@@ -1,0 +1,8 @@
+*.o
+*.exe
+*.html
+*.a
+scripts
+w3mimg
+po
+Makefile
