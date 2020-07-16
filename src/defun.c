@@ -569,3 +569,73 @@ DEFUN(qquitfm, QUIT, "Quit w3m")
 {
     _quitfm(confirm_on_quit);
 }
+
+/* Select buffer */
+DEFUN(selBuf, SELECT, "Go to buffer selection panel")
+{
+    Buffer *buf;
+    int ok;
+    char cmd;
+
+    ok = FALSE;
+    do {
+	buf = selectBuffer(Firstbuf, Currentbuf, &cmd);
+	switch (cmd) {
+	case 'B':
+	    ok = TRUE;
+	    break;
+	case '\n':
+	case ' ':
+	    Currentbuf = buf;
+	    ok = TRUE;
+	    break;
+	case 'D':
+	    delBuffer(buf);
+	    if (Firstbuf == NULL) {
+		/* No more buffer */
+		Firstbuf = nullBuffer();
+		Currentbuf = Firstbuf;
+	    }
+	    break;
+	case 'q':
+	    qquitfm();
+	    break;
+	case 'Q':
+	    quitfm();
+	    break;
+	}
+    } while (!ok);
+
+    for (buf = Firstbuf; buf != NULL; buf = buf->nextBuffer) {
+	if (buf == Currentbuf)
+	    continue;
+#ifdef USE_IMAGE
+	deleteImage(buf);
+#endif
+	if (clear_buffer)
+	    tmpClearBuffer(buf);
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+/* Suspend (on BSD), or run interactive shell (on SysV) */
+DEFUN(susp, INTERRUPT SUSPEND, "Stop loading document")
+{
+#ifndef SIGSTOP
+    char *shell;
+#endif				/* not SIGSTOP */
+    move(LASTLINE, 0);
+    clrtoeolx();
+    refresh();
+    fmTerm();
+#ifndef SIGSTOP
+    shell = getenv("SHELL");
+    if (shell == NULL)
+	shell = "/bin/sh";
+    system(shell);
+#else				/* SIGSTOP */
+    kill((pid_t) 0, SIGSTOP);
+#endif				/* SIGSTOP */
+    fmInit();
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
