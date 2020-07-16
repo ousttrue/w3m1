@@ -35,10 +35,32 @@ $ make
 $ ./w3m www.google.com // 動いた
 ```
 
-## その２。 コード生成を管理できるようにする
+## その２。 Ubuntu build
 
 `config.h` や `functable.c` などの生成されるソースをコミットして、
-`CMakeLists.txt` でビルドできるようにした。
+`CMakeLists.txt` で `Ubuntu-20.04` でビルドできるようにした。
+動かないけど。
+
+```
+> ./build/w3m
+Wrong __data_start/_end pair
+fish: './build/w3m' terminated by signal SIGABRT (Abort)
+```
+
+```
+apt install libgc-dev libssl-dev ncurses-dev
+```
+
+## その３。mktable
+
+```
+$ gcc -I. -g -O2 -I./libwc -I/usr/include/openssl -DHAVE_CONFIG_H -DAUXBIN_DIR="/mingw64/libexec/w3m" -DCGIBIN_DIR="/mingw64/libexec/w3m/cgi-bin" -DHELP_DIR="/mingw64/share/w3m" -DETC_DIR="/mingw64/etc" -DCONF_DIR="/mingw64/etc/w3m" -DRC_DIR="~/.w3m" -DLOCALEDIR="/mingw64/share/locale" -o mktable mktable.c Str.c myctype.c hash.c -ldl -lm -lgc
+> ./mktable
+Wrong __data_start/_end pair
+fish: './mktable' terminated by signal SIGABRT (Abort)
+```
+
+これも動かない。
 
 | ファイル     | 生成方法          | 入力           | 備考                                                   |
 |--------------|-------------------|----------------|--------------------------------------------------------|
