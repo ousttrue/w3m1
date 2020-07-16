@@ -44,7 +44,7 @@ DEFS = -DHAVE_CONFIG_H -DAUXBIN_DIR=\"$(AUXBIN_DIR)\" \
 	-DRC_DIR=\"$(RC_DIR)\" \
         -DLOCALEDIR=\"$(localedir)\"
 LDFLAGS = 
-LIBS =  -ldl
+LIBS =  -ldl -lm
 GC_LIBS = -lgc
 EXT_LIBS = -L. -lindep  $(GC_LIBS)
 W3M_LIBS =  -L./libwc -lwc  -lssl -lcrypto -lncurses
@@ -101,7 +101,7 @@ ALIBOBJS=Str.o indep.o regex.o textlist.o parsetag.o myctype.o hash.o
 ALIB=libindep.a
 ALLOBJS=$(OBJS) $(LOBJS) $(LLOBJS)
 
-EXT=.exe
+EXT=
 
 TARGET=$(PACKAGE)$(EXT)
 BOOKMARKER=w3mbookmark$(EXT)
@@ -135,12 +135,12 @@ $(ALIB): $(ALIBOBJS)
 
 $(OBJS) $(LOBJS): fm.h funcname1.h
 
-tagtable.c: tagtable.tab mktable$(EXT) html.h 
-	./mktable$(EXT) 100 $(srcdir)/tagtable.tab > $@
-
-entity.h: entity.tab mktable$(EXT)
-	echo '/* $$I''d$$ */' > $@
-	./mktable$(EXT) 100 $(srcdir)/entity.tab >> $@
+# tagtable.c: tagtable.tab mktable$(EXT) html.h 
+# 	./mktable$(EXT) 100 $(srcdir)/tagtable.tab > $@
+#
+# entity.h: entity.tab mktable$(EXT)
+# 	echo '/* $$I''d$$ */' > $@
+# 	./mktable$(EXT) 100 $(srcdir)/entity.tab >> $@
 
 indep.o: indep.c fm.h funcname1.h entity.h
 func.o: funcname.c functable.c funcname1.h
@@ -171,10 +171,10 @@ funcname1.h: funcname.tab
 funcname2.h: funcname.tab
 	sort funcname.tab | $(AWK) -f $(top_srcdir)/funcname2.awk > $@
 
-functable.c: funcname.tab mktable$(EXT)
-	sort funcname.tab | $(AWK) -f $(top_srcdir)/functable.awk > functable.tab
-	./mktable$(EXT) 100 functable.tab > $@
-	-rm -f functable.tab
+# functable.c: funcname.tab mktable$(EXT)
+# 	sort funcname.tab | $(AWK) -f $(top_srcdir)/functable.awk > functable.tab
+# 	./mktable$(EXT) 100 functable.tab > $@
+# 	-rm -f functable.tab
 
 mktable$(EXT): mktable.o dummy.o Str.o hash.o myctype.o
 	$(CC) $(CFLAGS) -o mktable mktable.o dummy.o Str.o hash.o myctype.o $(LDFLAGS) $(LIBS) $(GC_LIBS)
