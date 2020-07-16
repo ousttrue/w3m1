@@ -461,3 +461,55 @@ DEFUN(movR1, MOVE_RIGHT1,
 {
     _movR(1);
 }
+
+DEFUN(movLW, PREV_WORD, "Move to previous word")
+{
+    char *lb;
+    Line *pline, *l;
+    int ppos;
+    int i, n = searchKeyNum();
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    for (i = 0; i < n; i++) {
+	pline = Currentbuf->currentLine;
+	ppos = Currentbuf->pos;
+
+	if (prev_nonnull_line(Currentbuf->currentLine) < 0)
+	    goto end;
+
+	while (1) {
+	    l = Currentbuf->currentLine;
+	    lb = l->lineBuf;
+	    while (Currentbuf->pos > 0) {
+		int tmp = Currentbuf->pos;
+		prevChar(tmp, l);
+		if (is_wordchar(getChar(&lb[tmp])))
+		    break;
+		Currentbuf->pos = tmp;
+	    }
+	    if (Currentbuf->pos > 0)
+		break;
+	    if (prev_nonnull_line(Currentbuf->currentLine->prev) < 0) {
+		Currentbuf->currentLine = pline;
+		Currentbuf->pos = ppos;
+		goto end;
+	    }
+	    Currentbuf->pos = Currentbuf->currentLine->len;
+	}
+
+	l = Currentbuf->currentLine;
+	lb = l->lineBuf;
+	while (Currentbuf->pos > 0) {
+	    int tmp = Currentbuf->pos;
+	    prevChar(tmp, l);
+	    if (!is_wordchar(getChar(&lb[tmp])))
+		break;
+	    Currentbuf->pos = tmp;
+	}
+    }
+  end:
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}

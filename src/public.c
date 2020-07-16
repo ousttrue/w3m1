@@ -633,3 +633,97 @@ void _movR(int n)
         cursorRight(Currentbuf, n);
     displayBuffer(Currentbuf, B_NORMAL);
 }
+
+int prev_nonnull_line(Line *line)
+{
+    Line *l;
+
+    for (l = line; l != NULL && l->len == 0; l = l->prev)
+        ;
+    if (l == NULL || l->len == 0)
+        return -1;
+
+    Currentbuf->currentLine = l;
+    if (l != line)
+        Currentbuf->pos = Currentbuf->currentLine->len;
+    return 0;
+}
+
+int next_nonnull_line(Line *line)
+{
+    Line *l;
+
+    for (l = line; l != NULL && l->len == 0; l = l->next)
+        ;
+
+    if (l == NULL || l->len == 0)
+        return -1;
+
+    Currentbuf->currentLine = l;
+    if (l != line)
+        Currentbuf->pos = 0;
+    return 0;
+}
+
+char *
+getCurWord(Buffer *buf, int *spos, int *epos)
+{
+    char *p;
+    Line *l = buf->currentLine;
+    int b, e;
+
+    *spos = 0;
+    *epos = 0;
+    if (l == NULL)
+        return NULL;
+    p = l->lineBuf;
+    e = buf->pos;
+    while (e > 0 && !is_wordchar(getChar(&p[e])))
+        prevChar(&e, l);
+    if (!is_wordchar(getChar(&p[e])))
+        return NULL;
+    b = e;
+    while (b > 0)
+    {
+        int tmp = b;
+        prevChar(&tmp, l);
+        if (!is_wordchar(getChar(&p[tmp])))
+            break;
+        b = tmp;
+    }
+    while (e < l->len && is_wordchar(getChar(&p[e])))
+        nextChar(&e, l);
+    *spos = b;
+    *epos = e;
+    return &p[b];
+}
+
+/* 
+ * From: Takashi Nishimoto <g96p0935@mse.waseda.ac.jp> Date: Mon, 14 Jun
+ * 1999 09:29:56 +0900 
+ */
+void prevChar(int *s, Line *l)
+{
+    do
+    {
+        (*s)--;
+    } while ((*s) > 0 && (l)->propBuf[*s] & PC_WCHAR2);
+}
+
+void nextChar(int *s, Line *l)
+{
+    do
+    {
+        (*s)++;
+    } while ((*s) < (l)->len && (l)->propBuf[*s] & PC_WCHAR2);
+}
+
+wc_uint32 getChar(char *p)
+{
+    return wc_any_to_ucs(wtf_parse1((wc_uchar **)&p));
+}
+
+int is_wordchar(wc_uint32 c)
+{
+    return wc_is_ucs_alnum(c);
+}
