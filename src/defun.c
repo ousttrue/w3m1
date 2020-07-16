@@ -396,3 +396,22 @@ DEFUN(ldfile, LOAD, "Load local file")
     }
     cmd_loadfile(fn);
 }
+
+/* Load help file */
+DEFUN(ldhelp, HELP, "View help")
+{
+#ifdef USE_HELP_CGI
+    char *lang;
+    int n;
+    Str tmp;
+
+    lang = AcceptLang;
+    n = strcspn(lang, ";, \t");
+    tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
+		  Str_form_quote(Strnew_charp(w3m_version))->ptr,
+		  Str_form_quote(Strnew_charp_n(lang, n))->ptr);
+    cmd_loadURL(tmp->ptr, NULL, NO_REFERER, NULL);
+#else
+    cmd_loadURL(helpFile(HELP_FILE), NULL, NO_REFERER, NULL);
+#endif
+}
