@@ -2,14 +2,14 @@ project(w3m)
 cmake_minimum_required(VERSION 3.0.0)
    
 add_executable(mktable
-    mktable.c
-    Str.c
-    myctype.c
-    hash.c
+    src/mktable.c
+    src/Str.c
+    src/myctype.c
+    src/hash.c
 )
 target_include_directories(mktable
 PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/src
 )
 target_compile_definitions(mktable
 PRIVATE
@@ -48,53 +48,53 @@ add_executable(w3m
     libwc/utf8.c
     libwc/viet.c
     libwc/wtf.c
-    Str.c
-    indep.c
-    regex.c
-    textlist.c
-    parsetag.c
-    myctype.c
-    hash.c
-    main.c
-    file.c
-    buffer.c
-    display.c
-    etc.c
-    search.c
-    linein.c
-    table.c
-    local.c
-    form.c
-    map.c
-    frame.c
-    rc.c
-    menu.c
-    mailcap.c
-    image.c
-    symbol.c
-    entity.c
-    terms.c
-    url.c
-    ftp.c
-    mimehead.c
-    regex.c
-    news.c
-    func.c
-    cookie.c
-    history.c
-    backend.c
-    indep.c
-    version.c
-    istream.c
-    keybind.c
-    parsetagx.c
-    anchor.c
-    tagtable.c
+    src/Str.c
+    src/indep.c
+    src/regex.c
+    src/textlist.c
+    src/parsetag.c
+    src/myctype.c
+    src/hash.c
+    src/main.c
+    src/file.c
+    src/buffer.c
+    src/display.c
+    src/etc.c
+    src/search.c
+    src/linein.c
+    src/table.c
+    src/local.c
+    src/form.c
+    src/map.c
+    src/frame.c
+    src/rc.c
+    src/menu.c
+    src/mailcap.c
+    src/image.c
+    src/symbol.c
+    src/entity.c
+    src/terms.c
+    src/url.c
+    src/ftp.c
+    src/mimehead.c
+    src/regex.c
+    src/news.c
+    src/func.c
+    src/cookie.c
+    src/history.c
+    src/backend.c
+    src/indep.c
+    src/version.c
+    src/istream.c
+    src/keybind.c
+    src/parsetagx.c
+    src/anchor.c
+    src/tagtable.c
 )
 target_include_directories(w3m
 PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/libwc
-    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/src
     )
 target_compile_definitions(w3m
 PUBLIC
