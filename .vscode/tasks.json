@@ -29,6 +29,8 @@
                 "mktable",
                 "mktable.c",
                 "Str.c",
+                "myctype.c",
+                "hash.c",
                 "-ldl",
                 "-lm",
                 "-lgc",
