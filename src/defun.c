@@ -47,3 +47,13 @@ DEFUN(multimap, MULTIMAP, "multimap")
 	escKeyProc((int)c, 0, NULL);
     }
 }
+
+/* Move page forward */
+DEFUN(pgFore, NEXT_PAGE, "Move to next page")
+{
+    if (vi_prec_num)
+	nscroll(searchKeyNum() * (Currentbuf->LINES - 1), B_NORMAL);
+    else
+	nscroll(prec_num() ? searchKeyNum() : searchKeyNum()
+		* (Currentbuf->LINES - 1), prec_num() ? B_SCROLL : B_NORMAL);
+}

@@ -98,7 +98,7 @@ static char *getCurWord(Buffer *buf, int *spos, int *epos);
 
 static int display_ok = FALSE;
 static void do_dump(Buffer *);
-int prec_num = 0;
+
 int prev_key = -1;
 int on_target = 1;
 static int add_download_list = FALSE;
@@ -114,9 +114,7 @@ static void moveTab(TabBuffer * t, TabBuffer * t2, int right);
 static void _nextA(int);
 static void _prevA(int);
 static int check_target = TRUE;
-#define PREC_NUM (prec_num ? prec_num : 1)
-#define PREC_LIMIT 10000
-static int searchKeyNum(void);
+
 
 #define help() fusage(stdout, 0)
 #define usage() fusage(stderr, 1)
@@ -1140,16 +1138,16 @@ main(int argc, char **argv, char **envp)
 #endif				/* USE_MOUSE */
 	if (IS_ASCII(c)) {	/* Ascii */
 	    if (('0' <= c) && (c <= '9') &&
-		(prec_num || (GlobalKeymap[c] == FUNCNAME_nulcmd))) {
-		prec_num = prec_num * 10 + (int)(c - '0');
-		if (prec_num > PREC_LIMIT)
-		   prec_num = PREC_LIMIT;
+		(prec_num() || (GlobalKeymap[c] == FUNCNAME_nulcmd))) {
+		set_prec_num(prec_num() * 10 + (int)(c - '0'));
+		if (prec_num() > PREC_LIMIT())
+		   set_prec_num( PREC_LIMIT());
 	    }
 	    else {
 		set_buffer_environ(Currentbuf);
 		save_buffer_position(Currentbuf);
 		keyPressEventProc((int)c);
-		prec_num = 0;
+		set_prec_num(0);
 	    }
 	}
 	prev_key = CurrentKey;
@@ -1413,76 +1411,7 @@ SigPipe(SIGNAL_ARG)
 }
 #endif
 
-/* 
- * Command functions: These functions are called with a keystroke.
- */
 
-static void
-nscroll(int n, int mode)
-{
-    Buffer *buf = Currentbuf;
-    Line *top = buf->topLine, *cur = buf->currentLine;
-    int lnum, tlnum, llnum, diff_n;
-
-    if (buf->firstLine == NULL)
-	return;
-    lnum = cur->linenumber;
-    buf->topLine = lineSkip(buf, top, n, FALSE);
-    if (buf->topLine == top) {
-	lnum += n;
-	if (lnum < buf->topLine->linenumber)
-	    lnum = buf->topLine->linenumber;
-	else if (lnum > buf->lastLine->linenumber)
-	    lnum = buf->lastLine->linenumber;
-    }
-    else {
-	tlnum = buf->topLine->linenumber;
-	llnum = buf->topLine->linenumber + buf->LINES - 1;
-	if (nextpage_topline)
-	    diff_n = 0;
-	else
-	    diff_n = n - (tlnum - top->linenumber);
-	if (lnum < tlnum)
-	    lnum = tlnum + diff_n;
-	if (lnum > llnum)
-	    lnum = llnum + diff_n;
-    }
-    gotoLine(buf, lnum);
-    arrangeLine(buf);
-    if (n > 0) {
-	if (buf->currentLine->bpos &&
-	    buf->currentLine->bwidth >= buf->currentColumn + buf->visualpos)
-	    cursorDown(buf, 1);
-	else {
-	    while (buf->currentLine->next && buf->currentLine->next->bpos &&
-		   buf->currentLine->bwidth + buf->currentLine->width <
-		   buf->currentColumn + buf->visualpos)
-		cursorDown0(buf, 1);
-	}
-    }
-    else {
-	if (buf->currentLine->bwidth + buf->currentLine->width <
-	    buf->currentColumn + buf->visualpos)
-	    cursorUp(buf, 1);
-	else {
-	    while (buf->currentLine->prev && buf->currentLine->bpos &&
-		   buf->currentLine->bwidth >=
-		   buf->currentColumn + buf->visualpos)
-		cursorUp0(buf, 1);
-	}
-    }
-    displayBuffer(buf, mode);
-}
-
-/* Move page forward */
-DEFUN(pgFore, NEXT_PAGE, "Move to next page")
-{
-    if (vi_prec_num)
-	nscroll(searchKeyNum() * (Currentbuf->LINES - 1), B_NORMAL);
-    else
-	nscroll(prec_num ? searchKeyNum() : searchKeyNum()
-		* (Currentbuf->LINES - 1), prec_num ? B_SCROLL : B_NORMAL);
-}
 
 /* Move page backward */
 DEFUN(pgBack, PREV_PAGE, "Move to previous page")
@@ -1572,9 +1501,9 @@ srchcore(char *volatile str, int (*func) (Buffer *, char *))
     auto prevtrap = mySignal(SIGINT, intTrap);
     crmode();
     if (SETJMP(IntReturn) == 0) {
-	for (i = 0; i < PREC_NUM; i++) {
+	for (i = 0; i < PREC_NUM(); i++) {
 	    result = func(Currentbuf, str);
-	    if (i < PREC_NUM - 1 && result & SR_FOUND)
+	    if (i < PREC_NUM() - 1 && result & SR_FOUND)
 		clear_mark(Currentbuf->currentLine);
 	}
     }
@@ -2458,8 +2387,8 @@ _goLine(char *l)
 	return;
     }
     Currentbuf->pos = 0;
-    if (((*l == '^') || (*l == '$')) && prec_num) {
-	gotoRealLine(Currentbuf, prec_num);
+    if (((*l == '^') || (*l == '$')) && prec_num()) {
+	gotoRealLine(Currentbuf, prec_num());
     }
     else if (*l == '^') {
 	Currentbuf->topLine = Currentbuf->currentLine = Currentbuf->firstLine;
@@ -3439,10 +3368,10 @@ DEFUN(topA, LINK_BEGIN, "Go to the first link")
     if (!hl || hl->nmark == 0)
 	return;
 
-    if (prec_num > hl->nmark)
+    if (prec_num() > hl->nmark)
 	hseq = hl->nmark - 1;
-    else if (prec_num > 0)
-	hseq = prec_num - 1;
+    else if (prec_num() > 0)
+	hseq = prec_num() - 1;
     do {
 	if (hseq >= hl->nmark)
 	    return;
@@ -3472,10 +3401,10 @@ DEFUN(lastA, LINK_END, "Go to the last link")
     if (!hl || hl->nmark == 0)
 	return;
 
-    if (prec_num >= hl->nmark)
+    if (prec_num() >= hl->nmark)
 	hseq = 0;
-    else if (prec_num > 0)
-	hseq = hl->nmark - prec_num;
+    else if (prec_num() > 0)
+	hseq = hl->nmark - prec_num();
     else
 	hseq = hl->nmark - 1;
     do {
@@ -3830,7 +3759,7 @@ DEFUN(nextBf, NEXT, "Move to next buffer")
     Buffer *buf;
     int i;
 
-    for (i = 0; i < PREC_NUM; i++) {
+    for (i = 0; i < PREC_NUM(); i++) {
 	buf = prevBuffer(Firstbuf, Currentbuf);
 	if (!buf) {
 	    if (i == 0)
@@ -3848,7 +3777,7 @@ DEFUN(prevBf, PREV, "Move to previous buffer")
     Buffer *buf;
     int i;
 
-    for (i = 0; i < PREC_NUM; i++) {
+    for (i = 0; i < PREC_NUM(); i++) {
 	buf = Currentbuf->nextBuffer;
 	if (!buf) {
 	    if (i == 0)
@@ -4925,7 +4854,7 @@ invoke_browser(char *url)
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
     browser = searchKeyData();
     if (browser == NULL || *browser == '\0') {
-	switch (prec_num) {
+	switch (prec_num()) {
 	case 0:
 	case 1:
 	    browser = ExtBrowser;
@@ -5237,19 +5166,19 @@ process_mouse(int btn, int x, int y)
 		    delta_x = -delta_x;
 		}
 		if (delta_y > 0) {
-		    prec_num = delta_y;
+		    set_prec_num(delta_y);
 		    ldown1();
 		}
 		else if (delta_y < 0) {
-		    prec_num = -delta_y;
+		    set_prec_num( -delta_y);
 		    lup1();
 		}
 		if (delta_x > 0) {
-		    prec_num = delta_x;
+		    set_prec_num( delta_x);
 		    col1L();
 		}
 		else if (delta_x < 0) {
-		    prec_num = -delta_x;
+		    set_prec_num( -delta_x);
 		    col1R();
 		}
 	    }
@@ -5632,18 +5561,6 @@ searchKeyData(void)
     if (data == NULL || *data == '\0')
 	return NULL;
     return allocStr(data, -1);
-}
-
-static int
-searchKeyNum(void)
-{
-    char *d;
-    int n = 1;
-
-    d = searchKeyData();
-    if (d != NULL)
-	n = atoi(d);
-    return n * PREC_NUM;
 }
 
 #ifdef __EMX__
@@ -6075,7 +5992,7 @@ DEFUN(closeT, CLOSE_TAB, "Close current tab")
     if (nTab <= 1)
 	return;
     if (prec_num)
-	tab = numTab(PREC_NUM);
+	tab = numTab(PREC_NUM());
     else
 	tab = CurrentTab;
     if (tab)
@@ -6089,7 +6006,7 @@ DEFUN(nextT, NEXT_TAB, "Move to next tab")
 
     if (nTab <= 1)
 	return;
-    for (i = 0; i < PREC_NUM; i++) {
+    for (i = 0; i < PREC_NUM(); i++) {
 	if (CurrentTab->nextTab)
 	    CurrentTab = CurrentTab->nextTab;
 	else
@@ -6104,7 +6021,7 @@ DEFUN(prevT, PREV_TAB, "Move to previous tab")
 
     if (nTab <= 1)
 	return;
-    for (i = 0; i < PREC_NUM; i++) {
+    for (i = 0; i < PREC_NUM(); i++) {
 	if (CurrentTab->prevTab)
 	    CurrentTab = CurrentTab->prevTab;
 	else
@@ -6164,7 +6081,7 @@ followTab(TabBuffer * tab)
 
 DEFUN(tabA, TAB_LINK, "Open current link on new tab")
 {
-    followTab(prec_num ? numTab(PREC_NUM) : NULL);
+    followTab(prec_num() ? numTab(PREC_NUM()) : NULL);
 }
 
 static void
@@ -6205,13 +6122,13 @@ tabURL0(TabBuffer * tab, char *prompt, int relative)
 
 DEFUN(tabURL, TAB_GOTO, "Open URL on new tab")
 {
-    tabURL0(prec_num ? numTab(PREC_NUM) : NULL,
+    tabURL0(prec_num() ? numTab(PREC_NUM()) : NULL,
 	    "Goto URL on new tab: ", FALSE);
 }
 
 DEFUN(tabrURL, TAB_GOTO_RELATIVE, "Open relative URL on new tab")
 {
-    tabURL0(prec_num ? numTab(PREC_NUM) : NULL,
+    tabURL0(prec_num() ? numTab(PREC_NUM()) : NULL,
 	    "Goto relative URL on new tab: ", TRUE);
 }
 
@@ -6259,7 +6176,7 @@ DEFUN(tabR, TAB_RIGHT, "Move current tab right")
     TabBuffer *tab;
     int i;
 
-    for (tab = CurrentTab, i = 0; tab && i < PREC_NUM;
+    for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
 	 tab = tab->nextTab, i++) ;
     moveTab(CurrentTab, tab ? tab : LastTab, TRUE);
 }
@@ -6269,7 +6186,7 @@ DEFUN(tabL, TAB_LEFT, "Move current tab left")
     TabBuffer *tab;
     int i;
 
-    for (tab = CurrentTab, i = 0; tab && i < PREC_NUM;
+    for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
 	 tab = tab->prevTab, i++) ;
     moveTab(CurrentTab, tab ? tab : FirstTab, FALSE);
 }
@@ -6575,7 +6492,7 @@ DEFUN(undoPos, UNDO, "Cancel the last cursor movement")
 	return;
     if (!b || !b->prev)
 	return;
-    for (i = 0; i < PREC_NUM && b->prev; i++, b = b->prev) ;
+    for (i = 0; i < PREC_NUM() && b->prev; i++, b = b->prev) ;
     resetPos(b);
 }
 
@@ -6588,7 +6505,7 @@ DEFUN(redoPos, REDO, "Cancel the last undo")
 	return;
     if (!b || !b->next)
 	return;
-    for (i = 0; i < PREC_NUM && b->next; i++, b = b->next) ;
+    for (i = 0; i < PREC_NUM() && b->next; i++, b = b->next) ;
     resetPos(b);
 }
 
