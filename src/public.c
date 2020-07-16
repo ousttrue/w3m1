@@ -728,3 +728,36 @@ int is_wordchar(wc_uint32 c)
 {
     return wc_is_ucs_alnum(c);
 }
+
+void _quitfm(int confirm)
+{
+    char *ans = "y";
+
+    if (checkDownloadList())
+        /* FIXME: gettextize? */
+        ans = inputChar("Download process retains. "
+                        "Do you want to exit w3m? (y/n)");
+    else if (confirm)
+        /* FIXME: gettextize? */
+        ans = inputChar("Do you want to exit w3m? (y/n)");
+    if (!(ans && TOLOWER(*ans) == 'y'))
+    {
+        displayBuffer(Currentbuf, B_NORMAL);
+        return;
+    }
+
+    term_title(""); /* XXX */
+#ifdef USE_IMAGE
+    if (activeImage)
+        termImage();
+#endif
+    fmTerm();
+#ifdef USE_COOKIE
+    save_cookies();
+#endif /* USE_COOKIE */
+#ifdef USE_HISTORY
+    if (UseHistory && SaveURLHist)
+        saveHistory(URLHist, URLHistSize);
+#endif /* USE_HISTORY */
+    w3m_exit(0);
+}

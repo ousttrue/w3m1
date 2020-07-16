@@ -513,3 +513,59 @@ DEFUN(movLW, PREV_WORD, "Move to previous word")
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
 }
+
+DEFUN(movRW, NEXT_WORD, "Move to next word")
+{
+    char *lb;
+    Line *pline, *l;
+    int ppos;
+    int i, n = searchKeyNum();
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    for (i = 0; i < n; i++) {
+	pline = Currentbuf->currentLine;
+	ppos = Currentbuf->pos;
+
+	if (next_nonnull_line(Currentbuf->currentLine) < 0)
+	    goto end;
+
+	l = Currentbuf->currentLine;
+	lb = l->lineBuf;
+	while (Currentbuf->pos < l->len &&
+	       is_wordchar(getChar(&lb[Currentbuf->pos])))
+	    nextChar(&Currentbuf->pos, l);
+
+	while (1) {
+	    while (Currentbuf->pos < l->len &&
+		   !is_wordchar(getChar(&lb[Currentbuf->pos])))
+		nextChar(&Currentbuf->pos, l);
+	    if (Currentbuf->pos < l->len)
+		break;
+	    if (next_nonnull_line(Currentbuf->currentLine->next) < 0) {
+		Currentbuf->currentLine = pline;
+		Currentbuf->pos = ppos;
+		goto end;
+	    }
+	    Currentbuf->pos = 0;
+	    l = Currentbuf->currentLine;
+	    lb = l->lineBuf;
+	}
+    }
+  end:
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* Quit */
+DEFUN(quitfm, ABORT EXIT, "Quit w3m without confirmation")
+{
+    _quitfm(FALSE);
+}
+
+/* Question and Quit */
+DEFUN(qquitfm, QUIT, "Quit w3m")
+{
+    _quitfm(confirm_on_quit);
+}
