@@ -69,6 +69,8 @@ w3mも動いた。
 `extern C` の領域を減らしたい。
 まず、DEFUN(1200行から6000行くらい？) を `defun.c` に分離する。
 
+暗黙関数定義を禁止。 `-Werror=implicit-function-declaration`
+
 ## コード生成。mktable
 
 | ファイル     | 生成方法          | 入力           | 備考                                                   |
@@ -87,8 +89,9 @@ hash.h, hash.c を std::unordered_map とかに置き換えたい・・・。
 ## TODO
 
 * macro 減らす
-* source と header が対応するようにする(全て関数宣言付ける)
+* source と header が対応するようにする
 * c++ にする
     * 各 struct を class化してなるべくカプセル化する
 * DEFUNマクロをluaとかに置き換えたい
 * bohem-gc やめる(遠大)
+

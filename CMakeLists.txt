@@ -110,6 +110,10 @@ PUBLIC
     LOCALEDIR=\"/usr/local/share/locale\"
     USE_UNICODE
     )
+target_compile_options(w3m
+PRIVATE
+    -Werror=implicit-function-declaration
+    )
 target_link_libraries(w3m
 PRIVATE
     m
