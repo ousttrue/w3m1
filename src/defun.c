@@ -142,3 +142,15 @@ DEFUN(isrchbak, ISEARCH_BACK, "Incremental search backward")
 {
     isrch(backwardSearch, "I-search backward: ");
 }
+
+/* Search next matching */
+DEFUN(srchnxt, SEARCH_NEXT, "Search next regexp")
+{
+    srch_nxtprv(0);
+}
+
+/* Search previous matching */
+DEFUN(srchprv, SEARCH_PREV, "Search previous regexp")
+{
+    srch_nxtprv(1);
+}
