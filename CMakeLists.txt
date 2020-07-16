@@ -1,16 +1,82 @@
 project(w3m)
 cmake_minimum_required(VERSION 3.0.0)
-
+    
 add_executable(w3m
+    libwc/big5.c
+    libwc/ces.c
+    libwc/char_conv.c
+    libwc/charset.c
+    libwc/combining.c
+    libwc/conv.c
+    libwc/detect.c
+    libwc/gb18030.c
+    libwc/gbk.c
+    libwc/hkscs.c
+    libwc/hz.c
+    libwc/iso2022.c
+    libwc/jis.c
+    libwc/johab.c
+    libwc/priv.c
+    libwc/putc.c
+    libwc/search.c
+    libwc/sjis.c
+    libwc/status.c
+    libwc/ucs.c
+    libwc/uhc.c
+    libwc/utf7.c
+    libwc/utf8.c
+    libwc/viet.c
+    libwc/wtf.c
+    Str.c
+    indep.c
+    regex.c
+    textlist.c
+    parsetag.c
+    myctype.c
+    hash.c
     main.c
-    )
+    file.c
+    buffer.c
+    display.c
+    etc.c
+    search.c
+    linein.c
+    table.c
+    local.c
+    form.c
+    map.c
+    frame.c
+    rc.c
+    menu.c
+    mailcap.c
+    image.c
+    symbol.c
+    entity.c
+    terms.c
+    url.c
+    ftp.c
+    mimehead.c
+    regex.c
+    news.c
+    func.c
+    cookie.c
+    history.c
+    backend.c
+    indep.c
+    version.c
+    istream.c
+    keybind.c
+    parsetagx.c
+    anchor.c
+    tagtable.c
+)
 target_include_directories(w3m
-PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
+PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/libwc
+    ${CMAKE_CURRENT_LIST_DIR}
     )
 target_compile_definitions(w3m
-PRIVATE
+PUBLIC
     HAVE_CONFIG_H
     AUXBIN_DIR=\"/usr/local/w3m/libexec\"
     CGIBIN_DIR=\"/usr/local/w3m/cgi-bin\"
@@ -19,4 +85,13 @@ PRIVATE
     CONF_DIR=\"/usr/local/etc/w3m\"
     RC_DIR=\"~/.w3m\"
     LOCALEDIR=\"/usr/local/share/locale\"
+    USE_UNICODE
+    )
+target_link_libraries(w3m
+PRIVATE
+    m
+    gc
+    ncurses
+    ssl
+    crypto
     )
