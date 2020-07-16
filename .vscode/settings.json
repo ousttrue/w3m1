@@ -1,0 +1,13 @@
+{
+    "cmake.configureOnOpen": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "terminal.integrated.env.windows": {
+        "CHERE_INVOKING": 1,
+        "MSYSTEM": "MINGW64"
+    },
+    "terminal.integrated.setLocaleVariables": true,
+    "terminal.integrated.shell.windows": "C:\\msys64\\usr\\bin\\bash.exe",
+    "terminal.integrated.shellArgs.windows": [
+        "-i"
+    ],
+}

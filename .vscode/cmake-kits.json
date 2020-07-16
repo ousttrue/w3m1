@@ -1,0 +1,6 @@
+[
+    {
+        "name": "msys2",
+        "toolchainFile": "${workspaceFolder}/.vscode/msys2.cmake"
+    }
+]
