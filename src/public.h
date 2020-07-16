@@ -21,3 +21,7 @@ void pushBuffer(Buffer *buf);
 void cmd_loadfile(char *fn);
 void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request);
 int handleMailto(char *url);
+void _movL(int n);
+void _movD(int n);
+void _movU(int n);
+void _movR(int n);

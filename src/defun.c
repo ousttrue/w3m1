@@ -415,3 +415,49 @@ DEFUN(ldhelp, HELP, "View help")
     cmd_loadURL(helpFile(HELP_FILE), NULL, NO_REFERER, NULL);
 #endif
 }
+
+DEFUN(movL, MOVE_LEFT,
+      "Move cursor left (a half screen shift at the left edge)")
+{
+    _movL(Currentbuf->COLS / 2);
+}
+
+DEFUN(movL1, MOVE_LEFT1, "Move cursor left (1 columns shift at the left edge)")
+{
+    _movL(1);
+}
+
+DEFUN(movD, MOVE_DOWN,
+      "Move cursor down (a half screen scroll at the end of screen)")
+{
+    _movD((Currentbuf->LINES + 1) / 2);
+}
+
+DEFUN(movD1, MOVE_DOWN1,
+      "Move cursor down (1 line scroll at the end of screen)")
+{
+    _movD(1);
+}
+
+DEFUN(movU, MOVE_UP,
+      "Move cursor up (a half screen scroll at the top of screen)")
+{
+    _movU((Currentbuf->LINES + 1) / 2);
+}
+
+DEFUN(movU1, MOVE_UP1, "Move cursor up (1 line scrol at the top of screen)")
+{
+    _movU(1);
+}
+
+DEFUN(movR, MOVE_RIGHT,
+      "Move cursor right (a half screen shift at the right edge)")
+{
+    _movR(Currentbuf->COLS / 2);
+}
+
+DEFUN(movR1, MOVE_RIGHT1,
+      "Move cursor right (1 columns shift at the right edge)")
+{
+    _movR(1);
+}

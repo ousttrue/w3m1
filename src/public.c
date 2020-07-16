@@ -589,3 +589,47 @@ int handleMailto(char *url)
     pushHashHist(URLHist, url);
     return 1;
 }
+
+/* Move cursor left */
+void _movL(int n)
+{
+    int i, m = searchKeyNum();
+    if (Currentbuf->firstLine == NULL)
+        return;
+    for (i = 0; i < m; i++)
+        cursorLeft(Currentbuf, n);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* Move cursor downward */
+void _movD(int n)
+{
+    int i, m = searchKeyNum();
+    if (Currentbuf->firstLine == NULL)
+        return;
+    for (i = 0; i < m; i++)
+        cursorDown(Currentbuf, n);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* move cursor upward */
+void _movU(int n)
+{
+    int i, m = searchKeyNum();
+    if (Currentbuf->firstLine == NULL)
+        return;
+    for (i = 0; i < m; i++)
+        cursorUp(Currentbuf, n);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* Move cursor right */
+void _movR(int n)
+{
+    int i, m = searchKeyNum();
+    if (Currentbuf->firstLine == NULL)
+        return;
+    for (i = 0; i < m; i++)
+        cursorRight(Currentbuf, n);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
