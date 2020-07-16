@@ -1411,30 +1411,6 @@ SigPipe(SIGNAL_ARG)
 }
 #endif
 
-
-
-/* Move page backward */
-DEFUN(pgBack, PREV_PAGE, "Move to previous page")
-{
-    if (vi_prec_num)
-	nscroll(-searchKeyNum() * (Currentbuf->LINES - 1), B_NORMAL);
-    else
-	nscroll(-(prec_num ? searchKeyNum() : searchKeyNum()
-		  * (Currentbuf->LINES - 1)), prec_num ? B_SCROLL : B_NORMAL);
-}
-
-/* 1 line up */
-DEFUN(lup1, UP, "Scroll up one line")
-{
-    nscroll(searchKeyNum(), B_SCROLL);
-}
-
-/* 1 line down */
-DEFUN(ldown1, DOWN, "Scroll down one line")
-{
-    nscroll(-searchKeyNum(), B_SCROLL);
-}
-
 /* move cursor position to the center of screen */
 DEFUN(ctrCsrV, CENTER_V, "Move to the center column")
 {
