@@ -85,7 +85,7 @@
 #define INET6 1
 #define HAVE_SOCKLEN_T 1
 /* #undef HAVE_OLD_SS_FAMILY */
-#define USE_EGD
+// #define USE_EGD
 #define ENABLE_REMOVE_TRAILINGSPACES
 /* #undef MENU_THIN_FRAME */
 /* #undef USE_RAW_SCROLL */
@@ -105,7 +105,7 @@
 /* for USE_MIGEMO */
 #define DEF_MIGEMO_COMMAND "migemo -t egrep /usr/local/share/migemo/migemo-dict"
 
-#define USE_BINMODE_STREAM 1
+// #define USE_BINMODE_STREAM 1
 #define HAVE_TERMIOS_H 1
 /* #undef HAVE_TERMIO_H */
 /* #undef HAVE_SGTTY_H */
