@@ -37,3 +37,13 @@ DEFUN(escbmap, ESCBMAP, "ESC [ map")
     if (IS_ASCII(c))
 	escKeyProc((int)c, K_ESCB, EscBKeymap);
 }
+
+DEFUN(multimap, MULTIMAP, "multimap")
+{
+    char c;
+    c = getch();
+    if (IS_ASCII(c)) {
+	CurrentKey = K_MULTI | (CurrentKey << 16) | c;
+	escKeyProc((int)c, 0, NULL);
+    }
+}
