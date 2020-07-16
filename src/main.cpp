@@ -1587,30 +1587,6 @@ srch(int (*func) (Buffer *, char *), char *prompt)
     searchRoutine = func;
 }
 
-/* Search regular expression forward */
-
-DEFUN(srchfor, SEARCH SEARCH_FORE WHEREIS, "Search forward")
-{
-    srch(forwardSearch, "Forward: ");
-}
-
-DEFUN(isrchfor, ISEARCH, "Incremental search forward")
-{
-    isrch(forwardSearch, "I-search: ");
-}
-
-/* Search regular expression backward */
-
-DEFUN(srchbak, SEARCH_BACK, "Search backward")
-{
-    srch(backwardSearch, "Backward: ");
-}
-
-DEFUN(isrchbak, ISEARCH_BACK, "Incremental search backward")
-{
-    isrch(backwardSearch, "I-search backward: ");
-}
-
 static void
 srch_nxtprv(int reverse)
 {

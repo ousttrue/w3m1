@@ -120,3 +120,25 @@ DEFUN(rdrwSc, REDRAW, "Redraw screen")
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
+
+/* Search regular expression forward */
+DEFUN(srchfor, SEARCH SEARCH_FORE WHEREIS, "Search forward")
+{
+    srch(forwardSearch, "Forward: ");
+}
+
+DEFUN(isrchfor, ISEARCH, "Incremental search forward")
+{
+    isrch(forwardSearch, "I-search: ");
+}
+
+/* Search regular expression backward */
+DEFUN(srchbak, SEARCH_BACK, "Search backward")
+{
+    srch(backwardSearch, "Backward: ");
+}
+
+DEFUN(isrchbak, ISEARCH_BACK, "Incremental search backward")
+{
+    isrch(backwardSearch, "I-search backward: ");
+}
