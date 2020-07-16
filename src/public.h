@@ -32,3 +32,4 @@ void prevChar(int *s, Line *l);
 void nextChar(int *s, Line *l);
 wc_uint32 getChar(char *p);
 int is_wordchar(wc_uint32 c);
+int srchcore(char *volatile str, int (*func)(Buffer *, char *));
