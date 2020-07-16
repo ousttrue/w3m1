@@ -1,0 +1,41 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build mktable",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "gcc",
+            "args": [
+                "-I.",
+                "-g",
+                "-O2",
+                "-I./libwc",
+                "-I/usr/include/openssl",
+                "-DHAVE_CONFIG_H",
+                "-DAUXBIN_DIR=\"/mingw64/libexec/w3m\"",
+                "-DCGIBIN_DIR=\"/mingw64/libexec/w3m/cgi-bin\"",
+                "-DHELP_DIR=\"/mingw64/share/w3m\"",
+                "-DETC_DIR=\"/mingw64/etc\"",
+                "-DCONF_DIR=\"/mingw64/etc/w3m\"",
+                "-DRC_DIR=\"~/.w3m\"",
+                "-DLOCALEDIR=\"/mingw64/share/locale\"",
+                "-o",
+                "mktable",
+                "mktable.c",
+                "Str.c",
+                "-ldl",
+                "-lm",
+                "-lgc",
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
+}
