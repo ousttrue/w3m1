@@ -96,7 +96,6 @@ void set_buffer_environ(Buffer *);
 static void save_buffer_position(Buffer *buf);
 
 static void _followForm(int);
-static void _goLine(char *);
 static void _newT(void);
 static void followTab(TabBuffer * tab);
 static void moveTab(TabBuffer * t, TabBuffer * t2, int right);
@@ -1251,87 +1250,6 @@ SigPipe(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 #endif
-
-
-
-
-
-
-/* Go to specified line */
-static void
-_goLine(char *l)
-{
-    if (l == NULL || *l == '\0' || Currentbuf->currentLine == NULL) {
-	displayBuffer(Currentbuf, B_FORCE_REDRAW);
-	return;
-    }
-    Currentbuf->pos = 0;
-    if (((*l == '^') || (*l == '$')) && prec_num()) {
-	gotoRealLine(Currentbuf, prec_num());
-    }
-    else if (*l == '^') {
-	Currentbuf->topLine = Currentbuf->currentLine = Currentbuf->firstLine;
-    }
-    else if (*l == '$') {
-	Currentbuf->topLine =
-	    lineSkip(Currentbuf, Currentbuf->lastLine,
-		     -(Currentbuf->LINES + 1) / 2, TRUE);
-	Currentbuf->currentLine = Currentbuf->lastLine;
-    }
-    else
-	gotoRealLine(Currentbuf, atoi(l));
-    arrangeCursor(Currentbuf);
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
-
-DEFUN(goLine, GOTO_LINE, "Go to specified line")
-{
-
-    char *str = searchKeyData();
-    if (prec_num)
-	_goLine("^");
-    else if (str)
-	_goLine(str);
-    else
-	/* FIXME: gettextize? */
-	_goLine(inputStr("Goto line: ", ""));
-}
-
-
-DEFUN(goLineF, BEGIN, "Go to the first line")
-{
-    _goLine("^");
-}
-
-DEFUN(goLineL, END, "Go to the last line")
-{
-    _goLine("$");
-}
-
-/* Go to the beginning of the line */
-DEFUN(linbeg, LINE_BEGIN, "Go to the beginning of line")
-{
-    if (Currentbuf->firstLine == NULL)
-	return;
-    while (Currentbuf->currentLine->prev && Currentbuf->currentLine->bpos)
-	cursorUp0(Currentbuf, 1);
-    Currentbuf->pos = 0;
-    arrangeCursor(Currentbuf);
-    displayBuffer(Currentbuf, B_NORMAL);
-}
-
-/* Go to the bottom of the line */
-DEFUN(linend, LINE_END, "Go to the end of line")
-{
-    if (Currentbuf->firstLine == NULL)
-	return;
-    while (Currentbuf->currentLine->next
-	   && Currentbuf->currentLine->next->bpos)
-	cursorDown0(Currentbuf, 1);
-    Currentbuf->pos = Currentbuf->currentLine->len - 1;
-    arrangeCursor(Currentbuf);
-    displayBuffer(Currentbuf, B_NORMAL);
-}
 
 static int
 cur_real_linenumber(Buffer *buf)

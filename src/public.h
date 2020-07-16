@@ -35,3 +35,4 @@ int is_wordchar(wc_uint32 c);
 int srchcore(char *volatile str, int (*func)(Buffer *, char *));
 void _quitfm(int confirm);
 void delBuffer(Buffer *buf);
+void _goLine(char *l);
