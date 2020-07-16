@@ -2,7 +2,7 @@
 
 w3m を改造して遊ぶ。
 
-## その１。 msys2 でとりあえあずビルド
+## その１。 msys2 でとりあえずビルド
 
 最近のUbuntuとかだとビルドできなかった。
 しかし、msys2 ならわりと簡単にビルドできることを発見。
@@ -42,14 +42,14 @@ $ ./w3m www.google.com // 動いた
 動かないけど。
 
 ```
-> ./build/w3m
-Wrong __data_start/_end pair
-fish: './build/w3m' terminated by signal SIGABRT (Abort)
+# apt install gcc g++ make gdb
+# apt install libgc-dev libssl-dev ncurses-dev
 ```
 
 ```
-# apt install gcc g++ make gdb
-# apt install libgc-dev libssl-dev ncurses-dev
+> ./build/w3m
+Wrong __data_start/_end pair
+fish: './build/w3m' terminated by signal SIGABRT (Abort)
 ```
 
 ```
