@@ -23,6 +23,7 @@ PRIVATE
 )
 
 add_executable(w3m
+    src/main.cpp
     libwc/big5.c
     libwc/ces.c
     libwc/char_conv.c
@@ -55,7 +56,6 @@ add_executable(w3m
     src/parsetag.c
     src/myctype.c
     src/hash.c
-    src/main.c
     src/file.c
     src/buffer.c
     src/display.c

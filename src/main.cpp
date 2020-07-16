@@ -1,4 +1,5 @@
-/* $Id: main.c,v 1.270 2010/08/24 10:11:51 htrb Exp $ */
+extern "C" {
+
 #define MAINPROGRAM
 #include "fm.h"
 #include <signal.h>
@@ -1633,7 +1634,6 @@ clear_mark(Line *l)
 static int
 srchcore(char *volatile str, int (*func) (Buffer *, char *))
 {
-    MySignalHandler(*prevtrap) ();
     volatile int i, result = SR_NOTFOUND;
 
     if (str != NULL && str != SearchString)
@@ -1642,7 +1642,7 @@ srchcore(char *volatile str, int (*func) (Buffer *, char *))
 	return SR_NOTFOUND;
 
     str = conv_search_string(SearchString, DisplayCharset);
-    prevtrap = mySignal(SIGINT, intTrap);
+    auto prevtrap = mySignal(SIGINT, intTrap);
     crmode();
     if (SETJMP(IntReturn) == 0) {
 	for (i = 0; i < PREC_NUM; i++) {
@@ -1845,7 +1845,7 @@ srch_nxtprv(int reverse)
     if (result & SR_FOUND)
 	clear_mark(Currentbuf->currentLine);
     displayBuffer(Currentbuf, B_NORMAL);
-    disp_srchresult(result, (reverse ? "Backward: " : "Forward: "),
+    disp_srchresult(result, (char*)(reverse ? "Backward: " : "Forward: "),
 		    SearchString);
 }
 
@@ -2040,7 +2040,6 @@ DEFUN(pipesh, PIPE_SHELL, "Execute shell command and browse")
 DEFUN(readsh, READ_SHELL, "Execute shell command and load")
 {
     Buffer *buf;
-    MySignalHandler(*prevtrap) ();
     char *cmd;
 
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
@@ -2054,7 +2053,7 @@ DEFUN(readsh, READ_SHELL, "Execute shell command and load")
 	displayBuffer(Currentbuf, B_NORMAL);
 	return;
     }
-    prevtrap = mySignal(SIGINT, intTrap);
+    auto prevtrap = mySignal(SIGINT, intTrap);
     crmode();
     buf = getshell(cmd);
     mySignal(SIGINT, prevtrap);
@@ -2261,7 +2260,7 @@ DEFUN(movR1, MOVE_RIGHT1,
 static wc_uint32
 getChar(char *p)
 {
-    return wc_any_to_ucs(wtf_parse1(&p));
+    return wc_any_to_ucs(wtf_parse1((wc_uchar**)&p));
 }
 
 static int
@@ -5641,7 +5640,7 @@ set_buffer_environ(Buffer *buf)
 	set_environ("W3M_FILENAME", buf->filename);
 	set_environ("W3M_TITLE", buf->buffername);
 	set_environ("W3M_URL", parsedURL2Str(&buf->currentURL)->ptr);
-	set_environ("W3M_TYPE", buf->real_type ? buf->real_type : "unknown");
+	set_environ("W3M_TYPE", (char*)(buf->real_type ? buf->real_type : "unknown"));
 #ifdef USE_M17N
 	set_environ("W3M_CHARSET", wc_ces_to_charset(buf->document_charset));
 #endif
@@ -5651,7 +5650,7 @@ set_buffer_environ(Buffer *buf)
 	Anchor *a;
 	ParsedURL pu;
 	char *s = GetWord(buf);
-	set_environ("W3M_CURRENT_WORD", s ? s : "");
+	set_environ("W3M_CURRENT_WORD", (char*)(s ? s : ""));
 	a = retrieveCurrentAnchor(buf);
 	if (a) {
 	    parseURL2(a->url, &pu, baseURL(buf));
@@ -6398,7 +6397,7 @@ convert_size3(clen_t size)
     do {
 	n = size % 1000;
 	size /= 1000;
-	tmp = Sprintf(size ? ",%.3d%s" : "%d%s", n, tmp->ptr);
+	tmp = Sprintf((char*)(size ? ",%.3d%s" : "%d%s"), n, tmp->ptr);
     } while (size);
     return tmp->ptr;
 }
@@ -6664,4 +6663,6 @@ DEFUN(redoPos, REDO, "Cancel the last undo")
 	return;
     for (i = 0; i < PREC_NUM && b->next; i++, b = b->next) ;
     resetPos(b);
+}
+
 }

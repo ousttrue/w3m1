@@ -63,7 +63,13 @@ fish: './mktable' terminated by signal SIGABRT (Abort)
 w3mも動いた。
 とりあえず Debug できる(しかできない)。
 
-## その３。コード生成
+## その３。main.c
+
+とりあえず `main.c` を `main.cpp` にリネームして全部、 `extern "C"` に入れた。
+`extern C` の領域を減らしたい。
+その前に、DEFUN(1200行から6000行くらい？) を別ファイルに分離する。
+
+## コード生成。mktable
 
 | ファイル     | 生成方法          | 入力           | 備考                                                   |
 |--------------|-------------------|----------------|--------------------------------------------------------|
@@ -76,12 +82,11 @@ w3mも動いた。
 | functable.c  | Makefile(mktable) | funcname.tab   |                                                        |
 | tagtable.c   | Makefile(mktable) | funcname.tab   |                                                        |
 
-WIP
+hash.h, hash.c を std::unordered_map とかに置き換えたい・・・。
 
 ## TODO
 
 * macro 減らす
 * c++ にする
-* hash.h, hash.c を std::unordered_map とかに置き換えたい
 * DEFUNマクロをluaとかに置き換えたい
 * bohem-gc やめる(遠大)
