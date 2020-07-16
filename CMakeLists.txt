@@ -24,6 +24,7 @@ PRIVATE
 
 add_executable(w3m
     src/main.cpp
+    src/defun.c
     libwc/big5.c
     libwc/ces.c
     libwc/char_conv.c
