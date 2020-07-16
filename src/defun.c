@@ -1,4 +1,6 @@
 #include "fm.h"
+#include "myctype.h"
+#include "public.h"
 
 DEFUN(nulcmd, NOTHING NULL @@@, "Do nothing")
 {				/* do nothing */
@@ -15,3 +17,11 @@ pcmap(void)
 {
 }
 #endif
+
+DEFUN(escmap, ESCMAP, "ESC map")
+{
+    char c;
+    c = getch();
+    if (IS_ASCII(c))
+	escKeyProc((int)c, K_ESC, EscKeymap);
+}
