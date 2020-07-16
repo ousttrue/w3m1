@@ -1,6 +1,27 @@
 project(w3m)
 cmake_minimum_required(VERSION 3.0.0)
-    
+   
+add_executable(mktable
+    mktable.c
+    Str.c
+    myctype.c
+    hash.c
+)
+target_include_directories(mktable
+PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
+)
+target_compile_definitions(mktable
+PRIVATE
+    HAVE_CONFIG_H
+)
+target_link_libraries(mktable
+PRIVATE
+    dl
+    m
+    gc    
+)
+
 add_executable(w3m
     libwc/big5.c
     libwc/ces.c

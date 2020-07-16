@@ -5,10 +5,31 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "w3m",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/mktable",
+            "program": "${workspaceFolder}/build/w3m",
+            "args": [
+                "www.google.com",
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "mktable: entity",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/mktable",
             "args": [
                 "100",
                 "entity.tab",

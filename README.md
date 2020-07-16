@@ -48,10 +48,9 @@ fish: './build/w3m' terminated by signal SIGABRT (Abort)
 ```
 
 ```
-apt install libgc-dev libssl-dev ncurses-dev
+# apt install gcc g++ make gdb
+# apt install libgc-dev libssl-dev ncurses-dev
 ```
-
-## その３。mktable
 
 ```
 $ gcc -I. -g -O2 -I./libwc -I/usr/include/openssl -DHAVE_CONFIG_H -DAUXBIN_DIR="/mingw64/libexec/w3m" -DCGIBIN_DIR="/mingw64/libexec/w3m/cgi-bin" -DHELP_DIR="/mingw64/share/w3m" -DETC_DIR="/mingw64/etc" -DCONF_DIR="/mingw64/etc/w3m" -DRC_DIR="~/.w3m" -DLOCALEDIR="/mingw64/share/locale" -o mktable mktable.c Str.c myctype.c hash.c -ldl -lm -lgc
@@ -60,7 +59,11 @@ Wrong __data_start/_end pair
 fish: './mktable' terminated by signal SIGABRT (Abort)
 ```
 
-これも動かない。
+これも動かないが、gdb で動かすと動いてしまった。
+w3mも動いた。
+とりあえず Debug できる(しかできない)。
+
+## その３。コード生成
 
 | ファイル     | 生成方法          | 入力           | 備考                                                   |
 |--------------|-------------------|----------------|--------------------------------------------------------|
@@ -77,8 +80,8 @@ WIP
 
 ## TODO
 
-* mktable を python とかにする(Ubuntu-20.04だと死ぬ)
-* c++ にする
 * macro 減らす
+* c++ にする
+* hash.h, hash.c を std::unordered_map とかに置き換えたい
 * DEFUNマクロをluaとかに置き換えたい
 * bohem-gc やめる(遠大)
