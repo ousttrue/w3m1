@@ -1286,22 +1286,6 @@ do_dump(Buffer *buf)
     mySignal(SIGINT, prevtrap);
 }
 
-
-
-
-
-DEFUN(escbmap, ESCBMAP, "ESC [ map")
-{
-    char c;
-    c = getch();
-    if (IS_DIGIT(c)) {
-	escdmap(c);
-	return;
-    }
-    if (IS_ASCII(c))
-	escKeyProc((int)c, K_ESCB, EscBKeymap);
-}
-
 void
 escdmap(char c)
 {

@@ -25,3 +25,15 @@ DEFUN(escmap, ESCMAP, "ESC map")
     if (IS_ASCII(c))
 	escKeyProc((int)c, K_ESC, EscKeymap);
 }
+
+DEFUN(escbmap, ESCBMAP, "ESC [ map")
+{
+    char c;
+    c = getch();
+    if (IS_DIGIT(c)) {
+	escdmap(c);
+	return;
+    }
+    if (IS_ASCII(c))
+	escKeyProc((int)c, K_ESCB, EscBKeymap);
+}
