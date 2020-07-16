@@ -3,7 +3,6 @@
 /* 
  * Command functions: These functions are called with a keystroke.
  */
-
 void escKeyProc(int c, int esc, unsigned char *map);
 int prec_num();
 void set_prec_num(int n);
@@ -17,3 +16,4 @@ void isrch(int (*func)(Buffer *, char *), char *prompt);
 void srch(int (*func)(Buffer *, char *), char *prompt);
 void clear_mark(Line *l);
 void disp_srchresult(int result, char *prompt, char *str);
+void shiftvisualpos(Buffer *buf, int shift);

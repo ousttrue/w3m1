@@ -154,3 +154,64 @@ DEFUN(srchprv, SEARCH_PREV, "Search previous regexp")
 {
     srch_nxtprv(1);
 }
+
+/* Shift screen left */
+DEFUN(shiftl, SHIFT_LEFT, "Shift screen left")
+{
+    int column;
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+    column = Currentbuf->currentColumn;
+    columnSkip(Currentbuf, searchKeyNum() * (-Currentbuf->COLS + 1) + 1);
+    shiftvisualpos(Currentbuf, Currentbuf->currentColumn - column);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* Shift screen right */
+DEFUN(shiftr, SHIFT_RIGHT, "Shift screen right")
+{
+    int column;
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+    column = Currentbuf->currentColumn;
+    columnSkip(Currentbuf, searchKeyNum() * (Currentbuf->COLS - 1) - 1);
+    shiftvisualpos(Currentbuf, Currentbuf->currentColumn - column);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(col1R, RIGHT, "Shift screen one column right")
+{
+    Buffer *buf = Currentbuf;
+    Line *l = buf->currentLine;
+    int j, column, n = searchKeyNum();
+
+    if (l == NULL)
+	return;
+    for (j = 0; j < n; j++) {
+	column = buf->currentColumn;
+	columnSkip(Currentbuf, 1);
+	if (column == buf->currentColumn)
+	    break;
+	shiftvisualpos(Currentbuf, 1);
+    }
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(col1L, LEFT, "Shift screen one column")
+{
+    Buffer *buf = Currentbuf;
+    Line *l = buf->currentLine;
+    int j, n = searchKeyNum();
+
+    if (l == NULL)
+	return;
+    for (j = 0; j < n; j++) {
+	if (buf->currentColumn == 0)
+	    break;
+	columnSkip(Currentbuf, -1);
+	shiftvisualpos(Currentbuf, -1);
+    }
+    displayBuffer(Currentbuf, B_NORMAL);
+}
