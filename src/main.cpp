@@ -80,7 +80,6 @@ static char *MarkString = NULL;
 
 
 static void delBuffer(Buffer *buf);
-static void cmd_loadfile(char *path);
 static void cmd_loadURL(char *url, ParsedURL *current, char *referer,
 			FormList *request);
 static void cmd_loadBuffer(Buffer *buf, int prop, int linkid);
@@ -1216,30 +1215,6 @@ saveBufferInfo()
 }
 #endif
 
-static void
-pushBuffer(Buffer *buf)
-{
-    Buffer *b;
-
-#ifdef USE_IMAGE
-    deleteImage(Currentbuf);
-#endif
-    if (clear_buffer)
-	tmpClearBuffer(Currentbuf);
-    if (Firstbuf == Currentbuf) {
-	buf->nextBuffer = Firstbuf;
-	Firstbuf = Currentbuf = buf;
-    }
-    else if ((b = prevBuffer(Firstbuf, Currentbuf)) != NULL) {
-	b->nextBuffer = buf;
-	buf->nextBuffer = Currentbuf;
-	Currentbuf = buf;
-    }
-#ifdef USE_BUFINFO
-    saveBufferInfo();
-#endif
-
-}
 
 static void
 delBuffer(Buffer *buf)
@@ -1292,185 +1267,6 @@ SigPipe(SIGNAL_ARG)
 }
 #endif
 
-DEFUN(setEnv, SETENV, "Set environment variable")
-{
-    char *env;
-    char *var, *value;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    env = searchKeyData();
-    if (env == NULL || *env == '\0' || strchr(env, '=') == NULL) {
-	if (env != NULL && *env != '\0')
-	    env = Sprintf("%s=", env)->ptr;
-	env = inputStrHist("Set environ: ", env, TextHist);
-	if (env == NULL || *env == '\0') {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-    }
-    if ((value = strchr(env, '=')) != NULL && value > env) {
-	var = allocStr(env, value - env);
-	value++;
-	set_environ(var, value);
-    }
-    displayBuffer(Currentbuf, B_NORMAL);
-}
-
-DEFUN(pipeBuf, PIPE_BUF, "Send rendered document to pipe")
-{
-    Buffer *buf;
-    char *cmd, *tmpf;
-    FILE *f;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    cmd = searchKeyData();
-    if (cmd == NULL || *cmd == '\0') {
-	/* FIXME: gettextize? */
-	cmd = inputLineHist("Pipe buffer to: ", "", IN_COMMAND, ShellHist);
-    }
-    if (cmd != NULL)
-	cmd = conv_to_system(cmd);
-    if (cmd == NULL || *cmd == '\0') {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
-    f = fopen(tmpf, "w");
-    if (f == NULL) {
-	/* FIXME: gettextize? */
-	disp_message(Sprintf("Can't save buffer to %s", cmd)->ptr, TRUE);
-	return;
-    }
-    saveBuffer(Currentbuf, f, TRUE);
-    fclose(f);
-    buf = getpipe(myExtCommand(cmd, shell_quote(tmpf), TRUE)->ptr);
-    if (buf == NULL) {
-	disp_message("Execution failed", TRUE);
-	return;
-    }
-    else {
-	buf->filename = cmd;
-	buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
-				  conv_from_system(cmd))->ptr;
-	buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-	if (buf->type == NULL)
-	    buf->type = "text/plain";
-	buf->currentURL.file = "-";
-	pushBuffer(buf);
-    }
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
-
-/* Execute shell command and read output ac pipe. */
-DEFUN(pipesh, PIPE_SHELL, "Execute shell command and browse")
-{
-    Buffer *buf;
-    char *cmd;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    cmd = searchKeyData();
-    if (cmd == NULL || *cmd == '\0') {
-	cmd = inputLineHist("(read shell[pipe])!", "", IN_COMMAND, ShellHist);
-    }
-    if (cmd != NULL)
-	cmd = conv_to_system(cmd);
-    if (cmd == NULL || *cmd == '\0') {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    buf = getpipe(cmd);
-    if (buf == NULL) {
-	disp_message("Execution failed", TRUE);
-	return;
-    }
-    else {
-	buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-	if (buf->type == NULL)
-	    buf->type = "text/plain";
-	pushBuffer(buf);
-    }
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
-
-/* Execute shell command and load entire output to buffer */
-DEFUN(readsh, READ_SHELL, "Execute shell command and load")
-{
-    Buffer *buf;
-    char *cmd;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    cmd = searchKeyData();
-    if (cmd == NULL || *cmd == '\0') {
-	cmd = inputLineHist("(read shell)!", "", IN_COMMAND, ShellHist);
-    }
-    if (cmd != NULL)
-	cmd = conv_to_system(cmd);
-    if (cmd == NULL || *cmd == '\0') {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    auto prevtrap = mySignal(SIGINT, intTrap);
-    crmode();
-    buf = getshell(cmd);
-    mySignal(SIGINT, prevtrap);
-    term_raw();
-    if (buf == NULL) {
-	/* FIXME: gettextize? */
-	disp_message("Execution failed", TRUE);
-	return;
-    }
-    else {
-	buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-	if (buf->type == NULL)
-	    buf->type = "text/plain";
-	pushBuffer(buf);
-    }
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
-
-/* Execute shell command */
-DEFUN(execsh, EXEC_SHELL SHELL, "Execute shell command")
-{
-    char *cmd;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    cmd = searchKeyData();
-    if (cmd == NULL || *cmd == '\0') {
-	cmd = inputLineHist("(exec shell)!", "", IN_COMMAND, ShellHist);
-    }
-    if (cmd != NULL)
-	cmd = conv_to_system(cmd);
-    if (cmd != NULL && *cmd != '\0') {
-	fmTerm();
-	printf("\n");
-	system(cmd);
-	/* FIXME: gettextize? */
-	printf("\n[Hit any key]");
-	fflush(stdout);
-	fmInit();
-	getch();
-    }
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
-
-/* Load file */
-DEFUN(ldfile, LOAD, "Load local file")
-{
-    char *fn;
-
-    fn = searchKeyData();
-    if (fn == NULL || *fn == '\0') {
-	/* FIXME: gettextize? */
-	fn = inputFilenameHist("(Load)Filename? ", NULL, LoadHist);
-    }
-    if (fn != NULL)
-	fn = conv_to_system(fn);
-    if (fn == NULL || *fn == '\0') {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    cmd_loadfile(fn);
-}
 
 /* Load help file */
 DEFUN(ldhelp, HELP, "View help")
@@ -1489,25 +1285,6 @@ DEFUN(ldhelp, HELP, "View help")
 #else
     cmd_loadURL(helpFile(HELP_FILE), NULL, NO_REFERER, NULL);
 #endif
-}
-
-static void
-cmd_loadfile(char *fn)
-{
-    Buffer *buf;
-
-    buf = loadGeneralFile(file_to_url(fn), NULL, NO_REFERER, 0, NULL);
-    if (buf == NULL) {
-	/* FIXME: gettextize? */
-	char *emsg = Sprintf("%s not found", conv_from_system(fn))->ptr;
-	disp_err_message(emsg, FALSE);
-    }
-    else if (buf != NO_BUFFER) {
-	pushBuffer(buf);
-	if (RenderFrame && Currentbuf->frameset != NULL)
-	    rFrame();
-    }
-    displayBuffer(Currentbuf, B_NORMAL);
 }
 
 /* Move cursor left */

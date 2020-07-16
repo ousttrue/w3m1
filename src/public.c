@@ -472,3 +472,48 @@ void shiftvisualpos(Buffer *buf, int shift)
     if (buf->visualpos - l->bwidth == -shift && buf->cursorX == 0)
         buf->visualpos = l->bwidth;
 }
+
+void pushBuffer(Buffer *buf)
+{
+    Buffer *b;
+
+#ifdef USE_IMAGE
+    deleteImage(Currentbuf);
+#endif
+    if (clear_buffer)
+        tmpClearBuffer(Currentbuf);
+    if (Firstbuf == Currentbuf)
+    {
+        buf->nextBuffer = Firstbuf;
+        Firstbuf = Currentbuf = buf;
+    }
+    else if ((b = prevBuffer(Firstbuf, Currentbuf)) != NULL)
+    {
+        b->nextBuffer = buf;
+        buf->nextBuffer = Currentbuf;
+        Currentbuf = buf;
+    }
+#ifdef USE_BUFINFO
+    saveBufferInfo();
+#endif
+}
+
+void cmd_loadfile(char *fn)
+{
+    Buffer *buf;
+
+    buf = loadGeneralFile(file_to_url(fn), NULL, NO_REFERER, 0, NULL);
+    if (buf == NULL)
+    {
+        /* FIXME: gettextize? */
+        char *emsg = Sprintf("%s not found", conv_from_system(fn))->ptr;
+        disp_err_message(emsg, FALSE);
+    }
+    else if (buf != NO_BUFFER)
+    {
+        pushBuffer(buf);
+        if (RenderFrame && Currentbuf->frameset != NULL)
+            rFrame();
+    }
+    displayBuffer(Currentbuf, B_NORMAL);
+}
