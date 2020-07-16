@@ -79,3 +79,44 @@ DEFUN(ldown1, DOWN, "Scroll down one line")
 {
     nscroll(-searchKeyNum(), B_SCROLL);
 }
+
+/* move cursor position to the center of screen */
+DEFUN(ctrCsrV, CENTER_V, "Move to the center column")
+{
+    int offsety;
+    if (Currentbuf->firstLine == NULL)
+	return;
+    offsety = Currentbuf->LINES / 2 - Currentbuf->cursorY;
+    if (offsety != 0) {
+#if 0
+	Currentbuf->currentLine = lineSkip(Currentbuf,
+					   Currentbuf->currentLine, offsety,
+					   FALSE);
+#endif
+	Currentbuf->topLine =
+	    lineSkip(Currentbuf, Currentbuf->topLine, -offsety, FALSE);
+	arrangeLine(Currentbuf);
+	displayBuffer(Currentbuf, B_NORMAL);
+    }
+}
+
+DEFUN(ctrCsrH, CENTER_H, "Move to the center line")
+{
+    int offsetx;
+    if (Currentbuf->firstLine == NULL)
+	return;
+    offsetx = Currentbuf->cursorX - Currentbuf->COLS / 2;
+    if (offsetx != 0) {
+	columnSkip(Currentbuf, offsetx);
+	arrangeCursor(Currentbuf);
+	displayBuffer(Currentbuf, B_NORMAL);
+    }
+}
+
+/* Redraw screen */
+DEFUN(rdrwSc, REDRAW, "Redraw screen")
+{
+    clear();
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
