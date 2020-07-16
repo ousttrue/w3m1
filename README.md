@@ -63,11 +63,11 @@ fish: './mktable' terminated by signal SIGABRT (Abort)
 w3mも動いた。
 とりあえず Debug できる(しかできない)。
 
-## その３。main.c
+## その３。main.cpp
 
 とりあえず `main.c` を `main.cpp` にリネームして全部、 `extern "C"` に入れた。
 `extern C` の領域を減らしたい。
-その前に、DEFUN(1200行から6000行くらい？) を別ファイルに分離する。
+まず、DEFUN(1200行から6000行くらい？) を `defun.c` に分離する。
 
 ## コード生成。mktable
 
@@ -87,6 +87,8 @@ hash.h, hash.c を std::unordered_map とかに置き換えたい・・・。
 ## TODO
 
 * macro 減らす
+* source と header が対応するようにする(全て関数宣言付ける)
 * c++ にする
+    * 各 struct を class化してなるべくカプセル化する
 * DEFUNマクロをluaとかに置き換えたい
 * bohem-gc やめる(遠大)
