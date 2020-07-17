@@ -777,14 +777,14 @@ global char TrapSignal init(TRUE);
 	mySignal(SIGINT, prevtrap); \
 }
 
-extern unsigned char GlobalKeymap[];
+
 extern unsigned char EscKeymap[];
 extern unsigned char EscBKeymap[];
 extern unsigned char EscDKeymap[];
 #ifdef __EMX__
 extern unsigned char PcKeymap[];
 #endif
-extern FuncList w3mFuncList[];
+
 
 global char *HTTP_proxy init(NULL);
 #ifdef USE_SSL

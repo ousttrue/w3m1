@@ -420,7 +420,7 @@ static void mainloop()
             {
                 set_buffer_environ(Currentbuf);
                 save_buffer_position(Currentbuf);
-                keyPressEventProc((int)c);
+                KeyPressEventProc((int)c);
                 set_prec_num(0);
             }
         }

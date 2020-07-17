@@ -17,7 +17,7 @@ void escKeyProc(int c, int esc, unsigned char *map)
     if (CurrentIsMultiKey())
     {
         unsigned char **mmap;
-        mmap = (unsigned char **)getKeyData(MULTI_KEY(CurrentKey()));
+        mmap = (unsigned char **)getKeyData(MultiKey(CurrentKey()));
         if (!mmap)
             return;
         switch (esc)
@@ -1934,7 +1934,7 @@ void _peekURL(int only_img)
 
     if (Currentbuf->firstLine == NULL)
         return;
-    if (CurrentKey == prev_key && s != NULL)
+    if (CurrentKey == PrevKey && s != NULL)
     {
         if (s->length - offset >= COLS)
             offset++;
@@ -3372,11 +3372,6 @@ int ProcessEvent()
     return 0;
 }
 
-void keyPressEventProc(int c)
-{
-    SetCurrentKey(c);
-    w3mFuncList[(int)GlobalKeymap[c]].func();
-}
 
 static int
 parse_ansi_color(char **str, Lineprop *effect, Linecolor *color)

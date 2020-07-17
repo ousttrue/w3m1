@@ -1553,7 +1553,7 @@ DEFUN(curURL, PEEK, "Peek current URL")
 
     if (Currentbuf->bufferprop & BP_INTERNAL)
         return;
-    if (CurrentKey == prev_key() && s != NULL) {
+    if (CurrentKey == PrevKey() && s != NULL) {
         if (s->length - offset >= COLS)
             offset++;
         else if (s->length <= offset)	/* bug ? */
@@ -2129,32 +2129,8 @@ DEFUN(execCmd, COMMAND, "Execute w3m command(s)")
             return;
         }
     }
-    /* data: FUNC [DATA] [; FUNC [DATA] ...] */
-    while (*data) {
-        SKIP_BLANKS(data);
-        if (*data == ';') {
-            data++;
-            continue;
-        }
-        p = getWord(&data);
-        cmd = getFuncList(p);
-        if (cmd < 0)
-            break;
-        p = getQWord(&data);
-        ClearCurrentKey();
-        ClearCurrentKeyData();
-        CurrentCmdData = *p ? p : NULL;
-#ifdef USE_MOUSE
-        if (use_mouse)
-            mouse_inactive();
-#endif
-        w3mFuncList[cmd].func();
-#ifdef USE_MOUSE
-        if (use_mouse)
-            mouse_active();
-#endif
-        CurrentCmdData = NULL;
-    }
+
+    ExecuteCommand(data);
     displayBuffer(Currentbuf, B_NORMAL);
 }
 
