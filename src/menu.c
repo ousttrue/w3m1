@@ -14,12 +14,10 @@
 #ifdef USE_GPM
 #include <gpm.h>
 static int gpm_process_menu_mouse(Gpm_Event * event, void *data);
-extern int gpm_process_mouse(Gpm_Event *, void *);
 #endif				/* USE_GPM */
 #ifdef USE_SYSMOUSE
 extern int (*sysm_handler) (int x, int y, int nbs, int obs);
 static int sysm_process_menu_mouse(int, int, int, int);
-extern int sysm_process_mouse(int, int, int, int);
 #endif				/* USE_SYSMOUSE */
 #if defined(USE_GPM) || defined(USE_SYSMOUSE)
 #define X_MOUSE_SELECTED (char)0xff

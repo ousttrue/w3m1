@@ -57,20 +57,9 @@ extern "C"
     static Event *CurrentEvent = NULL;
     static Event *LastEvent = NULL;
 
-#ifdef SIGWINCH
-    static int need_resize_screen = FALSE;
-    static MySignalHandler resize_hook(SIGNAL_ARG);
-    static void resize_screen(void);
-#endif
-
-#ifdef SIGPIPE
-    static MySignalHandler SigPipe(SIGNAL_ARG);
-#endif
-
     static void keyPressEventProc(int c);
     int show_params_p = 0;
     void show_params(FILE *fp);
-    void set_buffer_environ(Buffer *);
 
 #define help() fusage(stdout, 0)
 #define usage() fusage(stderr, 1)
@@ -220,12 +209,6 @@ extern "C"
             show_params(f);
         exit(err);
     }
-
-#ifdef USE_M17N
-#ifdef __EMX__
-    static char *getCodePage(void);
-#endif
-#endif
 
     static GC_warn_proc orig_GC_warn_proc = NULL;
 #define GC_WARN_KEEP_MAX (20)
@@ -1158,7 +1141,7 @@ extern "C"
                 do
                 {
 #ifdef SIGWINCH
-                    if (need_resize_screen)
+                    if (need_resize_screen())
                         resize_screen();
 #endif
                     loadImage(Currentbuf, IMG_FLAG_NEXT);
@@ -1172,7 +1155,7 @@ extern "C"
             {
                 do
                 {
-                    if (need_resize_screen)
+                    if (need_resize_screen())
                         resize_screen();
                 } while (sleep_till_anykey(1, 0) <= 0);
             }
@@ -1279,336 +1262,9 @@ extern "C"
 #endif
 
 #ifdef SIGWINCH
-    static MySignalHandler
-        resize_hook(SIGNAL_ARG)
-    {
-        need_resize_screen = TRUE;
-        mySignal(SIGWINCH, resize_hook);
-        SIGNAL_RETURN;
-    }
-
-    static void
-    resize_screen(void)
-    {
-        need_resize_screen = FALSE;
-        setlinescols();
-        setupscreen();
-        if (CurrentTab)
-            displayBuffer(Currentbuf, B_FORCE_REDRAW);
-    }
 #endif /* SIGWINCH */
 
 #ifdef SIGPIPE
-    static MySignalHandler
-        SigPipe(SIGNAL_ARG)
-    {
-#ifdef USE_MIGEMO
-        init_migemo();
-#endif
-        mySignal(SIGPIPE, SigPipe);
-        SIGNAL_RETURN;
-    }
-#endif
-
-    /* process form */
-    void
-    followForm(void)
-    {
-        _followForm(FALSE);
-    }
-
-    void
-    follow_map(struct parsed_tagarg *arg)
-    {
-        char *name = tag_get_value(arg, "link");
-#if defined(MENU_MAP) || defined(USE_IMAGE)
-        Anchor *an;
-        MapArea *a;
-        int x, y;
-        ParsedURL p_url;
-
-        an = retrieveCurrentImg(Currentbuf);
-        x = Currentbuf->cursorX + Currentbuf->rootX;
-        y = Currentbuf->cursorY + Currentbuf->rootY;
-        a = follow_map_menu(Currentbuf, name, an, x, y);
-        if (a == NULL || a->url == NULL || *(a->url) == '\0')
-        {
-#endif
-#ifndef MENU_MAP
-            Buffer *buf = follow_map_panel(Currentbuf, name);
-
-            if (buf != NULL)
-                cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
-#endif
-#if defined(MENU_MAP) || defined(USE_IMAGE)
-            return;
-        }
-        if (*(a->url) == '#')
-        {
-            gotoLabel(a->url + 1);
-            return;
-        }
-        parseURL2(a->url, &p_url, baseURL(Currentbuf));
-        pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
-        if (check_target && open_tab_blank && a->target &&
-            (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
-        {
-            Buffer *buf;
-
-            _newT();
-            buf = Currentbuf;
-            cmd_loadURL(a->url, baseURL(Currentbuf),
-                        parsedURL2Str(&Currentbuf->currentURL)->ptr, NULL);
-            if (buf != Currentbuf)
-                delBuffer(buf);
-            else
-                deleteTab(CurrentTab);
-            displayBuffer(Currentbuf, B_FORCE_REDRAW);
-            return;
-        }
-        cmd_loadURL(a->url, baseURL(Currentbuf),
-                    parsedURL2Str(&Currentbuf->currentURL)->ptr, NULL);
-#endif
-    }
-
-#ifdef USE_M17N
-
-    void
-    change_charset(struct parsed_tagarg *arg)
-    {
-        Buffer *buf = Currentbuf->linkBuffer[LB_N_INFO];
-        wc_ces charset;
-
-        if (buf == NULL)
-            return;
-        delBuffer(Currentbuf);
-        Currentbuf = buf;
-        if (Currentbuf->bufferprop & BP_INTERNAL)
-            return;
-        charset = Currentbuf->document_charset;
-        for (; arg; arg = arg->next)
-        {
-            if (!strcmp(arg->arg, "charset"))
-                charset = atoi(arg->value);
-        }
-        _docCSet(charset);
-    }
-
-#endif
-
-    /* mark URL-like patterns as anchors */
-    void
-    chkURLBuffer(Buffer *buf)
-    {
-        static char *url_like_pat[] = {
-            "https?://[a-zA-Z0-9][a-zA-Z0-9:%\\-\\./?=~_\\&+@#,\\$;]*[a-zA-Z0-9_/=\\-]",
-            "file:/[a-zA-Z0-9:%\\-\\./=_\\+@#,\\$;]*",
-#ifdef USE_GOPHER
-            "gopher://[a-zA-Z0-9][a-zA-Z0-9:%\\-\\./_]*",
-#endif /* USE_GOPHER */
-            "ftp://[a-zA-Z0-9][a-zA-Z0-9:%\\-\\./=_+@#,\\$]*[a-zA-Z0-9_/]",
-#ifdef USE_NNTP
-            "news:[^<> 	][^<> 	]*",
-            "nntp://[a-zA-Z0-9][a-zA-Z0-9:%\\-\\./_]*",
-#endif                /* USE_NNTP */
-#ifndef USE_W3MMAILER /* see also chkExternalURIBuffer() */
-            "mailto:[^<> 	][^<> 	]*@[a-zA-Z0-9][a-zA-Z0-9\\-\\._]*[a-zA-Z0-9]",
-#endif
-#ifdef INET6
-            "https?://[a-zA-Z0-9:%\\-\\./_@]*\\[[a-fA-F0-9:][a-fA-F0-9:\\.]*\\][a-zA-Z0-9:%\\-\\./?=~_\\&+@#,\\$;]*",
-            "ftp://[a-zA-Z0-9:%\\-\\./_@]*\\[[a-fA-F0-9:][a-fA-F0-9:\\.]*\\][a-zA-Z0-9:%\\-\\./=_+@#,\\$]*",
-#endif /* INET6 */
-            NULL};
-        int i;
-        for (i = 0; url_like_pat[i]; i++)
-        {
-            reAnchor(buf, url_like_pat[i]);
-        }
-#ifdef USE_EXTERNAL_URI_LOADER
-        chkExternalURIBuffer(buf);
-#endif
-        buf->check_url |= CHK_URL;
-    }
-
-#ifdef USE_NNTP
-    /* mark Message-ID-like patterns as NEWS anchors */
-    void
-    chkNMIDBuffer(Buffer *buf)
-    {
-        static char *url_like_pat[] = {
-            "<[!-;=?-~]+@[a-zA-Z0-9\\.\\-_]+>",
-            NULL,
-        };
-        int i;
-        for (i = 0; url_like_pat[i]; i++)
-        {
-            reAnchorNews(buf, url_like_pat[i]);
-        }
-        buf->check_url |= CHK_NMID;
-    }
-
-#endif /* USE_NNTP */
-
-#ifdef USE_MOUSE
-
-#ifdef USE_GPM
-    int
-    gpm_process_mouse(Gpm_Event *event, void *data)
-    {
-        int btn = MOUSE_BTN_RESET, x, y;
-        if (event->type & GPM_UP)
-            btn = MOUSE_BTN_UP;
-        else if (event->type & GPM_DOWN)
-        {
-            switch (event->buttons)
-            {
-            case GPM_B_LEFT:
-                btn = MOUSE_BTN1_DOWN;
-                break;
-            case GPM_B_MIDDLE:
-                btn = MOUSE_BTN2_DOWN;
-                break;
-            case GPM_B_RIGHT:
-                btn = MOUSE_BTN3_DOWN;
-                break;
-            }
-        }
-        else
-        {
-            GPM_DRAWPOINTER(event);
-            return 0;
-        }
-        x = event->x;
-        y = event->y;
-        process_mouse(btn, x - 1, y - 1);
-        return 0;
-    }
-#endif /* USE_GPM */
-
-#ifdef USE_SYSMOUSE
-    int
-    sysm_process_mouse(int x, int y, int nbs, int obs)
-    {
-        int btn;
-        int bits;
-
-        if (obs & ~nbs)
-            btn = MOUSE_BTN_UP;
-        else if (nbs & ~obs)
-        {
-            bits = nbs & ~obs;
-            btn = bits & 0x1 ? MOUSE_BTN1_DOWN : (bits & 0x2 ? MOUSE_BTN2_DOWN : (bits & 0x4 ? MOUSE_BTN3_DOWN : 0));
-        }
-        else /* nbs == obs */
-            return 0;
-        process_mouse(btn, x, y);
-        return 0;
-    }
-#endif /* USE_SYSMOUSE */
-
-#endif /* USE_MOUSE */
-
-    void
-    set_buffer_environ(Buffer *buf)
-    {
-        static Buffer *prev_buf = NULL;
-        static Line *prev_line = NULL;
-        static int prev_pos = -1;
-        Line *l;
-
-        if (buf == NULL)
-            return;
-        if (buf != prev_buf)
-        {
-            set_environ("W3M_SOURCEFILE", buf->sourcefile);
-            set_environ("W3M_FILENAME", buf->filename);
-            set_environ("W3M_TITLE", buf->buffername);
-            set_environ("W3M_URL", parsedURL2Str(&buf->currentURL)->ptr);
-            set_environ("W3M_TYPE", (char *)(buf->real_type ? buf->real_type : "unknown"));
-#ifdef USE_M17N
-            set_environ("W3M_CHARSET", wc_ces_to_charset(buf->document_charset));
-#endif
-        }
-        l = buf->currentLine;
-        if (l && (buf != prev_buf || l != prev_line || buf->pos != prev_pos))
-        {
-            Anchor *a;
-            ParsedURL pu;
-            char *s = GetWord(buf);
-            set_environ("W3M_CURRENT_WORD", (char *)(s ? s : ""));
-            a = retrieveCurrentAnchor(buf);
-            if (a)
-            {
-                parseURL2(a->url, &pu, baseURL(buf));
-                set_environ("W3M_CURRENT_LINK", parsedURL2Str(&pu)->ptr);
-            }
-            else
-                set_environ("W3M_CURRENT_LINK", "");
-            a = retrieveCurrentImg(buf);
-            if (a)
-            {
-                parseURL2(a->url, &pu, baseURL(buf));
-                set_environ("W3M_CURRENT_IMG", parsedURL2Str(&pu)->ptr);
-            }
-            else
-                set_environ("W3M_CURRENT_IMG", "");
-            a = retrieveCurrentForm(buf);
-            if (a)
-                set_environ("W3M_CURRENT_FORM", form2str((FormItemList *)a->url));
-            else
-                set_environ("W3M_CURRENT_FORM", "");
-            set_environ("W3M_CURRENT_LINE", Sprintf("%d",
-                                                    l->real_linenumber)
-                                                ->ptr);
-            set_environ("W3M_CURRENT_COLUMN", Sprintf("%d",
-                                                      buf->currentColumn +
-                                                          buf->cursorX + 1)
-                                                  ->ptr);
-        }
-        else if (!l)
-        {
-            set_environ("W3M_CURRENT_WORD", "");
-            set_environ("W3M_CURRENT_LINK", "");
-            set_environ("W3M_CURRENT_IMG", "");
-            set_environ("W3M_CURRENT_FORM", "");
-            set_environ("W3M_CURRENT_LINE", "0");
-            set_environ("W3M_CURRENT_COLUMN", "0");
-        }
-        prev_buf = buf;
-        prev_line = l;
-        prev_pos = buf->pos;
-    }
-
-    char *
-    searchKeyData(void)
-    {
-        char *data = NULL;
-
-        if (CurrentKeyData != NULL && *CurrentKeyData != '\0')
-            data = CurrentKeyData;
-        else if (CurrentCmdData != NULL && *CurrentCmdData != '\0')
-            data = CurrentCmdData;
-        else if (CurrentKey >= 0)
-            data = getKeyData(CurrentKey);
-        CurrentKeyData = NULL;
-        CurrentCmdData = NULL;
-        if (data == NULL || *data == '\0')
-            return NULL;
-        return allocStr(data, -1);
-    }
-
-#ifdef __EMX__
-#ifdef USE_M17N
-    static char *
-    getCodePage(void)
-    {
-        unsigned long CpList[8], CpSize;
-
-        if (!getenv("WINDOWID") && !DosQueryCp(sizeof(CpList), CpList, &CpSize))
-            return Sprintf("CP%d", *CpList)->ptr;
-        return NULL;
-    }
-#endif
 #endif
 
 } // extern "C"

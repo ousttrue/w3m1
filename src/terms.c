@@ -2040,7 +2040,6 @@ void
 mouse_init()
 {
     Gpm_Connect conn;
-    extern int gpm_process_mouse(Gpm_Event *, void *);
     int r;
 
     if (mouseActive)
@@ -2092,7 +2091,6 @@ void
 mouse_init()
 {
     mouse_info_t mi;
-    extern int sysm_process_mouse();
 
     if (mouseActive)
 	return;

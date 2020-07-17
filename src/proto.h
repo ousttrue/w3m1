@@ -58,7 +58,6 @@ extern void followA(void);
 extern void bufferA(void);
 extern void followI(void);
 extern void submitForm(void);
-extern void followForm(void);
 extern void topA(void);
 extern void lastA(void);
 extern void onA(void);
@@ -96,11 +95,9 @@ extern void vwSrc(void);
 extern void reload(void);
 extern void reshape(void);
 extern void chkURL(void);
-extern void chkURLBuffer(Buffer *buf);
 extern void chkWORD(void);
 #ifdef USE_NNTP
 extern void chkNMID(void);
-extern void chkNMIDBuffer(Buffer *buf);
 #else
 #define chkNMID nulcmd
 #endif
@@ -392,7 +389,6 @@ extern void form_write_data(FILE * f, char *boundary, char *name, char *value);
 extern void form_write_from_file(FILE * f, char *boundary, char *name,
 				 char *filename, char *file);
 extern MapList *searchMapList(Buffer *buf, char *name);
-extern void follow_map(struct parsed_tagarg *arg);
 #if defined(MENU_MAP) || defined(USE_IMAGE)
 extern MapArea *follow_map_menu(Buffer *buf, char *name, Anchor *a_img, int x,
 				int y);
@@ -653,7 +649,6 @@ extern int check_cookie_accept_domain(char *domain);
 #ifdef USE_M17N
 extern void docCSet(void);
 extern void defCSet(void);
-extern void change_charset(struct parsed_tagarg *arg);
 #else
 #define docCSet nulcmd
 #define defCSet nulcmd
@@ -703,8 +698,6 @@ extern void addImage(ImageCache * cache, int x, int y, int sx, int sy, int w,
 extern void drawImage(void);
 extern void clearImage(void);
 #endif
-
-extern char *searchKeyData(void);
 
 extern void setKeymap(char *p, int lineno, int verbose);
 extern void initKeymap(int force);
