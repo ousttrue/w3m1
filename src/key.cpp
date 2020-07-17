@@ -1,9 +1,9 @@
-#include "fm.h"
 #include "key.h"
 #include "func.h"
 
 static int g_CurrentKey = -1;
 static int g_prev_key = -1;
+static char *g_CurrentKeyData = nullptr;
 
 extern "C"
 {
@@ -15,6 +15,16 @@ extern "C"
     void ClearCurrentKey()
     {
         g_CurrentKey = -1;
+    }
+
+    void ClearCurrentKeyData()
+    {
+        g_CurrentKeyData = NULL; /* not allowed in w3m-control: */
+    }
+
+    char *CurrentKeyData()
+    {
+        return g_CurrentKeyData;
     }
 
     void SetCurrentKey(int c)
@@ -40,9 +50,9 @@ extern "C"
 
     void CurrentKeyToPrev()
     {
-        g_prev_key = g_CurrentKey;
+        set_prev_key(g_CurrentKey);
         ClearCurrentKey();
-        CurrentKeyData = NULL;
+        ClearCurrentKeyData();
     }
 
     int prev_key()

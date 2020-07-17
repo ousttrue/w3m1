@@ -341,7 +341,7 @@ static void mainloop()
                 { /* refresh (0sec) */
                     Currentbuf->event = NULL;
                     ClearCurrentKey();
-                    CurrentKeyData = NULL;
+                    ClearCurrentKeyData();
                     CurrentCmdData = (char *)CurrentAlarm()->data;
                     w3mFuncList[CurrentAlarm()->cmd].func();
                     CurrentCmdData = NULL;

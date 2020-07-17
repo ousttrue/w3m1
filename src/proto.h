@@ -603,7 +603,8 @@ extern char *url_unquote_conv0(char *url);
 extern char *expandName(char *name);
 extern Str tmpfname(int type, char *ext);
 extern time_t mymktime(char *timestr);
-extern void (*mySignal(int signal_number, void (*action)(int)))(int);
+
+extern MySignalHandler mySignal(int signal_number, MySignalHandler action);
 
 extern char *FQDN(char *host);
 extern Str find_cookie(ParsedURL *pu);

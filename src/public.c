@@ -187,7 +187,7 @@ JMP_BUF IntReturn;
 _JBTYPE IntReturn[_JBLEN];
 #endif /* __MINGW32_VERSION */
 
-MySignalHandler
+void
     intTrap(SIGNAL_ARG)
 { /* Interrupt catcher */
     LONGJMP(IntReturn, 0);
@@ -320,7 +320,7 @@ int srchcore(char *volatile str, int (*func)(Buffer *, char *))
         return SR_NOTFOUND;
 
     str = conv_search_string(SearchString, DisplayCharset);
-    auto prevtrap = mySignal(SIGINT, intTrap);
+    MySignalHandler prevtrap = mySignal(SIGINT, intTrap);
     crmode();
     if (SETJMP(IntReturn) == 0)
     {
@@ -2024,7 +2024,7 @@ void invoke_browser(char *url)
     char *browser = NULL;
     int bg = 0, len;
 
-    CurrentKeyData = NULL; /* not allowed in w3m-control: */
+    ClearCurrentKeyData(); /* not allowed in w3m-control: */
     browser = searchKeyData();
     if (browser == NULL || *browser == '\0')
     {
@@ -2287,7 +2287,7 @@ void do_mouse_action(int btn, int x, int y)
         mouse_action.cursorX = x;
         mouse_action.cursorY = y;
         ClearCurrentKey();
-        CurrentKeyData = NULL;
+        ClearCurrentKeyData();
         CurrentCmdData = map->data;
         (*map->func)();
         CurrentCmdData = NULL;
@@ -2476,15 +2476,15 @@ void SetCurrentAlarm(AlarmEvent *alarm)
 {
     s_CurrentAlarm = alarm;
 }
-// static MySignalHandler SigAlarm(SIGNAL_ARG);
-MySignalHandler SigAlarm(SIGNAL_ARG)
+
+void SigAlarm(SIGNAL_ARG)
 {
     char *data;
 
     if (CurrentAlarm()->sec > 0)
     {
         ClearCurrentKey();
-        CurrentKeyData = NULL;
+        ClearCurrentKeyData();
         CurrentCmdData = data = (char *)CurrentAlarm()->data;
 #ifdef USE_MOUSE
         if (use_mouse)
@@ -2999,13 +2999,13 @@ char *searchKeyData()
 {
     char *data = NULL;
 
-    if (CurrentKeyData != NULL && *CurrentKeyData != '\0')
-        data = CurrentKeyData;
+    if (CurrentKeyData() != NULL && *CurrentKeyData() != '\0')
+        data = CurrentKeyData();
     else if (CurrentCmdData != NULL && *CurrentCmdData != '\0')
         data = CurrentCmdData;
     else if (CurrentKey >= 0)
-        data = getKeyData(CurrentKey);
-    CurrentKeyData = NULL;
+        data = getKeyData(CurrentKey());
+    ClearCurrentKeyData();
     CurrentCmdData = NULL;
     if (data == NULL || *data == '\0')
         return NULL;
@@ -3258,7 +3258,7 @@ void followForm(void)
     _followForm(FALSE);
 }
 
-MySignalHandler SigPipe(SIGNAL_ARG)
+void SigPipe(SIGNAL_ARG)
 {
 #ifdef USE_MIGEMO
     init_migemo();
@@ -3277,7 +3277,7 @@ void set_need_resize_screen(int need)
     s_need_resize_screen = need;
 }
 
-MySignalHandler
+void
     resize_hook(SIGNAL_ARG)
 {
     s_need_resize_screen = TRUE;
@@ -3362,7 +3362,7 @@ int ProcessEvent()
     if (CurrentEvent)
     {
         ClearCurrentKey();
-        CurrentKeyData = NULL;
+        ClearCurrentKeyData();
         CurrentCmdData = (char *)CurrentEvent->data;
         w3mFuncList[CurrentEvent->cmd].func();
         CurrentCmdData = NULL;

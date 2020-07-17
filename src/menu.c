@@ -591,7 +591,7 @@ action_menu(Menu *menu)
 	    *item.variable = item.value;
 	if (item.type & MENU_FUNC) {
 	    ClearCurrentKey();
-	    CurrentKeyData = NULL;
+	    ClearCurrentKeyData();
 	    CurrentCmdData = item.data;
 	    (*item.func) ();
 	    CurrentCmdData = NULL;

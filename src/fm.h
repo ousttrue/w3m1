@@ -848,7 +848,7 @@ global int TabCols init(10);
 #define Firstbuf (CurrentTab->firstBuffer)
 global DownloadList *FirstDL init(NULL);
 global DownloadList *LastDL init(NULL);
-global char *CurrentKeyData;
+
 global char *CurrentCmdData;
 global char *w3m_reqlog;
 extern char *w3m_version;

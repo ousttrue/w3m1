@@ -68,6 +68,7 @@ w3mも動いた。
 とりあえず `main.c` を `main.cpp` にリネームして全部、 `extern "C"` に入れた。
 `extern C` の領域を減らしたい。
 暗黙関数定義を禁止。 `-Werror=implicit-function-declaration`
+暗黙のint変換を寄進。 `-Werror=int-conversion`
 まず、DEFUN(1200行から6000行くらい？) を `defun.c` と `public.c` に分離する。
 `main.cpp` が 1800行くらいになった。
 

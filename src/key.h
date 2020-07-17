@@ -7,6 +7,8 @@ extern "C"
 
     int CurrentKey();
     void ClearCurrentKey();
+    void ClearCurrentKeyData();
+    char* CurrentKeyData();
     void SetCurrentKey(int c);
     void SetMultiKey(int c);
     int CurrentIsMultiKey();

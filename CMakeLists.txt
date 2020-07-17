@@ -114,6 +114,7 @@ PUBLIC
 target_compile_options(w3m
 PRIVATE
     -Werror=implicit-function-declaration
+    -Werror=int-conversion
     )
 target_link_libraries(w3m
 PRIVATE

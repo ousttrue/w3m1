@@ -233,7 +233,7 @@ DEFUN(setEnv, SETENV, "Set environment variable")
     char *env;
     char *var, *value;
 
-    CurrentKeyData = NULL; /* not allowed in w3m-control: */
+    ClearCurrentKeyData();
     env = searchKeyData();
     if (env == NULL || *env == '\0' || strchr(env, '=') == NULL)
     {
@@ -261,7 +261,7 @@ DEFUN(pipeBuf, PIPE_BUF, "Send rendered document to pipe")
     char *cmd, *tmpf;
     FILE *f;
 
-    CurrentKeyData = NULL; /* not allowed in w3m-control: */
+    ClearCurrentKeyData(); /* not allowed in w3m-control: */
     cmd = searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
@@ -312,7 +312,7 @@ DEFUN(pipesh, PIPE_SHELL, "Execute shell command and browse")
     Buffer *buf;
     char *cmd;
 
-    CurrentKeyData = NULL; /* not allowed in w3m-control: */
+    ClearCurrentKeyData(); /* not allowed in w3m-control: */
     cmd = searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
@@ -347,7 +347,7 @@ DEFUN(readsh, READ_SHELL, "Execute shell command and load")
     Buffer *buf;
     char *cmd;
 
-    CurrentKeyData = NULL; /* not allowed in w3m-control: */
+    ClearCurrentKeyData(); /* not allowed in w3m-control: */
     cmd = searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
@@ -360,7 +360,7 @@ DEFUN(readsh, READ_SHELL, "Execute shell command and load")
         displayBuffer(Currentbuf, B_NORMAL);
         return;
     }
-    auto prevtrap = mySignal(SIGINT, intTrap);
+    MySignalHandler prevtrap = mySignal(SIGINT, intTrap);
     crmode();
     buf = getshell(cmd);
     mySignal(SIGINT, prevtrap);
@@ -386,7 +386,7 @@ DEFUN(execsh, EXEC_SHELL SHELL, "Execute shell command")
 {
     char *cmd;
 
-    CurrentKeyData = NULL; /* not allowed in w3m-control: */
+    ClearCurrentKeyData(); /* not allowed in w3m-control: */
     cmd = searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
@@ -519,7 +519,7 @@ DEFUN(movLW, PREV_WORD, "Move to previous word")
             while (Currentbuf->pos > 0)
             {
                 int tmp = Currentbuf->pos;
-                prevChar(tmp, l);
+                prevChar(&tmp, l);
                 if (is_wordchar(getChar(&lb[tmp])))
                     break;
                 Currentbuf->pos = tmp;
@@ -540,7 +540,7 @@ DEFUN(movLW, PREV_WORD, "Move to previous word")
         while (Currentbuf->pos > 0)
         {
             int tmp = Currentbuf->pos;
-            prevChar(tmp, l);
+            prevChar(&tmp, l);
             if (!is_wordchar(getChar(&lb[tmp])))
                 break;
             Currentbuf->pos = tmp;
@@ -1383,7 +1383,7 @@ DEFUN(setOpt, SET_OPTION, "Set option")
 {
     char *opt;
 
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    ClearCurrentKeyData();	/* not allowed in w3m-control: */
     opt = searchKeyData();
     if (opt == NULL || *opt == '\0' || strchr(opt, '=') == NULL) {
         if (opt != NULL && *opt != '\0') {
@@ -1446,7 +1446,7 @@ DEFUN(ldHist, HISTORY, "View history of URL")
 /* download HREF link */
 DEFUN(svA, SAVE_LINK, "Save link to file")
 {
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    ClearCurrentKeyData();	/* not allowed in w3m-control: */
     do_download = TRUE;
     followA();
     do_download = FALSE;
@@ -1455,7 +1455,7 @@ DEFUN(svA, SAVE_LINK, "Save link to file")
 /* download IMG link */
 DEFUN(svI, SAVE_IMAGE, "Save image to file")
 {
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    ClearCurrentKeyData();	/* not allowed in w3m-control: */
     do_download = TRUE;
     followI();
     do_download = FALSE;
@@ -1468,7 +1468,7 @@ DEFUN(svBuf, PRINT SAVE_SCREEN, "Save rendered document to file")
     FILE *f;
     int is_pipe;
 
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    ClearCurrentKeyData();	/* not allowed in w3m-control: */
     file = searchKeyData();
     if (file == NULL || *file == '\0') {
         /* FIXME: gettextize? */
@@ -1517,7 +1517,7 @@ DEFUN(svSrc, DOWNLOAD SAVE, "Save document source to file")
 
     if (Currentbuf->sourcefile == NULL)
         return;
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    ClearCurrentKeyData();	/* not allowed in w3m-control: */
     PermitSaveToPipe = TRUE;
     if (Currentbuf->real_scheme == SCM_LOCAL)
         file = conv_from_system(guess_save_name(NULL,
@@ -2120,7 +2120,7 @@ DEFUN(execCmd, COMMAND, "Execute w3m command(s)")
     char *data, *p;
     int cmd;
 
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    ClearCurrentKeyData();	/* not allowed in w3m-control: */
     data = searchKeyData();
     if (data == NULL || *data == '\0') {
         data = inputStrHist("command [; ...]: ", "", TextHist);
@@ -2142,7 +2142,7 @@ DEFUN(execCmd, COMMAND, "Execute w3m command(s)")
             break;
         p = getQWord(&data);
         ClearCurrentKey();
-        CurrentKeyData = NULL;
+        ClearCurrentKeyData();
         CurrentCmdData = *p ? p : NULL;
 #ifdef USE_MOUSE
         if (use_mouse)
@@ -2163,7 +2163,7 @@ DEFUN(setAlarm, ALARM, "Set alarm")
     char *data;
     int sec = 0, cmd = -1;
 
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    ClearCurrentKeyData();	/* not allowed in w3m-control: */
     data = searchKeyData();
     if (data == NULL || *data == '\0') {
         data = inputStrHist("(Alarm)sec command: ", "", TextHist);
@@ -2263,7 +2263,7 @@ DEFUN(defKey, DEFINE_KEY,
 {
     char *data;
 
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    ClearCurrentKeyData();	/* not allowed in w3m-control: */
     data = searchKeyData();
     if (data == NULL || *data == '\0') {
         data = inputStrHist("Key definition: ", "", TextHist);
