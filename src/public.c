@@ -3,6 +3,7 @@
 #include <setjmp.h>
 #include <signal.h>
 #include "ucs.h"
+#include "proto.h"
 
 void escKeyProc(int c, int esc, unsigned char *map)
 {
@@ -801,4 +802,47 @@ void _goLine(char *l)
         gotoRealLine(Currentbuf, atoi(l));
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+int cur_real_linenumber(Buffer *buf)
+{
+    Line *l, *cur = buf->currentLine;
+    int n;
+
+    if (!cur)
+        return 1;
+    n = cur->real_linenumber ? cur->real_linenumber : 1;
+    for (l = buf->firstLine; l && l != cur && l->real_linenumber == 0; l = l->next)
+    { /* header */
+        if (l->bpos == 0)
+            n++;
+    }
+    return n;
+}
+
+char *inputLineHist(char *prompt, char *def_str, int flag, Hist *hist)
+{
+    return inputLineHistSearch(prompt, def_str, flag, hist, NULL);
+}
+
+char *inputStrHist(char *prompt, char *def_str, Hist *hist)
+{
+    return inputLineHist(prompt, def_str, IN_STRING, hist);
+}
+
+char *inputLine(char *prompt, char *def_str, int flag)
+{
+    return inputLineHist(prompt, def_str, flag, NULL);
+}
+
+static char *s_MarkString = NULL;
+
+char *MarkString()
+{
+    return s_MarkString;
+}
+
+void SetMarkString(char *str)
+{
+    s_MarkString = str;
 }

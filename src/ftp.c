@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include "fm.h"
+#include "public.h"
 #include "html.h"
 #include "myctype.h"
 

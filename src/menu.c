@@ -3,8 +3,8 @@
  * w3m menu.c
  */
 #include <stdio.h>
-
 #include "fm.h"
+#include "public.h"
 #include "menu.h"
 #include "func.h"
 #include "myctype.h"

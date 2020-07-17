@@ -1,6 +1,7 @@
 #include "fm.h"
 #include "myctype.h"
 #include "public.h"
+#include "regex.h"
 #include <signal.h>
 
 DEFUN(nulcmd, NOTHING NULL @@@, "Do nothing")
@@ -687,4 +688,174 @@ DEFUN(linend, LINE_END, "Go to the end of line")
     Currentbuf->pos = Currentbuf->currentLine->len - 1;
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* Run editor on the current buffer */
+DEFUN(editBf, EDIT, "Edit current document")
+{
+    char *fn = Currentbuf->filename;
+    Str cmd;
+
+    if (fn == NULL || Currentbuf->pagerSource != NULL ||	/* Behaving as a pager */
+	(Currentbuf->type == NULL && Currentbuf->edit == NULL) ||	/* Reading shell */
+	Currentbuf->real_scheme != SCM_LOCAL || !strcmp(Currentbuf->currentURL.file, "-") ||	/* file is std input  */
+	Currentbuf->bufferprop & BP_FRAME) {	/* Frame */
+	disp_err_message("Can't edit other than local file", TRUE);
+	return;
+    }
+    if (Currentbuf->edit)
+	cmd = unquote_mailcap(Currentbuf->edit, Currentbuf->real_type, fn,
+			      checkHeader(Currentbuf, "Content-Type:"), NULL);
+    else
+	cmd = myEditor(Editor, shell_quote(fn),
+		       cur_real_linenumber(Currentbuf));
+    fmTerm();
+    system(cmd->ptr);
+    fmInit();
+
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+    reload();
+}
+
+/* Run editor on the current screen */
+DEFUN(editScr, EDIT_SCREEN, "Edit currently rendered document")
+{
+    char *tmpf;
+    FILE *f;
+
+    tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
+    f = fopen(tmpf, "w");
+    if (f == NULL) {
+	/* FIXME: gettextize? */
+	disp_err_message(Sprintf("Can't open %s", tmpf)->ptr, TRUE);
+	return;
+    }
+    saveBuffer(Currentbuf, f, TRUE);
+    fclose(f);
+    fmTerm();
+    system(myEditor(Editor, shell_quote(tmpf),
+		    cur_real_linenumber(Currentbuf))->ptr);
+    fmInit();
+    unlink(tmpf);
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+/* Set / unset mark */
+DEFUN(_mark, MARK, "Set/unset mark")
+{
+    Line *l;
+    if (!use_mark)
+	return;
+    if (Currentbuf->firstLine == NULL)
+	return;
+    l = Currentbuf->currentLine;
+    l->propBuf[Currentbuf->pos] ^= PE_MARK;
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+/* Go to next mark */
+DEFUN(nextMk, NEXT_MARK, "Move to next word")
+{
+    Line *l;
+    int i;
+
+    if (!use_mark)
+	return;
+    if (Currentbuf->firstLine == NULL)
+	return;
+    i = Currentbuf->pos + 1;
+    l = Currentbuf->currentLine;
+    if (i >= l->len) {
+	i = 0;
+	l = l->next;
+    }
+    while (l != NULL) {
+	for (; i < l->len; i++) {
+	    if (l->propBuf[i] & PE_MARK) {
+		Currentbuf->currentLine = l;
+		Currentbuf->pos = i;
+		arrangeCursor(Currentbuf);
+		displayBuffer(Currentbuf, B_NORMAL);
+		return;
+	    }
+	}
+	l = l->next;
+	i = 0;
+    }
+    /* FIXME: gettextize? */
+    disp_message("No mark exist after here", TRUE);
+}
+
+/* Go to previous mark */
+DEFUN(prevMk, PREV_MARK, "Move to previous mark")
+{
+    Line *l;
+    int i;
+
+    if (!use_mark)
+	return;
+    if (Currentbuf->firstLine == NULL)
+	return;
+    i = Currentbuf->pos - 1;
+    l = Currentbuf->currentLine;
+    if (i < 0) {
+	l = l->prev;
+	if (l != NULL)
+	    i = l->len - 1;
+    }
+    while (l != NULL) {
+	for (; i >= 0; i--) {
+	    if (l->propBuf[i] & PE_MARK) {
+		Currentbuf->currentLine = l;
+		Currentbuf->pos = i;
+		arrangeCursor(Currentbuf);
+		displayBuffer(Currentbuf, B_NORMAL);
+		return;
+	    }
+	}
+	l = l->prev;
+	if (l != NULL)
+	    i = l->len - 1;
+    }
+    /* FIXME: gettextize? */
+    disp_message("No mark exist before here", TRUE);
+}
+
+/* Mark place to which the regular expression matches */
+DEFUN(reMark, REG_MARK, "Set mark using regexp")
+{
+    Line *l;
+    char *str;
+    char *p, *p1, *p2;
+
+    if (!use_mark)
+	return;
+    str = searchKeyData();
+    if (str == NULL || *str == '\0') {
+	str = inputStrHist("(Mark)Regexp: ", MarkString(), TextHist);
+	if (str == NULL || *str == '\0') {
+	    displayBuffer(Currentbuf, B_NORMAL);
+	    return;
+	}
+    }
+    str = conv_search_string(str, DisplayCharset);
+    if ((str = regexCompile(str, 1)) != NULL) {
+	disp_message(str, TRUE);
+	return;
+    }
+    SetMarkString(str);
+    for (l = Currentbuf->firstLine; l != NULL; l = l->next) {
+	p = l->lineBuf;
+	for (;;) {
+	    if (regexMatch(p, &l->lineBuf[l->len] - p, p == l->lineBuf) == 1) {
+		matchedPosition(&p1, &p2);
+		l->propBuf[p1 - l->lineBuf] |= PE_MARK;
+		p = p2;
+	    }
+	    else
+		break;
+	}
+    }
+
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
