@@ -10,7 +10,7 @@
 #include "ucs.h"
 #include "proto.h"
 #include "terms.h"
-#include "key.h"
+#include "dispatcher.h"
 
 void escKeyProc(int c, int esc, unsigned char *map)
 {

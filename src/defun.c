@@ -8,7 +8,7 @@
 #include "func.h"
 #include "funcname1.h"
 #include "frame.h"
-#include "key.h"
+#include "dispatcher.h"
 #include <signal.h>
 
 DEFUN(nulcmd, NOTHING NULL @ @ @, "Do nothing")

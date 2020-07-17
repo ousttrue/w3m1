@@ -28,7 +28,7 @@ extern "C"
 #include "ucs.h"
 #endif
 #endif
-#include "key.h"
+#include "dispatcher.h"
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>

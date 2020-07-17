@@ -11,7 +11,7 @@
 #include "func.h"
 #include "myctype.h"
 #include "regex.h"
-#include "key.h"
+#include "dispatcher.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

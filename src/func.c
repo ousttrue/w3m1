@@ -9,7 +9,7 @@
 #include "indep.h"
 #include "func.h"
 #include "myctype.h"
-#include "key.h"
+#include "dispatcher.h"
 #include "funcname.c"
 #include "functable.c"
 
