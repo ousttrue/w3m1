@@ -1789,3 +1789,107 @@ int checkBackBuffer(Buffer *buf)
 
     return FALSE;
 }
+
+/* go to specified URL */
+void goURL0(char *prompt, int relative)
+{
+    char *url, *referer;
+    ParsedURL p_url, *current;
+    Buffer *cur_buf = Currentbuf;
+
+    url = searchKeyData();
+    if (url == NULL)
+    {
+        Hist *hist = copyHist(URLHist);
+        Anchor *a;
+
+        current = baseURL(Currentbuf);
+        if (current)
+        {
+            char *c_url = parsedURL2Str(current)->ptr;
+            if (DefaultURLString == DEFAULT_URL_CURRENT)
+            {
+                url = c_url;
+                if (DecodeURL)
+                    url = url_unquote_conv(url, 0);
+            }
+            else
+                pushHist(hist, c_url);
+        }
+        a = retrieveCurrentAnchor(Currentbuf);
+        if (a)
+        {
+            char *a_url;
+            parseURL2(a->url, &p_url, current);
+            a_url = parsedURL2Str(&p_url)->ptr;
+            if (DefaultURLString == DEFAULT_URL_LINK)
+            {
+                url = a_url;
+                if (DecodeURL)
+                    url = url_unquote_conv(url, Currentbuf->document_charset);
+            }
+            else
+                pushHist(hist, a_url);
+        }
+        url = inputLineHist(prompt, url, IN_URL, hist);
+        if (url != NULL)
+            SKIP_BLANKS(url);
+    }
+#ifdef USE_M17N
+    if (url != NULL)
+    {
+        if ((relative || *url == '#') && Currentbuf->document_charset)
+            url = wc_conv_strict(url, InnerCharset,
+                                 Currentbuf->document_charset)
+                      ->ptr;
+        else
+            url = conv_to_system(url);
+    }
+#endif
+    if (url == NULL || *url == '\0')
+    {
+        displayBuffer(Currentbuf, B_FORCE_REDRAW);
+        return;
+    }
+    if (*url == '#')
+    {
+        gotoLabel(url + 1);
+        return;
+    }
+    if (relative)
+    {
+        current = baseURL(Currentbuf);
+        referer = parsedURL2Str(&Currentbuf->currentURL)->ptr;
+    }
+    else
+    {
+        current = NULL;
+        referer = NULL;
+    }
+    parseURL2(url, &p_url, current);
+    pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
+    cmd_loadURL(url, current, referer, NULL);
+    if (Currentbuf != cur_buf) /* success */
+        pushHashHist(URLHist, parsedURL2Str(&Currentbuf->currentURL)->ptr);
+}
+
+void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
+{
+    if (buf == NULL)
+    {
+        disp_err_message("Can't load string", FALSE);
+    }
+    else if (buf != NO_BUFFER)
+    {
+        buf->bufferprop |= (BP_INTERNAL | prop);
+        if (!(buf->bufferprop & BP_NO_URL))
+            copyParsedURL(&buf->currentURL, &Currentbuf->currentURL);
+        if (linkid != LB_NOLINK)
+        {
+            buf->linkBuffer[REV_LB[linkid]] = Currentbuf;
+            Currentbuf->linkBuffer[linkid] = buf;
+        }
+        pushBuffer(buf);
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}

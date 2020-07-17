@@ -59,3 +59,5 @@ void _newT();
 void nextX(int d, int dy);
 void nextY(int d);
 int checkBackBuffer(Buffer *buf);
+void goURL0(char *prompt, int relative);
+void cmd_loadBuffer(Buffer *buf, int prop, int linkid);
