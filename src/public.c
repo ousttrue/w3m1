@@ -2838,3 +2838,164 @@ void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
     LastDL = d;
     set_add_download_list(TRUE);
 }
+
+TabBuffer *deleteTab(TabBuffer *tab)
+{
+    Buffer *buf, *next;
+
+    if (nTab <= 1)
+        return FirstTab;
+    if (tab->prevTab)
+    {
+        if (tab->nextTab)
+            tab->nextTab->prevTab = tab->prevTab;
+        else
+            LastTab = tab->prevTab;
+        tab->prevTab->nextTab = tab->nextTab;
+        if (tab == CurrentTab)
+            CurrentTab = tab->prevTab;
+    }
+    else
+    { /* tab == FirstTab */
+        tab->nextTab->prevTab = NULL;
+        FirstTab = tab->nextTab;
+        if (tab == CurrentTab)
+            CurrentTab = tab->nextTab;
+    }
+    nTab--;
+    buf = tab->firstBuffer;
+    while (buf && buf != NO_BUFFER)
+    {
+        next = buf->nextBuffer;
+        discardBuffer(buf);
+        buf = next;
+    }
+    return FirstTab;
+}
+
+void calcTabPos()
+{
+    TabBuffer *tab;
+#if 0
+    int lcol = 0, rcol = 2, col;
+#else
+    int lcol = 0, rcol = 0, col;
+#endif
+    int n1, n2, na, nx, ny, ix, iy;
+
+#ifdef USE_MOUSE
+    lcol = mouse_action.menu_str ? mouse_action.menu_width : 0;
+#endif
+
+    if (nTab <= 0)
+        return;
+    n1 = (COLS - rcol - lcol) / TabCols;
+    if (n1 >= nTab)
+    {
+        n2 = 1;
+        ny = 1;
+    }
+    else
+    {
+        if (n1 < 0)
+            n1 = 0;
+        n2 = COLS / TabCols;
+        if (n2 == 0)
+            n2 = 1;
+        ny = (nTab - n1 - 1) / n2 + 2;
+    }
+    na = n1 + n2 * (ny - 1);
+    n1 -= (na - nTab) / ny;
+    if (n1 < 0)
+        n1 = 0;
+    na = n1 + n2 * (ny - 1);
+    tab = FirstTab;
+    for (iy = 0; iy < ny && tab; iy++)
+    {
+        if (iy == 0)
+        {
+            nx = n1;
+            col = COLS - rcol - lcol;
+        }
+        else
+        {
+            nx = n2 - (na - nTab + (iy - 1)) / (ny - 1);
+            col = COLS;
+        }
+        for (ix = 0; ix < nx && tab; ix++, tab = tab->nextTab)
+        {
+            tab->x1 = col * ix / nx;
+            tab->x2 = col * (ix + 1) / nx - 1;
+            tab->y = iy;
+            if (iy == 0)
+            {
+                tab->x1 += lcol;
+                tab->x2 += lcol;
+            }
+        }
+    }
+}
+
+TabBuffer *newTab(void)
+{
+    TabBuffer *n;
+
+    n = New(TabBuffer);
+    if (n == NULL)
+        return NULL;
+    n->nextTab = NULL;
+    n->currentBuffer = NULL;
+    n->firstBuffer = NULL;
+    return n;
+}
+
+AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, int cmd, void *data)
+{
+    if (event == NULL)
+        event = New(AlarmEvent);
+    event->sec = sec;
+    event->status = status;
+    event->cmd = cmd;
+    event->data = data;
+    return event;
+}
+
+    void
+    w3m_exit(int i)
+    {
+#ifdef USE_MIGEMO
+        init_migemo(); /* close pipe to migemo */
+#endif
+        stopDownload();
+        deleteFiles();
+#ifdef USE_SSL
+        free_ssl_ctx();
+#endif
+        disconnectFTP();
+#ifdef USE_NNTP
+        disconnectNews();
+#endif
+#ifdef __MINGW32_VERSION
+        WSACleanup();
+#endif
+        exit(i);
+    }
+
+    void
+    deleteFiles()
+    {
+        Buffer *buf;
+        char *f;
+
+        for (CurrentTab = FirstTab; CurrentTab; CurrentTab = CurrentTab->nextTab)
+        {
+            while (Firstbuf && Firstbuf != NO_BUFFER)
+            {
+                buf = Firstbuf->nextBuffer;
+                discardBuffer(Firstbuf);
+                Firstbuf = buf;
+            }
+        }
+        while ((f = popText(fileToDelete)) != NULL)
+            unlink(f);
+    }

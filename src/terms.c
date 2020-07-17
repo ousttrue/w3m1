@@ -49,6 +49,7 @@ static int tty;
 
 #include "terms.h"
 #include "fm.h"
+#include "public.h"
 #include "myctype.h"
 
 #ifdef __EMX__
