@@ -1657,3 +1657,110 @@ void _newT()
     CurrentTab = tag;
     nTab++;
 }
+
+/* go to the next left/right anchor */
+void nextX(int d, int dy)
+{
+    HmarkerList *hl = Currentbuf->hmarklist;
+    Anchor *an, *pan;
+    Line *l;
+    int i, x, y, n = searchKeyNum();
+
+    if (Currentbuf->firstLine == NULL)
+        return;
+    if (!hl || hl->nmark == 0)
+        return;
+
+    an = retrieveCurrentAnchor(Currentbuf);
+    if (an == NULL)
+        an = retrieveCurrentForm(Currentbuf);
+
+    l = Currentbuf->currentLine;
+    x = Currentbuf->pos;
+    y = l->linenumber;
+    pan = NULL;
+    for (i = 0; i < n; i++)
+    {
+        if (an)
+            x = (d > 0) ? an->end.pos : an->start.pos - 1;
+        an = NULL;
+        while (1)
+        {
+            for (; x >= 0 && x < l->len; x += d)
+            {
+                an = retrieveAnchor(Currentbuf->href, y, x);
+                if (!an)
+                    an = retrieveAnchor(Currentbuf->formitem, y, x);
+                if (an)
+                {
+                    pan = an;
+                    break;
+                }
+            }
+            if (!dy || an)
+                break;
+            l = (dy > 0) ? l->next : l->prev;
+            if (!l)
+                break;
+            x = (d > 0) ? 0 : l->len - 1;
+            y = l->linenumber;
+        }
+        if (!an)
+            break;
+    }
+
+    if (pan == NULL)
+        return;
+    gotoLine(Currentbuf, y);
+    Currentbuf->pos = pan->start.pos;
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* go to the next downward/upward anchor */
+void nextY(int d)
+{
+    HmarkerList *hl = Currentbuf->hmarklist;
+    Anchor *an, *pan;
+    int i, x, y, n = searchKeyNum();
+    int hseq;
+
+    if (Currentbuf->firstLine == NULL)
+        return;
+    if (!hl || hl->nmark == 0)
+        return;
+
+    an = retrieveCurrentAnchor(Currentbuf);
+    if (an == NULL)
+        an = retrieveCurrentForm(Currentbuf);
+
+    x = Currentbuf->pos;
+    y = Currentbuf->currentLine->linenumber + d;
+    pan = NULL;
+    hseq = -1;
+    for (i = 0; i < n; i++)
+    {
+        if (an)
+            hseq = abs(an->hseq);
+        an = NULL;
+        for (; y >= 0 && y <= Currentbuf->lastLine->linenumber; y += d)
+        {
+            an = retrieveAnchor(Currentbuf->href, y, x);
+            if (!an)
+                an = retrieveAnchor(Currentbuf->formitem, y, x);
+            if (an && hseq != abs(an->hseq))
+            {
+                pan = an;
+                break;
+            }
+        }
+        if (!an)
+            break;
+    }
+
+    if (pan == NULL)
+        return;
+    gotoLine(Currentbuf, pan->start.line);
+    arrangeLine(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}

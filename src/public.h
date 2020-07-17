@@ -56,3 +56,5 @@ void gotoLabel(char *label);
 int check_target();
 void set_check_target(int);
 void _newT();
+void nextX(int d, int dy);
+void nextY(int d);

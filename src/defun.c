@@ -1069,3 +1069,39 @@ DEFUN(followA, GOTO_LINK, "Go to current link")
     loadLink(url, a->target, a->referer, NULL);
     displayBuffer(Currentbuf, B_NORMAL);
 }
+
+/* go to the next left anchor */
+DEFUN(nextL, NEXT_LEFT, "Move to next left link")
+{
+    nextX(-1, 0);
+}
+
+/* go to the next left-up anchor */
+DEFUN(nextLU, NEXT_LEFT_UP, "Move to next left (or upward) link")
+{
+    nextX(-1, -1);
+}
+
+/* go to the next right anchor */
+DEFUN(nextR, NEXT_RIGHT, "Move to next right link")
+{
+    nextX(1, 0);
+}
+
+/* go to the next right-down anchor */
+DEFUN(nextRD, NEXT_RIGHT_DOWN, "Move to next right (or downward) link")
+{
+    nextX(1, 1);
+}
+
+/* go to the next downward anchor */
+DEFUN(nextD, NEXT_DOWN, "Move to next downward link")
+{
+    nextY(1);
+}
+
+/* go to the next upward anchor */
+DEFUN(nextU, NEXT_UP, "Move to next upward link")
+{
+    nextY(-1);
+}
