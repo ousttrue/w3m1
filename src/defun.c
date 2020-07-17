@@ -859,3 +859,38 @@ DEFUN(reMark, REG_MARK, "Set mark using regexp")
 
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
+
+/* view inline image */
+DEFUN(followI, VIEW_IMAGE, "View image")
+{
+    Line *l;
+    Anchor *a;
+    Buffer *buf;
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+    l = Currentbuf->currentLine;
+
+    a = retrieveCurrentImg(Currentbuf);
+    if (a == NULL)
+	return;
+    /* FIXME: gettextize? */
+    message(Sprintf("loading %s", a->url)->ptr, 0, 0);
+    refresh();
+    buf = loadGeneralFile(a->url, baseURL(Currentbuf), NULL, 0, NULL);
+    if (buf == NULL) {
+	/* FIXME: gettextize? */
+	char *emsg = Sprintf("Can't load %s", a->url)->ptr;
+	disp_err_message(emsg, FALSE);
+    }
+    else if (buf != NO_BUFFER) {
+	pushBuffer(buf);
+    }
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* submit form */
+DEFUN(submitForm, SUBMIT, "Submit form")
+{
+    _followForm(TRUE);
+}
