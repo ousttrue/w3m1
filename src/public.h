@@ -68,3 +68,5 @@ void set_prev_key(int key);
 Str currentURL(void);
 void repBuffer(Buffer *oldbuf, Buffer *buf);
 void _docCSet(wc_ces charset);
+int display_ok();
+void invoke_browser(char *url);

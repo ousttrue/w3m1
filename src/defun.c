@@ -1814,3 +1814,138 @@ DEFUN(docCSet, CHARSET, "Change the current document charset")
     }
     _docCSet(charset);
 }
+
+DEFUN(defCSet, DEFAULT_CHARSET, "Change the default document charset")
+{
+    char *cs;
+    wc_ces charset;
+
+    cs = searchKeyData();
+    if (cs == NULL || *cs == '\0')
+	/* FIXME: gettextize? */
+	cs = inputStr("Default document charset: ",
+		      wc_ces_to_charset(DocumentCharset));
+    charset = wc_guess_charset_short(cs, 0);
+    if (charset != 0)
+	DocumentCharset = charset;
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(chkURL, MARK_URL, "Mark URL-like strings as anchors")
+{
+    chkURLBuffer(Currentbuf);
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(chkWORD, MARK_WORD, "Mark current word as anchor")
+{
+    char *p;
+    int spos, epos;
+    p = getCurWord(Currentbuf, &spos, &epos);
+    if (p == NULL)
+	return;
+    reAnchorWord(Currentbuf, Currentbuf->currentLine, spos, epos);
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(chkNMID, MARK_MID, "Mark Message-ID-like strings as anchors")
+{
+    chkNMIDBuffer(Currentbuf);
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+/* render frame */
+DEFUN(rFrame, FRAME, "Render frame")
+{
+    Buffer *buf;
+
+    if ((buf = Currentbuf->linkBuffer[LB_FRAME]) != NULL) {
+	Currentbuf = buf;
+	displayBuffer(Currentbuf, B_NORMAL);
+	return;
+    }
+    if (Currentbuf->frameset == NULL) {
+	if ((buf = Currentbuf->linkBuffer[LB_N_FRAME]) != NULL) {
+	    Currentbuf = buf;
+	    displayBuffer(Currentbuf, B_NORMAL);
+	}
+	return;
+    }
+    if (fmInitialized) {
+	message("Rendering frame", 0, 0);
+	refresh();
+    }
+    buf = renderFrame(Currentbuf, 0);
+    if (buf == NULL) {
+	displayBuffer(Currentbuf, B_NORMAL);
+	return;
+    }
+    buf->linkBuffer[LB_N_FRAME] = Currentbuf;
+    Currentbuf->linkBuffer[LB_FRAME] = buf;
+    pushBuffer(buf);
+    if (fmInitialized && display_ok())
+	displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(extbrz, EXTERN, "Execute external browser")
+{
+    if (Currentbuf->bufferprop & BP_INTERNAL) {
+	/* FIXME: gettextize? */
+	disp_err_message("Can't browse...", TRUE);
+	return;
+    }
+    if (Currentbuf->currentURL.scheme == SCM_LOCAL &&
+	!strcmp(Currentbuf->currentURL.file, "-")) {
+	/* file is std input */
+	/* FIXME: gettextize? */
+	disp_err_message("Can't browse stdin", TRUE);
+	return;
+    }
+    invoke_browser(parsedURL2Str(&Currentbuf->currentURL)->ptr);
+}
+
+DEFUN(linkbrz, EXTERN_LINK, "View current link using external browser")
+{
+    Anchor *a;
+    ParsedURL pu;
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+    a = retrieveCurrentAnchor(Currentbuf);
+    if (a == NULL)
+	return;
+    parseURL2(a->url, &pu, baseURL(Currentbuf));
+    invoke_browser(parsedURL2Str(&pu)->ptr);
+}
+
+/* show current line number and number of lines in the entire document */
+DEFUN(curlno, LINE_INFO, "Show current line number")
+{
+    Line *l = Currentbuf->currentLine;
+    Str tmp;
+    int cur = 0, all = 0, col = 0, len = 0;
+
+    if (l != NULL) {
+	cur = l->real_linenumber;
+	col = l->bwidth + Currentbuf->currentColumn + Currentbuf->cursorX + 1;
+	while (l->next && l->next->bpos)
+	    l = l->next;
+	if (l->width < 0)
+	    l->width = COLPOS(l, l->len);
+	len = l->bwidth + l->width;
+    }
+    if (Currentbuf->lastLine)
+	all = Currentbuf->lastLine->real_linenumber;
+    if (Currentbuf->pagerSource && !(Currentbuf->bufferprop & BP_CLOSE))
+	tmp = Sprintf("line %d col %d/%d", cur, col, len);
+    else
+	tmp = Sprintf("line %d/%d (%d%%) col %d/%d", cur, all,
+		      (int)((double)cur * 100.0 / (double)(all ? all : 1)
+			    + 0.5), col, len);
+#ifdef USE_M17N
+    Strcat_charp(tmp, "  ");
+    Strcat_charp(tmp, wc_ces_to_charset_desc(Currentbuf->document_charset));
+#endif
+
+    disp_message(tmp->ptr, FALSE);
+}
