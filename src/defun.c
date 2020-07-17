@@ -2096,3 +2096,14 @@ DEFUN(wrapToggle, WRAP_TOGGLE, "Toggle wrap search mode")
 	disp_message("Wrap search on", TRUE);
     }
 }
+
+DEFUN(dictword, DICT_WORD, "Execute dictionary command (see README.dict)")
+{
+    execdict(inputStr("(dictionary)!", ""));
+}
+
+DEFUN(dictwordat, DICT_WORD_AT,
+      "Execute dictionary command for word at cursor")
+{
+    execdict(GetWord(Currentbuf));
+}

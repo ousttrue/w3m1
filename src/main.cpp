@@ -1434,65 +1434,6 @@ sysm_process_mouse(int x, int y, int nbs, int obs)
 
 #endif				/* USE_MOUSE */
 
-
-
-static char *
-GetWord(Buffer *buf)
-{
-    int b, e;
-    char *p;
-
-    if ((p = getCurWord(buf, &b, &e)) != NULL) {
-	return Strnew_charp_n(p, e - b)->ptr;
-    }
-    return NULL;
-}
-
-#ifdef USE_DICT
-static void
-execdict(char *word)
-{
-    char *w, *dictcmd;
-    Buffer *buf;
-
-    if (!UseDictCommand || word == NULL || *word == '\0') {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    w = conv_to_system(word);
-    if (*w == '\0') {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    dictcmd = Sprintf("%s?%s", DictCommand,
-		      Str_form_quote(Strnew_charp(w))->ptr)->ptr;
-    buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, 0, NULL);
-    if (buf == NULL) {
-	disp_message("Execution failed", TRUE);
-	return;
-    }
-    else {
-	buf->filename = w;
-	buf->buffername = Sprintf("%s %s", DICTBUFFERNAME, word)->ptr;
-	if (buf->type == NULL)
-	    buf->type = "text/plain";
-	pushBuffer(buf);
-    }
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
-
-DEFUN(dictword, DICT_WORD, "Execute dictionary command (see README.dict)")
-{
-    execdict(inputStr("(dictionary)!", ""));
-}
-
-DEFUN(dictwordat, DICT_WORD_AT,
-      "Execute dictionary command for word at cursor")
-{
-    execdict(GetWord(Currentbuf));
-}
-#endif				/* USE_DICT */
-
 void
 set_buffer_environ(Buffer *buf)
 {

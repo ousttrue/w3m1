@@ -76,3 +76,5 @@ void moveTab(TabBuffer *t, TabBuffer *t2, int right);
 TabBuffer *posTab(int x, int y);
 void followTab(TabBuffer *tab);
 int mouse_scroll_line();
+void execdict(char *word);
+char *GetWord(Buffer *buf);
