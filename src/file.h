@@ -52,3 +52,5 @@ Str process_textarea(struct parsed_tag *tag, int width);
 Str process_form(struct parsed_tag *tag);
 int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
 Buffer *loadGeneralFile(char *path, ParsedURL *current, char *referer, int flag, FormList *request);
+Str getLinkNumberStr(int correction);
+char *guess_save_name(Buffer *buf, char *file);
