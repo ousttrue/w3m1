@@ -2013,3 +2013,86 @@ DEFUN(mouse, MOUSE, "mouse operation")
 	return;
     process_mouse(btn, x, y);
 }
+
+DEFUN(movMs, MOVE_MOUSE, "Move cursor to mouse cursor (for mouse action)")
+{
+    if (!mouse_action.in_action)
+	return;
+    if ((nTab > 1 || mouse_action.menu_str) &&
+	mouse_action.cursorY < LastTab->y + 1)
+	return;
+    else if (mouse_action.cursorX >= Currentbuf->rootX &&
+	     mouse_action.cursorY < LASTLINE) {
+	cursorXY(Currentbuf, mouse_action.cursorX - Currentbuf->rootX,
+		 mouse_action.cursorY - Currentbuf->rootY);
+    }
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+#ifdef KANJI_SYMBOLS
+#define FRAME_WIDTH 2
+#else
+#define FRAME_WIDTH 1
+#endif
+
+DEFUN(menuMs, MENU_MOUSE, "Popup menu at mouse cursor (for mouse action)")
+{
+    if (!mouse_action.in_action)
+	return;
+    if ((nTab > 1 || mouse_action.menu_str) &&
+	mouse_action.cursorY < LastTab->y + 1)
+	mouse_action.cursorX -= FRAME_WIDTH + 1;
+    else if (mouse_action.cursorX >= Currentbuf->rootX &&
+	     mouse_action.cursorY < LASTLINE) {
+	cursorXY(Currentbuf, mouse_action.cursorX - Currentbuf->rootX,
+		 mouse_action.cursorY - Currentbuf->rootY);
+	displayBuffer(Currentbuf, B_NORMAL);
+    }
+    mainMn();
+}
+
+DEFUN(tabMs, TAB_MOUSE, "Move to tab on mouse cursor (for mouse action)")
+{
+    TabBuffer *tab;
+
+    if (!mouse_action.in_action)
+	return;
+    tab = posTab(mouse_action.cursorX, mouse_action.cursorY);
+    if (!tab || tab == NO_TABBUFFER)
+	return;
+    CurrentTab = tab;
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(closeTMs, CLOSE_TAB_MOUSE,
+      "Close tab on mouse cursor (for mouse action)")
+{
+    TabBuffer *tab;
+
+    if (!mouse_action.in_action)
+	return;
+    tab = posTab(mouse_action.cursorX, mouse_action.cursorY);
+    if (!tab || tab == NO_TABBUFFER)
+	return;
+    deleteTab(tab);
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(dispVer, VERSION, "Display version of w3m")
+{
+    disp_message(Sprintf("w3m version %s", w3m_version)->ptr, TRUE);
+}
+
+DEFUN(wrapToggle, WRAP_TOGGLE, "Toggle wrap search mode")
+{
+    if (WrapSearch) {
+	WrapSearch = FALSE;
+	/* FIXME: gettextize? */
+	disp_message("Wrap search off", TRUE);
+    }
+    else {
+	WrapSearch = TRUE;
+	/* FIXME: gettextize? */
+	disp_message("Wrap search on", TRUE);
+    }
+}
