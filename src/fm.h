@@ -71,7 +71,6 @@ typedef int wc_ces;	/* XXX: not used */
 #include "form.h"
 #include "frame.h"
 #include "textlist.h"
-#include "terms.h"
 
 #ifndef HAVE_BCOPY
 void bcopy(const void *, void *, int);

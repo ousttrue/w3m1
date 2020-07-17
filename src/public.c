@@ -6,6 +6,7 @@
 #include <signal.h>
 #include "ucs.h"
 #include "proto.h"
+#include "terms.h"
 
 void escKeyProc(int c, int esc, unsigned char *map)
 {
