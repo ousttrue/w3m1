@@ -2710,3 +2710,131 @@ void resetPos(BufferPos *b)
     Currentbuf->undo = b;
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
+
+void save_buffer_position(Buffer *buf)
+{
+    BufferPos *b = buf->undo;
+
+    if (!buf->firstLine)
+        return;
+    if (b && b->top_linenumber == TOP_LINENUMBER(buf) &&
+        b->cur_linenumber == CUR_LINENUMBER(buf) &&
+        b->currentColumn == buf->currentColumn && b->pos == buf->pos)
+        return;
+    b = New(BufferPos);
+    b->top_linenumber = TOP_LINENUMBER(buf);
+    b->cur_linenumber = CUR_LINENUMBER(buf);
+    b->currentColumn = buf->currentColumn;
+    b->pos = buf->pos;
+    b->bpos = buf->currentLine ? buf->currentLine->bpos : 0;
+    b->next = NULL;
+    b->prev = buf->undo;
+    if (buf->undo)
+        buf->undo->next = b;
+    buf->undo = b;
+}
+
+void stopDownload()
+{
+    DownloadList *d;
+
+    if (!FirstDL)
+        return;
+    for (d = FirstDL; d != NULL; d = d->next)
+    {
+        if (!d->running)
+            continue;
+#ifndef __MINGW32_VERSION
+        kill(d->pid, SIGKILL);
+#endif
+        unlink(d->lock);
+    }
+}
+
+void download_action(struct parsed_tagarg *arg)
+{
+    DownloadList *d;
+    pid_t pid;
+
+    for (; arg; arg = arg->next)
+    {
+        if (!strncmp(arg->arg, "stop", 4))
+        {
+            pid = (pid_t)atoi(&arg->arg[4]);
+#ifndef __MINGW32_VERSION
+            kill(pid, SIGKILL);
+#endif
+        }
+        else if (!strncmp(arg->arg, "ok", 2))
+            pid = (pid_t)atoi(&arg->arg[2]);
+        else
+            continue;
+        for (d = FirstDL; d; d = d->next)
+        {
+            if (d->pid == pid)
+            {
+                unlink(d->lock);
+                if (d->prev)
+                    d->prev->next = d->next;
+                else
+                    FirstDL = d->next;
+                if (d->next)
+                    d->next->prev = d->prev;
+                else
+                    LastDL = d->prev;
+                break;
+            }
+        }
+    }
+    ldDL();
+}
+
+int checkDownloadList()
+{
+    DownloadList *d;
+    struct stat st;
+
+    if (!FirstDL)
+        return FALSE;
+    for (d = FirstDL; d != NULL; d = d->next)
+    {
+        if (d->running && !lstat(d->lock, &st))
+            return TRUE;
+    }
+    return FALSE;
+}
+
+static int s_add_download_list = FALSE;
+int add_download_list()
+{
+    return s_add_download_list;
+}
+void set_add_download_list(int add)
+{
+    s_add_download_list = add;
+}
+
+void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
+{
+    DownloadList *d;
+
+    d = New(DownloadList);
+    d->pid = pid;
+    d->url = url;
+    if (save[0] != '/' && save[0] != '~')
+        save = Strnew_m_charp(CurrentDir, "/", save, NULL)->ptr;
+    d->save = expandPath(save);
+    d->lock = lock;
+    d->size = size;
+    d->time = time(0);
+    d->running = TRUE;
+    d->err = 0;
+    d->next = NULL;
+    d->prev = LastDL;
+    if (LastDL)
+        LastDL->next = d;
+    else
+        FirstDL = d;
+    LastDL = d;
+    set_add_download_list(TRUE);
+}
