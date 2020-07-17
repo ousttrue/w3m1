@@ -3,6 +3,8 @@ extern "C"
 
 #define MAINPROGRAM
 #include "fm.h"
+#include "file.h"
+#include "form.h"
 #include "funcname1.h"
 #include "public.h"
 #include <signal.h>

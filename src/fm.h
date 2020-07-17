@@ -68,7 +68,7 @@ typedef int wc_ces;	/* XXX: not used */
 # define gettext(Text) Text
 #endif
 
-#include "form.h"
+
 
 
 #ifndef HAVE_BCOPY
@@ -416,6 +416,8 @@ typedef struct _LinkList {
     char type;			/* Rel, Rev */
     struct _LinkList *next;
 } LinkList;
+
+#include "form.h"
 
 typedef struct _Buffer {
     char *filename;

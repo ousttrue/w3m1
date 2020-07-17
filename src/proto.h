@@ -175,8 +175,6 @@ extern void push_symbol(Str str, char symbol, int width, int n);
 extern void update_utf8_symbol(void);
 #endif
 extern Buffer *loadFile(char *path);
-extern Buffer *loadGeneralFile(char *path, ParsedURL *current, char *referer,
-			       int flag, FormList *request);
 extern int is_boundary(unsigned char *, unsigned char *);
 extern int is_blank_line(char *line, int indent);
 extern void push_render_image(Str str, int width, int limit,

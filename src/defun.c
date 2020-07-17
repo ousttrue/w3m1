@@ -1,4 +1,6 @@
 #include "fm.h"
+#include "file.h"
+#include "form.h"
 #include "myctype.h"
 #include "public.h"
 #include "regex.h"

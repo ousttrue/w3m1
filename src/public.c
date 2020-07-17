@@ -3,6 +3,7 @@
 #include "funcname1.h"
 #include "parsetag.h"
 #include "public.h"
+#include "file.h"
 #include <setjmp.h>
 #include <signal.h>
 #include "ucs.h"

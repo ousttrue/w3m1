@@ -3,6 +3,7 @@
 #include "frame.h"
 #include "parsetagx.h"
 #include "myctype.h"
+#include "file.h"
 #include <signal.h>
 #include <setjmp.h>
 

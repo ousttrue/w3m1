@@ -1,5 +1,6 @@
 #pragma once
 #include "parsetagx.h"
+#include "form.h"
 
 typedef struct
 {
@@ -50,3 +51,4 @@ Str process_select(struct parsed_tag *tag);
 Str process_textarea(struct parsed_tag *tag, int width);
 Str process_form(struct parsed_tag *tag);
 int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
+Buffer *loadGeneralFile(char *path, ParsedURL *current, char *referer, int flag, FormList *request);

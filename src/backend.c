@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
+#include <gc.h>
 #include "fm.h"
 #include "public.h"
-#include <gc.h>
+#include "file.h"
 #include "terms.h"
 
 
