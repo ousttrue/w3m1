@@ -1893,3 +1893,22 @@ void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
     }
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
+
+void anchorMn(Anchor *(*menu_func)(Buffer *), int go)
+{
+    Anchor *a;
+    BufferPoint *po;
+
+    if (!Currentbuf->href || !Currentbuf->hmarklist)
+        return;
+    a = menu_func(Currentbuf);
+    if (!a || a->hseq < 0)
+        return;
+    po = &Currentbuf->hmarklist->marks[a->hseq];
+    gotoLine(Currentbuf, po->line);
+    Currentbuf->pos = po->pos;
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+    if (go)
+        followA();
+}

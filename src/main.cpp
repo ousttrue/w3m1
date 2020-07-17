@@ -1255,66 +1255,6 @@ followForm(void)
     _followForm(FALSE);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* set an option */
-DEFUN(setOpt, SET_OPTION, "Set option")
-{
-    char *opt;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    opt = searchKeyData();
-    if (opt == NULL || *opt == '\0' || strchr(opt, '=') == NULL) {
-	if (opt != NULL && *opt != '\0') {
-	    char *v = get_param_option(opt);
-	    opt = Sprintf("%s=%s", opt, v ? v : "")->ptr;
-	}
-	opt = inputStrHist("Set option: ", opt, TextHist);
-	if (opt == NULL || *opt == '\0') {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-    }
-    if (set_param_option(opt))
-	sync_with_option();
-    displayBuffer(Currentbuf, B_REDRAW_IMAGE);
-}
-
-/* error message list */
-DEFUN(msgs, MSGS, "Display error messages")
-{
-    cmd_loadBuffer(message_list_panel(), BP_NO_URL, LB_NOLINK);
-}
-
-/* page info */
-DEFUN(pginfo, INFO, "View info of current document")
-{
-    Buffer *buf;
-
-    if ((buf = Currentbuf->linkBuffer[LB_N_INFO]) != NULL) {
-	Currentbuf = buf;
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    if ((buf = Currentbuf->linkBuffer[LB_INFO]) != NULL)
-	delBuffer(buf);
-    buf = page_info_panel(Currentbuf);
-    cmd_loadBuffer(buf, BP_NORMAL, LB_INFO);
-}
-
 void
 follow_map(struct parsed_tagarg *arg)
 {
@@ -1365,64 +1305,6 @@ follow_map(struct parsed_tagarg *arg)
 		parsedURL2Str(&Currentbuf->currentURL)->ptr, NULL);
 #endif
 }
-
-#ifdef USE_MENU
-/* link menu */
-DEFUN(linkMn, LINK_MENU, "Popup link element menu")
-{
-    LinkList *l = link_menu(Currentbuf);
-    ParsedURL p_url;
-
-    if (!l || !l->url)
-	return;
-    if (*(l->url) == '#') {
-	gotoLabel(l->url + 1);
-	return;
-    }
-    parseURL2(l->url, &p_url, baseURL(Currentbuf));
-    pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
-    cmd_loadURL(l->url, baseURL(Currentbuf),
-		parsedURL2Str(&Currentbuf->currentURL)->ptr, NULL);
-}
-
-static void
-anchorMn(Anchor *(*menu_func) (Buffer *), int go)
-{
-    Anchor *a;
-    BufferPoint *po;
-
-    if (!Currentbuf->href || !Currentbuf->hmarklist)
-	return;
-    a = menu_func(Currentbuf);
-    if (!a || a->hseq < 0)
-	return;
-    po = &Currentbuf->hmarklist->marks[a->hseq];
-    gotoLine(Currentbuf, po->line);
-    Currentbuf->pos = po->pos;
-    arrangeCursor(Currentbuf);
-    displayBuffer(Currentbuf, B_NORMAL);
-    if (go)
-	followA();
-}
-
-/* accesskey */
-DEFUN(accessKey, ACCESSKEY, "Popup acceskey menu")
-{
-    anchorMn(accesskey_menu, TRUE);
-}
-
-/* list menu */
-DEFUN(listMn, LIST_MENU, "Popup link list menu and go to selected link")
-{
-    anchorMn(list_menu, TRUE);
-}
-
-DEFUN(movlistMn, MOVE_LIST_MENU,
-      "Popup link list menu and move cursor to selected link")
-{
-    anchorMn(list_menu, FALSE);
-}
-#endif
 
 /* link,anchor,image list */
 DEFUN(linkLst, LIST, "Show all links and images")

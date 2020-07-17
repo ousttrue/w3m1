@@ -61,3 +61,4 @@ void nextY(int d);
 int checkBackBuffer(Buffer *buf);
 void goURL0(char *prompt, int relative);
 void cmd_loadBuffer(Buffer *buf, int prop, int linkid);
+void anchorMn(Anchor *(*menu_func)(Buffer *), int go);
