@@ -2107,3 +2107,77 @@ DEFUN(dictwordat, DICT_WORD_AT,
 {
     execdict(GetWord(Currentbuf));
 }
+
+DEFUN(execCmd, COMMAND, "Execute w3m command(s)")
+{
+    char *data, *p;
+    int cmd;
+
+    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    data = searchKeyData();
+    if (data == NULL || *data == '\0') {
+	data = inputStrHist("command [; ...]: ", "", TextHist);
+	if (data == NULL) {
+	    displayBuffer(Currentbuf, B_NORMAL);
+	    return;
+	}
+    }
+    /* data: FUNC [DATA] [; FUNC [DATA] ...] */
+    while (*data) {
+	SKIP_BLANKS(data);
+	if (*data == ';') {
+	    data++;
+	    continue;
+	}
+	p = getWord(&data);
+	cmd = getFuncList(p);
+	if (cmd < 0)
+	    break;
+	p = getQWord(&data);
+	CurrentKey = -1;
+	CurrentKeyData = NULL;
+	CurrentCmdData = *p ? p : NULL;
+#ifdef USE_MOUSE
+	if (use_mouse)
+	    mouse_inactive();
+#endif
+	w3mFuncList[cmd].func();
+#ifdef USE_MOUSE
+	if (use_mouse)
+	    mouse_active();
+#endif
+	CurrentCmdData = NULL;
+    }
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(setAlarm, ALARM, "Set alarm")
+{
+    char *data;
+    int sec = 0, cmd = -1;
+
+    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    data = searchKeyData();
+    if (data == NULL || *data == '\0') {
+	data = inputStrHist("(Alarm)sec command: ", "", TextHist);
+	if (data == NULL) {
+	    displayBuffer(Currentbuf, B_NORMAL);
+	    return;
+	}
+    }
+    if (*data != '\0') {
+	sec = atoi(getWord(&data));
+	if (sec > 0)
+	    cmd = getFuncList(getWord(&data));
+    }
+    if (cmd >= 0) {
+	data = getQWord(&data);
+	setAlarmEvent(DefaultAlarm(), sec, AL_EXPLICIT, cmd, data);
+	disp_message_nsec(Sprintf("%dsec %s %s", sec, w3mFuncList[cmd].id,
+				  data)->ptr, FALSE, 1, FALSE, TRUE);
+    }
+    else {
+	setAlarmEvent(DefaultAlarm(), 0, AL_UNSET, FUNCNAME_nulcmd, NULL);
+    }
+    displayBuffer(Currentbuf, B_NORMAL);
+}

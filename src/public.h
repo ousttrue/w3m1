@@ -78,3 +78,7 @@ void followTab(TabBuffer *tab);
 int mouse_scroll_line();
 void execdict(char *word);
 char *GetWord(Buffer *buf);
+AlarmEvent* DefaultAlarm();
+AlarmEvent *CurrentAlarm();
+void SetCurrentAlarm(AlarmEvent *);
+MySignalHandler SigAlarm(SIGNAL_ARG);

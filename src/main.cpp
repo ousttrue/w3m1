@@ -55,13 +55,6 @@ typedef struct _Event {
 static Event *CurrentEvent = NULL;
 static Event *LastEvent = NULL;
 
-#ifdef USE_ALARM
-static AlarmEvent DefaultAlarm = {
-    0, AL_UNSET, FUNCNAME_nulcmd, NULL
-};
-static AlarmEvent *CurrentAlarm = &DefaultAlarm;
-static MySignalHandler SigAlarm(SIGNAL_ARG);
-#endif
 
 #ifdef SIGWINCH
 static int need_resize_screen = FALSE;
@@ -1040,13 +1033,13 @@ main(int argc, char **argv, char **envp)
 #ifdef USE_ALARM
 	if (Currentbuf->event) {
 	    if (Currentbuf->event->status != AL_UNSET) {
-		CurrentAlarm = Currentbuf->event;
-		if (CurrentAlarm->sec == 0) {	/* refresh (0sec) */
+		SetCurrentAlarm(Currentbuf->event);
+		if (CurrentAlarm()->sec == 0) {	/* refresh (0sec) */
 		    Currentbuf->event = NULL;
 		    CurrentKey = -1;
 		    CurrentKeyData = NULL;
-		    CurrentCmdData = (char *)CurrentAlarm->data;
-		    w3mFuncList[CurrentAlarm->cmd].func();
+		    CurrentCmdData = (char *)CurrentAlarm()->data;
+		    w3mFuncList[CurrentAlarm()->cmd].func();
 		    CurrentCmdData = NULL;
 		    continue;
 		}
@@ -1055,7 +1048,7 @@ main(int argc, char **argv, char **envp)
 		Currentbuf->event = NULL;
 	}
 	if (!Currentbuf->event)
-	    CurrentAlarm = &DefaultAlarm;
+	    SetCurrentAlarm(DefaultAlarm());
 #endif
 #ifdef USE_MOUSE
 	mouse_action.in_action = FALSE;
@@ -1063,9 +1056,9 @@ main(int argc, char **argv, char **envp)
 	    mouse_active();
 #endif				/* USE_MOUSE */
 #ifdef USE_ALARM
-	if (CurrentAlarm->sec > 0) {
+	if (CurrentAlarm()->sec > 0) {
 	    mySignal(SIGALRM, SigAlarm);
-	    alarm(CurrentAlarm->sec);
+	    alarm(CurrentAlarm()->sec);
 	}
 #endif
 #ifdef SIGWINCH
@@ -1096,7 +1089,7 @@ main(int argc, char **argv, char **envp)
 #endif
 	c = getch();
 #ifdef USE_ALARM
-	if (CurrentAlarm->sec > 0) {
+	if (CurrentAlarm()->sec > 0) {
 	    alarm(0);
 	}
 #endif
@@ -1568,120 +1561,10 @@ w3m_exit(int i)
     exit(i);
 }
 
-DEFUN(execCmd, COMMAND, "Execute w3m command(s)")
-{
-    char *data, *p;
-    int cmd;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    data = searchKeyData();
-    if (data == NULL || *data == '\0') {
-	data = inputStrHist("command [; ...]: ", "", TextHist);
-	if (data == NULL) {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-    }
-    /* data: FUNC [DATA] [; FUNC [DATA] ...] */
-    while (*data) {
-	SKIP_BLANKS(data);
-	if (*data == ';') {
-	    data++;
-	    continue;
-	}
-	p = getWord(&data);
-	cmd = getFuncList(p);
-	if (cmd < 0)
-	    break;
-	p = getQWord(&data);
-	CurrentKey = -1;
-	CurrentKeyData = NULL;
-	CurrentCmdData = *p ? p : NULL;
-#ifdef USE_MOUSE
-	if (use_mouse)
-	    mouse_inactive();
-#endif
-	w3mFuncList[cmd].func();
-#ifdef USE_MOUSE
-	if (use_mouse)
-	    mouse_active();
-#endif
-	CurrentCmdData = NULL;
-    }
-    displayBuffer(Currentbuf, B_NORMAL);
-}
 
 #ifdef USE_ALARM
-static MySignalHandler
-SigAlarm(SIGNAL_ARG)
-{
-    char *data;
-
-    if (CurrentAlarm->sec > 0) {
-	CurrentKey = -1;
-	CurrentKeyData = NULL;
-	CurrentCmdData = data = (char *)CurrentAlarm->data;
-#ifdef USE_MOUSE
-	if (use_mouse)
-	    mouse_inactive();
-#endif
-	w3mFuncList[CurrentAlarm->cmd].func();
-#ifdef USE_MOUSE
-	if (use_mouse)
-	    mouse_active();
-#endif
-	CurrentCmdData = NULL;
-	if (CurrentAlarm->status == AL_IMPLICIT_ONCE) {
-	    CurrentAlarm->sec = 0;
-	    CurrentAlarm->status = AL_UNSET;
-	}
-	if (Currentbuf->event) {
-	    if (Currentbuf->event->status != AL_UNSET)
-		CurrentAlarm = Currentbuf->event;
-	    else
-		Currentbuf->event = NULL;
-	}
-	if (!Currentbuf->event)
-	    CurrentAlarm = &DefaultAlarm;
-	if (CurrentAlarm->sec > 0) {
-	    mySignal(SIGALRM, SigAlarm);
-	    alarm(CurrentAlarm->sec);
-	}
-    }
-    SIGNAL_RETURN;
-}
 
 
-DEFUN(setAlarm, ALARM, "Set alarm")
-{
-    char *data;
-    int sec = 0, cmd = -1;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    data = searchKeyData();
-    if (data == NULL || *data == '\0') {
-	data = inputStrHist("(Alarm)sec command: ", "", TextHist);
-	if (data == NULL) {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-    }
-    if (*data != '\0') {
-	sec = atoi(getWord(&data));
-	if (sec > 0)
-	    cmd = getFuncList(getWord(&data));
-    }
-    if (cmd >= 0) {
-	data = getQWord(&data);
-	setAlarmEvent(&DefaultAlarm, sec, AL_EXPLICIT, cmd, data);
-	disp_message_nsec(Sprintf("%dsec %s %s", sec, w3mFuncList[cmd].id,
-				  data)->ptr, FALSE, 1, FALSE, TRUE);
-    }
-    else {
-	setAlarmEvent(&DefaultAlarm, 0, AL_UNSET, FUNCNAME_nulcmd, NULL);
-    }
-    displayBuffer(Currentbuf, B_NORMAL);
-}
 
 AlarmEvent *
 setAlarmEvent(AlarmEvent * event, int sec, short status, int cmd, void *data)
