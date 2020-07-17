@@ -3,6 +3,7 @@
 #include "public.h"
 #include "regex.h"
 #include "func.h"
+#include "funcname1.h"
 #include <signal.h>
 
 DEFUN(nulcmd, NOTHING NULL @ @ @, "Do nothing")

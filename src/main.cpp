@@ -3,6 +3,7 @@ extern "C"
 
 #define MAINPROGRAM
 #include "fm.h"
+#include "funcname1.h"
 #include "public.h"
 #include <signal.h>
 #include <setjmp.h>

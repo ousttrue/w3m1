@@ -4,6 +4,7 @@
  */
 #include <stdio.h>
 #include "fm.h"
+#include "funcname1.h"
 #include "public.h"
 #include "menu.h"
 #include "func.h"

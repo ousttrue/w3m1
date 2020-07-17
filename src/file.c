@@ -1,5 +1,6 @@
 /* $Id: file.c,v 1.265 2010/12/15 10:50:24 htrb Exp $ */
 #include "fm.h"
+#include "funcname1.h"
 #include "file.h"
 #include "anchor.h"
 #include "public.h"
