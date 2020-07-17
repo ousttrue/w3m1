@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "fm.h"
+#include "indep.h"
 #include "func.h"
 #include "myctype.h"
 

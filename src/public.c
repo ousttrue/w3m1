@@ -1,4 +1,5 @@
 #include "fm.h"
+#include "indep.h"
 #include "frame.h"
 #include "funcname1.h"
 #include "parsetag.h"

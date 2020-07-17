@@ -724,5 +724,3 @@ extern void dispVer(void);
 void srand48(long);
 long lrand48(void);
 #endif
-
-#include "indep.h"

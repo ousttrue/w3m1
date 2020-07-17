@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "fm.h"
+#include "indep.h"
 #include "html.h"
 #include "parsetagx.h"
 #include "Str.h"

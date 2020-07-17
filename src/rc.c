@@ -3,6 +3,7 @@
  * Initialization file etc.
  */
 #include "fm.h"
+#include "indep.h"
 #include "parsetag.h"
 #include "rc.h"
 #include "myctype.h"

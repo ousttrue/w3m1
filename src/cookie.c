@@ -10,6 +10,7 @@
  */
 
 #include "fm.h"
+#include "indep.h"
 #include "parsetag.h"
 #include "cookie.h"
 #include "html.h"

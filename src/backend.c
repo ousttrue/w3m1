@@ -4,10 +4,10 @@
 #include <sys/types.h>
 #include <gc.h>
 #include "fm.h"
+#include "indep.h"
 #include "public.h"
 #include "file.h"
 #include "terms.h"
-
 
 /* Prototype declaration of internal functions */
 #ifdef HAVE_READLINE
