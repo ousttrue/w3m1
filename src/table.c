@@ -731,6 +731,8 @@ get_spec_cell_width(struct table *tbl, int row, int col)
     return w;
 }
 
+#include "file.h"
+
 void
 do_refill(struct table *tbl, int row, int col, int maxlimit)
 {
