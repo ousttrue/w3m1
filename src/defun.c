@@ -8,6 +8,7 @@
 #include "func.h"
 #include "funcname1.h"
 #include "frame.h"
+#include "key.h"
 #include <signal.h>
 
 DEFUN(nulcmd, NOTHING NULL @ @ @, "Do nothing")
@@ -52,7 +53,7 @@ DEFUN(multimap, MULTIMAP, "multimap")
     c = getch();
     if (IS_ASCII(c))
     {
-        CurrentKey = K_MULTI | (CurrentKey << 16) | c;
+        SetMultiKey(c);
         escKeyProc((int)c, 0, NULL);
     }
 }
@@ -2140,7 +2141,7 @@ DEFUN(execCmd, COMMAND, "Execute w3m command(s)")
         if (cmd < 0)
             break;
         p = getQWord(&data);
-        CurrentKey = -1;
+        ClearCurrentKey();
         CurrentKeyData = NULL;
         CurrentCmdData = *p ? p : NULL;
 #ifdef USE_MOUSE

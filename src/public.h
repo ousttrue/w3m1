@@ -63,8 +63,6 @@ void goURL0(char *prompt, int relative);
 void cmd_loadBuffer(Buffer *buf, int prop, int linkid);
 void anchorMn(Anchor *(*menu_func)(Buffer *), int go);
 void _peekURL(int only_img);
-int prev_key();
-void set_prev_key(int key);
 Str currentURL(void);
 void repBuffer(Buffer *oldbuf, Buffer *buf);
 void _docCSet(wc_ces charset);

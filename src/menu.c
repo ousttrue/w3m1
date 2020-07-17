@@ -11,6 +11,7 @@
 #include "func.h"
 #include "myctype.h"
 #include "regex.h"
+#include "key.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM
@@ -589,7 +590,7 @@ action_menu(Menu *menu)
 	if (item.type & MENU_VALUE)
 	    *item.variable = item.value;
 	if (item.type & MENU_FUNC) {
-	    CurrentKey = -1;
+	    ClearCurrentKey();
 	    CurrentKeyData = NULL;
 	    CurrentCmdData = item.data;
 	    (*item.func) ();

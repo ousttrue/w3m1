@@ -10,13 +10,14 @@
 #include "ucs.h"
 #include "proto.h"
 #include "terms.h"
+#include "key.h"
 
 void escKeyProc(int c, int esc, unsigned char *map)
 {
-    if (CurrentKey >= 0 && CurrentKey & K_MULTI)
+    if (CurrentIsMultiKey())
     {
         unsigned char **mmap;
-        mmap = (unsigned char **)getKeyData(MULTI_KEY(CurrentKey));
+        mmap = (unsigned char **)getKeyData(MULTI_KEY(CurrentKey()));
         if (!mmap)
             return;
         switch (esc)
@@ -34,9 +35,9 @@ void escKeyProc(int c, int esc, unsigned char *map)
             map = mmap[0];
             break;
         }
-        esc |= (CurrentKey & ~0xFFFF);
+        esc |= (CurrentKey() & ~0xFFFF);
     }
-    CurrentKey = esc | c;
+    SetCurrentKey(esc | c);
     w3mFuncList[(int)map[c]].func();
 }
 
@@ -1919,16 +1920,6 @@ void anchorMn(Anchor *(*menu_func)(Buffer *), int go)
         followA();
 }
 
-int s_prev_key = -1;
-int prev_key()
-{
-    return s_prev_key;
-}
-void set_prev_key(int key)
-{
-    s_prev_key = key;
-}
-
 void _peekURL(int only_img)
 {
 
@@ -2295,7 +2286,7 @@ void do_mouse_action(int btn, int x, int y)
         mouse_action.in_action = TRUE;
         mouse_action.cursorX = x;
         mouse_action.cursorY = y;
-        CurrentKey = -1;
+        ClearCurrentKey();
         CurrentKeyData = NULL;
         CurrentCmdData = map->data;
         (*map->func)();
@@ -2492,7 +2483,7 @@ MySignalHandler SigAlarm(SIGNAL_ARG)
 
     if (CurrentAlarm()->sec > 0)
     {
-        CurrentKey = -1;
+        ClearCurrentKey();
         CurrentKeyData = NULL;
         CurrentCmdData = data = (char *)CurrentAlarm()->data;
 #ifdef USE_MOUSE
@@ -3370,7 +3361,7 @@ int ProcessEvent()
 {
     if (CurrentEvent)
     {
-        CurrentKey = -1;
+        ClearCurrentKey();
         CurrentKeyData = NULL;
         CurrentCmdData = (char *)CurrentEvent->data;
         w3mFuncList[CurrentEvent->cmd].func();
@@ -3383,7 +3374,7 @@ int ProcessEvent()
 
 void keyPressEventProc(int c)
 {
-    CurrentKey = c;
+    SetCurrentKey(c);
     w3mFuncList[(int)GlobalKeymap[c]].func();
 }
 

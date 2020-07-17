@@ -28,6 +28,7 @@ extern "C"
 #include "ucs.h"
 #endif
 #endif
+#include "key.h"
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
@@ -339,7 +340,7 @@ static void mainloop()
                 if (CurrentAlarm()->sec == 0)
                 { /* refresh (0sec) */
                     Currentbuf->event = NULL;
-                    CurrentKey = -1;
+                    ClearCurrentKey();
                     CurrentKeyData = NULL;
                     CurrentCmdData = (char *)CurrentAlarm()->data;
                     w3mFuncList[CurrentAlarm()->cmd].func();
@@ -423,9 +424,7 @@ static void mainloop()
                 set_prec_num(0);
             }
         }
-        set_prev_key(CurrentKey);
-        CurrentKey = -1;
-        CurrentKeyData = NULL;
+        CurrentKeyToPrev();
     }
 }
 
@@ -874,7 +873,7 @@ int main(int argc, char **argv, char **envp)
     LastTab = NULL;
     nTab = 0;
     CurrentTab = NULL;
-    CurrentKey = -1;
+    ClearCurrentKey();
     if (BookmarkFile == NULL)
         BookmarkFile = rcFile(BOOKMARK);
 

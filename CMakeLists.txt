@@ -24,6 +24,7 @@ PRIVATE
 
 add_executable(w3m
     src/main.cpp
+    src/key.cpp
     src/defun.c
     src/public.c
     libwc/big5.c
