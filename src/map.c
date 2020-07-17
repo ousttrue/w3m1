@@ -5,6 +5,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "frame.h"
+#include "menu.h"
 #include <math.h>
 
 MapList *

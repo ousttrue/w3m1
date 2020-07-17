@@ -3,6 +3,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "public.h"
+#include "image.h"
 
 /* *INDENT-OFF* */
 #ifdef USE_COLOR
