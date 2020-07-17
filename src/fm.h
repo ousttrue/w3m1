@@ -561,20 +561,6 @@ typedef struct _DownloadList {
 #define INIT_BUFFER_WIDTH ((_INIT_BUFFER_WIDTH > 0) ? _INIT_BUFFER_WIDTH : 0)
 #define FOLD_BUFFER_WIDTH (FoldLine ? (INIT_BUFFER_WIDTH + 1) : -1)
 
-typedef struct {
-    int pos;
-    int len;
-    int tlen;
-    long flag;
-    Anchor anchor;
-    Str img_alt;
-    char fontstat[FONTSTAT_SIZE];
-    short nobr_level;
-    Lineprop prev_ctype;
-    char init_flag;
-    short top_margin;
-    short bottom_margin;
-} Breakpoint;
 
 
 #define in_bold fontstat[0]

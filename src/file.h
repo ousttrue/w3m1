@@ -1,5 +1,21 @@
 #pragma once
 
+typedef struct
+{
+    int pos;
+    int len;
+    int tlen;
+    long flag;
+    Anchor anchor;
+    Str img_alt;
+    char fontstat[FONTSTAT_SIZE];
+    short nobr_level;
+    Lineprop prev_ctype;
+    char init_flag;
+    short top_margin;
+    short bottom_margin;
+} Breakpoint;
+
 struct readbuffer
 {
     Str line;
