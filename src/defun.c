@@ -2,6 +2,7 @@
 #include "myctype.h"
 #include "public.h"
 #include "regex.h"
+#include "func.h"
 #include <signal.h>
 
 DEFUN(nulcmd, NOTHING NULL @ @ @, "Do nothing")

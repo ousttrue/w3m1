@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include "config.h"
 #include "history.h"
+#include "func.h"
 
 #ifdef USE_MENU
 #define MENU_SELECT
@@ -69,7 +70,7 @@ typedef int wc_ces;	/* XXX: not used */
 
 #include "form.h"
 #include "frame.h"
-#include "func.h"
+
 #include "menu.h"
 #include "textlist.h"
 #include "funcname1.h"
