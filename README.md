@@ -71,7 +71,7 @@ w3mも動いた。
 まず、DEFUN(1200行から6000行くらい？) を `defun.c` と `public.c` に分離する。
 `main.cpp` が 1800行くらいになった。
 
-## mainloop
+### mainloop
 
 だいたいこんな感じ
 
@@ -90,6 +90,10 @@ while(true)
     keyPressEventProc(c); // keymap に応じた関数の実行
 }
 ```
+
+## fm.h
+
+グローバル変数減らす。
 
 ## データ構造
 
