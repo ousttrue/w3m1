@@ -24,19 +24,9 @@ extern "C"
 #include "ucs.h"
 #endif
 #endif
-#ifdef USE_MOUSE
-#ifdef USE_GPM
-#include <gpm.h>
-#endif /* USE_GPM */
-#if defined(USE_GPM) || defined(USE_SYSMOUSE)
-    extern int do_getch();
-#define getch() do_getch()
-#endif /* defined(USE_GPM) || defined(USE_SYSMOUSE) */
-#endif
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
-
     WSADATA WSAData;
 #endif
 
@@ -48,16 +38,6 @@ extern "C"
     Hist *ShellHist;
     Hist *TextHist;
 
-    typedef struct _Event
-    {
-        int cmd;
-        void *data;
-        struct _Event *next;
-    } Event;
-    static Event *CurrentEvent = NULL;
-    static Event *LastEvent = NULL;
-
-    static void keyPressEventProc(int c);
     int show_params_p = 0;
     void show_params(FILE *fp);
 
@@ -1085,14 +1065,8 @@ extern "C"
                 continue;
             }
             /* event processing */
-            if (CurrentEvent)
+            if (ProcessEvent())
             {
-                CurrentKey = -1;
-                CurrentKeyData = NULL;
-                CurrentCmdData = (char *)CurrentEvent->data;
-                w3mFuncList[CurrentEvent->cmd].func();
-                CurrentCmdData = NULL;
-                CurrentEvent = CurrentEvent->next;
                 continue;
             }
             /* get keypress event */
@@ -1193,78 +1167,5 @@ extern "C"
             CurrentKeyData = NULL;
         }
     }
-
-    static void
-    keyPressEventProc(int c)
-    {
-        CurrentKey = c;
-        w3mFuncList[(int)GlobalKeymap[c]].func();
-    }
-
-    void
-    pushEvent(int cmd, void *data)
-    {
-        Event *event;
-
-        event = New(Event);
-        event->cmd = cmd;
-        event->data = data;
-        event->next = NULL;
-        if (CurrentEvent)
-            LastEvent->next = event;
-        else
-            CurrentEvent = event;
-        LastEvent = event;
-    }
-
-    void
-    escdmap(char c)
-    {
-        int d;
-        d = (int)c - (int)'0';
-        c = getch();
-        if (IS_DIGIT(c))
-        {
-            d = d * 10 + (int)c - (int)'0';
-            c = getch();
-        }
-        if (c == '~')
-            escKeyProc((int)d, K_ESCD, EscDKeymap);
-    }
-
-    void
-    tmpClearBuffer(Buffer *buf)
-    {
-        if (buf->pagerSource == NULL && writeBufferCache(buf) == 0)
-        {
-            buf->firstLine = NULL;
-            buf->topLine = NULL;
-            buf->currentLine = NULL;
-            buf->lastLine = NULL;
-        }
-    }
-
-#ifdef USE_BUFINFO
-    void
-    saveBufferInfo()
-    {
-        FILE *fp;
-
-        if (w3m_dump)
-            return;
-        if ((fp = fopen(rcFile("bufinfo"), "w")) == NULL)
-        {
-            return;
-        }
-        fprintf(fp, "%s\n", currentURL()->ptr);
-        fclose(fp);
-    }
-#endif
-
-#ifdef SIGWINCH
-#endif /* SIGWINCH */
-
-#ifdef SIGPIPE
-#endif
 
 } // extern "C"

@@ -3296,3 +3296,87 @@ void resize_screen()
     if (CurrentTab)
         displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
+
+void saveBufferInfo()
+{
+    FILE *fp;
+
+    if (w3m_dump)
+        return;
+    if ((fp = fopen(rcFile("bufinfo"), "w")) == NULL)
+    {
+        return;
+    }
+    fprintf(fp, "%s\n", currentURL()->ptr);
+    fclose(fp);
+}
+
+void tmpClearBuffer(Buffer *buf)
+{
+    if (buf->pagerSource == NULL && writeBufferCache(buf) == 0)
+    {
+        buf->firstLine = NULL;
+        buf->topLine = NULL;
+        buf->currentLine = NULL;
+        buf->lastLine = NULL;
+    }
+}
+
+void escdmap(char c)
+{
+    int d;
+    d = (int)c - (int)'0';
+    c = getch();
+    if (IS_DIGIT(c))
+    {
+        d = d * 10 + (int)c - (int)'0';
+        c = getch();
+    }
+    if (c == '~')
+        escKeyProc((int)d, K_ESCD, EscDKeymap);
+}
+
+typedef struct _Event
+{
+    int cmd;
+    void *data;
+    struct _Event *next;
+} Event;
+static Event *CurrentEvent = NULL;
+static Event *LastEvent = NULL;
+
+void pushEvent(int cmd, void *data)
+{
+    Event *event;
+
+    event = New(Event);
+    event->cmd = cmd;
+    event->data = data;
+    event->next = NULL;
+    if (CurrentEvent)
+        LastEvent->next = event;
+    else
+        CurrentEvent = event;
+    LastEvent = event;
+}
+
+int ProcessEvent()
+{
+    if (CurrentEvent)
+    {
+        CurrentKey = -1;
+        CurrentKeyData = NULL;
+        CurrentCmdData = (char *)CurrentEvent->data;
+        w3mFuncList[CurrentEvent->cmd].func();
+        CurrentCmdData = NULL;
+        CurrentEvent = CurrentEvent->next;
+        return 1;
+    }
+    return 0;
+}
+
+void keyPressEventProc(int c)
+{
+    CurrentKey = c;
+    w3mFuncList[(int)GlobalKeymap[c]].func();
+}

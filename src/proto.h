@@ -7,7 +7,6 @@
  */
 extern int main(int argc, char **argv, char **envp);
 extern void nulcmd(void);
-extern void pushEvent(int cmd, void *data);
 extern MySignalHandler intTrap(SIGNAL_ARG);
 extern void pgFore(void);
 extern void pgBack(void);
@@ -149,7 +148,7 @@ extern void undoPos(void);
 extern void redoPos(void);
 
 extern int currentLn(Buffer *buf);
-extern void tmpClearBuffer(Buffer *buf);
+
 extern char *filename_extension(char *patch, int is_url);
 #ifdef USE_EXTERNAL_URI_LOADER
 extern void initURIMethods();
@@ -337,7 +336,6 @@ extern int backwardSearch(Buffer *buf, char *str);
 extern void pcmap(void);
 extern void escmap(void);
 extern void escbmap(void);
-extern void escdmap(char c);
 extern void multimap(void);
 extern char *inputLineHistSearch(char *prompt, char *def_str, int flag,
 				 Hist *hist, int (*incfunc) (int ch, Str buf,
@@ -757,9 +755,6 @@ extern void reloadBuffer(Buffer *buf);
 extern char *guess_save_name(Buffer *buf, char *file);
 
 extern void wrapToggle(void);
-#ifdef USE_BUFINFO
-extern void saveBufferInfo(void);
-#endif
 
 extern Str getLinkNumberStr(int correction);
 
