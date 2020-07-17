@@ -1764,3 +1764,28 @@ void nextY(int d)
     arrangeLine(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
 }
+
+int checkBackBuffer(Buffer *buf)
+{
+    Buffer *fbuf = buf->linkBuffer[LB_N_FRAME];
+
+    if (fbuf)
+    {
+        if (fbuf->frameQ)
+            return TRUE; /* Currentbuf has stacked frames */
+        /* when no frames stacked and next is frame source, try next's
+	 * nextBuffer */
+        if (RenderFrame && fbuf == buf->nextBuffer)
+        {
+            if (fbuf->nextBuffer != NULL)
+                return TRUE;
+            else
+                return FALSE;
+        }
+    }
+
+    if (buf->nextBuffer)
+        return TRUE;
+
+    return FALSE;
+}

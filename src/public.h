@@ -58,3 +58,4 @@ void set_check_target(int);
 void _newT();
 void nextX(int d, int dy);
 void nextY(int d);
+int checkBackBuffer(Buffer *buf);

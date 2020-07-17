@@ -1105,3 +1105,97 @@ DEFUN(nextU, NEXT_UP, "Move to next upward link")
 {
     nextY(-1);
 }
+
+/* go to the next bufferr */
+DEFUN(nextBf, NEXT, "Move to next buffer")
+{
+    Buffer *buf;
+    int i;
+
+    for (i = 0; i < PREC_NUM(); i++) {
+	buf = prevBuffer(Firstbuf, Currentbuf);
+	if (!buf) {
+	    if (i == 0)
+		return;
+	    break;
+	}
+	Currentbuf = buf;
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+/* go to the previous bufferr */
+DEFUN(prevBf, PREV, "Move to previous buffer")
+{
+    Buffer *buf;
+    int i;
+
+    for (i = 0; i < PREC_NUM(); i++) {
+	buf = Currentbuf->nextBuffer;
+	if (!buf) {
+	    if (i == 0)
+		return;
+	    break;
+	}
+	Currentbuf = buf;
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+/* delete current buffer and back to the previous buffer */
+DEFUN(backBf, BACK, "Back to previous buffer")
+{
+    Buffer *buf = Currentbuf->linkBuffer[LB_N_FRAME];
+
+    if (!checkBackBuffer(Currentbuf)) {
+	if (close_tab_back && nTab >= 1) {
+	    deleteTab(CurrentTab);
+	    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+	}
+	else
+	    /* FIXME: gettextize? */
+	    disp_message("Can't back...", TRUE);
+	return;
+    }
+
+    delBuffer(Currentbuf);
+
+    if (buf) {
+	if (buf->frameQ) {
+	    struct frameset *fs;
+	    long linenumber = buf->frameQ->linenumber;
+	    long top = buf->frameQ->top_linenumber;
+	    int pos = buf->frameQ->pos;
+	    int currentColumn = buf->frameQ->currentColumn;
+	    AnchorList *formitem = buf->frameQ->formitem;
+
+	    fs = popFrameTree(&(buf->frameQ));
+	    deleteFrameSet(buf->frameset);
+	    buf->frameset = fs;
+
+	    if (buf == Currentbuf) {
+		rFrame();
+		Currentbuf->topLine = lineSkip(Currentbuf,
+					       Currentbuf->firstLine, top - 1,
+					       FALSE);
+		gotoLine(Currentbuf, linenumber);
+		Currentbuf->pos = pos;
+		Currentbuf->currentColumn = currentColumn;
+		arrangeCursor(Currentbuf);
+		formResetBuffer(Currentbuf, formitem);
+	    }
+	}
+	else if (RenderFrame && buf == Currentbuf) {
+	    delBuffer(Currentbuf);
+	}
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(deletePrevBuf, DELETE_PREVBUF,
+      "Delete previous buffer (mainly for local-CGI)")
+{
+    Buffer *buf = Currentbuf->nextBuffer;
+    if (buf)
+	delBuffer(buf);
+}
