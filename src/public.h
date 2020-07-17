@@ -50,3 +50,5 @@ FormItemList *save_submit_formlist(FormItemList *src);
 Str conv_form_encoding(Str val, FormItemList *fi, Buffer *buf);
 void bufferA();
 Buffer *loadNormalBuf(Buffer *buf, int renderframe);
+void _nextA(int visited);
+void _prevA(int visited);

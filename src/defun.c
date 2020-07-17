@@ -894,3 +894,95 @@ DEFUN(submitForm, SUBMIT, "Submit form")
 {
     _followForm(TRUE);
 }
+
+/* go to the top anchor */
+DEFUN(topA, LINK_BEGIN, "Go to the first link")
+{
+    HmarkerList *hl = Currentbuf->hmarklist;
+    BufferPoint *po;
+    Anchor *an;
+    int hseq = 0;
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+    if (!hl || hl->nmark == 0)
+	return;
+
+    if (prec_num() > hl->nmark)
+	hseq = hl->nmark - 1;
+    else if (prec_num() > 0)
+	hseq = prec_num() - 1;
+    do {
+	if (hseq >= hl->nmark)
+	    return;
+	po = hl->marks + hseq;
+	an = retrieveAnchor(Currentbuf->href, po->line, po->pos);
+	if (an == NULL)
+	    an = retrieveAnchor(Currentbuf->formitem, po->line, po->pos);
+	hseq++;
+    } while (an == NULL);
+
+    gotoLine(Currentbuf, po->line);
+    Currentbuf->pos = po->pos;
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* go to the last anchor */
+DEFUN(lastA, LINK_END, "Go to the last link")
+{
+    HmarkerList *hl = Currentbuf->hmarklist;
+    BufferPoint *po;
+    Anchor *an;
+    int hseq;
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+    if (!hl || hl->nmark == 0)
+	return;
+
+    if (prec_num() >= hl->nmark)
+	hseq = 0;
+    else if (prec_num() > 0)
+	hseq = hl->nmark - prec_num();
+    else
+	hseq = hl->nmark - 1;
+    do {
+	if (hseq < 0)
+	    return;
+	po = hl->marks + hseq;
+	an = retrieveAnchor(Currentbuf->href, po->line, po->pos);
+	if (an == NULL)
+	    an = retrieveAnchor(Currentbuf->formitem, po->line, po->pos);
+	hseq--;
+    } while (an == NULL);
+
+    gotoLine(Currentbuf, po->line);
+    Currentbuf->pos = po->pos;
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* go to the next anchor */
+DEFUN(nextA, NEXT_LINK, "Move to next link")
+{
+    _nextA(FALSE);
+}
+
+/* go to the previous anchor */
+DEFUN(prevA, PREV_LINK, "Move to previous link")
+{
+    _prevA(FALSE);
+}
+
+/* go to the next visited anchor */
+DEFUN(nextVA, NEXT_VISITED, "Move to next visited link")
+{
+    _nextA(TRUE);
+}
+
+/* go to the previous visited anchor */
+DEFUN(prevVA, PREV_VISITED, "Move to previous visited link")
+{
+    _prevA(TRUE);
+}
