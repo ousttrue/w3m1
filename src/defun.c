@@ -1949,3 +1949,67 @@ DEFUN(curlno, LINE_INFO, "Show current line number")
 
     disp_message(tmp->ptr, FALSE);
 }
+
+DEFUN(dispI, DISPLAY_IMAGE, "Restart loading and drawing of images")
+{
+    if (!displayImage)
+	initImage();
+    if (!activeImage)
+	return;
+    displayImage = TRUE;
+    /*
+     * if (!(Currentbuf->type && is_html_type(Currentbuf->type)))
+     * return;
+     */
+    Currentbuf->image_flag = IMG_FLAG_AUTO;
+    Currentbuf->need_reshape = TRUE;
+    displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+}
+
+DEFUN(stopI, STOP_IMAGE, "Stop loading and drawing of images")
+{
+    if (!activeImage)
+	return;
+    /*
+     * if (!(Currentbuf->type && is_html_type(Currentbuf->type)))
+     * return;
+     */
+    Currentbuf->image_flag = IMG_FLAG_SKIP;
+    displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+}
+
+DEFUN(msToggle, MOUSE_TOGGLE, "Toggle activity of mouse")
+{
+    if (use_mouse) {
+	use_mouse = FALSE;
+    }
+    else {
+	use_mouse = TRUE;
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(mouse, MOUSE, "mouse operation")
+{
+    int btn, x, y;
+
+    btn = (unsigned char)getch() - 32;
+#if defined(__CYGWIN__) && CYGWIN_VERSION_DLL_MAJOR < 1005
+    if (cygwin_mouse_btn_swapped) {
+	if (btn == MOUSE_BTN2_DOWN)
+	    btn = MOUSE_BTN3_DOWN;
+	else if (btn == MOUSE_BTN3_DOWN)
+	    btn = MOUSE_BTN2_DOWN;
+    }
+#endif
+    x = (unsigned char)getch() - 33;
+    if (x < 0)
+	x += 0x100;
+    y = (unsigned char)getch() - 33;
+    if (y < 0)
+	y += 0x100;
+
+    if (x < 0 || x >= COLS || y < 0 || y > LASTLINE)
+	return;
+    process_mouse(btn, x, y);
+}

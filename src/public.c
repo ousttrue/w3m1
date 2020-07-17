@@ -2074,3 +2074,343 @@ void invoke_browser(char *url)
     fmInit();
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
+
+void process_mouse(int btn, int x, int y)
+{
+    int delta_x, delta_y, i;
+    static int press_btn = MOUSE_BTN_RESET, press_x, press_y;
+    TabBuffer *t;
+    int ny = -1;
+
+    if (nTab > 1 || mouse_action.menu_str)
+        ny = LastTab->y + 1;
+    if (btn == MOUSE_BTN_UP)
+    {
+        switch (press_btn)
+        {
+        case MOUSE_BTN1_DOWN:
+            if (press_y == y && press_x == x)
+                do_mouse_action(press_btn, x, y);
+            else if (ny > 0 && y < ny)
+            {
+                if (press_y < ny)
+                {
+                    moveTab(posTab(press_x, press_y), posTab(x, y),
+                            (press_y == y) ? (press_x < x) : (press_y < y));
+                    return;
+                }
+                else if (press_x >= Currentbuf->rootX)
+                {
+                    Buffer *buf = Currentbuf;
+                    int cx = Currentbuf->cursorX, cy = Currentbuf->cursorY;
+
+                    t = posTab(x, y);
+                    if (t == NULL)
+                        return;
+                    if (t == NO_TABBUFFER)
+                        t = NULL; /* open new tab */
+                    cursorXY(Currentbuf, press_x - Currentbuf->rootX,
+                             press_y - Currentbuf->rootY);
+                    if (Currentbuf->cursorY == press_y - Currentbuf->rootY &&
+                        (Currentbuf->cursorX == press_x - Currentbuf->rootX
+#ifdef USE_M17N
+                         || (WcOption.use_wide &&
+                             Currentbuf->currentLine != NULL &&
+                             (CharType(Currentbuf->currentLine->propBuf[Currentbuf->pos]) == PC_KANJI1) && Currentbuf->cursorX == press_x - Currentbuf->rootX - 1)
+#endif
+                             ))
+                    {
+                        displayBuffer(Currentbuf, B_NORMAL);
+                        followTab(t);
+                    }
+                    if (buf == Currentbuf)
+                        cursorXY(Currentbuf, cx, cy);
+                }
+                return;
+            }
+            else
+            {
+                delta_x = x - press_x;
+                delta_y = y - press_y;
+
+                if (abs(delta_x) < abs(delta_y) / 3)
+                    delta_x = 0;
+                if (abs(delta_y) < abs(delta_x) / 3)
+                    delta_y = 0;
+                if (reverse_mouse)
+                {
+                    delta_y = -delta_y;
+                    delta_x = -delta_x;
+                }
+                if (delta_y > 0)
+                {
+                    set_prec_num(delta_y);
+                    ldown1();
+                }
+                else if (delta_y < 0)
+                {
+                    set_prec_num(-delta_y);
+                    lup1();
+                }
+                if (delta_x > 0)
+                {
+                    set_prec_num(delta_x);
+                    col1L();
+                }
+                else if (delta_x < 0)
+                {
+                    set_prec_num(-delta_x);
+                    col1R();
+                }
+            }
+            break;
+        case MOUSE_BTN2_DOWN:
+        case MOUSE_BTN3_DOWN:
+            if (press_y == y && press_x == x)
+                do_mouse_action(press_btn, x, y);
+            break;
+        case MOUSE_BTN4_DOWN_RXVT:
+            for (i = 0; i < mouse_scroll_line(); i++)
+                ldown1();
+            break;
+        case MOUSE_BTN5_DOWN_RXVT:
+            for (i = 0; i < mouse_scroll_line(); i++)
+                lup1();
+            break;
+        }
+    }
+    else if (btn == MOUSE_BTN4_DOWN_XTERM)
+    {
+        for (i = 0; i < mouse_scroll_line(); i++)
+            ldown1();
+    }
+    else if (btn == MOUSE_BTN5_DOWN_XTERM)
+    {
+        for (i = 0; i < mouse_scroll_line(); i++)
+            lup1();
+    }
+
+    if (btn != MOUSE_BTN4_DOWN_RXVT || press_btn == MOUSE_BTN_RESET)
+    {
+        press_btn = btn;
+        press_x = x;
+        press_y = y;
+    }
+    else
+    {
+        press_btn = MOUSE_BTN_RESET;
+    }
+}
+
+void do_mouse_action(int btn, int x, int y)
+{
+    MouseActionMap *map = NULL;
+    int ny = -1;
+
+    if (nTab > 1 || mouse_action.menu_str)
+        ny = LastTab->y + 1;
+
+    switch (btn)
+    {
+    case MOUSE_BTN1_DOWN:
+        btn = 0;
+        break;
+    case MOUSE_BTN2_DOWN:
+        btn = 1;
+        break;
+    case MOUSE_BTN3_DOWN:
+        btn = 2;
+        break;
+    default:
+        return;
+    }
+    if (y < ny)
+    {
+        if (mouse_action.menu_str && x >= 0 && x < mouse_action.menu_width)
+        {
+            if (mouse_action.menu_map[btn])
+                map = &mouse_action.menu_map[btn][x];
+        }
+        else
+            map = &mouse_action.tab_map[btn];
+    }
+    else if (y == LASTLINE)
+    {
+        if (mouse_action.lastline_str && x >= 0 &&
+            x < mouse_action.lastline_width)
+        {
+            if (mouse_action.lastline_map[btn])
+                map = &mouse_action.lastline_map[btn][x];
+        }
+    }
+    else if (y > ny)
+    {
+        if (y == Currentbuf->cursorY + Currentbuf->rootY &&
+            (x == Currentbuf->cursorX + Currentbuf->rootX
+#ifdef USE_M17N
+             || (WcOption.use_wide && Currentbuf->currentLine != NULL &&
+                 (CharType(Currentbuf->currentLine->propBuf[Currentbuf->pos]) == PC_KANJI1) && x == Currentbuf->cursorX + Currentbuf->rootX + 1)
+#endif
+                 ))
+        {
+            if (retrieveCurrentAnchor(Currentbuf) ||
+                retrieveCurrentForm(Currentbuf))
+            {
+                map = &mouse_action.active_map[btn];
+                if (!(map && map->func))
+                    map = &mouse_action.anchor_map[btn];
+            }
+        }
+        else
+        {
+            int cx = Currentbuf->cursorX, cy = Currentbuf->cursorY;
+            cursorXY(Currentbuf, x - Currentbuf->rootX, y - Currentbuf->rootY);
+            if (y == Currentbuf->cursorY + Currentbuf->rootY &&
+                (x == Currentbuf->cursorX + Currentbuf->rootX
+#ifdef USE_M17N
+                 || (WcOption.use_wide && Currentbuf->currentLine != NULL &&
+                     (CharType(Currentbuf->currentLine->propBuf[Currentbuf->pos]) == PC_KANJI1) && x == Currentbuf->cursorX + Currentbuf->rootX + 1)
+#endif
+                     ) &&
+                (retrieveCurrentAnchor(Currentbuf) ||
+                 retrieveCurrentForm(Currentbuf)))
+                map = &mouse_action.anchor_map[btn];
+            cursorXY(Currentbuf, cx, cy);
+        }
+    }
+    else
+    {
+        return;
+    }
+    if (!(map && map->func))
+        map = &mouse_action.default_map[btn];
+    if (map && map->func)
+    {
+        mouse_action.in_action = TRUE;
+        mouse_action.cursorX = x;
+        mouse_action.cursorY = y;
+        CurrentKey = -1;
+        CurrentKeyData = NULL;
+        CurrentCmdData = map->data;
+        (*map->func)();
+        CurrentCmdData = NULL;
+    }
+}
+
+void moveTab(TabBuffer *t, TabBuffer *t2, int right)
+{
+    if (t2 == NO_TABBUFFER)
+        t2 = FirstTab;
+    if (!t || !t2 || t == t2 || t == NO_TABBUFFER)
+        return;
+    if (t->prevTab)
+    {
+        if (t->nextTab)
+            t->nextTab->prevTab = t->prevTab;
+        else
+            LastTab = t->prevTab;
+        t->prevTab->nextTab = t->nextTab;
+    }
+    else
+    {
+        t->nextTab->prevTab = NULL;
+        FirstTab = t->nextTab;
+    }
+    if (right)
+    {
+        t->nextTab = t2->nextTab;
+        t->prevTab = t2;
+        if (t2->nextTab)
+            t2->nextTab->prevTab = t;
+        else
+            LastTab = t;
+        t2->nextTab = t;
+    }
+    else
+    {
+        t->prevTab = t2->prevTab;
+        t->nextTab = t2;
+        if (t2->prevTab)
+            t2->prevTab->nextTab = t;
+        else
+            FirstTab = t;
+        t2->prevTab = t;
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+TabBuffer *posTab(int x, int y)
+{
+    TabBuffer *tab;
+
+    if (mouse_action.menu_str && x < mouse_action.menu_width && y == 0)
+        return NO_TABBUFFER;
+    if (y > LastTab->y)
+        return NULL;
+    for (tab = FirstTab; tab; tab = tab->nextTab)
+    {
+        if (tab->x1 <= x && x <= tab->x2 && tab->y == y)
+            return tab;
+    }
+    return NULL;
+}
+
+void followTab(TabBuffer *tab)
+{
+    Buffer *buf;
+    Anchor *a;
+
+#ifdef USE_IMAGE
+    a = retrieveCurrentImg(Currentbuf);
+    if (!(a && a->image && a->image->map))
+#endif
+        a = retrieveCurrentAnchor(Currentbuf);
+    if (a == NULL)
+        return;
+
+    if (tab == CurrentTab)
+    {
+        set_check_target(FALSE);
+        followA();
+        set_check_target(TRUE);
+        return;
+    }
+    _newT();
+    buf = Currentbuf;
+    set_check_target(FALSE);
+    followA();
+    set_check_target(TRUE);
+    if (tab == NULL)
+    {
+        if (buf != Currentbuf)
+            delBuffer(buf);
+        else
+            deleteTab(CurrentTab);
+    }
+    else if (buf != Currentbuf)
+    {
+        /* buf <- p <- ... <- Currentbuf = c */
+        Buffer *c, *p;
+
+        c = Currentbuf;
+        p = prevBuffer(c, buf);
+        p->nextBuffer = NULL;
+        Firstbuf = buf;
+        deleteTab(CurrentTab);
+        CurrentTab = tab;
+        for (buf = p; buf; buf = p)
+        {
+            p = prevBuffer(c, buf);
+            pushBuffer(buf);
+        }
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+int mouse_scroll_line()
+{
+    if (relative_wheel_scroll)
+        return (relative_wheel_scroll_ratio * LASTLINE + 99) / 100;
+    else
+        return fixed_wheel_scroll_count;
+}

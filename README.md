@@ -90,6 +90,8 @@ hash.h, hash.c を std::unordered_map とかに置き換えたい・・・。
 
 * macro 減らす
 * source と header が対応するようにする
+    * fm.h 分解
+    * proto.h 分解
 * c++ にする
     * 各 struct を class化してなるべくカプセル化する
 * DEFUNマクロをluaとかに置き換えたい
