@@ -6,6 +6,7 @@
 #define FORM_H
 
 #include "Str.h"
+#include "parsetagx.h"
 
 #define FORM_UNKNOWN        -1
 #define FORM_INPUT_TEXT     0
@@ -95,5 +96,8 @@ typedef struct form_item_list {
     struct form_list *parent;
     struct form_item_list *next;
 } FormItemList;
+
+struct form_item_list *formList_addInput(struct form_list *fl,
+						struct parsed_tag *tag);
 
 #endif				/* not FORM_H */

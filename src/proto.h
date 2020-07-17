@@ -198,21 +198,17 @@ extern void loadImage(Buffer *buf, int flag);
 extern ImageCache *getImage(Image * image, ParsedURL *current, int flag);
 extern int getImageSize(ImageCache * cache);
 #endif
-extern Str process_img(struct parsed_tag *tag, int width);
-extern Str process_anchor(struct parsed_tag *tag, char *tagbuf);
-extern Str process_input(struct parsed_tag *tag);
-extern Str process_select(struct parsed_tag *tag);
+
+
+
+
 extern Str process_n_select(void);
 extern void feed_select(char *str);
 extern void process_option(void);
-extern Str process_textarea(struct parsed_tag *tag, int width);
 extern Str process_n_textarea(void);
 extern void feed_textarea(char *str);
-extern Str process_form(struct parsed_tag *tag);
 extern Str process_n_form(void);
 extern int getMetaRefreshParam(char *q, Str *refresh_uri);
-extern int HTMLtagproc1(struct parsed_tag *tag,
-			struct html_feed_environ *h_env);
 extern void HTMLlineproc2(Buffer *buf, TextLineList *tl);
 extern void HTMLlineproc0(char *istr, struct html_feed_environ *h_env,
 			  int internal);
@@ -369,8 +365,6 @@ extern void pushTable(struct table *, struct table *);
 extern struct form_list *newFormList(char *action, char *method, char *charset,
 				     char *enctype, char *target, char *name,
 				     struct form_list *_next);
-extern struct form_item_list *formList_addInput(struct form_list *fl,
-						struct parsed_tag *tag);
 extern char *form2str(FormItemList *fi);
 extern int formtype(char *typestr);
 extern void formRecheckRadio(Anchor *a, Buffer *buf, FormItemList *form);
@@ -537,8 +531,6 @@ extern Anchor *registerHref(Buffer *buf, char *url, char *target,
 extern Anchor *registerName(Buffer *buf, char *url, int line, int pos);
 extern Anchor *registerImg(Buffer *buf, char *url, char *title, int line,
 			   int pos);
-extern Anchor *registerForm(Buffer *buf, FormList *flist,
-			    struct parsed_tag *tag, int line, int pos);
 extern int onAnchor(Anchor *a, int line, int pos);
 extern Anchor *retrieveAnchor(AnchorList *al, int line, int pos);
 extern Anchor *retrieveCurrentAnchor(Buffer *buf);

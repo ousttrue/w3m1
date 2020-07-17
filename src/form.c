@@ -3,6 +3,7 @@
  * HTML forms
  */
 #include "fm.h"
+#include "form.h"
 #include "public.h"
 #include "parsetag.h"
 #include "rc.h"

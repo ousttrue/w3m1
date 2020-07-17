@@ -1,4 +1,5 @@
 #pragma once
+#include "parsetagx.h"
 
 typedef struct
 {
@@ -41,3 +42,11 @@ struct readbuffer
     short top_margin;
     short bottom_margin;
 };
+
+Str process_img(struct parsed_tag *tag, int width);
+Str process_anchor(struct parsed_tag *tag, char *tagbuf);
+Str process_input(struct parsed_tag *tag);
+Str process_select(struct parsed_tag *tag);
+Str process_textarea(struct parsed_tag *tag, int width);
+Str process_form(struct parsed_tag *tag);
+int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
