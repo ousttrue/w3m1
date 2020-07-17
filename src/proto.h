@@ -401,8 +401,6 @@ extern MapArea *newMapArea(char *url, char *target, char *alt, char *shape,
 extern Buffer *page_info_panel(Buffer *buf);
 extern struct frame_body *newFrame(struct parsed_tag *tag, Buffer *buf);
 extern struct frameset *newFrameSet(struct parsed_tag *tag);
-extern void addFrameSetElement(struct frameset *f,
-			       union frameset_element element);
 extern void deleteFrame(struct frame_body *b);
 extern void deleteFrameSet(struct frameset *f);
 extern void deleteFrameSetElement(union frameset_element e);
@@ -584,7 +582,6 @@ extern int set_param_option(char *option);
 extern char *get_param_option(char *name);
 extern void init_rc(void);
 extern Buffer *load_option_panel(void);
-extern void panel_set_option(struct parsed_tagarg *);
 extern void sync_with_option(void);
 extern char *rcFile(char *base);
 extern char *etcFile(char *base);
@@ -636,7 +633,6 @@ extern void load_cookies(void);
 extern void initCookie(void);
 extern void cooLst(void);
 extern Buffer *cookie_list_panel(void);
-extern void set_cookie_flag(struct parsed_tagarg *arg);
 extern int check_cookie_accept_domain(char *domain);
 #else				/* not USE_COOKIE */
 #define cooLst nulcmd

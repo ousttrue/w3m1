@@ -10,6 +10,8 @@
  */
 
 #include "fm.h"
+#include "parsetag.h"
+#include "cookie.h"
 #include "html.h"
 
 #ifdef USE_COOKIE

@@ -2,6 +2,9 @@
 /*
  * frame support
  */
+#pragma once
+#include "html.h"
+#include "form.h"
 
 struct frame_element {
     char attr;
@@ -60,3 +63,6 @@ struct frameset_queue {
 };
 
 extern struct frameset *renderFrameSet;
+
+void addFrameSetElement(struct frameset *f,
+			       union frameset_element element);

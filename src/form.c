@@ -5,6 +5,8 @@
 #include "fm.h"
 #include "public.h"
 #include "parsetag.h"
+#include "rc.h"
+#include "cookie.h"
 #include "parsetagx.h"
 #include "myctype.h"
 #include "local.h"

@@ -69,7 +69,6 @@ typedef int wc_ces;	/* XXX: not used */
 
 #include "form.h"
 #include "frame.h"
-#include "parsetag.h"
 #include "parsetagx.h"
 #include "func.h"
 #include "menu.h"

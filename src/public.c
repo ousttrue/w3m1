@@ -1,4 +1,5 @@
 #include "fm.h"
+#include "parsetag.h"
 #include "public.h"
 #include <setjmp.h>
 #include <signal.h>
