@@ -73,7 +73,7 @@ DEFUN(pgBack, PREV_PAGE, "Move to previous page")
     if (vi_prec_num)
         nscroll(-searchKeyNum() * (Currentbuf->LINES - 1), B_NORMAL);
     else
-        nscroll(-(prec_num ? searchKeyNum() : searchKeyNum() * (Currentbuf->LINES - 1)), prec_num ? B_SCROLL : B_NORMAL);
+        nscroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (Currentbuf->LINES - 1)), prec_num() ? B_SCROLL : B_NORMAL);
 }
 
 /* 1 line up */
@@ -688,7 +688,7 @@ DEFUN(goLine, GOTO_LINE, "Go to specified line")
 {
 
     char *str = searchKeyData();
-    if (prec_num)
+    if (prec_num())
         _goLine("^");
     else if (str)
         _goLine(str);
@@ -2264,7 +2264,7 @@ DEFUN(closeT, CLOSE_TAB, "Close current tab")
 
     if (nTab <= 1)
         return;
-    if (prec_num)
+    if (prec_num())
         tab = numTab(PREC_NUM());
     else
         tab = CurrentTab;
