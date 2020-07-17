@@ -2356,3 +2356,81 @@ DEFUN(tabL, TAB_LEFT, "Move current tab left")
 	 tab = tab->prevTab, i++) ;
     moveTab(CurrentTab, tab ? tab : FirstTab, FALSE);
 }
+
+/* download panel */
+DEFUN(ldDL, DOWNLOAD_LIST, "Display download list panel")
+{
+    Buffer *buf;
+    int replace = FALSE, new_tab = FALSE;
+#ifdef USE_ALARM
+    int reload;
+#endif
+
+    if (Currentbuf->bufferprop & BP_INTERNAL &&
+	!strcmp(Currentbuf->buffername, DOWNLOAD_LIST_TITLE))
+	replace = TRUE;
+    if (!FirstDL) {
+	if (replace) {
+	    if (Currentbuf == Firstbuf && Currentbuf->nextBuffer == NULL) {
+		if (nTab > 1)
+		    deleteTab(CurrentTab);
+	    }
+	    else
+		delBuffer(Currentbuf);
+	    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+	}
+	return;
+    }
+#ifdef USE_ALARM
+    reload = checkDownloadList();
+#endif
+    buf = DownloadListBuffer();
+    if (!buf) {
+	displayBuffer(Currentbuf, B_NORMAL);
+	return;
+    }
+    buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
+    if (replace) {
+	COPY_BUFROOT(buf, Currentbuf);
+	restorePosition(buf, Currentbuf);
+    }
+    if (!replace && open_tab_dl_list) {
+	_newT();
+	new_tab = TRUE;
+    }
+    pushBuffer(buf);
+    if (replace || new_tab)
+	deletePrevBuf();
+#ifdef USE_ALARM
+    if (reload)
+	Currentbuf->event = setAlarmEvent(Currentbuf->event, 1, AL_IMPLICIT,
+					  FUNCNAME_reload, NULL);
+#endif
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(undoPos, UNDO, "Cancel the last cursor movement")
+{
+    BufferPos *b = Currentbuf->undo;
+    int i;
+
+    if (!Currentbuf->firstLine)
+	return;
+    if (!b || !b->prev)
+	return;
+    for (i = 0; i < PREC_NUM() && b->prev; i++, b = b->prev) ;
+    resetPos(b);
+}
+
+DEFUN(redoPos, REDO, "Cancel the last undo")
+{
+    BufferPos *b = Currentbuf->undo;
+    int i;
+
+    if (!Currentbuf->firstLine)
+	return;
+    if (!b || !b->next)
+	return;
+    for (i = 0; i < PREC_NUM() && b->next; i++, b = b->next) ;
+    resetPos(b);
+}
