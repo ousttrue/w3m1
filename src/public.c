@@ -2523,3 +2523,58 @@ MySignalHandler SigAlarm(SIGNAL_ARG)
 }
 
 #endif
+
+TabBuffer *numTab(int n)
+{
+    TabBuffer *tab;
+    int i;
+
+    if (n == 0)
+        return CurrentTab;
+    if (n == 1)
+        return FirstTab;
+    if (nTab <= 1)
+        return NULL;
+    for (tab = FirstTab, i = 1; tab && i < n; tab = tab->nextTab, i++)
+        ;
+    return tab;
+}
+
+void tabURL0(TabBuffer *tab, char *prompt, int relative)
+{
+    Buffer *buf;
+
+    if (tab == CurrentTab)
+    {
+        goURL0(prompt, relative);
+        return;
+    }
+    _newT();
+    buf = Currentbuf;
+    goURL0(prompt, relative);
+    if (tab == NULL)
+    {
+        if (buf != Currentbuf)
+            delBuffer(buf);
+        else
+            deleteTab(CurrentTab);
+    }
+    else if (buf != Currentbuf)
+    {
+        /* buf <- p <- ... <- Currentbuf = c */
+        Buffer *c, *p;
+
+        c = Currentbuf;
+        p = prevBuffer(c, buf);
+        p->nextBuffer = NULL;
+        Firstbuf = buf;
+        deleteTab(CurrentTab);
+        CurrentTab = tab;
+        for (buf = p; buf; buf = p)
+        {
+            p = prevBuffer(c, buf);
+            pushBuffer(buf);
+        }
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}

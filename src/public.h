@@ -82,3 +82,5 @@ AlarmEvent* DefaultAlarm();
 AlarmEvent *CurrentAlarm();
 void SetCurrentAlarm(AlarmEvent *);
 MySignalHandler SigAlarm(SIGNAL_ARG);
+TabBuffer *numTab(int n);
+void tabURL0(TabBuffer *tab, char *prompt, int relative);

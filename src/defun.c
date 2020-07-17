@@ -2181,3 +2181,178 @@ DEFUN(setAlarm, ALARM, "Set alarm")
     }
     displayBuffer(Currentbuf, B_NORMAL);
 }
+
+DEFUN(reinit, REINIT, "Reload configuration files")
+{
+    char *resource = searchKeyData();
+
+    if (resource == NULL) {
+	init_rc();
+	sync_with_option();
+#ifdef USE_COOKIE
+	initCookie();
+#endif
+	displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+	return;
+    }
+
+    if (!strcasecmp(resource, "CONFIG") || !strcasecmp(resource, "RC")) {
+	init_rc();
+	sync_with_option();
+	displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+	return;
+    }
+
+#ifdef USE_COOKIE
+    if (!strcasecmp(resource, "COOKIE")) {
+	initCookie();
+	return;
+    }
+#endif
+
+    if (!strcasecmp(resource, "KEYMAP")) {
+	initKeymap(TRUE);
+	return;
+    }
+
+    if (!strcasecmp(resource, "MAILCAP")) {
+	initMailcap();
+	return;
+    }
+
+#ifdef USE_MOUSE
+    if (!strcasecmp(resource, "MOUSE")) {
+	initMouseAction();
+	displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+	return;
+    }
+#endif
+
+#ifdef USE_MENU
+    if (!strcasecmp(resource, "MENU")) {
+	initMenu();
+	return;
+    }
+#endif
+
+    if (!strcasecmp(resource, "MIMETYPES")) {
+	initMimeTypes();
+	return;
+    }
+
+#ifdef USE_EXTERNAL_URI_LOADER
+    if (!strcasecmp(resource, "URIMETHODS")) {
+	initURIMethods();
+	return;
+    }
+#endif
+
+    disp_err_message(Sprintf("Don't know how to reinitialize '%s'", resource)->
+		     ptr, FALSE);
+}
+
+DEFUN(defKey, DEFINE_KEY,
+      "Define a binding between a key stroke and a user command")
+{
+    char *data;
+
+    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    data = searchKeyData();
+    if (data == NULL || *data == '\0') {
+	data = inputStrHist("Key definition: ", "", TextHist);
+	if (data == NULL || *data == '\0') {
+	    displayBuffer(Currentbuf, B_NORMAL);
+	    return;
+	}
+    }
+    setKeymap(allocStr(data, -1), -1, TRUE);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(newT, NEW_TAB, "Open new tab")
+{
+    _newT();
+    displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+}
+
+DEFUN(closeT, CLOSE_TAB, "Close current tab")
+{
+    TabBuffer *tab;
+
+    if (nTab <= 1)
+	return;
+    if (prec_num)
+	tab = numTab(PREC_NUM());
+    else
+	tab = CurrentTab;
+    if (tab)
+	deleteTab(tab);
+    displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+}
+
+DEFUN(nextT, NEXT_TAB, "Move to next tab")
+{
+    int i;
+
+    if (nTab <= 1)
+	return;
+    for (i = 0; i < PREC_NUM(); i++) {
+	if (CurrentTab->nextTab)
+	    CurrentTab = CurrentTab->nextTab;
+	else
+	    CurrentTab = FirstTab;
+    }
+    displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+}
+
+DEFUN(prevT, PREV_TAB, "Move to previous tab")
+{
+    int i;
+
+    if (nTab <= 1)
+	return;
+    for (i = 0; i < PREC_NUM(); i++) {
+	if (CurrentTab->prevTab)
+	    CurrentTab = CurrentTab->prevTab;
+	else
+	    CurrentTab = LastTab;
+    }
+    displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+}
+
+DEFUN(tabA, TAB_LINK, "Open current link on new tab")
+{
+    followTab(prec_num() ? numTab(PREC_NUM()) : NULL);
+}
+
+DEFUN(tabURL, TAB_GOTO, "Open URL on new tab")
+{
+    tabURL0(prec_num() ? numTab(PREC_NUM()) : NULL,
+	    "Goto URL on new tab: ", FALSE);
+}
+
+DEFUN(tabrURL, TAB_GOTO_RELATIVE, "Open relative URL on new tab")
+{
+    tabURL0(prec_num() ? numTab(PREC_NUM()) : NULL,
+	    "Goto relative URL on new tab: ", TRUE);
+}
+
+DEFUN(tabR, TAB_RIGHT, "Move current tab right")
+{
+    TabBuffer *tab;
+    int i;
+
+    for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
+	 tab = tab->nextTab, i++) ;
+    moveTab(CurrentTab, tab ? tab : LastTab, TRUE);
+}
+
+DEFUN(tabL, TAB_LEFT, "Move current tab left")
+{
+    TabBuffer *tab;
+    int i;
+
+    for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
+	 tab = tab->prevTab, i++) ;
+    moveTab(CurrentTab, tab ? tab : FirstTab, FALSE);
+}
