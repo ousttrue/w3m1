@@ -1184,7 +1184,7 @@ tmpClearBuffer(Buffer *buf)
     }
 }
 
-static Str currentURL(void);
+
 
 #ifdef USE_BUFINFO
 void
@@ -1204,12 +1204,6 @@ saveBufferInfo()
 
 
 
-static void
-repBuffer(Buffer *oldbuf, Buffer *buf)
-{
-    Firstbuf = replaceBuffer(Firstbuf, oldbuf, buf);
-    Currentbuf = buf;
-}
 
 #ifdef SIGWINCH
 static MySignalHandler
@@ -1306,291 +1300,11 @@ follow_map(struct parsed_tagarg *arg)
 }
 
 
-/* show current URL */
-static Str
-currentURL(void)
-{
-    if (Currentbuf->bufferprop & BP_INTERNAL)
-	return Strnew_size(0);
-    return parsedURL2Str(&Currentbuf->currentURL);
-}
 
-DEFUN(curURL, PEEK, "Peek current URL")
-{
-    static Str s = NULL;
-#ifdef USE_M17N
-    static Lineprop *p = NULL;
-    Lineprop *pp;
-#endif
-    static int offset = 0, n;
 
-    if (Currentbuf->bufferprop & BP_INTERNAL)
-	return;
-    if (CurrentKey == prev_key() && s != NULL) {
-	if (s->length - offset >= COLS)
-	    offset++;
-	else if (s->length <= offset)	/* bug ? */
-	    offset = 0;
-    }
-    else {
-	offset = 0;
-	s = currentURL();
-	if (DecodeURL)
-	    s = Strnew_charp(url_unquote_conv(s->ptr, 0));
-#ifdef USE_M17N
-	s = checkType(s, &pp, NULL);
-	p = NewAtom_N(Lineprop, s->length);
-	bcopy((void *)pp, (void *)p, s->length * sizeof(Lineprop));
-#endif
-    }
-    n = searchKeyNum();
-    if (n > 1 && s->length > (n - 1) * (COLS - 1))
-	offset = (n - 1) * (COLS - 1);
-#ifdef USE_M17N
-    while (offset < s->length && p[offset] & PC_WCHAR2)
-	offset++;
-#endif
-    disp_message_nomouse(&s->ptr[offset], TRUE);
-}
-/* view HTML source */
 
-DEFUN(vwSrc, SOURCE VIEW, "View HTML source")
-{
-    Buffer *buf;
-
-    if (Currentbuf->type == NULL || Currentbuf->bufferprop & BP_FRAME)
-	return;
-    if ((buf = Currentbuf->linkBuffer[LB_SOURCE]) != NULL ||
-	(buf = Currentbuf->linkBuffer[LB_N_SOURCE]) != NULL) {
-	Currentbuf = buf;
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    if (Currentbuf->sourcefile == NULL) {
-	if (Currentbuf->pagerSource &&
-	    !strcasecmp(Currentbuf->type, "text/plain")) {
-#ifdef USE_M17N
-	    wc_ces old_charset;
-	    wc_bool old_fix_width_conv;
-#endif
-	    FILE *f;
-	    Str tmpf = tmpfname(TMPF_SRC, NULL);
-	    f = fopen(tmpf->ptr, "w");
-	    if (f == NULL)
-		return;
-#ifdef USE_M17N
-	    old_charset = DisplayCharset;
-	    old_fix_width_conv = WcOption.fix_width_conv;
-	    DisplayCharset = (Currentbuf->document_charset != WC_CES_US_ASCII)
-		? Currentbuf->document_charset : 0;
-	    WcOption.fix_width_conv = WC_FALSE;
-#endif
-	    saveBufferBody(Currentbuf, f, TRUE);
-#ifdef USE_M17N
-	    DisplayCharset = old_charset;
-	    WcOption.fix_width_conv = old_fix_width_conv;
-#endif
-	    fclose(f);
-	    Currentbuf->sourcefile = tmpf->ptr;
-	}
-	else {
-	    return;
-	}
-    }
-
-    buf = newBuffer(INIT_BUFFER_WIDTH);
-
-    if (is_html_type(Currentbuf->type)) {
-	buf->type = "text/plain";
-	if (Currentbuf->real_type &&
-	    is_html_type(Currentbuf->real_type))
-	    buf->real_type = "text/plain";
-	else
-	    buf->real_type = Currentbuf->real_type;
-	buf->buffername = Sprintf("source of %s", Currentbuf->buffername)->ptr;
-	buf->linkBuffer[LB_N_SOURCE] = Currentbuf;
-	Currentbuf->linkBuffer[LB_SOURCE] = buf;
-    }
-    else if (!strcasecmp(Currentbuf->type, "text/plain")) {
-	buf->type = "text/html";
-	if (Currentbuf->real_type &&
-	    !strcasecmp(Currentbuf->real_type, "text/plain"))
-	    buf->real_type = "text/html";
-	else
-	    buf->real_type = Currentbuf->real_type;
-	buf->buffername = Sprintf("HTML view of %s",
-				  Currentbuf->buffername)->ptr;
-	buf->linkBuffer[LB_SOURCE] = Currentbuf;
-	Currentbuf->linkBuffer[LB_N_SOURCE] = buf;
-    }
-    else {
-	return;
-    }
-    buf->currentURL = Currentbuf->currentURL;
-    buf->real_scheme = Currentbuf->real_scheme;
-    buf->filename = Currentbuf->filename;
-    buf->sourcefile = Currentbuf->sourcefile;
-    buf->header_source = Currentbuf->header_source;
-    buf->search_header = Currentbuf->search_header;
-#ifdef USE_M17N
-    buf->document_charset = Currentbuf->document_charset;
-#endif
-    buf->clone = Currentbuf->clone;
-    (*buf->clone)++;
-
-    buf->need_reshape = TRUE;
-    reshapeBuffer(buf);
-    pushBuffer(buf);
-    displayBuffer(Currentbuf, B_NORMAL);
-}
-
-/* reload */
-DEFUN(reload, RELOAD, "Reload buffer")
-{
-    Buffer *buf, *fbuf = NULL, sbuf;
-#ifdef USE_M17N
-    wc_ces old_charset;
-#endif
-    Str url;
-    FormList *request;
-    int multipart;
-
-    if (Currentbuf->bufferprop & BP_INTERNAL) {
-	if (!strcmp(Currentbuf->buffername, DOWNLOAD_LIST_TITLE)) {
-	    ldDL();
-	    return;
-	}
-	/* FIXME: gettextize? */
-	disp_err_message("Can't reload...", TRUE);
-	return;
-    }
-    if (Currentbuf->currentURL.scheme == SCM_LOCAL &&
-	!strcmp(Currentbuf->currentURL.file, "-")) {
-	/* file is std input */
-	/* FIXME: gettextize? */
-	disp_err_message("Can't reload stdin", TRUE);
-	return;
-    }
-    copyBuffer(&sbuf, Currentbuf);
-    if (Currentbuf->bufferprop & BP_FRAME &&
-	(fbuf = Currentbuf->linkBuffer[LB_N_FRAME])) {
-	if (fmInitialized) {
-	    message("Rendering frame", 0, 0);
-	    refresh();
-	}
-	if (!(buf = renderFrame(fbuf, 1))) {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-	if (fbuf->linkBuffer[LB_FRAME]) {
-	    if (buf->sourcefile &&
-		fbuf->linkBuffer[LB_FRAME]->sourcefile &&
-		!strcmp(buf->sourcefile,
-			fbuf->linkBuffer[LB_FRAME]->sourcefile))
-		fbuf->linkBuffer[LB_FRAME]->sourcefile = NULL;
-	    delBuffer(fbuf->linkBuffer[LB_FRAME]);
-	}
-	fbuf->linkBuffer[LB_FRAME] = buf;
-	buf->linkBuffer[LB_N_FRAME] = fbuf;
-	pushBuffer(buf);
-	Currentbuf = buf;
-	if (Currentbuf->firstLine) {
-	    COPY_BUFROOT(Currentbuf, &sbuf);
-	    restorePosition(Currentbuf, &sbuf);
-	}
-	displayBuffer(Currentbuf, B_FORCE_REDRAW);
-	return;
-    }
-    else if (Currentbuf->frameset != NULL)
-	fbuf = Currentbuf->linkBuffer[LB_FRAME];
-    multipart = 0;
-    if (Currentbuf->form_submit) {
-	request = Currentbuf->form_submit->parent;
-	if (request->method == FORM_METHOD_POST
-	    && request->enctype == FORM_ENCTYPE_MULTIPART) {
-	    Str query;
-	    struct stat st;
-	    multipart = 1;
-	    query_from_followform(&query, Currentbuf->form_submit, multipart);
-	    stat(request->body, &st);
-	    request->length = st.st_size;
-	}
-    }
-    else {
-	request = NULL;
-    }
-    url = parsedURL2Str(&Currentbuf->currentURL);
-    /* FIXME: gettextize? */
-    message("Reloading...", 0, 0);
-    refresh();
-#ifdef USE_M17N
-    old_charset = DocumentCharset;
-    if (Currentbuf->document_charset != WC_CES_US_ASCII)
-	DocumentCharset = Currentbuf->document_charset;
-#endif
-    SearchHeader = Currentbuf->search_header;
-    DefaultType = Currentbuf->real_type;
-    buf = loadGeneralFile(url->ptr, NULL, NO_REFERER, RG_NOCACHE, request);
-#ifdef USE_M17N
-    DocumentCharset = old_charset;
-#endif
-    SearchHeader = FALSE;
-    DefaultType = NULL;
-
-    if (multipart)
-	unlink(request->body);
-    if (buf == NULL) {
-	/* FIXME: gettextize? */
-	disp_err_message("Can't reload...", TRUE);
-	return;
-    }
-    else if (buf == NO_BUFFER) {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    if (fbuf != NULL)
-	Firstbuf = deleteBuffer(Firstbuf, fbuf);
-    repBuffer(Currentbuf, buf);
-    if ((buf->type != NULL) && (sbuf.type != NULL) &&
-	((!strcasecmp(buf->type, "text/plain") &&
-	  is_html_type(sbuf.type)) ||
-	 (is_html_type(buf->type) &&
-	  !strcasecmp(sbuf.type, "text/plain")))) {
-	vwSrc();
-	if (Currentbuf != buf)
-	    Firstbuf = deleteBuffer(Firstbuf, buf);
-    }
-    Currentbuf->search_header = sbuf.search_header;
-    Currentbuf->form_submit = sbuf.form_submit;
-    if (Currentbuf->firstLine) {
-	COPY_BUFROOT(Currentbuf, &sbuf);
-	restorePosition(Currentbuf, &sbuf);
-    }
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
-
-/* reshape */
-DEFUN(reshape, RESHAPE, "Re-render buffer")
-{
-    Currentbuf->need_reshape = TRUE;
-    reshapeBuffer(Currentbuf);
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
 
 #ifdef USE_M17N
-static void
-_docCSet(wc_ces charset)
-{
-    if (Currentbuf->bufferprop & BP_INTERNAL)
-	return;
-    if (Currentbuf->sourcefile == NULL) {
-	disp_message("Can't reload...", FALSE);
-	return;
-    }
-    Currentbuf->document_charset = charset;
-    Currentbuf->need_reshape = TRUE;
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-}
 
 void
 change_charset(struct parsed_tagarg *arg)
@@ -1612,23 +1326,6 @@ change_charset(struct parsed_tagarg *arg)
     _docCSet(charset);
 }
 
-DEFUN(docCSet, CHARSET, "Change the current document charset")
-{
-    char *cs;
-    wc_ces charset;
-
-    cs = searchKeyData();
-    if (cs == NULL || *cs == '\0')
-	/* FIXME: gettextize? */
-	cs = inputStr("Document charset: ",
-		      wc_ces_to_charset(Currentbuf->document_charset));
-    charset = wc_guess_charset_short(cs, 0);
-    if (charset == 0) {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
-    }
-    _docCSet(charset);
-}
 
 DEFUN(defCSet, DEFAULT_CHARSET, "Change the default document charset")
 {

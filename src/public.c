@@ -1985,3 +1985,31 @@ disp:
 #endif
     disp_message_nomouse(&s->ptr[offset], TRUE);
 }
+
+/* show current URL */
+Str currentURL(void)
+{
+    if (Currentbuf->bufferprop & BP_INTERNAL)
+        return Strnew_size(0);
+    return parsedURL2Str(&Currentbuf->currentURL);
+}
+
+void repBuffer(Buffer *oldbuf, Buffer *buf)
+{
+    Firstbuf = replaceBuffer(Firstbuf, oldbuf, buf);
+    Currentbuf = buf;
+}
+
+void _docCSet(wc_ces charset)
+{
+    if (Currentbuf->bufferprop & BP_INTERNAL)
+        return;
+    if (Currentbuf->sourcefile == NULL)
+    {
+        disp_message("Can't reload...", FALSE);
+        return;
+    }
+    Currentbuf->document_charset = charset;
+    Currentbuf->need_reshape = TRUE;
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
