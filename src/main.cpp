@@ -91,10 +91,10 @@ void set_buffer_environ(Buffer *);
 static void save_buffer_position(Buffer *buf);
 
 
-static void _newT(void);
+
 static void followTab(TabBuffer * tab);
 static void moveTab(TabBuffer * t, TabBuffer * t2, int right);
-static int check_target = TRUE;
+
 
 
 #define help() fusage(stdout, 0)
@@ -1243,123 +1243,6 @@ SigPipe(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 #endif
-
-
-static void
-gotoLabel(char *label)
-{
-    Buffer *buf;
-    Anchor *al;
-    int i;
-
-    al = searchURLLabel(Currentbuf, label);
-    if (al == NULL) {
-	/* FIXME: gettextize? */
-	disp_message(Sprintf("%s is not found", label)->ptr, TRUE);
-	return;
-    }
-    buf = newBuffer(Currentbuf->width);
-    copyBuffer(buf, Currentbuf);
-    for (i = 0; i < MAX_LB; i++)
-	buf->linkBuffer[i] = NULL;
-    buf->currentURL.label = allocStr(label, -1);
-    pushHashHist(URLHist, parsedURL2Str(&buf->currentURL)->ptr);
-    (*buf->clone)++;
-    pushBuffer(buf);
-    gotoLine(Currentbuf, al->start.line);
-    if (label_topline)
-	Currentbuf->topLine = lineSkip(Currentbuf, Currentbuf->topLine,
-				       Currentbuf->currentLine->linenumber
-				       - Currentbuf->topLine->linenumber,
-				       FALSE);
-    Currentbuf->pos = al->start.pos;
-    arrangeCursor(Currentbuf);
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-    return;
-}
-
-/* follow HREF link */
-DEFUN(followA, GOTO_LINK, "Go to current link")
-{
-    Line *l;
-    Anchor *a;
-    ParsedURL u;
-#ifdef USE_IMAGE
-    int x = 0, y = 0, map = 0;
-#endif
-    char *url;
-
-    if (Currentbuf->firstLine == NULL)
-	return;
-    l = Currentbuf->currentLine;
-
-#ifdef USE_IMAGE
-    a = retrieveCurrentImg(Currentbuf);
-    if (a && a->image && a->image->map) {
-	_followForm(FALSE);
-	return;
-    }
-    if (a && a->image && a->image->ismap) {
-	getMapXY(Currentbuf, a, &x, &y);
-	map = 1;
-    }
-#else
-    a = retrieveCurrentMap(Currentbuf);
-    if (a) {
-	_followForm(FALSE);
-	return;
-    }
-#endif
-    a = retrieveCurrentAnchor(Currentbuf);
-    if (a == NULL) {
-	_followForm(FALSE);
-	return;
-    }
-    if (*a->url == '#') {	/* index within this buffer */
-	gotoLabel(a->url + 1);
-	return;
-    }
-    parseURL2(a->url, &u, baseURL(Currentbuf));
-    if (Strcmp(parsedURL2Str(&u), parsedURL2Str(&Currentbuf->currentURL)) == 0) {
-	/* index within this buffer */
-	if (u.label) {
-	    gotoLabel(u.label);
-	    return;
-	}
-    }
-    if (handleMailto(a->url))
-	return;
-#if 0
-    else if (!strncasecmp(a->url, "news:", 5) && strchr(a->url, '@') == NULL) {
-	/* news:newsgroup is not supported */
-	/* FIXME: gettextize? */
-	disp_err_message("news:newsgroup_name is not supported", TRUE);
-	return;
-    }
-#endif				/* USE_NNTP */
-    url = a->url;
-#ifdef USE_IMAGE
-    if (map)
-	url = Sprintf("%s?%d,%d", a->url, x, y)->ptr;
-#endif
-
-    if (check_target && open_tab_blank && a->target &&
-	(!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank"))) {
-	Buffer *buf;
-
-	_newT();
-	buf = Currentbuf;
-	loadLink(url, a->target, a->referer, NULL);
-	if (buf != Currentbuf)
-	    delBuffer(buf);
-	else
-	    deleteTab(CurrentTab);
-	displayBuffer(Currentbuf, B_FORCE_REDRAW);
-	return;
-    }
-    loadLink(url, a->target, a->referer, NULL);
-    displayBuffer(Currentbuf, B_NORMAL);
-}
 
 
 
@@ -3544,35 +3427,6 @@ newTab(void)
     return n;
 }
 
-static void
-_newT(void)
-{
-    TabBuffer *tag;
-    Buffer *buf;
-    int i;
-
-    tag = newTab();
-    if (!tag)
-	return;
-
-    buf = newBuffer(Currentbuf->width);
-    copyBuffer(buf, Currentbuf);
-    buf->nextBuffer = NULL;
-    for (i = 0; i < MAX_LB; i++)
-	buf->linkBuffer[i] = NULL;
-    (*buf->clone)++;
-    tag->firstBuffer = tag->currentBuffer = buf;
-
-    tag->nextTab = CurrentTab->nextTab;
-    tag->prevTab = CurrentTab;
-    if (CurrentTab->nextTab)
-	CurrentTab->nextTab->prevTab = tag;
-    else
-	LastTab = tag;
-    CurrentTab->nextTab = tag;
-    CurrentTab = tag;
-    nTab++;
-}
 
 DEFUN(newT, NEW_TAB, "Open new tab")
 {
@@ -3745,16 +3599,16 @@ followTab(TabBuffer * tab)
 	return;
 
     if (tab == CurrentTab) {
-	check_target = FALSE;
+	set_check_target(FALSE);
 	followA();
-	check_target = TRUE;
+	set_check_target(TRUE);
 	return;
     }
     _newT();
     buf = Currentbuf;
-    check_target = FALSE;
+    set_check_target(FALSE);
     followA();
-    check_target = TRUE;
+    set_check_target(TRUE);
     if (tab == NULL) {
 	if (buf != Currentbuf)
 	    delBuffer(buf);

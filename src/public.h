@@ -52,3 +52,7 @@ void bufferA();
 Buffer *loadNormalBuf(Buffer *buf, int renderframe);
 void _nextA(int visited);
 void _prevA(int visited);
+void gotoLabel(char *label);
+int check_target();
+void set_check_target(int);
+void _newT();

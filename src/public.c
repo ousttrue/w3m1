@@ -1586,3 +1586,74 @@ _end:
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
 }
+
+void gotoLabel(char *label)
+{
+    Buffer *buf;
+    Anchor *al;
+    int i;
+
+    al = searchURLLabel(Currentbuf, label);
+    if (al == NULL)
+    {
+        /* FIXME: gettextize? */
+        disp_message(Sprintf("%s is not found", label)->ptr, TRUE);
+        return;
+    }
+    buf = newBuffer(Currentbuf->width);
+    copyBuffer(buf, Currentbuf);
+    for (i = 0; i < MAX_LB; i++)
+        buf->linkBuffer[i] = NULL;
+    buf->currentURL.label = allocStr(label, -1);
+    pushHashHist(URLHist, parsedURL2Str(&buf->currentURL)->ptr);
+    (*buf->clone)++;
+    pushBuffer(buf);
+    gotoLine(Currentbuf, al->start.line);
+    if (label_topline)
+        Currentbuf->topLine = lineSkip(Currentbuf, Currentbuf->topLine,
+                                       Currentbuf->currentLine->linenumber - Currentbuf->topLine->linenumber,
+                                       FALSE);
+    Currentbuf->pos = al->start.pos;
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+    return;
+}
+
+static int s_check_target = TRUE;
+int check_target()
+{
+    return s_check_target;
+}
+void set_check_target(int check)
+{
+    s_check_target = check;
+}
+
+void _newT()
+{
+    TabBuffer *tag;
+    Buffer *buf;
+    int i;
+
+    tag = newTab();
+    if (!tag)
+        return;
+
+    buf = newBuffer(Currentbuf->width);
+    copyBuffer(buf, Currentbuf);
+    buf->nextBuffer = NULL;
+    for (i = 0; i < MAX_LB; i++)
+        buf->linkBuffer[i] = NULL;
+    (*buf->clone)++;
+    tag->firstBuffer = tag->currentBuffer = buf;
+
+    tag->nextTab = CurrentTab->nextTab;
+    tag->prevTab = CurrentTab;
+    if (CurrentTab->nextTab)
+        CurrentTab->nextTab->prevTab = tag;
+    else
+        LastTab = tag;
+    CurrentTab->nextTab = tag;
+    CurrentTab = tag;
+    nTab++;
+}

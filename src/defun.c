@@ -986,3 +986,86 @@ DEFUN(prevVA, PREV_VISITED, "Move to previous visited link")
 {
     _prevA(TRUE);
 }
+
+/* follow HREF link */
+DEFUN(followA, GOTO_LINK, "Go to current link")
+{
+    Line *l;
+    Anchor *a;
+    ParsedURL u;
+#ifdef USE_IMAGE
+    int x = 0, y = 0, map = 0;
+#endif
+    char *url;
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+    l = Currentbuf->currentLine;
+
+#ifdef USE_IMAGE
+    a = retrieveCurrentImg(Currentbuf);
+    if (a && a->image && a->image->map) {
+	_followForm(FALSE);
+	return;
+    }
+    if (a && a->image && a->image->ismap) {
+	getMapXY(Currentbuf, a, &x, &y);
+	map = 1;
+    }
+#else
+    a = retrieveCurrentMap(Currentbuf);
+    if (a) {
+	_followForm(FALSE);
+	return;
+    }
+#endif
+    a = retrieveCurrentAnchor(Currentbuf);
+    if (a == NULL) {
+	_followForm(FALSE);
+	return;
+    }
+    if (*a->url == '#') {	/* index within this buffer */
+	gotoLabel(a->url + 1);
+	return;
+    }
+    parseURL2(a->url, &u, baseURL(Currentbuf));
+    if (Strcmp(parsedURL2Str(&u), parsedURL2Str(&Currentbuf->currentURL)) == 0) {
+	/* index within this buffer */
+	if (u.label) {
+	    gotoLabel(u.label);
+	    return;
+	}
+    }
+    if (handleMailto(a->url))
+	return;
+#if 0
+    else if (!strncasecmp(a->url, "news:", 5) && strchr(a->url, '@') == NULL) {
+	/* news:newsgroup is not supported */
+	/* FIXME: gettextize? */
+	disp_err_message("news:newsgroup_name is not supported", TRUE);
+	return;
+    }
+#endif				/* USE_NNTP */
+    url = a->url;
+#ifdef USE_IMAGE
+    if (map)
+	url = Sprintf("%s?%d,%d", a->url, x, y)->ptr;
+#endif
+
+    if (check_target && open_tab_blank && a->target &&
+	(!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank"))) {
+	Buffer *buf;
+
+	_newT();
+	buf = Currentbuf;
+	loadLink(url, a->target, a->referer, NULL);
+	if (buf != Currentbuf)
+	    delBuffer(buf);
+	else
+	    deleteTab(CurrentTab);
+	displayBuffer(Currentbuf, B_FORCE_REDRAW);
+	return;
+    }
+    loadLink(url, a->target, a->referer, NULL);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
