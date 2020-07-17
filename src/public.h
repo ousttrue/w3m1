@@ -120,3 +120,4 @@ void pushEvent(int cmd, void *data);
 int ProcessEvent();
 void keyPressEventProc(int c);
 Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);
+MySignalHandler intTrap(SIGNAL_ARG);

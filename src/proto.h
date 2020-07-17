@@ -7,7 +7,6 @@
  */
 
 extern void nulcmd(void);
-extern MySignalHandler intTrap(SIGNAL_ARG);
 extern void pgFore(void);
 extern void pgBack(void);
 extern void lup1(void);
