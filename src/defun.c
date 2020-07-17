@@ -97,9 +97,9 @@ DEFUN(ctrCsrV, CENTER_V, "Move to the center column")
     if (offsety != 0)
     {
 #if 0
-	Currentbuf->currentLine = lineSkip(Currentbuf,
-					   Currentbuf->currentLine, offsety,
-					   FALSE);
+        Currentbuf->currentLine = lineSkip(Currentbuf,
+                                           Currentbuf->currentLine, offsety,
+                                           FALSE);
 #endif
         Currentbuf->topLine =
             lineSkip(Currentbuf, Currentbuf->topLine, -offsety, FALSE);
@@ -1108,10 +1108,10 @@ DEFUN(followA, GOTO_LINK, "Go to current link")
         return;
 #if 0
     else if (!strncasecmp(a->url, "news:", 5) && strchr(a->url, '@') == NULL) {
-	/* news:newsgroup is not supported */
-	/* FIXME: gettextize? */
-	disp_err_message("news:newsgroup_name is not supported", TRUE);
-	return;
+        /* news:newsgroup is not supported */
+        /* FIXME: gettextize? */
+        disp_err_message("news:newsgroup_name is not supported", TRUE);
+        return;
     }
 #endif /* USE_NNTP */
     url = a->url;
@@ -1343,12 +1343,12 @@ DEFUN(pginfo, INFO, "View info of current document")
     Buffer *buf;
 
     if ((buf = Currentbuf->linkBuffer[LB_N_INFO]) != NULL) {
-	Currentbuf = buf;
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
+        Currentbuf = buf;
+        displayBuffer(Currentbuf, B_NORMAL);
+        return;
     }
     if ((buf = Currentbuf->linkBuffer[LB_INFO]) != NULL)
-	delBuffer(buf);
+        delBuffer(buf);
     buf = page_info_panel(Currentbuf);
     cmd_loadBuffer(buf, BP_NORMAL, LB_INFO);
 }
@@ -1360,15 +1360,15 @@ DEFUN(linkMn, LINK_MENU, "Popup link element menu")
     ParsedURL p_url;
 
     if (!l || !l->url)
-	return;
+        return;
     if (*(l->url) == '#') {
-	gotoLabel(l->url + 1);
-	return;
+        gotoLabel(l->url + 1);
+        return;
     }
     parseURL2(l->url, &p_url, baseURL(Currentbuf));
     pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
     cmd_loadURL(l->url, baseURL(Currentbuf),
-		parsedURL2Str(&Currentbuf->currentURL)->ptr, NULL);
+                parsedURL2Str(&Currentbuf->currentURL)->ptr, NULL);
 }
 
 /* accesskey */
@@ -1385,18 +1385,18 @@ DEFUN(setOpt, SET_OPTION, "Set option")
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
     opt = searchKeyData();
     if (opt == NULL || *opt == '\0' || strchr(opt, '=') == NULL) {
-	if (opt != NULL && *opt != '\0') {
-	    char *v = get_param_option(opt);
-	    opt = Sprintf("%s=%s", opt, v ? v : "")->ptr;
-	}
-	opt = inputStrHist("Set option: ", opt, TextHist);
-	if (opt == NULL || *opt == '\0') {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
+        if (opt != NULL && *opt != '\0') {
+            char *v = get_param_option(opt);
+            opt = Sprintf("%s=%s", opt, v ? v : "")->ptr;
+        }
+        opt = inputStrHist("Set option: ", opt, TextHist);
+        if (opt == NULL || *opt == '\0') {
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
     }
     if (set_param_option(opt))
-	sync_with_option();
+        sync_with_option();
     displayBuffer(Currentbuf, B_REDRAW_IMAGE);
 }
 
@@ -1420,9 +1420,9 @@ DEFUN(linkLst, LIST, "Show all links and images")
     buf = link_list_panel(Currentbuf);
     if (buf != NULL) {
 #ifdef USE_M17N
-	buf->document_charset = Currentbuf->document_charset;
+        buf->document_charset = Currentbuf->document_charset;
 #endif
-	cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
+        cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
     }
 }
 
@@ -1433,7 +1433,7 @@ DEFUN(cooLst, COOKIE, "View cookie list")
 
     buf = cookie_list_panel();
     if (buf != NULL)
-	cmd_loadBuffer(buf, BP_NO_URL, LB_NOLINK);
+        cmd_loadBuffer(buf, BP_NO_URL, LB_NOLINK);
 }
 
 /* History page */
@@ -1470,42 +1470,42 @@ DEFUN(svBuf, PRINT SAVE_SCREEN, "Save rendered document to file")
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
     file = searchKeyData();
     if (file == NULL || *file == '\0') {
-	/* FIXME: gettextize? */
-	qfile = inputLineHist("Save buffer to: ", NULL, IN_COMMAND, SaveHist);
-	if (qfile == NULL || *qfile == '\0') {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
+        /* FIXME: gettextize? */
+        qfile = inputLineHist("Save buffer to: ", NULL, IN_COMMAND, SaveHist);
+        if (qfile == NULL || *qfile == '\0') {
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
     }
     file = conv_to_system(qfile ? qfile : file);
     if (*file == '|') {
-	is_pipe = TRUE;
-	f = popen(file + 1, "w");
+        is_pipe = TRUE;
+        f = popen(file + 1, "w");
     }
     else {
-	if (qfile) {
-	    file = unescape_spaces(Strnew_charp(qfile))->ptr;
-	    file = conv_to_system(file);
-	}
-	file = expandPath(file);
-	if (checkOverWrite(file) < 0) {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-	f = fopen(file, "w");
-	is_pipe = FALSE;
+        if (qfile) {
+            file = unescape_spaces(Strnew_charp(qfile))->ptr;
+            file = conv_to_system(file);
+        }
+        file = expandPath(file);
+        if (checkOverWrite(file) < 0) {
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
+        f = fopen(file, "w");
+        is_pipe = FALSE;
     }
     if (f == NULL) {
-	/* FIXME: gettextize? */
-	char *emsg = Sprintf("Can't open %s", conv_from_system(file))->ptr;
-	disp_err_message(emsg, TRUE);
-	return;
+        /* FIXME: gettextize? */
+        char *emsg = Sprintf("Can't open %s", conv_from_system(file))->ptr;
+        disp_err_message(emsg, TRUE);
+        return;
     }
     saveBuffer(Currentbuf, f, TRUE);
     if (is_pipe)
-	pclose(f);
+        pclose(f);
     else
-	fclose(f);
+        fclose(f);
     displayBuffer(Currentbuf, B_NORMAL);
 }
 
@@ -1515,15 +1515,15 @@ DEFUN(svSrc, DOWNLOAD SAVE, "Save document source to file")
     char *file;
 
     if (Currentbuf->sourcefile == NULL)
-	return;
+        return;
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
     PermitSaveToPipe = TRUE;
     if (Currentbuf->real_scheme == SCM_LOCAL)
-	file = conv_from_system(guess_save_name(NULL,
-						Currentbuf->currentURL.
-						real_file));
+        file = conv_from_system(guess_save_name(NULL,
+                                                Currentbuf->currentURL.
+                                                real_file));
     else
-	file = guess_save_name(Currentbuf, Currentbuf->currentURL.file);
+        file = guess_save_name(Currentbuf, Currentbuf->currentURL.file);
     doFileCopy(Currentbuf->sourcefile, file);
     PermitSaveToPipe = FALSE;
     displayBuffer(Currentbuf, B_NORMAL);
@@ -1551,30 +1551,30 @@ DEFUN(curURL, PEEK, "Peek current URL")
     static int offset = 0, n;
 
     if (Currentbuf->bufferprop & BP_INTERNAL)
-	return;
+        return;
     if (CurrentKey == prev_key() && s != NULL) {
-	if (s->length - offset >= COLS)
-	    offset++;
-	else if (s->length <= offset)	/* bug ? */
-	    offset = 0;
+        if (s->length - offset >= COLS)
+            offset++;
+        else if (s->length <= offset)	/* bug ? */
+            offset = 0;
     }
     else {
-	offset = 0;
-	s = currentURL();
-	if (DecodeURL)
-	    s = Strnew_charp(url_unquote_conv(s->ptr, 0));
+        offset = 0;
+        s = currentURL();
+        if (DecodeURL)
+            s = Strnew_charp(url_unquote_conv(s->ptr, 0));
 #ifdef USE_M17N
-	s = checkType(s, &pp, NULL);
-	p = NewAtom_N(Lineprop, s->length);
-	bcopy((void *)pp, (void *)p, s->length * sizeof(Lineprop));
+        s = checkType(s, &pp, NULL);
+        p = NewAtom_N(Lineprop, s->length);
+        bcopy((void *)pp, (void *)p, s->length * sizeof(Lineprop));
 #endif
     }
     n = searchKeyNum();
     if (n > 1 && s->length > (n - 1) * (COLS - 1))
-	offset = (n - 1) * (COLS - 1);
+        offset = (n - 1) * (COLS - 1);
 #ifdef USE_M17N
     while (offset < s->length && p[offset] & PC_WCHAR2)
-	offset++;
+        offset++;
 #endif
     disp_message_nomouse(&s->ptr[offset], TRUE);
 }
@@ -1585,72 +1585,72 @@ DEFUN(vwSrc, SOURCE VIEW, "View HTML source")
     Buffer *buf;
 
     if (Currentbuf->type == NULL || Currentbuf->bufferprop & BP_FRAME)
-	return;
+        return;
     if ((buf = Currentbuf->linkBuffer[LB_SOURCE]) != NULL ||
-	(buf = Currentbuf->linkBuffer[LB_N_SOURCE]) != NULL) {
-	Currentbuf = buf;
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
+        (buf = Currentbuf->linkBuffer[LB_N_SOURCE]) != NULL) {
+        Currentbuf = buf;
+        displayBuffer(Currentbuf, B_NORMAL);
+        return;
     }
     if (Currentbuf->sourcefile == NULL) {
-	if (Currentbuf->pagerSource &&
-	    !strcasecmp(Currentbuf->type, "text/plain")) {
+        if (Currentbuf->pagerSource &&
+            !strcasecmp(Currentbuf->type, "text/plain")) {
 #ifdef USE_M17N
-	    wc_ces old_charset;
-	    wc_bool old_fix_width_conv;
+            wc_ces old_charset;
+            wc_bool old_fix_width_conv;
 #endif
-	    FILE *f;
-	    Str tmpf = tmpfname(TMPF_SRC, NULL);
-	    f = fopen(tmpf->ptr, "w");
-	    if (f == NULL)
-		return;
+            FILE *f;
+            Str tmpf = tmpfname(TMPF_SRC, NULL);
+            f = fopen(tmpf->ptr, "w");
+            if (f == NULL)
+                return;
 #ifdef USE_M17N
-	    old_charset = DisplayCharset;
-	    old_fix_width_conv = WcOption.fix_width_conv;
-	    DisplayCharset = (Currentbuf->document_charset != WC_CES_US_ASCII)
-		? Currentbuf->document_charset : 0;
-	    WcOption.fix_width_conv = WC_FALSE;
+            old_charset = DisplayCharset;
+            old_fix_width_conv = WcOption.fix_width_conv;
+            DisplayCharset = (Currentbuf->document_charset != WC_CES_US_ASCII)
+                ? Currentbuf->document_charset : 0;
+            WcOption.fix_width_conv = WC_FALSE;
 #endif
-	    saveBufferBody(Currentbuf, f, TRUE);
+            saveBufferBody(Currentbuf, f, TRUE);
 #ifdef USE_M17N
-	    DisplayCharset = old_charset;
-	    WcOption.fix_width_conv = old_fix_width_conv;
+            DisplayCharset = old_charset;
+            WcOption.fix_width_conv = old_fix_width_conv;
 #endif
-	    fclose(f);
-	    Currentbuf->sourcefile = tmpf->ptr;
-	}
-	else {
-	    return;
-	}
+            fclose(f);
+            Currentbuf->sourcefile = tmpf->ptr;
+        }
+        else {
+            return;
+        }
     }
 
     buf = newBuffer(INIT_BUFFER_WIDTH);
 
     if (is_html_type(Currentbuf->type)) {
-	buf->type = "text/plain";
-	if (Currentbuf->real_type &&
-	    is_html_type(Currentbuf->real_type))
-	    buf->real_type = "text/plain";
-	else
-	    buf->real_type = Currentbuf->real_type;
-	buf->buffername = Sprintf("source of %s", Currentbuf->buffername)->ptr;
-	buf->linkBuffer[LB_N_SOURCE] = Currentbuf;
-	Currentbuf->linkBuffer[LB_SOURCE] = buf;
+        buf->type = "text/plain";
+        if (Currentbuf->real_type &&
+            is_html_type(Currentbuf->real_type))
+            buf->real_type = "text/plain";
+        else
+            buf->real_type = Currentbuf->real_type;
+        buf->buffername = Sprintf("source of %s", Currentbuf->buffername)->ptr;
+        buf->linkBuffer[LB_N_SOURCE] = Currentbuf;
+        Currentbuf->linkBuffer[LB_SOURCE] = buf;
     }
     else if (!strcasecmp(Currentbuf->type, "text/plain")) {
-	buf->type = "text/html";
-	if (Currentbuf->real_type &&
-	    !strcasecmp(Currentbuf->real_type, "text/plain"))
-	    buf->real_type = "text/html";
-	else
-	    buf->real_type = Currentbuf->real_type;
-	buf->buffername = Sprintf("HTML view of %s",
-				  Currentbuf->buffername)->ptr;
-	buf->linkBuffer[LB_SOURCE] = Currentbuf;
-	Currentbuf->linkBuffer[LB_N_SOURCE] = buf;
+        buf->type = "text/html";
+        if (Currentbuf->real_type &&
+            !strcasecmp(Currentbuf->real_type, "text/plain"))
+            buf->real_type = "text/html";
+        else
+            buf->real_type = Currentbuf->real_type;
+        buf->buffername = Sprintf("HTML view of %s",
+                                  Currentbuf->buffername)->ptr;
+        buf->linkBuffer[LB_SOURCE] = Currentbuf;
+        Currentbuf->linkBuffer[LB_N_SOURCE] = buf;
     }
     else {
-	return;
+        return;
     }
     buf->currentURL = Currentbuf->currentURL;
     buf->real_scheme = Currentbuf->real_scheme;
@@ -1682,68 +1682,68 @@ DEFUN(reload, RELOAD, "Reload buffer")
     int multipart;
 
     if (Currentbuf->bufferprop & BP_INTERNAL) {
-	if (!strcmp(Currentbuf->buffername, DOWNLOAD_LIST_TITLE)) {
-	    ldDL();
-	    return;
-	}
-	/* FIXME: gettextize? */
-	disp_err_message("Can't reload...", TRUE);
-	return;
+        if (!strcmp(Currentbuf->buffername, DOWNLOAD_LIST_TITLE)) {
+            ldDL();
+            return;
+        }
+        /* FIXME: gettextize? */
+        disp_err_message("Can't reload...", TRUE);
+        return;
     }
     if (Currentbuf->currentURL.scheme == SCM_LOCAL &&
-	!strcmp(Currentbuf->currentURL.file, "-")) {
-	/* file is std input */
-	/* FIXME: gettextize? */
-	disp_err_message("Can't reload stdin", TRUE);
-	return;
+        !strcmp(Currentbuf->currentURL.file, "-")) {
+        /* file is std input */
+        /* FIXME: gettextize? */
+        disp_err_message("Can't reload stdin", TRUE);
+        return;
     }
     copyBuffer(&sbuf, Currentbuf);
     if (Currentbuf->bufferprop & BP_FRAME &&
-	(fbuf = Currentbuf->linkBuffer[LB_N_FRAME])) {
-	if (fmInitialized) {
-	    message("Rendering frame", 0, 0);
-	    refresh();
-	}
-	if (!(buf = renderFrame(fbuf, 1))) {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-	if (fbuf->linkBuffer[LB_FRAME]) {
-	    if (buf->sourcefile &&
-		fbuf->linkBuffer[LB_FRAME]->sourcefile &&
-		!strcmp(buf->sourcefile,
-			fbuf->linkBuffer[LB_FRAME]->sourcefile))
-		fbuf->linkBuffer[LB_FRAME]->sourcefile = NULL;
-	    delBuffer(fbuf->linkBuffer[LB_FRAME]);
-	}
-	fbuf->linkBuffer[LB_FRAME] = buf;
-	buf->linkBuffer[LB_N_FRAME] = fbuf;
-	pushBuffer(buf);
-	Currentbuf = buf;
-	if (Currentbuf->firstLine) {
-	    COPY_BUFROOT(Currentbuf, &sbuf);
-	    restorePosition(Currentbuf, &sbuf);
-	}
-	displayBuffer(Currentbuf, B_FORCE_REDRAW);
-	return;
+        (fbuf = Currentbuf->linkBuffer[LB_N_FRAME])) {
+        if (fmInitialized) {
+            message("Rendering frame", 0, 0);
+            refresh();
+        }
+        if (!(buf = renderFrame(fbuf, 1))) {
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
+        if (fbuf->linkBuffer[LB_FRAME]) {
+            if (buf->sourcefile &&
+                fbuf->linkBuffer[LB_FRAME]->sourcefile &&
+                !strcmp(buf->sourcefile,
+                        fbuf->linkBuffer[LB_FRAME]->sourcefile))
+                fbuf->linkBuffer[LB_FRAME]->sourcefile = NULL;
+            delBuffer(fbuf->linkBuffer[LB_FRAME]);
+        }
+        fbuf->linkBuffer[LB_FRAME] = buf;
+        buf->linkBuffer[LB_N_FRAME] = fbuf;
+        pushBuffer(buf);
+        Currentbuf = buf;
+        if (Currentbuf->firstLine) {
+            COPY_BUFROOT(Currentbuf, &sbuf);
+            restorePosition(Currentbuf, &sbuf);
+        }
+        displayBuffer(Currentbuf, B_FORCE_REDRAW);
+        return;
     }
     else if (Currentbuf->frameset != NULL)
-	fbuf = Currentbuf->linkBuffer[LB_FRAME];
+        fbuf = Currentbuf->linkBuffer[LB_FRAME];
     multipart = 0;
     if (Currentbuf->form_submit) {
-	request = Currentbuf->form_submit->parent;
-	if (request->method == FORM_METHOD_POST
-	    && request->enctype == FORM_ENCTYPE_MULTIPART) {
-	    Str query;
-	    struct stat st;
-	    multipart = 1;
-	    query_from_followform(&query, Currentbuf->form_submit, multipart);
-	    stat(request->body, &st);
-	    request->length = st.st_size;
-	}
+        request = Currentbuf->form_submit->parent;
+        if (request->method == FORM_METHOD_POST
+            && request->enctype == FORM_ENCTYPE_MULTIPART) {
+            Str query;
+            struct stat st;
+            multipart = 1;
+            query_from_followform(&query, Currentbuf->form_submit, multipart);
+            stat(request->body, &st);
+            request->length = st.st_size;
+        }
     }
     else {
-	request = NULL;
+        request = NULL;
     }
     url = parsedURL2Str(&Currentbuf->currentURL);
     /* FIXME: gettextize? */
@@ -1752,7 +1752,7 @@ DEFUN(reload, RELOAD, "Reload buffer")
 #ifdef USE_M17N
     old_charset = DocumentCharset;
     if (Currentbuf->document_charset != WC_CES_US_ASCII)
-	DocumentCharset = Currentbuf->document_charset;
+        DocumentCharset = Currentbuf->document_charset;
 #endif
     SearchHeader = Currentbuf->search_header;
     DefaultType = Currentbuf->real_type;
@@ -1764,33 +1764,33 @@ DEFUN(reload, RELOAD, "Reload buffer")
     DefaultType = NULL;
 
     if (multipart)
-	unlink(request->body);
+        unlink(request->body);
     if (buf == NULL) {
-	/* FIXME: gettextize? */
-	disp_err_message("Can't reload...", TRUE);
-	return;
+        /* FIXME: gettextize? */
+        disp_err_message("Can't reload...", TRUE);
+        return;
     }
     else if (buf == NO_BUFFER) {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
+        displayBuffer(Currentbuf, B_NORMAL);
+        return;
     }
     if (fbuf != NULL)
-	Firstbuf = deleteBuffer(Firstbuf, fbuf);
+        Firstbuf = deleteBuffer(Firstbuf, fbuf);
     repBuffer(Currentbuf, buf);
     if ((buf->type != NULL) && (sbuf.type != NULL) &&
-	((!strcasecmp(buf->type, "text/plain") &&
-	  is_html_type(sbuf.type)) ||
-	 (is_html_type(buf->type) &&
-	  !strcasecmp(sbuf.type, "text/plain")))) {
-	vwSrc();
-	if (Currentbuf != buf)
-	    Firstbuf = deleteBuffer(Firstbuf, buf);
+        ((!strcasecmp(buf->type, "text/plain") &&
+          is_html_type(sbuf.type)) ||
+         (is_html_type(buf->type) &&
+          !strcasecmp(sbuf.type, "text/plain")))) {
+        vwSrc();
+        if (Currentbuf != buf)
+            Firstbuf = deleteBuffer(Firstbuf, buf);
     }
     Currentbuf->search_header = sbuf.search_header;
     Currentbuf->form_submit = sbuf.form_submit;
     if (Currentbuf->firstLine) {
-	COPY_BUFROOT(Currentbuf, &sbuf);
-	restorePosition(Currentbuf, &sbuf);
+        COPY_BUFROOT(Currentbuf, &sbuf);
+        restorePosition(Currentbuf, &sbuf);
     }
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
@@ -1810,13 +1810,13 @@ DEFUN(docCSet, CHARSET, "Change the current document charset")
 
     cs = searchKeyData();
     if (cs == NULL || *cs == '\0')
-	/* FIXME: gettextize? */
-	cs = inputStr("Document charset: ",
-		      wc_ces_to_charset(Currentbuf->document_charset));
+        /* FIXME: gettextize? */
+        cs = inputStr("Document charset: ",
+                      wc_ces_to_charset(Currentbuf->document_charset));
     charset = wc_guess_charset_short(cs, 0);
     if (charset == 0) {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
+        displayBuffer(Currentbuf, B_NORMAL);
+        return;
     }
     _docCSet(charset);
 }
@@ -1828,12 +1828,12 @@ DEFUN(defCSet, DEFAULT_CHARSET, "Change the default document charset")
 
     cs = searchKeyData();
     if (cs == NULL || *cs == '\0')
-	/* FIXME: gettextize? */
-	cs = inputStr("Default document charset: ",
-		      wc_ces_to_charset(DocumentCharset));
+        /* FIXME: gettextize? */
+        cs = inputStr("Default document charset: ",
+                      wc_ces_to_charset(DocumentCharset));
     charset = wc_guess_charset_short(cs, 0);
     if (charset != 0)
-	DocumentCharset = charset;
+        DocumentCharset = charset;
     displayBuffer(Currentbuf, B_NORMAL);
 }
 
@@ -1849,7 +1849,7 @@ DEFUN(chkWORD, MARK_WORD, "Mark current word as anchor")
     int spos, epos;
     p = getCurWord(Currentbuf, &spos, &epos);
     if (p == NULL)
-	return;
+        return;
     reAnchorWord(Currentbuf, Currentbuf->currentLine, spos, epos);
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
@@ -1866,46 +1866,46 @@ DEFUN(rFrame, FRAME, "Render frame")
     Buffer *buf;
 
     if ((buf = Currentbuf->linkBuffer[LB_FRAME]) != NULL) {
-	Currentbuf = buf;
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
+        Currentbuf = buf;
+        displayBuffer(Currentbuf, B_NORMAL);
+        return;
     }
     if (Currentbuf->frameset == NULL) {
-	if ((buf = Currentbuf->linkBuffer[LB_N_FRAME]) != NULL) {
-	    Currentbuf = buf;
-	    displayBuffer(Currentbuf, B_NORMAL);
-	}
-	return;
+        if ((buf = Currentbuf->linkBuffer[LB_N_FRAME]) != NULL) {
+            Currentbuf = buf;
+            displayBuffer(Currentbuf, B_NORMAL);
+        }
+        return;
     }
     if (fmInitialized) {
-	message("Rendering frame", 0, 0);
-	refresh();
+        message("Rendering frame", 0, 0);
+        refresh();
     }
     buf = renderFrame(Currentbuf, 0);
     if (buf == NULL) {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
+        displayBuffer(Currentbuf, B_NORMAL);
+        return;
     }
     buf->linkBuffer[LB_N_FRAME] = Currentbuf;
     Currentbuf->linkBuffer[LB_FRAME] = buf;
     pushBuffer(buf);
     if (fmInitialized && display_ok())
-	displayBuffer(Currentbuf, B_FORCE_REDRAW);
+        displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
 
 DEFUN(extbrz, EXTERN, "Execute external browser")
 {
     if (Currentbuf->bufferprop & BP_INTERNAL) {
-	/* FIXME: gettextize? */
-	disp_err_message("Can't browse...", TRUE);
-	return;
+        /* FIXME: gettextize? */
+        disp_err_message("Can't browse...", TRUE);
+        return;
     }
     if (Currentbuf->currentURL.scheme == SCM_LOCAL &&
-	!strcmp(Currentbuf->currentURL.file, "-")) {
-	/* file is std input */
-	/* FIXME: gettextize? */
-	disp_err_message("Can't browse stdin", TRUE);
-	return;
+        !strcmp(Currentbuf->currentURL.file, "-")) {
+        /* file is std input */
+        /* FIXME: gettextize? */
+        disp_err_message("Can't browse stdin", TRUE);
+        return;
     }
     invoke_browser(parsedURL2Str(&Currentbuf->currentURL)->ptr);
 }
@@ -1916,10 +1916,10 @@ DEFUN(linkbrz, EXTERN_LINK, "View current link using external browser")
     ParsedURL pu;
 
     if (Currentbuf->firstLine == NULL)
-	return;
+        return;
     a = retrieveCurrentAnchor(Currentbuf);
     if (a == NULL)
-	return;
+        return;
     parseURL2(a->url, &pu, baseURL(Currentbuf));
     invoke_browser(parsedURL2Str(&pu)->ptr);
 }
@@ -1932,22 +1932,22 @@ DEFUN(curlno, LINE_INFO, "Show current line number")
     int cur = 0, all = 0, col = 0, len = 0;
 
     if (l != NULL) {
-	cur = l->real_linenumber;
-	col = l->bwidth + Currentbuf->currentColumn + Currentbuf->cursorX + 1;
-	while (l->next && l->next->bpos)
-	    l = l->next;
-	if (l->width < 0)
-	    l->width = COLPOS(l, l->len);
-	len = l->bwidth + l->width;
+        cur = l->real_linenumber;
+        col = l->bwidth + Currentbuf->currentColumn + Currentbuf->cursorX + 1;
+        while (l->next && l->next->bpos)
+            l = l->next;
+        if (l->width < 0)
+            l->width = COLPOS(l, l->len);
+        len = l->bwidth + l->width;
     }
     if (Currentbuf->lastLine)
-	all = Currentbuf->lastLine->real_linenumber;
+        all = Currentbuf->lastLine->real_linenumber;
     if (Currentbuf->pagerSource && !(Currentbuf->bufferprop & BP_CLOSE))
-	tmp = Sprintf("line %d col %d/%d", cur, col, len);
+        tmp = Sprintf("line %d col %d/%d", cur, col, len);
     else
-	tmp = Sprintf("line %d/%d (%d%%) col %d/%d", cur, all,
-		      (int)((double)cur * 100.0 / (double)(all ? all : 1)
-			    + 0.5), col, len);
+        tmp = Sprintf("line %d/%d (%d%%) col %d/%d", cur, all,
+                      (int)((double)cur * 100.0 / (double)(all ? all : 1)
+                            + 0.5), col, len);
 #ifdef USE_M17N
     Strcat_charp(tmp, "  ");
     Strcat_charp(tmp, wc_ces_to_charset_desc(Currentbuf->document_charset));
@@ -1959,9 +1959,9 @@ DEFUN(curlno, LINE_INFO, "Show current line number")
 DEFUN(dispI, DISPLAY_IMAGE, "Restart loading and drawing of images")
 {
     if (!displayImage)
-	initImage();
+        initImage();
     if (!activeImage)
-	return;
+        return;
     displayImage = TRUE;
     /*
      * if (!(Currentbuf->type && is_html_type(Currentbuf->type)))
@@ -1975,7 +1975,7 @@ DEFUN(dispI, DISPLAY_IMAGE, "Restart loading and drawing of images")
 DEFUN(stopI, STOP_IMAGE, "Stop loading and drawing of images")
 {
     if (!activeImage)
-	return;
+        return;
     /*
      * if (!(Currentbuf->type && is_html_type(Currentbuf->type)))
      * return;
@@ -1987,10 +1987,10 @@ DEFUN(stopI, STOP_IMAGE, "Stop loading and drawing of images")
 DEFUN(msToggle, MOUSE_TOGGLE, "Toggle activity of mouse")
 {
     if (use_mouse) {
-	use_mouse = FALSE;
+        use_mouse = FALSE;
     }
     else {
-	use_mouse = TRUE;
+        use_mouse = TRUE;
     }
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
@@ -2002,35 +2002,35 @@ DEFUN(mouse, MOUSE, "mouse operation")
     btn = (unsigned char)getch() - 32;
 #if defined(__CYGWIN__) && CYGWIN_VERSION_DLL_MAJOR < 1005
     if (cygwin_mouse_btn_swapped) {
-	if (btn == MOUSE_BTN2_DOWN)
-	    btn = MOUSE_BTN3_DOWN;
-	else if (btn == MOUSE_BTN3_DOWN)
-	    btn = MOUSE_BTN2_DOWN;
+        if (btn == MOUSE_BTN2_DOWN)
+            btn = MOUSE_BTN3_DOWN;
+        else if (btn == MOUSE_BTN3_DOWN)
+            btn = MOUSE_BTN2_DOWN;
     }
 #endif
     x = (unsigned char)getch() - 33;
     if (x < 0)
-	x += 0x100;
+        x += 0x100;
     y = (unsigned char)getch() - 33;
     if (y < 0)
-	y += 0x100;
+        y += 0x100;
 
     if (x < 0 || x >= COLS || y < 0 || y > LASTLINE)
-	return;
+        return;
     process_mouse(btn, x, y);
 }
 
 DEFUN(movMs, MOVE_MOUSE, "Move cursor to mouse cursor (for mouse action)")
 {
     if (!mouse_action.in_action)
-	return;
+        return;
     if ((nTab > 1 || mouse_action.menu_str) &&
-	mouse_action.cursorY < LastTab->y + 1)
-	return;
+        mouse_action.cursorY < LastTab->y + 1)
+        return;
     else if (mouse_action.cursorX >= Currentbuf->rootX &&
-	     mouse_action.cursorY < LASTLINE) {
-	cursorXY(Currentbuf, mouse_action.cursorX - Currentbuf->rootX,
-		 mouse_action.cursorY - Currentbuf->rootY);
+             mouse_action.cursorY < LASTLINE) {
+        cursorXY(Currentbuf, mouse_action.cursorX - Currentbuf->rootX,
+                 mouse_action.cursorY - Currentbuf->rootY);
     }
     displayBuffer(Currentbuf, B_NORMAL);
 }
@@ -2044,15 +2044,15 @@ DEFUN(movMs, MOVE_MOUSE, "Move cursor to mouse cursor (for mouse action)")
 DEFUN(menuMs, MENU_MOUSE, "Popup menu at mouse cursor (for mouse action)")
 {
     if (!mouse_action.in_action)
-	return;
+        return;
     if ((nTab > 1 || mouse_action.menu_str) &&
-	mouse_action.cursorY < LastTab->y + 1)
-	mouse_action.cursorX -= FRAME_WIDTH + 1;
+        mouse_action.cursorY < LastTab->y + 1)
+        mouse_action.cursorX -= FRAME_WIDTH + 1;
     else if (mouse_action.cursorX >= Currentbuf->rootX &&
-	     mouse_action.cursorY < LASTLINE) {
-	cursorXY(Currentbuf, mouse_action.cursorX - Currentbuf->rootX,
-		 mouse_action.cursorY - Currentbuf->rootY);
-	displayBuffer(Currentbuf, B_NORMAL);
+             mouse_action.cursorY < LASTLINE) {
+        cursorXY(Currentbuf, mouse_action.cursorX - Currentbuf->rootX,
+                 mouse_action.cursorY - Currentbuf->rootY);
+        displayBuffer(Currentbuf, B_NORMAL);
     }
     mainMn();
 }
@@ -2062,10 +2062,10 @@ DEFUN(tabMs, TAB_MOUSE, "Move to tab on mouse cursor (for mouse action)")
     TabBuffer *tab;
 
     if (!mouse_action.in_action)
-	return;
+        return;
     tab = posTab(mouse_action.cursorX, mouse_action.cursorY);
     if (!tab || tab == NO_TABBUFFER)
-	return;
+        return;
     CurrentTab = tab;
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
@@ -2076,10 +2076,10 @@ DEFUN(closeTMs, CLOSE_TAB_MOUSE,
     TabBuffer *tab;
 
     if (!mouse_action.in_action)
-	return;
+        return;
     tab = posTab(mouse_action.cursorX, mouse_action.cursorY);
     if (!tab || tab == NO_TABBUFFER)
-	return;
+        return;
     deleteTab(tab);
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
@@ -2092,14 +2092,14 @@ DEFUN(dispVer, VERSION, "Display version of w3m")
 DEFUN(wrapToggle, WRAP_TOGGLE, "Toggle wrap search mode")
 {
     if (WrapSearch) {
-	WrapSearch = FALSE;
-	/* FIXME: gettextize? */
-	disp_message("Wrap search off", TRUE);
+        WrapSearch = FALSE;
+        /* FIXME: gettextize? */
+        disp_message("Wrap search off", TRUE);
     }
     else {
-	WrapSearch = TRUE;
-	/* FIXME: gettextize? */
-	disp_message("Wrap search on", TRUE);
+        WrapSearch = TRUE;
+        /* FIXME: gettextize? */
+        disp_message("Wrap search on", TRUE);
     }
 }
 
@@ -2122,37 +2122,37 @@ DEFUN(execCmd, COMMAND, "Execute w3m command(s)")
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
     data = searchKeyData();
     if (data == NULL || *data == '\0') {
-	data = inputStrHist("command [; ...]: ", "", TextHist);
-	if (data == NULL) {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
+        data = inputStrHist("command [; ...]: ", "", TextHist);
+        if (data == NULL) {
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
     }
     /* data: FUNC [DATA] [; FUNC [DATA] ...] */
     while (*data) {
-	SKIP_BLANKS(data);
-	if (*data == ';') {
-	    data++;
-	    continue;
-	}
-	p = getWord(&data);
-	cmd = getFuncList(p);
-	if (cmd < 0)
-	    break;
-	p = getQWord(&data);
-	CurrentKey = -1;
-	CurrentKeyData = NULL;
-	CurrentCmdData = *p ? p : NULL;
+        SKIP_BLANKS(data);
+        if (*data == ';') {
+            data++;
+            continue;
+        }
+        p = getWord(&data);
+        cmd = getFuncList(p);
+        if (cmd < 0)
+            break;
+        p = getQWord(&data);
+        CurrentKey = -1;
+        CurrentKeyData = NULL;
+        CurrentCmdData = *p ? p : NULL;
 #ifdef USE_MOUSE
-	if (use_mouse)
-	    mouse_inactive();
+        if (use_mouse)
+            mouse_inactive();
 #endif
-	w3mFuncList[cmd].func();
+        w3mFuncList[cmd].func();
 #ifdef USE_MOUSE
-	if (use_mouse)
-	    mouse_active();
+        if (use_mouse)
+            mouse_active();
 #endif
-	CurrentCmdData = NULL;
+        CurrentCmdData = NULL;
     }
     displayBuffer(Currentbuf, B_NORMAL);
 }
@@ -2165,25 +2165,25 @@ DEFUN(setAlarm, ALARM, "Set alarm")
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
     data = searchKeyData();
     if (data == NULL || *data == '\0') {
-	data = inputStrHist("(Alarm)sec command: ", "", TextHist);
-	if (data == NULL) {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
+        data = inputStrHist("(Alarm)sec command: ", "", TextHist);
+        if (data == NULL) {
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
     }
     if (*data != '\0') {
-	sec = atoi(getWord(&data));
-	if (sec > 0)
-	    cmd = getFuncList(getWord(&data));
+        sec = atoi(getWord(&data));
+        if (sec > 0)
+            cmd = getFuncList(getWord(&data));
     }
     if (cmd >= 0) {
-	data = getQWord(&data);
-	setAlarmEvent(DefaultAlarm(), sec, AL_EXPLICIT, cmd, data);
-	disp_message_nsec(Sprintf("%dsec %s %s", sec, w3mFuncList[cmd].id,
-				  data)->ptr, FALSE, 1, FALSE, TRUE);
+        data = getQWord(&data);
+        setAlarmEvent(DefaultAlarm(), sec, AL_EXPLICIT, cmd, data);
+        disp_message_nsec(Sprintf("%dsec %s %s", sec, w3mFuncList[cmd].id,
+                                  data)->ptr, FALSE, 1, FALSE, TRUE);
     }
     else {
-	setAlarmEvent(DefaultAlarm(), 0, AL_UNSET, FUNCNAME_nulcmd, NULL);
+        setAlarmEvent(DefaultAlarm(), 0, AL_UNSET, FUNCNAME_nulcmd, NULL);
     }
     displayBuffer(Currentbuf, B_NORMAL);
 }
@@ -2193,68 +2193,68 @@ DEFUN(reinit, REINIT, "Reload configuration files")
     char *resource = searchKeyData();
 
     if (resource == NULL) {
-	init_rc();
-	sync_with_option();
+        init_rc();
+        sync_with_option();
 #ifdef USE_COOKIE
-	initCookie();
+        initCookie();
 #endif
-	displayBuffer(Currentbuf, B_REDRAW_IMAGE);
-	return;
+        displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+        return;
     }
 
     if (!strcasecmp(resource, "CONFIG") || !strcasecmp(resource, "RC")) {
-	init_rc();
-	sync_with_option();
-	displayBuffer(Currentbuf, B_REDRAW_IMAGE);
-	return;
+        init_rc();
+        sync_with_option();
+        displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+        return;
     }
 
 #ifdef USE_COOKIE
     if (!strcasecmp(resource, "COOKIE")) {
-	initCookie();
-	return;
+        initCookie();
+        return;
     }
 #endif
 
     if (!strcasecmp(resource, "KEYMAP")) {
-	initKeymap(TRUE);
-	return;
+        initKeymap(TRUE);
+        return;
     }
 
     if (!strcasecmp(resource, "MAILCAP")) {
-	initMailcap();
-	return;
+        initMailcap();
+        return;
     }
 
 #ifdef USE_MOUSE
     if (!strcasecmp(resource, "MOUSE")) {
-	initMouseAction();
-	displayBuffer(Currentbuf, B_REDRAW_IMAGE);
-	return;
+        initMouseAction();
+        displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+        return;
     }
 #endif
 
 #ifdef USE_MENU
     if (!strcasecmp(resource, "MENU")) {
-	initMenu();
-	return;
+        initMenu();
+        return;
     }
 #endif
 
     if (!strcasecmp(resource, "MIMETYPES")) {
-	initMimeTypes();
-	return;
+        initMimeTypes();
+        return;
     }
 
 #ifdef USE_EXTERNAL_URI_LOADER
     if (!strcasecmp(resource, "URIMETHODS")) {
-	initURIMethods();
-	return;
+        initURIMethods();
+        return;
     }
 #endif
 
     disp_err_message(Sprintf("Don't know how to reinitialize '%s'", resource)->
-		     ptr, FALSE);
+                     ptr, FALSE);
 }
 
 DEFUN(defKey, DEFINE_KEY,
@@ -2265,11 +2265,11 @@ DEFUN(defKey, DEFINE_KEY,
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
     data = searchKeyData();
     if (data == NULL || *data == '\0') {
-	data = inputStrHist("Key definition: ", "", TextHist);
-	if (data == NULL || *data == '\0') {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
+        data = inputStrHist("Key definition: ", "", TextHist);
+        if (data == NULL || *data == '\0') {
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
     }
     setKeymap(allocStr(data, -1), -1, TRUE);
     displayBuffer(Currentbuf, B_NORMAL);
@@ -2286,13 +2286,13 @@ DEFUN(closeT, CLOSE_TAB, "Close current tab")
     TabBuffer *tab;
 
     if (nTab <= 1)
-	return;
+        return;
     if (prec_num)
-	tab = numTab(PREC_NUM());
+        tab = numTab(PREC_NUM());
     else
-	tab = CurrentTab;
+        tab = CurrentTab;
     if (tab)
-	deleteTab(tab);
+        deleteTab(tab);
     displayBuffer(Currentbuf, B_REDRAW_IMAGE);
 }
 
@@ -2301,12 +2301,12 @@ DEFUN(nextT, NEXT_TAB, "Move to next tab")
     int i;
 
     if (nTab <= 1)
-	return;
+        return;
     for (i = 0; i < PREC_NUM(); i++) {
-	if (CurrentTab->nextTab)
-	    CurrentTab = CurrentTab->nextTab;
-	else
-	    CurrentTab = FirstTab;
+        if (CurrentTab->nextTab)
+            CurrentTab = CurrentTab->nextTab;
+        else
+            CurrentTab = FirstTab;
     }
     displayBuffer(Currentbuf, B_REDRAW_IMAGE);
 }
@@ -2316,12 +2316,12 @@ DEFUN(prevT, PREV_TAB, "Move to previous tab")
     int i;
 
     if (nTab <= 1)
-	return;
+        return;
     for (i = 0; i < PREC_NUM(); i++) {
-	if (CurrentTab->prevTab)
-	    CurrentTab = CurrentTab->prevTab;
-	else
-	    CurrentTab = LastTab;
+        if (CurrentTab->prevTab)
+            CurrentTab = CurrentTab->prevTab;
+        else
+            CurrentTab = LastTab;
     }
     displayBuffer(Currentbuf, B_REDRAW_IMAGE);
 }
@@ -2334,13 +2334,13 @@ DEFUN(tabA, TAB_LINK, "Open current link on new tab")
 DEFUN(tabURL, TAB_GOTO, "Open URL on new tab")
 {
     tabURL0(prec_num() ? numTab(PREC_NUM()) : NULL,
-	    "Goto URL on new tab: ", FALSE);
+            "Goto URL on new tab: ", FALSE);
 }
 
 DEFUN(tabrURL, TAB_GOTO_RELATIVE, "Open relative URL on new tab")
 {
     tabURL0(prec_num() ? numTab(PREC_NUM()) : NULL,
-	    "Goto relative URL on new tab: ", TRUE);
+            "Goto relative URL on new tab: ", TRUE);
 }
 
 DEFUN(tabR, TAB_RIGHT, "Move current tab right")
@@ -2349,7 +2349,7 @@ DEFUN(tabR, TAB_RIGHT, "Move current tab right")
     int i;
 
     for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
-	 tab = tab->nextTab, i++) ;
+         tab = tab->nextTab, i++) ;
     moveTab(CurrentTab, tab ? tab : LastTab, TRUE);
 }
 
@@ -2359,7 +2359,7 @@ DEFUN(tabL, TAB_LEFT, "Move current tab left")
     int i;
 
     for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
-	 tab = tab->prevTab, i++) ;
+         tab = tab->prevTab, i++) ;
     moveTab(CurrentTab, tab ? tab : FirstTab, FALSE);
 }
 
@@ -2373,44 +2373,44 @@ DEFUN(ldDL, DOWNLOAD_LIST, "Display download list panel")
 #endif
 
     if (Currentbuf->bufferprop & BP_INTERNAL &&
-	!strcmp(Currentbuf->buffername, DOWNLOAD_LIST_TITLE))
-	replace = TRUE;
+        !strcmp(Currentbuf->buffername, DOWNLOAD_LIST_TITLE))
+        replace = TRUE;
     if (!FirstDL) {
-	if (replace) {
-	    if (Currentbuf == Firstbuf && Currentbuf->nextBuffer == NULL) {
-		if (nTab > 1)
-		    deleteTab(CurrentTab);
-	    }
-	    else
-		delBuffer(Currentbuf);
-	    displayBuffer(Currentbuf, B_FORCE_REDRAW);
-	}
-	return;
+        if (replace) {
+            if (Currentbuf == Firstbuf && Currentbuf->nextBuffer == NULL) {
+                if (nTab > 1)
+                    deleteTab(CurrentTab);
+            }
+            else
+                delBuffer(Currentbuf);
+            displayBuffer(Currentbuf, B_FORCE_REDRAW);
+        }
+        return;
     }
 #ifdef USE_ALARM
     reload = checkDownloadList();
 #endif
     buf = DownloadListBuffer();
     if (!buf) {
-	displayBuffer(Currentbuf, B_NORMAL);
-	return;
+        displayBuffer(Currentbuf, B_NORMAL);
+        return;
     }
     buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
     if (replace) {
-	COPY_BUFROOT(buf, Currentbuf);
-	restorePosition(buf, Currentbuf);
+        COPY_BUFROOT(buf, Currentbuf);
+        restorePosition(buf, Currentbuf);
     }
     if (!replace && open_tab_dl_list) {
-	_newT();
-	new_tab = TRUE;
+        _newT();
+        new_tab = TRUE;
     }
     pushBuffer(buf);
     if (replace || new_tab)
-	deletePrevBuf();
+        deletePrevBuf();
 #ifdef USE_ALARM
     if (reload)
-	Currentbuf->event = setAlarmEvent(Currentbuf->event, 1, AL_IMPLICIT,
-					  FUNCNAME_reload, NULL);
+        Currentbuf->event = setAlarmEvent(Currentbuf->event, 1, AL_IMPLICIT,
+                                          FUNCNAME_reload, NULL);
 #endif
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
@@ -2421,9 +2421,9 @@ DEFUN(undoPos, UNDO, "Cancel the last cursor movement")
     int i;
 
     if (!Currentbuf->firstLine)
-	return;
+        return;
     if (!b || !b->prev)
-	return;
+        return;
     for (i = 0; i < PREC_NUM() && b->prev; i++, b = b->prev) ;
     resetPos(b);
 }
@@ -2434,9 +2434,9 @@ DEFUN(redoPos, REDO, "Cancel the last undo")
     int i;
 
     if (!Currentbuf->firstLine)
-	return;
+        return;
     if (!b || !b->next)
-	return;
+        return;
     for (i = 0; i < PREC_NUM() && b->next; i++, b = b->next) ;
     resetPos(b);
 }
