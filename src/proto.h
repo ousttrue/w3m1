@@ -5,7 +5,7 @@
  *
  *   Created: Wed Feb 10 12:47:03 1999
  */
-extern int main(int argc, char **argv, char **envp);
+
 extern void nulcmd(void);
 extern MySignalHandler intTrap(SIGNAL_ARG);
 extern void pgFore(void);

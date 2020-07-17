@@ -71,6 +71,34 @@ w3mも動いた。
 まず、DEFUN(1200行から6000行くらい？) を `defun.c` と `public.c` に分離する。
 `main.cpp` が 1800行くらいになった。
 
+## mainloop
+
+だいたいこんな感じ
+
+```c
+while(true)
+{
+    // ここで入力をブロックする
+    {
+        do
+        {
+            if (need_resize_screen())
+                resize_screen();
+        } while (sleep_till_anykey(1, 0) <= 0);
+    }
+    auto c = getch();
+    keyPressEventProc(c); // keymap に応じた関数の実行
+}
+```
+
+## データ構造
+
+tabs
+tab
+buffer
+line
+lineprops
+
 ## コード生成。mktable
 
 | ファイル     | 生成方法          | 入力           | 備考                                                   |
