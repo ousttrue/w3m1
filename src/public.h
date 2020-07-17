@@ -119,3 +119,4 @@ void escdmap(char c);
 void pushEvent(int cmd, void *data);
 int ProcessEvent();
 void keyPressEventProc(int c);
+Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);
