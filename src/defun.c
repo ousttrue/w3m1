@@ -1405,3 +1405,132 @@ DEFUN(movlistMn, MOVE_LIST_MENU,
 {
     anchorMn(list_menu, FALSE);
 }
+
+/* link,anchor,image list */
+DEFUN(linkLst, LIST, "Show all links and images")
+{
+    Buffer *buf;
+
+    buf = link_list_panel(Currentbuf);
+    if (buf != NULL) {
+#ifdef USE_M17N
+	buf->document_charset = Currentbuf->document_charset;
+#endif
+	cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
+    }
+}
+
+/* cookie list */
+DEFUN(cooLst, COOKIE, "View cookie list")
+{
+    Buffer *buf;
+
+    buf = cookie_list_panel();
+    if (buf != NULL)
+	cmd_loadBuffer(buf, BP_NO_URL, LB_NOLINK);
+}
+
+/* History page */
+DEFUN(ldHist, HISTORY, "View history of URL")
+{
+    cmd_loadBuffer(historyBuffer(URLHist), BP_NO_URL, LB_NOLINK);
+}
+
+/* download HREF link */
+DEFUN(svA, SAVE_LINK, "Save link to file")
+{
+    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    do_download = TRUE;
+    followA();
+    do_download = FALSE;
+}
+
+/* download IMG link */
+DEFUN(svI, SAVE_IMAGE, "Save image to file")
+{
+    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    do_download = TRUE;
+    followI();
+    do_download = FALSE;
+}
+
+/* save buffer */
+DEFUN(svBuf, PRINT SAVE_SCREEN, "Save rendered document to file")
+{
+    char *qfile = NULL, *file;
+    FILE *f;
+    int is_pipe;
+
+    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    file = searchKeyData();
+    if (file == NULL || *file == '\0') {
+	/* FIXME: gettextize? */
+	qfile = inputLineHist("Save buffer to: ", NULL, IN_COMMAND, SaveHist);
+	if (qfile == NULL || *qfile == '\0') {
+	    displayBuffer(Currentbuf, B_NORMAL);
+	    return;
+	}
+    }
+    file = conv_to_system(qfile ? qfile : file);
+    if (*file == '|') {
+	is_pipe = TRUE;
+	f = popen(file + 1, "w");
+    }
+    else {
+	if (qfile) {
+	    file = unescape_spaces(Strnew_charp(qfile))->ptr;
+	    file = conv_to_system(file);
+	}
+	file = expandPath(file);
+	if (checkOverWrite(file) < 0) {
+	    displayBuffer(Currentbuf, B_NORMAL);
+	    return;
+	}
+	f = fopen(file, "w");
+	is_pipe = FALSE;
+    }
+    if (f == NULL) {
+	/* FIXME: gettextize? */
+	char *emsg = Sprintf("Can't open %s", conv_from_system(file))->ptr;
+	disp_err_message(emsg, TRUE);
+	return;
+    }
+    saveBuffer(Currentbuf, f, TRUE);
+    if (is_pipe)
+	pclose(f);
+    else
+	fclose(f);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* save source */
+DEFUN(svSrc, DOWNLOAD SAVE, "Save document source to file")
+{
+    char *file;
+
+    if (Currentbuf->sourcefile == NULL)
+	return;
+    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
+    PermitSaveToPipe = TRUE;
+    if (Currentbuf->real_scheme == SCM_LOCAL)
+	file = conv_from_system(guess_save_name(NULL,
+						Currentbuf->currentURL.
+						real_file));
+    else
+	file = guess_save_name(Currentbuf, Currentbuf->currentURL.file);
+    doFileCopy(Currentbuf->sourcefile, file);
+    PermitSaveToPipe = FALSE;
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* peek URL */
+DEFUN(peekURL, PEEK_LINK, "Peek link URL")
+{
+    _peekURL(0);
+}
+
+/* peek URL of image */
+DEFUN(peekIMG, PEEK_IMG, "Peek image URL")
+{
+    _peekURL(1);
+}

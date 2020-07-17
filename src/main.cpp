@@ -84,7 +84,6 @@ void show_params(FILE * fp);
 static int display_ok = FALSE;
 
 
-int prev_key = -1;
 static int add_download_list = FALSE;
 
 void set_buffer_environ(Buffer *);
@@ -1131,7 +1130,7 @@ main(int argc, char **argv, char **envp)
 		set_prec_num(0);
 	    }
 	}
-	prev_key = CurrentKey;
+	set_prev_key(CurrentKey);
 	CurrentKey = -1;
 	CurrentKeyData = NULL;
     }
@@ -1306,198 +1305,6 @@ follow_map(struct parsed_tagarg *arg)
 #endif
 }
 
-/* link,anchor,image list */
-DEFUN(linkLst, LIST, "Show all links and images")
-{
-    Buffer *buf;
-
-    buf = link_list_panel(Currentbuf);
-    if (buf != NULL) {
-#ifdef USE_M17N
-	buf->document_charset = Currentbuf->document_charset;
-#endif
-	cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
-    }
-}
-
-#ifdef USE_COOKIE
-/* cookie list */
-DEFUN(cooLst, COOKIE, "View cookie list")
-{
-    Buffer *buf;
-
-    buf = cookie_list_panel();
-    if (buf != NULL)
-	cmd_loadBuffer(buf, BP_NO_URL, LB_NOLINK);
-}
-#endif				/* USE_COOKIE */
-
-#ifdef USE_HISTORY
-/* History page */
-DEFUN(ldHist, HISTORY, "View history of URL")
-{
-    cmd_loadBuffer(historyBuffer(URLHist), BP_NO_URL, LB_NOLINK);
-}
-#endif				/* USE_HISTORY */
-
-/* download HREF link */
-DEFUN(svA, SAVE_LINK, "Save link to file")
-{
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    do_download = TRUE;
-    followA();
-    do_download = FALSE;
-}
-
-/* download IMG link */
-DEFUN(svI, SAVE_IMAGE, "Save image to file")
-{
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    do_download = TRUE;
-    followI();
-    do_download = FALSE;
-}
-
-/* save buffer */
-DEFUN(svBuf, PRINT SAVE_SCREEN, "Save rendered document to file")
-{
-    char *qfile = NULL, *file;
-    FILE *f;
-    int is_pipe;
-
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    file = searchKeyData();
-    if (file == NULL || *file == '\0') {
-	/* FIXME: gettextize? */
-	qfile = inputLineHist("Save buffer to: ", NULL, IN_COMMAND, SaveHist);
-	if (qfile == NULL || *qfile == '\0') {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-    }
-    file = conv_to_system(qfile ? qfile : file);
-    if (*file == '|') {
-	is_pipe = TRUE;
-	f = popen(file + 1, "w");
-    }
-    else {
-	if (qfile) {
-	    file = unescape_spaces(Strnew_charp(qfile))->ptr;
-	    file = conv_to_system(file);
-	}
-	file = expandPath(file);
-	if (checkOverWrite(file) < 0) {
-	    displayBuffer(Currentbuf, B_NORMAL);
-	    return;
-	}
-	f = fopen(file, "w");
-	is_pipe = FALSE;
-    }
-    if (f == NULL) {
-	/* FIXME: gettextize? */
-	char *emsg = Sprintf("Can't open %s", conv_from_system(file))->ptr;
-	disp_err_message(emsg, TRUE);
-	return;
-    }
-    saveBuffer(Currentbuf, f, TRUE);
-    if (is_pipe)
-	pclose(f);
-    else
-	fclose(f);
-    displayBuffer(Currentbuf, B_NORMAL);
-}
-
-/* save source */
-DEFUN(svSrc, DOWNLOAD SAVE, "Save document source to file")
-{
-    char *file;
-
-    if (Currentbuf->sourcefile == NULL)
-	return;
-    CurrentKeyData = NULL;	/* not allowed in w3m-control: */
-    PermitSaveToPipe = TRUE;
-    if (Currentbuf->real_scheme == SCM_LOCAL)
-	file = conv_from_system(guess_save_name(NULL,
-						Currentbuf->currentURL.
-						real_file));
-    else
-	file = guess_save_name(Currentbuf, Currentbuf->currentURL.file);
-    doFileCopy(Currentbuf->sourcefile, file);
-    PermitSaveToPipe = FALSE;
-    displayBuffer(Currentbuf, B_NORMAL);
-}
-
-static void
-_peekURL(int only_img)
-{
-
-    Anchor *a;
-    ParsedURL pu;
-    static Str s = NULL;
-#ifdef USE_M17N
-    static Lineprop *p = NULL;
-    Lineprop *pp;
-#endif
-    static int offset = 0, n;
-
-    if (Currentbuf->firstLine == NULL)
-	return;
-    if (CurrentKey == prev_key && s != NULL) {
-	if (s->length - offset >= COLS)
-	    offset++;
-	else if (s->length <= offset)	/* bug ? */
-	    offset = 0;
-	goto disp;
-    }
-    else {
-	offset = 0;
-    }
-    s = NULL;
-    a = (only_img ? NULL : retrieveCurrentAnchor(Currentbuf));
-    if (a == NULL) {
-	a = (only_img ? NULL : retrieveCurrentForm(Currentbuf));
-	if (a == NULL) {
-	    a = retrieveCurrentImg(Currentbuf);
-	    if (a == NULL)
-		return;
-	}
-	else
-	    s = Strnew_charp(form2str((FormItemList *)a->url));
-    }
-    if (s == NULL) {
-	parseURL2(a->url, &pu, baseURL(Currentbuf));
-	s = parsedURL2Str(&pu);
-    }
-    if (DecodeURL)
-	s = Strnew_charp(url_unquote_conv
-			 (s->ptr, Currentbuf->document_charset));
-#ifdef USE_M17N
-    s = checkType(s, &pp, NULL);
-    p = NewAtom_N(Lineprop, s->length);
-    bcopy((void *)pp, (void *)p, s->length * sizeof(Lineprop));
-#endif
-  disp:
-    n = searchKeyNum();
-    if (n > 1 && s->length > (n - 1) * (COLS - 1))
-	offset = (n - 1) * (COLS - 1);
-#ifdef USE_M17N
-    while (offset < s->length && p[offset] & PC_WCHAR2)
-	offset++;
-#endif
-    disp_message_nomouse(&s->ptr[offset], TRUE);
-}
-
-/* peek URL */
-DEFUN(peekURL, PEEK_LINK, "Peek link URL")
-{
-    _peekURL(0);
-}
-
-/* peek URL of image */
-DEFUN(peekIMG, PEEK_IMG, "Peek image URL")
-{
-    _peekURL(1);
-}
 
 /* show current URL */
 static Str
@@ -1519,7 +1326,7 @@ DEFUN(curURL, PEEK, "Peek current URL")
 
     if (Currentbuf->bufferprop & BP_INTERNAL)
 	return;
-    if (CurrentKey == prev_key && s != NULL) {
+    if (CurrentKey == prev_key() && s != NULL) {
 	if (s->length - offset >= COLS)
 	    offset++;
 	else if (s->length <= offset)	/* bug ? */

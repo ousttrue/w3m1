@@ -62,3 +62,6 @@ int checkBackBuffer(Buffer *buf);
 void goURL0(char *prompt, int relative);
 void cmd_loadBuffer(Buffer *buf, int prop, int linkid);
 void anchorMn(Anchor *(*menu_func)(Buffer *), int go);
+void _peekURL(int only_img);
+int prev_key();
+void set_prev_key(int key);
