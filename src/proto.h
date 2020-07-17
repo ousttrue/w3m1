@@ -397,13 +397,10 @@ extern struct frame_body *newFrame(struct parsed_tag *tag, Buffer *buf);
 extern struct frameset *newFrameSet(struct parsed_tag *tag);
 extern void deleteFrame(struct frame_body *b);
 extern void deleteFrameSet(struct frameset *f);
-extern void deleteFrameSetElement(union frameset_element e);
 extern struct frameset *copyFrameSet(struct frameset *of);
 extern void pushFrameTree(struct frameset_queue **fqpp, struct frameset *fs,
 			  Buffer *buf);
 extern struct frameset *popFrameTree(struct frameset_queue **fqpp);
-extern void resetFrameElement(union frameset_element *f_element, Buffer *buf,
-			      char *referer, FormList *request);
 extern Buffer *renderFrame(Buffer *Cbuf, int force_reload);
 extern union frameset_element *search_frame(struct frameset *fset, char *name);
 extern int set_tty(void);

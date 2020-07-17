@@ -6,19 +6,21 @@
 #include "html.h"
 #include "form.h"
 
-struct frame_element {
+struct frame_element
+{
     char attr;
-#define	F_UNLOADED	0x00
-#define	F_BODY		0x01
-#define	F_FRAMESET	0x02
+#define F_UNLOADED 0x00
+#define F_BODY 0x01
+#define F_FRAMESET 0x02
     char dummy;
     char *name;
 };
 
-struct frame_body {
+struct frame_body
+{
     char attr;
     char flags;
-#define	FB_NO_BUFFER	0x01
+#define FB_NO_BUFFER 0x01
     char *name;
     char *url;
     ParsedURL *baseURL;
@@ -38,7 +40,8 @@ union frameset_element {
     struct frameset *set;
 };
 
-struct frameset {
+struct frameset
+{
     char attr;
     char dummy;
     char *name;
@@ -51,7 +54,8 @@ struct frameset {
     union frameset_element *frame;
 };
 
-struct frameset_queue {
+struct frameset_queue
+{
     struct frameset_queue *next;
     struct frameset_queue *back;
     struct frameset *frameset;
@@ -65,4 +69,7 @@ struct frameset_queue {
 extern struct frameset *renderFrameSet;
 
 void addFrameSetElement(struct frameset *f,
-			       union frameset_element element);
+                        union frameset_element element);
+void deleteFrameSetElement(union frameset_element e);
+void resetFrameElement(union frameset_element *f_element, Buffer *buf,
+                       char *referer, FormList *request);
