@@ -24,10 +24,9 @@ typedef struct _FuncList
 
 char *getQWord(char **str);
 char *getWord(char **str);
-void setKeymap(char *p, int lineno, int verbose);
+
 void initKeymap(int force);
 int getFuncList(char *id);
 int getKey(char *s);
-char *getKeyData(int key);
 
 #endif /* not FUNC_H */

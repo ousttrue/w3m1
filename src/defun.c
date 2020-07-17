@@ -2248,7 +2248,7 @@ DEFUN(defKey, DEFINE_KEY,
             return;
         }
     }
-    setKeymap(allocStr(data, -1), -1, TRUE);
+    SetKeymap(allocStr(data, -1), -1, TRUE);
     displayBuffer(Currentbuf, B_NORMAL);
 }
 

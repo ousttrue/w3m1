@@ -403,28 +403,12 @@ static void mainloop()
             alarm(0);
         }
 #endif
-#ifdef USE_MOUSE
         if (use_mouse)
+        {
             mouse_inactive();
-#endif /* USE_MOUSE */
-        if (IS_ASCII(c))
-        { /* Ascii */
-            if (('0' <= c) && (c <= '9') &&
-                (prec_num() || (GlobalKeymap[c] == FUNCNAME_nulcmd)))
-            {
-                set_prec_num(prec_num() * 10 + (int)(c - '0'));
-                if (prec_num() > PREC_LIMIT())
-                    set_prec_num(PREC_LIMIT());
-            }
-            else
-            {
-                set_buffer_environ(Currentbuf);
-                save_buffer_position(Currentbuf);
-                KeyPressEventProc((int)c);
-                set_prec_num(0);
-            }
         }
-        CurrentKeyToPrev();
+
+        DispatchKey(c);
     }
 }
 

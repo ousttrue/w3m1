@@ -13,112 +13,11 @@
 #include "funcname.c"
 #include "functable.c"
 
-#define KEYDATA_HASH_SIZE 16
-static Hash_iv *keyData = NULL;
+
 static char keymap_initialized = FALSE;
 static struct stat sys_current_keymap_file;
 static struct stat current_keymap_file;
 
-void setKeymap(char *p, int lineno, int verbose)
-{
-	unsigned char *map = NULL;
-	char *s, *emsg;
-	int c, f;
-
-	s = getQWord(&p);
-	c = getKey(s);
-	if (c < 0)
-	{ /* error */
-		if (lineno > 0)
-			/* FIXME: gettextize? */
-			emsg = Sprintf("line %d: unknown key '%s'", lineno, s)->ptr;
-		else
-			/* FIXME: gettextize? */
-			emsg = Sprintf("defkey: unknown key '%s'", s)->ptr;
-		record_err_message(emsg);
-		if (verbose)
-			disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
-		return;
-	}
-	s = getWord(&p);
-	f = getFuncList(s);
-	if (f < 0)
-	{
-		if (lineno > 0)
-			/* FIXME: gettextize? */
-			emsg = Sprintf("line %d: invalid command '%s'", lineno, s)->ptr;
-		else
-			/* FIXME: gettextize? */
-			emsg = Sprintf("defkey: invalid command '%s'", s)->ptr;
-		record_err_message(emsg);
-		if (verbose)
-			disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
-		return;
-	}
-	if (c & K_MULTI)
-	{
-		unsigned char **mmap = NULL;
-		int i, j, m = MultiKey(c);
-
-		if (m & K_ESCD)
-			map = EscDKeymap;
-		else if (m & K_ESCB)
-			map = EscBKeymap;
-		else if (m & K_ESC)
-			map = EscKeymap;
-		else
-			map = GlobalKeymap;
-		if (map[m & 0x7F] == FUNCNAME_multimap)
-			mmap = (unsigned char **)getKeyData(m);
-		else
-			map[m & 0x7F] = FUNCNAME_multimap;
-		if (!mmap)
-		{
-			mmap = New_N(unsigned char *, 4);
-			for (i = 0; i < 4; i++)
-			{
-				mmap[i] = New_N(unsigned char, 128);
-				for (j = 0; j < 128; j++)
-					mmap[i][j] = FUNCNAME_nulcmd;
-			}
-			mmap[0][ESC_CODE] = FUNCNAME_escmap;
-			mmap[1]['['] = FUNCNAME_escbmap;
-			mmap[1]['O'] = FUNCNAME_escbmap;
-		}
-		if (keyData == NULL)
-			keyData = newHash_iv(KEYDATA_HASH_SIZE);
-		putHash_iv(keyData, m, (void *)mmap);
-		if (c & K_ESCD)
-			map = mmap[3];
-		else if (c & K_ESCB)
-			map = mmap[2];
-		else if (c & K_ESC)
-			map = mmap[1];
-		else
-			map = mmap[0];
-	}
-	else
-	{
-		if (c & K_ESCD)
-			map = EscDKeymap;
-		else if (c & K_ESCB)
-			map = EscBKeymap;
-		else if (c & K_ESC)
-			map = EscKeymap;
-		else
-			map = GlobalKeymap;
-	}
-	map[c & 0x7F] = f;
-	s = getQWord(&p);
-	if (*s)
-	{
-		if (keyData == NULL)
-			keyData = newHash_iv(KEYDATA_HASH_SIZE);
-		putHash_iv(keyData, c, (void *)s);
-	}
-	else if (getKeyData(c))
-		putHash_iv(keyData, c, NULL);
-}
 
 static void
 interpret_keymap(FILE *kf, struct stat *current, int force)
@@ -184,7 +83,7 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
 				disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
 			continue;
 		}
-		setKeymap(p, lineno, verbose);
+		SetKeymap(p, lineno, verbose);
 	}
 }
 
@@ -212,13 +111,6 @@ int getFuncList(char *id)
 	return getHash_si(&functable, id, -1);
 }
 
-char *
-getKeyData(int key)
-{
-	if (keyData == NULL)
-		return NULL;
-	return (char *)getHash_iv(keyData, key, NULL);
-}
 
 static int
 getKey2(char **str)

@@ -17,7 +17,7 @@ void escKeyProc(int c, int esc, unsigned char *map)
     if (CurrentIsMultiKey())
     {
         unsigned char **mmap;
-        mmap = (unsigned char **)getKeyData(MultiKey(CurrentKey()));
+        mmap = (unsigned char **)GetKeyData(MultiKey(CurrentKey()));
         if (!mmap)
             return;
         switch (esc)
@@ -39,21 +39,6 @@ void escKeyProc(int c, int esc, unsigned char *map)
     }
     SetCurrentKey(esc | c);
     w3mFuncList[(int)map[c]].func();
-}
-
-static int s_prec_num = 0;
-int prec_num()
-{
-    return s_prec_num;
-}
-void set_prec_num(int n)
-{
-    s_prec_num = n;
-}
-
-int PREC_NUM()
-{
-    return prec_num() ? prec_num() : 1;
 }
 
 int searchKeyNum(void)
@@ -3004,7 +2989,7 @@ char *searchKeyData()
     else if (CurrentCmdData != NULL && *CurrentCmdData != '\0')
         data = CurrentCmdData;
     else if (CurrentKey >= 0)
-        data = getKeyData(CurrentKey());
+        data = GetKeyData(CurrentKey());
     ClearCurrentKeyData();
     CurrentCmdData = NULL;
     if (data == NULL || *data == '\0')

@@ -12,6 +12,10 @@ extern "C"
     // funcname.c
     extern FuncList w3mFuncList[];
 
+    int prec_num();
+    void set_prec_num(int n);
+    int PREC_NUM();
+    inline int PREC_LIMIT() { return 10000; }
     int CurrentKey();
     void ClearCurrentKey();
     void ClearCurrentKeyData();
@@ -20,11 +24,13 @@ extern "C"
     void SetMultiKey(int c);
     int CurrentIsMultiKey();
     int MultiKey(int c);
-    void CurrentKeyToPrev();
     int PrevKey();
     void SetPrevKey(int key);
     void KeyPressEventProc(int c);
+    void DispatchKey(int c);
     void ExecuteCommand(char *data);
+    char *GetKeyData(int key);
+    void SetKeymap(char *p, int lineno, int verbose);
 
 #ifdef __cplusplus
 }
