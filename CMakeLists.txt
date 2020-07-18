@@ -25,7 +25,8 @@ PRIVATE
 add_executable(w3m
     src/main.cpp
     src/dispatcher.cpp
-    src/defun.c
+    src/commands.cpp
+    # src/defun.c
     src/public.c
     libwc/big5.c
     libwc/ces.c

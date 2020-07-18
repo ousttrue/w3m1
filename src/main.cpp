@@ -343,7 +343,7 @@ static void mainloop()
                     ClearCurrentKey();
                     ClearCurrentKeyData();
                     CurrentCmdData = (char *)CurrentAlarm()->data;
-                    w3mFuncList[CurrentAlarm()->cmd].func();
+                    CurrentAlarm()->cmd();
                     CurrentCmdData = NULL;
                     continue;
                 }
@@ -411,6 +411,8 @@ static void mainloop()
         DispatchKey(c);
     }
 }
+
+#include "register_commands.h"
 
 int main(int argc, char **argv, char **envp)
 {
@@ -917,6 +919,8 @@ int main(int argc, char **argv, char **envp)
 #ifdef SIGPIPE
     mySignal(SIGPIPE, SigPipe);
 #endif
+
+    register_commands();
 
     /*orig_GC_warn_proc =*/GC_set_warn_proc(wrap_GC_warn_proc);
     err_msg = Strnew();

@@ -1140,7 +1140,7 @@ int backend(void);
 typedef struct _AlarmEvent {
     int sec;
     short status;
-    int cmd;
+    Command cmd;
     void *data;
 } AlarmEvent;
 #endif

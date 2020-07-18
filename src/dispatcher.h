@@ -6,9 +6,6 @@ extern "C"
 #endif
 #include "func.h"
 
-    // funcname.c
-    extern FuncList w3mFuncList[];
-
     int prec_num();
     void set_prec_num(int n);
     int PREC_NUM();
@@ -31,6 +28,8 @@ extern "C"
     void ExecuteCommand(char *data);
     char *GetKeyData(int key);
     void SetKeymap(char *p, int lineno, int verbose);
+    void RegisterCommand(const char *name, const char *key, const char *description, void (*command)());
+    Command getFuncList(char *name);
 
 #ifdef __cplusplus
 }

@@ -10,7 +10,7 @@
 #include "func.h"
 #include "myctype.h"
 #include "dispatcher.h"
-#include "funcname.c"
+// #include "funcname.c"
 #include "functable.c"
 
 
@@ -104,11 +104,6 @@ void initKeymap(int force)
 		fclose(kf);
 	}
 	keymap_initialized = TRUE;
-}
-
-int getFuncList(char *id)
-{
-	return getHash_si(&functable, id, -1);
 }
 
 
@@ -434,7 +429,7 @@ static void
 setMouseAction1(MouseActionMap **map, int width, char *p)
 {
 	char *s;
-	int x, x2, f;
+	int x, x2;
 
 	if (!*map)
 	{
@@ -454,13 +449,13 @@ setMouseAction1(MouseActionMap **map, int width, char *p)
 	if (!(IS_DIGIT(*s) && x2 >= 0 && x2 < width))
 		return; /* error */
 	s = getWord(&p);
-	f = getFuncList(s);
+	Command f = getFuncList(s);
 	s = getQWord(&p);
 	if (!*s)
 		s = NULL;
 	for (; x <= x2; x++)
 	{
-		(*map)[x].func = (f >= 0) ? w3mFuncList[f].func : NULL;
+		(*map)[x].func = f;
 		(*map)[x].data = s;
 	}
 }
@@ -469,14 +464,13 @@ static void
 setMouseAction2(MouseActionMap *map, char *p)
 {
 	char *s;
-	int f;
 
 	s = getWord(&p);
-	f = getFuncList(s);
+	Command f = getFuncList(s);
 	s = getQWord(&p);
 	if (!*s)
 		s = NULL;
-	map->func = (f >= 0) ? w3mFuncList[f].func : NULL;
+	map->func = f;
 	map->data = s;
 }
 

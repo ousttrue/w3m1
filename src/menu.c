@@ -1693,7 +1693,6 @@ int
 setMenuItem(MenuItem *item, char *type, char *line)
 {
     char *label, *func, *popup, *keys, *data;
-    int f;
     int n;
 
     if (type == NULL || *type == '\0')	/* error */
@@ -1716,8 +1715,8 @@ setMenuItem(MenuItem *item, char *type, char *line)
             return -1;
         item->type = MENU_FUNC;
         item->label = label;
-        f = getFuncList(func);
-        item->func = w3mFuncList[(f >= 0) ? f : FUNCNAME_nulcmd].func;
+        Command f = getFuncList(func);
+        item->func = f;
         item->keys = keys;
         item->data = data;
         return MENU_FUNC;

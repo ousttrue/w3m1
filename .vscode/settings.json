@@ -1,4 +1,9 @@
 {
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "python.pythonPath": "/usr/bin/python3",
+    "python.linting.pylintEnabled": false,
+    "python.linting.mypyEnabled": true,
+    "python.linting.enabled": true,
+    "python.formatting.provider": "yapf"
 }

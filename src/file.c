@@ -1,7 +1,6 @@
 /* $Id: file.c,v 1.265 2010/12/15 10:50:24 htrb Exp $ */
 #include "fm.h"
 #include "indep.h"
-#include "funcname1.h"
 #include "frame.h"
 #include "file.h"
 #include "anchor.h"
@@ -24,6 +23,7 @@
 #include "parsetagx.h"
 #include "local.h"
 #include "regex.h"
+#include "dispatcher.h"
 
 #ifndef max
 #define max(a,b)        ((a) > (b) ? (a) : (b))
@@ -906,15 +906,14 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 	else if (!strncasecmp(lineBuf2->ptr, "w3m-control:", 12) &&
 		 uf->scheme == SCM_LOCAL_CGI) {
 	    Str funcname = Strnew();
-	    int f;
 
 	    p = lineBuf2->ptr + 12;
 	    SKIP_BLANKS(p);
 	    while (*p && !IS_SPACE(*p))
 		Strcat_char(funcname, *(p++));
 	    SKIP_BLANKS(p);
-	    f = getFuncList(funcname->ptr);
-	    if (f >= 0) {
+	    Command f = getFuncList(funcname->ptr);
+	    if (f) {
 		tmp = Strnew_charp(p);
 		Strchop(tmp);
 		pushEvent(f, tmp->ptr);
@@ -1222,6 +1221,8 @@ AuthBasicCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
  *                     "8" | "9" | "a" | "b" |
  *                     "c" | "d" | "e" | "f"
  */
+
+#include <openssl/md5.h>
 
 static Str
 digest_hex(unsigned char *p)
@@ -5834,13 +5835,13 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 			    buf->event = setAlarmEvent(buf->event,
 						       refresh_interval,
 						       AL_IMPLICIT_ONCE,
-						       FUNCNAME_gorURL, p);
+						       &gorURL, p);
 			}
 			else if (refresh_interval > 0)
 			    buf->event = setAlarmEvent(buf->event,
 						       refresh_interval,
 						       AL_IMPLICIT,
-						       FUNCNAME_reload, NULL);
+						       &reload, NULL);
 #else
 			if (tmp && refresh_interval == 0) {
 			    p = url_quote_conv(remove_space(tmp->ptr),

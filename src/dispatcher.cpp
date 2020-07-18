@@ -1,4 +1,10 @@
 #include "dispatcher.h"
+extern "C"
+{
+#include "fm.h"
+#include "func.h"
+#include "public.h"
+}
 
 static int g_prec_num = 0;
 static int g_CurrentKey = -1;
@@ -7,21 +13,16 @@ static int g_prev_key = -1;
 const int KEYDATA_HASH_SIZE = 16;
 
 // keybind.c
-extern unsigned char GlobalKeymap[];
-extern unsigned char EscKeymap[];
-extern unsigned char EscBKeymap[];
-extern unsigned char EscDKeymap[];
+extern Command GlobalKeymap[];
+extern Command EscKeymap[];
+extern Command EscBKeymap[];
+extern Command EscDKeymap[];
 
 #include <unordered_map>
 #include <string>
 
 extern "C"
 {
-#include "fm.h"
-#include "func.h"
-#include "funcname1.h"
-#include "public.h"
-
     // static Hash_iv *g_keyData = NULL;
     static std::unordered_map<int, std::string> g_keyData;
 
@@ -94,8 +95,8 @@ extern "C"
     void KeyPressEventProc(int c)
     {
         SetCurrentKey(c);
-        auto index = (int)GlobalKeymap[c];
-        w3mFuncList[index].func();
+        GlobalKeymap[c]();
+        // w3mFuncList[index].func();
     }
 
     void DispatchKey(int c)
@@ -103,7 +104,7 @@ extern "C"
         if (IS_ASCII(c))
         { /* Ascii */
             if (('0' <= c) && (c <= '9') &&
-                (prec_num() || (GlobalKeymap[c] == FUNCNAME_nulcmd)))
+                (prec_num() || (GlobalKeymap[c] == &nulcmd)))
             {
                 set_prec_num(prec_num() * 10 + (int)(c - '0'));
                 if (prec_num() > PREC_LIMIT())
@@ -122,33 +123,33 @@ extern "C"
         ClearCurrentKeyData();
     }
 
-    static void _escKeyProc(int c, int esc, unsigned char *map)
+    static void _escKeyProc(int c, int esc, Command map[])
     {
-        if (CurrentIsMultiKey())
-        {
-            unsigned char **mmap;
-            mmap = (unsigned char **)GetKeyData(MultiKey(CurrentKey()));
-            if (!mmap)
-                return;
-            switch (esc)
-            {
-            case K_ESCD:
-                map = mmap[3];
-                break;
-            case K_ESCB:
-                map = mmap[2];
-                break;
-            case K_ESC:
-                map = mmap[1];
-                break;
-            default:
-                map = mmap[0];
-                break;
-            }
-            esc |= (CurrentKey() & ~0xFFFF);
-        }
+        // if (CurrentIsMultiKey())
+        // {
+        //     unsigned char **mmap;
+        //     mmap = (unsigned char **)GetKeyData(MultiKey(CurrentKey()));
+        //     if (!mmap)
+        //         return;
+        //     switch (esc)
+        //     {
+        //     case K_ESCD:
+        //         map = mmap[3];
+        //         break;
+        //     case K_ESCB:
+        //         map = mmap[2];
+        //         break;
+        //     case K_ESC:
+        //         map = mmap[1];
+        //         break;
+        //     default:
+        //         map = mmap[0];
+        //         break;
+        //     }
+        //     esc |= (CurrentKey() & ~0xFFFF);
+        // }
         SetCurrentKey(esc | c);
-        w3mFuncList[(int)map[c]].func();
+        map[c]();
     }
 
     void escKeyProc(char c)
@@ -219,7 +220,7 @@ extern "C"
             {
                 mouse_inactive();
             }
-            w3mFuncList[cmd].func();
+            cmd();
             if (use_mouse)
             {
                 mouse_active();
@@ -259,7 +260,7 @@ extern "C"
         return c;
     }
 
-    static int GetFunc(char **p, int lineno, int verbose)
+    static Command GetFunc(char **p, int lineno, int verbose)
     {
         auto s = getWord(p);
         auto f = getFuncList(s);
@@ -291,7 +292,7 @@ extern "C"
         {
             return;
         }
-        unsigned char *map = nullptr;
+        Command *map = nullptr;
         // if (c & K_MULTI)
         // {
         //     // Kanji Multibyte ? SJIS とか EUC ?
@@ -365,5 +366,22 @@ extern "C"
                 g_keyData.erase(found);
             }
         }
+    }
+
+    std::unordered_map<std::string, Command> g_commandMap;
+
+    void RegisterCommand(const char *name, const char *key, const char *description, void (*command)())
+    {
+        g_commandMap[name] = command;
+    }
+
+    Command getFuncList(char *name)
+    {
+        auto found = g_commandMap.find(name);
+        if (found == g_commandMap.end())
+        {
+            return &nulcmd;
+        }
+        return found->second;
     }
 }

@@ -46,6 +46,13 @@
                     "ignoreFailures": true
                 }
             ]
-        }
+        },
+        {
+            "name": "defun.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/defun.py",
+            "console": "integratedTerminal"
+        },
     ]
 }

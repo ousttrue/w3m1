@@ -16,17 +16,20 @@
 #define K_ESCD 0x400
 #define K_MULTI 0x10000000
 
+/*
 typedef struct _FuncList
 {
     char *id;
     void (*func)();
 } FuncList;
+*/
 
 char *getQWord(char **str);
 char *getWord(char **str);
 
+typedef void (*Command)();
+
 void initKeymap(int force);
-int getFuncList(char *id);
 int getKey(char *s);
 
 #endif /* not FUNC_H */

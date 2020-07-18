@@ -2447,7 +2447,7 @@ void SigAlarm(SIGNAL_ARG)
         if (use_mouse)
             mouse_inactive();
 #endif
-        w3mFuncList[CurrentAlarm()->cmd].func();
+        CurrentAlarm()->cmd();
 #ifdef USE_MOUSE
         if (use_mouse)
             mouse_active();
@@ -2903,7 +2903,7 @@ TabBuffer *newTab(void)
     return n;
 }
 
-AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, int cmd, void *data)
+AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd, void *data)
 {
     if (event == NULL)
         event = New(AlarmEvent);
@@ -3279,14 +3279,14 @@ void tmpClearBuffer(Buffer *buf)
 
 typedef struct _Event
 {
-    int cmd;
+    Command cmd;
     void *data;
     struct _Event *next;
 } Event;
 static Event *CurrentEvent = NULL;
 static Event *LastEvent = NULL;
 
-void pushEvent(int cmd, void *data)
+void pushEvent(Command cmd, void *data)
 {
     Event *event;
 
@@ -3308,7 +3308,7 @@ int ProcessEvent()
         ClearCurrentKey();
         ClearCurrentKeyData();
         CurrentCmdData = (char *)CurrentEvent->data;
-        w3mFuncList[CurrentEvent->cmd].func();
+        CurrentEvent->cmd();
         CurrentCmdData = NULL;
         CurrentEvent = CurrentEvent->next;
         return 1;
