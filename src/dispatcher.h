@@ -6,9 +6,6 @@ extern "C"
 #endif
 #include "func.h"
 
-    // keybind.c
-    extern unsigned char GlobalKeymap[];
-
     // funcname.c
     extern FuncList w3mFuncList[];
 

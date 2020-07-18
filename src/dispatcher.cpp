@@ -6,6 +6,9 @@ static char *g_CurrentKeyData = nullptr;
 static int g_prev_key = -1;
 const int KEYDATA_HASH_SIZE = 16;
 
+// keybind.c
+extern unsigned char GlobalKeymap[];
+
 extern "C"
 {
 #include "fm.h"
