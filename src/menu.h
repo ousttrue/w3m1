@@ -74,4 +74,8 @@ void popupMenu(int x, int y, Menu *menu);
 void optionMenu(int x, int y, char **label, int *variable, int initial, void (*func)());
 void mainMenu(int x, int y);
 
+void PopupMenu();
+void PopupBufferMenu();
+void PopupTabMenu();
+
 #endif /* not MENU_H */

@@ -9,6 +9,7 @@
 #include "funcname1.h"
 #include "frame.h"
 #include "dispatcher.h"
+#include "menu.h"
 #include <signal.h>
 
 DEFUN(nulcmd, NOTHING NULL @ @ @, "Do nothing")
@@ -2402,4 +2403,19 @@ DEFUN(redoPos, REDO, "Cancel the last undo")
         return;
     for (i = 0; i < PREC_NUM() && b->next; i++, b = b->next) ;
     resetPos(b);
+}
+
+DEFUN(mainMn, MAIN_MENU MENU, "Popup menu")
+{
+    PopupMenu();
+}
+
+DEFUN(selMn, SELECT_MENU, "Popup buffer selection menu")
+{
+    PopupBufferMenu();
+}
+
+DEFUN(tabMn, TAB_MENU, "Popup tab selection menu")
+{
+    PopupTabMenu();
 }

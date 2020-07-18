@@ -1290,47 +1290,11 @@ mainMenu(int x, int y)
     popupMenu(x, y, &MainMenu);
 }
 
-DEFUN(mainMn, MAIN_MENU MENU, "Popup menu")
-{
-    Menu *menu = &MainMenu;
-    char *data;
-    int n;
-    int x = Currentbuf->cursorX + Currentbuf->rootX,
-        y = Currentbuf->cursorY + Currentbuf->rootY;
-
-    data = searchKeyData();
-    if (data != NULL) {
-        n = getMenuN(w3mMenuList, data);
-        if (n < 0)
-            return;
-        menu = w3mMenuList[n].menu;
-    }
-#ifdef USE_MOUSE
-    if (mouse_action.in_action) {
-        x = mouse_action.cursorX;
-        y = mouse_action.cursorY;
-    }
-#endif
-    popupMenu(x, y, menu);
-}
 
 /* --- MainMenu (END) --- */
 
 /* --- SelectMenu --- */
 
-DEFUN(selMn, SELECT_MENU, "Popup buffer selection menu")
-{
-    int x = Currentbuf->cursorX + Currentbuf->rootX,
-        y = Currentbuf->cursorY + Currentbuf->rootY;
-
-#ifdef USE_MOUSE
-    if (mouse_action.in_action) {
-        x = mouse_action.cursorX;
-        y = mouse_action.cursorY;
-    }
-#endif
-    popupMenu(x, y, &SelectMenu);
-}
 
 static void
 initSelectMenu(void)
@@ -1464,20 +1428,6 @@ smDelBuf(char c)
 /* --- SelectMenu (END) --- */
 
 /* --- SelTabMenu --- */
-
-DEFUN(tabMn, TAB_MENU, "Popup tab selection menu")
-{
-    int x = Currentbuf->cursorX + Currentbuf->rootX,
-        y = Currentbuf->cursorY + Currentbuf->rootY;
-
-#ifdef USE_MOUSE
-    if (mouse_action.in_action) {
-        x = mouse_action.cursorX;
-        y = mouse_action.cursorY;
-    }
-#endif
-    popupMenu(x, y, &SelTabMenu);
-}
 
 static void
 initSelTabMenu(void)
@@ -2072,3 +2022,55 @@ list_menu(Buffer *buf)
 }
 
 #endif				/* USE_MENU */
+
+void PopupMenu()
+{
+    Menu *menu = &MainMenu;
+    char *data;
+    int n;
+    int x = Currentbuf->cursorX + Currentbuf->rootX,
+        y = Currentbuf->cursorY + Currentbuf->rootY;
+
+    data = searchKeyData();
+    if (data != NULL) {
+        n = getMenuN(w3mMenuList, data);
+        if (n < 0)
+            return;
+        menu = w3mMenuList[n].menu;
+    }
+#ifdef USE_MOUSE
+    if (mouse_action.in_action) {
+        x = mouse_action.cursorX;
+        y = mouse_action.cursorY;
+    }
+#endif
+    popupMenu(x, y, menu);
+}
+
+void PopupBufferMenu()
+{
+    int x = Currentbuf->cursorX + Currentbuf->rootX,
+        y = Currentbuf->cursorY + Currentbuf->rootY;
+
+#ifdef USE_MOUSE
+    if (mouse_action.in_action) {
+        x = mouse_action.cursorX;
+        y = mouse_action.cursorY;
+    }
+#endif
+    popupMenu(x, y, &SelectMenu);
+}
+
+void PopupTabMenu()
+{
+    int x = Currentbuf->cursorX + Currentbuf->rootX,
+        y = Currentbuf->cursorY + Currentbuf->rootY;
+
+#ifdef USE_MOUSE
+    if (mouse_action.in_action) {
+        x = mouse_action.cursorX;
+        y = mouse_action.cursorY;
+    }
+#endif
+    popupMenu(x, y, &SelTabMenu);
+}
