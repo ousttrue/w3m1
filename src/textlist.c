@@ -183,3 +183,28 @@ TextList *appendTextList(TextList *tl, TextList *tl2)
 {
     return (TextList *)appendGeneralList((GeneralList *)(tl), (GeneralList *)(tl2));
 }
+
+TextLineList *newTextLineList()
+{
+    return ((TextLineList *)newGeneralList());
+}
+
+void pushTextLine(TextLineList* tl, TextLine* lbuf)
+{
+    pushValue((GeneralList *)(tl), (void *)(lbuf));
+}
+
+TextLine *popTextLine( TextLineList* tl)
+{
+    return ((TextLine *)popValue((GeneralList *)(tl)));
+}
+
+TextLine *rpopTextLine(TextLineList *tl)
+{
+    return ((TextLine *)rpopValue((GeneralList *)(tl)));
+}
+
+TextLineList* appendTextLineList(TextLineList * tl, TextLineList* tl2)
+{
+    return ((TextLineList *)appendGeneralList((GeneralList *)(tl), (GeneralList *)(tl2)));
+}

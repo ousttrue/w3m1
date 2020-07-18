@@ -74,10 +74,10 @@ typedef struct _textlinelist
 
 extern TextLine *newTextLine(Str line, int pos);
 extern void appendTextLine(TextLineList *tl, Str line, int pos);
-#define newTextLineList() ((TextLineList *)newGeneralList())
-#define pushTextLine(tl, lbuf) pushValue((GeneralList *)(tl), (void *)(lbuf))
-#define popTextLine(tl) ((TextLine *)popValue((GeneralList *)(tl)))
-#define rpopTextLine(tl) ((TextLine *)rpopValue((GeneralList *)(tl)))
-#define appendTextLineList(tl, tl2) ((TextLineList *)appendGeneralList((GeneralList *)(tl), (GeneralList *)(tl2)))
+TextLineList *newTextLineList();
+void pushTextLine(TextLineList* tl, TextLine* lbuf);
+TextLine *popTextLine( TextLineList* tl);
+TextLine *rpopTextLine(TextLineList *tl);
+TextLineList* appendTextLineList(TextLineList * tl, TextLineList* tl2);
 
 #endif /* not TEXTLIST_H */
