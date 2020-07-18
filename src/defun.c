@@ -424,8 +424,7 @@ DEFUN(ldhelp, HELP, "View help")
 #endif
 }
 
-DEFUN(movL, MOVE_LEFT,
-      "Move cursor left (a half screen shift at the left edge)")
+DEFUN(movL, MOVE_LEFT, "Move cursor left (a half screen shift at the left edge)")
 {
     _movL(Currentbuf->COLS / 2);
 }
@@ -435,20 +434,17 @@ DEFUN(movL1, MOVE_LEFT1, "Move cursor left (1 columns shift at the left edge)")
     _movL(1);
 }
 
-DEFUN(movD, MOVE_DOWN,
-      "Move cursor down (a half screen scroll at the end of screen)")
+DEFUN(movD, MOVE_DOWN, "Move cursor down (a half screen scroll at the end of screen)")
 {
     _movD((Currentbuf->LINES + 1) / 2);
 }
 
-DEFUN(movD1, MOVE_DOWN1,
-      "Move cursor down (1 line scroll at the end of screen)")
+DEFUN(movD1, MOVE_DOWN1, "Move cursor down (1 line scroll at the end of screen)")
 {
     _movD(1);
 }
 
-DEFUN(movU, MOVE_UP,
-      "Move cursor up (a half screen scroll at the top of screen)")
+DEFUN(movU, MOVE_UP, "Move cursor up (a half screen scroll at the top of screen)")
 {
     _movU((Currentbuf->LINES + 1) / 2);
 }
@@ -458,14 +454,12 @@ DEFUN(movU1, MOVE_UP1, "Move cursor up (1 line scrol at the top of screen)")
     _movU(1);
 }
 
-DEFUN(movR, MOVE_RIGHT,
-      "Move cursor right (a half screen shift at the right edge)")
+DEFUN(movR, MOVE_RIGHT, "Move cursor right (a half screen shift at the right edge)")
 {
     _movR(Currentbuf->COLS / 2);
 }
 
-DEFUN(movR1, MOVE_RIGHT1,
-      "Move cursor right (1 columns shift at the right edge)")
+DEFUN(movR1, MOVE_RIGHT1, "Move cursor right (1 columns shift at the right edge)")
 {
     _movR(1);
 }
@@ -1248,8 +1242,7 @@ DEFUN(backBf, BACK, "Back to previous buffer")
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
 
-DEFUN(deletePrevBuf, DELETE_PREVBUF,
-      "Delete previous buffer (mainly for local-CGI)")
+DEFUN(deletePrevBuf, DELETE_PREVBUF, "Delete previous buffer (mainly for local-CGI)")
 {
     Buffer *buf = Currentbuf->nextBuffer;
     if (buf)
@@ -1383,8 +1376,7 @@ DEFUN(listMn, LIST_MENU, "Popup link list menu and go to selected link")
     anchorMn(list_menu, TRUE);
 }
 
-DEFUN(movlistMn, MOVE_LIST_MENU,
-      "Popup link list menu and move cursor to selected link")
+DEFUN(movlistMn, MOVE_LIST_MENU, "Popup link list menu and move cursor to selected link")
 {
     anchorMn(list_menu, FALSE);
 }
@@ -2047,8 +2039,7 @@ DEFUN(tabMs, TAB_MOUSE, "Move to tab on mouse cursor (for mouse action)")
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
 
-DEFUN(closeTMs, CLOSE_TAB_MOUSE,
-      "Close tab on mouse cursor (for mouse action)")
+DEFUN(closeTMs, CLOSE_TAB_MOUSE, "Close tab on mouse cursor (for mouse action)")
 {
     TabBuffer *tab;
 
@@ -2085,8 +2076,7 @@ DEFUN(dictword, DICT_WORD, "Execute dictionary command (see README.dict)")
     execdict(inputStr("(dictionary)!", ""));
 }
 
-DEFUN(dictwordat, DICT_WORD_AT,
-      "Execute dictionary command for word at cursor")
+DEFUN(dictwordat, DICT_WORD_AT, "Execute dictionary command for word at cursor")
 {
     execdict(GetWord(Currentbuf));
 }
@@ -2210,8 +2200,7 @@ DEFUN(reinit, REINIT, "Reload configuration files")
                      ptr, FALSE);
 }
 
-DEFUN(defKey, DEFINE_KEY,
-      "Define a binding between a key stroke and a user command")
+DEFUN(defKey, DEFINE_KEY, "Define a binding between a key stroke and a user command")
 {
     char *data;
 
