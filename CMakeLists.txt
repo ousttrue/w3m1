@@ -8,8 +8,8 @@ add_executable(w3m
     src/tagtable.cpp
     src/entity.cpp
     src/anchor.cpp
+    src/public.cpp
     # src/defun.c
-    src/public.c
     libwc/big5.c
     libwc/ces.c
     libwc/char_conv.c

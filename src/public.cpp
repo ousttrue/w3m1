@@ -1,3 +1,5 @@
+extern "C"
+{
 #include "fm.h"
 #include "indep.h"
 #include "rc.h"
@@ -15,6 +17,7 @@
 #include "image.h"
 #include "commands.h"
 #include "url.h"
+}
 
 int searchKeyNum(void)
 {
@@ -231,9 +234,7 @@ dump_head(Buffer *buf)
 
 void do_dump(Buffer *buf)
 {
-    MySignalHandler (*volatile prevtrap)(SIGNAL_ARG) = NULL;
-
-    prevtrap = mySignal(SIGINT, intTrap);
+    auto prevtrap = mySignal(SIGINT, intTrap);
     if (SETJMP(IntReturn) != 0)
     {
         mySignal(SIGINT, prevtrap);
@@ -3279,7 +3280,6 @@ void tmpClearBuffer(Buffer *buf)
     }
 }
 
-
 typedef struct _Event
 {
     Command cmd;
@@ -3318,7 +3318,6 @@ int ProcessEvent()
     }
     return 0;
 }
-
 
 static int
 parse_ansi_color(char **str, Lineprop *effect, Linecolor *color)
@@ -3431,11 +3430,11 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 
     if (ShowEffect)
     {
-        bs = memchr(str, '\b', s->length);
+        bs = (char*)memchr(str, '\b', s->length);
 #ifdef USE_ANSI_COLOR
         if (ocolor)
         {
-            es = memchr(str, ESC_CODE, s->length);
+            es = (char*)memchr(str, ESC_CODE, s->length);
             if (es)
             {
                 if (color_size < s->length)
@@ -3491,7 +3490,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 str += 4;
                 effect = PE_UNDER;
                 if (str < endp)
-                    bs = memchr(str, '\b', endp - str);
+                    bs = (char*)memchr(str, '\b', endp - str);
                 continue;
             }
             else
@@ -3501,7 +3500,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 str += 2;
                 effect = PE_UNDER;
                 if (str < endp)
-                    bs = memchr(str, '\b', endp - str);
+                    bs = (char*)memchr(str, '\b', endp - str);
                 continue;
             }
             else if (str == bs)
@@ -3601,12 +3600,12 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                     }
                 }
                 if (str < endp)
-                    bs = memchr(str, '\b', endp - str);
+                    bs = (char*)memchr(str, '\b', endp - str);
                 continue;
             }
 #ifdef USE_ANSI_COLOR
             else if (str > bs)
-                bs = memchr(str, '\b', endp - str);
+                bs = (char*)memchr(str, '\b', endp - str);
 #endif
         }
 #ifdef USE_ANSI_COLOR
@@ -3616,7 +3615,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
             {
                 int ok = parse_ansi_color(&str, &ceffect, &cmode);
                 if (str < endp)
-                    es = memchr(str, ESC_CODE, endp - str);
+                    es = (char*)memchr(str, ESC_CODE, endp - str);
                 if (ok)
                 {
                     if (cmode)
@@ -3625,7 +3624,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 }
             }
             else if (str > es)
-                es = memchr(str, ESC_CODE, endp - str);
+                es = (char*)memchr(str, ESC_CODE, endp - str);
         }
 #endif
 
