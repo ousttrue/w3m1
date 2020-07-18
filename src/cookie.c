@@ -14,6 +14,7 @@
 #include "parsetag.h"
 #include "cookie.h"
 #include "html.h"
+#include "commands.h"
 
 #ifdef USE_COOKIE
 #include <time.h>

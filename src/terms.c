@@ -3,6 +3,7 @@
  * An original curses library for EUC-kanji by Akinori ITO,     December 1989
  * revised by Akinori ITO, January 1995
  */
+#include "commands.h"
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>

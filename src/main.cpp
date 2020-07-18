@@ -7,6 +7,7 @@ extern "C"
 #include "file.h"
 #include "form.h"
 #include "public.h"
+#include "commands.h"
 #include <signal.h>
 #include <setjmp.h>
 #include <sys/stat.h>

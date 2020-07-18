@@ -10,6 +10,8 @@
 #include "myctype.h"
 #include "regex.h"
 #include "dispatcher.h"
+#include "terms.h"
+#include "commands.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

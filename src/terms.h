@@ -30,4 +30,9 @@ extern void disable_win9x_console_input(void);
 #endif
 #endif
 
+void mouse_active();
+void mouse_inactive();
+void mouse_end();
+
+
 #endif				/* not TERMS_H */

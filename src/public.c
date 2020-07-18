@@ -10,7 +10,8 @@
 #include "proto.h"
 #include "terms.h"
 #include "dispatcher.h"
-
+#include "image.h"
+#include "commands.h"
 
 int searchKeyNum(void)
 {

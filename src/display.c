@@ -4,6 +4,7 @@
 #include "indep.h"
 #include "public.h"
 #include "image.h"
+#include "terms.h"
 
 /* *INDENT-OFF* */
 #ifdef USE_COLOR

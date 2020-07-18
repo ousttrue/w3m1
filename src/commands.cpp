@@ -15,6 +15,7 @@ extern "C"
 #include "dispatcher.h"
 #include "mouse.h"
 #include "menu.h"
+#include "image.h"
 #include <signal.h>
 
 void nulcmd()

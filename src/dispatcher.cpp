@@ -2,7 +2,9 @@
 extern "C"
 {
 #include "fm.h"
+#include "terms.h"
 #include "public.h"
+#include "commands.h"
 }
 
 static int g_prec_num = 0;

@@ -13,6 +13,9 @@
 #include "local.h"
 #include "dispatcher.h"
 #include "mouse.h"
+#include "menu.h"
+#include "image.h"
+#include "commands.h"
 #include <stdlib.h>
 
 struct param_ptr {

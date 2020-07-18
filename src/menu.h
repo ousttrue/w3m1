@@ -73,6 +73,7 @@ int getMenuN(MenuList *list, char *id);
 void popupMenu(int x, int y, Menu *menu);
 void optionMenu(int x, int y, char **label, int *variable, int initial, void (*func)());
 void mainMenu(int x, int y);
+void initMenu(void);
 
 void PopupMenu();
 void PopupBufferMenu();

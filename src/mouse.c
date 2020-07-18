@@ -9,6 +9,7 @@
 #include "indep.h"
 #include "myctype.h"
 #include "dispatcher.h"
+#include "commands.h"
 
 //
 // mouse
