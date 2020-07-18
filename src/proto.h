@@ -6,27 +6,6 @@
  *   Created: Wed Feb 10 12:47:03 1999
  */
 
-
-#ifdef USE_MENU
-extern void linkMn(void);
-extern LinkList *link_menu(Buffer *buf);
-extern void accessKey(void);
-extern Anchor *accesskey_menu(Buffer *buf);
-extern void listMn(void);
-extern void movlistMn(void);
-extern Anchor *list_menu(Buffer *buf);
-#else
-#define linkMn nulcmd
-#define accessKey nulcmd
-#define listMn nulcmd
-#define movlistMn nulcmd
-#endif
-extern void undoPos(void);
-extern void redoPos(void);
-
-extern int currentLn(Buffer *buf);
-
-extern char *filename_extension(char *patch, int is_url);
 #ifdef USE_EXTERNAL_URI_LOADER
 extern void initURIMethods();
 extern Str searchURIMethods(ParsedURL *pu);

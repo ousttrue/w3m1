@@ -25,6 +25,7 @@
 #include "local.h"
 #include "regex.h"
 #include "dispatcher.h"
+#include "url.h"
 
 #ifndef max
 #define max(a,b)        ((a) > (b) ? (a) : (b))

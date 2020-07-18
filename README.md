@@ -134,12 +134,17 @@ std::unordered_map<std::string, Command> g_commandMap;
 | functable.c  | Makefile(mktable) | funcname.tab   |                                                        |
 | tagtable.c   | Makefile(mktable) | funcname.tab   |                                                        |
 
+## proto.h
+
+すべての関数定義が投入されているので、各ソースのヘッダに分配する。
+DEFUN 由来の `void xxx(void)` という関数は、 `commands.h` に移ったので、
+`proto.h` から削除する。
+
 ## TODO
 
 * macro 減らす
 * source と header が対応するようにする
     * fm.h 分解
-    * proto.h 分解
 * c++ にする
     * 各 C struct を class化して
         * member の private化
