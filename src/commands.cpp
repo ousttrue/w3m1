@@ -16,6 +16,7 @@ extern "C"
 #include "mouse.h"
 #include "menu.h"
 #include "image.h"
+#include "url.h"
 #include <signal.h>
 
 void nulcmd()

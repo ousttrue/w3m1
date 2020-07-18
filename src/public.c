@@ -12,6 +12,7 @@
 #include "dispatcher.h"
 #include "image.h"
 #include "commands.h"
+#include "url.h"
 
 int searchKeyNum(void)
 {

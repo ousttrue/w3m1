@@ -12,6 +12,7 @@
 #include "dispatcher.h"
 #include "terms.h"
 #include "commands.h"
+#include "symbol.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

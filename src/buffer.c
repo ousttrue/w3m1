@@ -2,6 +2,8 @@
 #include "fm.h"
 #include "public.h"
 #include "indep.h"
+#include "file.h"
+#include "image.h"
 #ifdef USE_MOUSE
 #ifdef USE_GPM
 #include <gpm.h>

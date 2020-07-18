@@ -10,6 +10,7 @@
 #include "myctype.h"
 #include "dispatcher.h"
 #include "commands.h"
+#include "symbol.h"
 
 //
 // mouse

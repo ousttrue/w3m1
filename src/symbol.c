@@ -1,6 +1,7 @@
 
 #include "fm.h"
 #include "indep.h"
+#include "symbol.h"
 #include "Symbols/alt.sym"
 #include "Symbols/graph.sym"
 #ifdef USE_M17N

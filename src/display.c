@@ -5,6 +5,9 @@
 #include "public.h"
 #include "image.h"
 #include "terms.h"
+#include "file.h"
+#include "symbol.h"
+#include "map.h"
 
 /* *INDENT-OFF* */
 #ifdef USE_COLOR

@@ -6,52 +6,8 @@
  *   Created: Wed Feb 10 12:47:03 1999
  */
 
-#ifdef USE_EXTERNAL_URI_LOADER
-extern void initURIMethods();
-extern Str searchURIMethods(ParsedURL *pu);
-extern void chkExternalURIBuffer(Buffer *buf);
-#endif
-extern ParsedURL *schemeToProxy(int scheme);
-extern void examineFile(char *path, URLFile *uf);
-extern char *acceptableEncoding();
-extern int dir_exist(char *path);
-extern int is_html_type(char *type);
-#ifdef USE_M17N
-extern char **get_symbol(wc_ces charset, int *width);
-extern char **set_symbol(int width);
-extern Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset,
-                       wc_ces doc_charset);
-#else
-extern char **get_symbol(void);
-extern Str convertLine0(URLFile *uf, Str line, int mode);
-#define convertLine(uf, line, mode, charset, dcharset) convertLine0(uf, line, mode)
-#endif
-extern void push_symbol(Str str, char symbol, int width, int n);
-#ifdef USE_UNICODE
-extern void update_utf8_symbol(void);
-#endif
-extern Buffer *loadFile(char *path);
-extern int is_boundary(unsigned char *, unsigned char *);
-extern int is_blank_line(char *line, int indent);
-extern void push_render_image(Str str, int width, int limit,
-                              struct html_feed_environ *h_env);
-extern void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
-                      int indent, int force, int width);
-extern void do_blankline(struct html_feed_environ *h_env,
-                         struct readbuffer *obuf, int indent, int indent_incr,
-                         int width);
-extern void purgeline(struct html_feed_environ *h_env);
-extern void save_fonteffect(struct html_feed_environ *h_env,
-                            struct readbuffer *obuf);
-extern void restore_fonteffect(struct html_feed_environ *h_env,
-                               struct readbuffer *obuf);
-#ifdef USE_IMAGE
-extern void deleteImage(Buffer *buf);
-extern void getAllImage(Buffer *buf);
-extern void loadImage(Buffer *buf, int flag);
-extern ImageCache *getImage(Image *image, ParsedURL *current, int flag);
-extern int getImageSize(ImageCache *cache);
-#endif
+
+#include "map.h"
 
 extern Str process_n_select(void);
 extern void feed_select(char *str);

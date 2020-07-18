@@ -5,6 +5,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "parsetag.h"
+#include "symbol.h"
 #include "rc.h"
 #include "myctype.h"
 #include "proto.h"
@@ -16,6 +17,8 @@
 #include "menu.h"
 #include "image.h"
 #include "commands.h"
+#include "url.h"
+#include "file.h"
 #include <stdlib.h>
 
 struct param_ptr {

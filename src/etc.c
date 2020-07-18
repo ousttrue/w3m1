@@ -1,6 +1,7 @@
 /* $Id: etc.c,v 1.81 2007/05/23 15:06:05 inu Exp $ */
 #include "fm.h"
 #include "indep.h"
+#include "file.h"
 #ifndef __MINGW32_VERSION
 #include <pwd.h>
 #endif

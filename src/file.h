@@ -54,3 +54,23 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
 Buffer *loadGeneralFile(char *path, ParsedURL *current, char *referer, int flag, FormList *request);
 Str getLinkNumberStr(int correction);
 char *guess_save_name(Buffer *buf, char *file);
+void examineFile(char *path, URLFile *uf);
+char *acceptableEncoding();
+int dir_exist(char *path);
+int is_html_type(char *type);
+Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_charset);
+Buffer *loadFile(char *path);
+int is_boundary(unsigned char *, unsigned char *);
+int is_blank_line(char *line, int indent);
+void push_render_image(Str str, int width, int limit,
+                       struct html_feed_environ *h_env);
+void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
+               int indent, int force, int width);
+void do_blankline(struct html_feed_environ *h_env,
+                  struct readbuffer *obuf, int indent, int indent_incr,
+                  int width);
+void purgeline(struct html_feed_environ *h_env);
+void save_fonteffect(struct html_feed_environ *h_env,
+                     struct readbuffer *obuf);
+void restore_fonteffect(struct html_feed_environ *h_env,
+                        struct readbuffer *obuf);

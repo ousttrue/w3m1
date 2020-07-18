@@ -5,6 +5,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "form.h"
+#include "file.h"
 #include "public.h"
 #include "parsetag.h"
 #include "rc.h"
