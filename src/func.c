@@ -10,8 +10,6 @@
 #include "func.h"
 #include "myctype.h"
 #include "dispatcher.h"
-// #include "funcname.c"
-#include "functable.c"
 
 
 static char keymap_initialized = FALSE;

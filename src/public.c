@@ -1,7 +1,6 @@
 #include "fm.h"
 #include "indep.h"
 #include "frame.h"
-#include "funcname1.h"
 #include "parsetag.h"
 #include "public.h"
 #include "file.h"
@@ -2419,7 +2418,7 @@ char *GetWord(Buffer *buf)
 
 #ifdef USE_ALARM
 static AlarmEvent s_DefaultAlarm = {
-    0, AL_UNSET, FUNCNAME_nulcmd, NULL};
+    0, AL_UNSET, &nulcmd, NULL};
 AlarmEvent *DefaultAlarm()
 {
     return &s_DefaultAlarm;
