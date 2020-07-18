@@ -9,6 +9,7 @@ add_executable(w3m
     src/entity.cpp
     src/anchor.cpp
     src/public.cpp
+    src/display.cpp
     # src/defun.c
     libwc/big5.c
     libwc/ces.c
@@ -44,7 +45,6 @@ add_executable(w3m
     src/hash.c
     src/file.c
     src/buffer.c
-    src/display.c
     src/etc.c
     src/search.c
     src/linein.c
