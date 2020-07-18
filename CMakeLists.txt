@@ -1,32 +1,12 @@
 project(w3m)
 cmake_minimum_required(VERSION 3.0.0)
    
-add_executable(mktable
-    src/mktable.c
-    src/Str.c
-    src/myctype.c
-    src/hash.c
-)
-target_include_directories(mktable
-PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/src
-)
-target_compile_definitions(mktable
-PRIVATE
-    HAVE_CONFIG_H
-)
-target_link_libraries(mktable
-PRIVATE
-    dl
-    m
-    gc    
-)
-
 add_executable(w3m
     src/main.cpp
     src/dispatcher.cpp
     src/commands.cpp
     src/tagtable.cpp
+    src/entity.cpp
     # src/defun.c
     src/public.c
     libwc/big5.c
@@ -77,7 +57,6 @@ add_executable(w3m
     src/mailcap.c
     src/image.c
     src/symbol.c
-    src/entity.c
     src/terms.c
     src/url.c
     src/ftp.c

@@ -4,7 +4,6 @@
 #include "indep.h"
 #include "Str.h"
 #include "parsetagx.h"
-#include "hash.h"
 #include "tagtable.h"
 #include "html.c"
 

@@ -404,6 +404,8 @@ cleanup_line(Str s, int mode)
     }
 }
 
+#include "entity.h"
+
 int
 getescapechar(char **str)
 {
@@ -466,7 +468,7 @@ getescapechar(char **str)
 	return -1;
     }
     *str = p;
-    return getHash_si(&entity, q, -1);
+    return GetEntity(q, -1);
 }
 
 char *

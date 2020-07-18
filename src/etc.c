@@ -9,7 +9,6 @@
 #include "myctype.h"
 #include "html.h"
 #include "local.h"
-#include "hash.h"
 #include "tagtable.h"
  
 // #include <sys/socket.h>

@@ -16,7 +16,6 @@
 #include <limits.h>		/* _MAX_PATH ? */
 #endif				/* __EMX__ */
 #include "local.h"
-#include "hash.h"
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
