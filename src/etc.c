@@ -10,7 +10,7 @@
 #include "html.h"
 #include "local.h"
 #include "hash.h"
-
+#include "tagtable.h"
  
 // #include <sys/socket.h>
 #include <netdb.h>
@@ -52,19 +52,19 @@ columnSkip(Buffer *buf, int offset)
 
     maxColumn = 0;
     for (i = 0, l = buf->topLine; i < nlines && l != NULL; i++, l = l->next) {
-	if (l->width < 0)
-	    l->width = COLPOS(l, l->len);
-	if (l->width - 1 > maxColumn)
-	    maxColumn = l->width - 1;
+        if (l->width < 0)
+            l->width = COLPOS(l, l->len);
+        if (l->width - 1 > maxColumn)
+            maxColumn = l->width - 1;
     }
     maxColumn -= buf->COLS - 1;
     if (column < maxColumn)
-	maxColumn = column;
+        maxColumn = column;
     if (maxColumn < 0)
-	maxColumn = 0;
+        maxColumn = 0;
 
     if (buf->currentColumn == maxColumn)
-	return 0;
+        return 0;
     buf->currentColumn = maxColumn;
     return 1;
 }
@@ -75,8 +75,8 @@ columnPos(Line *line, int column)
     int i;
 
     for (i = 1; i < line->len; i++) {
-	if (COLPOS(line, i) > column)
-	    break;
+        if (COLPOS(line, i) > column)
+            break;
     }
 #ifdef USE_M17N
     for (i--; i > 0 && line->propBuf[i] & PC_WCHAR2; i--) ;
@@ -94,8 +94,8 @@ lineSkip(Buffer *buf, Line *line, int offset, int last)
 
     l = currentLineSkip(buf, line, offset, last);
     if (!nextpage_topline)
-	for (i = buf->LINES - 1 - (buf->lastLine->linenumber - l->linenumber);
-	     i > 0 && l->prev != NULL; i--, l = l->prev) ;
+        for (i = buf->LINES - 1 - (buf->lastLine->linenumber - l->linenumber);
+             i > 0 && l->prev != NULL; i--, l = l->prev) ;
     return l;
 }
 
@@ -106,21 +106,21 @@ currentLineSkip(Buffer *buf, Line *line, int offset, int last)
     Line *l = line;
 
     if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE)) {
-	n = line->linenumber + offset + buf->LINES;
-	if (buf->lastLine->linenumber < n)
-	    getNextPage(buf, n - buf->lastLine->linenumber);
-	while ((last || (buf->lastLine->linenumber < n)) &&
-	       (getNextPage(buf, 1) != NULL)) ;
-	if (last)
-	    l = buf->lastLine;
+        n = line->linenumber + offset + buf->LINES;
+        if (buf->lastLine->linenumber < n)
+            getNextPage(buf, n - buf->lastLine->linenumber);
+        while ((last || (buf->lastLine->linenumber < n)) &&
+               (getNextPage(buf, 1) != NULL)) ;
+        if (last)
+            l = buf->lastLine;
     }
 
     if (offset == 0)
-	return l;
+        return l;
     if (offset > 0)
-	for (i = 0; i < offset && l->next != NULL; i++, l = l->next) ;
+        for (i = 0; i < offset && l->next != NULL; i++, l = l->next) ;
     else
-	for (i = 0; i < -offset && l->prev != NULL; i++, l = l->prev) ;
+        for (i = 0; i < -offset && l->prev != NULL; i++, l = l->prev) ;
     return l;
 }
 
@@ -129,39 +129,39 @@ currentLineSkip(Buffer *buf, Line *line, int offset, int last)
 int
 gethtmlcmd(char **s)
 {
-    extern Hash_si tagtable;
     char cmdstr[MAX_CMD_LEN];
     char *p = cmdstr;
     char *save = *s;
-    int cmd;
 
     (*s)++;
     /* first character */
     if (IS_ALNUM(**s) || **s == '_' || **s == '/') {
-	*(p++) = TOLOWER(**s);
-	(*s)++;
+        *(p++) = TOLOWER(**s);
+        (*s)++;
     }
     else
-	return HTML_UNKNOWN;
+        return HTML_UNKNOWN;
     if (p[-1] == '/')
-	SKIP_BLANKS(*s);
+        SKIP_BLANKS(*s);
     while ((IS_ALNUM(**s) || **s == '_') && p - cmdstr < MAX_CMD_LEN) {
-	*(p++) = TOLOWER(**s);
-	(*s)++;
+        *(p++) = TOLOWER(**s);
+        (*s)++;
     }
     if (p - cmdstr == MAX_CMD_LEN) {
-	/* buffer overflow: perhaps caused by bad HTML source */
-	*s = save + 1;
-	return HTML_UNKNOWN;
+        /* buffer overflow: perhaps caused by bad HTML source */
+        *s = save + 1;
+        return HTML_UNKNOWN;
     }
     *p = '\0';
 
     /* hash search */
-    cmd = getHash_si(&tagtable, cmdstr, HTML_UNKNOWN);
+//     extern Hash_si tagtable;
+//     int cmd = getHash_si(&tagtable, cmdstr, HTML_UNKNOWN);
+    int cmd = GetTag(cmdstr, HTML_UNKNOWN);
     while (**s && **s != '>')
-	(*s)++;
+        (*s)++;
     if (**s == '>')
-	(*s)++;
+        (*s)++;
     return cmd;
 }
 
@@ -172,17 +172,17 @@ static int
 nextColumn(int n, char *p, Lineprop *pr)
 {
     if (*pr & PC_CTRL) {
-	if (*p == '\t')
-	    return (n + Tabstop) / Tabstop * Tabstop;
-	else if (*p == '\n')
-	    return n + 1;
-	else if (*p != '\r')
-	    return n + 2;
-	return n;
+        if (*p == '\t')
+            return (n + Tabstop) / Tabstop * Tabstop;
+        else if (*p == '\n')
+            return n + 1;
+        else if (*p != '\r')
+            return n + 2;
+        return n;
     }
 #ifdef USE_M17N
     if (*pr & PC_UNKNOWN)
-	return n + 4;
+        return n + 4;
     return n + wtf_width((wc_uchar *) p);
 #else
     return n + 1;
@@ -198,39 +198,39 @@ calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode)
     int i, j;
 
     if (l == NULL || len == 0)
-	return bpos;
+        return bpos;
     if (l == prevl && mode == CP_AUTO) {
-	if (pos <= len)
-	    return realColumn[pos];
+        if (pos <= len)
+            return realColumn[pos];
     }
     if (size < len + 1) {
-	size = (len + 1 > LINELEN) ? (len + 1) : LINELEN;
-	realColumn = New_N(int, size);
+        size = (len + 1 > LINELEN) ? (len + 1) : LINELEN;
+        realColumn = New_N(int, size);
     }
     prevl = l;
     i = 0;
     j = bpos;
 #ifdef USE_M17N
     if (pr[i] & PC_WCHAR2) {
-	for (; i < len && pr[i] & PC_WCHAR2; i++)
-	    realColumn[i] = j;
-	if (i > 0 && pr[i - 1] & PC_KANJI && WcOption.use_wide)
-	    j++;
+        for (; i < len && pr[i] & PC_WCHAR2; i++)
+            realColumn[i] = j;
+        if (i > 0 && pr[i - 1] & PC_KANJI && WcOption.use_wide)
+            j++;
     }
 #endif
     while (1) {
-	realColumn[i] = j;
-	if (i == len)
-	    break;
-	j = nextColumn(j, &l[i], &pr[i]);
-	i++;
+        realColumn[i] = j;
+        if (i == len)
+            break;
+        j = nextColumn(j, &l[i], &pr[i]);
+        i++;
 #ifdef USE_M17N
-	for (; i < len && pr[i] & PC_WCHAR2; i++)
-	    realColumn[i] = realColumn[i - 1];
+        for (; i < len && pr[i] & PC_WCHAR2; i++)
+            realColumn[i] = realColumn[i - 1];
 #endif
     }
     if (pos >= i)
-	return j;
+        return j;
     return realColumn[pos];
 }
 
@@ -240,13 +240,13 @@ columnLen(Line *line, int column)
     int i, j;
 
     for (i = 0, j = 0; i < line->len;) {
-	j = nextColumn(j, &line->lineBuf[i], &line->propBuf[i]);
-	if (j > column)
-	    return i;
-	i++;
+        j = nextColumn(j, &line->lineBuf[i], &line->propBuf[i]);
+        if (j > column)
+            return i;
+        i++;
 #ifdef USE_M17N
-	while (i < line->len && line->propBuf[i] & PC_WCHAR2)
-	    i++;
+        while (i < line->len && line->propBuf[i] & PC_WCHAR2)
+            i++;
 #endif
     }
     return line->len;
@@ -259,9 +259,9 @@ lastFileName(char *path)
 
     p = q = path;
     while (*p != '\0') {
-	if (*p == '/')
-	    q = p + 1;
-	p++;
+        if (*p == '/')
+            q = p + 1;
+        p++;
     }
 
     return allocStr(q, -1);
@@ -295,13 +295,13 @@ mybasename(char *s)
 {
     char *p = s;
     while (*p)
-	p++;
+        p++;
     while (s <= p && *p != '/')
-	p--;
+        p--;
     if (*p == '/')
-	p++;
+        p++;
     else
-	p = s;
+        p = s;
     return allocStr(p, -1);
 }
 
@@ -310,17 +310,17 @@ mydirname(char *s)
 {
     char *p = s;
     while (*p)
-	p++;
+        p++;
     if (s != p)
-	p--;
+        p--;
     while (s != p && *p == '/')
-	p--;
+        p--;
     while (s != p && *p != '/')
-	p--;
+        p--;
     if (*p != '/')
-	return ".";
+        return ".";
     while (s != p && *p == '/')
-	p--;
+        p--;
     return allocStr(s, strlen(s) - strlen(p) + 1);
 }
 
@@ -342,12 +342,12 @@ prepare_sys_errlist()
 
     i = 1;
     while (strerror(i) != NULL)
-	i++;
+        i++;
     n = i;
     sys_errlist = New_N(char *, n);
     sys_errlist[0] = "";
     for (i = 1; i < n; i++)
-	sys_errlist[i] = strerror(i);
+        sys_errlist[i] = strerror(i);
 }
 #endif				/* not HAVE_SYS_ERRLIST */
 
@@ -356,138 +356,138 @@ next_status(char c, int *status)
 {
     switch (*status) {
     case R_ST_NORMAL:
-	if (c == '<') {
-	    *status = R_ST_TAG0;
-	    return 0;
-	}
-	else if (c == '&') {
-	    *status = R_ST_AMP;
-	    return 1;
-	}
-	else
-	    return 1;
-	break;
+        if (c == '<') {
+            *status = R_ST_TAG0;
+            return 0;
+        }
+        else if (c == '&') {
+            *status = R_ST_AMP;
+            return 1;
+        }
+        else
+            return 1;
+        break;
     case R_ST_TAG0:
-	if (c == '!') {
-	    *status = R_ST_CMNT1;
-	    return 0;
-	}
-	*status = R_ST_TAG;
-	/* continues to next case */
+        if (c == '!') {
+            *status = R_ST_CMNT1;
+            return 0;
+        }
+        *status = R_ST_TAG;
+        /* continues to next case */
     case R_ST_TAG:
-	if (c == '>')
-	    *status = R_ST_NORMAL;
-	else if (c == '=')
-	    *status = R_ST_EQL;
-	return 0;
+        if (c == '>')
+            *status = R_ST_NORMAL;
+        else if (c == '=')
+            *status = R_ST_EQL;
+        return 0;
     case R_ST_EQL:
-	if (c == '"')
-	    *status = R_ST_DQUOTE;
-	else if (c == '\'')
-	    *status = R_ST_QUOTE;
-	else if (IS_SPACE(c))
-	    *status = R_ST_EQL;
-	else if (c == '>')
-	    *status = R_ST_NORMAL;
-	else
-	    *status = R_ST_VALUE;
-	return 0;
+        if (c == '"')
+            *status = R_ST_DQUOTE;
+        else if (c == '\'')
+            *status = R_ST_QUOTE;
+        else if (IS_SPACE(c))
+            *status = R_ST_EQL;
+        else if (c == '>')
+            *status = R_ST_NORMAL;
+        else
+            *status = R_ST_VALUE;
+        return 0;
     case R_ST_QUOTE:
-	if (c == '\'')
-	    *status = R_ST_TAG;
-	return 0;
+        if (c == '\'')
+            *status = R_ST_TAG;
+        return 0;
     case R_ST_DQUOTE:
-	if (c == '"')
-	    *status = R_ST_TAG;
-	return 0;
+        if (c == '"')
+            *status = R_ST_TAG;
+        return 0;
     case R_ST_VALUE:
-	if (c == '>')
-	    *status = R_ST_NORMAL;
-	else if (IS_SPACE(c))
-	    *status = R_ST_TAG;
-	return 0;
+        if (c == '>')
+            *status = R_ST_NORMAL;
+        else if (IS_SPACE(c))
+            *status = R_ST_TAG;
+        return 0;
     case R_ST_AMP:
-	if (c == ';') {
-	    *status = R_ST_NORMAL;
-	    return 0;
-	}
-	else if (c != '#' && !IS_ALNUM(c) && c != '_') {
-	    /* something's wrong! */
-	    *status = R_ST_NORMAL;
-	    return 0;
-	}
-	else
-	    return 0;
+        if (c == ';') {
+            *status = R_ST_NORMAL;
+            return 0;
+        }
+        else if (c != '#' && !IS_ALNUM(c) && c != '_') {
+            /* something's wrong! */
+            *status = R_ST_NORMAL;
+            return 0;
+        }
+        else
+            return 0;
     case R_ST_CMNT1:
-	switch (c) {
-	case '-':
-	    *status = R_ST_CMNT2;
-	    break;
-	case '>':
-	    *status = R_ST_NORMAL;
-	    break;
-	default:
-	    *status = R_ST_IRRTAG;
-	}
-	return 0;
+        switch (c) {
+        case '-':
+            *status = R_ST_CMNT2;
+            break;
+        case '>':
+            *status = R_ST_NORMAL;
+            break;
+        default:
+            *status = R_ST_IRRTAG;
+        }
+        return 0;
     case R_ST_CMNT2:
-	switch (c) {
-	case '-':
-	    *status = R_ST_CMNT;
-	    break;
-	case '>':
-	    *status = R_ST_NORMAL;
-	    break;
-	default:
-	    *status = R_ST_IRRTAG;
-	}
-	return 0;
+        switch (c) {
+        case '-':
+            *status = R_ST_CMNT;
+            break;
+        case '>':
+            *status = R_ST_NORMAL;
+            break;
+        default:
+            *status = R_ST_IRRTAG;
+        }
+        return 0;
     case R_ST_CMNT:
-	if (c == '-')
-	    *status = R_ST_NCMNT1;
-	return 0;
+        if (c == '-')
+            *status = R_ST_NCMNT1;
+        return 0;
     case R_ST_NCMNT1:
-	if (c == '-')
-	    *status = R_ST_NCMNT2;
-	else
-	    *status = R_ST_CMNT;
-	return 0;
+        if (c == '-')
+            *status = R_ST_NCMNT2;
+        else
+            *status = R_ST_CMNT;
+        return 0;
     case R_ST_NCMNT2:
-	switch (c) {
-	case '>':
-	    *status = R_ST_NORMAL;
-	    break;
-	case '-':
-	    *status = R_ST_NCMNT2;
-	    break;
-	default:
-	    if (IS_SPACE(c))
-		*status = R_ST_NCMNT3;
-	    else
-		*status = R_ST_CMNT;
-	    break;
-	}
-	break;
+        switch (c) {
+        case '>':
+            *status = R_ST_NORMAL;
+            break;
+        case '-':
+            *status = R_ST_NCMNT2;
+            break;
+        default:
+            if (IS_SPACE(c))
+                *status = R_ST_NCMNT3;
+            else
+                *status = R_ST_CMNT;
+            break;
+        }
+        break;
     case R_ST_NCMNT3:
-	switch (c) {
-	case '>':
-	    *status = R_ST_NORMAL;
-	    break;
-	case '-':
-	    *status = R_ST_NCMNT1;
-	    break;
-	default:
-	    if (IS_SPACE(c))
-		*status = R_ST_NCMNT3;
-	    else
-		*status = R_ST_CMNT;
-	    break;
-	}
-	return 0;
+        switch (c) {
+        case '>':
+            *status = R_ST_NORMAL;
+            break;
+        case '-':
+            *status = R_ST_NCMNT1;
+            break;
+        default:
+            if (IS_SPACE(c))
+                *status = R_ST_NCMNT3;
+            else
+                *status = R_ST_CMNT;
+            break;
+        }
+        return 0;
     case R_ST_IRRTAG:
-	if (c == '>')
-	    *status = R_ST_NORMAL;
-	return 0;
+        if (c == '>')
+            *status = R_ST_NORMAL;
+        return 0;
     }
     /* notreached */
     return 0;
@@ -500,79 +500,79 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
     int prev_status;
 
     if (!append)
-	Strclear(buf);
+        Strclear(buf);
     if (**instr == '\0')
-	return 0;
+        return 0;
     for (p = *instr; *p; p++) {
-	prev_status = *status;
-	next_status(*p, status);
-	switch (*status) {
-	case R_ST_NORMAL:
-	    if (prev_status == R_ST_AMP && *p != ';') {
-		p--;
-		break;
-	    }
-	    if (prev_status == R_ST_NCMNT2 || prev_status == R_ST_NCMNT3 ||
-		prev_status == R_ST_IRRTAG || prev_status == R_ST_CMNT1) {
-		if (prev_status == R_ST_CMNT1 && !append && !pre)
-		    Strclear(buf);
-		if (pre)
-		    Strcat_char(buf, *p);
-		p++;
-		goto proc_end;
-	    }
-	    Strcat_char(buf, (!pre && IS_SPACE(*p)) ? ' ' : *p);
-	    if (ST_IS_REAL_TAG(prev_status)) {
-		*instr = p + 1;
-		if (buf->length < 2 ||
-		    buf->ptr[buf->length - 2] != '<' ||
-		    buf->ptr[buf->length - 1] != '>')
-		    return 1;
-		Strshrink(buf, 2);
-	    }
-	    break;
-	case R_ST_TAG0:
-	case R_ST_TAG:
-	    if (prev_status == R_ST_NORMAL && p != *instr) {
-		*instr = p;
-		*status = prev_status;
-		return 1;
-	    }
-	    if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p)) {
-		/* it seems that this '<' is not a beginning of a tag */
-		/*
-		 * Strcat_charp(buf, "&lt;");
-		 */
-		Strcat_char(buf, '<');
-		*status = R_ST_NORMAL;
-	    }
-	    else
-		Strcat_char(buf, *p);
-	    break;
-	case R_ST_EQL:
-	case R_ST_QUOTE:
-	case R_ST_DQUOTE:
-	case R_ST_VALUE:
-	case R_ST_AMP:
-	    Strcat_char(buf, *p);
-	    break;
-	case R_ST_CMNT:
-	case R_ST_IRRTAG:
-	    if (pre)
-		Strcat_char(buf, *p);
-	    else if (!append)
-		Strclear(buf);
-	    break;
-	case R_ST_CMNT1:
-	case R_ST_CMNT2:
-	case R_ST_NCMNT1:
-	case R_ST_NCMNT2:
-	case R_ST_NCMNT3:
-	    /* do nothing */
-	    if (pre)
-		Strcat_char(buf, *p);
-	    break;
-	}
+        prev_status = *status;
+        next_status(*p, status);
+        switch (*status) {
+        case R_ST_NORMAL:
+            if (prev_status == R_ST_AMP && *p != ';') {
+                p--;
+                break;
+            }
+            if (prev_status == R_ST_NCMNT2 || prev_status == R_ST_NCMNT3 ||
+                prev_status == R_ST_IRRTAG || prev_status == R_ST_CMNT1) {
+                if (prev_status == R_ST_CMNT1 && !append && !pre)
+                    Strclear(buf);
+                if (pre)
+                    Strcat_char(buf, *p);
+                p++;
+                goto proc_end;
+            }
+            Strcat_char(buf, (!pre && IS_SPACE(*p)) ? ' ' : *p);
+            if (ST_IS_REAL_TAG(prev_status)) {
+                *instr = p + 1;
+                if (buf->length < 2 ||
+                    buf->ptr[buf->length - 2] != '<' ||
+                    buf->ptr[buf->length - 1] != '>')
+                    return 1;
+                Strshrink(buf, 2);
+            }
+            break;
+        case R_ST_TAG0:
+        case R_ST_TAG:
+            if (prev_status == R_ST_NORMAL && p != *instr) {
+                *instr = p;
+                *status = prev_status;
+                return 1;
+            }
+            if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p)) {
+                /* it seems that this '<' is not a beginning of a tag */
+                /*
+                 * Strcat_charp(buf, "&lt;");
+                 */
+                Strcat_char(buf, '<');
+                *status = R_ST_NORMAL;
+            }
+            else
+                Strcat_char(buf, *p);
+            break;
+        case R_ST_EQL:
+        case R_ST_QUOTE:
+        case R_ST_DQUOTE:
+        case R_ST_VALUE:
+        case R_ST_AMP:
+            Strcat_char(buf, *p);
+            break;
+        case R_ST_CMNT:
+        case R_ST_IRRTAG:
+            if (pre)
+                Strcat_char(buf, *p);
+            else if (!append)
+                Strclear(buf);
+            break;
+        case R_ST_CMNT1:
+        case R_ST_CMNT2:
+        case R_ST_NCMNT1:
+        case R_ST_NCMNT2:
+        case R_ST_NCMNT3:
+            /* do nothing */
+            if (pre)
+                Strcat_char(buf, *p);
+            break;
+        }
     }
   proc_end:
     *instr = p;
@@ -586,36 +586,36 @@ correct_irrtag(int status)
     Str tmp = Strnew();
 
     while (status != R_ST_NORMAL) {
-	switch (status) {
-	case R_ST_CMNT:	/* required "-->" */
-	case R_ST_NCMNT1:	/* required "->" */
-	    c = '-';
-	    break;
-	case R_ST_NCMNT2:
-	case R_ST_NCMNT3:
-	case R_ST_IRRTAG:
-	case R_ST_CMNT1:
-	case R_ST_CMNT2:
-	case R_ST_TAG:
-	case R_ST_TAG0:
-	case R_ST_EQL:		/* required ">" */
-	case R_ST_VALUE:
-	    c = '>';
-	    break;
-	case R_ST_QUOTE:
-	    c = '\'';
-	    break;
-	case R_ST_DQUOTE:
-	    c = '"';
-	    break;
-	case R_ST_AMP:
-	    c = ';';
-	    break;
-	default:
-	    return tmp;
-	}
-	next_status(c, &status);
-	Strcat_char(tmp, c);
+        switch (status) {
+        case R_ST_CMNT:	/* required "-->" */
+        case R_ST_NCMNT1:	/* required "->" */
+            c = '-';
+            break;
+        case R_ST_NCMNT2:
+        case R_ST_NCMNT3:
+        case R_ST_IRRTAG:
+        case R_ST_CMNT1:
+        case R_ST_CMNT2:
+        case R_ST_TAG:
+        case R_ST_TAG0:
+        case R_ST_EQL:		/* required ">" */
+        case R_ST_VALUE:
+            c = '>';
+            break;
+        case R_ST_QUOTE:
+            c = '\'';
+            break;
+        case R_ST_DQUOTE:
+            c = '"';
+            break;
+        case R_ST_AMP:
+            c = ';';
+            break;
+        default:
+            return tmp;
+        }
+        next_status(c, &status);
+        Strcat_char(tmp, c);
     }
     return tmp;
 }
@@ -635,70 +635,70 @@ static void
 add_auth_pass_entry(const struct auth_pass *ent, int netrc, int override)
 {
     if ((ent->host || netrc)	/* netrc accept default (host == NULL) */
-	&&(ent->is_proxy || ent->realm || netrc)
-	&& ent->uname && ent->pwd) {
-	struct auth_pass *newent = New(struct auth_pass);
-	memcpy(newent, ent, sizeof(struct auth_pass));
-	if (override) {
-	    newent->next = passwords;
-	    passwords = newent;
-	} 
-	else {
-	    if (passwords == NULL)
-		passwords = newent;
-	    else if (passwords->next == NULL)
-		passwords->next = newent;
-	    else {
-		struct auth_pass *ep = passwords;
-		for (; ep->next; ep = ep->next) ;
-		ep->next = newent;
-	    }
-	}
+        &&(ent->is_proxy || ent->realm || netrc)
+        && ent->uname && ent->pwd) {
+        struct auth_pass *newent = New(struct auth_pass);
+        memcpy(newent, ent, sizeof(struct auth_pass));
+        if (override) {
+            newent->next = passwords;
+            passwords = newent;
+        } 
+        else {
+            if (passwords == NULL)
+                passwords = newent;
+            else if (passwords->next == NULL)
+                passwords->next = newent;
+            else {
+                struct auth_pass *ep = passwords;
+                for (; ep->next; ep = ep->next) ;
+                ep->next = newent;
+            }
+        }
     }
     /* ignore invalid entries */
 }
 
 static struct auth_pass *
 find_auth_pass_entry(char *host, int port, char *realm, char *uname, 
-		     int is_proxy)
+                     int is_proxy)
 {
     struct auth_pass *ent;
     for (ent = passwords; ent != NULL; ent = ent->next) {
-	if (ent->is_proxy == is_proxy
-	    && (ent->bad != TRUE)
-	    && (!ent->host || !Strcasecmp_charp(ent->host, host))
-	    && (!ent->port || ent->port == port)
-	    && (!ent->uname || !uname || !Strcmp_charp(ent->uname, uname))
-	    && (!ent->realm || !realm || !Strcmp_charp(ent->realm, realm))
-	    )
-	    return ent;
+        if (ent->is_proxy == is_proxy
+            && (ent->bad != TRUE)
+            && (!ent->host || !Strcasecmp_charp(ent->host, host))
+            && (!ent->port || ent->port == port)
+            && (!ent->uname || !uname || !Strcmp_charp(ent->uname, uname))
+            && (!ent->realm || !realm || !Strcmp_charp(ent->realm, realm))
+            )
+            return ent;
     }
     return NULL;
 }
 
 int
 find_auth_user_passwd(ParsedURL *pu, char *realm,
-		      Str *uname, Str *pwd, int is_proxy)
+                      Str *uname, Str *pwd, int is_proxy)
 {
     struct auth_pass *ent;
 
     if (pu->user && pu->pass) {
-	*uname = Strnew_charp(pu->user);
-	*pwd = Strnew_charp(pu->pass);
-	return 1;
+        *uname = Strnew_charp(pu->user);
+        *pwd = Strnew_charp(pu->pass);
+        return 1;
     }
     ent = find_auth_pass_entry(pu->host, pu->port, realm, pu->user, is_proxy);
     if (ent) {
-	*uname = ent->uname;
-	*pwd = ent->pwd;
-	return 1;
+        *uname = ent->uname;
+        *pwd = ent->pwd;
+        return 1;
     }
     return 0;
 }
 
 void
 add_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd, 
-		     int is_proxy)
+                     int is_proxy)
 {
     struct auth_pass ent;
     memset(&ent, 0, sizeof(ent));
@@ -714,12 +714,12 @@ add_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
 
 void
 invalidate_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd, 
-			    int is_proxy)
+                            int is_proxy)
 {
     struct auth_pass *ent;
     ent = find_auth_pass_entry(pu->host, pu->port, realm, NULL, is_proxy);
     if (ent) {
-	ent->bad = TRUE;
+        ent->bad = TRUE;
     }
     return;
 }
@@ -743,15 +743,15 @@ next_token(Str arg)
     Str narg = NULL;
     char *p, *q;
     if (arg == NULL || arg->length == 0)
-	return NULL;
+        return NULL;
     p = arg->ptr;
     q = p;
     SKIP_NON_BLANKS(q);
     if (*q != '\0') {
-	*q++ = '\0';
-	SKIP_BLANKS(q);
-	if (*q != '\0')
-	    narg = Strnew_charp(q);
+        *q++ = '\0';
+        SKIP_BLANKS(q);
+        if (*q != '\0')
+            narg = Strnew_charp(q);
     }
     return narg;
 }
@@ -764,76 +764,76 @@ parsePasswd(FILE * fp, int netrc)
 
     bzero(&ent, sizeof(struct auth_pass));
     while (1) {
-	Str arg = NULL;
-	char *p;
+        Str arg = NULL;
+        char *p;
 
-	if (line == NULL || line->length == 0)
-	    line = Strfgets(fp);
-	if (line->length == 0)
-	    break;
-	Strchop(line);
-	Strremovefirstspaces(line);
-	p = line->ptr;
-	if (*p == '#' || *p == '\0') {
-	    line = NULL;
-	    continue;		/* comment or empty line */
-	}
-	arg = next_token(line);
+        if (line == NULL || line->length == 0)
+            line = Strfgets(fp);
+        if (line->length == 0)
+            break;
+        Strchop(line);
+        Strremovefirstspaces(line);
+        p = line->ptr;
+        if (*p == '#' || *p == '\0') {
+            line = NULL;
+            continue;		/* comment or empty line */
+        }
+        arg = next_token(line);
 
-	if (!strcmp(p, "machine") || !strcmp(p, "host")
-	    || (netrc && !strcmp(p, "default"))) {
-	    add_auth_pass_entry(&ent, netrc, 0);
-	    bzero(&ent, sizeof(struct auth_pass));
-	    if (netrc)
-		ent.port = 21;	/* XXX: getservbyname("ftp"); ? */
-	    if (strcmp(p, "default") != 0) {
-		line = next_token(arg);
-		ent.host = arg;
-	    }
-	    else {
-		line = arg;
-	    }
-	}
-	else if (!netrc && !strcmp(p, "port") && arg) {
-	    line = next_token(arg);
-	    ent.port = atoi(arg->ptr);
-	}
-	else if (!netrc && !strcmp(p, "proxy")) {
-	    ent.is_proxy = 1;
-	    line = arg;
-	}
-	else if (!netrc && !strcmp(p, "path")) {
-	    line = next_token(arg);
-	    /* ent.file = arg; */
-	}
-	else if (!netrc && !strcmp(p, "realm")) {
-	    /* XXX: rest of line becomes arg for realm */
-	    line = NULL;
-	    ent.realm = arg;
-	}
-	else if (!strcmp(p, "login")) {
-	    line = next_token(arg);
-	    ent.uname = arg;
-	}
-	else if (!strcmp(p, "password") || !strcmp(p, "passwd")) {
-	    line = next_token(arg);
-	    ent.pwd = arg;
-	}
-	else if (netrc && !strcmp(p, "machdef")) {
-	    while ((line = Strfgets(fp))->length != 0) {
-		if (*line->ptr == '\n')
-		    break;
-	    }
-	    line = NULL;
-	}
-	else if (netrc && !strcmp(p, "account")) {
-	    /* ignore */
-	    line = next_token(arg);
-	}
-	else {
-	    /* ignore rest of line */
-	    line = NULL;
-	}
+        if (!strcmp(p, "machine") || !strcmp(p, "host")
+            || (netrc && !strcmp(p, "default"))) {
+            add_auth_pass_entry(&ent, netrc, 0);
+            bzero(&ent, sizeof(struct auth_pass));
+            if (netrc)
+                ent.port = 21;	/* XXX: getservbyname("ftp"); ? */
+            if (strcmp(p, "default") != 0) {
+                line = next_token(arg);
+                ent.host = arg;
+            }
+            else {
+                line = arg;
+            }
+        }
+        else if (!netrc && !strcmp(p, "port") && arg) {
+            line = next_token(arg);
+            ent.port = atoi(arg->ptr);
+        }
+        else if (!netrc && !strcmp(p, "proxy")) {
+            ent.is_proxy = 1;
+            line = arg;
+        }
+        else if (!netrc && !strcmp(p, "path")) {
+            line = next_token(arg);
+            /* ent.file = arg; */
+        }
+        else if (!netrc && !strcmp(p, "realm")) {
+            /* XXX: rest of line becomes arg for realm */
+            line = NULL;
+            ent.realm = arg;
+        }
+        else if (!strcmp(p, "login")) {
+            line = next_token(arg);
+            ent.uname = arg;
+        }
+        else if (!strcmp(p, "password") || !strcmp(p, "passwd")) {
+            line = next_token(arg);
+            ent.pwd = arg;
+        }
+        else if (netrc && !strcmp(p, "machdef")) {
+            while ((line = Strfgets(fp))->length != 0) {
+                if (*line->ptr == '\n')
+                    break;
+            }
+            line = NULL;
+        }
+        else if (netrc && !strcmp(p, "account")) {
+            /* ignore */
+            line = next_token(arg);
+        }
+        else {
+            /* ignore rest of line */
+            line = NULL;
+        }
     }
     add_auth_pass_entry(&ent, netrc, 0);
 }
@@ -848,10 +848,10 @@ openSecretFile(char *fname)
     struct stat st;
 
     if (fname == NULL)
-	return NULL;
+        return NULL;
     efname = expandPath(fname);
     if (stat(efname, &st) < 0)
-	return NULL;
+        return NULL;
 
     /* check permissions, if group or others readable or writable,
      * refuse it, because it's insecure.
@@ -863,18 +863,18 @@ openSecretFile(char *fname)
      *   [w3m-dev 03368][w3m-dev 03369][w3m-dev 03370]
      */
     if (disable_secret_security_check)
-	/* do nothing */ ;
+        /* do nothing */ ;
     else if ((st.st_mode & (S_IRWXG | S_IRWXO)) != 0) {
-	if (fmInitialized) {
-	    message(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, 0, 0);
-	    refresh();
-	}
-	else {
-	    fputs(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, stderr);
-	    fputc('\n', stderr);
-	}
-	sleep(2);
-	return NULL;
+        if (fmInitialized) {
+            message(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, 0, 0);
+            refresh();
+        }
+        else {
+            fputs(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, stderr);
+            fputc('\n', stderr);
+        }
+        sleep(2);
+        return NULL;
     }
 
     return fopen(efname, "r");
@@ -888,15 +888,15 @@ loadPasswd(void)
     passwords = NULL;
     fp = openSecretFile(passwd_file);
     if (fp != NULL) {
-	parsePasswd(fp, 0);
-	fclose(fp);
+        parsePasswd(fp, 0);
+        fclose(fp);
     }
 
     /* for FTP */
     fp = openSecretFile("~/.netrc");
     if (fp != NULL) {
-	parsePasswd(fp, 1);
-	fclose(fp);
+        parsePasswd(fp, 1);
+        fclose(fp);
     }
     return;
 }
@@ -909,17 +909,17 @@ last_modified(Buffer *buf)
     struct stat st;
 
     if (buf->document_header) {
-	for (ti = buf->document_header->first; ti; ti = ti->next) {
-	    if (strncasecmp(ti->ptr, "Last-modified: ", 15) == 0) {
-		return ti->ptr + 15;
-	    }
-	}
-	return "unknown";
+        for (ti = buf->document_header->first; ti; ti = ti->next) {
+            if (strncasecmp(ti->ptr, "Last-modified: ", 15) == 0) {
+                return ti->ptr + 15;
+            }
+        }
+        return "unknown";
     }
     else if (buf->currentURL.scheme == SCM_LOCAL) {
-	if (stat(buf->currentURL.file, &st) < 0)
-	    return "unknown";
-	return ctime(&st.st_mtime);
+        if (stat(buf->currentURL.file, &st) < 0)
+            return "unknown";
+        return ctime(&st.st_mtime);
     }
     return "unknown";
 }
@@ -940,25 +940,25 @@ romanNum2(int l, int n)
     case 1:
     case 2:
     case 3:
-	for (; n > 0; n--)
-	    Strcat_char(s, roman_num1[l]);
-	break;
+        for (; n > 0; n--)
+            Strcat_char(s, roman_num1[l]);
+        break;
     case 4:
-	Strcat_char(s, roman_num1[l]);
-	Strcat_char(s, roman_num5[l]);
-	break;
+        Strcat_char(s, roman_num1[l]);
+        Strcat_char(s, roman_num5[l]);
+        break;
     case 5:
     case 6:
     case 7:
     case 8:
-	Strcat_char(s, roman_num5[l]);
-	for (n -= 5; n > 0; n--)
-	    Strcat_char(s, roman_num1[l]);
-	break;
+        Strcat_char(s, roman_num5[l]);
+        for (n -= 5; n > 0; n--)
+            Strcat_char(s, roman_num1[l]);
+        break;
     case 9:
-	Strcat_char(s, roman_num1[l]);
-	Strcat_char(s, roman_num1[l + 1]);
-	break;
+        Strcat_char(s, roman_num1[l]);
+        Strcat_char(s, roman_num1[l + 1]);
+        break;
     }
     return s;
 }
@@ -969,10 +969,10 @@ romanNumeral(int n)
     Str r = Strnew();
 
     if (n <= 0)
-	return r;
+        return r;
     if (n >= 4000) {
-	Strcat_charp(r, "**");
-	return r;
+        Strcat_charp(r, "**");
+        return r;
     }
     Strcat(r, romanNum2(3, n / 1000));
     Strcat(r, romanNum2(2, (n % 1000) / 100));
@@ -990,16 +990,16 @@ romanAlphabet(int n)
     char buf[14];
 
     if (n <= 0)
-	return r;
+        return r;
 
     l = 0;
     while (n) {
-	buf[l++] = 'a' + (n - 1) % 26;
-	n = (n - 1) / 26;
+        buf[l++] = 'a' + (n - 1) % 26;
+        n = (n - 1) / 26;
     }
     l--;
     for (; l >= 0; l--)
-	Strcat_char(r, buf[l]);
+        Strcat_char(r, buf[l]);
 
     return r;
 }
@@ -1042,16 +1042,16 @@ close_all_fds_except(int i, int f)
 {
     switch (i) {		/* fall through */
     case 0:
-	dup2(open(DEV_NULL_PATH, O_RDONLY), 0);
+        dup2(open(DEV_NULL_PATH, O_RDONLY), 0);
     case 1:
-	dup2(open(DEV_NULL_PATH, O_WRONLY), 1);
+        dup2(open(DEV_NULL_PATH, O_WRONLY), 1);
     case 2:
-	dup2(open(DEV_NULL_PATH, O_WRONLY), 2);
+        dup2(open(DEV_NULL_PATH, O_WRONLY), 2);
     }
     /* close all other file descriptors (socket, ...) */
     for (i = 3; i < FOPEN_MAX; i++) {
-	if (i != f)
-	    close(i);
+        if (i != f)
+            close(i);
     }
 }
 
@@ -1062,7 +1062,7 @@ setup_child(int child, int i, int f)
     mySignal(SIGINT, SIG_IGN);
 #ifndef __MINGW32_VERSION
     if (!child)
-	SETPGRP();
+        SETPGRP();
 #endif /* __MINGW32_VERSION */
     close_tty();
     close_all_fds_except(i, f);
@@ -1080,51 +1080,51 @@ open_pipe_rw(FILE ** fr, FILE ** fw)
     pid_t pid;
 
     if (fr && pipe(fdr) < 0)
-	goto err0;
+        goto err0;
     if (fw && pipe(fdw) < 0)
-	goto err1;
+        goto err1;
 
     flush_tty();
     pid = fork();
     if (pid < 0)
-	goto err2;
+        goto err2;
     if (pid == 0) {
-	/* child */
-	if (fr) {
-	    close(fdr[0]);
-	    dup2(fdr[1], 1);
-	}
-	if (fw) {
-	    close(fdw[1]);
-	    dup2(fdw[0], 0);
-	}
+        /* child */
+        if (fr) {
+            close(fdr[0]);
+            dup2(fdr[1], 1);
+        }
+        if (fw) {
+            close(fdw[1]);
+            dup2(fdw[0], 0);
+        }
     }
     else {
-	if (fr) {
-	    close(fdr[1]);
-	    if (*fr == stdin)
-		dup2(fdr[0], 0);
-	    else
-		*fr = fdopen(fdr[0], "r");
-	}
-	if (fw) {
-	    close(fdw[0]);
-	    if (*fw == stdout)
-		dup2(fdw[1], 1);
-	    else
-		*fw = fdopen(fdw[1], "w");
-	}
+        if (fr) {
+            close(fdr[1]);
+            if (*fr == stdin)
+                dup2(fdr[0], 0);
+            else
+                *fr = fdopen(fdr[0], "r");
+        }
+        if (fw) {
+            close(fdw[0]);
+            if (*fw == stdout)
+                dup2(fdw[1], 1);
+            else
+                *fw = fdopen(fdw[1], "w");
+        }
     }
     return pid;
   err2:
     if (fw) {
-	close(fdw[0]);
-	close(fdw[1]);
+        close(fdw[0]);
+        close(fdw[1]);
     }
   err1:
     if (fr) {
-	close(fdr[0]);
-	close(fdr[1]);
+        close(fdr[0]);
+        close(fdr[1]);
     }
   err0:
     return (pid_t) - 1;
@@ -1145,20 +1145,20 @@ mySystem(char *command, int background)
 #ifndef __MINGW32_VERSION
     if (background) {
 #ifndef __EMX__
-	flush_tty();
-	if (!fork()) {
-	    setup_child(FALSE, 0, -1);
-	    myExec(command);
-	}
+        flush_tty();
+        if (!fork()) {
+            setup_child(FALSE, 0, -1);
+            myExec(command);
+        }
 #else
-	Str cmd = Strnew_charp("start /f ");
-	Strcat_charp(cmd, command);
-	system(cmd->ptr);
+        Str cmd = Strnew_charp("start /f ");
+        Strcat_charp(cmd, command);
+        system(cmd->ptr);
 #endif
     }
     else
 #endif /* __MINGW32_VERSION */
-	system(command);
+        system(command);
 }
 
 Str
@@ -1169,23 +1169,23 @@ myExtCommand(char *cmd, char *arg, int redirect)
     int set_arg = FALSE;
 
     for (p = cmd; *p; p++) {
-	if (*p == '%' && *(p + 1) == 's' && !set_arg) {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(cmd, (int)(p - cmd));
-	    Strcat_charp(tmp, arg);
-	    set_arg = TRUE;
-	    p++;
-	}
-	else {
-	    if (tmp)
-		Strcat_char(tmp, *p);
-	}
+        if (*p == '%' && *(p + 1) == 's' && !set_arg) {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(cmd, (int)(p - cmd));
+            Strcat_charp(tmp, arg);
+            set_arg = TRUE;
+            p++;
+        }
+        else {
+            if (tmp)
+                Strcat_char(tmp, *p);
+        }
     }
     if (!set_arg) {
-	if (redirect)
-	    tmp = Strnew_m_charp("(", cmd, ") < ", arg, NULL);
-	else
-	    tmp = Strnew_m_charp(cmd, " ", arg, NULL);
+        if (redirect)
+            tmp = Strnew_m_charp("(", cmd, ") < ", arg, NULL);
+        else
+            tmp = Strnew_m_charp(cmd, " ", arg, NULL);
     }
     return tmp;
 }
@@ -1198,31 +1198,31 @@ myEditor(char *cmd, char *file, int line)
     int set_file = FALSE, set_line = FALSE;
 
     for (p = cmd; *p; p++) {
-	if (*p == '%' && *(p + 1) == 's' && !set_file) {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(cmd, (int)(p - cmd));
-	    Strcat_charp(tmp, file);
-	    set_file = TRUE;
-	    p++;
-	}
-	else if (*p == '%' && *(p + 1) == 'd' && !set_line && line > 0) {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(cmd, (int)(p - cmd));
-	    Strcat(tmp, Sprintf("%d", line));
-	    set_line = TRUE;
-	    p++;
-	}
-	else {
-	    if (tmp)
-		Strcat_char(tmp, *p);
-	}
+        if (*p == '%' && *(p + 1) == 's' && !set_file) {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(cmd, (int)(p - cmd));
+            Strcat_charp(tmp, file);
+            set_file = TRUE;
+            p++;
+        }
+        else if (*p == '%' && *(p + 1) == 'd' && !set_line && line > 0) {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(cmd, (int)(p - cmd));
+            Strcat(tmp, Sprintf("%d", line));
+            set_line = TRUE;
+            p++;
+        }
+        else {
+            if (tmp)
+                Strcat_char(tmp, *p);
+        }
     }
     if (!set_file) {
-	if (tmp == NULL)
-	    tmp = Strnew_charp(cmd);
-	if (!set_line && line > 1 && strcasestr(cmd, "vi"))
-	    Strcat(tmp, Sprintf(" +%d", line));
-	Strcat_m_charp(tmp, " ", file, NULL);
+        if (tmp == NULL)
+            tmp = Strnew_charp(cmd);
+        if (!set_line && line > 1 && strcasestr(cmd, "vi"))
+            Strcat(tmp, Sprintf(" +%d", line));
+        Strcat_m_charp(tmp, " ", file, NULL);
     }
     return tmp;
 }
@@ -1242,38 +1242,38 @@ expandName(char *name)
     Str extpath = NULL;
 
     if (name == NULL)
-	return NULL;
+        return NULL;
     p = name;
     if (*p == '/') {
-	if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2)))
-	    && personal_document_root) {
-	    char *q;
-	    p += 2;
-	    q = strchr(p, '/');
-	    if (q) {		/* /~user/dir... */
-		passent = getpwnam(allocStr(p, q - p));
-		p = q;
-	    }
-	    else {		/* /~user */
-		passent = getpwnam(p);
-		p = "";
-	    }
-	    if (!passent)
-		goto rest;
-	    extpath = Strnew_m_charp(passent->pw_dir, "/",
-				     personal_document_root, NULL);
-	    if (*personal_document_root == '\0' && *p == '/')
-		p++;
-	}
-	else
-	    goto rest;
-	if (Strcmp_charp(extpath, "/") == 0 && *p == '/')
-	    p++;
-	Strcat_charp(extpath, p);
-	return extpath->ptr;
+        if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2)))
+            && personal_document_root) {
+            char *q;
+            p += 2;
+            q = strchr(p, '/');
+            if (q) {		/* /~user/dir... */
+                passent = getpwnam(allocStr(p, q - p));
+                p = q;
+            }
+            else {		/* /~user */
+                passent = getpwnam(p);
+                p = "";
+            }
+            if (!passent)
+                goto rest;
+            extpath = Strnew_m_charp(passent->pw_dir, "/",
+                                     personal_document_root, NULL);
+            if (*personal_document_root == '\0' && *p == '/')
+                p++;
+        }
+        else
+            goto rest;
+        if (Strcmp_charp(extpath, "/") == 0 && *p == '/')
+            p++;
+        Strcat_charp(extpath, p);
+        return extpath->ptr;
     }
     else
-	return expandPath(p);
+        return expandPath(p);
   rest:
     return name;
 }
@@ -1293,39 +1293,39 @@ file_to_url(char *file)
     file = expandPath(file);
 #ifdef SUPPORT_NETBIOS_SHARE
     if (file[0] == '/' && file[1] == '/') {
-	char *p;
-	file += 2;
-	if (*file) {
-	    p = strchr(file, '/');
-	    if (p != NULL && p != file) {
-		host = allocStr(file, (p - file));
-		file = p;
-	    }
-	}
+        char *p;
+        file += 2;
+        if (*file) {
+            p = strchr(file, '/');
+            if (p != NULL && p != file) {
+                host = allocStr(file, (p - file));
+                file = p;
+            }
+        }
     }
 #endif
 #ifdef SUPPORT_DOS_DRIVE_PREFIX
     if (IS_ALPHA(file[0]) && file[1] == ':') {
-	drive = allocStr(file, 2);
-	file += 2;
+        drive = allocStr(file, 2);
+        file += 2;
     }
     else
 #endif
     if (file[0] != '/') {
-	tmp = Strnew_charp(CurrentDir);
-	if (Strlastchar(tmp) != '/')
-	    Strcat_char(tmp, '/');
-	Strcat_charp(tmp, file);
-	file = tmp->ptr;
+        tmp = Strnew_charp(CurrentDir);
+        if (Strlastchar(tmp) != '/')
+            Strcat_char(tmp, '/');
+        Strcat_charp(tmp, file);
+        file = tmp->ptr;
     }
     tmp = Strnew_charp("file://");
 #ifdef SUPPORT_NETBIOS_SHARE
     if (host)
-	Strcat_charp(tmp, host);
+        Strcat_charp(tmp, host);
 #endif
 #ifdef SUPPORT_DOS_DRIVE_PREFIX
     if (drive)
-	Strcat_charp(tmp, drive);
+        Strcat_charp(tmp, drive);
 #endif
     Strcat_charp(tmp, file_quote(cleanupName(file)));
     return tmp->ptr;
@@ -1346,7 +1346,7 @@ url_unquote_conv0(char *url)
     tmp = Str_url_unquote(Strnew_charp(url), FALSE, TRUE);
 #ifdef USE_M17N
     if (!charset || charset == WC_CES_US_ASCII)
-	charset = SystemCharset;
+        charset = SystemCharset;
     WcOption.auto_detect = WC_OPT_DETECT_ON;
     tmp = convertLine(NULL, tmp, RAW_MODE, &charset, charset);
     WcOption.auto_detect = old_auto_detect;
@@ -1364,9 +1364,9 @@ tmpfname(int type, char *ext)
 {
     Str tmpf;
     tmpf = Sprintf("%s/w3m%s%d-%d%s",
-		   tmp_dir,
-		   tmpf_base[type],
-		   CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
+                   tmp_dir,
+                   tmpf_base[type],
+                   CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
     pushText(fileToDelete, tmpf->ptr);
     return tmpf;
 }
@@ -1384,16 +1384,16 @@ get_day(char **s)
     char *ss = *s;
 
     if (!**s)
-	return -1;
+        return -1;
 
     while (**s && IS_DIGIT(**s))
-	Strcat_char(tmp, *((*s)++));
+        Strcat_char(tmp, *((*s)++));
 
     day = atoi(tmp->ptr);
 
     if (day < 1 || day > 31) {
-	*s = ss;
-	return -1;
+        *s = ss;
+        return -1;
     }
     return day;
 }
@@ -1406,24 +1406,24 @@ get_month(char **s)
     char *ss = *s;
 
     if (!**s)
-	return -1;
+        return -1;
 
     while (**s && IS_DIGIT(**s))
-	Strcat_char(tmp, *((*s)++));
+        Strcat_char(tmp, *((*s)++));
     if (tmp->length > 0) {
-	mon = atoi(tmp->ptr);
+        mon = atoi(tmp->ptr);
     }
     else {
-	while (**s && IS_ALPHA(**s))
-	    Strcat_char(tmp, *((*s)++));
-	for (mon = 1; mon <= 12; mon++) {
-	    if (strncmp(tmp->ptr, monthtbl[mon - 1], 3) == 0)
-		break;
-	}
+        while (**s && IS_ALPHA(**s))
+            Strcat_char(tmp, *((*s)++));
+        for (mon = 1; mon <= 12; mon++) {
+            if (strncmp(tmp->ptr, monthtbl[mon - 1], 3) == 0)
+                break;
+        }
     }
     if (mon < 1 || mon > 12) {
-	*s = ss;
-	return -1;
+        *s = ss;
+        return -1;
     }
     return mon;
 }
@@ -1436,21 +1436,21 @@ get_year(char **s)
     char *ss = *s;
 
     if (!**s)
-	return -1;
+        return -1;
 
     while (**s && IS_DIGIT(**s))
-	Strcat_char(tmp, *((*s)++));
+        Strcat_char(tmp, *((*s)++));
     if (tmp->length != 2 && tmp->length != 4) {
-	*s = ss;
-	return -1;
+        *s = ss;
+        return -1;
     }
 
     year = atoi(tmp->ptr);
     if (tmp->length == 2) {
-	if (year >= 70)
-	    year += 1900;
-	else
-	    year += 2000;
+        if (year >= 70)
+            year += 1900;
+        else
+            year += 2000;
     }
     return year;
 }
@@ -1462,36 +1462,36 @@ get_time(char **s, int *hour, int *min, int *sec)
     char *ss = *s;
 
     if (!**s)
-	return -1;
+        return -1;
 
     while (**s && IS_DIGIT(**s))
-	Strcat_char(tmp, *((*s)++));
+        Strcat_char(tmp, *((*s)++));
     if (**s != ':') {
-	*s = ss;
-	return -1;
+        *s = ss;
+        return -1;
     }
     *hour = atoi(tmp->ptr);
 
     (*s)++;
     Strclear(tmp);
     while (**s && IS_DIGIT(**s))
-	Strcat_char(tmp, *((*s)++));
+        Strcat_char(tmp, *((*s)++));
     if (**s != ':') {
-	*s = ss;
-	return -1;
+        *s = ss;
+        return -1;
     }
     *min = atoi(tmp->ptr);
 
     (*s)++;
     Strclear(tmp);
     while (**s && IS_DIGIT(**s))
-	Strcat_char(tmp, *((*s)++));
+        Strcat_char(tmp, *((*s)++));
     *sec = atoi(tmp->ptr);
 
     if (*hour < 0 || *hour >= 24 ||
-	*min < 0 || *min >= 60 || *sec < 0 || *sec >= 60) {
-	*s = ss;
-	return -1;
+        *min < 0 || *min >= 60 || *sec < 0 || *sec >= 60) {
+        *s = ss;
+        return -1;
     }
     return 0;
 }
@@ -1504,16 +1504,16 @@ get_zone(char **s, int *z_hour, int *z_min)
     char *ss = *s;
 
     if (!**s)
-	return -1;
+        return -1;
 
     if (**s == '+' || **s == '-')
-	Strcat_char(tmp, *((*s)++));
+        Strcat_char(tmp, *((*s)++));
     while (**s && IS_DIGIT(**s))
-	Strcat_char(tmp, *((*s)++));
+        Strcat_char(tmp, *((*s)++));
     if (!(tmp->length == 4 && IS_DIGIT(*ss)) &&
-	!(tmp->length == 5 && (*ss == '+' || *ss == '-'))) {
-	*s = ss;
-	return -1;
+        !(tmp->length == 5 && (*ss == '+' || *ss == '-'))) {
+        *s = ss;
+        return -1;
     }
 
     zone = atoi(tmp->ptr);
@@ -1530,7 +1530,7 @@ mymktime(char *timestr)
     int day, mon, year, hour, min, sec, z_hour = 0, z_min = 0;
 
     if (!(timestr && *timestr))
-	return -1;
+        return -1;
     s = timestr;
 
 #ifdef DEBUG
@@ -1538,79 +1538,79 @@ mymktime(char *timestr)
 #endif				/* DEBUG */
 
     while (*s && IS_ALPHA(*s))
-	s++;
+        s++;
     while (*s && !IS_ALNUM(*s))
-	s++;
+        s++;
 
     if (IS_DIGIT(*s)) {
-	/* RFC 1123 or RFC 850 format */
-	if ((day = get_day(&s)) == -1)
-	    return -1;
+        /* RFC 1123 or RFC 850 format */
+        if ((day = get_day(&s)) == -1)
+            return -1;
 
-	while (*s && !IS_ALNUM(*s))
-	    s++;
-	if ((mon = get_month(&s)) == -1)
-	    return -1;
+        while (*s && !IS_ALNUM(*s))
+            s++;
+        if ((mon = get_month(&s)) == -1)
+            return -1;
 
-	while (*s && !IS_DIGIT(*s))
-	    s++;
-	if ((year = get_year(&s)) == -1)
-	    return -1;
+        while (*s && !IS_DIGIT(*s))
+            s++;
+        if ((year = get_year(&s)) == -1)
+            return -1;
 
-	while (*s && !IS_DIGIT(*s))
-	    s++;
-	if (!*s) {
-	    hour = 0;
-	    min = 0;
-	    sec = 0;
-	}
-	else {
-	    if (get_time(&s, &hour, &min, &sec) == -1)
-		return -1;
-	    while (*s && !IS_DIGIT(*s) && *s != '+' && *s != '-')
-		s++;
-	    get_zone(&s, &z_hour, &z_min);
-	}
+        while (*s && !IS_DIGIT(*s))
+            s++;
+        if (!*s) {
+            hour = 0;
+            min = 0;
+            sec = 0;
+        }
+        else {
+            if (get_time(&s, &hour, &min, &sec) == -1)
+                return -1;
+            while (*s && !IS_DIGIT(*s) && *s != '+' && *s != '-')
+                s++;
+            get_zone(&s, &z_hour, &z_min);
+        }
     }
     else {
-	/* ANSI C asctime() format. */
-	while (*s && !IS_ALNUM(*s))
-	    s++;
-	if ((mon = get_month(&s)) == -1)
-	    return -1;
+        /* ANSI C asctime() format. */
+        while (*s && !IS_ALNUM(*s))
+            s++;
+        if ((mon = get_month(&s)) == -1)
+            return -1;
 
-	while (*s && !IS_DIGIT(*s))
-	    s++;
-	if ((day = get_day(&s)) == -1)
-	    return -1;
+        while (*s && !IS_DIGIT(*s))
+            s++;
+        if ((day = get_day(&s)) == -1)
+            return -1;
 
-	while (*s && !IS_DIGIT(*s))
-	    s++;
-	if (get_time(&s, &hour, &min, &sec) == -1)
-	    return -1;
+        while (*s && !IS_DIGIT(*s))
+            s++;
+        if (get_time(&s, &hour, &min, &sec) == -1)
+            return -1;
 
-	while (*s && !IS_DIGIT(*s))
-	    s++;
-	if ((year = get_year(&s)) == -1)
-	    return -1;
+        while (*s && !IS_DIGIT(*s))
+            s++;
+        if ((year = get_year(&s)) == -1)
+            return -1;
     }
 #ifdef DEBUG
     fprintf(stderr,
-	    "year=%d month=%d day=%d hour:min:sec=%d:%d:%d zone=%d:%d\n", year,
-	    mon, day, hour, min, sec, z_hour, z_min);
+            "year=%d month=%d day=%d hour:min:sec=%d:%d:%d zone=%d:%d\n", year,
+            mon, day, hour, min, sec, z_hour, z_min);
 #endif				/* DEBUG */
 
     mon -= 3;
     if (mon < 0) {
-	mon += 12;
-	year--;
+        mon += 12;
+        year--;
     }
     day += (year - 1968) * 1461 / 4;
     day += ((((mon * 153) + 2) / 5) - 672);
     hour -= z_hour;
     min -= z_min;
     return (time_t) ((day * 60 * 60 * 24) +
-		     (hour * 60 * 60) + (min * 60) + sec);
+                     (hour * 60 * 60) + (min * 60) + sec);
 }
 
 #ifdef USE_COOKIE
@@ -1633,53 +1633,53 @@ FQDN(char *host)
 #endif				/* INET6 */
 
     if (host == NULL)
-	return NULL;
+        return NULL;
 
     if (strcasecmp(host, "localhost") == 0)
-	return host;
+        return host;
 
     for (p = host; *p && *p != '.'; p++) ;
 
     if (*p == '.')
-	return host;
+        return host;
 
 #ifndef INET6
     if (!(entry = gethostbyname(host)))
-	return NULL;
+        return NULL;
 
     return allocStr(entry->h_name, -1);
 #else				/* INET6 */
     for (af = ai_family_order_table[DNS_order];; af++) {
-	int error;
-	struct addrinfo hints;
-	struct addrinfo *res, *res0;
-	char *namebuf;
+        int error;
+        struct addrinfo hints;
+        struct addrinfo *res, *res0;
+        char *namebuf;
 
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_flags = AI_CANONNAME;
-	hints.ai_family = *af;
-	hints.ai_socktype = SOCK_STREAM;
-	error = getaddrinfo(host, NULL, &hints, &res0);
-	if (error) {
-	    if (*af == PF_UNSPEC) {
-		/* all done */
-		break;
-	    }
-	    /* try next address family */
-	    continue;
-	}
-	for (res = res0; res != NULL; res = res->ai_next) {
-	    if (res->ai_canonname) {
-		/* found */
-		namebuf = strdup(res->ai_canonname);
-		freeaddrinfo(res0);
-		return namebuf;
-	    }
-	}
-	freeaddrinfo(res0);
-	if (*af == PF_UNSPEC) {
-	    break;
-	}
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_flags = AI_CANONNAME;
+        hints.ai_family = *af;
+        hints.ai_socktype = SOCK_STREAM;
+        error = getaddrinfo(host, NULL, &hints, &res0);
+        if (error) {
+            if (*af == PF_UNSPEC) {
+                /* all done */
+                break;
+            }
+            /* try next address family */
+            continue;
+        }
+        for (res = res0; res != NULL; res = res->ai_next) {
+            if (res->ai_canonname) {
+                /* found */
+                namebuf = strdup(res->ai_canonname);
+                freeaddrinfo(res0);
+                return namebuf;
+            }
+        }
+        freeaddrinfo(res0);
+        if (*af == PF_UNSPEC) {
+            break;
+        }
     }
     /* all failed */
     return NULL;
@@ -1696,13 +1696,13 @@ void (*mySignal(int signal_number, void (*action) (int))) (int) {
     new_action.sa_handler = action;
     if (signal_number == SIGALRM) {
 #ifdef	SA_INTERRUPT
-	new_action.sa_flags = SA_INTERRUPT;
+        new_action.sa_flags = SA_INTERRUPT;
 #else
-	new_action.sa_flags = 0;
+        new_action.sa_flags = 0;
 #endif
     }
     else {
-	new_action.sa_flags = SA_RESTART;
+        new_action.sa_flags = SA_RESTART;
     }
     sigaction(signal_number, &new_action, &old_action);
     return (old_action.sa_handler);

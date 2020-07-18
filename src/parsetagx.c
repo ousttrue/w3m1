@@ -5,7 +5,7 @@
 #include "Str.h"
 #include "parsetagx.h"
 #include "hash.h"
-
+#include "tagtable.h"
 #include "html.c"
 
 /* parse HTML tag */
@@ -107,14 +107,12 @@ toVAlign(char *oval, int *valign)
     return 1;
 }
 
-extern Hash_si tagtable;
 #define MAX_TAG_LEN 64
 
 struct parsed_tag *
 parse_tag(char **s, int internal)
 {
     struct parsed_tag *tag = NULL;
-    int tag_id;
     char tagname[MAX_TAG_LEN], attrname[MAX_TAG_LEN];
     char *p, *q;
     int i, attr_id = 0, nattr;
@@ -136,7 +134,7 @@ parse_tag(char **s, int internal)
 	   *q != '>')
 	q++;
 
-    tag_id = getHash_si(&tagtable, tagname, HTML_UNKNOWN);
+    int tag_id = GetTag(tagname, HTML_UNKNOWN);
 
     if (tag_id == HTML_UNKNOWN ||
 	(!internal && TagMAP[tag_id].flag & TFLG_INT))

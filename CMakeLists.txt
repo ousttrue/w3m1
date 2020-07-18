@@ -26,6 +26,7 @@ add_executable(w3m
     src/main.cpp
     src/dispatcher.cpp
     src/commands.cpp
+    src/tagtable.cpp
     # src/defun.c
     src/public.c
     libwc/big5.c
@@ -93,7 +94,6 @@ add_executable(w3m
     src/keybind.c
     src/parsetagx.c
     src/anchor.c
-    src/tagtable.c
 )
 target_include_directories(w3m
 PUBLIC
