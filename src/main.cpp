@@ -503,6 +503,7 @@ int main(int argc, char **argv, char **envp)
 
     /* initializations */
     init_rc();
+    register_commands();
 
     LoadHist = newHist();
     SaveHist = newHist();
@@ -919,8 +920,6 @@ int main(int argc, char **argv, char **envp)
 #ifdef SIGPIPE
     mySignal(SIGPIPE, SigPipe);
 #endif
-
-    register_commands();
 
     /*orig_GC_warn_proc =*/GC_set_warn_proc(wrap_GC_warn_proc);
     err_msg = Strnew();

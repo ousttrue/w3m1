@@ -264,7 +264,7 @@ extern "C"
     {
         auto s = getWord(p);
         auto f = getFuncList(s);
-        if (f < 0)
+        if (!f)
         {
             char *emsg = nullptr;
             if (lineno > 0)
@@ -288,7 +288,7 @@ extern "C"
             return;
         }
         auto f = GetFunc(&p, lineno, verbose);
-        if (f < 0)
+        if (!f)
         {
             return;
         }
@@ -372,7 +372,7 @@ extern "C"
 
     void RegisterCommand(const char *name, const char *key, const char *description, void (*command)())
     {
-        g_commandMap[name] = command;
+        g_commandMap[key] = command;
     }
 
     Command getFuncList(char *name)
