@@ -3,6 +3,7 @@
 #include "indep.h"
 #include "myctype.h"
 #include "istream.h"
+#include "file.h"
 #include <signal.h>
 #ifdef USE_SSL
 #include <openssl/x509v3.h>

@@ -6,6 +6,7 @@
 #include "indep.h"
 #include "frame.h"
 #include "menu.h"
+#include "file.h"
 #include <math.h>
 
 MapList *

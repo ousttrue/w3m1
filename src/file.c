@@ -8,6 +8,7 @@
 #include "public.h"
 #include "symbol.h"
 #include "map.h"
+#include "display.h"
 #include <sys/types.h>
 #include "myctype.h"
 #include <signal.h>

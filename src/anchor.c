@@ -4,6 +4,7 @@
 #include "anchor.h"
 #include "myctype.h"
 #include "regex.h"
+#include "file.h"
 
 #define FIRST_ANCHOR_SIZE 30
 

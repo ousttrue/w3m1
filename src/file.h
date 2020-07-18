@@ -74,3 +74,61 @@ void save_fonteffect(struct html_feed_environ *h_env,
                      struct readbuffer *obuf);
 void restore_fonteffect(struct html_feed_environ *h_env,
                         struct readbuffer *obuf);
+Str process_n_select(void);
+void feed_select(char *str);
+void process_option(void);
+Str process_n_textarea(void);
+void feed_textarea(char *str);
+Str process_n_form(void);
+int getMetaRefreshParam(char *q, Str *refresh_uri);
+void HTMLlineproc2(Buffer *buf, TextLineList *tl);
+void HTMLlineproc0(char *istr, struct html_feed_environ *h_env,
+                   int internal);
+#define HTMLlineproc1(x, y) HTMLlineproc0(x, y, TRUE)
+Buffer *loadHTMLBuffer(URLFile *f, Buffer *newBuf);
+char *convert_size(clen_t size, int usefloat);
+char *convert_size2(clen_t size1, clen_t size2, int usefloat);
+void showProgress(clen_t *linelen, clen_t *trbyte);
+void init_henv(struct html_feed_environ *, struct readbuffer *,
+               struct environment *, int, TextLineList *, int, int);
+void completeHTMLstream(struct html_feed_environ *,
+                        struct readbuffer *);
+void loadHTMLstream(URLFile *f, Buffer *newBuf, FILE *src,
+                    int internal);
+Buffer *loadHTMLString(Str page);
+
+Buffer *loadBuffer(URLFile *uf, Buffer *newBuf);
+Buffer *loadImageBuffer(URLFile *uf, Buffer *newBuf);
+void saveBuffer(Buffer *buf, FILE *f, int cont);
+void saveBufferBody(Buffer *buf, FILE *f, int cont);
+Buffer *getshell(char *cmd);
+Buffer *getpipe(char *cmd);
+Buffer *openPagerBuffer(InputStream stream, Buffer *buf);
+Buffer *openGeneralPagerBuffer(InputStream stream);
+Line *getNextPage(Buffer *buf, int plen);
+int save2tmp(URLFile uf, char *tmpf);
+int doExternal(URLFile uf, char *path, char *type, Buffer **bufp,
+                      Buffer *defaultbuf);
+int _doFileCopy(char *tmpf, char *defstr, int download);
+#define doFileCopy(tmpf, defstr) _doFileCopy(tmpf, defstr, FALSE);
+int doFileMove(char *tmpf, char *defstr);
+int doFileSave(URLFile uf, char *defstr);
+int checkCopyFile(char *path1, char *path2);
+int checkSaveFile(InputStream stream, char *path);
+int checkOverWrite(char *path);
+char *inputAnswer(char *prompt);
+int matchattr(char *p, char *attr, int len, Str *value);
+void readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu);
+char *checkHeader(Buffer *buf, char *field);
+Buffer *newBuffer(int width);
+Buffer *nullBuffer(void);
+void clearBuffer(Buffer *buf);
+void discardBuffer(Buffer *buf);
+Buffer *namedBuffer(Buffer *first, char *name);
+Buffer *deleteBuffer(Buffer *first, Buffer *delbuf);
+Buffer *replaceBuffer(Buffer *first, Buffer *delbuf, Buffer *newbuf);
+Buffer *nthBuffer(Buffer *firstbuf, int n);
+void gotoRealLine(Buffer *buf, int n);
+void gotoLine(Buffer *buf, int n);
+Buffer *selectBuffer(Buffer *firstbuf, Buffer *currentbuf,
+                            char *selectchar);

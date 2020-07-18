@@ -1,6 +1,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "frame.h"
+#include "display.h"
 #include "parsetag.h"
 #include "public.h"
 #include "file.h"

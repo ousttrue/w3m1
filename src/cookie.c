@@ -15,6 +15,7 @@
 #include "cookie.h"
 #include "html.h"
 #include "commands.h"
+#include "file.h"
 
 #ifdef USE_COOKIE
 #include <time.h>

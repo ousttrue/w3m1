@@ -9,68 +9,6 @@
 
 #include "map.h"
 
-extern Str process_n_select(void);
-extern void feed_select(char *str);
-extern void process_option(void);
-extern Str process_n_textarea(void);
-extern void feed_textarea(char *str);
-extern Str process_n_form(void);
-extern int getMetaRefreshParam(char *q, Str *refresh_uri);
-extern void HTMLlineproc2(Buffer *buf, TextLineList *tl);
-extern void HTMLlineproc0(char *istr, struct html_feed_environ *h_env,
-                          int internal);
-#define HTMLlineproc1(x, y) HTMLlineproc0(x, y, TRUE)
-extern Buffer *loadHTMLBuffer(URLFile *f, Buffer *newBuf);
-extern char *convert_size(clen_t size, int usefloat);
-extern char *convert_size2(clen_t size1, clen_t size2, int usefloat);
-extern void showProgress(clen_t *linelen, clen_t *trbyte);
-extern void init_henv(struct html_feed_environ *, struct readbuffer *,
-                      struct environment *, int, TextLineList *, int, int);
-extern void completeHTMLstream(struct html_feed_environ *,
-                               struct readbuffer *);
-extern void loadHTMLstream(URLFile *f, Buffer *newBuf, FILE *src,
-                           int internal);
-extern Buffer *loadHTMLString(Str page);
-#ifdef USE_GOPHER
-extern Str loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces *charset);
-#endif /* USE_GOPHER */
-extern Buffer *loadBuffer(URLFile *uf, Buffer *newBuf);
-#ifdef USE_IMAGE
-extern Buffer *loadImageBuffer(URLFile *uf, Buffer *newBuf);
-#endif
-extern void saveBuffer(Buffer *buf, FILE *f, int cont);
-extern void saveBufferBody(Buffer *buf, FILE *f, int cont);
-extern Buffer *getshell(char *cmd);
-extern Buffer *getpipe(char *cmd);
-extern Buffer *openPagerBuffer(InputStream stream, Buffer *buf);
-extern Buffer *openGeneralPagerBuffer(InputStream stream);
-extern Line *getNextPage(Buffer *buf, int plen);
-extern int save2tmp(URLFile uf, char *tmpf);
-extern int doExternal(URLFile uf, char *path, char *type, Buffer **bufp,
-                      Buffer *defaultbuf);
-extern int _doFileCopy(char *tmpf, char *defstr, int download);
-#define doFileCopy(tmpf, defstr) _doFileCopy(tmpf, defstr, FALSE);
-extern int doFileMove(char *tmpf, char *defstr);
-extern int doFileSave(URLFile uf, char *defstr);
-extern int checkCopyFile(char *path1, char *path2);
-extern int checkSaveFile(InputStream stream, char *path);
-extern int checkOverWrite(char *path);
-extern char *inputAnswer(char *prompt);
-extern int matchattr(char *p, char *attr, int len, Str *value);
-extern void readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu);
-extern char *checkHeader(Buffer *buf, char *field);
-extern Buffer *newBuffer(int width);
-extern Buffer *nullBuffer(void);
-extern void clearBuffer(Buffer *buf);
-extern void discardBuffer(Buffer *buf);
-extern Buffer *namedBuffer(Buffer *first, char *name);
-extern Buffer *deleteBuffer(Buffer *first, Buffer *delbuf);
-extern Buffer *replaceBuffer(Buffer *first, Buffer *delbuf, Buffer *newbuf);
-extern Buffer *nthBuffer(Buffer *firstbuf, int n);
-extern void gotoRealLine(Buffer *buf, int n);
-extern void gotoLine(Buffer *buf, int n);
-extern Buffer *selectBuffer(Buffer *firstbuf, Buffer *currentbuf,
-                            char *selectchar);
 extern void reshapeBuffer(Buffer *buf);
 extern void copyBuffer(Buffer *a, Buffer *b);
 extern Buffer *prevBuffer(Buffer *first, Buffer *buf);
@@ -78,7 +16,7 @@ extern int writeBufferCache(Buffer *buf);
 extern int readBufferCache(Buffer *buf);
 extern void fmTerm(void);
 extern void fmInit(void);
-extern void displayBuffer(Buffer *buf, int mode);
+
 extern void addChar(char c, Lineprop mode);
 #ifdef USE_M17N
 extern void addMChar(char *c, Lineprop mode, size_t len);

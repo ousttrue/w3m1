@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "fm.h"
 #include "indep.h"
+#include "display.h"
 #include "public.h"
 #include "menu.h"
 #include "myctype.h"
@@ -13,6 +14,7 @@
 #include "terms.h"
 #include "commands.h"
 #include "symbol.h"
+#include "file.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

@@ -4,6 +4,7 @@
 #include "image.h"
 #include "indep.h"
 #include "file.h"
+#include "display.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>

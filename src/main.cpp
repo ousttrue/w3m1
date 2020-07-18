@@ -4,6 +4,7 @@ extern "C"
 #define MAINPROGRAM
 #include "fm.h"
 #include "indep.h"
+#include "display.h"
 #include "file.h"
 #include "form.h"
 #include "public.h"

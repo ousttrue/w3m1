@@ -140,6 +140,10 @@ std::unordered_map<std::string, Command> g_commandMap;
 DEFUN 由来の `void xxx(void)` という関数は、 `commands.h` に移ったので、
 `proto.h` から削除する。
 
+## file.c
+
+巨大すぎるので適当に分割する。
+
 ## TODO
 
 * macro 減らす
