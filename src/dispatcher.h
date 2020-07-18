@@ -4,7 +4,21 @@
 extern "C"
 {
 #endif
-#include "func.h"
+
+    typedef void (*Command)();
+
+#define AL_UNSET 0
+#define AL_EXPLICIT 1
+#define AL_IMPLICIT 2
+#define AL_IMPLICIT_ONCE 3
+
+    typedef struct _AlarmEvent
+    {
+        int sec;
+        short status;
+        Command cmd;
+        void *data;
+    } AlarmEvent;
 
     int prec_num();
     void set_prec_num(int n);
@@ -30,6 +44,10 @@ extern "C"
     void SetKeymap(char *p, int lineno, int verbose);
     void RegisterCommand(const char *name, const char *key, const char *description, void (*command)());
     Command getFuncList(char *name);
+    char *getQWord(char **str);
+    char *getWord(char **str);
+    void initKeymap(int force);
+    int getKey(char *s);
 
 #ifdef __cplusplus
 }

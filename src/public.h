@@ -1,4 +1,5 @@
 #pragma once
+#include "dispatcher.h"
 
 /* 
  * Command functions: These functions are called with a keystroke.

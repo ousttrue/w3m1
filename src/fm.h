@@ -24,7 +24,6 @@
 #include <unistd.h>
 #include "config.h"
 #include "history.h"
-#include "func.h"
 
 #ifdef USE_MENU
 #define MENU_SELECT
@@ -1130,20 +1129,6 @@ global int w3m_backend init(FALSE);
 global TextLineList *backend_halfdump_buf;
 global TextList *backend_batch_commands init(NULL);
 int backend(void);
-
-#ifdef USE_ALARM
-#define AL_UNSET         0
-#define AL_EXPLICIT      1
-#define AL_IMPLICIT      2
-#define AL_IMPLICIT_ONCE 3
-
-typedef struct _AlarmEvent {
-    int sec;
-    short status;
-    Command cmd;
-    void *data;
-} AlarmEvent;
-#endif
 
 /* 
  * Externals

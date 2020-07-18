@@ -641,7 +641,7 @@ extern void initImage(void);
 extern void termImage(void);
 extern void drawImage(void);
 extern void clearImage(void);
-extern void initMouseAction(void);
+
 extern void mainMn(void);
 extern void selMn(void);
 extern void tabMn(void);

@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
+#include "dispatcher.h"
+#include "mouse.h"
 #include <stdlib.h>
 
 struct param_ptr {

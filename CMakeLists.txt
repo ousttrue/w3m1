@@ -83,7 +83,7 @@ add_executable(w3m
     src/mimehead.c
     src/regex.c
     src/news.c
-    src/func.c
+    src/mouse.c
     src/cookie.c
     src/history.c
     src/backend.c

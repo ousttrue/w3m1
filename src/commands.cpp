@@ -11,9 +11,9 @@ extern "C"
 #include "myctype.h"
 #include "public.h"
 #include "regex.h"
-#include "func.h"
 #include "frame.h"
 #include "dispatcher.h"
+#include "mouse.h"
 #include "menu.h"
 #include <signal.h>
 

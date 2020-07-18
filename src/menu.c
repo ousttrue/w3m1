@@ -7,7 +7,6 @@
 #include "indep.h"
 #include "public.h"
 #include "menu.h"
-#include "func.h"
 #include "myctype.h"
 #include "regex.h"
 #include "dispatcher.h"

@@ -1,5 +1,5 @@
 /* $Id: keybind.c,v 1.10 2006/05/29 12:17:25 inu Exp $ */
-#include "func.h"
+#include "dispatcher.h"
 #include "commands.h"
 
 Command GlobalKeymap[128] = {
