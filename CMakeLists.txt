@@ -10,6 +10,7 @@ add_executable(w3m
     src/anchor.cpp
     src/public.cpp
     src/display.cpp
+    src/buffer.cpp
     # src/defun.c
     libwc/big5.c
     libwc/ces.c
@@ -44,7 +45,6 @@ add_executable(w3m
     src/myctype.c
     src/hash.c
     src/file.c
-    src/buffer.c
     src/etc.c
     src/search.c
     src/linein.c
