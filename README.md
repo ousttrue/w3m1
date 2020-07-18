@@ -67,8 +67,10 @@ w3mも動いた。
 
 とりあえず `main.c` を `main.cpp` にリネームして全部、 `extern "C"` に入れた。
 `extern C` の領域を減らしたい。
-暗黙関数定義を禁止。 `-Werror=implicit-function-declaration`
-暗黙のint変換を寄進。 `-Werror=int-conversion`
+
+* 暗黙関数定義を禁止。 `-Werror=implicit-function-declaration`
+* 暗黙のint変換を禁止。 `-Werror=int-conversion`
+
 まず、DEFUN(1200行から6000行くらい？) を `defun.c` と `public.c` に分離する。
 `main.cpp` が 1800行くらいになった。
 
@@ -92,10 +94,6 @@ while(true)
 }
 ```
 
-## fm.h
-
-グローバル変数減らす。
-
 ## DEFUN
 
 ```
@@ -114,18 +112,16 @@ Alarm
 ```
 
 Key, Mouse, Alarm を入力に DEFUN に Dispatch する。
+ディスパッチするときに、
+コマンド名 => `hashTable の index` => 関数ポインタ という風になっていて、 `hashTable の index(hash.h)` がよくわからなかったのだけど、
 
-Key の場合
+```c++
+typedef void (*Command)();
+std::unordered_map<std::string, Command> g_commandMap;
+```
 
-`GlobalKeymap`, `EscKeymap(Alt)`, `EscBKeymap(Blace [ ? Control ?)`, `EscDKeymap(Digit ?. function key とか)`
-
-が、`keybind.c` にコーディングされていて、
-実行時に `~/.w3m/keymap` で設定できる。
-
-GlobalKeyMap で `int ch` => `w3mFuncList` の index => `void(*)()` のコールバック実行。
-この辺に mktable とかコード生成が絡んでいるので単純にする。
-
-## コード生成。mktable
+で置き換えることができた。
+コードを整理する。
 
 | ファイル     | 生成方法          | 入力           | 備考                                                   |
 |--------------|-------------------|----------------|--------------------------------------------------------|
@@ -138,8 +134,6 @@ GlobalKeyMap で `int ch` => `w3mFuncList` の index => `void(*)()` のコール
 | functable.c  | Makefile(mktable) | funcname.tab   |                                                        |
 | tagtable.c   | Makefile(mktable) | funcname.tab   |                                                        |
 
-hash.h, hash.c を std::unordered_map とかに置き換えたい・・・。
-
 ## TODO
 
 * macro 減らす
@@ -147,7 +141,7 @@ hash.h, hash.c を std::unordered_map とかに置き換えたい・・・。
     * fm.h 分解
     * proto.h 分解
 * c++ にする
-    * 各 struct を class化してなるべくカプセル化する
-* DEFUNマクロをluaとかに置き換えたい
+    * 各 C struct を class化して
+        * member の private化
+        * 関数のメソッド化
 * bohem-gc やめる(遠大)
-
