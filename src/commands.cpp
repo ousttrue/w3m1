@@ -6,6 +6,7 @@ extern "C"
 
 #include "fm.h"
 #include "indep.h"
+#include "etc.h"
 #include "file.h"
 #include "form.h"
 #include "myctype.h"

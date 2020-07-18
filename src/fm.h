@@ -176,7 +176,7 @@ void bzero(void *, int);
 #define SetCharType(v,c)	((v)=(((v)&~P_CHARTYPE)|(c)))
 
 
-#define COLPOS(l,c)	calcPosition(l->lineBuf,l->propBuf,l->len,c,0,CP_AUTO)
+
 
 /* Flags for displayBuffer() */
 #define B_NORMAL	0
@@ -591,17 +591,6 @@ global char MetaRefresh init(FALSE);
 global char fmInitialized init(FALSE);
 global char QuietMessage init(FALSE);
 global char TrapSignal init(TRUE);
-#define TRAP_ON if (TrapSignal) { \
-    prevtrap = mySignal(SIGINT, KeyAbort); \
-    if (fmInitialized) \
-	term_cbreak(); \
-}
-#define TRAP_OFF if (TrapSignal) { \
-    if (fmInitialized) \
-	term_raw(); \
-    if (prevtrap) \
-	mySignal(SIGINT, prevtrap); \
-}
 
 
 
@@ -956,12 +945,5 @@ global int w3m_backend init(FALSE);
 global TextLineList *backend_halfdump_buf;
 global TextList *backend_batch_commands init(NULL);
 int backend(void);
-
-/* 
- * Externals
- */
-
-#include "table.h"
-#include "proto.h"
 
 #endif				/* not FM_H */

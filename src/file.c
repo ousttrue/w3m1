@@ -1,6 +1,8 @@
 /* $Id: file.c,v 1.265 2010/12/15 10:50:24 htrb Exp $ */
 #include "fm.h"
+#include "table.h"
 #include "indep.h"
+#include "etc.h"
 #include "commands.h"
 #include "frame.h"
 #include "file.h"

@@ -4,6 +4,7 @@
  * revised by Akinori ITO, January 1995
  */
 #include "commands.h"
+#include "etc.h"
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>

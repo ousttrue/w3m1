@@ -7,6 +7,7 @@
 #include "frame.h"
 #include "menu.h"
 #include "file.h"
+#include "etc.h"
 #include <math.h>
 
 MapList *

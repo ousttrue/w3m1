@@ -4,6 +4,8 @@
 #include "local.h"
 #include "myctype.h"
 #include "display.h"
+#include "etc.h"
+#include "file.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

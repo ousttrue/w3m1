@@ -3,6 +3,7 @@
  * HTML forms
  */
 #include "fm.h"
+#include "etc.h"
 #include "indep.h"
 #include "form.h"
 #include "file.h"

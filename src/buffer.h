@@ -2,6 +2,7 @@
 #include "anchor.h"
 #include "line.h"
 #include "bufferpoint.h"
+#include "map.h"
 
 typedef struct
 {
@@ -92,3 +93,4 @@ void deleteImage(Buffer *buf);
 void getAllImage(Buffer *buf);
 void loadImage(Buffer *buf, int flag);
 Anchor *registerForm(Buffer *buf, FormList *flist, struct parsed_tag *tag, int line, int pos);
+MapArea *follow_map_menu(Buffer *buf, char *name, Anchor *a_img, int x,int y);

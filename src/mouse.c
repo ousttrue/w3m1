@@ -7,6 +7,7 @@
 
 #include "fm.h"
 #include "indep.h"
+#include "rc.h"
 #include "myctype.h"
 #include "dispatcher.h"
 #include "commands.h"

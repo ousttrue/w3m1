@@ -4,6 +4,7 @@
  */
 #include <stdio.h>
 #include "fm.h"
+#include "rc.h"
 #include "indep.h"
 #include "display.h"
 #include "public.h"

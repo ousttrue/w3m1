@@ -3,6 +3,8 @@ extern "C"
 
 #define MAINPROGRAM
 #include "fm.h"
+#include "etc.h"
+#include "rc.h"
 #include "indep.h"
 #include "display.h"
 #include "file.h"

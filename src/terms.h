@@ -33,6 +33,6 @@ extern void disable_win9x_console_input(void);
 void mouse_active();
 void mouse_inactive();
 void mouse_end();
-
+void addmch(char *p, size_t len);
 
 #endif				/* not TERMS_H */

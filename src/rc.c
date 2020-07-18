@@ -3,12 +3,11 @@
  * Initialization file etc.
  */
 #include "fm.h"
+#include "rc.h"
 #include "indep.h"
 #include "parsetag.h"
 #include "symbol.h"
-#include "rc.h"
 #include "myctype.h"
-#include "proto.h"
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"

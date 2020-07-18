@@ -11,6 +11,7 @@
 
 #include "fm.h"
 #include "indep.h"
+#include "rc.h"
 #include "parsetag.h"
 #include "cookie.h"
 #include "html.h"

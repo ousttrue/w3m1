@@ -10,6 +10,7 @@
 
 #include "fm.h"
 #include "indep.h"
+#include "etc.h"
 #include "file.h"
 #include "public.h"
 #include "html.h"

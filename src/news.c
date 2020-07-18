@@ -3,6 +3,7 @@
 #include "indep.h"
 #include "myctype.h"
 #include "file.h"
+#include "etc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

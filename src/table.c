@@ -13,6 +13,8 @@
 #include "Str.h"
 #include "myctype.h"
 #include "symbol.h"
+#include "table.h"
+#include "etc.h"
 
 int symbol_width = 0;
 int symbol_width0 = 0;

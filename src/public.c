@@ -1,5 +1,7 @@
 #include "fm.h"
 #include "indep.h"
+#include "rc.h"
+#include "etc.h"
 #include "frame.h"
 #include "display.h"
 #include "parsetag.h"
@@ -8,7 +10,6 @@
 #include <setjmp.h>
 #include <signal.h>
 #include "ucs.h"
-#include "proto.h"
 #include "terms.h"
 #include "dispatcher.h"
 #include "image.h"

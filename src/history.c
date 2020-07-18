@@ -2,6 +2,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
+#include "rc.h"
 
 #ifdef USE_HISTORY
 Buffer *

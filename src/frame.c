@@ -2,6 +2,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "frame.h"
+#include "etc.h"
 #include "parsetagx.h"
 #include "myctype.h"
 #include "file.h"

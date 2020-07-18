@@ -1,5 +1,4 @@
 /* $Id: display.c,v 1.71 2010/07/18 14:10:09 htrb Exp $ */
-#include <signal.h>
 #include "fm.h"
 #include "indep.h"
 #include "public.h"
@@ -8,6 +7,9 @@
 #include "file.h"
 #include "symbol.h"
 #include "map.h"
+#include "etc.h"
+#include <signal.h>
+#include <math.h>
 
 /* *INDENT-OFF* */
 #ifdef USE_COLOR
