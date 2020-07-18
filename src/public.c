@@ -3668,3 +3668,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 #endif
     return s;
 }
+
+void pcmap(void)
+{
+}
