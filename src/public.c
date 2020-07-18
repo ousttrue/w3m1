@@ -12,34 +12,6 @@
 #include "terms.h"
 #include "dispatcher.h"
 
-void escKeyProc(int c, int esc, unsigned char *map)
-{
-    if (CurrentIsMultiKey())
-    {
-        unsigned char **mmap;
-        mmap = (unsigned char **)GetKeyData(MultiKey(CurrentKey()));
-        if (!mmap)
-            return;
-        switch (esc)
-        {
-        case K_ESCD:
-            map = mmap[3];
-            break;
-        case K_ESCB:
-            map = mmap[2];
-            break;
-        case K_ESC:
-            map = mmap[1];
-            break;
-        default:
-            map = mmap[0];
-            break;
-        }
-        esc |= (CurrentKey() & ~0xFFFF);
-    }
-    SetCurrentKey(esc | c);
-    w3mFuncList[(int)map[c]].func();
-}
 
 int searchKeyNum(void)
 {
@@ -3304,19 +3276,6 @@ void tmpClearBuffer(Buffer *buf)
     }
 }
 
-void escdmap(char c)
-{
-    int d;
-    d = (int)c - (int)'0';
-    c = getch();
-    if (IS_DIGIT(c))
-    {
-        d = d * 10 + (int)c - (int)'0';
-        c = getch();
-    }
-    if (c == '~')
-        escKeyProc((int)d, K_ESCD, EscDKeymap);
-}
 
 typedef struct _Event
 {

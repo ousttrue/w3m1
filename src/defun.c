@@ -28,34 +28,20 @@ void pcmap(void)
 
 DEFUN(escmap, ESCMAP, "ESC map")
 {
-    char c;
-    c = getch();
-    if (IS_ASCII(c))
-        escKeyProc((int)c, K_ESC, EscKeymap);
+    char c = getch();
+    escKeyProc(c);
 }
 
 DEFUN(escbmap, ESCBMAP, "ESC [ map")
 {
-    char c;
-    c = getch();
-    if (IS_DIGIT(c))
-    {
-        escdmap(c);
-        return;
-    }
-    if (IS_ASCII(c))
-        escKeyProc((int)c, K_ESCB, EscBKeymap);
+    char c = getch();
+    escbKeyProc(c);
 }
 
 DEFUN(multimap, MULTIMAP, "multimap")
 {
-    char c;
-    c = getch();
-    if (IS_ASCII(c))
-    {
-        SetMultiKey(c);
-        escKeyProc((int)c, 0, NULL);
-    }
+    char c = getch();
+    MultiKeyProc(c);
 }
 
 /* Move page forward */
@@ -1553,7 +1539,7 @@ DEFUN(curURL, PEEK, "Peek current URL")
 
     if (Currentbuf->bufferprop & BP_INTERNAL)
         return;
-    if (CurrentKey == PrevKey() && s != NULL) {
+    if (CurrentKey() == PrevKey() && s != NULL) {
         if (s->length - offset >= COLS)
             offset++;
         else if (s->length <= offset)	/* bug ? */

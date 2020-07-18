@@ -778,12 +778,6 @@ global char TrapSignal init(TRUE);
 }
 
 
-extern unsigned char EscKeymap[];
-extern unsigned char EscBKeymap[];
-extern unsigned char EscDKeymap[];
-#ifdef __EMX__
-extern unsigned char PcKeymap[];
-#endif
 
 
 global char *HTTP_proxy init(NULL);

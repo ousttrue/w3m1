@@ -3,7 +3,6 @@
 /* 
  * Command functions: These functions are called with a keystroke.
  */
-void escKeyProc(int c, int esc, unsigned char *map);
 int searchKeyNum();
 void nscroll(int n, int mode);
 void srch_nxtprv(int reverse);
@@ -109,7 +108,6 @@ int need_resize_screen();
 void resize_hook(SIGNAL_ARG);
 void saveBufferInfo();
 void tmpClearBuffer(Buffer *buf);
-void escdmap(char c);
 void pushEvent(int cmd, void *data);
 int ProcessEvent();
 Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);

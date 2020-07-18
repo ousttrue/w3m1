@@ -98,11 +98,16 @@ while(true)
 
 ## データ構造
 
-tabs
-tab
-buffer
-line
-lineprops
+MouseAction
+    ActionMap
+        DEFUN
+    Menu
+        Defun
+Key
+    KeyMap
+        DEFUN
+    Menu
+        Defun
 
 ## コード生成。mktable
 

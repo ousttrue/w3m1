@@ -8,6 +8,9 @@ const int KEYDATA_HASH_SIZE = 16;
 
 // keybind.c
 extern unsigned char GlobalKeymap[];
+extern unsigned char EscKeymap[];
+extern unsigned char EscBKeymap[];
+extern unsigned char EscDKeymap[];
 
 extern "C"
 {
@@ -115,6 +118,77 @@ extern "C"
         SetPrevKey(g_CurrentKey);
         ClearCurrentKey();
         ClearCurrentKeyData();
+    }
+
+    static void _escKeyProc(int c, int esc, unsigned char *map)
+    {
+        if (CurrentIsMultiKey())
+        {
+            unsigned char **mmap;
+            mmap = (unsigned char **)GetKeyData(MultiKey(CurrentKey()));
+            if (!mmap)
+                return;
+            switch (esc)
+            {
+            case K_ESCD:
+                map = mmap[3];
+                break;
+            case K_ESCB:
+                map = mmap[2];
+                break;
+            case K_ESC:
+                map = mmap[1];
+                break;
+            default:
+                map = mmap[0];
+                break;
+            }
+            esc |= (CurrentKey() & ~0xFFFF);
+        }
+        SetCurrentKey(esc | c);
+        w3mFuncList[(int)map[c]].func();
+    }
+
+    void escKeyProc(char c)
+    {
+        if (IS_ASCII(c))
+            _escKeyProc((int)c, K_ESC, EscKeymap);
+    }
+
+    void MultiKeyProc(char c)
+    {
+        if (IS_ASCII(c))
+        {
+            SetMultiKey(c);
+            _escKeyProc((int)c, 0, NULL);
+        }
+    }
+
+    void escdmap(char c)
+    {
+        int d;
+        d = (int)c - (int)'0';
+        c = getch();
+        if (IS_DIGIT(c))
+        {
+            d = d * 10 + (int)c - (int)'0';
+            c = getch();
+        }
+        if (c == '~')
+            _escKeyProc((int)d, K_ESCD, EscDKeymap);
+    }
+
+    void escbKeyProc(char c)
+    {
+        if (IS_DIGIT(c))
+        {
+            escdmap(c);
+            return;
+        }
+        if (IS_ASCII(c))
+        {
+            _escKeyProc((int)c, K_ESCB, EscBKeymap);
+        }
     }
 
     /* data: FUNC [DATA] [; FUNC [DATA] ...] */
