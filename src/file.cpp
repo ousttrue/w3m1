@@ -1,4 +1,5 @@
 /* $Id: file.c,v 1.265 2010/12/15 10:50:24 htrb Exp $ */
+extern "C" {
 #include "fm.h"
 #include "table.h"
 #include "indep.h"
@@ -11,8 +12,15 @@
 #include "symbol.h"
 #include "map.h"
 #include "display.h"
-#include <sys/types.h>
 #include "myctype.h"
+#include "html.h"
+#include "parsetagx.h"
+#include "local.h"
+#include "regex.h"
+#include "dispatcher.h"
+#include "url.h"
+}
+#include <sys/types.h>
 #include <signal.h>
 #include <setjmp.h>
 #if defined(HAVE_WAITPID) || defined(HAVE_WAIT3)
@@ -25,12 +33,6 @@
 #include <utime.h>
 /* foo */
 
-#include "html.h"
-#include "parsetagx.h"
-#include "local.h"
-#include "regex.h"
-#include "dispatcher.h"
-#include "url.h"
 
 #ifndef max
 #define max(a,b)        ((a) > (b) ? (a) : (b))
@@ -148,7 +150,7 @@ static int cur_iseq;
 #ifdef USE_COOKIE
 /* This array should be somewhere else */
 /* FIXME: gettextize? */
-char *violations[COO_EMAX] = {
+const char *violations[COO_EMAX] = {
     "internal error",
     "tail match failed",
     "wrong number of dots",
@@ -190,7 +192,7 @@ static struct compression_decoder {
 
 #define SAVE_BUF_SIZE 1536
 
-static MySignalHandler
+static void
 KeyAbort(SIGNAL_ARG)
 {
     LONGJMP(AbortLoading, 1);
@@ -871,7 +873,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 			       comment, version, port, commentURL);
 		if (err) {
 		    char *ans = (accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
-			? "y" : NULL;
+			? (char*)"y" : NULL;
 		    if (fmInitialized && (err & COO_OVERRIDE_OK) &&
 			accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK) {
 			Str msg = Sprintf("Accept bad cookie from %s for %s?",
@@ -1274,7 +1276,7 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
     cnonce_seed.r[0] = rand();
     cnonce_seed.r[1] = rand();
     cnonce_seed.r[2] = rand();
-    MD5(cnonce_seed.s, sizeof(cnonce_seed.s), md5);
+    MD5((const unsigned char*)cnonce_seed.s, sizeof(cnonce_seed.s), md5);
     cnonce = digest_hex(md5);
     cnonce_seed.r[3]++;
 
@@ -1310,7 +1312,7 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
     tmp = Strnew_m_charp(uname->ptr, ":",
 			 qstr_unquote(get_auth_param(ha->param, "realm"))->ptr,
 			 ":", pw->ptr, NULL);
-    MD5(tmp->ptr, strlen(tmp->ptr), md5);
+    MD5((const unsigned char*)tmp->ptr, strlen(tmp->ptr), md5);
     a1buf = digest_hex(md5);
 
     if (algorithm) {
@@ -1323,7 +1325,7 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 	    tmp = Strnew_m_charp(a1buf->ptr, ":",
 				 qstr_unquote(nonce)->ptr,
 				 ":", qstr_unquote(cnonce)->ptr, NULL);
-	    MD5(tmp->ptr, strlen(tmp->ptr), md5);
+	    MD5((const unsigned char*)tmp->ptr, strlen(tmp->ptr), md5);
 	    a1buf = digest_hex(md5);
 	}
 	else if (strcasecmp(algorithm->ptr, "MD5") == 0)
@@ -1344,23 +1346,23 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 		if (fp != NULL) {
 		    Str ebody;
 		    ebody = Strfgetall(fp);
-		    MD5(ebody->ptr, strlen(ebody->ptr), md5);
+		    MD5((const unsigned char*)ebody->ptr, strlen(ebody->ptr), md5);
 		}
 		else {
-		    MD5("", 0, md5);
+		    MD5((const unsigned char*)"", 0, md5);
 		}
 	    }
 	    else {
-		MD5(request->body, request->length, md5);
+		MD5((const unsigned char*)request->body, request->length, md5);
 	    }
 	}
 	else {
-	    MD5("", 0, md5);
+	    MD5((const unsigned char*)"", 0, md5);
 	}
 	Strcat_char(tmp, ':');
 	Strcat(tmp, digest_hex(md5));
     }
-    MD5(tmp->ptr, strlen(tmp->ptr), md5);
+    MD5((const unsigned char*)tmp->ptr, strlen(tmp->ptr), md5);
     a2buf = digest_hex(md5);
 
     if (qop_i >= QOP_AUTH) {
@@ -1378,7 +1380,7 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 			     ":", qstr_unquote(cnonce)->ptr,
 			     ":", qop_i == QOP_AUTH ? "auth" : "auth-int",
 			     ":", a2buf->ptr, NULL);
-	MD5(tmp->ptr, strlen(tmp->ptr), md5);
+	MD5((const unsigned char*)tmp->ptr, strlen(tmp->ptr), md5);
 	rd = digest_hex(md5);
     }
     else {
@@ -1388,7 +1390,7 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 	tmp = Strnew_m_charp(a1buf->ptr, ":",
 			     qstr_unquote(get_auth_param(ha->param, "nonce"))->
 			     ptr, ":", a2buf->ptr, NULL);
-	MD5(tmp->ptr, strlen(tmp->ptr), md5);
+	MD5((const unsigned char*)tmp->ptr, strlen(tmp->ptr), md5);
 	rd = digest_hex(md5);
     }
 
@@ -1568,7 +1570,7 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
 	    fprintf(stderr, "Wrong username or password\n");
 	sleep(1);
 	/* delete Authenticate: header from extra_header */
-	delText(extra_header, i);
+	delText(extra_header, (char*)i);
 	invalidate_auth_user_passwd(pu, realm, *uname, *pwd, proxy);
     }
     *uname = NULL;
@@ -1717,13 +1719,13 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
 {
     URLFile f, *volatile of = NULL;
     ParsedURL pu;
-    Buffer *b = NULL, *(*volatile proc)() = loadBuffer;
+    Buffer *b = NULL;
+	auto proc = loadBuffer;
     char *volatile tpath;
     char *volatile t = "text/plain", *p, *volatile real_type = NULL;
     Buffer *volatile t_buf = NULL;
     int volatile searchHeader = SearchHeader;
     int volatile searchHeader_through = TRUE;
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
     TextList *extra_header = newTextList();
     volatile Str uname = NULL;
     volatile Str pwd = NULL;
@@ -1740,7 +1742,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
     ParsedURL *volatile auth_pu;
 
     tpath = path;
-    prevtrap = NULL;
+    MySignalHandler prevtrap = NULL;
     add_auth_cookie_flag = 0;
 
     checkRedirection(NULL);
@@ -6637,7 +6639,7 @@ convert_size(clen_t size, int usefloat)
 	csize = csize / 1024.0;
 	sizepos++;
     }
-    return Sprintf(usefloat ? "%.3g%s" : "%.0f%s",
+    return Sprintf(usefloat ? (char*)"%.3g%s" : (char*)"%.0f%s",
 		   floor(csize * 100.0 + 0.5) / 100.0, sizes[sizepos])->ptr;
 }
 
@@ -6653,7 +6655,7 @@ convert_size2(clen_t size1, clen_t size2, int usefloat)
 	factor *= 1024.0;
 	sizepos++;
     }
-    return Sprintf(usefloat ? "%.3g/%.3g%s" : "%.0f/%.0f%s",
+    return Sprintf(usefloat ? (char*)"%.3g/%.3g%s" : (char*)"%.0f/%.0f%s",
 		   floor(size1 / factor * 100.0 + 0.5) / 100.0,
 		   floor(size2 / factor * 100.0 + 0.5) / 100.0,
 		   sizes[sizepos])->ptr;
@@ -6931,7 +6933,7 @@ loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
 #ifdef USE_IMAGE
     int volatile image_flag;
 #endif
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
 
 #ifdef USE_M17N
     if (fmInitialized && graph_ok()) {
@@ -7100,7 +7102,7 @@ Buffer *
 loadHTMLString(Str page)
 {
     URLFile f;
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
     Buffer *newBuf;
 
     newBuf = newBuffer(INIT_BUFFER_WIDTH);
@@ -7143,7 +7145,7 @@ loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
     Str volatile tmp;
     Str lbuf, name, file, host, port;
     char *volatile p, *volatile q;
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
 #ifdef USE_M17N
     wc_ces doc_charset = DocumentCharset;
 #endif
@@ -7246,7 +7248,7 @@ loadBuffer(URLFile *uf, Buffer *volatile newBuf)
 #ifdef USE_ANSI_COLOR
     Linecolor *colorBuffer = NULL;
 #endif
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
 
     if (newBuf == NULL)
 	newBuf = newBuffer(INIT_BUFFER_WIDTH);
@@ -7336,7 +7338,7 @@ loadImageBuffer(URLFile *uf, Buffer *newBuf)
     Str tmp, tmpf;
     FILE *src = NULL;
     URLFile f;
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
     struct stat st;
 
     loadImage(newBuf, IMG_FLAG_STOP);
@@ -7663,7 +7665,7 @@ getNextPage(Buffer *buf, int plen)
 #ifdef USE_ANSI_COLOR
     Linecolor *colorBuffer = NULL;
 #endif
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
 
     if (buf->pagerSource == NULL)
 	return NULL;
@@ -7771,7 +7773,7 @@ save2tmp(URLFile uf, char *tmpf)
     FILE *ff;
     int check;
     clen_t linelen = 0, trbyte = 0;
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
     static JMP_BUF env_bak;
 
     ff = fopen(tmpf, "wb");
