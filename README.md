@@ -96,18 +96,34 @@ while(true)
 
 グローバル変数減らす。
 
-## データ構造
+## DEFUN
 
-MouseAction
-    ActionMap
-        DEFUN
-    Menu
-        Defun
+```
 Key
     KeyMap
         DEFUN
     Menu
-        Defun
+        DEFUN
+MouseAction
+    ActionMap
+        DEFUN
+    Menu
+        DEFUN
+Alarm
+    DEFUN
+```
+
+Key, Mouse, Alarm を入力に DEFUN に Dispatch する。
+
+Key の場合
+
+`GlobalKeymap`, `EscKeymap(Alt)`, `EscBKeymap(Blace [ ? Control ?)`, `EscDKeymap(Digit ?. function key とか)`
+
+が、`keybind.c` にコーディングされていて、
+実行時に `~/.w3m/keymap` で設定できる。
+
+GlobalKeyMap で `int ch` => `w3mFuncList` の index => `void(*)()` のコールバック実行。
+この辺に mktable とかコード生成が絡んでいるので単純にする。
 
 ## コード生成。mktable
 

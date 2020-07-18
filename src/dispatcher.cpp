@@ -12,16 +12,18 @@ extern unsigned char EscKeymap[];
 extern unsigned char EscBKeymap[];
 extern unsigned char EscDKeymap[];
 
+#include <unordered_map>
+#include <string>
+
 extern "C"
 {
 #include "fm.h"
 #include "func.h"
-#include "indep.h"
 #include "funcname1.h"
-#include "hash.h"
 #include "public.h"
 
-    static Hash_iv *keyData = NULL;
+    // static Hash_iv *g_keyData = NULL;
+    static std::unordered_map<int, std::string> g_keyData;
 
     int prec_num()
     {
@@ -229,18 +231,21 @@ extern "C"
 
     char *GetKeyData(int key)
     {
-        if (keyData == NULL)
-            return NULL;
-        return (char *)getHash_iv(keyData, key, NULL);
+        auto found = g_keyData.find(key);
+        if (found == g_keyData.end())
+        {
+            return nullptr;
+        }
+        return (char *)found->second.c_str();
     }
 
-    void SetKeymap(char *p, int lineno, int verbose)
+    static int GetKey(char **p, int lineno, int verbose)
     {
-        auto s = getQWord(&p);
+        auto s = getQWord(p);
         auto c = getKey(s);
-        char *emsg = nullptr;
         if (c < 0)
         { /* error */
+            char *emsg = nullptr;
             if (lineno > 0)
                 /* FIXME: gettextize? */
                 emsg = Sprintf("line %d: unknown key '%s'", lineno, s)->ptr;
@@ -250,12 +255,17 @@ extern "C"
             record_err_message(emsg);
             if (verbose)
                 disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
-            return;
         }
-        s = getWord(&p);
+        return c;
+    }
+
+    static int GetFunc(char **p, int lineno, int verbose)
+    {
+        auto s = getWord(p);
         auto f = getFuncList(s);
         if (f < 0)
         {
+            char *emsg = nullptr;
             if (lineno > 0)
                 /* FIXME: gettextize? */
                 emsg = Sprintf("line %d: invalid command '%s'", lineno, s)->ptr;
@@ -265,71 +275,95 @@ extern "C"
             record_err_message(emsg);
             if (verbose)
                 disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
+        }
+        return f;
+    }
+
+    void SetKeymap(char *p, int lineno, int verbose)
+    {
+        auto c = GetKey(&p, lineno, verbose);
+        if (c < 0)
+        {
+            return;
+        }
+        auto f = GetFunc(&p, lineno, verbose);
+        if (f < 0)
+        {
             return;
         }
         unsigned char *map = nullptr;
-        if (c & K_MULTI)
-        {
-            unsigned char **mmap = NULL;
-            int i, j, m = MultiKey(c);
+        // if (c & K_MULTI)
+        // {
+        //     // Kanji Multibyte ? SJIS とか EUC ?
+        //     int m = MultiKey(c);
 
-            if (m & K_ESCD)
+        //     if (m & K_ESCD)
+        //         map = EscDKeymap;
+        //     else if (m & K_ESCB)
+        //         map = EscBKeymap;
+        //     else if (m & K_ESC)
+        //         map = EscKeymap;
+        //     else
+        //         map = GlobalKeymap;
+
+        //     unsigned char **mmap = NULL;
+        //     if (map[m & 0x7F] == FUNCNAME_multimap)
+        //         mmap = (unsigned char **)GetKeyData(m);
+        //     else
+        //         map[m & 0x7F] = FUNCNAME_multimap;
+        //     if (!mmap)
+        //     {
+        //         mmap = New_N(unsigned char *, 4);
+        //         for (int i = 0; i < 4; i++)
+        //         {
+        //             mmap[i] = New_N(unsigned char, 128);
+        //             for (int j = 0; j < 128; j++)
+        //                 mmap[i][j] = FUNCNAME_nulcmd;
+        //         }
+        //         mmap[0][ESC_CODE] = FUNCNAME_escmap;
+        //         mmap[1]['['] = FUNCNAME_escbmap;
+        //         mmap[1]['O'] = FUNCNAME_escbmap;
+        //     }
+        //     if (keyData == NULL)
+        //         keyData = newHash_iv(KEYDATA_HASH_SIZE);
+        //     putHash_iv(keyData, m, (void *)mmap);
+        //     if (c & K_ESCD)
+        //         map = mmap[3];
+        //     else if (c & K_ESCB)
+        //         map = mmap[2];
+        //     else if (c & K_ESC)
+        //         map = mmap[1];
+        //     else
+        //         map = mmap[0];
+        // }
+        // else
+        {
+            if (c & K_ESCD)
                 map = EscDKeymap;
-            else if (m & K_ESCB)
+            else if (c & K_ESCB)
                 map = EscBKeymap;
-            else if (m & K_ESC)
+            else if (c & K_ESC)
                 map = EscKeymap;
             else
                 map = GlobalKeymap;
-            if (map[m & 0x7F] == FUNCNAME_multimap)
-                mmap = (unsigned char **)GetKeyData(m);
-            else
-                map[m & 0x7F] = FUNCNAME_multimap;
-            if (!mmap)
-            {
-                mmap = New_N(unsigned char *, 4);
-                for (i = 0; i < 4; i++)
-                {
-                    mmap[i] = New_N(unsigned char, 128);
-                    for (j = 0; j < 128; j++)
-                        mmap[i][j] = FUNCNAME_nulcmd;
-                }
-                mmap[0][ESC_CODE] = FUNCNAME_escmap;
-                mmap[1]['['] = FUNCNAME_escbmap;
-                mmap[1]['O'] = FUNCNAME_escbmap;
-            }
-            if (keyData == NULL)
-                keyData = newHash_iv(KEYDATA_HASH_SIZE);
-            putHash_iv(keyData, m, (void *)mmap);
-            if (c & K_ESCD)
-                map = mmap[3];
-            else if (c & K_ESCB)
-                map = mmap[2];
-            else if (c & K_ESC)
-                map = mmap[1];
-            else
-                map = mmap[0];
+        }
+
+        // push c: key = f: function
+        map[c & 0x7F] = f;
+
+        // data
+        auto s = getQWord(&p);
+        if (*s)
+        {
+            g_keyData[c] = s;
         }
         else
         {
-            if (c & K_ESCD)
-                map = EscDKeymap;
-            else if (c & K_ESCB)
-                map = EscBKeymap;
-            else if (c & K_ESC)
-                map = EscKeymap;
-            else
-                map = GlobalKeymap;
+            auto found = g_keyData.find(c);
+            if (found != g_keyData.end())
+            {
+                g_keyData.erase(found);
+            }
         }
-        map[c & 0x7F] = f;
-        s = getQWord(&p);
-        if (*s)
-        {
-            if (keyData == NULL)
-                keyData = newHash_iv(KEYDATA_HASH_SIZE);
-            putHash_iv(keyData, c, (void *)s);
-        }
-        else if (GetKeyData(c))
-            putHash_iv(keyData, c, NULL);
     }
 }
