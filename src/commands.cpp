@@ -3,7 +3,6 @@
 
 extern "C"
 {
-
 #include "fm.h"
 #include "indep.h"
 #include "etc.h"
@@ -24,6 +23,7 @@ extern "C"
 #include "terms.h"
 #include "wc.h"
 #include "wtf.h"
+#include "mouse.h"
 #include <signal.h>
 
 void nulcmd()

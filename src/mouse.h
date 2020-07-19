@@ -6,6 +6,6 @@
 #ifndef FUNC_H
 #define FUNC_H
 
-extern void initMouseAction(void);
+void initMouseAction(void);
 
 #endif /* not FUNC_H */

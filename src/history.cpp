@@ -1,8 +1,9 @@
-/* $Id: history.c,v 1.11 2003/09/26 17:59:51 ukai Exp $ */
+extern "C" {
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
 #include "rc.h"
+}
 
 #ifdef USE_HISTORY
 Buffer *
@@ -101,15 +102,15 @@ newHist()
 Hist *
 copyHist(Hist *hist)
 {
-    Hist *new;
+    Hist *newHistory;
     HistItem *item;
 
     if (hist == NULL)
 	return NULL;
-    new = newHist();
+    newHistory = newHist();
     for (item = hist->list->first; item; item = item->next)
-	pushHist(new, (char *)item->ptr);
-    return new;
+	pushHist(newHistory, (char *)item->ptr);
+    return newHistory;
 }
 
 HistItem *

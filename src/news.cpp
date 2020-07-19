@@ -1,4 +1,4 @@
-/* $Id: news.c,v 1.17 2003/10/05 18:52:51 ukai Exp $ */
+extern "C" {
 #include "fm.h"
 #include "indep.h"
 #include "myctype.h"
@@ -8,11 +8,13 @@
 #include "html.h"
 #include "wc.h"
 #include "wtf.h"
+#include "mimehead.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <signal.h>
 #include <setjmp.h>
+}
 
 #ifdef USE_NNTP
 
@@ -32,7 +34,7 @@ static News current_news = { NULL, 0, NULL, NULL, NULL };
 
 static JMP_BUF AbortLoading;
 
-static MySignalHandler
+static void
 KeyAbort(SIGNAL_ARG)
 {
     LONGJMP(AbortLoading, 1);
@@ -267,7 +269,7 @@ openNewsStream(ParsedURL *pu)
 	mode = NULL;
     if (current_news.host) {
 	if (!strcmp(current_news.host, host) && current_news.port == port) {
-	    tmp = news_command(&current_news, "MODE", mode ? mode : "READER",
+	    tmp = news_command(&current_news, "MODE", mode ? mode : (char*)"READER",
 			       &status);
 	    if (status != 200 && status != 201)
 		news_close(&current_news);
@@ -326,7 +328,7 @@ loadNewsgroup0(ParsedURL *pu)
     char *volatile scheme, *volatile group, *volatile list;
     int status, i, first, last;
     volatile int flag = 0, start = 0, end = 0;
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
 #ifdef USE_M17N
     wc_ces doc_charset = DocumentCharset, mime_charset;
 

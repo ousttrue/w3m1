@@ -100,11 +100,11 @@ add_executable(w3m
     src/terms.cpp
     src/url.cpp
     src/ftp.cpp
-    src/mimehead.c
-    src/news.c
-    src/mouse.c
-    src/history.c
-    src/version.c
+    src/mimehead.cpp
+    src/news.cpp
+    src/mouse.cpp
+    src/history.cpp
+    src/version.cpp
     src/istream.c
     src/keybind.c
     src/parsetagx.c

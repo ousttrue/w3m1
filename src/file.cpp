@@ -26,6 +26,7 @@ extern "C" {
 #include "ctrlcode.h"
 #include "wc.h"
 #include "wtf.h"
+#include "mimehead.h"
 }
 #include <sys/types.h>
 #include <signal.h>

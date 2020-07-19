@@ -326,13 +326,6 @@ void addMultirowsImg(Buffer *buf, AnchorList *al);
 
 Buffer *link_list_panel(Buffer *buf);
 
-Str decodeB(char **ww);
-Str decodeQ(char **ww);
-Str decodeQP(char **ww);
-Str decodeU(char **ww);
-Str decodeWord(char **ow, wc_ces *charset);
-Str decodeMIME(Str orgstr, wc_ces *charset);
-Str encodeB(char *a);
 int set_param_option(char *option);
 char *get_param_option(char *name);
 void init_rc(void);
