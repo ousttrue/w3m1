@@ -63,7 +63,7 @@ fish: './mktable' terminated by signal SIGABRT (Abort)
 w3mも動いた。
 とりあえず Debug できる(しかできない)。
 
-## Wrong __data_start/_end pair の原因
+## `Wrong __data_start/_end pair` 解決
 
 https://hitkey.nekokan.dyndns.info/diary2004.php#D200424
 
@@ -113,6 +113,9 @@ $ ulimit -s 81920
 
 動いた。
 8192KB では足りなく、 unlimted では多すぎるらしい。難儀な。
+
+* WSL Ubuntu-20.04 で `apt install w3m` 動くようになった
+* w3m-0.5.3 のビルド。`mktable` (GC) 使っているが落ちなくなったのでビルドできるようになった。ビルド結果も動く。
 
 ## main.cpp
 
@@ -210,15 +213,6 @@ Tabは必ず1以上。
 ## file.c
 
 巨大すぎるので適当に分割する。
-
-## w3mbookmark
-
-これも
-
-`Wrong __data_start/_end pair`
-
-で動かない。
-もしかして、 `WSL` 環境の問題か？
 
 ## TODO
 
