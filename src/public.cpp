@@ -32,7 +32,7 @@ int searchKeyNum(void)
 
 void nscroll(int n, int mode)
 {
-    Buffer *buf = Currentbuf;
+    Buffer *buf = GetCurrentbuf();
     Line *top = buf->topLine, *cur = buf->currentLine;
     int lnum, tlnum, llnum, diff_n;
 
@@ -455,14 +455,14 @@ void pushBuffer(Buffer *buf)
     if (GetFirstbuf() == GetCurrentbuf())
     {
         buf->nextBuffer = GetFirstbuf();
-        Currentbuf = buf;
+        SetCurrentbuf(buf);
         SetFirstbuf(buf);
     }
     else if ((b = prevBuffer(GetFirstbuf(), GetCurrentbuf())) != NULL)
     {
         b->nextBuffer = buf;
-        buf->nextBuffer = Currentbuf;
-        Currentbuf = buf;
+        buf->nextBuffer = GetCurrentbuf();
+        SetCurrentbuf(buf);
     }
 #ifdef USE_BUFINFO
     saveBufferInfo();
@@ -736,11 +736,11 @@ void delBuffer(Buffer *buf)
 {
     if (buf == NULL)
         return;
-    if (Currentbuf == buf)
-        Currentbuf = buf->nextBuffer;
+    if (GetCurrentbuf() == buf)
+        SetCurrentbuf(buf->nextBuffer);
     SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
     if (!GetCurrentbuf())
-        Currentbuf = GetFirstbuf();
+        SetCurrentbuf(GetFirstbuf());
 }
 
 /* Go to specified line */
@@ -1231,7 +1231,7 @@ loadLink(char *url, char *target, char *referer, FormList *request)
     pushFrameTree(&(nfbuf->frameQ), copyFrameSet(nfbuf->frameset), GetCurrentbuf());
     /* delete frame view buffer */
     delBuffer(GetCurrentbuf());
-    Currentbuf = nfbuf;
+    SetCurrentbuf(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
     resetFrameElement(f_element, buf, referer, request);
     discardBuffer(buf);
@@ -1764,7 +1764,7 @@ void goURL0(char *prompt, int relative)
 {
     char *url, *referer;
     ParsedURL p_url, *current;
-    Buffer *cur_buf = Currentbuf;
+    Buffer *cur_buf = GetCurrentbuf();
 
     url = searchKeyData();
     if (url == NULL)
@@ -1838,7 +1838,7 @@ void goURL0(char *prompt, int relative)
     parseURL2(url, &p_url, current);
     pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
     cmd_loadURL(url, current, referer, NULL);
-    if (Currentbuf != cur_buf) /* success */
+    if (GetCurrentbuf() != cur_buf) /* success */
         pushHashHist(URLHist, parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr);
 }
 
@@ -1855,7 +1855,7 @@ void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
             copyParsedURL(&buf->currentURL, &GetCurrentbuf()->currentURL);
         if (linkid != LB_NOLINK)
         {
-            buf->linkBuffer[REV_LB[linkid]] = Currentbuf;
+            buf->linkBuffer[REV_LB[linkid]] = GetCurrentbuf();
             GetCurrentbuf()->linkBuffer[linkid] = buf;
         }
         pushBuffer(buf);
@@ -1956,7 +1956,7 @@ Str currentURL(void)
 void repBuffer(Buffer *oldbuf, Buffer *buf)
 {
     SetFirstbuf(replaceBuffer(GetFirstbuf(), oldbuf, buf));
-    Currentbuf = buf;
+    SetCurrentbuf(buf);
 }
 
 void _docCSet(wc_ces charset)
@@ -2060,7 +2060,7 @@ void process_mouse(int btn, int x, int y)
                 }
                 else if (press_x >= GetCurrentbuf()->rootX)
                 {
-                    Buffer *buf = Currentbuf;
+                    Buffer *buf = GetCurrentbuf();
                     int cx = GetCurrentbuf()->cursorX, cy = GetCurrentbuf()->cursorY;
 
                     t = posTab(x, y);
@@ -2335,7 +2335,7 @@ void followTab(TabBuffer *tab)
         return;
     }
     _newT();
-    buf = Currentbuf;
+    buf = GetCurrentbuf();
     set_check_target(FALSE);
     followA();
     set_check_target(TRUE);
@@ -2351,7 +2351,7 @@ void followTab(TabBuffer *tab)
         /* buf <- p <- ... <- Currentbuf = c */
         Buffer *c, *p;
 
-        c = Currentbuf;
+        c = GetCurrentbuf();
         p = prevBuffer(c, buf);
         p->nextBuffer = NULL;
         SetFirstbuf(buf);
@@ -2509,7 +2509,7 @@ void tabURL0(TabBuffer *tab, char *prompt, int relative)
         return;
     }
     _newT();
-    buf = Currentbuf;
+    buf = GetCurrentbuf();
     goURL0(prompt, relative);
     if (tab == NULL)
     {
@@ -2523,7 +2523,7 @@ void tabURL0(TabBuffer *tab, char *prompt, int relative)
         /* buf <- p <- ... <- Currentbuf = c */
         Buffer *c, *p;
 
-        c = Currentbuf;
+        c = GetCurrentbuf();
         p = prevBuffer(c, buf);
         p->nextBuffer = NULL;
         SetFirstbuf(buf);
@@ -3149,7 +3149,7 @@ void change_charset(struct parsed_tagarg *arg)
     if (buf == NULL)
         return;
     delBuffer(GetCurrentbuf());
-    Currentbuf = buf;
+    SetCurrentbuf(buf);
     if (GetCurrentbuf()->bufferprop & BP_INTERNAL)
         return;
     charset = GetCurrentbuf()->document_charset;
@@ -3196,10 +3196,8 @@ void follow_map(struct parsed_tagarg *arg)
     if (check_target && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
-        Buffer *buf;
-
         _newT();
-        buf = Currentbuf;
+        Buffer *buf = GetCurrentbuf();
         cmd_loadURL(a->url, baseURL(GetCurrentbuf()),
                     parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr, NULL);
         if (buf != GetCurrentbuf())

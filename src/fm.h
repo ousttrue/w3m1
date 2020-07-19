@@ -649,7 +649,6 @@ global int close_tab_back init(FALSE);
 global int nTab;
 global int TabCols init(10);
 #define NO_TABBUFFER ((TabBuffer *)1)
-#define Currentbuf (CurrentTab->currentBuffer)
 global DownloadList *FirstDL init(NULL);
 global DownloadList *LastDL init(NULL);
 

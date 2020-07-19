@@ -176,7 +176,7 @@ void shiftr()
 
 void col1R()
 {
-    Buffer *buf = Currentbuf;
+    Buffer *buf = GetCurrentbuf();
     Line *l = buf->currentLine;
     int j, column, n = searchKeyNum();
     if (l == NULL)
@@ -194,7 +194,7 @@ void col1R()
 
 void col1L()
 {
-    Buffer *buf = Currentbuf;
+    Buffer *buf = GetCurrentbuf();
     Line *l = buf->currentLine;
     int j, n = searchKeyNum();
     if (l == NULL)
@@ -585,7 +585,7 @@ void selBuf()
             break;
         case '\n':
         case ' ':
-            Currentbuf = buf;
+            SetCurrentbuf(buf);
             ok = TRUE;
             break;
         case 'D':
@@ -594,7 +594,7 @@ void selBuf()
             {
                 /* No more buffer */
                 SetFirstbuf(nullBuffer());
-                Currentbuf = GetFirstbuf();
+                SetCurrentbuf(GetFirstbuf());
             }
             break;
         case 'q':
@@ -1064,7 +1064,7 @@ void followA()
     {
         Buffer *buf;
         _newT();
-        buf = Currentbuf;
+        buf = GetCurrentbuf();
         loadLink(url, a->target, a->referer, NULL);
         if (buf != GetCurrentbuf())
             delBuffer(buf);
@@ -1127,7 +1127,7 @@ void nextBf()
                 return;
             break;
         }
-        Currentbuf = buf;
+        SetCurrentbuf(buf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
@@ -1146,7 +1146,7 @@ void prevBf()
                 return;
             break;
         }
-        Currentbuf = buf;
+        SetCurrentbuf(buf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
@@ -1271,7 +1271,7 @@ void pginfo()
 {
     Buffer *buf;
     if ((buf = GetCurrentbuf()->linkBuffer[LB_N_INFO]) != NULL) {
-        Currentbuf = buf;
+        SetCurrentbuf(buf);
         displayBuffer(GetCurrentbuf(), B_NORMAL);
         return;
     }
@@ -1507,7 +1507,7 @@ void vwSrc()
         return;
     if ((buf = GetCurrentbuf()->linkBuffer[LB_SOURCE]) != NULL ||
         (buf = GetCurrentbuf()->linkBuffer[LB_N_SOURCE]) != NULL) {
-        Currentbuf = buf;
+        SetCurrentbuf(buf);
         displayBuffer(GetCurrentbuf(), B_NORMAL);
         return;
     }
@@ -1551,7 +1551,7 @@ void vwSrc()
         else
             buf->real_type = GetCurrentbuf()->real_type;
         buf->buffername = Sprintf("source of %s", GetCurrentbuf()->buffername)->ptr;
-        buf->linkBuffer[LB_N_SOURCE] = Currentbuf;
+        buf->linkBuffer[LB_N_SOURCE] = GetCurrentbuf();
         GetCurrentbuf()->linkBuffer[LB_SOURCE] = buf;
     }
     else if (!strcasecmp(GetCurrentbuf()->type, "text/plain")) {
@@ -1563,7 +1563,7 @@ void vwSrc()
             buf->real_type = GetCurrentbuf()->real_type;
         buf->buffername = Sprintf("HTML view of %s",
                                   GetCurrentbuf()->buffername)->ptr;
-        buf->linkBuffer[LB_SOURCE] = Currentbuf;
+        buf->linkBuffer[LB_SOURCE] = GetCurrentbuf();
         GetCurrentbuf()->linkBuffer[LB_N_SOURCE] = buf;
     }
     else {
@@ -1634,7 +1634,7 @@ void reload()
         fbuf->linkBuffer[LB_FRAME] = buf;
         buf->linkBuffer[LB_N_FRAME] = fbuf;
         pushBuffer(buf);
-        Currentbuf = buf;
+        SetCurrentbuf(buf);
         if (GetCurrentbuf()->firstLine) {
             COPY_BUFROOT(GetCurrentbuf(), &sbuf);
             restorePosition(GetCurrentbuf(), &sbuf);
@@ -1697,7 +1697,7 @@ void reload()
          (is_html_type(buf->type) &&
           !strcasecmp(sbuf.type, "text/plain")))) {
         vwSrc();
-        if (Currentbuf != buf)
+        if (GetCurrentbuf() != buf)
             SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
     }
     GetCurrentbuf()->search_header = sbuf.search_header;
@@ -1777,13 +1777,13 @@ void rFrame()
 {
     Buffer *buf;
     if ((buf = GetCurrentbuf()->linkBuffer[LB_FRAME]) != NULL) {
-        Currentbuf = buf;
+        SetCurrentbuf(buf);
         displayBuffer(GetCurrentbuf(), B_NORMAL);
         return;
     }
     if (GetCurrentbuf()->frameset == NULL) {
         if ((buf = GetCurrentbuf()->linkBuffer[LB_N_FRAME]) != NULL) {
-            Currentbuf = buf;
+            SetCurrentbuf(buf);
             displayBuffer(GetCurrentbuf(), B_NORMAL);
         }
         return;
@@ -1797,7 +1797,7 @@ void rFrame()
         displayBuffer(GetCurrentbuf(), B_NORMAL);
         return;
     }
-    buf->linkBuffer[LB_N_FRAME] = Currentbuf;
+    buf->linkBuffer[LB_N_FRAME] = GetCurrentbuf();
     GetCurrentbuf()->linkBuffer[LB_FRAME] = buf;
     pushBuffer(buf);
     if (fmInitialized && display_ok())
@@ -2231,7 +2231,7 @@ void ldDL()
         replace = TRUE;
     if (!FirstDL) {
         if (replace) {
-            if (Currentbuf == GetFirstbuf() && GetCurrentbuf()->nextBuffer == NULL) {
+            if (GetCurrentbuf() == GetFirstbuf() && GetCurrentbuf()->nextBuffer == NULL) {
                 if (nTab > 1)
                     deleteTab(CurrentTab);
             }

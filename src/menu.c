@@ -1377,7 +1377,7 @@ smChBuf(void)
     if (SelectV < 0 || SelectV >= SelectMenu.nitem)
         return;
     for (i = 0, buf = GetFirstbuf(); i < SelectV; i++, buf = buf->nextBuffer) ;
-    Currentbuf = buf;
+    SetCurrentbuf(buf);
     for (buf = GetFirstbuf(); buf != NULL; buf = buf->nextBuffer) {
         if (buf == GetCurrentbuf())
             continue;
@@ -1399,14 +1399,14 @@ smDelBuf(char c)
         return (MENU_NOTHING);
     for (i = 0, buf = GetFirstbuf(); i < CurrentMenu->select;
          i++, buf = buf->nextBuffer) ;
-    if (Currentbuf == buf)
-        Currentbuf = buf->nextBuffer;
+    if (GetCurrentbuf() == buf)
+        SetCurrentbuf(buf->nextBuffer);
     SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
     if (!GetCurrentbuf())
-        Currentbuf = nthBuffer(GetFirstbuf(), i - 1);;
+        SetCurrentbuf(nthBuffer(GetFirstbuf(), i - 1));
     if (GetFirstbuf()) {
         SetFirstbuf(nullBuffer());
-        Currentbuf = GetFirstbuf();
+        SetCurrentbuf(GetFirstbuf());
     }
 
     x = CurrentMenu->x;

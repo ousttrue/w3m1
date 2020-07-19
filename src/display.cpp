@@ -1374,7 +1374,7 @@ void disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mous
 		fprintf(stderr, "%s\n", conv_to_system(s));
 		return;
 	}
-	if (CurrentTab != NULL && Currentbuf != NULL)
+	if (CurrentTab != NULL && GetCurrentbuf() != NULL)
 		message(s, GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
 				GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY);
 	else
@@ -1389,7 +1389,7 @@ void disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mous
 	if (mouse && use_mouse)
 		mouse_inactive();
 #endif
-	if (CurrentTab != NULL && Currentbuf != NULL && redraw_current)
+	if (CurrentTab != NULL && GetCurrentbuf() != NULL && redraw_current)
 		displayCurrentbuf(B_NORMAL);
 }
 
