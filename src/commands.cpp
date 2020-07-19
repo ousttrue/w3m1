@@ -2160,15 +2160,7 @@ void closeT()
 
 void nextT()
 {
-    int i;
-    if (nTab <= 1)
-        return;
-    for (i = 0; i < PREC_NUM(); i++) {
-        if (CurrentTab->nextTab)
-            CurrentTab = CurrentTab->nextTab;
-        else
-            CurrentTab = FirstTab;
-    }
+    SelectNextTab(PREC_NUM());
     displayBuffer(GetCurrentbuf(), B_REDRAW_IMAGE);
 }
 
@@ -2205,20 +2197,12 @@ void tabrURL()
 
 void tabR()
 {
-    TabBuffer *tab;
-    int i;
-    for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
-         tab = tab->nextTab, i++) ;
-    moveTab(CurrentTab, tab ? tab : GetLastTab(), TRUE);
+    MoveTab(PREC_NUM());
 }
 
 void tabL()
 {
-    TabBuffer *tab;
-    int i;
-    for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
-         tab = tab->prevTab, i++) ;
-    moveTab(CurrentTab, tab ? tab : FirstTab, FALSE);
+    MoveTab(-PREC_NUM());
 }
 /* download panel */
 

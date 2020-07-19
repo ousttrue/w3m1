@@ -688,7 +688,7 @@ redrawNLine(Buffer *buf, int n)
 			addstr(mouse_action.menu_str);
 #endif
 		clrtoeolx();
-		for (t = FirstTab; t; t = t->nextTab)
+		for (t = GetFirstTab(); t; t = t->nextTab)
 		{
 			move(t->y, t->x1);
 			if (t == CurrentTab)

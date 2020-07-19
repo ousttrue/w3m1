@@ -859,7 +859,6 @@ int main(int argc, char **argv, char **envp)
     }
 #endif
 
-    FirstTab = NULL;
     nTab = 0;
     CurrentTab = NULL;
     ClearCurrentKey();
@@ -1109,7 +1108,7 @@ int main(int argc, char **argv, char **envp)
     {
         set_add_download_list(FALSE);
         CurrentTab = GetLastTab();
-        if (!FirstTab)
+        if (!GetFirstTab())
         {
             InitializeTab();
         }
@@ -1125,8 +1124,8 @@ int main(int argc, char **argv, char **envp)
         ldDL();
     }
     else
-        CurrentTab = FirstTab;
-    if (!FirstTab || !HasFirstBuffer())
+        CurrentTab = GetFirstTab();
+    if (!GetFirstTab() || !HasFirstBuffer())
     {
         if (newbuf == NO_BUFFER)
         {

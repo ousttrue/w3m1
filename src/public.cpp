@@ -2256,64 +2256,6 @@ void do_mouse_action(int btn, int x, int y)
     }
 }
 
-void moveTab(TabBuffer *t, TabBuffer *t2, int right)
-{
-    if (t2 == NO_TABBUFFER)
-        t2 = FirstTab;
-    if (!t || !t2 || t == t2 || t == NO_TABBUFFER)
-        return;
-    if (t->prevTab)
-    {
-        if (t->nextTab)
-            t->nextTab->prevTab = t->prevTab;
-        else
-            SetLastTab(t->prevTab);
-        t->prevTab->nextTab = t->nextTab;
-    }
-    else
-    {
-        t->nextTab->prevTab = NULL;
-        FirstTab = t->nextTab;
-    }
-    if (right)
-    {
-        t->nextTab = t2->nextTab;
-        t->prevTab = t2;
-        if (t2->nextTab)
-            t2->nextTab->prevTab = t;
-        else
-            SetLastTab(t);
-        t2->nextTab = t;
-    }
-    else
-    {
-        t->prevTab = t2->prevTab;
-        t->nextTab = t2;
-        if (t2->prevTab)
-            t2->prevTab->nextTab = t;
-        else
-            FirstTab = t;
-        t2->prevTab = t;
-    }
-    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
-}
-
-TabBuffer *posTab(int x, int y)
-{
-    TabBuffer *tab;
-
-    if (mouse_action.menu_str && x < mouse_action.menu_width && y == 0)
-        return NO_TABBUFFER;
-    if (y > GetLastTab()->y)
-        return NULL;
-    for (tab = FirstTab; tab; tab = tab->nextTab)
-    {
-        if (tab->x1 <= x && x <= tab->x2 && tab->y == y)
-            return tab;
-    }
-    return NULL;
-}
-
 void followTab(TabBuffer *tab)
 {
     Buffer *buf;
@@ -2482,22 +2424,6 @@ void SigAlarm(SIGNAL_ARG)
 }
 
 #endif
-
-TabBuffer *numTab(int n)
-{
-    TabBuffer *tab;
-    int i;
-
-    if (n == 0)
-        return CurrentTab;
-    if (n == 1)
-        return FirstTab;
-    if (nTab <= 1)
-        return NULL;
-    for (tab = FirstTab, i = 1; tab && i < n; tab = tab->nextTab, i++)
-        ;
-    return tab;
-}
 
 void tabURL0(TabBuffer *tab, char *prompt, int relative)
 {
@@ -2798,116 +2724,6 @@ void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
     set_add_download_list(TRUE);
 }
 
-TabBuffer *deleteTab(TabBuffer *tab)
-{
-    Buffer *buf, *next;
-
-    if (nTab <= 1)
-        return FirstTab;
-    if (tab->prevTab)
-    {
-        if (tab->nextTab)
-            tab->nextTab->prevTab = tab->prevTab;
-        else
-            SetLastTab(tab->prevTab);
-        tab->prevTab->nextTab = tab->nextTab;
-        if (tab == CurrentTab)
-            CurrentTab = tab->prevTab;
-    }
-    else
-    { /* tab == FirstTab */
-        tab->nextTab->prevTab = NULL;
-        FirstTab = tab->nextTab;
-        if (tab == CurrentTab)
-            CurrentTab = tab->nextTab;
-    }
-    nTab--;
-    buf = tab->firstBuffer;
-    while (buf && buf != NO_BUFFER)
-    {
-        next = buf->nextBuffer;
-        discardBuffer(buf);
-        buf = next;
-    }
-    return FirstTab;
-}
-
-void calcTabPos()
-{
-    TabBuffer *tab;
-#if 0
-    int lcol = 0, rcol = 2, col;
-#else
-    int lcol = 0, rcol = 0, col;
-#endif
-    int n1, n2, na, nx, ny, ix, iy;
-
-#ifdef USE_MOUSE
-    lcol = mouse_action.menu_str ? mouse_action.menu_width : 0;
-#endif
-
-    if (nTab <= 0)
-        return;
-    n1 = (COLS - rcol - lcol) / TabCols;
-    if (n1 >= nTab)
-    {
-        n2 = 1;
-        ny = 1;
-    }
-    else
-    {
-        if (n1 < 0)
-            n1 = 0;
-        n2 = COLS / TabCols;
-        if (n2 == 0)
-            n2 = 1;
-        ny = (nTab - n1 - 1) / n2 + 2;
-    }
-    na = n1 + n2 * (ny - 1);
-    n1 -= (na - nTab) / ny;
-    if (n1 < 0)
-        n1 = 0;
-    na = n1 + n2 * (ny - 1);
-    tab = FirstTab;
-    for (iy = 0; iy < ny && tab; iy++)
-    {
-        if (iy == 0)
-        {
-            nx = n1;
-            col = COLS - rcol - lcol;
-        }
-        else
-        {
-            nx = n2 - (na - nTab + (iy - 1)) / (ny - 1);
-            col = COLS;
-        }
-        for (ix = 0; ix < nx && tab; ix++, tab = tab->nextTab)
-        {
-            tab->x1 = col * ix / nx;
-            tab->x2 = col * (ix + 1) / nx - 1;
-            tab->y = iy;
-            if (iy == 0)
-            {
-                tab->x1 += lcol;
-                tab->x2 += lcol;
-            }
-        }
-    }
-}
-
-TabBuffer *newTab(void)
-{
-    TabBuffer *n;
-
-    n = New(TabBuffer);
-    if (n == NULL)
-        return NULL;
-    n->nextTab = NULL;
-    n->currentBuffer = NULL;
-    n->firstBuffer = NULL;
-    return n;
-}
-
 AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd, void *data)
 {
     if (event == NULL)
@@ -2944,7 +2760,7 @@ void deleteFiles()
     Buffer *buf;
     char *f;
 
-    for (CurrentTab = FirstTab; CurrentTab; CurrentTab = CurrentTab->nextTab)
+    for (CurrentTab = GetFirstTab(); CurrentTab; CurrentTab = CurrentTab->nextTab)
     {
         while (HasFirstBuffer())
         {
@@ -3677,12 +3493,24 @@ void pcmap(void)
 //
 // Buffer
 //
+static TabBuffer *g_FirstTab = nullptr;
+
 static TabBuffer *g_LastTab = nullptr;
 
 void InitializeTab()
 {
-    FirstTab = g_LastTab = CurrentTab = newTab();
+    g_FirstTab = g_LastTab = CurrentTab = newTab();
     nTab = 1;
+}
+
+TabBuffer *GetFirstTab()
+{
+    return g_FirstTab;
+}
+
+void SetFirstTab(TabBuffer *tab)
+{
+    g_FirstTab = tab;
 }
 
 TabBuffer *GetLastTab()
@@ -3693,6 +3521,224 @@ TabBuffer *GetLastTab()
 void SetLastTab(TabBuffer *tab)
 {
     g_LastTab = tab;
+}
+
+void calcTabPos()
+{
+    TabBuffer *tab;
+#if 0
+    int lcol = 0, rcol = 2, col;
+#else
+    int lcol = 0, rcol = 0, col;
+#endif
+    int n1, n2, na, nx, ny, ix, iy;
+
+#ifdef USE_MOUSE
+    lcol = mouse_action.menu_str ? mouse_action.menu_width : 0;
+#endif
+
+    if (nTab <= 0)
+        return;
+    n1 = (COLS - rcol - lcol) / TabCols;
+    if (n1 >= nTab)
+    {
+        n2 = 1;
+        ny = 1;
+    }
+    else
+    {
+        if (n1 < 0)
+            n1 = 0;
+        n2 = COLS / TabCols;
+        if (n2 == 0)
+            n2 = 1;
+        ny = (nTab - n1 - 1) / n2 + 2;
+    }
+    na = n1 + n2 * (ny - 1);
+    n1 -= (na - nTab) / ny;
+    if (n1 < 0)
+        n1 = 0;
+    na = n1 + n2 * (ny - 1);
+    tab = g_FirstTab;
+    for (iy = 0; iy < ny && tab; iy++)
+    {
+        if (iy == 0)
+        {
+            nx = n1;
+            col = COLS - rcol - lcol;
+        }
+        else
+        {
+            nx = n2 - (na - nTab + (iy - 1)) / (ny - 1);
+            col = COLS;
+        }
+        for (ix = 0; ix < nx && tab; ix++, tab = tab->nextTab)
+        {
+            tab->x1 = col * ix / nx;
+            tab->x2 = col * (ix + 1) / nx - 1;
+            tab->y = iy;
+            if (iy == 0)
+            {
+                tab->x1 += lcol;
+                tab->x2 += lcol;
+            }
+        }
+    }
+}
+
+TabBuffer *posTab(int x, int y)
+{
+    TabBuffer *tab;
+
+    if (mouse_action.menu_str && x < mouse_action.menu_width && y == 0)
+        return NO_TABBUFFER;
+    if (y > GetLastTab()->y)
+        return NULL;
+    for (tab = g_FirstTab; tab; tab = tab->nextTab)
+    {
+        if (tab->x1 <= x && x <= tab->x2 && tab->y == y)
+            return tab;
+    }
+    return NULL;
+}
+
+TabBuffer *numTab(int n)
+{
+    TabBuffer *tab;
+    int i;
+
+    if (n == 0)
+        return CurrentTab;
+    if (n == 1)
+        return g_FirstTab;
+    if (nTab <= 1)
+        return NULL;
+    for (tab = g_FirstTab, i = 1; tab && i < n; tab = tab->nextTab, i++)
+        ;
+    return tab;
+}
+
+TabBuffer *newTab(void)
+{
+    TabBuffer *n;
+
+    n = New(TabBuffer);
+    if (n == NULL)
+        return NULL;
+    n->nextTab = NULL;
+    n->currentBuffer = NULL;
+    n->firstBuffer = NULL;
+    return n;
+}
+
+TabBuffer *deleteTab(TabBuffer *tab)
+{
+    Buffer *buf, *next;
+
+    if (nTab <= 1)
+        return g_FirstTab;
+    if (tab->prevTab)
+    {
+        if (tab->nextTab)
+            tab->nextTab->prevTab = tab->prevTab;
+        else
+            SetLastTab(tab->prevTab);
+        tab->prevTab->nextTab = tab->nextTab;
+        if (tab == CurrentTab)
+            CurrentTab = tab->prevTab;
+    }
+    else
+    { /* tab == FirstTab */
+        tab->nextTab->prevTab = NULL;
+        g_FirstTab = tab->nextTab;
+        if (tab == CurrentTab)
+            CurrentTab = tab->nextTab;
+    }
+    nTab--;
+    buf = tab->firstBuffer;
+    while (buf && buf != NO_BUFFER)
+    {
+        next = buf->nextBuffer;
+        discardBuffer(buf);
+        buf = next;
+    }
+    return g_FirstTab;
+}
+
+void moveTab(TabBuffer *t, TabBuffer *t2, int right)
+{
+    if (t2 == NO_TABBUFFER)
+        t2 = g_FirstTab;
+    if (!t || !t2 || t == t2 || t == NO_TABBUFFER)
+        return;
+    if (t->prevTab)
+    {
+        if (t->nextTab)
+            t->nextTab->prevTab = t->prevTab;
+        else
+            SetLastTab(t->prevTab);
+        t->prevTab->nextTab = t->nextTab;
+    }
+    else
+    {
+        t->nextTab->prevTab = NULL;
+        g_FirstTab = t->nextTab;
+    }
+    if (right)
+    {
+        t->nextTab = t2->nextTab;
+        t->prevTab = t2;
+        if (t2->nextTab)
+            t2->nextTab->prevTab = t;
+        else
+            SetLastTab(t);
+        t2->nextTab = t;
+    }
+    else
+    {
+        t->prevTab = t2->prevTab;
+        t->nextTab = t2;
+        if (t2->prevTab)
+            t2->prevTab->nextTab = t;
+        else
+            g_FirstTab = t;
+        t2->prevTab = t;
+    }
+    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+}
+
+void SelectNextTab(int prec)
+{
+    int i;
+    if (nTab <= 1)
+        return;
+    for (i = 0; i < prec; i++)
+    {
+        if (CurrentTab->nextTab)
+            CurrentTab = CurrentTab->nextTab;
+        else
+            CurrentTab = g_FirstTab;
+    }
+}
+
+void MoveTab(int x)
+{
+    TabBuffer *tab;
+    int i;
+    if (x > 0)
+    {
+        for (tab = CurrentTab, i = 0; tab && i < x;
+             tab = tab->nextTab, i++)
+            ;
+        moveTab(CurrentTab, tab ? tab : GetLastTab(), TRUE);
+    }
+    else if (x < 0)
+    {
+        for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
+             tab = tab->prevTab, i++)
+            ;
+        moveTab(CurrentTab, tab ? tab : g_FirstTab, FALSE);
+    }
 }
 
 Buffer *GetCurrentbuf()
