@@ -1,6 +1,8 @@
 /* $Id: hash.c,v 1.5 2003/04/07 16:27:10 ukai Exp $ */
-#include <string.h>
+extern "C" {
 #include "hash.h"
+}
+#include <string.h>
 #include <gc.h>
 
 static unsigned int

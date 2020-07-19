@@ -143,3 +143,5 @@ struct table_mode {
 /* c-basic-offset: 4   */
 /* tab-width: 8        */
 /* End:                */
+
+void align(TextLine *lbuf, int width, int mode);

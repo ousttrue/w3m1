@@ -207,7 +207,6 @@ double log_like(int x);
 struct table *newTable(void);
 void pushdata(struct table *t, int row, int col, char *data);
 int visible_length(char *str);
-void align(TextLine *lbuf, int width, int mode);
 void print_item(struct table *t, int row, int col, int width, Str buf);
 void print_sep(struct table *t, int row, int type, int maxcol, Str buf);
 void do_refill(struct table *tbl, int row, int col, int maxlimit);

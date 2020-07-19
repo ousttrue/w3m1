@@ -2,6 +2,7 @@
 /* 
  * HTML table
  */
+extern "C" {
 #include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,6 +17,8 @@
 #include "table.h"
 #include "etc.h"
 #include "entity.h"
+#include "file.h"
+}
 
 int symbol_width = 0;
 int symbol_width0 = 0;
@@ -402,7 +405,7 @@ pushdata(struct table *t, int row, int col, char *data)
     if (t->tabdata[row][col] == NULL)
 	t->tabdata[row][col] = newGeneralList();
 
-    pushText(t->tabdata[row][col], data ? data : "");
+    pushText((TextList*)t->tabdata[row][col], data ? data : (char*)"");
 }
 
 void
@@ -413,7 +416,7 @@ suspend_or_pushdata(struct table *tbl, char *line)
     else {
 	if (!tbl->suspended_data)
 	    tbl->suspended_data = newTextList();
-	pushText(tbl->suspended_data, line ? line : "");
+	pushText(tbl->suspended_data, line ? line : (char*)"");
     }
 }
 
@@ -605,7 +608,7 @@ print_item(struct table *t, int row, int col, int width, Str buf)
     TextLine *lbuf;
 
     if (t->tabdata[row])
-	lbuf = popTextLine(t->tabdata[row][col]);
+	lbuf = popTextLine((TextLineList*)t->tabdata[row][col]);
     else
 	lbuf = NULL;
 
@@ -735,8 +738,6 @@ get_spec_cell_width(struct table *tbl, int row, int col)
     }
     return w;
 }
-
-#include "file.h"
 
 void
 do_refill(struct table *tbl, int row, int col, int maxlimit)
@@ -3189,7 +3190,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 			Strcat_char(tmp, '\n');
 			break;
 		    default:
-			r = conv_entity(ec);
+			r = (char*)conv_entity(ec);
 			if (r != NULL && strlen(r) == 1 &&
 			    ec == (unsigned char)*r) {
 			    Strcat_char(tmp, *r);

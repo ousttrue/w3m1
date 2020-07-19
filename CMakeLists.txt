@@ -8,10 +8,10 @@ add_executable(w3mbookmark
     src/Str.cpp
     src/indep.cpp
     src/regex.cpp
-    src/textlist.c
-    src/parsetag.c
-    src/myctype.c
-    src/hash.c
+    src/textlist.cpp
+    src/parsetag.cpp
+    src/myctype.cpp
+    src/hash.cpp
     src/entity.cpp
     libwc/big5.c
     libwc/ces.c
@@ -81,14 +81,14 @@ add_executable(w3m
     src/Str.cpp
     src/regex.cpp
     # src/defun.c
-    src/textlist.c
-    src/parsetag.c
-    src/myctype.c
-    src/hash.c
-    src/etc.c
-    src/search.c
-    src/linein.c
-    src/table.c
+    src/textlist.cpp
+    src/parsetag.cpp
+    src/myctype.cpp
+    src/hash.cpp
+    src/etc.cpp
+    src/search.cpp
+    src/linein.cpp
+    src/table.cpp
     src/local.c
     src/form.c
     src/map.c

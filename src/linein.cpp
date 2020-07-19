@@ -1,4 +1,5 @@
 /* $Id: linein.c,v 1.35 2007/05/23 12:14:24 inu Exp $ */
+extern "C" {
 #include "fm.h"
 #include "indep.h"
 #include "local.h"
@@ -7,20 +8,7 @@
 #include "etc.h"
 #include "file.h"
 #include "public.h"
-
-#ifdef USE_MOUSE
-#ifdef USE_GPM
-#include <gpm.h>
-#endif
-#if defined(USE_GPM) || defined(USE_SYSMOUSE)
-extern int do_getch();
-#define getch()	do_getch()
-#endif				/* USE_GPM */
-#endif				/* USE_MOUSE */
-
-#ifdef __EMX__
-#include <sys/kbdscan.h>
-#endif
+}
 
 #define STR_LEN	1024
 #define CLEN (COLS - 2)
@@ -215,7 +203,7 @@ inputLineHistSearch(char *prompt, char *def_str, int flag, Hist *hist,
 	else if (!i_quote && c < 0x20) {	/* Control code */
 	    if (incrfunc == NULL
 		|| (c = incrfunc((int)c, strBuf, strProp)) < 0x20)
-		(*InputKeymap[(int)c]) (c);
+		(*InputKeymap[(int)c]) ();
 	    if (incrfunc && c != (unsigned char)-1 && c != CTRL_J)
 		incrfunc(-1, strBuf, strProp);
 	    if (cm_clear)

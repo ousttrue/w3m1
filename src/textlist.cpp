@@ -1,8 +1,10 @@
 /* $Id: textlist.c,v 1.6 2003/04/07 16:27:11 ukai Exp $ */
+extern "C"{
 #include "textlist.h"
 #include "indep.h"
 #include "Str.h"
 #include <gc.h>
+}
 
 /* General doubly linked list */
 
@@ -176,7 +178,7 @@ char *rpopText(TextList *tl)
 
 void delText(TextList *tl, char *i)
 {
-    delValue((GeneralList *)(tl), (void *)(i));
+    delValue((GeneralList *)(tl), (ListItem *)(i));
 }
 
 TextList *appendTextList(TextList *tl, TextList *tl2)
