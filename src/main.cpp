@@ -925,7 +925,7 @@ int main(int argc, char **argv, char **envp)
         /* no URL specified */
         if (!isatty(0))
         {
-            redin = newFileStream(fdopen(dup(0), "rb"), (void (*)())pclose);
+            redin = newFileStream(fdopen(dup(0), "rb"), (FileStreamCloseFunc)pclose);
             newbuf = openGeneralPagerBuffer(redin);
             dup2(1, 0);
         }
