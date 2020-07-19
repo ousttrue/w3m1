@@ -5031,7 +5031,7 @@
 	* fm.h (MapArea): add target
 		(Buffer): add rootY
 		(TabBuffer): added
-		(Currentbuf): comment out
+		(GetCurrentbuf()): comment out
 		(Firstbuf): comment out
 		(CurrentTab): added
 		(FirstTab): added
@@ -5041,7 +5041,7 @@
 		(nTab): added
 		(TabCols): added
 		(N_TAB): added
-		(Currentbuf): CurrentTab->currentBuffer
+		(GetCurrentbuf()): CurrentTab->currentBuffer
 		(Firstbuf): CurrentTab->firstBuffer
 	* funcname.tab (CLOSE_TAB): added
 		(NEW_TAB): added

@@ -1312,7 +1312,7 @@ initSelectMenu(void)
 
     SelectV = -1;
     for (i = 0, buf = GetFirstbuf(); buf != NULL; i++, buf = buf->nextBuffer) {
-        if (buf == Currentbuf)
+        if (buf == GetCurrentbuf())
             SelectV = i;
     }
     nitem = i;
@@ -1379,7 +1379,7 @@ smChBuf(void)
     for (i = 0, buf = GetFirstbuf(); i < SelectV; i++, buf = buf->nextBuffer) ;
     Currentbuf = buf;
     for (buf = GetFirstbuf(); buf != NULL; buf = buf->nextBuffer) {
-        if (buf == Currentbuf)
+        if (buf == GetCurrentbuf())
             continue;
 #ifdef USE_IMAGE
         deleteImage(buf);
@@ -1402,7 +1402,7 @@ smDelBuf(char c)
     if (Currentbuf == buf)
         Currentbuf = buf->nextBuffer;
     SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
-    if (!Currentbuf)
+    if (!GetCurrentbuf())
         Currentbuf = nthBuffer(GetFirstbuf(), i - 1);;
     if (GetFirstbuf()) {
         SetFirstbuf(nullBuffer());

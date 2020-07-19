@@ -1075,7 +1075,7 @@ int main(int argc, char **argv, char **envp)
         {
             _newT();
             GetCurrentbuf()->nextBuffer = newbuf;
-            delBuffer(Currentbuf);
+            delBuffer(GetCurrentbuf());
         }
         else
         {
@@ -1088,7 +1088,7 @@ int main(int argc, char **argv, char **envp)
                 rFrame();
         }
         if (w3m_dump)
-            do_dump(Currentbuf);
+            do_dump(GetCurrentbuf());
         else
         {
             Currentbuf = newbuf;
@@ -1119,7 +1119,7 @@ int main(int argc, char **argv, char **envp)
         if (!HasFirstBuffer())
         {
             Currentbuf = newBuffer(INIT_BUFFER_WIDTH);
-            SetFirstbuf(Currentbuf);
+            SetFirstbuf(GetCurrentbuf());
             GetCurrentbuf()->bufferprop = BP_INTERNAL | BP_NO_URL;
             GetCurrentbuf()->buffername = DOWNLOAD_LIST_TITLE;
         }

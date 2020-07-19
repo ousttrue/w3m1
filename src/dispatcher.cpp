@@ -122,8 +122,8 @@ extern "C"
             }
             else
             {
-                set_buffer_environ(Currentbuf);
-                save_buffer_position(Currentbuf);
+                set_buffer_environ(GetCurrentbuf());
+                save_buffer_position(GetCurrentbuf());
                 KeyPressEventProc((int)c);
                 set_prec_num(0);
             }
