@@ -1727,5 +1727,5 @@ void restorePosition(Buffer *buf, Buffer *orig)
 
 extern "C" void displayCurrentbuf(int mode)
 {
-	displayBuffer(Currentbuf, mode);
+	displayBuffer(GetCurrentbuf(), mode);
 }

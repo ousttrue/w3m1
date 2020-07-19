@@ -323,7 +323,7 @@ static void mainloop()
         {
             Anchor *a = GetCurrentbuf()->submit;
             GetCurrentbuf()->submit = NULL;
-            gotoLine(Currentbuf, a->start.line);
+            gotoLine(GetCurrentbuf(), a->start.line);
             GetCurrentbuf()->pos = a->start.pos;
             _followForm(TRUE);
             continue;
@@ -382,7 +382,7 @@ static void mainloop()
                 if (need_resize_screen())
                     resize_screen();
 #endif
-                loadImage(Currentbuf, IMG_FLAG_NEXT);
+                loadImage(GetCurrentbuf(), IMG_FLAG_NEXT);
             } while (sleep_till_anykey(1, 0) <= 0);
         }
 #ifdef SIGWINCH
@@ -1162,7 +1162,7 @@ int main(int argc, char **argv, char **envp)
 #endif
 
     Currentbuf = GetFirstbuf();
-    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
     if (line_str)
     {
         _goLine(line_str);
