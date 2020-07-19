@@ -48,8 +48,8 @@ target_compile_definitions(w3mbookmark
 PUBLIC
     DUMMY
     HAVE_CONFIG_H
-    AUXBIN_DIR=\"${W3M_PREFIX}/w3m/libexec\"
-    CGIBIN_DIR=\"${W3M_PREFIX}/w3m/cgi-bin\"
+    AUXBIN_DIR=\"${W3M_PREFIX}/libexec/w3m\"
+    CGIBIN_DIR=\"${W3M_PREFIX}/libexec/w3m/cgi-bin\"
     HELP_DIR=\"${W3M_PREFIX}/share/w3m\"
     ETC_DIR=\"${W3M_PREFIX}/etc\"
     CONF_DIR=\"${W3M_PREFIX}/etc/w3m\"
@@ -144,8 +144,8 @@ PUBLIC
 target_compile_definitions(w3m
 PUBLIC
     HAVE_CONFIG_H
-    AUXBIN_DIR=\"${W3M_PREFIX}/w3m/libexec\"
-    CGIBIN_DIR=\"${W3M_PREFIX}/w3m/cgi-bin\"
+    AUXBIN_DIR=\"${W3M_PREFIX}/libexec/w3m\"
+    CGIBIN_DIR=\"${W3M_PREFIX}/libexec/w3m/cgi-bin\"
     HELP_DIR=\"${W3M_PREFIX}/share/w3m\"
     ETC_DIR=\"${W3M_PREFIX}/etc\"
     CONF_DIR=\"${W3M_PREFIX}/etc/w3m\"
