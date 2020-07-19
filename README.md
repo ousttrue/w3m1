@@ -2,7 +2,7 @@
 
 w3m を改造して遊ぶ。
 
-## その１。 msys2 でとりあえずビルド
+## msys2 でとりあえずビルド
 
 最近のUbuntuとかだとビルドできなかった。
 しかし、msys2 ならわりと簡単にビルドできることを発見。
@@ -35,7 +35,7 @@ $ make
 $ ./w3m www.google.com // 動いた
 ```
 
-## その２。 Ubuntu build
+## Ubuntu build
 
 `config.h` や `functable.c` などの生成されるソースをコミットして、
 `CMakeLists.txt` で `Ubuntu-20.04` でビルドできるようにした。
@@ -63,7 +63,58 @@ fish: './mktable' terminated by signal SIGABRT (Abort)
 w3mも動いた。
 とりあえず Debug できる(しかできない)。
 
-## その３。main.cpp
+## Wrong __data_start/_end pair の原因
+
+https://hitkey.nekokan.dyndns.info/diary2004.php#D200424
+
+によると、stack size の制限が原因らしい。
+
+```
+$ ulimit -s
+8192
+```
+
+WSL でこれを変えるには・・・。
+
+https://github.com/microsoft/WSL/issues/633
+
+無理。
+
+`WSL2` ならできる？
+
+```
+> wsl -l -v
+  NAME            STATE           VERSION
+* Ubuntu-20.04    Running         1
+```
+
+やってみる。
+
+```
+$ ulimit -s unlimited
+> ulimit -s
+unlimited
+```
+
+できた。
+
+```
+$ w3m
+Wrong __data_start/_end pair
+```
+
+うーむ。
+
+```
+$ ulimit -s 81920
+> ulimit -s
+81920
+```
+
+動いた。
+8192KB では足りなく、 unlimted では多すぎるらしい。難儀な。
+
+## main.cpp
 
 とりあえず `main.c` を `main.cpp` にリネームして全部、 `extern "C"` に入れた。
 `extern C` の領域を減らしたい。
