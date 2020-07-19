@@ -1931,7 +1931,7 @@ void movMs()
     if (!mouse_action.in_action)
         return;
     if ((nTab > 1 || mouse_action.menu_str) &&
-        mouse_action.cursorY < LastTab->y + 1)
+        mouse_action.cursorY < GetLastTab()->y + 1)
         return;
     else if (mouse_action.cursorX >= GetCurrentbuf()->rootX &&
              mouse_action.cursorY < LASTLINE) {
@@ -1951,7 +1951,7 @@ void menuMs()
     if (!mouse_action.in_action)
         return;
     if ((nTab > 1 || mouse_action.menu_str) &&
-        mouse_action.cursorY < LastTab->y + 1)
+        mouse_action.cursorY < GetLastTab()->y + 1)
         mouse_action.cursorX -= FRAME_WIDTH + 1;
     else if (mouse_action.cursorX >= GetCurrentbuf()->rootX &&
              mouse_action.cursorY < LASTLINE) {
@@ -2181,7 +2181,7 @@ void prevT()
         if (CurrentTab->prevTab)
             CurrentTab = CurrentTab->prevTab;
         else
-            CurrentTab = LastTab;
+            CurrentTab = GetLastTab();
     }
     displayBuffer(GetCurrentbuf(), B_REDRAW_IMAGE);
 }
@@ -2209,7 +2209,7 @@ void tabR()
     int i;
     for (tab = CurrentTab, i = 0; tab && i < PREC_NUM();
          tab = tab->nextTab, i++) ;
-    moveTab(CurrentTab, tab ? tab : LastTab, TRUE);
+    moveTab(CurrentTab, tab ? tab : GetLastTab(), TRUE);
 }
 
 void tabL()

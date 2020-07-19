@@ -1204,8 +1204,8 @@ loadLink(char *url, char *target, char *referer, FormList *request)
     if (do_download) /* download (thus no need to render frame) */
         return loadNormalBuf(buf, FALSE);
 
-    if (target == NULL ||                    /* no target specified (that means this page is not a frame page) */
-        !strcmp(target, "_top") ||           /* this link is specified to be opened as an indivisual * page */
+    if (target == NULL ||                         /* no target specified (that means this page is not a frame page) */
+        !strcmp(target, "_top") ||                /* this link is specified to be opened as an indivisual * page */
         !(GetCurrentbuf()->bufferprop & BP_FRAME) /* This page is not a frame page */
     )
     {
@@ -1254,9 +1254,9 @@ loadLink(char *url, char *target, char *referer, FormList *request)
             gotoLine(GetCurrentbuf(), al->start.line);
             if (label_topline)
                 GetCurrentbuf()->topLine = lineSkip(GetCurrentbuf(), GetCurrentbuf()->topLine,
-                                               GetCurrentbuf()->currentLine->linenumber -
-                                                   GetCurrentbuf()->topLine->linenumber,
-                                               FALSE);
+                                                    GetCurrentbuf()->currentLine->linenumber -
+                                                        GetCurrentbuf()->topLine->linenumber,
+                                                    FALSE);
             GetCurrentbuf()->pos = al->start.pos;
             arrangeCursor(GetCurrentbuf());
         }
@@ -1580,8 +1580,8 @@ void gotoLabel(char *label)
     gotoLine(GetCurrentbuf(), al->start.line);
     if (label_topline)
         GetCurrentbuf()->topLine = lineSkip(GetCurrentbuf(), GetCurrentbuf()->topLine,
-                                       GetCurrentbuf()->currentLine->linenumber - GetCurrentbuf()->topLine->linenumber,
-                                       FALSE);
+                                            GetCurrentbuf()->currentLine->linenumber - GetCurrentbuf()->topLine->linenumber,
+                                            FALSE);
     GetCurrentbuf()->pos = al->start.pos;
     arrangeCursor(GetCurrentbuf());
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
@@ -1621,7 +1621,7 @@ void _newT()
     if (CurrentTab->nextTab)
         CurrentTab->nextTab->prevTab = tag;
     else
-        LastTab = tag;
+        SetLastTab(tag);
     CurrentTab->nextTab = tag;
     CurrentTab = tag;
     nTab++;
@@ -2042,7 +2042,7 @@ void process_mouse(int btn, int x, int y)
     int ny = -1;
 
     if (nTab > 1 || mouse_action.menu_str)
-        ny = LastTab->y + 1;
+        ny = GetLastTab()->y + 1;
     if (btn == MOUSE_BTN_UP)
     {
         switch (press_btn)
@@ -2167,7 +2167,7 @@ void do_mouse_action(int btn, int x, int y)
     int ny = -1;
 
     if (nTab > 1 || mouse_action.menu_str)
-        ny = LastTab->y + 1;
+        ny = GetLastTab()->y + 1;
 
     switch (btn)
     {
@@ -2267,7 +2267,7 @@ void moveTab(TabBuffer *t, TabBuffer *t2, int right)
         if (t->nextTab)
             t->nextTab->prevTab = t->prevTab;
         else
-            LastTab = t->prevTab;
+            SetLastTab(t->prevTab);
         t->prevTab->nextTab = t->nextTab;
     }
     else
@@ -2282,7 +2282,7 @@ void moveTab(TabBuffer *t, TabBuffer *t2, int right)
         if (t2->nextTab)
             t2->nextTab->prevTab = t;
         else
-            LastTab = t;
+            SetLastTab(t);
         t2->nextTab = t;
     }
     else
@@ -2304,7 +2304,7 @@ TabBuffer *posTab(int x, int y)
 
     if (mouse_action.menu_str && x < mouse_action.menu_width && y == 0)
         return NO_TABBUFFER;
-    if (y > LastTab->y)
+    if (y > GetLastTab()->y)
         return NULL;
     for (tab = FirstTab; tab; tab = tab->nextTab)
     {
@@ -2809,7 +2809,7 @@ TabBuffer *deleteTab(TabBuffer *tab)
         if (tab->nextTab)
             tab->nextTab->prevTab = tab->prevTab;
         else
-            LastTab = tab->prevTab;
+            SetLastTab(tab->prevTab);
         tab->prevTab->nextTab = tab->nextTab;
         if (tab == CurrentTab)
             CurrentTab = tab->prevTab;
@@ -3429,11 +3429,11 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 
     if (ShowEffect)
     {
-        bs = (char*)memchr(str, '\b', s->length);
+        bs = (char *)memchr(str, '\b', s->length);
 #ifdef USE_ANSI_COLOR
         if (ocolor)
         {
-            es = (char*)memchr(str, ESC_CODE, s->length);
+            es = (char *)memchr(str, ESC_CODE, s->length);
             if (es)
             {
                 if (color_size < s->length)
@@ -3489,7 +3489,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 str += 4;
                 effect = PE_UNDER;
                 if (str < endp)
-                    bs = (char*)memchr(str, '\b', endp - str);
+                    bs = (char *)memchr(str, '\b', endp - str);
                 continue;
             }
             else
@@ -3499,7 +3499,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 str += 2;
                 effect = PE_UNDER;
                 if (str < endp)
-                    bs = (char*)memchr(str, '\b', endp - str);
+                    bs = (char *)memchr(str, '\b', endp - str);
                 continue;
             }
             else if (str == bs)
@@ -3599,12 +3599,12 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                     }
                 }
                 if (str < endp)
-                    bs = (char*)memchr(str, '\b', endp - str);
+                    bs = (char *)memchr(str, '\b', endp - str);
                 continue;
             }
 #ifdef USE_ANSI_COLOR
             else if (str > bs)
-                bs = (char*)memchr(str, '\b', endp - str);
+                bs = (char *)memchr(str, '\b', endp - str);
 #endif
         }
 #ifdef USE_ANSI_COLOR
@@ -3614,7 +3614,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
             {
                 int ok = parse_ansi_color(&str, &ceffect, &cmode);
                 if (str < endp)
-                    es = (char*)memchr(str, ESC_CODE, endp - str);
+                    es = (char *)memchr(str, ESC_CODE, endp - str);
                 if (ok)
                 {
                     if (cmode)
@@ -3623,7 +3623,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 }
             }
             else if (str > es)
-                es = (char*)memchr(str, ESC_CODE, endp - str);
+                es = (char *)memchr(str, ESC_CODE, endp - str);
         }
 #endif
 
@@ -3677,6 +3677,24 @@ void pcmap(void)
 //
 // Buffer
 //
+static TabBuffer *g_LastTab = nullptr;
+
+void InitializeTab()
+{
+    FirstTab = g_LastTab = CurrentTab = newTab();
+    nTab = 1;
+}
+
+TabBuffer *GetLastTab()
+{
+    return g_LastTab;
+}
+
+void SetLastTab(TabBuffer *tab)
+{
+    g_LastTab = tab;
+}
+
 Buffer *GetCurrentbuf()
 {
     return CurrentTab->currentBuffer;
@@ -3684,7 +3702,7 @@ Buffer *GetCurrentbuf()
 
 void SetCurrentbuf(Buffer *buf)
 {
-    CurrentTab->currentBuffer=buf;
+    CurrentTab->currentBuffer = buf;
 }
 
 Buffer *GetFirstbuf()
@@ -3694,7 +3712,7 @@ Buffer *GetFirstbuf()
 
 int HasFirstBuffer()
 {
-    return GetFirstbuf() && GetFirstbuf() != NO_BUFFER    ;
+    return GetFirstbuf() && GetFirstbuf() != NO_BUFFER;
 }
 
 void SetFirstbuf(Buffer *buffer)

@@ -1445,14 +1445,14 @@ initSelTabMenu(void)
     static char *comment = " SPC for select / D for delete tab ";
 
     SelTabV = -1;
-    for (i = 0, tab = LastTab; tab != NULL; i++, tab = tab->prevTab) {
+    for (i = 0, tab = GetLastTab(); tab != NULL; i++, tab = tab->prevTab) {
         if (tab == CurrentTab)
             SelTabV = i;
     }
     nitem = i;
 
     label = New_N(char *, nitem + 2);
-    for (i = 0, tab = LastTab; i < nitem; i++, tab = tab->prevTab) {
+    for (i = 0, tab = GetLastTab(); i < nitem; i++, tab = tab->prevTab) {
         buf = tab->currentBuffer;
         str = Sprintf("<%s>", buf->buffername);
         if (buf->filename != NULL) {
@@ -1511,10 +1511,10 @@ smChTab(void)
 
     if (SelTabV < 0 || SelTabV >= SelTabMenu.nitem)
         return;
-    for (i = 0, tab = LastTab; i < SelTabV && tab != NULL;
+    for (i = 0, tab = GetLastTab(); i < SelTabV && tab != NULL;
          i++, tab = tab->prevTab) ;
     CurrentTab = tab;
-    for (tab = LastTab; tab != NULL; tab = tab->prevTab) {
+    for (tab = GetLastTab(); tab != NULL; tab = tab->prevTab) {
         if (tab == CurrentTab)
             continue;
         buf = tab->currentBuffer;
@@ -1534,7 +1534,7 @@ smDelTab(char c)
 
     if (CurrentMenu->select < 0 || CurrentMenu->select >= SelTabMenu.nitem)
         return (MENU_NOTHING);
-    for (i = 0, tab = LastTab; i < CurrentMenu->select && tab != NULL;
+    for (i = 0, tab = GetLastTab(); i < CurrentMenu->select && tab != NULL;
          i++, tab = tab->prevTab) ;
     deleteTab(tab);
 

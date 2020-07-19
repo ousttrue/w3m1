@@ -860,7 +860,6 @@ int main(int argc, char **argv, char **envp)
 #endif
 
     FirstTab = NULL;
-    LastTab = NULL;
     nTab = 0;
     CurrentTab = NULL;
     ClearCurrentKey();
@@ -1066,8 +1065,7 @@ int main(int argc, char **argv, char **envp)
             newbuf->search_header = search_header;
         if (CurrentTab == NULL)
         {
-            FirstTab = LastTab = CurrentTab = newTab();
-            nTab = 1;
+            InitializeTab();
             SetCurrentbuf(newbuf);
             SetFirstbuf(newbuf);
         }
@@ -1110,11 +1108,10 @@ int main(int argc, char **argv, char **envp)
     if (add_download_list())
     {
         set_add_download_list(FALSE);
-        CurrentTab = LastTab;
+        CurrentTab = GetLastTab();
         if (!FirstTab)
         {
-            FirstTab = LastTab = CurrentTab = newTab();
-            nTab = 1;
+            InitializeTab();
         }
         if (!HasFirstBuffer())
         {

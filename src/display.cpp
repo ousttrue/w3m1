@@ -468,7 +468,7 @@ extern "C" void displayBuffer(Buffer *buf, int mode)
 	{
 		if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
 			calcTabPos();
-		ny = LastTab->y + 2;
+		ny = GetLastTab()->y + 2;
 		if (ny > LASTLINE)
 			ny = LASTLINE;
 	}
@@ -715,7 +715,7 @@ redrawNLine(Buffer *buf, int n)
 	move(0, COLS - 2);
 	addstr(" x");
 #endif
-		move(LastTab->y + 1, 0);
+		move(GetLastTab()->y + 1, 0);
 		for (i = 0; i < COLS; i++)
 			addch('~');
 	}

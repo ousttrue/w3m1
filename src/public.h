@@ -114,6 +114,9 @@ int ProcessEvent();
 Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);
 void intTrap(SIGNAL_ARG);
 
+void InitializeTab();
+TabBuffer *GetLastTab();
+void SetLastTab(TabBuffer* tab);
 Buffer *GetCurrentbuf();
 void SetCurrentbuf(Buffer *buf);
 Buffer *GetFirstbuf();

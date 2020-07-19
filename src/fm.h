@@ -642,7 +642,6 @@ global char *CurrentDir;
 global int CurrentPid;
 global TabBuffer *CurrentTab;
 global TabBuffer *FirstTab;
-global TabBuffer *LastTab;
 global int open_tab_blank init(FALSE);
 global int open_tab_dl_list init(FALSE);
 global int close_tab_back init(FALSE);
