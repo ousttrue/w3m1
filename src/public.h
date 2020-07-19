@@ -1,5 +1,32 @@
 #pragma once
 #include "dispatcher.h"
+#include "tab.h"
+
+typedef struct _BufferPos {
+    long top_linenumber;
+    long cur_linenumber;
+    int currentColumn;
+    int pos;
+    int bpos;
+    struct _BufferPos *next;
+    struct _BufferPos *prev;
+} BufferPos;
+
+typedef struct _DownloadList {
+    pid_t pid;
+    char *url;
+    char *save;
+    char *lock;
+    clen_t size;
+    time_t time;
+    int running;
+    int err;
+    struct _DownloadList *next;
+    struct _DownloadList *prev;
+} DownloadList;
+
+global DownloadList *FirstDL init(NULL);
+global DownloadList *LastDL init(NULL);
 
 /* 
  * Command functions: These functions are called with a keystroke.

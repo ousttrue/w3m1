@@ -293,33 +293,8 @@ void bzero(void *, int);
 #define NO_REFERER ((char*)-1)
 
 
-#include "form.h"
-
-#include "tab.h"
-
-typedef struct _BufferPos {
-    long top_linenumber;
-    long cur_linenumber;
-    int currentColumn;
-    int pos;
-    int bpos;
-    struct _BufferPos *next;
-    struct _BufferPos *prev;
-} BufferPos;
 
 
-typedef struct _DownloadList {
-    pid_t pid;
-    char *url;
-    char *save;
-    char *lock;
-    clen_t size;
-    time_t time;
-    int running;
-    int err;
-    struct _DownloadList *next;
-    struct _DownloadList *prev;
-} DownloadList;
 #define DOWNLOAD_LIST_TITLE "Download List Panel"
 
 #define COPY_BUFROOT(dstbuf, srcbuf) {\
@@ -506,13 +481,6 @@ struct cookie {
 #define VALIGN_TOP    1
 #define VALIGN_BOTTOM 2
 
-typedef struct http_request {
-    char command;
-    char flag;
-    char *referer;
-    FormList *request;
-} HRequest;
-
 #define HR_COMMAND_GET		0
 #define HR_COMMAND_POST		1
 #define HR_COMMAND_CONNECT	2
@@ -619,8 +587,6 @@ global int open_tab_dl_list init(FALSE);
 global int close_tab_back init(FALSE);
 global int TabCols init(10);
 #define NO_TABBUFFER ((TabBuffer *)1)
-global DownloadList *FirstDL init(NULL);
-global DownloadList *LastDL init(NULL);
 
 global char *CurrentCmdData;
 global char *w3m_reqlog;

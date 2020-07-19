@@ -6,6 +6,8 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include "tab.h"
+
 #define MENU_END 0
 #define MENU_NOP 1
 #define MENU_VALUE 2

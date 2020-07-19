@@ -1,6 +1,14 @@
 #pragma once
 #include "parsetagx.h"
 #include "form.h"
+#include "tab.h"
+
+typedef struct http_request {
+    char command;
+    char flag;
+    char *referer;
+    FormList *request;
+} HRequest;
 
 typedef struct
 {
