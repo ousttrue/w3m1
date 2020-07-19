@@ -3,17 +3,14 @@
 #include <string.h>
 #include <sys/types.h>
 #include <gc.h>
-extern "C"
-{
+
 #include "fm.h"
 #include "indep.h"
 #include "public.h"
 #include "file.h"
 #include "terms.h"
 #include "cookie.h"
-#include "wc.h"
-#include "wtf.h"
-}
+
 
 /* Prototype declaration of internal functions */
 #ifdef HAVE_READLINE

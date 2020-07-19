@@ -1,5 +1,5 @@
 /* $Id: file.c,v 1.265 2010/12/15 10:50:24 htrb Exp $ */
-extern "C" {
+
 #include "fm.h"
 #include "table.h"
 #include "indep.h"
@@ -24,10 +24,8 @@ extern "C" {
 #include "terms.h"
 #include "image.h"
 #include "ctrlcode.h"
-#include "wc.h"
-#include "wtf.h"
 #include "mimehead.h"
-}
+
 #include <sys/types.h>
 #include <signal.h>
 #include <setjmp.h>

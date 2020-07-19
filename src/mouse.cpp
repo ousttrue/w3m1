@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-extern "C" {
+
 #include "fm.h"
 #include "indep.h"
 #include "rc.h"
@@ -13,7 +13,7 @@ extern "C" {
 #include "dispatcher.h"
 #include "commands.h"
 #include "symbol.h"
-}
+
 
 //
 // mouse
@@ -192,7 +192,7 @@ interpret_mouse_action(FILE *mf)
 	}
 }
 
-extern "C" void initMouseAction(void)
+void initMouseAction(void)
 {
 	FILE *mf;
 

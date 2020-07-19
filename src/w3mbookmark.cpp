@@ -9,9 +9,9 @@
 
 #if LANG == JA
 /* FIXME: gettextize here */
-#define BKMARK_TITLE "¥Ö¥Ã¥¯¥Þ¡¼¥¯¤ÎÅÐÏ¿"
-#define BKMARK_ADD "ÅÐÏ¿"
-#define DEFAULT_SECTION "Ì¤Ê¬Îà"
+#define BKMARK_TITLE "ï¿½Ö¥Ã¥ï¿½ï¿½Þ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿"
+#define BKMARK_ADD "ï¿½ï¿½Ï¿"
+#define DEFAULT_SECTION "Ì¤Ê¬ï¿½ï¿½"
 #else
 #define BKMARK_TITLE "Register to my bookmark"
 #define BKMARK_ADD "ADD"
@@ -176,10 +176,11 @@ insert_bookmark(char *bmark, struct parsed_tagarg *data)
     return TRUE;
 }
 
+// extern "C" char *getenv(const char *);
+
 int
 main(int argc, char *argv[], char **envp)
 {
-    extern char *getenv();
     char *p;
     int length;
     Str qs = NULL;

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.0.0)
 set(W3M_PREFIX $ENV{HOME}/local)
    
 add_executable(w3mbookmark
-    src/w3mbookmark.c
+    src/w3mbookmark.cpp
     src/Str.cpp
     src/indep.cpp
     src/regex.cpp

@@ -9,7 +9,7 @@
  *   [DRAFT 12] http://www.ics.uci.edu/pub/ietf/http/draft-ietf-http-state-man-mec-12.txt
  */
 
-extern "C" {
+
 #include "fm.h"
 #include "indep.h"
 #include "rc.h"
@@ -21,7 +21,7 @@ extern "C" {
 #include "local.h"
 #include "regex.h"
 #include "myctype.h"
-}
+
 
 #include <time.h>
 

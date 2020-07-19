@@ -1,8 +1,7 @@
 
 #include "commands.h"
 
-extern "C"
-{
+
 #include "fm.h"
 #include "indep.h"
 #include "etc.h"
@@ -21,8 +20,6 @@ extern "C"
 #include "tab.h"
 #include "cookie.h"
 #include "terms.h"
-#include "wc.h"
-#include "wtf.h"
 #include "mouse.h"
 #include <signal.h>
 
@@ -2282,5 +2279,4 @@ void selMn()
 void tabMn()
 {
     PopupTabMenu();
-}
 }

@@ -1,5 +1,4 @@
-extern "C"
-{
+
 #include "fm.h"
 #include "indep.h"
 #include "myctype.h"
@@ -15,7 +14,7 @@ extern "C"
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
 #endif
-}
+
 
 #define uchar unsigned char
 

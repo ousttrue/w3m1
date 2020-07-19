@@ -1,5 +1,5 @@
 /* $Id: etc.c,v 1.81 2007/05/23 15:06:05 inu Exp $ */
-extern "C" {
+
 #include "fm.h"
 #include "etc.h"
 #include "indep.h"
@@ -12,9 +12,7 @@ extern "C" {
 #include "local.h"
 #include "tagtable.h"
 #include "terms.h"
-#include "wc.h"
-#include "wtf.h"
-}
+
 
 // #include <sys/socket.h>
 #include <netdb.h>

@@ -1,4 +1,4 @@
-extern "C" {
+
 #include "fm.h"
 #include "indep.h"
 #include "myctype.h"
@@ -6,15 +6,13 @@ extern "C" {
 #include "etc.h"
 #include "terms.h"
 #include "html.h"
-#include "wc.h"
-#include "wtf.h"
 #include "mimehead.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <signal.h>
 #include <setjmp.h>
-}
+
 
 #ifdef USE_NNTP
 

@@ -15,12 +15,13 @@
  */
 #ifndef GC_STR_H
 #define GC_STR_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <string.h>
-#ifdef __EMX__
-#define strcasecmp	stricmp
-#define strncasecmp	strnicmp
-#endif
 
 typedef struct _Str {
     char *ptr;
@@ -80,4 +81,9 @@ void Strgrow(Str s);
 #define Strinsert(s,n,p)             Strinsert_charp((s),(n),(p)->ptr)
 #define Strshrinkfirst(s,n)          Strdelete((s),0,(n))
 #define Strfputs(s,f)                fwrite((s)->ptr,1,(s)->length,(f))
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif				/* not GC_STR_H */

@@ -1,9 +1,7 @@
-extern "C" {
+
 #include "fm.h"
 #include "indep.h"
 #include "ctrlcode.h"
-#include "wc.h"
-#include "wtf.h"
 #include "symbol.h"
 #include "Symbols/alt.sym"
 #include "Symbols/graph.sym"
@@ -17,7 +15,7 @@ extern "C" {
 #include "Symbols/utf8.sym"
 #endif
 #include "Symbols/cp850.sym"
-}
+
 
 typedef struct {
     wc_ces ces;

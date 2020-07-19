@@ -6,7 +6,7 @@
  * Revised by A.ITO, January 2002
  */
 
-extern "C" {
+
 #ifdef REGEX_DEBUG
 #include <sys/types.h>
 #include <malloc.h>
@@ -16,17 +16,11 @@ extern "C" {
 #include <string.h>
 #include <gc.h>
 #include "config.h"
-#ifdef USE_M17N
-#include "wc.h"
-#include "wtf.h"
-#ifdef USE_UNICODE
-#include "ucs.h"
-#endif
-#endif
+#include "types.h"
 #include "regex.h"
 #include "config.h"
 #include "myctype.h"
-}
+
 
 #ifndef NULL
 #define NULL	0

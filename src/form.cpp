@@ -2,7 +2,7 @@
 /* 
  * HTML forms
  */
-extern "C" {
+
 #include "fm.h"
 #include "etc.h"
 #include "indep.h"
@@ -17,11 +17,9 @@ extern "C" {
 #include "local.h"
 #include "regex.h"
 #include "menu.h"
-#include "wc.h"
-#include "wtf.h"
 extern Str *textarea_str;
 extern FormSelectOption *select_option;
-}
+
 
 /* *INDENT-OFF* */
 struct {

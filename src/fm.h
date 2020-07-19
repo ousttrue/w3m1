@@ -24,8 +24,6 @@
 #include <unistd.h>
 #include "config.h"
 #include "history.h"
-#include "wc.h"
-#include "wtf.h"
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif

@@ -204,7 +204,7 @@ static std::unordered_map<std::string, int> g_tagMap = {
     /* 197 */ {"/i", HTML_N_I},
 };
 
-extern "C" int GetTag(const char *src, int value)
+int GetTag(const char *src, int value)
 {
     auto found = g_tagMap.find(src);
     if (found == g_tagMap.end())

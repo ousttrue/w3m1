@@ -1,6 +1,5 @@
 /* $Id: display.c,v 1.71 2010/07/18 14:10:09 htrb Exp $ */
-extern "C"
-{
+
 #include "fm.h"
 #include "indep.h"
 #include "public.h"
@@ -12,9 +11,7 @@ extern "C"
 #include "etc.h"
 #include "display.h"
 #include "ctrlcode.h"
-#include "wc.h"
-#include "wtf.h"
-}
+
 #include <signal.h>
 #include <math.h>
 
@@ -428,7 +425,7 @@ make_lastline_message(Buffer *buf)
 	return msg;
 }
 
-extern "C" void displayBuffer(Buffer *buf, int mode)
+ void displayBuffer(Buffer *buf, int mode)
 {
 	Str msg;
 	int ny = 0;
@@ -1716,7 +1713,7 @@ void restorePosition(Buffer *buf, Buffer *orig)
 /* tab-width: 8        */
 /* End:                */
 
-extern "C" void displayCurrentbuf(int mode)
+void displayCurrentbuf(int mode)
 {
 	if (GetCurrentTab())
 	{

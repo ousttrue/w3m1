@@ -3,7 +3,8 @@
  * An original curses library for EUC-kanji by Akinori ITO,     December 1989
  * revised by Akinori ITO, January 1995
  */
-extern "C" {
+
+
 #include "config.h"
 #include "fm.h"
 #include "commands.h"
@@ -11,10 +12,9 @@ extern "C" {
 #include "terms.h"
 #include "indep.h"
 #include "public.h"
-#include "myctype.h"
 #include "ctrlcode.h"
-#include "wc.h"
-#include "wtf.h"
+
+#include "myctype.h"
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -31,6 +31,7 @@ extern "C" {
 #else
 #include <winsock.h>
 #endif /* __MINGW32_VERSION */
+
 
 static int is_xterm = 0;
 void mouse_init(), mouse_end();
@@ -268,7 +269,7 @@ typedef struct termios TerminalMode;
 #define TerminalGet(fd,x)       tcgetattr(fd,x)
 #define MODEFLAG(d)     ((d).c_lflag)
 #define IMODEFLAG(d)    ((d).c_iflag)
-#endif				/* HAVE_TERMIOS_H */
+#endif		/* HAVE_TERMIOS_H */
 
 #ifdef HAVE_SGTTY_H
 #include <sgtty.h>
@@ -427,12 +428,13 @@ static int graph_enabled = 0;
 
 static char gcmap[96];
 
-extern int tgetent(char *, char *);
-extern int tgetnum(char *);
-extern int tgetflag(char *);
-extern char *tgetstr(char *, char **);
-extern char *tgoto(char *, int, int);
-extern int tputs(char *, int, int (*)(char));
+// ncurses ?
+extern "C" int tgetent(char *, char *);
+extern "C" int tgetnum(char *);
+extern "C" int tgetflag(char *);
+extern "C" char *tgetstr(char *, char **);
+extern "C" char *tgoto(char *, int, int);
+extern "C" int tputs(char *, int, int (*)(char));
 void clear(), wrap(), touch_line(), touch_column(int);
 #if 0
 void need_clrtoeol(void);
@@ -2252,4 +2254,4 @@ char *ttyname(int tty)
 }
 
 #endif /* __MINGW32_VERSION */
-}
+

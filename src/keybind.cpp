@@ -1,7 +1,7 @@
-extern "C" {
+
 #include "dispatcher.h"
 #include "commands.h"
-}
+
 
 Command GlobalKeymap[128] = {
     /*  C-@     C-a     C-b     C-c     C-d     C-e     C-f     C-g      */

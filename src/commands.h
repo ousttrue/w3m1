@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 void nulcmd();
 void escmap();
 void escbmap();
@@ -142,7 +137,3 @@ void redoPos();
 void mainMn();
 void selMn();
 void tabMn();
-
-#ifdef __cplusplus
-}
-#endif

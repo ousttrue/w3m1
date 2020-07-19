@@ -1,5 +1,5 @@
 /* $Id: ftp.c,v 1.42 2010/12/15 10:50:24 htrb Exp $ */
-extern "C" {
+
 #include <stdio.h>
 #ifndef __MINGW32_VERSION
 #include <pwd.h>
@@ -17,9 +17,7 @@ extern "C" {
 #include "html.h"
 #include "myctype.h"
 #include "terms.h"
-#include "wc.h"
-#include "wtf.h"
-}
+
 
 #ifdef DEBUG
 #include <malloc.h>

@@ -1,5 +1,4 @@
-extern "C"
-{
+
 #include "fm.h"
 #include "indep.h"
 #include "rc.h"
@@ -19,9 +18,7 @@ extern "C"
 #include "url.h"
 #include "cookie.h"
 #include "ctrlcode.h"
-#include "wc.h"
-#include "wtf.h"
-}
+
 
 int searchKeyNum(void)
 {

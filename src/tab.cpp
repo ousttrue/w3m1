@@ -1,12 +1,11 @@
-extern "C"
-{
+
 #include "tab.h"
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
 #include "display.h"
 #include "dispatcher.h"
-}
+
 
 static TabBuffer *g_FirstTab = nullptr;
 static TabBuffer *g_LastTab = nullptr;

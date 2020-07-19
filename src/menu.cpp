@@ -2,7 +2,7 @@
 /* 
  * w3m menu.c
  */
-extern "C" {
+
 #include <stdio.h>
 #include "fm.h"
 #include "rc.h"
@@ -18,9 +18,7 @@ extern "C" {
 #include "symbol.h"
 #include "file.h"
 #include "html.h"
-#include "wc.h"
-#include "wtf.h"
-}
+
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

@@ -1,6 +1,5 @@
 /* $Id: anchor.c,v 1.33 2006/04/08 11:33:16 inu Exp $ */
-extern "C"
-{
+
 #include "fm.h"
 #include "indep.h"
 #include "etc.h"
@@ -10,9 +9,7 @@ extern "C"
 #include "file.h"
 #include "form.h"
 #include "buffer.h"
-#include "wc.h"
-#include "wtf.h"
-}
+
 
 #define FIRST_ANCHOR_SIZE 30
 

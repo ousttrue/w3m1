@@ -1,6 +1,5 @@
 /* $Id: buffer.c,v 1.30 2010/07/18 14:10:09 htrb Exp $ */
-extern "C"
-{
+
 #include "fm.h"
 #include "public.h"
 #include "indep.h"
@@ -10,9 +9,7 @@ extern "C"
 #include "terms.h"
 #include "html.h"
 #include "ctrlcode.h"
-#include "wc.h"
-#include "wtf.h"
-}
+
 
 char *NullLine = "";
 Lineprop NullProp[] = {0};

@@ -2,7 +2,7 @@
 /*
  * client-side image maps
  */
-extern "C" {
+
 #include "fm.h"
 #include "indep.h"
 #include "frame.h"
@@ -10,10 +10,8 @@ extern "C" {
 #include "file.h"
 #include "etc.h"
 #include "ctrlcode.h"
-#include "wc.h"
-#include "wtf.h"
 #include <math.h>
-}
+
 
 MapList *
 searchMapList(Buffer *buf, char *name)

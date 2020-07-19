@@ -1,5 +1,4 @@
-extern "C"
-{
+
 #include "fm.h"
 #include "myctype.h"
 #include "indep.h"
@@ -7,7 +6,7 @@ extern "C"
 #include "parsetagx.h"
 #include "tagtable.h"
 #include "html.c"
-}
+
 
 /* parse HTML tag */
 

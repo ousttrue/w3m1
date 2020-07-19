@@ -2,7 +2,17 @@
 #include "Str.h"
 #include "textlist.h"
 #include "istream.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "wc.h"
+#include "wtf.h"
 #include "wc_types.h"
+#include "ucs.h"
+#ifdef __cplusplus
+}
+#endif
 
 #define MAX_LB 5
 

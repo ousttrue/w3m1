@@ -1,5 +1,3 @@
-extern "C"
-{
 
 #define MAINPROGRAM
 #include "fm.h"
@@ -26,14 +24,12 @@ extern "C"
 #include "myctype.h"
 #include "regex.h"
 #ifdef USE_M17N
-#include "wc.h"
-#include "wtf.h"
 #ifdef USE_UNICODE
 #include "ucs.h"
 #endif
 #endif
 #include "dispatcher.h"
-} // extern "C"
+
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>

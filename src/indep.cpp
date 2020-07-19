@@ -1,5 +1,5 @@
 /* $Id: indep.c,v 1.38 2007/05/23 15:06:05 inu Exp $ */
-extern "C" {
+
 #include "fm.h"
 #include <stdio.h>
 #ifndef __MINGW32_VERSION
@@ -13,7 +13,7 @@ extern "C" {
 #include <gc.h>
 #include "myctype.h"
 #include "entity.h"
-}
+
 
 unsigned char QUOTE_MAP[0x100] = {
     /* NUL SOH STX ETX EOT ENQ ACK BEL  BS  HT  LF  VT  FF  CR  SO  SI */
