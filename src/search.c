@@ -2,6 +2,7 @@
 #include "fm.h"
 #include "regex.h"
 #include "file.h"
+#include "public.h"
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>
@@ -88,8 +89,8 @@ char *
 conv_search_string(char *str, wc_ces f_ces)
 {
     if (SearchConv && !WcOption.pre_conv &&
-	Currentbuf->document_charset != f_ces)
-	str = wtf_conv_fit(str, Currentbuf->document_charset);
+	GetCurrentbuf()->document_charset != f_ces)
+	str = wtf_conv_fit(str, GetCurrentbuf()->document_charset);
     return str;
 }
 #endif

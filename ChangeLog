@@ -3067,7 +3067,7 @@
 				buf->sourcefile reset
 	* frame.h (FB_NOCACHE): deleted
 		(FB_TODELETE): deleted
-	* main.c (vmSrc): Currentbuf->sourcefile
+	* main.c (vmSrc): GetCurrentbuf()->sourcefile
 			need_reshape if images exist
 
 2003-01-09  Hironori SAKAMOTO <hsaka@mth.biglobe.ne.jp>
@@ -3246,7 +3246,7 @@
 		(CurrentEvent): added
 		(main): event processing, add CurrentEvent linked list
 		(pushEvent): add Event to CurrentEvent
-		(SigAlarm): Currentbuf->event
+		(SigAlarm): GetCurrentbuf()->event
 	* proto.h (pushEvent): rename args
 
 2002-12-25  Hiroaki Shimotsu <shim@d5.bs1.fc.nec.co.jp>
@@ -3393,7 +3393,7 @@
 		(DefaultAlarm): added
 		(CurrentAlarm): point to DefaultAlarm
 		(main): CurrentKeyData, CurrentCmdData
-			handle Currentbuf->event
+			handle GetCurrentbuf()->event
 		(SigAlarm): CurrentAlarm is pointer
 		(copyAlarmEvent): deleted
 		(setAlarm): setAlarmEvent pass &DefaultAlarm
@@ -4896,14 +4896,14 @@
 		(lineSkip): buf->LINES
 		(currentLineSkip): buf->LINES
 	* fm.h (Buffer): add LINES
-	* main.c (nscroll): Currentbuf->LINES
-		(pgFore): Currentbuf->LINES
-		(pgBack): Currentbuf->LINES
-		(ctrCsrV): Currentbuf->LINES
-		(movD): Currentbuf->LINES
-		(movU): Currentbuf->LINES
-		(_goLine): Currentbuf->LINES
-		(drawAnchorCursor): Currentbuf->LINES
+	* main.c (nscroll): GetCurrentbuf()->LINES
+		(pgFore): GetCurrentbuf()->LINES
+		(pgBack): GetCurrentbuf()->LINES
+		(ctrCsrV): GetCurrentbuf()->LINES
+		(movD): GetCurrentbuf()->LINES
+		(movU): GetCurrentbuf()->LINES
+		(_goLine): GetCurrentbuf()->LINES
+		(drawAnchorCursor): GetCurrentbuf()->LINES
 		(setOpt): B_REDRAW_IMAGE
 		(newT): B_REDRAW_IMAGE
 		(closeT): B_REDRAW_IMAGE

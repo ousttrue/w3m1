@@ -1280,8 +1280,8 @@ popupMenu(int x, int y, Menu *menu)
     initSelectMenu();
     initSelTabMenu();
 
-    menu->cursorX = Currentbuf->cursorX + Currentbuf->rootX;
-    menu->cursorY = Currentbuf->cursorY + Currentbuf->rootY;
+    menu->cursorX = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
+    menu->cursorY = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
     menu->x = x + FRAME_WIDTH + 1;
     menu->y = y + 2;
 
@@ -1362,8 +1362,8 @@ initSelectMenu(void)
 
     new_option_menu(&SelectMenu, label, &SelectV, smChBuf);
     SelectMenu.initial = SelectV;
-    SelectMenu.cursorX = Currentbuf->cursorX + Currentbuf->rootX;
-    SelectMenu.cursorY = Currentbuf->cursorY + Currentbuf->rootY;
+    SelectMenu.cursorX = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
+    SelectMenu.cursorY = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
     SelectMenu.keymap['D'] = smDelBuf;
     SelectMenu.item[nitem].type = MENU_NOP;
 }
@@ -1496,8 +1496,8 @@ initSelTabMenu(void)
 
     new_option_menu(&SelTabMenu, label, &SelTabV, smChTab);
     SelTabMenu.initial = SelTabV;
-    SelTabMenu.cursorX = Currentbuf->cursorX + Currentbuf->rootX;
-    SelTabMenu.cursorY = Currentbuf->cursorY + Currentbuf->rootY;
+    SelTabMenu.cursorX = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
+    SelTabMenu.cursorY = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
     SelTabMenu.keymap['D'] = smDelTab;
     SelTabMenu.item[nitem].type = MENU_NOP;
 }
@@ -2031,8 +2031,8 @@ void PopupMenu()
     Menu *menu = &MainMenu;
     char *data;
     int n;
-    int x = Currentbuf->cursorX + Currentbuf->rootX,
-        y = Currentbuf->cursorY + Currentbuf->rootY;
+    int x = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
+        y = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
 
     data = searchKeyData();
     if (data != NULL) {
@@ -2052,8 +2052,8 @@ void PopupMenu()
 
 void PopupBufferMenu()
 {
-    int x = Currentbuf->cursorX + Currentbuf->rootX,
-        y = Currentbuf->cursorY + Currentbuf->rootY;
+    int x = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
+        y = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
 
 #ifdef USE_MOUSE
     if (mouse_action.in_action) {
@@ -2066,8 +2066,8 @@ void PopupBufferMenu()
 
 void PopupTabMenu()
 {
-    int x = Currentbuf->cursorX + Currentbuf->rootX,
-        y = Currentbuf->cursorY + Currentbuf->rootY;
+    int x = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
+        y = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
 
 #ifdef USE_MOUSE
     if (mouse_action.in_action) {

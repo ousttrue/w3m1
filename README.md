@@ -143,7 +143,10 @@ DEFUN 由来の `void xxx(void)` という関数は、 `commands.h` に移った
 
 ## Buffer
 
-`CurrentTab`, `FirstTab`, `LastTab`, `CurrentBuffer`, `FirstBuffer`, `LastBuffer` マクロを関数化する。
+`CurrentTab`, `FirstTab`, `LastTab`, `CurrentBuf`, `FirstBuf` マクロを関数化する。
+
+`FirstBuffer` => `GetFirstbuf()`, `SetFirstbuf(Buffer *buf)` というふうにする。
+あとで、もっとハイレベルな関数を用意してリンクリストの手動操作を隠蔽する。
 
 ## file.c
 

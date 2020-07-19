@@ -135,10 +135,10 @@ void srch_nxtprv(int reverse)
     if (searchRoutine == backwardSearch)
         reverse ^= 1;
     if (reverse == 0)
-        Currentbuf->pos += 1;
+        GetCurrentbuf()->pos += 1;
     result = srchcore(SearchString, routine[reverse]);
     if (result & SR_FOUND)
-        clear_mark(Currentbuf->currentLine);
+        clear_mark(GetCurrentbuf()->currentLine);
     displayBuffer(Currentbuf, B_NORMAL);
     disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
                     SearchString);
@@ -262,7 +262,7 @@ void do_dump(Buffer *buf)
                 parseURL2(buf->href->anchors[i].url, &pu, baseURL(buf));
                 s = parsedURL2Str(&pu);
                 if (DecodeURL)
-                    s = Strnew_charp(url_unquote_conv(s->ptr, Currentbuf->document_charset));
+                    s = Strnew_charp(url_unquote_conv(s->ptr, GetCurrentbuf()->document_charset));
                 printf("[%d] %s\n", buf->href->anchors[i].hseq + 1, s->ptr);
             }
         }
@@ -289,7 +289,7 @@ int srchcore(char *volatile str, int (*func)(Buffer *, char *))
         {
             result = func(Currentbuf, str);
             if (i < PREC_NUM() - 1 && result & SR_FOUND)
-                clear_mark(Currentbuf->currentLine);
+                clear_mark(GetCurrentbuf()->currentLine);
         }
     }
     mySignal(SIGINT, prevtrap);
@@ -341,16 +341,16 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
         if (*str)
         {
             if (searchRoutine == forwardSearch)
-                Currentbuf->pos += 1;
+                GetCurrentbuf()->pos += 1;
             SAVE_BUFPOSITION(&sbuf);
             if (srchcore(str, searchRoutine) == SR_NOTFOUND && searchRoutine == forwardSearch)
             {
-                Currentbuf->pos -= 1;
+                GetCurrentbuf()->pos -= 1;
                 SAVE_BUFPOSITION(&sbuf);
             }
             arrangeCursor(Currentbuf);
             displayBuffer(Currentbuf, B_FORCE_REDRAW);
-            clear_mark(Currentbuf->currentLine);
+            clear_mark(GetCurrentbuf()->currentLine);
             return -1;
         }
         else
@@ -362,11 +362,11 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
         arrangeCursor(Currentbuf);
         srchcore(str, searchRoutine);
         arrangeCursor(Currentbuf);
-        currentLine = Currentbuf->currentLine;
-        pos = Currentbuf->pos;
+        currentLine = GetCurrentbuf()->currentLine;
+        pos = GetCurrentbuf()->pos;
     }
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
-    clear_mark(Currentbuf->currentLine);
+    clear_mark(GetCurrentbuf()->currentLine);
 #ifdef USE_MIGEMO
 done:
     while (*str++ != '\0')
@@ -416,14 +416,14 @@ void srch(int (*func)(Buffer *, char *), char *prompt)
         }
         disp = TRUE;
     }
-    pos = Currentbuf->pos;
+    pos = GetCurrentbuf()->pos;
     if (func == forwardSearch)
-        Currentbuf->pos += 1;
+        GetCurrentbuf()->pos += 1;
     result = srchcore(str, func);
     if (result & SR_FOUND)
-        clear_mark(Currentbuf->currentLine);
+        clear_mark(GetCurrentbuf()->currentLine);
     else
-        Currentbuf->pos = pos;
+        GetCurrentbuf()->pos = pos;
     displayBuffer(Currentbuf, B_NORMAL);
     if (disp)
         disp_srchresult(result, prompt, str);
@@ -483,7 +483,7 @@ void cmd_loadfile(char *fn)
     else if (buf != NO_BUFFER)
     {
         pushBuffer(buf);
-        if (RenderFrame && Currentbuf->frameset != NULL)
+        if (RenderFrame && GetCurrentbuf()->frameset != NULL)
             rFrame();
     }
     displayBuffer(Currentbuf, B_NORMAL);
@@ -515,7 +515,7 @@ void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request
     else if (buf != NO_BUFFER)
     {
         pushBuffer(buf);
-        if (RenderFrame && Currentbuf->frameset != NULL)
+        if (RenderFrame && GetCurrentbuf()->frameset != NULL)
             rFrame();
     }
     displayBuffer(Currentbuf, B_NORMAL);
@@ -565,7 +565,7 @@ int handleMailto(char *url)
 void _movL(int n)
 {
     int i, m = searchKeyNum();
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     for (i = 0; i < m; i++)
         cursorLeft(Currentbuf, n);
@@ -576,7 +576,7 @@ void _movL(int n)
 void _movD(int n)
 {
     int i, m = searchKeyNum();
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     for (i = 0; i < m; i++)
         cursorDown(Currentbuf, n);
@@ -587,7 +587,7 @@ void _movD(int n)
 void _movU(int n)
 {
     int i, m = searchKeyNum();
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     for (i = 0; i < m; i++)
         cursorUp(Currentbuf, n);
@@ -598,7 +598,7 @@ void _movU(int n)
 void _movR(int n)
 {
     int i, m = searchKeyNum();
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     for (i = 0; i < m; i++)
         cursorRight(Currentbuf, n);
@@ -614,9 +614,9 @@ int prev_nonnull_line(Line *line)
     if (l == NULL || l->len == 0)
         return -1;
 
-    Currentbuf->currentLine = l;
+    GetCurrentbuf()->currentLine = l;
     if (l != line)
-        Currentbuf->pos = Currentbuf->currentLine->len;
+        GetCurrentbuf()->pos = GetCurrentbuf()->currentLine->len;
     return 0;
 }
 
@@ -630,9 +630,9 @@ int next_nonnull_line(Line *line)
     if (l == NULL || l->len == 0)
         return -1;
 
-    Currentbuf->currentLine = l;
+    GetCurrentbuf()->currentLine = l;
     if (l != line)
-        Currentbuf->pos = 0;
+        GetCurrentbuf()->pos = 0;
     return 0;
 }
 
@@ -746,26 +746,26 @@ void delBuffer(Buffer *buf)
 /* Go to specified line */
 void _goLine(char *l)
 {
-    if (l == NULL || *l == '\0' || Currentbuf->currentLine == NULL)
+    if (l == NULL || *l == '\0' || GetCurrentbuf()->currentLine == NULL)
     {
         displayBuffer(Currentbuf, B_FORCE_REDRAW);
         return;
     }
-    Currentbuf->pos = 0;
+    GetCurrentbuf()->pos = 0;
     if (((*l == '^') || (*l == '$')) && prec_num())
     {
         gotoRealLine(Currentbuf, prec_num());
     }
     else if (*l == '^')
     {
-        Currentbuf->topLine = Currentbuf->currentLine = Currentbuf->firstLine;
+        GetCurrentbuf()->topLine = GetCurrentbuf()->currentLine = GetCurrentbuf()->firstLine;
     }
     else if (*l == '$')
     {
-        Currentbuf->topLine =
-            lineSkip(Currentbuf, Currentbuf->lastLine,
-                     -(Currentbuf->LINES + 1) / 2, TRUE);
-        Currentbuf->currentLine = Currentbuf->lastLine;
+        GetCurrentbuf()->topLine =
+            lineSkip(Currentbuf, GetCurrentbuf()->lastLine,
+                     -(GetCurrentbuf()->LINES + 1) / 2, TRUE);
+        GetCurrentbuf()->currentLine = GetCurrentbuf()->lastLine;
     }
     else
         gotoRealLine(Currentbuf, atoi(l));
@@ -825,9 +825,9 @@ void _followForm(int submit)
     Str tmp, tmp2;
     int multipart = 0, i;
 
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
-    l = Currentbuf->currentLine;
+    l = GetCurrentbuf()->currentLine;
 
     a = retrieveCurrentForm(Currentbuf);
     if (a == NULL)
@@ -922,9 +922,9 @@ void _followForm(int submit)
         if (submit)
             goto do_submit;
         if (!formChooseOptionByMenu(fi,
-                                    Currentbuf->cursorX - Currentbuf->pos +
-                                        a->start.pos + Currentbuf->rootX,
-                                    Currentbuf->cursorY + Currentbuf->rootY))
+                                    GetCurrentbuf()->cursorX - GetCurrentbuf()->pos +
+                                        a->start.pos + GetCurrentbuf()->rootX,
+                                    GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY))
             break;
         formUpdateBuffer(a, Currentbuf, fi);
         if (fi->parent->nitems == 1)
@@ -945,7 +945,7 @@ void _followForm(int submit)
         if (!Strcmp_charp(tmp2, "!CURRENT_URL!"))
         {
             /* It means "current URL" */
-            tmp2 = parsedURL2Str(&Currentbuf->currentURL);
+            tmp2 = parsedURL2Str(&GetCurrentbuf()->currentURL);
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
                 Strshrink(tmp2, (tmp2->ptr + tmp2->length) - p);
         }
@@ -986,7 +986,7 @@ void _followForm(int submit)
                 buf->form_submit = save_submit_formlist(fi);
             }
         }
-        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (!Strcmp_charp(fi->parent->action, "map") || !Strcmp_charp(fi->parent->action, "none"))) || Currentbuf->bufferprop & BP_INTERNAL)
+        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (!Strcmp_charp(fi->parent->action, "map") || !Strcmp_charp(fi->parent->action, "none"))) || GetCurrentbuf()->bufferprop & BP_INTERNAL)
         { /* internal */
             do_internal(tmp2->ptr, tmp->ptr);
         }
@@ -997,9 +997,9 @@ void _followForm(int submit)
         }
         break;
     case FORM_INPUT_RESET:
-        for (i = 0; i < Currentbuf->formitem->nanchor; i++)
+        for (i = 0; i < GetCurrentbuf()->formitem->nanchor; i++)
         {
-            a2 = &Currentbuf->formitem->anchors[i];
+            a2 = &GetCurrentbuf()->formitem->anchors[i];
             f2 = (FormItemList *)a2->url;
             if (f2->parent == fi->parent &&
                 f2->name && f2->value &&
@@ -1182,7 +1182,7 @@ loadLink(char *url, char *target, char *referer, FormList *request)
         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
         referer = NO_REFERER;
     if (referer == NULL)
-        referer = parsedURL2Str(&Currentbuf->currentURL)->ptr;
+        referer = parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr;
     buf = loadGeneralFile(url, baseURL(Currentbuf), referer, flag, request);
     if (buf == NULL)
     {
@@ -1206,12 +1206,12 @@ loadLink(char *url, char *target, char *referer, FormList *request)
 
     if (target == NULL ||                    /* no target specified (that means this page is not a frame page) */
         !strcmp(target, "_top") ||           /* this link is specified to be opened as an indivisual * page */
-        !(Currentbuf->bufferprop & BP_FRAME) /* This page is not a frame page */
+        !(GetCurrentbuf()->bufferprop & BP_FRAME) /* This page is not a frame page */
     )
     {
         return loadNormalBuf(buf, TRUE);
     }
-    nfbuf = Currentbuf->linkBuffer[LB_N_FRAME];
+    nfbuf = GetCurrentbuf()->linkBuffer[LB_N_FRAME];
     if (nfbuf == NULL)
     {
         /* original page (that contains <frameset> tag) doesn't exist */
@@ -1253,11 +1253,11 @@ loadLink(char *url, char *target, char *referer, FormList *request)
         {
             gotoLine(Currentbuf, al->start.line);
             if (label_topline)
-                Currentbuf->topLine = lineSkip(Currentbuf, Currentbuf->topLine,
-                                               Currentbuf->currentLine->linenumber -
-                                                   Currentbuf->topLine->linenumber,
+                GetCurrentbuf()->topLine = lineSkip(Currentbuf, GetCurrentbuf()->topLine,
+                                               GetCurrentbuf()->currentLine->linenumber -
+                                                   GetCurrentbuf()->topLine->linenumber,
                                                FALSE);
-            Currentbuf->pos = al->start.pos;
+            GetCurrentbuf()->pos = al->start.pos;
             arrangeCursor(Currentbuf);
         }
     }
@@ -1363,7 +1363,7 @@ Str conv_form_encoding(Str val, FormItemList *fi, Buffer *buf)
 Buffer *loadNormalBuf(Buffer *buf, int renderframe)
 {
     pushBuffer(buf);
-    if (renderframe && RenderFrame && Currentbuf->frameset != NULL)
+    if (renderframe && RenderFrame && GetCurrentbuf()->frameset != NULL)
         rFrame();
     return buf;
 }
@@ -1371,13 +1371,13 @@ Buffer *loadNormalBuf(Buffer *buf, int renderframe)
 /* go to the next [visited] anchor */
 void _nextA(int visited)
 {
-    HmarkerList *hl = Currentbuf->hmarklist;
+    HmarkerList *hl = GetCurrentbuf()->hmarklist;
     BufferPoint *po;
     Anchor *an, *pan;
     int i, x, y, n = searchKeyNum();
     ParsedURL url;
 
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     if (!hl || hl->nmark == 0)
         return;
@@ -1386,8 +1386,8 @@ void _nextA(int visited)
     if (visited != TRUE && an == NULL)
         an = retrieveCurrentForm(Currentbuf);
 
-    y = Currentbuf->currentLine->linenumber;
-    x = Currentbuf->pos;
+    y = GetCurrentbuf()->currentLine->linenumber;
+    x = GetCurrentbuf()->pos;
 
     if (visited == TRUE)
     {
@@ -1410,9 +1410,9 @@ void _nextA(int visited)
                     goto _end;
                 }
                 po = &hl->marks[hseq];
-                an = retrieveAnchor(Currentbuf->href, po->line, po->pos);
+                an = retrieveAnchor(GetCurrentbuf()->href, po->line, po->pos);
                 if (visited != TRUE && an == NULL)
-                    an = retrieveAnchor(Currentbuf->formitem, po->line,
+                    an = retrieveAnchor(GetCurrentbuf()->formitem, po->line,
                                         po->pos);
                 hseq++;
                 if (visited == TRUE && an)
@@ -1427,9 +1427,9 @@ void _nextA(int visited)
         }
         else
         {
-            an = closest_next_anchor(Currentbuf->href, NULL, x, y);
+            an = closest_next_anchor(GetCurrentbuf()->href, NULL, x, y);
             if (visited != TRUE)
-                an = closest_next_anchor(Currentbuf->formitem, an, x, y);
+                an = closest_next_anchor(GetCurrentbuf()->formitem, an, x, y);
             if (an == NULL)
             {
                 if (visited == TRUE)
@@ -1457,7 +1457,7 @@ _end:
         return;
     po = &hl->marks[an->hseq];
     gotoLine(Currentbuf, po->line);
-    Currentbuf->pos = po->pos;
+    GetCurrentbuf()->pos = po->pos;
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
 }
@@ -1465,13 +1465,13 @@ _end:
 /* go to the previous anchor */
 void _prevA(int visited)
 {
-    HmarkerList *hl = Currentbuf->hmarklist;
+    HmarkerList *hl = GetCurrentbuf()->hmarklist;
     BufferPoint *po;
     Anchor *an, *pan;
     int i, x, y, n = searchKeyNum();
     ParsedURL url;
 
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     if (!hl || hl->nmark == 0)
         return;
@@ -1480,8 +1480,8 @@ void _prevA(int visited)
     if (visited != TRUE && an == NULL)
         an = retrieveCurrentForm(Currentbuf);
 
-    y = Currentbuf->currentLine->linenumber;
-    x = Currentbuf->pos;
+    y = GetCurrentbuf()->currentLine->linenumber;
+    x = GetCurrentbuf()->pos;
 
     if (visited == TRUE)
     {
@@ -1504,9 +1504,9 @@ void _prevA(int visited)
                     goto _end;
                 }
                 po = hl->marks + hseq;
-                an = retrieveAnchor(Currentbuf->href, po->line, po->pos);
+                an = retrieveAnchor(GetCurrentbuf()->href, po->line, po->pos);
                 if (visited != TRUE && an == NULL)
-                    an = retrieveAnchor(Currentbuf->formitem, po->line,
+                    an = retrieveAnchor(GetCurrentbuf()->formitem, po->line,
                                         po->pos);
                 hseq--;
                 if (visited == TRUE && an)
@@ -1521,9 +1521,9 @@ void _prevA(int visited)
         }
         else
         {
-            an = closest_prev_anchor(Currentbuf->href, NULL, x, y);
+            an = closest_prev_anchor(GetCurrentbuf()->href, NULL, x, y);
             if (visited != TRUE)
-                an = closest_prev_anchor(Currentbuf->formitem, an, x, y);
+                an = closest_prev_anchor(GetCurrentbuf()->formitem, an, x, y);
             if (an == NULL)
             {
                 if (visited == TRUE)
@@ -1551,7 +1551,7 @@ _end:
         return;
     po = hl->marks + an->hseq;
     gotoLine(Currentbuf, po->line);
-    Currentbuf->pos = po->pos;
+    GetCurrentbuf()->pos = po->pos;
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
 }
@@ -1569,7 +1569,7 @@ void gotoLabel(char *label)
         disp_message(Sprintf("%s is not found", label)->ptr, TRUE);
         return;
     }
-    buf = newBuffer(Currentbuf->width);
+    buf = newBuffer(GetCurrentbuf()->width);
     copyBuffer(buf, Currentbuf);
     for (i = 0; i < MAX_LB; i++)
         buf->linkBuffer[i] = NULL;
@@ -1579,10 +1579,10 @@ void gotoLabel(char *label)
     pushBuffer(buf);
     gotoLine(Currentbuf, al->start.line);
     if (label_topline)
-        Currentbuf->topLine = lineSkip(Currentbuf, Currentbuf->topLine,
-                                       Currentbuf->currentLine->linenumber - Currentbuf->topLine->linenumber,
+        GetCurrentbuf()->topLine = lineSkip(Currentbuf, GetCurrentbuf()->topLine,
+                                       GetCurrentbuf()->currentLine->linenumber - GetCurrentbuf()->topLine->linenumber,
                                        FALSE);
-    Currentbuf->pos = al->start.pos;
+    GetCurrentbuf()->pos = al->start.pos;
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
     return;
@@ -1608,7 +1608,7 @@ void _newT()
     if (!tag)
         return;
 
-    buf = newBuffer(Currentbuf->width);
+    buf = newBuffer(GetCurrentbuf()->width);
     copyBuffer(buf, Currentbuf);
     buf->nextBuffer = NULL;
     for (i = 0; i < MAX_LB; i++)
@@ -1630,12 +1630,12 @@ void _newT()
 /* go to the next left/right anchor */
 void nextX(int d, int dy)
 {
-    HmarkerList *hl = Currentbuf->hmarklist;
+    HmarkerList *hl = GetCurrentbuf()->hmarklist;
     Anchor *an, *pan;
     Line *l;
     int i, x, y, n = searchKeyNum();
 
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     if (!hl || hl->nmark == 0)
         return;
@@ -1644,8 +1644,8 @@ void nextX(int d, int dy)
     if (an == NULL)
         an = retrieveCurrentForm(Currentbuf);
 
-    l = Currentbuf->currentLine;
-    x = Currentbuf->pos;
+    l = GetCurrentbuf()->currentLine;
+    x = GetCurrentbuf()->pos;
     y = l->linenumber;
     pan = NULL;
     for (i = 0; i < n; i++)
@@ -1657,9 +1657,9 @@ void nextX(int d, int dy)
         {
             for (; x >= 0 && x < l->len; x += d)
             {
-                an = retrieveAnchor(Currentbuf->href, y, x);
+                an = retrieveAnchor(GetCurrentbuf()->href, y, x);
                 if (!an)
-                    an = retrieveAnchor(Currentbuf->formitem, y, x);
+                    an = retrieveAnchor(GetCurrentbuf()->formitem, y, x);
                 if (an)
                 {
                     pan = an;
@@ -1681,7 +1681,7 @@ void nextX(int d, int dy)
     if (pan == NULL)
         return;
     gotoLine(Currentbuf, y);
-    Currentbuf->pos = pan->start.pos;
+    GetCurrentbuf()->pos = pan->start.pos;
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
 }
@@ -1689,12 +1689,12 @@ void nextX(int d, int dy)
 /* go to the next downward/upward anchor */
 void nextY(int d)
 {
-    HmarkerList *hl = Currentbuf->hmarklist;
+    HmarkerList *hl = GetCurrentbuf()->hmarklist;
     Anchor *an, *pan;
     int i, x, y, n = searchKeyNum();
     int hseq;
 
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     if (!hl || hl->nmark == 0)
         return;
@@ -1703,8 +1703,8 @@ void nextY(int d)
     if (an == NULL)
         an = retrieveCurrentForm(Currentbuf);
 
-    x = Currentbuf->pos;
-    y = Currentbuf->currentLine->linenumber + d;
+    x = GetCurrentbuf()->pos;
+    y = GetCurrentbuf()->currentLine->linenumber + d;
     pan = NULL;
     hseq = -1;
     for (i = 0; i < n; i++)
@@ -1712,11 +1712,11 @@ void nextY(int d)
         if (an)
             hseq = abs(an->hseq);
         an = NULL;
-        for (; y >= 0 && y <= Currentbuf->lastLine->linenumber; y += d)
+        for (; y >= 0 && y <= GetCurrentbuf()->lastLine->linenumber; y += d)
         {
-            an = retrieveAnchor(Currentbuf->href, y, x);
+            an = retrieveAnchor(GetCurrentbuf()->href, y, x);
             if (!an)
-                an = retrieveAnchor(Currentbuf->formitem, y, x);
+                an = retrieveAnchor(GetCurrentbuf()->formitem, y, x);
             if (an && hseq != abs(an->hseq))
             {
                 pan = an;
@@ -1795,7 +1795,7 @@ void goURL0(char *prompt, int relative)
             {
                 url = a_url;
                 if (DecodeURL)
-                    url = url_unquote_conv(url, Currentbuf->document_charset);
+                    url = url_unquote_conv(url, GetCurrentbuf()->document_charset);
             }
             else
                 pushHist(hist, a_url);
@@ -1807,9 +1807,9 @@ void goURL0(char *prompt, int relative)
 #ifdef USE_M17N
     if (url != NULL)
     {
-        if ((relative || *url == '#') && Currentbuf->document_charset)
+        if ((relative || *url == '#') && GetCurrentbuf()->document_charset)
             url = wc_conv_strict(url, InnerCharset,
-                                 Currentbuf->document_charset)
+                                 GetCurrentbuf()->document_charset)
                       ->ptr;
         else
             url = conv_to_system(url);
@@ -1828,7 +1828,7 @@ void goURL0(char *prompt, int relative)
     if (relative)
     {
         current = baseURL(Currentbuf);
-        referer = parsedURL2Str(&Currentbuf->currentURL)->ptr;
+        referer = parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr;
     }
     else
     {
@@ -1839,7 +1839,7 @@ void goURL0(char *prompt, int relative)
     pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
     cmd_loadURL(url, current, referer, NULL);
     if (Currentbuf != cur_buf) /* success */
-        pushHashHist(URLHist, parsedURL2Str(&Currentbuf->currentURL)->ptr);
+        pushHashHist(URLHist, parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr);
 }
 
 void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
@@ -1852,11 +1852,11 @@ void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
     {
         buf->bufferprop |= (BP_INTERNAL | prop);
         if (!(buf->bufferprop & BP_NO_URL))
-            copyParsedURL(&buf->currentURL, &Currentbuf->currentURL);
+            copyParsedURL(&buf->currentURL, &GetCurrentbuf()->currentURL);
         if (linkid != LB_NOLINK)
         {
             buf->linkBuffer[REV_LB[linkid]] = Currentbuf;
-            Currentbuf->linkBuffer[linkid] = buf;
+            GetCurrentbuf()->linkBuffer[linkid] = buf;
         }
         pushBuffer(buf);
     }
@@ -1868,14 +1868,14 @@ void anchorMn(Anchor *(*menu_func)(Buffer *), int go)
     Anchor *a;
     BufferPoint *po;
 
-    if (!Currentbuf->href || !Currentbuf->hmarklist)
+    if (!GetCurrentbuf()->href || !GetCurrentbuf()->hmarklist)
         return;
     a = menu_func(Currentbuf);
     if (!a || a->hseq < 0)
         return;
-    po = &Currentbuf->hmarklist->marks[a->hseq];
+    po = &GetCurrentbuf()->hmarklist->marks[a->hseq];
     gotoLine(Currentbuf, po->line);
-    Currentbuf->pos = po->pos;
+    GetCurrentbuf()->pos = po->pos;
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
     if (go)
@@ -1894,7 +1894,7 @@ void _peekURL(int only_img)
 #endif
     static int offset = 0, n;
 
-    if (Currentbuf->firstLine == NULL)
+    if (GetCurrentbuf()->firstLine == NULL)
         return;
     if (CurrentKey == PrevKey && s != NULL)
     {
@@ -1928,7 +1928,7 @@ void _peekURL(int only_img)
         s = parsedURL2Str(&pu);
     }
     if (DecodeURL)
-        s = Strnew_charp(url_unquote_conv(s->ptr, Currentbuf->document_charset));
+        s = Strnew_charp(url_unquote_conv(s->ptr, GetCurrentbuf()->document_charset));
 #ifdef USE_M17N
     s = checkType(s, &pp, NULL);
     p = NewAtom_N(Lineprop, s->length);
@@ -1948,9 +1948,9 @@ disp:
 /* show current URL */
 Str currentURL(void)
 {
-    if (Currentbuf->bufferprop & BP_INTERNAL)
+    if (GetCurrentbuf()->bufferprop & BP_INTERNAL)
         return Strnew_size(0);
-    return parsedURL2Str(&Currentbuf->currentURL);
+    return parsedURL2Str(&GetCurrentbuf()->currentURL);
 }
 
 void repBuffer(Buffer *oldbuf, Buffer *buf)
@@ -1961,15 +1961,15 @@ void repBuffer(Buffer *oldbuf, Buffer *buf)
 
 void _docCSet(wc_ces charset)
 {
-    if (Currentbuf->bufferprop & BP_INTERNAL)
+    if (GetCurrentbuf()->bufferprop & BP_INTERNAL)
         return;
-    if (Currentbuf->sourcefile == NULL)
+    if (GetCurrentbuf()->sourcefile == NULL)
     {
         disp_message("Can't reload...", FALSE);
         return;
     }
-    Currentbuf->document_charset = charset;
-    Currentbuf->need_reshape = TRUE;
+    GetCurrentbuf()->document_charset = charset;
+    GetCurrentbuf()->need_reshape = TRUE;
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
 
@@ -2058,24 +2058,24 @@ void process_mouse(int btn, int x, int y)
                             (press_y == y) ? (press_x < x) : (press_y < y));
                     return;
                 }
-                else if (press_x >= Currentbuf->rootX)
+                else if (press_x >= GetCurrentbuf()->rootX)
                 {
                     Buffer *buf = Currentbuf;
-                    int cx = Currentbuf->cursorX, cy = Currentbuf->cursorY;
+                    int cx = GetCurrentbuf()->cursorX, cy = GetCurrentbuf()->cursorY;
 
                     t = posTab(x, y);
                     if (t == NULL)
                         return;
                     if (t == NO_TABBUFFER)
                         t = NULL; /* open new tab */
-                    cursorXY(Currentbuf, press_x - Currentbuf->rootX,
-                             press_y - Currentbuf->rootY);
-                    if (Currentbuf->cursorY == press_y - Currentbuf->rootY &&
-                        (Currentbuf->cursorX == press_x - Currentbuf->rootX
+                    cursorXY(Currentbuf, press_x - GetCurrentbuf()->rootX,
+                             press_y - GetCurrentbuf()->rootY);
+                    if (GetCurrentbuf()->cursorY == press_y - GetCurrentbuf()->rootY &&
+                        (GetCurrentbuf()->cursorX == press_x - GetCurrentbuf()->rootX
 #ifdef USE_M17N
                          || (WcOption.use_wide &&
-                             Currentbuf->currentLine != NULL &&
-                             (CharType(Currentbuf->currentLine->propBuf[Currentbuf->pos]) == PC_KANJI1) && Currentbuf->cursorX == press_x - Currentbuf->rootX - 1)
+                             GetCurrentbuf()->currentLine != NULL &&
+                             (CharType(GetCurrentbuf()->currentLine->propBuf[GetCurrentbuf()->pos]) == PC_KANJI1) && GetCurrentbuf()->cursorX == press_x - GetCurrentbuf()->rootX - 1)
 #endif
                              ))
                     {
@@ -2204,11 +2204,11 @@ void do_mouse_action(int btn, int x, int y)
     }
     else if (y > ny)
     {
-        if (y == Currentbuf->cursorY + Currentbuf->rootY &&
-            (x == Currentbuf->cursorX + Currentbuf->rootX
+        if (y == GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY &&
+            (x == GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX
 #ifdef USE_M17N
-             || (WcOption.use_wide && Currentbuf->currentLine != NULL &&
-                 (CharType(Currentbuf->currentLine->propBuf[Currentbuf->pos]) == PC_KANJI1) && x == Currentbuf->cursorX + Currentbuf->rootX + 1)
+             || (WcOption.use_wide && GetCurrentbuf()->currentLine != NULL &&
+                 (CharType(GetCurrentbuf()->currentLine->propBuf[GetCurrentbuf()->pos]) == PC_KANJI1) && x == GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX + 1)
 #endif
                  ))
         {
@@ -2222,13 +2222,13 @@ void do_mouse_action(int btn, int x, int y)
         }
         else
         {
-            int cx = Currentbuf->cursorX, cy = Currentbuf->cursorY;
-            cursorXY(Currentbuf, x - Currentbuf->rootX, y - Currentbuf->rootY);
-            if (y == Currentbuf->cursorY + Currentbuf->rootY &&
-                (x == Currentbuf->cursorX + Currentbuf->rootX
+            int cx = GetCurrentbuf()->cursorX, cy = GetCurrentbuf()->cursorY;
+            cursorXY(Currentbuf, x - GetCurrentbuf()->rootX, y - GetCurrentbuf()->rootY);
+            if (y == GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY &&
+                (x == GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX
 #ifdef USE_M17N
-                 || (WcOption.use_wide && Currentbuf->currentLine != NULL &&
-                     (CharType(Currentbuf->currentLine->propBuf[Currentbuf->pos]) == PC_KANJI1) && x == Currentbuf->cursorX + Currentbuf->rootX + 1)
+                 || (WcOption.use_wide && GetCurrentbuf()->currentLine != NULL &&
+                     (CharType(GetCurrentbuf()->currentLine->propBuf[GetCurrentbuf()->pos]) == PC_KANJI1) && x == GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX + 1)
 #endif
                      ) &&
                 (retrieveCurrentAnchor(Currentbuf) ||
@@ -2463,14 +2463,14 @@ void SigAlarm(SIGNAL_ARG)
             CurrentAlarm()->sec = 0;
             CurrentAlarm()->status = AL_UNSET;
         }
-        if (Currentbuf->event)
+        if (GetCurrentbuf()->event)
         {
-            if (Currentbuf->event->status != AL_UNSET)
-                SetCurrentAlarm(Currentbuf->event);
+            if (GetCurrentbuf()->event->status != AL_UNSET)
+                SetCurrentAlarm(GetCurrentbuf()->event);
             else
-                Currentbuf->event = NULL;
+                GetCurrentbuf()->event = NULL;
         }
-        if (!Currentbuf->event)
+        if (!GetCurrentbuf()->event)
             SetCurrentAlarm(DefaultAlarm());
         if (CurrentAlarm()->sec > 0)
         {
@@ -2666,7 +2666,7 @@ void resetPos(BufferPos *b)
     buf.pos = b->pos;
     buf.currentColumn = b->currentColumn;
     restorePosition(Currentbuf, &buf);
-    Currentbuf->undo = b;
+    GetCurrentbuf()->undo = b;
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
 
@@ -3143,16 +3143,16 @@ void chkURLBuffer(Buffer *buf)
 
 void change_charset(struct parsed_tagarg *arg)
 {
-    Buffer *buf = Currentbuf->linkBuffer[LB_N_INFO];
+    Buffer *buf = GetCurrentbuf()->linkBuffer[LB_N_INFO];
     wc_ces charset;
 
     if (buf == NULL)
         return;
     delBuffer(Currentbuf);
     Currentbuf = buf;
-    if (Currentbuf->bufferprop & BP_INTERNAL)
+    if (GetCurrentbuf()->bufferprop & BP_INTERNAL)
         return;
-    charset = Currentbuf->document_charset;
+    charset = GetCurrentbuf()->document_charset;
     for (; arg; arg = arg->next)
     {
         if (!strcmp(arg->arg, "charset"))
@@ -3171,8 +3171,8 @@ void follow_map(struct parsed_tagarg *arg)
     ParsedURL p_url;
 
     an = retrieveCurrentImg(Currentbuf);
-    x = Currentbuf->cursorX + Currentbuf->rootX;
-    y = Currentbuf->cursorY + Currentbuf->rootY;
+    x = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
+    y = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
     a = follow_map_menu(Currentbuf, name, an, x, y);
     if (a == NULL || a->url == NULL || *(a->url) == '\0')
     {
@@ -3201,7 +3201,7 @@ void follow_map(struct parsed_tagarg *arg)
         _newT();
         buf = Currentbuf;
         cmd_loadURL(a->url, baseURL(Currentbuf),
-                    parsedURL2Str(&Currentbuf->currentURL)->ptr, NULL);
+                    parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr, NULL);
         if (buf != Currentbuf)
             delBuffer(buf);
         else
@@ -3210,7 +3210,7 @@ void follow_map(struct parsed_tagarg *arg)
         return;
     }
     cmd_loadURL(a->url, baseURL(Currentbuf),
-                parsedURL2Str(&Currentbuf->currentURL)->ptr, NULL);
+                parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr, NULL);
 #endif
 }
 
@@ -3699,13 +3699,7 @@ int HasFirstBuffer()
     return GetFirstbuf() && GetFirstbuf() != NO_BUFFER    ;
 }
 
-// int NoFirstBuffer()
-// {
-//     return !Firstbuf() || Firstbuf() == NO_BUFFER;    
-// }
-
 void SetFirstbuf(Buffer *buffer)
 {
     CurrentTab->firstBuffer = buffer;
 }
-

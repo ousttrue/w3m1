@@ -1375,8 +1375,8 @@ void disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mous
 		return;
 	}
 	if (CurrentTab != NULL && Currentbuf != NULL)
-		message(s, Currentbuf->cursorX + Currentbuf->rootX,
-				Currentbuf->cursorY + Currentbuf->rootY);
+		message(s, GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
+				GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY);
 	else
 		message(s, LASTLINE, 0);
 	refresh();
