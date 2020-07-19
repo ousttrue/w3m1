@@ -105,7 +105,7 @@ add_executable(w3m
     src/mouse.cpp
     src/history.cpp
     src/version.cpp
-    src/istream.c
+    src/istream.cpp
     src/keybind.c
     src/parsetagx.c
     libwc/big5.c

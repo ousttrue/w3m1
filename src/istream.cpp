@@ -1,4 +1,5 @@
-/* $Id: istream.c,v 1.27 2010/07/18 13:43:23 htrb Exp $ */
+extern "C"
+{
 #include "fm.h"
 #include "indep.h"
 #include "myctype.h"
@@ -14,6 +15,7 @@
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
 #endif
+}
 
 #define uchar unsigned char
 
@@ -24,8 +26,8 @@
 
 #define POP_CHAR(bs) ((bs)->iseos ? '\0' : (bs)->stream.buf[(bs)->stream.cur++])
 
-static void basic_close(int *handle);
-static int basic_read(int *handle, char *buf, int len);
+static void basic_close(void *handle);
+static int basic_read(void *handle, unsigned char *buf, int len);
 
 static void file_close(struct filestream_handle *handle);
 static int file_read(struct filestream_handle *handle, char *buf, int len);
@@ -108,8 +110,8 @@ newInputStream(int des)
 	stream->base.type = IST_BASIC;
 	stream->base.handle = New(int);
 	*(int *)stream->base.handle = des;
-	stream->base.read = (int (*)())basic_read;
-	stream->base.close = (void (*)())basic_close;
+	stream->base.read = basic_read;
+	stream->base.close = basic_close;
 	return stream;
 }
 
@@ -143,7 +145,7 @@ newStrStream(Str s)
 	init_str_stream(&stream->base, s);
 	stream->str.type = IST_STR;
 	stream->str.handle = s;
-	stream->str.read = (int (*)())str_read;
+	stream->str.read = (ReadFunc)str_read;
 	stream->str.close = NULL;
 	return stream;
 }
@@ -161,8 +163,8 @@ newSSLStream(SSL *ssl, int sock)
 	stream->ssl.handle = New(struct ssl_handle);
 	stream->ssl.handle->ssl = ssl;
 	stream->ssl.handle->sock = sock;
-	stream->ssl.read = (int (*)())ssl_read;
-	stream->ssl.close = (void (*)())ssl_close;
+	stream->ssl.read = (ReadFunc)ssl_read;
+	stream->ssl.close = (CloseFunc)ssl_close;
 	return stream;
 }
 #endif
@@ -182,14 +184,14 @@ newEncodedStream(InputStream is, char encoding)
 	stream->ens.handle->pos = 0;
 	stream->ens.handle->encoding = encoding;
 	stream->ens.handle->s = NULL;
-	stream->ens.read = (int (*)())ens_read;
-	stream->ens.close = (void (*)())ens_close;
+	stream->ens.read = (ReadFunc)ens_read;
+	stream->ens.close = (CloseFunc)ens_close;
 	return stream;
 }
 
 int ISclose(InputStream stream)
 {
-	MySignalHandler (*prevtrap)();
+	MySignalHandler prevtrap = NULL;
 	if (stream == NULL || stream->base.close == NULL ||
 		stream->base.type & IST_UNCLOSE)
 		return -1;
@@ -234,7 +236,7 @@ Str StrISgets(InputStream stream)
 	int len;
 
 	if (stream == NULL)
-		return '\0';
+		return NULL;
 	base = &stream->base;
 	sb = &base->stream;
 
@@ -246,7 +248,7 @@ Str StrISgets(InputStream stream)
 		}
 		else
 		{
-			if ((p = memchr(&sb->buf[sb->cur], '\n', sb->next - sb->cur)))
+			if ((p = (unsigned char *)memchr(&sb->buf[sb->cur], '\n', sb->next - sb->cur)))
 			{
 				len = p - &sb->buf[sb->cur] + 1;
 				if (s == NULL)
@@ -279,7 +281,7 @@ Str StrmyISgets(InputStream stream)
 	int i, len;
 
 	if (stream == NULL)
-		return '\0';
+		return NULL;
 	base = &stream->base;
 	sb = &base->stream;
 
@@ -339,7 +341,7 @@ int ISread(InputStream stream, Str buf, int count)
 	rest = count - len;
 	if (MUST_BE_UPDATED(base))
 	{
-		len = base->read(base->handle, &buf->ptr[len], rest);
+		len = base->read(base->handle, (unsigned char*)&buf->ptr[len], rest);
 		if (len <= 0)
 		{
 			base->iseos = TRUE;
@@ -450,12 +452,11 @@ ssl_check_cert_ident(X509 *x, char *hostname)
 		STACK_OF(GENERAL_NAME) * alt;
 
 		ex = X509_get_ext(x, i);
-		alt = X509V3_EXT_d2i(ex);
+		alt = (STACK_OF(GENERAL_NAME) *)X509V3_EXT_d2i(ex);
 		if (alt)
 		{
 			int n;
 			GENERAL_NAME *gn;
-			X509V3_EXT_METHOD *method;
 			Str seen_dnsname = NULL;
 
 			n = sk_GENERAL_NAME_num(alt);
@@ -464,7 +465,7 @@ ssl_check_cert_ident(X509 *x, char *hostname)
 				gn = sk_GENERAL_NAME_value(alt, i);
 				if (gn->type == GEN_DNS)
 				{
-					char *sn = ASN1_STRING_data(gn->d.ia5);
+					char *sn = (char*)ASN1_STRING_data(gn->d.ia5);
 					int sl = ASN1_STRING_length(gn->d.ia5);
 
 					if (!seen_dnsname)
@@ -485,7 +486,7 @@ ssl_check_cert_ident(X509 *x, char *hostname)
 						break;
 				}
 			}
-			method = X509V3_EXT_get(ex);
+			auto method = X509V3_EXT_get(ex);
 			sk_GENERAL_NAME_free(alt);
 			if (i < n) /* Found a match */
 				match_ident = TRUE;
@@ -672,7 +673,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
 /* Raw level input stream functions */
 
 static void
-basic_close(int *handle)
+basic_close(void *handle)
 {
 #ifdef __MINGW32_VERSION
 	closesocket(*(int *)handle);
@@ -682,7 +683,7 @@ basic_close(int *handle)
 }
 
 static int
-basic_read(int *handle, char *buf, int len)
+basic_read(void *handle, unsigned char *buf, int len)
 {
 #ifdef __MINGW32_VERSION
 	return recv(*(int *)handle, buf, len, 0);
