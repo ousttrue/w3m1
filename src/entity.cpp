@@ -13,7 +13,7 @@ extern "C"
 #endif /* DUMMY */
 
     /* *INDENT-OFF* */
-    static char *alt_latin1[96] = {
+    static const char *alt_latin1[96] = {
         " ", "!", "-c-", "-L-", "CUR", "=Y=", "|", "S:",
         "\"", "(C)", "-a", "<<", "NOT", "-", "(R)", "-",
         "DEG", "+-", "^2", "^3", "'", "u", "P:", ".",
@@ -28,7 +28,7 @@ extern "C"
         "o/", "u`", "u'", "u^", "u:", "y'", "th", "y:"};
     /* *INDENT-ON* */
 
-    char *
+    const char *
     conv_entity(unsigned int c)
     {
         char b = c & 0xff;

@@ -5,7 +5,8 @@ extern "C"
 {
 #endif
 
-int GetEntity(const char* src, int value);
+    int GetEntity(const char *src, int value);
+    const char *conv_entity(unsigned int ch);
 
 #ifdef __cplusplus
 }

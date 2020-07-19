@@ -6,10 +6,36 @@ extern "C"
 #include "indep.h"
 #include "file.h"
 #include "image.h"
+#include "display.h"
 }
 
 char *NullLine = "";
 Lineprop NullProp[] = {0};
+
+int REV_LB[MAX_LB] = {
+    LB_N_FRAME, LB_FRAME, LB_N_INFO, LB_INFO, LB_N_SOURCE,
+};
+
+void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
+{
+    if (buf == NULL)
+    {
+        disp_err_message("Can't load string", FALSE);
+    }
+    else if (buf != NO_BUFFER)
+    {
+        buf->bufferprop |= (BP_INTERNAL | prop);
+        if (!(buf->bufferprop & BP_NO_URL))
+            copyParsedURL(&buf->currentURL, &GetCurrentbuf()->currentURL);
+        if (linkid != LB_NOLINK)
+        {
+            buf->linkBuffer[REV_LB[linkid]] = GetCurrentbuf();
+            GetCurrentbuf()->linkBuffer[linkid] = buf;
+        }
+        pushBuffer(buf);
+    }
+    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+}
 
 /* 
  * Buffer creation

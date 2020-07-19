@@ -72,6 +72,7 @@ add_executable(w3m
     src/public.cpp
     src/display.cpp
     src/buffer.cpp
+    src/tab.cpp
     src/file.cpp
     # src/defun.c
     src/indep.c

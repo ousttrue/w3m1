@@ -19,6 +19,7 @@ extern "C" {
 #include "regex.h"
 #include "dispatcher.h"
 #include "url.h"
+#include "entity.h"
 }
 #include <sys/types.h>
 #include <signal.h>
@@ -6067,7 +6068,7 @@ proc_escape(struct readbuffer *obuf, char **str_return)
     }
     mode = IS_CNTRL(ech) ? PC_CTRL : PC_ASCII;
 
-    estr = conv_entity(ech);
+    estr = (char*)conv_entity(ech);
     check_breakpoint(obuf, obuf->flag & RB_SPECIAL, estr);
     width = get_strwidth(estr);
     if (width == 1 && ech == (unsigned char)*estr &&

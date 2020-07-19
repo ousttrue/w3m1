@@ -202,20 +202,13 @@ void bzero(void *, int);
 #define LB_N_INFO	3
 #define LB_SOURCE	4	/* vwSrc() */
 #define LB_N_SOURCE	LB_SOURCE
-#define MAX_LB		5
+
 
 /* Search Result */
 #define SR_FOUND       0x1
 #define SR_NOTFOUND    0x2
 #define SR_WRAPPED     0x4
 
-#ifdef MAINPROGRAM
-int REV_LB[MAX_LB] = {
-    LB_N_FRAME, LB_FRAME, LB_N_INFO, LB_INFO, LB_N_SOURCE,
-};
-#else				/* not MAINPROGRAM */
-extern int REV_LB[];
-#endif				/* not MAINPROGRAM */
 
 /* mark URL, Message-ID */
 #define CHK_URL                1
@@ -299,20 +292,10 @@ extern int REV_LB[];
 
 #define NO_REFERER ((char*)-1)
 
-#define LINK_TYPE_NONE 0
-#define LINK_TYPE_REL  1
-#define LINK_TYPE_REV  2
-typedef struct _LinkList {
-    char *url;
-    char *title;		/* Next, Contents, ... */
-    char *ctype;		/* Content-Type */
-    char type;			/* Rel, Rev */
-    struct _LinkList *next;
-} LinkList;
 
 #include "form.h"
 
-#include "buffer.h"
+#include "tab.h"
 
 typedef struct _BufferPos {
     long top_linenumber;
@@ -324,15 +307,6 @@ typedef struct _BufferPos {
     struct _BufferPos *prev;
 } BufferPos;
 
-typedef struct _TabBuffer {
-    struct _TabBuffer *nextTab;
-    struct _TabBuffer *prevTab;
-    Buffer *currentBuffer;
-    Buffer *firstBuffer;
-    short x1;
-    short x2;
-    short y;
-} TabBuffer;
 
 typedef struct _DownloadList {
     pid_t pid;

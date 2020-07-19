@@ -15,6 +15,7 @@
 #include "symbol.h"
 #include "table.h"
 #include "etc.h"
+#include "entity.h"
 
 int symbol_width = 0;
 int symbol_width0 = 0;
@@ -2262,7 +2263,7 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
 	    if (*c == '&') {
 		ec = getescapechar(&line);
 		if (ec >= 0) {
-		    c = conv_entity(ec);
+		    c = (char*)conv_entity(ec);
 		    ctype = get_mctype(c);
 		    len = get_strwidth(c);
 		    wlen = line - save;
