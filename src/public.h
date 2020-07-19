@@ -114,7 +114,7 @@ int ProcessEvent();
 Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);
 void intTrap(SIGNAL_ARG);
 
-Buffer *Currentbuf();
+Buffer *GetCurrentbuf();
 void SetCurrentbuf(Buffer *buf);
 Buffer *Firstbuf();
 int HasFirstBuffer();

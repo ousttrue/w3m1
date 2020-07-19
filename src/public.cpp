@@ -3676,6 +3676,19 @@ void pcmap(void)
 {
 }
 
+//
+// Buffer
+//
+Buffer *GetCurrentbuf()
+{
+    return CurrentTab->currentBuffer;
+}
+
+void SetCurrentbuf(Buffer *buf)
+{
+    CurrentTab->currentBuffer=buf;
+}
+
 Buffer *Firstbuf()
 {
     return CurrentTab->firstBuffer;
