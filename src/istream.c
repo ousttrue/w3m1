@@ -5,6 +5,7 @@
 #include "istream.h"
 #include "file.h"
 #include "etc.h"
+#include "html.h"
 #include <signal.h>
 #ifdef USE_SSL
 #include <openssl/x509v3.h>

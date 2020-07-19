@@ -8,6 +8,7 @@ extern "C" {
 #include "parsetag.h"
 #include "local.h"
 #include "file.h"
+#include "html.h"
 }
 
 static struct mailcap DefaultMailcap[] = {

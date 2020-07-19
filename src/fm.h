@@ -25,18 +25,8 @@
 #include "config.h"
 #include "history.h"
 
-#ifdef USE_MENU
-#define MENU_SELECT
-#define MENU_MAP
-#endif				/* USE_MENU */
-
-#ifndef USE_COLOR
-#undef USE_ANSI_COLOR
-#undef USE_BG_COLOR
-#endif
 
 #include "ctrlcode.h"
-#include "html.h"
 #include <gc.h>
 #include "Str.h"
 #ifdef USE_M17N

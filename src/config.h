@@ -57,6 +57,8 @@
 /* #undef USE_GPM */
 /* #undef USE_SYSMOUSE */
 #define USE_MENU 1
+#define MENU_SELECT
+#define MENU_MAP
 #define USE_COOKIE 1
 #define USE_DIGEST_AUTH 1
 #define USE_SSL 1

@@ -17,6 +17,7 @@ extern "C" {
 #include "commands.h"
 #include "symbol.h"
 #include "file.h"
+#include "html.h"
 }
 
 #ifdef USE_MOUSE

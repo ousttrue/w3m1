@@ -20,6 +20,25 @@ typedef struct _ParsedURL
     int is_nocache;
 } ParsedURL;
 
+typedef struct {
+    unsigned char scheme;
+    char is_cgi;
+    char encoding;
+    InputStream stream;
+    char *ext;
+    int compression;
+    int content_encoding;
+    char *guess_type;
+    char *ssl_certificate;
+    char *url;
+    time_t modtime;
+} URLFile;
+
+typedef struct {
+    char *referer;
+    int flag;
+} URLOption;
+
 struct cookie {
     ParsedURL url;
     Str name;

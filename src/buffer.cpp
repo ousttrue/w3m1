@@ -8,6 +8,7 @@ extern "C"
 #include "image.h"
 #include "display.h"
 #include "terms.h"
+#include "html.h"
 }
 
 char *NullLine = "";

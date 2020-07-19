@@ -5,6 +5,7 @@
 #include "file.h"
 #include "etc.h"
 #include "terms.h"
+#include "html.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

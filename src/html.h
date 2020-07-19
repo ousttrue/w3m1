@@ -44,27 +44,8 @@ struct table2 {
     char *item2;
 };
 
-typedef struct {
-    char *referer;
-    int flag;
-} URLOption;
 
 
-typedef struct {
-    unsigned char scheme;
-    char is_cgi;
-    char encoding;
-    InputStream stream;
-    char *ext;
-    int compression;
-    int content_encoding;
-    char *guess_type;
-#ifdef USE_SSL
-    char *ssl_certificate;
-#endif
-    char *url;
-    time_t modtime;
-} URLFile;
 
 #define CMP_NOCOMPRESS   0
 #define CMP_COMPRESS     1
