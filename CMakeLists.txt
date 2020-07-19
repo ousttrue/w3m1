@@ -98,8 +98,8 @@ add_executable(w3m
     src/image.cpp
     src/symbol.cpp
     src/terms.cpp
-    src/url.c
-    src/ftp.c
+    src/url.cpp
+    src/ftp.cpp
     src/mimehead.c
     src/news.c
     src/mouse.c

@@ -1,4 +1,5 @@
 /* $Id: url.c,v 1.100 2010/12/15 10:50:24 htrb Exp $ */
+extern "C" {
 #include "fm.h"
 #include "etc.h"
 #include "url.h"
@@ -29,6 +30,7 @@
 #include "Str.h"
 #include "myctype.h"
 #include "regex.h"
+}
 
 #ifdef USE_SSL
 #ifndef SSLEAY_VERSION_NUMBER
@@ -244,7 +246,7 @@ DefaultFile(int scheme)
     return NULL;
 }
 
-static MySignalHandler
+static void
 KeyAbort(SIGNAL_ARG)
 {
     LONGJMP(AbortLoading, 1);
@@ -472,7 +474,7 @@ openSocket(char *const hostname,
     int a1, a2, a3, a4;
     unsigned long adr;
 #endif				/* not INET6 */
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
 
     if (fmInitialized) {
 	/* FIXME: gettextize? */
@@ -1805,7 +1807,7 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 	else
 	    tmp = Str_url_unquote(tmp, FALSE, FALSE);
 	uf.stream = newStrStream(tmp);
-	uf.guess_type = (*p != '\0') ? p : "text/plain";
+	uf.guess_type = (*p != '\0') ? p : (char*)"text/plain";
 	return uf;
     case SCM_UNKNOWN:
     default:
@@ -1937,7 +1939,7 @@ check_no_proxy(char *domain)
 {
     TextListItem *tl;
     volatile int ret = 0;
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
 
     if (NO_proxy_domains == NULL || NO_proxy_domains->nitem == 0 ||
 	domain == NULL)

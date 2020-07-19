@@ -1,4 +1,5 @@
 /* $Id: ftp.c,v 1.42 2010/12/15 10:50:24 htrb Exp $ */
+extern "C" {
 #include <stdio.h>
 #ifndef __MINGW32_VERSION
 #include <pwd.h>
@@ -16,6 +17,7 @@
 #include "html.h"
 #include "myctype.h"
 #include "terms.h"
+}
 
 #ifdef DEBUG
 #include <malloc.h>
@@ -50,7 +52,7 @@ static struct _FTP current_ftp = {
 
 static JMP_BUF AbortLoading;
 
-static MySignalHandler
+static void
 KeyAbort(SIGNAL_ARG)
 {
     LONGJMP(AbortLoading, 1);
@@ -423,7 +425,7 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
     else {
 #ifndef __MINGW32_VERSION
 	struct passwd *mypw = getpwuid(getuid());
-	tmp = Strnew_charp(mypw ? mypw->pw_name : "anonymous");
+	tmp = Strnew_charp(mypw ? mypw->pw_name : (char*)"anonymous");
 #else
 	tmp = Strnew_charp("anonymous");
 #endif /* __MINGW32_VERSION */
@@ -481,7 +483,7 @@ loadFTPDir0(ParsedURL *pu)
     char *realpathname, *fn, *q;
     char **flist;
     int i, nfile, nfile_max;
-    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+    MySignalHandler prevtrap = NULL;
 #ifdef USE_M17N
     wc_ces doc_charset = DocumentCharset;
 
