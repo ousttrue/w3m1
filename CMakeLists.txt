@@ -106,8 +106,8 @@ add_executable(w3m
     src/history.cpp
     src/version.cpp
     src/istream.cpp
-    src/keybind.c
-    src/parsetagx.c
+    src/keybind.cpp
+    src/parsetagx.cpp
     libwc/big5.c
     libwc/ces.c
     libwc/char_conv.c

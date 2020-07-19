@@ -1,6 +1,7 @@
-/* $Id: keybind.c,v 1.10 2006/05/29 12:17:25 inu Exp $ */
+extern "C" {
 #include "dispatcher.h"
 #include "commands.h"
+}
 
 Command GlobalKeymap[128] = {
     /*  C-@     C-a     C-b     C-c     C-d     C-e     C-f     C-g      */
