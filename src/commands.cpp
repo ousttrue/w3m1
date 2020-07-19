@@ -21,6 +21,7 @@ extern "C"
 #include "display.h"
 #include "tab.h"
 #include "cookie.h"
+#include "terms.h"
 #include <signal.h>
 
 void nulcmd()

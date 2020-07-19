@@ -7,6 +7,7 @@ extern "C"
 #include "file.h"
 #include "image.h"
 #include "display.h"
+#include "terms.h"
 }
 
 char *NullLine = "";

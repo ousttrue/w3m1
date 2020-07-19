@@ -1,4 +1,4 @@
-
+extern "C" {
 #include "fm.h"
 #include "indep.h"
 #include "symbol.h"
@@ -14,6 +14,7 @@
 #include "Symbols/utf8.sym"
 #endif
 #include "Symbols/cp850.sym"
+}
 
 typedef struct {
     wc_ces ces;

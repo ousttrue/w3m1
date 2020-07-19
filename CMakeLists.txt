@@ -89,15 +89,15 @@ add_executable(w3m
     src/search.cpp
     src/linein.cpp
     src/table.cpp
-    src/local.c
-    src/form.c
-    src/map.c
-    src/frame.c
-    src/menu.c
-    src/mailcap.c
-    src/image.c
-    src/symbol.c
-    src/terms.c
+    src/local.cpp
+    src/form.cpp
+    src/map.cpp
+    src/frame.cpp
+    src/menu.cpp
+    src/mailcap.cpp
+    src/image.cpp
+    src/symbol.cpp
+    src/terms.cpp
     src/url.c
     src/ftp.c
     src/mimehead.c

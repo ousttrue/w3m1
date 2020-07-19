@@ -2,6 +2,7 @@
 /* 
  * w3m menu.c
  */
+extern "C" {
 #include <stdio.h>
 #include "fm.h"
 #include "rc.h"
@@ -16,6 +17,7 @@
 #include "commands.h"
 #include "symbol.h"
 #include "file.h"
+}
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM
@@ -1790,7 +1792,7 @@ link_menu(Buffer *buf)
 
     label = New_N(char *, nitem + 1);
     for (i = 0, l = buf->linklist; l; i++, l = l->next) {
-        str = Strnew_charp(l->title ? l->title : "(empty)");
+        str = Strnew_charp(l->title ? l->title : (char*)"(empty)");
         if (l->type == LINK_TYPE_REL)
             Strcat_charp(str, " [Rel] ");
         else if (l->type == LINK_TYPE_REV)

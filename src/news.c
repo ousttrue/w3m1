@@ -4,6 +4,7 @@
 #include "myctype.h"
 #include "file.h"
 #include "etc.h"
+#include "terms.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

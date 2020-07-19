@@ -1,7 +1,9 @@
 /* $Id: local.c,v 1.35 2007/05/23 15:06:05 inu Exp $ */
+extern "C" {
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
+#include "etc.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,13 +11,9 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <errno.h>
-#ifdef HAVE_READLINK
 #include <unistd.h>
-#endif				/* HAVE_READLINK */
-#ifdef __EMX__
-#include <limits.h>		/* _MAX_PATH ? */
-#endif				/* __EMX__ */
 #include "local.h"
+}
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
@@ -411,7 +409,7 @@ localcgi_post(char *uri, char *qstr, FormList *request, char *referer)
     }
     else {
 	set_environ("REQUEST_METHOD", "GET");
-	set_environ("QUERY_STRING", qstr ? qstr : "");
+	set_environ("QUERY_STRING", qstr ? qstr : (char*)"");
 	freopen(DEV_NULL_PATH, "r", stdin);
     }
 

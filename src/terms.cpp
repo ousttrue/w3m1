@@ -3,8 +3,15 @@
  * An original curses library for EUC-kanji by Akinori ITO,     December 1989
  * revised by Akinori ITO, January 1995
  */
+extern "C" {
+#include "config.h"
+#include "fm.h"
 #include "commands.h"
 #include "etc.h"
+#include "terms.h"
+#include "indep.h"
+#include "public.h"
+#include "myctype.h"
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -12,7 +19,6 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include "config.h"
 #include <string.h>
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
@@ -22,43 +28,15 @@
 #else
 #include <winsock.h>
 #endif /* __MINGW32_VERSION */
-#ifdef USE_MOUSE
-#ifdef USE_GPM
-#include <gpm.h>
-#endif				/* USE_GPM */
-#ifdef USE_SYSMOUSE
-#include <osreldate.h>
-#if (__FreeBSD_version >= 400017) || (__FreeBSD_kernel_version >= 400017)
-#include <sys/consio.h>
-#include <sys/fbio.h>
-#else
-#include <machine/console.h>
-#endif
-int (*sysm_handler) (int x, int y, int nbs, int obs);
-static int cwidth = 8, cheight = 16;
-static int xpix, ypix, nbs, obs = 0;
-#endif				/* use_SYSMOUSE */
 
 static int is_xterm = 0;
-
 void mouse_init(), mouse_end();
 int mouseActive = 0;
-#endif				/* USE_MOUSE */
+
 
 static char *title_str = NULL;
 
-static int tty;
-
-#include "terms.h"
-#include "fm.h"
-#include "indep.h"
-#include "public.h"
-#include "myctype.h"
-
-#ifdef __EMX__
-#define INCL_DOSNLS
-#include <os2.h>
-#endif				/* __EMX__ */
+static int tty = -1;
 
 #if defined(__CYGWIN__)
 #include <windows.h>
@@ -259,8 +237,10 @@ check_cygwin_console(void)
 }
 #endif				/* __CYGWIN__ */
 
-char *getenv(const char *);
-MySignalHandler reset_exit(SIGNAL_ARG), reset_error_exit(SIGNAL_ARG), error_dump(SIGNAL_ARG);
+// char *getenv(const char *);
+void reset_exit(SIGNAL_ARG);
+void reset_error_exit(SIGNAL_ARG);
+// MySignalHandler error_dump;
 void setlinescols(void);
 void flush_tty();
 
@@ -421,7 +401,6 @@ typedef struct scline {
 } Screen;
 
 static TerminalMode d_ioval;
-static int tty = -1;
 static FILE *ttyf = NULL;
 
 static
@@ -641,7 +620,7 @@ reset_tty(void)
     close_tty();
 }
 
-static MySignalHandler
+static void
 reset_exit_with_value(SIGNAL_ARG, int rval)
 {
 #ifdef USE_MOUSE
@@ -653,19 +632,19 @@ reset_exit_with_value(SIGNAL_ARG, int rval)
     SIGNAL_RETURN;
 }
 
-MySignalHandler
+void
 reset_error_exit(SIGNAL_ARG)
 {
   reset_exit_with_value(SIGNAL_ARGLIST, 1);
 }
 
-MySignalHandler
+void
 reset_exit(SIGNAL_ARG)
 {
   reset_exit_with_value(SIGNAL_ARGLIST, 0);
 }
 
-MySignalHandler
+void
 error_dump(SIGNAL_ARG)
 {
     mySignal(SIGIOT, SIG_DFL);
@@ -2270,3 +2249,4 @@ char *ttyname(int tty)
 }
 
 #endif /* __MINGW32_VERSION */
+}

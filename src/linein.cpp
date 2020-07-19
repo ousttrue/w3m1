@@ -8,6 +8,7 @@ extern "C" {
 #include "etc.h"
 #include "file.h"
 #include "public.h"
+#include "terms.h"
 }
 
 #define STR_LEN	1024

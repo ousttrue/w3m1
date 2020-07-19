@@ -2,6 +2,7 @@
 /* 
  * HTML forms
  */
+extern "C" {
 #include "fm.h"
 #include "etc.h"
 #include "indep.h"
@@ -15,12 +16,10 @@
 #include "myctype.h"
 #include "local.h"
 #include "regex.h"
-
-extern Str *textarea_str;
-#ifdef MENU_SELECT
-extern FormSelectOption *select_option;
 #include "menu.h"
-#endif				/* MENU_SELECT */
+extern Str *textarea_str;
+extern FormSelectOption *select_option;
+}
 
 /* *INDENT-OFF* */
 struct {
@@ -797,57 +796,57 @@ static struct pre_form *
 add_pre_form(struct pre_form *prev, char *url, char *name, char *action)
 {
     ParsedURL pu;
-    struct pre_form *new;
+    struct pre_form *newForm;
 
     if (prev)
-	new = prev->next = New(struct pre_form);
+	newForm = prev->next = New(struct pre_form);
     else
-	new = PreForm = New(struct pre_form);
+	newForm = PreForm = New(struct pre_form);
     if (url && *url == '/') {
 	int l = strlen(url);
 	if (l > 1 && url[l - 1] == '/')
-	    new->url = allocStr(url + 1, l - 2);
+	    newForm->url = allocStr(url + 1, l - 2);
 	else
-	    new->url = url + 1;
-	new->re_url = newRegex(new->url, FALSE, NULL, NULL);
-	if (!new->re_url)
-	    new->url = NULL;
+	    newForm->url = url + 1;
+	newForm->re_url = newRegex(newForm->url, FALSE, NULL, NULL);
+	if (!newForm->re_url)
+	    newForm->url = NULL;
     }
     else if (url) {
 	parseURL2(url, &pu, NULL);
-	new->url = parsedURL2Str(&pu)->ptr;
-	new->re_url = NULL;
+	newForm->url = parsedURL2Str(&pu)->ptr;
+	newForm->re_url = NULL;
     }
-    new->name = (name && *name) ? name : NULL;
-    new->action = (action && *action) ? action : NULL;
-    new->item = NULL;
-    new->next = NULL;
-    return new;
+    newForm->name = (name && *name) ? name : NULL;
+    newForm->action = (action && *action) ? action : NULL;
+    newForm->item = NULL;
+    newForm->next = NULL;
+    return newForm;
 }
 
 static struct pre_form_item *
 add_pre_form_item(struct pre_form *pf, struct pre_form_item *prev, int type,
 		  char *name, char *value, char *checked)
 {
-    struct pre_form_item *new;
+    struct pre_form_item *newForm;
 
     if (!pf)
 	return NULL;
     if (prev)
-	new = prev->next = New(struct pre_form_item);
+	newForm = prev->next = New(struct pre_form_item);
     else
-	new = pf->item = New(struct pre_form_item);
-    new->type = type;
-    new->name = name;
-    new->value = value;
+	newForm = pf->item = New(struct pre_form_item);
+    newForm->type = type;
+    newForm->name = name;
+    newForm->value = value;
     if (checked && *checked && (!strcmp(checked, "0") ||
 				strcasecmp(checked, "off")
 				|| !strcasecmp(checked, "no")))
-	new->checked = 0;
+	newForm->checked = 0;
     else
-	new->checked = 1;
-    new->next = NULL;
-    return new;
+	newForm->checked = 1;
+    newForm->next = NULL;
+    return newForm;
 }
 
 /*

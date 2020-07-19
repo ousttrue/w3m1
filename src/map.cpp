@@ -2,6 +2,7 @@
 /*
  * client-side image maps
  */
+extern "C" {
 #include "fm.h"
 #include "indep.h"
 #include "frame.h"
@@ -9,6 +10,7 @@
 #include "file.h"
 #include "etc.h"
 #include <math.h>
+}
 
 MapList *
 searchMapList(Buffer *buf, char *name)
@@ -313,7 +315,7 @@ newMapArea(char *url, char *target, char *alt, char *shape, char *coords)
 
     a->url = url;
     a->target = target;
-    a->alt = alt ? alt : "";
+    a->alt = alt ? alt : (char*)"";
 #ifdef USE_IMAGE
     a->shape = SHAPE_RECT;
     if (shape) {
