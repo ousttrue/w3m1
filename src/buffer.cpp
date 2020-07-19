@@ -131,7 +131,7 @@ namedBuffer(Buffer *first, char *name)
 }
 
 /* 
- * deleteBuffer: delete buffer
+ * deleteBuffer: delete buffer & return fistbuffer
  */
 Buffer *
 deleteBuffer(Buffer *first, Buffer *delbuf)

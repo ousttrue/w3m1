@@ -577,7 +577,7 @@ void selBuf()
     ok = FALSE;
     do
     {
-        buf = selectBuffer(Firstbuf, Currentbuf, &cmd);
+        buf = selectBuffer(Firstbuf(), Currentbuf, &cmd);
         switch (cmd)
         {
         case 'B':
@@ -590,11 +590,11 @@ void selBuf()
             break;
         case 'D':
             delBuffer(buf);
-            if (Firstbuf == NULL)
+            if (Firstbuf() == NULL)
             {
                 /* No more buffer */
-                Firstbuf = nullBuffer();
-                Currentbuf = Firstbuf;
+                SetFirstbuf(nullBuffer());
+                Currentbuf = Firstbuf();
             }
             break;
         case 'q':
@@ -605,7 +605,8 @@ void selBuf()
             break;
         }
     } while (!ok);
-    for (buf = Firstbuf; buf != NULL; buf = buf->nextBuffer)
+
+    for (buf = Firstbuf(); buf != NULL; buf = buf->nextBuffer)
     {
         if (buf == Currentbuf)
             continue;
@@ -1119,7 +1120,7 @@ void nextBf()
     int i;
     for (i = 0; i < PREC_NUM(); i++)
     {
-        buf = prevBuffer(Firstbuf, Currentbuf);
+        buf = prevBuffer(Firstbuf(), Currentbuf);
         if (!buf)
         {
             if (i == 0)
@@ -1688,7 +1689,7 @@ void reload()
         return;
     }
     if (fbuf != NULL)
-        Firstbuf = deleteBuffer(Firstbuf, fbuf);
+        SetFirstbuf(deleteBuffer(Firstbuf(), fbuf));
     repBuffer(Currentbuf, buf);
     if ((buf->type != NULL) && (sbuf.type != NULL) &&
         ((!strcasecmp(buf->type, "text/plain") &&
@@ -1697,7 +1698,7 @@ void reload()
           !strcasecmp(sbuf.type, "text/plain")))) {
         vwSrc();
         if (Currentbuf != buf)
-            Firstbuf = deleteBuffer(Firstbuf, buf);
+            SetFirstbuf(deleteBuffer(Firstbuf(), buf));
     }
     Currentbuf->search_header = sbuf.search_header;
     Currentbuf->form_submit = sbuf.form_submit;
@@ -2230,7 +2231,7 @@ void ldDL()
         replace = TRUE;
     if (!FirstDL) {
         if (replace) {
-            if (Currentbuf == Firstbuf && Currentbuf->nextBuffer == NULL) {
+            if (Currentbuf == Firstbuf() && Currentbuf->nextBuffer == NULL) {
                 if (nTab > 1)
                     deleteTab(CurrentTab);
             }

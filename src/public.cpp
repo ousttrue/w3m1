@@ -452,12 +452,13 @@ void pushBuffer(Buffer *buf)
 #endif
     if (clear_buffer)
         tmpClearBuffer(Currentbuf);
-    if (Firstbuf == Currentbuf)
+    if (Firstbuf() == Currentbuf)
     {
-        buf->nextBuffer = Firstbuf;
-        Firstbuf = Currentbuf = buf;
+        buf->nextBuffer = Firstbuf();
+        Currentbuf = buf;
+        SetFirstbuf(buf);
     }
-    else if ((b = prevBuffer(Firstbuf, Currentbuf)) != NULL)
+    else if ((b = prevBuffer(Firstbuf(), Currentbuf)) != NULL)
     {
         b->nextBuffer = buf;
         buf->nextBuffer = Currentbuf;
@@ -737,9 +738,9 @@ void delBuffer(Buffer *buf)
         return;
     if (Currentbuf == buf)
         Currentbuf = buf->nextBuffer;
-    Firstbuf = deleteBuffer(Firstbuf, buf);
+    SetFirstbuf(deleteBuffer(Firstbuf(), buf));
     if (!Currentbuf)
-        Currentbuf = Firstbuf;
+        Currentbuf = Firstbuf();
 }
 
 /* Go to specified line */
@@ -1954,7 +1955,7 @@ Str currentURL(void)
 
 void repBuffer(Buffer *oldbuf, Buffer *buf)
 {
-    Firstbuf = replaceBuffer(Firstbuf, oldbuf, buf);
+    SetFirstbuf(replaceBuffer(Firstbuf(), oldbuf, buf));
     Currentbuf = buf;
 }
 
@@ -2353,7 +2354,7 @@ void followTab(TabBuffer *tab)
         c = Currentbuf;
         p = prevBuffer(c, buf);
         p->nextBuffer = NULL;
-        Firstbuf = buf;
+        SetFirstbuf(buf);
         deleteTab(CurrentTab);
         CurrentTab = tab;
         for (buf = p; buf; buf = p)
@@ -2525,7 +2526,7 @@ void tabURL0(TabBuffer *tab, char *prompt, int relative)
         c = Currentbuf;
         p = prevBuffer(c, buf);
         p->nextBuffer = NULL;
-        Firstbuf = buf;
+        SetFirstbuf(buf);
         deleteTab(CurrentTab);
         CurrentTab = tab;
         for (buf = p; buf; buf = p)
@@ -2945,11 +2946,11 @@ void deleteFiles()
 
     for (CurrentTab = FirstTab; CurrentTab; CurrentTab = CurrentTab->nextTab)
     {
-        while (Firstbuf && Firstbuf != NO_BUFFER)
+        while (HasFirstBuffer())
         {
-            buf = Firstbuf->nextBuffer;
-            discardBuffer(Firstbuf);
-            Firstbuf = buf;
+            buf = Firstbuf()->nextBuffer;
+            discardBuffer(Firstbuf());
+            SetFirstbuf(buf);
         }
     }
     while ((f = popText(fileToDelete)) != NULL)
@@ -3674,3 +3675,24 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 void pcmap(void)
 {
 }
+
+Buffer *Firstbuf()
+{
+    return CurrentTab->firstBuffer;
+}
+
+int HasFirstBuffer()
+{
+    return Firstbuf() && Firstbuf() != NO_BUFFER    ;
+}
+
+// int NoFirstBuffer()
+// {
+//     return !Firstbuf() || Firstbuf() == NO_BUFFER;    
+// }
+
+void SetFirstbuf(Buffer *buffer)
+{
+    CurrentTab->firstBuffer = buffer;
+}
+

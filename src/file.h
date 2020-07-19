@@ -121,21 +121,8 @@ int matchattr(char *p, char *attr, int len, Str *value);
 void readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu);
 char *checkHeader(Buffer *buf, char *field);
 Buffer *newBuffer(int width);
-Buffer *nullBuffer(void);
-void clearBuffer(Buffer *buf);
-void discardBuffer(Buffer *buf);
-Buffer *namedBuffer(Buffer *first, char *name);
-Buffer *deleteBuffer(Buffer *first, Buffer *delbuf);
-Buffer *replaceBuffer(Buffer *first, Buffer *delbuf, Buffer *newbuf);
-Buffer *nthBuffer(Buffer *firstbuf, int n);
-void gotoRealLine(Buffer *buf, int n);
-void gotoLine(Buffer *buf, int n);
-Buffer *selectBuffer(Buffer *firstbuf, Buffer *currentbuf,
-                     char *selectchar);
 
-void reshapeBuffer(Buffer *buf);
-void copyBuffer(Buffer *a, Buffer *b);
-Buffer *prevBuffer(Buffer *first, Buffer *buf);
+
 int writeBufferCache(Buffer *buf);
 int readBufferCache(Buffer *buf);
 void fmTerm(void);

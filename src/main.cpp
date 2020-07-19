@@ -1068,7 +1068,8 @@ int main(int argc, char **argv, char **envp)
         {
             FirstTab = LastTab = CurrentTab = newTab();
             nTab = 1;
-            Firstbuf = Currentbuf = newbuf;
+            Currentbuf = newbuf;
+            SetFirstbuf(newbuf);
         }
         else if (open_new_tab)
         {
@@ -1115,19 +1116,20 @@ int main(int argc, char **argv, char **envp)
             FirstTab = LastTab = CurrentTab = newTab();
             nTab = 1;
         }
-        if (!Firstbuf || Firstbuf == NO_BUFFER)
+        if (!HasFirstBuffer())
         {
-            Firstbuf = Currentbuf = newBuffer(INIT_BUFFER_WIDTH);
+            Currentbuf = newBuffer(INIT_BUFFER_WIDTH);
+            SetFirstbuf(Currentbuf);
             Currentbuf->bufferprop = BP_INTERNAL | BP_NO_URL;
             Currentbuf->buffername = DOWNLOAD_LIST_TITLE;
         }
         else
-            Currentbuf = Firstbuf;
+            Currentbuf = Firstbuf();
         ldDL();
     }
     else
         CurrentTab = FirstTab;
-    if (!FirstTab || !Firstbuf || Firstbuf == NO_BUFFER)
+    if (!FirstTab || !HasFirstBuffer())
     {
         if (newbuf == NO_BUFFER)
         {
@@ -1159,7 +1161,7 @@ int main(int argc, char **argv, char **envp)
     WcOption.auto_detect = auto_detect;
 #endif
 
-    Currentbuf = Firstbuf;
+    Currentbuf = Firstbuf();
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
     if (line_str)
     {

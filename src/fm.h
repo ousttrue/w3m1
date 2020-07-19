@@ -640,10 +640,6 @@ global char *index_file init(NULL);
 
 global char *CurrentDir;
 global int CurrentPid;
-/*
- * global Buffer *Currentbuf;
- * global Buffer *Firstbuf;
- */
 global TabBuffer *CurrentTab;
 global TabBuffer *FirstTab;
 global TabBuffer *LastTab;
@@ -654,7 +650,6 @@ global int nTab;
 global int TabCols init(10);
 #define NO_TABBUFFER ((TabBuffer *)1)
 #define Currentbuf (CurrentTab->currentBuffer)
-#define Firstbuf (CurrentTab->firstBuffer)
 global DownloadList *FirstDL init(NULL);
 global DownloadList *LastDL init(NULL);
 

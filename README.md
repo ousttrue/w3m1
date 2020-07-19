@@ -139,6 +139,11 @@ std::unordered_map<std::string, Command> g_commandMap;
 すべての関数定義が投入されているので、各ソースのヘッダに分配する。
 DEFUN 由来の `void xxx(void)` という関数は、 `commands.h` に移ったので、
 `proto.h` から削除する。
+適当に `file.h` ほかに分配して削除した。
+
+## Buffer
+
+`CurrentTab`, `FirstTab`, `LastTab`, `CurrentBuffer`, `FirstBuffer`, `LastBuffer` マクロを関数化する。
 
 ## file.c
 
