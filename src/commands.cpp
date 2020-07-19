@@ -20,6 +20,7 @@ extern "C"
 #include "url.h"
 #include "display.h"
 #include "tab.h"
+#include "cookie.h"
 #include <signal.h>
 
 void nulcmd()

@@ -4,6 +4,7 @@
 #include "url.h"
 #include "file.h"
 #include "indep.h"
+#include "cookie.h"
 #ifndef __MINGW32_VERSION
 #include <sys/types.h>
 #include <sys/socket.h>

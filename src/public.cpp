@@ -17,6 +17,7 @@ extern "C"
 #include "image.h"
 #include "commands.h"
 #include "url.h"
+#include "cookie.h"
 }
 
 int searchKeyNum(void)

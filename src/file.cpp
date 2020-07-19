@@ -20,6 +20,7 @@ extern "C" {
 #include "dispatcher.h"
 #include "url.h"
 #include "entity.h"
+#include "cookie.h"
 }
 #include <sys/types.h>
 #include <signal.h>

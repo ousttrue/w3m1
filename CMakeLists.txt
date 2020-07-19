@@ -74,6 +74,8 @@ add_executable(w3m
     src/buffer.cpp
     src/tab.cpp
     src/file.cpp
+    src/backend.cpp
+    src/cookie.cpp
     # src/defun.c
     src/indep.c
     src/rc.c
@@ -102,9 +104,7 @@ add_executable(w3m
     src/regex.c
     src/news.c
     src/mouse.c
-    src/cookie.c
     src/history.c
-    src/backend.c
     src/indep.c
     src/version.c
     src/istream.c

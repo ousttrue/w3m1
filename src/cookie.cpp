@@ -9,6 +9,7 @@
  *   [DRAFT 12] http://www.ics.uci.edu/pub/ietf/http/draft-ietf-http-state-man-mec-12.txt
  */
 
+extern "C" {
 #include "fm.h"
 #include "indep.h"
 #include "rc.h"
@@ -17,12 +18,12 @@
 #include "html.h"
 #include "commands.h"
 #include "file.h"
-
-#ifdef USE_COOKIE
-#include <time.h>
 #include "local.h"
 #include "regex.h"
 #include "myctype.h"
+}
+
+#include <time.h>
 
 static int is_saved = 1;
 
@@ -673,7 +674,7 @@ cookie_list_panel(void)
 	    Strcat_charp(src, "</td></tr>");
 	}
 	Strcat_charp(src, "<tr><td width=\"80\"><b>Secure:</b></td><td>");
-	Strcat_charp(src, (p->flag & COO_SECURE) ? "Yes" : "No");
+	Strcat_charp(src, (p->flag & COO_SECURE) ? (char*)"Yes" : (char*)"No");
 	Strcat_charp(src, "</td></tr><tr><td>");
 
 	Strcat(src, Sprintf("<tr><td width=\"80\"><b>Use:</b></td><td>"
@@ -735,4 +736,3 @@ check_cookie_accept_domain(char *domain)
     }
     return 1;
 }
-#endif				/* USE_COOKIE */
