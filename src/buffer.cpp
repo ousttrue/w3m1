@@ -9,6 +9,7 @@ extern "C"
 #include "display.h"
 #include "terms.h"
 #include "html.h"
+#include "ctrlcode.h"
 }
 
 char *NullLine = "";

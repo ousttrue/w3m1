@@ -11,6 +11,7 @@ extern "C"
 #include "map.h"
 #include "etc.h"
 #include "display.h"
+#include "ctrlcode.h"
 }
 #include <signal.h>
 #include <math.h>

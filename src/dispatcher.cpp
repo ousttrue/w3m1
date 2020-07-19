@@ -7,6 +7,7 @@ extern "C"
 #include "commands.h"
 #include "file.h"
 #include "rc.h"
+#include "ctrlcode.h"
 }
 
 static int g_prec_num = 0;

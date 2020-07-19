@@ -23,6 +23,7 @@ extern "C" {
 #include "cookie.h"
 #include "terms.h"
 #include "image.h"
+#include "ctrlcode.h"
 }
 #include <sys/types.h>
 #include <signal.h>

@@ -1,6 +1,7 @@
 extern "C" {
 #include "fm.h"
 #include "indep.h"
+#include "ctrlcode.h"
 #include "symbol.h"
 #include "Symbols/alt.sym"
 #include "Symbols/graph.sym"

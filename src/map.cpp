@@ -9,6 +9,7 @@ extern "C" {
 #include "menu.h"
 #include "file.h"
 #include "etc.h"
+#include "ctrlcode.h"
 #include <math.h>
 }
 

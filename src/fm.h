@@ -26,7 +26,6 @@
 #include "history.h"
 
 
-#include "ctrlcode.h"
 #include <gc.h>
 #include "Str.h"
 #ifdef USE_M17N

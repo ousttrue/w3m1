@@ -10,6 +10,7 @@ extern "C"
 #include "fm.h"
 #include "ucs.h"
 #include "utf8.h"
+#include "ctrlcode.h"
 #endif /* DUMMY */
 
     /* *INDENT-OFF* */

@@ -12,6 +12,7 @@ extern "C" {
 #include "indep.h"
 #include "public.h"
 #include "myctype.h"
+#include "ctrlcode.h"
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
