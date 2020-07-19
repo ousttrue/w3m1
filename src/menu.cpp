@@ -18,6 +18,8 @@ extern "C" {
 #include "symbol.h"
 #include "file.h"
 #include "html.h"
+#include "wc.h"
+#include "wtf.h"
 }
 
 #ifdef USE_MOUSE

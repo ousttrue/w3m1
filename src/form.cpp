@@ -17,6 +17,8 @@ extern "C" {
 #include "local.h"
 #include "regex.h"
 #include "menu.h"
+#include "wc.h"
+#include "wtf.h"
 extern Str *textarea_str;
 extern FormSelectOption *select_option;
 }

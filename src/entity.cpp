@@ -11,6 +11,8 @@ extern "C"
 #include "ucs.h"
 #include "utf8.h"
 #include "ctrlcode.h"
+#include "wc.h"
+#include "wtf.h"
 #endif /* DUMMY */
 
     /* *INDENT-OFF* */

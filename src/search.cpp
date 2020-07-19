@@ -4,6 +4,8 @@ extern "C" {
 #include "regex.h"
 #include "file.h"
 #include "public.h"
+#include "wc.h"
+#include "wtf.h"
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>

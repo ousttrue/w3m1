@@ -10,6 +10,8 @@ extern "C" {
 #include "public.h"
 #include "terms.h"
 #include "ctrlcode.h"
+#include "wc.h"
+#include "wtf.h"
 }
 
 #define STR_LEN	1024

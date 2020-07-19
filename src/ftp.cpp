@@ -17,6 +17,8 @@ extern "C" {
 #include "html.h"
 #include "myctype.h"
 #include "terms.h"
+#include "wc.h"
+#include "wtf.h"
 }
 
 #ifdef DEBUG

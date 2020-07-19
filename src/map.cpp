@@ -10,6 +10,8 @@ extern "C" {
 #include "file.h"
 #include "etc.h"
 #include "ctrlcode.h"
+#include "wc.h"
+#include "wtf.h"
 #include <math.h>
 }
 

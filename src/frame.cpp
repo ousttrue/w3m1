@@ -11,6 +11,8 @@ extern "C"
 #include "terms.h"
 #include <signal.h>
 #include <setjmp.h>
+#include "wc.h"
+#include "wtf.h"
 }
 
 static JMP_BUF AbortLoading;

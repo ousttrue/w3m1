@@ -8,6 +8,8 @@ extern "C"
 #include "file.h"
 #include "rc.h"
 #include "ctrlcode.h"
+#include "wc.h"
+#include "wtf.h"
 }
 
 static int g_prec_num = 0;

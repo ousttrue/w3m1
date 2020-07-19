@@ -13,6 +13,8 @@ extern "C" {
 #include "public.h"
 #include "myctype.h"
 #include "ctrlcode.h"
+#include "wc.h"
+#include "wtf.h"
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>

@@ -19,6 +19,8 @@ extern "C" {
 #include "commands.h"
 #include "url.h"
 #include "file.h"
+#include "wc.h"
+#include "wtf.h"
 #include <stdlib.h>
 }
 

@@ -11,6 +11,8 @@ extern "C"
 #include "file.h"
 #include "terms.h"
 #include "cookie.h"
+#include "wc.h"
+#include "wtf.h"
 }
 
 /* Prototype declaration of internal functions */

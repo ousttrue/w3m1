@@ -10,6 +10,8 @@ extern "C"
 #include "terms.h"
 #include "html.h"
 #include "ctrlcode.h"
+#include "wc.h"
+#include "wtf.h"
 }
 
 char *NullLine = "";

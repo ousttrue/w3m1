@@ -10,6 +10,8 @@ extern "C"
 #include "file.h"
 #include "form.h"
 #include "buffer.h"
+#include "wc.h"
+#include "wtf.h"
 }
 
 #define FIRST_ANCHOR_SIZE 30

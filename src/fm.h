@@ -24,17 +24,8 @@
 #include <unistd.h>
 #include "config.h"
 #include "history.h"
-
-
-#include <gc.h>
-#include "Str.h"
-#ifdef USE_M17N
 #include "wc.h"
 #include "wtf.h"
-#else
-typedef int wc_ces;	/* XXX: not used */
-#endif
-
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -56,17 +47,6 @@ typedef int wc_ces;	/* XXX: not used */
 # define gettext(Text) Text
 #endif
 
-
-
-
-#ifndef HAVE_BCOPY
-void bcopy(const void *, void *, int);
-void bzero(void *, int);
-#endif				/* HAVE_BCOPY */
-#ifdef __EMX__
-#include <strings.h>		/* for bzero() and bcopy() */
-#endif
-
 #ifdef MAINPROGRAM
 #define global
 #define init(x) =(x)
@@ -74,8 +54,6 @@ void bzero(void *, int);
 #define global extern
 #define init(x)
 #endif				/* not MAINPROGRAM */
-
-#define DEFUN(funcname, macroname, docstring) void funcname(void)
 
 /* 
  * Constants.

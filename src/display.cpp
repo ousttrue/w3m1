@@ -12,6 +12,8 @@ extern "C"
 #include "etc.h"
 #include "display.h"
 #include "ctrlcode.h"
+#include "wc.h"
+#include "wtf.h"
 }
 #include <signal.h>
 #include <math.h>

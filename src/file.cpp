@@ -24,6 +24,8 @@ extern "C" {
 #include "terms.h"
 #include "image.h"
 #include "ctrlcode.h"
+#include "wc.h"
+#include "wtf.h"
 }
 #include <sys/types.h>
 #include <signal.h>

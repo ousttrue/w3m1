@@ -12,6 +12,8 @@ extern "C" {
 #include "local.h"
 #include "tagtable.h"
 #include "terms.h"
+#include "wc.h"
+#include "wtf.h"
 }
 
 // #include <sys/socket.h>
