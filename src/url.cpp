@@ -7,6 +7,7 @@ extern "C" {
 #include "indep.h"
 #include "cookie.h"
 #include "terms.h"
+#include "form.h"
 #ifndef __MINGW32_VERSION
 #include <sys/types.h>
 #include <sys/socket.h>

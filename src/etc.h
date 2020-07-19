@@ -1,6 +1,6 @@
 #pragma once
 #include "config.h"
-#include "line.h"
+#include "types.h"
 
 pid_t open_pipe_rw(FILE **fr, FILE **fw);
 int next_status(char c, int *status);

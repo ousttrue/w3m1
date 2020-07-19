@@ -22,6 +22,7 @@ extern "C" {
 #include "entity.h"
 #include "cookie.h"
 #include "terms.h"
+#include "image.h"
 }
 #include <sys/types.h>
 #include <signal.h>

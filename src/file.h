@@ -1,7 +1,5 @@
 #pragma once
-#include "parsetagx.h"
-#include "form.h"
-#include "tab.h"
+#include "types.h"
 
 typedef struct http_request {
     char command;
@@ -181,11 +179,7 @@ Str correct_irrtag(int status);
 #ifdef USE_MIGEMO
 void init_migemo(void);
 #endif
-#ifdef USE_M17N
 char *conv_search_string(char *str, wc_ces f_ces);
-#else
-#define conv_search_string(str, f_ces) str
-#endif
 int forwardSearch(Buffer *buf, char *str);
 int backwardSearch(Buffer *buf, char *str);
 void pcmap(void);
@@ -241,10 +235,8 @@ MapList *searchMapList(Buffer *buf, char *name);
 #ifndef MENU_MAP
 Buffer *follow_map_panel(Buffer *buf, char *name);
 #endif
-#ifdef USE_IMAGE
 int getMapXY(Buffer *buf, Anchor *a, int *x, int *y);
 MapArea *retrieveCurrentMapArea(Buffer *buf);
-#endif
 Anchor *retrieveCurrentMap(Buffer *buf);
 MapArea *newMapArea(char *url, char *target, char *alt, char *shape,
                     char *coords);
@@ -296,25 +288,13 @@ char *guessContentType(char *filename);
 TextList *make_domain_list(char *domain_list);
 int check_no_proxy(char *domain);
 InputStream openFTPStream(ParsedURL *pu, URLFile *uf);
-#ifdef USE_M17N
 Str loadFTPDir(ParsedURL *pu, wc_ces *charset);
-#else
-Str loadFTPDir0(ParsedURL *pu);
-#define loadFTPDir(pu, charset) loadFTPDir0(pu)
-#endif
 void closeFTP(void);
 void disconnectFTP(void);
-#ifdef USE_NNTP
 InputStream openNewsStream(ParsedURL *pu);
-#ifdef USE_M17N
 Str loadNewsgroup(ParsedURL *pu, wc_ces *charset);
-#else
-Str loadNewsgroup0(ParsedURL *pu);
-#define loadNewsgroup(pu, charset) loadNewsgroup0(pu)
-#endif
 void closeNews(void);
 void disconnectNews(void);
-#endif
 AnchorList *putAnchor(AnchorList *al, char *url, char *target,
                       Anchor **anchor_return, char *referer,
                       char *title, unsigned char key, int line,
@@ -341,24 +321,17 @@ char *reAnchorNewsheader(Buffer *buf);
 void addMultirowsForm(Buffer *buf, AnchorList *al);
 Anchor *closest_next_anchor(AnchorList *a, Anchor *an, int x, int y);
 Anchor *closest_prev_anchor(AnchorList *a, Anchor *an, int x, int y);
-#ifdef USE_IMAGE
+
 void addMultirowsImg(Buffer *buf, AnchorList *al);
-#endif
+
 Buffer *link_list_panel(Buffer *buf);
 
 Str decodeB(char **ww);
 Str decodeQ(char **ww);
 Str decodeQP(char **ww);
 Str decodeU(char **ww);
-#ifdef USE_M17N
 Str decodeWord(char **ow, wc_ces *charset);
 Str decodeMIME(Str orgstr, wc_ces *charset);
-#else
-Str decodeWord0(char **ow);
-Str decodeMIME0(Str orgstr);
-#define decodeWord(ow, charset) decodeWord0(ow)
-#define decodeMIME(orgstr, charset) decodeMIME0(orgstr)
-#endif
 Str encodeB(char *a);
 int set_param_option(char *option);
 char *get_param_option(char *name);
@@ -392,12 +365,7 @@ void mySystem(char *command, int background);
 Str myExtCommand(char *cmd, char *arg, int redirect);
 Str myEditor(char *cmd, char *file, int line);
 char *file_to_url(char *file);
-#ifdef USE_M17N
 char *url_unquote_conv(char *url, wc_ces charset);
-#else
-char *url_unquote_conv0(char *url);
-#define url_unquote_conv(url, charset) url_unquote_conv0(url)
-#endif
 char *expandName(char *name);
 Str tmpfname(int type, char *ext);
 time_t mymktime(char *timestr);

@@ -41,31 +41,7 @@
 				 * within one document */
 #endif				/* MENU_SELECT */
 
-typedef struct form_list {
-    struct form_item_list *item;
-    struct form_item_list *lastitem;
-    int method;
-    Str action;
-    char *target;
-    char *name;
-#ifdef USE_M17N
-    wc_ces charset;
-#endif
-    int enctype;
-    struct form_list *next;
-    int nitems;
-    char *body;
-    char *boundary;
-    unsigned long length;
-} FormList;
-
 #ifdef MENU_SELECT
-typedef struct form_select_option_item {
-    Str value;
-    Str label;
-    int checked;
-    struct form_select_option_item *next;
-} FormSelectOptionItem;
 
 typedef struct form_select_option {
     FormSelectOptionItem *first;
@@ -78,24 +54,6 @@ void updateSelectOption(struct form_item_list *fi, FormSelectOptionItem *item);
 int formChooseOptionByMenu(struct form_item_list *fi, int x, int y);
 #endif				/* MENU_SELECT */
 
-typedef struct form_item_list {
-    int type;
-    Str name;
-    Str value, init_value;
-    int checked, init_checked;
-    int accept;
-    int size;
-    int rows;
-    int maxlength;
-    int readonly;
-#ifdef MENU_SELECT
-    FormSelectOptionItem *select_option;
-    Str label, init_label;
-    int selected, init_selected;
-#endif				/* MENU_SELECT */
-    struct form_list *parent;
-    struct form_item_list *next;
-} FormItemList;
 
 struct form_item_list *formList_addInput(struct form_list *fl,
 						struct parsed_tag *tag);

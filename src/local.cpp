@@ -13,6 +13,7 @@ extern "C" {
 #include <errno.h>
 #include <unistd.h>
 #include "local.h"
+#include "form.h"
 }
 
 #ifdef __MINGW32_VERSION

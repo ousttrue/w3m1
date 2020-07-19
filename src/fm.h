@@ -431,20 +431,6 @@ struct portlist {
     struct portlist *next;
 };
 
-struct cookie {
-    ParsedURL url;
-    Str name;
-    Str value;
-    time_t expires;
-    Str path;
-    Str domain;
-    Str comment;
-    Str commentURL;
-    struct portlist *portl;
-    char version;
-    char flag;
-    struct cookie *next;
-};
 #define COO_USE		1
 #define COO_SECURE	2
 #define COO_DOMAIN	4
@@ -535,7 +521,7 @@ global char QuietMessage init(FALSE);
 global char TrapSignal init(TRUE);
 
 
-
+#include "types.h"
 
 global char *HTTP_proxy init(NULL);
 #ifdef USE_SSL
@@ -846,28 +832,20 @@ global int is_redisplay init(FALSE);
 global int clear_buffer init(TRUE);
 global double pixel_per_char init(DEFAULT_PIXEL_PER_CHAR);
 global int set_pixel_per_char init(FALSE);
-#ifdef USE_IMAGE
+
 global double pixel_per_line init(DEFAULT_PIXEL_PER_LINE);
 global int set_pixel_per_line init(FALSE);
 global double image_scale init(100);
-#endif
+
 global int use_lessopen init(FALSE);
 
 global char *keymap_file init(KEYMAP_FILE);
 
-#ifdef USE_M17N
 #define get_mctype(c) ((Lineprop)wtf_type((wc_uchar *)(c)) << 8)
 #define get_mclen(c) wtf_len1((wc_uchar *)(c))
 #define get_mcwidth(c) wtf_width((wc_uchar *)(c))
 #define get_strwidth(c) wtf_strwidth((wc_uchar *)(c))
 #define get_Str_strwidth(c) wtf_strwidth((wc_uchar *)((c)->ptr))
-#else
-#define get_mctype(c) (IS_CNTRL(*(c)) ? PC_CTRL : PC_ASCII)
-#define get_mclen(c) 1
-#define get_mcwidth(c) 1
-#define get_strwidth(c) strlen(c)
-#define get_Str_strwidth(c) ((c)->length)
-#endif
 
 global int FollowRedirection init(10);
 
