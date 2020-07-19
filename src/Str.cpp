@@ -13,16 +13,15 @@
  * limited to warranty of fitness of purpose, or merchantability, or
  * results obtained from use of this software.
  */
+extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <gc.h>
 #include <stdarg.h>
 #include <string.h>
-#ifdef __EMX__			/* or include "fm.h" for HAVE_BCOPY? */
-#include <strings.h>
-#endif
 #include "Str.h"
 #include "myctype.h"
+}
 
 #define INITIAL_STR_SIZE 32
 
@@ -36,8 +35,8 @@
 Str
 Strnew()
 {
-    Str x = GC_MALLOC(sizeof(struct _Str));
-    x->ptr = GC_MALLOC_ATOMIC(INITIAL_STR_SIZE);
+    Str x = (Str)GC_MALLOC(sizeof(struct _Str));
+    x->ptr = (char*)GC_MALLOC_ATOMIC(INITIAL_STR_SIZE);
     x->ptr[0] = '\0';
     x->area_size = INITIAL_STR_SIZE;
     x->length = 0;
@@ -47,8 +46,8 @@ Strnew()
 Str
 Strnew_size(int n)
 {
-    Str x = GC_MALLOC(sizeof(struct _Str));
-    x->ptr = GC_MALLOC_ATOMIC(n + 1);
+    Str x = (Str)GC_MALLOC(sizeof(struct _Str));
+    x->ptr = (char*)GC_MALLOC_ATOMIC(n + 1);
     x->ptr[0] = '\0';
     x->area_size = n + 1;
     x->length = 0;
@@ -63,9 +62,9 @@ Strnew_charp(char *p)
 
     if (p == NULL)
 	return Strnew();
-    x = GC_MALLOC(sizeof(struct _Str));
+    x = (Str)GC_MALLOC(sizeof(struct _Str));
     n = strlen(p) + 1;
-    x->ptr = GC_MALLOC_ATOMIC(n);
+    x->ptr = (char*)GC_MALLOC_ATOMIC(n);
     x->area_size = n;
     x->length = n - 1;
     bcopy((void *)p, (void *)x->ptr, n);
@@ -93,8 +92,8 @@ Strnew_charp_n(char *p, int n)
 
     if (p == NULL)
 	return Strnew_size(n);
-    x = GC_MALLOC(sizeof(struct _Str));
-    x->ptr = GC_MALLOC_ATOMIC(n + 1);
+    x = (Str)GC_MALLOC(sizeof(struct _Str));
+    x->ptr = (char*)GC_MALLOC_ATOMIC(n + 1);
     x->area_size = n + 1;
     x->length = n;
     bcopy((void *)p, (void *)x->ptr, n);
@@ -132,7 +131,7 @@ Strcopy(Str x, Str y)
     STR_LENGTH_CHECK(y);
     if (x->area_size < y->length + 1) {
 	GC_free(x->ptr);
-	x->ptr = GC_MALLOC_ATOMIC(y->length + 1);
+	x->ptr = (char*)GC_MALLOC_ATOMIC(y->length + 1);
 	x->area_size = y->length + 1;
     }
     bcopy((void *)y->ptr, (void *)x->ptr, y->length + 1);
@@ -152,7 +151,7 @@ Strcopy_charp(Str x, char *y)
     len = strlen(y);
     if (x->area_size < len + 1) {
 	GC_free(x->ptr);
-	x->ptr = GC_MALLOC_ATOMIC(len + 1);
+	x->ptr = (char*)GC_MALLOC_ATOMIC(len + 1);
 	x->area_size = len + 1;
     }
     bcopy((void *)y, (void *)x->ptr, len + 1);
@@ -171,7 +170,7 @@ Strcopy_charp_n(Str x, char *y, int n)
     }
     if (x->area_size < len + 1) {
 	GC_free(x->ptr);
-	x->ptr = GC_MALLOC_ATOMIC(len + 1);
+	x->ptr = (char*)GC_MALLOC_ATOMIC(len + 1);
 	x->area_size = len + 1;
     }
     bcopy((void *)y, (void *)x->ptr, n);
@@ -191,7 +190,7 @@ Strcat_charp_n(Str x, char *y, int n)
     if (x->area_size < newlen) {
 	char *old = x->ptr;
 	newlen = newlen * 3 / 2;
-	x->ptr = GC_MALLOC_ATOMIC(newlen);
+	x->ptr =(char*)GC_MALLOC_ATOMIC(newlen);
 	x->area_size = newlen;
 	bcopy((void *)old, (void *)x->ptr, x->length);
 	GC_free(old);
@@ -235,7 +234,7 @@ Strgrow(Str x)
     newlen = x->length * 6 / 5;
     if (newlen == x->length)
 	newlen += 2;
-    x->ptr = GC_MALLOC_ATOMIC(newlen);
+    x->ptr = (char*)GC_MALLOC_ATOMIC(newlen);
     x->area_size = newlen;
     bcopy((void *)old, (void *)x->ptr, x->length);
     GC_free(old);

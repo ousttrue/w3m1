@@ -5,9 +5,9 @@ set(W3M_PREFIX $ENV{HOME}/local)
    
 add_executable(w3mbookmark
     src/w3mbookmark.c
-    src/Str.c
-    src/indep.c
-    src/regex.c
+    src/Str.cpp
+    src/indep.cpp
+    src/regex.cpp
     src/textlist.c
     src/parsetag.c
     src/myctype.c
@@ -76,11 +76,11 @@ add_executable(w3m
     src/file.cpp
     src/backend.cpp
     src/cookie.cpp
+    src/indep.cpp
+    src/rc.cpp
+    src/Str.cpp
+    src/regex.cpp
     # src/defun.c
-    src/indep.c
-    src/rc.c
-    src/Str.c
-    src/regex.c
     src/textlist.c
     src/parsetag.c
     src/myctype.c
@@ -101,11 +101,9 @@ add_executable(w3m
     src/url.c
     src/ftp.c
     src/mimehead.c
-    src/regex.c
     src/news.c
     src/mouse.c
     src/history.c
-    src/indep.c
     src/version.c
     src/istream.c
     src/keybind.c

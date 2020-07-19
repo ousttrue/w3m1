@@ -1,4 +1,5 @@
 /* $Id: indep.c,v 1.38 2007/05/23 15:06:05 inu Exp $ */
+extern "C" {
 #include "fm.h"
 #include <stdio.h>
 #ifndef __MINGW32_VERSION
@@ -12,6 +13,7 @@
 #include <gc.h>
 #include "myctype.h"
 #include "entity.h"
+}
 
 unsigned char QUOTE_MAP[0x100] = {
     /* NUL SOH STX ETX EOT ENQ ACK BEL  BS  HT  LF  VT  FF  CR  SO  SI */
@@ -479,7 +481,7 @@ getescapecmd(char **s)
     int ch = getescapechar(s);
 
     if (ch >= 0)
-	return conv_entity(ch);
+	return (char*)conv_entity(ch);
 
     if (*save != '&')
 	tmp = Strnew_charp("&");
@@ -537,7 +539,7 @@ html_unquote(char *str)
     return str;
 }
 
-static char xdigit[0x10] = "0123456789ABCDEF";
+static const char xdigit[0x11] = "0123456789ABCDEF";
 
 #define url_unquote_char(pstr) \
   ((IS_XDIGIT((*(pstr))[1]) && IS_XDIGIT((*(pstr))[2])) ? \

@@ -2,6 +2,7 @@
 /* 
  * Initialization file etc.
  */
+extern "C" {
 #include "fm.h"
 #include "rc.h"
 #include "indep.h"
@@ -19,6 +20,7 @@
 #include "url.h"
 #include "file.h"
 #include <stdlib.h>
+}
 
 struct param_ptr {
     char *name;
@@ -866,7 +868,7 @@ show_params(FILE * fp)
 	    case P_CHARINT:
 	    case P_NZINT:
 		t = (sections[j].params[i].inputtype ==
-		     PI_ONOFF) ? "bool" : "number";
+		     PI_ONOFF) ? (char*)"bool" : (char*)"number";
 		break;
 	    case P_CHAR:
 		t = "char";

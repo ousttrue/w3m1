@@ -48,7 +48,6 @@ extern "C"
     Hist *TextHist;
 
     int show_params_p = 0;
-    void show_params(FILE *fp);
 
 #define help() fusage(stdout, 0)
 #define usage() fusage(stderr, 1)
