@@ -1374,8 +1374,8 @@ void disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mous
 		return;
 	}
 	if (CurrentTab != NULL && Currentbuf != NULL)
-		message(s, Currentbuf->cursorX + Currentbuf->rootX,
-				Currentbuf->cursorY + Currentbuf->rootY);
+		message(s, Currentbuf()->cursorX + Currentbuf()->rootX,
+				Currentbuf()->cursorY + Currentbuf()->rootY);
 	else
 		message(s, LASTLINE, 0);
 	refresh();
@@ -1389,7 +1389,7 @@ void disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mous
 		mouse_inactive();
 #endif
 	if (CurrentTab != NULL && Currentbuf != NULL && redraw_current)
-		displayBuffer(Currentbuf, B_NORMAL);
+		displayBuffer(Currentbuf(), B_NORMAL);
 }
 
 void disp_message(char *s, int redraw_current)
@@ -1722,3 +1722,9 @@ void restorePosition(Buffer *buf, Buffer *orig)
 /* c-basic-offset: 4   */
 /* tab-width: 8        */
 /* End:                */
+
+
+extern "C" void displayCurrentbuf(int mode)
+{
+	displayBuffer(Currentbuf(), mode);
+}

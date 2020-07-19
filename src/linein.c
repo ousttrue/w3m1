@@ -262,7 +262,7 @@ inputLineHistSearch(char *prompt, char *def_str, int flag, Hist *hist,
 
     if (CurrentTab) {
 	if (need_redraw)
-	    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+	    displayCurrentbuf(B_FORCE_REDRAW);
     }
 
 #ifdef SUPPORT_WIN9X_CONSOLE_MBCS
@@ -730,7 +730,7 @@ next_dcompl(int next)
 	return;
     cm_disp_clear = FALSE;
     if (CurrentTab)
-	displayBuffer(Currentbuf, B_FORCE_REDRAW);
+	displayCurrentbuf(B_FORCE_REDRAW);
     if (LASTLINE >= 3) {
 	comment = TRUE;
 	nline = LASTLINE - 2;
@@ -1135,5 +1135,5 @@ _editor(void)
     }
     CLen = CPos = setStrType(strBuf, strProp);
     if (CurrentTab)
-	displayBuffer(Currentbuf, B_FORCE_REDRAW);
+	displayCurrentbuf(B_FORCE_REDRAW);
 }
