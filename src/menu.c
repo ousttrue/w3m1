@@ -1311,14 +1311,14 @@ initSelectMenu(void)
     static char *comment = " SPC for select / D for delete buffer ";
 
     SelectV = -1;
-    for (i = 0, buf = Firstbuf(); buf != NULL; i++, buf = buf->nextBuffer) {
+    for (i = 0, buf = GetFirstbuf(); buf != NULL; i++, buf = buf->nextBuffer) {
         if (buf == Currentbuf)
             SelectV = i;
     }
     nitem = i;
 
     label = New_N(char *, nitem + 2);
-    for (i = 0, buf = Firstbuf(); i < nitem; i++, buf = buf->nextBuffer) {
+    for (i = 0, buf = GetFirstbuf(); i < nitem; i++, buf = buf->nextBuffer) {
         str = Sprintf("<%s>", buf->buffername);
         if (buf->filename != NULL) {
             switch (buf->currentURL.scheme) {
@@ -1376,9 +1376,9 @@ smChBuf(void)
 
     if (SelectV < 0 || SelectV >= SelectMenu.nitem)
         return;
-    for (i = 0, buf = Firstbuf(); i < SelectV; i++, buf = buf->nextBuffer) ;
+    for (i = 0, buf = GetFirstbuf(); i < SelectV; i++, buf = buf->nextBuffer) ;
     Currentbuf = buf;
-    for (buf = Firstbuf(); buf != NULL; buf = buf->nextBuffer) {
+    for (buf = GetFirstbuf(); buf != NULL; buf = buf->nextBuffer) {
         if (buf == Currentbuf)
             continue;
 #ifdef USE_IMAGE
@@ -1397,16 +1397,16 @@ smDelBuf(char c)
 
     if (CurrentMenu->select < 0 || CurrentMenu->select >= SelectMenu.nitem)
         return (MENU_NOTHING);
-    for (i = 0, buf = Firstbuf(); i < CurrentMenu->select;
+    for (i = 0, buf = GetFirstbuf(); i < CurrentMenu->select;
          i++, buf = buf->nextBuffer) ;
     if (Currentbuf == buf)
         Currentbuf = buf->nextBuffer;
-    SetFirstbuf(deleteBuffer(Firstbuf(), buf));
+    SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
     if (!Currentbuf)
-        Currentbuf = nthBuffer(Firstbuf(), i - 1);;
-    if (Firstbuf()) {
+        Currentbuf = nthBuffer(GetFirstbuf(), i - 1);;
+    if (GetFirstbuf()) {
         SetFirstbuf(nullBuffer());
-        Currentbuf = Firstbuf();
+        Currentbuf = GetFirstbuf();
     }
 
     x = CurrentMenu->x;

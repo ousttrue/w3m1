@@ -116,7 +116,7 @@ void intTrap(SIGNAL_ARG);
 
 Buffer *GetCurrentbuf();
 void SetCurrentbuf(Buffer *buf);
-Buffer *Firstbuf();
+Buffer *GetFirstbuf();
 int HasFirstBuffer();
 // int NoFirstBuffer();
 void SetFirstbuf(Buffer *buffer);

@@ -1124,7 +1124,7 @@ int main(int argc, char **argv, char **envp)
             Currentbuf->buffername = DOWNLOAD_LIST_TITLE;
         }
         else
-            Currentbuf = Firstbuf();
+            Currentbuf = GetFirstbuf();
         ldDL();
     }
     else
@@ -1161,7 +1161,7 @@ int main(int argc, char **argv, char **envp)
     WcOption.auto_detect = auto_detect;
 #endif
 
-    Currentbuf = Firstbuf();
+    Currentbuf = GetFirstbuf();
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
     if (line_str)
     {

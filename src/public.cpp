@@ -452,13 +452,13 @@ void pushBuffer(Buffer *buf)
 #endif
     if (clear_buffer)
         tmpClearBuffer(Currentbuf);
-    if (Firstbuf() == Currentbuf)
+    if (GetFirstbuf() == Currentbuf)
     {
-        buf->nextBuffer = Firstbuf();
+        buf->nextBuffer = GetFirstbuf();
         Currentbuf = buf;
         SetFirstbuf(buf);
     }
-    else if ((b = prevBuffer(Firstbuf(), Currentbuf)) != NULL)
+    else if ((b = prevBuffer(GetFirstbuf(), Currentbuf)) != NULL)
     {
         b->nextBuffer = buf;
         buf->nextBuffer = Currentbuf;
@@ -738,9 +738,9 @@ void delBuffer(Buffer *buf)
         return;
     if (Currentbuf == buf)
         Currentbuf = buf->nextBuffer;
-    SetFirstbuf(deleteBuffer(Firstbuf(), buf));
+    SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
     if (!Currentbuf)
-        Currentbuf = Firstbuf();
+        Currentbuf = GetFirstbuf();
 }
 
 /* Go to specified line */
@@ -1955,7 +1955,7 @@ Str currentURL(void)
 
 void repBuffer(Buffer *oldbuf, Buffer *buf)
 {
-    SetFirstbuf(replaceBuffer(Firstbuf(), oldbuf, buf));
+    SetFirstbuf(replaceBuffer(GetFirstbuf(), oldbuf, buf));
     Currentbuf = buf;
 }
 
@@ -2948,8 +2948,8 @@ void deleteFiles()
     {
         while (HasFirstBuffer())
         {
-            buf = Firstbuf()->nextBuffer;
-            discardBuffer(Firstbuf());
+            buf = GetFirstbuf()->nextBuffer;
+            discardBuffer(GetFirstbuf());
             SetFirstbuf(buf);
         }
     }
@@ -3689,14 +3689,14 @@ void SetCurrentbuf(Buffer *buf)
     CurrentTab->currentBuffer=buf;
 }
 
-Buffer *Firstbuf()
+Buffer *GetFirstbuf()
 {
     return CurrentTab->firstBuffer;
 }
 
 int HasFirstBuffer()
 {
-    return Firstbuf() && Firstbuf() != NO_BUFFER    ;
+    return GetFirstbuf() && GetFirstbuf() != NO_BUFFER    ;
 }
 
 // int NoFirstBuffer()
