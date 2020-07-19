@@ -1,18 +1,18 @@
 project(w3m)
 cmake_minimum_required(VERSION 3.0.0)
    
-add_executable(w3m
-    src/main.cpp
-    src/dispatcher.cpp
-    src/commands.cpp
-    src/tagtable.cpp
+set(W3M_PREFIX $ENV{HOME}/local)
+   
+add_executable(w3mbookmark
+    src/w3mbookmark.c
+    src/Str.c
+    src/indep.c
+    src/regex.c
+    src/textlist.c
+    src/parsetag.c
+    src/myctype.c
+    src/hash.c
     src/entity.cpp
-    src/anchor.cpp
-    src/public.cpp
-    src/display.cpp
-    src/buffer.cpp
-    src/file.cpp
-    # src/defun.c
     libwc/big5.c
     libwc/ces.c
     libwc/char_conv.c
@@ -38,8 +38,45 @@ add_executable(w3m
     libwc/utf8.c
     libwc/viet.c
     libwc/wtf.c
-    src/Str.c
+    )
+target_include_directories(w3mbookmark
+PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/libwc
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    )   
+target_compile_definitions(w3mbookmark
+PUBLIC
+    DUMMY
+    HAVE_CONFIG_H
+    AUXBIN_DIR=\"${W3M_PREFIX}/w3m/libexec\"
+    CGIBIN_DIR=\"${W3M_PREFIX}/w3m/cgi-bin\"
+    HELP_DIR=\"${W3M_PREFIX}/share/w3m\"
+    ETC_DIR=\"${W3M_PREFIX}/etc\"
+    CONF_DIR=\"${W3M_PREFIX}/etc/w3m\"
+    RC_DIR=\"~/.w3m\"
+    LOCALEDIR=\"${W3M_PREFIX}/share/locale\"
+    USE_UNICODE
+    )
+target_link_libraries(w3mbookmark
+PRIVATE
+    gc
+    )
+        
+add_executable(w3m
+    src/main.cpp
+    src/dispatcher.cpp
+    src/commands.cpp
+    src/tagtable.cpp
+    src/entity.cpp
+    src/anchor.cpp
+    src/public.cpp
+    src/display.cpp
+    src/buffer.cpp
+    src/file.cpp
+    # src/defun.c
     src/indep.c
+    src/rc.c
+    src/Str.c
     src/regex.c
     src/textlist.c
     src/parsetag.c
@@ -53,7 +90,6 @@ add_executable(w3m
     src/form.c
     src/map.c
     src/frame.c
-    src/rc.c
     src/menu.c
     src/mailcap.c
     src/image.c
@@ -73,6 +109,31 @@ add_executable(w3m
     src/istream.c
     src/keybind.c
     src/parsetagx.c
+    libwc/big5.c
+    libwc/ces.c
+    libwc/char_conv.c
+    libwc/charset.c
+    libwc/combining.c
+    libwc/conv.c
+    libwc/detect.c
+    libwc/gb18030.c
+    libwc/gbk.c
+    libwc/hkscs.c
+    libwc/hz.c
+    libwc/iso2022.c
+    libwc/jis.c
+    libwc/johab.c
+    libwc/priv.c
+    libwc/putc.c
+    libwc/search.c
+    libwc/sjis.c
+    libwc/status.c
+    libwc/ucs.c
+    libwc/uhc.c
+    libwc/utf7.c
+    libwc/utf8.c
+    libwc/viet.c
+    libwc/wtf.c
 )
 target_include_directories(w3m
 PUBLIC
@@ -82,13 +143,13 @@ PUBLIC
 target_compile_definitions(w3m
 PUBLIC
     HAVE_CONFIG_H
-    AUXBIN_DIR=\"/usr/local/w3m/libexec\"
-    CGIBIN_DIR=\"/usr/local/w3m/cgi-bin\"
-    HELP_DIR=\"/usr/local/share/w3m\"
-    ETC_DIR=\"/usr/local/etc\"
-    CONF_DIR=\"/usr/local/etc/w3m\"
+    AUXBIN_DIR=\"${W3M_PREFIX}/w3m/libexec\"
+    CGIBIN_DIR=\"${W3M_PREFIX}/w3m/cgi-bin\"
+    HELP_DIR=\"${W3M_PREFIX}/share/w3m\"
+    ETC_DIR=\"${W3M_PREFIX}/etc\"
+    CONF_DIR=\"${W3M_PREFIX}/etc/w3m\"
     RC_DIR=\"~/.w3m\"
-    LOCALEDIR=\"/usr/local/share/locale\"
+    LOCALEDIR=\"${W3M_PREFIX}/share/locale\"
     USE_UNICODE
     )
 target_compile_options(w3m
@@ -98,8 +159,8 @@ PRIVATE
     )
 target_link_libraries(w3m
 PRIVATE
-    m
     gc
+    m
     ncurses
     ssl
     crypto

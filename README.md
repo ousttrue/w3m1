@@ -149,6 +149,15 @@ DEFUN 由来の `void xxx(void)` という関数は、 `commands.h` に移った
 
 巨大すぎるので適当に分割する。
 
+## w3mbookmark
+
+これも
+
+`Wrong __data_start/_end pair`
+
+で動かない。
+もしかして、 `WSL` 環境の問題か？
+
 ## TODO
 
 * macro 減らす
