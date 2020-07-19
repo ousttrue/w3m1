@@ -115,13 +115,18 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);
 void intTrap(SIGNAL_ARG);
 
 void InitializeTab();
+int GetTabCount();
 TabBuffer *GetFirstTab();
 void SetFirstTab(TabBuffer* tab);
 TabBuffer *GetLastTab();
 void SetLastTab(TabBuffer* tab);
-void SelectNextTab(int prec);
+TabBuffer *GetCurrentTab();
+void SetCurrentTab(TabBuffer* tab);
+void SelectRelativeTab(int prec);
+void SelectTabByPosition(int x, int y);
 void MoveTab(int x);
-
+void DeleteCurrentTab();
+void DeleteAllTabs();
 Buffer *GetCurrentbuf();
 void SetCurrentbuf(Buffer *buf);
 Buffer *GetFirstbuf();

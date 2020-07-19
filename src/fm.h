@@ -640,11 +640,9 @@ global char *index_file init(NULL);
 
 global char *CurrentDir;
 global int CurrentPid;
-global TabBuffer *CurrentTab;
 global int open_tab_blank init(FALSE);
 global int open_tab_dl_list init(FALSE);
 global int close_tab_back init(FALSE);
-global int nTab;
 global int TabCols init(10);
 #define NO_TABBUFFER ((TabBuffer *)1)
 global DownloadList *FirstDL init(NULL);

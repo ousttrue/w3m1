@@ -147,12 +147,14 @@ DEFUN 由来の `void xxx(void)` という関数は、 `commands.h` に移った
 `proto.h` から削除する。
 適当に `file.h` ほかに分配して削除した。
 
-## Buffer
+## Tab と Buffer
 
 `CurrentTab`, `FirstTab`, `LastTab`, `CurrentBuf`, `FirstBuf` マクロを関数化する。
 
 `FirstBuffer` => `GetFirstbuf()`, `SetFirstbuf(Buffer *buf)` というふうにする。
 Setter は隠蔽する。
+Tabは必ず1以上。
+  * CurrentTab の null check 無くせる？
 
 ## file.c
 

@@ -460,11 +460,7 @@ extern "C" void displayBuffer(Buffer *buf, int mode)
 	else
 		buf->rootX = 0;
 	buf->COLS = COLS - buf->rootX;
-	if (nTab > 1
-#ifdef USE_MOUSE
-		|| mouse_action.menu_str
-#endif
-	)
+	if (GetTabCount() > 1 || mouse_action.menu_str)
 	{
 		if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
 			calcTabPos();
@@ -664,34 +660,27 @@ redrawNLine(Buffer *buf, int n)
 	Line *l;
 	int i;
 
-#ifdef USE_COLOR
 	if (useColor)
 	{
 		EFFECT_ANCHOR_END_C;
-#ifdef USE_BG_COLOR
 		setbcolor(bg_color);
-#endif /* USE_BG_COLOR */
 	}
-#endif /* USE_COLOR */
-	if (nTab > 1
-#ifdef USE_MOUSE
-		|| mouse_action.menu_str
-#endif
-	)
+
+	if (GetTabCount() > 1 || mouse_action.menu_str)
 	{
 		TabBuffer *t;
 		int l;
 
 		move(0, 0);
-#ifdef USE_MOUSE
+
 		if (mouse_action.menu_str)
 			addstr(mouse_action.menu_str);
-#endif
+
 		clrtoeolx();
 		for (t = GetFirstTab(); t; t = t->nextTab)
 		{
 			move(t->y, t->x1);
-			if (t == CurrentTab)
+			if (t == GetCurrentTab())
 				bold();
 			addch('[');
 			l = t->x2 - t->x1 - 1 - get_strwidth(t->currentBuffer->buffername);
@@ -699,16 +688,16 @@ redrawNLine(Buffer *buf, int n)
 				l = 0;
 			if (l / 2 > 0)
 				addnstr_sup(" ", l / 2);
-			if (t == CurrentTab)
+			if (t == GetCurrentTab())
 				EFFECT_ACTIVE_START;
 			addnstr(t->currentBuffer->buffername, t->x2 - t->x1 - l);
-			if (t == CurrentTab)
+			if (t == GetCurrentTab())
 				EFFECT_ACTIVE_END;
 			if ((l + 1) / 2 > 0)
 				addnstr_sup(" ", (l + 1) / 2);
 			move(t->y, t->x2);
 			addch(']');
-			if (t == CurrentTab)
+			if (t == GetCurrentTab())
 				boldend();
 		}
 #if 0
@@ -1341,7 +1330,7 @@ message_list_panel(void)
 				 "<h1>List of error messages</h1><table cellpadding=0>\n");
 	if (message_list)
 		for (p = message_list->last; p; p = p->prev)
-			Strcat_m_charp(tmp, "<tr><td><pre>", html_quote((char*)p->ptr),
+			Strcat_m_charp(tmp, "<tr><td><pre>", html_quote((char *)p->ptr),
 						   "</pre></td></tr>\n", NULL);
 	else
 		Strcat_charp(tmp, "<tr><td>(no message recorded)</td></tr>\n");
@@ -1374,7 +1363,7 @@ void disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mous
 		fprintf(stderr, "%s\n", conv_to_system(s));
 		return;
 	}
-	if (CurrentTab != NULL && GetCurrentbuf() != NULL)
+	if (GetCurrentTab() != NULL && GetCurrentbuf() != NULL)
 		message(s, GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
 				GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY);
 	else
@@ -1389,7 +1378,7 @@ void disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mous
 	if (mouse && use_mouse)
 		mouse_inactive();
 #endif
-	if (CurrentTab != NULL && GetCurrentbuf() != NULL && redraw_current)
+	if (GetCurrentTab() != NULL && GetCurrentbuf() != NULL && redraw_current)
 		displayCurrentbuf(B_NORMAL);
 }
 
@@ -1724,8 +1713,10 @@ void restorePosition(Buffer *buf, Buffer *orig)
 /* tab-width: 8        */
 /* End:                */
 
-
 extern "C" void displayCurrentbuf(int mode)
 {
-	displayBuffer(GetCurrentbuf(), mode);
+	if (GetCurrentTab())
+	{
+		displayBuffer(GetCurrentbuf(), mode);
+	}
 }

@@ -1069,7 +1069,7 @@ void followA()
         if (buf != GetCurrentbuf())
             delBuffer(buf);
         else
-            deleteTab(CurrentTab);
+            deleteTab(GetCurrentTab());
         displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
         return;
     }
@@ -1157,9 +1157,9 @@ void backBf()
     Buffer *buf = GetCurrentbuf()->linkBuffer[LB_N_FRAME];
     if (!checkBackBuffer(GetCurrentbuf()))
     {
-        if (close_tab_back && nTab >= 1)
+        if (close_tab_back && GetTabCount() >= 1)
         {
-            deleteTab(CurrentTab);
+            deleteTab(GetCurrentTab());
             displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
         }
         else
@@ -1930,7 +1930,7 @@ void movMs()
 {
     if (!mouse_action.in_action)
         return;
-    if ((nTab > 1 || mouse_action.menu_str) &&
+    if ((GetTabCount() > 1 || mouse_action.menu_str) &&
         mouse_action.cursorY < GetLastTab()->y + 1)
         return;
     else if (mouse_action.cursorX >= GetCurrentbuf()->rootX &&
@@ -1950,7 +1950,7 @@ void menuMs()
 {
     if (!mouse_action.in_action)
         return;
-    if ((nTab > 1 || mouse_action.menu_str) &&
+    if ((GetTabCount() > 1 || mouse_action.menu_str) &&
         mouse_action.cursorY < GetLastTab()->y + 1)
         mouse_action.cursorX -= FRAME_WIDTH + 1;
     else if (mouse_action.cursorX >= GetCurrentbuf()->rootX &&
@@ -1964,13 +1964,9 @@ void menuMs()
 
 void tabMs()
 {
-    TabBuffer *tab;
     if (!mouse_action.in_action)
         return;
-    tab = posTab(mouse_action.cursorX, mouse_action.cursorY);
-    if (!tab || tab == NO_TABBUFFER)
-        return;
-    CurrentTab = tab;
+    SelectTabByPosition(mouse_action.cursorX, mouse_action.cursorY);
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
@@ -2146,13 +2142,13 @@ void newT()
 
 void closeT()
 {
-    TabBuffer *tab;
-    if (nTab <= 1)
+    if (GetTabCount() <= 1)
         return;
+    TabBuffer *tab;
     if (prec_num())
         tab = numTab(PREC_NUM());
     else
-        tab = CurrentTab;
+        tab = GetCurrentTab();
     if (tab)
         deleteTab(tab);
     displayBuffer(GetCurrentbuf(), B_REDRAW_IMAGE);
@@ -2160,21 +2156,13 @@ void closeT()
 
 void nextT()
 {
-    SelectNextTab(PREC_NUM());
+    SelectRelativeTab(PREC_NUM());
     displayBuffer(GetCurrentbuf(), B_REDRAW_IMAGE);
 }
 
 void prevT()
 {
-    int i;
-    if (nTab <= 1)
-        return;
-    for (i = 0; i < PREC_NUM(); i++) {
-        if (CurrentTab->prevTab)
-            CurrentTab = CurrentTab->prevTab;
-        else
-            CurrentTab = GetLastTab();
-    }
+    SelectRelativeTab(-PREC_NUM());
     displayBuffer(GetCurrentbuf(), B_REDRAW_IMAGE);
 }
 
@@ -2216,8 +2204,7 @@ void ldDL()
     if (!FirstDL) {
         if (replace) {
             if (GetCurrentbuf() == GetFirstbuf() && GetCurrentbuf()->nextBuffer == NULL) {
-                if (nTab > 1)
-                    deleteTab(CurrentTab);
+                DeleteCurrentTab();
             }
             else
                 delBuffer(GetCurrentbuf());

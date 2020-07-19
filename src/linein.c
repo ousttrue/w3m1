@@ -6,6 +6,7 @@
 #include "display.h"
 #include "etc.h"
 #include "file.h"
+#include "public.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM
@@ -260,7 +261,7 @@ inputLineHistSearch(char *prompt, char *def_str, int flag, Hist *hist,
 	    break;
     } while (i_cont);
 
-    if (CurrentTab) {
+    if (GetCurrentTab()) {
 	if (need_redraw)
 	    displayCurrentbuf(B_FORCE_REDRAW);
     }
@@ -729,7 +730,7 @@ next_dcompl(int next)
     if (cm_mode == CPL_NEVER || cm_mode & CPL_OFF)
 	return;
     cm_disp_clear = FALSE;
-    if (CurrentTab)
+    if (GetCurrentTab())
 	displayCurrentbuf(B_FORCE_REDRAW);
     if (LASTLINE >= 3) {
 	comment = TRUE;
@@ -1134,6 +1135,6 @@ _editor(void)
 	Strcat_char(strBuf, *p);
     }
     CLen = CPos = setStrType(strBuf, strProp);
-    if (CurrentTab)
+
 	displayCurrentbuf(B_FORCE_REDRAW);
 }

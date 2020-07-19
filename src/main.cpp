@@ -859,8 +859,6 @@ int main(int argc, char **argv, char **envp)
     }
 #endif
 
-    nTab = 0;
-    CurrentTab = NULL;
     ClearCurrentKey();
     if (BookmarkFile == NULL)
         BookmarkFile = rcFile(BOOKMARK);
@@ -1062,7 +1060,7 @@ int main(int argc, char **argv, char **envp)
             (newbuf->real_scheme == SCM_LOCAL && newbuf->header_source &&
              newbuf->currentURL.file && strcmp(newbuf->currentURL.file, "-")))
             newbuf->search_header = search_header;
-        if (CurrentTab == NULL)
+        if (GetCurrentTab() == NULL)
         {
             InitializeTab();
             SetCurrentbuf(newbuf);
@@ -1107,7 +1105,7 @@ int main(int argc, char **argv, char **envp)
     if (add_download_list())
     {
         set_add_download_list(FALSE);
-        CurrentTab = GetLastTab();
+        SetCurrentTab(GetLastTab());
         if (!GetFirstTab())
         {
             InitializeTab();
@@ -1124,7 +1122,7 @@ int main(int argc, char **argv, char **envp)
         ldDL();
     }
     else
-        CurrentTab = GetFirstTab();
+        SetCurrentTab(GetFirstTab());
     if (!GetFirstTab() || !HasFirstBuffer())
     {
         if (newbuf == NO_BUFFER)

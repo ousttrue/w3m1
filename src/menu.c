@@ -1446,7 +1446,7 @@ initSelTabMenu(void)
 
     SelTabV = -1;
     for (i = 0, tab = GetLastTab(); tab != NULL; i++, tab = tab->prevTab) {
-        if (tab == CurrentTab)
+        if (tab == GetCurrentTab())
             SelTabV = i;
     }
     nitem = i;
@@ -1513,9 +1513,9 @@ smChTab(void)
         return;
     for (i = 0, tab = GetLastTab(); i < SelTabV && tab != NULL;
          i++, tab = tab->prevTab) ;
-    CurrentTab = tab;
+    SetCurrentTab(tab);
     for (tab = GetLastTab(); tab != NULL; tab = tab->prevTab) {
-        if (tab == CurrentTab)
+        if (tab == GetCurrentTab())
             continue;
         buf = tab->currentBuffer;
 #ifdef USE_IMAGE
