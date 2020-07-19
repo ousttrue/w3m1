@@ -1,18 +1,10 @@
 #pragma once
 #include "anchor.h"
 #include "line.h"
-#include "bufferpoint.h"
 #include "map.h"
 #include "textlist.h"
 #include "form.h"
-
-typedef struct
-{
-    BufferPoint *marks;
-    int nmark;
-    int markmax;
-    int prevhseq;
-} HmarkerList;
+#include "marker.h"
 
 typedef struct _MapList
 {
@@ -122,3 +114,7 @@ Buffer *selectBuffer(Buffer *firstbuf, Buffer *currentbuf,char *selectchar);
 void reshapeBuffer(Buffer *buf);
 void copyBuffer(Buffer *a, Buffer *b);
 Buffer *prevBuffer(Buffer *first, Buffer *buf);
+HmarkerList *putHmarker(HmarkerList *ml, int line, int pos, int seq);
+void shiftAnchorPosition(AnchorList *a, HmarkerList *hl, int line,
+                         int pos, int shift);
+char *getAnchorText(Buffer *buf, AnchorList *al, Anchor *a);

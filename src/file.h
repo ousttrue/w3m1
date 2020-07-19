@@ -404,10 +404,6 @@ Anchor *closest_prev_anchor(AnchorList *a, Anchor *an, int x, int y);
 #ifdef USE_IMAGE
 void addMultirowsImg(Buffer *buf, AnchorList *al);
 #endif
-HmarkerList *putHmarker(HmarkerList *ml, int line, int pos, int seq);
-void shiftAnchorPosition(AnchorList *a, HmarkerList *hl, int line,
-                         int pos, int shift);
-char *getAnchorText(Buffer *buf, AnchorList *al, Anchor *a);
 Buffer *link_list_panel(Buffer *buf);
 
 Str decodeB(char **ww);
