@@ -33,282 +33,280 @@ extern "C"
 #endif
 #endif
 #include "dispatcher.h"
+} // extern "C"
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
-    WSADATA WSAData;
+WSADATA WSAData;
 #endif
 
 #define DSTR_LEN 256
 
-    Hist *LoadHist;
-    Hist *SaveHist;
-    Hist *URLHist;
-    Hist *ShellHist;
-    Hist *TextHist;
+Hist *LoadHist;
+Hist *SaveHist;
+Hist *URLHist;
+Hist *ShellHist;
+Hist *TextHist;
 
-    int show_params_p = 0;
+int show_params_p = 0;
 
 #define help() fusage(stdout, 0)
 #define usage() fusage(stderr, 1)
 
-    static void
-    fversion(FILE *f)
-    {
-        fprintf(f, "w3m version %s, options %s\n", w3m_version,
+static void
+fversion(FILE *f)
+{
+    fprintf(f, "w3m version %s, options %s\n", w3m_version,
 #if LANG == JA
-                "lang=ja"
+            "lang=ja"
 #else
-                "lang=en"
+            "lang=en"
 #endif
 #ifdef USE_M17N
-                ",m17n"
+            ",m17n"
 #endif
 #ifdef USE_IMAGE
-                ",image"
+            ",image"
 #endif
 #ifdef USE_COLOR
-                ",color"
+            ",color"
 #ifdef USE_ANSI_COLOR
-                ",ansi-color"
+            ",ansi-color"
 #endif
 #endif
 #ifdef USE_MOUSE
-                ",mouse"
+            ",mouse"
 #ifdef USE_GPM
-                ",gpm"
+            ",gpm"
 #endif
 #ifdef USE_SYSMOUSE
-                ",sysmouse"
+            ",sysmouse"
 #endif
 #endif
 #ifdef USE_MENU
-                ",menu"
+            ",menu"
 #endif
 #ifdef USE_COOKIE
-                ",cookie"
+            ",cookie"
 #endif
 #ifdef USE_SSL
-                ",ssl"
+            ",ssl"
 #ifdef USE_SSL_VERIFY
-                ",ssl-verify"
+            ",ssl-verify"
 #endif
 #endif
 #ifdef USE_EXTERNAL_URI_LOADER
-                ",external-uri-loader"
+            ",external-uri-loader"
 #endif
 #ifdef USE_W3MMAILER
-                ",w3mmailer"
+            ",w3mmailer"
 #endif
 #ifdef USE_NNTP
-                ",nntp"
+            ",nntp"
 #endif
 #ifdef USE_GOPHER
-                ",gopher"
+            ",gopher"
 #endif
 #ifdef INET6
-                ",ipv6"
+            ",ipv6"
 #endif
 #ifdef USE_ALARM
-                ",alarm"
+            ",alarm"
 #endif
 #ifdef USE_MARK
-                ",mark"
+            ",mark"
 #endif
 #ifdef USE_MIGEMO
-                ",migemo"
+            ",migemo"
 #endif
-        );
-    }
+    );
+}
 
-    static void
-    fusage(FILE *f, int err)
-    {
-        fversion(f);
-        /* FIXME: gettextize? */
-        fprintf(f, "usage: w3m [options] [URL or filename]\noptions:\n");
-        fprintf(f, "    -t tab           set tab width\n");
-        fprintf(f, "    -r               ignore backspace effect\n");
-        fprintf(f, "    -l line          # of preserved line (default 10000)\n");
+static void
+fusage(FILE *f, int err)
+{
+    fversion(f);
+    /* FIXME: gettextize? */
+    fprintf(f, "usage: w3m [options] [URL or filename]\noptions:\n");
+    fprintf(f, "    -t tab           set tab width\n");
+    fprintf(f, "    -r               ignore backspace effect\n");
+    fprintf(f, "    -l line          # of preserved line (default 10000)\n");
 #ifdef USE_M17N
-        fprintf(f, "    -I charset       document charset\n");
-        fprintf(f, "    -O charset       display/output charset\n");
-        fprintf(f, "    -e               EUC-JP\n");
-        fprintf(f, "    -s               Shift_JIS\n");
-        fprintf(f, "    -j               JIS\n");
+    fprintf(f, "    -I charset       document charset\n");
+    fprintf(f, "    -O charset       display/output charset\n");
+    fprintf(f, "    -e               EUC-JP\n");
+    fprintf(f, "    -s               Shift_JIS\n");
+    fprintf(f, "    -j               JIS\n");
 #endif
-        fprintf(f, "    -B               load bookmark\n");
-        fprintf(f, "    -bookmark file   specify bookmark file\n");
-        fprintf(f, "    -T type          specify content-type\n");
-        fprintf(f, "    -m               internet message mode\n");
-        fprintf(f, "    -v               visual startup mode\n");
+    fprintf(f, "    -B               load bookmark\n");
+    fprintf(f, "    -bookmark file   specify bookmark file\n");
+    fprintf(f, "    -T type          specify content-type\n");
+    fprintf(f, "    -m               internet message mode\n");
+    fprintf(f, "    -v               visual startup mode\n");
 #ifdef USE_COLOR
-        fprintf(f, "    -M               monochrome display\n");
+    fprintf(f, "    -M               monochrome display\n");
 #endif /* USE_COLOR */
-        fprintf(f,
-                "    -N               open URL of command line on each new tab\n");
-        fprintf(f, "    -F               automatically render frame\n");
-        fprintf(f,
-                "    -cols width      specify column width (used with -dump)\n");
-        fprintf(f,
-                "    -ppc count       specify the number of pixels per character (4.0...32.0)\n");
+    fprintf(f,
+            "    -N               open URL of command line on each new tab\n");
+    fprintf(f, "    -F               automatically render frame\n");
+    fprintf(f,
+            "    -cols width      specify column width (used with -dump)\n");
+    fprintf(f,
+            "    -ppc count       specify the number of pixels per character (4.0...32.0)\n");
 #ifdef USE_IMAGE
-        fprintf(f,
-                "    -ppl count       specify the number of pixels per line (4.0...64.0)\n");
+    fprintf(f,
+            "    -ppl count       specify the number of pixels per line (4.0...64.0)\n");
 #endif
-        fprintf(f, "    -dump            dump formatted page into stdout\n");
-        fprintf(f,
-                "    -dump_head       dump response of HEAD request into stdout\n");
-        fprintf(f, "    -dump_source     dump page source into stdout\n");
-        fprintf(f, "    -dump_both       dump HEAD and source into stdout\n");
-        fprintf(f,
-                "    -dump_extra      dump HEAD, source, and extra information into stdout\n");
-        fprintf(f, "    -post file       use POST method with file content\n");
-        fprintf(f, "    -header string   insert string as a header\n");
-        fprintf(f, "    +<num>           goto <num> line\n");
-        fprintf(f, "    -num             show line number\n");
-        fprintf(f, "    -no-proxy        don't use proxy\n");
+    fprintf(f, "    -dump            dump formatted page into stdout\n");
+    fprintf(f,
+            "    -dump_head       dump response of HEAD request into stdout\n");
+    fprintf(f, "    -dump_source     dump page source into stdout\n");
+    fprintf(f, "    -dump_both       dump HEAD and source into stdout\n");
+    fprintf(f,
+            "    -dump_extra      dump HEAD, source, and extra information into stdout\n");
+    fprintf(f, "    -post file       use POST method with file content\n");
+    fprintf(f, "    -header string   insert string as a header\n");
+    fprintf(f, "    +<num>           goto <num> line\n");
+    fprintf(f, "    -num             show line number\n");
+    fprintf(f, "    -no-proxy        don't use proxy\n");
 #ifdef INET6
-        fprintf(f, "    -4               IPv4 only (-o dns_order=4)\n");
-        fprintf(f, "    -6               IPv6 only (-o dns_order=6)\n");
+    fprintf(f, "    -4               IPv4 only (-o dns_order=4)\n");
+    fprintf(f, "    -6               IPv6 only (-o dns_order=6)\n");
 #endif
 #ifdef USE_MOUSE
-        fprintf(f, "    -no-mouse        don't use mouse\n");
+    fprintf(f, "    -no-mouse        don't use mouse\n");
 #endif /* USE_MOUSE */
 #ifdef USE_COOKIE
-        fprintf(f,
-                "    -cookie          use cookie (-no-cookie: don't use cookie)\n");
+    fprintf(f,
+            "    -cookie          use cookie (-no-cookie: don't use cookie)\n");
 #endif /* USE_COOKIE */
-        fprintf(f, "    -graph           use DEC special graphics for border of table and menu\n");
-        fprintf(f, "    -no-graph        use ACII character for border of table and menu\n");
-        fprintf(f, "    -S               squeeze multiple blank lines\n");
-        fprintf(f, "    -W               toggle wrap search mode\n");
-        fprintf(f, "    -X               don't use termcap init/deinit\n");
-        fprintf(f,
-                "    -title[=TERM]    set buffer name to terminal title string\n");
-        fprintf(f, "    -o opt=value     assign value to config option\n");
-        fprintf(f, "    -show-option     print all config options\n");
-        fprintf(f, "    -config file     specify config file\n");
-        fprintf(f, "    -help            print this usage message\n");
-        fprintf(f, "    -version         print w3m version\n");
-        fprintf(f, "    -reqlog          write request logfile\n");
-        fprintf(f, "    -debug           DO NOT USE\n");
-        if (show_params_p)
-            show_params(f);
-        exit(err);
-    }
+    fprintf(f, "    -graph           use DEC special graphics for border of table and menu\n");
+    fprintf(f, "    -no-graph        use ACII character for border of table and menu\n");
+    fprintf(f, "    -S               squeeze multiple blank lines\n");
+    fprintf(f, "    -W               toggle wrap search mode\n");
+    fprintf(f, "    -X               don't use termcap init/deinit\n");
+    fprintf(f,
+            "    -title[=TERM]    set buffer name to terminal title string\n");
+    fprintf(f, "    -o opt=value     assign value to config option\n");
+    fprintf(f, "    -show-option     print all config options\n");
+    fprintf(f, "    -config file     specify config file\n");
+    fprintf(f, "    -help            print this usage message\n");
+    fprintf(f, "    -version         print w3m version\n");
+    fprintf(f, "    -reqlog          write request logfile\n");
+    fprintf(f, "    -debug           DO NOT USE\n");
+    if (show_params_p)
+        show_params(f);
+    exit(err);
+}
 
-    static GC_warn_proc orig_GC_warn_proc = NULL;
+static GC_warn_proc orig_GC_warn_proc = NULL;
 #define GC_WARN_KEEP_MAX (20)
 
-    static void
-    wrap_GC_warn_proc(char *msg, GC_word arg)
+static void
+wrap_GC_warn_proc(char *msg, GC_word arg)
+{
+    if (fmInitialized)
     {
-        if (fmInitialized)
+        /* *INDENT-OFF* */
+        static struct
         {
-            /* *INDENT-OFF* */
-            static struct
-            {
-                char *msg;
-                GC_word arg;
-            } msg_ring[GC_WARN_KEEP_MAX];
-            /* *INDENT-ON* */
-            static int i = 0;
-            static int n = 0;
-            static int lock = 0;
-            int j;
+            char *msg;
+            GC_word arg;
+        } msg_ring[GC_WARN_KEEP_MAX];
+        /* *INDENT-ON* */
+        static int i = 0;
+        static int n = 0;
+        static int lock = 0;
+        int j;
 
-            j = (i + n) % (sizeof(msg_ring) / sizeof(msg_ring[0]));
-            msg_ring[j].msg = msg;
-            msg_ring[j].arg = arg;
+        j = (i + n) % (sizeof(msg_ring) / sizeof(msg_ring[0]));
+        msg_ring[j].msg = msg;
+        msg_ring[j].arg = arg;
 
-            if (n < sizeof(msg_ring) / sizeof(msg_ring[0]))
-                ++n;
-            else
-                ++i;
-
-            if (!lock)
-            {
-                lock = 1;
-
-                for (; n > 0; --n, ++i)
-                {
-                    i %= sizeof(msg_ring) / sizeof(msg_ring[0]);
-
-                    printf(msg_ring[i].msg, (unsigned long)msg_ring[i].arg);
-                    sleep_till_anykey(1, 1);
-                }
-
-                lock = 0;
-            }
-        }
-        else if (orig_GC_warn_proc)
-            orig_GC_warn_proc(msg, arg);
+        if (n < sizeof(msg_ring) / sizeof(msg_ring[0]))
+            ++n;
         else
-            fprintf(stderr, msg, (unsigned long)arg);
+            ++i;
+
+        if (!lock)
+        {
+            lock = 1;
+
+            for (; n > 0; --n, ++i)
+            {
+                i %= sizeof(msg_ring) / sizeof(msg_ring[0]);
+
+                printf(msg_ring[i].msg, (unsigned long)msg_ring[i].arg);
+                sleep_till_anykey(1, 1);
+            }
+
+            lock = 0;
+        }
     }
+    else if (orig_GC_warn_proc)
+        orig_GC_warn_proc(msg, arg);
+    else
+        fprintf(stderr, msg, (unsigned long)arg);
+}
 
 #ifdef SIGCHLD
-    static void
-    sig_chld(int signo)
-    {
-        int p_stat;
-        pid_t pid;
+static void
+sig_chld(int signo)
+{
+    int p_stat;
+    pid_t pid;
 
 #ifdef HAVE_WAITPID
-        while ((pid = waitpid(-1, &p_stat, WNOHANG)) > 0)
+    while ((pid = waitpid(-1, &p_stat, WNOHANG)) > 0)
 #elif HAVE_WAIT3
-        while ((pid = wait3(&p_stat, WNOHANG, NULL)) > 0)
+    while ((pid = wait3(&p_stat, WNOHANG, NULL)) > 0)
 #else
-        if ((pid = wait(&p_stat)) > 0)
+    if ((pid = wait(&p_stat)) > 0)
 #endif
-        {
-            DownloadList *d;
+    {
+        DownloadList *d;
 
-            if (WIFEXITED(p_stat))
+        if (WIFEXITED(p_stat))
+        {
+            for (d = FirstDL; d != NULL; d = d->next)
             {
-                for (d = FirstDL; d != NULL; d = d->next)
+                if (d->pid == pid)
                 {
-                    if (d->pid == pid)
-                    {
-                        d->err = WEXITSTATUS(p_stat);
-                        break;
-                    }
+                    d->err = WEXITSTATUS(p_stat);
+                    break;
                 }
             }
         }
-        mySignal(SIGCHLD, sig_chld);
-        return;
     }
+    mySignal(SIGCHLD, sig_chld);
+    return;
+}
 #endif
 
-    Str
-    make_optional_header_string(char *s)
-    {
-        char *p;
-        Str hs;
+Str make_optional_header_string(char *s)
+{
+    char *p;
+    Str hs;
 
-        if (strchr(s, '\n') || strchr(s, '\r'))
-            return NULL;
-        for (p = s; *p && *p != ':'; p++)
-            ;
-        if (*p != ':' || p == s)
-            return NULL;
-        hs = Strnew_size(strlen(s) + 3);
-        Strcopy_charp_n(hs, s, p - s);
-        if (!Strcasecmp_charp(hs, "content-type"))
-            override_content_type = TRUE;
-        Strcat_charp(hs, ": ");
-        if (*(++p))
-        {                   /* not null header */
-            SKIP_BLANKS(p); /* skip white spaces */
-            Strcat_charp(hs, p);
-        }
-        Strcat_charp(hs, "\r\n");
-        return hs;
+    if (strchr(s, '\n') || strchr(s, '\r'))
+        return NULL;
+    for (p = s; *p && *p != ':'; p++)
+        ;
+    if (*p != ':' || p == s)
+        return NULL;
+    hs = Strnew_size(strlen(s) + 3);
+    Strcopy_charp_n(hs, s, p - s);
+    if (!Strcasecmp_charp(hs, "content-type"))
+        override_content_type = TRUE;
+    Strcat_charp(hs, ": ");
+    if (*(++p))
+    {                   /* not null header */
+        SKIP_BLANKS(p); /* skip white spaces */
+        Strcat_charp(hs, p);
     }
-
-} // extern "C"
+    Strcat_charp(hs, "\r\n");
+    return hs;
+}
 
 static void mainloop()
 {
