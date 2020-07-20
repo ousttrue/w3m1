@@ -49,6 +49,11 @@ typedef struct {
     int flag;
 } URLOption;
 
+struct portlist {
+    unsigned short port;
+    struct portlist *next;
+};
+
 struct cookie {
     ParsedURL url;
     Str name;

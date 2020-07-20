@@ -377,11 +377,6 @@
 
 
 #ifdef USE_COOKIE
-struct portlist {
-    unsigned short port;
-    struct portlist *next;
-};
-
 #define COO_USE		1
 #define COO_SECURE	2
 #define COO_DOMAIN	4
