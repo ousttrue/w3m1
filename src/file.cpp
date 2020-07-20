@@ -2645,19 +2645,6 @@ proc_mchar(struct readbuffer *obuf, int pre_mode,
     obuf->flag |= RB_NFLUSHED;
 }
 
-void
-push_render_image(Str str, int width, int limit,
-		  struct html_feed_environ *h_env)
-{
-    struct readbuffer *obuf = h_env->obuf;
-    int indent = h_env->envs[h_env->envc].indent;
-
-    push_spaces(obuf, 1, (limit - width) / 2);
-    push_str(obuf, width, str, PC_ASCII);
-    push_spaces(obuf, 1, (limit - width + 1) / 2);
-    if (width > 0)
-	flushline(h_env, obuf, indent, 0, h_env->limit);
-}
 
 static int
 sloppy_parse_line(char **str)
@@ -2742,348 +2729,6 @@ fillline(struct readbuffer *obuf, int indent)
     obuf->flag &= ~RB_NFLUSHED;
 }
 
-void
-flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
-	  int force, int width)
-{
-    TextLineList *buf = h_env->buf;
-    FILE *f = h_env->f;
-    Str line = obuf->line, pass = NULL;
-    char *hidden_anchor = NULL, *hidden_img = NULL, *hidden_bold = NULL,
-	*hidden_under = NULL, *hidden_italic = NULL, *hidden_strike = NULL,
-	*hidden_ins = NULL, *hidden = NULL;
-
-#ifdef DEBUG
-    if (w3m_debug) {
-	FILE *df = fopen("zzzproc1", "a");
-	fprintf(df, "flushline(%s,%d,%d,%d)\n", obuf->line->ptr, indent, force,
-		width);
-	if (buf) {
-	    TextLineListItem *p;
-	    for (p = buf->first; p; p = p->next) {
-		fprintf(df, "buf=\"%s\"\n", p->ptr->line->ptr);
-	    }
-	}
-	fclose(df);
-    }
-#endif
-
-    if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && Strlastchar(line) == ' ') {
-	Strshrink(line, 1);
-	obuf->pos--;
-    }
-
-    append_tags(obuf);
-
-    if (obuf->anchor.url)
-	hidden = hidden_anchor = has_hidden_link(obuf, HTML_A);
-    if (obuf->img_alt) {
-	if ((hidden_img = has_hidden_link(obuf, HTML_IMG_ALT)) != NULL) {
-	    if (!hidden || hidden_img < hidden)
-		hidden = hidden_img;
-	}
-    }
-    if (obuf->in_bold) {
-	if ((hidden_bold = has_hidden_link(obuf, HTML_B)) != NULL) {
-	    if (!hidden || hidden_bold < hidden)
-		hidden = hidden_bold;
-	}
-    }
-    if (obuf->in_italic) {
-	if ((hidden_italic = has_hidden_link(obuf, HTML_I)) != NULL) {
-	    if (!hidden || hidden_italic < hidden)
-		hidden = hidden_italic;
-	}
-    }
-    if (obuf->in_under) {
-	if ((hidden_under = has_hidden_link(obuf, HTML_U)) != NULL) {
-	    if (!hidden || hidden_under < hidden)
-		hidden = hidden_under;
-	}
-    }
-    if (obuf->in_strike) {
-	if ((hidden_strike = has_hidden_link(obuf, HTML_S)) != NULL) {
-	    if (!hidden || hidden_strike < hidden)
-		hidden = hidden_strike;
-	}
-    }
-    if (obuf->in_ins) {
-	if ((hidden_ins = has_hidden_link(obuf, HTML_INS)) != NULL) {
-	    if (!hidden || hidden_ins < hidden)
-		hidden = hidden_ins;
-	}
-    }
-    if (hidden) {
-	pass = Strnew_charp(hidden);
-	Strshrink(line, line->ptr + line->length - hidden);
-    }
-
-    if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && obuf->pos > width) {
-	char *tp = &line->ptr[obuf->bp.len - obuf->bp.tlen];
-	char *ep = &line->ptr[line->length];
-
-	if (obuf->bp.pos == obuf->pos && tp <= ep &&
-	    tp > line->ptr && tp[-1] == ' ') {
-	    bcopy(tp, tp - 1, ep - tp + 1);
-	    line->length--;
-	    obuf->pos--;
-	}
-    }
-
-    if (obuf->anchor.url && !hidden_anchor)
-	Strcat_charp(line, "</a>");
-    if (obuf->img_alt && !hidden_img)
-	Strcat_charp(line, "</img_alt>");
-    if (obuf->in_bold && !hidden_bold)
-	Strcat_charp(line, "</b>");
-    if (obuf->in_italic && !hidden_italic)
-	Strcat_charp(line, "</i>");
-    if (obuf->in_under && !hidden_under)
-	Strcat_charp(line, "</u>");
-    if (obuf->in_strike && !hidden_strike)
-	Strcat_charp(line, "</s>");
-    if (obuf->in_ins && !hidden_ins)
-	Strcat_charp(line, "</ins>");
-
-    if (obuf->top_margin > 0) {
-	int i;
-	struct html_feed_environ h;
-	struct readbuffer o;
-	struct environment e[1];
-
-	init_henv(&h, &o, e, 1, NULL, width, indent);
-	o.line = Strnew_size(width + 20);
-	o.pos = obuf->pos;
-	o.flag = obuf->flag;
-	o.top_margin = -1;
-	o.bottom_margin = -1;
-	Strcat_charp(o.line, "<pre_int>");
-	for (i = 0; i < o.pos; i++)
-	    Strcat_char(o.line, ' ');
-	Strcat_charp(o.line, "</pre_int>");
-	for (i = 0; i < obuf->top_margin; i++)
-	    flushline(h_env, &o, indent, force, width);
-    }
-
-    if (force == 1 || obuf->flag & RB_NFLUSHED) {
-	TextLine *lbuf = newTextLine(line, obuf->pos);
-	if (RB_GET_ALIGN(obuf) == RB_CENTER) {
-	    align(lbuf, width, ALIGN_CENTER);
-	}
-	else if (RB_GET_ALIGN(obuf) == RB_RIGHT) {
-	    align(lbuf, width, ALIGN_RIGHT);
-	}
-	else if (RB_GET_ALIGN(obuf) == RB_LEFT && obuf->flag & RB_INTABLE) {
-	    align(lbuf, width, ALIGN_LEFT);
-	}
-#ifdef FORMAT_NICE
-	else if (obuf->flag & RB_FILL) {
-	    char *p;
-	    int rest, rrest;
-	    int nspace, d, i;
-
-	    rest = width - get_Str_strwidth(line);
-	    if (rest > 1) {
-		nspace = 0;
-		for (p = line->ptr + indent; *p; p++) {
-		    if (*p == ' ')
-			nspace++;
-		}
-		if (nspace > 0) {
-		    int indent_here = 0;
-		    d = rest / nspace;
-		    p = line->ptr;
-		    while (IS_SPACE(*p)) {
-			p++;
-			indent_here++;
-		    }
-		    rrest = rest - d * nspace;
-		    line = Strnew_size(width + 1);
-		    for (i = 0; i < indent_here; i++)
-			Strcat_char(line, ' ');
-		    for (; *p; p++) {
-			Strcat_char(line, *p);
-			if (*p == ' ') {
-			    for (i = 0; i < d; i++)
-				Strcat_char(line, ' ');
-			    if (rrest > 0) {
-				Strcat_char(line, ' ');
-				rrest--;
-			    }
-			}
-		    }
-		    lbuf = newTextLine(line, width);
-		}
-	    }
-	}
-#endif				/* FORMAT_NICE */
-#ifdef TABLE_DEBUG
-	if (w3m_debug) {
-	    FILE *f = fopen("zzzproc1", "a");
-	    fprintf(f, "pos=%d,%d, maxlimit=%d\n",
-		    visible_length(lbuf->line->ptr), lbuf->pos,
-		    h_env->maxlimit);
-	    fclose(f);
-	}
-#endif
-	if (lbuf->pos > h_env->maxlimit)
-	    h_env->maxlimit = lbuf->pos;
-	if (buf)
-	    pushTextLine(buf, lbuf);
-	else if (f) {
-	    Strfputs(Str_conv_to_halfdump(lbuf->line), f);
-	    fputc('\n', f);
-	}
-	if (obuf->flag & RB_SPECIAL || obuf->flag & RB_NFLUSHED)
-	    h_env->blank_lines = 0;
-	else
-	    h_env->blank_lines++;
-    }
-    else {
-	char *p = line->ptr, *q;
-	Str tmp = Strnew(), tmp2 = Strnew();
-
-#define APPEND(str) \
-	if (buf) \
-	    appendTextLine(buf,(str),0); \
-	else if (f) \
-	    Strfputs((str),f)
-
-	while (*p) {
-	    q = p;
-	    if (sloppy_parse_line(&p)) {
-		Strcat_charp_n(tmp, q, p - q);
-		if (force == 2) {
-		    APPEND(tmp);
-		}
-		else
-		    Strcat(tmp2, tmp);
-		Strclear(tmp);
-	    }
-	}
-	if (force == 2) {
-	    if (pass) {
-		APPEND(pass);
-	    }
-	    pass = NULL;
-	}
-	else {
-	    if (pass)
-		Strcat(tmp2, pass);
-	    pass = tmp2;
-	}
-    }
-
-    if (obuf->bottom_margin > 0) {
-	int i;
-	struct html_feed_environ h;
-	struct readbuffer o;
-	struct environment e[1];
-
-	init_henv(&h, &o, e, 1, NULL, width, indent);
-	o.line = Strnew_size(width + 20);
-	o.pos = obuf->pos;
-	o.flag = obuf->flag;
-	o.top_margin = -1;
-	o.bottom_margin = -1;
-	Strcat_charp(o.line, "<pre_int>");
-	for (i = 0; i < o.pos; i++)
-	    Strcat_char(o.line, ' ');
-	Strcat_charp(o.line, "</pre_int>");
-	for (i = 0; i < obuf->bottom_margin; i++)
-	    flushline(h_env, &o, indent, force, width);
-    }
-    if (obuf->top_margin < 0 || obuf->bottom_margin < 0)
-	return;
-
-    obuf->line = Strnew_size(256);
-    obuf->pos = 0;
-    obuf->top_margin = 0;
-    obuf->bottom_margin = 0;
-    set_space_to_prevchar(obuf->prevchar);
-    obuf->bp.init_flag = 1;
-    obuf->flag &= ~RB_NFLUSHED;
-    set_breakpoint(obuf, 0);
-    obuf->prev_ctype = PC_ASCII;
-    link_stack = NULL;
-    fillline(obuf, indent);
-    if (pass)
-	passthrough(obuf, pass->ptr, 0);
-    if (!hidden_anchor && obuf->anchor.url) {
-	Str tmp;
-	if (obuf->anchor.hseq > 0)
-	    obuf->anchor.hseq = -obuf->anchor.hseq;
-	tmp = Sprintf("<A HSEQ=\"%d\" HREF=\"", obuf->anchor.hseq);
-	Strcat_charp(tmp, html_quote(obuf->anchor.url));
-	if (obuf->anchor.target) {
-	    Strcat_charp(tmp, "\" TARGET=\"");
-	    Strcat_charp(tmp, html_quote(obuf->anchor.target));
-	}
-	if (obuf->anchor.referer) {
-	    Strcat_charp(tmp, "\" REFERER=\"");
-	    Strcat_charp(tmp, html_quote(obuf->anchor.referer));
-	}
-	if (obuf->anchor.title) {
-	    Strcat_charp(tmp, "\" TITLE=\"");
-	    Strcat_charp(tmp, html_quote(obuf->anchor.title));
-	}
-	if (obuf->anchor.accesskey) {
-	    char *c = html_quote_char(obuf->anchor.accesskey);
-	    Strcat_charp(tmp, "\" ACCESSKEY=\"");
-	    if (c)
-		Strcat_charp(tmp, c);
-	    else
-		Strcat_char(tmp, obuf->anchor.accesskey);
-	}
-	Strcat_charp(tmp, "\">");
-	push_tag(obuf, tmp->ptr, HTML_A);
-    }
-    if (!hidden_img && obuf->img_alt) {
-	Str tmp = Strnew_charp("<IMG_ALT SRC=\"");
-	Strcat_charp(tmp, html_quote(obuf->img_alt->ptr));
-	Strcat_charp(tmp, "\">");
-	push_tag(obuf, tmp->ptr, HTML_IMG_ALT);
-    }
-    if (!hidden_bold && obuf->in_bold)
-	push_tag(obuf, "<B>", HTML_B);
-    if (!hidden_italic && obuf->in_italic)
-	push_tag(obuf, "<I>", HTML_I);
-    if (!hidden_under && obuf->in_under)
-	push_tag(obuf, "<U>", HTML_U);
-    if (!hidden_strike && obuf->in_strike)
-	push_tag(obuf, "<S>", HTML_S);
-    if (!hidden_ins && obuf->in_ins)
-	push_tag(obuf, "<INS>", HTML_INS);
-}
-
-void
-do_blankline(struct html_feed_environ *h_env, struct readbuffer *obuf,
-	     int indent, int indent_incr, int width)
-{
-    if (h_env->blank_lines == 0)
-	flushline(h_env, obuf, indent, 1, width);
-}
-
-void
-purgeline(struct html_feed_environ *h_env)
-{
-    char *p, *q;
-    Str tmp;
-
-    if (h_env->buf == NULL || h_env->blank_lines == 0)
-	return;
-
-    p = rpopTextLine(h_env->buf)->line->ptr;
-    tmp = Strnew();
-    while (*p) {
-	q = p;
-	if (sloppy_parse_line(&p)) {
-	    Strcat_charp_n(tmp, q, p - q);
-	}
-    }
-    appendTextLine(h_env->buf, tmp, 0);
-    h_env->blank_lines--;
-}
 
 static int
 close_effect0(struct readbuffer *obuf, int cmd)
@@ -3108,92 +2753,6 @@ close_effect0(struct readbuffer *obuf, int cmd)
     return 0;
 }
 
-static void
-close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
-{
-    if (obuf->anchor.url) {
-	int i;
-	char *p = NULL;
-	int is_erased = 0;
-
-	for (i = obuf->tag_sp - 1; i >= 0; i--) {
-	    if (obuf->tag_stack[i]->cmd == HTML_A)
-		break;
-	}
-	if (i < 0 && obuf->anchor.hseq > 0 && Strlastchar(obuf->line) == ' ') {
-	    Strshrink(obuf->line, 1);
-	    obuf->pos--;
-	    is_erased = 1;
-	}
-
-	if (i >= 0 || (p = has_hidden_link(obuf, HTML_A))) {
-	    if (obuf->anchor.hseq > 0) {
-		HTMLlineproc1(ANSP, h_env);
-		set_space_to_prevchar(obuf->prevchar);
-	    }
-	    else {
-		if (i >= 0) {
-		    obuf->tag_sp--;
-		    bcopy(&obuf->tag_stack[i + 1], &obuf->tag_stack[i],
-			  (obuf->tag_sp - i) * sizeof(struct cmdtable *));
-		}
-		else {
-		    passthrough(obuf, p, 1);
-		}
-		bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
-		return;
-	    }
-	    is_erased = 0;
-	}
-	if (is_erased) {
-	    Strcat_char(obuf->line, ' ');
-	    obuf->pos++;
-	}
-
-	push_tag(obuf, "</a>", HTML_N_A);
-    }
-    bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
-}
-
-void
-save_fonteffect(struct html_feed_environ *h_env, struct readbuffer *obuf)
-{
-    if (obuf->fontstat_sp < FONT_STACK_SIZE)
-	bcopy(obuf->fontstat, obuf->fontstat_stack[obuf->fontstat_sp],
-	      FONTSTAT_SIZE);
-    obuf->fontstat_sp++;
-    if (obuf->in_bold)
-	push_tag(obuf, "</b>", HTML_N_B);
-    if (obuf->in_italic)
-	push_tag(obuf, "</i>", HTML_N_I);
-    if (obuf->in_under)
-	push_tag(obuf, "</u>", HTML_N_U);
-    if (obuf->in_strike)
-	push_tag(obuf, "</s>", HTML_N_S);
-    if (obuf->in_ins)
-	push_tag(obuf, "</ins>", HTML_N_INS);
-    bzero(obuf->fontstat, FONTSTAT_SIZE);
-}
-
-void
-restore_fonteffect(struct html_feed_environ *h_env, struct readbuffer *obuf)
-{
-    if (obuf->fontstat_sp > 0)
-	obuf->fontstat_sp--;
-    if (obuf->fontstat_sp < FONT_STACK_SIZE)
-	bcopy(obuf->fontstat_stack[obuf->fontstat_sp], obuf->fontstat,
-	      FONTSTAT_SIZE);
-    if (obuf->in_bold)
-	push_tag(obuf, "<b>", HTML_B);
-    if (obuf->in_italic)
-	push_tag(obuf, "<i>", HTML_I);
-    if (obuf->in_under)
-	push_tag(obuf, "<u>", HTML_U);
-    if (obuf->in_strike)
-	push_tag(obuf, "<s>", HTML_S);
-    if (obuf->in_ins)
-	push_tag(obuf, "<ins>", HTML_INS);
-}
 
 static Str
 process_title(struct parsed_tag *tag)
@@ -4331,949 +3890,6 @@ getMetaRefreshParam(char *q, Str *refresh_uri)
     return refresh_interval;
 }
 
-int
-HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
-{
-    char *p, *q, *r;
-    int i, w, x, y, z, count, width;
-    struct readbuffer *obuf = h_env->obuf;
-    struct environment *envs = h_env->envs;
-    Str tmp;
-    int hseq;
-    int cmd;
-#ifdef ID_EXT
-    char *id = NULL;
-#endif				/* ID_EXT */
-
-    cmd = tag->tagid;
-
-    if (obuf->flag & RB_PRE) {
-	switch (cmd) {
-	case HTML_NOBR:
-	case HTML_N_NOBR:
-	case HTML_PRE_INT:
-	case HTML_N_PRE_INT:
-	    return 1;
-	}
-    }
-
-    switch (cmd) {
-    case HTML_B:
-	obuf->in_bold++;
-	if (obuf->in_bold > 1)
-	    return 1;
-	return 0;
-    case HTML_N_B:
-	if (obuf->in_bold == 1 && close_effect0(obuf, HTML_B))
-	    obuf->in_bold = 0;
-	if (obuf->in_bold > 0) {
-	    obuf->in_bold--;
-	    if (obuf->in_bold == 0)
-		return 0;
-	}
-	return 1;
-    case HTML_I:
-	obuf->in_italic++;
-	if (obuf->in_italic > 1)
-	    return 1;
-	return 0;
-    case HTML_N_I:
-	if (obuf->in_italic == 1 && close_effect0(obuf, HTML_I))
-	    obuf->in_italic = 0;
-	if (obuf->in_italic > 0) {
-	    obuf->in_italic--;
-	    if (obuf->in_italic == 0)
-		return 0;
-	}
-	return 1;
-    case HTML_U:
-	obuf->in_under++;
-	if (obuf->in_under > 1)
-	    return 1;
-	return 0;
-    case HTML_N_U:
-	if (obuf->in_under == 1 && close_effect0(obuf, HTML_U))
-	    obuf->in_under = 0;
-	if (obuf->in_under > 0) {
-	    obuf->in_under--;
-	    if (obuf->in_under == 0)
-		return 0;
-	}
-	return 1;
-    case HTML_EM:
-	HTMLlineproc1("<i>", h_env);
-	return 1;
-    case HTML_N_EM:
-	HTMLlineproc1("</i>", h_env);
-	return 1;
-    case HTML_STRONG:
-	HTMLlineproc1("<b>", h_env);
-	return 1;
-    case HTML_N_STRONG:
-	HTMLlineproc1("</b>", h_env);
-	return 1;
-    case HTML_Q:
-	HTMLlineproc1("`", h_env);
-	return 1;
-    case HTML_N_Q:
-	HTMLlineproc1("'", h_env);
-	return 1;
-    case HTML_P:
-    case HTML_N_P:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 1, h_env->limit);
-	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			 h_env->limit);
-	}
-	obuf->flag |= RB_IGNORE_P;
-	if (cmd == HTML_P) {
-	    set_alignment(obuf, tag);
-	    obuf->flag |= RB_P;
-	}
-	return 1;
-    case HTML_BR:
-	flushline(h_env, obuf, envs[h_env->envc].indent, 1, h_env->limit);
-	h_env->blank_lines = 0;
-	return 1;
-    case HTML_H:
-	if (!(obuf->flag & (RB_PREMODE | RB_IGNORE_P))) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			 h_env->limit);
-	}
-	HTMLlineproc1("<b>", h_env);
-	set_alignment(obuf, tag);
-	return 1;
-    case HTML_N_H:
-	HTMLlineproc1("</b>", h_env);
-	if (!(obuf->flag & RB_PREMODE)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	}
-	do_blankline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	RB_RESTORE_FLAG(obuf);
-	close_anchor(h_env, obuf);
-	obuf->flag |= RB_IGNORE_P;
-	return 1;
-    case HTML_UL:
-    case HTML_OL:
-    case HTML_BLQ:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	    if (!(obuf->flag & RB_PREMODE) &&
-		(h_env->envc == 0 || cmd == HTML_BLQ))
-		do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			     h_env->limit);
-	}
-	PUSH_ENV(cmd);
-	if (cmd == HTML_UL || cmd == HTML_OL) {
-	    if (parsedtag_get_value(tag, ATTR_START, &count)) {
-		envs[h_env->envc].count = count - 1;
-	    }
-	}
-	if (cmd == HTML_OL) {
-	    envs[h_env->envc].type = '1';
-	    if (parsedtag_get_value(tag, ATTR_TYPE, &p)) {
-		envs[h_env->envc].type = (int)*p;
-	    }
-	}
-	if (cmd == HTML_UL)
-	    envs[h_env->envc].type = ul_type(tag, 0);
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	return 1;
-    case HTML_N_UL:
-    case HTML_N_OL:
-    case HTML_N_DL:
-    case HTML_N_BLQ:
-	CLOSE_DT;
-	CLOSE_A;
-	if (h_env->envc > 0) {
-	    flushline(h_env, obuf, envs[h_env->envc - 1].indent, 0,
-		      h_env->limit);
-	    POP_ENV;
-	    if (!(obuf->flag & RB_PREMODE) &&
-		(h_env->envc == 0 || cmd == HTML_N_DL || cmd == HTML_N_BLQ)) {
-		do_blankline(h_env, obuf,
-			     envs[h_env->envc].indent,
-			     INDENT_INCR, h_env->limit);
-		obuf->flag |= RB_IGNORE_P;
-	    }
-	}
-	close_anchor(h_env, obuf);
-	return 1;
-    case HTML_DL:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	    if (!(obuf->flag & RB_PREMODE))
-		do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			     h_env->limit);
-	}
-	PUSH_ENV(cmd);
-	if (parsedtag_exists(tag, ATTR_COMPACT))
-	    envs[h_env->envc].env = HTML_DL_COMPACT;
-	obuf->flag |= RB_IGNORE_P;
-	return 1;
-    case HTML_LI:
-	CLOSE_A;
-	CLOSE_DT;
-	if (h_env->envc > 0) {
-	    Str num;
-	    flushline(h_env, obuf,
-		      envs[h_env->envc - 1].indent, 0, h_env->limit);
-	    envs[h_env->envc].count++;
-	    if (parsedtag_get_value(tag, ATTR_VALUE, &p)) {
-		count = atoi(p);
-		if (count > 0)
-		    envs[h_env->envc].count = count;
-		else
-		    envs[h_env->envc].count = 0;
-	    }
-	    switch (envs[h_env->envc].env) {
-	    case HTML_UL:
-		envs[h_env->envc].type = ul_type(tag, envs[h_env->envc].type);
-		for (i = 0; i < INDENT_INCR - 3; i++)
-		    push_charp(obuf, 1, NBSP, PC_ASCII);
-		tmp = Strnew();
-		switch (envs[h_env->envc].type) {
-		case 'd':
-		    push_symbol(tmp, UL_SYMBOL_DISC, symbol_width, 1);
-		    break;
-		case 'c':
-		    push_symbol(tmp, UL_SYMBOL_CIRCLE, symbol_width, 1);
-		    break;
-		case 's':
-		    push_symbol(tmp, UL_SYMBOL_SQUARE, symbol_width, 1);
-		    break;
-		default:
-		    push_symbol(tmp,
-				UL_SYMBOL((h_env->envc_real -
-					   1) % MAX_UL_LEVEL), symbol_width,
-				1);
-		    break;
-		}
-		if (symbol_width == 1)
-		    push_charp(obuf, 1, NBSP, PC_ASCII);
-		push_str(obuf, symbol_width, tmp, PC_ASCII);
-		push_charp(obuf, 1, NBSP, PC_ASCII);
-		set_space_to_prevchar(obuf->prevchar);
-		break;
-	    case HTML_OL:
-		if (parsedtag_get_value(tag, ATTR_TYPE, &p))
-		    envs[h_env->envc].type = (int)*p;
-		switch ((envs[h_env->envc].count > 0)? envs[h_env->envc].type: '1') {
-		case 'i':
-		    num = romanNumeral(envs[h_env->envc].count);
-		    break;
-		case 'I':
-		    num = romanNumeral(envs[h_env->envc].count);
-		    Strupper(num);
-		    break;
-		case 'a':
-		    num = romanAlphabet(envs[h_env->envc].count);
-		    break;
-		case 'A':
-		    num = romanAlphabet(envs[h_env->envc].count);
-		    Strupper(num);
-		    break;
-		default:
-		    num = Sprintf("%d", envs[h_env->envc].count);
-		    break;
-		}
-		if (INDENT_INCR >= 4)
-		    Strcat_charp(num, ". ");
-		else
-		    Strcat_char(num, '.');
-		push_spaces(obuf, 1, INDENT_INCR - num->length);
-		push_str(obuf, num->length, num, PC_ASCII);
-		if (INDENT_INCR >= 4)
-		    set_space_to_prevchar(obuf->prevchar);
-		break;
-	    default:
-		push_spaces(obuf, 1, INDENT_INCR);
-		break;
-	    }
-	}
-	else {
-	    flushline(h_env, obuf, 0, 0, h_env->limit);
-	}
-	obuf->flag |= RB_IGNORE_P;
-	return 1;
-    case HTML_DT:
-	CLOSE_A;
-	if (h_env->envc == 0 ||
-	    (h_env->envc_real < h_env->nenv &&
-	     envs[h_env->envc].env != HTML_DL &&
-	     envs[h_env->envc].env != HTML_DL_COMPACT)) {
-	    PUSH_ENV(HTML_DL);
-	}
-	if (h_env->envc > 0) {
-	    flushline(h_env, obuf,
-		      envs[h_env->envc - 1].indent, 0, h_env->limit);
-	}
-	if (!(obuf->flag & RB_IN_DT)) {
-	    HTMLlineproc1("<b>", h_env);
-	    obuf->flag |= RB_IN_DT;
-	}
-	obuf->flag |= RB_IGNORE_P;
-	return 1;
-    case HTML_DD:
-	CLOSE_A;
-	CLOSE_DT;
-	if (envs[h_env->envc].env == HTML_DL_COMPACT) {
-	    if (obuf->pos > envs[h_env->envc].indent)
-		flushline(h_env, obuf, envs[h_env->envc].indent, 0,
-			  h_env->limit);
-	    else
-		push_spaces(obuf, 1, envs[h_env->envc].indent - obuf->pos);
-	}
-	else
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	/* obuf->flag |= RB_IGNORE_P; */
-	return 1;
-    case HTML_TITLE:
-	close_anchor(h_env, obuf);
-	process_title(tag);
-	obuf->flag |= RB_TITLE;
-	obuf->end_tag = HTML_N_TITLE;
-	return 1;
-    case HTML_N_TITLE:
-	if (!(obuf->flag & RB_TITLE))
-	    return 1;
-	obuf->flag &= ~RB_TITLE;
-	obuf->end_tag = 0;
-	tmp = process_n_title(tag);
-	if (tmp)
-	    HTMLlineproc1(tmp->ptr, h_env);
-	return 1;
-    case HTML_TITLE_ALT:
-	if (parsedtag_get_value(tag, ATTR_TITLE, &p))
-	    h_env->title = html_unquote(p);
-	return 0;
-    case HTML_FRAMESET:
-	PUSH_ENV(cmd);
-	push_charp(obuf, 9, "--FRAME--", PC_ASCII);
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	return 0;
-    case HTML_N_FRAMESET:
-	if (h_env->envc > 0) {
-	    POP_ENV;
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	}
-	return 0;
-    case HTML_NOFRAMES:
-	CLOSE_A;
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	obuf->flag |= (RB_NOFRAMES | RB_IGNORE_P);
-	/* istr = str; */
-	return 1;
-    case HTML_N_NOFRAMES:
-	CLOSE_A;
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	obuf->flag &= ~RB_NOFRAMES;
-	return 1;
-    case HTML_FRAME:
-	q = r = NULL;
-	parsedtag_get_value(tag, ATTR_SRC, &q);
-	parsedtag_get_value(tag, ATTR_NAME, &r);
-	if (q) {
-	    q = html_quote(q);
-	    push_tag(obuf, Sprintf("<a hseq=\"%d\" href=\"%s\">",
-				   cur_hseq++, q)->ptr, HTML_A);
-	    if (r)
-		q = html_quote(r);
-	    push_charp(obuf, get_strwidth(q), q, PC_ASCII);
-	    push_tag(obuf, "</a>", HTML_N_A);
-	}
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	return 0;
-    case HTML_HR:
-	close_anchor(h_env, obuf);
-	tmp = process_hr(tag, h_env->limit, envs[h_env->envc].indent);
-	HTMLlineproc1(tmp->ptr, h_env);
-	set_space_to_prevchar(obuf->prevchar);
-	return 1;
-    case HTML_PRE:
-	x = parsedtag_exists(tag, ATTR_FOR_TABLE);
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	    if (!x)
-		do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			     h_env->limit);
-	}
-	else
-	    fillline(obuf, envs[h_env->envc].indent);
-	obuf->flag |= (RB_PRE | RB_IGNORE_P);
-	/* istr = str; */
-	return 1;
-    case HTML_N_PRE:
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			 h_env->limit);
-	    obuf->flag |= RB_IGNORE_P;
-	    h_env->blank_lines++;
-	}
-	obuf->flag &= ~RB_PRE;
-	close_anchor(h_env, obuf);
-	return 1;
-    case HTML_PRE_INT:
-	i = obuf->line->length;
-	append_tags(obuf);
-	if (!(obuf->flag & RB_SPECIAL)) {
-	    set_breakpoint(obuf, obuf->line->length - i);
-	}
-	obuf->flag |= RB_PRE_INT;
-	return 0;
-    case HTML_N_PRE_INT:
-	push_tag(obuf, "</pre_int>", HTML_N_PRE_INT);
-	obuf->flag &= ~RB_PRE_INT;
-	if (!(obuf->flag & RB_SPECIAL) && obuf->pos > obuf->bp.pos) {
-	    set_prevchar(obuf->prevchar, "", 0);
-	    obuf->prev_ctype = PC_CTRL;
-	}
-	return 1;
-    case HTML_NOBR:
-	obuf->flag |= RB_NOBR;
-	obuf->nobr_level++;
-	return 0;
-    case HTML_N_NOBR:
-	if (obuf->nobr_level > 0)
-	    obuf->nobr_level--;
-	if (obuf->nobr_level == 0)
-	    obuf->flag &= ~RB_NOBR;
-	return 0;
-    case HTML_PRE_PLAIN:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			 h_env->limit);
-	}
-	obuf->flag |= (RB_PRE | RB_IGNORE_P);
-	return 1;
-    case HTML_N_PRE_PLAIN:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			 h_env->limit);
-	    obuf->flag |= RB_IGNORE_P;
-	}
-	obuf->flag &= ~RB_PRE;
-	return 1;
-    case HTML_LISTING:
-    case HTML_XMP:
-    case HTML_PLAINTEXT:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			 h_env->limit);
-	}
-	obuf->flag |= (RB_PLAIN | RB_IGNORE_P);
-	switch (cmd) {
-	case HTML_LISTING:
-	    obuf->end_tag = HTML_N_LISTING;
-	    break;
-	case HTML_XMP:
-	    obuf->end_tag = HTML_N_XMP;
-	    break;
-	case HTML_PLAINTEXT:
-	    obuf->end_tag = MAX_HTMLTAG;
-	    break;
-	}
-	return 1;
-    case HTML_N_LISTING:
-    case HTML_N_XMP:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P)) {
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			 h_env->limit);
-	    obuf->flag |= RB_IGNORE_P;
-	}
-	obuf->flag &= ~RB_PLAIN;
-	obuf->end_tag = 0;
-	return 1;
-    case HTML_SCRIPT:
-	obuf->flag |= RB_SCRIPT;
-	obuf->end_tag = HTML_N_SCRIPT;
-	return 1;
-    case HTML_STYLE:
-	obuf->flag |= RB_STYLE;
-	obuf->end_tag = HTML_N_STYLE;
-	return 1;
-    case HTML_N_SCRIPT:
-	obuf->flag &= ~RB_SCRIPT;
-	obuf->end_tag = 0;
-	return 1;
-    case HTML_N_STYLE:
-	obuf->flag &= ~RB_STYLE;
-	obuf->end_tag = 0;
-	return 1;
-    case HTML_A:
-	if (obuf->anchor.url)
-	    close_anchor(h_env, obuf);
-
-	hseq = 0;
-
-	if (parsedtag_get_value(tag, ATTR_HREF, &p))
-	    obuf->anchor.url = Strnew_charp(p)->ptr;
-	if (parsedtag_get_value(tag, ATTR_TARGET, &p))
-	    obuf->anchor.target = Strnew_charp(p)->ptr;
-	if (parsedtag_get_value(tag, ATTR_REFERER, &p))
-	    obuf->anchor.referer = Strnew_charp(p)->ptr;
-	if (parsedtag_get_value(tag, ATTR_TITLE, &p))
-	    obuf->anchor.title = Strnew_charp(p)->ptr;
-	if (parsedtag_get_value(tag, ATTR_ACCESSKEY, &p))
-	    obuf->anchor.accesskey = (unsigned char)*p;
-	if (parsedtag_get_value(tag, ATTR_HSEQ, &hseq))
-	    obuf->anchor.hseq = hseq;
-
-	if (hseq == 0 && obuf->anchor.url) {
-	    obuf->anchor.hseq = cur_hseq;
-	    tmp = process_anchor(tag, h_env->tagbuf->ptr);
-	    push_tag(obuf, tmp->ptr, HTML_A);
-	    if (displayLinkNumber)
-		HTMLlineproc1(getLinkNumberStr(-1)->ptr, h_env);
-	    return 1;
-	}
-	return 0;
-    case HTML_N_A:
-	close_anchor(h_env, obuf);
-	return 1;
-    case HTML_IMG:
-	tmp = process_img(tag, h_env->limit);
-	HTMLlineproc1(tmp->ptr, h_env);
-	return 1;
-    case HTML_IMG_ALT:
-	if (parsedtag_get_value(tag, ATTR_SRC, &p))
-	    obuf->img_alt = Strnew_charp(p);
-#ifdef USE_IMAGE
-	i = 0;
-	if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i)) {
-	    if (i > obuf->top_margin)
-		obuf->top_margin = i;
-	}
-	i = 0;
-	if (parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &i)) {
-	    if (i > obuf->bottom_margin)
-		obuf->bottom_margin = i;
-	}
-#endif
-	return 0;
-    case HTML_N_IMG_ALT:
-	if (obuf->img_alt) {
-	    if (!close_effect0(obuf, HTML_IMG_ALT))
-		push_tag(obuf, "</img_alt>", HTML_N_IMG_ALT);
-	    obuf->img_alt = NULL;
-	}
-	return 1;
-    case HTML_INPUT_ALT:
-	i = 0;
-	if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i)) {
-	    if (i > obuf->top_margin)
-		obuf->top_margin = i;
-	}
-	i = 0;
-	if (parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &i)) {
-	    if (i > obuf->bottom_margin)
-		obuf->bottom_margin = i;
-	}
-	return 0;
-    case HTML_TABLE:
-	close_anchor(h_env, obuf);
-	obuf->table_level++;
-	if (obuf->table_level >= MAX_TABLE)
-	    break;
-	w = BORDER_NONE;
-	/* x: cellspacing, y: cellpadding */
-	x = 2;
-	y = 1;
-	z = 0;
-	width = 0;
-	if (parsedtag_exists(tag, ATTR_BORDER)) {
-	    if (parsedtag_get_value(tag, ATTR_BORDER, &w)) {
-		if (w > 2)
-		    w = BORDER_THICK;
-		else if (w < 0) {	/* weird */
-		    w = BORDER_THIN;
-		}
-	    }
-	    else
-		w = BORDER_THIN;
-	}
-	if (parsedtag_get_value(tag, ATTR_WIDTH, &i)) {
-	    if (obuf->table_level == 0)
-		width = REAL_WIDTH(i, h_env->limit - envs[h_env->envc].indent);
-	    else
-		width = RELATIVE_WIDTH(i);
-	}
-	if (parsedtag_exists(tag, ATTR_HBORDER))
-	    w = BORDER_NOWIN;
-	parsedtag_get_value(tag, ATTR_CELLSPACING, &x);
-	parsedtag_get_value(tag, ATTR_CELLPADDING, &y);
-	parsedtag_get_value(tag, ATTR_VSPACE, &z);
-#ifdef ID_EXT
-	parsedtag_get_value(tag, ATTR_ID, &id);
-#endif				/* ID_EXT */
-	tables[obuf->table_level] = begin_table(w, x, y, z);
-#ifdef ID_EXT
-	if (id != NULL)
-	    tables[obuf->table_level]->id = Strnew_charp(id);
-#endif				/* ID_EXT */
-	table_mode[obuf->table_level].pre_mode = 0;
-	table_mode[obuf->table_level].indent_level = 0;
-	table_mode[obuf->table_level].nobr_level = 0;
-	table_mode[obuf->table_level].caption = 0;
-	table_mode[obuf->table_level].end_tag = 0;	/* HTML_UNKNOWN */
-#ifndef TABLE_EXPAND
-	tables[obuf->table_level]->total_width = width;
-#else
-	tables[obuf->table_level]->real_width = width;
-	tables[obuf->table_level]->total_width = 0;
-#endif
-	return 1;
-    case HTML_N_TABLE:
-	/* should be processed in HTMLlineproc() */
-	return 1;
-    case HTML_CENTER:
-	CLOSE_A;
-	if (!(obuf->flag & (RB_PREMODE | RB_IGNORE_P)))
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	RB_SAVE_FLAG(obuf);
-	RB_SET_ALIGN(obuf, RB_CENTER);
-	return 1;
-    case HTML_N_CENTER:
-	CLOSE_A;
-	if (!(obuf->flag & RB_PREMODE))
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	RB_RESTORE_FLAG(obuf);
-	return 1;
-    case HTML_DIV:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P))
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	set_alignment(obuf, tag);
-	return 1;
-    case HTML_N_DIV:
-	CLOSE_A;
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	RB_RESTORE_FLAG(obuf);
-	return 1;
-    case HTML_DIV_INT:
-	CLOSE_P;
-	if (!(obuf->flag & RB_IGNORE_P))
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	set_alignment(obuf, tag);
-	return 1;
-    case HTML_N_DIV_INT:
-	CLOSE_P;
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	RB_RESTORE_FLAG(obuf);
-	return 1;
-    case HTML_FORM:
-	CLOSE_A;
-	if (!(obuf->flag & RB_IGNORE_P))
-	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	tmp = process_form(tag);
-	if (tmp)
-	    HTMLlineproc1(tmp->ptr, h_env);
-	return 1;
-    case HTML_N_FORM:
-	CLOSE_A;
-	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
-	obuf->flag |= RB_IGNORE_P;
-	process_n_form();
-	return 1;
-    case HTML_INPUT:
-	close_anchor(h_env, obuf);
-	tmp = process_input(tag);
-	if (tmp)
-	    HTMLlineproc1(tmp->ptr, h_env);
-	return 1;
-    case HTML_SELECT:
-	close_anchor(h_env, obuf);
-	tmp = process_select(tag);
-	if (tmp)
-	    HTMLlineproc1(tmp->ptr, h_env);
-	obuf->flag |= RB_INSELECT;
-	obuf->end_tag = HTML_N_SELECT;
-	return 1;
-    case HTML_N_SELECT:
-	obuf->flag &= ~RB_INSELECT;
-	obuf->end_tag = 0;
-	tmp = process_n_select();
-	if (tmp)
-	    HTMLlineproc1(tmp->ptr, h_env);
-	return 1;
-    case HTML_OPTION:
-	/* nothing */
-	return 1;
-    case HTML_TEXTAREA:
-	close_anchor(h_env, obuf);
-	tmp = process_textarea(tag, h_env->limit);
-	if (tmp)
-	    HTMLlineproc1(tmp->ptr, h_env);
-	obuf->flag |= RB_INTXTA;
-	obuf->end_tag = HTML_N_TEXTAREA;
-	return 1;
-    case HTML_N_TEXTAREA:
-	obuf->flag &= ~RB_INTXTA;
-	obuf->end_tag = 0;
-	tmp = process_n_textarea();
-	if (tmp)
-	    HTMLlineproc1(tmp->ptr, h_env);
-	return 1;
-    case HTML_ISINDEX:
-	p = "";
-	q = "!CURRENT_URL!";
-	parsedtag_get_value(tag, ATTR_PROMPT, &p);
-	parsedtag_get_value(tag, ATTR_ACTION, &q);
-	tmp = Strnew_m_charp("<form method=get action=\"",
-			     html_quote(q),
-			     "\">",
-			     html_quote(p),
-			     "<input type=text name=\"\" accept></form>",
-			     NULL);
-	HTMLlineproc1(tmp->ptr, h_env);
-	return 1;
-    case HTML_META:
-	p = q = NULL;
-	parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &p);
-	parsedtag_get_value(tag, ATTR_CONTENT, &q);
-#ifdef USE_M17N
-	if (p && q && !strcasecmp(p, "Content-Type") &&
-	    (q = strcasestr(q, "charset")) != NULL) {
-	    q += 7;
-	    SKIP_BLANKS(q);
-	    if (*q == '=') {
-		q++;
-		SKIP_BLANKS(q);
-		meta_charset = wc_guess_charset(q, 0);
-	    }
-	}
-	else
-#endif
-	if (p && q && !strcasecmp(p, "refresh")) {
-	    int refresh_interval;
-	    tmp = NULL;
-	    refresh_interval = getMetaRefreshParam(q, &tmp);
-	    if (tmp) {
-		q = html_quote(tmp->ptr);
-		tmp = Sprintf("Refresh (%d sec) <a href=\"%s\">%s</a>",
-			      refresh_interval, q, q);
-	    }
-	    else if (refresh_interval > 0)
-		tmp = Sprintf("Refresh (%d sec)", refresh_interval);
-	    if (tmp) {
-		HTMLlineproc1(tmp->ptr, h_env);
-		do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
-			     h_env->limit);
-		if (!is_redisplay &&
-		    !((obuf->flag & RB_NOFRAMES) && RenderFrame)) {
-		    tag->need_reconstruct = TRUE;
-		    return 0;
-		}
-	    }
-	}
-	return 1;
-    case HTML_BASE:
-#ifdef USE_IMAGE
-	p = NULL;
-	if (parsedtag_get_value(tag, ATTR_HREF, &p)) {
-	    if (!cur_baseURL)
-		cur_baseURL = New(ParsedURL);
-	    parseURL(p, cur_baseURL, NULL);
-	}
-#endif
-    case HTML_MAP:
-    case HTML_N_MAP:
-    case HTML_AREA:
-	return 0;
-    case HTML_DEL:
-	switch (displayInsDel) {
-	case DISPLAY_INS_DEL_SIMPLE:
-	    obuf->flag |= RB_DEL;
-	    break;
-	case DISPLAY_INS_DEL_NORMAL:
-	    HTMLlineproc1("<U>[DEL:</U>", h_env);
-	    break;
-	case DISPLAY_INS_DEL_FONTIFY:
-	    obuf->in_strike++;
-	    if (obuf->in_strike == 1) {
-		push_tag(obuf, "<s>", HTML_S);
-	    }
-	    break;
-	}
-	return 1;
-    case HTML_N_DEL:
-	switch (displayInsDel) {
-	case DISPLAY_INS_DEL_SIMPLE:
-	    obuf->flag &= ~RB_DEL;
-	    break;
-	case DISPLAY_INS_DEL_NORMAL:
-	    HTMLlineproc1("<U>:DEL]</U>", h_env);
-	case DISPLAY_INS_DEL_FONTIFY:
-	    if (obuf->in_strike == 0)
-		return 1;
-	    if (obuf->in_strike == 1 && close_effect0(obuf, HTML_S))
-		obuf->in_strike = 0;
-	    if (obuf->in_strike > 0) {
-		obuf->in_strike--;
-		if (obuf->in_strike == 0) {
-		    push_tag(obuf, "</s>", HTML_N_S);
-		}
-	    }
-	    break;
-	}
-	return 1;
-    case HTML_S:
-	switch (displayInsDel) {
-	case DISPLAY_INS_DEL_SIMPLE:
-	    obuf->flag |= RB_S;
-	    break;
-	case DISPLAY_INS_DEL_NORMAL:
-	    HTMLlineproc1("<U>[S:</U>", h_env);
-	    break;
-	case DISPLAY_INS_DEL_FONTIFY:
-	    obuf->in_strike++;
-	    if (obuf->in_strike == 1) {
-		push_tag(obuf, "<s>", HTML_S);
-	    }
-	    break;
-	}
-	return 1;
-    case HTML_N_S:
-	switch (displayInsDel) {
-	case DISPLAY_INS_DEL_SIMPLE:
-	    obuf->flag &= ~RB_S;
-	    break;
-	case DISPLAY_INS_DEL_NORMAL:
-	    HTMLlineproc1("<U>:S]</U>", h_env);
-	    break;
-	case DISPLAY_INS_DEL_FONTIFY:
-	    if (obuf->in_strike == 0)
-		return 1;
-	    if (obuf->in_strike == 1 && close_effect0(obuf, HTML_S))
-		obuf->in_strike = 0;
-	    if (obuf->in_strike > 0) {
-		obuf->in_strike--;
-		if (obuf->in_strike == 0) {
-		    push_tag(obuf, "</s>", HTML_N_S);
-		}
-	    }
-	}
-	return 1;
-    case HTML_INS:
-	switch (displayInsDel) {
-	case DISPLAY_INS_DEL_SIMPLE:
-	    break;
-	case DISPLAY_INS_DEL_NORMAL:
-	    HTMLlineproc1("<U>[INS:</U>", h_env);
-	    break;
-	case DISPLAY_INS_DEL_FONTIFY:
-	    obuf->in_ins++;
-	    if (obuf->in_ins == 1) {
-		push_tag(obuf, "<ins>", HTML_INS);
-	    }
-	    break;
-	}
-	return 1;
-    case HTML_N_INS:
-	switch (displayInsDel) {
-	case DISPLAY_INS_DEL_SIMPLE:
-	    break;
-	case DISPLAY_INS_DEL_NORMAL:
-	    HTMLlineproc1("<U>:INS]</U>", h_env);
-	    break;
-	case DISPLAY_INS_DEL_FONTIFY:
-	    if (obuf->in_ins == 0)
-		return 1;
-	    if (obuf->in_ins == 1 && close_effect0(obuf, HTML_INS))
-		obuf->in_ins = 0;
-	    if (obuf->in_ins > 0) {
-		obuf->in_ins--;
-		if (obuf->in_ins == 0) {
-		    push_tag(obuf, "</ins>", HTML_N_INS);
-		}
-	    }
-	    break;
-	}
-	return 1;
-    case HTML_SUP:
-	if (!(obuf->flag & (RB_DEL | RB_S)))
-	    HTMLlineproc1("^", h_env);
-	return 1;
-    case HTML_N_SUP:
-	return 1;
-    case HTML_SUB:
-	if (!(obuf->flag & (RB_DEL | RB_S)))
-	    HTMLlineproc1("[", h_env);
-	return 1;
-    case HTML_N_SUB:
-	if (!(obuf->flag & (RB_DEL | RB_S)))
-	    HTMLlineproc1("]", h_env);
-	return 1;
-    case HTML_FONT:
-    case HTML_N_FONT:
-    case HTML_NOP:
-	return 1;
-    case HTML_BGSOUND:
-	if (view_unseenobject) {
-	    if (parsedtag_get_value(tag, ATTR_SRC, &p)) {
-		Str s;
-		q = html_quote(p);
-		s = Sprintf("<A HREF=\"%s\">bgsound(%s)</A>", q, q);
-		HTMLlineproc1(s->ptr, h_env);
-	    }
-	}
-	return 1;
-    case HTML_EMBED:
-	if (view_unseenobject) {
-	    if (parsedtag_get_value(tag, ATTR_SRC, &p)) {
-		Str s;
-		q = html_quote(p);
-		s = Sprintf("<A HREF=\"%s\">embed(%s)</A>", q, q);
-		HTMLlineproc1(s->ptr, h_env);
-	    }
-	}
-	return 1;
-    case HTML_APPLET:
-	if (view_unseenobject) {
-	    if (parsedtag_get_value(tag, ATTR_ARCHIVE, &p)) {
-		Str s;
-		q = html_quote(p);
-		s = Sprintf("<A HREF=\"%s\">applet archive(%s)</A>", q, q);
-		HTMLlineproc1(s->ptr, h_env);
-	    }
-	}
-	return 1;
-    case HTML_BODY:
-	if (view_unseenobject) {
-	    if (parsedtag_get_value(tag, ATTR_BACKGROUND, &p)) {
-		Str s;
-		q = html_quote(p);
-		s = Sprintf("<IMG SRC=\"%s\" ALT=\"bg image(%s)\"><BR>", q, q);
-		HTMLlineproc1(s->ptr, h_env);
-	    }
-	}
-    case HTML_N_HEAD:
-	if (obuf->flag & RB_TITLE)
-	    HTMLlineproc1("</title>", h_env);
-    case HTML_HEAD:
-    case HTML_N_BODY:
-	return 1;
-    default:
-	/* obuf->prevchar = '\0'; */
-	return 0;
-    }
-    /* not reached */
-    return 0;
-}
 
 #define PPUSH(p,c) {outp[pos]=(p);outc[pos]=(c);pos++;}
 #define PSIZE	\
@@ -6089,403 +4705,6 @@ proc_escape(struct readbuffer *obuf, char **str_return)
 }
 
 
-static int
-need_flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
-	       Lineprop mode)
-{
-    char ch;
-
-    if (obuf->flag & RB_PRE_INT) {
-	if (obuf->pos > h_env->limit)
-	    return 1;
-	else
-	    return 0;
-    }
-
-    ch = Strlastchar(obuf->line);
-    /* if (ch == ' ' && obuf->tag_sp > 0) */
-    if (ch == ' ')
-	return 0;
-
-    if (obuf->pos > h_env->limit)
-	return 1;
-
-    return 0;
-}
-
-static int
-table_width(struct html_feed_environ *h_env, int table_level)
-{
-    int width;
-    if (table_level < 0)
-	return 0;
-    width = tables[table_level]->total_width;
-    if (table_level > 0 || width > 0)
-	return width;
-    return h_env->limit - h_env->envs[h_env->envc].indent;
-}
-
-/* HTML processing first pass */
-void
-HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
-{
-    Lineprop mode;
-    int cmd;
-    struct readbuffer *obuf = h_env->obuf;
-    int indent, delta;
-    struct parsed_tag *tag;
-    Str tokbuf;
-    struct table *tbl = NULL;
-    struct table_mode *tbl_mode = NULL;
-    int tbl_width = 0;
-#ifdef USE_M17N
-    int is_hangul, prev_is_hangul = 0;
-#endif
-
-#ifdef DEBUG
-    if (w3m_debug) {
-	FILE *f = fopen("zzzproc1", "a");
-	fprintf(f, "%c%c%c%c",
-		(obuf->flag & RB_PREMODE) ? 'P' : ' ',
-		(obuf->table_level >= 0) ? 'T' : ' ',
-		(obuf->flag & RB_INTXTA) ? 'X' : ' ',
-		(obuf->flag & (RB_SCRIPT | RB_STYLE)) ? 'S' : ' ');
-	fprintf(f, "HTMLlineproc1(\"%s\",%d,%lx)\n", line, h_env->limit,
-		(unsigned long)h_env);
-	fclose(f);
-    }
-#endif
-
-    tokbuf = Strnew();
-
-  table_start:
-    if (obuf->table_level >= 0) {
-	int level = min(obuf->table_level, MAX_TABLE - 1);
-	tbl = tables[level];
-	tbl_mode = &table_mode[level];
-	tbl_width = table_width(h_env, level);
-    }
-
-    while (*line != '\0') {
-	char *str, *p;
-	int is_tag = FALSE;
-	int pre_mode = (obuf->table_level >= 0) ? tbl_mode->pre_mode :
-	    obuf->flag;
-	int end_tag = (obuf->table_level >= 0) ? tbl_mode->end_tag :
-	    obuf->end_tag;
-
-	if (*line == '<' || obuf->status != R_ST_NORMAL) {
-	    /* 
-	     * Tag processing
-	     */
-	    if (obuf->status == R_ST_EOL)
-		obuf->status = R_ST_NORMAL;
-	    else {
-		read_token(h_env->tagbuf, &line, &obuf->status,
-			   pre_mode & RB_PREMODE, obuf->status != R_ST_NORMAL);
-		if (obuf->status != R_ST_NORMAL)
-		    return;
-	    }
-	    if (h_env->tagbuf->length == 0)
-		continue;
-	    str = h_env->tagbuf->ptr;
-	    if (*str == '<') {
-		if (str[1] && REALLY_THE_BEGINNING_OF_A_TAG(str))
-		    is_tag = TRUE;
-		else if (!(pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT |
-				       RB_SCRIPT | RB_STYLE | RB_TITLE))) {
-		    line = Strnew_m_charp(str + 1, line, NULL)->ptr;
-		    str = "&lt;";
-		}
-	    }
-	}
-	else {
-	    read_token(tokbuf, &line, &obuf->status, pre_mode & RB_PREMODE, 0);
-	    if (obuf->status != R_ST_NORMAL)	/* R_ST_AMP ? */
-		obuf->status = R_ST_NORMAL;
-	    str = tokbuf->ptr;
-	}
-
-	if (pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT | RB_SCRIPT |
-			RB_STYLE | RB_TITLE)) {
-	    if (is_tag) {
-		p = str;
-		if ((tag = parse_tag(&p, internal))) {
-		    if (tag->tagid == end_tag ||
-			(pre_mode & RB_INSELECT && tag->tagid == HTML_N_FORM)
-			|| (pre_mode & RB_TITLE
-			    && (tag->tagid == HTML_N_HEAD
-				|| tag->tagid == HTML_BODY)))
-			goto proc_normal;
-		}
-	    }
-	    /* title */
-	    if (pre_mode & RB_TITLE) {
-		feed_title(str);
-		continue;
-	    }
-	    /* select */
-	    if (pre_mode & RB_INSELECT) {
-		if (obuf->table_level >= 0)
-		    goto proc_normal;
-		feed_select(str);
-		continue;
-	    }
-	    if (is_tag) {
-		if (strncmp(str, "<!--", 4) && (p = strchr(str + 1, '<'))) {
-		    str = Strnew_charp_n(str, p - str)->ptr;
-		    line = Strnew_m_charp(p, line, NULL)->ptr;
-		}
-		is_tag = FALSE;
-	    }
-	    if (obuf->table_level >= 0)
-		goto proc_normal;
-	    /* textarea */
-	    if (pre_mode & RB_INTXTA) {
-		feed_textarea(str);
-		continue;
-	    }
-	    /* script */
-	    if (pre_mode & RB_SCRIPT)
-		continue;
-	    /* style */
-	    if (pre_mode & RB_STYLE)
-		continue;
-	}
-
-      proc_normal:
-	if (obuf->table_level >= 0) {
-	    /* 
-	     * within table: in <table>..</table>, all input tokens
-	     * are fed to the table renderer, and then the renderer
-	     * makes HTML output.
-	     */
-	    switch (feed_table(tbl, str, tbl_mode, tbl_width, internal)) {
-	    case 0:
-		/* </table> tag */
-		obuf->table_level--;
-		if (obuf->table_level >= MAX_TABLE - 1)
-		    continue;
-		end_table(tbl);
-		if (obuf->table_level >= 0) {
-		    struct table *tbl0 = tables[obuf->table_level];
-		    str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
-		    pushTable(tbl0, tbl);
-		    tbl = tbl0;
-		    tbl_mode = &table_mode[obuf->table_level];
-		    tbl_width = table_width(h_env, obuf->table_level);
-		    feed_table(tbl, str, tbl_mode, tbl_width, TRUE);
-		    continue;
-		    /* continue to the next */
-		}
-		if (obuf->flag & RB_DEL)
-		    continue;
-		/* all tables have been read */
-		if (tbl->vspace > 0 && !(obuf->flag & RB_IGNORE_P)) {
-		    int indent = h_env->envs[h_env->envc].indent;
-		    flushline(h_env, obuf, indent, 0, h_env->limit);
-		    do_blankline(h_env, obuf, indent, 0, h_env->limit);
-		}
-		save_fonteffect(h_env, obuf);
-		renderTable(tbl, tbl_width, h_env);
-		restore_fonteffect(h_env, obuf);
-		obuf->flag &= ~RB_IGNORE_P;
-		if (tbl->vspace > 0) {
-		    int indent = h_env->envs[h_env->envc].indent;
-		    do_blankline(h_env, obuf, indent, 0, h_env->limit);
-		    obuf->flag |= RB_IGNORE_P;
-		}
-		set_space_to_prevchar(obuf->prevchar);
-		continue;
-	    case 1:
-		/* <table> tag */
-		break;
-	    default:
-		continue;
-	    }
-	}
-
-	if (is_tag) {
-/*** Beginning of a new tag ***/
-	    if ((tag = parse_tag(&str, internal)))
-		cmd = tag->tagid;
-	    else
-		continue;
-	    /* process tags */
-	    if (HTMLtagproc1(tag, h_env) == 0) {
-		/* preserve the tag for second-stage processing */
-		if (parsedtag_need_reconstruct(tag))
-		    h_env->tagbuf = parsedtag2str(tag);
-		push_tag(obuf, h_env->tagbuf->ptr, cmd);
-	    }
-#ifdef ID_EXT
-	    else {
-		process_idattr(obuf, cmd, tag);
-	    }
-#endif				/* ID_EXT */
-	    obuf->bp.init_flag = 1;
-	    clear_ignore_p_flag(cmd, obuf);
-	    if (cmd == HTML_TABLE)
-		goto table_start;
-	    else
-		continue;
-	}
-
-	if (obuf->flag & (RB_DEL | RB_S))
-	    continue;
-	while (*str) {
-	    mode = get_mctype(str);
-	    delta = get_mcwidth(str);
-	    if (obuf->flag & (RB_SPECIAL & ~RB_NOBR)) {
-		char ch = *str;
-		if (!(obuf->flag & RB_PLAIN) && (*str == '&')) {
-		    char *p = str;
-		    int ech = getescapechar(&p);
-		    if (ech == '\n' || ech == '\r') {
-			ch = '\n';
-			str = p - 1;
-		    }
-		    else if (ech == '\t') {
-			ch = '\t';
-			str = p - 1;
-		    }
-		}
-		if (ch != '\n')
-		    obuf->flag &= ~RB_IGNORE_P;
-		if (ch == '\n') {
-		    str++;
-		    if (obuf->flag & RB_IGNORE_P) {
-			obuf->flag &= ~RB_IGNORE_P;
-			continue;
-		    }
-		    if (obuf->flag & RB_PRE_INT)
-			PUSH(' ');
-		    else
-			flushline(h_env, obuf, h_env->envs[h_env->envc].indent,
-				  1, h_env->limit);
-		}
-		else if (ch == '\t') {
-		    do {
-			PUSH(' ');
-		    } while ((h_env->envs[h_env->envc].indent + obuf->pos)
-			     % Tabstop != 0);
-		    str++;
-		}
-		else if (obuf->flag & RB_PLAIN) {
-		    char *p = html_quote_char(*str);
-		    if (p) {
-			push_charp(obuf, 1, p, PC_ASCII);
-			str++;
-		    }
-		    else {
-			proc_mchar(obuf, 1, delta, &str, mode);
-		    }
-		}
-		else {
-		    if (*str == '&')
-			proc_escape(obuf, &str);
-		    else
-			proc_mchar(obuf, 1, delta, &str, mode);
-		}
-		if (obuf->flag & (RB_SPECIAL & ~RB_PRE_INT))
-		    continue;
-	    }
-	    else {
-		if (!IS_SPACE(*str))
-		    obuf->flag &= ~RB_IGNORE_P;
-		if ((mode == PC_ASCII || mode == PC_CTRL) && IS_SPACE(*str)) {
-		    if (*obuf->prevchar->ptr != ' ') {
-			PUSH(' ');
-		    }
-		    str++;
-		}
-		else {
-#ifdef USE_M17N
-		    if (mode == PC_KANJI1)
-			is_hangul = wtf_is_hangul((wc_uchar *) str);
-		    else
-			is_hangul = 0;
-		    if (!SimplePreserveSpace && mode == PC_KANJI1 &&
-			!is_hangul && !prev_is_hangul &&
-			obuf->pos > h_env->envs[h_env->envc].indent &&
-			Strlastchar(obuf->line) == ' ') {
-			while (obuf->line->length >= 2 &&
-			       !strncmp(obuf->line->ptr + obuf->line->length -
-					2, "  ", 2)
-			       && obuf->pos >= h_env->envs[h_env->envc].indent) {
-			    Strshrink(obuf->line, 1);
-			    obuf->pos--;
-			}
-			if (obuf->line->length >= 3 &&
-			    obuf->prev_ctype == PC_KANJI1 &&
-			    Strlastchar(obuf->line) == ' ' &&
-			    obuf->pos >= h_env->envs[h_env->envc].indent) {
-			    Strshrink(obuf->line, 1);
-			    obuf->pos--;
-			}
-		    }
-		    prev_is_hangul = is_hangul;
-#endif
-		    if (*str == '&')
-			proc_escape(obuf, &str);
-		    else
-			proc_mchar(obuf, obuf->flag & RB_SPECIAL, delta, &str,
-				   mode);
-		}
-	    }
-	    if (need_flushline(h_env, obuf, mode)) {
-		char *bp = obuf->line->ptr + obuf->bp.len;
-		char *tp = bp - obuf->bp.tlen;
-		int i = 0;
-
-		if (tp > obuf->line->ptr && tp[-1] == ' ')
-		    i = 1;
-
-		indent = h_env->envs[h_env->envc].indent;
-		if (obuf->bp.pos - i > indent) {
-		    Str line;
-		    append_tags(obuf);
-		    line = Strnew_charp(bp);
-		    Strshrink(obuf->line, obuf->line->length - obuf->bp.len);
-#ifdef FORMAT_NICE
-		    if (obuf->pos - i > h_env->limit)
-			obuf->flag |= RB_FILL;
-#endif				/* FORMAT_NICE */
-		    back_to_breakpoint(obuf);
-		    flushline(h_env, obuf, indent, 0, h_env->limit);
-#ifdef FORMAT_NICE
-		    obuf->flag &= ~RB_FILL;
-#endif				/* FORMAT_NICE */
-		    HTMLlineproc1(line->ptr, h_env);
-		}
-	    }
-	}
-    }
-    if (!(obuf->flag & (RB_SPECIAL | RB_INTXTA | RB_INSELECT))) {
-	char *tp;
-	int i = 0;
-
-	if (obuf->bp.pos == obuf->pos) {
-	    tp = &obuf->line->ptr[obuf->bp.len - obuf->bp.tlen];
-	}
-	else {
-	    tp = &obuf->line->ptr[obuf->line->length];
-	}
-
-	if (tp > obuf->line->ptr && tp[-1] == ' ')
-	    i = 1;
-	indent = h_env->envs[h_env->envc].indent;
-	if (obuf->pos - i > h_env->limit) {
-#ifdef FORMAT_NICE
-	    obuf->flag |= RB_FILL;
-#endif				/* FORMAT_NICE */
-	    flushline(h_env, obuf, indent, 0, h_env->limit);
-#ifdef FORMAT_NICE
-	    obuf->flag &= ~RB_FILL;
-#endif				/* FORMAT_NICE */
-	}
-    }
-}
 
 extern char *NullLine;
 extern Lineprop NullProp[];
@@ -6752,354 +4971,6 @@ showProgress(clen_t * linelen, clen_t * trbyte)
     }
 }
 
-void
-init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf,
-	  struct environment *envs, int nenv, TextLineList *buf,
-	  int limit, int indent)
-{
-    envs[0].indent = indent;
-
-    obuf->line = Strnew();
-    obuf->cprop = 0;
-    obuf->pos = 0;
-    obuf->prevchar = Strnew_size(8);
-    set_space_to_prevchar(obuf->prevchar);
-    obuf->flag = RB_IGNORE_P;
-    obuf->flag_sp = 0;
-    obuf->status = R_ST_NORMAL;
-    obuf->table_level = -1;
-    obuf->nobr_level = 0;
-    bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
-    obuf->img_alt = 0;
-    obuf->in_bold = 0;
-    obuf->in_italic = 0;
-    obuf->in_under = 0;
-    obuf->in_strike = 0;
-    obuf->in_ins = 0;
-    obuf->prev_ctype = PC_ASCII;
-    obuf->tag_sp = 0;
-    obuf->fontstat_sp = 0;
-    obuf->top_margin = 0;
-    obuf->bottom_margin = 0;
-    obuf->bp.init_flag = 1;
-    set_breakpoint(obuf, 0);
-
-    h_env->buf = buf;
-    h_env->f = NULL;
-    h_env->obuf = obuf;
-    h_env->tagbuf = Strnew();
-    h_env->limit = limit;
-    h_env->maxlimit = 0;
-    h_env->envs = envs;
-    h_env->nenv = nenv;
-    h_env->envc = 0;
-    h_env->envc_real = 0;
-    h_env->title = NULL;
-    h_env->blank_lines = 0;
-}
-
-void
-completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf)
-{
-    close_anchor(h_env, obuf);
-    if (obuf->img_alt) {
-	push_tag(obuf, "</img_alt>", HTML_N_IMG_ALT);
-	obuf->img_alt = NULL;
-    }
-    if (obuf->in_bold) {
-	push_tag(obuf, "</b>", HTML_N_B);
-	obuf->in_bold = 0;
-    }
-    if (obuf->in_italic) {
-	push_tag(obuf, "</i>", HTML_N_I);
-	obuf->in_italic = 0;
-    }
-    if (obuf->in_under) {
-	push_tag(obuf, "</u>", HTML_N_U);
-	obuf->in_under = 0;
-    }
-    if (obuf->in_strike) {
-	push_tag(obuf, "</s>", HTML_N_S);
-	obuf->in_strike = 0;
-    }
-    if (obuf->in_ins) {
-	push_tag(obuf, "</ins>", HTML_N_INS);
-	obuf->in_ins = 0;
-    }
-    if (obuf->flag & RB_INTXTA)
-	HTMLlineproc1("</textarea>", h_env);
-    /* for unbalanced select tag */
-    if (obuf->flag & RB_INSELECT)
-	HTMLlineproc1("</select>", h_env);
-    if (obuf->flag & RB_TITLE)
-	HTMLlineproc1("</title>", h_env);
-
-    /* for unbalanced table tag */
-    if (obuf->table_level >= MAX_TABLE)
-	obuf->table_level = MAX_TABLE - 1;
-
-    while (obuf->table_level >= 0) {
-	table_mode[obuf->table_level].pre_mode
-	    &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
-	HTMLlineproc1("</table>", h_env);
-    }
-}
-
-static void
-print_internal_information(struct html_feed_environ *henv)
-{
-    int i;
-    Str s;
-    TextLineList *tl = newTextLineList();
-
-    s = Strnew_charp("<internal>");
-    pushTextLine(tl, newTextLine(s, 0));
-    if (henv->title) {
-	s = Strnew_m_charp("<title_alt title=\"",
-			   html_quote(henv->title), "\">", NULL);
-	pushTextLine(tl, newTextLine(s, 0));
-    }
-#if 0
-    if (form_max >= 0) {
-	FormList *fp;
-	for (i = 0; i <= form_max; i++) {
-	    fp = forms[i];
-	    s = Sprintf("<form_int fid=\"%d\" action=\"%s\" method=\"%s\"",
-			i, html_quote(fp->action->ptr),
-			(fp->method == FORM_METHOD_POST) ? "post"
-			: ((fp->method ==
-			    FORM_METHOD_INTERNAL) ? "internal" : "get"));
-	    if (fp->target)
-		Strcat(s, Sprintf(" target=\"%s\"", html_quote(fp->target)));
-	    if (fp->enctype == FORM_ENCTYPE_MULTIPART)
-		Strcat_charp(s, " enctype=\"multipart/form-data\"");
-#ifdef USE_M17N
-	    if (fp->charset)
-		Strcat(s, Sprintf(" accept-charset=\"%s\"",
-				  html_quote(fp->charset)));
-#endif
-	    Strcat_charp(s, ">");
-	    pushTextLine(tl, newTextLine(s, 0));
-	}
-    }
-#endif
-#ifdef MENU_SELECT
-    if (n_select > 0) {
-	FormSelectOptionItem *ip;
-	for (i = 0; i < n_select; i++) {
-	    s = Sprintf("<select_int selectnumber=%d>", i);
-	    pushTextLine(tl, newTextLine(s, 0));
-	    for (ip = select_option[i].first; ip; ip = ip->next) {
-		s = Sprintf("<option_int value=\"%s\" label=\"%s\"%s>",
-			    html_quote(ip->value ? ip->value->ptr :
-				       ip->label->ptr),
-			    html_quote(ip->label->ptr),
-			    ip->checked ? " selected" : "");
-		pushTextLine(tl, newTextLine(s, 0));
-	    }
-	    s = Strnew_charp("</select_int>");
-	    pushTextLine(tl, newTextLine(s, 0));
-	}
-    }
-#endif				/* MENU_SELECT */
-    if (n_textarea > 0) {
-	for (i = 0; i < n_textarea; i++) {
-	    s = Sprintf("<textarea_int textareanumber=%d>", i);
-	    pushTextLine(tl, newTextLine(s, 0));
-	    s = Strnew_charp(html_quote(textarea_str[i]->ptr));
-	    Strcat_charp(s, "</textarea_int>");
-	    pushTextLine(tl, newTextLine(s, 0));
-	}
-    }
-    s = Strnew_charp("</internal>");
-    pushTextLine(tl, newTextLine(s, 0));
-
-    if (henv->buf)
-	appendTextLineList(henv->buf, tl);
-    else if (henv->f) {
-	TextLineListItem *p;
-	for (p = tl->first; p; p = p->next)
-	    fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
-    }
-}
-
-void
-loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
-{
-    struct environment envs[MAX_ENV_LEVEL];
-    clen_t linelen = 0;
-    clen_t trbyte = 0;
-    Str lineBuf2 = Strnew();
-#ifdef USE_M17N
-    wc_ces charset = WC_CES_US_ASCII;
-    wc_ces volatile doc_charset = DocumentCharset;
-#endif
-    struct html_feed_environ htmlenv1;
-    struct readbuffer obuf;
-#ifdef USE_IMAGE
-    int volatile image_flag;
-#endif
-    MySignalHandler prevtrap = NULL;
-
-#ifdef USE_M17N
-    if (fmInitialized && graph_ok()) {
-	symbol_width = symbol_width0 = 1;
-    }
-    else {
-	symbol_width0 = 0;
-	get_symbol(DisplayCharset, &symbol_width0);
-	symbol_width = WcOption.use_wide ? symbol_width0 : 1;
-    }
-#else
-    symbol_width = symbol_width0 = 1;
-#endif
-
-    cur_title = NULL;
-    n_textarea = 0;
-    cur_textarea = NULL;
-    max_textarea = MAX_TEXTAREA;
-    textarea_str = New_N(Str, max_textarea);
-#ifdef MENU_SELECT
-    n_select = 0;
-    max_select = MAX_SELECT;
-    select_option = New_N(FormSelectOption, max_select);
-#endif				/* MENU_SELECT */
-    cur_select = NULL;
-    form_sp = -1;
-    form_max = -1;
-    forms_size = 0;
-    forms = NULL;
-    cur_hseq = 1;
-#ifdef USE_IMAGE
-    cur_iseq = 1;
-    if (newBuf->image_flag)
-	image_flag = newBuf->image_flag;
-    else if (activeImage && displayImage && autoImage)
-	image_flag = IMG_FLAG_AUTO;
-    else
-	image_flag = IMG_FLAG_SKIP;
-    if (newBuf->currentURL.file)
-	cur_baseURL = baseURL(newBuf);
-#endif
-
-    if (w3m_halfload) {
-	newBuf->buffername = "---";
-#ifdef USE_M17N
-	newBuf->document_charset = InnerCharset;
-#endif
-	max_textarea = 0;
-#ifdef MENU_SELECT
-	max_select = 0;
-#endif
-	HTMLlineproc3(newBuf, f->stream);
-	w3m_halfload = FALSE;
-	return;
-    }
-
-    init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, NULL, newBuf->width, 0);
-
-    if (w3m_halfdump)
-	htmlenv1.f = stdout;
-    else
-	htmlenv1.buf = newTextLineList();
-
-    if (SETJMP(AbortLoading) != 0) {
-	HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1);
-	goto phase2;
-    }
-    TRAP_ON;
-
-#ifdef USE_M17N
-    if (newBuf != NULL) {
-	if (newBuf->bufferprop & BP_FRAME)
-	    charset = InnerCharset;
-	else if (newBuf->document_charset)
-	    charset = doc_charset = newBuf->document_charset;
-    }
-    if (content_charset && UseContentCharset)
-	doc_charset = content_charset;
-    else if (f->guess_type && !strcasecmp(f->guess_type, "application/xhtml+xml"))
-	doc_charset = WC_CES_UTF_8;
-    meta_charset = 0;
-#endif
-#if	0
-    do_blankline(&htmlenv1, &obuf, 0, 0, htmlenv1.limit);
-    obuf.flag = RB_IGNORE_P;
-#endif
-    if (IStype(f->stream) != IST_ENCODED)
-	f->stream = newEncodedStream(f->stream, f->encoding);
-    while ((lineBuf2 = StrmyUFgets(f))->length) {
-#ifdef USE_NNTP
-	if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.') {
-	    Strshrinkfirst(lineBuf2, 1);
-	    if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
-		lineBuf2->ptr[0] == '\0') {
-		/*
-		 * iseos(f->stream) = TRUE;
-		 */
-		break;
-	    }
-	}
-#endif				/* USE_NNTP */
-	if (src)
-	    Strfputs(lineBuf2, src);
-	linelen += lineBuf2->length;
-	if (w3m_dump & DUMP_EXTRA)
-	    printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
-	if (w3m_dump & DUMP_SOURCE)
-	    continue;
-	showProgress(&linelen, &trbyte);
-	/*
-	 * if (frame_source)
-	 * continue;
-	 */
-#ifdef USE_M17N
-	if (meta_charset) {	/* <META> */
-	    if (content_charset == 0 && UseContentCharset) {
-		doc_charset = meta_charset;
-		charset = WC_CES_US_ASCII;
-	    }
-	    meta_charset = 0;
-	}
-#endif
-	lineBuf2 = convertLine(f, lineBuf2, HTML_MODE, &charset, doc_charset);
-#if defined(USE_M17N) && defined(USE_IMAGE)
-	cur_document_charset = charset;
-#endif
-	HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
-    }
-    if (obuf.status != R_ST_NORMAL) {
-	obuf.status = R_ST_EOL;
-	HTMLlineproc0("\n", &htmlenv1, internal);
-    }
-    obuf.status = R_ST_NORMAL;
-    completeHTMLstream(&htmlenv1, &obuf);
-    flushline(&htmlenv1, &obuf, 0, 2, htmlenv1.limit);
-    if (htmlenv1.title)
-	newBuf->buffername = htmlenv1.title;
-    if (w3m_halfdump) {
-	TRAP_OFF;
-	print_internal_information(&htmlenv1);
-	return;
-    }
-    if (w3m_backend) {
-	TRAP_OFF;
-	print_internal_information(&htmlenv1);
-	backend_halfdump_buf = htmlenv1.buf;
-	return;
-    }
-  phase2:
-    newBuf->trbyte = trbyte + linelen;
-    TRAP_OFF;
-#ifdef USE_M17N
-    if (!(newBuf->bufferprop & BP_FRAME))
-	newBuf->document_charset = charset;
-#endif
-#ifdef USE_IMAGE
-    newBuf->image_flag = image_flag;
-#endif
-    HTMLlineproc2(newBuf, htmlenv1.buf);
-}
 
 /* 
  * loadHTMLString: read string and make new buffer
@@ -8486,3 +6357,2138 @@ guess_save_name(Buffer *buf, char *path)
 /* c-basic-offset: 4   */
 /* tab-width: 8        */
 /* End:                */
+
+
+void push_render_image(Str str, int width, int limit,
+                       struct html_feed_environ *h_env)
+{
+    struct readbuffer *obuf = h_env->obuf;
+    int indent = h_env->envs[h_env->envc].indent;
+
+    push_spaces(obuf, 1, (limit - width) / 2);
+    push_str(obuf, width, str, PC_ASCII);
+    push_spaces(obuf, 1, (limit - width + 1) / 2);
+    if (width > 0)
+        flushline(h_env, obuf, indent, 0, h_env->limit);
+}
+
+void
+flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
+	  int force, int width)
+{
+    TextLineList *buf = h_env->buf;
+    FILE *f = h_env->f;
+    Str line = obuf->line, pass = NULL;
+    char *hidden_anchor = NULL, *hidden_img = NULL, *hidden_bold = NULL,
+	*hidden_under = NULL, *hidden_italic = NULL, *hidden_strike = NULL,
+	*hidden_ins = NULL, *hidden = NULL;
+
+#ifdef DEBUG
+    if (w3m_debug) {
+	FILE *df = fopen("zzzproc1", "a");
+	fprintf(df, "flushline(%s,%d,%d,%d)\n", obuf->line->ptr, indent, force,
+		width);
+	if (buf) {
+	    TextLineListItem *p;
+	    for (p = buf->first; p; p = p->next) {
+		fprintf(df, "buf=\"%s\"\n", p->ptr->line->ptr);
+	    }
+	}
+	fclose(df);
+    }
+#endif
+
+    if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && Strlastchar(line) == ' ') {
+	Strshrink(line, 1);
+	obuf->pos--;
+    }
+
+    append_tags(obuf);
+
+    if (obuf->anchor.url)
+	hidden = hidden_anchor = has_hidden_link(obuf, HTML_A);
+    if (obuf->img_alt) {
+	if ((hidden_img = has_hidden_link(obuf, HTML_IMG_ALT)) != NULL) {
+	    if (!hidden || hidden_img < hidden)
+		hidden = hidden_img;
+	}
+    }
+    if (obuf->in_bold) {
+	if ((hidden_bold = has_hidden_link(obuf, HTML_B)) != NULL) {
+	    if (!hidden || hidden_bold < hidden)
+		hidden = hidden_bold;
+	}
+    }
+    if (obuf->in_italic) {
+	if ((hidden_italic = has_hidden_link(obuf, HTML_I)) != NULL) {
+	    if (!hidden || hidden_italic < hidden)
+		hidden = hidden_italic;
+	}
+    }
+    if (obuf->in_under) {
+	if ((hidden_under = has_hidden_link(obuf, HTML_U)) != NULL) {
+	    if (!hidden || hidden_under < hidden)
+		hidden = hidden_under;
+	}
+    }
+    if (obuf->in_strike) {
+	if ((hidden_strike = has_hidden_link(obuf, HTML_S)) != NULL) {
+	    if (!hidden || hidden_strike < hidden)
+		hidden = hidden_strike;
+	}
+    }
+    if (obuf->in_ins) {
+	if ((hidden_ins = has_hidden_link(obuf, HTML_INS)) != NULL) {
+	    if (!hidden || hidden_ins < hidden)
+		hidden = hidden_ins;
+	}
+    }
+    if (hidden) {
+	pass = Strnew_charp(hidden);
+	Strshrink(line, line->ptr + line->length - hidden);
+    }
+
+    if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && obuf->pos > width) {
+	char *tp = &line->ptr[obuf->bp.len - obuf->bp.tlen];
+	char *ep = &line->ptr[line->length];
+
+	if (obuf->bp.pos == obuf->pos && tp <= ep &&
+	    tp > line->ptr && tp[-1] == ' ') {
+	    bcopy(tp, tp - 1, ep - tp + 1);
+	    line->length--;
+	    obuf->pos--;
+	}
+    }
+
+    if (obuf->anchor.url && !hidden_anchor)
+	Strcat_charp(line, "</a>");
+    if (obuf->img_alt && !hidden_img)
+	Strcat_charp(line, "</img_alt>");
+    if (obuf->in_bold && !hidden_bold)
+	Strcat_charp(line, "</b>");
+    if (obuf->in_italic && !hidden_italic)
+	Strcat_charp(line, "</i>");
+    if (obuf->in_under && !hidden_under)
+	Strcat_charp(line, "</u>");
+    if (obuf->in_strike && !hidden_strike)
+	Strcat_charp(line, "</s>");
+    if (obuf->in_ins && !hidden_ins)
+	Strcat_charp(line, "</ins>");
+
+    if (obuf->top_margin > 0) {
+	int i;
+	struct html_feed_environ h;
+	struct readbuffer o;
+	struct environment e[1];
+
+	init_henv(&h, &o, e, 1, NULL, width, indent);
+	o.line = Strnew_size(width + 20);
+	o.pos = obuf->pos;
+	o.flag = obuf->flag;
+	o.top_margin = -1;
+	o.bottom_margin = -1;
+	Strcat_charp(o.line, "<pre_int>");
+	for (i = 0; i < o.pos; i++)
+	    Strcat_char(o.line, ' ');
+	Strcat_charp(o.line, "</pre_int>");
+	for (i = 0; i < obuf->top_margin; i++)
+	    flushline(h_env, &o, indent, force, width);
+    }
+
+    if (force == 1 || obuf->flag & RB_NFLUSHED) {
+	TextLine *lbuf = newTextLine(line, obuf->pos);
+	if (RB_GET_ALIGN(obuf) == RB_CENTER) {
+	    align(lbuf, width, ALIGN_CENTER);
+	}
+	else if (RB_GET_ALIGN(obuf) == RB_RIGHT) {
+	    align(lbuf, width, ALIGN_RIGHT);
+	}
+	else if (RB_GET_ALIGN(obuf) == RB_LEFT && obuf->flag & RB_INTABLE) {
+	    align(lbuf, width, ALIGN_LEFT);
+	}
+#ifdef FORMAT_NICE
+	else if (obuf->flag & RB_FILL) {
+	    char *p;
+	    int rest, rrest;
+	    int nspace, d, i;
+
+	    rest = width - get_Str_strwidth(line);
+	    if (rest > 1) {
+		nspace = 0;
+		for (p = line->ptr + indent; *p; p++) {
+		    if (*p == ' ')
+			nspace++;
+		}
+		if (nspace > 0) {
+		    int indent_here = 0;
+		    d = rest / nspace;
+		    p = line->ptr;
+		    while (IS_SPACE(*p)) {
+			p++;
+			indent_here++;
+		    }
+		    rrest = rest - d * nspace;
+		    line = Strnew_size(width + 1);
+		    for (i = 0; i < indent_here; i++)
+			Strcat_char(line, ' ');
+		    for (; *p; p++) {
+			Strcat_char(line, *p);
+			if (*p == ' ') {
+			    for (i = 0; i < d; i++)
+				Strcat_char(line, ' ');
+			    if (rrest > 0) {
+				Strcat_char(line, ' ');
+				rrest--;
+			    }
+			}
+		    }
+		    lbuf = newTextLine(line, width);
+		}
+	    }
+	}
+#endif				/* FORMAT_NICE */
+#ifdef TABLE_DEBUG
+	if (w3m_debug) {
+	    FILE *f = fopen("zzzproc1", "a");
+	    fprintf(f, "pos=%d,%d, maxlimit=%d\n",
+		    visible_length(lbuf->line->ptr), lbuf->pos,
+		    h_env->maxlimit);
+	    fclose(f);
+	}
+#endif
+	if (lbuf->pos > h_env->maxlimit)
+	    h_env->maxlimit = lbuf->pos;
+	if (buf)
+	    pushTextLine(buf, lbuf);
+	else if (f) {
+	    Strfputs(Str_conv_to_halfdump(lbuf->line), f);
+	    fputc('\n', f);
+	}
+	if (obuf->flag & RB_SPECIAL || obuf->flag & RB_NFLUSHED)
+	    h_env->blank_lines = 0;
+	else
+	    h_env->blank_lines++;
+    }
+    else {
+	char *p = line->ptr, *q;
+	Str tmp = Strnew(), tmp2 = Strnew();
+
+#define APPEND(str) \
+	if (buf) \
+	    appendTextLine(buf,(str),0); \
+	else if (f) \
+	    Strfputs((str),f)
+
+	while (*p) {
+	    q = p;
+	    if (sloppy_parse_line(&p)) {
+		Strcat_charp_n(tmp, q, p - q);
+		if (force == 2) {
+		    APPEND(tmp);
+		}
+		else
+		    Strcat(tmp2, tmp);
+		Strclear(tmp);
+	    }
+	}
+	if (force == 2) {
+	    if (pass) {
+		APPEND(pass);
+	    }
+	    pass = NULL;
+	}
+	else {
+	    if (pass)
+		Strcat(tmp2, pass);
+	    pass = tmp2;
+	}
+    }
+
+    if (obuf->bottom_margin > 0) {
+	int i;
+	struct html_feed_environ h;
+	struct readbuffer o;
+	struct environment e[1];
+
+	init_henv(&h, &o, e, 1, NULL, width, indent);
+	o.line = Strnew_size(width + 20);
+	o.pos = obuf->pos;
+	o.flag = obuf->flag;
+	o.top_margin = -1;
+	o.bottom_margin = -1;
+	Strcat_charp(o.line, "<pre_int>");
+	for (i = 0; i < o.pos; i++)
+	    Strcat_char(o.line, ' ');
+	Strcat_charp(o.line, "</pre_int>");
+	for (i = 0; i < obuf->bottom_margin; i++)
+	    flushline(h_env, &o, indent, force, width);
+    }
+    if (obuf->top_margin < 0 || obuf->bottom_margin < 0)
+	return;
+
+    obuf->line = Strnew_size(256);
+    obuf->pos = 0;
+    obuf->top_margin = 0;
+    obuf->bottom_margin = 0;
+    set_space_to_prevchar(obuf->prevchar);
+    obuf->bp.init_flag = 1;
+    obuf->flag &= ~RB_NFLUSHED;
+    set_breakpoint(obuf, 0);
+    obuf->prev_ctype = PC_ASCII;
+    link_stack = NULL;
+    fillline(obuf, indent);
+    if (pass)
+	passthrough(obuf, pass->ptr, 0);
+    if (!hidden_anchor && obuf->anchor.url) {
+	Str tmp;
+	if (obuf->anchor.hseq > 0)
+	    obuf->anchor.hseq = -obuf->anchor.hseq;
+	tmp = Sprintf("<A HSEQ=\"%d\" HREF=\"", obuf->anchor.hseq);
+	Strcat_charp(tmp, html_quote(obuf->anchor.url));
+	if (obuf->anchor.target) {
+	    Strcat_charp(tmp, "\" TARGET=\"");
+	    Strcat_charp(tmp, html_quote(obuf->anchor.target));
+	}
+	if (obuf->anchor.referer) {
+	    Strcat_charp(tmp, "\" REFERER=\"");
+	    Strcat_charp(tmp, html_quote(obuf->anchor.referer));
+	}
+	if (obuf->anchor.title) {
+	    Strcat_charp(tmp, "\" TITLE=\"");
+	    Strcat_charp(tmp, html_quote(obuf->anchor.title));
+	}
+	if (obuf->anchor.accesskey) {
+	    char *c = html_quote_char(obuf->anchor.accesskey);
+	    Strcat_charp(tmp, "\" ACCESSKEY=\"");
+	    if (c)
+		Strcat_charp(tmp, c);
+	    else
+		Strcat_char(tmp, obuf->anchor.accesskey);
+	}
+	Strcat_charp(tmp, "\">");
+	push_tag(obuf, tmp->ptr, HTML_A);
+    }
+    if (!hidden_img && obuf->img_alt) {
+	Str tmp = Strnew_charp("<IMG_ALT SRC=\"");
+	Strcat_charp(tmp, html_quote(obuf->img_alt->ptr));
+	Strcat_charp(tmp, "\">");
+	push_tag(obuf, tmp->ptr, HTML_IMG_ALT);
+    }
+    if (!hidden_bold && obuf->in_bold)
+	push_tag(obuf, "<B>", HTML_B);
+    if (!hidden_italic && obuf->in_italic)
+	push_tag(obuf, "<I>", HTML_I);
+    if (!hidden_under && obuf->in_under)
+	push_tag(obuf, "<U>", HTML_U);
+    if (!hidden_strike && obuf->in_strike)
+	push_tag(obuf, "<S>", HTML_S);
+    if (!hidden_ins && obuf->in_ins)
+	push_tag(obuf, "<INS>", HTML_INS);
+}
+
+void
+do_blankline(struct html_feed_environ *h_env, struct readbuffer *obuf,
+	     int indent, int indent_incr, int width)
+{
+    if (h_env->blank_lines == 0)
+	flushline(h_env, obuf, indent, 1, width);
+}
+
+void
+purgeline(struct html_feed_environ *h_env)
+{
+    char *p, *q;
+    Str tmp;
+
+    if (h_env->buf == NULL || h_env->blank_lines == 0)
+	return;
+
+    p = rpopTextLine(h_env->buf)->line->ptr;
+    tmp = Strnew();
+    while (*p) {
+	q = p;
+	if (sloppy_parse_line(&p)) {
+	    Strcat_charp_n(tmp, q, p - q);
+	}
+    }
+    appendTextLine(h_env->buf, tmp, 0);
+    h_env->blank_lines--;
+}
+
+static void
+close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
+{
+    if (obuf->anchor.url) {
+	int i;
+	char *p = NULL;
+	int is_erased = 0;
+
+	for (i = obuf->tag_sp - 1; i >= 0; i--) {
+	    if (obuf->tag_stack[i]->cmd == HTML_A)
+		break;
+	}
+	if (i < 0 && obuf->anchor.hseq > 0 && Strlastchar(obuf->line) == ' ') {
+	    Strshrink(obuf->line, 1);
+	    obuf->pos--;
+	    is_erased = 1;
+	}
+
+	if (i >= 0 || (p = has_hidden_link(obuf, HTML_A))) {
+	    if (obuf->anchor.hseq > 0) {
+		HTMLlineproc1(ANSP, h_env);
+		set_space_to_prevchar(obuf->prevchar);
+	    }
+	    else {
+		if (i >= 0) {
+		    obuf->tag_sp--;
+		    bcopy(&obuf->tag_stack[i + 1], &obuf->tag_stack[i],
+			  (obuf->tag_sp - i) * sizeof(struct cmdtable *));
+		}
+		else {
+		    passthrough(obuf, p, 1);
+		}
+		bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
+		return;
+	    }
+	    is_erased = 0;
+	}
+	if (is_erased) {
+	    Strcat_char(obuf->line, ' ');
+	    obuf->pos++;
+	}
+
+	push_tag(obuf, "</a>", HTML_N_A);
+    }
+    bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
+}
+
+void
+save_fonteffect(struct html_feed_environ *h_env, struct readbuffer *obuf)
+{
+    if (obuf->fontstat_sp < FONT_STACK_SIZE)
+	bcopy(obuf->fontstat, obuf->fontstat_stack[obuf->fontstat_sp],
+	      FONTSTAT_SIZE);
+    obuf->fontstat_sp++;
+    if (obuf->in_bold)
+	push_tag(obuf, "</b>", HTML_N_B);
+    if (obuf->in_italic)
+	push_tag(obuf, "</i>", HTML_N_I);
+    if (obuf->in_under)
+	push_tag(obuf, "</u>", HTML_N_U);
+    if (obuf->in_strike)
+	push_tag(obuf, "</s>", HTML_N_S);
+    if (obuf->in_ins)
+	push_tag(obuf, "</ins>", HTML_N_INS);
+    bzero(obuf->fontstat, FONTSTAT_SIZE);
+}
+
+void
+restore_fonteffect(struct html_feed_environ *h_env, struct readbuffer *obuf)
+{
+    if (obuf->fontstat_sp > 0)
+	obuf->fontstat_sp--;
+    if (obuf->fontstat_sp < FONT_STACK_SIZE)
+	bcopy(obuf->fontstat_stack[obuf->fontstat_sp], obuf->fontstat,
+	      FONTSTAT_SIZE);
+    if (obuf->in_bold)
+	push_tag(obuf, "<b>", HTML_B);
+    if (obuf->in_italic)
+	push_tag(obuf, "<i>", HTML_I);
+    if (obuf->in_under)
+	push_tag(obuf, "<u>", HTML_U);
+    if (obuf->in_strike)
+	push_tag(obuf, "<s>", HTML_S);
+    if (obuf->in_ins)
+	push_tag(obuf, "<ins>", HTML_INS);
+}
+
+int
+HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
+{
+    char *p, *q, *r;
+    int i, w, x, y, z, count, width;
+    struct readbuffer *obuf = h_env->obuf;
+    struct environment *envs = h_env->envs;
+    Str tmp;
+    int hseq;
+    int cmd;
+#ifdef ID_EXT
+    char *id = NULL;
+#endif				/* ID_EXT */
+
+    cmd = tag->tagid;
+
+    if (obuf->flag & RB_PRE) {
+	switch (cmd) {
+	case HTML_NOBR:
+	case HTML_N_NOBR:
+	case HTML_PRE_INT:
+	case HTML_N_PRE_INT:
+	    return 1;
+	}
+    }
+
+    switch (cmd) {
+    case HTML_B:
+	obuf->in_bold++;
+	if (obuf->in_bold > 1)
+	    return 1;
+	return 0;
+    case HTML_N_B:
+	if (obuf->in_bold == 1 && close_effect0(obuf, HTML_B))
+	    obuf->in_bold = 0;
+	if (obuf->in_bold > 0) {
+	    obuf->in_bold--;
+	    if (obuf->in_bold == 0)
+		return 0;
+	}
+	return 1;
+    case HTML_I:
+	obuf->in_italic++;
+	if (obuf->in_italic > 1)
+	    return 1;
+	return 0;
+    case HTML_N_I:
+	if (obuf->in_italic == 1 && close_effect0(obuf, HTML_I))
+	    obuf->in_italic = 0;
+	if (obuf->in_italic > 0) {
+	    obuf->in_italic--;
+	    if (obuf->in_italic == 0)
+		return 0;
+	}
+	return 1;
+    case HTML_U:
+	obuf->in_under++;
+	if (obuf->in_under > 1)
+	    return 1;
+	return 0;
+    case HTML_N_U:
+	if (obuf->in_under == 1 && close_effect0(obuf, HTML_U))
+	    obuf->in_under = 0;
+	if (obuf->in_under > 0) {
+	    obuf->in_under--;
+	    if (obuf->in_under == 0)
+		return 0;
+	}
+	return 1;
+    case HTML_EM:
+	HTMLlineproc1("<i>", h_env);
+	return 1;
+    case HTML_N_EM:
+	HTMLlineproc1("</i>", h_env);
+	return 1;
+    case HTML_STRONG:
+	HTMLlineproc1("<b>", h_env);
+	return 1;
+    case HTML_N_STRONG:
+	HTMLlineproc1("</b>", h_env);
+	return 1;
+    case HTML_Q:
+	HTMLlineproc1("`", h_env);
+	return 1;
+    case HTML_N_Q:
+	HTMLlineproc1("'", h_env);
+	return 1;
+    case HTML_P:
+    case HTML_N_P:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 1, h_env->limit);
+	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			 h_env->limit);
+	}
+	obuf->flag |= RB_IGNORE_P;
+	if (cmd == HTML_P) {
+	    set_alignment(obuf, tag);
+	    obuf->flag |= RB_P;
+	}
+	return 1;
+    case HTML_BR:
+	flushline(h_env, obuf, envs[h_env->envc].indent, 1, h_env->limit);
+	h_env->blank_lines = 0;
+	return 1;
+    case HTML_H:
+	if (!(obuf->flag & (RB_PREMODE | RB_IGNORE_P))) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			 h_env->limit);
+	}
+	HTMLlineproc1("<b>", h_env);
+	set_alignment(obuf, tag);
+	return 1;
+    case HTML_N_H:
+	HTMLlineproc1("</b>", h_env);
+	if (!(obuf->flag & RB_PREMODE)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	}
+	do_blankline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	RB_RESTORE_FLAG(obuf);
+	close_anchor(h_env, obuf);
+	obuf->flag |= RB_IGNORE_P;
+	return 1;
+    case HTML_UL:
+    case HTML_OL:
+    case HTML_BLQ:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	    if (!(obuf->flag & RB_PREMODE) &&
+		(h_env->envc == 0 || cmd == HTML_BLQ))
+		do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			     h_env->limit);
+	}
+	PUSH_ENV(cmd);
+	if (cmd == HTML_UL || cmd == HTML_OL) {
+	    if (parsedtag_get_value(tag, ATTR_START, &count)) {
+		envs[h_env->envc].count = count - 1;
+	    }
+	}
+	if (cmd == HTML_OL) {
+	    envs[h_env->envc].type = '1';
+	    if (parsedtag_get_value(tag, ATTR_TYPE, &p)) {
+		envs[h_env->envc].type = (int)*p;
+	    }
+	}
+	if (cmd == HTML_UL)
+	    envs[h_env->envc].type = ul_type(tag, 0);
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	return 1;
+    case HTML_N_UL:
+    case HTML_N_OL:
+    case HTML_N_DL:
+    case HTML_N_BLQ:
+	CLOSE_DT;
+	CLOSE_A;
+	if (h_env->envc > 0) {
+	    flushline(h_env, obuf, envs[h_env->envc - 1].indent, 0,
+		      h_env->limit);
+	    POP_ENV;
+	    if (!(obuf->flag & RB_PREMODE) &&
+		(h_env->envc == 0 || cmd == HTML_N_DL || cmd == HTML_N_BLQ)) {
+		do_blankline(h_env, obuf,
+			     envs[h_env->envc].indent,
+			     INDENT_INCR, h_env->limit);
+		obuf->flag |= RB_IGNORE_P;
+	    }
+	}
+	close_anchor(h_env, obuf);
+	return 1;
+    case HTML_DL:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	    if (!(obuf->flag & RB_PREMODE))
+		do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			     h_env->limit);
+	}
+	PUSH_ENV(cmd);
+	if (parsedtag_exists(tag, ATTR_COMPACT))
+	    envs[h_env->envc].env = HTML_DL_COMPACT;
+	obuf->flag |= RB_IGNORE_P;
+	return 1;
+    case HTML_LI:
+	CLOSE_A;
+	CLOSE_DT;
+	if (h_env->envc > 0) {
+	    Str num;
+	    flushline(h_env, obuf,
+		      envs[h_env->envc - 1].indent, 0, h_env->limit);
+	    envs[h_env->envc].count++;
+	    if (parsedtag_get_value(tag, ATTR_VALUE, &p)) {
+		count = atoi(p);
+		if (count > 0)
+		    envs[h_env->envc].count = count;
+		else
+		    envs[h_env->envc].count = 0;
+	    }
+	    switch (envs[h_env->envc].env) {
+	    case HTML_UL:
+		envs[h_env->envc].type = ul_type(tag, envs[h_env->envc].type);
+		for (i = 0; i < INDENT_INCR - 3; i++)
+		    push_charp(obuf, 1, NBSP, PC_ASCII);
+		tmp = Strnew();
+		switch (envs[h_env->envc].type) {
+		case 'd':
+		    push_symbol(tmp, UL_SYMBOL_DISC, symbol_width, 1);
+		    break;
+		case 'c':
+		    push_symbol(tmp, UL_SYMBOL_CIRCLE, symbol_width, 1);
+		    break;
+		case 's':
+		    push_symbol(tmp, UL_SYMBOL_SQUARE, symbol_width, 1);
+		    break;
+		default:
+		    push_symbol(tmp,
+				UL_SYMBOL((h_env->envc_real -
+					   1) % MAX_UL_LEVEL), symbol_width,
+				1);
+		    break;
+		}
+		if (symbol_width == 1)
+		    push_charp(obuf, 1, NBSP, PC_ASCII);
+		push_str(obuf, symbol_width, tmp, PC_ASCII);
+		push_charp(obuf, 1, NBSP, PC_ASCII);
+		set_space_to_prevchar(obuf->prevchar);
+		break;
+	    case HTML_OL:
+		if (parsedtag_get_value(tag, ATTR_TYPE, &p))
+		    envs[h_env->envc].type = (int)*p;
+		switch ((envs[h_env->envc].count > 0)? envs[h_env->envc].type: '1') {
+		case 'i':
+		    num = romanNumeral(envs[h_env->envc].count);
+		    break;
+		case 'I':
+		    num = romanNumeral(envs[h_env->envc].count);
+		    Strupper(num);
+		    break;
+		case 'a':
+		    num = romanAlphabet(envs[h_env->envc].count);
+		    break;
+		case 'A':
+		    num = romanAlphabet(envs[h_env->envc].count);
+		    Strupper(num);
+		    break;
+		default:
+		    num = Sprintf("%d", envs[h_env->envc].count);
+		    break;
+		}
+		if (INDENT_INCR >= 4)
+		    Strcat_charp(num, ". ");
+		else
+		    Strcat_char(num, '.');
+		push_spaces(obuf, 1, INDENT_INCR - num->length);
+		push_str(obuf, num->length, num, PC_ASCII);
+		if (INDENT_INCR >= 4)
+		    set_space_to_prevchar(obuf->prevchar);
+		break;
+	    default:
+		push_spaces(obuf, 1, INDENT_INCR);
+		break;
+	    }
+	}
+	else {
+	    flushline(h_env, obuf, 0, 0, h_env->limit);
+	}
+	obuf->flag |= RB_IGNORE_P;
+	return 1;
+    case HTML_DT:
+	CLOSE_A;
+	if (h_env->envc == 0 ||
+	    (h_env->envc_real < h_env->nenv &&
+	     envs[h_env->envc].env != HTML_DL &&
+	     envs[h_env->envc].env != HTML_DL_COMPACT)) {
+	    PUSH_ENV(HTML_DL);
+	}
+	if (h_env->envc > 0) {
+	    flushline(h_env, obuf,
+		      envs[h_env->envc - 1].indent, 0, h_env->limit);
+	}
+	if (!(obuf->flag & RB_IN_DT)) {
+	    HTMLlineproc1("<b>", h_env);
+	    obuf->flag |= RB_IN_DT;
+	}
+	obuf->flag |= RB_IGNORE_P;
+	return 1;
+    case HTML_DD:
+	CLOSE_A;
+	CLOSE_DT;
+	if (envs[h_env->envc].env == HTML_DL_COMPACT) {
+	    if (obuf->pos > envs[h_env->envc].indent)
+		flushline(h_env, obuf, envs[h_env->envc].indent, 0,
+			  h_env->limit);
+	    else
+		push_spaces(obuf, 1, envs[h_env->envc].indent - obuf->pos);
+	}
+	else
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	/* obuf->flag |= RB_IGNORE_P; */
+	return 1;
+    case HTML_TITLE:
+	close_anchor(h_env, obuf);
+	process_title(tag);
+	obuf->flag |= RB_TITLE;
+	obuf->end_tag = HTML_N_TITLE;
+	return 1;
+    case HTML_N_TITLE:
+	if (!(obuf->flag & RB_TITLE))
+	    return 1;
+	obuf->flag &= ~RB_TITLE;
+	obuf->end_tag = 0;
+	tmp = process_n_title(tag);
+	if (tmp)
+	    HTMLlineproc1(tmp->ptr, h_env);
+	return 1;
+    case HTML_TITLE_ALT:
+	if (parsedtag_get_value(tag, ATTR_TITLE, &p))
+	    h_env->title = html_unquote(p);
+	return 0;
+    case HTML_FRAMESET:
+	PUSH_ENV(cmd);
+	push_charp(obuf, 9, "--FRAME--", PC_ASCII);
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	return 0;
+    case HTML_N_FRAMESET:
+	if (h_env->envc > 0) {
+	    POP_ENV;
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	}
+	return 0;
+    case HTML_NOFRAMES:
+	CLOSE_A;
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	obuf->flag |= (RB_NOFRAMES | RB_IGNORE_P);
+	/* istr = str; */
+	return 1;
+    case HTML_N_NOFRAMES:
+	CLOSE_A;
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	obuf->flag &= ~RB_NOFRAMES;
+	return 1;
+    case HTML_FRAME:
+	q = r = NULL;
+	parsedtag_get_value(tag, ATTR_SRC, &q);
+	parsedtag_get_value(tag, ATTR_NAME, &r);
+	if (q) {
+	    q = html_quote(q);
+	    push_tag(obuf, Sprintf("<a hseq=\"%d\" href=\"%s\">",
+				   cur_hseq++, q)->ptr, HTML_A);
+	    if (r)
+		q = html_quote(r);
+	    push_charp(obuf, get_strwidth(q), q, PC_ASCII);
+	    push_tag(obuf, "</a>", HTML_N_A);
+	}
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	return 0;
+    case HTML_HR:
+	close_anchor(h_env, obuf);
+	tmp = process_hr(tag, h_env->limit, envs[h_env->envc].indent);
+	HTMLlineproc1(tmp->ptr, h_env);
+	set_space_to_prevchar(obuf->prevchar);
+	return 1;
+    case HTML_PRE:
+	x = parsedtag_exists(tag, ATTR_FOR_TABLE);
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	    if (!x)
+		do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			     h_env->limit);
+	}
+	else
+	    fillline(obuf, envs[h_env->envc].indent);
+	obuf->flag |= (RB_PRE | RB_IGNORE_P);
+	/* istr = str; */
+	return 1;
+    case HTML_N_PRE:
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			 h_env->limit);
+	    obuf->flag |= RB_IGNORE_P;
+	    h_env->blank_lines++;
+	}
+	obuf->flag &= ~RB_PRE;
+	close_anchor(h_env, obuf);
+	return 1;
+    case HTML_PRE_INT:
+	i = obuf->line->length;
+	append_tags(obuf);
+	if (!(obuf->flag & RB_SPECIAL)) {
+	    set_breakpoint(obuf, obuf->line->length - i);
+	}
+	obuf->flag |= RB_PRE_INT;
+	return 0;
+    case HTML_N_PRE_INT:
+	push_tag(obuf, "</pre_int>", HTML_N_PRE_INT);
+	obuf->flag &= ~RB_PRE_INT;
+	if (!(obuf->flag & RB_SPECIAL) && obuf->pos > obuf->bp.pos) {
+	    set_prevchar(obuf->prevchar, "", 0);
+	    obuf->prev_ctype = PC_CTRL;
+	}
+	return 1;
+    case HTML_NOBR:
+	obuf->flag |= RB_NOBR;
+	obuf->nobr_level++;
+	return 0;
+    case HTML_N_NOBR:
+	if (obuf->nobr_level > 0)
+	    obuf->nobr_level--;
+	if (obuf->nobr_level == 0)
+	    obuf->flag &= ~RB_NOBR;
+	return 0;
+    case HTML_PRE_PLAIN:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			 h_env->limit);
+	}
+	obuf->flag |= (RB_PRE | RB_IGNORE_P);
+	return 1;
+    case HTML_N_PRE_PLAIN:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			 h_env->limit);
+	    obuf->flag |= RB_IGNORE_P;
+	}
+	obuf->flag &= ~RB_PRE;
+	return 1;
+    case HTML_LISTING:
+    case HTML_XMP:
+    case HTML_PLAINTEXT:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			 h_env->limit);
+	}
+	obuf->flag |= (RB_PLAIN | RB_IGNORE_P);
+	switch (cmd) {
+	case HTML_LISTING:
+	    obuf->end_tag = HTML_N_LISTING;
+	    break;
+	case HTML_XMP:
+	    obuf->end_tag = HTML_N_XMP;
+	    break;
+	case HTML_PLAINTEXT:
+	    obuf->end_tag = MAX_HTMLTAG;
+	    break;
+	}
+	return 1;
+    case HTML_N_LISTING:
+    case HTML_N_XMP:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P)) {
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	    do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			 h_env->limit);
+	    obuf->flag |= RB_IGNORE_P;
+	}
+	obuf->flag &= ~RB_PLAIN;
+	obuf->end_tag = 0;
+	return 1;
+    case HTML_SCRIPT:
+	obuf->flag |= RB_SCRIPT;
+	obuf->end_tag = HTML_N_SCRIPT;
+	return 1;
+    case HTML_STYLE:
+	obuf->flag |= RB_STYLE;
+	obuf->end_tag = HTML_N_STYLE;
+	return 1;
+    case HTML_N_SCRIPT:
+	obuf->flag &= ~RB_SCRIPT;
+	obuf->end_tag = 0;
+	return 1;
+    case HTML_N_STYLE:
+	obuf->flag &= ~RB_STYLE;
+	obuf->end_tag = 0;
+	return 1;
+    case HTML_A:
+	if (obuf->anchor.url)
+	    close_anchor(h_env, obuf);
+
+	hseq = 0;
+
+	if (parsedtag_get_value(tag, ATTR_HREF, &p))
+	    obuf->anchor.url = Strnew_charp(p)->ptr;
+	if (parsedtag_get_value(tag, ATTR_TARGET, &p))
+	    obuf->anchor.target = Strnew_charp(p)->ptr;
+	if (parsedtag_get_value(tag, ATTR_REFERER, &p))
+	    obuf->anchor.referer = Strnew_charp(p)->ptr;
+	if (parsedtag_get_value(tag, ATTR_TITLE, &p))
+	    obuf->anchor.title = Strnew_charp(p)->ptr;
+	if (parsedtag_get_value(tag, ATTR_ACCESSKEY, &p))
+	    obuf->anchor.accesskey = (unsigned char)*p;
+	if (parsedtag_get_value(tag, ATTR_HSEQ, &hseq))
+	    obuf->anchor.hseq = hseq;
+
+	if (hseq == 0 && obuf->anchor.url) {
+	    obuf->anchor.hseq = cur_hseq;
+	    tmp = process_anchor(tag, h_env->tagbuf->ptr);
+	    push_tag(obuf, tmp->ptr, HTML_A);
+	    if (displayLinkNumber)
+		HTMLlineproc1(getLinkNumberStr(-1)->ptr, h_env);
+	    return 1;
+	}
+	return 0;
+    case HTML_N_A:
+	close_anchor(h_env, obuf);
+	return 1;
+    case HTML_IMG:
+	tmp = process_img(tag, h_env->limit);
+	HTMLlineproc1(tmp->ptr, h_env);
+	return 1;
+    case HTML_IMG_ALT:
+	if (parsedtag_get_value(tag, ATTR_SRC, &p))
+	    obuf->img_alt = Strnew_charp(p);
+#ifdef USE_IMAGE
+	i = 0;
+	if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i)) {
+	    if (i > obuf->top_margin)
+		obuf->top_margin = i;
+	}
+	i = 0;
+	if (parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &i)) {
+	    if (i > obuf->bottom_margin)
+		obuf->bottom_margin = i;
+	}
+#endif
+	return 0;
+    case HTML_N_IMG_ALT:
+	if (obuf->img_alt) {
+	    if (!close_effect0(obuf, HTML_IMG_ALT))
+		push_tag(obuf, "</img_alt>", HTML_N_IMG_ALT);
+	    obuf->img_alt = NULL;
+	}
+	return 1;
+    case HTML_INPUT_ALT:
+	i = 0;
+	if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i)) {
+	    if (i > obuf->top_margin)
+		obuf->top_margin = i;
+	}
+	i = 0;
+	if (parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &i)) {
+	    if (i > obuf->bottom_margin)
+		obuf->bottom_margin = i;
+	}
+	return 0;
+    case HTML_TABLE:
+	close_anchor(h_env, obuf);
+	obuf->table_level++;
+	if (obuf->table_level >= MAX_TABLE)
+	    break;
+	w = BORDER_NONE;
+	/* x: cellspacing, y: cellpadding */
+	x = 2;
+	y = 1;
+	z = 0;
+	width = 0;
+	if (parsedtag_exists(tag, ATTR_BORDER)) {
+	    if (parsedtag_get_value(tag, ATTR_BORDER, &w)) {
+		if (w > 2)
+		    w = BORDER_THICK;
+		else if (w < 0) {	/* weird */
+		    w = BORDER_THIN;
+		}
+	    }
+	    else
+		w = BORDER_THIN;
+	}
+	if (parsedtag_get_value(tag, ATTR_WIDTH, &i)) {
+	    if (obuf->table_level == 0)
+		width = REAL_WIDTH(i, h_env->limit - envs[h_env->envc].indent);
+	    else
+		width = RELATIVE_WIDTH(i);
+	}
+	if (parsedtag_exists(tag, ATTR_HBORDER))
+	    w = BORDER_NOWIN;
+	parsedtag_get_value(tag, ATTR_CELLSPACING, &x);
+	parsedtag_get_value(tag, ATTR_CELLPADDING, &y);
+	parsedtag_get_value(tag, ATTR_VSPACE, &z);
+#ifdef ID_EXT
+	parsedtag_get_value(tag, ATTR_ID, &id);
+#endif				/* ID_EXT */
+	tables[obuf->table_level] = begin_table(w, x, y, z);
+#ifdef ID_EXT
+	if (id != NULL)
+	    tables[obuf->table_level]->id = Strnew_charp(id);
+#endif				/* ID_EXT */
+	table_mode[obuf->table_level].pre_mode = 0;
+	table_mode[obuf->table_level].indent_level = 0;
+	table_mode[obuf->table_level].nobr_level = 0;
+	table_mode[obuf->table_level].caption = 0;
+	table_mode[obuf->table_level].end_tag = 0;	/* HTML_UNKNOWN */
+#ifndef TABLE_EXPAND
+	tables[obuf->table_level]->total_width = width;
+#else
+	tables[obuf->table_level]->real_width = width;
+	tables[obuf->table_level]->total_width = 0;
+#endif
+	return 1;
+    case HTML_N_TABLE:
+	/* should be processed in HTMLlineproc() */
+	return 1;
+    case HTML_CENTER:
+	CLOSE_A;
+	if (!(obuf->flag & (RB_PREMODE | RB_IGNORE_P)))
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	RB_SAVE_FLAG(obuf);
+	RB_SET_ALIGN(obuf, RB_CENTER);
+	return 1;
+    case HTML_N_CENTER:
+	CLOSE_A;
+	if (!(obuf->flag & RB_PREMODE))
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	RB_RESTORE_FLAG(obuf);
+	return 1;
+    case HTML_DIV:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P))
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	set_alignment(obuf, tag);
+	return 1;
+    case HTML_N_DIV:
+	CLOSE_A;
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	RB_RESTORE_FLAG(obuf);
+	return 1;
+    case HTML_DIV_INT:
+	CLOSE_P;
+	if (!(obuf->flag & RB_IGNORE_P))
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	set_alignment(obuf, tag);
+	return 1;
+    case HTML_N_DIV_INT:
+	CLOSE_P;
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	RB_RESTORE_FLAG(obuf);
+	return 1;
+    case HTML_FORM:
+	CLOSE_A;
+	if (!(obuf->flag & RB_IGNORE_P))
+	    flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	tmp = process_form(tag);
+	if (tmp)
+	    HTMLlineproc1(tmp->ptr, h_env);
+	return 1;
+    case HTML_N_FORM:
+	CLOSE_A;
+	flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
+	obuf->flag |= RB_IGNORE_P;
+	process_n_form();
+	return 1;
+    case HTML_INPUT:
+	close_anchor(h_env, obuf);
+	tmp = process_input(tag);
+	if (tmp)
+	    HTMLlineproc1(tmp->ptr, h_env);
+	return 1;
+    case HTML_SELECT:
+	close_anchor(h_env, obuf);
+	tmp = process_select(tag);
+	if (tmp)
+	    HTMLlineproc1(tmp->ptr, h_env);
+	obuf->flag |= RB_INSELECT;
+	obuf->end_tag = HTML_N_SELECT;
+	return 1;
+    case HTML_N_SELECT:
+	obuf->flag &= ~RB_INSELECT;
+	obuf->end_tag = 0;
+	tmp = process_n_select();
+	if (tmp)
+	    HTMLlineproc1(tmp->ptr, h_env);
+	return 1;
+    case HTML_OPTION:
+	/* nothing */
+	return 1;
+    case HTML_TEXTAREA:
+	close_anchor(h_env, obuf);
+	tmp = process_textarea(tag, h_env->limit);
+	if (tmp)
+	    HTMLlineproc1(tmp->ptr, h_env);
+	obuf->flag |= RB_INTXTA;
+	obuf->end_tag = HTML_N_TEXTAREA;
+	return 1;
+    case HTML_N_TEXTAREA:
+	obuf->flag &= ~RB_INTXTA;
+	obuf->end_tag = 0;
+	tmp = process_n_textarea();
+	if (tmp)
+	    HTMLlineproc1(tmp->ptr, h_env);
+	return 1;
+    case HTML_ISINDEX:
+	p = "";
+	q = "!CURRENT_URL!";
+	parsedtag_get_value(tag, ATTR_PROMPT, &p);
+	parsedtag_get_value(tag, ATTR_ACTION, &q);
+	tmp = Strnew_m_charp("<form method=get action=\"",
+			     html_quote(q),
+			     "\">",
+			     html_quote(p),
+			     "<input type=text name=\"\" accept></form>",
+			     NULL);
+	HTMLlineproc1(tmp->ptr, h_env);
+	return 1;
+    case HTML_META:
+	p = q = NULL;
+	parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &p);
+	parsedtag_get_value(tag, ATTR_CONTENT, &q);
+#ifdef USE_M17N
+	if (p && q && !strcasecmp(p, "Content-Type") &&
+	    (q = strcasestr(q, "charset")) != NULL) {
+	    q += 7;
+	    SKIP_BLANKS(q);
+	    if (*q == '=') {
+		q++;
+		SKIP_BLANKS(q);
+		meta_charset = wc_guess_charset(q, 0);
+	    }
+	}
+	else
+#endif
+	if (p && q && !strcasecmp(p, "refresh")) {
+	    int refresh_interval;
+	    tmp = NULL;
+	    refresh_interval = getMetaRefreshParam(q, &tmp);
+	    if (tmp) {
+		q = html_quote(tmp->ptr);
+		tmp = Sprintf("Refresh (%d sec) <a href=\"%s\">%s</a>",
+			      refresh_interval, q, q);
+	    }
+	    else if (refresh_interval > 0)
+		tmp = Sprintf("Refresh (%d sec)", refresh_interval);
+	    if (tmp) {
+		HTMLlineproc1(tmp->ptr, h_env);
+		do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
+			     h_env->limit);
+		if (!is_redisplay &&
+		    !((obuf->flag & RB_NOFRAMES) && RenderFrame)) {
+		    tag->need_reconstruct = TRUE;
+		    return 0;
+		}
+	    }
+	}
+	return 1;
+    case HTML_BASE:
+#ifdef USE_IMAGE
+	p = NULL;
+	if (parsedtag_get_value(tag, ATTR_HREF, &p)) {
+	    if (!cur_baseURL)
+		cur_baseURL = New(ParsedURL);
+	    parseURL(p, cur_baseURL, NULL);
+	}
+#endif
+    case HTML_MAP:
+    case HTML_N_MAP:
+    case HTML_AREA:
+	return 0;
+    case HTML_DEL:
+	switch (displayInsDel) {
+	case DISPLAY_INS_DEL_SIMPLE:
+	    obuf->flag |= RB_DEL;
+	    break;
+	case DISPLAY_INS_DEL_NORMAL:
+	    HTMLlineproc1("<U>[DEL:</U>", h_env);
+	    break;
+	case DISPLAY_INS_DEL_FONTIFY:
+	    obuf->in_strike++;
+	    if (obuf->in_strike == 1) {
+		push_tag(obuf, "<s>", HTML_S);
+	    }
+	    break;
+	}
+	return 1;
+    case HTML_N_DEL:
+	switch (displayInsDel) {
+	case DISPLAY_INS_DEL_SIMPLE:
+	    obuf->flag &= ~RB_DEL;
+	    break;
+	case DISPLAY_INS_DEL_NORMAL:
+	    HTMLlineproc1("<U>:DEL]</U>", h_env);
+	case DISPLAY_INS_DEL_FONTIFY:
+	    if (obuf->in_strike == 0)
+		return 1;
+	    if (obuf->in_strike == 1 && close_effect0(obuf, HTML_S))
+		obuf->in_strike = 0;
+	    if (obuf->in_strike > 0) {
+		obuf->in_strike--;
+		if (obuf->in_strike == 0) {
+		    push_tag(obuf, "</s>", HTML_N_S);
+		}
+	    }
+	    break;
+	}
+	return 1;
+    case HTML_S:
+	switch (displayInsDel) {
+	case DISPLAY_INS_DEL_SIMPLE:
+	    obuf->flag |= RB_S;
+	    break;
+	case DISPLAY_INS_DEL_NORMAL:
+	    HTMLlineproc1("<U>[S:</U>", h_env);
+	    break;
+	case DISPLAY_INS_DEL_FONTIFY:
+	    obuf->in_strike++;
+	    if (obuf->in_strike == 1) {
+		push_tag(obuf, "<s>", HTML_S);
+	    }
+	    break;
+	}
+	return 1;
+    case HTML_N_S:
+	switch (displayInsDel) {
+	case DISPLAY_INS_DEL_SIMPLE:
+	    obuf->flag &= ~RB_S;
+	    break;
+	case DISPLAY_INS_DEL_NORMAL:
+	    HTMLlineproc1("<U>:S]</U>", h_env);
+	    break;
+	case DISPLAY_INS_DEL_FONTIFY:
+	    if (obuf->in_strike == 0)
+		return 1;
+	    if (obuf->in_strike == 1 && close_effect0(obuf, HTML_S))
+		obuf->in_strike = 0;
+	    if (obuf->in_strike > 0) {
+		obuf->in_strike--;
+		if (obuf->in_strike == 0) {
+		    push_tag(obuf, "</s>", HTML_N_S);
+		}
+	    }
+	}
+	return 1;
+    case HTML_INS:
+	switch (displayInsDel) {
+	case DISPLAY_INS_DEL_SIMPLE:
+	    break;
+	case DISPLAY_INS_DEL_NORMAL:
+	    HTMLlineproc1("<U>[INS:</U>", h_env);
+	    break;
+	case DISPLAY_INS_DEL_FONTIFY:
+	    obuf->in_ins++;
+	    if (obuf->in_ins == 1) {
+		push_tag(obuf, "<ins>", HTML_INS);
+	    }
+	    break;
+	}
+	return 1;
+    case HTML_N_INS:
+	switch (displayInsDel) {
+	case DISPLAY_INS_DEL_SIMPLE:
+	    break;
+	case DISPLAY_INS_DEL_NORMAL:
+	    HTMLlineproc1("<U>:INS]</U>", h_env);
+	    break;
+	case DISPLAY_INS_DEL_FONTIFY:
+	    if (obuf->in_ins == 0)
+		return 1;
+	    if (obuf->in_ins == 1 && close_effect0(obuf, HTML_INS))
+		obuf->in_ins = 0;
+	    if (obuf->in_ins > 0) {
+		obuf->in_ins--;
+		if (obuf->in_ins == 0) {
+		    push_tag(obuf, "</ins>", HTML_N_INS);
+		}
+	    }
+	    break;
+	}
+	return 1;
+    case HTML_SUP:
+	if (!(obuf->flag & (RB_DEL | RB_S)))
+	    HTMLlineproc1("^", h_env);
+	return 1;
+    case HTML_N_SUP:
+	return 1;
+    case HTML_SUB:
+	if (!(obuf->flag & (RB_DEL | RB_S)))
+	    HTMLlineproc1("[", h_env);
+	return 1;
+    case HTML_N_SUB:
+	if (!(obuf->flag & (RB_DEL | RB_S)))
+	    HTMLlineproc1("]", h_env);
+	return 1;
+    case HTML_FONT:
+    case HTML_N_FONT:
+    case HTML_NOP:
+	return 1;
+    case HTML_BGSOUND:
+	if (view_unseenobject) {
+	    if (parsedtag_get_value(tag, ATTR_SRC, &p)) {
+		Str s;
+		q = html_quote(p);
+		s = Sprintf("<A HREF=\"%s\">bgsound(%s)</A>", q, q);
+		HTMLlineproc1(s->ptr, h_env);
+	    }
+	}
+	return 1;
+    case HTML_EMBED:
+	if (view_unseenobject) {
+	    if (parsedtag_get_value(tag, ATTR_SRC, &p)) {
+		Str s;
+		q = html_quote(p);
+		s = Sprintf("<A HREF=\"%s\">embed(%s)</A>", q, q);
+		HTMLlineproc1(s->ptr, h_env);
+	    }
+	}
+	return 1;
+    case HTML_APPLET:
+	if (view_unseenobject) {
+	    if (parsedtag_get_value(tag, ATTR_ARCHIVE, &p)) {
+		Str s;
+		q = html_quote(p);
+		s = Sprintf("<A HREF=\"%s\">applet archive(%s)</A>", q, q);
+		HTMLlineproc1(s->ptr, h_env);
+	    }
+	}
+	return 1;
+    case HTML_BODY:
+	if (view_unseenobject) {
+	    if (parsedtag_get_value(tag, ATTR_BACKGROUND, &p)) {
+		Str s;
+		q = html_quote(p);
+		s = Sprintf("<IMG SRC=\"%s\" ALT=\"bg image(%s)\"><BR>", q, q);
+		HTMLlineproc1(s->ptr, h_env);
+	    }
+	}
+    case HTML_N_HEAD:
+	if (obuf->flag & RB_TITLE)
+	    HTMLlineproc1("</title>", h_env);
+    case HTML_HEAD:
+    case HTML_N_BODY:
+	return 1;
+    default:
+	/* obuf->prevchar = '\0'; */
+	return 0;
+    }
+    /* not reached */
+    return 0;
+}
+
+static int
+need_flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
+	       Lineprop mode)
+{
+    char ch;
+
+    if (obuf->flag & RB_PRE_INT) {
+	if (obuf->pos > h_env->limit)
+	    return 1;
+	else
+	    return 0;
+    }
+
+    ch = Strlastchar(obuf->line);
+    /* if (ch == ' ' && obuf->tag_sp > 0) */
+    if (ch == ' ')
+	return 0;
+
+    if (obuf->pos > h_env->limit)
+	return 1;
+
+    return 0;
+}
+
+static int
+table_width(struct html_feed_environ *h_env, int table_level)
+{
+    int width;
+    if (table_level < 0)
+	return 0;
+    width = tables[table_level]->total_width;
+    if (table_level > 0 || width > 0)
+	return width;
+    return h_env->limit - h_env->envs[h_env->envc].indent;
+}
+
+/* HTML processing first pass */
+void
+HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
+{
+    Lineprop mode;
+    int cmd;
+    struct readbuffer *obuf = h_env->obuf;
+    int indent, delta;
+    struct parsed_tag *tag;
+    Str tokbuf;
+    struct table *tbl = NULL;
+    struct table_mode *tbl_mode = NULL;
+    int tbl_width = 0;
+#ifdef USE_M17N
+    int is_hangul, prev_is_hangul = 0;
+#endif
+
+#ifdef DEBUG
+    if (w3m_debug) {
+	FILE *f = fopen("zzzproc1", "a");
+	fprintf(f, "%c%c%c%c",
+		(obuf->flag & RB_PREMODE) ? 'P' : ' ',
+		(obuf->table_level >= 0) ? 'T' : ' ',
+		(obuf->flag & RB_INTXTA) ? 'X' : ' ',
+		(obuf->flag & (RB_SCRIPT | RB_STYLE)) ? 'S' : ' ');
+	fprintf(f, "HTMLlineproc1(\"%s\",%d,%lx)\n", line, h_env->limit,
+		(unsigned long)h_env);
+	fclose(f);
+    }
+#endif
+
+    tokbuf = Strnew();
+
+  table_start:
+    if (obuf->table_level >= 0) {
+	int level = min(obuf->table_level, MAX_TABLE - 1);
+	tbl = tables[level];
+	tbl_mode = &table_mode[level];
+	tbl_width = table_width(h_env, level);
+    }
+
+    while (*line != '\0') {
+	char *str, *p;
+	int is_tag = FALSE;
+	int pre_mode = (obuf->table_level >= 0) ? tbl_mode->pre_mode :
+	    obuf->flag;
+	int end_tag = (obuf->table_level >= 0) ? tbl_mode->end_tag :
+	    obuf->end_tag;
+
+	if (*line == '<' || obuf->status != R_ST_NORMAL) {
+	    /* 
+	     * Tag processing
+	     */
+	    if (obuf->status == R_ST_EOL)
+		obuf->status = R_ST_NORMAL;
+	    else {
+		read_token(h_env->tagbuf, &line, &obuf->status,
+			   pre_mode & RB_PREMODE, obuf->status != R_ST_NORMAL);
+		if (obuf->status != R_ST_NORMAL)
+		    return;
+	    }
+	    if (h_env->tagbuf->length == 0)
+		continue;
+	    str = h_env->tagbuf->ptr;
+	    if (*str == '<') {
+		if (str[1] && REALLY_THE_BEGINNING_OF_A_TAG(str))
+		    is_tag = TRUE;
+		else if (!(pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT |
+				       RB_SCRIPT | RB_STYLE | RB_TITLE))) {
+		    line = Strnew_m_charp(str + 1, line, NULL)->ptr;
+		    str = "&lt;";
+		}
+	    }
+	}
+	else {
+	    read_token(tokbuf, &line, &obuf->status, pre_mode & RB_PREMODE, 0);
+	    if (obuf->status != R_ST_NORMAL)	/* R_ST_AMP ? */
+		obuf->status = R_ST_NORMAL;
+	    str = tokbuf->ptr;
+	}
+
+	if (pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT | RB_SCRIPT |
+			RB_STYLE | RB_TITLE)) {
+	    if (is_tag) {
+		p = str;
+		if ((tag = parse_tag(&p, internal))) {
+		    if (tag->tagid == end_tag ||
+			(pre_mode & RB_INSELECT && tag->tagid == HTML_N_FORM)
+			|| (pre_mode & RB_TITLE
+			    && (tag->tagid == HTML_N_HEAD
+				|| tag->tagid == HTML_BODY)))
+			goto proc_normal;
+		}
+	    }
+	    /* title */
+	    if (pre_mode & RB_TITLE) {
+		feed_title(str);
+		continue;
+	    }
+	    /* select */
+	    if (pre_mode & RB_INSELECT) {
+		if (obuf->table_level >= 0)
+		    goto proc_normal;
+		feed_select(str);
+		continue;
+	    }
+	    if (is_tag) {
+		if (strncmp(str, "<!--", 4) && (p = strchr(str + 1, '<'))) {
+		    str = Strnew_charp_n(str, p - str)->ptr;
+		    line = Strnew_m_charp(p, line, NULL)->ptr;
+		}
+		is_tag = FALSE;
+	    }
+	    if (obuf->table_level >= 0)
+		goto proc_normal;
+	    /* textarea */
+	    if (pre_mode & RB_INTXTA) {
+		feed_textarea(str);
+		continue;
+	    }
+	    /* script */
+	    if (pre_mode & RB_SCRIPT)
+		continue;
+	    /* style */
+	    if (pre_mode & RB_STYLE)
+		continue;
+	}
+
+      proc_normal:
+	if (obuf->table_level >= 0) {
+	    /* 
+	     * within table: in <table>..</table>, all input tokens
+	     * are fed to the table renderer, and then the renderer
+	     * makes HTML output.
+	     */
+	    switch (feed_table(tbl, str, tbl_mode, tbl_width, internal)) {
+	    case 0:
+		/* </table> tag */
+		obuf->table_level--;
+		if (obuf->table_level >= MAX_TABLE - 1)
+		    continue;
+		end_table(tbl);
+		if (obuf->table_level >= 0) {
+		    struct table *tbl0 = tables[obuf->table_level];
+		    str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
+		    pushTable(tbl0, tbl);
+		    tbl = tbl0;
+		    tbl_mode = &table_mode[obuf->table_level];
+		    tbl_width = table_width(h_env, obuf->table_level);
+		    feed_table(tbl, str, tbl_mode, tbl_width, TRUE);
+		    continue;
+		    /* continue to the next */
+		}
+		if (obuf->flag & RB_DEL)
+		    continue;
+		/* all tables have been read */
+		if (tbl->vspace > 0 && !(obuf->flag & RB_IGNORE_P)) {
+		    int indent = h_env->envs[h_env->envc].indent;
+		    flushline(h_env, obuf, indent, 0, h_env->limit);
+		    do_blankline(h_env, obuf, indent, 0, h_env->limit);
+		}
+		save_fonteffect(h_env, obuf);
+		renderTable(tbl, tbl_width, h_env);
+		restore_fonteffect(h_env, obuf);
+		obuf->flag &= ~RB_IGNORE_P;
+		if (tbl->vspace > 0) {
+		    int indent = h_env->envs[h_env->envc].indent;
+		    do_blankline(h_env, obuf, indent, 0, h_env->limit);
+		    obuf->flag |= RB_IGNORE_P;
+		}
+		set_space_to_prevchar(obuf->prevchar);
+		continue;
+	    case 1:
+		/* <table> tag */
+		break;
+	    default:
+		continue;
+	    }
+	}
+
+	if (is_tag) {
+/*** Beginning of a new tag ***/
+	    if ((tag = parse_tag(&str, internal)))
+		cmd = tag->tagid;
+	    else
+		continue;
+	    /* process tags */
+	    if (HTMLtagproc1(tag, h_env) == 0) {
+		/* preserve the tag for second-stage processing */
+		if (parsedtag_need_reconstruct(tag))
+		    h_env->tagbuf = parsedtag2str(tag);
+		push_tag(obuf, h_env->tagbuf->ptr, cmd);
+	    }
+#ifdef ID_EXT
+	    else {
+		process_idattr(obuf, cmd, tag);
+	    }
+#endif				/* ID_EXT */
+	    obuf->bp.init_flag = 1;
+	    clear_ignore_p_flag(cmd, obuf);
+	    if (cmd == HTML_TABLE)
+		goto table_start;
+	    else
+		continue;
+	}
+
+	if (obuf->flag & (RB_DEL | RB_S))
+	    continue;
+	while (*str) {
+	    mode = get_mctype(str);
+	    delta = get_mcwidth(str);
+	    if (obuf->flag & (RB_SPECIAL & ~RB_NOBR)) {
+		char ch = *str;
+		if (!(obuf->flag & RB_PLAIN) && (*str == '&')) {
+		    char *p = str;
+		    int ech = getescapechar(&p);
+		    if (ech == '\n' || ech == '\r') {
+			ch = '\n';
+			str = p - 1;
+		    }
+		    else if (ech == '\t') {
+			ch = '\t';
+			str = p - 1;
+		    }
+		}
+		if (ch != '\n')
+		    obuf->flag &= ~RB_IGNORE_P;
+		if (ch == '\n') {
+		    str++;
+		    if (obuf->flag & RB_IGNORE_P) {
+			obuf->flag &= ~RB_IGNORE_P;
+			continue;
+		    }
+		    if (obuf->flag & RB_PRE_INT)
+			PUSH(' ');
+		    else
+			flushline(h_env, obuf, h_env->envs[h_env->envc].indent,
+				  1, h_env->limit);
+		}
+		else if (ch == '\t') {
+		    do {
+			PUSH(' ');
+		    } while ((h_env->envs[h_env->envc].indent + obuf->pos)
+			     % Tabstop != 0);
+		    str++;
+		}
+		else if (obuf->flag & RB_PLAIN) {
+		    char *p = html_quote_char(*str);
+		    if (p) {
+			push_charp(obuf, 1, p, PC_ASCII);
+			str++;
+		    }
+		    else {
+			proc_mchar(obuf, 1, delta, &str, mode);
+		    }
+		}
+		else {
+		    if (*str == '&')
+			proc_escape(obuf, &str);
+		    else
+			proc_mchar(obuf, 1, delta, &str, mode);
+		}
+		if (obuf->flag & (RB_SPECIAL & ~RB_PRE_INT))
+		    continue;
+	    }
+	    else {
+		if (!IS_SPACE(*str))
+		    obuf->flag &= ~RB_IGNORE_P;
+		if ((mode == PC_ASCII || mode == PC_CTRL) && IS_SPACE(*str)) {
+		    if (*obuf->prevchar->ptr != ' ') {
+			PUSH(' ');
+		    }
+		    str++;
+		}
+		else {
+#ifdef USE_M17N
+		    if (mode == PC_KANJI1)
+			is_hangul = wtf_is_hangul((wc_uchar *) str);
+		    else
+			is_hangul = 0;
+		    if (!SimplePreserveSpace && mode == PC_KANJI1 &&
+			!is_hangul && !prev_is_hangul &&
+			obuf->pos > h_env->envs[h_env->envc].indent &&
+			Strlastchar(obuf->line) == ' ') {
+			while (obuf->line->length >= 2 &&
+			       !strncmp(obuf->line->ptr + obuf->line->length -
+					2, "  ", 2)
+			       && obuf->pos >= h_env->envs[h_env->envc].indent) {
+			    Strshrink(obuf->line, 1);
+			    obuf->pos--;
+			}
+			if (obuf->line->length >= 3 &&
+			    obuf->prev_ctype == PC_KANJI1 &&
+			    Strlastchar(obuf->line) == ' ' &&
+			    obuf->pos >= h_env->envs[h_env->envc].indent) {
+			    Strshrink(obuf->line, 1);
+			    obuf->pos--;
+			}
+		    }
+		    prev_is_hangul = is_hangul;
+#endif
+		    if (*str == '&')
+			proc_escape(obuf, &str);
+		    else
+			proc_mchar(obuf, obuf->flag & RB_SPECIAL, delta, &str,
+				   mode);
+		}
+	    }
+	    if (need_flushline(h_env, obuf, mode)) {
+		char *bp = obuf->line->ptr + obuf->bp.len;
+		char *tp = bp - obuf->bp.tlen;
+		int i = 0;
+
+		if (tp > obuf->line->ptr && tp[-1] == ' ')
+		    i = 1;
+
+		indent = h_env->envs[h_env->envc].indent;
+		if (obuf->bp.pos - i > indent) {
+		    Str line;
+		    append_tags(obuf);
+		    line = Strnew_charp(bp);
+		    Strshrink(obuf->line, obuf->line->length - obuf->bp.len);
+#ifdef FORMAT_NICE
+		    if (obuf->pos - i > h_env->limit)
+			obuf->flag |= RB_FILL;
+#endif				/* FORMAT_NICE */
+		    back_to_breakpoint(obuf);
+		    flushline(h_env, obuf, indent, 0, h_env->limit);
+#ifdef FORMAT_NICE
+		    obuf->flag &= ~RB_FILL;
+#endif				/* FORMAT_NICE */
+		    HTMLlineproc1(line->ptr, h_env);
+		}
+	    }
+	}
+    }
+    if (!(obuf->flag & (RB_SPECIAL | RB_INTXTA | RB_INSELECT))) {
+	char *tp;
+	int i = 0;
+
+	if (obuf->bp.pos == obuf->pos) {
+	    tp = &obuf->line->ptr[obuf->bp.len - obuf->bp.tlen];
+	}
+	else {
+	    tp = &obuf->line->ptr[obuf->line->length];
+	}
+
+	if (tp > obuf->line->ptr && tp[-1] == ' ')
+	    i = 1;
+	indent = h_env->envs[h_env->envc].indent;
+	if (obuf->pos - i > h_env->limit) {
+#ifdef FORMAT_NICE
+	    obuf->flag |= RB_FILL;
+#endif				/* FORMAT_NICE */
+	    flushline(h_env, obuf, indent, 0, h_env->limit);
+#ifdef FORMAT_NICE
+	    obuf->flag &= ~RB_FILL;
+#endif				/* FORMAT_NICE */
+	}
+    }
+}
+
+void
+init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf,
+	  struct environment *envs, int nenv, TextLineList *buf,
+	  int limit, int indent)
+{
+    envs[0].indent = indent;
+
+    obuf->line = Strnew();
+    obuf->cprop = 0;
+    obuf->pos = 0;
+    obuf->prevchar = Strnew_size(8);
+    set_space_to_prevchar(obuf->prevchar);
+    obuf->flag = RB_IGNORE_P;
+    obuf->flag_sp = 0;
+    obuf->status = R_ST_NORMAL;
+    obuf->table_level = -1;
+    obuf->nobr_level = 0;
+    bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
+    obuf->img_alt = 0;
+    obuf->in_bold = 0;
+    obuf->in_italic = 0;
+    obuf->in_under = 0;
+    obuf->in_strike = 0;
+    obuf->in_ins = 0;
+    obuf->prev_ctype = PC_ASCII;
+    obuf->tag_sp = 0;
+    obuf->fontstat_sp = 0;
+    obuf->top_margin = 0;
+    obuf->bottom_margin = 0;
+    obuf->bp.init_flag = 1;
+    set_breakpoint(obuf, 0);
+
+    h_env->buf = buf;
+    h_env->f = NULL;
+    h_env->obuf = obuf;
+    h_env->tagbuf = Strnew();
+    h_env->limit = limit;
+    h_env->maxlimit = 0;
+    h_env->envs = envs;
+    h_env->nenv = nenv;
+    h_env->envc = 0;
+    h_env->envc_real = 0;
+    h_env->title = NULL;
+    h_env->blank_lines = 0;
+}
+
+void
+completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf)
+{
+    close_anchor(h_env, obuf);
+    if (obuf->img_alt) {
+	push_tag(obuf, "</img_alt>", HTML_N_IMG_ALT);
+	obuf->img_alt = NULL;
+    }
+    if (obuf->in_bold) {
+	push_tag(obuf, "</b>", HTML_N_B);
+	obuf->in_bold = 0;
+    }
+    if (obuf->in_italic) {
+	push_tag(obuf, "</i>", HTML_N_I);
+	obuf->in_italic = 0;
+    }
+    if (obuf->in_under) {
+	push_tag(obuf, "</u>", HTML_N_U);
+	obuf->in_under = 0;
+    }
+    if (obuf->in_strike) {
+	push_tag(obuf, "</s>", HTML_N_S);
+	obuf->in_strike = 0;
+    }
+    if (obuf->in_ins) {
+	push_tag(obuf, "</ins>", HTML_N_INS);
+	obuf->in_ins = 0;
+    }
+    if (obuf->flag & RB_INTXTA)
+	HTMLlineproc1("</textarea>", h_env);
+    /* for unbalanced select tag */
+    if (obuf->flag & RB_INSELECT)
+	HTMLlineproc1("</select>", h_env);
+    if (obuf->flag & RB_TITLE)
+	HTMLlineproc1("</title>", h_env);
+
+    /* for unbalanced table tag */
+    if (obuf->table_level >= MAX_TABLE)
+	obuf->table_level = MAX_TABLE - 1;
+
+    while (obuf->table_level >= 0) {
+	table_mode[obuf->table_level].pre_mode
+	    &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
+	HTMLlineproc1("</table>", h_env);
+    }
+}
+
+static void
+print_internal_information(struct html_feed_environ *henv)
+{
+    int i;
+    Str s;
+    TextLineList *tl = newTextLineList();
+
+    s = Strnew_charp("<internal>");
+    pushTextLine(tl, newTextLine(s, 0));
+    if (henv->title) {
+	s = Strnew_m_charp("<title_alt title=\"",
+			   html_quote(henv->title), "\">", NULL);
+	pushTextLine(tl, newTextLine(s, 0));
+    }
+#if 0
+    if (form_max >= 0) {
+	FormList *fp;
+	for (i = 0; i <= form_max; i++) {
+	    fp = forms[i];
+	    s = Sprintf("<form_int fid=\"%d\" action=\"%s\" method=\"%s\"",
+			i, html_quote(fp->action->ptr),
+			(fp->method == FORM_METHOD_POST) ? "post"
+			: ((fp->method ==
+			    FORM_METHOD_INTERNAL) ? "internal" : "get"));
+	    if (fp->target)
+		Strcat(s, Sprintf(" target=\"%s\"", html_quote(fp->target)));
+	    if (fp->enctype == FORM_ENCTYPE_MULTIPART)
+		Strcat_charp(s, " enctype=\"multipart/form-data\"");
+#ifdef USE_M17N
+	    if (fp->charset)
+		Strcat(s, Sprintf(" accept-charset=\"%s\"",
+				  html_quote(fp->charset)));
+#endif
+	    Strcat_charp(s, ">");
+	    pushTextLine(tl, newTextLine(s, 0));
+	}
+    }
+#endif
+#ifdef MENU_SELECT
+    if (n_select > 0) {
+	FormSelectOptionItem *ip;
+	for (i = 0; i < n_select; i++) {
+	    s = Sprintf("<select_int selectnumber=%d>", i);
+	    pushTextLine(tl, newTextLine(s, 0));
+	    for (ip = select_option[i].first; ip; ip = ip->next) {
+		s = Sprintf("<option_int value=\"%s\" label=\"%s\"%s>",
+			    html_quote(ip->value ? ip->value->ptr :
+				       ip->label->ptr),
+			    html_quote(ip->label->ptr),
+			    ip->checked ? " selected" : "");
+		pushTextLine(tl, newTextLine(s, 0));
+	    }
+	    s = Strnew_charp("</select_int>");
+	    pushTextLine(tl, newTextLine(s, 0));
+	}
+    }
+#endif				/* MENU_SELECT */
+    if (n_textarea > 0) {
+	for (i = 0; i < n_textarea; i++) {
+	    s = Sprintf("<textarea_int textareanumber=%d>", i);
+	    pushTextLine(tl, newTextLine(s, 0));
+	    s = Strnew_charp(html_quote(textarea_str[i]->ptr));
+	    Strcat_charp(s, "</textarea_int>");
+	    pushTextLine(tl, newTextLine(s, 0));
+	}
+    }
+    s = Strnew_charp("</internal>");
+    pushTextLine(tl, newTextLine(s, 0));
+
+    if (henv->buf)
+	appendTextLineList(henv->buf, tl);
+    else if (henv->f) {
+	TextLineListItem *p;
+	for (p = tl->first; p; p = p->next)
+	    fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
+    }
+}
+
+void
+loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
+{
+    struct environment envs[MAX_ENV_LEVEL];
+    clen_t linelen = 0;
+    clen_t trbyte = 0;
+    Str lineBuf2 = Strnew();
+#ifdef USE_M17N
+    wc_ces charset = WC_CES_US_ASCII;
+    wc_ces volatile doc_charset = DocumentCharset;
+#endif
+    struct html_feed_environ htmlenv1;
+    struct readbuffer obuf;
+#ifdef USE_IMAGE
+    int volatile image_flag;
+#endif
+    MySignalHandler prevtrap = NULL;
+
+#ifdef USE_M17N
+    if (fmInitialized && graph_ok()) {
+	symbol_width = symbol_width0 = 1;
+    }
+    else {
+	symbol_width0 = 0;
+	get_symbol(DisplayCharset, &symbol_width0);
+	symbol_width = WcOption.use_wide ? symbol_width0 : 1;
+    }
+#else
+    symbol_width = symbol_width0 = 1;
+#endif
+
+    cur_title = NULL;
+    n_textarea = 0;
+    cur_textarea = NULL;
+    max_textarea = MAX_TEXTAREA;
+    textarea_str = New_N(Str, max_textarea);
+#ifdef MENU_SELECT
+    n_select = 0;
+    max_select = MAX_SELECT;
+    select_option = New_N(FormSelectOption, max_select);
+#endif				/* MENU_SELECT */
+    cur_select = NULL;
+    form_sp = -1;
+    form_max = -1;
+    forms_size = 0;
+    forms = NULL;
+    cur_hseq = 1;
+#ifdef USE_IMAGE
+    cur_iseq = 1;
+    if (newBuf->image_flag)
+	image_flag = newBuf->image_flag;
+    else if (activeImage && displayImage && autoImage)
+	image_flag = IMG_FLAG_AUTO;
+    else
+	image_flag = IMG_FLAG_SKIP;
+    if (newBuf->currentURL.file)
+	cur_baseURL = baseURL(newBuf);
+#endif
+
+    if (w3m_halfload) {
+	newBuf->buffername = "---";
+#ifdef USE_M17N
+	newBuf->document_charset = InnerCharset;
+#endif
+	max_textarea = 0;
+#ifdef MENU_SELECT
+	max_select = 0;
+#endif
+	HTMLlineproc3(newBuf, f->stream);
+	w3m_halfload = FALSE;
+	return;
+    }
+
+    init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, NULL, newBuf->width, 0);
+
+    if (w3m_halfdump)
+	htmlenv1.f = stdout;
+    else
+	htmlenv1.buf = newTextLineList();
+
+    if (SETJMP(AbortLoading) != 0) {
+	HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1);
+	goto phase2;
+    }
+    TRAP_ON;
+
+#ifdef USE_M17N
+    if (newBuf != NULL) {
+	if (newBuf->bufferprop & BP_FRAME)
+	    charset = InnerCharset;
+	else if (newBuf->document_charset)
+	    charset = doc_charset = newBuf->document_charset;
+    }
+    if (content_charset && UseContentCharset)
+	doc_charset = content_charset;
+    else if (f->guess_type && !strcasecmp(f->guess_type, "application/xhtml+xml"))
+	doc_charset = WC_CES_UTF_8;
+    meta_charset = 0;
+#endif
+#if	0
+    do_blankline(&htmlenv1, &obuf, 0, 0, htmlenv1.limit);
+    obuf.flag = RB_IGNORE_P;
+#endif
+    if (IStype(f->stream) != IST_ENCODED)
+	f->stream = newEncodedStream(f->stream, f->encoding);
+    while ((lineBuf2 = StrmyUFgets(f))->length) {
+#ifdef USE_NNTP
+	if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.') {
+	    Strshrinkfirst(lineBuf2, 1);
+	    if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
+		lineBuf2->ptr[0] == '\0') {
+		/*
+		 * iseos(f->stream) = TRUE;
+		 */
+		break;
+	    }
+	}
+#endif				/* USE_NNTP */
+	if (src)
+	    Strfputs(lineBuf2, src);
+	linelen += lineBuf2->length;
+	if (w3m_dump & DUMP_EXTRA)
+	    printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
+	if (w3m_dump & DUMP_SOURCE)
+	    continue;
+	showProgress(&linelen, &trbyte);
+	/*
+	 * if (frame_source)
+	 * continue;
+	 */
+#ifdef USE_M17N
+	if (meta_charset) {	/* <META> */
+	    if (content_charset == 0 && UseContentCharset) {
+		doc_charset = meta_charset;
+		charset = WC_CES_US_ASCII;
+	    }
+	    meta_charset = 0;
+	}
+#endif
+	lineBuf2 = convertLine(f, lineBuf2, HTML_MODE, &charset, doc_charset);
+#if defined(USE_M17N) && defined(USE_IMAGE)
+	cur_document_charset = charset;
+#endif
+	HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
+    }
+    if (obuf.status != R_ST_NORMAL) {
+	obuf.status = R_ST_EOL;
+	HTMLlineproc0("\n", &htmlenv1, internal);
+    }
+    obuf.status = R_ST_NORMAL;
+    completeHTMLstream(&htmlenv1, &obuf);
+    flushline(&htmlenv1, &obuf, 0, 2, htmlenv1.limit);
+    if (htmlenv1.title)
+	newBuf->buffername = htmlenv1.title;
+    if (w3m_halfdump) {
+	TRAP_OFF;
+	print_internal_information(&htmlenv1);
+	return;
+    }
+    if (w3m_backend) {
+	TRAP_OFF;
+	print_internal_information(&htmlenv1);
+	backend_halfdump_buf = htmlenv1.buf;
+	return;
+    }
+  phase2:
+    newBuf->trbyte = trbyte + linelen;
+    TRAP_OFF;
+#ifdef USE_M17N
+    if (!(newBuf->bufferprop & BP_FRAME))
+	newBuf->document_charset = charset;
+#endif
+#ifdef USE_IMAGE
+    newBuf->image_flag = image_flag;
+#endif
+    HTMLlineproc2(newBuf, htmlenv1.buf);
+}

@@ -344,12 +344,6 @@ typedef struct tag_attribute_info {
 extern TagInfo TagMAP[];
 extern TagAttrInfo AttrMAP[];
 
-struct environment {
-    unsigned char env;
-    int type;
-    int count;
-    char indent;
-};
 
 #define MAX_ENV_LEVEL    20
 #define MAX_INDENT_LEVEL 10

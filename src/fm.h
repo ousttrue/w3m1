@@ -375,20 +375,6 @@
 #define RG_FRAME     2
 #define RG_FRAME_SRC 4
 
-struct html_feed_environ {
-    struct readbuffer *obuf;
-    TextLineList *buf;
-    FILE *f;
-    Str tagbuf;
-    int limit;
-    int maxlimit;
-    struct environment *envs;
-    int nenv;
-    int envc;
-    int envc_real;
-    char *title;
-    int blank_lines;
-};
 
 #ifdef USE_COOKIE
 struct portlist {

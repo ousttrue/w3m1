@@ -74,13 +74,13 @@ add_executable(w3m
     src/buffer.cpp
     src/tab.cpp
     src/file.cpp
+    # src/html_feed_environ.cpp
     src/backend.cpp
     src/cookie.cpp
     src/indep.cpp
     src/rc.cpp
     src/Str.cpp
-    src/regex.cpp
-    # src/defun.c
+    src/regex.cpp    
     src/textlist.cpp
     src/parsetag.cpp
     src/myctype.cpp

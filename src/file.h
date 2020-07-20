@@ -56,7 +56,7 @@ Str process_input(struct parsed_tag *tag);
 Str process_select(struct parsed_tag *tag);
 Str process_textarea(struct parsed_tag *tag, int width);
 Str process_form(struct parsed_tag *tag);
-int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
+
 Buffer *loadGeneralFile(char *path, ParsedURL *current, char *referer, int flag, FormList *request);
 Str getLinkNumberStr(int correction);
 char *guess_save_name(Buffer *buf, char *file);
@@ -68,18 +68,6 @@ Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_cha
 Buffer *loadFile(char *path);
 int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
-void push_render_image(Str str, int width, int limit,
-                       struct html_feed_environ *h_env);
-void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
-               int indent, int force, int width);
-void do_blankline(struct html_feed_environ *h_env,
-                  struct readbuffer *obuf, int indent, int indent_incr,
-                  int width);
-void purgeline(struct html_feed_environ *h_env);
-void save_fonteffect(struct html_feed_environ *h_env,
-                     struct readbuffer *obuf);
-void restore_fonteffect(struct html_feed_environ *h_env,
-                        struct readbuffer *obuf);
 Str process_n_select(void);
 void feed_select(char *str);
 void process_option(void);
@@ -87,20 +75,10 @@ Str process_n_textarea(void);
 void feed_textarea(char *str);
 Str process_n_form(void);
 int getMetaRefreshParam(char *q, Str *refresh_uri);
-void HTMLlineproc2(Buffer *buf, TextLineList *tl);
-void HTMLlineproc0(char *istr, struct html_feed_environ *h_env,
-                   int internal);
-#define HTMLlineproc1(x, y) HTMLlineproc0(x, y, TRUE)
 Buffer *loadHTMLBuffer(URLFile *f, Buffer *newBuf);
 char *convert_size(clen_t size, int usefloat);
 char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte);
-void init_henv(struct html_feed_environ *, struct readbuffer *,
-               struct environment *, int, TextLineList *, int, int);
-void completeHTMLstream(struct html_feed_environ *,
-                        struct readbuffer *);
-void loadHTMLstream(URLFile *f, Buffer *newBuf, FILE *src,
-                    int internal);
 Buffer *loadHTMLString(Str page);
 
 Buffer *loadBuffer(URLFile *uf, Buffer *newBuf);
@@ -204,8 +182,6 @@ int visible_length(char *str);
 void print_item(struct table *t, int row, int col, int width, Str buf);
 void print_sep(struct table *t, int row, int type, int maxcol, Str buf);
 void do_refill(struct table *tbl, int row, int col, int maxlimit);
-void renderTable(struct table *t, int max_width,
-                 struct html_feed_environ *h_env);
 struct table *begin_table(int border, int spacing, int padding,
                           int vspace);
 void end_table(struct table *tbl);
@@ -364,3 +340,51 @@ Str tmpfname(int type, char *ext);
 time_t mymktime(char *timestr);
 
 char *FQDN(char *host);
+
+struct environment {
+    unsigned char env;
+    int type;
+    int count;
+    char indent;
+};
+
+struct html_feed_environ {
+    struct readbuffer *obuf;
+    TextLineList *buf;
+    FILE *f;
+    Str tagbuf;
+    int limit;
+    int maxlimit;
+    struct environment *envs;
+    int nenv;
+    int envc;
+    int envc_real;
+    char *title;
+    int blank_lines;
+};
+
+int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
+void HTMLlineproc2(Buffer *buf, TextLineList *tl);
+void HTMLlineproc0(char *istr, struct html_feed_environ *h_env,
+                   int internal);
+#define HTMLlineproc1(x, y) HTMLlineproc0(x, y, TRUE)
+void push_render_image(Str str, int width, int limit,
+                       struct html_feed_environ *h_env);
+void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
+               int indent, int force, int width);
+void do_blankline(struct html_feed_environ *h_env,
+                  struct readbuffer *obuf, int indent, int indent_incr,
+                  int width);
+void purgeline(struct html_feed_environ *h_env);
+void save_fonteffect(struct html_feed_environ *h_env,
+                     struct readbuffer *obuf);
+void restore_fonteffect(struct html_feed_environ *h_env,
+                        struct readbuffer *obuf);
+void init_henv(struct html_feed_environ *, struct readbuffer *,
+               struct environment *, int, TextLineList *, int, int);
+void completeHTMLstream(struct html_feed_environ *,
+                        struct readbuffer *);
+void renderTable(struct table *t, int max_width,
+                 struct html_feed_environ *h_env);
+void loadHTMLstream(URLFile *f, Buffer *newBuf, FILE *src,
+                    int internal);
