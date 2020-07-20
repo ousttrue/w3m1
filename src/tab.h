@@ -39,3 +39,4 @@ int HasFirstBuffer();
 void SetFirstbuf(Buffer *buffer);
 void moveTab(TabBuffer *t, TabBuffer *t2, int right);
 void calcTabPos();
+void followTab(TabBuffer *tab);

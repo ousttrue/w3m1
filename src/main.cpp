@@ -10,6 +10,7 @@
 #include "public.h"
 #include "commands.h"
 #include "cookie.h"
+#include "mouse.h"
 #include <signal.h>
 #include <setjmp.h>
 #include <sys/stat.h>
@@ -351,11 +352,11 @@ static void mainloop()
         if (!GetCurrentbuf()->event)
             SetCurrentAlarm(DefaultAlarm());
 #endif
-#ifdef USE_MOUSE
-        mouse_action.in_action = FALSE;
+
+        DisableMouseAction();
         if (use_mouse)
             mouse_active();
-#endif /* USE_MOUSE */
+
 #ifdef USE_ALARM
         if (CurrentAlarm()->sec > 0)
         {

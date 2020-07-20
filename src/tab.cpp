@@ -5,7 +5,9 @@
 #include "file.h"
 #include "display.h"
 #include "dispatcher.h"
-
+#include "mouse.h"
+#include "public.h"
+#include "commands.h"
 
 static TabBuffer *g_FirstTab = nullptr;
 static TabBuffer *g_LastTab = nullptr;
@@ -63,9 +65,7 @@ void calcTabPos()
 #endif
     int n1, n2, na, nx, ny, ix, iy;
 
-#ifdef USE_MOUSE
-    lcol = mouse_action.menu_str ? mouse_action.menu_width : 0;
-#endif
+    lcol = GetMouseActionMenuStr() ? GetMouseActionMenuWidth() : 0;
 
     if (g_nTab <= 0)
         return;
@@ -120,7 +120,7 @@ TabBuffer *posTab(int x, int y)
 {
     TabBuffer *tab;
 
-    if (mouse_action.menu_str && x < mouse_action.menu_width && y == 0)
+    if (GetMouseActionMenuStr() && x < GetMouseActionMenuWidth() && y == 0)
         return NO_TABBUFFER;
     if (y > GetLastTab()->y)
         return NULL;
@@ -362,4 +362,56 @@ int HasFirstBuffer()
 void SetFirstbuf(Buffer *buffer)
 {
     g_CurrentTab->firstBuffer = buffer;
+}
+
+void followTab(TabBuffer *tab)
+{
+    Buffer *buf;
+    Anchor *a;
+
+#ifdef USE_IMAGE
+    a = retrieveCurrentImg(GetCurrentbuf());
+    if (!(a && a->image && a->image->map))
+#endif
+        a = retrieveCurrentAnchor(GetCurrentbuf());
+    if (a == NULL)
+        return;
+
+    if (tab == GetCurrentTab())
+    {
+        set_check_target(FALSE);
+        followA();
+        set_check_target(TRUE);
+        return;
+    }
+    _newT();
+    buf = GetCurrentbuf();
+    set_check_target(FALSE);
+    followA();
+    set_check_target(TRUE);
+    if (tab == NULL)
+    {
+        if (buf != GetCurrentbuf())
+            delBuffer(buf);
+        else
+            deleteTab(GetCurrentTab());
+    }
+    else if (buf != GetCurrentbuf())
+    {
+        /* buf <- p <- ... <- Currentbuf = c */
+        Buffer *c, *p;
+
+        c = GetCurrentbuf();
+        p = prevBuffer(c, buf);
+        p->nextBuffer = NULL;
+        SetFirstbuf(buf);
+        deleteTab(GetCurrentTab());
+        SetCurrentTab(tab);
+        for (buf = p; buf; buf = p)
+        {
+            p = prevBuffer(c, buf);
+            pushBuffer(buf);
+        }
+    }
+    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }

@@ -734,26 +734,6 @@ global int reverse_mouse init(FALSE);
 global int relative_wheel_scroll init(FALSE);
 global int fixed_wheel_scroll_count init(5);
 global int relative_wheel_scroll_ratio init(30);
-typedef struct _MouseActionMap {
-    void (*func) ();
-    char *data;
-} MouseActionMap;
-typedef struct _MouseAction {
-    char *menu_str;
-    char *lastline_str;
-    int menu_width;
-    int lastline_width;
-    int in_action;
-    int cursorX;
-    int cursorY;
-    MouseActionMap default_map[3];
-    MouseActionMap anchor_map[3];
-    MouseActionMap active_map[3];
-    MouseActionMap tab_map[3];
-    MouseActionMap *menu_map[3];
-    MouseActionMap *lastline_map[3];
-} MouseAction;
-global MouseAction mouse_action;
 #define LIMIT_MOUSE_MENU 100
 #endif				/* USE_MOUSE */
 

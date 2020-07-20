@@ -18,7 +18,7 @@
 #include "url.h"
 #include "cookie.h"
 #include "ctrlcode.h"
-
+#include "mouse.h"
 
 int searchKeyNum(void)
 {
@@ -1599,7 +1599,6 @@ void set_check_target(int check)
     s_check_target = check;
 }
 
-
 /* go to the next left/right anchor */
 void nextX(int d, int dy)
 {
@@ -1815,7 +1814,6 @@ void goURL0(char *prompt, int relative)
         pushHashHist(URLHist, parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr);
 }
 
-
 void anchorMn(Anchor *(*menu_func)(Buffer *), int go)
 {
     Anchor *a;
@@ -1987,287 +1985,8 @@ void invoke_browser(char *url)
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
-void process_mouse(int btn, int x, int y)
-{
-    int delta_x, delta_y, i;
-    static int press_btn = MOUSE_BTN_RESET, press_x, press_y;
-    TabBuffer *t;
-    int ny = -1;
 
-    if (GetTabCount() > 1 || mouse_action.menu_str)
-        ny = GetLastTab()->y + 1;
-    if (btn == MOUSE_BTN_UP)
-    {
-        switch (press_btn)
-        {
-        case MOUSE_BTN1_DOWN:
-            if (press_y == y && press_x == x)
-                do_mouse_action(press_btn, x, y);
-            else if (ny > 0 && y < ny)
-            {
-                if (press_y < ny)
-                {
-                    moveTab(posTab(press_x, press_y), posTab(x, y),
-                            (press_y == y) ? (press_x < x) : (press_y < y));
-                    return;
-                }
-                else if (press_x >= GetCurrentbuf()->rootX)
-                {
-                    Buffer *buf = GetCurrentbuf();
-                    int cx = GetCurrentbuf()->cursorX, cy = GetCurrentbuf()->cursorY;
 
-                    t = posTab(x, y);
-                    if (t == NULL)
-                        return;
-                    if (t == NO_TABBUFFER)
-                        t = NULL; /* open new tab */
-                    cursorXY(GetCurrentbuf(), press_x - GetCurrentbuf()->rootX,
-                             press_y - GetCurrentbuf()->rootY);
-                    if (GetCurrentbuf()->cursorY == press_y - GetCurrentbuf()->rootY &&
-                        (GetCurrentbuf()->cursorX == press_x - GetCurrentbuf()->rootX
-#ifdef USE_M17N
-                         || (WcOption.use_wide &&
-                             GetCurrentbuf()->currentLine != NULL &&
-                             (CharType(GetCurrentbuf()->currentLine->propBuf[GetCurrentbuf()->pos]) == PC_KANJI1) && GetCurrentbuf()->cursorX == press_x - GetCurrentbuf()->rootX - 1)
-#endif
-                             ))
-                    {
-                        displayBuffer(GetCurrentbuf(), B_NORMAL);
-                        followTab(t);
-                    }
-                    if (buf == GetCurrentbuf())
-                        cursorXY(GetCurrentbuf(), cx, cy);
-                }
-                return;
-            }
-            else
-            {
-                delta_x = x - press_x;
-                delta_y = y - press_y;
-
-                if (abs(delta_x) < abs(delta_y) / 3)
-                    delta_x = 0;
-                if (abs(delta_y) < abs(delta_x) / 3)
-                    delta_y = 0;
-                if (reverse_mouse)
-                {
-                    delta_y = -delta_y;
-                    delta_x = -delta_x;
-                }
-                if (delta_y > 0)
-                {
-                    set_prec_num(delta_y);
-                    ldown1();
-                }
-                else if (delta_y < 0)
-                {
-                    set_prec_num(-delta_y);
-                    lup1();
-                }
-                if (delta_x > 0)
-                {
-                    set_prec_num(delta_x);
-                    col1L();
-                }
-                else if (delta_x < 0)
-                {
-                    set_prec_num(-delta_x);
-                    col1R();
-                }
-            }
-            break;
-        case MOUSE_BTN2_DOWN:
-        case MOUSE_BTN3_DOWN:
-            if (press_y == y && press_x == x)
-                do_mouse_action(press_btn, x, y);
-            break;
-        case MOUSE_BTN4_DOWN_RXVT:
-            for (i = 0; i < mouse_scroll_line(); i++)
-                ldown1();
-            break;
-        case MOUSE_BTN5_DOWN_RXVT:
-            for (i = 0; i < mouse_scroll_line(); i++)
-                lup1();
-            break;
-        }
-    }
-    else if (btn == MOUSE_BTN4_DOWN_XTERM)
-    {
-        for (i = 0; i < mouse_scroll_line(); i++)
-            ldown1();
-    }
-    else if (btn == MOUSE_BTN5_DOWN_XTERM)
-    {
-        for (i = 0; i < mouse_scroll_line(); i++)
-            lup1();
-    }
-
-    if (btn != MOUSE_BTN4_DOWN_RXVT || press_btn == MOUSE_BTN_RESET)
-    {
-        press_btn = btn;
-        press_x = x;
-        press_y = y;
-    }
-    else
-    {
-        press_btn = MOUSE_BTN_RESET;
-    }
-}
-
-void do_mouse_action(int btn, int x, int y)
-{
-    MouseActionMap *map = NULL;
-    int ny = -1;
-
-    if (GetTabCount() > 1 || mouse_action.menu_str)
-        ny = GetLastTab()->y + 1;
-
-    switch (btn)
-    {
-    case MOUSE_BTN1_DOWN:
-        btn = 0;
-        break;
-    case MOUSE_BTN2_DOWN:
-        btn = 1;
-        break;
-    case MOUSE_BTN3_DOWN:
-        btn = 2;
-        break;
-    default:
-        return;
-    }
-    if (y < ny)
-    {
-        if (mouse_action.menu_str && x >= 0 && x < mouse_action.menu_width)
-        {
-            if (mouse_action.menu_map[btn])
-                map = &mouse_action.menu_map[btn][x];
-        }
-        else
-            map = &mouse_action.tab_map[btn];
-    }
-    else if (y == LASTLINE)
-    {
-        if (mouse_action.lastline_str && x >= 0 &&
-            x < mouse_action.lastline_width)
-        {
-            if (mouse_action.lastline_map[btn])
-                map = &mouse_action.lastline_map[btn][x];
-        }
-    }
-    else if (y > ny)
-    {
-        if (y == GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY &&
-            (x == GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX
-#ifdef USE_M17N
-             || (WcOption.use_wide && GetCurrentbuf()->currentLine != NULL &&
-                 (CharType(GetCurrentbuf()->currentLine->propBuf[GetCurrentbuf()->pos]) == PC_KANJI1) && x == GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX + 1)
-#endif
-                 ))
-        {
-            if (retrieveCurrentAnchor(GetCurrentbuf()) ||
-                retrieveCurrentForm(GetCurrentbuf()))
-            {
-                map = &mouse_action.active_map[btn];
-                if (!(map && map->func))
-                    map = &mouse_action.anchor_map[btn];
-            }
-        }
-        else
-        {
-            int cx = GetCurrentbuf()->cursorX, cy = GetCurrentbuf()->cursorY;
-            cursorXY(GetCurrentbuf(), x - GetCurrentbuf()->rootX, y - GetCurrentbuf()->rootY);
-            if (y == GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY &&
-                (x == GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX
-#ifdef USE_M17N
-                 || (WcOption.use_wide && GetCurrentbuf()->currentLine != NULL &&
-                     (CharType(GetCurrentbuf()->currentLine->propBuf[GetCurrentbuf()->pos]) == PC_KANJI1) && x == GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX + 1)
-#endif
-                     ) &&
-                (retrieveCurrentAnchor(GetCurrentbuf()) ||
-                 retrieveCurrentForm(GetCurrentbuf())))
-                map = &mouse_action.anchor_map[btn];
-            cursorXY(GetCurrentbuf(), cx, cy);
-        }
-    }
-    else
-    {
-        return;
-    }
-    if (!(map && map->func))
-        map = &mouse_action.default_map[btn];
-    if (map && map->func)
-    {
-        mouse_action.in_action = TRUE;
-        mouse_action.cursorX = x;
-        mouse_action.cursorY = y;
-        ClearCurrentKey();
-        ClearCurrentKeyData();
-        CurrentCmdData = map->data;
-        (*map->func)();
-        CurrentCmdData = NULL;
-    }
-}
-
-void followTab(TabBuffer *tab)
-{
-    Buffer *buf;
-    Anchor *a;
-
-#ifdef USE_IMAGE
-    a = retrieveCurrentImg(GetCurrentbuf());
-    if (!(a && a->image && a->image->map))
-#endif
-        a = retrieveCurrentAnchor(GetCurrentbuf());
-    if (a == NULL)
-        return;
-
-    if (tab == GetCurrentTab())
-    {
-        set_check_target(FALSE);
-        followA();
-        set_check_target(TRUE);
-        return;
-    }
-    _newT();
-    buf = GetCurrentbuf();
-    set_check_target(FALSE);
-    followA();
-    set_check_target(TRUE);
-    if (tab == NULL)
-    {
-        if (buf != GetCurrentbuf())
-            delBuffer(buf);
-        else
-            deleteTab(GetCurrentTab());
-    }
-    else if (buf != GetCurrentbuf())
-    {
-        /* buf <- p <- ... <- Currentbuf = c */
-        Buffer *c, *p;
-
-        c = GetCurrentbuf();
-        p = prevBuffer(c, buf);
-        p->nextBuffer = NULL;
-        SetFirstbuf(buf);
-        deleteTab(GetCurrentTab());
-        SetCurrentTab(tab);
-        for (buf = p; buf; buf = p)
-        {
-            p = prevBuffer(c, buf);
-            pushBuffer(buf);
-        }
-    }
-    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
-}
-
-int mouse_scroll_line()
-{
-    if (relative_wheel_scroll)
-        return (relative_wheel_scroll_ratio * LASTLINE + 99) / 100;
-    else
-        return fixed_wheel_scroll_count;
-}
 
 void execdict(char *word)
 {
@@ -2818,7 +2537,7 @@ int sysm_process_mouse(int x, int y, int nbs, int obs)
     }
     else /* nbs == obs */
         return 0;
-    process_mouse(btn, x, y);
+    process_mouse(static_cast<MouseBtnAction>(btn), x, y);
     return 0;
 }
 
