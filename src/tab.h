@@ -2,16 +2,16 @@
 
 #include "buffer.h"
 
-typedef struct _TabBuffer
+struct TabBuffer
 {
-    struct _TabBuffer *nextTab;
-    struct _TabBuffer *prevTab;
+    TabBuffer *nextTab;
+    TabBuffer *prevTab;
     Buffer *currentBuffer;
     Buffer *firstBuffer;
     short x1;
     short x2;
     short y;
-} TabBuffer;
+};
 
 TabBuffer *newTab();
 void _newT();

@@ -5,19 +5,19 @@
 
 /* General doubly linked list */
 
-typedef struct _listitem
+struct ListItem
 {
     void *ptr;
-    struct _listitem *next;
-    struct _listitem *prev;
-} ListItem;
+    ListItem *next;
+    ListItem *prev;
+};
 
-typedef struct _generallist
+struct GeneralList
 {
     ListItem *first;
     ListItem *last;
     short nitem;
-} GeneralList;
+};
 
 extern ListItem *newListItem(void *s, ListItem *n, ListItem *p);
 extern GeneralList *newGeneralList(void);
@@ -29,19 +29,19 @@ extern GeneralList *appendGeneralList(GeneralList *, GeneralList *);
 
 /* Text list */
 
-typedef struct _textlistitem
+struct TextListItem
 {
     char *ptr;
-    struct _textlistitem *next;
-    struct _textlistitem *prev;
-} TextListItem;
+    TextListItem *next;
+    TextListItem *prev;
+};
 
-typedef struct _textlist
+struct TextList
 {
     TextListItem *first;
     TextListItem *last;
     short nitem;
-} TextList;
+};
 
 TextList *newTextList();
 void pushText(TextList *tl, char *s);
@@ -52,32 +52,32 @@ TextList *appendTextList(TextList *tl, TextList *tl2);
 
 /* Line text list */
 
-typedef struct _TextLine
+struct TextLine
 {
     Str line;
     short pos;
-} TextLine;
+};
 
-typedef struct _textlinelistitem
+struct TextLineListItem
 {
     TextLine *ptr;
-    struct _textlinelistitem *next;
-    struct _textlinelistitem *prev;
-} TextLineListItem;
+    TextLineListItem *next;
+    TextLineListItem *prev;
+};
 
-typedef struct _textlinelist
+struct TextLineList
 {
     TextLineListItem *first;
     TextLineListItem *last;
     short nitem;
-} TextLineList;
+};
 
 extern TextLine *newTextLine(Str line, int pos);
 extern void appendTextLine(TextLineList *tl, Str line, int pos);
 TextLineList *newTextLineList();
-void pushTextLine(TextLineList* tl, TextLine* lbuf);
-TextLine *popTextLine( TextLineList* tl);
+void pushTextLine(TextLineList *tl, TextLine *lbuf);
+TextLine *popTextLine(TextLineList *tl);
 TextLine *rpopTextLine(TextLineList *tl);
-TextLineList* appendTextLineList(TextLineList * tl, TextLineList* tl2);
+TextLineList *appendTextLineList(TextLineList *tl, TextLineList *tl2);
 
 #endif /* not TEXTLIST_H */

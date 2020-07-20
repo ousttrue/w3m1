@@ -2,17 +2,8 @@
 #include "dispatcher.h"
 #include "tab.h"
 
-typedef struct _BufferPos {
-    long top_linenumber;
-    long cur_linenumber;
-    int currentColumn;
-    int pos;
-    int bpos;
-    struct _BufferPos *next;
-    struct _BufferPos *prev;
-} BufferPos;
-
-typedef struct _DownloadList {
+struct DownloadList
+{
     pid_t pid;
     char *url;
     char *save;
@@ -21,9 +12,9 @@ typedef struct _DownloadList {
     time_t time;
     int running;
     int err;
-    struct _DownloadList *next;
-    struct _DownloadList *prev;
-} DownloadList;
+    DownloadList *next;
+    DownloadList *prev;
+};
 
 global DownloadList *FirstDL init(NULL);
 global DownloadList *LastDL init(NULL);

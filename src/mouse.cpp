@@ -17,14 +17,15 @@
 #include "file.h"
 #include "display.h"
 #include "tab.h"
+#include "types.h"
 
-typedef struct _MouseActionMap
+struct MouseActionMap
 {
-    void (*func)();
+    Command func;
     char *data;
-} MouseActionMap;
+};
 
-typedef struct _MouseAction
+struct MouseAction
 {
     char *menu_str;
     char *lastline_str;
@@ -39,7 +40,7 @@ typedef struct _MouseAction
     MouseActionMap tab_map[3];
     MouseActionMap *menu_map[3];
     MouseActionMap *lastline_map[3];
-} MouseAction;
+} ;
 static MouseAction mouse_action;
 
 static MouseAction default_mouse_action = {

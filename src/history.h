@@ -11,11 +11,12 @@ typedef ListItem HistItem;
 
 typedef GeneralList HistList;
 
-typedef struct {
+struct Hist
+{
     HistList *list;
     HistItem *current;
     Hash_sv *hash;
-} Hist;
+};
 
 extern Hist *newHist();
 extern Hist *copyHist(Hist *hist);
@@ -27,4 +28,4 @@ extern char *lastHist(Hist *hist);
 extern char *nextHist(Hist *hist);
 extern char *prevHist(Hist *hist);
 
-#endif				/* HISTORY_H */
+#endif /* HISTORY_H */

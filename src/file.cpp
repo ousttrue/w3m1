@@ -4653,7 +4653,7 @@ HTMLlineproc2(Buffer *buf, TextLineList *tl)
     HTMLlineproc2body(buf, textlist_feed, -1);
 }
 
-static InputStream _file_lp2;
+static InputStream* _file_lp2;
 
 static Str
 file_feed()
@@ -4668,7 +4668,7 @@ file_feed()
 }
 
 void
-HTMLlineproc3(Buffer *buf, InputStream stream)
+HTMLlineproc3(Buffer *buf, InputStream* stream)
 {
     _file_lp2 = stream;
     HTMLlineproc2body(buf, file_feed, -1);
@@ -5430,7 +5430,7 @@ getpipe(char *cmd)
  * Open pager buffer
  */
 Buffer *
-openPagerBuffer(InputStream stream, Buffer *buf)
+openPagerBuffer(InputStream *stream, Buffer *buf)
 {
 
     if (buf == NULL)
@@ -5454,7 +5454,7 @@ openPagerBuffer(InputStream stream, Buffer *buf)
 }
 
 Buffer *
-openGeneralPagerBuffer(InputStream stream)
+openGeneralPagerBuffer(InputStream *stream)
 {
     Buffer *buf;
     char *t = "text/plain";
@@ -5817,7 +5817,7 @@ doExternal(URLFile uf, char *path, char *type, Buffer **bufp,
 static int
 _MoveFile(char *path1, char *path2)
 {
-    InputStream f1;
+    InputStream *f1;
     FILE *f2;
     int is_pipe;
     clen_t linelen = 0, trbyte = 0;
@@ -6097,7 +6097,7 @@ checkCopyFile(char *path1, char *path2)
 }
 
 int
-checkSaveFile(InputStream stream, char *path2)
+checkSaveFile(InputStream *stream, char *path2)
 {
     struct stat st1, st2;
     int des = ISfileno(stream);

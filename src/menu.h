@@ -18,21 +18,23 @@
 #define MENU_CANCEL -2
 #define MENU_CLOSE -3
 
-typedef struct _MenuItem
+struct Menu;
+
+struct MenuItem
 {
     int type;
     char *label;
     int *variable;
     int value;
     void (*func)();
-    struct _Menu *popup;
+    Menu *popup;
     char *keys;
     char *data;
-} MenuItem;
+};
 
-typedef struct _Menu
+struct Menu
 {
-    struct _Menu *parent;
+    Menu *parent;
     int cursorX;
     int cursorY;
     int x;
@@ -47,14 +49,14 @@ typedef struct _Menu
     int active;
     int (*keymap[128])(char c);
     int keyselect[128];
-} Menu;
+};
 
-typedef struct _MenuList
+struct MenuList
 {
     char *id;
     Menu *menu;
     MenuItem *item;
-} MenuList;
+};
 
 void new_menu(Menu *menu, MenuItem *item);
 void geom_menu(Menu *menu, int x, int y, int mselect);

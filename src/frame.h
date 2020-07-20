@@ -28,7 +28,7 @@ struct frame_body
     char *source;
     char *type;
     char *referer;
-    struct _anchorList *nameList;
+    AnchorList *nameList;
     FormList *request;
 #ifdef USE_SSL
     char *ssl_certificate;
@@ -64,7 +64,7 @@ struct frameset_queue
     long top_linenumber;
     int pos;
     int currentColumn;
-    struct _anchorList *formitem;
+    AnchorList *formitem;
 };
 
 extern struct frameset *renderFrameSet;

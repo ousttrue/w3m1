@@ -1,14 +1,15 @@
 #pragma once
 #include "types.h"
 
-typedef struct http_request {
+struct HRequest
+{
     char command;
     char flag;
     char *referer;
     FormList *request;
-} HRequest;
+};
 
-typedef struct
+struct Breakpoint
 {
     int pos;
     int len;
@@ -22,7 +23,7 @@ typedef struct
     char init_flag;
     short top_margin;
     short bottom_margin;
-} Breakpoint;
+};
 
 struct readbuffer
 {
@@ -87,8 +88,8 @@ void saveBuffer(Buffer *buf, FILE *f, int cont);
 void saveBufferBody(Buffer *buf, FILE *f, int cont);
 Buffer *getshell(char *cmd);
 Buffer *getpipe(char *cmd);
-Buffer *openPagerBuffer(InputStream stream, Buffer *buf);
-Buffer *openGeneralPagerBuffer(InputStream stream);
+Buffer *openPagerBuffer(InputStream *stream, Buffer *buf);
+Buffer *openGeneralPagerBuffer(InputStream *stream);
 Line *getNextPage(Buffer *buf, int plen);
 int save2tmp(URLFile uf, char *tmpf);
 int doExternal(URLFile uf, char *path, char *type, Buffer **bufp,
@@ -98,14 +99,13 @@ int _doFileCopy(char *tmpf, char *defstr, int download);
 int doFileMove(char *tmpf, char *defstr);
 int doFileSave(URLFile uf, char *defstr);
 int checkCopyFile(char *path1, char *path2);
-int checkSaveFile(InputStream stream, char *path);
+int checkSaveFile(InputStream *stream, char *path);
 int checkOverWrite(char *path);
 char *inputAnswer(char *prompt);
 int matchattr(char *p, char *attr, int len, Str *value);
 void readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu);
 char *checkHeader(Buffer *buf, char *field);
 Buffer *newBuffer(int width);
-
 
 int writeBufferCache(Buffer *buf);
 int readBufferCache(Buffer *buf);
@@ -147,7 +147,6 @@ int columnLen(Line *line, int column);
 Line *lineSkip(Buffer *buf, Line *line, int offset, int last);
 Line *currentLineSkip(Buffer *buf, Line *line, int offset, int last);
 int gethtmlcmd(char **s);
-
 
 char *lastFileName(char *path);
 char *mybasename(char *s);
@@ -192,9 +191,9 @@ int feed_table(struct table *tbl, char *line, struct table_mode *mode,
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode,
                  int width);
 void pushTable(struct table *, struct table *);
-struct form_list *newFormList(char *action, char *method, char *charset,
+FormList *newFormList(char *action, char *method, char *charset,
                               char *enctype, char *target, char *name,
-                              struct form_list *_next);
+                              FormList *_next);
 char *form2str(FormItemList *fi);
 int formtype(char *typestr);
 void formRecheckRadio(Anchor *a, Buffer *buf, FormItemList *form);
@@ -231,11 +230,6 @@ union frameset_element *search_frame(struct frameset *fset, char *name);
 MySignalHandler reset_exit(SIGNAL_ARG);
 MySignalHandler error_dump(SIGNAL_ARG);
 
-
-
-
-
-
 void initMimeTypes();
 void free_ssl_ctx();
 ParsedURL *baseURL(Buffer *buf);
@@ -246,7 +240,7 @@ void copyParsedURL(ParsedURL *p, ParsedURL *q);
 void parseURL2(char *url, ParsedURL *pu, ParsedURL *current);
 Str parsedURL2Str(ParsedURL *pu);
 int getURLScheme(char **url);
-void init_stream(URLFile *uf, int scheme, InputStream stream);
+void init_stream(URLFile *uf, int scheme, InputStream *stream);
 Str HTTPrequestMethod(HRequest *hr);
 Str HTTPrequestURI(ParsedURL *pu, HRequest *hr);
 URLFile openURL(char *url, ParsedURL *pu, ParsedURL *current,
@@ -263,11 +257,11 @@ Str unquote_mailcap(char *qstr, char *type, char *name, char *attr,
 char *guessContentType(char *filename);
 TextList *make_domain_list(char *domain_list);
 int check_no_proxy(char *domain);
-InputStream openFTPStream(ParsedURL *pu, URLFile *uf);
+InputStream *openFTPStream(ParsedURL *pu, URLFile *uf);
 Str loadFTPDir(ParsedURL *pu, wc_ces *charset);
 void closeFTP(void);
 void disconnectFTP(void);
-InputStream openNewsStream(ParsedURL *pu);
+InputStream *openNewsStream(ParsedURL *pu);
 Str loadNewsgroup(ParsedURL *pu, wc_ces *charset);
 void closeNews(void);
 void disconnectNews(void);
@@ -341,14 +335,16 @@ time_t mymktime(char *timestr);
 
 char *FQDN(char *host);
 
-struct environment {
+struct environment
+{
     unsigned char env;
     int type;
     int count;
     char indent;
 };
 
-struct html_feed_environ {
+struct html_feed_environ
+{
     struct readbuffer *obuf;
     TextLineList *buf;
     FILE *f;

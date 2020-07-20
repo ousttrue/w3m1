@@ -8,19 +8,19 @@
 #include "Str.h"
 #include "parsetagx.h"
 
-#define FORM_UNKNOWN        -1
-#define FORM_INPUT_TEXT     0
+#define FORM_UNKNOWN -1
+#define FORM_INPUT_TEXT 0
 #define FORM_INPUT_PASSWORD 1
 #define FORM_INPUT_CHECKBOX 2
-#define FORM_INPUT_RADIO    3
-#define FORM_INPUT_SUBMIT   4
-#define FORM_INPUT_RESET    5
-#define FORM_INPUT_HIDDEN   6
-#define FORM_INPUT_IMAGE    7
-#define FORM_SELECT         8
-#define FORM_TEXTAREA       9
-#define FORM_INPUT_BUTTON   10
-#define FORM_INPUT_FILE     11
+#define FORM_INPUT_RADIO 3
+#define FORM_INPUT_SUBMIT 4
+#define FORM_INPUT_RESET 5
+#define FORM_INPUT_HIDDEN 6
+#define FORM_INPUT_IMAGE 7
+#define FORM_SELECT 8
+#define FORM_TEXTAREA 9
+#define FORM_INPUT_BUTTON 10
+#define FORM_INPUT_FILE 11
 
 #define FORM_I_TEXT_DEFAULT_SIZE 40
 #define FORM_I_SELECT_DEFAULT_SIZE 40
@@ -32,30 +32,30 @@
 #define FORM_METHOD_HEAD 3
 
 #define FORM_ENCTYPE_URLENCODED 0
-#define FORM_ENCTYPE_MULTIPART  1
+#define FORM_ENCTYPE_MULTIPART 1
 
-#define MAX_TEXTAREA 10		/* max number of <textarea>..</textarea> 
-				 * within one document */
+#define MAX_TEXTAREA 10 /* max number of <textarea>..</textarea> \
+                         * within one document */
 #ifdef MENU_SELECT
-#define MAX_SELECT 10		/* max number of <select>..</select>
-				 * within one document */
-#endif				/* MENU_SELECT */
+#define MAX_SELECT 10 /* max number of <select>..</select> \
+                       * within one document */
+#endif                /* MENU_SELECT */
 
 #ifdef MENU_SELECT
 
-typedef struct form_select_option {
+struct FormSelectOption
+{
     FormSelectOptionItem *first;
     FormSelectOptionItem *last;
-} FormSelectOption;
+};
 
 void addSelectOption(FormSelectOption *fso, Str value, Str label, int chk);
-void chooseSelectOption(struct form_item_list *fi, FormSelectOptionItem *item);
-void updateSelectOption(struct form_item_list *fi, FormSelectOptionItem *item);
-int formChooseOptionByMenu(struct form_item_list *fi, int x, int y);
-#endif				/* MENU_SELECT */
+void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item);
+void updateSelectOption(FormItemList *fi, FormSelectOptionItem *item);
+int formChooseOptionByMenu(FormItemList *fi, int x, int y);
+#endif /* MENU_SELECT */
 
+FormItemList *formList_addInput(FormList *fl,
+                                         struct parsed_tag *tag);
 
-struct form_item_list *formList_addInput(struct form_list *fl,
-						struct parsed_tag *tag);
-
-#endif				/* not FORM_H */
+#endif /* not FORM_H */

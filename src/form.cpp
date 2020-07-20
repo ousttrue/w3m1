@@ -40,11 +40,11 @@ struct {
 };
 /* *INDENT-ON* */
 
-struct form_list *
+FormList *
 newFormList(char *action, char *method, char *charset, char *enctype,
-	    char *target, char *name, struct form_list *_next)
+	    char *target, char *name, FormList *_next)
 {
-    struct form_list *l;
+    FormList *l;
     Str a = Strnew_charp(action);
     int m = FORM_METHOD_GET;
     int e = FORM_ENCTYPE_URLENCODED;
@@ -71,7 +71,7 @@ newFormList(char *action, char *method, char *charset, char *enctype,
 	c = wc_guess_charset(charset, 0);
 #endif
 
-    l = New(struct form_list);
+    l = New(FormList);
     l->item = l->lastitem = NULL;
     l->action = a;
     l->method = m;
@@ -91,10 +91,10 @@ newFormList(char *action, char *method, char *charset, char *enctype,
 /* 
  * add <input> element to form_list
  */
-struct form_item_list *
-formList_addInput(struct form_list *fl, struct parsed_tag *tag)
+FormItemList *
+formList_addInput(FormList *fl, struct parsed_tag *tag)
 {
-    struct form_item_list *item;
+    FormItemList *item;
     char *p;
     int i;
 
@@ -102,7 +102,7 @@ formList_addInput(struct form_list *fl, struct parsed_tag *tag)
     if (fl == NULL)
 	return NULL;
 
-    item = New(struct form_item_list);
+    item = New(FormItemList);
     item->type = FORM_UNKNOWN;
     item->size = -1;
     item->rows = 0;
@@ -705,7 +705,7 @@ updateSelectOption(FormItemList *fi, FormSelectOptionItem *item)
 }
 
 int
-formChooseOptionByMenu(struct form_item_list *fi, int x, int y)
+formChooseOptionByMenu(FormItemList *fi, int x, int y)
 {
     int i, n, selected = -1, init_select = fi->selected;
     FormSelectOptionItem *opt;

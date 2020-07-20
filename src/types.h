@@ -4,7 +4,8 @@
 #include "istream.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 #include "wc.h"
 #include "wtf.h"
@@ -16,7 +17,7 @@ extern "C" {
 
 #define MAX_LB 5
 
-typedef struct _ParsedURL
+struct  ParsedURL
 {
     int scheme;
     char *user;
@@ -28,13 +29,14 @@ typedef struct _ParsedURL
     char *query;
     char *label;
     int is_nocache;
-} ParsedURL;
+};
 
-typedef struct {
+struct URLFile
+{
     unsigned char scheme;
     char is_cgi;
     char encoding;
-    InputStream stream;
+    InputStream *stream;
     char *ext;
     int compression;
     int content_encoding;
@@ -42,19 +44,22 @@ typedef struct {
     char *ssl_certificate;
     char *url;
     time_t modtime;
-} URLFile;
-
-typedef struct {
-    char *referer;
-    int flag;
-} URLOption;
-
-struct portlist {
-    unsigned short port;
-    struct portlist *next;
 };
 
-struct cookie {
+struct URLOption
+{
+    char *referer;
+    int flag;
+};
+
+struct portlist
+{
+    unsigned short port;
+    portlist *next;
+};
+
+struct cookie
+{
     ParsedURL url;
     Str name;
     Str value;
@@ -63,41 +68,41 @@ struct cookie {
     Str domain;
     Str comment;
     Str commentURL;
-    struct portlist *portl;
+    portlist *portl;
     char version;
     char flag;
-    struct cookie *next;
+    cookie *next;
 };
 
-typedef struct _MapList
+struct MapList
 {
     Str name;
     GeneralList *area;
-    struct _MapList *next;
-} MapList;
+    MapList *next;
+};
 
 #define LINK_TYPE_NONE 0
 #define LINK_TYPE_REL 1
 #define LINK_TYPE_REV 2
-typedef struct _LinkList
+struct LinkList
 {
     char *url;
     char *title; /* Next, Contents, ... */
     char *ctype; /* Content-Type */
     char type;   /* Rel, Rev */
-    struct _LinkList *next;
-} LinkList;
+    LinkList *next;
+};
 
-typedef unsigned short Lineprop;
-typedef unsigned char Linecolor;
+using Lineprop = unsigned short;
+using Linecolor = unsigned char;
 
-typedef struct _Line
+struct Line
 {
     char *lineBuf;
     Lineprop *propBuf;
     Linecolor *colorBuf;
-    struct _Line *next;
-    struct _Line *prev;
+    Line *next;
+    Line *prev;
     int len;
     int width;
     long linenumber;      /* on buffer */
@@ -106,16 +111,16 @@ typedef struct _Line
     int size;
     int bpos;
     int bwidth;
-} Line;
+};
 
-typedef struct
+struct BufferPoint
 {
     int line;
     int pos;
     int invalid;
-} BufferPoint;
+};
 
-typedef struct _imageCache
+struct ImageCache
 {
     char *url;
     ParsedURL *current;
@@ -126,9 +131,9 @@ typedef struct _imageCache
     int index;
     short width;
     short height;
-} ImageCache;
+};
 
-typedef struct _image
+struct Image
 {
     char *url;
     char *ext;
@@ -142,9 +147,9 @@ typedef struct _image
     char ismap;
     int touch;
     ImageCache *cache;
-} Image;
+};
 
-typedef struct _anchor
+struct Anchor
 {
     char *url;
     char *target;
@@ -158,49 +163,34 @@ typedef struct _anchor
     short y;
     short rows;
     Image *image;
-} Anchor;
+};
 
-typedef struct _anchorList
+struct AnchorList
 {
     Anchor *anchors;
     int nanchor;
     int anchormax;
     int acache;
-} AnchorList;
+};
 
-typedef struct
+struct HmarkerList
 {
     BufferPoint *marks;
     int nmark;
     int markmax;
     int prevhseq;
-} HmarkerList;
+};
 
-typedef struct form_list
+struct FormSelectOptionItem
 {
-    struct form_item_list *item;
-    struct form_item_list *lastitem;
-    int method;
-    Str action;
-    char *target;
-    char *name;
-    wc_ces charset;
-    int enctype;
-    struct form_list *next;
-    int nitems;
-    char *body;
-    char *boundary;
-    unsigned long length;
-} FormList;
-
-typedef struct form_select_option_item {
     Str value;
     Str label;
     int checked;
-    struct form_select_option_item *next;
-} FormSelectOptionItem;
+    FormSelectOptionItem *next;
+};
 
-typedef struct form_item_list {
+struct FormItemList
+{
     int type;
     Str name;
     Str value, init_value;
@@ -213,12 +203,49 @@ typedef struct form_item_list {
     FormSelectOptionItem *select_option;
     Str label, init_label;
     int selected, init_selected;
-    struct form_list *parent;
-    struct form_item_list *next;
-} FormItemList;
+    struct FormList *parent;
+    FormItemList *next;
+};
 
+struct FormList
+{
+    FormItemList *item;
+    FormItemList *lastitem;
+    int method;
+    Str action;
+    char *target;
+    char *name;
+    wc_ces charset;
+    int enctype;
+    FormList *next;
+    int nitems;
+    char *body;
+    char *boundary;
+    unsigned long length;
+};
 
-typedef struct _Buffer
+using Command = void (*)();
+
+struct AlarmEvent
+{
+    int sec;
+    short status;
+    Command cmd;
+    void *data;
+};
+
+struct BufferPos
+{
+    long top_linenumber;
+    long cur_linenumber;
+    int currentColumn;
+    int pos;
+    int bpos;
+    BufferPos *next;
+    BufferPos *prev;
+};
+
+struct Buffer
 {
     char *filename;
     char *buffername;
@@ -226,8 +253,8 @@ typedef struct _Buffer
     Line *topLine;
     Line *currentLine;
     Line *lastLine;
-    struct _Buffer *nextBuffer;
-    struct _Buffer *linkBuffer[MAX_LB];
+    Buffer *nextBuffer;
+    Buffer *linkBuffer[MAX_LB];
     short width;
     short height;
     char *type;
@@ -243,7 +270,7 @@ typedef struct _Buffer
     short rootY;
     short COLS;
     short LINES;
-    InputStream pagerSource;
+    InputStream *pagerSource;
     AnchorList *href;
     AnchorList *name;
     AnchorList *img;
@@ -278,11 +305,11 @@ typedef struct _Buffer
     char image_loaded;
     char need_reshape;
     Anchor *submit;
-    struct _BufferPos *undo;
-    struct _AlarmEvent *event;
-} Buffer;
+    BufferPos *undo;
+    AlarmEvent *event;
+};
 
-typedef struct _MapArea
+struct MapArea
 {
     char *url;
     char *target;
@@ -292,4 +319,4 @@ typedef struct _MapArea
     int ncoords;
     short center_x;
     short center_y;
-} MapArea;
+};

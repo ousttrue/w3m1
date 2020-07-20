@@ -1,19 +1,10 @@
 #pragma once
-
-typedef void (*Command)();
+#include "types.h"
 
 #define AL_UNSET 0
 #define AL_EXPLICIT 1
 #define AL_IMPLICIT 2
 #define AL_IMPLICIT_ONCE 3
-
-typedef struct _AlarmEvent
-{
-    int sec;
-    short status;
-    Command cmd;
-    void *data;
-} AlarmEvent;
 
 int prec_num();
 void set_prec_num(int n);

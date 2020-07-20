@@ -1472,7 +1472,7 @@ HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra)
 }
 
 void
-init_stream(URLFile *uf, int scheme, InputStream stream)
+init_stream(URLFile *uf, int scheme, InputStream* stream)
 {
     memset(uf, 0, sizeof(URLFile));
     uf->stream = stream;

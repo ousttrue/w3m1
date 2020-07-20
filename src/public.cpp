@@ -2758,12 +2758,12 @@ void tmpClearBuffer(Buffer *buf)
     }
 }
 
-typedef struct _Event
+struct Event
 {
     Command cmd;
     void *data;
-    struct _Event *next;
-} Event;
+    Event *next;
+};
 static Event *CurrentEvent = NULL;
 static Event *LastEvent = NULL;
 

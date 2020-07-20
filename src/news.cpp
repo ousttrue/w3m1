@@ -20,13 +20,13 @@
     ((*(p) == '.' && ((p)[1] == '\n' || (p)[1] == '\r' || (p)[1] == '\0')) || \
     *(p) == '\n' || *(p) == '\r' || *(p) == '\0')
 
-typedef struct _News {
+struct News {
     char *host;
     int port;
     char *mode;
-    InputStream rf;
+    InputStream *rf;
     FILE *wf;
-} News;
+};
 
 static News current_news = { NULL, 0, NULL, NULL, NULL };
 
@@ -236,7 +236,7 @@ add_news_message(Str str, int index, char *date, char *name, char *subject,
  * <message-id> = <unique>@<full_domain_name>
  */
 
-InputStream
+InputStream*
 openNewsStream(ParsedURL *pu)
 {
     char *host, *mode, *group, *p;
