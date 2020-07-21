@@ -1,4 +1,3 @@
-
 #include "tab.h"
 #include "fm.h"
 #include "indep.h"
@@ -12,7 +11,7 @@
 #include <algorithm>
 
 std::list<TabBufferPtr> g_tabs;
-std::weak_ptr<TabBuffer> g_current;
+std::weak_ptr<Tab> g_current;
 
 std::list<TabBufferPtr> &Tabs()
 {
@@ -21,7 +20,7 @@ std::list<TabBufferPtr> &Tabs()
 
 void InitializeTab()
 {
-    g_tabs.push_back(std::make_shared<TabBuffer>());
+    g_tabs.push_back(std::make_shared<Tab>());
     g_current = g_tabs.front();
 }
 
@@ -30,7 +29,13 @@ int GetTabCount()
     return g_tabs.size();
 }
 
-TabBuffer *GetTabByIndex(int index)
+int GetTabbarHeight()
+{
+    // 最後のtabのy + 境界線(1)
+    return GetLastTab()->Y() + 1;
+}
+
+Tab *GetTabByIndex(int index)
 {
     int i = 0;
     for (auto tab : g_tabs)
@@ -44,17 +49,17 @@ TabBuffer *GetTabByIndex(int index)
     throw std::runtime_error("not found");
 }
 
-TabBuffer *GetFirstTab()
+Tab *GetFirstTab()
 {
     return g_tabs.empty() ? nullptr : g_tabs.front().get();
 }
 
-TabBuffer *GetLastTab()
+Tab *GetLastTab()
 {
     return g_tabs.empty() ? nullptr : g_tabs.back().get();
 }
 
-TabBuffer *GetCurrentTab()
+Tab *GetCurrentTab()
 {
     auto current = g_current.lock();
     return current ? current.get() : nullptr;
@@ -76,7 +81,7 @@ int GetCurrentTabIndex()
     throw std::runtime_error("not found");
 }
 
-void SetCurrentTab(TabBuffer *current)
+void SetCurrentTab(Tab *current)
 {
     for (auto tab : g_tabs)
     {
@@ -89,14 +94,13 @@ void SetCurrentTab(TabBuffer *current)
 
 void calcTabPos()
 {
-    int lcol = 0, rcol = 0, col;
-    int n1, n2, na, nx, ny, ix, iy;
-
-    lcol = GetMouseActionMenuStr() ? GetMouseActionMenuWidth() : 0;
+    int lcol = GetMouseActionMenuStr() ? GetMouseActionMenuWidth() : 0;
 
     if (g_tabs.size() <= 0)
         return;
-    n1 = (COLS - rcol - lcol) / TabCols;
+    int n1 = (COLS - lcol) / TabCols;
+    int n2;
+    int ny;
     if (n1 >= g_tabs.size())
     {
         n2 = 1;
@@ -111,52 +115,46 @@ void calcTabPos()
             n2 = 1;
         ny = (g_tabs.size() - n1 - 1) / n2 + 2;
     }
-    na = n1 + n2 * (ny - 1);
+    int na = n1 + n2 * (ny - 1);
     n1 -= (na - g_tabs.size()) / ny;
     if (n1 < 0)
         n1 = 0;
     na = n1 + n2 * (ny - 1);
     auto it = g_tabs.begin();
-    for (iy = 0; iy < ny && *it; iy++)
+    for (int iy = 0; iy < ny && *it; iy++)
     {
+        int col;
+        int nx;
         if (iy == 0)
         {
             nx = n1;
-            col = COLS - rcol - lcol;
+            col = COLS - lcol;
         }
         else
         {
             nx = n2 - (na - g_tabs.size() + (iy - 1)) / (ny - 1);
             col = COLS;
         }
-        ix = 0;
+        int ix = 0;
         for (ix = 0; ix < nx && it != g_tabs.end(); ix++, ++it)
         {
-            auto tab = *it;
-            tab->x1 = col * ix / nx;
-            tab->x2 = col * (ix + 1) / nx - 1;
-            tab->y = iy;
-            if (iy == 0)
-            {
-                tab->x1 += lcol;
-                tab->x2 += lcol;
-            }
+            (*it)->Calc(col / nx, ix, iy, lcol);
         }
     }
 }
 
-TabBuffer *posTab(int x, int y)
+Tab *posTab(int x, int y)
 {
-    TabBuffer *tab;
+    Tab *tab;
 
     if (GetMouseActionMenuStr() && x < GetMouseActionMenuWidth() && y == 0)
-        return NO_TABBUFFER;
-    if (y > GetLastTab()->y)
-        return NULL;
+        return nullptr;
     for (auto tab : g_tabs)
     {
-        if (tab->x1 <= x && x <= tab->x2 && tab->y == y)
+        if(tab->IsHit(x, y))
+        {
             return tab.get();
+        }
     }
     return NULL;
 }
@@ -176,14 +174,14 @@ void _newT()
     auto current = g_current.lock();
     auto found = std::find(g_tabs.begin(), g_tabs.end(), current);
     ++found;
-    auto tab = std::make_shared<TabBuffer>();
+    auto tab = std::make_shared<Tab>();
     tab->firstBuffer = tab->currentBuffer = buf;
     g_tabs.insert(found, tab);
 
     g_current = tab;
 }
 
-void deleteTab(TabBuffer *tab)
+void deleteTab(Tab *tab)
 {
     if (g_tabs.size() <= 1)
         return;
@@ -225,9 +223,9 @@ void DeleteAllTabs()
     }
 }
 
-void moveTab(TabBuffer *src, TabBuffer *dst, int right)
+void moveTab(Tab *src, Tab *dst, int right)
 {
-    if (!src || !dst || src == dst || src == NO_TABBUFFER || dst == NO_TABBUFFER)
+    if (!src || !dst || src == dst)
         return;
 
     auto s = std::find_if(g_tabs.begin(), g_tabs.end(), [src](auto t) {
@@ -274,8 +272,8 @@ void SelectRelativeTab(int prec)
 
 void SelectTabByPosition(int x, int y)
 {
-    TabBuffer *tab = posTab(x, y);
-    if (!tab || tab == NO_TABBUFFER)
+    Tab *tab = posTab(x, y);
+    if (!tab)
         return;
     SetCurrentTab(tab);
 }
@@ -325,7 +323,7 @@ void SetFirstbuf(Buffer *buffer)
     g_current.lock()->firstBuffer = buffer;
 }
 
-void followTab(TabBuffer *tab)
+void followTab(Tab *tab)
 {
     Buffer *buf;
     Anchor *a;

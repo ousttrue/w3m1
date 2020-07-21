@@ -4,39 +4,69 @@
 #include <memory>
 #include <list>
 
-struct TabBuffer
+///
+/// [ tab ]
+///
+class Tab
 {
-    Buffer *currentBuffer = nullptr;
-    Buffer *firstBuffer = nullptr;
     short x1 = -1;
     short x2 = -1;
     short y = -1;
+
+public:
+    Buffer *currentBuffer = nullptr;
+    Buffer *firstBuffer = nullptr;
+
+    int Left() const { return x1; }
+    int Right() const { return x2; }
+    int Width() const
+    {
+        // -1 ?
+        return x2 - x1 - 1;
+    }
+    int Y() const { return y; }
+    void Calc(int w, int ix, int iy, int left)
+    {
+        this->x1 = w * ix;
+        this->x2 = w * (ix + 1) - 1;
+        this->y = iy;
+        if (iy == 0)
+        {
+            this->x1 += left;
+            this->x2 += left;
+        }
+    }
+    bool IsHit(int x, int y)
+    {
+        return x1 <= x && x <= x2 && y == y;
+    }
 };
-using TabBufferPtr = std::shared_ptr<TabBuffer>;
+using TabBufferPtr = std::shared_ptr<Tab>;
 
 std::list<TabBufferPtr> &Tabs();
 
 void _newT();
 void InitializeTab();
 int GetTabCount();
-TabBuffer *GetTabByIndex(int index);
-TabBuffer *GetFirstTab();
-TabBuffer *GetLastTab();
-TabBuffer *GetCurrentTab();
+int GetTabbarHeight();
+Tab *GetTabByIndex(int index);
+Tab *GetFirstTab();
+Tab *GetLastTab();
+Tab *GetCurrentTab();
 
-void SetCurrentTab(TabBuffer *tab);
+void SetCurrentTab(Tab *tab);
 void SelectRelativeTab(int prec);
 void SelectTabByPosition(int x, int y);
 void MoveTab(int x);
-void deleteTab(TabBuffer *tab);
+void deleteTab(Tab *tab);
 void DeleteCurrentTab();
 void DeleteAllTabs();
 Buffer *GetCurrentbuf();
-TabBuffer *posTab(int x, int y);
+Tab *posTab(int x, int y);
 void SetCurrentbuf(Buffer *buf);
 Buffer *GetFirstbuf();
 int HasFirstBuffer();
 void SetFirstbuf(Buffer *buffer);
-void moveTab(TabBuffer *src, TabBuffer *dst, int right);
+void moveTab(Tab *src, Tab *dst, int right);
 void calcTabPos();
-void followTab(TabBuffer *tab);
+void followTab(Tab *tab);

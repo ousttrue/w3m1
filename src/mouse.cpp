@@ -291,7 +291,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
 {
     int ny = -1;
     if (GetTabCount() > 1 || GetMouseActionMenuStr())
-        ny = GetLastTab()->y + 1;
+        ny = GetTabbarHeight();
 
     switch (btn)
     {
@@ -391,11 +391,11 @@ void process_mouse(MouseBtnAction btn, int x, int y)
     int delta_x, delta_y, i;
     static auto press_btn = MouseBtnAction::BTN_RESET;
     static int press_x, press_y;
-    TabBuffer *t;
+    Tab *t;
     int ny = -1;
 
     if (GetTabCount() > 1 || GetMouseActionMenuStr())
-        ny = GetLastTab()->y + 1;
+        ny = GetTabbarHeight();
     if (btn == MouseBtnAction::BTN_UP)
     {
         switch (press_btn)
@@ -420,8 +420,6 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                     t = posTab(x, y);
                     if (t == NULL)
                         return;
-                    if (t == NO_TABBUFFER)
-                        t = NULL; /* open new tab */
                     cursorXY(GetCurrentbuf(), press_x - GetCurrentbuf()->rootX,
                              press_y - GetCurrentbuf()->rootY);
                     if (GetCurrentbuf()->cursorY == press_y - GetCurrentbuf()->rootY &&

@@ -518,7 +518,6 @@ global int open_tab_blank init(FALSE);
 global int open_tab_dl_list init(FALSE);
 global int close_tab_back init(FALSE);
 global int TabCols init(10);
-#define NO_TABBUFFER ((TabBuffer *)1)
 
 global char *CurrentCmdData;
 global char *w3m_reqlog;

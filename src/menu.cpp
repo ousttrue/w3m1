@@ -1947,7 +1947,7 @@ static void
 initSelTabMenu(void)
 {
     int i, nitem, len = 0, l;
-    TabBuffer *tab;
+    Tab *tab;
     Buffer *buf;
     Str str;
     char **label;
@@ -2050,7 +2050,7 @@ static int
 smDelTab(char c)
 {
     int i, x, y, mselect;
-    TabBuffer *tab;
+    Tab *tab;
 
     // TODO
 

@@ -1982,7 +1982,7 @@ void movMs()
         return;
     }
     if ((GetTabCount() > 1 || GetMouseActionMenuStr()) &&
-        y < GetLastTab()->y + 1)
+        y < GetTabbarHeight())
         return;
     else if (x >= GetCurrentbuf()->rootX &&
              y < LASTLINE)
@@ -2006,8 +2006,7 @@ void menuMs()
     {
         return;
     }
-    if ((GetTabCount() > 1 || GetMouseActionMenuStr()) &&
-        y < GetLastTab()->y + 1)
+    if ((GetTabCount() > 1 || GetMouseActionMenuStr()) && y < GetTabbarHeight())
     {
         x -= FRAME_WIDTH + 1;
     }
@@ -2041,7 +2040,7 @@ void closeTMs()
         return;
     }
     auto tab = posTab(x, y);
-    if (!tab || tab == NO_TABBUFFER)
+    if (!tab)
         return;
     deleteTab(tab);
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
@@ -2230,7 +2229,7 @@ void closeT()
 {
     if (GetTabCount() <= 1)
         return;
-    TabBuffer *tab;
+    Tab *tab;
     if (prec_num())
         tab = GetTabByIndex(PREC_NUM()-1);
     else
@@ -2254,7 +2253,7 @@ void prevT()
 
 void tabA()
 {
-    TabBuffer *tab;
+    Tab *tab;
     if (prec_num())
         tab = GetTabByIndex(PREC_NUM()-1);
     else
@@ -2264,7 +2263,7 @@ void tabA()
 
 void tabURL()
 {
-    TabBuffer *tab;
+    Tab *tab;
     if (prec_num())
         tab = GetTabByIndex(PREC_NUM()-1);
     else
@@ -2275,7 +2274,7 @@ void tabURL()
 
 void tabrURL()
 {
-    TabBuffer *tab;
+    Tab *tab;
     if (prec_num())
         tab = GetTabByIndex(PREC_NUM()-1);
     else

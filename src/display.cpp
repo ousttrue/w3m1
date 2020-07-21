@@ -463,7 +463,7 @@ void displayBuffer(Buffer *buf, int mode)
     {
         if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
             calcTabPos();
-        ny = GetLastTab()->y + 2;
+        ny = GetTabbarHeight() + 1;
         if (ny > LASTLINE)
             ny = LASTLINE;
     }
@@ -677,23 +677,23 @@ redrawNLine(Buffer *buf, int n)
         clrtoeolx();
         for(auto t: Tabs())        
         {
-            move(t->y, t->x1);
+            move(t->Y(), t->Left());
             if (t.get() == GetCurrentTab())
                 bold();
             addch('[');
-            l = t->x2 - t->x1 - 1 - get_strwidth(t->currentBuffer->buffername);
+            l = t->Width() - get_strwidth(t->currentBuffer->buffername);
             if (l < 0)
                 l = 0;
             if (l / 2 > 0)
                 addnstr_sup(" ", l / 2);
             if (t.get() == GetCurrentTab())
                 EFFECT_ACTIVE_START;
-            addnstr(t->currentBuffer->buffername, t->x2 - t->x1 - l);
+            addnstr(t->currentBuffer->buffername, t->Width());
             if (t.get() == GetCurrentTab())
                 EFFECT_ACTIVE_END;
             if ((l + 1) / 2 > 0)
                 addnstr_sup(" ", (l + 1) / 2);
-            move(t->y, t->x2);
+            move(t->Y(), t->Right());
             addch(']');
             if (t.get() == GetCurrentTab())
                 boldend();
@@ -702,7 +702,7 @@ redrawNLine(Buffer *buf, int n)
 	move(0, COLS - 2);
 	addstr(" x");
 #endif
-        move(GetLastTab()->y + 1, 0);
+        move(GetTabbarHeight(), 0);
         for (i = 0; i < COLS; i++)
             addch('~');
     }
