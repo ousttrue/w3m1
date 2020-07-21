@@ -13,6 +13,7 @@ struct TabBuffer
     short y;
 
     TabBuffer *AddNext(Buffer *buffer);
+    void Remove();
 };
 
 void _newT();
@@ -28,7 +29,7 @@ void SelectRelativeTab(int prec);
 void SelectTabByPosition(int x, int y);
 TabBuffer *numTab(int n);
 void MoveTab(int x);
-TabBuffer *deleteTab(TabBuffer *tab);
+void deleteTab(TabBuffer *tab);
 void DeleteCurrentTab();
 void DeleteAllTabs();
 Buffer *GetCurrentbuf();

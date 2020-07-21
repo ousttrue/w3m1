@@ -34,13 +34,37 @@ TabBuffer *TabBuffer::AddNext(Buffer *buf)
         this->nextTab->prevTab = tab;
     else
         SetLastTab(tab);
-        
+
     // this <-> tab
     this->nextTab = tab;
     tab->prevTab = this;
     
     tab->firstBuffer = tab->currentBuffer = buf;
     return tab;
+}
+
+void TabBuffer::Remove()
+{
+    if (this->prevTab)
+    {
+        // prev <-> tab        
+        if (this->nextTab)
+            // prev <-> tab->next
+            this->nextTab->prevTab = this->prevTab;
+        else
+            SetLastTab(this->prevTab);
+        this->prevTab->nextTab = this->nextTab;
+        if (this == g_CurrentTab)
+            g_CurrentTab = this->prevTab;
+    }
+    else
+    { /* this == FirstTab */
+        this->nextTab->prevTab = NULL;
+        g_FirstTab = this->nextTab;
+        if (this == g_CurrentTab)
+            g_CurrentTab = this->nextTab;
+    }
+    g_nTab--;
 }
 
 void InitializeTab()
@@ -193,30 +217,13 @@ void _newT()
     g_CurrentTab = tab;
 }
 
-TabBuffer *deleteTab(TabBuffer *tab)
+void deleteTab(TabBuffer *tab)
 {
-    Buffer *buf, *next;
-
     if (g_nTab <= 1)
-        return g_FirstTab;
-    if (tab->prevTab)
-    {
-        if (tab->nextTab)
-            tab->nextTab->prevTab = tab->prevTab;
-        else
-            SetLastTab(tab->prevTab);
-        tab->prevTab->nextTab = tab->nextTab;
-        if (tab == g_CurrentTab)
-            g_CurrentTab = tab->prevTab;
-    }
-    else
-    { /* tab == FirstTab */
-        tab->nextTab->prevTab = NULL;
-        g_FirstTab = tab->nextTab;
-        if (tab == g_CurrentTab)
-            g_CurrentTab = tab->nextTab;
-    }
-    g_nTab--;
+        return; 
+
+    // clear buffer
+    Buffer *buf, *next;
     buf = tab->firstBuffer;
     while (buf && buf != NO_BUFFER)
     {
@@ -224,7 +231,10 @@ TabBuffer *deleteTab(TabBuffer *tab)
         discardBuffer(buf);
         buf = next;
     }
-    return g_FirstTab;
+
+    tab->Remove();
+
+    return;
 }
 
 void DeleteCurrentTab()
