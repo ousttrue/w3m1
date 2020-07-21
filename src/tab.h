@@ -23,7 +23,7 @@ TabBuffer *GetTabByIndex(int index);
 TabBuffer *GetFirstTab();
 TabBuffer *GetLastTab();
 TabBuffer *GetCurrentTab();
-int GetCurrentTabIndex();
+
 void SetCurrentTab(TabBuffer *tab);
 void SelectRelativeTab(int prec);
 void SelectTabByPosition(int x, int y);
@@ -36,7 +36,6 @@ TabBuffer *posTab(int x, int y);
 void SetCurrentbuf(Buffer *buf);
 Buffer *GetFirstbuf();
 int HasFirstBuffer();
-// int NoFirstBuffer();
 void SetFirstbuf(Buffer *buffer);
 void moveTab(TabBuffer *src, TabBuffer *dst, int right);
 void calcTabPos();

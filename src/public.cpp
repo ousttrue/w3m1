@@ -2413,6 +2413,7 @@ void w3m_exit(int i)
     init_migemo(); /* close pipe to migemo */
 #endif
     stopDownload();
+    DeleteAllTabs();
     deleteFiles();
 #ifdef USE_SSL
     free_ssl_ctx();
@@ -2429,8 +2430,6 @@ void w3m_exit(int i)
 
 void deleteFiles()
 {
-    DeleteAllTabs();
-
     char *f;
     while ((f = popText(fileToDelete)) != NULL)
         unlink(f);
