@@ -40,7 +40,7 @@ struct MouseAction
     MouseActionMap tab_map[3];
     MouseActionMap *menu_map[3];
     MouseActionMap *lastline_map[3];
-} ;
+};
 static MouseAction mouse_action;
 
 static MouseAction default_mouse_action = {
@@ -409,6 +409,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                 {
                     moveTab(posTab(press_x, press_y), posTab(x, y),
                             (press_y == y) ? (press_x < x) : (press_y < y));
+                    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
                     return;
                 }
                 else if (press_x >= GetCurrentbuf()->rootX)

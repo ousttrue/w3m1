@@ -13,7 +13,10 @@ struct TabBuffer
     short y;
 
     TabBuffer *AddNext(Buffer *buffer);
-    void Remove();
+    void AddNext(TabBuffer *tab);
+    void AddPrev(TabBuffer *tab);
+    void Remove(bool keepCurrent = false);
+    void MoveTo(TabBuffer *dst, bool isRight);
 };
 
 void _newT();
@@ -39,6 +42,6 @@ Buffer *GetFirstbuf();
 int HasFirstBuffer();
 // int NoFirstBuffer();
 void SetFirstbuf(Buffer *buffer);
-void moveTab(TabBuffer *t, TabBuffer *t2, int right);
+void moveTab(TabBuffer *src, TabBuffer *dst, int right);
 void calcTabPos();
 void followTab(TabBuffer *tab);

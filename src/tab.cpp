@@ -26,6 +26,15 @@ static TabBuffer *newTab(void)
 TabBuffer *TabBuffer::AddNext(Buffer *buf)
 {
     auto tab = newTab();
+
+    AddNext(tab);
+
+    tab->firstBuffer = tab->currentBuffer = buf;
+    return tab;
+}
+
+void TabBuffer::AddNext(TabBuffer *tab)
+{
     g_nTab++;
 
     // tab <-> this->next
@@ -38,33 +47,58 @@ TabBuffer *TabBuffer::AddNext(Buffer *buf)
     // this <-> tab
     this->nextTab = tab;
     tab->prevTab = this;
-    
-    tab->firstBuffer = tab->currentBuffer = buf;
-    return tab;
 }
 
-void TabBuffer::Remove()
+void TabBuffer::AddPrev(TabBuffer *tab)
+{
+    g_nTab++;
+
+    tab->prevTab = this->prevTab;
+    tab->nextTab = this;
+    if (this->prevTab)
+        this->prevTab->nextTab = tab;
+    else
+        g_FirstTab = tab;
+    this->prevTab = tab;
+}
+
+void TabBuffer::Remove(bool keepCurrent)
 {
     if (this->prevTab)
     {
-        // prev <-> tab        
+        // prev <-> tab
         if (this->nextTab)
             // prev <-> tab->next
             this->nextTab->prevTab = this->prevTab;
         else
             SetLastTab(this->prevTab);
         this->prevTab->nextTab = this->nextTab;
-        if (this == g_CurrentTab)
+
+        if (!keepCurrent && this == g_CurrentTab)
             g_CurrentTab = this->prevTab;
     }
     else
     { /* this == FirstTab */
         this->nextTab->prevTab = NULL;
         g_FirstTab = this->nextTab;
-        if (this == g_CurrentTab)
+        if (!keepCurrent && this == g_CurrentTab)
             g_CurrentTab = this->nextTab;
     }
     g_nTab--;
+}
+
+void TabBuffer::MoveTo(TabBuffer *dst, bool isRight)
+{
+    Remove(true);
+
+    if (isRight)
+    {
+        dst->AddNext(this);
+    }
+    else
+    {
+        dst->AddPrev(this);
+    }
 }
 
 void InitializeTab()
@@ -220,7 +254,7 @@ void _newT()
 void deleteTab(TabBuffer *tab)
 {
     if (g_nTab <= 1)
-        return; 
+        return;
 
     // clear buffer
     Buffer *buf, *next;
@@ -256,46 +290,12 @@ void DeleteAllTabs()
     }
 }
 
-void moveTab(TabBuffer *t, TabBuffer *t2, int right)
+void moveTab(TabBuffer *src, TabBuffer *dst, int right)
 {
-    if (t2 == NO_TABBUFFER)
-        t2 = g_FirstTab;
-    if (!t || !t2 || t == t2 || t == NO_TABBUFFER)
+    if (!src || !dst || src == dst || src == NO_TABBUFFER || dst == NO_TABBUFFER)
         return;
-    if (t->prevTab)
-    {
-        if (t->nextTab)
-            t->nextTab->prevTab = t->prevTab;
-        else
-            SetLastTab(t->prevTab);
-        t->prevTab->nextTab = t->nextTab;
-    }
-    else
-    {
-        t->nextTab->prevTab = NULL;
-        g_FirstTab = t->nextTab;
-    }
-    if (right)
-    {
-        t->nextTab = t2->nextTab;
-        t->prevTab = t2;
-        if (t2->nextTab)
-            t2->nextTab->prevTab = t;
-        else
-            SetLastTab(t);
-        t2->nextTab = t;
-    }
-    else
-    {
-        t->prevTab = t2->prevTab;
-        t->nextTab = t2;
-        if (t2->prevTab)
-            t2->prevTab->nextTab = t;
-        else
-            g_FirstTab = t;
-        t2->prevTab = t;
-    }
-    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+
+    src->MoveTo(dst, right);
 }
 
 void SelectRelativeTab(int prec)

@@ -2272,11 +2272,13 @@ void tabrURL()
 void tabR()
 {
     MoveTab(PREC_NUM());
+    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
 void tabL()
 {
     MoveTab(-PREC_NUM());
+    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 /* download panel */
 
