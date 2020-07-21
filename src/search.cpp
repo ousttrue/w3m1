@@ -4,6 +4,7 @@
 #include "regex.h"
 #include "file.h"
 #include "public.h"
+#include "buffer.h"
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>

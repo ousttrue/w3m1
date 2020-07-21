@@ -1954,93 +1954,96 @@ initSelTabMenu(void)
     char *p;
     static char *comment = " SPC for select / D for delete tab ";
 
-    SelTabV = -1;
-    for (i = 0, tab = GetLastTab(); tab != NULL; i++, tab = tab->prevTab)
-    {
-        if (tab == GetCurrentTab())
-            SelTabV = i;
-    }
-    nitem = i;
+    // TODO
 
-    label = New_N(char *, nitem + 2);
-    for (i = 0, tab = GetLastTab(); i < nitem; i++, tab = tab->prevTab)
-    {
-        buf = tab->currentBuffer;
-        str = Sprintf("<%s>", buf->buffername);
-        if (buf->filename != NULL)
-        {
-            switch (buf->currentURL.scheme)
-            {
-            case SCM_LOCAL:
-                if (strcmp(buf->currentURL.file, "-"))
-                {
-                    Strcat_char(str, ' ');
-                    Strcat_charp(str,
-                                 conv_from_system(buf->currentURL.real_file));
-                }
-                break;
-                /* case SCM_UNKNOWN: */
-            case SCM_MISSING:
-                break;
-            default:
-                p = parsedURL2Str(&buf->currentURL)->ptr;
-                if (DecodeURL)
-                    p = url_unquote_conv(p, 0);
-                Strcat_charp(str, p);
-                break;
-            }
-        }
-        label[i] = str->ptr;
-        if (len < str->length)
-            len = str->length;
-    }
-    l = strlen(comment);
-    if (len < l + 4)
-        len = l + 4;
-    if (len > COLS - 2 * FRAME_WIDTH)
-        len = COLS - 2 * FRAME_WIDTH;
-    len = (len > 1) ? ((len - l + 1) / 2) : 0;
-    str = Strnew();
-    for (i = 0; i < len; i++)
-        Strcat_char(str, '-');
-    Strcat_charp(str, comment);
-    for (i = 0; i < len; i++)
-        Strcat_char(str, '-');
-    label[nitem] = str->ptr;
-    label[nitem + 1] = NULL;
+    // SelTabV = -1;
+    // for (i = 0, tab = GetLastTab(); tab != NULL; i++, tab = tab->prevTab)
+    // {
+    //     if (tab == GetCurrentTab())
+    //         SelTabV = i;
+    // }
+    // nitem = i;
 
-    new_option_menu(&SelTabMenu, label, &SelTabV, smChTab);
-    SelTabMenu.initial = SelTabV;
-    SelTabMenu.cursorX = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
-    SelTabMenu.cursorY = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
-    SelTabMenu.keymap['D'] = smDelTab;
-    SelTabMenu.item[nitem].type = MENU_NOP;
+    // label = New_N(char *, nitem + 2);
+    // for (i = 0, tab = GetLastTab(); i < nitem; i++, tab = tab->prevTab)
+    // {
+    //     buf = tab->currentBuffer;
+    //     str = Sprintf("<%s>", buf->buffername);
+    //     if (buf->filename != NULL)
+    //     {
+    //         switch (buf->currentURL.scheme)
+    //         {
+    //         case SCM_LOCAL:
+    //             if (strcmp(buf->currentURL.file, "-"))
+    //             {
+    //                 Strcat_char(str, ' ');
+    //                 Strcat_charp(str,
+    //                              conv_from_system(buf->currentURL.real_file));
+    //             }
+    //             break;
+    //             /* case SCM_UNKNOWN: */
+    //         case SCM_MISSING:
+    //             break;
+    //         default:
+    //             p = parsedURL2Str(&buf->currentURL)->ptr;
+    //             if (DecodeURL)
+    //                 p = url_unquote_conv(p, 0);
+    //             Strcat_charp(str, p);
+    //             break;
+    //         }
+    //     }
+    //     label[i] = str->ptr;
+    //     if (len < str->length)
+    //         len = str->length;
+    // }
+    // l = strlen(comment);
+    // if (len < l + 4)
+    //     len = l + 4;
+    // if (len > COLS - 2 * FRAME_WIDTH)
+    //     len = COLS - 2 * FRAME_WIDTH;
+    // len = (len > 1) ? ((len - l + 1) / 2) : 0;
+    // str = Strnew();
+    // for (i = 0; i < len; i++)
+    //     Strcat_char(str, '-');
+    // Strcat_charp(str, comment);
+    // for (i = 0; i < len; i++)
+    //     Strcat_char(str, '-');
+    // label[nitem] = str->ptr;
+    // label[nitem + 1] = NULL;
+
+    // new_option_menu(&SelTabMenu, label, &SelTabV, smChTab);
+    // SelTabMenu.initial = SelTabV;
+    // SelTabMenu.cursorX = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
+    // SelTabMenu.cursorY = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
+    // SelTabMenu.keymap['D'] = smDelTab;
+    // SelTabMenu.item[nitem].type = MENU_NOP;
 }
 
 static void
 smChTab(void)
 {
-    int i;
-    TabBuffer *tab;
-    Buffer *buf;
+    // TODO
+//     int i;
+//     TabBuffer *tab;
+//     Buffer *buf;
 
-    if (SelTabV < 0 || SelTabV >= SelTabMenu.nitem)
-        return;
-    for (i = 0, tab = GetLastTab(); i < SelTabV && tab != NULL;
-         i++, tab = tab->prevTab)
-        ;
-    SetCurrentTab(tab);
-    for (tab = GetLastTab(); tab != NULL; tab = tab->prevTab)
-    {
-        if (tab == GetCurrentTab())
-            continue;
-        buf = tab->currentBuffer;
-#ifdef USE_IMAGE
-        deleteImage(buf);
-#endif
-        if (clear_buffer)
-            tmpClearBuffer(buf);
-    }
+//     if (SelTabV < 0 || SelTabV >= SelTabMenu.nitem)
+//         return;
+//     for (i = 0, tab = GetLastTab(); i < SelTabV && tab != NULL;
+//          i++, tab = tab->prevTab)
+//         ;
+//     SetCurrentTab(tab);
+//     for (tab = GetLastTab(); tab != NULL; tab = tab->prevTab)
+//     {
+//         if (tab == GetCurrentTab())
+//             continue;
+//         buf = tab->currentBuffer;
+// #ifdef USE_IMAGE
+//         deleteImage(buf);
+// #endif
+//         if (clear_buffer)
+//             tmpClearBuffer(buf);
+//     }
 }
 
 static int
@@ -2049,30 +2052,32 @@ smDelTab(char c)
     int i, x, y, mselect;
     TabBuffer *tab;
 
-    if (CurrentMenu->select < 0 || CurrentMenu->select >= SelTabMenu.nitem)
-        return (MENU_NOTHING);
-    for (i = 0, tab = GetLastTab(); i < CurrentMenu->select && tab != NULL;
-         i++, tab = tab->prevTab)
-        ;
-    deleteTab(tab);
+    // TODO
 
-    x = CurrentMenu->x;
-    y = CurrentMenu->y;
-    mselect = CurrentMenu->select;
+    // if (CurrentMenu->select < 0 || CurrentMenu->select >= SelTabMenu.nitem)
+    //     return (MENU_NOTHING);
+    // for (i = 0, tab = GetLastTab(); i < CurrentMenu->select && tab != NULL;
+    //      i++, tab = tab->prevTab)
+    //     ;
+    // deleteTab(tab);
 
-    initSelTabMenu();
+    // x = CurrentMenu->x;
+    // y = CurrentMenu->y;
+    // mselect = CurrentMenu->select;
 
-    CurrentMenu->x = x;
-    CurrentMenu->y = y;
+    // initSelTabMenu();
 
-    geom_menu(CurrentMenu, x, y, 0);
+    // CurrentMenu->x = x;
+    // CurrentMenu->y = y;
 
-    CurrentMenu->select = (mselect <= CurrentMenu->nitem - 2) ? mselect
-                                                              : (CurrentMenu->nitem - 2);
+    // geom_menu(CurrentMenu, x, y, 0);
 
-    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
-    draw_all_menu(CurrentMenu);
-    select_menu(CurrentMenu, CurrentMenu->select);
+    // CurrentMenu->select = (mselect <= CurrentMenu->nitem - 2) ? mselect
+    //                                                           : (CurrentMenu->nitem - 2);
+
+    // displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+    // draw_all_menu(CurrentMenu);
+    // select_menu(CurrentMenu, CurrentMenu->select);
     return (MENU_NOTHING);
 }
 

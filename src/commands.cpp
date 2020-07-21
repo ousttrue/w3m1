@@ -2232,7 +2232,7 @@ void closeT()
         return;
     TabBuffer *tab;
     if (prec_num())
-        tab = numTab(PREC_NUM());
+        tab = GetTabByIndex(PREC_NUM()-1);
     else
         tab = GetCurrentTab();
     if (tab)
@@ -2254,18 +2254,33 @@ void prevT()
 
 void tabA()
 {
-    followTab(prec_num() ? numTab(PREC_NUM()) : NULL);
+    TabBuffer *tab;
+    if (prec_num())
+        tab = GetTabByIndex(PREC_NUM()-1);
+    else
+        tab = GetCurrentTab();   
+    followTab(prec_num() ? tab : NULL);
 }
 
 void tabURL()
 {
-    tabURL0(prec_num() ? numTab(PREC_NUM()) : NULL,
+    TabBuffer *tab;
+    if (prec_num())
+        tab = GetTabByIndex(PREC_NUM()-1);
+    else
+        tab = GetCurrentTab();   
+    tabURL0(prec_num() ? tab : NULL,
             "Goto URL on new tab: ", FALSE);
 }
 
 void tabrURL()
 {
-    tabURL0(prec_num() ? numTab(PREC_NUM()) : NULL,
+    TabBuffer *tab;
+    if (prec_num())
+        tab = GetTabByIndex(PREC_NUM()-1);
+    else
+        tab = GetCurrentTab();   
+    tabURL0(prec_num() ? tab : NULL,
             "Goto relative URL on new tab: ", TRUE);
 }
 

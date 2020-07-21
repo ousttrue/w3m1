@@ -1,38 +1,32 @@
 #pragma once
 
-#include "buffer.h"
+#include "types.h"
+#include <memory>
+#include <list>
 
 struct TabBuffer
 {
-    TabBuffer *nextTab;
-    TabBuffer *prevTab;
-    Buffer *currentBuffer;
-    Buffer *firstBuffer;
-    short x1;
-    short x2;
-    short y;
-
-    TabBuffer *AddNext(Buffer *buffer);
-    void AddNext(TabBuffer *tab);
-    void AddPrev(TabBuffer *tab);
-    void Remove(bool keepCurrent = false);
-    void MoveTo(TabBuffer *dst, bool isRight);
+    Buffer *currentBuffer = nullptr;
+    Buffer *firstBuffer = nullptr;
+    short x1 = -1;
+    short x2 = -1;
+    short y = -1;
 };
+using TabBufferPtr = std::shared_ptr<TabBuffer>;
+
+std::list<TabBufferPtr> &Tabs();
 
 void _newT();
 void InitializeTab();
 int GetTabCount();
 TabBuffer *GetTabByIndex(int index);
 TabBuffer *GetFirstTab();
-void SetFirstTab(TabBuffer *tab);
 TabBuffer *GetLastTab();
-void SetLastTab(TabBuffer *tab);
 TabBuffer *GetCurrentTab();
 int GetCurrentTabIndex();
 void SetCurrentTab(TabBuffer *tab);
 void SelectRelativeTab(int prec);
 void SelectTabByPosition(int x, int y);
-TabBuffer *numTab(int n);
 void MoveTab(int x);
 void deleteTab(TabBuffer *tab);
 void DeleteCurrentTab();
