@@ -678,7 +678,7 @@ redrawNLine(Buffer *buf, int n)
         for(auto t: Tabs())        
         {
             move(t->Y(), t->Left());
-            if (t.get() == GetCurrentTab())
+            if (t == GetCurrentTab())
                 bold();
             addch('[');
             l = t->Width() - get_strwidth(t->currentBuffer->buffername);
@@ -686,16 +686,16 @@ redrawNLine(Buffer *buf, int n)
                 l = 0;
             if (l / 2 > 0)
                 addnstr_sup(" ", l / 2);
-            if (t.get() == GetCurrentTab())
+            if (t == GetCurrentTab())
                 EFFECT_ACTIVE_START;
             addnstr(t->currentBuffer->buffername, t->Width());
-            if (t.get() == GetCurrentTab())
+            if (t == GetCurrentTab())
                 EFFECT_ACTIVE_END;
             if ((l + 1) / 2 > 0)
                 addnstr_sup(" ", (l + 1) / 2);
             move(t->Y(), t->Right());
             addch(']');
-            if (t.get() == GetCurrentTab())
+            if (t == GetCurrentTab())
                 boldend();
         }
 #if 0

@@ -13,7 +13,15 @@ class Tab
     short x2 = -1;
     short y = -1;
 
+    // avoid copy
+    Tab(const Tab &) = delete;
+    Tab &operator=(const Tab &) = delete;
+
 public:
+    Tab() = default;
+    ~Tab()
+    {
+    }
     Buffer *currentBuffer = nullptr;
     Buffer *firstBuffer = nullptr;
 
@@ -41,32 +49,32 @@ public:
         return x1 <= x && x <= x2 && y == y;
     }
 };
-using TabBufferPtr = std::shared_ptr<Tab>;
+using TabPtr = std::shared_ptr<Tab>;
 
-std::list<TabBufferPtr> &Tabs();
+std::list<TabPtr> &Tabs();
 
 void _newT();
 void InitializeTab();
 int GetTabCount();
 int GetTabbarHeight();
-Tab *GetTabByIndex(int index);
-Tab *GetFirstTab();
-Tab *GetLastTab();
-Tab *GetCurrentTab();
+TabPtr GetTabByIndex(int index);
+TabPtr GetFirstTab();
+TabPtr GetLastTab();
+TabPtr GetCurrentTab();
 
-void SetCurrentTab(Tab *tab);
+void SetCurrentTab(TabPtr tab);
 void SelectRelativeTab(int prec);
 void SelectTabByPosition(int x, int y);
 void MoveTab(int x);
-void deleteTab(Tab *tab);
+void deleteTab(TabPtr tab);
 void DeleteCurrentTab();
 void DeleteAllTabs();
 Buffer *GetCurrentbuf();
-Tab *posTab(int x, int y);
+TabPtr posTab(int x, int y);
 void SetCurrentbuf(Buffer *buf);
 Buffer *GetFirstbuf();
 int HasFirstBuffer();
 void SetFirstbuf(Buffer *buffer);
-void moveTab(Tab *src, Tab *dst, int right);
+void moveTab(TabPtr src, TabPtr dst, int right);
 void calcTabPos();
-void followTab(Tab *tab);
+void followTab(TabPtr tab);

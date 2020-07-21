@@ -2097,7 +2097,7 @@ void SigAlarm(SIGNAL_ARG)
 
 #endif
 
-void tabURL0(Tab *tab, char *prompt, int relative)
+void tabURL0(TabPtr tab, char *prompt, int relative)
 {
     Buffer *buf;
 

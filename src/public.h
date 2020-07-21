@@ -87,7 +87,7 @@ AlarmEvent *DefaultAlarm();
 AlarmEvent *CurrentAlarm();
 void SetCurrentAlarm(AlarmEvent *);
 void SigAlarm(SIGNAL_ARG);
-void tabURL0(Tab *tab, char *prompt, int relative);
+void tabURL0(TabPtr tab, char *prompt, int relative);
 Buffer *DownloadListBuffer();
 char *convert_size3(clen_t size);
 void resetPos(BufferPos *b);

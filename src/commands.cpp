@@ -2229,7 +2229,7 @@ void closeT()
 {
     if (GetTabCount() <= 1)
         return;
-    Tab *tab;
+    TabPtr tab;
     if (prec_num())
         tab = GetTabByIndex(PREC_NUM()-1);
     else
@@ -2253,7 +2253,7 @@ void prevT()
 
 void tabA()
 {
-    Tab *tab;
+    TabPtr tab;
     if (prec_num())
         tab = GetTabByIndex(PREC_NUM()-1);
     else
@@ -2263,7 +2263,7 @@ void tabA()
 
 void tabURL()
 {
-    Tab *tab;
+    TabPtr tab;
     if (prec_num())
         tab = GetTabByIndex(PREC_NUM()-1);
     else
@@ -2274,7 +2274,7 @@ void tabURL()
 
 void tabrURL()
 {
-    Tab *tab;
+    TabPtr tab;
     if (prec_num())
         tab = GetTabByIndex(PREC_NUM()-1);
     else

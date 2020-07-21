@@ -391,7 +391,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
     int delta_x, delta_y, i;
     static auto press_btn = MouseBtnAction::BTN_RESET;
     static int press_x, press_y;
-    Tab *t;
+    TabPtr t;
     int ny = -1;
 
     if (GetTabCount() > 1 || GetMouseActionMenuStr())
