@@ -14,6 +14,35 @@ static TabBuffer *g_LastTab = nullptr;
 static TabBuffer *g_CurrentTab = nullptr;
 static int g_nTab = 0;
 
+static TabBuffer *newTab(void)
+{
+    auto n = New(TabBuffer);
+    n->nextTab = NULL;
+    n->currentBuffer = NULL;
+    n->firstBuffer = NULL;
+    return n;
+}
+
+TabBuffer *TabBuffer::AddNext(Buffer *buf)
+{
+    auto tab = newTab();
+    g_nTab++;
+
+    // tab <-> this->next
+    tab->nextTab = this->nextTab;
+    if (this->nextTab)
+        this->nextTab->prevTab = tab;
+    else
+        SetLastTab(tab);
+        
+    // this <-> tab
+    this->nextTab = tab;
+    tab->prevTab = this;
+    
+    tab->firstBuffer = tab->currentBuffer = buf;
+    return tab;
+}
+
 void InitializeTab()
 {
     g_FirstTab = g_LastTab = g_CurrentTab = newTab();
@@ -148,43 +177,20 @@ TabBuffer *numTab(int n)
     return tab;
 }
 
-TabBuffer *newTab(void)
-{
-    TabBuffer *n;
-
-    n = New(TabBuffer);
-    if (n == NULL)
-        return NULL;
-    n->nextTab = NULL;
-    n->currentBuffer = NULL;
-    n->firstBuffer = NULL;
-    return n;
-}
-
 // setup
 void _newT()
 {
-    auto tag = newTab();
-    if (!tag)
-        return;
-
+    // setup buffer
     auto buf = newBuffer(GetCurrentbuf()->width);
     copyBuffer(buf, GetCurrentbuf());
     buf->nextBuffer = NULL;
     for (int i = 0; i < MAX_LB; i++)
         buf->linkBuffer[i] = NULL;
     (*buf->clone)++;
-    tag->firstBuffer = tag->currentBuffer = buf;
 
-    tag->nextTab = g_CurrentTab->nextTab;
-    tag->prevTab = g_CurrentTab;
-    if (g_CurrentTab->nextTab)
-        g_CurrentTab->nextTab->prevTab = tag;
-    else
-        SetLastTab(tag);
-    g_CurrentTab->nextTab = tag;
-    g_CurrentTab = tag;
-    g_nTab++;
+    // new tab
+    auto tab = g_CurrentTab->AddNext(buf);
+    g_CurrentTab = tab;
 }
 
 TabBuffer *deleteTab(TabBuffer *tab)

@@ -11,9 +11,10 @@ struct TabBuffer
     short x1;
     short x2;
     short y;
+
+    TabBuffer *AddNext(Buffer *buffer);
 };
 
-TabBuffer *newTab();
 void _newT();
 void InitializeTab();
 int GetTabCount();
