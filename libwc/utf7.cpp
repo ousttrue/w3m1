@@ -1,9 +1,9 @@
-#ifdef USE_UNICODE
-
+extern "C"{
 #include "wc.h"
 #include "ucs.h"
 #include "utf7.h"
 #include "wtf.h"
+}
 
 #define SD WC_UTF7_MAP_SET_D
 #define SO WC_UTF7_MAP_SET_O
@@ -362,7 +362,3 @@ wc_char_conv_from_utf7(wc_uchar c, wc_status *st)
     st->state = -1;
     return os;
 }
-
-#endif
-
-

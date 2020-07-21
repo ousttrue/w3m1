@@ -1,10 +1,9 @@
-
-#ifdef USE_UNICODE
-
+extern "C"{
 #include "wc.h"
 #include "ucs.h"
 #include "utf8.h"
 #include "wtf.h"
+}
 
 wc_uint8 WC_UTF8_MAP[ 0x100 ] = {
    8, 8, 8, 8, 8, 8, 8, 8,  8, 8, 8, 8, 8, 8, 8, 8,
@@ -342,5 +341,3 @@ wc_char_conv_from_utf8(wc_uchar c, wc_status *st)
     st->state = -1;
     return os;
 }
-
-#endif

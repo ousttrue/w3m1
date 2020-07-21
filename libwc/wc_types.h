@@ -42,11 +42,13 @@ typedef struct {
     wc_uint16 code3;
 } wc_map3;
 
+typedef wc_wchar_t (*WcConvFunc)();
+
 typedef struct {
     wc_ccs       ccs;
     size_t       n;
     wc_map      *map;
-    wc_wchar_t (*conv)();
+    WcConvFunc conv;
 } wc_table;
 
 typedef struct {

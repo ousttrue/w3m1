@@ -1,12 +1,11 @@
-
+extern "C"{
 #include "wc.h"
 #include "viet.h"
 #include "wtf.h"
 #include "search.h"
-#ifdef USE_UNICODE
 #include "ucs.h"
-#endif
 #include "map/tcvn57123_tcvn5712.map"
+}
 
 wc_uint8 wc_c0_tcvn57122_map[ 0x20 ] = {
     0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,     

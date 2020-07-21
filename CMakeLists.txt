@@ -33,11 +33,11 @@ add_executable(w3mbookmark
     libwc/sjis.c
     libwc/status.c
     libwc/ucs.c
-    libwc/uhc.c
-    libwc/utf7.c
-    libwc/utf8.c
-    libwc/viet.c
-    libwc/wtf.c
+    libwc/uhc.cpp
+    libwc/utf7.cpp
+    libwc/utf8.cpp
+    libwc/viet.cpp
+    libwc/wtf.cpp
     )
 target_include_directories(w3mbookmark
 PUBLIC
@@ -128,11 +128,11 @@ add_executable(w3m
     libwc/sjis.c
     libwc/status.c
     libwc/ucs.c
-    libwc/uhc.c
-    libwc/utf7.c
-    libwc/utf8.c
-    libwc/viet.c
-    libwc/wtf.c
+    libwc/uhc.cpp
+    libwc/utf7.cpp
+    libwc/utf8.cpp
+    libwc/viet.cpp
+    libwc/wtf.cpp
 )
 target_include_directories(w3m
 PUBLIC
