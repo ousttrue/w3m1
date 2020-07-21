@@ -8,6 +8,7 @@
 #include "mouse.h"
 #include "public.h"
 #include "commands.h"
+#include <stdexcept>
 
 static TabBuffer *g_FirstTab = nullptr;
 static TabBuffer *g_LastTab = nullptr;
@@ -112,6 +113,20 @@ int GetTabCount()
     return g_nTab;
 }
 
+TabBuffer *GetTabByIndex(int index)
+{
+    int i = 0;
+    for (auto tab = g_FirstTab; tab; tab = tab->nextTab)
+    {
+        if (i == index)
+        {
+            return tab;
+        }
+        ++i;
+    }
+    throw std::runtime_error("not found");
+}
+
 TabBuffer *GetFirstTab()
 {
     return g_FirstTab;
@@ -135,6 +150,20 @@ void SetLastTab(TabBuffer *tab)
 TabBuffer *GetCurrentTab()
 {
     return g_CurrentTab;
+}
+
+int GetCurrentTabIndex()
+{
+    int i = 0;
+    for (auto tab = g_FirstTab; tab; tab = tab->nextTab)
+    {
+        if (tab == g_CurrentTab)
+        {
+            return i;
+        }
+        ++i;
+    }
+    throw std::runtime_error("not found");
 }
 
 void SetCurrentTab(TabBuffer *tab)
@@ -304,27 +333,23 @@ void SelectRelativeTab(int prec)
     {
         return;
     }
+    if (prec == 0)
+    {
+        return;
+    }
 
-    if (prec > 0)
+    auto current = GetCurrentTabIndex();
+    auto index = current + prec;
+    if (index < 0)
     {
-        for (int i = 0; i < prec; i++)
-        {
-            if (g_CurrentTab->nextTab)
-                g_CurrentTab = g_CurrentTab->nextTab;
-            else
-                g_CurrentTab = g_FirstTab;
-        }
+        index = 0;
     }
-    else if (prec < 0)
+    else if (index >= GetTabCount())
     {
-        for (int i = 0; i < PREC_NUM(); i++)
-        {
-            if (g_CurrentTab->prevTab)
-                g_CurrentTab = g_CurrentTab->prevTab;
-            else
-                g_CurrentTab = GetLastTab();
-        }
+        index = GetTabCount() - 1;
     }
+
+    g_CurrentTab = GetTabByIndex(index);
 }
 
 void SelectTabByPosition(int x, int y)
@@ -337,22 +362,22 @@ void SelectTabByPosition(int x, int y)
 
 void MoveTab(int x)
 {
-    TabBuffer *tab;
-    int i;
-    if (x > 0)
+    if (x == 0)
     {
-        for (tab = g_CurrentTab, i = 0; tab && i < x;
-             tab = tab->nextTab, i++)
-            ;
-        moveTab(g_CurrentTab, tab ? tab : GetLastTab(), TRUE);
+        return;
     }
-    else if (x < 0)
+    auto current = GetCurrentTabIndex();
+    auto index = current + x;
+    if (index < 0)
     {
-        for (tab = g_CurrentTab, i = 0; tab && i < PREC_NUM();
-             tab = tab->prevTab, i++)
-            ;
-        moveTab(g_CurrentTab, tab ? tab : g_FirstTab, FALSE);
+        index = 0;
     }
+    else if (index >= GetTabCount())
+    {
+        index = GetTabCount() - 1;
+    }
+    auto tab = GetTabByIndex(index);
+    moveTab(g_CurrentTab, tab ? tab : GetLastTab(), x > 0);
 }
 
 Buffer *GetCurrentbuf()

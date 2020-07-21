@@ -22,11 +22,13 @@ struct TabBuffer
 void _newT();
 void InitializeTab();
 int GetTabCount();
+TabBuffer *GetTabByIndex(int index);
 TabBuffer *GetFirstTab();
 void SetFirstTab(TabBuffer *tab);
 TabBuffer *GetLastTab();
 void SetLastTab(TabBuffer *tab);
 TabBuffer *GetCurrentTab();
+int GetCurrentTabIndex();
 void SetCurrentTab(TabBuffer *tab);
 void SelectRelativeTab(int prec);
 void SelectTabByPosition(int x, int y);
