@@ -18,16 +18,16 @@ add_executable(w3mbookmark
     libwc/char_conv.c
     libwc/charset.c
     libwc/combining.c
-    libwc/conv.c
-    libwc/detect.c
-    libwc/gb18030.c
+    libwc/conv.cpp
+    libwc/detect.cpp
+    libwc/gb18030.cpp
     libwc/gbk.cpp
-    libwc/hkscs.c
-    libwc/hz.c
-    libwc/iso2022.c
-    libwc/jis.c
-    libwc/johab.c
-    libwc/priv.c
+    libwc/hkscs.cpp
+    libwc/hz.cpp
+    libwc/iso2022.cpp
+    libwc/jis.cpp
+    libwc/johab.cpp
+    libwc/priv.cpp
     libwc/putc.cpp
     libwc/search.cpp
     libwc/sjis.cpp
@@ -113,16 +113,16 @@ add_executable(w3m
     libwc/char_conv.c
     libwc/charset.c
     libwc/combining.c
-    libwc/conv.c
-    libwc/detect.c
-    libwc/gb18030.c
+    libwc/conv.cpp
+    libwc/detect.cpp
+    libwc/gb18030.cpp
     libwc/gbk.cpp
-    libwc/hkscs.c
-    libwc/hz.c
-    libwc/iso2022.c
-    libwc/jis.c
-    libwc/johab.c
-    libwc/priv.c
+    libwc/hkscs.cpp
+    libwc/hz.cpp
+    libwc/iso2022.cpp
+    libwc/jis.cpp
+    libwc/johab.cpp
+    libwc/priv.cpp
     libwc/putc.cpp
     libwc/search.cpp
     libwc/sjis.cpp

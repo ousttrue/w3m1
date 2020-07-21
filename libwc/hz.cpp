@@ -1,11 +1,10 @@
-
+extern "C" {
 #include "wc.h"
 #include "iso2022.h"
 #include "hz.h"
 #include "wtf.h"
-#ifdef USE_UNICODE
 #include "ucs.h"
-#endif
+}
 
 Str
 wc_conv_from_hz(Str is, wc_ces ces)

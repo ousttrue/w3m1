@@ -1,5 +1,6 @@
-
+extern "C"{
 #include "wc.h"
+#include "detect.h"
 #include "iso2022.h"
 #include "sjis.h"
 #include "big5.h"
@@ -9,6 +10,7 @@
 #include "utf8.h"
 #include "utf7.h"
 #endif
+}
 
 wc_uint8 WC_DETECT_MAP[ 0x100 ] = {
     0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 

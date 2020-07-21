@@ -1,13 +1,12 @@
-
+extern "C"{
 #include "wc.h"
 #include "iso2022.h"
 #include "jis.h"
 #include "big5.h"
 #include "johab.h"
 #include "wtf.h"
-#ifdef USE_UNICODE
 #include "ucs.h"
-#endif
+}
 
 #define C0  WC_ISO_MAP_C0
 #define C1  WC_ISO_MAP_C1

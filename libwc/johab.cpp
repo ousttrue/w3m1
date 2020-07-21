@@ -1,10 +1,9 @@
-
+extern "C"{
 #include "wc.h"
 #include "johab.h"
 #include "wtf.h"
-#ifdef USE_UNICODE
 #include "ucs.h"
-#endif
+}
 
 #define C0 WC_JOHAB_MAP_C0
 #define GL WC_JOHAB_MAP_GL

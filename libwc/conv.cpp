@@ -1,13 +1,15 @@
-
+extern "C" {
+#include "wc_types.h"
+#include "detect.h"
+#include "conv.h"    
 #include "wc.h"
 #include "wtf.h"
 #include "iso2022.h"
 #include "hz.h"
-#ifdef USE_UNICODE
 #include "ucs.h"
 #include "utf8.h"
 #include "utf7.h"
-#endif
+}
 
 char *WcReplace = "?";
 char *WcReplaceW = "??";
