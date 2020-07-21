@@ -1,4 +1,4 @@
-
+extern "C" {
 #include "wc.h"
 #include "sjis.h"
 #include "jis.h"
@@ -6,6 +6,7 @@
 #include "ucs.h"
 
 #include "map/jisx02132_sjis.map"
+}
 wc_uchar *wc_jisx0212_jisx02132_map = jisx02132_sjis_map;
 
 #define C0  WC_SJIS_MAP_C0

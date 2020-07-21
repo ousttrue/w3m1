@@ -1,12 +1,11 @@
-
+extern "C" {
 #include <string.h>
 #include <gc.h>
 #define New_N(type,n) ((type*)GC_MALLOC((n)*sizeof(type)))
 
 #include "wc.h"
-#ifdef USE_UNICODE
 #include "ucs.h"
-#endif
+}
 
 wc_option WcOption = {
     WC_OPT_DETECT_ON,	/* auto_detect */

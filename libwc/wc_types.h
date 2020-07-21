@@ -64,7 +64,7 @@ typedef struct {
     wc_gset  *gset;
     wc_uchar *gset_ext;
     Str     (*conv_from)();
-    void    (*push_to)();
+    void    (*push_to)(Str, wc_wchar_t, struct _wc_status *);
     Str     (*char_conv)();
 } wc_ces_info;
 
@@ -96,7 +96,7 @@ typedef struct {
     wc_bool east_asian_width;	/* East Asian Ambiguous characters are wide */
 } wc_option;
 
-typedef struct {
+typedef struct _wc_status {
     wc_ces_info *ces_info;
     wc_uint8     gr;
     wc_uint8     gl;

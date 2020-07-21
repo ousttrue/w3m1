@@ -1,14 +1,13 @@
-
+extern "C"{
 #include "wc.h"
 #include "gbk.h"
 #include "search.h"
 #include "wtf.h"
-#ifdef USE_UNICODE
 #include "ucs.h"
-#endif
+
 
 #include "map/gb2312_gbk.map"
-
+}
 #define C0 WC_GBK_MAP_C0
 #define GL WC_GBK_MAP_GL
 #define C1 WC_GBK_MAP_C1
