@@ -21,6 +21,37 @@ void EachTab(const std::function<void(const TabPtr &)> callback)
     }
 }
 
+// currentPrev -> buf -> current 
+void Tab::BufferPushFront(Buffer *buf)
+{
+    deleteImage(GetCurrentbuf());
+    if (clear_buffer)
+    {
+        tmpClearBuffer(GetCurrentbuf());
+    }
+
+    if (GetFirstbuf() == GetCurrentbuf())
+    {
+        buf->nextBuffer = GetFirstbuf();
+        SetCurrentbuf(buf);
+        SetFirstbuf(buf);
+    }
+    else
+    {
+        auto b = prevBuffer(GetFirstbuf(), GetCurrentbuf());
+        if (b != NULL)
+        {
+            b->nextBuffer = buf;
+            buf->nextBuffer = GetCurrentbuf();
+            SetCurrentbuf(buf);
+        }
+    }
+#ifdef USE_BUFINFO
+    saveBufferInfo();
+#endif
+}
+
+
 void InitializeTab()
 {
     g_tabs.push_back(std::make_shared<Tab>());
@@ -366,7 +397,7 @@ void followTab(TabPtr tab)
         for (buf = p; buf; buf = p)
         {
             p = prevBuffer(c, buf);
-            pushBuffer(buf);
+            GetCurrentTab()->BufferPushFront(buf);
         }
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);

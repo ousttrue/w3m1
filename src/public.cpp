@@ -444,31 +444,6 @@ void shiftvisualpos(Buffer *buf, int shift)
         buf->visualpos = l->bwidth;
 }
 
-void pushBuffer(Buffer *buf)
-{
-    Buffer *b;
-
-#ifdef USE_IMAGE
-    deleteImage(GetCurrentbuf());
-#endif
-    if (clear_buffer)
-        tmpClearBuffer(GetCurrentbuf());
-    if (GetFirstbuf() == GetCurrentbuf())
-    {
-        buf->nextBuffer = GetFirstbuf();
-        SetCurrentbuf(buf);
-        SetFirstbuf(buf);
-    }
-    else if ((b = prevBuffer(GetFirstbuf(), GetCurrentbuf())) != NULL)
-    {
-        b->nextBuffer = buf;
-        buf->nextBuffer = GetCurrentbuf();
-        SetCurrentbuf(buf);
-    }
-#ifdef USE_BUFINFO
-    saveBufferInfo();
-#endif
-}
 
 void cmd_loadfile(char *fn)
 {
@@ -483,7 +458,7 @@ void cmd_loadfile(char *fn)
     }
     else if (buf != NO_BUFFER)
     {
-        pushBuffer(buf);
+        GetCurrentTab()->BufferPushFront(buf);
         if (RenderFrame && GetCurrentbuf()->frameset != NULL)
             rFrame();
     }
@@ -515,7 +490,7 @@ void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request
     }
     else if (buf != NO_BUFFER)
     {
-        pushBuffer(buf);
+        GetCurrentTab()->BufferPushFront(buf);
         if (RenderFrame && GetCurrentbuf()->frameset != NULL)
             rFrame();
     }
@@ -1363,7 +1338,7 @@ Str conv_form_encoding(Str val, FormItemList *fi, Buffer *buf)
 
 Buffer *loadNormalBuf(Buffer *buf, int renderframe)
 {
-    pushBuffer(buf);
+    GetCurrentTab()->BufferPushFront(buf);
     if (renderframe && RenderFrame && GetCurrentbuf()->frameset != NULL)
         rFrame();
     return buf;
@@ -1577,7 +1552,7 @@ void gotoLabel(char *label)
     buf->currentURL.label = allocStr(label, -1);
     pushHashHist(URLHist, parsedURL2Str(&buf->currentURL)->ptr);
     (*buf->clone)++;
-    pushBuffer(buf);
+    GetCurrentTab()->BufferPushFront(buf);
     gotoLine(GetCurrentbuf(), al->start.line);
     if (label_topline)
         GetCurrentbuf()->topLine = lineSkip(GetCurrentbuf(), GetCurrentbuf()->topLine,
@@ -1985,9 +1960,6 @@ void invoke_browser(char *url)
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
-
-
-
 void execdict(char *word)
 {
     char *w, *dictcmd;
@@ -2019,7 +1991,7 @@ void execdict(char *word)
         buf->buffername = Sprintf("%s %s", DICTBUFFERNAME, word)->ptr;
         if (buf->type == NULL)
             buf->type = "text/plain";
-        pushBuffer(buf);
+        GetCurrentTab()->BufferPushFront(buf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
@@ -2130,7 +2102,7 @@ void tabURL0(TabPtr tab, char *prompt, int relative)
         for (buf = p; buf; buf = p)
         {
             p = prevBuffer(c, buf);
-            pushBuffer(buf);
+            GetCurrentTab()->BufferPushFront(buf);
         }
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);

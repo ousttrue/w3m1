@@ -49,6 +49,9 @@ public:
     {
         return x1 <= x && x <= x2 && y == y;
     }
+
+    // buffer
+    void BufferPushFront(Buffer *buf);    
 };
 using TabPtr = std::shared_ptr<Tab>;
 

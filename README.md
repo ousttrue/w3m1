@@ -219,6 +219,12 @@ libwc を除いてうまく C++ 化できたようだ。
 とりあえず、`struct tag` まわりの `typedef` を取り除く。
 然る後に、前方宣言を活用してヘッダの分割を推進。
 
+## TabBuffer, Buffer
+
+TabBuffer の双方向リンクリストを `std::list<std::shared_ptr<TabBuffer>>` に置き換えた。
+Buffer のリンクリストを Tab のメソッド化して、 Buffer::nextBuffer への直接アクセスを封じてからこれも、
+`std::list` にする。
+
 ## TODO
 
 * macro 減らす

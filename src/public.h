@@ -31,7 +31,7 @@ void srch(int (*func)(Buffer *, char *), char *prompt);
 void clear_mark(Line *l);
 void disp_srchresult(int result, char *prompt, char *str);
 void shiftvisualpos(Buffer *buf, int shift);
-void pushBuffer(Buffer *buf);
+
 void cmd_loadfile(char *fn);
 void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request);
 int handleMailto(char *url);
