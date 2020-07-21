@@ -3,6 +3,7 @@
 #include "types.h"
 #include <memory>
 #include <list>
+#include <functional>
 
 ///
 /// [ tab ]
@@ -51,8 +52,7 @@ public:
 };
 using TabPtr = std::shared_ptr<Tab>;
 
-std::list<TabPtr> &Tabs();
-
+void EachTab(const std::function<void(const TabPtr&)> callback);
 void _newT();
 void InitializeTab();
 int GetTabCount();

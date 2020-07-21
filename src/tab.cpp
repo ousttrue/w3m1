@@ -13,9 +13,12 @@
 std::list<TabPtr> g_tabs;
 std::weak_ptr<Tab> g_current;
 
-std::list<TabPtr> &Tabs()
+void EachTab(const std::function<void(const TabPtr &)> callback)
 {
-    return g_tabs;
+    for (auto &tab : g_tabs)
+    {
+        callback(tab);
+    }
 }
 
 void InitializeTab()
@@ -151,7 +154,7 @@ TabPtr posTab(int x, int y)
         return nullptr;
     for (auto tab : g_tabs)
     {
-        if(tab->IsHit(x, y))
+        if (tab->IsHit(x, y))
         {
             return tab;
         }

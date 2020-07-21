@@ -667,21 +667,18 @@ redrawNLine(Buffer *buf, int n)
 
     if (GetTabCount() > 1 || GetMouseActionMenuStr())
     {
-        int l;
-
         move(0, 0);
 
         if (GetMouseActionMenuStr())
             addstr(GetMouseActionMenuStr());
 
         clrtoeolx();
-        for(auto t: Tabs())        
-        {
+        EachTab([](auto t) {
             move(t->Y(), t->Left());
             if (t == GetCurrentTab())
                 bold();
             addch('[');
-            l = t->Width() - get_strwidth(t->currentBuffer->buffername);
+            auto l = t->Width() - get_strwidth(t->currentBuffer->buffername);
             if (l < 0)
                 l = 0;
             if (l / 2 > 0)
@@ -697,11 +694,7 @@ redrawNLine(Buffer *buf, int n)
             addch(']');
             if (t == GetCurrentTab())
                 boldend();
-        }
-#if 0
-	move(0, COLS - 2);
-	addstr(" x");
-#endif
+        });       
         move(GetTabbarHeight(), 0);
         for (i = 0; i < COLS; i++)
             addch('~');
