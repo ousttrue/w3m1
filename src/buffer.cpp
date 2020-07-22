@@ -1,6 +1,7 @@
 /* $Id: buffer.c,v 1.30 2010/07/18 14:10:09 htrb Exp $ */
 
 #include "fm.h"
+#include "buffer.h"
 #include "public.h"
 #include "indep.h"
 #include "file.h"
@@ -102,9 +103,7 @@ void discardBuffer(Buffer *buf)
 	int i;
 	Buffer *b;
 
-#ifdef USE_IMAGE
 	deleteImage(buf);
-#endif
 	clearBuffer(buf);
 	for (i = 0; i < MAX_LB; i++)
 	{

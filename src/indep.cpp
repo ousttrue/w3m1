@@ -748,16 +748,16 @@ int getescapechar(char **str)
     return GetEntity(q, -1);
 }
 
-char *
-getescapecmd(char **s)
+char *getescapecmd(char **s)
 {
     char *save = *s;
-    Str tmp;
+    
     int ch = getescapechar(s);
-
-    if (ch >= 0)
+    if (ch >= 0){
         return (char *)conv_entity(ch);
+    }
 
+    Str tmp;
     if (*save != '&')
         tmp = Strnew_charp("&");
     else

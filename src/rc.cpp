@@ -20,6 +20,7 @@
 #include "url.h"
 #include "file.h"
 #include "mimetypes.h"
+#include "display.h"
 #include <stdlib.h>
 
 

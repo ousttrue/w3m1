@@ -7,6 +7,7 @@
 #include "display.h"
 #include "terms.h"
 #include "etc.h"
+#include "buffer.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>

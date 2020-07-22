@@ -4,6 +4,7 @@
 #include "file.h"
 #include "rc.h"
 #include "etc.h"
+#include "display.h"
 
 #ifdef USE_HISTORY
 Buffer *

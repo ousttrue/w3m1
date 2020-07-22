@@ -7,7 +7,7 @@
 #include "file.h"
 #include "rc.h"
 #include "ctrlcode.h"
-
+#include "display.h"
 
 static int g_prec_num = 0;
 static int g_CurrentKey = -1;

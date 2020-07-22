@@ -12,6 +12,7 @@
 #include "display.h"
 #include "ctrlcode.h"
 #include "mouse.h"
+#include "buffer.h"
 
 #include <signal.h>
 #include <math.h>
@@ -216,14 +217,13 @@ void fmTerm(void)
         move(LASTLINE, 0);
         clrtoeolx();
         refresh();
-#ifdef USE_IMAGE
+
         if (activeImage)
             loadImage(NULL, IMG_FLAG_STOP);
-#endif
-#ifdef USE_MOUSE
+
         if (use_mouse)
             mouse_end();
-#endif /* USE_MOUSE */
+
         reset_tty();
         fmInitialized = FALSE;
     }
@@ -1290,7 +1290,7 @@ void addChar(char c, Lineprop mode)
 
 static GeneralList *message_list = NULL;
 
-void record_err_message(char *s)
+void record_err_message(const char *s)
 {
     if (fmInitialized)
     {
@@ -1334,7 +1334,7 @@ void message(const char *s, int return_x, int return_y)
     move(return_y, return_x);
 }
 
-void disp_err_message(char *s, int redraw_current)
+void disp_err_message(const char *s, int redraw_current)
 {
     record_err_message(s);
     disp_message(s, redraw_current);
@@ -1368,18 +1368,17 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, in
         displayCurrentbuf(B_NORMAL);
 }
 
-void disp_message(char *s, int redraw_current)
+void disp_message(const char *s, int redraw_current)
 {
     disp_message_nsec(s, redraw_current, 10, FALSE, TRUE);
 }
-#ifdef USE_MOUSE
-void disp_message_nomouse(char *s, int redraw_current)
+
+void disp_message_nomouse(const char *s, int redraw_current)
 {
     disp_message_nsec(s, redraw_current, 10, FALSE, FALSE);
 }
-#endif
 
-void set_delayed_message(char *s)
+void set_delayed_message(const char *s)
 {
     delayed_msg = allocStr(s, -1);
 }

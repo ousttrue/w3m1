@@ -7,6 +7,7 @@
 #include "mouse.h"
 #include "public.h"
 #include "commands.h"
+#include "buffer.h"
 #include <stdexcept>
 #include <algorithm>
 

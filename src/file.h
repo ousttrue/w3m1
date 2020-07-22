@@ -113,22 +113,12 @@ void fmTerm(void);
 void fmInit(void);
 
 void addChar(char c, Lineprop mode);
-#ifdef USE_M17N
+
 void addMChar(char *c, Lineprop mode, size_t len);
-#endif
-void record_err_message(char *s);
+
 Buffer *message_list_panel(void);
 
-void disp_err_message(char *s, int redraw_current);
-void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
-                       int mouse);
-void disp_message(char *s, int redraw_current);
-#ifdef USE_MOUSE
-void disp_message_nomouse(char *s, int redraw_current);
-#else
-#define disp_message_nomouse disp_message
-#endif
-void set_delayed_message(char *s);
+
 void cursorUp0(Buffer *buf, int n);
 void cursorUp(Buffer *buf, int n);
 void cursorDown0(Buffer *buf, int n);

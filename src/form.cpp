@@ -18,6 +18,7 @@
 #include "regex.h"
 #include "menu.h"
 #include "mimetypes.h"
+#include "display.h"
 extern Str *textarea_str;
 extern FormSelectOption *select_option;
 

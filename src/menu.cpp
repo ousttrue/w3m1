@@ -15,6 +15,7 @@
 #include "html.h"
 #include "mouse.h"
 #include "etc.h"
+#include "buffer.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM
@@ -1890,9 +1891,9 @@ smChBuf(void)
     {
         if (buf == GetCurrentbuf())
             continue;
-#ifdef USE_IMAGE
+
         deleteImage(buf);
-#endif
+
         if (clear_buffer)
             tmpClearBuffer(buf);
     }

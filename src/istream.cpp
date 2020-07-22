@@ -7,10 +7,10 @@
 #include "etc.h"
 #include "html.h"
 #include "mimehead.h"
+#include "display.h"
 #include <signal.h>
-#ifdef USE_SSL
 #include <openssl/x509v3.h>
-#endif
+
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
 #endif
@@ -630,7 +630,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
         else
         {
             /* FIXME: gettextize? */
-            char *e = "This SSL session was rejected "
+            const char *e = "This SSL session was rejected "
                       "to prevent security violation";
             disp_err_message(e, FALSE);
             free_ssl_ctx();
