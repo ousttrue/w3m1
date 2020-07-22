@@ -62,10 +62,10 @@ extern void wc_putc_clear_status(void);
 extern void   wc_create_detect_map(wc_ces ces, wc_bool esc);
 
 extern wc_ces       wc_guess_charset(char *charset, wc_ces orig);
-extern wc_ces       wc_guess_charset_short(char *charset, wc_ces orig);
+wc_ces       wc_guess_charset_short(const char *charset, wc_ces orig);
 extern wc_ces       wc_guess_locale_charset(char *locale, wc_ces orig);
-extern wc_ces       wc_charset_to_ces(char *charset);
-extern wc_ces       wc_charset_short_to_ces(char *charset);
+wc_ces       wc_charset_to_ces(const char *charset);
+wc_ces       wc_charset_short_to_ces(const char *charset);
 extern wc_ces       wc_locale_to_ces(char *locale);
 extern wc_ces       wc_guess_8bit_charset(wc_ces orig);
 extern char        *wc_ces_to_charset(wc_ces ces);

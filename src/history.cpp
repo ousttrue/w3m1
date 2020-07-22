@@ -130,7 +130,7 @@ unshiftHist(Hist *hist, char *ptr)
 }
 
 HistItem *
-pushHist(Hist *hist, char *ptr)
+pushHist(Hist *hist, const char *ptr)
 {
     HistItem *item;
 
@@ -150,7 +150,7 @@ pushHist(Hist *hist, char *ptr)
 /* Don't mix pushHashHist() and pushHist()/unshiftHist(). */
 
 HistItem *
-pushHashHist(Hist *hist, char *ptr)
+pushHashHist(Hist *hist, const char *ptr)
 {
     HistItem *item;
 
@@ -169,12 +169,12 @@ pushHashHist(Hist *hist, char *ptr)
 	hist->list->nitem--;
     }
     item = pushHist(hist, ptr);
-    putHash_sv(hist->hash, ptr, (void *)item);
+    putHash_sv(hist->hash, (char*)ptr, (void *)item);
     return item;
 }
 
 HistItem *
-getHashHist(Hist *hist, char *ptr)
+getHashHist(Hist *hist, const char *ptr)
 {
     HistItem *item;
 
@@ -185,7 +185,7 @@ getHashHist(Hist *hist, char *ptr)
 	for (item = hist->list->first; item; item = item->next)
 	    putHash_sv(hist->hash, (char *)item->ptr, (void *)item);
     }
-    return (HistItem *)getHash_sv(hist->hash, ptr, NULL);
+    return (HistItem *)getHash_sv(hist->hash, (char*)ptr, NULL);
 }
 
 char *

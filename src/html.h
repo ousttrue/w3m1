@@ -43,8 +43,8 @@ struct mailcap
 
 struct table2
 {
-    char *item1;
-    char *item2;
+    const char *item1;
+    const char *item2;
 };
 
 #define CMP_NOCOMPRESS 0

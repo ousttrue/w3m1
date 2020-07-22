@@ -85,7 +85,7 @@ wc_guess_charset(char *charset, wc_ces orig)
 }
 
 wc_ces
-wc_guess_charset_short(char *charset, wc_ces orig)
+wc_guess_charset_short(const char *charset, wc_ces orig)
 {
     wc_ces guess;
 
@@ -107,9 +107,9 @@ wc_guess_locale_charset(char *locale, wc_ces orig)
 }
 
 wc_ces
-wc_charset_to_ces(char *charset)
+wc_charset_to_ces(const char *charset)
 {
-    char *p = charset;
+    auto p = charset;
     char buf[16];
     int n;
 
@@ -278,9 +278,9 @@ wc_charset_to_ces(char *charset)
 }
 
 wc_ces
-wc_charset_short_to_ces(char *charset)
+wc_charset_short_to_ces(const char *charset)
 {
-    char *p = charset;
+    auto p = charset;
     char buf[16];
     wc_ces ces;
     int n;

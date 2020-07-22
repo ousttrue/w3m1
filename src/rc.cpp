@@ -798,7 +798,7 @@ create_option_search_table()
 }
 
 struct param_ptr *
-search_param(char *name)
+search_param(const char *name)
 {
     size_t b, e, i;
     int cmp;
@@ -918,7 +918,7 @@ show_params(FILE * fp)
 }
 
 int
-str_to_bool(char *value, int old)
+str_to_bool(const char *value, int old)
 {
     if (value == NULL)
 	return 1;
@@ -946,7 +946,7 @@ str_to_bool(char *value, int old)
 
 #ifdef USE_COLOR
 static int
-str_to_color(char *value)
+str_to_color(const char *value)
 {
     if (value == NULL)
 	return 8;		/* terminal */
@@ -987,79 +987,84 @@ str_to_color(char *value)
 #endif
 
 static int
-set_param(char *name, char *value)
+set_param(const char *name, const char *value)
 {
     struct param_ptr *p;
     double ppc;
 
     if (value == NULL)
-	return 0;
+        return 0;
     p = search_param(name);
     if (p == NULL)
-	return 0;
-    switch (p->type) {
+        return 0;
+    switch (p->type)
+    {
     case P_INT:
-	if (atoi(value) >= 0)
-	    *(int *)p->varptr = (p->inputtype == PI_ONOFF)
-		? str_to_bool(value, *(int *)p->varptr) : atoi(value);
-	break;
+        if (atoi(value) >= 0)
+            *(int *)p->varptr = (p->inputtype == PI_ONOFF)
+                                    ? str_to_bool(value, *(int *)p->varptr)
+                                    : atoi(value);
+        break;
     case P_NZINT:
-	if (atoi(value) > 0)
-	    *(int *)p->varptr = atoi(value);
-	break;
+        if (atoi(value) > 0)
+            *(int *)p->varptr = atoi(value);
+        break;
     case P_SHORT:
-	*(short *)p->varptr = (p->inputtype == PI_ONOFF)
-	    ? str_to_bool(value, *(short *)p->varptr) : atoi(value);
-	break;
+        *(short *)p->varptr = (p->inputtype == PI_ONOFF)
+                                  ? str_to_bool(value, *(short *)p->varptr)
+                                  : atoi(value);
+        break;
     case P_CHARINT:
-	*(char *)p->varptr = (p->inputtype == PI_ONOFF)
-	    ? str_to_bool(value, *(char *)p->varptr) : atoi(value);
-	break;
+        *(char *)p->varptr = (p->inputtype == PI_ONOFF)
+                                 ? str_to_bool(value, *(char *)p->varptr)
+                                 : atoi(value);
+        break;
     case P_CHAR:
-	*(char *)p->varptr = value[0];
-	break;
+        *(char *)p->varptr = value[0];
+        break;
     case P_STRING:
-	*(char **)p->varptr = value;
-	break;
+        *(const char **)p->varptr = value;
+        break;
 #if defined(USE_SSL) && defined(USE_SSL_VERIFY)
     case P_SSLPATH:
-	if (value != NULL && value[0] != '\0')
-	    *(char **)p->varptr = rcFile(value);
-	else
-	    *(char **)p->varptr = NULL;
-	ssl_path_modified = 1;
-	break;
+        if (value != NULL && value[0] != '\0')
+            *(char **)p->varptr = rcFile(value);
+        else
+            *(char **)p->varptr = NULL;
+        ssl_path_modified = 1;
+        break;
 #endif
 #ifdef USE_COLOR
     case P_COLOR:
-	*(int *)p->varptr = str_to_color(value);
-	break;
+        *(int *)p->varptr = str_to_color(value);
+        break;
 #endif
 #ifdef USE_M17N
     case P_CODE:
-	*(wc_ces *) p->varptr =
-	    wc_guess_charset_short(value, *(wc_ces *) p->varptr);
-	break;
+        *(wc_ces *)p->varptr =
+            wc_guess_charset_short(value, *(wc_ces *)p->varptr);
+        break;
 #endif
     case P_PIXELS:
-	ppc = atof(value);
-	if (ppc >= MINIMUM_PIXEL_PER_CHAR && ppc <= MAXIMUM_PIXEL_PER_CHAR * 2)
-	    *(double *)p->varptr = ppc;
-	break;
+        ppc = atof(value);
+        if (ppc >= MINIMUM_PIXEL_PER_CHAR && ppc <= MAXIMUM_PIXEL_PER_CHAR * 2)
+            *(double *)p->varptr = ppc;
+        break;
     case P_SCALE:
-	ppc = atof(value);
-	if (ppc >= 10 && ppc <= 1000)
-	    *(double *)p->varptr = ppc;
-	break;
+        ppc = atof(value);
+        if (ppc >= 10 && ppc <= 1000)
+            *(double *)p->varptr = ppc;
+        break;
     }
     return 1;
 }
 
 int
-set_param_option(char *option)
+set_param_option(const char *option)
 {
     Str tmp = Strnew();
-    char *p = option, *q;
+    auto p = option;
+    char *q;
 
     while (*p && !IS_SPACE(*p) && *p != '=')
 	tmp->Push(*p++);
@@ -1522,7 +1527,7 @@ panel_set_option(struct parsed_tagarg *arg)
 }
 
 char *
-rcFile(char *base)
+rcFile(const char *base)
 {
     if (base &&
 	(base[0] == '/' ||

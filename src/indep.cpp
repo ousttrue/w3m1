@@ -394,14 +394,11 @@ currentdir()
     return path;
 }
 
-char *
-cleanupName(char *name)
+char * cleanupName(const char *name)
 {
-    char *buf, *p, *q;
-
-    buf = allocStr(name, -1);
-    p = buf;
-    q = name;
+    auto buf = allocStr(name, -1);
+    auto p = buf;
+    auto q = name;
     while (*q != '\0')
     {
         if (strncmp(p, "/../", 4) == 0)
@@ -473,22 +470,21 @@ cleanupName(char *name)
 }
 
 char *
-expandPath(char *name)
+expandPath(const char *name)
 {
-    char *p;
     struct passwd *passent, *getpwnam(const char *);
     Str extpath = NULL;
 
     if (name == NULL)
         return NULL;
-    p = name;
+    auto p = name;
     if (*p == '~')
     {
         p++;
 #ifndef __MINGW32_VERSION
         if (IS_ALPHA(*p))
         {
-            char *q = strchr(p, '/');
+            auto q = strchr(p, '/');
             if (q)
             { /* ~user/dir... */
                 passent = getpwnam(allocStr(p, q - p));
@@ -517,7 +513,7 @@ expandPath(char *name)
         return extpath->ptr;
     }
 rest:
-    return name;
+    return const_cast<char*>(name);
 }
 
 #ifndef HAVE_STRCHR

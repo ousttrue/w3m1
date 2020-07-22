@@ -646,7 +646,7 @@ int main(int argc, char **argv, char **envp)
                     if (tmp->Back() != '/')
                         tmp->Push('/');
                     tmp->Push(BookmarkFile);
-                    BookmarkFile = cleanupName(tmp->ptr);
+                    BookmarkFile = cleanupName(tmp->c_str());
                 }
             }
             else if (!strcmp("-F", argv[i]))
@@ -733,7 +733,7 @@ int main(int argc, char **argv, char **envp)
                 use_proxy = FALSE;
 #ifdef INET6
             else if (!strcmp("-4", argv[i]) || !strcmp("-6", argv[i]))
-                set_param_option(Sprintf("dns_order=%c", argv[i][1])->ptr);
+                set_param_option(Sprintf("dns_order=%c", argv[i][1])->c_str());
 #endif
             else if (!strcmp("-post", argv[i]))
             {
@@ -957,7 +957,7 @@ int main(int argc, char **argv, char **envp)
             if (newbuf == NULL)
                 err_msg->Push( Sprintf("w3m: Can't load %s.\n", p));
             else if (newbuf != NO_BUFFER)
-                pushHashHist(URLHist, parsedURL2Str(&newbuf->currentURL)->ptr);
+                pushHashHist(URLHist, parsedURL2Str(&newbuf->currentURL)->c_str());
         }
         else
         {

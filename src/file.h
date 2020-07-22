@@ -293,7 +293,7 @@ void addMultirowsImg(Buffer *buf, AnchorList *al);
 
 Buffer *link_list_panel(Buffer *buf);
 
-int set_param_option(char *option);
+int set_param_option(const char *option);
 char *get_param_option(char *name);
 void init_rc(void);
 Buffer *load_option_panel(void);
