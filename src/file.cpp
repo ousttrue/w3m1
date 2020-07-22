@@ -936,8 +936,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 	}
 	if (headerlist)
 	    pushText(headerlist, lineBuf2->ptr);
-	Strfree(lineBuf2);
-	lineBuf2 = NULL;
+    	lineBuf2 = NULL;
     }
     if (thru)
 	addnewline(newBuf, "", propBuffer, NULL, 0, -1, -1);
@@ -2693,7 +2692,7 @@ passthrough(struct readbuffer *obuf, char *str, int back)
 	    else {
 		Strcat_charp_n(tok, str_bak, str - str_bak);
 		push_tag(obuf, tok->ptr, cmd);
-		Strclear(tok);
+		tok->Clear();
 	    }
 	}
 	else {
@@ -6588,7 +6587,7 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 		}
 		else
 		    Strcat(tmp2, tmp);
-		Strclear(tmp);
+		tmp->Clear();
 	    }
 	}
 	if (force == 2) {

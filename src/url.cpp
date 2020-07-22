@@ -1902,7 +1902,7 @@ make_domain_list(char *domain_list)
     while (*p) {
 	while (*p && IS_SPACE(*p))
 	    p++;
-	Strclear(tmp);
+	tmp->Clear();
 	while (*p && !IS_SPACE(*p) && *p != ',')
 	    Strcat_char(tmp, *p++);
 	if (tmp->length > 0) {

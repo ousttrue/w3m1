@@ -102,7 +102,7 @@ make_portlist(Str port)
     while (*p) {
 	while (*p && !IS_DIGIT(*p))
 	    p++;
-	Strclear(tmp);
+	tmp->Clear();
 	while (*p && IS_DIGIT(*p))
 	    Strcat_char(tmp, *(p++));
 	if (tmp->length == 0)

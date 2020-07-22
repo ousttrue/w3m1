@@ -502,7 +502,7 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
     int prev_status;
 
     if (!append)
-        Strclear(buf);
+        buf->Clear();
     if (**instr == '\0')
         return 0;
     for (p = *instr; *p; p++) {
@@ -517,7 +517,7 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
             if (prev_status == R_ST_NCMNT2 || prev_status == R_ST_NCMNT3 ||
                 prev_status == R_ST_IRRTAG || prev_status == R_ST_CMNT1) {
                 if (prev_status == R_ST_CMNT1 && !append && !pre)
-                    Strclear(buf);
+                    buf->Clear();
                 if (pre)
                     Strcat_char(buf, *p);
                 p++;
@@ -563,7 +563,7 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
             if (pre)
                 Strcat_char(buf, *p);
             else if (!append)
-                Strclear(buf);
+                buf->Clear();
             break;
         case R_ST_CMNT1:
         case R_ST_CMNT2:
@@ -1475,7 +1475,7 @@ get_time(char **s, int *hour, int *min, int *sec)
     *hour = atoi(tmp->ptr);
 
     (*s)++;
-    Strclear(tmp);
+    tmp->Clear();
     while (**s && IS_DIGIT(**s))
         Strcat_char(tmp, *((*s)++));
     if (**s != ':') {
@@ -1485,7 +1485,7 @@ get_time(char **s, int *hour, int *min, int *sec)
     *min = atoi(tmp->ptr);
 
     (*s)++;
-    Strclear(tmp);
+    tmp->Clear();
     while (**s && IS_DIGIT(**s))
         Strcat_char(tmp, *((*s)++));
     *sec = atoi(tmp->ptr);

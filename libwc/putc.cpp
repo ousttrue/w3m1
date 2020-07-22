@@ -25,7 +25,7 @@ wc_putc(char *c, FILE *f)
     else
 	p = (uint8_t *)c;
 
-    Strclear(putc_str);
+    putc_str->Clear();
     while (*p)
 	(*putc_st.ces_info->push_to)(putc_str, wtf_parse(&p), &putc_st);
     fwrite(putc_str->ptr, 1, putc_str->length, f);
@@ -34,7 +34,7 @@ wc_putc(char *c, FILE *f)
 void
 wc_putc_end(FILE *f)
 {
-    Strclear(putc_str);
+    putc_str->Clear();
     wc_push_end(putc_str, &putc_st);
     if (putc_str->length)
 	fwrite(putc_str->ptr, 1, putc_str->length, f);

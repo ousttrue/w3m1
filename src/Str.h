@@ -17,13 +17,15 @@
 #include <stdio.h>
 #include <string.h>
 
-struct _Str
+struct GCStr
 {
     char *ptr;
     int length;
     int area_size;
+
+    void Clear();
 };
-using Str = _Str *;
+using Str = GCStr *;
 
 Str Strnew(void);
 Str Strnew_size(int);
@@ -31,8 +33,7 @@ Str Strnew_charp(char *);
 Str Strnew_charp_n(char *, int);
 Str Strnew_m_charp(char *, ...);
 Str Strdup(Str);
-void Strclear(Str);
-void Strfree(Str);
+
 void Strcopy(Str, Str);
 void Strcopy_charp(Str, char *);
 void Strcopy_charp_n(Str, char *, int);

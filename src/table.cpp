@@ -452,7 +452,7 @@ visible_length(char *str)
 	}
 #endif
 	if (status == R_ST_TAG0) {
-	    Strclear(tagbuf);
+	    tagbuf->Clear();
 	    PUSH_TAG(str, n);
 	}
 	else if (status == R_ST_TAG || status == R_ST_DQUOTE
@@ -462,7 +462,7 @@ visible_length(char *str)
 	}
 	else if (status == R_ST_AMP) {
 	    if (prev_status == R_ST_NORMAL) {
-		Strclear(tagbuf);
+		tagbuf->Clear();
 		len--;
 		amp_len = 0;
 	    }
