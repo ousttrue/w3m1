@@ -353,6 +353,44 @@ GCStr *GCStr::UrlEncode()
     return this;
 }
 
+GCStr *GCStr::UrlDecode(bool is_form, bool safe)
+{
+    Str tmp = NULL;
+    char *p = ptr, *ep = ptr + Size(), *q;
+    int c;
+
+    for (; p < ep;)
+    {
+        if (is_form && *p == '+')
+        {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(ptr, (int)(p - ptr));
+            tmp->Push(' ');
+            p++;
+            continue;
+        }
+        else if (*p == '%')
+        {
+            q = p;
+            c = url_unquote_char(&q);
+            if (c >= 0 && (!safe || !IS_ASCII(c) || !is_file_quote(c)))
+            {
+                if (tmp == NULL)
+                    tmp = Strnew_charp_n(ptr, (int)(p - ptr));
+                tmp->Push((char)c);
+                p = q;
+                continue;
+            }
+        }
+        if (tmp)
+            tmp->Push(*p);
+        p++;
+    }
+    if (tmp)
+        return tmp;
+    return this;
+}
+
 int GCStr::Puts(FILE *f) const
 {
     return fwrite(ptr, 1, m_size, f);

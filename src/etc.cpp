@@ -1340,18 +1340,13 @@ char *
 url_unquote_conv0(char *url)
 #endif
 {
-#ifdef USE_M17N
     uint8_t old_auto_detect = WcOption.auto_detect;
-#endif
-    Str tmp;
-    tmp = Str_url_unquote(Strnew_charp(url), FALSE, TRUE);
-#ifdef USE_M17N
+    Str tmp = Strnew_charp(url)->UrlDecode(FALSE, TRUE);
     if (!charset || charset == WC_CES_US_ASCII)
         charset = SystemCharset;
     WcOption.auto_detect = WC_OPT_DETECT_ON;
     tmp = convertLine(NULL, tmp, RAW_MODE, &charset, charset);
     WcOption.auto_detect = old_auto_detect;
-#endif
     return tmp->ptr;
 }
 

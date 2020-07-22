@@ -541,11 +541,6 @@ html_unquote(char *str)
 
 static const char xdigit[0x11] = "0123456789ABCDEF";
 
-#define url_unquote_char(pstr) \
-  ((IS_XDIGIT((*(pstr))[1]) && IS_XDIGIT((*(pstr))[2])) ? \
-    (*(pstr) += 3, (GET_MYCDIGIT((*(pstr))[-2]) << 4) | GET_MYCDIGIT((*(pstr))[-1])) : \
-   -1)
-
 char *
 url_quote(char *str)
 {
@@ -621,41 +616,6 @@ file_unquote(char *str)
     if (tmp)
 	return tmp->ptr;
     return str;
-}
-
-Str
-Str_url_unquote(Str x, int is_form, int safe)
-{
-    Str tmp = NULL;
-    char *p = x->ptr, *ep = x->ptr + x->Size(), *q;
-    int c;
-
-    for (; p < ep;) {
-	if (is_form && *p == '+') {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(x->ptr, (int)(p - x->ptr));
-	    tmp->Push(' ');
-	    p++;
-	    continue;
-	}
-	else if (*p == '%') {
-	    q = p;
-	    c = url_unquote_char(&q);
-	    if (c >= 0 && (!safe || !IS_ASCII(c) || !is_file_quote(c))) {
-		if (tmp == NULL)
-		    tmp = Strnew_charp_n(x->ptr, (int)(p - x->ptr));
-		tmp->Push((char)c);
-		p = q;
-		continue;
-	    }
-	}
-	if (tmp)
-	    tmp->Push(*p);
-	p++;
-    }
-    if (tmp)
-	return tmp;
-    return x;
 }
 
 char *

@@ -96,7 +96,7 @@ public:
     GCStr *AlignRight(int width) const;
     GCStr *AlignCenter(int width) const;
     GCStr *UrlEncode();
-
+    GCStr *UrlDecode(bool is_form, bool safe);
     int Puts(FILE *f) const;
 };
 using Str = GCStr *;

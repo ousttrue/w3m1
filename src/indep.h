@@ -32,6 +32,11 @@ extern char *HTML_QUOTE_MAP[];
 #define is_url_unsafe(c)   (GET_QUOTE_TYPE(c) & URL_UNSAFE_MASK)
 #define html_quote_char(c) HTML_QUOTE_MAP[(int)is_html_quote(c)]
 
+#define url_unquote_char(pstr) \
+  ((IS_XDIGIT((*(pstr))[1]) && IS_XDIGIT((*(pstr))[2])) ? \
+    (*(pstr) += 3, (GET_MYCDIGIT((*(pstr))[-2]) << 4) | GET_MYCDIGIT((*(pstr))[-1])) : \
+   -1)
+
 extern clen_t strtoclen(const char *s);
 extern int getescapechar(char **s);
 extern char *getescapecmd(char **s);
@@ -59,8 +64,9 @@ extern char *html_unquote(char *str);
 extern char *file_quote(char *str);
 extern char *file_unquote(char *str);
 extern char *url_quote(char *str);
-extern Str Str_url_unquote(Str x, int is_form, int safe);
-#define Str_form_unquote(x) Str_url_unquote((x), TRUE, FALSE)
+inline Str Str_form_unquote(Str x){
+    return x->UrlDecode(TRUE, FALSE);
+}
 extern char *shell_quote(char *str);
 
 extern char *w3m_auxbin_dir();
