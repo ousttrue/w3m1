@@ -1,4 +1,4 @@
-
+extern "C"{
 #include <stdlib.h>
 #include <ctype.h>
 #include <gc.h>
@@ -9,6 +9,7 @@
 #ifdef HAVE_LANGINFO_CODESET
 #include <langinfo.h>
 #endif
+}
 
 wc_locale WcLocale = 0;
 

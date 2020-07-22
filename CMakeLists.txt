@@ -16,8 +16,8 @@ add_executable(w3mbookmark
     libwc/big5.cpp
     libwc/ces.c
     libwc/char_conv.cpp
-    libwc/charset.c
-    libwc/combining.c
+    libwc/charset.cpp
+    libwc/combining.cpp
     libwc/conv.cpp
     libwc/detect.cpp
     libwc/gb18030.cpp
@@ -111,8 +111,8 @@ add_executable(w3m
     libwc/big5.cpp
     libwc/ces.c
     libwc/char_conv.cpp
-    libwc/charset.c
-    libwc/combining.c
+    libwc/charset.cpp
+    libwc/combining.cpp
     libwc/conv.cpp
     libwc/detect.cpp
     libwc/gb18030.cpp
