@@ -1069,7 +1069,7 @@ set_param_option(char *option)
 	while (*p && IS_SPACE(*p))
 	    p++;
     }
-    Strlower(tmp);
+    tmp->ToLower();
     if (set_param(tmp->ptr, p))
 	goto option_assigned;
     q = tmp->ptr;
@@ -1120,7 +1120,7 @@ interpret_rc(FILE * f)
 	    tmp->Push(*p++);
 	while (*p && IS_SPACE(*p))
 	    p++;
-	Strlower(tmp);
+	tmp->ToLower();
 	set_param(tmp->ptr, p);
     }
 }

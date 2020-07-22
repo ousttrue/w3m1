@@ -79,6 +79,8 @@ struct GCStr : public gc_cleanup
     {
         Insert(pos, src->ptr);
     }
+    void ToLower();
+    void ToUpper();
 };
 using Str = GCStr *;
 
@@ -105,8 +107,6 @@ inline Str Strnew_charp_n(const char *src, int size)
 Str Strnew_m_charp(char *, ...);
 void Strcat_m_charp(Str, ...);
 
-void Strlower(Str);
-void Strupper(Str);
 Str Stralign_left(Str, int);
 Str Stralign_right(Str, int);
 Str Stralign_center(Str, int);

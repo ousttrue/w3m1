@@ -23,20 +23,6 @@
 #include "myctype.h"
 #include <algorithm>
 
-Str Strnew_m_charp(char *p, ...)
-{
-    va_list ap;
-    va_start(ap, p);
-
-    Str r = Strnew();
-    while (p != NULL)
-    {
-        r->Push(p);
-        p = va_arg(ap, char *);
-    }
-    return r;
-}
-
 GCStr::GCStr(int size)
 {
     // Str x = (Str)GC_MALLOC(sizeof(GCStr));
@@ -232,6 +218,32 @@ void GCStr::Insert(int pos, const char *p)
         Insert(pos++, *(p++));
 }
 
+void GCStr::ToLower()
+{
+    for (int i = 0; i < length; i++)
+        ptr[i] = TOLOWER(ptr[i]);
+}
+
+void GCStr::ToUpper()
+{
+    for (int i = 0; i < length; i++)
+        ptr[i] = TOUPPER(ptr[i]);
+}
+
+Str Strnew_m_charp(char *p, ...)
+{
+    va_list ap;
+    va_start(ap, p);
+
+    Str r = Strnew();
+    while (p != NULL)
+    {
+        r->Push(p);
+        p = va_arg(ap, char *);
+    }
+    return r;
+}
+
 void Strcat_m_charp(Str x, ...)
 {
     va_list ap;
@@ -241,24 +253,6 @@ void Strcat_m_charp(Str x, ...)
     while ((p = va_arg(ap, char *)) != NULL)
         x->Push(p, strlen(p));
 }
-
-void Strlower(Str s)
-{
-    int i;
-
-    for (i = 0; i < s->length; i++)
-        s->ptr[i] = TOLOWER(s->ptr[i]);
-}
-
-void Strupper(Str s)
-{
-    int i;
-
-    for (i = 0; i < s->length; i++)
-        s->ptr[i] = TOUPPER(s->ptr[i]);
-}
-
-
 
 Str Stralign_left(Str s, int width)
 {

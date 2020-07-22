@@ -7039,14 +7039,14 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
                     break;
                 case 'I':
                     num = romanNumeral(envs[h_env->envc].count);
-                    Strupper(num);
+                    num->ToUpper();
                     break;
                 case 'a':
                     num = romanAlphabet(envs[h_env->envc].count);
                     break;
                 case 'A':
                     num = romanAlphabet(envs[h_env->envc].count);
-                    Strupper(num);
+                    num->ToUpper();
                     break;
                 default:
                     num = Sprintf("%d", envs[h_env->envc].count);
