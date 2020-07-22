@@ -21,7 +21,7 @@ void EachTab(const std::function<void(const TabPtr &)> callback)
     }
 }
 
-// currentPrev -> buf -> current 
+// currentPrev -> buf -> current
 void Tab::BufferPushFront(Buffer *buf)
 {
     deleteImage(GetCurrentbuf());
@@ -50,7 +50,6 @@ void Tab::BufferPushFront(Buffer *buf)
     saveBufferInfo();
 #endif
 }
-
 
 void InitializeTab()
 {
@@ -328,7 +327,12 @@ void MoveTab(int x)
 
 Buffer *GetCurrentbuf()
 {
-    return g_current.lock()->currentBuffer;
+    auto current = g_current.lock();
+    if (!current)
+    {
+        return nullptr;
+    }
+    return current->currentBuffer;
 }
 
 void SetCurrentbuf(Buffer *buf)

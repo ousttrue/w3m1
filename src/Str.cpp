@@ -124,7 +124,7 @@ void GCStr::Push(const char *y, int n)
     ptr[length] = '\0';
 }
 
-GCStr* GCStr::Substr(int begin, int len)
+GCStr *GCStr::Substr(int begin, int len)
 {
     if (begin >= length)
     {
@@ -132,6 +132,22 @@ GCStr* GCStr::Substr(int begin, int len)
         return new GCStr();
     }
     return new GCStr(ptr + begin, std::min(length - begin, len));
+}
+
+void GCStr::Insert(int pos, char c)
+{
+    if (pos < 0 || pos > length)
+    {
+        return;
+    }
+    if (length + 2 > area_size){
+        Grow();
+    }
+    for (int i = length; i > pos; i--){
+        ptr[i] = ptr[i - 1];
+    }
+    ptr[++length] = '\0';
+    ptr[pos] = c;
 }
 
 void Strcat_m_charp(Str x, ...)
@@ -171,25 +187,11 @@ void Strchop(Str s)
     s->ptr[s->length] = '\0';
 }
 
-void Strinsert_char(Str s, int pos, char c)
-{
-    int i;
-
-    if (pos < 0 || s->length < pos)
-        return;
-    if (s->length + 2 > s->area_size)
-        s->Grow();
-    for (i = s->length; i > pos; i--)
-        s->ptr[i] = s->ptr[i - 1];
-    s->ptr[++s->length] = '\0';
-    s->ptr[pos] = c;
-}
-
 void Strinsert_charp(Str s, int pos, char *p)
 {
 
     while (*p)
-        Strinsert_char(s, pos++, *(p++));
+        s->Insert(pos++, *(p++));
 }
 
 void Strdelete(Str s, int pos, int n)

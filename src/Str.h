@@ -61,7 +61,8 @@ struct GCStr : public gc_cleanup
         Push(&y, 1);
         // ((length + 1 >= area_size) ? Strgrow(x), 0 : 0, ptr[length++] = (y), ptr[length] = 0);
     }
-    GCStr* Substr(int begin, int len);
+    GCStr *Substr(int begin, int len);
+    void Insert(int pos, char c);
 };
 using Str = GCStr *;
 
@@ -88,7 +89,6 @@ inline Str Strnew_charp_n(const char *src, int size)
 Str Strnew_m_charp(char *, ...);
 void Strcat_m_charp(Str, ...);
 
-void Strinsert_char(Str, int, char);
 void Strinsert_charp(Str, int, char *);
 void Strdelete(Str, int, int);
 void Strtruncate(Str, int);
@@ -107,7 +107,6 @@ Str Sprintf(char *fmt, ...);
 
 Str Strfgets(FILE *);
 Str Strfgetall(FILE *);
-
 
 inline int Strcmp(Str x, Str y)
 {
