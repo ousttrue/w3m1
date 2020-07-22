@@ -624,36 +624,6 @@ file_unquote(char *str)
 }
 
 Str
-Str_form_quote(Str x)
-{
-    Str tmp = NULL;
-    char *p = x->ptr, *ep = x->ptr + x->Size();
-    char buf[4];
-
-    for (; p < ep; p++) {
-	if (*p == ' ') {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(x->ptr, (int)(p - x->ptr));
-	    tmp->Push('+');
-	}
-	else if (is_url_unsafe(*p)) {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(x->ptr, (int)(p - x->ptr));
-	    sprintf(buf, "%%%02X", (unsigned char)*p);
-	    tmp->Push(buf);
-	}
-	else {
-	    if (tmp)
-		tmp->Push(*p);
-	}
-    }
-    if (tmp)
-	return tmp;
-    return x;
-}
-
-
-Str
 Str_url_unquote(Str x, int is_form, int safe)
 {
     Str tmp = NULL;

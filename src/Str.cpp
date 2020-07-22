@@ -14,13 +14,14 @@
  * results obtained from use of this software.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <gc.h>
-#include <stdarg.h>
-#include <string.h>
 #include "Str.h"
 #include "myctype.h"
+#include "indep.h"
+#include <stdio.h>
+#include <stdlib.h>
+// #include <gc.h>
+#include <stdarg.h>
+#include <string.h>
 #include <algorithm>
 
 GCStr::GCStr(int size)
@@ -319,6 +320,39 @@ GCStr *GCStr::AlignCenter(int width) const
     return n;
 }
 
+GCStr *GCStr::Quote()
+{
+    auto p = ptr;
+    auto ep = ptr + Size();
+    char buf[4];
+
+    GCStr *tmp = NULL;
+    for (; p < ep; p++)
+    {
+        if (*p == ' ')
+        {
+            if (tmp == NULL)
+                tmp = new GCStr(ptr, (int)(p - ptr));
+            tmp->Push('+');
+        }
+        else if (is_url_unsafe(*p))
+        {
+            if (tmp == NULL)
+                tmp = new GCStr(ptr, (int)(p - ptr));
+            sprintf(buf, "%%%02X", (unsigned char)*p);
+            tmp->Push(buf);
+        }
+        else
+        {
+            if (tmp)
+                tmp->Push(*p);
+        }
+    }
+    if (tmp)
+        return tmp;
+    return this;
+}
+
 int GCStr::Puts(FILE *f) const
 {
     return fwrite(ptr, 1, m_size, f);
@@ -454,7 +488,7 @@ Str Sprintf(char *fmt, ...)
     vsprintf(s->ptr, fmt, ap);
     va_end(ap);
     // s->m_size = ;
-    s->Pop(s->Size()-strlen(s->ptr));
+    s->Pop(s->Size() - strlen(s->ptr));
     if (s->Size() > len * 2)
     {
         fprintf(stderr, "Sprintf: string too long\n");

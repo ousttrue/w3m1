@@ -1085,14 +1085,11 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
             if (f2->type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
-#ifdef USE_IMAGE
                 getMapXY(GetCurrentbuf(), retrieveCurrentImg(GetCurrentbuf()), &x, &y);
-#endif
                 (*query)->Push(
-                       Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
+                       conv_form_encoding(f2->name, fi, GetCurrentbuf())->Quote());
                 (*query)->Push( Sprintf(".x=%d&", x));
-                (*query)->Push(
-                       Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
+                (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentbuf())->Quote());
                 (*query)->Push( Sprintf(".y=%d", y));
             }
             else
@@ -1100,18 +1097,16 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 /* not IMAGE */
                 if (f2->name && f2->name->Size() > 0)
                 {
-                    (*query)->Push(
-                           Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
+                    (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentbuf())->Quote());
                     (*query)->Push('=');
                 }
                 if (f2->value != NULL)
                 {
                     if (fi->parent->method == FORM_METHOD_INTERNAL)
-                        (*query)->Push( Str_form_quote(f2->value));
+                        (*query)->Push(f2->value->Quote());
                     else
                     {
-                        (*query)->Push(
-                               Str_form_quote(conv_form_encoding(f2->value, fi, GetCurrentbuf())));
+                        (*query)->Push(conv_form_encoding(f2->value, fi, GetCurrentbuf())->Quote());
                     }
                 }
             }
@@ -1974,9 +1969,7 @@ void execdict(char *word)
         displayBuffer(GetCurrentbuf(), B_NORMAL);
         return;
     }
-    dictcmd = Sprintf("%s?%s", DictCommand,
-                      Str_form_quote(Strnew_charp(w))->ptr)
-                  ->ptr;
+    dictcmd = Sprintf("%s?%s", DictCommand,Strnew_charp(w)->Quote()->ptr)->ptr;
     buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, 0, NULL);
     if (buf == NULL)
     {

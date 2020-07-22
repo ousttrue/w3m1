@@ -95,6 +95,7 @@ public:
     GCStr *AlignLeft(int width) const;
     GCStr *AlignRight(int width) const;
     GCStr *AlignCenter(int width) const;
+    GCStr *Quote();
 
     int Puts(FILE *f) const;
 };

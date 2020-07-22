@@ -415,8 +415,8 @@ void ldhelp()
     lang = AcceptLang;
     n = strcspn(lang, ";, \t");
     tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
-                  Str_form_quote(Strnew_charp(w3m_version))->ptr,
-                  Str_form_quote(Strnew_charp_n(lang, n))->ptr);
+                  Strnew_charp(w3m_version)->Quote()->ptr,
+                  Strnew_charp_n(lang, n)->Quote()->ptr);
     cmd_loadURL(tmp->ptr, NULL, NO_REFERER, NULL);
 #else
     cmd_loadURL(helpFile(HELP_FILE), NULL, NO_REFERER, NULL);
@@ -1231,23 +1231,16 @@ void adBmark()
 {
     Str tmp;
     FormList *request;
-    tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s"
-#ifdef USE_M17N
-                  "&charset=%s"
-#endif
-                  ,
-                  (Str_form_quote(localCookie()))->ptr,
-                  (Str_form_quote(Strnew_charp(BookmarkFile)))->ptr,
-                  (Str_form_quote(parsedURL2Str(&GetCurrentbuf()->currentURL)))->ptr,
-#ifdef USE_M17N
-                  (Str_form_quote(wc_conv_strict(GetCurrentbuf()->buffername,
+    tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
+                  (localCookie()->Quote())->ptr,
+                  (Strnew_charp(BookmarkFile)->Quote())->ptr,
+                  (parsedURL2Str(&GetCurrentbuf()->currentURL)->Quote())->ptr,
+
+                  (wc_conv_strict(GetCurrentbuf()->buffername,
                                                  InnerCharset,
-                                                 BookmarkCharset)))
+                                                 BookmarkCharset)->Quote())
                       ->ptr,
                   wc_ces_to_charset(BookmarkCharset));
-#else
-                  (Str_form_quote(Strnew_charp(GetCurrentbuf()->buffername)))->ptr);
-#endif
     request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
     request->body = tmp->ptr;
     request->length = tmp->Size();
