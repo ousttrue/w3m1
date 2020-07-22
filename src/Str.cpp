@@ -29,14 +29,13 @@ GCStr::GCStr(int size)
     ptr = (char *)GC_MALLOC_ATOMIC(size);
     ptr[0] = '\0';
     m_capacity = size;
-    length = 0;
 }
 
 GCStr::GCStr(const char *src, int size)
 {
     ptr = (char *)GC_MALLOC_ATOMIC(size + 1);
     m_capacity = size + 1;
-    length = size;
+    m_size = size;
     bcopy((void *)src, (void *)ptr, size);
     ptr[size] = '\0';
 }
@@ -83,17 +82,17 @@ int GCStr::ICaseCmp(const char *y, int n) const
 
 char GCStr::Back() const
 {
-    return (length > 0 ? ptr[length - 1] : '\0');
+    return (m_size > 0 ? ptr[m_size - 1] : '\0');
 }
 
 GCStr *GCStr::Clone() const
 {
-    return new GCStr(ptr, length);
+    return new GCStr(ptr, m_size);
 }
 
 void GCStr::Clear()
 {
-    length = 0;
+    m_size = 0;
     ptr[0] = '\0';
 }
 
@@ -112,24 +111,24 @@ char *GCStr::RequireSize(int size)
 void GCStr::Grow()
 {
     char *old = ptr;
-    int newlen = length * 6 / 5;
-    if (newlen == length)
+    int newlen = m_size * 6 / 5;
+    if (newlen == m_size)
         newlen += 2;
     RequireSize(newlen);
-    bcopy((void *)old, (void *)ptr, length);
+    bcopy((void *)old, (void *)ptr, m_size);
 }
 
 void GCStr::CopyFrom(const char *y, int n)
 {
     if (y == NULL)
     {
-        length = 0;
+        m_size = 0;
         return;
     }
     RequireSize(n + 1);
     bcopy((void *)y, (void *)ptr, n);
     ptr[n] = '\0';
-    length = n;
+    m_size = n;
 }
 
 void GCStr::Push(const char *y, int n)
@@ -139,58 +138,58 @@ void GCStr::Push(const char *y, int n)
         return;
     }
 
-    auto old = RequireSize(length + n + 1);
+    auto old = RequireSize(m_size + n + 1);
     if (old)
     {
-        bcopy((void *)old, (void *)ptr, length);
+        bcopy((void *)old, (void *)ptr, m_size);
     }
-    bcopy((void *)y, (void *)&ptr[length], n);
-    length += n;
-    ptr[length] = '\0';
+    bcopy((void *)y, (void *)&ptr[m_size], n);
+    m_size += n;
+    ptr[m_size] = '\0';
 }
 
 void GCStr::Truncate(int pos)
 {
     ptr[pos] = '\0';
-    length = pos;
+    m_size = pos;
 }
 
 void GCStr::Pop(int len)
 {
-    if (len >= length)
+    if (len >= m_size)
     {
-        length = 0;
+        m_size = 0;
         ptr[0] = '\0';
     }
     else
     {
-        length -= len;
-        ptr[length] = '\0';
+        m_size -= len;
+        ptr[m_size] = '\0';
     }
 }
 
 void GCStr::Delete(int pos, int len)
 {
-    if (length <= pos + len)
+    if (m_size <= pos + len)
     {
         ptr[pos] = '\0';
-        length = pos;
+        m_size = pos;
         return;
     }
 
     int i = pos;
-    for (; i < length - len; i++)
+    for (; i < m_size - len; i++)
     {
         ptr[i] = ptr[i + len];
     }
     ptr[i] = '\0';
-    length = i;
+    m_size = i;
 }
 
 void GCStr::StripLeft()
 {
     int i = 0;
-    for (; i < length; i++)
+    for (; i < m_size; i++)
     {
         if (!IS_SPACE(ptr[i]))
         {
@@ -202,7 +201,7 @@ void GCStr::StripLeft()
 
 void GCStr::StripRight()
 {
-    int i = length - 1;
+    int i = m_size - 1;
     for (; i >= 0; i--)
     {
         if (!IS_SPACE(ptr[i]))
@@ -211,45 +210,45 @@ void GCStr::StripRight()
         }
     }
     ptr[i + 1] = '\0';
-    length = i + 1;
+    m_size = i + 1;
 }
 
 // void GCStr::Chop(Str s)
 // {
 
-//     while ((s->ptr[s->length - 1] == '\n' || s->ptr[s->length - 1] == '\r') &&
-//            s->length > 0)
+//     while ((s->ptr[s->m_size - 1] == '\n' || s->ptr[s->m_size - 1] == '\r') &&
+//            s->m_size > 0)
 //     {
-//         s->length--;
+//         s->m_size--;
 //     }
-//     s->ptr[s->length] = '\0';
+//     s->ptr[s->m_size] = '\0';
 // }
 
 GCStr *GCStr::Substr(int begin, int len) const
 {
-    if (begin >= length)
+    if (begin >= m_size)
     {
         // return empty
         return new GCStr();
     }
-    return new GCStr(ptr + begin, std::min(length - begin, len));
+    return new GCStr(ptr + begin, std::min(m_size - begin, len));
 }
 
 void GCStr::Insert(int pos, char c)
 {
-    if (pos < 0 || pos > length)
+    if (pos < 0 || pos > m_size)
     {
         return;
     }
-    if (length + 2 > m_capacity)
+    if (m_size + 2 > m_capacity)
     {
         Grow();
     }
-    for (int i = length; i > pos; i--)
+    for (int i = m_size; i > pos; i--)
     {
         ptr[i] = ptr[i - 1];
     }
-    ptr[++length] = '\0';
+    ptr[++m_size] = '\0';
     ptr[pos] = c;
 }
 
@@ -261,26 +260,26 @@ void GCStr::Insert(int pos, const char *p)
 
 void GCStr::ToLower()
 {
-    for (int i = 0; i < length; i++)
+    for (int i = 0; i < m_size; i++)
         ptr[i] = TOLOWER(ptr[i]);
 }
 
 void GCStr::ToUpper()
 {
-    for (int i = 0; i < length; i++)
+    for (int i = 0; i < m_size; i++)
         ptr[i] = TOUPPER(ptr[i]);
 }
 
 GCStr *GCStr::AlignLeft(int width) const
 {
-    if (length >= width)
+    if (m_size >= width)
     {
         return Clone();
     }
 
     auto n = new GCStr(width);
     n->CopyFrom(this);
-    for (int i = length; i < width; i++)
+    for (int i = m_size; i < width; i++)
     {
         n->Push(' ');
     }
@@ -289,13 +288,13 @@ GCStr *GCStr::AlignLeft(int width) const
 
 GCStr *GCStr::AlignRight(int width) const
 {
-    if (length >= width)
+    if (m_size >= width)
     {
         return Clone();
     }
 
     auto n = new GCStr(width);
-    for (int i = length; i < width; i++)
+    for (int i = m_size; i < width; i++)
     {
         n->Push(' ');
     }
@@ -305,24 +304,24 @@ GCStr *GCStr::AlignRight(int width) const
 
 GCStr *GCStr::AlignCenter(int width) const
 {
-    if (length >= width)
+    if (m_size >= width)
     {
         return Clone();
     }
 
     auto n = new GCStr(width);
-    auto w = (width - length) / 2;
+    auto w = (width - m_size) / 2;
     for (int i = 0; i < w; i++)
         n->Push(' ');
     n->Push(this);
-    for (int i = w + length; i < width; i++)
+    for (int i = w + m_size; i < width; i++)
         n->Push(' ');
     return n;
 }
 
 int GCStr::Puts(FILE *f) const
 {
-    return fwrite(ptr, 1, length, f);
+    return fwrite(ptr, 1, m_size, f);
 }
 
 Str Strnew_m_charp(char *p, ...)
@@ -454,7 +453,7 @@ Str Sprintf(char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(s->ptr, fmt, ap);
     va_end(ap);
-    // s->length = ;
+    // s->m_size = ;
     s->Pop(s->Size()-strlen(s->ptr));
     if (s->Size() > len * 2)
     {

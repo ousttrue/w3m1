@@ -24,8 +24,8 @@
 
 class GCStr : public gc_cleanup
 {
-    int m_capacity;
-    int length;
+    int m_capacity = 0;
+    int m_size = 0;
 
 public:
     char *ptr;
@@ -35,7 +35,7 @@ public:
     {
     }
     ~GCStr();
-    int Size()const{ return length; }
+    int Size() const { return m_size; }
     int Cmp(const GCStr *y) const;
     int Cmp(const GCStr *y, int len) const;
     int Cmp(const char *y) const;
@@ -57,7 +57,7 @@ public:
     }
     void CopyFrom(const GCStr *src)
     {
-        CopyFrom(src->ptr, src->length);
+        CopyFrom(src->ptr, src->m_size);
     }
     void Push(const char *src, int size);
     void Push(const char *src)
@@ -66,12 +66,11 @@ public:
     }
     void Push(const GCStr *src)
     {
-        Push(src->ptr, src->length);
+        Push(src->ptr, src->m_size);
     }
     void Push(char y)
     {
         Push(&y, 1);
-        // ((length + 1 >= area_size) ? Strgrow(x), 0 : 0, ptr[length++] = (y), ptr[length] = 0);
     }
     void Truncate(int pos);
     void Pop(int len);
@@ -97,7 +96,7 @@ public:
     GCStr *AlignRight(int width) const;
     GCStr *AlignCenter(int width) const;
 
-    int Puts(FILE *f)const;
+    int Puts(FILE *f) const;
 };
 using Str = GCStr *;
 
