@@ -48,9 +48,7 @@ loadHistory(Hist *hist)
 
     while (!feof(f)) {
 	line = Strfgets(f);
-	Strchop(line);
-	Strremovefirstspaces(line);
-	Strremovetrailingspaces(line);
+    line->Strip();
 	if (line->length == 0)
 	    continue;
 	pushHist(hist, url_quote(line->ptr));

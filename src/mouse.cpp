@@ -197,8 +197,7 @@ interpret_mouse_action(FILE *mf)
     while (!feof(mf))
     {
         line = Strfgets(mf);
-        Strchop(line);
-        Strremovefirstspaces(line);
+        line->Strip();
         if (line->length == 0)
             continue;
         p = conv_from_system(line->ptr);

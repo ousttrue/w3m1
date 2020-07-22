@@ -773,8 +773,7 @@ parsePasswd(FILE * fp, int netrc)
             line = Strfgets(fp);
         if (line->length == 0)
             break;
-        Strchop(line);
-        Strremovefirstspaces(line);
+        line->Strip();
         p = line->ptr;
         if (*p == '#' || *p == '\0') {
             line = NULL;

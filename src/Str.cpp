@@ -124,7 +124,61 @@ void GCStr::Push(const char *y, int n)
     ptr[length] = '\0';
 }
 
-GCStr *GCStr::Substr(int begin, int len)
+void GCStr::Delete(int pos, int len)
+{
+    if (length <= pos + len)
+    {
+        ptr[pos] = '\0';
+        length = pos;
+        return;
+    }
+
+    int i = pos;
+    for (; i < length - len; i++)
+    {
+        ptr[i] = ptr[i + len];
+    }
+    ptr[i] = '\0';
+    length = i;
+}
+
+void GCStr::StripLeft()
+{
+    int i = 0;
+    for (; i < length; i++)
+    {
+        if (!IS_SPACE(ptr[i]))
+        {
+            break;
+        }
+    }
+    Delete(0, i);
+}
+
+void GCStr::StripRight()
+{
+    int i = length - 1;
+    for (; i >= 0 ; i--){
+        if(!IS_SPACE(ptr[i])){
+            break;
+        }
+    }
+    ptr[i + 1] = '\0';
+    length = i + 1;
+}
+
+// void GCStr::Chop(Str s)
+// {
+
+//     while ((s->ptr[s->length - 1] == '\n' || s->ptr[s->length - 1] == '\r') &&
+//            s->length > 0)
+//     {
+//         s->length--;
+//     }
+//     s->ptr[s->length] = '\0';
+// }
+
+GCStr *GCStr::Substr(int begin, int len) const
 {
     if (begin >= length)
     {
@@ -184,33 +238,6 @@ void Strupper(Str s)
         s->ptr[i] = TOUPPER(s->ptr[i]);
 }
 
-void Strchop(Str s)
-{
-
-    while ((s->ptr[s->length - 1] == '\n' || s->ptr[s->length - 1] == '\r') &&
-           s->length > 0)
-    {
-        s->length--;
-    }
-    s->ptr[s->length] = '\0';
-}
-
-void Strdelete(Str s, int pos, int n)
-{
-    int i;
-
-    if (s->length <= pos + n)
-    {
-        s->ptr[pos] = '\0';
-        s->length = pos;
-        return;
-    }
-    for (i = pos; i < s->length - n; i++)
-        s->ptr[i] = s->ptr[i + n];
-    s->ptr[i] = '\0';
-    s->length = i;
-}
-
 void Strtruncate(Str s, int pos)
 {
 
@@ -231,27 +258,6 @@ void Strshrink(Str s, int n)
         s->length -= n;
         s->ptr[s->length] = '\0';
     }
-}
-
-void Strremovefirstspaces(Str s)
-{
-    int i;
-
-    for (i = 0; i < s->length && IS_SPACE(s->ptr[i]); i++)
-        ;
-    if (i == 0)
-        return;
-    Strdelete(s, 0, i);
-}
-
-void Strremovetrailingspaces(Str s)
-{
-    int i;
-
-    for (i = s->length - 1; i >= 0 && IS_SPACE(s->ptr[i]); i--)
-        ;
-    s->length = i + 1;
-    s->ptr[i + 1] = '\0';
 }
 
 Str Stralign_left(Str s, int width)

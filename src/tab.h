@@ -45,17 +45,17 @@ public:
             this->x2 += left;
         }
     }
-    bool IsHit(int x, int y)
+    bool IsHit(int x, int y) const
     {
         return x1 <= x && x <= x2 && y == y;
     }
 
     // buffer
-    void BufferPushFront(Buffer *buf);    
+    void BufferPushFront(Buffer *buf);
 };
 using TabPtr = std::shared_ptr<Tab>;
 
-void EachTab(const std::function<void(const TabPtr&)> callback);
+void EachTab(const std::function<void(const TabPtr &)> callback);
 void _newT();
 void InitializeTab();
 int GetTabCount();

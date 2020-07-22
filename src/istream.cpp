@@ -763,12 +763,12 @@ ens_read(struct ens_handle *handle, char *buf, int len)
             return 0;
         cleanup_line(handle->s, PAGER_MODE);
         if (handle->encoding == ENC_BASE64)
-            Strchop(handle->s);
+            handle->s->StripRight();
         else if (handle->encoding == ENC_UUENCODE)
         {
             if (!strncmp(handle->s->ptr, "begin", 5))
                 handle->s = StrmyISgets(handle->is);
-            Strchop(handle->s);
+            handle->s->StripRight();
         }
         p = handle->s->ptr;
         if (handle->encoding == ENC_QUOTE)

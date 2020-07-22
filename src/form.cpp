@@ -651,8 +651,7 @@ addSelectOption(FormSelectOption *fso, Str value, Str label, int chk)
     if (value == NULL)
 	value = label;
     o->value = value;
-    Strremovefirstspaces(label);
-    Strremovetrailingspaces(label);
+    label->Strip();
     o->label = label;
     o->checked = chk;
     o->next = NULL;
@@ -890,8 +889,7 @@ loadPreForm(void)
 	    textarea->Push( line);
 	    continue;
 	}
-	Strchop(line);
-	Strremovefirstspaces(line);
+    line->Strip();
 	p = line->ptr;
 	if (*p == '#' || *p == '\0')
 	    continue;		/* comment or empty line */

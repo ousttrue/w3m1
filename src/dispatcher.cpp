@@ -682,8 +682,7 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
     {
         line = Strfgets(kf);
         lineno++;
-        Strchop(line);
-        Strremovefirstspaces(line);
+        line->Strip();
         if (line->length == 0)
             continue;
 #ifdef USE_M17N

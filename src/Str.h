@@ -61,7 +61,16 @@ struct GCStr : public gc_cleanup
         Push(&y, 1);
         // ((length + 1 >= area_size) ? Strgrow(x), 0 : 0, ptr[length++] = (y), ptr[length] = 0);
     }
-    GCStr *Substr(int begin, int len);
+    void Delete(int pos, int len);
+    void StripLeft();
+    void StripRight();
+    void Strip()
+    {
+        StripLeft();
+        StripRight();
+    }
+
+    GCStr *Substr(int begin, int len) const;
     void Insert(int pos, char c);
     void Insert(int pos, const char *src);
     void Insert(int pos, const GCStr *src)
@@ -94,15 +103,10 @@ inline Str Strnew_charp_n(const char *src, int size)
 Str Strnew_m_charp(char *, ...);
 void Strcat_m_charp(Str, ...);
 
-void Strdelete(Str, int, int);
 void Strtruncate(Str, int);
 void Strlower(Str);
 void Strupper(Str);
-void Strchop(Str);
 void Strshrink(Str, int);
-void Strshrinkfirst(Str, int);
-void Strremovefirstspaces(Str);
-void Strremovetrailingspaces(Str);
 Str Stralign_left(Str, int);
 Str Stralign_right(Str, int);
 Str Stralign_center(Str, int);
@@ -155,11 +159,6 @@ inline int Strncasecmp_charp(Str x, char *y, int n)
 inline char Strlastchar(Str s)
 {
     return ((s)->length > 0 ? (s)->ptr[(s)->length - 1] : '\0');
-}
-
-inline void Strshrinkfirst(Str s, int n)
-{
-    Strdelete((s), 0, (n));
 }
 
 inline int Strfputs(Str s, FILE *f)

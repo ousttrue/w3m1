@@ -489,7 +489,7 @@ delC(void)
     for (i = CPos; i < CLen; i++) {
         strProp[i] = strProp[i + delta];
     }
-    Strdelete(strBuf, CPos, delta);
+    strBuf->Delete(CPos, delta);
     CLen -= delta;
 }
 
@@ -903,12 +903,12 @@ doComplete(Str ifn, int *status, int next)
         CDirBuf = CompleteBuf->Clone();
         if (cm_mode & CPL_URL) {
             if (strncmp(CompleteBuf->ptr, "file://localhost/", 17) == 0)
-                Strdelete(CompleteBuf, 0, 16);
+                CompleteBuf->Delete(0, 16);
             else if (strncmp(CompleteBuf->ptr, "file:///", 8) == 0)
-                Strdelete(CompleteBuf, 0, 7);
+                CompleteBuf->Delete(0, 7);
             else if (strncmp(CompleteBuf->ptr, "file:/", 6) == 0 &&
                      CompleteBuf->ptr[6] != '/')
-                Strdelete(CompleteBuf, 0, 5);
+                CompleteBuf->Delete(0, 5);
             else {
                 CompleteBuf = ifn->Clone();
                 *status = CPL_FAIL;

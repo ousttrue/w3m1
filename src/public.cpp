@@ -1951,7 +1951,7 @@ void invoke_browser(char *url)
         bg = 1;
     }
     cmd = myExtCommand(browser, shell_quote(url), FALSE);
-    Strremovetrailingspaces(cmd);
+    cmd->StripRight();
     fmTerm();
     mySystem(cmd->ptr, bg);
     fmInit();

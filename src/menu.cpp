@@ -2120,8 +2120,7 @@ interpret_menu(FILE *mf)
     while (!feof(mf))
     {
         line = Strfgets(mf);
-        Strchop(line);
-        Strremovefirstspaces(line);
+        line->Strip();
         if (line->length == 0)
             continue;
 #ifdef USE_M17N

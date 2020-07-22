@@ -68,7 +68,7 @@ print_bookmark_panel(char *bmark, char *url, char *title, char *charset)
     if ((f = fopen(bmark, "r")) != NULL) {
 	printf("<tr><td>Section:<td><select name=\"section\">\n");
 	while (tmp = Strfgets(f), tmp->length > 0) {
-	    Strremovefirstspaces(tmp);
+	    tmp->StripLeft();
 	    if (Strncasecmp_charp(tmp, "<h2>", 4) == 0) {
 		p = tmp->ptr + 4;
 		tmp2 = Strnew();
@@ -144,7 +144,7 @@ insert_bookmark(char *bmark, struct parsed_tagarg *data)
 	if (Strcasecmp(tmp, section_tmp) == 0)
 	    section_found = 1;
 	if (section_found && !bmark_added) {
-	    Strremovefirstspaces(tmp);
+	    tmp->StripLeft();
 	    if (Strcmp_charp(tmp, end_section) == 0) {
 		pushText(tl,
 			 Sprintf("<li><a href=\"%s\">%s</a>\n", url,
@@ -201,7 +201,7 @@ main(int argc, char *argv[], char **envp)
 	goto request_err;
 
     qs = Strfgets(stdin);
-    Strchop(qs);
+    qs->StripRight();
     if (qs->length != length)
 	goto request_err;
     cgiarg = cgistr2tagarg(qs->ptr);
