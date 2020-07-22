@@ -1036,7 +1036,7 @@ void followA()
         return;
     }
     parseURL2(a->url, &u, baseURL(GetCurrentbuf()));
-    if (Strcmp(parsedURL2Str(&u), parsedURL2Str(&GetCurrentbuf()->currentURL)) == 0)
+    if (parsedURL2Str(&u)->Cmp(parsedURL2Str(&GetCurrentbuf()->currentURL)) == 0)
     {
         /* index within this buffer */
         if (u.label)

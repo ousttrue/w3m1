@@ -21,7 +21,7 @@ searchMapList(Buffer *buf, char *name)
     if (name == NULL)
 	return NULL;
     for (ml = buf->maplist; ml != NULL; ml = ml->next) {
-	if (!Strcmp_charp(ml->name, name))
+	if (ml->name->Cmp(name)==0)
 	    break;
     }
     return ml;
@@ -199,7 +199,7 @@ retrieveCurrentMap(Buffer *buf)
 	return NULL;
     fi = (FormItemList *)a->url;
     if (fi->parent->method == FORM_METHOD_INTERNAL &&
-	!Strcmp_charp(fi->parent->action, "map"))
+	fi->parent->action->Cmp("map")==0)
 	return a;
     return NULL;
 }
@@ -629,7 +629,7 @@ page_info_panel(Buffer *buf)
 		       "<tr valign=top><td nowrap>Method/type of current form&nbsp;<td>",
 		       p, NULL);
 	if (fi->parent->method == FORM_METHOD_INTERNAL
-	    && !Strcmp_charp(fi->parent->action, "map"))
+	    && fi->parent->action->Cmp("map")==0)
 	    append_map_info(buf, tmp, fi->parent->item);
     }
     tmp->Push("</table>\n");

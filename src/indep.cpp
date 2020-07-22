@@ -250,7 +250,7 @@ expandPath(char *name)
 	}
 	else
 	    goto rest;
-	if (Strcmp_charp(extpath, "/") == 0 && *p == '/')
+	if (extpath->Cmp("/") == 0 && *p == '/')
 	    p++;
 	extpath->Push(p);
 	return extpath->ptr;

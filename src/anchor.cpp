@@ -894,7 +894,7 @@ link_list_panel(Buffer *buf)
 			fi = (FormItemList *)a->url;
 			fi = fi->parent->item;
 			if (fi->parent->method == FORM_METHOD_INTERNAL &&
-				!Strcmp_charp(fi->parent->action, "map") && fi->value)
+				fi->parent->action->Cmp("map")==0 && fi->value)
 			{
 				MapList *ml = searchMapList(buf, fi->value->ptr);
 				ListItem *mi;

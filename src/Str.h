@@ -34,7 +34,10 @@ struct GCStr : public gc_cleanup
     {
     }
     ~GCStr();
-    GCStr *Clone();
+    int Cmp(const GCStr *y)const;
+    int Cmp(const char *y)const;
+    int Cmp(const GCStr *y, int len) const;
+    GCStr *Clone() const;
     void Clear();
     char *RequireSize(int size);
     void Grow();
@@ -81,6 +84,9 @@ struct GCStr : public gc_cleanup
     }
     void ToLower();
     void ToUpper();
+    GCStr *AlignLeft(int width) const;
+    GCStr *AlignRight(int width) const;
+    GCStr *AlignCenter(int width) const;
 };
 using Str = GCStr *;
 
@@ -107,29 +113,10 @@ inline Str Strnew_charp_n(const char *src, int size)
 Str Strnew_m_charp(char *, ...);
 void Strcat_m_charp(Str, ...);
 
-Str Stralign_left(Str, int);
-Str Stralign_right(Str, int);
-Str Stralign_center(Str, int);
-
 Str Sprintf(char *fmt, ...);
-
 Str Strfgets(FILE *);
 Str Strfgetall(FILE *);
 
-inline int Strcmp(Str x, Str y)
-{
-    return strcmp((x)->ptr, (y)->ptr);
-}
-
-inline int Strcmp_charp(Str x, const char *y)
-{
-    return strcmp((x)->ptr, (y));
-}
-
-inline int Strncmp(Str x, Str y, int n)
-{
-    return strncmp((x)->ptr, (y)->ptr, (n));
-}
 
 inline int Strncmp_charp(Str x, char *y, int n)
 {

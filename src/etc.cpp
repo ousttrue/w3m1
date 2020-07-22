@@ -670,8 +670,8 @@ find_auth_pass_entry(char *host, int port, char *realm, char *uname,
             && (ent->bad != TRUE)
             && (!ent->host || !Strcasecmp_charp(ent->host, host))
             && (!ent->port || ent->port == port)
-            && (!ent->uname || !uname || !Strcmp_charp(ent->uname, uname))
-            && (!ent->realm || !realm || !Strcmp_charp(ent->realm, realm))
+            && (!ent->uname || !uname || ent->uname->Cmp(uname)==0)
+            && (!ent->realm || !realm || ent->realm->Cmp(realm)==0)
             )
             return ent;
     }
@@ -1268,7 +1268,7 @@ expandName(char *name)
         }
         else
             goto rest;
-        if (Strcmp_charp(extpath, "/") == 0 && *p == '/')
+        if (extpath->Cmp("/") == 0 && *p == '/')
             p++;
         extpath->Push(p);
         return extpath->ptr;

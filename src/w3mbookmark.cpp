@@ -145,7 +145,7 @@ insert_bookmark(char *bmark, struct parsed_tagarg *data)
 	    section_found = 1;
 	if (section_found && !bmark_added) {
 	    tmp->StripLeft();
-	    if (Strcmp_charp(tmp, end_section) == 0) {
+	    if (tmp->Cmp(end_section) == 0) {
 		pushText(tl,
 			 Sprintf("<li><a href=\"%s\">%s</a>\n", url,
 				 title)->ptr);

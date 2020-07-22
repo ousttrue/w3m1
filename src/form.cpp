@@ -216,7 +216,7 @@ formRecheckRadio(Anchor *a, Buffer *buf, FormItemList *fi)
 	a2 = &buf->formitem->anchors[i];
 	f2 = (FormItemList *)a2->url;
 	if (f2->parent == fi->parent && f2 != fi &&
-	    f2->type == FORM_INPUT_RADIO && Strcmp(f2->name, fi->name) == 0) {
+	    f2->type == FORM_INPUT_RADIO && f2->name->Cmp(fi->name) == 0) {
 	    f2->checked = 0;
 	    formUpdateBuffer(a2, buf, f2);
 	}
@@ -989,7 +989,7 @@ preFormUpdateBuffer(Buffer *buf)
 		continue;
 	}
 	else if (pf->url) {
-	    if (Strcmp_charp(parsedURL2Str(&buf->currentURL), pf->url))
+	    if (parsedURL2Str(&buf->currentURL)->Cmp(pf->url)!=0)
 		continue;
 	}
 	else
@@ -1001,7 +1001,7 @@ preFormUpdateBuffer(Buffer *buf)
 	    if (pf->name && (!fl->name || strcmp(fl->name, pf->name)))
 		continue;
 	    if (pf->action
-		&& (!fl->action || Strcmp_charp(fl->action, pf->action)))
+		&& (!fl->action || fl->action->Cmp(pf->action)!=0))
 		continue;
 	    for (pi = pf->item; pi; pi = pi->next) {
 		if (pi->type != fi->type)
@@ -1009,13 +1009,13 @@ preFormUpdateBuffer(Buffer *buf)
 		if (pi->type == FORM_INPUT_SUBMIT ||
 		    pi->type == FORM_INPUT_IMAGE) {
 		    if ((!pi->name || !*pi->name ||
-			 (fi->name && !Strcmp_charp(fi->name, pi->name))) &&
+			 (fi->name && fi->name->Cmp(pi->name)==0)) &&
 			(!pi->value || !*pi->value ||
-			 (fi->value && !Strcmp_charp(fi->value, pi->value))))
+			 (fi->value && fi->value->Cmp(pi->value)==0)))
 			buf->submit = a;
 		    continue;
 		}
-		if (!pi->name || !fi->name || Strcmp_charp(fi->name, pi->name))
+		if (!pi->name || !fi->name || fi->name->Cmp(pi->name)!=0)
 		    continue;
 		switch (pi->type) {
 		case FORM_INPUT_TEXT:
@@ -1027,14 +1027,14 @@ preFormUpdateBuffer(Buffer *buf)
 		    break;
 		case FORM_INPUT_CHECKBOX:
 		    if (pi->value && fi->value &&
-			!Strcmp_charp(fi->value, pi->value)) {
+			fi->value->Cmp(pi->value)==0) {
 			fi->checked = pi->checked;
 			formUpdateBuffer(a, buf, fi);
 		    }
 		    break;
 		case FORM_INPUT_RADIO:
 		    if (pi->value && fi->value &&
-			!Strcmp_charp(fi->value, pi->value))
+			fi->value->Cmp(pi->value)==0)
 			formRecheckRadio(a, buf, fi);
 		    break;
 #ifdef MENU_SELECT
@@ -1042,7 +1042,7 @@ preFormUpdateBuffer(Buffer *buf)
 		    for (j = 0, opt = fi->select_option; opt != NULL;
 			 j++, opt = opt->next) {
 			if (pi->value && opt->value &&
-			    !Strcmp_charp(opt->value, pi->value)) {
+			    opt->value->Cmp(pi->value)==0) {
 			    fi->selected = j;
 			    fi->value = opt->value;
 			    fi->label = opt->label;

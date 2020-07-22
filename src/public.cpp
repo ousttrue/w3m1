@@ -918,7 +918,7 @@ void _followForm(int submit)
         query_from_followform(&tmp, fi, multipart);
 
         tmp2 = fi->parent->action->Clone();
-        if (!Strcmp_charp(tmp2, "!CURRENT_URL!"))
+        if (tmp2->Cmp("!CURRENT_URL!")==0)
         {
             /* It means "current URL" */
             tmp2 = parsedURL2Str(&GetCurrentbuf()->currentURL);
@@ -962,7 +962,7 @@ void _followForm(int submit)
                 buf->form_submit = save_submit_formlist(fi);
             }
         }
-        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (!Strcmp_charp(fi->parent->action, "map") || !Strcmp_charp(fi->parent->action, "none"))) || GetCurrentbuf()->bufferprop & BP_INTERNAL)
+        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action->Cmp("map")==0 || fi->parent->action->Cmp("none")==0)) || GetCurrentbuf()->bufferprop & BP_INTERNAL)
         { /* internal */
             do_internal(tmp2->ptr, tmp->ptr);
         }

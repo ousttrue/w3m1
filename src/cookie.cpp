@@ -204,7 +204,7 @@ get_cookie_info(Str domain, Str path, Str name)
 
     for (p = First_cookie; p; p = p->next) {
 	if (Strcasecmp(p->domain, domain) == 0 &&
-	    Strcmp(p->path, path) == 0 && Strcasecmp(p->name, name) == 0)
+	    p->path->Cmp(path) == 0 && Strcasecmp(p->name, name) == 0)
 	    return p;
     }
     return NULL;

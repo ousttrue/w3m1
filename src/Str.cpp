@@ -47,7 +47,20 @@ GCStr::~GCStr()
     auto a = 0;
 }
 
-GCStr *GCStr::Clone()
+int GCStr::Cmp(const GCStr *y) const
+{
+    return strcmp(ptr, y->ptr);
+}
+int GCStr::Cmp(const char *y) const
+{
+    return strcmp(ptr, y);
+}
+int GCStr::Cmp(const GCStr *y, int n) const
+{
+    return strncmp(ptr, y->ptr, n);
+}
+
+GCStr *GCStr::Clone() const
 {
     return new GCStr(ptr, length);
 }
@@ -164,8 +177,10 @@ void GCStr::StripLeft()
 void GCStr::StripRight()
 {
     int i = length - 1;
-    for (; i >= 0 ; i--){
-        if(!IS_SPACE(ptr[i])){
+    for (; i >= 0; i--)
+    {
+        if (!IS_SPACE(ptr[i]))
+        {
             break;
         }
     }
@@ -230,6 +245,55 @@ void GCStr::ToUpper()
         ptr[i] = TOUPPER(ptr[i]);
 }
 
+GCStr *GCStr::AlignLeft(int width) const
+{
+    if (length >= width)
+    {
+        return Clone();
+    }
+
+    auto n = new GCStr(width);
+    n->CopyFrom(this);
+    for (int i = length; i < width; i++)
+    {
+        n->Push(' ');
+    }
+    return n;
+}
+
+GCStr *GCStr::AlignRight(int width) const
+{
+    if (length >= width)
+    {
+        return Clone();
+    }
+
+    auto n = new GCStr(width);
+    for (int i = length; i < width; i++)
+    {
+        n->Push(' ');
+    }
+    n->Push(this);
+    return n;
+}
+
+GCStr *GCStr::AlignCenter(int width) const
+{
+    if (length >= width)
+    {
+        return Clone();
+    }
+
+    auto n = new GCStr(width);
+    auto w = (width - length) / 2;
+    for (int i = 0; i < w; i++)
+        n->Push(' ');
+    n->Push(this);
+    for (int i = w + length; i < width; i++)
+        n->Push(' ');
+    return n;
+}
+
 Str Strnew_m_charp(char *p, ...)
 {
     va_list ap;
@@ -252,42 +316,6 @@ void Strcat_m_charp(Str x, ...)
     va_start(ap, x);
     while ((p = va_arg(ap, char *)) != NULL)
         x->Push(p, strlen(p));
-}
-
-Str Stralign_left(Str s, int width)
-{
-    if (s->length >= width)
-        return s->Clone();
-    auto n = Strnew_size(width);
-    n->CopyFrom(s);
-    for (int i = s->length; i < width; i++)
-        n->Push(' ');
-    return n;
-}
-
-Str Stralign_right(Str s, int width)
-{
-    if (s->length >= width)
-        return s->Clone();
-    auto n = Strnew_size(width);
-    for (int i = s->length; i < width; i++)
-        n->Push(' ');
-    n->Push(s);
-    return n;
-}
-
-Str Stralign_center(Str s, int width)
-{
-    if (s->length >= width)
-        return s->Clone();
-    auto n = Strnew_size(width);
-    auto w = (width - s->length) / 2;
-    for (int i = 0; i < w; i++)
-        n->Push(' ');
-    n->Push(s);
-    for (int i = w + s->length; i < width; i++)
-        n->Push(' ');
-    return n;
 }
 
 #define SP_NORMAL 0
