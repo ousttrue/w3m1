@@ -21,6 +21,7 @@
 #include <string.h>
 #include "Str.h"
 #include "myctype.h"
+#include <algorithm>
 
 Str Strnew_m_charp(char *p, ...)
 {
@@ -83,6 +84,16 @@ char *GCStr::RequireSize(int size)
     return old;
 }
 
+void GCStr::Grow()
+{
+    char *old = ptr;
+    int newlen = length * 6 / 5;
+    if (newlen == length)
+        newlen += 2;
+    RequireSize(newlen);
+    bcopy((void *)old, (void *)ptr, length);
+}
+
 void GCStr::CopyFrom(const char *y, int n)
 {
     if (y == NULL)
@@ -113,6 +124,16 @@ void GCStr::Concat(const char *y, int n)
     ptr[length] = '\0';
 }
 
+GCStr* GCStr::Substr(int begin, int len)
+{
+    if (begin >= length)
+    {
+        // return empty
+        return new GCStr();
+    }
+    return new GCStr(ptr + begin, std::min(length - begin, len));
+}
+
 void Strcat_m_charp(Str x, ...)
 {
     va_list ap;
@@ -121,32 +142,6 @@ void Strcat_m_charp(Str x, ...)
     va_start(ap, x);
     while ((p = va_arg(ap, char *)) != NULL)
         x->Concat(p, strlen(p));
-}
-
-void Strgrow(Str x)
-{
-    char *old = x->ptr;
-    int newlen;
-    newlen = x->length * 6 / 5;
-    if (newlen == x->length)
-        newlen += 2;
-    x->ptr = (char *)GC_MALLOC_ATOMIC(newlen);
-    x->area_size = newlen;
-    bcopy((void *)old, (void *)x->ptr, x->length);
-    GC_free(old);
-}
-
-Str Strsubstr(Str s, int beg, int len)
-{
-    Str new_s;
-    int i;
-
-    new_s = Strnew();
-    if (beg >= s->length)
-        return new_s;
-    for (i = 0; i < len && beg + i < s->length; i++)
-        new_s->Concat(s->ptr[beg + i]);
-    return new_s;
 }
 
 void Strlower(Str s)
@@ -183,7 +178,7 @@ void Strinsert_char(Str s, int pos, char c)
     if (pos < 0 || s->length < pos)
         return;
     if (s->length + 2 > s->area_size)
-        Strgrow(s);
+        s->Grow();
     for (i = s->length; i > pos; i--)
         s->ptr[i] = s->ptr[i - 1];
     s->ptr[++s->length] = '\0';

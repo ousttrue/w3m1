@@ -671,9 +671,9 @@ next_compl(int next)
 	    b++;
 	}
 	a = CPos;
-	CBeforeBuf = Strsubstr(strBuf, 0, b);
-	buf = Strsubstr(strBuf, b, a - b);
-	CAfterBuf = Strsubstr(strBuf, a, strBuf->length - a);
+	CBeforeBuf = strBuf->Substr(0, b);
+	buf = strBuf->Substr(b, a - b);
+	CAfterBuf = strBuf->Substr(a, strBuf->length - a);
 	s = doComplete(buf, &status, next);
     }
     else {

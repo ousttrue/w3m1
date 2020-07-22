@@ -4587,7 +4587,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 	if (internal == HTML_N_INTERNAL)
 	    internal = 0;
 	if (str != endp) {
-	    line = Strsubstr(line, str - line->ptr, endp - str);
+	    line = line->Substr(str - line->ptr, endp - str);
 	    goto proc_again;
 	}
     }
