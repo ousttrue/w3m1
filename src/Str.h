@@ -126,9 +126,9 @@ inline Str Strnew_charp_n(const char *src, int size)
     return new GCStr(src, size);
 }
 
-Str Strnew_m_charp(char *, ...);
+Str Strnew_m_charp(const char *, ...);
 void Strcat_m_charp(Str, ...);
 
-Str Sprintf(char *fmt, ...);
+Str Sprintf(const char *fmt, ...);
 Str Strfgets(FILE *);
 Str Strfgetall(FILE *);

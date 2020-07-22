@@ -93,9 +93,6 @@ loadMimeTypes(char *filename)
 
 void initMimeTypes()
 {
-    int i;
-    TextListItem *tl;
-
     if (non_null(mimetypes_files))
         mimetypes_list = make_domain_list(mimetypes_files);
     else
@@ -103,8 +100,12 @@ void initMimeTypes()
     if (mimetypes_list == NULL)
         return;
     UserMimeTypes = New_N(struct ExtensionWithMime *, mimetypes_list->nitem);
-    for (i = 0, tl = mimetypes_list->first; tl; i++, tl = tl->next)
-        UserMimeTypes[i] = loadMimeTypes(tl->ptr);
+
+    int i = 0;
+    for (auto tl = mimetypes_list->first; tl; tl = tl->next)
+    {
+        UserMimeTypes[i++] = loadMimeTypes(tl->ptr);
+    }
 }
 
 static const char *
@@ -133,19 +134,23 @@ guessContentTypeFromTable(struct ExtensionWithMime *table, const char *filename)
 
 const char *guessContentType(const char *filename)
 {
-    if (filename == NULL)
-        return NULL;
-    if (mimetypes_list == NULL)
-        goto no_user_mimetypes;
-
-    for (int i = 0; i < mimetypes_list->nitem; i++)
+    if (!filename)
     {
-        const char *ret;
-        if ((ret =
-                 guessContentTypeFromTable(UserMimeTypes[i], filename)) != NULL)
-            return ret;
+        return nullptr;
     }
 
-no_user_mimetypes:
+    if (mimetypes_list)
+    {
+
+        for (int i = 0; i < mimetypes_list->nitem; i++)
+        {
+            auto type = guessContentTypeFromTable(UserMimeTypes[i], filename);
+            if (type)
+            {
+                return type;
+            }
+        }
+    }
+
     return guessContentTypeFromTable(DefaultGuess, filename);
 }

@@ -396,7 +396,7 @@ int GCStr::Puts(FILE *f) const
     return fwrite(ptr, 1, m_size, f);
 }
 
-Str Strnew_m_charp(char *p, ...)
+Str Strnew_m_charp(const char *p, ...)
 {
     va_list ap;
     va_start(ap, p);
@@ -425,16 +425,15 @@ void Strcat_m_charp(Str x, ...)
 #define SP_PREC 1
 #define SP_PREC2 2
 
-Str Sprintf(char *fmt, ...)
+Str Sprintf(const char *fmt, ...)
 {
     int len = 0;
     int status = SP_NORMAL;
     int p = 0;
-    char *f;
 
     va_list ap;
     va_start(ap, fmt);
-    for (f = fmt; *f; f++)
+    for (auto f = fmt; *f; f++)
     {
     redo:
         switch (status)
