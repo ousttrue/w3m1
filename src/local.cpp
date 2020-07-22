@@ -123,7 +123,7 @@ loadLocalDir(char *dname)
 	p = flist[i];
 	if (strcmp(p, ".") == 0)
 	    continue;
-	Strcopy(fbuf, dirname);
+	fbuf->CopyFrom(dirname);
 	if (Strlastchar(fbuf) != '/')
 	    Strcat_char(fbuf, '/');
 	Strcat_charp(fbuf, p);

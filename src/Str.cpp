@@ -24,15 +24,6 @@
 
 #define INITIAL_STR_SIZE 32
 
-#ifdef STR_DEBUG
-/* This is obsolete, because "Str" can handle a '\0' character now. */
-#define STR_LENGTH_CHECK(x)                                                       \
-    if (((x)->ptr == 0 && (x)->length != 0) || (strlen((x)->ptr) != (x)->length)) \
-        abort();
-#else /* not STR_DEBUG */
-#define STR_LENGTH_CHECK(x)
-#endif /* not STR_DEBUG */
-
 Str Strnew()
 {
     Str x = (Str)GC_MALLOC(sizeof(GCStr));
@@ -100,9 +91,8 @@ Str Strnew_charp_n(char *p, int n)
 
 Str Strdup(Str s)
 {
-    Str n = Strnew_size(s->length);
-    STR_LENGTH_CHECK(s);
-    Strcopy(n, s);
+    Str n = Strnew_size(s->length);   
+    n->CopyFrom(s);
     return n;
 }
 
@@ -112,25 +102,29 @@ void GCStr::Clear()
     ptr[0] = '\0';
 }
 
-void Strcopy(Str x, Str y)
+void GCStr::RequireSize(int size)
 {
-    STR_LENGTH_CHECK(x);
-    STR_LENGTH_CHECK(y);
-    if (x->area_size < y->length + 1)
+    if (area_size >= size)
     {
-        GC_free(x->ptr);
-        x->ptr = (char *)GC_MALLOC_ATOMIC(y->length + 1);
-        x->area_size = y->length + 1;
+        return;
     }
-    bcopy((void *)y->ptr, (void *)x->ptr, y->length + 1);
-    x->length = y->length;
+    GC_free(ptr);
+    ptr = (char *)GC_MALLOC_ATOMIC(size);
+    area_size = size;
+}
+
+void GCStr::CopyFrom(const GCStr *src)
+{
+    RequireSize(src->length+1);
+    bcopy((void *)src->ptr, (void *)ptr, src->length + 1);
+    length = src->length;
 }
 
 void Strcopy_charp(Str x, char *y)
 {
     int len;
 
-    STR_LENGTH_CHECK(x);
+    
     if (y == NULL)
     {
         x->length = 0;
@@ -151,7 +145,7 @@ void Strcopy_charp_n(Str x, char *y, int n)
 {
     int len = n;
 
-    STR_LENGTH_CHECK(x);
+    
     if (y == NULL)
     {
         x->length = 0;
@@ -172,7 +166,7 @@ void Strcat_charp_n(Str x, char *y, int n)
 {
     int newlen;
 
-    STR_LENGTH_CHECK(x);
+    
     if (y == NULL)
         return;
     newlen = x->length + n + 1;
@@ -192,7 +186,7 @@ void Strcat_charp_n(Str x, char *y, int n)
 
 void Strcat(Str x, Str y)
 {
-    STR_LENGTH_CHECK(y);
+    
     Strcat_charp_n(x, y->ptr, y->length);
 }
 
@@ -231,7 +225,7 @@ Str Strsubstr(Str s, int beg, int len)
     Str new_s;
     int i;
 
-    STR_LENGTH_CHECK(s);
+    
     new_s = Strnew();
     if (beg >= s->length)
         return new_s;
@@ -243,7 +237,7 @@ Str Strsubstr(Str s, int beg, int len)
 void Strlower(Str s)
 {
     int i;
-    STR_LENGTH_CHECK(s);
+    
     for (i = 0; i < s->length; i++)
         s->ptr[i] = TOLOWER(s->ptr[i]);
 }
@@ -251,14 +245,14 @@ void Strlower(Str s)
 void Strupper(Str s)
 {
     int i;
-    STR_LENGTH_CHECK(s);
+    
     for (i = 0; i < s->length; i++)
         s->ptr[i] = TOUPPER(s->ptr[i]);
 }
 
 void Strchop(Str s)
 {
-    STR_LENGTH_CHECK(s);
+    
     while ((s->ptr[s->length - 1] == '\n' || s->ptr[s->length - 1] == '\r') &&
            s->length > 0)
     {
@@ -270,7 +264,7 @@ void Strchop(Str s)
 void Strinsert_char(Str s, int pos, char c)
 {
     int i;
-    STR_LENGTH_CHECK(s);
+    
     if (pos < 0 || s->length < pos)
         return;
     if (s->length + 2 > s->area_size)
@@ -283,7 +277,7 @@ void Strinsert_char(Str s, int pos, char c)
 
 void Strinsert_charp(Str s, int pos, char *p)
 {
-    STR_LENGTH_CHECK(s);
+    
     while (*p)
         Strinsert_char(s, pos++, *(p++));
 }
@@ -291,7 +285,7 @@ void Strinsert_charp(Str s, int pos, char *p)
 void Strdelete(Str s, int pos, int n)
 {
     int i;
-    STR_LENGTH_CHECK(s);
+    
     if (s->length <= pos + n)
     {
         s->ptr[pos] = '\0';
@@ -306,14 +300,14 @@ void Strdelete(Str s, int pos, int n)
 
 void Strtruncate(Str s, int pos)
 {
-    STR_LENGTH_CHECK(s);
+    
     s->ptr[pos] = '\0';
     s->length = pos;
 }
 
 void Strshrink(Str s, int n)
 {
-    STR_LENGTH_CHECK(s);
+    
     if (n >= s->length)
     {
         s->length = 0;
@@ -330,7 +324,7 @@ void Strremovefirstspaces(Str s)
 {
     int i;
 
-    STR_LENGTH_CHECK(s);
+    
     for (i = 0; i < s->length && IS_SPACE(s->ptr[i]); i++)
         ;
     if (i == 0)
@@ -342,7 +336,7 @@ void Strremovetrailingspaces(Str s)
 {
     int i;
 
-    STR_LENGTH_CHECK(s);
+    
     for (i = s->length - 1; i >= 0 && IS_SPACE(s->ptr[i]); i--)
         ;
     s->length = i + 1;
@@ -351,15 +345,11 @@ void Strremovetrailingspaces(Str s)
 
 Str Stralign_left(Str s, int width)
 {
-    Str n;
-    int i;
-
-    STR_LENGTH_CHECK(s);
     if (s->length >= width)
         return Strdup(s);
-    n = Strnew_size(width);
-    Strcopy(n, s);
-    for (i = s->length; i < width; i++)
+    auto n = Strnew_size(width);
+    n->CopyFrom(s);
+    for (int i = s->length; i < width; i++)
         Strcat_char(n, ' ');
     return n;
 }
@@ -369,7 +359,7 @@ Str Stralign_right(Str s, int width)
     Str n;
     int i;
 
-    STR_LENGTH_CHECK(s);
+    
     if (s->length >= width)
         return Strdup(s);
     n = Strnew_size(width);
@@ -384,7 +374,7 @@ Str Stralign_center(Str s, int width)
     Str n;
     int i, w;
 
-    STR_LENGTH_CHECK(s);
+    
     if (s->length >= width)
         return Strdup(s);
     n = Strnew_size(width);

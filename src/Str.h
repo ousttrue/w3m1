@@ -24,6 +24,8 @@ struct GCStr
     int area_size;
 
     void Clear();
+    void RequireSize(int size);
+    void CopyFrom(const GCStr *src);
 };
 using Str = GCStr *;
 
