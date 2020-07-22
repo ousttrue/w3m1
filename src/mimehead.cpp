@@ -271,7 +271,7 @@ Str
 decodeMIME0(Str orgstr)
 #endif
 {
-    char *org = orgstr->ptr, *endp = org + orgstr->length;
+    char *org = orgstr->ptr, *endp = org + orgstr->Size();
     char *org0, *p;
     Str cnv = NULL;
 
@@ -281,7 +281,7 @@ decodeMIME0(Str orgstr)
     while (org < endp) {
 	if (*org == '=' && *(org + 1) == '?') {
 	    if (cnv == NULL) {
-		cnv = Strnew_size(orgstr->length);
+		cnv = Strnew_size(orgstr->Size());
 		cnv->Push(orgstr->ptr, org - orgstr->ptr);
 	    }
 	  nextEncodeWord:

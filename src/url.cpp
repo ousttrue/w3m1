@@ -171,7 +171,7 @@ loadMimeTypes(char *filename)
     if (f == NULL)
 	return NULL;
     n = 0;
-    while (tmp = Strfgets(f), tmp->length > 0) {
+    while (tmp = Strfgets(f), tmp->Size() > 0) {
 	d = tmp->ptr;
 	if (d[0] != '#') {
 	    d = strtok(d, " \t\n\r");
@@ -186,7 +186,7 @@ loadMimeTypes(char *filename)
     fseek(f, 0, 0);
     mtypes = New_N(struct table2, n + 1);
     i = 0;
-    while (tmp = Strfgets(f), tmp->length > 0) {
+    while (tmp = Strfgets(f), tmp->Size() > 0) {
 	d = tmp->ptr;
 	if (d[0] == '#')
 	    continue;
@@ -1073,7 +1073,7 @@ parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
 		p = pu->file;
 		if (current->file) {
 		    tmp = Strnew_charp(current->file);
-		    while (tmp->length > 0) {
+		    while (tmp->Size() > 0) {
 			if (tmp->Back() == '/')
 			    break;
 			tmp->Pop(1);
@@ -1618,7 +1618,7 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 		return uf;
 	    uf.scheme = SCM_HTTP;
 	    tmp = HTTPrequest(pu, current, hr, extra_header);
-	    write(sock, tmp->ptr, tmp->length);
+	    write(sock, tmp->ptr, tmp->Size());
 	}
 	else {
 	    uf.stream = openFTPStream(pu, &uf);
@@ -1717,16 +1717,16 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 	if (pu->scheme == SCM_HTTPS) {
 	    uf.stream = newSSLStream(sslh, sock);
 	    if (sslh)
-		SSL_write(sslh, tmp->ptr, tmp->length);
+		SSL_write(sslh, tmp->ptr, tmp->Size());
 	    else
-		write(sock, tmp->ptr, tmp->length);
+		write(sock, tmp->ptr, tmp->Size());
 	    if(w3m_reqlog){
 		FILE *ff = fopen(w3m_reqlog, "a");
 		if (sslh)
 		    fputs("HTTPS: request via SSL\n", ff);
 		else
 		    fputs("HTTPS: request without SSL\n", ff);
-		fwrite(tmp->ptr, sizeof(char), tmp->length, ff);
+		fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
 		fclose(ff);
 	    }
 	    if (hr->command == HR_COMMAND_POST &&
@@ -1741,10 +1741,10 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 	else
 #endif				/* USE_SSL */
 	{
-	    write(sock, tmp->ptr, tmp->length);
+	    write(sock, tmp->ptr, tmp->Size());
 	    if(w3m_reqlog){
 		FILE *ff = fopen(w3m_reqlog, "a");
-		fwrite(tmp->ptr, sizeof(char), tmp->length, ff);
+		fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
 		fclose(ff);
 	    }
 	    if (hr->command == HR_COMMAND_POST &&
@@ -1905,7 +1905,7 @@ make_domain_list(char *domain_list)
 	tmp->Clear();
 	while (*p && !IS_SPACE(*p) && *p != ',')
 	    tmp->Push(*p++);
-	if (tmp->length > 0) {
+	if (tmp->Size() > 0) {
 	    if (domains == NULL)
 		domains = newTextList();
 	    pushText(domains, tmp->ptr);
@@ -2088,7 +2088,7 @@ loadURIMethods(char *filename)
     if (f == NULL)
 	return NULL;
     i = 0;
-    while (tmp = Strfgets(f), tmp->length > 0) {
+    while (tmp = Strfgets(f), tmp->Size() > 0) {
 	if (tmp->ptr[0] != '#')
 	    i++;
     }
@@ -2096,7 +2096,7 @@ loadURIMethods(char *filename)
     n = i;
     um = New_N(struct table2, n + 1);
     i = 0;
-    while (tmp = Strfgets(f), tmp->length > 0) {
+    while (tmp = Strfgets(f), tmp->Size() > 0) {
 	if (tmp->ptr[0] == '#')
 	    continue;
 	while (IS_SPACE(tmp->Back()))

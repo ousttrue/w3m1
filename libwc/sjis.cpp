@@ -195,7 +195,7 @@ wc_conv_from_sjis(Str is, wc_ces ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;
-    uint8_t *ep = sp + is->length;
+    uint8_t *ep = sp + is->Size();
     uint8_t *p;
     uint8_t jis[2];
     int state = WC_SJIS_NOSTATE;
@@ -205,7 +205,7 @@ wc_conv_from_sjis(Str is, wc_ces ces)
 	;
     if (p == ep)
 	return is;
-    os = Strnew_size(is->length);
+    os = Strnew_size(is->Size());
     if (p > sp)
 	os->Push(is->ptr, (int)(p - sp));
 
@@ -275,7 +275,7 @@ wc_conv_from_sjisx0213(Str is, wc_ces ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;
-    uint8_t *ep = sp + is->length;
+    uint8_t *ep = sp + is->Size();
     uint8_t *p;
     uint8_t jis[2];
     int state = WC_SJIS_NOSTATE;
@@ -285,7 +285,7 @@ wc_conv_from_sjisx0213(Str is, wc_ces ces)
 	;
     if (p == ep)
 	return is;
-    os = Strnew_size(is->length);
+    os = Strnew_size(is->Size());
     if (p > sp)
 	os->Push(is->ptr, (int)(p - sp));
 

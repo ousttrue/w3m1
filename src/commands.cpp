@@ -1250,7 +1250,7 @@ void adBmark()
 #endif
     request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
     request->body = tmp->ptr;
-    request->length = tmp->length;
+    request->length = tmp->Size();
     cmd_loadURL("file:///$LIB/" W3MBOOKMARK_CMDNAME, NULL, NO_REFERER,
                 request);
 }
@@ -1487,9 +1487,9 @@ void curURL()
         return;
     if (CurrentKey() == PrevKey() && s != NULL)
     {
-        if (s->length - offset >= COLS)
+        if (s->Size() - offset >= COLS)
             offset++;
-        else if (s->length <= offset) /* bug ? */
+        else if (s->Size() <= offset) /* bug ? */
             offset = 0;
     }
     else
@@ -1500,15 +1500,15 @@ void curURL()
             s = Strnew_charp(url_unquote_conv(s->ptr, 0));
 #ifdef USE_M17N
         s = checkType(s, &pp, NULL);
-        p = NewAtom_N(Lineprop, s->length);
-        bcopy((void *)pp, (void *)p, s->length * sizeof(Lineprop));
+        p = NewAtom_N(Lineprop, s->Size());
+        bcopy((void *)pp, (void *)p, s->Size() * sizeof(Lineprop));
 #endif
     }
     n = searchKeyNum();
-    if (n > 1 && s->length > (n - 1) * (COLS - 1))
+    if (n > 1 && s->Size() > (n - 1) * (COLS - 1))
         offset = (n - 1) * (COLS - 1);
 #ifdef USE_M17N
-    while (offset < s->length && p[offset] & PC_WCHAR2)
+    while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;
 #endif
     disp_message_nomouse(&s->ptr[offset], TRUE);

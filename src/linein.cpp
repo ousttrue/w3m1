@@ -223,7 +223,7 @@ inputLineHistSearch(char *prompt, char *def_str, int flag, Hist *hist,
             i_quote = FALSE;
             cm_next = FALSE;
             cm_disp_next = -1;
-            if (CLen + tmp->length > STR_LEN || !tmp->length)
+            if (CLen + tmp->Size() > STR_LEN || !tmp->Size())
                 goto next_char;
             ins_char(tmp);
             if (incrfunc)
@@ -375,11 +375,11 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
 static void
 ins_char(Str str)
 {
-    char *p = str->ptr, *ep = p + str->length;
+    char *p = str->ptr, *ep = p + str->Size();
     Lineprop ctype;
     int len;
 
-    if (CLen + str->length >= STR_LEN)
+    if (CLen + str->Size() >= STR_LEN)
         return;
     while (p < ep) {
         len = get_mclen(p);
@@ -468,7 +468,7 @@ _esc(void)
 static void insC()
 {
     strBuf->Insert(CPos, ' ');
-    CLen = strBuf->length;
+    CLen = strBuf->Size();
     for (int i = CLen; i > CPos; i--) {
         strProp[i] = strProp[i - 1];
     }
@@ -670,7 +670,7 @@ next_compl(int next)
         a = CPos;
         CBeforeBuf = strBuf->Substr(0, b);
         buf = strBuf->Substr(b, a - b);
-        CAfterBuf = strBuf->Substr(a, strBuf->length - a);
+        CAfterBuf = strBuf->Substr(a, strBuf->Size() - a);
         s = doComplete(buf, &status, next);
     }
     else {
@@ -686,7 +686,7 @@ next_compl(int next)
 
     strBuf = Strnew_m_charp(CBeforeBuf->ptr, s->ptr, CAfterBuf->ptr, NULL);
     CLen = setStrType(strBuf, strProp);
-    CPos = CBeforeBuf->length + s->length;
+    CPos = CBeforeBuf->Size() + s->Size();
     if (CPos > CLen)
         CPos = CLen;
 }
@@ -753,7 +753,7 @@ next_dcompl(int next)
     cm_disp_next = 0;
 
     d = Str_conv_to_system(CDirBuf->Clone());
-    if (d->length > 0 && d->Back() != '/')
+    if (d->Size() > 0 && d->Back() != '/')
         d->Push( '/');
     if (cm_mode & CPL_URL && d->ptr[0] == 'f') {
         p = d->ptr;
@@ -898,7 +898,7 @@ doComplete(Str ifn, int *status, int next)
         if (cm_mode & CPL_ON)
             ifn = unescape_spaces(ifn);
         CompleteBuf = ifn->Clone();
-        while (CompleteBuf->Back() != '/' && CompleteBuf->length > 0)
+        while (CompleteBuf->Back() != '/' && CompleteBuf->Size() > 0)
             CompleteBuf->Pop(1);
         CDirBuf = CompleteBuf->Clone();
         if (cm_mode & CPL_URL) {
@@ -915,10 +915,10 @@ doComplete(Str ifn, int *status, int next)
                 return Str_conv_to_system(CompleteBuf);
             }
         }
-        if (CompleteBuf->length == 0) {
+        if (CompleteBuf->Size() == 0) {
             CompleteBuf->Push( '.');
         }
-        if (CompleteBuf->Back() == '/' && CompleteBuf->length > 1) {
+        if (CompleteBuf->Back() == '/' && CompleteBuf->Size() > 1) {
             CompleteBuf->Pop(1);
         }
         if ((d = opendir(expandPath(CompleteBuf->ptr))) == NULL) {
@@ -977,7 +977,7 @@ doComplete(Str ifn, int *status, int next)
         *status = CPL_MENU;
     }
     CompleteBuf = CDirBuf->Clone();
-    if (CompleteBuf->length && CompleteBuf->Back() != '/')
+    if (CompleteBuf->Size() && CompleteBuf->Back() != '/')
         CompleteBuf->Push( '/');
     CompleteBuf->Push( CFileName);
     if (*status != CPL_AMBIG) {
@@ -1052,7 +1052,7 @@ static int
 setStrType(Str str, Lineprop *prop)
 {
     Lineprop ctype;
-    char *p = str->ptr, *ep = p + str->length;
+    char *p = str->ptr, *ep = p + str->Size();
     int i, len = 1;
 
     for (i = 0; p < ep;) {

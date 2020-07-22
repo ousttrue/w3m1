@@ -312,7 +312,7 @@ Str wc_conv_from_iso2022(Str is, wc_ces ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;
-    uint8_t *ep = sp + is->length;
+    uint8_t *ep = sp + is->Size();
     uint8_t *p, *q = NULL;
     int state = WC_ISO_NOSTATE;
     wc_status st;
@@ -322,7 +322,7 @@ Str wc_conv_from_iso2022(Str is, wc_ces ces)
         ;
     if (p == ep)
         return is;
-    os = Strnew_size(is->length);
+    os = Strnew_size(is->Size());
     if (p > sp)
         os->Push(is->ptr, (int)(p - sp));
 

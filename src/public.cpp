@@ -923,13 +923,13 @@ void _followForm(int submit)
             /* It means "current URL" */
             tmp2 = parsedURL2Str(&GetCurrentbuf()->currentURL);
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
-                tmp2->Pop((tmp2->ptr + tmp2->length) - p);
+                tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
         }
 
         if (fi->parent->method == FORM_METHOD_GET)
         {
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
-                tmp2->Pop((tmp2->ptr + tmp2->length) - p);
+                tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
             tmp2->Push( "?");
             tmp2->Push( tmp);
             loadLink(tmp2->ptr, a->target, NULL, NULL);
@@ -946,7 +946,7 @@ void _followForm(int submit)
             else
             {
                 fi->parent->body = tmp->ptr;
-                fi->parent->length = tmp->length;
+                fi->parent->length = tmp->Size();
             }
             buf = loadLink(tmp2->ptr, a->target, NULL, fi->parent);
             if (multipart)
@@ -1025,7 +1025,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
         if (f2->name == NULL)
             continue;
         /* <ISINDEX> is translated into single text form */
-        if (f2->name->length == 0 &&
+        if (f2->name->Size() == 0 &&
             (multipart || f2->type != FORM_INPUT_TEXT))
             continue;
         switch (f2->type)
@@ -1060,7 +1060,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
             }
-            else if (f2->name && f2->name->length > 0 && f2->value != NULL)
+            else if (f2->name && f2->name->Size() > 0 && f2->value != NULL)
             {
                 /* not IMAGE */
                 *query = conv_form_encoding(f2->value, fi, GetCurrentbuf());
@@ -1098,7 +1098,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
             else
             {
                 /* not IMAGE */
-                if (f2->name && f2->name->length > 0)
+                if (f2->name && f2->name->Size() > 0)
                 {
                     (*query)->Push(
                            Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
@@ -1822,9 +1822,9 @@ void _peekURL(int only_img)
         return;
     if (CurrentKey == PrevKey && s != NULL)
     {
-        if (s->length - offset >= COLS)
+        if (s->Size() - offset >= COLS)
             offset++;
-        else if (s->length <= offset) /* bug ? */
+        else if (s->Size() <= offset) /* bug ? */
             offset = 0;
         goto disp;
     }
@@ -1855,15 +1855,15 @@ void _peekURL(int only_img)
         s = Strnew_charp(url_unquote_conv(s->ptr, GetCurrentbuf()->document_charset));
 #ifdef USE_M17N
     s = checkType(s, &pp, NULL);
-    p = NewAtom_N(Lineprop, s->length);
-    bcopy((void *)pp, (void *)p, s->length * sizeof(Lineprop));
+    p = NewAtom_N(Lineprop, s->Size());
+    bcopy((void *)pp, (void *)p, s->Size() * sizeof(Lineprop));
 #endif
 disp:
     n = searchKeyNum();
-    if (n > 1 && s->length > (n - 1) * (COLS - 1))
+    if (n > 1 && s->Size() > (n - 1) * (COLS - 1))
         offset = (n - 1) * (COLS - 1);
 #ifdef USE_M17N
-    while (offset < s->length && p[offset] & PC_WCHAR2)
+    while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;
 #endif
     disp_message_nomouse(&s->ptr[offset], TRUE);
@@ -2854,7 +2854,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
     Lineprop *prop;
     static Lineprop *prop_buffer = NULL;
     static int prop_size = 0;
-    char *str = s->ptr, *endp = &s->ptr[s->length], *bs = NULL;
+    char *str = s->ptr, *endp = &s->ptr[s->Size()], *bs = NULL;
 #ifdef USE_ANSI_COLOR
     Lineprop ceffect = PE_NORMAL;
     Linecolor cmode = 0;
@@ -2868,25 +2868,25 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
     int i;
     int plen = 0, clen;
 
-    if (prop_size < s->length)
+    if (prop_size < s->Size())
     {
-        prop_size = (s->length > LINELEN) ? s->length : LINELEN;
+        prop_size = (s->Size() > LINELEN) ? s->Size() : LINELEN;
         prop_buffer = New_Reuse(Lineprop, prop_buffer, prop_size);
     }
     prop = prop_buffer;
 
     if (ShowEffect)
     {
-        bs = (char *)memchr(str, '\b', s->length);
+        bs = (char *)memchr(str, '\b', s->Size());
 #ifdef USE_ANSI_COLOR
         if (ocolor)
         {
-            es = (char *)memchr(str, ESC_CODE, s->length);
+            es = (char *)memchr(str, ESC_CODE, s->Size());
             if (es)
             {
-                if (color_size < s->length)
+                if (color_size < s->Size())
                 {
-                    color_size = (s->length > LINELEN) ? s->length : LINELEN;
+                    color_size = (s->Size() > LINELEN) ? s->Size() : LINELEN;
                     color_buffer = New_Reuse(Linecolor, color_buffer,
                                              color_size);
                 }
@@ -2901,7 +2901,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
         )
         {
             char *sp = str, *ep;
-            s = Strnew_size(s->length);
+            s = Strnew_size(s->Size());
             do_copy = TRUE;
             ep = bs ? (bs - 2) : endp;
 #ifdef USE_ANSI_COLOR
@@ -2954,7 +2954,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
             {
                 if (*(str + 1) == '_')
                 {
-                    if (s->length)
+                    if (s->Size())
                     {
                         str += 2;
 #ifdef USE_M17N
@@ -2972,7 +2972,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 #ifdef USE_M17N
                 else if (!strncmp(str + 1, "\b__", 3))
                 {
-                    if (s->length)
+                    if (s->Size())
                     {
                         str += (plen == 1) ? 3 : 4;
                         for (i = 1; i <= plen; i++)
@@ -2985,7 +2985,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 }
                 else if (*(str + 1) == '\b')
                 {
-                    if (s->length)
+                    if (s->Size())
                     {
                         clen = get_mclen(str + 2);
                         if (plen == clen &&
@@ -3010,7 +3010,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 #endif
                 else
                 {
-                    if (s->length)
+                    if (s->Size())
                     {
 
                         clen = get_mclen(str + 1);

@@ -105,7 +105,7 @@ make_portlist(Str port)
 	tmp->Clear();
 	while (*p && IS_DIGIT(*p))
 	    tmp->Push(*(p++));
-	if (tmp->length == 0)
+	if (tmp->Size() == 0)
 	    break;
 	pl = New(struct portlist);
 	pl->port = atoi(tmp->ptr);
@@ -182,7 +182,7 @@ match_cookie(ParsedURL *pu, struct cookie *cookie, char *domainname)
 
     if (!domain_match(domainname, cookie->domain->ptr))
 	return 0;
-    if (strncmp(cookie->path->ptr, pu->file, cookie->path->length) != 0)
+    if (strncmp(cookie->path->ptr, pu->file, cookie->path->Size()) != 0)
 	return 0;
 #ifdef USE_SSL
     if (cookie->flag & COO_SECURE && pu->scheme != SCM_HTTPS)
@@ -331,7 +331,7 @@ add_cookie(ParsedURL *pu, Str name, Str value,
 	if (version == 0) {
 	    /* [NETSCAPE] rule */
 	    int n = total_dot_number(domain->ptr,
-				     domain->ptr + domain->length,
+				     domain->ptr + domain->Size(),
 				     3);
 	    if (n < 2) {
 		if (! check_avoid_wrong_number_of_dots_domain(domain)) {
@@ -342,7 +342,7 @@ add_cookie(ParsedURL *pu, Str name, Str value,
 		char **sdomain;
 		int ok = 0;
 		for (sdomain = (char**)special_domain; !ok && *sdomain; sdomain++) {
-		    int offset = domain->length - strlen(*sdomain);
+		    int offset = domain->Size() - strlen(*sdomain);
 		    if (offset >= 0 &&
 			strcasecmp(*sdomain, &domain->ptr[offset]) == 0)
 			ok = 1;
@@ -355,7 +355,7 @@ add_cookie(ParsedURL *pu, Str name, Str value,
 	else {
 	    /* [DRAFT 12] s. 4.3.2 case 2 */
 	    if (strcasecmp(domain->ptr, ".local") != 0 &&
-		contain_no_dots(&domain->ptr[1], &domain->ptr[domain->length]))
+		contain_no_dots(&domain->ptr[1], &domain->ptr[domain->Size()]))
 		COOKIE_ERROR(COO_ENODOT);
 	}
 
@@ -369,7 +369,7 @@ add_cookie(ParsedURL *pu, Str name, Str value,
     }
     if (path) {
 	/* [RFC 2109] s. 4.3.2 case 1 */
-	if (version > 0 && strncmp(path->ptr, pu->file, path->length) != 0)
+	if (version > 0 && strncmp(path->ptr, pu->file, path->Size()) != 0)
 	    COOKIE_ERROR(COO_EPATH);
     }
     if (port) {
@@ -383,7 +383,7 @@ add_cookie(ParsedURL *pu, Str name, Str value,
 	domain = Strnew_charp(domainname);
     if (!path) {
 	path = Strnew_charp(pu->file);
-	while (path->length > 0 && path->Back() != '/')
+	while (path->Size() > 0 && path->Back() != '/')
 	    path->Pop(1);
 	if (path->Back() == '/')
 	    path->Pop(1);
@@ -510,7 +510,7 @@ load_cookies(void)
     for (;;) {
 	line = Strfgets(fp);
 
-	if (line->length == 0)
+	if (line->Size() == 0)
 	    break;
 	str = line->ptr;
 	cookie = New(struct cookie);
@@ -546,7 +546,7 @@ load_cookies(void)
 	if (!*str)
 	    return;
 	cookie->comment = readcol(&str);
-	if (cookie->comment->length == 0)
+	if (cookie->comment->Size() == 0)
 	    cookie->comment = NULL;
 	if (!*str)
 	    return;
@@ -554,7 +554,7 @@ load_cookies(void)
 	if (!*str)
 	    return;
 	cookie->commentURL = readcol(&str);
-	if (cookie->commentURL->length == 0)
+	if (cookie->commentURL->Size() == 0)
 	    cookie->commentURL = NULL;
 
 	if (p)

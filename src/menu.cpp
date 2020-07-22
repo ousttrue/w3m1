@@ -1848,8 +1848,8 @@ initSelectMenu(void)
             }
         }
         label[i] = str->ptr;
-        if (len < str->length)
-            len = str->length;
+        if (len < str->Size())
+            len = str->Size();
     }
     l = get_strwidth(comment);
     if (len < l + 4)
@@ -2121,7 +2121,7 @@ interpret_menu(FILE *mf)
     {
         line = Strfgets(mf);
         line->Strip();
-        if (line->length == 0)
+        if (line->Size() == 0)
             continue;
 #ifdef USE_M17N
         line = wc_Str_conv(line, charset, InnerCharset);
@@ -2340,8 +2340,8 @@ link_menu(Buffer *buf)
             p = l->url;
         str->Push( p);
         label[i] = str->ptr;
-        if (len < str->length)
-            len = str->length;
+        if (len < str->Size())
+            len = str->Size();
     }
     label[nitem] = NULL;
 

@@ -526,9 +526,9 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
             buf->Push( (!pre && IS_SPACE(*p)) ? ' ' : *p);
             if (ST_IS_REAL_TAG(prev_status)) {
                 *instr = p + 1;
-                if (buf->length < 2 ||
-                    buf->ptr[buf->length - 2] != '<' ||
-                    buf->ptr[buf->length - 1] != '>')
+                if (buf->Size() < 2 ||
+                    buf->ptr[buf->Size() - 2] != '<' ||
+                    buf->ptr[buf->Size() - 1] != '>')
                     return 1;
                 buf->Pop(2);
             }
@@ -744,7 +744,7 @@ next_token(Str arg)
 {
     Str narg = NULL;
     char *p, *q;
-    if (arg == NULL || arg->length == 0)
+    if (arg == NULL || arg->Size() == 0)
         return NULL;
     p = arg->ptr;
     q = p;
@@ -769,9 +769,9 @@ parsePasswd(FILE * fp, int netrc)
         Str arg = NULL;
         char *p;
 
-        if (line == NULL || line->length == 0)
+        if (line == NULL || line->Size() == 0)
             line = Strfgets(fp);
-        if (line->length == 0)
+        if (line->Size() == 0)
             break;
         line->Strip();
         p = line->ptr;
@@ -821,7 +821,7 @@ parsePasswd(FILE * fp, int netrc)
             ent.pwd = arg;
         }
         else if (netrc && !strcmp(p, "machdef")) {
-            while ((line = Strfgets(fp))->length != 0) {
+            while ((line = Strfgets(fp))->Size() != 0) {
                 if (*line->ptr == '\n')
                     break;
             }
@@ -1411,7 +1411,7 @@ get_month(char **s)
 
     while (**s && IS_DIGIT(**s))
         tmp->Push(*((*s)++));
-    if (tmp->length > 0) {
+    if (tmp->Size() > 0) {
         mon = atoi(tmp->ptr);
     }
     else {
@@ -1441,13 +1441,13 @@ get_year(char **s)
 
     while (**s && IS_DIGIT(**s))
         tmp->Push(*((*s)++));
-    if (tmp->length != 2 && tmp->length != 4) {
+    if (tmp->Size() != 2 && tmp->Size() != 4) {
         *s = ss;
         return -1;
     }
 
     year = atoi(tmp->ptr);
-    if (tmp->length == 2) {
+    if (tmp->Size() == 2) {
         if (year >= 70)
             year += 1900;
         else
@@ -1511,8 +1511,8 @@ get_zone(char **s, int *z_hour, int *z_min)
         tmp->Push(*((*s)++));
     while (**s && IS_DIGIT(**s))
         tmp->Push(*((*s)++));
-    if (!(tmp->length == 4 && IS_DIGIT(*ss)) &&
-        !(tmp->length == 5 && (*ss == '+' || *ss == '-'))) {
+    if (!(tmp->Size() == 4 && IS_DIGIT(*ss)) &&
+        !(tmp->Size() == 5 && (*ss == '+' || *ss == '-'))) {
         *s = ss;
         return -1;
     }

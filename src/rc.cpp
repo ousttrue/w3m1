@@ -1107,10 +1107,10 @@ interpret_rc(FILE * f)
 
     for (;;) {
 	line = Strfgets(f);
-	if (line->length == 0)		/* end of file */
+	if (line->Size() == 0)		/* end of file */
 	    break;
     line->Strip();
-	if (line->length == 0)		/* blank line */
+	if (line->Size() == 0)		/* blank line */
 	    continue;
 	if (line->ptr[0] == '#')	/* comment */
 	    continue;

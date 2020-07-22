@@ -22,18 +22,20 @@
 // http://aitoweb.world.coocan.jp/gc/gc.html
 //
 
-struct GCStr : public gc_cleanup
+class GCStr : public gc_cleanup
 {
-    char *ptr;
+    int m_capacity;
     int length;
-    int area_size;
 
+public:
+    char *ptr;
     GCStr(int size = 32);
     GCStr(const char *src, int size);
     GCStr(const char *src) : GCStr(src, strlen(src))
     {
     }
     ~GCStr();
+    int Size()const{ return length; }
     int Cmp(const GCStr *y) const;
     int Cmp(const GCStr *y, int len) const;
     int Cmp(const char *y) const;

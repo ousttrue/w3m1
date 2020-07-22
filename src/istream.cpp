@@ -94,7 +94,7 @@ init_base_stream(BaseStream *base, int bufsize)
 static void
 init_str_stream(BaseStream *base, Str s)
 {
-    init_buffer(base, s->ptr, s->length);
+    init_buffer(base, s->ptr, s->Size());
 }
 
 InputStream *
@@ -345,7 +345,7 @@ int ISread(InputStream *stream, Str buf, int count)
         rest -= len;
     }
     buf->Truncate(count - rest);
-    if (buf->length > 0)
+    if (buf->Size() > 0)
         return 1;
     return 0;
 }
@@ -616,8 +616,8 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
         else
         {
             Str ep = emsg->Clone();
-            if (ep->length > COLS - 16)
-                ep->Pop(ep->length - (COLS - 16));
+            if (ep->Size() > COLS - 16)
+                ep->Pop(ep->Size() - (COLS - 16));
             ep->Push( ": accept? (y/n)");
             ans = inputAnswer(ep->ptr);
         }
@@ -755,11 +755,11 @@ ens_close(struct ens_handle *handle)
 static int
 ens_read(struct ens_handle *handle, char *buf, int len)
 {
-    if (handle->s == NULL || handle->pos == handle->s->length)
+    if (handle->s == NULL || handle->pos == handle->s->Size())
     {
         char *p;
         handle->s = StrmyISgets(handle->is);
-        if (handle->s->length == 0)
+        if (handle->s->Size() == 0)
             return 0;
         cleanup_line(handle->s, PAGER_MODE);
         if (handle->encoding == ENC_BASE64)
@@ -780,8 +780,8 @@ ens_read(struct ens_handle *handle, char *buf, int len)
         handle->pos = 0;
     }
 
-    if (len > handle->s->length - handle->pos)
-        len = handle->s->length - handle->pos;
+    if (len > handle->s->Size() - handle->pos)
+        len = handle->s->Size() - handle->pos;
 
     bcopy(&handle->s->ptr[handle->pos], buf, len);
     handle->pos += len;

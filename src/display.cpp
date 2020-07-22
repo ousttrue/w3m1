@@ -333,7 +333,7 @@ make_lastline_link(Buffer *buf, char *title, char *url)
     s->Push("..");
     i = get_Str_strwidth(u) - (COLS - 1 - get_Str_strwidth(s));
 #ifdef USE_M17N
-    while (i < u->length && pr[i] & PC_WCHAR2)
+    while (i < u->Size() && pr[i] & PC_WCHAR2)
         i++;
 #endif
     s->Push(&u->ptr[i]);

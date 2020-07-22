@@ -137,7 +137,7 @@ wc_conv_from_utf8(Str is, wc_ces ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;
-    uint8_t *ep = sp + is->length;
+    uint8_t *ep = sp + is->Size();
     uint8_t *p;
     uint8_t *q = NULL;
     int state = WC_UTF8_NOSTATE;
@@ -149,7 +149,7 @@ wc_conv_from_utf8(Str is, wc_ces ces)
 	;
     if (p == ep)
 	return is;
-    os = Strnew_size(is->length * 4 / 3);
+    os = Strnew_size(is->Size() * 4 / 3);
     if (p > sp)
 	os->Push(is->ptr, (int)(p - sp));
 

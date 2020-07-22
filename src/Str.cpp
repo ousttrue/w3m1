@@ -28,14 +28,14 @@ GCStr::GCStr(int size)
     // Str x = (Str)GC_MALLOC(sizeof(GCStr));
     ptr = (char *)GC_MALLOC_ATOMIC(size);
     ptr[0] = '\0';
-    area_size = size;
+    m_capacity = size;
     length = 0;
 }
 
 GCStr::GCStr(const char *src, int size)
 {
     ptr = (char *)GC_MALLOC_ATOMIC(size + 1);
-    area_size = size + 1;
+    m_capacity = size + 1;
     length = size;
     bcopy((void *)src, (void *)ptr, size);
     ptr[size] = '\0';
@@ -99,13 +99,13 @@ void GCStr::Clear()
 
 char *GCStr::RequireSize(int size)
 {
-    if (area_size >= size)
+    if (m_capacity >= size)
     {
         return nullptr;
     }
     auto old = ptr;
     ptr = (char *)GC_MALLOC_ATOMIC(size);
-    area_size = size;
+    m_capacity = size;
     return old;
 }
 
@@ -241,7 +241,7 @@ void GCStr::Insert(int pos, char c)
     {
         return;
     }
-    if (length + 2 > area_size)
+    if (length + 2 > m_capacity)
     {
         Grow();
     }
@@ -360,9 +360,8 @@ Str Sprintf(char *fmt, ...)
     int status = SP_NORMAL;
     int p = 0;
     char *f;
-    Str s;
-    va_list ap;
 
+    va_list ap;
     va_start(ap, fmt);
     for (f = fmt; *f; f++)
     {
@@ -450,12 +449,14 @@ Str Sprintf(char *fmt, ...)
         }
     }
     va_end(ap);
-    s = Strnew_size(len * 2);
+
+    auto s = Strnew_size(len * 2);
     va_start(ap, fmt);
     vsprintf(s->ptr, fmt, ap);
     va_end(ap);
-    s->length = strlen(s->ptr);
-    if (s->length > len * 2)
+    // s->length = ;
+    s->Pop(s->Size()-strlen(s->ptr));
+    if (s->Size() > len * 2)
     {
         fprintf(stderr, "Sprintf: string too long\n");
         exit(1);

@@ -108,12 +108,12 @@ internal_get(char *url, int flag, FormList *request)
 			for (p = backend_halfdump_buf->first; p; p = p->next)
 			{
 				p->ptr->line = Str_conv_to_halfdump(p->ptr->line);
-				len += p->ptr->line->length + 1;
+				len += p->ptr->line->Size() + 1;
 			}
 			first = Strnew_charp("<pre>\n");
 			last = Strnew_m_charp("</pre><title>", html_quote(buf->buffername),
 								  "</title>\n", NULL);
-			print_headers(buf, len + first->length + last->length);
+			print_headers(buf, len + first->Size() + last->Size());
 			printf("\n");
 			printf("%s", first->ptr);
 			for (p = backend_halfdump_buf->first; p; p = p->next)
@@ -406,7 +406,7 @@ split(char *p)
 			{
 				s->Push(*p);
 			}
-			else if (s->length > 0)
+			else if (s->Size() > 0)
 			{
 				pushText(tp, s->ptr);
 				s = Strnew();
@@ -417,7 +417,7 @@ split(char *p)
 		}
 	}
 LAST:
-	if (s->length > 0)
+	if (s->Size() > 0)
 		pushText(tp, s->ptr);
 	return tp;
 }

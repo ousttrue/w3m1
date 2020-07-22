@@ -388,18 +388,18 @@ non_null(char *s)
 void
 cleanup_line(Str s, int mode)
 {
-    if (s->length >= 2 &&
-	s->ptr[s->length - 2] == '\r' && s->ptr[s->length - 1] == '\n') {
+    if (s->Size() >= 2 &&
+	s->ptr[s->Size() - 2] == '\r' && s->ptr[s->Size() - 1] == '\n') {
 	s->Pop(2);
 	s->Push('\n');
     }
     else if (s->Back() == '\r')
-	s->ptr[s->length - 1] = '\n';
+	s->ptr[s->Size() - 1] = '\n';
     else if (s->Back() != '\n')
 	s->Push('\n');
     if (mode != PAGER_MODE) {
 	int i;
-	for (i = 0; i < s->length; i++) {
+	for (i = 0; i < s->Size(); i++) {
 	    if (s->ptr[i] == '\0')
 		s->ptr[i] = ' ';
 	}
@@ -627,7 +627,7 @@ Str
 Str_form_quote(Str x)
 {
     Str tmp = NULL;
-    char *p = x->ptr, *ep = x->ptr + x->length;
+    char *p = x->ptr, *ep = x->ptr + x->Size();
     char buf[4];
 
     for (; p < ep; p++) {
@@ -657,7 +657,7 @@ Str
 Str_url_unquote(Str x, int is_form, int safe)
 {
     Str tmp = NULL;
-    char *p = x->ptr, *ep = x->ptr + x->length, *q;
+    char *p = x->ptr, *ep = x->ptr + x->Size(), *q;
     int c;
 
     for (; p < ep;) {

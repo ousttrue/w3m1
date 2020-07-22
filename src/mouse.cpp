@@ -198,7 +198,7 @@ interpret_mouse_action(FILE *mf)
     {
         line = Strfgets(mf);
         line->Strip();
-        if (line->length == 0)
+        if (line->Size() == 0)
             continue;
         p = conv_from_system(line->ptr);
         s = getWord(&p);

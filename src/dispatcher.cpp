@@ -683,7 +683,7 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
         line = Strfgets(kf);
         lineno++;
         line->Strip();
-        if (line->length == 0)
+        if (line->Size() == 0)
             continue;
 #ifdef USE_M17N
         line = wc_Str_conv(line, charset, InnerCharset);

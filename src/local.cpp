@@ -42,7 +42,7 @@ writeLocalCookie()
     if (!f)
 	return;
     localCookie();
-    fwrite(Local_cookie->ptr, sizeof(char), Local_cookie->length, f);
+    fwrite(Local_cookie->ptr, sizeof(char), Local_cookie->Size(), f);
     fclose(f);
     chmod(Local_cookie_file, S_IRUSR | S_IWUSR);
 }
@@ -330,18 +330,18 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
 	tmp->Push('/');
     if (strncmp(uri, "/$LIB/", 6) == 0)
 	offset = 6;
-    else if (strncmp(uri, tmp->ptr, tmp->length) == 0)
-	offset = tmp->length;
+    else if (strncmp(uri, tmp->ptr, tmp->Size()) == 0)
+	offset = tmp->Size();
     else if (*uri == '/' && document_root != NULL) {
 	Str tmp2 = Strnew_charp(document_root);
 	if (tmp2->Back() != '/')
 	    tmp2->Push( '/');
 	tmp2->Push( uri + 1);
-	if (strncmp(tmp2->ptr, tmp->ptr, tmp->length) != 0)
+	if (strncmp(tmp2->ptr, tmp->ptr, tmp->Size()) != 0)
 	    return CGIFN_NORMAL;
 	uri = tmp2->ptr;
 	*name = uri;
-	offset = tmp->length;
+	offset = tmp->Size();
     }
     else
 	return CGIFN_NORMAL;

@@ -563,7 +563,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 				{
 					Str tmp;
 					fprintf(f1, "<pre>\n");
-					while ((tmp = StrmyUFgets(&f2))->length)
+					while ((tmp = StrmyUFgets(&f2))->Size())
 					{
 						tmp = convertLine(NULL, tmp, HTML_MODE, &charset,
 										  doc_charset);
@@ -584,7 +584,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 						if (*p == '\0')
 						{
 							Str tmp = StrmyUFgets(&f2);
-							if (tmp->length == 0)
+							if (tmp->Size() == 0)
 								break;
 							tmp = convertLine(NULL, tmp, HTML_MODE, &charset,
 											  doc_charset);
@@ -593,7 +593,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 						read_token(tok, &p, &status, 1, status != R_ST_NORMAL);
 					} while (status != R_ST_NORMAL);
 
-					if (tok->length == 0)
+					if (tok->Size() == 0)
 						continue;
 
 					if (tok->ptr[0] == '<')

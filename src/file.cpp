@@ -476,7 +476,7 @@ acceptableEncoding()
     }
     encodings = Strnew();
     while ((p = popText(l)) != NULL) {
-        if (encodings->length)
+        if (encodings->Size())
             encodings->Push( ", ");
         encodings->Push( p);
     }
@@ -641,7 +641,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
         if (src)
             newBuf->header_source = tmpf;
     }
-    while ((tmp = StrmyUFgets(uf))->length) {
+    while ((tmp = StrmyUFgets(uf))->Size()) {
 #ifdef USE_NNTP
         if (uf->scheme == SCM_NEWS && tmp->ptr[0] == '.')
             tmp->Delete(0, 1);
@@ -679,7 +679,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
                                    mime_charset ? mime_charset
                                    : DocumentCharset);
             /* separated with line and stored */
-            tmp = Strnew_size(lineBuf2->length);
+            tmp = Strnew_size(lineBuf2->Size());
             for (p = lineBuf2->ptr; *p; p = q) {
                 for (q = p; *q && *q != '\r' && *q != '\n'; q++) ;
                 lineBuf2 = checkType(Strnew_charp_n(p, q - p), &propBuffer,
@@ -687,7 +687,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
                 tmp->Push(lineBuf2);
                 if (thru)
                     addnewline(newBuf, lineBuf2->ptr, propBuffer, NULL,
-                               lineBuf2->length, FOLD_BUFFER_WIDTH, -1);
+                               lineBuf2->Size(), FOLD_BUFFER_WIDTH, -1);
                 for (; *q && (*q == '\r' || *q == '\n'); q++) ;
             }
 #ifdef USE_IMAGE
@@ -865,7 +865,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
                     p++;
                 }
             }
-            if (pu && name->length > 0) {
+            if (pu && name->Size() > 0) {
                 int err;
                 if (show_cookie) {
                     if (flag & COO_SECURE)
@@ -888,8 +888,8 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
                                           pu->host,
                                           ((domain && domain->ptr)
                                            ? domain->ptr : "<localdomain>"));
-                        if (msg->length > COLS - 10)
-                            msg->Pop(msg->length - (COLS - 10));
+                        if (msg->Size() > COLS - 10)
+                            msg->Pop(msg->Size() - (COLS - 10));
                         msg->Push(" (y/n)");
                         ans = inputAnswer(msg->ptr);
                     }
@@ -1817,7 +1817,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
                                      parsedURL2Str(&pu)->ptr)->ptr, FALSE);
             break;
         }
-        if (page && page->length > 0)
+        if (page && page->Size() > 0)
             goto page_loaded;
         return NULL;
     }
@@ -2476,7 +2476,7 @@ is_boundary(unsigned char *ch1, unsigned char *ch2)
 static void
 set_breakpoint(struct readbuffer *obuf, int tag_length)
 {
-    obuf->bp.len = obuf->line->length;
+    obuf->bp.len = obuf->line->Size();
     obuf->bp.pos = obuf->pos;
     obuf->bp.tlen = tag_length;
     obuf->bp.flag = obuf->flag;
@@ -2526,7 +2526,7 @@ static void
 append_tags(struct readbuffer *obuf)
 {
     int i;
-    int len = obuf->line->length;
+    int len = obuf->line->Size();
     int set_bp = 0;
 
     for (i = 0; i < obuf->tag_sp; i++) {
@@ -2537,7 +2537,7 @@ append_tags(struct readbuffer *obuf)
         case HTML_U:
         case HTML_I:
         case HTML_S:
-            push_link(obuf->tag_stack[i]->cmd, obuf->line->length, obuf->pos);
+            push_link(obuf->tag_stack[i]->cmd, obuf->line->Size(), obuf->pos);
             break;
         }
         obuf->line->Push(obuf->tag_stack[i]->cmdname);
@@ -2552,7 +2552,7 @@ append_tags(struct readbuffer *obuf)
     }
     obuf->tag_sp = 0;
     if (set_bp)
-        set_breakpoint(obuf, obuf->line->length - len);
+        set_breakpoint(obuf, obuf->line->Size() - len);
 }
 
 static void
@@ -2584,17 +2584,17 @@ push_nchars(struct readbuffer *obuf, int width,
 push_nchars(obuf, width, str, strlen(str), mode)
 
 #define push_str(obuf, width, str, mode)\
-push_nchars(obuf, width, str->ptr, str->length, mode)
+push_nchars(obuf, width, str->ptr, str->Size(), mode)
 
 static void
 check_breakpoint(struct readbuffer *obuf, int pre_mode, char *ch)
 {
-    int tlen, len = obuf->line->length;
+    int tlen, len = obuf->line->Size();
 
     append_tags(obuf);
     if (pre_mode)
         return;
-    tlen = obuf->line->length - len;
+    tlen = obuf->line->Size() - len;
     if (tlen > 0
         || is_boundary((unsigned char *)obuf->prevchar->ptr,
                        (unsigned char *)ch))
@@ -2673,7 +2673,7 @@ passthrough(struct readbuffer *obuf, char *str, int back)
 
     if (back) {
         Str str_save = Strnew_charp(str);
-        obuf->line->Pop(obuf->line->ptr + obuf->line->length - str);
+        obuf->line->Pop(obuf->line->ptr + obuf->line->Size() - str);
         str = str_save->ptr;
     }
     while (*str) {
@@ -3451,7 +3451,7 @@ process_option(void)
 
     if (cur_select == NULL || cur_option == NULL)
         return;
-    while (cur_option->length > 0 && IS_SPACE(cur_option->Back()))
+    while (cur_option->Size() > 0 && IS_SPACE(cur_option->Back()))
         cur_option->Pop(1);
     if (cur_option_value == NULL)
         cur_option_value = cur_option;
@@ -3872,10 +3872,10 @@ getMetaRefreshParam(char *q, Str *refresh_uri)
                 r++;
             s_tmp = Strnew_charp_n(q, r - q);
 
-            if (s_tmp->ptr[s_tmp->length - 1] == '\"') {	/* " 
+            if (s_tmp->ptr[s_tmp->Size() - 1] == '\"') {	/* " 
                                                                  */
-                s_tmp->length--;
-                s_tmp->ptr[s_tmp->length] = '\0';
+                s_tmp->Pop(1);
+                s_tmp->ptr[s_tmp->Size()] = '\0';
             }
             q = r;
         }
@@ -4009,7 +4009,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
         line->StripRight();
 #endif
         str = line->ptr;
-        endp = str + line->length;
+        endp = str + line->Size();
         while (str < endp) {
             PSIZE;
             mode = get_mctype(str);
@@ -4660,7 +4660,7 @@ file_feed()
 {
     Str s;
     s = StrISgets(_file_lp2);
-    if (s->length == 0) {
+    if (s->Size() == 0) {
         ISclose(_file_lp2);
         return NULL;
     }
@@ -5153,7 +5153,7 @@ loadBuffer(URLFile *uf, Buffer *volatile newBuf)
     nlines = 0;
     if (IStype(uf->stream) != IST_ENCODED)
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
-    while ((lineBuf2 = StrmyISgets(uf->stream))->length) {
+    while ((lineBuf2 = StrmyISgets(uf->stream))->Size()) {
 #ifdef USE_NNTP
         if (uf->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.') {
             lineBuf2->Delete(0, 1);
@@ -5168,7 +5168,7 @@ loadBuffer(URLFile *uf, Buffer *volatile newBuf)
 #endif				/* USE_NNTP */
         if (src)
             lineBuf2->Puts( src);
-        linelen += lineBuf2->length;
+        linelen += lineBuf2->Size();
         if (w3m_dump & DUMP_EXTRA)
             printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
         if (w3m_dump & DUMP_SOURCE)
@@ -5189,7 +5189,7 @@ loadBuffer(URLFile *uf, Buffer *volatile newBuf)
         lineBuf2->StripRight();
         lineBuf2 = checkType(lineBuf2, &propBuffer, NULL);
         addnewline(newBuf, lineBuf2->ptr, propBuffer, colorBuffer,
-                   lineBuf2->length, FOLD_BUFFER_WIDTH, nlines);
+                   lineBuf2->Size(), FOLD_BUFFER_WIDTH, nlines);
     }
   _end:
     TRAP_OFF;
@@ -5576,7 +5576,7 @@ getNextPage(Buffer *buf, int plen)
     init_stream(&uf, SCM_UNKNOWN, NULL);
     for (i = 0; i < plen; i++) {
         lineBuf2 = StrmyISgets(buf->pagerSource);
-        if (lineBuf2->length == 0) {
+        if (lineBuf2->Size() == 0) {
             /* Assume that `cmd == buf->filename' */
             if (buf->filename)
                 buf->buffername = Sprintf("%s %s",
@@ -5588,7 +5588,7 @@ getNextPage(Buffer *buf, int plen)
             buf->bufferprop |= BP_CLOSE;
             break;
         }
-        linelen += lineBuf2->length;
+        linelen += lineBuf2->Size();
         showProgress(&linelen, &trbyte);
         lineBuf2 =
             convertLine(&uf, lineBuf2, PAGER_MODE, &charset, doc_charset);
@@ -5606,7 +5606,7 @@ getNextPage(Buffer *buf, int plen)
         lineBuf2->StripRight();
         lineBuf2 = checkType(lineBuf2, &propBuffer, &colorBuffer);
         addnewline(buf, lineBuf2->ptr, propBuffer, colorBuffer,
-                   lineBuf2->length, FOLD_BUFFER_WIDTH, nlines);
+                   lineBuf2->Size(), FOLD_BUFFER_WIDTH, nlines);
         if (!top) {
             top = buf->firstLine;
             cur = top;
@@ -5690,14 +5690,14 @@ save2tmp(URLFile uf, char *tmpf)
     {
         Str buf = Strnew_size(SAVE_BUF_SIZE);
         while (UFread(&uf, buf, SAVE_BUF_SIZE)) {
-            if (buf->Puts( ff) != buf->length) {
+            if (buf->Puts( ff) != buf->Size()) {
                 bcopy(env_bak, AbortLoading, sizeof(JMP_BUF));
                 TRAP_OFF;
                 fclose(ff);
                 current_content_length = 0;
                 return -2;
             }
-            linelen += buf->length;
+            linelen += buf->Size();
             showProgress(&linelen, &trbyte);
         }
     }
@@ -5842,7 +5842,7 @@ _MoveFile(char *path1, char *path2)
     buf = Strnew_size(SAVE_BUF_SIZE);
     while (ISread(f1, buf, SAVE_BUF_SIZE)) {
         buf->Puts( f2);
-        linelen += buf->length;
+        linelen += buf->Size();
         showProgress(&linelen, &trbyte);
     }
     ISclose(f1);
@@ -5934,7 +5934,7 @@ _doFileCopy(char *tmpf, char *defstr, int download)
             printf("(Download)Save file to: ");
             fflush(stdout);
             filen = Strfgets(stdin);
-            if (filen->length == 0)
+            if (filen->Size() == 0)
                 return -1;
             q = filen->ptr;
         }
@@ -6050,7 +6050,7 @@ doFileSave(URLFile uf, char *defstr)
             printf("(Download)Save file to: ");
             fflush(stdout);
             filen = Strfgets(stdin);
-            if (filen->length == 0)
+            if (filen->Size() == 0)
                 return -1;
             q = filen->ptr;
         }
@@ -6445,17 +6445,17 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
     }
     if (hidden) {
         pass = Strnew_charp(hidden);
-        line->Pop(line->ptr + line->length - hidden);
+        line->Pop(line->ptr + line->Size() - hidden);
     }
 
     if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && obuf->pos > width) {
         char *tp = &line->ptr[obuf->bp.len - obuf->bp.tlen];
-        char *ep = &line->ptr[line->length];
+        char *ep = &line->ptr[line->Size()];
 
         if (obuf->bp.pos == obuf->pos && tp <= ep &&
             tp > line->ptr && tp[-1] == ' ') {
             bcopy(tp, tp - 1, ep - tp + 1);
-            line->length--;
+            line->Pop(1);
             obuf->pos--;
         }
     }
@@ -7056,8 +7056,8 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
                     num->Push( ". ");
                 else
                     num->Push( '.');
-                push_spaces(obuf, 1, INDENT_INCR - num->length);
-                push_str(obuf, num->length, num, PC_ASCII);
+                push_spaces(obuf, 1, INDENT_INCR - num->Size());
+                push_str(obuf, num->Size(), num, PC_ASCII);
                 if (INDENT_INCR >= 4)
                     set_space_to_prevchar(obuf->prevchar);
                 break;
@@ -7191,10 +7191,10 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         close_anchor(h_env, obuf);
         return 1;
     case HTML_PRE_INT:
-        i = obuf->line->length;
+        i = obuf->line->Size();
         append_tags(obuf);
         if (!(obuf->flag & RB_SPECIAL)) {
-            set_breakpoint(obuf, obuf->line->length - i);
+            set_breakpoint(obuf, obuf->line->Size() - i);
         }
         obuf->flag |= RB_PRE_INT;
         return 0;
@@ -7841,7 +7841,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
                 if (obuf->status != R_ST_NORMAL)
                     return;
             }
-            if (h_env->tagbuf->length == 0)
+            if (h_env->tagbuf->Size() == 0)
                 continue;
             str = h_env->tagbuf->ptr;
             if (*str == '<') {
@@ -8064,14 +8064,14 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
                         !is_hangul && !prev_is_hangul &&
                         obuf->pos > h_env->envs[h_env->envc].indent &&
                         obuf->line->Back() == ' ') {
-                        while (obuf->line->length >= 2 &&
-                               !strncmp(obuf->line->ptr + obuf->line->length -
+                        while (obuf->line->Size() >= 2 &&
+                               !strncmp(obuf->line->ptr + obuf->line->Size() -
                                         2, "  ", 2)
                                && obuf->pos >= h_env->envs[h_env->envc].indent) {
                             obuf->line->Pop(1);
                             obuf->pos--;
                         }
-                        if (obuf->line->length >= 3 &&
+                        if (obuf->line->Size() >= 3 &&
                             obuf->prev_ctype == PC_KANJI1 &&
                             obuf->line->Back() == ' ' &&
                             obuf->pos >= h_env->envs[h_env->envc].indent) {
@@ -8101,7 +8101,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
                     Str line;
                     append_tags(obuf);
                     line = Strnew_charp(bp);
-                    obuf->line->Pop(obuf->line->length - obuf->bp.len);
+                    obuf->line->Pop(obuf->line->Size() - obuf->bp.len);
 #ifdef FORMAT_NICE
                     if (obuf->pos - i > h_env->limit)
                         obuf->flag |= RB_FILL;
@@ -8124,7 +8124,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
             tp = &obuf->line->ptr[obuf->bp.len - obuf->bp.tlen];
         }
         else {
-            tp = &obuf->line->ptr[obuf->line->length];
+            tp = &obuf->line->ptr[obuf->line->Size()];
         }
 
         if (tp > obuf->line->ptr && tp[-1] == ' ')
@@ -8418,7 +8418,7 @@ loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
 #endif
     if (IStype(f->stream) != IST_ENCODED)
         f->stream = newEncodedStream(f->stream, f->encoding);
-    while ((lineBuf2 = StrmyUFgets(f))->length) {
+    while ((lineBuf2 = StrmyUFgets(f))->Size()) {
 #ifdef USE_NNTP
         if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.') {
             lineBuf2->Delete(0, 1);
@@ -8433,7 +8433,7 @@ loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
 #endif				/* USE_NNTP */
         if (src)
             lineBuf2->Puts( src);
-        linelen += lineBuf2->length;
+        linelen += lineBuf2->Size();
         if (w3m_dump & DUMP_EXTRA)
             printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
         if (w3m_dump & DUMP_SOURCE)

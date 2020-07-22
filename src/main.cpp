@@ -969,7 +969,7 @@ int main(int argc, char **argv, char **envp)
         {
             if (fmInitialized)
                 fmTerm();
-            if (err_msg->length)
+            if (err_msg->Size())
                 fprintf(stderr, "%s", err_msg->ptr);
             w3m_exit(2);
         }
@@ -1018,7 +1018,7 @@ int main(int argc, char **argv, char **envp)
                                     NULL);
                     request->body = body->ptr;
                     request->boundary = NULL;
-                    request->length = body->length;
+                    request->length = body->Size();
                 }
                 else
                 {
@@ -1089,7 +1089,7 @@ int main(int argc, char **argv, char **envp)
     }
     if (w3m_dump)
     {
-        if (err_msg->length)
+        if (err_msg->Size())
             fprintf(stderr, "%s", err_msg->ptr);
 #ifdef USE_COOKIE
         save_cookies();
@@ -1128,19 +1128,19 @@ int main(int argc, char **argv, char **envp)
         }
         if (fmInitialized)
             fmTerm();
-        if (err_msg->length)
+        if (err_msg->Size())
             fprintf(stderr, "%s", err_msg->ptr);
         if (newbuf == NO_BUFFER)
         {
 #ifdef USE_COOKIE
             save_cookies();
 #endif /* USE_COOKIE */
-            if (!err_msg->length)
+            if (!err_msg->Size())
                 w3m_exit(0);
         }
         w3m_exit(2);
     }
-    if (err_msg->length)
+    if (err_msg->Size())
         disp_message_nsec(err_msg->ptr, FALSE, 1, TRUE, FALSE);
 
     SearchHeader = FALSE;
