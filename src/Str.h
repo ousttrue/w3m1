@@ -34,9 +34,14 @@ struct GCStr : public gc_cleanup
     {
     }
     ~GCStr();
-    int Cmp(const GCStr *y)const;
-    int Cmp(const char *y)const;
+    int Cmp(const GCStr *y) const;
     int Cmp(const GCStr *y, int len) const;
+    int Cmp(const char *y) const;
+    int Cmp(const char *y, int n) const;
+    int ICaseCmp(const GCStr *y) const;
+    int ICaseCmp(const GCStr *y, int n) const;
+    int ICaseCmp(const char *y) const;
+    int ICaseCmp(const char *y, int n)const;
     GCStr *Clone() const;
     void Clear();
     char *RequireSize(int size);
@@ -116,32 +121,6 @@ void Strcat_m_charp(Str, ...);
 Str Sprintf(char *fmt, ...);
 Str Strfgets(FILE *);
 Str Strfgetall(FILE *);
-
-
-inline int Strncmp_charp(Str x, char *y, int n)
-{
-    return strncmp((x)->ptr, (y), (n));
-}
-
-inline int Strcasecmp(Str x, Str y)
-{
-    return strcasecmp((x)->ptr, (y)->ptr);
-}
-
-inline int Strcasecmp_charp(Str x, char *y)
-{
-    return strcasecmp((x)->ptr, (y));
-}
-
-inline int Strncasecmp(Str x, Str y, int n)
-{
-    return strncasecmp((x)->ptr, (y)->ptr, (n));
-}
-
-inline int Strncasecmp_charp(Str x, char *y, int n)
-{
-    return strncasecmp((x)->ptr, (y), (n));
-}
 
 inline char Strlastchar(Str s)
 {

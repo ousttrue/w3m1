@@ -293,7 +293,7 @@ Str make_optional_header_string(char *s)
         return NULL;
     hs = Strnew_size(strlen(s) + 3);
     hs->CopyFrom(s, p - s);
-    if (!Strcasecmp_charp(hs, "content-type"))
+    if (hs->ICaseCmp("content-type")==0)
         override_content_type = TRUE;
     hs->Push( ": ");
     if (*(++p))

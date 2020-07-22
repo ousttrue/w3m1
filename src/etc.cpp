@@ -668,7 +668,7 @@ find_auth_pass_entry(char *host, int port, char *realm, char *uname,
     for (ent = passwords; ent != NULL; ent = ent->next) {
         if (ent->is_proxy == is_proxy
             && (ent->bad != TRUE)
-            && (!ent->host || !Strcasecmp_charp(ent->host, host))
+            && (!ent->host || ent->host->ICaseCmp(host)==0)
             && (!ent->port || ent->port == port)
             && (!ent->uname || !uname || ent->uname->Cmp(uname)==0)
             && (!ent->realm || !realm || ent->realm->Cmp(realm)==0)

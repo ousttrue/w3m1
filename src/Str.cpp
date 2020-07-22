@@ -59,6 +59,27 @@ int GCStr::Cmp(const GCStr *y, int n) const
 {
     return strncmp(ptr, y->ptr, n);
 }
+int GCStr::Cmp(const char *y, int n)const
+{
+    return strncmp(ptr, y, n);
+}
+// ignore case
+int GCStr::ICaseCmp(const GCStr *y)const
+{
+    return strcasecmp(ptr, y->ptr);
+}
+int GCStr::ICaseCmp(const GCStr *y, int n)const
+{
+    return strncasecmp(ptr, y->ptr, n);
+}
+int GCStr::ICaseCmp(const char *y)const
+{
+    return strcasecmp(ptr, y);
+}
+int GCStr::ICaseCmp(const char *y, int n)const
+{
+    return strncasecmp(ptr, y, n);
+}
 
 GCStr *GCStr::Clone() const
 {

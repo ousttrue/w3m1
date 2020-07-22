@@ -69,7 +69,7 @@ print_bookmark_panel(char *bmark, char *url, char *title, char *charset)
 	printf("<tr><td>Section:<td><select name=\"section\">\n");
 	while (tmp = Strfgets(f), tmp->length > 0) {
 	    tmp->StripLeft();
-	    if (Strncasecmp_charp(tmp, "<h2>", 4) == 0) {
+	    if (tmp->ICaseCmp("<h2>", 4) == 0) {
 		p = tmp->ptr + 4;
 		tmp2 = Strnew();
 		while (*p && *p != '<')
@@ -141,7 +141,7 @@ insert_bookmark(char *bmark, struct parsed_tagarg *data)
 	tmp = Strfgets(f);
 	if (tmp->length == 0)
 	    break;
-	if (Strcasecmp(tmp, section_tmp) == 0)
+	if (tmp->ICaseCmp(section_tmp) == 0)
 	    section_found = 1;
 	if (section_found && !bmark_added) {
 	    tmp->StripLeft();
@@ -152,7 +152,7 @@ insert_bookmark(char *bmark, struct parsed_tagarg *data)
 		bmark_added = 1;
 	    }
 	}
-	if (!bmark_added && Strcasecmp_charp(tmp, "</body>\n") == 0) {
+	if (!bmark_added && tmp->ICaseCmp("</body>\n") == 0) {
 	    pushText(tl, Sprintf("<h2>%s</h2>\n<ul>\n", section)->ptr);
 	    pushText(tl,
 		     Sprintf("<li><a href=\"%s\">%s</a>\n", url, title)->ptr);

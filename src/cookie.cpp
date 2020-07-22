@@ -203,8 +203,8 @@ get_cookie_info(Str domain, Str path, Str name)
     struct cookie *p;
 
     for (p = First_cookie; p; p = p->next) {
-	if (Strcasecmp(p->domain, domain) == 0 &&
-	    p->path->Cmp(path) == 0 && Strcasecmp(p->name, name) == 0)
+	if (p->domain->ICaseCmp(domain) == 0 &&
+	    p->path->Cmp(path) == 0 && p->name->ICaseCmp(name) == 0)
 	    return p;
     }
     return NULL;
@@ -223,7 +223,7 @@ find_cookie(ParsedURL *pu)
     for (p = First_cookie; p; p = p->next) {
 	domainname = (p->version == 0) ? fq_domainname : pu->host;
 	if (p->flag & COO_USE && match_cookie(pu, p, domainname)) {
-	    for (p1 = fco; p1 && Strcasecmp(p1->name, p->name);
+	    for (p1 = fco; p1 && p1->name->ICaseCmp(p->name);
 		 p1 = p1->next) ;
 	    if (p1)
 		continue;
