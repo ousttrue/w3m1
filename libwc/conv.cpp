@@ -1,5 +1,6 @@
 extern "C" {
 #include "wc_types.h"
+#include "status.h"
 #include "detect.h"
 #include "conv.h"    
 #include "wc.h"

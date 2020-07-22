@@ -65,7 +65,7 @@ typedef struct {
     wc_uchar *gset_ext;
     Str     (*conv_from)(Str, wc_ces);
     void    (*push_to)(Str, wc_wchar_t, struct _wc_status *);
-    Str     (*char_conv)();
+    Str     (*char_conv)(wc_uchar, struct _wc_status*);
 } wc_ces_info;
 
 typedef struct {

@@ -1,11 +1,10 @@
-
+extern "C"{
 #include "wc.h"
 #include "big5.h"
 #include "search.h"
 #include "wtf.h"
-#ifdef USE_UNICODE
 #include "ucs.h"
-#endif
+}
 
 #define C0 WC_BIG5_MAP_C0
 #define GL WC_BIG5_MAP_GL

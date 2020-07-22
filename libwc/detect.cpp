@@ -1,5 +1,6 @@
 extern "C"{
 #include "wc.h"
+#include "status.h"
 #include "detect.h"
 #include "iso2022.h"
 #include "sjis.h"

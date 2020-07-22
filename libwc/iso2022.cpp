@@ -1,5 +1,6 @@
 extern "C"{
 #include "wc.h"
+#include "status.h"
 #include "iso2022.h"
 #include "jis.h"
 #include "big5.h"

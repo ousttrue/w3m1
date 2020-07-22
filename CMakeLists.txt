@@ -13,9 +13,9 @@ add_executable(w3mbookmark
     src/myctype.cpp
     src/hash.cpp
     src/entity.cpp
-    libwc/big5.c
+    libwc/big5.cpp
     libwc/ces.c
-    libwc/char_conv.c
+    libwc/char_conv.cpp
     libwc/charset.c
     libwc/combining.c
     libwc/conv.cpp
@@ -108,9 +108,9 @@ add_executable(w3m
     src/istream.cpp
     src/keybind.cpp
     src/parsetagx.cpp
-    libwc/big5.c
+    libwc/big5.cpp
     libwc/ces.c
-    libwc/char_conv.c
+    libwc/char_conv.cpp
     libwc/charset.c
     libwc/combining.c
     libwc/conv.cpp
