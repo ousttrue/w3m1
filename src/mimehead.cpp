@@ -104,7 +104,7 @@ decodeB(char **ww)
 	d[1] = ((c[1] << 4) | (c[2] >> 2));
 	d[2] = ((c[2] << 6) | c[3]);
 	for (i = 0; i < 3 - n_pad; i++) {
-	    ap->Concat( d[i]);
+	    ap->Push( d[i]);
 	}
 	if (n_pad || *wp == '\0' || *wp == '?')
 	    break;
@@ -128,7 +128,7 @@ decodeU(char **ww)
     for (w++, i = 2; *w != '\0' && n; n--) {
 	c1 = (w[0] - 0x20) % 0x40;
 	c2 = (w[1] - 0x20) % 0x40;
-	a->Concat( (c1 << i) | (c2 >> (6 - i)));
+	a->Push( (c1 << i) | (c2 >> (6 - i)));
 	if (i == 6) {
 	    w += 2;
 	    i = 2;
@@ -151,14 +151,14 @@ decodeQ(char **ww)
     for (; *w != '\0' && *w != '?'; w++) {
 	if (*w == '=') {
 	    w++;
-	    a->Concat( ha2d(*w, *(w + 1)));
+	    a->Push( ha2d(*w, *(w + 1)));
 	    w++;
 	}
 	else if (*w == '_') {
-	    a->Concat( ' ');
+	    a->Push( ' ');
 	}
 	else
-	    a->Concat( *w);
+	    a->Push( *w);
     }
     *ww = w;
     return a;
@@ -183,12 +183,12 @@ decodeQP(char **ww)
 	    else {
 		if (*w == '\0' || *(w + 1) == '\0')
 		    break;
-		a->Concat( ha2d(*w, *(w + 1)));
+		a->Push( ha2d(*w, *(w + 1)));
 		w++;
 	    }
 	}
 	else
-	    a->Concat( *w);
+	    a->Push( *w);
     }
     *ww = w;
     return a;
@@ -216,7 +216,7 @@ decodeWord0(char **ow)
     for (; *w != '?'; w++) {
 	if (*w == '\0')
 	    goto convert_fail;
-	tmp->Concat(*w);
+	tmp->Push(*w);
     }
 #ifdef USE_M17N
     c = wc_guess_charset(tmp->ptr, 0);
@@ -282,13 +282,13 @@ decodeMIME0(Str orgstr)
 	if (*org == '=' && *(org + 1) == '?') {
 	    if (cnv == NULL) {
 		cnv = Strnew_size(orgstr->length);
-		cnv->Concat(orgstr->ptr, org - orgstr->ptr);
+		cnv->Push(orgstr->ptr, org - orgstr->ptr);
 	    }
 	  nextEncodeWord:
 	    p = org;
-	    cnv->Concat( decodeWord(&org, charset));
+	    cnv->Push( decodeWord(&org, charset));
 	    if (org == p) {	/* Convert failure */
-		cnv->Concat( org);
+		cnv->Push( org);
 		return cnv;
 	    }
 	    org0 = org;
@@ -311,7 +311,7 @@ decodeMIME0(Str orgstr)
 	}
 	else {
 	    if (cnv != NULL)
-		cnv->Concat( *org);
+		cnv->Push( *org);
 	    org++;
 	}
     }
@@ -358,10 +358,10 @@ encodeB(char *a)
 	    c3 = (((d[1] << 2) | (d[2] >> 6)) & 0x3f);
 	    c4 = (d[2] & 0x3f);
 	}
-	w->Concat( Base64Table[c1]);
-	w->Concat( Base64Table[c2]);
-	w->Concat( Base64Table[c3]);
-	w->Concat( Base64Table[c4]);
+	w->Push( Base64Table[c1]);
+	w->Push( Base64Table[c2]);
+	w->Push( Base64Table[c3]);
+	w->Push( Base64Table[c4]);
 	if (n_pad)
 	    break;
 	a += 3;

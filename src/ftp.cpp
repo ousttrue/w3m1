@@ -161,18 +161,18 @@ ftp_login(FTP *ftp)
 
                 if (getnameinfo((struct sockaddr *)&sockname, socknamelen,
                                 hostbuf, sizeof hostbuf, NULL, 0, NI_NAMEREQD) == 0)
-                    tmp->Concat(hostbuf);
+                    tmp->Push(hostbuf);
                 else if (getnameinfo((struct sockaddr *)&sockname, socknamelen,
                                      hostbuf, sizeof hostbuf, NULL, 0, NI_NUMERICHOST) == 0)
                     Strcat_m_charp(tmp, "[", hostbuf, "]", NULL);
                 else
-                    tmp->Concat("unknown");
+                    tmp->Push("unknown");
 #else
 
                 if ((sockent = gethostbyaddr((char *)&sockname.sin_addr,
                                              sizeof(sockname.sin_addr),
                                              sockname.sin_family)))
-                    tmp->Concat(sockent->h_name);
+                    tmp->Push(sockent->h_name);
                 else
                     Strcat_m_charp(tmp, "[", inet_ntoa(sockname.sin_addr),
                                    "]", NULL);
@@ -451,7 +451,7 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
 #else
         tmp = Strnew_charp("anonymous");
 #endif /* __MINGW32_VERSION */
-        tmp->Concat('@');
+        tmp->Push('@');
         pass = tmp->ptr;
     }
 
@@ -548,7 +548,7 @@ Str loadFTPDir0(ParsedURL *pu)
     }
     tmp = parsedURL2Str(pu);
     if (Strlastchar(tmp) != '/')
-        tmp->Concat('/');
+        tmp->Push('/');
     fn = html_quote(tmp->ptr);
     tmp =
         convertLine(NULL, Strnew_charp(file_unquote(tmp->ptr)), RAW_MODE,
@@ -562,19 +562,19 @@ Str loadFTPDir0(ParsedURL *pu)
     if (SETJMP(AbortLoading) != 0)
     {
         if (sv_type == UNIXLIKE_SERVER)
-            FTPDIRtmp->Concat( "</a></pre>\n");
+            FTPDIRtmp->Push( "</a></pre>\n");
         else
-            FTPDIRtmp->Concat( "</a></ul>\n");
-        FTPDIRtmp->Concat( "<p>Transfer Interrupted!\n");
+            FTPDIRtmp->Push( "</a></ul>\n");
+        FTPDIRtmp->Push( "<p>Transfer Interrupted!\n");
         goto ftp_end;
     }
     TRAP_ON;
 
     if (sv_type == UNIXLIKE_SERVER)
-        FTPDIRtmp->Concat( "<pre>\n");
+        FTPDIRtmp->Push( "<pre>\n");
     else
-        FTPDIRtmp->Concat( "<ul>\n<li>");
-    FTPDIRtmp->Concat( "<a href=\"..\">[Upper Directory]</a>\n");
+        FTPDIRtmp->Push( "<ul>\n<li>");
+    FTPDIRtmp->Push( "<a href=\"..\">[Upper Directory]</a>\n");
 
     nfile_max = 100;
     flist = New_N(char *, nfile_max);
@@ -646,21 +646,21 @@ Str loadFTPDir0(ParsedURL *pu)
             tmp = convertLine(NULL, Strnew_charp(fn), RAW_MODE, charset,
                               doc_charset);
             if (ftype == FTPDIR_LINK)
-                tmp->Concat('@');
+                tmp->Push('@');
             Strcat_m_charp(FTPDIRtmp, "<a href=\"", html_quote(file_quote(fn)),
                            "\">", html_quote(tmp->ptr), "</a>", NULL);
             for (i = get_Str_strwidth(tmp); i <= max_len; i++)
             {
                 if ((max_len % 2 + i) % 2)
-                    FTPDIRtmp->Concat( '.');
+                    FTPDIRtmp->Push( '.');
                 else
-                    FTPDIRtmp->Concat( ' ');
+                    FTPDIRtmp->Push( ' ');
             }
             tmp = convertLine(NULL, Strnew_charp(date), RAW_MODE, charset,
                               doc_charset);
             Strcat_m_charp(FTPDIRtmp, html_quote(tmp->ptr), "\n", NULL);
         }
-        FTPDIRtmp->Concat( "</pre>\n");
+        FTPDIRtmp->Push( "</pre>\n");
     }
     else
     {
@@ -684,11 +684,11 @@ Str loadFTPDir0(ParsedURL *pu)
                            html_quote(file_quote(fn)), "\">",
                            html_quote(tmp->ptr), "</a>\n", NULL);
         }
-        FTPDIRtmp->Concat( "</ul>\n");
+        FTPDIRtmp->Push( "</ul>\n");
     }
 
 ftp_end:
-    FTPDIRtmp->Concat( "</body>\n</html>\n");
+    FTPDIRtmp->Push( "</body>\n</html>\n");
     TRAP_OFF;
     closeFTPdata(current_ftp.data);
     return FTPDIRtmp;

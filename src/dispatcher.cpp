@@ -597,20 +597,20 @@ char *getQWord(char **str)
             if (in_q)
             {
                 if (*p != '\\' && *p != '\'') /* '..\\..', '..\'..' */
-                    tmp->Concat('\\');
+                    tmp->Push('\\');
             }
             else if (in_dq)
             {
                 if (*p != '\\' && *p != '"') /* "..\\..", "..\".." */
-                    tmp->Concat('\\');
+                    tmp->Push('\\');
             }
             else
             {
                 if (*p != '\\' && *p != '\'' && /* ..\\.., ..\'.. */
                     *p != '"' && !IS_SPACE(*p)) /* ..\".., ..\.. */
-                    tmp->Concat('\\');
+                    tmp->Push('\\');
             }
-            tmp->Concat(*p);
+            tmp->Push(*p);
             esc = 0;
         }
         else if (*p == '\\')
@@ -622,14 +622,14 @@ char *getQWord(char **str)
             if (*p == '\'')
                 in_q = 0;
             else
-                tmp->Concat(*p);
+                tmp->Push(*p);
         }
         else if (in_dq)
         {
             if (*p == '"')
                 in_dq = 0;
             else
-                tmp->Concat(*p);
+                tmp->Push(*p);
         }
         else if (*p == '\'')
         {
@@ -645,7 +645,7 @@ char *getQWord(char **str)
         }
         else
         {
-            tmp->Concat(*p);
+            tmp->Push(*p);
         }
     }
     *str = p;

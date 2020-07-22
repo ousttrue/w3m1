@@ -47,18 +47,18 @@ struct GCStr : public gc_cleanup
     {
         CopyFrom(src->ptr, src->length);
     }
-    void Concat(const char *src, int size);
-    void Concat(const char *src)
+    void Push(const char *src, int size);
+    void Push(const char *src)
     {
-        Concat(src, strlen(src));
+        Push(src, strlen(src));
     }
-    void Concat(const GCStr *src)
+    void Push(const GCStr *src)
     {
-        Concat(src->ptr, src->length);
+        Push(src->ptr, src->length);
     }
-    void Concat(char y)
+    void Push(char y)
     {
-        Concat(&y, 1);
+        Push(&y, 1);
         // ((length + 1 >= area_size) ? Strgrow(x), 0 : 0, ptr[length++] = (y), ptr[length] = 0);
     }
     GCStr* Substr(int begin, int len);

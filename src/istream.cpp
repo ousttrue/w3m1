@@ -248,7 +248,7 @@ Str StrISgets(InputStream *stream)
                 len = p - &sb->buf[sb->cur] + 1;
                 if (s == NULL)
                     s = Strnew_size(len);
-                s->Concat((char *)&sb->buf[sb->cur], len);
+                s->Push((char *)&sb->buf[sb->cur], len);
                 sb->cur += len;
                 return s;
             }
@@ -256,7 +256,7 @@ Str StrISgets(InputStream *stream)
             {
                 if (s == NULL)
                     s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
-                s->Concat((char *)&sb->buf[sb->cur],
+                s->Push((char *)&sb->buf[sb->cur],
                                sb->next - sb->cur);
                 sb->cur = sb->next;
             }
@@ -291,7 +291,7 @@ Str StrmyISgets(InputStream *stream)
             if (s && Strlastchar(s) == '\r')
             {
                 if (sb->buf[sb->cur] == '\n')
-                    s->Concat((char)sb->buf[sb->cur++]);
+                    s->Push((char)sb->buf[sb->cur++]);
                 return s;
             }
             for (i = sb->cur;
@@ -303,7 +303,7 @@ Str StrmyISgets(InputStream *stream)
                 len = i - sb->cur + 1;
                 if (s == NULL)
                     s = Strnew_size(len + MARGIN_STR_SIZE);
-                s->Concat((char *)&sb->buf[sb->cur], len);
+                s->Push((char *)&sb->buf[sb->cur], len);
                 sb->cur = i + 1;
                 if (sb->buf[i] == '\n')
                     return s;
@@ -312,7 +312,7 @@ Str StrmyISgets(InputStream *stream)
             {
                 if (s == NULL)
                     s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
-                s->Concat((char *)&sb->buf[sb->cur],
+                s->Push((char *)&sb->buf[sb->cur],
                                sb->next - sb->cur);
                 sb->cur = sb->next;
             }
@@ -618,14 +618,14 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
             Str ep = emsg->Clone();
             if (ep->length > COLS - 16)
                 Strshrink(ep, ep->length - (COLS - 16));
-            ep->Concat( ": accept? (y/n)");
+            ep->Push( ": accept? (y/n)");
             ans = inputAnswer(ep->ptr);
         }
         if (ans && TOLOWER(*ans) == 'y')
         {
             /* FIXME: gettextize? */
             amsg = Strnew_charp("Accept unsecure SSL session:");
-            amsg->Concat( emsg);
+            amsg->Push( emsg);
         }
         else
         {
@@ -642,23 +642,23 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
     ssl_accept_this_site(hostname);
     /* FIXME: gettextize? */
     s = amsg ? amsg : Strnew_charp("valid certificate");
-    s->Concat( "\n");
+    s->Push( "\n");
     xn = X509_get_subject_name(x);
     if (X509_NAME_get_text_by_NID(xn, NID_commonName, buf, sizeof(buf)) == -1)
-        s->Concat( " subject=<unknown>");
+        s->Push( " subject=<unknown>");
     else
         Strcat_m_charp(s, " subject=", buf, NULL);
     xn = X509_get_issuer_name(x);
     if (X509_NAME_get_text_by_NID(xn, NID_commonName, buf, sizeof(buf)) == -1)
-        s->Concat( ": issuer=<unknown>");
+        s->Push( ": issuer=<unknown>");
     else
         Strcat_m_charp(s, ": issuer=", buf, NULL);
-    s->Concat( "\n\n");
+    s->Push( "\n\n");
 
     bp = BIO_new(BIO_s_mem());
     X509_print(bp, x);
     len = (int)BIO_ctrl(bp, BIO_CTRL_INFO, 0, (char *)&p);
-    s->Concat(p, len);
+    s->Push(p, len);
     BIO_free_all(bp);
     X509_free(x);
     return s;

@@ -356,13 +356,13 @@ split(char *p)
 		{
 		case '"':
 			if (in_single_quote)
-				s->Concat('"');
+				s->Push('"');
 			else
 				in_double_quote = !in_double_quote;
 			break;
 		case '\'':
 			if (in_double_quote)
-				s->Concat('\'');
+				s->Push('\'');
 			else
 				in_single_quote = !in_single_quote;
 			break;
@@ -374,26 +374,26 @@ split(char *p)
 				switch (*p)
 				{
 				case 't':
-					s->Concat('\t');
+					s->Push('\t');
 					break;
 				case 'r':
-					s->Concat('\r');
+					s->Push('\r');
 					break;
 				case 'f':
-					s->Concat('\f');
+					s->Push('\f');
 					break;
 				case 'n':
-					s->Concat('\n');
+					s->Push('\n');
 					break;
 				case '\0':
 					goto LAST;
 				default:
-					s->Concat(*p);
+					s->Push(*p);
 				}
 			}
 			else
 			{
-				s->Concat(*p);
+				s->Push(*p);
 			}
 			break;
 		case ' ':
@@ -404,7 +404,7 @@ split(char *p)
 			/* Separators are detected. */
 			if (in_double_quote || in_single_quote)
 			{
-				s->Concat(*p);
+				s->Push(*p);
 			}
 			else if (s->length > 0)
 			{
@@ -413,7 +413,7 @@ split(char *p)
 			}
 			break;
 		default:
-			s->Concat(*p);
+			s->Push(*p);
 		}
 	}
 LAST:

@@ -324,7 +324,7 @@ Str wc_conv_from_iso2022(Str is, wc_ces ces)
         return is;
     os = Strnew_size(is->length);
     if (p > sp)
-        os->Concat(is->ptr, (int)(p - sp));
+        os->Push(is->ptr, (int)(p - sp));
 
     wc_input_init(ces, &st);
     gl_ccs = st.design[st.gl];
@@ -342,7 +342,7 @@ Str wc_conv_from_iso2022(Str is, wc_ces ces)
                                : st.design[st.gl];
                 if (!(WC_CCS_TYPE(gl_ccs) & WC_CCS_A_CS96))
                 {
-                    os->Concat((char)*p);
+                    os->Push((char)*p);
                     break;
                 }
             case GL:
@@ -355,7 +355,7 @@ Str wc_conv_from_iso2022(Str is, wc_ces ces)
                     continue;
                 }
                 else if (gl_ccs == WC_CES_US_ASCII)
-                    os->Concat((char)*p);
+                    os->Push((char)*p);
                 else
                     wtf_push_iso2022(os, gl_ccs, (uint32_t)*p);
                 break;
@@ -382,7 +382,7 @@ Str wc_conv_from_iso2022(Str is, wc_ces ces)
                     wtf_push_unknown(os, p, 1);
                 break;
             case C0:
-                os->Concat((char)*p);
+                os->Push((char)*p);
                 break;
             case C1:
                 wtf_push(os, WC_CCS_C1, (uint32_t)*p);
@@ -392,7 +392,7 @@ Str wc_conv_from_iso2022(Str is, wc_ces ces)
                 if (wc_parse_iso2022_esc(&p, &st))
                     state = st.state;
                 else
-                    os->Concat((char)*p);
+                    os->Push((char)*p);
                 continue;
             case SI:
                 st.gl = 0;
@@ -424,8 +424,8 @@ Str wc_conv_from_iso2022(Str is, wc_ces ces)
             case GL2:
                 if (!(WC_CCS_TYPE(gl_ccs) & WC_CCS_A_CS96))
                 {
-                    os->Concat((char)*q);
-                    os->Concat((char)*p);
+                    os->Push((char)*q);
+                    os->Push((char)*p);
                     break;
                 }
             case GL:
@@ -785,8 +785,8 @@ void wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st)
 
         wc_push_iso2022_esc(os, cc.ccs, g, 1, st);
         if (is_wide)
-            os->Concat((char)((cc.code >> 8) & 0x7f));
-        os->Concat((char)(cc.code & 0x7f));
+            os->Push((char)((cc.code >> 8) & 0x7f));
+        os->Push((char)(cc.code & 0x7f));
         return;
     }
 }
@@ -804,23 +804,23 @@ void wc_push_iso2022_esc(Str os, wc_ccs ccs, uint8_t g, uint8_t invoke, wc_statu
 
     if (st->design[g_invoke] != ccs)
     {
-        os->Concat(WC_C_ESC);
+        os->Push(WC_C_ESC);
         if (WC_CCS_IS_WIDE(ccs))
         {
-            os->Concat(WC_C_MBCS);
+            os->Push(WC_C_MBCS);
             if (g_invoke != 0 ||
                 (ccs != WC_CCS_JIS_C_6226 &&
                  ccs != WC_CCS_JIS_X_0208 &&
                  ccs != WC_CCS_GB_2312))
-                os->Concat((char)g);
+                os->Push((char)g);
         }
         else
         {
-            os->Concat((char)g);
+            os->Push((char)g);
             if ((ccs & WC_CCS_A_ISO_2022) == WC_CCS_A_CS942)
-                os->Concat(WC_C_CS942);
+                os->Push(WC_C_CS942);
         }
-        os->Concat((char)WC_CCS_GET_F(ccs));
+        os->Push((char)WC_CCS_GET_F(ccs));
         st->design[g_invoke] = ccs;
     }
     if (!invoke)
@@ -831,24 +831,24 @@ void wc_push_iso2022_esc(Str os, wc_ccs ccs, uint8_t g, uint8_t invoke, wc_statu
     case 0:
         if (st->gl != 0)
         {
-            os->Concat(WC_C_SI);
+            os->Push(WC_C_SI);
             st->gl = 0;
         }
         break;
     case 1:
         if (st->gl != 1)
         {
-            os->Concat(WC_C_SO);
+            os->Push(WC_C_SO);
             st->gl = 1;
         }
         break;
     case 2:
-        os->Concat(WC_C_ESC);
-        os->Concat(WC_C_SS2);
+        os->Push(WC_C_ESC);
+        os->Push(WC_C_SS2);
         break;
     case 3:
-        os->Concat(WC_C_ESC);
-        os->Concat(WC_C_SS3);
+        os->Push(WC_C_ESC);
+        os->Push(WC_C_SS3);
         break;
     }
 }
@@ -861,25 +861,25 @@ void wc_push_to_euc(Str os, wc_wchar_t cc, wc_status *st)
     {
         if (cc.ccs == g1_ccs)
         {
-            os->Concat((char)((cc.code >> 8) | 0x80));
-            os->Concat((char)((cc.code & 0xff) | 0x80));
+            os->Push((char)((cc.code >> 8) | 0x80));
+            os->Push((char)((cc.code & 0xff) | 0x80));
             return;
         }
         switch (cc.ccs)
         {
         case WC_CCS_US_ASCII:
-            os->Concat((char)cc.code);
+            os->Push((char)cc.code);
             return;
         case WC_CCS_C1:
-            os->Concat((char)(cc.code | 0x80));
+            os->Push((char)(cc.code | 0x80));
             return;
         case WC_CCS_UNKNOWN_W:
             if (!WcOption.no_replace)
-                os->Concat(WC_REPLACE_W);
+                os->Push(WC_REPLACE_W);
             return;
         case WC_CCS_UNKNOWN:
             if (!WcOption.no_replace)
-                os->Concat(WC_REPLACE);
+                os->Push(WC_REPLACE);
             return;
         case WC_CCS_JOHAB:
         case WC_CCS_JOHAB_1:
@@ -909,13 +909,13 @@ void wc_push_to_eucjp(Str os, wc_wchar_t cc, wc_status *st)
         switch (cc.ccs)
         {
         case WC_CCS_US_ASCII:
-            os->Concat((char)cc.code);
+            os->Push((char)cc.code);
             return;
         case WC_CCS_JIS_X_0201K:
             if (WcOption.use_jisx0201k)
             {
-                os->Concat(WC_C_SS2R);
-                os->Concat((char)(cc.code | 0x80));
+                os->Push(WC_C_SS2R);
+                os->Push((char)(cc.code | 0x80));
                 return;
             }
             else if (WcOption.fix_width_conv)
@@ -938,7 +938,7 @@ void wc_push_to_eucjp(Str os, wc_wchar_t cc, wc_status *st)
         case WC_CCS_JIS_X_0212:
             if (WcOption.use_jisx0212)
             {
-                os->Concat(WC_C_SS3R);
+                os->Push(WC_C_SS3R);
                 break;
             }
 #ifdef USE_UNICODE
@@ -951,7 +951,7 @@ void wc_push_to_eucjp(Str os, wc_wchar_t cc, wc_status *st)
         case WC_CCS_JIS_X_0213_2:
             if (WcOption.use_jisx0213)
             {
-                os->Concat(WC_C_SS3R);
+                os->Push(WC_C_SS3R);
                 break;
             }
 #ifdef USE_UNICODE
@@ -962,15 +962,15 @@ void wc_push_to_eucjp(Str os, wc_wchar_t cc, wc_status *st)
                 cc.ccs = WC_CCS_UNKNOWN_W;
             continue;
         case WC_CCS_C1:
-            os->Concat((char)(cc.code | 0x80));
+            os->Push((char)(cc.code | 0x80));
             return;
         case WC_CCS_UNKNOWN_W:
             if (!WcOption.no_replace)
-                os->Concat(WC_REPLACE_W);
+                os->Push(WC_REPLACE_W);
             return;
         case WC_CCS_UNKNOWN:
             if (!WcOption.no_replace)
-                os->Concat(WC_REPLACE);
+                os->Push(WC_REPLACE);
             return;
         default:
 #ifdef USE_UNICODE
@@ -981,8 +981,8 @@ void wc_push_to_eucjp(Str os, wc_wchar_t cc, wc_status *st)
                 cc.ccs = WC_CCS_IS_WIDE(cc.ccs) ? WC_CCS_UNKNOWN_W : WC_CCS_UNKNOWN;
             continue;
         }
-        os->Concat((char)((cc.code >> 8) | 0x80));
-        os->Concat((char)((cc.code & 0xff) | 0x80));
+        os->Push((char)((cc.code >> 8) | 0x80));
+        os->Push((char)((cc.code & 0xff) | 0x80));
         return;
     }
 }
@@ -994,7 +994,7 @@ void wc_push_to_euctw(Str os, wc_wchar_t cc, wc_status *st)
         switch (cc.ccs)
         {
         case WC_CCS_US_ASCII:
-            os->Concat((char)cc.code);
+            os->Push((char)cc.code);
             return;
         case WC_CCS_CNS_11643_1:
             break;
@@ -1004,8 +1004,8 @@ void wc_push_to_euctw(Str os, wc_wchar_t cc, wc_status *st)
         case WC_CCS_CNS_11643_5:
         case WC_CCS_CNS_11643_6:
         case WC_CCS_CNS_11643_7:
-            os->Concat(WC_C_SS2R);
-            os->Concat((char)(0xA1 + (cc.ccs - WC_CCS_CNS_11643_1)));
+            os->Push(WC_C_SS2R);
+            os->Push((char)(0xA1 + (cc.ccs - WC_CCS_CNS_11643_1)));
             break;
         case WC_CCS_CNS_11643_8:
         case WC_CCS_CNS_11643_9:
@@ -1016,19 +1016,19 @@ void wc_push_to_euctw(Str os, wc_wchar_t cc, wc_status *st)
         case WC_CCS_CNS_11643_14:
         case WC_CCS_CNS_11643_15:
         case WC_CCS_CNS_11643_16:
-            os->Concat(WC_C_SS2R);
-            os->Concat((char)(0xA8 + (cc.ccs - WC_CCS_CNS_11643_8)));
+            os->Push(WC_C_SS2R);
+            os->Push((char)(0xA8 + (cc.ccs - WC_CCS_CNS_11643_8)));
             break;
         case WC_CCS_C1:
-            os->Concat((char)(cc.code | 0x80));
+            os->Push((char)(cc.code | 0x80));
             return;
         case WC_CCS_UNKNOWN_W:
             if (!WcOption.no_replace)
-                os->Concat(WC_REPLACE_W);
+                os->Push(WC_REPLACE_W);
             return;
         case WC_CCS_UNKNOWN:
             if (!WcOption.no_replace)
-                os->Concat(WC_REPLACE);
+                os->Push(WC_REPLACE);
             return;
         default:
 #ifdef USE_UNICODE
@@ -1039,8 +1039,8 @@ void wc_push_to_euctw(Str os, wc_wchar_t cc, wc_status *st)
                 cc.ccs = WC_CCS_IS_WIDE(cc.ccs) ? WC_CCS_UNKNOWN_W : WC_CCS_UNKNOWN;
             continue;
         }
-        os->Concat((char)((cc.code >> 8) | 0x80));
-        os->Concat((char)((cc.code & 0xff) | 0x80));
+        os->Push((char)((cc.code >> 8) | 0x80));
+        os->Push((char)((cc.code & 0xff) | 0x80));
         return;
     }
 }
@@ -1053,24 +1053,24 @@ void wc_push_to_iso8859(Str os, wc_wchar_t cc, wc_status *st)
     {
         if (cc.ccs == g1_ccs)
         {
-            os->Concat((char)(cc.code | 0x80));
+            os->Push((char)(cc.code | 0x80));
             return;
         }
         switch (cc.ccs)
         {
         case WC_CCS_US_ASCII:
-            os->Concat((char)cc.code);
+            os->Push((char)cc.code);
             return;
         case WC_CCS_C1:
-            os->Concat((char)(cc.code | 0x80));
+            os->Push((char)(cc.code | 0x80));
             return;
         case WC_CCS_UNKNOWN_W:
             if (!WcOption.no_replace)
-                os->Concat(WC_REPLACE_W);
+                os->Push(WC_REPLACE_W);
             return;
         case WC_CCS_UNKNOWN:
             if (!WcOption.no_replace)
-                os->Concat(WC_REPLACE);
+                os->Push(WC_REPLACE);
             return;
         default:
 #ifdef USE_UNICODE
@@ -1181,7 +1181,7 @@ Str wc_char_conv_from_iso2022(uint8_t c, wc_status *st)
         case GL2:
             if (!(WC_CCS_TYPE(gl_ccs) & WC_CCS_A_CS96))
             {
-                os->Concat((char)c);
+                os->Push((char)c);
                 break;
             }
         case GL:
@@ -1192,7 +1192,7 @@ Str wc_char_conv_from_iso2022(uint8_t c, wc_status *st)
                 return NULL;
             }
             else if (gl_ccs == WC_CES_US_ASCII)
-                os->Concat((char)c);
+                os->Push((char)c);
             else
                 wtf_push_iso2022(os, gl_ccs, (uint32_t)c);
             break;
@@ -1210,7 +1210,7 @@ Str wc_char_conv_from_iso2022(uint8_t c, wc_status *st)
                 wtf_push_iso2022(os, gr_ccs, (uint32_t)c);
             break;
         case C0:
-            os->Concat((char)c);
+            os->Push((char)c);
             break;
         case C1:
             break;

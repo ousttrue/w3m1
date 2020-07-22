@@ -98,7 +98,7 @@ matchMailcapAttr(char *p, char *attr, int len, Str *value)
 			quoted = 0;
 		    else if (*p == '\\')
 			quoted = 1;
-		    (*value)->Concat(*p);
+		    (*value)->Push(*p);
 		    p++;
 		}
 		if (q)
@@ -213,7 +213,7 @@ loadMailcap(char *filename)
 	if (Strlastchar(tmp) == '\\') {
 	    /* continuation */
 	    Strshrink(tmp, 1);
-	    tmp->Concat(Strfgets(f));
+	    tmp->Push(Strfgets(f));
 	    goto redo;
 	}
 	if (extractMailcapEntry(tmp->ptr, &mcap[i]))
@@ -278,11 +278,11 @@ acceptableMimeTypes()
 	}
     }
     types = Strnew();
-    types->Concat( "text/html, text/*;q=0.5");
+    types->Push( "text/html, text/*;q=0.5");
     while ((p = popText(l)) != NULL) {
-	types->Concat( ", ");
-	types->Concat( p);
-	types->Concat( "/*");
+	types->Push( ", ");
+	types->Push( p);
+	types->Push( "/*");
     }
     return types->ptr;
 }
@@ -329,23 +329,23 @@ quote_mailcap(char *s, int flag)
 	case '"':
 	case '\\':
 	    if (!(flag & MCF_SQUOTED))
-		d->Concat( '\\');
+		d->Push( '\\');
 
-	    d->Concat( *s);
+	    d->Push( *s);
 	    break;
 	case '\'':
 	    if (flag & MCF_SQUOTED) {
-		d->Concat( "'\\''");
+		d->Push( "'\\''");
 		break;
 	    }
 	default:
 	    if (!flag && !IS_ALNUM(*s))
-		d->Concat( '\\');
+		d->Push( '\\');
 	case '_':
 	case '.':
 	case ':':
 	case '/':
-	    d->Concat( *s);
+	    d->Push( *s);
 	    break;
 	}
   end:
@@ -373,9 +373,9 @@ unquote_mailcap_loop(char *qstr, char *type, char *name, char *attr,
     for (flag = flag0, p = qstr; *p; p++) {
 	if (status == MC_QUOTED) {
 	    if (prev_status == MC_PREC2)
-		tmp->Concat(*p);
+		tmp->Push(*p);
 	    else
-		str->Concat( *p);
+		str->Push( *p);
 	    status = prev_status;
 	    continue;
 	}
@@ -402,7 +402,7 @@ unquote_mailcap_loop(char *qstr, char *type, char *name, char *attr,
 		    else if (!flag)
 			flag |= MCF_DQUOTED;
 		}
-		str->Concat( *p);
+		str->Push( *p);
 	    }
 	    break;
 	case MC_PREC:
@@ -410,14 +410,14 @@ unquote_mailcap_loop(char *qstr, char *type, char *name, char *attr,
 		switch (*p) {
 		case 's':
 		    if (name) {
-			str->Concat( quote_mailcap(name, flag)->ptr);
+			str->Push( quote_mailcap(name, flag)->ptr);
 			if (mc_stat)
 			    *mc_stat |= MCSTAT_REPNAME;
 		    }
 		    break;
 		case 't':
 		    if (type) {
-			str->Concat( quote_mailcap(type, flag)->ptr);
+			str->Push( quote_mailcap(type, flag)->ptr);
 			if (mc_stat)
 			    *mc_stat |= MCSTAT_REPTYPE;
 		    }
@@ -431,12 +431,12 @@ unquote_mailcap_loop(char *qstr, char *type, char *name, char *attr,
 		tmp = Strnew();
 	    }
 	    else if (*p == '%') {
-		str->Concat( *p);
+		str->Push( *p);
 	    }
 	    break;
 	case MC_PREC2:
 	    if (sp > 0 || *p == '{') {
-		tmp->Concat(*p);
+		tmp->Push(*p);
 
 		switch (*p) {
 		case '{':
@@ -454,14 +454,14 @@ unquote_mailcap_loop(char *qstr, char *type, char *name, char *attr,
 		if (attr && (q = strcasestr(attr, tmp->ptr)) != NULL &&
 		    (q == attr || IS_SPACE(*(q - 1)) || *(q - 1) == ';') &&
 		    matchattr(q, tmp->ptr, tmp->length, &tmp)) {
-		    str->Concat( quote_mailcap(tmp->ptr, flag)->ptr);
+		    str->Push( quote_mailcap(tmp->ptr, flag)->ptr);
 		    if (mc_stat)
 			*mc_stat |= MCSTAT_REPPARAM;
 		}
 		status = MC_NORMAL;
 	    }
 	    else {
-		tmp->Concat(*p);
+		tmp->Push(*p);
 	    }
 	    break;
 	}

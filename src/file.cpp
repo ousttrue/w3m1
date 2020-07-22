@@ -448,9 +448,9 @@ check_command(char *cmd, int auxbin_p)
 	if (np)
 	    *np++ = '\0';
 	pathname = Strnew();
-	pathname->Concat(p);
-	pathname->Concat('/');
-	pathname->Concat(cmd);
+	pathname->Push(p);
+	pathname->Push('/');
+	pathname->Push(cmd);
 	if (stat(pathname->ptr, &st) == 0 && S_ISREG(st.st_mode)
 	    && (st.st_mode & S_IXANY) != 0)
 	    return 1;
@@ -477,8 +477,8 @@ acceptableEncoding()
     encodings = Strnew();
     while ((p = popText(l)) != NULL) {
 	if (encodings->length)
-	    encodings->Concat( ", ");
-	encodings->Concat( p);
+	    encodings->Push( ", ");
+	encodings->Push( p);
     }
     return encodings->ptr;
 }
@@ -550,7 +550,7 @@ matchattr(char *p, char *attr, int len, Str *value)
 		    if (*p == '"')
 			quoted = (quoted) ? 0 : 1;
 		    else
-			(*value)->Concat(*p);
+			(*value)->Push(*p);
 		    p++;
 		}
 		if (q)
@@ -663,7 +663,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 	}
 	else if (!(w3m_dump & DUMP_HEAD)) {
 	    if (lineBuf2) {
-		lineBuf2->Concat( tmp);
+		lineBuf2->Push( tmp);
 	    }
 	    else {
 		lineBuf2 = tmp;
@@ -684,7 +684,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 		for (q = p; *q && *q != '\r' && *q != '\n'; q++) ;
 		lineBuf2 = checkType(Strnew_charp_n(p, q - p), &propBuffer,
 				     NULL);
-		tmp->Concat(lineBuf2);
+		tmp->Push(lineBuf2);
 		if (thru)
 		    addnewline(newBuf, lineBuf2->ptr, propBuffer, NULL,
 			       lineBuf2->length, FOLD_BUFFER_WIDTH, -1);
@@ -804,7 +804,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 #endif				/* DEBUG */
 	    SKIP_BLANKS(p);
 	    while (*p != '=' && !IS_ENDT(*p))
-		name->Concat( *(p++));
+		name->Push( *(p++));
 	    Strremovetrailingspaces(name);
 	    if (*p == '=') {
 		p++;
@@ -815,7 +815,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 			q = p;
 		    if (*p == '"')
 			quoted = (quoted) ? 0 : 1;
-		    value->Concat( *(p++));
+		    value->Push( *(p++));
 		}
 		if (q)
 		    Strshrink(value, p - q - 1);
@@ -890,7 +890,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 					   ? domain->ptr : "<localdomain>"));
 			if (msg->length > COLS - 10)
 			    Strshrink(msg, msg->length - (COLS - 10));
-			msg->Concat(" (y/n)");
+			msg->Push(" (y/n)");
 			ans = inputAnswer(msg->ptr);
 		    }
 		    if (ans == NULL || TOLOWER(*ans) != 'y' ||
@@ -927,7 +927,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 	    p = lineBuf2->ptr + 12;
 	    SKIP_BLANKS(p);
 	    while (*p && !IS_SPACE(*p))
-		funcname->Concat( *(p++));
+		funcname->Push( *(p++));
 	    SKIP_BLANKS(p);
 	    Command f = getFuncList(funcname->ptr);
 	    if (f) {
@@ -975,7 +975,7 @@ checkContentType(Buffer *buf)
 	return NULL;
     r = Strnew();
     while (*p && *p != ';' && !IS_SPACE(*p))
-	r->Concat( *p++);
+	r->Push( *p++);
 #ifdef USE_M17N
     if ((p = strcasestr(p, "charset")) != NULL) {
 	p += 7;
@@ -1069,11 +1069,11 @@ extract_auth_val(char **q)
     SKIP_BLANKS(qq);
     if (*qq == '"') {
 	quoted = TRUE;
-	val->Concat( *qq++);
+	val->Push( *qq++);
     }
     while (*qq != '\0') {
 	if (quoted && *qq == '"') {
-	    val->Concat( *qq++);
+	    val->Push( *qq++);
 	    break;
 	}
 	if (!quoted) {
@@ -1105,8 +1105,8 @@ extract_auth_val(char **q)
 	    }
 	}
 	else if (quoted && *qq == '\\')
-	    val->Concat( *qq++);
-	val->Concat( *qq++);
+	    val->Push( *qq++);
+	val->Push( *qq++);
     }
   end_token:
     *q = (char *)qq;
@@ -1126,7 +1126,7 @@ qstr_unquote(Str s)
 	for (p++; *p != '\0'; p++) {
 	    if (*p == '\\')
 		p++;
-	    tmp->Concat(*p);
+	    tmp->Push(*p);
 	}
 	if (Strlastchar(tmp) == '"')
 	    Strshrink(tmp, 1);
@@ -1205,8 +1205,8 @@ AuthBasicCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 	      HRequest *hr, FormList *request)
 {
     Str s = uname->Clone();
-    s->Concat(':');
-    s->Concat( pw);
+    s->Push(':');
+    s->Push( pw);
     return Strnew_m_charp("Basic ", encodeB(s->ptr)->ptr, NULL);
 }
 
@@ -1247,8 +1247,8 @@ digest_hex(unsigned char *p)
     Str tmp = Strnew_size(MD5_DIGEST_LENGTH * 2 + 1);
     int i;
     for (i = 0; i < MD5_DIGEST_LENGTH; i++, p++) {
-	tmp->Concat(h[(*p >> 4) & 0x0f]);
-	tmp->Concat(h[*p & 0x0f]);
+	tmp->Push(h[(*p >> 4) & 0x0f]);
+	tmp->Push(h[*p & 0x0f]);
     }
     return tmp;
 }
@@ -1366,8 +1366,8 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 	else {
 	    MD5((const unsigned char*)"", 0, md5);
 	}
-	tmp->Concat(':');
-	tmp->Concat(digest_hex(md5));
+	tmp->Push(':');
+	tmp->Push(digest_hex(md5));
     }
     MD5((const unsigned char*)tmp->ptr, strlen(tmp->ptr), md5);
     a2buf = digest_hex(md5);
@@ -2540,7 +2540,7 @@ append_tags(struct readbuffer *obuf)
 	    push_link(obuf->tag_stack[i]->cmd, obuf->line->length, obuf->pos);
 	    break;
 	}
-	obuf->line->Concat(obuf->tag_stack[i]->cmdname);
+	obuf->line->Push(obuf->tag_stack[i]->cmdname);
 	switch (obuf->tag_stack[i]->cmd) {
 	case HTML_NOBR:
 	    if (obuf->nobr_level > 1)
@@ -2571,7 +2571,7 @@ push_nchars(struct readbuffer *obuf, int width,
 	    char *str, int len, Lineprop mode)
 {
     append_tags(obuf);
-    obuf->line->Concat(str, len);
+    obuf->line->Push(str, len);
     obuf->pos += width;
     if (width > 0) {
 	obuf->prevchar->CopyFrom(str, len);
@@ -2605,7 +2605,7 @@ static void
 push_char(struct readbuffer *obuf, int pre_mode, char ch)
 {
     check_breakpoint(obuf, pre_mode, &ch);
-    obuf->line->Concat(ch);
+    obuf->line->Push(ch);
     obuf->pos++;
     obuf->prevchar->CopyFrom(&ch, 1);
     if (ch != ' ')
@@ -2624,7 +2624,7 @@ push_spaces(struct readbuffer *obuf, int pre_mode, int width)
 	return;
     check_breakpoint(obuf, pre_mode, " ");
     for (i = 0; i < width; i++)
-	obuf->line->Concat(' ');
+	obuf->line->Push(' ');
     obuf->pos += width;
     set_space_to_prevchar(obuf->prevchar);
     obuf->flag |= RB_NFLUSHED;
@@ -2636,7 +2636,7 @@ proc_mchar(struct readbuffer *obuf, int pre_mode,
 {
     check_breakpoint(obuf, pre_mode, *str);
     obuf->pos += width;
-    obuf->line->Concat(*str, get_mclen(*str));
+    obuf->line->Push(*str, get_mclen(*str));
     if (width > 0) {
 	obuf->prevchar->CopyFrom(*str, 1);
 	if (**str != ' ')
@@ -2692,7 +2692,7 @@ passthrough(struct readbuffer *obuf, char *str, int back)
 		back = 0;
 	    }
 	    else {
-		tok->Concat(str_bak, str - str_bak);
+		tok->Push(str_bak, str - str_bak);
 		push_tag(obuf, tok->ptr, cmd);
 		tok->Clear();
 	    }
@@ -2784,13 +2784,13 @@ feed_title(char *str)
 	return;
     while (*str) {
 	if (*str == '&')
-	    cur_title->Concat( getescapecmd(&str));
+	    cur_title->Push( getescapecmd(&str));
 	else if (*str == '\n' || *str == '\r') {
-	    cur_title->Concat( ' ');
+	    cur_title->Push( ' ');
 	    str++;
 	}
 	else
-	    cur_title->Concat( *(str++));
+	    cur_title->Push( *(str++));
     }
 }
 
@@ -2871,13 +2871,13 @@ process_img(struct parsed_tag *tag, int width)
     if (use_image) {
 	switch (align) {
 	case ALIGN_LEFT:
-	    tmp->Concat("<div_int align=left>");
+	    tmp->Push("<div_int align=left>");
 	    break;
 	case ALIGN_CENTER:
-	    tmp->Concat("<div_int align=center>");
+	    tmp->Push("<div_int align=center>");
 	    break;
 	case ALIGN_RIGHT:
-	    tmp->Concat("<div_int align=right>");
+	    tmp->Push("<div_int align=right>");
 	    break;
 	}
     }
@@ -2888,11 +2888,11 @@ process_img(struct parsed_tag *tag, int width)
 	s = "<form_int method=internal action=map>";
 	tmp2 = process_form(parse_tag(&s, TRUE));
 	if (tmp2)
-	    tmp->Concat(tmp2);
-	tmp->Concat(Sprintf("<input_alt fid=\"%d\" "
+	    tmp->Push(tmp2);
+	tmp->Push(Sprintf("<input_alt fid=\"%d\" "
 			    "type=hidden name=link value=\"", cur_form_id));
-	tmp->Concat(html_quote((r2) ? r2 + 1 : r));
-	tmp->Concat(Sprintf("\"><input_alt hseq=\"%d\" fid=\"%d\" "
+	tmp->Push(html_quote((r2) ? r2 + 1 : r));
+	tmp->Push(Sprintf("\"><input_alt hseq=\"%d\" fid=\"%d\" "
 			    "type=submit no_effect=true>",
 			    cur_hseq++, cur_form_id));
     }
@@ -2930,7 +2930,7 @@ process_img(struct parsed_tag *tag, int width)
 	}
 	nw = (w > 3) ? (int)((w - 3) / pixel_per_char + 1) : 1;
 	ni = (i > 3) ? (int)((i - 3) / pixel_per_line + 1) : 1;
-	tmp->Concat(
+	tmp->Push(
 	       Sprintf("<pre_int><img_alt hseq=\"%d\" src=\"", cur_iseq++));
 	pre_int = TRUE;
     }
@@ -2941,24 +2941,24 @@ process_img(struct parsed_tag *tag, int width)
 	    w = 12 * pixel_per_char;
 	nw = w ? (int)((w - 1) / pixel_per_char + 1) : 1;
 	if (r) {
-	    tmp->Concat("<pre_int>");
+	    tmp->Push("<pre_int>");
 	    pre_int = TRUE;
 	}
-	tmp->Concat("<img_alt src=\"");
+	tmp->Push("<img_alt src=\"");
     }
-    tmp->Concat(html_quote(p));
-    tmp->Concat("\"");
+    tmp->Push(html_quote(p));
+    tmp->Push("\"");
     if (t) {
-	tmp->Concat(" title=\"");
-	tmp->Concat(html_quote(t));
-	tmp->Concat("\"");
+	tmp->Push(" title=\"");
+	tmp->Push(html_quote(t));
+	tmp->Push("\"");
     }
 #ifdef USE_IMAGE
     if (use_image) {
 	if (w0 >= 0)
-	    tmp->Concat(Sprintf(" width=%d", w0));
+	    tmp->Push(Sprintf(" width=%d", w0));
 	if (i0 >= 0)
-	    tmp->Concat(Sprintf(" height=%d", i0));
+	    tmp->Push(Sprintf(" height=%d", i0));
 	switch (align) {
 	case ALIGN_TOP:
 	    top = 0;
@@ -2992,23 +2992,23 @@ process_img(struct parsed_tag *tag, int width)
 	}
 	xoffset = (int)((nw * pixel_per_char - w) / 2);
 	if (xoffset)
-	    tmp->Concat(Sprintf(" xoffset=%d", xoffset));
+	    tmp->Push(Sprintf(" xoffset=%d", xoffset));
 	if (yoffset)
-	    tmp->Concat(Sprintf(" yoffset=%d", yoffset));
+	    tmp->Push(Sprintf(" yoffset=%d", yoffset));
 	if (top)
-	    tmp->Concat(Sprintf(" top_margin=%d", top));
+	    tmp->Push(Sprintf(" top_margin=%d", top));
 	if (bottom)
-	    tmp->Concat(Sprintf(" bottom_margin=%d", bottom));
+	    tmp->Push(Sprintf(" bottom_margin=%d", bottom));
 	if (r) {
-	    tmp->Concat(" usemap=\"");
-	    tmp->Concat(html_quote((r2) ? r2 + 1 : r));
-	    tmp->Concat("\"");
+	    tmp->Push(" usemap=\"");
+	    tmp->Push(html_quote((r2) ? r2 + 1 : r));
+	    tmp->Push("\"");
 	}
 	if (ismap)
-	    tmp->Concat(" ismap");
+	    tmp->Push(" ismap");
     }
 #endif
-    tmp->Concat(">");
+    tmp->Push(">");
     if (q != NULL && *q == '\0' && ignore_null_img_alt)
 	q = NULL;
     if (q != NULL) {
@@ -3021,14 +3021,14 @@ process_img(struct parsed_tag *tag, int width)
 		    if (n + get_mcwidth(r) > nw)
 			break;
 		}
-		tmp->Concat(html_quote(Strnew_charp_n(q, r - q)->ptr));
+		tmp->Push(html_quote(Strnew_charp_n(q, r - q)->ptr));
 	    }
 	    else
-		tmp->Concat(html_quote(q));
+		tmp->Push(html_quote(q));
 	}
 	else
 #endif
-	    tmp->Concat(html_quote(q));
+	    tmp->Push(html_quote(q));
 	goto img_end;
     }
     if (w > 0 && i > 0) {
@@ -3037,13 +3037,13 @@ process_img(struct parsed_tag *tag, int width)
 	    /* must be an icon or space */
 	    n = 1;
 	    if (strcasestr(p, "space") || strcasestr(p, "blank"))
-		tmp->Concat("_");
+		tmp->Push("_");
 	    else {
 		if (w * i < 8 * 16)
-		    tmp->Concat("*");
+		    tmp->Push("*");
 		else {
 		    if (!pre_int) {
-			tmp->Concat("<pre_int>");
+			tmp->Push("<pre_int>");
 			pre_int = TRUE;
 		    }
 		    push_symbol(tmp, IMG_SYMBOL, symbol_width, 1);
@@ -3055,7 +3055,7 @@ process_img(struct parsed_tag *tag, int width)
 	if (w > 200 && i < 13) {
 	    /* must be a horizontal line */
 	    if (!pre_int) {
-		tmp->Concat("<pre_int>");
+		tmp->Push("<pre_int>");
 		pre_int = TRUE;
 	    }
 	    w = w / pixel_per_char / symbol_width;
@@ -3071,32 +3071,32 @@ process_img(struct parsed_tag *tag, int width)
 	q--;
     if (*q == '/')
 	q++;
-    tmp->Concat('[');
+    tmp->Push('[');
     n = 1;
     p = q;
     for (; *q; q++) {
 	if (!IS_ALNUM(*q) && *q != '_' && *q != '-') {
 	    break;
 	}
-	tmp->Concat(*q);
+	tmp->Push(*q);
 	n++;
 	if (n + 1 >= nw)
 	    break;
     }
-    tmp->Concat(']');
+    tmp->Push(']');
     n++;
   img_end:
 #ifdef USE_IMAGE
     if (use_image) {
 	for (; n < nw; n++)
-	    tmp->Concat(' ');
+	    tmp->Push(' ');
     }
 #endif
-    tmp->Concat("</img_alt>");
+    tmp->Push("</img_alt>");
     if (pre_int && !ext_pre_int)
-	tmp->Concat("</pre_int>");
+	tmp->Push("</pre_int>");
     if (r) {
-	tmp->Concat("</input_alt>");
+	tmp->Push("</input_alt>");
 	process_n_form();
     }
 #ifdef USE_IMAGE
@@ -3105,7 +3105,7 @@ process_img(struct parsed_tag *tag, int width)
 	case ALIGN_RIGHT:
 	case ALIGN_CENTER:
 	case ALIGN_LEFT:
-	    tmp->Concat("</div_int>");
+	    tmp->Push("</div_int>");
 	    break;
 	}
     }
@@ -3122,7 +3122,7 @@ process_anchor(struct parsed_tag *tag, char *tagbuf)
     }
     else {
 	Str tmp = Sprintf("<a hseq=\"%d\"", cur_hseq++);
-	tmp->Concat(tagbuf + 2);
+	tmp->Push(tagbuf + 2);
 	return tmp;
     }
 }
@@ -3190,62 +3190,62 @@ process_input(struct parsed_tag *tag)
 	qlen = get_strwidth(q);
     }
 
-    tmp->Concat("<pre_int>");
+    tmp->Push("<pre_int>");
     switch (v) {
     case FORM_INPUT_PASSWORD:
     case FORM_INPUT_TEXT:
     case FORM_INPUT_FILE:
     case FORM_INPUT_CHECKBOX:
 	if (displayLinkNumber)
-	    tmp->Concat(getLinkNumberStr(0));
-	tmp->Concat('[');
+	    tmp->Push(getLinkNumberStr(0));
+	tmp->Push('[');
 	break;
     case FORM_INPUT_RADIO:
 	if (displayLinkNumber)
-	    tmp->Concat(getLinkNumberStr(0));
-	tmp->Concat('(');
+	    tmp->Push(getLinkNumberStr(0));
+	tmp->Push('(');
     }
-    tmp->Concat(Sprintf("<input_alt hseq=\"%d\" fid=\"%d\" type=%s "
+    tmp->Push(Sprintf("<input_alt hseq=\"%d\" fid=\"%d\" type=%s "
 			"name=\"%s\" width=%d maxlength=%d value=\"%s\"",
 			cur_hseq++, cur_form_id, p, html_quote(r), w, i, qq));
     if (x)
-	tmp->Concat(" checked");
+	tmp->Push(" checked");
     if (y)
-	tmp->Concat(" accept");
+	tmp->Push(" accept");
     if (z)
-	tmp->Concat(" readonly");
-    tmp->Concat('>');
+	tmp->Push(" readonly");
+    tmp->Push('>');
 
     if (v == FORM_INPUT_HIDDEN)
-	tmp->Concat("</input_alt></pre_int>");
+	tmp->Push("</input_alt></pre_int>");
     else {
 	switch (v) {
 	case FORM_INPUT_PASSWORD:
 	case FORM_INPUT_TEXT:
 	case FORM_INPUT_FILE:
-	    tmp->Concat("<u>");
+	    tmp->Push("<u>");
 	    break;
 	case FORM_INPUT_IMAGE:
 	    s = NULL;
 	    parsedtag_get_value(tag, ATTR_SRC, &s);
 	    if (s) {
-		tmp->Concat(Sprintf("<img src=\"%s\"", html_quote(s)));
+		tmp->Push(Sprintf("<img src=\"%s\"", html_quote(s)));
 		if (p2)
-		    tmp->Concat(Sprintf(" alt=\"%s\"", html_quote(p2)));
+		    tmp->Push(Sprintf(" alt=\"%s\"", html_quote(p2)));
 		if (parsedtag_get_value(tag, ATTR_WIDTH, &iw))
-		    tmp->Concat(Sprintf(" width=\"%d\"", iw));
+		    tmp->Push(Sprintf(" width=\"%d\"", iw));
 		if (parsedtag_get_value(tag, ATTR_HEIGHT, &ih))
-		    tmp->Concat(Sprintf(" height=\"%d\"", ih));
-		tmp->Concat(" pre_int>");
-		tmp->Concat("</input_alt></pre_int>");
+		    tmp->Push(Sprintf(" height=\"%d\"", ih));
+		tmp->Push(" pre_int>");
+		tmp->Push("</input_alt></pre_int>");
 		return tmp;
 	    }
 	case FORM_INPUT_SUBMIT:
 	case FORM_INPUT_BUTTON:
 	case FORM_INPUT_RESET:
 	    if (displayLinkNumber)
-		tmp->Concat(getLinkNumberStr(-1));
-	    tmp->Concat("[");
+		tmp->Push(getLinkNumberStr(-1));
+	    tmp->Push("[");
 	    break;
 	}
 	switch (v) {
@@ -3253,62 +3253,62 @@ process_input(struct parsed_tag *tag)
 	    i = 0;
 	    if (q) {
 		for (; i < qlen && i < w; i++)
-		    tmp->Concat('*');
+		    tmp->Push('*');
 	    }
 	    for (; i < w; i++)
-		tmp->Concat(' ');
+		tmp->Push(' ');
 	    break;
 	case FORM_INPUT_TEXT:
 	case FORM_INPUT_FILE:
 	    if (q)
-		tmp->Concat(textfieldrep(Strnew_charp(q), w));
+		tmp->Push(textfieldrep(Strnew_charp(q), w));
 	    else {
 		for (i = 0; i < w; i++)
-		    tmp->Concat(' ');
+		    tmp->Push(' ');
 	    }
 	    break;
 	case FORM_INPUT_SUBMIT:
 	case FORM_INPUT_BUTTON:
 	    if (p2)
-		tmp->Concat(html_quote(p2));
+		tmp->Push(html_quote(p2));
 	    else
-		tmp->Concat(qq);
+		tmp->Push(qq);
 	    break;
 	case FORM_INPUT_RESET:
-	    tmp->Concat(qq);
+	    tmp->Push(qq);
 	    break;
 	case FORM_INPUT_RADIO:
 	case FORM_INPUT_CHECKBOX:
 	    if (x)
-		tmp->Concat('*');
+		tmp->Push('*');
 	    else
-		tmp->Concat(' ');
+		tmp->Push(' ');
 	    break;
 	}
 	switch (v) {
 	case FORM_INPUT_PASSWORD:
 	case FORM_INPUT_TEXT:
 	case FORM_INPUT_FILE:
-	    tmp->Concat("</u>");
+	    tmp->Push("</u>");
 	    break;
 	case FORM_INPUT_IMAGE:
 	case FORM_INPUT_SUBMIT:
 	case FORM_INPUT_BUTTON:
 	case FORM_INPUT_RESET:
-	    tmp->Concat("]");
+	    tmp->Push("]");
 	}
-	tmp->Concat("</input_alt>");
+	tmp->Push("</input_alt>");
 	switch (v) {
 	case FORM_INPUT_PASSWORD:
 	case FORM_INPUT_TEXT:
 	case FORM_INPUT_FILE:
 	case FORM_INPUT_CHECKBOX:
-	    tmp->Concat(']');
+	    tmp->Push(']');
 	    break;
 	case FORM_INPUT_RADIO:
-	    tmp->Concat(')');
+	    tmp->Push(')');
 	}
-	tmp->Concat("</pre_int>");
+	tmp->Push("</pre_int>");
     }
     return tmp;
 }
@@ -3333,11 +3333,11 @@ process_select(struct parsed_tag *tag)
     if (!select_is_multiple) {
 	select_str = Strnew_charp("<pre_int>");
 	if (displayLinkNumber)
-	    select_str->Concat( getLinkNumberStr(0));
-	select_str->Concat( Sprintf("[<input_alt hseq=\"%d\" "
+	    select_str->Push( getLinkNumberStr(0));
+	select_str->Push( Sprintf("[<input_alt hseq=\"%d\" "
 			     "fid=\"%d\" type=select name=\"%s\" selectnumber=%d",
 			     cur_hseq++, cur_form_id, html_quote(p), n_select));
-	select_str->Concat( ">");
+	select_str->Push( ">");
 	if (n_select == max_select) {
 	    max_select *= 2;
 	    select_option =
@@ -3367,14 +3367,14 @@ process_n_select(void)
 	if (select_option[n_select].first) {
 	    FormItemList sitem;
 	    chooseSelectOption(&sitem, select_option[n_select].first);
-	    select_str->Concat( textfieldrep(sitem.label, cur_option_maxwidth));
+	    select_str->Push( textfieldrep(sitem.label, cur_option_maxwidth));
 	}
-	select_str->Concat( "</input_alt>]</pre_int>");
+	select_str->Push( "</input_alt>]</pre_int>");
 	n_select++;
     }
     else
 #endif				/* MENU_SELECT */
-	select_str->Concat( "<br>");
+	select_str->Push( "<br>");
     cur_select = NULL;
     n_selectitem = 0;
     return select_str;
@@ -3435,9 +3435,9 @@ feed_select(char *str)
 		    else
 			prev_spaces = 0;
 		    if (*p == '&')
-			cur_option->Concat( getescapecmd(&p));
+			cur_option->Push( getescapecmd(&p));
 		    else
-			cur_option->Concat( *(p++));
+			cur_option->Push( *(p++));
 		}
 	    }
 	}
@@ -3473,19 +3473,19 @@ process_option(void)
 	begin_char = '(';
 	end_char = ')';
     }
-    select_str->Concat( Sprintf("<br><pre_int>%c<input_alt hseq=\"%d\" "
+    select_str->Push( Sprintf("<br><pre_int>%c<input_alt hseq=\"%d\" "
 			       "fid=\"%d\" type=%s name=\"%s\" value=\"%s\"",
 			       begin_char, cur_hseq++, cur_form_id,
 			       select_is_multiple ? "checkbox" : "radio",
 			       html_quote(cur_select->ptr),
 			       html_quote(cur_option_value->ptr)));
     if (cur_option_selected)
-	select_str->Concat( " checked>*</input_alt>");
+	select_str->Push( " checked>*</input_alt>");
     else
-	select_str->Concat( "> </input_alt>");
-    select_str->Concat( end_char);
-    select_str->Concat( html_quote(cur_option_label->ptr));
-    select_str->Concat( "</pre_int>");
+	select_str->Push( "> </input_alt>");
+    select_str->Push( end_char);
+    select_str->Push( html_quote(cur_option_label->ptr));
+    select_str->Push( "</pre_int>");
     n_selectitem++;
 }
 
@@ -3546,7 +3546,7 @@ process_n_textarea(void)
 	return NULL;
 
     tmp = Strnew();
-    tmp->Concat(Sprintf("<pre_int>[<input_alt hseq=\"%d\" fid=\"%d\" "
+    tmp->Push(Sprintf("<pre_int>[<input_alt hseq=\"%d\" fid=\"%d\" "
 			"type=textarea name=\"%s\" size=%d rows=%d "
 			"top_margin=%d textareanumber=%d",
 			cur_hseq, cur_form_id,
@@ -3554,11 +3554,11 @@ process_n_textarea(void)
 			cur_textarea_size, cur_textarea_rows,
 			cur_textarea_rows - 1, n_textarea));
     if (cur_textarea_readonly)
-	tmp->Concat(" readonly");
-    tmp->Concat("><u>");
+	tmp->Push(" readonly");
+    tmp->Push("><u>");
     for (i = 0; i < cur_textarea_size; i++)
-	tmp->Concat(' ');
-    tmp->Concat("</u></input_alt>]</pre_int>\n");
+	tmp->Push(' ');
+    tmp->Push("</u></input_alt>]</pre_int>\n");
     cur_hseq++;
     n_textarea++;
     cur_textarea = NULL;
@@ -3580,13 +3580,13 @@ feed_textarea(char *str)
     ignore_nl_textarea = FALSE;
     while (*str) {
 	if (*str == '&')
-	    textarea_str[n_textarea]->Concat(getescapecmd(&str));
+	    textarea_str[n_textarea]->Push(getescapecmd(&str));
 	else if (*str == '\n') {
-	    textarea_str[n_textarea]->Concat("\r\n");
+	    textarea_str[n_textarea]->Push("\r\n");
 	    str++;
 	}
 	else if (*str != '\r')
-	    textarea_str[n_textarea]->Concat(*(str++));
+	    textarea_str[n_textarea]->Push(*(str++));
     }
 }
 
@@ -3612,20 +3612,20 @@ process_hr(struct parsed_tag *tag, int width, int indent_width)
     parsedtag_get_value(tag, ATTR_ALIGN, &x);
     switch (x) {
     case ALIGN_CENTER:
-	tmp->Concat("<div_int align=center>");
+	tmp->Push("<div_int align=center>");
 	break;
     case ALIGN_RIGHT:
-	tmp->Concat("<div_int align=right>");
+	tmp->Push("<div_int align=right>");
 	break;
     case ALIGN_LEFT:
-	tmp->Concat("<div_int align=left>");
+	tmp->Push("<div_int align=left>");
 	break;
     }
     w /= symbol_width;
     if (w <= 0)
 	w = 1;
     push_symbol(tmp, HR_SYMBOL, symbol_width, w);
-    tmp->Concat("</div_int></nobr>");
+    tmp->Push("</div_int></nobr>");
     return tmp;
 }
 
@@ -3706,16 +3706,16 @@ process_form_int(struct parsed_tag *tag, int fid)
 	Str tmp = Sprintf("<form_int fid=\"%d\" action=\"%s\" method=\"%s\"",
 			  fid, html_quote(q), html_quote(p));
 	if (s)
-	    tmp->Concat(Sprintf(" enctype=\"%s\"", html_quote(s)));
+	    tmp->Push(Sprintf(" enctype=\"%s\"", html_quote(s)));
 	if (tg)
-	    tmp->Concat(Sprintf(" target=\"%s\"", html_quote(tg)));
+	    tmp->Push(Sprintf(" target=\"%s\"", html_quote(tg)));
 	if (n)
-	    tmp->Concat(Sprintf(" name=\"%s\"", html_quote(n)));
+	    tmp->Push(Sprintf(" name=\"%s\"", html_quote(n)));
 #ifdef USE_M17N
 	if (r)
-	    tmp->Concat(Sprintf(" accept-charset=\"%s\"", html_quote(r)));
+	    tmp->Push(Sprintf(" accept-charset=\"%s\"", html_quote(r)));
 #endif
-	tmp->Concat(">");
+	tmp->Push(">");
 	return tmp;
     }
 
@@ -3999,7 +3999,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 	}
 #endif
 	if (n_textarea >= 0 && *(line->ptr) != '<') {	/* halfload */
-	    textarea_str[n_textarea]->Concat(line);
+	    textarea_str[n_textarea]->Push(line);
 	    continue;
 	}
       proc_again:
@@ -5101,7 +5101,7 @@ loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
   gopher_end:
     TRAP_OFF;
 
-    tmp->Concat("</table>\n</body>\n</html>\n");
+    tmp->Push("</table>\n</body>\n</html>\n");
     return tmp;
 }
 #endif				/* USE_GOPHER */
@@ -5298,14 +5298,14 @@ conv_symbol(Line *l)
 		symbol = get_symbol(DisplayCharset, &w);
 #endif
 	    }
-	    tmp->Concat(symbol[(int)c]);
+	    tmp->Push(symbol[(int)c]);
 #ifdef USE_M17N
 	    p += len - 1;
 	    pr += len - 1;
 #endif
 	}
 	else if (tmp != NULL)
-	    tmp->Concat(*p);
+	    tmp->Push(*p);
     }
     if (tmp)
 	return tmp;
@@ -6462,19 +6462,19 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
     }
 
     if (obuf->anchor.url && !hidden_anchor)
-	line->Concat( "</a>");
+	line->Push( "</a>");
     if (obuf->img_alt && !hidden_img)
-	line->Concat( "</img_alt>");
+	line->Push( "</img_alt>");
     if (obuf->in_bold && !hidden_bold)
-	line->Concat( "</b>");
+	line->Push( "</b>");
     if (obuf->in_italic && !hidden_italic)
-	line->Concat( "</i>");
+	line->Push( "</i>");
     if (obuf->in_under && !hidden_under)
-	line->Concat( "</u>");
+	line->Push( "</u>");
     if (obuf->in_strike && !hidden_strike)
-	line->Concat( "</s>");
+	line->Push( "</s>");
     if (obuf->in_ins && !hidden_ins)
-	line->Concat( "</ins>");
+	line->Push( "</ins>");
 
     if (obuf->top_margin > 0) {
 	int i;
@@ -6488,10 +6488,10 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 	o.flag = obuf->flag;
 	o.top_margin = -1;
 	o.bottom_margin = -1;
-	o.line->Concat("<pre_int>");
+	o.line->Push("<pre_int>");
 	for (i = 0; i < o.pos; i++)
-	    o.line->Concat(' ');
-	o.line->Concat("</pre_int>");
+	    o.line->Push(' ');
+	o.line->Push("</pre_int>");
 	for (i = 0; i < obuf->top_margin; i++)
 	    flushline(h_env, &o, indent, force, width);
     }
@@ -6531,14 +6531,14 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 		    rrest = rest - d * nspace;
 		    line = Strnew_size(width + 1);
 		    for (i = 0; i < indent_here; i++)
-			line->Concat( ' ');
+			line->Push( ' ');
 		    for (; *p; p++) {
-			line->Concat( *p);
+			line->Push( *p);
 			if (*p == ' ') {
 			    for (i = 0; i < d; i++)
-				line->Concat( ' ');
+				line->Push( ' ');
 			    if (rrest > 0) {
-				line->Concat( ' ');
+				line->Push( ' ');
 				rrest--;
 			    }
 			}
@@ -6583,12 +6583,12 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 	while (*p) {
 	    q = p;
 	    if (sloppy_parse_line(&p)) {
-		tmp->Concat(q, p - q);
+		tmp->Push(q, p - q);
 		if (force == 2) {
 		    APPEND(tmp);
 		}
 		else
-		    tmp2->Concat( tmp);
+		    tmp2->Push( tmp);
 		tmp->Clear();
 	    }
 	}
@@ -6600,7 +6600,7 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 	}
 	else {
 	    if (pass)
-		tmp2->Concat( pass);
+		tmp2->Push( pass);
 	    pass = tmp2;
 	}
     }
@@ -6617,10 +6617,10 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 	o.flag = obuf->flag;
 	o.top_margin = -1;
 	o.bottom_margin = -1;
-	o.line->Concat("<pre_int>");
+	o.line->Push("<pre_int>");
 	for (i = 0; i < o.pos; i++)
-	    o.line->Concat(' ');
-	o.line->Concat("</pre_int>");
+	    o.line->Push(' ');
+	o.line->Push("</pre_int>");
 	for (i = 0; i < obuf->bottom_margin; i++)
 	    flushline(h_env, &o, indent, force, width);
     }
@@ -6645,34 +6645,34 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 	if (obuf->anchor.hseq > 0)
 	    obuf->anchor.hseq = -obuf->anchor.hseq;
 	tmp = Sprintf("<A HSEQ=\"%d\" HREF=\"", obuf->anchor.hseq);
-	tmp->Concat(html_quote(obuf->anchor.url));
+	tmp->Push(html_quote(obuf->anchor.url));
 	if (obuf->anchor.target) {
-	    tmp->Concat("\" TARGET=\"");
-	    tmp->Concat(html_quote(obuf->anchor.target));
+	    tmp->Push("\" TARGET=\"");
+	    tmp->Push(html_quote(obuf->anchor.target));
 	}
 	if (obuf->anchor.referer) {
-	    tmp->Concat("\" REFERER=\"");
-	    tmp->Concat(html_quote(obuf->anchor.referer));
+	    tmp->Push("\" REFERER=\"");
+	    tmp->Push(html_quote(obuf->anchor.referer));
 	}
 	if (obuf->anchor.title) {
-	    tmp->Concat("\" TITLE=\"");
-	    tmp->Concat(html_quote(obuf->anchor.title));
+	    tmp->Push("\" TITLE=\"");
+	    tmp->Push(html_quote(obuf->anchor.title));
 	}
 	if (obuf->anchor.accesskey) {
 	    char *c = html_quote_char(obuf->anchor.accesskey);
-	    tmp->Concat("\" ACCESSKEY=\"");
+	    tmp->Push("\" ACCESSKEY=\"");
 	    if (c)
-		tmp->Concat(c);
+		tmp->Push(c);
 	    else
-		tmp->Concat(obuf->anchor.accesskey);
+		tmp->Push(obuf->anchor.accesskey);
 	}
-	tmp->Concat("\">");
+	tmp->Push("\">");
 	push_tag(obuf, tmp->ptr, HTML_A);
     }
     if (!hidden_img && obuf->img_alt) {
 	Str tmp = Strnew_charp("<IMG_ALT SRC=\"");
-	tmp->Concat(html_quote(obuf->img_alt->ptr));
-	tmp->Concat("\">");
+	tmp->Push(html_quote(obuf->img_alt->ptr));
+	tmp->Push("\">");
 	push_tag(obuf, tmp->ptr, HTML_IMG_ALT);
     }
     if (!hidden_bold && obuf->in_bold)
@@ -6709,7 +6709,7 @@ purgeline(struct html_feed_environ *h_env)
     while (*p) {
 	q = p;
 	if (sloppy_parse_line(&p)) {
-	    tmp->Concat(q, p - q);
+	    tmp->Push(q, p - q);
 	}
     }
     appendTextLine(h_env->buf, tmp, 0);
@@ -6754,7 +6754,7 @@ close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
 	    is_erased = 0;
 	}
 	if (is_erased) {
-	    obuf->line->Concat(' ');
+	    obuf->line->Push(' ');
 	    obuf->pos++;
 	}
 
@@ -7054,9 +7054,9 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
 		    break;
 		}
 		if (INDENT_INCR >= 4)
-		    num->Concat( ". ");
+		    num->Push( ". ");
 		else
-		    num->Concat( '.');
+		    num->Push( '.');
 		push_spaces(obuf, 1, INDENT_INCR - num->length);
 		push_str(obuf, num->length, num, PC_ASCII);
 		if (INDENT_INCR >= 4)
@@ -8263,15 +8263,15 @@ print_internal_information(struct html_feed_environ *henv)
 			: ((fp->method ==
 			    FORM_METHOD_INTERNAL) ? "internal" : "get"));
 	    if (fp->target)
-		s->Concat( Sprintf(" target=\"%s\"", html_quote(fp->target)));
+		s->Push( Sprintf(" target=\"%s\"", html_quote(fp->target)));
 	    if (fp->enctype == FORM_ENCTYPE_MULTIPART)
-		s->Concat( " enctype=\"multipart/form-data\"");
+		s->Push( " enctype=\"multipart/form-data\"");
 #ifdef USE_M17N
 	    if (fp->charset)
-		s->Concat( Sprintf(" accept-charset=\"%s\"",
+		s->Push( Sprintf(" accept-charset=\"%s\"",
 				  html_quote(fp->charset)));
 #endif
-	    s->Concat( ">");
+	    s->Push( ">");
 	    pushTextLine(tl, newTextLine(s, 0));
 	}
     }
@@ -8300,7 +8300,7 @@ print_internal_information(struct html_feed_environ *henv)
 	    s = Sprintf("<textarea_int textareanumber=%d>", i);
 	    pushTextLine(tl, newTextLine(s, 0));
 	    s = Strnew_charp(html_quote(textarea_str[i]->ptr));
-	    s->Concat( "</textarea_int>");
+	    s->Push( "</textarea_int>");
 	    pushTextLine(tl, newTextLine(s, 0));
 	}
     }

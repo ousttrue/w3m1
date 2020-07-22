@@ -21,7 +21,7 @@ wc_conv_from_hz(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length);
     if (p > sp)
-	os->Concat(is->ptr, (int)(p - sp));
+	os->Push(is->ptr, (int)(p - sp));
 
     for (; p < ep; p++) {
 	switch (state) {
@@ -33,14 +33,14 @@ wc_conv_from_hz(Str is, wc_ces ces)
 	    else if (*p & 0x80)
 		wtf_push_unknown(os, p, 1);
 	    else
-		os->Concat((char)*p);
+		os->Push((char)*p);
 	    break;
 	case WC_HZ_TILDA:
 	    if (*p == WC_C_HZ_SI) {
 		state = WC_HZ_MBYTE;
 		break;
 	    } else if (*p == WC_C_HZ_TILDA)
-		os->Concat((char)*p);
+		os->Push((char)*p);
 	    else if (*p == '\n')
 		break;
 	    else
@@ -100,42 +100,42 @@ wc_push_to_hz(Str os, wc_wchar_t cc, wc_status *st)
     switch (cc.ccs) {
     case WC_CCS_US_ASCII:
 	if (st->gl) {
-	    os->Concat(WC_C_HZ_TILDA);
-	    os->Concat(WC_C_HZ_SO);
+	    os->Push(WC_C_HZ_TILDA);
+	    os->Push(WC_C_HZ_SO);
 	    st->gl = 0;
 	}
 	if ((char)cc.code == WC_C_HZ_TILDA)
-	    os->Concat(WC_C_HZ_TILDA);
-	os->Concat((char)cc.code);
+	    os->Push(WC_C_HZ_TILDA);
+	os->Push((char)cc.code);
 	return;
     case WC_CCS_GB_2312:
 	if (! st->gl) {
-	    os->Concat(WC_C_HZ_TILDA);
-	    os->Concat(WC_C_HZ_SI);
+	    os->Push(WC_C_HZ_TILDA);
+	    os->Push(WC_C_HZ_SI);
 	    st->gl = 1;
 	}
-	os->Concat((char)((cc.code >> 8) & 0x7f));
-	os->Concat((char)(cc.code & 0x7f));
+	os->Push((char)((cc.code >> 8) & 0x7f));
+	os->Push((char)(cc.code & 0x7f));
 	return;
     case WC_CCS_UNKNOWN_W:
 	if (WcOption.no_replace)
 	    return;
 	if (st->gl) {
-	    os->Concat(WC_C_HZ_TILDA);
-	    os->Concat(WC_C_HZ_SO);
+	    os->Push(WC_C_HZ_TILDA);
+	    os->Push(WC_C_HZ_SO);
 	    st->gl = 0;
 	}
-	os->Concat(WC_REPLACE_W);
+	os->Push(WC_REPLACE_W);
 	return;
     case WC_CCS_UNKNOWN:
 	if (WcOption.no_replace)
 	    return;
 	if (st->gl) {
-	    os->Concat(WC_C_HZ_TILDA);
-	    os->Concat(WC_C_HZ_SO);
+	    os->Push(WC_C_HZ_TILDA);
+	    os->Push(WC_C_HZ_SO);
 	    st->gl = 0;
 	}
-	os->Concat(WC_REPLACE);
+	os->Push(WC_REPLACE);
 	return;
     default:
 #ifdef USE_UNICODE
@@ -153,8 +153,8 @@ void
 wc_push_to_hz_end(Str os, wc_status *st)
 {
     if (st->gl) {
-	os->Concat(WC_C_HZ_TILDA);
-	os->Concat(WC_C_HZ_SO);
+	os->Push(WC_C_HZ_TILDA);
+	os->Push(WC_C_HZ_SO);
 	st->gl = 0;
     }
 }

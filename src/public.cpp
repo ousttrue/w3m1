@@ -175,17 +175,17 @@ dump_extra(Buffer *buf)
         char *p;
         for (p = buf->ssl_certificate; *p; p++)
         {
-            tmp->Concat(*p);
+            tmp->Push(*p);
             if (*p == '\n')
             {
                 for (; *(p + 1) == '\n'; p++)
                     ;
                 if (*(p + 1))
-                    tmp->Concat('\t');
+                    tmp->Push('\t');
             }
         }
         if (Strlastchar(tmp) != '\n')
-            tmp->Concat('\n');
+            tmp->Push('\n');
         printf("W3m-ssl-certificate: %s", tmp->ptr);
     }
 #endif
@@ -930,8 +930,8 @@ void _followForm(int submit)
         {
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
                 Strshrink(tmp2, (tmp2->ptr + tmp2->length) - p);
-            tmp2->Concat( "?");
-            tmp2->Concat( tmp);
+            tmp2->Push( "?");
+            tmp2->Push( tmp);
             loadLink(tmp2->ptr, a->target, NULL, NULL);
         }
         else if (fi->parent->method == FORM_METHOD_POST)
@@ -1052,11 +1052,11 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 getMapXY(GetCurrentbuf(), retrieveCurrentImg(GetCurrentbuf()), &x, &y);
 #endif
                 *query = conv_form_encoding(f2->name, fi, GetCurrentbuf())->Clone();
-                (*query)->Concat(".x");
+                (*query)->Push(".x");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", x)->ptr);
                 *query = conv_form_encoding(f2->name, fi, GetCurrentbuf())->Clone();
-                (*query)->Concat(".y");
+                (*query)->Push(".y");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
             }
@@ -1088,35 +1088,35 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
 #ifdef USE_IMAGE
                 getMapXY(GetCurrentbuf(), retrieveCurrentImg(GetCurrentbuf()), &x, &y);
 #endif
-                (*query)->Concat(
+                (*query)->Push(
                        Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
-                (*query)->Concat( Sprintf(".x=%d&", x));
-                (*query)->Concat(
+                (*query)->Push( Sprintf(".x=%d&", x));
+                (*query)->Push(
                        Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
-                (*query)->Concat( Sprintf(".y=%d", y));
+                (*query)->Push( Sprintf(".y=%d", y));
             }
             else
             {
                 /* not IMAGE */
                 if (f2->name && f2->name->length > 0)
                 {
-                    (*query)->Concat(
+                    (*query)->Push(
                            Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
-                    (*query)->Concat('=');
+                    (*query)->Push('=');
                 }
                 if (f2->value != NULL)
                 {
                     if (fi->parent->method == FORM_METHOD_INTERNAL)
-                        (*query)->Concat( Str_form_quote(f2->value));
+                        (*query)->Push( Str_form_quote(f2->value));
                     else
                     {
-                        (*query)->Concat(
+                        (*query)->Push(
                                Str_form_quote(conv_form_encoding(f2->value, fi, GetCurrentbuf())));
                     }
                 }
             }
             if (f2->next)
-                (*query)->Concat('&');
+                (*query)->Push('&');
         }
     }
     if (multipart)
@@ -2126,8 +2126,8 @@ Buffer *DownloadListBuffer()
     {
         if (lstat(d->lock, &st))
             d->running = FALSE;
-        src->Concat("<pre>\n");
-        src->Concat(Sprintf("%s\n  --&gt; %s\n  ", html_quote(d->url),
+        src->Push("<pre>\n");
+        src->Push(Sprintf("%s\n  --&gt; %s\n  ", html_quote(d->url),
                             html_quote(conv_from_system(d->save))));
         duration = cur_time - d->time;
         if (!stat(d->save, &st))
@@ -2151,59 +2151,59 @@ Buffer *DownloadListBuffer()
                 i = l;
             l -= i;
             while (i-- > 0)
-                src->Concat( '#');
+                src->Push( '#');
             while (l-- > 0)
-                src->Concat( '_');
-            src->Concat( '\n');
+                src->Push( '_');
+            src->Push( '\n');
         }
         if ((d->running || d->err) && size < d->size)
-            src->Concat(Sprintf("  %s / %s bytes (%d%%)",
+            src->Push(Sprintf("  %s / %s bytes (%d%%)",
                                 convert_size3(size), convert_size3(d->size),
                                 (int)(100.0 * size / d->size)));
         else
-            src->Concat(Sprintf("  %s bytes loaded", convert_size3(size)));
+            src->Push(Sprintf("  %s bytes loaded", convert_size3(size)));
         if (duration > 0)
         {
             rate = size / duration;
-            src->Concat(Sprintf("  %02d:%02d:%02d  rate %s/sec",
+            src->Push(Sprintf("  %02d:%02d:%02d  rate %s/sec",
                                 duration / (60 * 60), (duration / 60) % 60,
                                 duration % 60, convert_size(rate, 1)));
             if (d->running && size < d->size && rate)
             {
                 eta = (d->size - size) / rate;
-                src->Concat(Sprintf("  eta %02d:%02d:%02d", eta / (60 * 60),
+                src->Push(Sprintf("  eta %02d:%02d:%02d", eta / (60 * 60),
                                     (eta / 60) % 60, eta % 60));
             }
         }
-        src->Concat( '\n');
+        src->Push( '\n');
         if (!d->running)
         {
-            src->Concat(Sprintf("<input type=submit name=ok%d value=OK>",
+            src->Push(Sprintf("<input type=submit name=ok%d value=OK>",
                                 d->pid));
             switch (d->err)
             {
             case 0:
                 if (size < d->size)
-                    src->Concat(" Download ended but probably not complete");
+                    src->Push(" Download ended but probably not complete");
                 else
-                    src->Concat(" Download complete");
+                    src->Push(" Download complete");
                 break;
             case 1:
-                src->Concat(" Error: could not open destination file");
+                src->Push(" Error: could not open destination file");
                 break;
             case 2:
-                src->Concat(" Error: could not write to file (disk full)");
+                src->Push(" Error: could not write to file (disk full)");
                 break;
             default:
-                src->Concat(" Error: unknown reason");
+                src->Push(" Error: unknown reason");
             }
         }
         else
-            src->Concat(Sprintf("<input type=submit name=stop%d value=STOP>",
+            src->Push(Sprintf("<input type=submit name=stop%d value=STOP>",
                                 d->pid));
-        src->Concat("\n</pre><hr>\n");
+        src->Push("\n</pre><hr>\n");
     }
-    src->Concat("</form></body></html>");
+    src->Push("</form></body></html>");
     return loadHTMLString(src);
 }
 
@@ -2916,7 +2916,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                     *(color++) = 0;
 #endif
             }
-            s->Concat(sp, (int)(str - sp));
+            s->Push(sp, (int)(str - sp));
         }
     }
     if (!do_copy)
@@ -3098,14 +3098,14 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 #endif
             }
             if (do_copy)
-                s->Concat((char *)str, plen);
+                s->Push((char *)str, plen);
             str += plen;
         }
         else
 #endif
         {
             if (do_copy)
-                s->Concat((char)*str);
+                s->Push((char)*str);
             str++;
         }
         effect = PE_NORMAL;

@@ -31,7 +31,7 @@ Str Strnew_m_charp(char *p, ...)
     Str r = Strnew();
     while (p != NULL)
     {
-        r->Concat(p);
+        r->Push(p);
         p = va_arg(ap, char *);
     }
     return r;
@@ -107,7 +107,7 @@ void GCStr::CopyFrom(const char *y, int n)
     length = n;
 }
 
-void GCStr::Concat(const char *y, int n)
+void GCStr::Push(const char *y, int n)
 {
     if (y == NULL)
     {
@@ -141,7 +141,7 @@ void Strcat_m_charp(Str x, ...)
 
     va_start(ap, x);
     while ((p = va_arg(ap, char *)) != NULL)
-        x->Concat(p, strlen(p));
+        x->Push(p, strlen(p));
 }
 
 void Strlower(Str s)
@@ -258,7 +258,7 @@ Str Stralign_left(Str s, int width)
     auto n = Strnew_size(width);
     n->CopyFrom(s);
     for (int i = s->length; i < width; i++)
-        n->Concat(' ');
+        n->Push(' ');
     return n;
 }
 
@@ -268,8 +268,8 @@ Str Stralign_right(Str s, int width)
         return s->Clone();
     auto n = Strnew_size(width);
     for (int i = s->length; i < width; i++)
-        n->Concat(' ');
-    n->Concat(s);
+        n->Push(' ');
+    n->Push(s);
     return n;
 }
 
@@ -280,10 +280,10 @@ Str Stralign_center(Str s, int width)
     auto n = Strnew_size(width);
     auto w = (width - s->length) / 2;
     for (int i = 0; i < w; i++)
-        n->Concat(' ');
-    n->Concat(s);
+        n->Push(' ');
+    n->Push(s);
     for (int i = w + s->length; i < width; i++)
-        n->Concat(' ');
+        n->Push(' ');
     return n;
 }
 
@@ -409,7 +409,7 @@ Str Strfgets(FILE *f)
         c = fgetc(f);
         if (feof(f) || ferror(f))
             break;
-        s->Concat(c);
+        s->Push(c);
         if (c == '\n')
             break;
     }
@@ -425,7 +425,7 @@ Str Strfgetall(FILE *f)
         c = fgetc(f);
         if (feof(f) || ferror(f))
             break;
-        s->Concat(c);
+        s->Push(c);
     }
     return s;
 }

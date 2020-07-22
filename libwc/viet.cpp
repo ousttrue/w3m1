@@ -136,7 +136,7 @@ wc_conv_from_viet(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length);
     if (p > sp)
-	os->Concat(is->ptr, (int)(p - sp));
+	os->Push(is->ptr, (int)(p - sp));
 
     for (; p < ep; p++) {
 	if (*p & 0x80)
@@ -144,7 +144,7 @@ wc_conv_from_viet(Str is, wc_ces ces)
 	else if (*p < 0x20 && map[*p])
 	    wtf_push(os, ccs2, (uint32_t)*p);
 	else
-	    os->Concat((char)*p);
+	    os->Push((char)*p);
     }
     return os;
 }
@@ -177,30 +177,30 @@ wc_push_to_viet(Str os, wc_wchar_t cc, wc_status *st)
 
   while (1) {
     if (cc.ccs == ccs1) {
-	os->Concat((char)(cc.code | 0x80));
+	os->Push((char)(cc.code | 0x80));
 	return;
     } else if (cc.ccs == ccs2) {
-	os->Concat((char)(cc.code & 0x7f));
+	os->Push((char)(cc.code & 0x7f));
 	return;
     } else if (cc.ccs == ccs3) {
-	os->Concat((char)((cc.code >> 8) & 0xff));
-	os->Concat((char)(cc.code & 0xff));
+	os->Push((char)((cc.code >> 8) & 0xff));
+	os->Push((char)(cc.code & 0xff));
 	return;
     }
     switch (cc.ccs) {
     case WC_CCS_US_ASCII:
 	if (cc.code < 0x20 && map && map[cc.code])
-	    os->Concat(' ');
+	    os->Push(' ');
 	else
-	    os->Concat((char)cc.code);
+	    os->Push((char)cc.code);
 	return;
     case WC_CCS_UNKNOWN_W:
 	if (!WcOption.no_replace)
-	    os->Concat(WC_REPLACE_W);
+	    os->Push(WC_REPLACE_W);
 	return;
     case WC_CCS_UNKNOWN:
 	if (!WcOption.no_replace)
-	    os->Concat(WC_REPLACE);
+	    os->Push(WC_REPLACE);
 	return;
     default:
 #ifdef USE_UNICODE
@@ -237,6 +237,6 @@ wc_char_conv_from_viet(uint8_t c, wc_status *st)
     else if (c < 0x20 && map[c])
 	wtf_push(os, st->ces_info->gset[2].ccs, (uint32_t)c);
     else
-	os->Concat((char)c);
+	os->Push((char)c);
     return os;
 }

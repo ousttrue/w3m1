@@ -151,7 +151,7 @@ wc_conv_from_utf8(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length * 4 / 3);
     if (p > sp)
-	os->Concat(is->ptr, (int)(p - sp));
+	os->Push(is->ptr, (int)(p - sp));
 
     st.tag = NULL;
     st.ntag = 0;
@@ -164,7 +164,7 @@ wc_conv_from_utf8(Str is, wc_ces ces)
 		wtf_push_ucs(os, (uint32_t)*p, &st);
 		break;
 	    case 8:
-		os->Concat((char)*p);
+		os->Push((char)*p);
 		break;
 	    case 0:
 	    case 7:
@@ -215,14 +215,14 @@ wc_push_tag_to_utf8(Str os, int ntag)
     }
     if (ntag) {
 	wc_ucs_to_utf8(WC_C_LANGUAGE_TAG, utf8_buf);
-	os->Concat((char *)utf8_buf);
+	os->Push((char *)utf8_buf);
 	for (; *p; p++) {
 	    wc_ucs_to_utf8(WC_C_LANGUAGE_TAG0 | *p, utf8_buf);
-	    os->Concat((char *)utf8_buf);
+	    os->Push((char *)utf8_buf);
 	}
     } else {
 	wc_ucs_to_utf8(WC_C_CANCEL_TAG, utf8_buf);
-	os->Concat((char *)utf8_buf);
+	os->Push((char *)utf8_buf);
     }
     return ntag;
 }
@@ -235,39 +235,39 @@ wc_push_to_utf8(Str os, wc_wchar_t cc, wc_status *st)
     case WC_CCS_US_ASCII:
 	if (st->ntag)
 	    st->ntag = wc_push_tag_to_utf8(os, 0);
-	os->Concat((char)(cc.code & 0x7f));
+	os->Push((char)(cc.code & 0x7f));
 	return;
     case WC_CCS_UCS2:
     case WC_CCS_UCS4:
 	if (st->ntag)
 	    st->ntag = wc_push_tag_to_utf8(os, 0);
 	wc_ucs_to_utf8(cc.code, utf8_buf);
-	os->Concat((char *)utf8_buf);
+	os->Push((char *)utf8_buf);
 	return;
     case WC_CCS_UCS_TAG:
 	if (WcOption.use_language_tag && wc_ucs_tag_to_tag(cc.code) != st->ntag)
 	    st->ntag = wc_push_tag_to_utf8(os, wc_ucs_tag_to_tag(cc.code));
 	wc_ucs_to_utf8(wc_ucs_tag_to_ucs(cc.code), utf8_buf);
-	os->Concat((char *)utf8_buf);
+	os->Push((char *)utf8_buf);
 	return;
     case WC_CCS_ISO_8859_1:
 	if (st->ntag)
 	    st->ntag = wc_push_tag_to_utf8(os, 0);
 	wc_ucs_to_utf8((cc.code | 0x80), utf8_buf);
-	os->Concat((char *)utf8_buf);
+	os->Push((char *)utf8_buf);
 	return;
     case WC_CCS_UNKNOWN_W:
 	if (!WcOption.no_replace) {
 	    if (st->ntag)
 	        st->ntag = wc_push_tag_to_utf8(os, 0);
-	    os->Concat(WC_REPLACE_W);
+	    os->Push(WC_REPLACE_W);
 	}
 	return;
     case WC_CCS_UNKNOWN:
 	if (!WcOption.no_replace) {
 	    if (st->ntag)
 	        st->ntag = wc_push_tag_to_utf8(os, 0);
-	    os->Concat(WC_REPLACE);
+	    os->Push(WC_REPLACE);
 	}
 	return;
     default:
@@ -312,7 +312,7 @@ wc_char_conv_from_utf8(uint8_t c, wc_status *st)
 	    wtf_push_ucs(os, (uint32_t)c, st);
 	    break;
 	case 8:
-	    os->Concat((char)c);
+	    os->Push((char)c);
 	    break;
 	case 0:
 	case 7:

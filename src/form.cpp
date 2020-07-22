@@ -182,8 +182,8 @@ form2str(FormItemList *fi)
     Str tmp = Strnew();
 
     if (fi->type != FORM_SELECT && fi->type != FORM_TEXTAREA)
-	tmp->Concat("input type=");
-    tmp->Concat(_formtypetbl[fi->type]);
+	tmp->Push("input type=");
+    tmp->Push(_formtypetbl[fi->type]);
     if (fi->name && fi->name->length)
 	Strcat_m_charp(tmp, " name=\"", fi->name->ptr, "\"", NULL);
     if ((fi->type == FORM_INPUT_RADIO || fi->type == FORM_INPUT_CHECKBOX ||
@@ -521,23 +521,23 @@ textfieldrep(Str s, int width)
 	if (k > width)
 	    break;
 	if (c_type == PC_CTRL)
-	    n->Concat(' ');
+	    n->Push(' ');
 #ifdef USE_M17N
 	else if (c_type & PC_UNKNOWN)
-	    n->Concat(' ');
+	    n->Push(' ');
 #endif
 	else if (s->ptr[i] == '&')
-	    n->Concat( "&amp;");
+	    n->Push( "&amp;");
 	else if (s->ptr[i] == '<')
-	    n->Concat( "&lt;");
+	    n->Push( "&lt;");
 	else if (s->ptr[i] == '>')
-	    n->Concat( "&gt;");
+	    n->Push( "&gt;");
 	else
-	    n->Concat(&s->ptr[i], c_len);
+	    n->Push(&s->ptr[i], c_len);
 	j = k;
     }
     for (; j < width; j++)
-	n->Concat(' ');
+	n->Push(' ');
     return n;
 }
 
@@ -557,7 +557,7 @@ form_fputs_decode(Str s, FILE * f)
 #endif				/* !defined( __CYGWIN__ ) && !defined( __EMX__ 
 				 * ) */
 	default:
-	    z->Concat( *p);
+	    z->Push( *p);
 	    p++;
 	    break;
 	}
@@ -615,10 +615,10 @@ input_textarea(FormItemList *fi)
 	else if (tmp->length > 1 && tmp->ptr[tmp->length - 1] == '\n' &&
 		 tmp->ptr[tmp->length - 2] != '\r') {
 	    Strshrink(tmp, 1);
-	    tmp->Concat("\r\n");
+	    tmp->Push("\r\n");
 	}
 	tmp = convertLine(NULL, tmp, RAW_MODE, &charset, DisplayCharset);
-	fi->value->Concat(tmp);
+	fi->value->Push(tmp);
     }
 #ifdef USE_M17N
     WcOption.auto_detect = auto_detect;
@@ -887,7 +887,7 @@ loadPreForm(void)
 	    break;
 	if (textarea && !(!strncmp(line->ptr, "/textarea", 9) &&
 			  IS_SPACE(line->ptr[9]))) {
-	    textarea->Concat( line);
+	    textarea->Push( line);
 	    continue;
 	}
 	Strchop(line);

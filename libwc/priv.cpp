@@ -18,13 +18,13 @@ wc_conv_from_priv1(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length);
     if (p > sp)
-	os->Concat(is->ptr, (int)(p - sp));
+	os->Push(is->ptr, (int)(p - sp));
 
     for (; p < ep; p++) {
 	if (*p & 0x80)
 	    wtf_push(os, ccs, (uint32_t)*p);
 	else
-	    os->Concat((char)*p);
+	    os->Push((char)*p);
     }
     return os;
 }
@@ -37,7 +37,7 @@ wc_char_conv_from_priv1(uint8_t c, wc_status *st)
     if (c & 0x80)
 	wtf_push(os, st->ces_info->gset[1].ccs, (uint32_t)c);
     else
-	os->Concat((char)c);
+	os->Push((char)c);
     return os;
 }
 
@@ -55,13 +55,13 @@ wc_conv_from_ascii(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length);
     if (p > sp)
-	os->Concat(is->ptr, (int)(p - sp));
+	os->Push(is->ptr, (int)(p - sp));
 
     for (; p < ep; p++) {
 	if (*p & 0x80)
 	    wtf_push_unknown(os, p, 1);
 	else
-	    os->Concat((char)*p);
+	    os->Push((char)*p);
     }
     return os;
 }
@@ -73,7 +73,7 @@ wc_push_to_raw(Str os, wc_wchar_t cc, wc_status *st)
     switch (cc.ccs) {
     case WC_CCS_US_ASCII:
     case WC_CCS_RAW:
-	os->Concat((char)cc.code);
+	os->Push((char)cc.code);
     }
     return;
 }

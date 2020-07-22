@@ -301,7 +301,7 @@ make_lastline_link(Buffer *buf, char *title, char *url)
                 *p = ' ';
         }
         if (url)
-            s->Concat(" ");
+            s->Push(" ");
         l -= get_Str_strwidth(s);
         if (l <= 0)
             return s;
@@ -319,7 +319,7 @@ make_lastline_link(Buffer *buf, char *title, char *url)
     {
         if (!s)
             return u;
-        s->Concat(u);
+        s->Push(u);
         return s;
     }
     if (!s)
@@ -329,14 +329,14 @@ make_lastline_link(Buffer *buf, char *title, char *url)
     while (i && pr[i] & PC_WCHAR2)
         i--;
 
-    s->Concat(u->ptr, i);
-    s->Concat("..");
+    s->Push(u->ptr, i);
+    s->Push("..");
     i = get_Str_strwidth(u) - (COLS - 1 - get_Str_strwidth(s));
 #ifdef USE_M17N
     while (i < u->length && pr[i] & PC_WCHAR2)
         i++;
 #endif
-    s->Concat(&u->ptr[i]);
+    s->Push(&u->ptr[i]);
     return s;
 }
 
@@ -385,17 +385,17 @@ make_lastline_message(Buffer *buf)
         int cl = buf->currentLine->real_linenumber;
         int ll = buf->lastLine->real_linenumber;
         int r = (int)((double)cl * 100.0 / (double)(ll ? ll : 1) + 0.5);
-        msg->Concat(Sprintf("%d/%d (%d%%)", cl, ll, r));
+        msg->Push(Sprintf("%d/%d (%d%%)", cl, ll, r));
     }
     else
         /* FIXME: gettextize? */
-        msg->Concat("Viewing");
+        msg->Push("Viewing");
 #ifdef USE_SSL
     if (buf->ssl_certificate)
-        msg->Concat("[SSL]");
+        msg->Push("[SSL]");
 #endif
-    msg->Concat(" <");
-    msg->Concat(buf->buffername);
+    msg->Push(" <");
+    msg->Push(buf->buffername);
 
     if (s)
     {
@@ -414,12 +414,12 @@ make_lastline_message(Buffer *buf)
 #endif
             Strtruncate(msg, l);
         }
-        msg->Concat("> ");
-        msg->Concat(s);
+        msg->Push("> ");
+        msg->Push(s);
     }
     else
     {
-        msg->Concat(">");
+        msg->Push(">");
     }
     return msg;
 }
@@ -541,7 +541,7 @@ void displayBuffer(Buffer *buf, int mode)
     if (buf->firstLine == NULL)
     {
         /* FIXME: gettextize? */
-        msg->Concat("\tNo Line");
+        msg->Push("\tNo Line");
     }
     if (delayed_msg != NULL)
     {
@@ -1316,15 +1316,15 @@ message_list_panel(void)
     ListItem *p;
 
     /* FIXME: gettextize? */
-    tmp->Concat("<html><head><title>List of error messages</title></head><body>"
+    tmp->Push("<html><head><title>List of error messages</title></head><body>"
                  "<h1>List of error messages</h1><table cellpadding=0>\n");
     if (message_list)
         for (p = message_list->last; p; p = p->prev)
             Strcat_m_charp(tmp, "<tr><td><pre>", html_quote((char *)p->ptr),
                            "</pre></td></tr>\n", NULL);
     else
-        tmp->Concat("<tr><td>(no message recorded)</td></tr>\n");
-    tmp->Concat("</table></body></html>");
+        tmp->Push("<tr><td>(no message recorded)</td></tr>\n");
+    tmp->Push("</table></body></html>");
     return loadHTMLString(tmp);
 }
 

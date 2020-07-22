@@ -188,7 +188,7 @@ parse_tag(char **s, int internal)
 				q++;
 				while (*q && *q != '"')
 				{
-					value_tmp->Concat( *q);
+					value_tmp->Push( *q);
 					if (!tag->need_reconstruct && is_html_quote(*q))
 						tag->need_reconstruct = TRUE;
 					q++;
@@ -201,7 +201,7 @@ parse_tag(char **s, int internal)
 				q++;
 				while (*q && *q != '\'')
 				{
-					value_tmp->Concat( *q);
+					value_tmp->Push( *q);
 					if (!tag->need_reconstruct && is_html_quote(*q))
 						tag->need_reconstruct = TRUE;
 					q++;
@@ -213,7 +213,7 @@ parse_tag(char **s, int internal)
 			{
 				while (*q && !IS_SPACE(*q) && *q != '>')
 				{
-					value_tmp->Concat( *q);
+					value_tmp->Push( *q);
 					if (!tag->need_reconstruct && is_html_quote(*q))
 						tag->need_reconstruct = TRUE;
 					q++;
@@ -255,7 +255,7 @@ parse_tag(char **s, int internal)
 				for (x = value_tmp->ptr; *x; x++)
 				{
 					if (*x != '\n')
-						value->Concat( *x);
+						value->Push( *x);
 				}
 			}
 		}
@@ -323,18 +323,18 @@ Str parsedtag2str(struct parsed_tag *tag)
 	int tag_id = tag->tagid;
 	int nattr = TagMAP[tag_id].max_attribute;
 	Str tagstr = Strnew();
-	tagstr->Concat( '<');
-	tagstr->Concat( TagMAP[tag_id].name);
+	tagstr->Push( '<');
+	tagstr->Push( TagMAP[tag_id].name);
 	for (i = 0; i < nattr; i++)
 	{
 		if (tag->attrid[i] != ATTR_UNKNOWN)
 		{
-			tagstr->Concat( ' ');
-			tagstr->Concat( AttrMAP[tag->attrid[i]].name);
+			tagstr->Push( ' ');
+			tagstr->Push( AttrMAP[tag->attrid[i]].name);
 			if (tag->value[i])
-				tagstr->Concat( Sprintf("=\"%s\"", html_quote(tag->value[i])));
+				tagstr->Push( Sprintf("=\"%s\"", html_quote(tag->value[i])));
 		}
 	}
-	tagstr->Concat( '>');
+	tagstr->Push( '>');
 	return tagstr;
 }

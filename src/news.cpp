@@ -179,11 +179,11 @@ html_quote_s(char *str)
 	if (q) {
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(str, (int)(p - str));
-	    tmp->Concat(q);
+	    tmp->Push(q);
 	}
 	else {
 	    if (tmp)
-		tmp->Concat(*p);
+		tmp->Push(*p);
 	}
     }
     if (tmp)
@@ -201,14 +201,14 @@ add_news_message(Str str, int index, char *date, char *name, char *subject,
     name = name_from_address(name, 16);
     t = mymktime(date);
     tm = localtime(&t);
-    str->Concat(
+    str->Push(
 	   Sprintf("<tr valign=top><td>%d<td nowrap>(%02d/%02d)<td nowrap>%s",
 		   index, tm->tm_mon + 1, tm->tm_mday, html_quote_s(name)));
     if (group)
-	str->Concat( Sprintf("<td><a href=\"%s%s/%d\">%s</a>\n", scheme, group,
+	str->Push( Sprintf("<td><a href=\"%s%s/%d\">%s</a>\n", scheme, group,
 			    index, html_quote(subject)));
     else
-	str->Concat( Sprintf("<td><a href=\"%s%s\">%s</a>\n", scheme,
+	str->Push( Sprintf("<td><a href=\"%s%s\">%s</a>\n", scheme,
 			    html_quote(file_quote(mid)), html_quote(subject)));
 }
 
@@ -356,7 +356,7 @@ loadNewsgroup0(ParsedURL *pu)
 
     if (SETJMP(AbortLoading) != 0) {
 	news_close(&current_news);
-	page->Concat( "</table>\n<p>Transfer Interrupted!\n");
+	page->Push( "</table>\n<p>Transfer Interrupted!\n");
 	goto news_end;
     }
     TRAP_ON;
@@ -392,11 +392,11 @@ loadNewsgroup0(ParsedURL *pu)
 	i = start - MaxNewsMessage;
 	if (i < first)
 	    i = first;
-	page->Concat( Sprintf("<a href=\"%s%s/%d-%d\">[%d-%d]</a>\n", scheme,
+	page->Push( Sprintf("<a href=\"%s%s/%d-%d\">[%d-%d]</a>\n", scheme,
 			     qgroup, i, start - 1, i, start - 1));
     }
 
-    page->Concat( "<table>\n");
+    page->Push( "<table>\n");
     news_command(&current_news, "XOVER", Sprintf("%d-%d", start, end)->ptr,
 		 &status);
     if (status == 224) {
@@ -461,13 +461,13 @@ loadNewsgroup0(ParsedURL *pu)
 			     pu->scheme == SCM_NNTP_GROUP ? qgroup : NULL);
 	}
     }
-    page->Concat( "</table>\n");
+    page->Push( "</table>\n");
 
     if (end < last) {
 	i = end + MaxNewsMessage;
 	if (i > last)
 	    i = last;
-	page->Concat( Sprintf("<a href=\"%s%s/%d-%d\">[%d-%d]</a>\n", scheme,
+	page->Push( Sprintf("<a href=\"%s%s/%d-%d\">[%d-%d]</a>\n", scheme,
 			     qgroup, end + 1, i, end + 1, i));
     }
     flag = 1;
@@ -475,7 +475,7 @@ loadNewsgroup0(ParsedURL *pu)
   news_list:
     tmp = Sprintf("ACTIVE %s", group);
     if (!strchr(group, '*'))
-	tmp->Concat(".*");
+	tmp->Push(".*");
     news_command(&current_news, "LIST", tmp->ptr, &status);
     if (status != 215)
 	goto news_end;
@@ -485,8 +485,8 @@ loadNewsgroup0(ParsedURL *pu)
 	    break;
 	if (flag < 2) {
 	    if (flag == 1)
-		page->Concat( "<hr>\n");
-	    page->Concat( "<table>\n");
+		page->Push( "<hr>\n");
+	    page->Push( "<table>\n");
 	    flag = 2;
 	}
 	p = tmp->ptr;
@@ -496,16 +496,16 @@ loadNewsgroup0(ParsedURL *pu)
 	    i = last - first + 1;
 	else
 	    i = 0;
-	page->Concat(
+	page->Push(
 	       Sprintf
 	       ("<tr><td align=right>%d<td><a href=\"%s%s\">%s</a>\n", i,
 		scheme, html_quote(file_quote(p)), html_quote(p)));
     }
     if (flag == 2)
-	page->Concat( "</table>\n");
+	page->Push( "</table>\n");
 
   news_end:
-    page->Concat( "</body>\n</html>\n");
+    page->Push( "</body>\n</html>\n");
     TRAP_OFF;
     return page;
 }

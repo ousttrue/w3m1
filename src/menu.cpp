@@ -1830,8 +1830,8 @@ initSelectMenu(void)
             case SCM_LOCAL:
                 if (strcmp(buf->currentURL.file, "-"))
                 {
-                    str->Concat( ' ');
-                    str->Concat(
+                    str->Push( ' ');
+                    str->Push(
                                  conv_from_system(buf->currentURL.real_file));
                 }
                 break;
@@ -1839,11 +1839,11 @@ initSelectMenu(void)
             case SCM_MISSING:
                 break;
             default:
-                str->Concat( ' ');
+                str->Push( ' ');
                 p = parsedURL2Str(&buf->currentURL)->ptr;
                 if (DecodeURL)
                     p = url_unquote_conv(p, 0);
-                str->Concat( p);
+                str->Push( p);
                 break;
             }
         }
@@ -1859,10 +1859,10 @@ initSelectMenu(void)
     len = (len > 1) ? ((len - l + 1) / 2) : 0;
     str = Strnew();
     for (i = 0; i < len; i++)
-        str->Concat( '-');
-    str->Concat( comment);
+        str->Push( '-');
+    str->Push( comment);
     for (i = 0; i < len; i++)
-        str->Concat( '-');
+        str->Push( '-');
     label[nitem] = str->ptr;
     label[nitem + 1] = NULL;
 
@@ -1976,8 +1976,8 @@ initSelTabMenu(void)
     //         case SCM_LOCAL:
     //             if (strcmp(buf->currentURL.file, "-"))
     //             {
-    //                 str->Concat( ' ');
-    //                 str->Concat(
+    //                 str->Push( ' ');
+    //                 str->Push(
     //                              conv_from_system(buf->currentURL.real_file));
     //             }
     //             break;
@@ -1988,7 +1988,7 @@ initSelTabMenu(void)
     //             p = parsedURL2Str(&buf->currentURL)->ptr;
     //             if (DecodeURL)
     //                 p = url_unquote_conv(p, 0);
-    //             str->Concat( p);
+    //             str->Push( p);
     //             break;
     //         }
     //     }
@@ -2004,10 +2004,10 @@ initSelTabMenu(void)
     // len = (len > 1) ? ((len - l + 1) / 2) : 0;
     // str = Strnew();
     // for (i = 0; i < len; i++)
-    //     str->Concat( '-');
-    // str->Concat( comment);
+    //     str->Push( '-');
+    // str->Push( comment);
     // for (i = 0; i < len; i++)
-    //     str->Concat( '-');
+    //     str->Push( '-');
     // label[nitem] = str->ptr;
     // label[nitem + 1] = NULL;
 
@@ -2328,18 +2328,18 @@ link_menu(Buffer *buf)
     {
         str = Strnew_charp(l->title ? l->title : (char *)"(empty)");
         if (l->type == LINK_TYPE_REL)
-            str->Concat( " [Rel] ");
+            str->Push( " [Rel] ");
         else if (l->type == LINK_TYPE_REV)
-            str->Concat( " [Rev] ");
+            str->Push( " [Rev] ");
         else
-            str->Concat( " ");
+            str->Push( " ");
         if (!l->url)
             p = "";
         else if (DecodeURL)
             p = url_unquote_conv(l->url, buf->document_charset);
         else
             p = l->url;
-        str->Concat( p);
+        str->Push( p);
         label[i] = str->ptr;
         if (len < str->length)
             len = str->length;

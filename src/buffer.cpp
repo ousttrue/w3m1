@@ -248,16 +248,16 @@ writeBufferName(Buffer *buf, int n)
 		case SCM_LOCAL_CGI:
 			if (strcmp(buf->currentURL.file, "-"))
 			{
-				msg->Concat( ' ');
-				msg->Concat(conv_from_system(buf->currentURL.real_file));
+				msg->Push( ' ');
+				msg->Push(conv_from_system(buf->currentURL.real_file));
 			}
 			break;
 		case SCM_UNKNOWN:
 		case SCM_MISSING:
 			break;
 		default:
-			msg->Concat( ' ');
-			msg->Concat(parsedURL2Str(&buf->currentURL));
+			msg->Push( ' ');
+			msg->Push(parsedURL2Str(&buf->currentURL));
 			break;
 		}
 	}

@@ -757,7 +757,7 @@ next_dcompl(int next)
 
     d = Str_conv_to_system(CDirBuf->Clone());
     if (d->length > 0 && Strlastchar(d) != '/')
-	d->Concat( '/');
+	d->Push( '/');
     if (cm_mode & CPL_URL && d->ptr[0] == 'f') {
 	p = d->ptr;
 	if (strncmp(p, "file://localhost/", 17) == 0)
@@ -818,7 +818,7 @@ next_dcompl(int next)
 	    move(y, j * len);
 	    clrtoeolx();
 	    f = d->Clone();
-	    f->Concat(CFileBuf[n]);
+	    f->Push(CFileBuf[n]);
 	    addstr(conv_from_system(CFileBuf[n]));
 	    if (stat(expandPath(f->ptr), &st) != -1 && S_ISDIR(st.st_mode))
 		addstr("/");
@@ -852,10 +852,10 @@ escape_spaces(Str s)
 	if (*p == ' ' || *p == CTRL_I) {
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(s->ptr, (int)(p - s->ptr));
-	    tmp->Concat('\\');
+	    tmp->Push('\\');
 	}
 	if (tmp)
-	    tmp->Concat(*p);
+	    tmp->Push(*p);
     }
     if (tmp)
 	return tmp;
@@ -878,7 +878,7 @@ unescape_spaces(Str s)
 	}
 	else {
 	    if (tmp)
-		tmp->Concat(*p);
+		tmp->Push(*p);
 	}
     }
     if (tmp)
@@ -919,7 +919,7 @@ doComplete(Str ifn, int *status, int next)
 	    }
 	}
 	if (CompleteBuf->length == 0) {
-	    CompleteBuf->Concat( '.');
+	    CompleteBuf->Push( '.');
 	}
 	if (Strlastchar(CompleteBuf) == '/' && CompleteBuf->length > 1) {
 	    Strshrink(CompleteBuf, 1);
@@ -981,8 +981,8 @@ doComplete(Str ifn, int *status, int next)
     }
     CompleteBuf = CDirBuf->Clone();
     if (CompleteBuf->length && Strlastchar(CompleteBuf) != '/')
-	CompleteBuf->Concat( '/');
-    CompleteBuf->Concat( CFileName);
+	CompleteBuf->Push( '/');
+    CompleteBuf->Push( CFileName);
     if (*status != CPL_AMBIG) {
 	p = CompleteBuf->ptr;
 	if (cm_mode & CPL_URL) {
@@ -994,7 +994,7 @@ doComplete(Str ifn, int *status, int next)
 		p = &p[5];
 	}
 	if (stat(expandPath(p), &st) != -1 && S_ISDIR(st.st_mode))
-	    CompleteBuf->Concat( '/');
+	    CompleteBuf->Push( '/');
     }
     if (cm_mode & CPL_ON)
 	CompleteBuf = escape_spaces(CompleteBuf);
@@ -1114,7 +1114,7 @@ _editor(void)
 
     fi.readonly = FALSE;
     fi.value = strBuf->Clone();
-    fi.value->Concat('\n');
+    fi.value->Push('\n');
 
     input_textarea(&fi);
 
@@ -1122,7 +1122,7 @@ _editor(void)
     for (p = fi.value->ptr; *p; p++) {
 	if (*p == '\r' || *p == '\n')
 	    continue;
-	strBuf->Concat( *p);
+	strBuf->Push( *p);
     }
     CLen = CPos = setStrType(strBuf, strProp);
 

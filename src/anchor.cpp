@@ -783,8 +783,8 @@ getAnchorText(Buffer *buf, AnchorList *al, Anchor *a)
 		if (!tmp)
 			tmp = Strnew_size(ep - p);
 		else
-			tmp->Concat(' ');
-		tmp->Concat(p, ep - p);
+			tmp->Push(' ');
+		tmp->Push(p, ep - p);
 	}
 	return tmp ? tmp->ptr : NULL;
 }
@@ -811,7 +811,7 @@ link_list_panel(Buffer *buf)
 
 	if (buf->linklist)
 	{
-		tmp->Concat("<hr><h2>Links</h2>\n<ol>\n");
+		tmp->Push("<hr><h2>Links</h2>\n<ol>\n");
 		for (l = buf->linklist; l; l = l->next)
 		{
 			if (l->url)
@@ -837,12 +837,12 @@ link_list_panel(Buffer *buf)
 			Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
 						   "\n", NULL);
 		}
-		tmp->Concat("</ol>\n");
+		tmp->Push("</ol>\n");
 	}
 
 	if (buf->href)
 	{
-		tmp->Concat("<hr><h2>Anchors</h2>\n<ol>\n");
+		tmp->Push("<hr><h2>Anchors</h2>\n<ol>\n");
 		al = buf->href;
 		for (i = 0; i < al->nanchor; i++)
 		{
@@ -861,12 +861,12 @@ link_list_panel(Buffer *buf)
 			Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
 						   "\n", NULL);
 		}
-		tmp->Concat("</ol>\n");
+		tmp->Push("</ol>\n");
 	}
 
 	if (buf->img)
 	{
-		tmp->Concat("<hr><h2>Images</h2>\n<ol>\n");
+		tmp->Push("<hr><h2>Images</h2>\n<ol>\n");
 		al = buf->img;
 		for (i = 0; i < al->nanchor; i++)
 		{
@@ -901,7 +901,7 @@ link_list_panel(Buffer *buf)
 				MapArea *m;
 				if (!ml)
 					continue;
-				tmp->Concat("<br>\n<b>Image map</b>\n<ol>\n");
+				tmp->Push("<br>\n<b>Image map</b>\n<ol>\n");
 				for (mi = ml->area->first; mi != NULL; mi = mi->next)
 				{
 					m = (MapArea *)mi->ptr;
@@ -925,10 +925,10 @@ link_list_panel(Buffer *buf)
 					Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t,
 								   "</a><br>", p, "\n", NULL);
 				}
-				tmp->Concat("</ol>\n");
+				tmp->Push("</ol>\n");
 			}
 		}
-		tmp->Concat("</ol>\n");
+		tmp->Push("</ol>\n");
 	}
 
 	return loadHTMLString(tmp);

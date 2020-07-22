@@ -149,7 +149,7 @@ void appendTextLine(TextLineList *tl, Str line, int pos)
     {
         lbuf = tl->last->ptr;
         if (lbuf->line)
-            lbuf->line->Concat(line);
+            lbuf->line->Push(line);
         else
             lbuf->line = line;
         lbuf->pos += pos;

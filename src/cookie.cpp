@@ -104,7 +104,7 @@ make_portlist(Str port)
 	    p++;
 	tmp->Clear();
 	while (*p && IS_DIGIT(*p))
-	    tmp->Concat(*(p++));
+	    tmp->Push(*(p++));
 	if (tmp->length == 0)
 	    break;
 	pl = New(struct portlist);
@@ -123,7 +123,7 @@ portlist2str(struct portlist *first)
 
     tmp = Sprintf("%d", first->port);
     for (pl = first->next; pl; pl = pl->next)
-	tmp->Concat(Sprintf(", %d", pl->port));
+	tmp->Push(Sprintf(", %d", pl->port));
     return tmp;
 }
 
@@ -169,8 +169,8 @@ static Str
 make_cookie(struct cookie *cookie)
 {
     Str tmp = cookie->name->Clone();
-    tmp->Concat('=');
-    tmp->Concat(cookie->value);
+    tmp->Push('=');
+    tmp->Push(cookie->value);
     return tmp;
 }
 
@@ -241,19 +241,19 @@ find_cookie(ParsedURL *pu)
 
     tmp = Strnew();
     if (version > 0)
-	tmp->Concat(Sprintf("$Version=\"%d\"; ", version));
+	tmp->Push(Sprintf("$Version=\"%d\"; ", version));
 
-    tmp->Concat(make_cookie(fco));
+    tmp->Push(make_cookie(fco));
     for (p1 = fco->next; p1; p1 = p1->next) {
-	tmp->Concat("; ");
-	tmp->Concat(make_cookie(p1));
+	tmp->Push("; ");
+	tmp->Push(make_cookie(p1));
 	if (version > 0) {
 	    if (p1->flag & COO_PATH)
-		tmp->Concat(Sprintf("; $Path=\"%s\"", p1->path->ptr));
+		tmp->Push(Sprintf("; $Path=\"%s\"", p1->path->ptr));
 	    if (p1->flag & COO_DOMAIN)
-		tmp->Concat(Sprintf("; $Domain=\"%s\"", p1->domain->ptr));
+		tmp->Push(Sprintf("; $Domain=\"%s\"", p1->domain->ptr));
 	    if (p1->portl)
-		tmp->Concat(Sprintf("; $Port=\"%s\"", portlist2str(p1->portl)));
+		tmp->Push(Sprintf("; $Port=\"%s\"", portlist2str(p1->portl)));
 	}
     }
     return tmp;
@@ -484,7 +484,7 @@ readcol(char **p)
 {
     Str tmp = Strnew();
     while (**p && **p != '\n' && **p != '\r' && **p != '\t')
-	tmp->Concat(*((*p)++));
+	tmp->Push(*((*p)++));
     if (**p == '\t')
 	(*p)++;
     return tmp;
@@ -588,7 +588,7 @@ cookie_list_panel(void)
     if (!use_cookie || !First_cookie)
 	return NULL;
 
-    src->Concat("<ol>");
+    src->Push("<ol>");
     for (p = First_cookie, i = 0; p; p = p->next, i++) {
 	tmp = html_quote(parsedURL2Str(&p->url)->ptr);
 	if (p->expires != (time_t) - 1) {
@@ -619,71 +619,71 @@ cookie_list_panel(void)
 	}
 	else
 	    tmp2[0] = '\0';
-	src->Concat("<li>");
-	src->Concat("<h1><a href=\"");
-	src->Concat(tmp);
-	src->Concat("\">");
-	src->Concat(tmp);
-	src->Concat("</a></h1>");
+	src->Push("<li>");
+	src->Push("<h1><a href=\"");
+	src->Push(tmp);
+	src->Push("\">");
+	src->Push(tmp);
+	src->Push("</a></h1>");
 
-	src->Concat("<table cellpadding=0>");
+	src->Push("<table cellpadding=0>");
 	if (!(p->flag & COO_SECURE)) {
-	    src->Concat("<tr><td width=\"80\"><b>Cookie:</b></td><td>");
-	    src->Concat(html_quote(make_cookie(p)->ptr));
-	    src->Concat("</td></tr>");
+	    src->Push("<tr><td width=\"80\"><b>Cookie:</b></td><td>");
+	    src->Push(html_quote(make_cookie(p)->ptr));
+	    src->Push("</td></tr>");
 	}
 	if (p->comment) {
-	    src->Concat("<tr><td width=\"80\"><b>Comment:</b></td><td>");
-	    src->Concat(html_quote(p->comment->ptr));
-	    src->Concat("</td></tr>");
+	    src->Push("<tr><td width=\"80\"><b>Comment:</b></td><td>");
+	    src->Push(html_quote(p->comment->ptr));
+	    src->Push("</td></tr>");
 	}
 	if (p->commentURL) {
-	    src->Concat("<tr><td width=\"80\"><b>CommentURL:</b></td><td>");
-	    src->Concat("<a href=\"");
-	    src->Concat(html_quote(p->commentURL->ptr));
-	    src->Concat("\">");
-	    src->Concat(html_quote(p->commentURL->ptr));
-	    src->Concat("</a>");
-	    src->Concat("</td></tr>");
+	    src->Push("<tr><td width=\"80\"><b>CommentURL:</b></td><td>");
+	    src->Push("<a href=\"");
+	    src->Push(html_quote(p->commentURL->ptr));
+	    src->Push("\">");
+	    src->Push(html_quote(p->commentURL->ptr));
+	    src->Push("</a>");
+	    src->Push("</td></tr>");
 	}
 	if (tmp2[0]) {
-	    src->Concat("<tr><td width=\"80\"><b>Expires:</b></td><td>");
-	    src->Concat(tmp2);
+	    src->Push("<tr><td width=\"80\"><b>Expires:</b></td><td>");
+	    src->Push(tmp2);
 	    if (p->flag & COO_DISCARD)
-		src->Concat(" (Discard)");
-	    src->Concat("</td></tr>");
+		src->Push(" (Discard)");
+	    src->Push("</td></tr>");
 	}
-	src->Concat("<tr><td width=\"80\"><b>Version:</b></td><td>");
-	src->Concat(Sprintf("%d", p->version)->ptr);
-	src->Concat("</td></tr><tr><td>");
+	src->Push("<tr><td width=\"80\"><b>Version:</b></td><td>");
+	src->Push(Sprintf("%d", p->version)->ptr);
+	src->Push("</td></tr><tr><td>");
 	if (p->domain) {
-	    src->Concat("<tr><td width=\"80\"><b>Domain:</b></td><td>");
-	    src->Concat(html_quote(p->domain->ptr));
-	    src->Concat("</td></tr>");
+	    src->Push("<tr><td width=\"80\"><b>Domain:</b></td><td>");
+	    src->Push(html_quote(p->domain->ptr));
+	    src->Push("</td></tr>");
 	}
 	if (p->path) {
-	    src->Concat("<tr><td width=\"80\"><b>Path:</b></td><td>");
-	    src->Concat(html_quote(p->path->ptr));
-	    src->Concat("</td></tr>");
+	    src->Push("<tr><td width=\"80\"><b>Path:</b></td><td>");
+	    src->Push(html_quote(p->path->ptr));
+	    src->Push("</td></tr>");
 	}
 	if (p->portl) {
-	    src->Concat("<tr><td width=\"80\"><b>Port:</b></td><td>");
-	    src->Concat(html_quote(portlist2str(p->portl)->ptr));
-	    src->Concat("</td></tr>");
+	    src->Push("<tr><td width=\"80\"><b>Port:</b></td><td>");
+	    src->Push(html_quote(portlist2str(p->portl)->ptr));
+	    src->Push("</td></tr>");
 	}
-	src->Concat("<tr><td width=\"80\"><b>Secure:</b></td><td>");
-	src->Concat((p->flag & COO_SECURE) ? (char*)"Yes" : (char*)"No");
-	src->Concat("</td></tr><tr><td>");
+	src->Push("<tr><td width=\"80\"><b>Secure:</b></td><td>");
+	src->Push((p->flag & COO_SECURE) ? (char*)"Yes" : (char*)"No");
+	src->Push("</td></tr><tr><td>");
 
-	src->Concat(Sprintf("<tr><td width=\"80\"><b>Use:</b></td><td>"
+	src->Push(Sprintf("<tr><td width=\"80\"><b>Use:</b></td><td>"
 			    "<input type=radio name=\"%d\" value=1%s>Yes"
 			    "&nbsp;&nbsp;"
 			    "<input type=radio name=\"%d\" value=0%s>No",
 			    i, (p->flag & COO_USE) ? " checked" : "",
 			    i, (!(p->flag & COO_USE)) ? " checked" : ""));
-	src->Concat("</td></tr><tr><td><input type=submit value=\"OK\"></table><p>");
+	src->Push("</td></tr><tr><td><input type=submit value=\"OK\"></table><p>");
     }
-    src->Concat("</ol></form></body></html>");
+    src->Push("</ol></form></body></html>");
     return loadHTMLString(src);
 }
 

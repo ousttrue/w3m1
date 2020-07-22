@@ -261,7 +261,7 @@ wc_conv_from_johab(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length);
     if (p > sp)
-	os->Concat(is->ptr, (int)(p - sp));
+	os->Push(is->ptr, (int)(p - sp));
 
     for (; p < ep; p++) {
 	switch (state) {
@@ -277,7 +277,7 @@ wc_conv_from_johab(Str is, wc_ces ces)
 		wtf_push_unknown(os, p, 1);
 		break;
 	    default:
-		os->Concat((char)*p);
+		os->Push((char)*p);
 		break;
 	    }
 	    break;
@@ -312,26 +312,26 @@ wc_push_to_johab(Str os, wc_wchar_t cc, wc_status *st)
   while (1) {
     switch (cc.ccs) {
     case WC_CCS_US_ASCII:
-	os->Concat((char)cc.code);
+	os->Push((char)cc.code);
 	return;
     case WC_CCS_JOHAB_1:
     case WC_CCS_JOHAB_2:
     case WC_CCS_JOHAB_3:
 	cc = wc_cs128w_to_johab(cc);
     case WC_CCS_JOHAB:
-	os->Concat((char)(cc.code >> 8));
-	os->Concat((char)(cc.code & 0xff));
+	os->Push((char)(cc.code >> 8));
+	os->Push((char)(cc.code & 0xff));
 	return;
     case WC_CCS_KS_X_1001:
 	cc = wc_ksx1001_to_johab(cc);
 	continue;
     case WC_CCS_UNKNOWN_W:
 	if (!WcOption.no_replace)
-	    os->Concat(WC_REPLACE_W);
+	    os->Push(WC_REPLACE_W);
 	return;
     case WC_CCS_UNKNOWN:
 	if (!WcOption.no_replace)
-	    os->Concat(WC_REPLACE);
+	    os->Push(WC_REPLACE);
 	return;
     default:
 #ifdef USE_UNICODE
@@ -370,7 +370,7 @@ wc_char_conv_from_johab(uint8_t c, wc_status *st)
 	case WC_JOHAB_MAP_C1:
 	    break;
 	default:
-	    os->Concat((char)c);
+	    os->Push((char)c);
 	    break;
 	}
 	break;

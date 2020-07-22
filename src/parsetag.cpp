@@ -40,7 +40,7 @@ cgistr2tagarg(char *cgistr)
 	t0 = t;
 	tag = Strnew();
 	while (*cgistr && *cgistr != '=' && *cgistr != '&')
-	    tag->Concat( *cgistr++);
+	    tag->Push( *cgistr++);
 	t->arg = Str_form_unquote(tag)->ptr;
 	t->value = NULL;
 	if (*cgistr == '\0')
@@ -49,7 +49,7 @@ cgistr2tagarg(char *cgistr)
 	    cgistr++;
 	    value = Strnew();
 	    while (*cgistr && *cgistr != '&')
-		value->Concat( *cgistr++);
+		value->Push( *cgistr++);
 	    t->value = Str_form_unquote(value)->ptr;
 	}
 	else if (*cgistr == '&')

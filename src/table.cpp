@@ -422,9 +422,9 @@ suspend_or_pushdata(struct table *tbl, char *line)
 }
 
 #ifdef USE_M17N
-#define PUSH_TAG(str,n) tagbuf->Concat(str, n)
+#define PUSH_TAG(str,n) tagbuf->Push(str, n)
 #else
-#define PUSH_TAG(str,n) tagbuf->Concat( *str)
+#define PUSH_TAG(str,n) tagbuf->Push( *str)
 #endif
 
 int visible_length_offset = 0;
@@ -568,7 +568,7 @@ align(TextLine *lbuf, int width, int mode)
 
     if (line->length == 0) {
 	for (i = 0; i < width; i++)
-	    line->Concat( ' ');
+	    line->Push( ' ');
 	lbuf->pos = width;
 	return;
     }
@@ -579,20 +579,20 @@ align(TextLine *lbuf, int width, int mode)
 	l1 = l / 2;
 	l2 = l - l1;
 	for (i = 0; i < l1; i++)
-	    buf->Concat( ' ');
-	buf->Concat( line);
+	    buf->Push( ' ');
+	buf->Push( line);
 	for (i = 0; i < l2; i++)
-	    buf->Concat( ' ');
+	    buf->Push( ' ');
 	break;
     case ALIGN_LEFT:
-	buf->Concat( line);
+	buf->Push( line);
 	for (i = 0; i < l; i++)
-	    buf->Concat( ' ');
+	    buf->Push( ' ');
 	break;
     case ALIGN_RIGHT:
 	for (i = 0; i < l; i++)
-	    buf->Concat( ' ');
-	buf->Concat( line);
+	    buf->Push( ' ');
+	buf->Push( line);
 	break;
     default:
 	return;
@@ -623,12 +623,12 @@ print_item(struct table *t, int row, int col, int width, Str buf)
 	else if ((t->tabattr[row][col] & HTT_ALIGN) == HTT_CENTER)
 	    alignment = ALIGN_CENTER;
 	align(lbuf, width, alignment);
-	buf->Concat( lbuf->line);
+	buf->Push( lbuf->line);
     }
     else {
 	lbuf = newTextLine(NULL, 0);
 	align(lbuf, width, ALIGN_CENTER);
-	buf->Concat( lbuf->line);
+	buf->Push( lbuf->line);
     }
 }
 
@@ -1884,19 +1884,19 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 	vrulec = Strnew();
 	push_symbol(vrulea, TK_VERTICALBAR(t->border_mode), symbol_width, 1);
 	for (i = 0; i < t->cellpadding; i++) {
-	    vrulea->Concat( ' ');
-	    vruleb->Concat( ' ');
-	    vrulec->Concat( ' ');
+	    vrulea->Push( ' ');
+	    vruleb->Push( ' ');
+	    vrulec->Push( ' ');
 	}
 	push_symbol(vrulec, TK_VERTICALBAR(t->border_mode), symbol_width, 1);
     case BORDER_NOWIN:
 	push_symbol(vruleb, TK_VERTICALBAR(BORDER_THIN), symbol_width, 1);
 	for (i = 0; i < t->cellpadding; i++)
-	    vruleb->Concat( ' ');
+	    vruleb->Push( ' ');
 	break;
     case BORDER_NONE:
 	for (i = 0; i < t->cellspacing; i++)
-	    vruleb->Concat( ' ');
+	    vruleb->Push( ' ');
     }
 
     for (r = 0; r <= t->maxrow; r++) {
@@ -1904,12 +1904,12 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 	    renderbuf = Strnew();
 	    if (t->border_mode == BORDER_THIN
 		|| t->border_mode == BORDER_THICK)
-		renderbuf->Concat( vrulea);
+		renderbuf->Push( vrulea);
 #ifdef ID_EXT
 	    if (t->tridvalue[r] != NULL && h == 0) {
 		idtag = Sprintf("<_id id=\"%s\">",
 				html_quote((t->tridvalue[r])->ptr));
-		renderbuf->Concat( idtag);
+		renderbuf->Push( idtag);
 	    }
 #endif				/* ID_EXT */
 	    for (i = 0; i <= t->maxcol; i++) {
@@ -1918,7 +1918,7 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 		if (t->tabidvalue[r][i] != NULL && h == 0) {
 		    idtag = Sprintf("<_id id=\"%s\">",
 				    html_quote((t->tabidvalue[r][i])->ptr));
-		    renderbuf->Concat( idtag);
+		    renderbuf->Push( idtag);
 		}
 #endif				/* ID_EXT */
 		if (!(t->tabattr[r][i] & HTT_X)) {
@@ -1935,12 +1935,12 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 			print_item(t, r, i, w, renderbuf);
 		}
 		if (i < t->maxcol && !(t->tabattr[r][i + 1] & HTT_X))
-		    renderbuf->Concat( vruleb);
+		    renderbuf->Push( vruleb);
 	    }
 	    switch (t->border_mode) {
 	    case BORDER_THIN:
 	    case BORDER_THICK:
-		renderbuf->Concat( vrulec);
+		renderbuf->Push( vrulec);
 		t->total_height += 1;
 		break;
 	    }
@@ -2930,7 +2930,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 		{
 			Str t = getLinkNumberStr(-1);
 			feed_table_inline_tag(tbl, NULL, mode, t->length);
-			tmp->Concat(t);
+			tmp->Push(t);
 		}
 		pushdata(tbl, tbl->row, tbl->col, tmp->ptr);
 	    }
@@ -3146,7 +3146,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 	    return -1;
     }
     if (mode->caption) {
-	tbl->caption->Concat(line);
+	tbl->caption->Push(line);
 	return -1;
     }
     if (mode->pre_mode & TBLM_SCRIPT)
@@ -3171,7 +3171,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 		if (!strncasecmp(p, "&amp;", 5) ||
 		    !strncasecmp(p, "&gt;", 4) || !strncasecmp(p, "&lt;", 4)) {
 		    /* do not convert */
-		    tmp->Concat(*p);
+		    tmp->Push(*p);
 		    p++;
 		}
 		else {
@@ -3179,33 +3179,33 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 		    q = p;
 		    switch (ec = getescapechar(&p)) {
 		    case '<':
-			tmp->Concat("&lt;");
+			tmp->Push("&lt;");
 			break;
 		    case '>':
-			tmp->Concat("&gt;");
+			tmp->Push("&gt;");
 			break;
 		    case '&':
-			tmp->Concat("&amp;");
+			tmp->Push("&amp;");
 			break;
 		    case '\r':
-			tmp->Concat('\n');
+			tmp->Push('\n');
 			break;
 		    default:
 			r = (char*)conv_entity(ec);
 			if (r != NULL && strlen(r) == 1 &&
 			    ec == (unsigned char)*r) {
-			    tmp->Concat(*r);
+			    tmp->Push(*r);
 			    break;
 			}
 		    case -1:
-			tmp->Concat(*q);
+			tmp->Push(*q);
 			p = q + 1;
 			break;
 		    }
 		}
 	    }
 	    else {
-		tmp->Concat(*p);
+		tmp->Push(*p);
 		p++;
 	    }
 	}

@@ -73,7 +73,7 @@ print_bookmark_panel(char *bmark, char *url, char *title, char *charset)
 		p = tmp->ptr + 4;
 		tmp2 = Strnew();
 		while (*p && *p != '<')
-		    tmp2->Concat( *p++);
+		    tmp2->Push( *p++);
 		printf("<option value=\"%s\">%s\n", tmp2->ptr,
 		       tmp2->ptr);
 	    }
