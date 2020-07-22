@@ -63,10 +63,26 @@ struct GCStr : public gc_cleanup
 };
 using Str = GCStr *;
 
-Str Strnew(void);
-Str Strnew_size(int);
-Str Strnew_charp(char *);
-Str Strnew_charp_n(char *, int);
+inline Str Strnew()
+{
+    return new GCStr();
+}
+
+inline Str Strnew_size(int size)
+{
+    return new GCStr(size);
+}
+
+inline Str Strnew_charp(const char *src)
+{
+    return new GCStr(src);
+}
+
+inline Str Strnew_charp_n(const char *src, int size)
+{
+    return new GCStr(src, size);
+}
+
 Str Strnew_m_charp(char *, ...);
 Str Strdup(Str);
 

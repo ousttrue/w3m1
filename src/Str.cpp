@@ -22,21 +22,6 @@
 #include "Str.h"
 #include "myctype.h"
 
-Str Strnew()
-{
-    return new GCStr();
-}
-
-Str Strnew_size(int n)
-{
-    return new GCStr(n + 1);
-}
-
-Str Strnew_charp(char *p)
-{
-    return new GCStr(p);
-}
-
 Str Strnew_m_charp(char *p, ...)
 {
     va_list ap;
@@ -49,11 +34,6 @@ Str Strnew_m_charp(char *p, ...)
         p = va_arg(ap, char *);
     }
     return r;
-}
-
-Str Strnew_charp_n(char *p, int n)
-{
-    return new GCStr(p, n);
 }
 
 Str Strdup(Str s)
