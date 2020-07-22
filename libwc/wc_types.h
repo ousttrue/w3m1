@@ -57,15 +57,19 @@ typedef struct {
     wc_bool  init;
 } wc_gset;
 
+typedef Str (*ConvFromFunc)(Str, wc_ces);
+typedef void (*PushToFunc)(Str, wc_wchar_t, struct _wc_status *);
+typedef Str (*CharConvFunc)(wc_uchar, struct _wc_status*);
+
 typedef struct {
     wc_ces    id;
     char     *name;
     char     *desc;
     wc_gset  *gset;
     wc_uchar *gset_ext;
-    Str     (*conv_from)(Str, wc_ces);
-    void    (*push_to)(Str, wc_wchar_t, struct _wc_status *);
-    Str     (*char_conv)(wc_uchar, struct _wc_status*);
+    ConvFromFunc conv_from;
+    PushToFunc push_to;
+    CharConvFunc char_conv;
 } wc_ces_info;
 
 typedef struct {

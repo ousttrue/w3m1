@@ -379,7 +379,7 @@ ucs_hkscs_conv(wc_ccs cs, wc_uint16 c)
   return wc_hkscs_to_cs128w(cc);
 }
 
-#define null_table { 0, 0, NULL, (WcConvFunc)ucs_cs94_conv }
+#define null_table { 0, 0, NULL, ucs_cs94_conv }
 
 static wc_table ucs_cs94_table[] = {
   null_table,		/* 40 */
@@ -391,7 +391,7 @@ static wc_table ucs_cs94_table[] = {
   null_table,		/* 46 */
   null_table,		/* 47 */
   null_table,		/* 48 */
-  { WC_CCS_JIS_X_0201K, N_ucs_jisx0201k_map, ucs_jisx0201k_map, (WcConvFunc)ucs_cs94_conv },
+  { WC_CCS_JIS_X_0201K, N_ucs_jisx0201k_map, ucs_jisx0201k_map, ucs_cs94_conv },
   null_table,		/* 4A (JIS X 0201) */
   null_table,		/* 4B */
   null_table,		/* 4C */
@@ -407,117 +407,117 @@ static wc_table ucs_cs94_table[] = {
 
 static wc_table ucs_cs96_table[] = {
   null_table,		/* 40 */
-  { WC_CCS_ISO_8859_1,  N_ucs_iso88591_map,  ucs_iso88591_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_ISO_8859_2,  N_ucs_iso88592_map,  ucs_iso88592_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_ISO_8859_3,  N_ucs_iso88593_map,  ucs_iso88593_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_ISO_8859_4,  N_ucs_iso88594_map,  ucs_iso88594_map,  (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_1,  N_ucs_iso88591_map,  ucs_iso88591_map,  ucs_cs96_conv },
+  { WC_CCS_ISO_8859_2,  N_ucs_iso88592_map,  ucs_iso88592_map,  ucs_cs96_conv },
+  { WC_CCS_ISO_8859_3,  N_ucs_iso88593_map,  ucs_iso88593_map,  ucs_cs96_conv },
+  { WC_CCS_ISO_8859_4,  N_ucs_iso88594_map,  ucs_iso88594_map,  ucs_cs96_conv },
   null_table,		/* 45 */
-  { WC_CCS_ISO_8859_7,  N_ucs_iso88597_map,  ucs_iso88597_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_ISO_8859_6,  N_ucs_iso88596_map,  ucs_iso88596_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_ISO_8859_8,  N_ucs_iso88598_map,  ucs_iso88598_map,  (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_7,  N_ucs_iso88597_map,  ucs_iso88597_map,  ucs_cs96_conv },
+  { WC_CCS_ISO_8859_6,  N_ucs_iso88596_map,  ucs_iso88596_map,  ucs_cs96_conv },
+  { WC_CCS_ISO_8859_8,  N_ucs_iso88598_map,  ucs_iso88598_map,  ucs_cs96_conv },
   null_table,		/* 49 */
   null_table,		/* 4A */
   null_table,		/* 4B */
-  { WC_CCS_ISO_8859_5,  N_ucs_iso88595_map,  ucs_iso88595_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_ISO_8859_9,  N_ucs_iso88599_map,  ucs_iso88599_map,  (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_5,  N_ucs_iso88595_map,  ucs_iso88595_map,  ucs_cs96_conv },
+  { WC_CCS_ISO_8859_9,  N_ucs_iso88599_map,  ucs_iso88599_map,  ucs_cs96_conv },
   null_table,		/* 4E */
   null_table,		/* 4F */
   null_table,		/* 50 */
   null_table,		/* 51 */
   null_table,		/* 52 */
   null_table,		/* 53 */
-  { WC_CCS_ISO_8859_11, N_ucs_iso885911_map, ucs_iso885911_map, (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_11, N_ucs_iso885911_map, ucs_iso885911_map, ucs_cs96_conv },
   null_table,		/* 55 */
-  { WC_CCS_ISO_8859_10, N_ucs_iso885910_map, ucs_iso885910_map, (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_10, N_ucs_iso885910_map, ucs_iso885910_map, ucs_cs96_conv },
   null_table,		/* 57 */
   null_table,		/* 58 */
-  { WC_CCS_ISO_8859_13, N_ucs_iso885913_map, ucs_iso885913_map, (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_13, N_ucs_iso885913_map, ucs_iso885913_map, ucs_cs96_conv },
   null_table,		/* 5A */
   null_table,		/* 5B */
   null_table,		/* 5C */
   null_table,		/* 5D */
   null_table,		/* 5E */
-  { WC_CCS_ISO_8859_14, N_ucs_iso885914_map, ucs_iso885914_map, (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_14, N_ucs_iso885914_map, ucs_iso885914_map, ucs_cs96_conv },
   null_table,		/* 60 */
   null_table,		/* 61 */
-  { WC_CCS_ISO_8859_15, N_ucs_iso885915_map, ucs_iso885915_map, (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_15, N_ucs_iso885915_map, ucs_iso885915_map, ucs_cs96_conv },
   null_table,		/* 63 */
   null_table,		/* 64 */
   null_table,		/* 65 */
-  { WC_CCS_ISO_8859_16, N_ucs_iso885916_map, ucs_iso885916_map, (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_ISO_8859_16, N_ucs_iso885916_map, ucs_iso885916_map, ucs_cs96_conv },
 };
 
 static wc_table *ucs_cs942_table;
 
 static wc_table ucs_pcs_table[] = {
-  { WC_CCS_CP437,  N_ucs_cp437_map,  ucs_cp437_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP737,  N_ucs_cp737_map,  ucs_cp737_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP775,  N_ucs_cp775_map,  ucs_cp775_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP850,  N_ucs_cp850_map,  ucs_cp850_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP852,  N_ucs_cp852_map,  ucs_cp852_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP855,  N_ucs_cp855_map,  ucs_cp855_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP856,  N_ucs_cp856_map,  ucs_cp856_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP857,  N_ucs_cp857_map,  ucs_cp857_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP860,  N_ucs_cp860_map,  ucs_cp860_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP861,  N_ucs_cp861_map,  ucs_cp861_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP862,  N_ucs_cp862_map,  ucs_cp862_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP863,  N_ucs_cp863_map,  ucs_cp863_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP864,  N_ucs_cp864_map,  ucs_cp864_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP865,  N_ucs_cp865_map,  ucs_cp865_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP866,  N_ucs_cp866_map,  ucs_cp866_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP869,  N_ucs_cp869_map,  ucs_cp869_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP874,  N_ucs_cp874_map,  ucs_cp874_map,  (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1006, N_ucs_cp1006_map, ucs_cp1006_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1250, N_ucs_cp1250_map, ucs_cp1250_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1251, N_ucs_cp1251_map, ucs_cp1251_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1252, N_ucs_cp1252_map, ucs_cp1252_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1253, N_ucs_cp1253_map, ucs_cp1253_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1254, N_ucs_cp1254_map, ucs_cp1254_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1255, N_ucs_cp1255_map, ucs_cp1255_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1256, N_ucs_cp1256_map, ucs_cp1256_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1257, N_ucs_cp1257_map, ucs_cp1257_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_CP1258_1, N_ucs_cp1258_map, ucs_cp1258_map, (WcConvFunc)ucs_cp1258_conv },
-  { WC_CCS_CP1258_2, N_ucs_cp1258_map, ucs_cp1258_map, (WcConvFunc)ucs_cp1258_conv },
-  { WC_CCS_TCVN_5712_1, N_ucs_tcvn5712_map, ucs_tcvn5712_map, (WcConvFunc)ucs_viet_conv },
-  { WC_CCS_TCVN_5712_2, N_ucs_tcvn5712_map, ucs_tcvn5712_map, (WcConvFunc)ucs_viet_conv },
-  { WC_CCS_TCVN_5712_3, N_ucs_tcvn5712_map, ucs_tcvn5712_map, (WcConvFunc)ucs_viet_conv },
-  { WC_CCS_VISCII_11_1, N_ucs_viscii11_map, ucs_viscii11_map, (WcConvFunc)ucs_viet_conv },
-  { WC_CCS_VISCII_11_2, N_ucs_viscii11_map, ucs_viscii11_map, (WcConvFunc)ucs_viet_conv },
-  { WC_CCS_VPS_1,  N_ucs_vps_map,    ucs_vps_map,    (WcConvFunc)ucs_viet_conv },
-  { WC_CCS_VPS_2,  N_ucs_vps_map,    ucs_vps_map,    (WcConvFunc)ucs_viet_conv },
-  { WC_CCS_KOI8_R, N_ucs_koi8r_map,  ucs_koi8r_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_KOI8_U, N_ucs_koi8u_map,  ucs_koi8u_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_NEXTSTEP, N_ucs_nextstep_map, ucs_nextstep_map, (WcConvFunc)ucs_cs96_conv },
-  { WC_CCS_GBK_80, N_ucs_gbk_80_map, ucs_gbk_80_map, (WcConvFunc)ucs_cs96_conv },
+  { WC_CCS_CP437,  N_ucs_cp437_map,  ucs_cp437_map,  ucs_cs96_conv },
+  { WC_CCS_CP737,  N_ucs_cp737_map,  ucs_cp737_map,  ucs_cs96_conv },
+  { WC_CCS_CP775,  N_ucs_cp775_map,  ucs_cp775_map,  ucs_cs96_conv },
+  { WC_CCS_CP850,  N_ucs_cp850_map,  ucs_cp850_map,  ucs_cs96_conv },
+  { WC_CCS_CP852,  N_ucs_cp852_map,  ucs_cp852_map,  ucs_cs96_conv },
+  { WC_CCS_CP855,  N_ucs_cp855_map,  ucs_cp855_map,  ucs_cs96_conv },
+  { WC_CCS_CP856,  N_ucs_cp856_map,  ucs_cp856_map,  ucs_cs96_conv },
+  { WC_CCS_CP857,  N_ucs_cp857_map,  ucs_cp857_map,  ucs_cs96_conv },
+  { WC_CCS_CP860,  N_ucs_cp860_map,  ucs_cp860_map,  ucs_cs96_conv },
+  { WC_CCS_CP861,  N_ucs_cp861_map,  ucs_cp861_map,  ucs_cs96_conv },
+  { WC_CCS_CP862,  N_ucs_cp862_map,  ucs_cp862_map,  ucs_cs96_conv },
+  { WC_CCS_CP863,  N_ucs_cp863_map,  ucs_cp863_map,  ucs_cs96_conv },
+  { WC_CCS_CP864,  N_ucs_cp864_map,  ucs_cp864_map,  ucs_cs96_conv },
+  { WC_CCS_CP865,  N_ucs_cp865_map,  ucs_cp865_map,  ucs_cs96_conv },
+  { WC_CCS_CP866,  N_ucs_cp866_map,  ucs_cp866_map,  ucs_cs96_conv },
+  { WC_CCS_CP869,  N_ucs_cp869_map,  ucs_cp869_map,  ucs_cs96_conv },
+  { WC_CCS_CP874,  N_ucs_cp874_map,  ucs_cp874_map,  ucs_cs96_conv },
+  { WC_CCS_CP1006, N_ucs_cp1006_map, ucs_cp1006_map, ucs_cs96_conv },
+  { WC_CCS_CP1250, N_ucs_cp1250_map, ucs_cp1250_map, ucs_cs96_conv },
+  { WC_CCS_CP1251, N_ucs_cp1251_map, ucs_cp1251_map, ucs_cs96_conv },
+  { WC_CCS_CP1252, N_ucs_cp1252_map, ucs_cp1252_map, ucs_cs96_conv },
+  { WC_CCS_CP1253, N_ucs_cp1253_map, ucs_cp1253_map, ucs_cs96_conv },
+  { WC_CCS_CP1254, N_ucs_cp1254_map, ucs_cp1254_map, ucs_cs96_conv },
+  { WC_CCS_CP1255, N_ucs_cp1255_map, ucs_cp1255_map, ucs_cs96_conv },
+  { WC_CCS_CP1256, N_ucs_cp1256_map, ucs_cp1256_map, ucs_cs96_conv },
+  { WC_CCS_CP1257, N_ucs_cp1257_map, ucs_cp1257_map, ucs_cs96_conv },
+  { WC_CCS_CP1258_1, N_ucs_cp1258_map, ucs_cp1258_map, ucs_cp1258_conv },
+  { WC_CCS_CP1258_2, N_ucs_cp1258_map, ucs_cp1258_map, ucs_cp1258_conv },
+  { WC_CCS_TCVN_5712_1, N_ucs_tcvn5712_map, ucs_tcvn5712_map, ucs_viet_conv },
+  { WC_CCS_TCVN_5712_2, N_ucs_tcvn5712_map, ucs_tcvn5712_map, ucs_viet_conv },
+  { WC_CCS_TCVN_5712_3, N_ucs_tcvn5712_map, ucs_tcvn5712_map, ucs_viet_conv },
+  { WC_CCS_VISCII_11_1, N_ucs_viscii11_map, ucs_viscii11_map, ucs_viet_conv },
+  { WC_CCS_VISCII_11_2, N_ucs_viscii11_map, ucs_viscii11_map, ucs_viet_conv },
+  { WC_CCS_VPS_1,  N_ucs_vps_map,    ucs_vps_map,    ucs_viet_conv },
+  { WC_CCS_VPS_2,  N_ucs_vps_map,    ucs_vps_map,    ucs_viet_conv },
+  { WC_CCS_KOI8_R, N_ucs_koi8r_map,  ucs_koi8r_map, ucs_cs96_conv },
+  { WC_CCS_KOI8_U, N_ucs_koi8u_map,  ucs_koi8u_map, ucs_cs96_conv },
+  { WC_CCS_NEXTSTEP, N_ucs_nextstep_map, ucs_nextstep_map, ucs_cs96_conv },
+  { WC_CCS_GBK_80, N_ucs_gbk_80_map, ucs_gbk_80_map, ucs_cs96_conv },
   null_table,		/* (Raw) */
 };
 
 static wc_table ucs_cs94w_table[] = {
   null_table,		/* 40 (JIS C 6226) */
-  { WC_CCS_GB_2312, N_ucs_gb2312_map, ucs_gb2312_map, (WcConvFunc)ucs_cs94w_conv },
-  { WC_CCS_JIS_X_0208, N_ucs_jisx0208_map, ucs_jisx0208_map, (WcConvFunc)ucs_cs94w_conv },
-  { WC_CCS_KS_X_1001, N_ucs_ksx1001_map, ucs_ksx1001_map, (WcConvFunc)ucs_cs94w_conv },
-  { WC_CCS_JIS_X_0212, N_ucs_jisx0212_map, ucs_jisx0212_map, (WcConvFunc)ucs_cs94w_conv },
+  { WC_CCS_GB_2312, N_ucs_gb2312_map, ucs_gb2312_map, ucs_cs94w_conv },
+  { WC_CCS_JIS_X_0208, N_ucs_jisx0208_map, ucs_jisx0208_map, ucs_cs94w_conv },
+  { WC_CCS_KS_X_1001, N_ucs_ksx1001_map, ucs_ksx1001_map, ucs_cs94w_conv },
+  { WC_CCS_JIS_X_0212, N_ucs_jisx0212_map, ucs_jisx0212_map, ucs_cs94w_conv },
   null_table,		/* 45 (ISO IR 165) */
   null_table,		/* 46 */
-  { WC_CCS_CNS_11643_1, N_ucs_cns11643_map, ucs_cns11643_map, (WcConvFunc)ucs_cns11643_conv },
-  { WC_CCS_CNS_11643_2, N_ucs_cns11643_map, ucs_cns11643_map, (WcConvFunc)ucs_cns11643_conv },
+  { WC_CCS_CNS_11643_1, N_ucs_cns11643_map, ucs_cns11643_map, ucs_cns11643_conv },
+  { WC_CCS_CNS_11643_2, N_ucs_cns11643_map, ucs_cns11643_map, ucs_cns11643_conv },
   null_table,		/* 49 (CNS 11643-3) */
   null_table,		/* 4A (CNS 11643-4) */
   null_table,		/* 4B (CNS 11643-5) */
   null_table,		/* 4C (CNS 11643-6) */
   null_table,		/* 4D (CNS 11643-7) */
   null_table,		/* 4E (KSP 9566) */
-  { WC_CCS_JIS_X_0213_1, N_ucs_jisx02131_map, ucs_jisx02131_map, (WcConvFunc)ucs_cs94w_conv },
-  { WC_CCS_JIS_X_0213_2, N_ucs_jisx02132_map, ucs_jisx02132_map, (WcConvFunc)ucs_cs94w_conv },
+  { WC_CCS_JIS_X_0213_1, N_ucs_jisx02131_map, ucs_jisx02131_map, ucs_cs94w_conv },
+  { WC_CCS_JIS_X_0213_2, N_ucs_jisx02132_map, ucs_jisx02132_map, ucs_cs94w_conv },
 };
 
 static wc_table *ucs_cs96w_table;
 
 static wc_table ucs_pcsw_table[] = {
-  { WC_CCS_BIG5,   N_ucs_big5_map, ucs_big5_map, (WcConvFunc)ucs_cs94w_conv },
-  { WC_CCS_BIG5_1, N_ucs_big5_map, ucs_big5_map, (WcConvFunc)ucs_big5_conv },
-  { WC_CCS_BIG5_2, N_ucs_big5_map, ucs_big5_map, (WcConvFunc)ucs_big5_conv },
+  { WC_CCS_BIG5,   N_ucs_big5_map, ucs_big5_map, ucs_cs94w_conv },
+  { WC_CCS_BIG5_1, N_ucs_big5_map, ucs_big5_map, ucs_big5_conv },
+  { WC_CCS_BIG5_2, N_ucs_big5_map, ucs_big5_map, ucs_big5_conv },
   null_table,		/* CNS 11643-8 */
   null_table,		/* CNS 11643-9 */
   null_table,		/* CNS 11643-10 */
@@ -529,25 +529,25 @@ static wc_table ucs_pcsw_table[] = {
   null_table,		/* CNS 11643-16 */
   null_table,		/* CNS 11643-X */
   /* use GB 12345 instead of GB 2312 */ 
-  { WC_CCS_GB_2312, N_ucs_gb12345_map, ucs_gb12345_map, (WcConvFunc)ucs_cs94w_conv },
+  { WC_CCS_GB_2312, N_ucs_gb12345_map, ucs_gb12345_map, ucs_cs94w_conv },
   null_table,		/* Johab (special conversion) */
   null_table,		/* Johab-1 (special conversion) */
-  { WC_CCS_JOHAB_2, N_ucs_johab2_map, ucs_johab2_map, (WcConvFunc)ucs_johab2_conv },
-  { WC_CCS_JOHAB_3, N_ucs_ksx1001_map, ucs_ksx1001_map, (WcConvFunc)ucs_johab3_conv },
-  { WC_CCS_SJIS_EXT,   N_ucs_sjis_ext_map, ucs_sjis_ext_map, (WcConvFunc)ucs_cs94w_conv },
-  { WC_CCS_SJIS_EXT_1, N_ucs_sjis_ext_map, ucs_sjis_ext_map, (WcConvFunc)ucs_sjis_ext_conv },
-  { WC_CCS_SJIS_EXT_2, N_ucs_sjis_ext_map, ucs_sjis_ext_map, (WcConvFunc)ucs_sjis_ext_conv },
-  { WC_CCS_GBK,   N_ucs_gbk_map, ucs_gbk_map, (WcConvFunc)ucs_cs128w_conv },
-  { WC_CCS_GBK_1, N_ucs_gbk_map, ucs_gbk_map, (WcConvFunc)ucs_gbk_conv },
-  { WC_CCS_GBK_2, N_ucs_gbk_map, ucs_gbk_map, (WcConvFunc)ucs_gbk_conv },
+  { WC_CCS_JOHAB_2, N_ucs_johab2_map, ucs_johab2_map, ucs_johab2_conv },
+  { WC_CCS_JOHAB_3, N_ucs_ksx1001_map, ucs_ksx1001_map, ucs_johab3_conv },
+  { WC_CCS_SJIS_EXT,   N_ucs_sjis_ext_map, ucs_sjis_ext_map, ucs_cs94w_conv },
+  { WC_CCS_SJIS_EXT_1, N_ucs_sjis_ext_map, ucs_sjis_ext_map, ucs_sjis_ext_conv },
+  { WC_CCS_SJIS_EXT_2, N_ucs_sjis_ext_map, ucs_sjis_ext_map, ucs_sjis_ext_conv },
+  { WC_CCS_GBK,   N_ucs_gbk_map, ucs_gbk_map, ucs_cs128w_conv },
+  { WC_CCS_GBK_1, N_ucs_gbk_map, ucs_gbk_map, ucs_gbk_conv },
+  { WC_CCS_GBK_2, N_ucs_gbk_map, ucs_gbk_map, ucs_gbk_conv },
   null_table,		/* GB18030 GBK-ext (special conversion) */
   null_table,		/* GB18030 GBK-ext-1 (special conversion) */
   null_table,		/* GB18030 GBK-ext-2 (special conversion) */
-  { WC_CCS_UHC,   N_ucs_uhc_map, ucs_uhc_map, (WcConvFunc)ucs_cs128w_conv },
-  { WC_CCS_UHC_1, N_ucs_uhc_map, ucs_uhc_map, (WcConvFunc)ucs_uhc_conv },
-  { WC_CCS_UHC_2, N_ucs_uhc_map, ucs_uhc_map, (WcConvFunc)ucs_uhc_conv },
-  { WC_CCS_HKSCS,   N_ucs_hkscs_map, ucs_hkscs_map, (WcConvFunc)ucs_cs128w_conv },
-  { WC_CCS_HKSCS_1, N_ucs_hkscs_map, ucs_hkscs_map, (WcConvFunc)ucs_hkscs_conv },
-  { WC_CCS_HKSCS_2, N_ucs_hkscs_map, ucs_hkscs_map, (WcConvFunc)ucs_hkscs_conv },
+  { WC_CCS_UHC,   N_ucs_uhc_map, ucs_uhc_map, ucs_cs128w_conv },
+  { WC_CCS_UHC_1, N_ucs_uhc_map, ucs_uhc_map, ucs_uhc_conv },
+  { WC_CCS_UHC_2, N_ucs_uhc_map, ucs_uhc_map, ucs_uhc_conv },
+  { WC_CCS_HKSCS,   N_ucs_hkscs_map, ucs_hkscs_map, ucs_cs128w_conv },
+  { WC_CCS_HKSCS_1, N_ucs_hkscs_map, ucs_hkscs_map, ucs_hkscs_conv },
+  { WC_CCS_HKSCS_2, N_ucs_hkscs_map, ucs_hkscs_map, ucs_hkscs_conv },
 };
 
