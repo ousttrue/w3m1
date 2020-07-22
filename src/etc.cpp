@@ -1314,7 +1314,7 @@ file_to_url(char *file)
 #endif
     if (file[0] != '/') {
         tmp = Strnew_charp(CurrentDir);
-        if (Strlastchar(tmp) != '/')
+        if (tmp->Back() != '/')
             tmp->Push('/');
         tmp->Push(file);
         file = tmp->ptr;

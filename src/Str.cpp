@@ -59,26 +59,31 @@ int GCStr::Cmp(const GCStr *y, int n) const
 {
     return strncmp(ptr, y->ptr, n);
 }
-int GCStr::Cmp(const char *y, int n)const
+int GCStr::Cmp(const char *y, int n) const
 {
     return strncmp(ptr, y, n);
 }
 // ignore case
-int GCStr::ICaseCmp(const GCStr *y)const
+int GCStr::ICaseCmp(const GCStr *y) const
 {
     return strcasecmp(ptr, y->ptr);
 }
-int GCStr::ICaseCmp(const GCStr *y, int n)const
+int GCStr::ICaseCmp(const GCStr *y, int n) const
 {
     return strncasecmp(ptr, y->ptr, n);
 }
-int GCStr::ICaseCmp(const char *y)const
+int GCStr::ICaseCmp(const char *y) const
 {
     return strcasecmp(ptr, y);
 }
-int GCStr::ICaseCmp(const char *y, int n)const
+int GCStr::ICaseCmp(const char *y, int n) const
 {
     return strncasecmp(ptr, y, n);
+}
+
+char GCStr::Back()const
+{
+    return (length > 0 ? ptr[length - 1] : '\0');
 }
 
 GCStr *GCStr::Clone() const
@@ -332,11 +337,12 @@ Str Strnew_m_charp(char *p, ...)
 void Strcat_m_charp(Str x, ...)
 {
     va_list ap;
-    char *p;
-
     va_start(ap, x);
-    while ((p = va_arg(ap, char *)) != NULL)
+
+    for (char *p = va_arg(ap, char *); p != NULL; p = va_arg(ap, char *))
+    {
         x->Push(p, strlen(p));
+    }
 }
 
 #define SP_NORMAL 0

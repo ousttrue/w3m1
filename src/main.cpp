@@ -643,7 +643,7 @@ int main(int argc, char **argv, char **envp)
                 if (BookmarkFile[0] != '~' && BookmarkFile[0] != '/')
                 {
                     Str tmp = Strnew_charp(CurrentDir);
-                    if (Strlastchar(tmp) != '/')
+                    if (tmp->Back() != '/')
                         tmp->Push('/');
                     tmp->Push(BookmarkFile);
                     BookmarkFile = cleanupName(tmp->ptr);

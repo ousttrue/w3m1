@@ -208,9 +208,9 @@ loadMailcap(char *filename)
 	if (tmp->ptr[0] == '#')
 	    continue;
       redo:
-	while (IS_SPACE(Strlastchar(tmp)))
+	while (IS_SPACE(tmp->Back()))
 	    tmp->Pop(1);
-	if (Strlastchar(tmp) == '\\') {
+	if (tmp->Back() == '\\') {
 	    /* continuation */
 	    tmp->Pop(1);
 	    tmp->Push(Strfgets(f));

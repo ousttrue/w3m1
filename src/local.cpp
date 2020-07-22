@@ -85,7 +85,7 @@ loadLocalDir(char *dname)
     if (d == NULL)
 	return NULL;
     dirname = Strnew_charp(dname);
-    if (Strlastchar(dirname) != '/')
+    if (dirname->Back() != '/')
 	dirname->Push( '/');
     qdir = html_quote(Str_conv_from_system(dirname)->ptr);
     /* FIXME: gettextize? */
@@ -124,7 +124,7 @@ loadLocalDir(char *dname)
 	if (strcmp(p, ".") == 0)
 	    continue;
 	fbuf->CopyFrom(dirname);
-	if (Strlastchar(fbuf) != '/')
+	if (fbuf->Back() != '/')
 	    fbuf->Push( '/');
 	fbuf->Push( p);
 #ifdef HAVE_LSTAT
@@ -282,7 +282,7 @@ checkPath(char *fn, char *path)
     while (*path) {
 	p = strchr(path, ':');
 	tmp = Strnew_charp(expandPath(p ? allocStr(path, p - path) : path));
-	if (Strlastchar(tmp) != '/')
+	if (tmp->Back() != '/')
 	    tmp->Push('/');
 	tmp->Push(fn);
 	if (stat(tmp->ptr, &st) == 0)
@@ -326,7 +326,7 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
 #else
     tmp = Strnew_charp(w3m_lib_dir());
 #endif
-    if (Strlastchar(tmp) != '/')
+    if (tmp->Back() != '/')
 	tmp->Push('/');
     if (strncmp(uri, "/$LIB/", 6) == 0)
 	offset = 6;
@@ -334,7 +334,7 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
 	offset = tmp->length;
     else if (*uri == '/' && document_root != NULL) {
 	Str tmp2 = Strnew_charp(document_root);
-	if (Strlastchar(tmp2) != '/')
+	if (tmp2->Back() != '/')
 	    tmp2->Push( '/');
 	tmp2->Push( uri + 1);
 	if (strncmp(tmp2->ptr, tmp->ptr, tmp->length) != 0)

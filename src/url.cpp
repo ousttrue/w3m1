@@ -1074,7 +1074,7 @@ parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
 		if (current->file) {
 		    tmp = Strnew_charp(current->file);
 		    while (tmp->length > 0) {
-			if (Strlastchar(tmp) == '/')
+			if (tmp->Back() == '/')
 			    break;
 			tmp->Pop(1);
 		    }
@@ -1116,7 +1116,7 @@ parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
 	    strcmp(pu->file, "-")) {
 	    /* local file, relative path */
 	    tmp = Strnew_charp(CurrentDir);
-	    if (Strlastchar(tmp) != '/')
+	    if (tmp->Back() != '/')
 		tmp->Push('/');
 	    tmp->Push(file_unquote(pu->file));
 	    pu->file = file_quote(cleanupName(tmp->ptr));
@@ -1246,7 +1246,7 @@ _parsedURL2Str(ParsedURL *pu, int pass)
 	    )))
 	tmp->Push('/');
     tmp->Push(pu->file);
-    if (pu->scheme == SCM_FTPDIR && Strlastchar(tmp) != '/')
+    if (pu->scheme == SCM_FTPDIR && tmp->Back() != '/')
 	tmp->Push('/');
     if (pu->query) {
 	tmp->Push('?');
@@ -1573,7 +1573,7 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 	    }
 	    else if (document_root != NULL) {
 		tmp = Strnew_charp(document_root);
-		if (Strlastchar(tmp) != '/' && pu->file[0] != '/')
+		if (tmp->Back() != '/' && pu->file[0] != '/')
 		    tmp->Push('/');
 		tmp->Push(pu->file);
 		p = cleanupName(tmp->ptr);
@@ -2099,7 +2099,7 @@ loadURIMethods(char *filename)
     while (tmp = Strfgets(f), tmp->length > 0) {
 	if (tmp->ptr[0] == '#')
 	    continue;
-	while (IS_SPACE(Strlastchar(tmp)))
+	while (IS_SPACE(tmp->Back()))
 	    tmp->Pop(1);
 	for (up = p = tmp->ptr; *p != '\0'; p++) {
 	    if (*p == ':') {

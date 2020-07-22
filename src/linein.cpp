@@ -753,7 +753,7 @@ next_dcompl(int next)
     cm_disp_next = 0;
 
     d = Str_conv_to_system(CDirBuf->Clone());
-    if (d->length > 0 && Strlastchar(d) != '/')
+    if (d->length > 0 && d->Back() != '/')
         d->Push( '/');
     if (cm_mode & CPL_URL && d->ptr[0] == 'f') {
         p = d->ptr;
@@ -898,7 +898,7 @@ doComplete(Str ifn, int *status, int next)
         if (cm_mode & CPL_ON)
             ifn = unescape_spaces(ifn);
         CompleteBuf = ifn->Clone();
-        while (Strlastchar(CompleteBuf) != '/' && CompleteBuf->length > 0)
+        while (CompleteBuf->Back() != '/' && CompleteBuf->length > 0)
             CompleteBuf->Pop(1);
         CDirBuf = CompleteBuf->Clone();
         if (cm_mode & CPL_URL) {
@@ -918,7 +918,7 @@ doComplete(Str ifn, int *status, int next)
         if (CompleteBuf->length == 0) {
             CompleteBuf->Push( '.');
         }
-        if (Strlastchar(CompleteBuf) == '/' && CompleteBuf->length > 1) {
+        if (CompleteBuf->Back() == '/' && CompleteBuf->length > 1) {
             CompleteBuf->Pop(1);
         }
         if ((d = opendir(expandPath(CompleteBuf->ptr))) == NULL) {
@@ -977,7 +977,7 @@ doComplete(Str ifn, int *status, int next)
         *status = CPL_MENU;
     }
     CompleteBuf = CDirBuf->Clone();
-    if (CompleteBuf->length && Strlastchar(CompleteBuf) != '/')
+    if (CompleteBuf->length && CompleteBuf->Back() != '/')
         CompleteBuf->Push( '/');
     CompleteBuf->Push( CFileName);
     if (*status != CPL_AMBIG) {

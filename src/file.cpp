@@ -1128,7 +1128,7 @@ qstr_unquote(Str s)
                 p++;
             tmp->Push(*p);
         }
-        if (Strlastchar(tmp) == '"')
+        if (tmp->Back() == '"')
             tmp->Pop(1);
         return tmp;
     }
@@ -2327,7 +2327,7 @@ has_hidden_link(struct readbuffer *obuf, int cmd)
     Str line = obuf->line;
     struct link_stack *p;
 
-    if (Strlastchar(line) != '>')
+    if (line->Back() != '>')
         return NULL;
 
     for (p = link_stack; p; p = p->next)
@@ -3393,7 +3393,7 @@ feed_select(char *str)
         if (cur_status != R_ST_NORMAL || prev_status != R_ST_NORMAL)
             continue;
         p = tmp->ptr;
-        if (tmp->ptr[0] == '<' && Strlastchar(tmp) == '>') {
+        if (tmp->ptr[0] == '<' && tmp->Back() == '>') {
             struct parsed_tag *tag;
             char *q;
             if (!(tag = parse_tag(&p, FALSE)))
@@ -3451,7 +3451,7 @@ process_option(void)
 
     if (cur_select == NULL || cur_option == NULL)
         return;
-    while (cur_option->length > 0 && IS_SPACE(Strlastchar(cur_option)))
+    while (cur_option->length > 0 && IS_SPACE(cur_option->Back()))
         cur_option->Pop(1);
     if (cur_option_value == NULL)
         cur_option_value = cur_option;
@@ -5335,7 +5335,7 @@ _saveBuffer(Buffer *buf, Line *l, FILE * f, int cont)
             tmp = Strnew_charp_n(l->lineBuf, l->len);
         tmp = wc_Str_conv(tmp, InnerCharset, charset);
         Strfputs(tmp, f);
-        if (Strlastchar(tmp) != '\n' && !(cont && l->next && l->next->bpos))
+        if (tmp->Back() != '\n' && !(cont && l->next && l->next->bpos))
             putc('\n', f);
     }
     if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE)) {
@@ -6398,7 +6398,7 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
     }
 #endif
 
-    if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && Strlastchar(line) == ' ') {
+    if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && line->Back() == ' ') {
         line->Pop(1);
         obuf->pos--;
     }
@@ -6727,7 +6727,7 @@ close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
             if (obuf->tag_stack[i]->cmd == HTML_A)
                 break;
         }
-        if (i < 0 && obuf->anchor.hseq > 0 && Strlastchar(obuf->line) == ' ') {
+        if (i < 0 && obuf->anchor.hseq > 0 && obuf->line->Back() == ' ') {
             obuf->line->Pop(1);
             obuf->pos--;
             is_erased = 1;
@@ -7750,8 +7750,6 @@ static int
 need_flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
                Lineprop mode)
 {
-    char ch;
-
     if (obuf->flag & RB_PRE_INT) {
         if (obuf->pos > h_env->limit)
             return 1;
@@ -7759,7 +7757,7 @@ need_flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
             return 0;
     }
 
-    ch = Strlastchar(obuf->line);
+    auto ch = obuf->line->Back();
     /* if (ch == ' ' && obuf->tag_sp > 0) */
     if (ch == ' ')
         return 0;
@@ -8065,7 +8063,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
                     if (!SimplePreserveSpace && mode == PC_KANJI1 &&
                         !is_hangul && !prev_is_hangul &&
                         obuf->pos > h_env->envs[h_env->envc].indent &&
-                        Strlastchar(obuf->line) == ' ') {
+                        obuf->line->Back() == ' ') {
                         while (obuf->line->length >= 2 &&
                                !strncmp(obuf->line->ptr + obuf->line->length -
                                         2, "  ", 2)
@@ -8075,7 +8073,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
                         }
                         if (obuf->line->length >= 3 &&
                             obuf->prev_ctype == PC_KANJI1 &&
-                            Strlastchar(obuf->line) == ' ' &&
+                            obuf->line->Back() == ' ' &&
                             obuf->pos >= h_env->envs[h_env->envc].indent) {
                             obuf->line->Pop(1);
                             obuf->pos--;

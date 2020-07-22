@@ -288,7 +288,7 @@ Str StrmyISgets(InputStream *stream)
         }
         else
         {
-            if (s && Strlastchar(s) == '\r')
+            if (s && s->Back() == '\r')
             {
                 if (sb->buf[sb->cur] == '\n')
                     s->Push((char)sb->buf[sb->cur++]);

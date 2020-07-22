@@ -547,7 +547,7 @@ Str loadFTPDir0(ParsedURL *pu)
         return NULL;
     }
     tmp = parsedURL2Str(pu);
-    if (Strlastchar(tmp) != '/')
+    if (tmp->Back() != '/')
         tmp->Push('/');
     fn = html_quote(tmp->ptr);
     tmp =

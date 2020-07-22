@@ -41,7 +41,9 @@ struct GCStr : public gc_cleanup
     int ICaseCmp(const GCStr *y) const;
     int ICaseCmp(const GCStr *y, int n) const;
     int ICaseCmp(const char *y) const;
-    int ICaseCmp(const char *y, int n)const;
+    int ICaseCmp(const char *y, int n) const;
+    char Back() const;
+
     GCStr *Clone() const;
     void Clear();
     char *RequireSize(int size);
@@ -121,11 +123,6 @@ void Strcat_m_charp(Str, ...);
 Str Sprintf(char *fmt, ...);
 Str Strfgets(FILE *);
 Str Strfgetall(FILE *);
-
-inline char Strlastchar(Str s)
-{
-    return ((s)->length > 0 ? (s)->ptr[(s)->length - 1] : '\0');
-}
 
 inline int Strfputs(Str s, FILE *f)
 {

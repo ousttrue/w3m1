@@ -393,9 +393,9 @@ cleanup_line(Str s, int mode)
 	s->Pop(2);
 	s->Push('\n');
     }
-    else if (Strlastchar(s) == '\r')
+    else if (s->Back() == '\r')
 	s->ptr[s->length - 1] = '\n';
-    else if (Strlastchar(s) != '\n')
+    else if (s->Back() != '\n')
 	s->Push('\n');
     if (mode != PAGER_MODE) {
 	int i;

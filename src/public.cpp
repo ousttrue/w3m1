@@ -184,7 +184,7 @@ dump_extra(Buffer *buf)
                     tmp->Push('\t');
             }
         }
-        if (Strlastchar(tmp) != '\n')
+        if (tmp->Back() != '\n')
             tmp->Push('\n');
         printf("W3m-ssl-certificate: %s", tmp->ptr);
     }
@@ -1127,7 +1127,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
     else
     {
         /* remove trailing & */
-        while (Strlastchar(*query) == '&')
+        while ((*query)->Back() == '&')
             (*query)->Pop(1);
     }
 }
