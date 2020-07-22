@@ -225,6 +225,24 @@ TabBuffer の双方向リンクリストを `std::list<std::shared_ptr<TabBuffer
 Buffer のリンクリストを Tab のメソッド化して、 Buffer::nextBuffer への直接アクセスを封じてからこれも、
 `std::list` にする。
 
+
+## Str
+
+```c
+struct _Str
+{
+    char *ptr;
+    int length;
+    int area_size;
+};
+using Str = _Str *;
+```
+
+ptr が boehmGC 管理になる。
+`libwc` 広範囲で使っているが、メンバーを private 化して、関数をメンバー化すれば
+同じインタフェースの他の実装に置き換えることはできそう。
+`std::shared_ptr<_Str>` など。
+
 ## TODO
 
 * macro 減らす
