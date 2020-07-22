@@ -415,8 +415,8 @@ void ldhelp()
     lang = AcceptLang;
     n = strcspn(lang, ";, \t");
     tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
-                  Strnew_charp(w3m_version)->Quote()->ptr,
-                  Strnew_charp_n(lang, n)->Quote()->ptr);
+                  Strnew_charp(w3m_version)->UrlEncode()->ptr,
+                  Strnew_charp_n(lang, n)->UrlEncode()->ptr);
     cmd_loadURL(tmp->ptr, NULL, NO_REFERER, NULL);
 #else
     cmd_loadURL(helpFile(HELP_FILE), NULL, NO_REFERER, NULL);
@@ -1232,13 +1232,13 @@ void adBmark()
     Str tmp;
     FormList *request;
     tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
-                  (localCookie()->Quote())->ptr,
-                  (Strnew_charp(BookmarkFile)->Quote())->ptr,
-                  (parsedURL2Str(&GetCurrentbuf()->currentURL)->Quote())->ptr,
+                  (localCookie()->UrlEncode())->ptr,
+                  (Strnew_charp(BookmarkFile)->UrlEncode())->ptr,
+                  (parsedURL2Str(&GetCurrentbuf()->currentURL)->UrlEncode())->ptr,
 
                   (wc_conv_strict(GetCurrentbuf()->buffername,
                                                  InnerCharset,
-                                                 BookmarkCharset)->Quote())
+                                                 BookmarkCharset)->UrlEncode())
                       ->ptr,
                   wc_ces_to_charset(BookmarkCharset));
     request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);

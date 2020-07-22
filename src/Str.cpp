@@ -320,25 +320,25 @@ GCStr *GCStr::AlignCenter(int width) const
     return n;
 }
 
-GCStr *GCStr::Quote()
+GCStr *GCStr::UrlEncode()
 {
-    auto p = ptr;
-    auto ep = ptr + Size();
-    char buf[4];
-
     GCStr *tmp = NULL;
-    for (; p < ep; p++)
+    auto end = ptr + Size();
+    for (auto p = ptr; p < end; p++)
     {
         if (*p == ' ')
         {
+            // space
             if (tmp == NULL)
                 tmp = new GCStr(ptr, (int)(p - ptr));
             tmp->Push('+');
         }
         else if (is_url_unsafe(*p))
         {
+            //
             if (tmp == NULL)
                 tmp = new GCStr(ptr, (int)(p - ptr));
+            char buf[4];
             sprintf(buf, "%%%02X", (unsigned char)*p);
             tmp->Push(buf);
         }

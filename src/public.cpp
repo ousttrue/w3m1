@@ -1087,9 +1087,9 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 int x = 0, y = 0;
                 getMapXY(GetCurrentbuf(), retrieveCurrentImg(GetCurrentbuf()), &x, &y);
                 (*query)->Push(
-                       conv_form_encoding(f2->name, fi, GetCurrentbuf())->Quote());
+                       conv_form_encoding(f2->name, fi, GetCurrentbuf())->UrlEncode());
                 (*query)->Push( Sprintf(".x=%d&", x));
-                (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentbuf())->Quote());
+                (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentbuf())->UrlEncode());
                 (*query)->Push( Sprintf(".y=%d", y));
             }
             else
@@ -1097,16 +1097,16 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 /* not IMAGE */
                 if (f2->name && f2->name->Size() > 0)
                 {
-                    (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentbuf())->Quote());
+                    (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentbuf())->UrlEncode());
                     (*query)->Push('=');
                 }
                 if (f2->value != NULL)
                 {
                     if (fi->parent->method == FORM_METHOD_INTERNAL)
-                        (*query)->Push(f2->value->Quote());
+                        (*query)->Push(f2->value->UrlEncode());
                     else
                     {
-                        (*query)->Push(conv_form_encoding(f2->value, fi, GetCurrentbuf())->Quote());
+                        (*query)->Push(conv_form_encoding(f2->value, fi, GetCurrentbuf())->UrlEncode());
                     }
                 }
             }
@@ -1969,7 +1969,7 @@ void execdict(char *word)
         displayBuffer(GetCurrentbuf(), B_NORMAL);
         return;
     }
-    dictcmd = Sprintf("%s?%s", DictCommand,Strnew_charp(w)->Quote()->ptr)->ptr;
+    dictcmd = Sprintf("%s?%s", DictCommand,Strnew_charp(w)->UrlEncode()->ptr)->ptr;
     buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, 0, NULL);
     if (buf == NULL)
     {
