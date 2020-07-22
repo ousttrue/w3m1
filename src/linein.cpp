@@ -755,7 +755,7 @@ next_dcompl(int next)
 	return;
     cm_disp_next = 0;
 
-    d = Str_conv_to_system(Strdup(CDirBuf));
+    d = Str_conv_to_system(CDirBuf->Clone());
     if (d->length > 0 && Strlastchar(d) != '/')
 	d->Concat( '/');
     if (cm_mode & CPL_URL && d->ptr[0] == 'f') {
@@ -817,7 +817,7 @@ next_dcompl(int next)
 		break;
 	    move(y, j * len);
 	    clrtoeolx();
-	    f = Strdup(d);
+	    f = d->Clone();
 	    f->Concat(CFileBuf[n]);
 	    addstr(conv_from_system(CFileBuf[n]));
 	    if (stat(expandPath(f->ptr), &st) != -1 && S_ISDIR(st.st_mode))
@@ -900,10 +900,10 @@ doComplete(Str ifn, int *status, int next)
 	ifn = Str_conv_to_system(ifn);
 	if (cm_mode & CPL_ON)
 	    ifn = unescape_spaces(ifn);
-	CompleteBuf = Strdup(ifn);
+	CompleteBuf = ifn->Clone();
 	while (Strlastchar(CompleteBuf) != '/' && CompleteBuf->length > 0)
 	    Strshrink(CompleteBuf, 1);
-	CDirBuf = Strdup(CompleteBuf);
+	CDirBuf = CompleteBuf->Clone();
 	if (cm_mode & CPL_URL) {
 	    if (strncmp(CompleteBuf->ptr, "file://localhost/", 17) == 0)
 		Strdelete(CompleteBuf, 0, 16);
@@ -913,7 +913,7 @@ doComplete(Str ifn, int *status, int next)
 		     CompleteBuf->ptr[6] != '/')
 		Strdelete(CompleteBuf, 0, 5);
 	    else {
-		CompleteBuf = Strdup(ifn);
+		CompleteBuf = ifn->Clone();
 		*status = CPL_FAIL;
 		return Str_conv_to_system(CompleteBuf);
 	    }
@@ -925,7 +925,7 @@ doComplete(Str ifn, int *status, int next)
 	    Strshrink(CompleteBuf, 1);
 	}
 	if ((d = opendir(expandPath(CompleteBuf->ptr))) == NULL) {
-	    CompleteBuf = Strdup(ifn);
+	    CompleteBuf = ifn->Clone();
 	    *status = CPL_FAIL;
 	    if (cm_mode & CPL_ON)
 		CompleteBuf = escape_spaces(CompleteBuf);
@@ -958,7 +958,7 @@ doComplete(Str ifn, int *status, int next)
 	}
 	closedir(d);
 	if (NCFileBuf == 0) {
-	    CompleteBuf = Strdup(ifn);
+	    CompleteBuf = ifn->Clone();
 	    *status = CPL_FAIL;
 	    if (cm_mode & CPL_ON)
 		CompleteBuf = escape_spaces(CompleteBuf);
@@ -979,7 +979,7 @@ doComplete(Str ifn, int *status, int next)
 	NCFileOffset = (NCFileOffset + next + NCFileBuf) % NCFileBuf;
 	*status = CPL_MENU;
     }
-    CompleteBuf = Strdup(CDirBuf);
+    CompleteBuf = CDirBuf->Clone();
     if (CompleteBuf->length && Strlastchar(CompleteBuf) != '/')
 	CompleteBuf->Concat( '/');
     CompleteBuf->Concat( CFileName);
@@ -1113,7 +1113,7 @@ _editor(void)
 	return;
 
     fi.readonly = FALSE;
-    fi.value = Strdup(strBuf);
+    fi.value = strBuf->Clone();
     fi.value->Concat('\n');
 
     input_textarea(&fi);

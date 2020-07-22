@@ -34,7 +34,7 @@ struct GCStr : public gc_cleanup
     {
     }
     ~GCStr();
-
+    GCStr *Clone();
     void Clear();
     char *RequireSize(int size);
     void CopyFrom(const char *src, int size);
@@ -84,10 +84,6 @@ inline Str Strnew_charp_n(const char *src, int size)
 }
 
 Str Strnew_m_charp(char *, ...);
-Str Strdup(Str);
-
-// void Str->Concat( Str);
-// void Str->Concat( char *);
 
 void Strcat_m_charp(Str, ...);
 Str Strsubstr(Str, int, int);

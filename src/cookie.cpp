@@ -168,7 +168,7 @@ check_expired_cookies(void)
 static Str
 make_cookie(struct cookie *cookie)
 {
-    Str tmp = Strdup(cookie->name);
+    Str tmp = cookie->name->Clone();
     tmp->Concat('=');
     tmp->Concat(cookie->value);
     return tmp;

@@ -917,7 +917,7 @@ void _followForm(int submit)
                      fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
         query_from_followform(&tmp, fi, multipart);
 
-        tmp2 = Strdup(fi->parent->action);
+        tmp2 = fi->parent->action->Clone();
         if (!Strcmp_charp(tmp2, "!CURRENT_URL!"))
         {
             /* It means "current URL" */
@@ -1051,11 +1051,11 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
 #ifdef USE_IMAGE
                 getMapXY(GetCurrentbuf(), retrieveCurrentImg(GetCurrentbuf()), &x, &y);
 #endif
-                *query = Strdup(conv_form_encoding(f2->name, fi, GetCurrentbuf()));
+                *query = conv_form_encoding(f2->name, fi, GetCurrentbuf())->Clone();
                 (*query)->Concat(".x");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", x)->ptr);
-                *query = Strdup(conv_form_encoding(f2->name, fi, GetCurrentbuf()));
+                *query = conv_form_encoding(f2->name, fi, GetCurrentbuf())->Clone();
                 (*query)->Concat(".y");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
@@ -1259,10 +1259,8 @@ FormItemList *save_submit_formlist(FormItemList *src)
     srclist = src->parent;
     list = New(FormList);
     list->method = srclist->method;
-    list->action = Strdup(srclist->action);
-#ifdef USE_M17N
+    list->action = srclist->action->Clone();
     list->charset = srclist->charset;
-#endif
     list->enctype = srclist->enctype;
     list->nitems = srclist->nitems;
     list->body = srclist->body;
@@ -1273,8 +1271,8 @@ FormItemList *save_submit_formlist(FormItemList *src)
     {
         item = New(FormItemList);
         item->type = srcitem->type;
-        item->name = Strdup(srcitem->name);
-        item->value = Strdup(srcitem->value);
+        item->name = srcitem->name->Clone();
+        item->value = srcitem->value->Clone();
         item->checked = srcitem->checked;
         item->accept = srcitem->accept;
         item->size = srcitem->size;
@@ -1288,8 +1286,8 @@ FormItemList *save_submit_formlist(FormItemList *src)
             if (!srcopt->checked)
                 continue;
             opt = New(FormSelectOptionItem);
-            opt->value = Strdup(srcopt->value);
-            opt->label = Strdup(srcopt->label);
+            opt->value = srcopt->value->Clone();
+            opt->label = srcopt->label->Clone();
             opt->checked = srcopt->checked;
             if (item->select_option == NULL)
             {
@@ -1303,7 +1301,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
         }
         item->select_option = opt;
         if (srcitem->label)
-            item->label = Strdup(srcitem->label);
+            item->label = srcitem->label->Clone();
 #endif /* MENU_SELECT */
         item->parent = list;
         item->next = NULL;

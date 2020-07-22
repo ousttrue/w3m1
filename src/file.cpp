@@ -1204,7 +1204,7 @@ static Str
 AuthBasicCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 	      HRequest *hr, FormList *request)
 {
-    Str s = Strdup(uname);
+    Str s = uname->Clone();
     s->Concat(':');
     s->Concat( pw);
     return Strnew_m_charp("Basic ", encodeB(s->ptr)->ptr, NULL);

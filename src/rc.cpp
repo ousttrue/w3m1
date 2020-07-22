@@ -1415,7 +1415,7 @@ load_option_panel(void)
 	OptionEncode = TRUE;
     }
 #endif
-    src = Strdup(optionpanel_str);
+    src = optionpanel_str->Clone();
 
     src->Concat("<table><tr><td>");
     for (i = 0; sections[i].name != NULL; i++) {

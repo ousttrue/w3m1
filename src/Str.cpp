@@ -36,13 +36,6 @@ Str Strnew_m_charp(char *p, ...)
     return r;
 }
 
-Str Strdup(Str s)
-{
-    Str n = Strnew_size(s->length);
-    n->CopyFrom(s);
-    return n;
-}
-
 GCStr::GCStr(int size)
 {
     // Str x = (Str)GC_MALLOC(sizeof(GCStr));
@@ -65,6 +58,11 @@ GCStr::~GCStr()
 {
     // GC_FREE(ptr);
     auto a = 0;
+}
+
+GCStr *GCStr::Clone()
+{
+    return new GCStr(ptr, length);
 }
 
 void GCStr::Clear()
@@ -261,7 +259,7 @@ void Strremovetrailingspaces(Str s)
 Str Stralign_left(Str s, int width)
 {
     if (s->length >= width)
-        return Strdup(s);
+        return s->Clone();
     auto n = Strnew_size(width);
     n->CopyFrom(s);
     for (int i = s->length; i < width; i++)
@@ -272,7 +270,7 @@ Str Stralign_left(Str s, int width)
 Str Stralign_right(Str s, int width)
 {
     if (s->length >= width)
-        return Strdup(s);
+        return s->Clone();
     auto n = Strnew_size(width);
     for (int i = s->length; i < width; i++)
         n->Concat(' ');
@@ -283,7 +281,7 @@ Str Stralign_right(Str s, int width)
 Str Stralign_center(Str s, int width)
 {
     if (s->length >= width)
-        return Strdup(s);
+        return s->Clone();
     auto n = Strnew_size(width);
     auto w = (width - s->length) / 2;
     for (int i = 0; i < w; i++)

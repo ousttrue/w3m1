@@ -615,7 +615,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
             ans = "y";
         else
         {
-            Str ep = Strdup(emsg);
+            Str ep = emsg->Clone();
             if (ep->length > COLS - 16)
                 Strshrink(ep, ep->length - (COLS - 16));
             ep->Concat( ": accept? (y/n)");

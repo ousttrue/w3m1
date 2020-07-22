@@ -143,7 +143,7 @@ void appendTextLine(TextLineList *tl, Str line, int pos)
 
     if (tl->last == NULL)
     {
-        pushTextLine(tl, newTextLine(Strdup(line), pos));
+        pushTextLine(tl, newTextLine(line->Clone(), pos));
     }
     else
     {
