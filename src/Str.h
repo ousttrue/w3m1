@@ -25,7 +25,15 @@ struct GCStr
 
     void Clear();
     void RequireSize(int size);
-    void CopyFrom(const GCStr *src);
+    void CopyFrom(const char *src, int size);
+    void CopyFrom(const char *src)
+    {
+        CopyFrom(src, strlen(src));
+    }
+    void CopyFrom(const GCStr *src)
+    {
+        CopyFrom(src->ptr, src->length);
+    }
 };
 using Str = GCStr *;
 
@@ -36,9 +44,6 @@ Str Strnew_charp_n(char *, int);
 Str Strnew_m_charp(char *, ...);
 Str Strdup(Str);
 
-void Strcopy(Str, Str);
-void Strcopy_charp(Str, char *);
-void Strcopy_charp_n(Str, char *, int);
 void Strcat_charp_n(Str, char *, int);
 void Strcat(Str, Str);
 void Strcat_charp(Str, char *);

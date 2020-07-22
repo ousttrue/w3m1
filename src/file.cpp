@@ -111,8 +111,10 @@ static char *check_charset(char *p);
 static char *check_accept_charset(char *p);
 #endif
 
-#define set_prevchar(x,y,n) Strcopy_charp_n((x),(y),(n))
-#define set_space_to_prevchar(x) Strcopy_charp_n((x)," ",1)
+// #define set_prevchar(x,y,n) Strcopy_charp_n((x),(y),(n))
+static inline void set_space_to_prevchar(Str x){
+   x->CopyFrom(" ",1);
+}
 
 struct link_stack {
     int cmd;
@@ -1241,7 +1243,7 @@ AuthBasicCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 static Str
 digest_hex(unsigned char *p)
 {
-    char *h = "0123456789abcdef";
+    auto *h = "0123456789abcdef";
     Str tmp = Strnew_size(MD5_DIGEST_LENGTH * 2 + 1);
     int i;
     for (i = 0; i < MD5_DIGEST_LENGTH; i++, p++) {
@@ -2572,7 +2574,7 @@ push_nchars(struct readbuffer *obuf, int width,
     Strcat_charp_n(obuf->line, str, len);
     obuf->pos += width;
     if (width > 0) {
-	set_prevchar(obuf->prevchar, str, len);
+	obuf->prevchar->CopyFrom(str, len);
 	obuf->prev_ctype = mode;
     }
     obuf->flag |= RB_NFLUSHED;
@@ -2605,7 +2607,7 @@ push_char(struct readbuffer *obuf, int pre_mode, char ch)
     check_breakpoint(obuf, pre_mode, &ch);
     Strcat_char(obuf->line, ch);
     obuf->pos++;
-    set_prevchar(obuf->prevchar, &ch, 1);
+    obuf->prevchar->CopyFrom(&ch, 1);
     if (ch != ' ')
 	obuf->prev_ctype = PC_ASCII;
     obuf->flag |= RB_NFLUSHED;
@@ -2636,7 +2638,7 @@ proc_mchar(struct readbuffer *obuf, int pre_mode,
     obuf->pos += width;
     Strcat_charp_n(obuf->line, *str, get_mclen(*str));
     if (width > 0) {
-	set_prevchar(obuf->prevchar, *str, 1);
+	obuf->prevchar->CopyFrom(*str, 1);
 	if (**str != ' ')
 	    obuf->prev_ctype = mode;
     }
@@ -4699,7 +4701,7 @@ proc_escape(struct readbuffer *obuf, char **str_return)
     }
     else
 	push_nchars(obuf, width, str, n_add, mode);
-    set_prevchar(obuf->prevchar, estr, strlen(estr));
+    obuf->prevchar->CopyFrom(estr, strlen(estr));
     obuf->prev_ctype = mode;
 }
 
@@ -5290,7 +5292,7 @@ conv_symbol(Line *l)
 #endif
 	    if (tmp == NULL) {
 		tmp = Strnew_size(l->len);
-		Strcopy_charp_n(tmp, l->lineBuf, p - l->lineBuf);
+		tmp->CopyFrom(l->lineBuf, p - l->lineBuf);
 #ifdef USE_M17N
 		w = (*pr & PC_KANJI) ? 2 : 1;
 		symbol = get_symbol(DisplayCharset, &w);
@@ -7201,7 +7203,7 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
 	push_tag(obuf, "</pre_int>", HTML_N_PRE_INT);
 	obuf->flag &= ~RB_PRE_INT;
 	if (!(obuf->flag & RB_SPECIAL) && obuf->pos > obuf->bp.pos) {
-	    set_prevchar(obuf->prevchar, "", 0);
+	    obuf->prevchar->CopyFrom("", 0);
 	    obuf->prev_ctype = PC_CTRL;
 	}
 	return 1;

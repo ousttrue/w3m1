@@ -58,8 +58,10 @@ int symbol_width0 = 0;
 #define abs(a)          ((a) >= 0. ? (a) : -(a))
 #endif				/* not abs */
 
-#define set_prevchar(x,y,n) Strcopy_charp_n((x),(y),(n))
-#define set_space_to_prevchar(x) Strcopy_charp_n((x)," ",1)
+// #define set_prevchar(x,y,n) Strcopy_charp_n((x),(y),(n))
+static inline void set_space_to_prevchar(Str x){
+     x->CopyFrom(" ",1);
+}
 
 #ifdef MATRIX
 #ifndef MESCHACH
@@ -321,7 +323,7 @@ newTable()
     t->linfo.prev_spaces = -1;
 #endif
     t->linfo.prevchar = Strnew_size(8);
-    set_prevchar(t->linfo.prevchar, "", 0);
+    t->linfo.prevchar->CopyFrom("", 0);
     t->trattr = 0;
 
     t->caption = Strnew();
@@ -2288,7 +2290,7 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
 	    s = 0;
 	    prev_ctype = ctype;
 	}
-	set_prevchar(prevchar, c, plen);
+	prevchar->CopyFrom(c, plen);
 	line = save + wlen;
     }
     if (s > 1) {

@@ -292,7 +292,7 @@ Str make_optional_header_string(char *s)
     if (*p != ':' || p == s)
         return NULL;
     hs = Strnew_size(strlen(s) + 3);
-    Strcopy_charp_n(hs, s, p - s);
+    hs->CopyFrom(s, p - s);
     if (!Strcasecmp_charp(hs, "content-type"))
         override_content_type = TRUE;
     Strcat_charp(hs, ": ");

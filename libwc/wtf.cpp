@@ -578,7 +578,7 @@ wtf_conv_fit(char *s, wc_ces ces)
 
     os = Strnew_size(strlen(s));
     if (p > (uint8_t *)s)
-	Strcopy_charp_n(os, s, (int)(p - (uint8_t *)s));
+	os->CopyFrom(s, (int)(p - (uint8_t *)s));
 
     major_ces = wtf_major_ces;
     pre_conv = WcOption.pre_conv;

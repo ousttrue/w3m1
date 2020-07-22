@@ -113,53 +113,17 @@ void GCStr::RequireSize(int size)
     area_size = size;
 }
 
-void GCStr::CopyFrom(const GCStr *src)
+void GCStr::CopyFrom(const char *y, int n)
 {
-    RequireSize(src->length+1);
-    bcopy((void *)src->ptr, (void *)ptr, src->length + 1);
-    length = src->length;
-}
-
-void Strcopy_charp(Str x, char *y)
-{
-    int len;
-
-    
     if (y == NULL)
     {
-        x->length = 0;
+        length = 0;
         return;
     }
-    len = strlen(y);
-    if (x->area_size < len + 1)
-    {
-        GC_free(x->ptr);
-        x->ptr = (char *)GC_MALLOC_ATOMIC(len + 1);
-        x->area_size = len + 1;
-    }
-    bcopy((void *)y, (void *)x->ptr, len + 1);
-    x->length = len;
-}
-
-void Strcopy_charp_n(Str x, char *y, int n)
-{
-    int len = n;
-
-    
-    if (y == NULL)
-    {
-        x->length = 0;
-        return;
-    }
-    if (x->area_size < len + 1)
-    {
-        GC_free(x->ptr);
-        x->ptr = (char *)GC_MALLOC_ATOMIC(len + 1);
-        x->area_size = len + 1;
-    }
-    bcopy((void *)y, (void *)x->ptr, n);
-    x->ptr[n] = '\0';
-    x->length = n;
+    RequireSize(n + 1);   
+    bcopy((void *)y, (void *)ptr, n);
+    ptr[n] = '\0';
+    length = n;
 }
 
 void Strcat_charp_n(Str x, char *y, int n)

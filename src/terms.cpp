@@ -950,7 +950,7 @@ addch(char pc)
 
     if (tmp == NULL)
 	tmp = Strnew();
-    Strcopy_charp_n(tmp, pc, len);
+    tmp->CopyFrom(pc, len);
     pc = tmp->ptr;
 #else
     char *p;
