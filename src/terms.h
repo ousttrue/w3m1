@@ -39,7 +39,7 @@ void clrtoeolx(void);
 void clrtobot(void);
 void clrtobotx(void);
 void no_clrtoeol(void);
-void addstr(char *s);
+void addstr(const char *s);
 void addnstr(const char *s, int n);
 void addnstr_sup(char *s, int n);
 void crmode(void);

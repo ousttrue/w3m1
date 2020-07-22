@@ -285,9 +285,7 @@ static Str
 make_lastline_link(Buffer *buf, char *title, char *url)
 {
     Str s = NULL, u;
-#ifdef USE_M17N
     Lineprop *pr;
-#endif
     ParsedURL pu;
     char *p;
     int l = COLS - 1, i;
@@ -295,11 +293,11 @@ make_lastline_link(Buffer *buf, char *title, char *url)
     if (title && *title)
     {
         s = Strnew_m_charp("[", title, "]", NULL);
-        for (p = s->ptr; *p; p++)
-        {
-            if (IS_CNTRL(*p) || IS_SPACE(*p))
-                *p = ' ';
-        }
+        s->Replace([](char &c){
+            if (IS_CNTRL(c) || IS_SPACE(c)){
+                c = ' ';
+            }
+        });
         if (url)
             s->Push(" ");
         l -= get_Str_strwidth(s);
@@ -311,7 +309,7 @@ make_lastline_link(Buffer *buf, char *title, char *url)
     parseURL2(url, &pu, baseURL(buf));
     u = parsedURL2Str(&pu);
     if (DecodeURL)
-        u = Strnew_charp(url_unquote_conv(u->ptr, buf->document_charset));
+        u = Strnew_charp(url_unquote_conv(u->c_str(), buf->document_charset));
 #ifdef USE_M17N
     u = checkType(u, &pr, NULL);
 #endif
@@ -329,14 +327,14 @@ make_lastline_link(Buffer *buf, char *title, char *url)
     while (i && pr[i] & PC_WCHAR2)
         i--;
 
-    s->Push(u->ptr, i);
+    s->Push(u->c_str(), i);
     s->Push("..");
     i = get_Str_strwidth(u) - (COLS - 1 - get_Str_strwidth(s));
 #ifdef USE_M17N
     while (i < u->Size() && pr[i] & PC_WCHAR2)
         i++;
 #endif
-    s->Push(&u->ptr[i]);
+    s->Push(&u->c_str()[i]);
     return s;
 }
 
@@ -402,16 +400,14 @@ make_lastline_message(Buffer *buf)
         int l = COLS - 3 - sl;
         if (get_Str_strwidth(msg) > l)
         {
-#ifdef USE_M17N
-            char *p;
-            for (p = msg->ptr; *p; p += get_mclen(p))
+            const char *p;
+            for (p = msg->c_str(); *p; p += get_mclen(p))
             {
                 l -= get_mcwidth(p);
                 if (l < 0)
                     break;
             }
-            l = p - msg->ptr;
-#endif
+            l = p - msg->c_str();
             msg->Truncate(l);
         }
         msg->Push("> ");
@@ -550,7 +546,7 @@ void displayBuffer(Buffer *buf, int mode)
         refresh();
     }
     standout();
-    message(msg->ptr, buf->cursorX + buf->rootX, buf->cursorY + buf->rootY);
+    message(msg->c_str(), buf->cursorX + buf->rootX, buf->cursorY + buf->rootY);
     standend();
     term_title(conv_to_system(buf->buffername));
     refresh();
@@ -801,7 +797,7 @@ redrawLine(Buffer *buf, Line *l, int i)
             if (a)
             {
                 parseURL2(a->url, &url, baseURL(buf));
-                if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
+                if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
                         pr[k - pos] |= PE_VISITED;
@@ -1023,7 +1019,7 @@ redrawLineRegion(Buffer *buf, Line *l, int i, int bpos, int epos)
             if (a)
             {
                 parseURL2(a->url, &url, baseURL(buf));
-                if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
+                if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
                         pr[k - pos] |= PE_VISITED;
@@ -1320,7 +1316,7 @@ message_list_panel(void)
                  "<h1>List of error messages</h1><table cellpadding=0>\n");
     if (message_list)
         for (p = message_list->last; p; p = p->prev)
-            Strcat_m_charp(tmp, "<tr><td><pre>", html_quote((char *)p->ptr),
+            Strcat_m_charp(tmp, "<tr><td><pre>", html_quote((const char *)p->ptr),
                            "</pre></td></tr>\n", NULL);
     else
         tmp->Push("<tr><td>(no message recorded)</td></tr>\n");

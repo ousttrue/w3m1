@@ -14,6 +14,7 @@
 #include "file.h"
 #include "html.h"
 #include "mouse.h"
+#include "etc.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

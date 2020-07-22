@@ -18,3 +18,4 @@ MySignalHandler mySignal(int signal_number, MySignalHandler action);
     if (prevtrap) \
 	mySignal(SIGINT, prevtrap); \
 }
+char *url_unquote_conv(const char *url, wc_ces charset);

@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <gc_cpp.h>
+#include <functional>
 
 //
 // http://aitoweb.world.coocan.jp/gc/gc.html
@@ -95,6 +96,7 @@ public:
     {
         Insert(pos, src->ptr);
     }
+    void Replace(const std::function<void(char&)> &pred);
     void ToLower();
     void ToUpper();
     GCStr *AlignLeft(int width) const;

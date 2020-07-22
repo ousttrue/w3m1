@@ -1672,7 +1672,7 @@ no_clrtoeol(void)
 #endif				/* 0 */
 
 void
-addstr(char *s)
+addstr(const char *s)
 {
 #ifdef USE_M17N
     int len;

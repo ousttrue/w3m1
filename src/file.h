@@ -325,7 +325,7 @@ void mySystem(char *command, int background);
 Str myExtCommand(char *cmd, char *arg, int redirect);
 Str myEditor(char *cmd, char *file, int line);
 char *file_to_url(char *file);
-char *url_unquote_conv(char *url, wc_ces charset);
+
 char *expandName(char *name);
 Str tmpfname(int type, const char *ext);
 time_t mymktime(char *timestr);

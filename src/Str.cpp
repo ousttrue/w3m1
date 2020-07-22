@@ -104,6 +104,7 @@ char *GCStr::RequireSize(int size)
         return nullptr;
     }
     auto old = ptr;
+    size = std::max(m_capacity * 2, size);
     ptr = (char *)GC_MALLOC_ATOMIC(size);
     m_capacity = size;
     return old;
@@ -257,6 +258,14 @@ void GCStr::Insert(int pos, const char *p)
 {
     while (*p)
         Insert(pos++, *(p++));
+}
+
+void GCStr::Replace(const std::function<void(char &)> &pred)
+{
+    for (auto p = ptr; *p; p++)
+    {
+        pred(*p);
+    }
 }
 
 void GCStr::ToLower()

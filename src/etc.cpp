@@ -1332,13 +1332,9 @@ file_to_url(char *file)
     return tmp->ptr;
 }
 
-#ifdef USE_M17N
+
 char *
-url_unquote_conv(char *url, wc_ces charset)
-#else
-char *
-url_unquote_conv0(char *url)
-#endif
+url_unquote_conv(const char *url, wc_ces charset)
 {
     uint8_t old_auto_detect = WcOption.auto_detect;
     Str tmp = Strnew_charp(url)->UrlDecode(FALSE, TRUE);
