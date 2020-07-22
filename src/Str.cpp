@@ -140,14 +140,22 @@ void GCStr::Insert(int pos, char c)
     {
         return;
     }
-    if (length + 2 > area_size){
+    if (length + 2 > area_size)
+    {
         Grow();
     }
-    for (int i = length; i > pos; i--){
+    for (int i = length; i > pos; i--)
+    {
         ptr[i] = ptr[i - 1];
     }
     ptr[++length] = '\0';
     ptr[pos] = c;
+}
+
+void GCStr::Insert(int pos, const char *p)
+{
+    while (*p)
+        Insert(pos++, *(p++));
 }
 
 void Strcat_m_charp(Str x, ...)
@@ -185,13 +193,6 @@ void Strchop(Str s)
         s->length--;
     }
     s->ptr[s->length] = '\0';
-}
-
-void Strinsert_charp(Str s, int pos, char *p)
-{
-
-    while (*p)
-        s->Insert(pos++, *(p++));
 }
 
 void Strdelete(Str s, int pos, int n)

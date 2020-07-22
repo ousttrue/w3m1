@@ -63,6 +63,11 @@ struct GCStr : public gc_cleanup
     }
     GCStr *Substr(int begin, int len);
     void Insert(int pos, char c);
+    void Insert(int pos, const char *src);
+    void Insert(int pos, const GCStr *src)
+    {
+        Insert(pos, src->ptr);
+    }
 };
 using Str = GCStr *;
 
@@ -89,7 +94,6 @@ inline Str Strnew_charp_n(const char *src, int size)
 Str Strnew_m_charp(char *, ...);
 void Strcat_m_charp(Str, ...);
 
-void Strinsert_charp(Str, int, char *);
 void Strdelete(Str, int, int);
 void Strtruncate(Str, int);
 void Strlower(Str);
@@ -151,11 +155,6 @@ inline int Strncasecmp_charp(Str x, char *y, int n)
 inline char Strlastchar(Str s)
 {
     return ((s)->length > 0 ? (s)->ptr[(s)->length - 1] : '\0');
-}
-
-inline void Strinsert(Str s, int n, Str p)
-{
-    Strinsert_charp((s), (n), (p)->ptr);
 }
 
 inline void Strshrinkfirst(Str s, int n)
