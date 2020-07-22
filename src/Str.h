@@ -19,11 +19,13 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct _Str {
+struct _Str
+{
     char *ptr;
     int length;
     int area_size;
-} *Str;
+};
+using Str = _Str *;
 
 Str Strnew(void);
 Str Strnew_size(int);
@@ -63,19 +65,19 @@ Str Strfgetall(FILE *);
 
 void Strgrow(Str s);
 
-#define Strcat_char(x,y) (((x)->length+1>=(x)->area_size)?Strgrow(x),0:0,(x)->ptr[(x)->length++]=(y),(x)->ptr[(x)->length]=0)
-#define Strcmp(x,y)                  strcmp((x)->ptr,(y)->ptr)
-#define Strcmp_charp(x,y)            strcmp((x)->ptr,(y))
-#define Strncmp(x,y,n)               strncmp((x)->ptr,(y)->ptr,(n))
-#define Strncmp_charp(x,y,n)         strncmp((x)->ptr,(y),(n))
-#define Strcasecmp(x,y)              strcasecmp((x)->ptr,(y)->ptr)
-#define Strcasecmp_charp(x,y)        strcasecmp((x)->ptr,(y))
-#define Strncasecmp(x,y,n)           strncasecmp((x)->ptr,(y)->ptr,(n))
-#define Strncasecmp_charp(x,y,n)     strncasecmp((x)->ptr,(y),(n))
+#define Strcat_char(x, y) (((x)->length + 1 >= (x)->area_size) ? Strgrow(x), 0 : 0, (x)->ptr[(x)->length++] = (y), (x)->ptr[(x)->length] = 0)
+#define Strcmp(x, y) strcmp((x)->ptr, (y)->ptr)
+#define Strcmp_charp(x, y) strcmp((x)->ptr, (y))
+#define Strncmp(x, y, n) strncmp((x)->ptr, (y)->ptr, (n))
+#define Strncmp_charp(x, y, n) strncmp((x)->ptr, (y), (n))
+#define Strcasecmp(x, y) strcasecmp((x)->ptr, (y)->ptr)
+#define Strcasecmp_charp(x, y) strcasecmp((x)->ptr, (y))
+#define Strncasecmp(x, y, n) strncasecmp((x)->ptr, (y)->ptr, (n))
+#define Strncasecmp_charp(x, y, n) strncasecmp((x)->ptr, (y), (n))
 
-#define Strlastchar(s)               ((s)->length>0?(s)->ptr[(s)->length-1]:'\0')
-#define Strinsert(s,n,p)             Strinsert_charp((s),(n),(p)->ptr)
-#define Strshrinkfirst(s,n)          Strdelete((s),0,(n))
-#define Strfputs(s,f)                fwrite((s)->ptr,1,(s)->length,(f))
+#define Strlastchar(s) ((s)->length > 0 ? (s)->ptr[(s)->length - 1] : '\0')
+#define Strinsert(s, n, p) Strinsert_charp((s), (n), (p)->ptr)
+#define Strshrinkfirst(s, n) Strdelete((s), 0, (n))
+#define Strfputs(s, f) fwrite((s)->ptr, 1, (s)->length, (f))
 
-#endif				/* not GC_STR_H */
+#endif /* not GC_STR_H */

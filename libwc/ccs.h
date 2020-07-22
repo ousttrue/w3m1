@@ -2,6 +2,7 @@
 #ifndef _WC_CCS_H
 #define _WC_CCS_H
 
+#include "wc_types.h"
 #include "iso2022.h"
 #include "priv.h"
 
