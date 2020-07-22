@@ -565,7 +565,7 @@ form_fputs_decode(Str s, FILE * f)
 #ifdef USE_M17N
     z = wc_Str_conv_strict(z, InnerCharset, DisplayCharset);
 #endif
-    Strfputs(z, f);
+    z->Puts( f);
 }
 
 

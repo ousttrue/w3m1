@@ -81,7 +81,7 @@ int GCStr::ICaseCmp(const char *y, int n) const
     return strncasecmp(ptr, y, n);
 }
 
-char GCStr::Back()const
+char GCStr::Back() const
 {
     return (length > 0 ? ptr[length - 1] : '\0');
 }
@@ -318,6 +318,11 @@ GCStr *GCStr::AlignCenter(int width) const
     for (int i = w + length; i < width; i++)
         n->Push(' ');
     return n;
+}
+
+int GCStr::Puts(FILE *f) const
+{
+    return fwrite(ptr, 1, length, f);
 }
 
 Str Strnew_m_charp(char *p, ...)

@@ -879,7 +879,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 						}
 						if (parsedtag_need_reconstruct(tag))
 							tok = parsedtag2str(tag);
-						Strfputs(tok, f1);
+						tok->Puts( f1);
 					}
 					else
 					{
@@ -889,7 +889,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 							fprintf(f1, "%s",
 									html_quote(html_unquote(tok->ptr)));
 						else
-							Strfputs(tok, f1);
+							tok->Puts( f1);
 					}
 				token_end:
 					tok->Clear();

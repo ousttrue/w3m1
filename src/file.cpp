@@ -649,11 +649,11 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
         if(w3m_reqlog){
             FILE *ff;
             ff = fopen(w3m_reqlog, "a");
-            Strfputs(tmp, ff);
+            tmp->Puts( ff);
             fclose(ff);
         }
         if (src)
-            Strfputs(tmp, src);
+            tmp->Puts( src);
         cleanup_line(tmp, HEADER_MODE);
         if (tmp->ptr[0] == '\n' || tmp->ptr[0] == '\r' || tmp->ptr[0] == '\0') {
             if (!lineBuf2)
@@ -2110,7 +2110,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
         if (src) {
             Str s;
             s = wc_Str_conv_strict(page, InnerCharset, charset);
-            Strfputs(s, src);
+            s->Puts( src);
             fclose(src);
         }
         if (do_download) {
@@ -3993,7 +3993,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
     while ((line = feed()) != NULL) {
 #ifdef DEBUG
         if (w3m_debug) {
-            Strfputs(line, debug);
+            line->Puts( debug);
             fputc('\n', debug);
         }
 #endif
@@ -5167,7 +5167,7 @@ loadBuffer(URLFile *uf, Buffer *volatile newBuf)
         }
 #endif				/* USE_NNTP */
         if (src)
-            Strfputs(lineBuf2, src);
+            lineBuf2->Puts( src);
         linelen += lineBuf2->length;
         if (w3m_dump & DUMP_EXTRA)
             printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
@@ -5334,7 +5334,7 @@ _saveBuffer(Buffer *buf, Line *l, FILE * f, int cont)
         else
             tmp = Strnew_charp_n(l->lineBuf, l->len);
         tmp = wc_Str_conv(tmp, InnerCharset, charset);
-        Strfputs(tmp, f);
+        tmp->Puts( f);
         if (tmp->Back() != '\n' && !(cont && l->next && l->next->bpos))
             putc('\n', f);
     }
@@ -5690,7 +5690,7 @@ save2tmp(URLFile uf, char *tmpf)
     {
         Str buf = Strnew_size(SAVE_BUF_SIZE);
         while (UFread(&uf, buf, SAVE_BUF_SIZE)) {
-            if (Strfputs(buf, ff) != buf->length) {
+            if (buf->Puts( ff) != buf->length) {
                 bcopy(env_bak, AbortLoading, sizeof(JMP_BUF));
                 TRAP_OFF;
                 fclose(ff);
@@ -5841,7 +5841,7 @@ _MoveFile(char *path1, char *path2)
     current_content_length = 0;
     buf = Strnew_size(SAVE_BUF_SIZE);
     while (ISread(f1, buf, SAVE_BUF_SIZE)) {
-        Strfputs(buf, f2);
+        buf->Puts( f2);
         linelen += buf->length;
         showProgress(&linelen, &trbyte);
     }
@@ -6210,10 +6210,10 @@ uncompress_stream(URLFile *uf, char **src)
             if (tmpf)
                 f = fopen(tmpf, "wb");
             while (UFread(uf, buf, SAVE_BUF_SIZE)) {
-                if (Strfputs(buf, stdout) < 0)
+                if (buf->Puts( stdout) < 0)
                     break;
                 if (f)
-                    Strfputs(buf, f);
+                    buf->Puts( f);
             }
             UFclose(uf);
             if (f)
@@ -6561,7 +6561,7 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
         if (buf)
             pushTextLine(buf, lbuf);
         else if (f) {
-            Strfputs(Str_conv_to_halfdump(lbuf->line), f);
+            Str_conv_to_halfdump(lbuf->line)->Puts(f);
             fputc('\n', f);
         }
         if (obuf->flag & RB_SPECIAL || obuf->flag & RB_NFLUSHED)
@@ -6577,7 +6577,7 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
         if (buf) \
             appendTextLine(buf,(str),0); \
         else if (f) \
-            Strfputs((str),f)
+            (str)->Puts(f)
 
         while (*p) {
             q = p;
@@ -8432,7 +8432,7 @@ loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
         }
 #endif				/* USE_NNTP */
         if (src)
-            Strfputs(lineBuf2, src);
+            lineBuf2->Puts( src);
         linelen += lineBuf2->length;
         if (w3m_dump & DUMP_EXTRA)
             printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));

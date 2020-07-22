@@ -94,6 +94,8 @@ struct GCStr : public gc_cleanup
     GCStr *AlignLeft(int width) const;
     GCStr *AlignRight(int width) const;
     GCStr *AlignCenter(int width) const;
+
+    int Puts(FILE *f)const;
 };
 using Str = GCStr *;
 
@@ -123,8 +125,3 @@ void Strcat_m_charp(Str, ...);
 Str Sprintf(char *fmt, ...);
 Str Strfgets(FILE *);
 Str Strfgetall(FILE *);
-
-inline int Strfputs(Str s, FILE *f)
-{
-    return fwrite((s)->ptr, 1, (s)->length, (f));
-}
