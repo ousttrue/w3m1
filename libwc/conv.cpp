@@ -1,4 +1,4 @@
-extern "C" {
+
 #include "wc_types.h"
 #include "status.h"
 #include "detect.h"
@@ -10,7 +10,7 @@ extern "C" {
 #include "ucs.h"
 #include "utf8.h"
 #include "utf7.h"
-}
+
 
 char *WcReplace = "?";
 char *WcReplaceW = "??";

@@ -1,9 +1,9 @@
-extern "C"{
+
 #include "wc.h"
 #include "ucs.h"
 #include "utf8.h"
 #include "wtf.h"
-}
+
 
 wc_uint8 WC_UTF8_MAP[ 0x100 ] = {
    8, 8, 8, 8, 8, 8, 8, 8,  8, 8, 8, 8, 8, 8, 8, 8,

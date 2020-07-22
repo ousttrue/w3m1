@@ -1,4 +1,4 @@
-extern "C"{
+
 #include "wc.h"
 #include "status.h"
 #include "detect.h"
@@ -11,7 +11,7 @@ extern "C"{
 #include "utf8.h"
 #include "utf7.h"
 #endif
-}
+
 
 wc_uint8 WC_DETECT_MAP[ 0x100 ] = {
     0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 

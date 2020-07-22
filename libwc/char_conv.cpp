@@ -1,9 +1,9 @@
-extern "C"{
+
 #include "wc.h"
 #include "status.h"
 static wc_ces char_conv_f_ces = 0, char_conv_t_ces = WC_CES_WTF;
 static wc_status char_conv_st;
-}
+
 
 void
 wc_char_conv_init(wc_ces f_ces, wc_ces t_ces)

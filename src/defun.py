@@ -47,8 +47,7 @@ def header(path: pathlib.Path, funcs: List[Func]):
         w.write('''#pragma once
 
 #ifdef __cplusplus
-extern "C"
-{
+
 #endif
 
 ''')
@@ -60,7 +59,7 @@ extern "C"
 
         w.write('''
 #ifdef __cplusplus
-}
+
 #endif
 ''')
     print(path)
@@ -71,8 +70,7 @@ def body(path: pathlib.Path, funcs: List[Func]):
         w.write('''
 #include "commands.h"
 
-extern "C"
-{
+
 ''')
         for f in funcs:
             w.write('\n')
@@ -83,7 +81,7 @@ extern "C"
                 w.write(f.define())
                 w.write('\n')
         
-        w.write("}\n")
+        w.write("\n")
     print(path)
 
 

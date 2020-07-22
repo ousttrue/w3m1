@@ -1,4 +1,4 @@
-extern "C" {
+
 #include <string.h>
 #include <gc.h>
 #define New_N(type,n) ((type*)GC_MALLOC((n)*sizeof(type)))
@@ -6,7 +6,7 @@ extern "C" {
 #include "wc.h"
 #include "status.h"
 #include "ucs.h"
-}
+
 
 wc_option WcOption = {
     WC_OPT_DETECT_ON,	/* auto_detect */

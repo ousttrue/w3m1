@@ -1,11 +1,11 @@
-extern "C"{
+
 #include "wc.h"
 #include "big5.h"
 #include "hkscs.h"
 #include "search.h"
 #include "wtf.h"
 #include "ucs.h"
-}
+
 
 #define C0 WC_HKSCS_MAP_C0
 #define GL WC_HKSCS_MAP_GL

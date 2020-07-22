@@ -1,7 +1,7 @@
-extern "C"{
+
 #include "wc.h"
 #include "wtf.h"
-}
+
 
 Str
 wc_conv_from_priv1(Str is, wc_ces ces)

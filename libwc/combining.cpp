@@ -1,4 +1,4 @@
-extern "C"{
+
 #include "wc.h"
 #include "ucs.h"
 #include "map/iso88596_combining.map"
@@ -9,7 +9,7 @@ extern "C"{
 #include "map/cp1256_combining.map"
 #include "map/cp1258_combining.map"
 #include "map/tcvn5712_combining.map"
-}
+
 
 wc_bool
 wc_is_combining(wc_wchar_t cc)

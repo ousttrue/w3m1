@@ -1,4 +1,4 @@
-extern "C" {
+
 #include "wc.h"
 #include "wtf.h"
 #include "sjis.h"
@@ -12,7 +12,7 @@ extern "C" {
 #include "uhc.h"
 #include "ucs.h"
 #include "utf8.h"
-}
+
 
 wc_uint8 WTF_WIDTH_MAP[ 0x100 ] = {
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,

@@ -1,4 +1,4 @@
-extern "C"{
+
 #include <stdlib.h>
 #include "wc.h"
 #include "ucs.h"
@@ -26,7 +26,7 @@ extern "C"{
 #include "map/ucs_islower.map"
 #include "map/ucs_isupper.map"
 #include "map/ucs_case.map"
-}
+
 
 #define MAX_TAG_MAP 0x100
 static int n_tag_map = 0;

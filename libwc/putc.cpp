@@ -1,7 +1,7 @@
-extern "C"{
+
 #include "wc.h"
 #include "wtf.h"
-}
+
 static wc_status putc_st;
 static wc_ces putc_f_ces, putc_t_ces;
 static Str putc_str;

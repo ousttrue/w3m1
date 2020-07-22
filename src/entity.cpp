@@ -7,10 +7,10 @@
 #undef USE_M17N
 #else /* DUMMY */
 #include "fm.h"
-extern "C" {
+
 #include "ucs.h"
 #include "utf8.h"
-}
+
 #include "ctrlcode.h"
 #endif /* DUMMY */
 

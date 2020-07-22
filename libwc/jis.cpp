@@ -1,4 +1,4 @@
-extern "C"{
+
 #include "wc.h"
 #include "jis.h"
 #include "search.h"
@@ -6,7 +6,7 @@ extern "C"{
 
 #include "map/jisx0201k_jisx0208.map"
 #include "map/jisx0208_jisx02131.map"
-}
+
 
 wc_wchar_t
 wc_jisx0201k_to_jisx0208(wc_wchar_t cc)

@@ -14,7 +14,7 @@
  * results obtained from use of this software.
  */
 
-extern "C" {
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gc.h>
@@ -22,7 +22,7 @@ extern "C" {
 #include <string.h>
 #include "Str.h"
 #include "myctype.h"
-}
+
 
 #define INITIAL_STR_SIZE 32
 
