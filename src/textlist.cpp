@@ -161,7 +161,7 @@ TextList *newTextList()
     return (TextList *)newGeneralList();
 }
 
-void pushText(TextList *tl, char *s)
+void pushText(TextList *tl, const char *s)
 {
     pushValue((GeneralList *)(tl), (void *)allocStr((s), -1));
 }

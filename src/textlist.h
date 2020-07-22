@@ -44,7 +44,7 @@ struct TextList
 };
 
 TextList *newTextList();
-void pushText(TextList *tl, char *s);
+void pushText(TextList *tl, const char *s);
 char *popText(TextList *tl);
 char *rpopText(TextList *tl);
 void delText(TextList *tl, char *i);

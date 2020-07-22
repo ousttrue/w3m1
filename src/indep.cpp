@@ -14,33 +14,272 @@
 #include "myctype.h"
 #include "entity.h"
 
-
 unsigned char QUOTE_MAP[0x100] = {
     /* NUL SOH STX ETX EOT ENQ ACK BEL  BS  HT  LF  VT  FF  CR  SO  SI */
-    24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
     /* DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN  EM SUB ESC  FS  GS  RS  US */
-    24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
     /* SPC   !   "   #   $   %   &   '   (   )   *   +   ,   -   .   / */
-    24, 72, 76, 40, 8, 40, 41, 72, 72, 72, 72, 40, 72, 8, 0, 64,
+    24,
+    72,
+    76,
+    40,
+    8,
+    40,
+    41,
+    72,
+    72,
+    72,
+    72,
+    40,
+    72,
+    8,
+    0,
+    64,
     /*   0   1   2   3   4   5   6   7   8   9   :   ;   <   =   >   ? */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 72, 74, 72, 75, 40,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    32,
+    72,
+    74,
+    72,
+    75,
+    40,
     /*   @   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O */
-    72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    72,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
     /*   P   Q   R   S   T   U   V   W   X   Y   Z   [   \   ]   ^   _ */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 72, 72, 72, 72, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    72,
+    72,
+    72,
+    72,
+    0,
     /*   `   a   b   c   d   e   f   g   h   i   j   k   l   m   n   o */
-    72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    72,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
     /*   p   q   r   s   t   u   v   w   x   y   z   {   |   }   ~ DEL */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 72, 72, 72, 72, 24,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    72,
+    72,
+    72,
+    72,
+    24,
 
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
 };
 
 char *HTML_QUOTE_MAP[] = {
@@ -71,31 +310,31 @@ strtoclen(const char *s)
 }
 
 #ifndef HAVE_BCOPY
-void
-bcopy(const void *src, void *dest, int len)
+void bcopy(const void *src, void *dest, int len)
 {
     int i;
     if (src == dest)
-	return;
-    if (src < dest) {
-	for (i = len - 1; i >= 0; i--)
-	    ((char *)dest)[i] = ((const char *)src)[i];
+        return;
+    if (src < dest)
+    {
+        for (i = len - 1; i >= 0; i--)
+            ((char *)dest)[i] = ((const char *)src)[i];
     }
-    else {			/* src > dest */
-	for (i = 0; i < len; i++)
-	    ((char *)dest)[i] = ((const char *)src)[i];
+    else
+    { /* src > dest */
+        for (i = 0; i < len; i++)
+            ((char *)dest)[i] = ((const char *)src)[i];
     }
 }
 
-void
-bzero(void *ptr, int len)
+void bzero(void *ptr, int len)
 {
     int i;
     char *p = ptr;
     for (i = 0; i < len; i++)
-	*(p++) = 0;
+        *(p++) = 0;
 }
-#endif				/* not HAVE_BCOPY */
+#endif /* not HAVE_BCOPY */
 
 char *
 allocStr(const char *s, int len)
@@ -103,21 +342,21 @@ allocStr(const char *s, int len)
     char *ptr;
 
     if (s == NULL)
-	return NULL;
+        return NULL;
     if (len < 0)
-	len = strlen(s);
+        len = strlen(s);
     ptr = NewAtom_N(char, len + 1);
-    if (ptr == NULL) {
-	fprintf(stderr, "fm: Can't allocate string. Give me more memory!\n");
-	exit(-1);
+    if (ptr == NULL)
+    {
+        fprintf(stderr, "fm: Can't allocate string. Give me more memory!\n");
+        exit(-1);
     }
     bcopy(s, ptr, len);
     ptr[len] = '\0';
     return ptr;
 }
 
-int
-strCmp(const void *s1, const void *s2)
+int strCmp(const void *s1, const void *s2)
 {
     return strcmp(*(const char **)s1, *(const char **)s2);
 }
@@ -133,11 +372,11 @@ currentdir()
 #else
     path = getcwd(NULL, 0);
 #endif
-#else				/* not HAVE_GETCWD */
+#else /* not HAVE_GETCWD */
 #ifdef HAVE_GETWD
     path = NewAtom_N(char, 1024);
     getwd(path);
-#else				/* not HAVE_GETWD */
+#else  /* not HAVE_GETWD */
     FILE *f;
     char *p;
     path = NewAtom_N(char, 1024);
@@ -145,12 +384,13 @@ currentdir()
     fgets(path, 1024, f);
     pclose(f);
     for (p = path; *p; p++)
-	if (*p == '\n') {
-	    *p = '\0';
-	    break;
-	}
-#endif				/* not HAVE_GETWD */
-#endif				/* not HAVE_GETCWD */
+        if (*p == '\n')
+        {
+            *p = '\0';
+            break;
+        }
+#endif /* not HAVE_GETWD */
+#endif /* not HAVE_GETCWD */
     return path;
 }
 
@@ -162,57 +402,72 @@ cleanupName(char *name)
     buf = allocStr(name, -1);
     p = buf;
     q = name;
-    while (*q != '\0') {
-	if (strncmp(p, "/../", 4) == 0) {	/* foo/bar/../FOO */
-	    if (p - 2 == buf && strncmp(p - 2, "..", 2) == 0) {
-		/* ../../       */
-		p += 3;
-		q += 3;
-	    }
-	    else if (p - 3 >= buf && strncmp(p - 3, "/..", 3) == 0) {
-		/* ../../../    */
-		p += 3;
-		q += 3;
-	    }
-	    else {
-		while (p != buf && *--p != '/') ;	/* ->foo/FOO */
-		*p = '\0';
-		q += 3;
-		strcat(buf, q);
-	    }
-	}
-	else if (strcmp(p, "/..") == 0) {	/* foo/bar/..   */
-	    if (p - 2 == buf && strncmp(p - 2, "..", 2) == 0) {
-		/* ../..        */
-	    }
-	    else if (p - 3 >= buf && strncmp(p - 3, "/..", 3) == 0) {
-		/* ../../..     */
-	    }
-	    else {
-		while (p != buf && *--p != '/') ;	/* ->foo/ */
-		*++p = '\0';
-	    }
-	    break;
-	}
-	else if (strncmp(p, "/./", 3) == 0) {	/* foo/./bar */
-	    *p = '\0';		/* -> foo/bar           */
-	    q += 2;
-	    strcat(buf, q);
-	}
-	else if (strcmp(p, "/.") == 0) {	/* foo/. */
-	    *++p = '\0';	/* -> foo/              */
-	    break;
-	}
-	else if (strncmp(p, "//", 2) == 0) {	/* foo//bar */
-	    /* -> foo/bar           */
-	    *p = '\0';
-	    q++;
-	    strcat(buf, q);
-	}
-	else {
-	    p++;
-	    q++;
-	}
+    while (*q != '\0')
+    {
+        if (strncmp(p, "/../", 4) == 0)
+        { /* foo/bar/../FOO */
+            if (p - 2 == buf && strncmp(p - 2, "..", 2) == 0)
+            {
+                /* ../../       */
+                p += 3;
+                q += 3;
+            }
+            else if (p - 3 >= buf && strncmp(p - 3, "/..", 3) == 0)
+            {
+                /* ../../../    */
+                p += 3;
+                q += 3;
+            }
+            else
+            {
+                while (p != buf && *--p != '/')
+                    ; /* ->foo/FOO */
+                *p = '\0';
+                q += 3;
+                strcat(buf, q);
+            }
+        }
+        else if (strcmp(p, "/..") == 0)
+        { /* foo/bar/..   */
+            if (p - 2 == buf && strncmp(p - 2, "..", 2) == 0)
+            {
+                /* ../..        */
+            }
+            else if (p - 3 >= buf && strncmp(p - 3, "/..", 3) == 0)
+            {
+                /* ../../..     */
+            }
+            else
+            {
+                while (p != buf && *--p != '/')
+                    ; /* ->foo/ */
+                *++p = '\0';
+            }
+            break;
+        }
+        else if (strncmp(p, "/./", 3) == 0)
+        {              /* foo/./bar */
+            *p = '\0'; /* -> foo/bar           */
+            q += 2;
+            strcat(buf, q);
+        }
+        else if (strcmp(p, "/.") == 0)
+        {                /* foo/. */
+            *++p = '\0'; /* -> foo/              */
+            break;
+        }
+        else if (strncmp(p, "//", 2) == 0)
+        { /* foo//bar */
+            /* -> foo/bar           */
+            *p = '\0';
+            q++;
+            strcat(buf, q);
+        }
+        else
+        {
+            p++;
+            q++;
+        }
     }
     return buf;
 }
@@ -225,37 +480,43 @@ expandPath(char *name)
     Str extpath = NULL;
 
     if (name == NULL)
-	return NULL;
+        return NULL;
     p = name;
-    if (*p == '~') {
-	p++;
+    if (*p == '~')
+    {
+        p++;
 #ifndef __MINGW32_VERSION
-	if (IS_ALPHA(*p)) {
-	    char *q = strchr(p, '/');
-	    if (q) {		/* ~user/dir... */
-		passent = getpwnam(allocStr(p, q - p));
-		p = q;
-	    }
-	    else {		/* ~user */
-		passent = getpwnam(p);
-		p = "";
-	    }
-	    if (!passent)
-		goto rest;
-	    extpath = Strnew_charp(passent->pw_dir);
-	} else
+        if (IS_ALPHA(*p))
+        {
+            char *q = strchr(p, '/');
+            if (q)
+            { /* ~user/dir... */
+                passent = getpwnam(allocStr(p, q - p));
+                p = q;
+            }
+            else
+            { /* ~user */
+                passent = getpwnam(p);
+                p = "";
+            }
+            if (!passent)
+                goto rest;
+            extpath = Strnew_charp(passent->pw_dir);
+        }
+        else
 #endif /* __MINGW32_VERSION */
-	  if (*p == '/' || *p == '\0') {	/* ~/dir... or ~ */
-	    extpath = Strnew_charp(getenv("HOME"));
-	}
-	else
-	    goto rest;
-	if (extpath->Cmp("/") == 0 && *p == '/')
-	    p++;
-	extpath->Push(p);
-	return extpath->ptr;
+            if (*p == '/' || *p == '\0')
+        { /* ~/dir... or ~ */
+            extpath = Strnew_charp(getenv("HOME"));
+        }
+        else
+            goto rest;
+        if (extpath->Cmp("/") == 0 && *p == '/')
+            p++;
+        extpath->Push(p);
+        return extpath->ptr;
     }
-  rest:
+rest:
     return name;
 }
 
@@ -263,45 +524,46 @@ expandPath(char *name)
 char *
 strchr(const char *s, int c)
 {
-    while (*s) {
-	if ((unsigned char)*s == c)
-	    return (char *)s;
-	s++;
+    while (*s)
+    {
+        if ((unsigned char)*s == c)
+            return (char *)s;
+        s++;
     }
     return NULL;
 }
-#endif				/* not HAVE_STRCHR */
+#endif /* not HAVE_STRCHR */
 
 #ifndef HAVE_STRCASECMP
-int
-strcasecmp(const char *s1, const char *s2)
+int strcasecmp(const char *s1, const char *s2)
 {
     int x;
-    while (*s1) {
-	x = TOLOWER(*s1) - TOLOWER(*s2);
-	if (x != 0)
-	    return x;
-	s1++;
-	s2++;
+    while (*s1)
+    {
+        x = TOLOWER(*s1) - TOLOWER(*s2);
+        if (x != 0)
+            return x;
+        s1++;
+        s2++;
     }
     return -TOLOWER(*s2);
 }
 
-int
-strncasecmp(const char *s1, const char *s2, size_t n)
+int strncasecmp(const char *s1, const char *s2, size_t n)
 {
     int x;
-    while (*s1 && n) {
-	x = TOLOWER(*s1) - TOLOWER(*s2);
-	if (x != 0)
-	    return x;
-	s1++;
-	s2++;
-	n--;
+    while (*s1 && n)
+    {
+        x = TOLOWER(*s1) - TOLOWER(*s2);
+        if (x != 0)
+            return x;
+        s1++;
+        s2++;
+        n--;
     }
     return n ? -TOLOWER(*s2) : 0;
 }
-#endif				/* not HAVE_STRCASECMP */
+#endif /* not HAVE_STRCASECMP */
 
 #ifndef HAVE_STRCASESTR
 /* string search using the simplest algorithm */
@@ -310,16 +572,17 @@ strcasestr(const char *s1, const char *s2)
 {
     int len1, len2;
     if (s2 == NULL)
-	return (char *)s1;
+        return (char *)s1;
     if (*s2 == '\0')
-	return (char *)s1;
+        return (char *)s1;
     len1 = strlen(s1);
     len2 = strlen(s2);
-    while (*s1 && len1 >= len2) {
-	if (strncasecmp(s1, s2, len2) == 0)
-	    return (char *)s1;
-	s1++;
-	len1--;
+    while (*s1 && len1 >= len2)
+    {
+        if (strncasecmp(s1, s2, len2) == 0)
+            return (char *)s1;
+        s1++;
+        len1--;
     }
     return 0;
 }
@@ -329,32 +592,35 @@ static int
 strcasematch(char *s1, char *s2)
 {
     int x;
-    while (*s1) {
-	if (*s2 == '\0')
-	    return 1;
-	x = TOLOWER(*s1) - TOLOWER(*s2);
-	if (x != 0)
-	    break;
-	s1++;
-	s2++;
+    while (*s1)
+    {
+        if (*s2 == '\0')
+            return 1;
+        x = TOLOWER(*s1) - TOLOWER(*s2);
+        if (x != 0)
+            break;
+        s1++;
+        s2++;
     }
     return (*s2 == '\0');
 }
 
 /* search multiple strings */
-int
-strcasemstr(char *str, char *srch[], char **ret_ptr)
+int strcasemstr(char *str, char *srch[], char **ret_ptr)
 {
     int i;
-    while (*str) {
-	for (i = 0; srch[i]; i++) {
-	    if (strcasematch(str, srch[i])) {
-		if (ret_ptr)
-		    *ret_ptr = str;
-		return i;
-	    }
-	}
-	str++;
+    while (*str)
+    {
+        for (i = 0; srch[i]; i++)
+        {
+            if (strcasematch(str, srch[i]))
+            {
+                if (ret_ptr)
+                    *ret_ptr = str;
+                return i;
+            }
+        }
+        str++;
     }
     return -1;
 }
@@ -364,96 +630,108 @@ remove_space(char *str)
 {
     char *p, *q;
 
-    for (p = str; *p && IS_SPACE(*p); p++) ;
-    for (q = p; *q; q++) ;
-    for (; q > p && IS_SPACE(*(q - 1)); q--) ;
+    for (p = str; *p && IS_SPACE(*p); p++)
+        ;
+    for (q = p; *q; q++)
+        ;
+    for (; q > p && IS_SPACE(*(q - 1)); q--)
+        ;
     if (*q != '\0')
-	return Strnew_charp_n(p, q - p)->ptr;
+        return Strnew_charp_n(p, q - p)->ptr;
     return p;
 }
 
-int
-non_null(char *s)
+int non_null(char *s)
 {
     if (s == NULL)
-	return FALSE;
-    while (*s) {
-	if (!IS_SPACE(*s))
-	    return TRUE;
-	s++;
+        return FALSE;
+    while (*s)
+    {
+        if (!IS_SPACE(*s))
+            return TRUE;
+        s++;
     }
     return FALSE;
 }
 
-void
-cleanup_line(Str s, int mode)
+void cleanup_line(Str s, int mode)
 {
     if (s->Size() >= 2 &&
-	s->ptr[s->Size() - 2] == '\r' && s->ptr[s->Size() - 1] == '\n') {
-	s->Pop(2);
-	s->Push('\n');
+        s->ptr[s->Size() - 2] == '\r' && s->ptr[s->Size() - 1] == '\n')
+    {
+        s->Pop(2);
+        s->Push('\n');
     }
     else if (s->Back() == '\r')
-	s->ptr[s->Size() - 1] = '\n';
+        s->ptr[s->Size() - 1] = '\n';
     else if (s->Back() != '\n')
-	s->Push('\n');
-    if (mode != PAGER_MODE) {
-	int i;
-	for (i = 0; i < s->Size(); i++) {
-	    if (s->ptr[i] == '\0')
-		s->ptr[i] = ' ';
-	}
+        s->Push('\n');
+    if (mode != PAGER_MODE)
+    {
+        int i;
+        for (i = 0; i < s->Size(); i++)
+        {
+            if (s->ptr[i] == '\0')
+                s->ptr[i] = ' ';
+        }
     }
 }
 
 #include "entity.h"
 
-int
-getescapechar(char **str)
+int getescapechar(char **str)
 {
     int dummy = -1;
     char *p = *str, *q;
     int strict_entity = TRUE;
 
     if (*p == '&')
-	p++;
-    if (*p == '#') {
-	p++;
-	if (*p == 'x' || *p == 'X') {
-	    p++;
-	    if (!IS_XDIGIT(*p)) {
-		*str = p;
-		return -1;
-	    }
-	    for (dummy = GET_MYCDIGIT(*p), p++; IS_XDIGIT(*p); p++)
-		dummy = dummy * 0x10 + GET_MYCDIGIT(*p);
-	    if (*p == ';')
-		p++;
-	    *str = p;
-	    return dummy;
-	}
-	else {
-	    if (!IS_DIGIT(*p)) {
-		*str = p;
-		return -1;
-	    }
-	    for (dummy = GET_MYCDIGIT(*p), p++; IS_DIGIT(*p); p++)
-		dummy = dummy * 10 + GET_MYCDIGIT(*p);
-	    if (*p == ';')
-		p++;
-	    *str = p;
-	    return dummy;
-	}
+        p++;
+    if (*p == '#')
+    {
+        p++;
+        if (*p == 'x' || *p == 'X')
+        {
+            p++;
+            if (!IS_XDIGIT(*p))
+            {
+                *str = p;
+                return -1;
+            }
+            for (dummy = GET_MYCDIGIT(*p), p++; IS_XDIGIT(*p); p++)
+                dummy = dummy * 0x10 + GET_MYCDIGIT(*p);
+            if (*p == ';')
+                p++;
+            *str = p;
+            return dummy;
+        }
+        else
+        {
+            if (!IS_DIGIT(*p))
+            {
+                *str = p;
+                return -1;
+            }
+            for (dummy = GET_MYCDIGIT(*p), p++; IS_DIGIT(*p); p++)
+                dummy = dummy * 10 + GET_MYCDIGIT(*p);
+            if (*p == ';')
+                p++;
+            *str = p;
+            return dummy;
+        }
     }
-    if (!IS_ALPHA(*p)) {
-	*str = p;
-	return -1;
+    if (!IS_ALPHA(*p))
+    {
+        *str = p;
+        return -1;
     }
     q = p;
-    for (p++; IS_ALNUM(*p); p++) ;
+    for (p++; IS_ALNUM(*p); p++)
+        ;
     q = allocStr(q, p - q);
-    if (strcasestr("lt gt amp quot nbsp", q) && *p != '=') {
-	/* a character entity MUST be terminated with ";". However,
+    if (strcasestr("lt gt amp quot nbsp", q) && *p != '=')
+    {
+        /* a character entity MUST be terminated with ";". However,
 	 * there's MANY web pages which uses &lt , &gt or something
 	 * like them as &lt;, &gt;, etc. Therefore, we treat the most
 	 * popular character entities (including &#xxxx;) without
@@ -461,13 +739,14 @@ getescapechar(char **str)
 	 * is "=", it must be a part of query in an URL. So &lt=, &gt=, etc.
 	 * are not regarded as character entities.
 	 */
-	strict_entity = FALSE;
+        strict_entity = FALSE;
     }
     if (*p == ';')
-	p++;
-    else if (strict_entity) {
-	*str = p;
-	return -1;
+        p++;
+    else if (strict_entity)
+    {
+        *str = p;
+        return -1;
     }
     *str = p;
     return GetEntity(q, -1);
@@ -481,37 +760,32 @@ getescapecmd(char **s)
     int ch = getescapechar(s);
 
     if (ch >= 0)
-	return (char*)conv_entity(ch);
+        return (char *)conv_entity(ch);
 
     if (*save != '&')
-	tmp = Strnew_charp("&");
+        tmp = Strnew_charp("&");
     else
-	tmp = Strnew();
+        tmp = Strnew();
     tmp->Push(save, *s - save);
     return tmp->ptr;
 }
 
-char *
-html_quote(char *str)
+char *html_quote(const char *str)
 {
-    Str tmp = NULL;
-    char *p, *q;
-
-    for (p = str; *p; p++) {
-	q = html_quote_char(*p);
-	if (q) {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(str, (int)(p - str));
-	    tmp->Push(q);
-	}
-	else {
-	    if (tmp)
-		tmp->Push(*p);
-	}
+    auto tmp = new GCStr();
+    for (auto p = str; *p; p++)
+    {
+        auto q = html_quote_char(*p);
+        if (q)
+        {
+            tmp->Push(q);
+        }
+        else
+        {
+            tmp->Push(*p);
+        }
     }
-    if (tmp)
-	return tmp->ptr;
-    return str;
+    return tmp->ptr;
 }
 
 char *
@@ -520,22 +794,25 @@ html_unquote(char *str)
     Str tmp = NULL;
     char *p, *q;
 
-    for (p = str; *p;) {
-	if (*p == '&') {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(str, (int)(p - str));
-	    q = getescapecmd(&p);
-	    tmp->Push(q);
-	}
-	else {
-	    if (tmp)
-		tmp->Push(*p);
-	    p++;
-	}
+    for (p = str; *p;)
+    {
+        if (*p == '&')
+        {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(str, (int)(p - str));
+            q = getescapecmd(&p);
+            tmp->Push(q);
+        }
+        else
+        {
+            if (tmp)
+                tmp->Push(*p);
+            p++;
+        }
     }
 
     if (tmp)
-	return tmp->ptr;
+        return tmp->ptr;
     return str;
 }
 
@@ -547,21 +824,24 @@ url_quote(char *str)
     Str tmp = NULL;
     char *p;
 
-    for (p = str; *p; p++) {
-	if (is_url_quote(*p)) {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(str, (int)(p - str));
-	    tmp->Push('%');
-	    tmp->Push(xdigit[((unsigned char)*p >> 4) & 0xF]);
-	    tmp->Push(xdigit[(unsigned char)*p & 0xF]);
-	}
-	else {
-	    if (tmp)
-		tmp->Push(*p);
-	}
+    for (p = str; *p; p++)
+    {
+        if (is_url_quote(*p))
+        {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(str, (int)(p - str));
+            tmp->Push('%');
+            tmp->Push(xdigit[((unsigned char)*p >> 4) & 0xF]);
+            tmp->Push(xdigit[(unsigned char)*p & 0xF]);
+        }
+        else
+        {
+            if (tmp)
+                tmp->Push(*p);
+        }
     }
     if (tmp)
-	return tmp->ptr;
+        return tmp->ptr;
     return str;
 }
 
@@ -572,20 +852,23 @@ file_quote(char *str)
     char *p;
     char buf[4];
 
-    for (p = str; *p; p++) {
-	if (is_file_quote(*p)) {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(str, (int)(p - str));
-	    sprintf(buf, "%%%02X", (unsigned char)*p);
-	    tmp->Push(buf);
-	}
-	else {
-	    if (tmp)
-		tmp->Push(*p);
-	}
+    for (p = str; *p; p++)
+    {
+        if (is_file_quote(*p))
+        {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(str, (int)(p - str));
+            sprintf(buf, "%%%02X", (unsigned char)*p);
+            tmp->Push(buf);
+        }
+        else
+        {
+            if (tmp)
+                tmp->Push(*p);
+        }
     }
     if (tmp)
-	return tmp->ptr;
+        return tmp->ptr;
     return str;
 }
 
@@ -596,25 +879,28 @@ file_unquote(char *str)
     char *p, *q;
     int c;
 
-    for (p = str; *p;) {
-	if (*p == '%') {
-	    q = p;
-	    c = url_unquote_char(&q);
-	    if (c >= 0) {
-		if (tmp == NULL)
-		    tmp = Strnew_charp_n(str, (int)(p - str));
-		if (c != '\0' && c != '\n' && c != '\r')
-		    tmp->Push((char)c);
-		p = q;
-		continue;
-	    }
-	}
-	if (tmp)
-	    tmp->Push(*p);
-	p++;
+    for (p = str; *p;)
+    {
+        if (*p == '%')
+        {
+            q = p;
+            c = url_unquote_char(&q);
+            if (c >= 0)
+            {
+                if (tmp == NULL)
+                    tmp = Strnew_charp_n(str, (int)(p - str));
+                if (c != '\0' && c != '\n' && c != '\r')
+                    tmp->Push((char)c);
+                p = q;
+                continue;
+            }
+        }
+        if (tmp)
+            tmp->Push(*p);
+        p++;
     }
     if (tmp)
-	return tmp->ptr;
+        return tmp->ptr;
     return str;
 }
 
@@ -624,20 +910,23 @@ shell_quote(char *str)
     Str tmp = NULL;
     char *p;
 
-    for (p = str; *p; p++) {
-	if (is_shell_unsafe(*p)) {
-	    if (tmp == NULL)
-		tmp = Strnew_charp_n(str, (int)(p - str));
-	    tmp->Push('\\');
-	    tmp->Push(*p);
-	}
-	else {
-	    if (tmp)
-		tmp->Push(*p);
-	}
+    for (p = str; *p; p++)
+    {
+        if (is_shell_unsafe(*p))
+        {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(str, (int)(p - str));
+            tmp->Push('\\');
+            tmp->Push(*p);
+        }
+        else
+        {
+            if (tmp)
+                tmp->Push(*p);
+        }
     }
     if (tmp)
-	return tmp->ptr;
+        return tmp->ptr;
     return str;
 }
 
