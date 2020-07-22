@@ -30,7 +30,7 @@ struct URLFile
     char is_cgi;
     char encoding;
     InputStream *stream;
-    char *ext;
+    const char *ext;
     int compression;
     int content_encoding;
     const char *guess_type;
@@ -129,7 +129,7 @@ struct ImageCache
 struct Image
 {
     char *url;
-    char *ext;
+    const char *ext;
     short width;
     short height;
     short xoffset;

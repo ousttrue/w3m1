@@ -118,9 +118,9 @@ void addMChar(char *c, Lineprop mode, size_t len);
 #endif
 void record_err_message(char *s);
 Buffer *message_list_panel(void);
-void message(char *s, int return_x, int return_y);
+
 void disp_err_message(char *s, int redraw_current);
-void disp_message_nsec(char *s, int redraw_current, int sec, int purge,
+void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
                        int mouse);
 void disp_message(char *s, int redraw_current);
 #ifdef USE_MOUSE
@@ -327,7 +327,7 @@ Str myEditor(char *cmd, char *file, int line);
 char *file_to_url(char *file);
 char *url_unquote_conv(char *url, wc_ces charset);
 char *expandName(char *name);
-Str tmpfname(int type, char *ext);
+Str tmpfname(int type, const char *ext);
 time_t mymktime(char *timestr);
 
 char *FQDN(char *host);

@@ -897,7 +897,7 @@ move(int line, int column)
 
 static int
 #ifdef USE_M17N
-need_redraw(char *c1, l_prop pr1, char *c2, l_prop pr2)
+need_redraw(char *c1, l_prop pr1, const char *c2, l_prop pr2)
 {
     if (!c1 || !c2 || strcmp(c1, c2))
 	return 1;
@@ -933,7 +933,7 @@ addch(char c)
 }
 
 void
-addmch(char *pc, size_t len)
+addmch(const char *pc, size_t len)
 #else
 void
 addch(char pc)
@@ -1689,7 +1689,7 @@ addstr(char *s)
 }
 
 void
-addnstr(char *s, int n)
+addnstr(const char *s, int n)
 {
     int i;
 #ifdef USE_M17N

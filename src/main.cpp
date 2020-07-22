@@ -970,7 +970,7 @@ int main(int argc, char **argv, char **envp)
             if (fmInitialized)
                 fmTerm();
             if (err_msg->Size())
-                fprintf(stderr, "%s", err_msg->ptr);
+                fprintf(stderr, "%s", err_msg->c_str());
             w3m_exit(2);
         }
         i = -1;
@@ -1016,7 +1016,7 @@ int main(int argc, char **argv, char **envp)
                     request =
                         newFormList(NULL, "post", NULL, NULL, NULL, NULL,
                                     NULL);
-                    request->body = body->ptr;
+                    request->body = const_cast<char*>(body->c_str());
                     request->boundary = NULL;
                     request->length = body->Size();
                 }
@@ -1045,7 +1045,7 @@ int main(int argc, char **argv, char **envp)
             case SCM_LOCAL_CGI:
                 unshiftHist(LoadHist, conv_from_system(load_argv[i]));
             default:
-                pushHashHist(URLHist, parsedURL2Str(&newbuf->currentURL)->ptr);
+                pushHashHist(URLHist, parsedURL2Str(&newbuf->currentURL)->c_str());
                 break;
             }
         }
@@ -1090,7 +1090,7 @@ int main(int argc, char **argv, char **envp)
     if (w3m_dump)
     {
         if (err_msg->Size())
-            fprintf(stderr, "%s", err_msg->ptr);
+            fprintf(stderr, "%s", err_msg->c_str());
 #ifdef USE_COOKIE
         save_cookies();
 #endif /* USE_COOKIE */
@@ -1129,7 +1129,7 @@ int main(int argc, char **argv, char **envp)
         if (fmInitialized)
             fmTerm();
         if (err_msg->Size())
-            fprintf(stderr, "%s", err_msg->ptr);
+            fprintf(stderr, "%s", err_msg->c_str());
         if (newbuf == NO_BUFFER)
         {
 #ifdef USE_COOKIE
@@ -1141,7 +1141,7 @@ int main(int argc, char **argv, char **envp)
         w3m_exit(2);
     }
     if (err_msg->Size())
-        disp_message_nsec(err_msg->ptr, FALSE, 1, TRUE, FALSE);
+        disp_message_nsec(err_msg->c_str(), FALSE, 1, TRUE, FALSE);
 
     SearchHeader = FALSE;
     DefaultType = NULL;

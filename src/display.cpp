@@ -1328,7 +1328,7 @@ message_list_panel(void)
     return loadHTMLString(tmp);
 }
 
-void message(char *s, int return_x, int return_y)
+void message(const char *s, int return_x, int return_y)
 {
     if (!fmInitialized)
         return;
@@ -1344,7 +1344,7 @@ void disp_err_message(char *s, int redraw_current)
     disp_message(s, redraw_current);
 }
 
-void disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mouse)
+void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, int mouse)
 {
     if (QuietMessage)
         return;

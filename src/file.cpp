@@ -341,7 +341,7 @@ compress_application_type(int compression)
 }
 
 static const char *
-uncompressed_file_type(char *path, char **ext)
+uncompressed_file_type(const char *path, const char **ext)
 {
     int len, slen;
     Str fn;
@@ -415,7 +415,7 @@ examineFile(char *path, URLFile *uf)
         }
         check_compression(path, uf);
         if (uf->compression != CMP_NOCOMPRESS) {
-            char *ext = uf->ext;
+            const char *ext = uf->ext;
             auto t0 = uncompressed_file_type(path, &ext);
             uf->guess_type = t0;
             uf->ext = ext;
@@ -5711,7 +5711,8 @@ doExternal(URLFile uf, char *path, const char *type, Buffer **bufp,
     struct mailcap *mcap;
     int mc_stat;
     Buffer *buf = NULL;
-    char *header, *src = NULL, *ext = uf.ext;
+    char *header, *src = NULL;
+    auto ext = uf.ext;
 
     if (!(mcap = searchExtViewer(type)))
         return 0;

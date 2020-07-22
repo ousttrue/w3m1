@@ -12,7 +12,7 @@
 #include "local.h"
 #include "tagtable.h"
 #include "terms.h"
-
+#include "display.h"
 
 // #include <sys/socket.h>
 #include <netdb.h>
@@ -1356,7 +1356,7 @@ static char *tmpf_base[MAX_TMPF_TYPE] = {
 static unsigned int tmpf_seq[MAX_TMPF_TYPE];
 
 Str
-tmpfname(int type, char *ext)
+tmpfname(int type, const char *ext)
 {
     Str tmpf;
     tmpf = Sprintf("%s/w3m%s%d-%d%s",

@@ -3,7 +3,7 @@
 #include "parsetagx.h"
 #include "textlist.h"
 
-char *filename_extension(char *patch, int is_url);
+const char *filename_extension(const char *patch, int is_url);
 void initURIMethods();
 Str searchURIMethods(ParsedURL *pu);
 void chkExternalURIBuffer(Buffer *buf);

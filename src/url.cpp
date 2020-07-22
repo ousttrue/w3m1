@@ -8,6 +8,8 @@
 #include "cookie.h"
 #include "terms.h"
 #include "form.h"
+#include "display.h"
+
 #ifndef __MINGW32_VERSION
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -1910,32 +1912,37 @@ check_no_proxy(char *domain)
     return ret;
 }
 
-char *
-filename_extension(char *path, int is_url)
+const char *
+filename_extension(const char *path, int is_url)
 {
-    char *last_dot = "", *p = path;
-    int i;
-
+    const char *last_dot = "";
     if (path == NULL)
-	return last_dot;
+        return last_dot;
+
+    auto p = path;
     if (*p == '.')
-	p++;
-    for (; *p; p++) {
-	if (*p == '.') {
-	    last_dot = p;
-	}
-	else if (is_url && *p == '?')
-	    break;
+        p++;
+    for (; *p; p++)
+    {
+        if (*p == '.')
+        {
+            last_dot = p;
+        }
+        else if (is_url && *p == '?')
+            break;
     }
-    if (*last_dot == '.') {
-	for (i = 1; last_dot[i] && i < 8; i++) {
-	    if (is_url && !IS_ALNUM(last_dot[i]))
-		break;
-	}
-	return allocStr(last_dot, i);
+    if (*last_dot == '.')
+    {
+        int i = 1;        
+        for (; last_dot[i] && i < 8; i++)
+        {
+            if (is_url && !IS_ALNUM(last_dot[i]))
+                break;
+        }
+        return allocStr(last_dot, i);
     }
     else
-	return last_dot;
+        return last_dot;
 }
 
 #ifdef USE_EXTERNAL_URI_LOADER

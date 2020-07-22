@@ -7,6 +7,7 @@
 #include "terms.h"
 #include "html.h"
 #include "mimehead.h"
+#include "display.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
