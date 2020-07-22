@@ -365,14 +365,14 @@ wtf_push(Str os, wc_ccs ccs, uint32_t code)
     os->Push((char *)s, n);
 }
 
-void
-wtf_push_unknown(Str os, uint8_t *p, size_t len)
+void wtf_push_unknown(Str os, const uint8_t *p, size_t len)
 {
-    for (; len--; p++) {
-	if (*p & 0x80)
-	    wtf_push(os, WC_CCS_UNKNOWN, *p);
-	else
-	    os->Push((char)*p);
+    for (; len--; p++)
+    {
+        if (*p & 0x80)
+            wtf_push(os, WC_CCS_UNKNOWN, *p);
+        else
+            os->Push((char)*p);
     }
 }
 

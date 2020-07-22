@@ -16,6 +16,7 @@
 #pragma once
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include <gc_cpp.h>
 
 //
@@ -29,6 +30,10 @@ class GCStr : public gc_cleanup
 
 public:
     char *ptr;
+
+    const char *const c_str() const { return ptr; }
+    const uint8_t *const data() const { return reinterpret_cast<const uint8_t *const>(ptr); }
+
     GCStr(int size = 32);
     GCStr(const char *src, int size);
     GCStr(const char *src) : GCStr(src, strlen(src))
