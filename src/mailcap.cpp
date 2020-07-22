@@ -9,6 +9,8 @@
 #include "local.h"
 #include "file.h"
 #include "html.h"
+#include "url.h"
+#include "mimetypes.h"
 
 
 static struct mailcap DefaultMailcap[] = {
@@ -21,7 +23,7 @@ static TextList *mailcap_list;
 static struct mailcap **UserMailcap;
 
 int
-mailcapMatch(struct mailcap *mcap, char *type)
+mailcapMatch(struct mailcap *mcap, const char *type)
 {
     char *cap = mcap->type, *p;
     int level;
@@ -52,7 +54,7 @@ mailcapMatch(struct mailcap *mcap, char *type)
 }
 
 struct mailcap *
-searchMailcap(struct mailcap *table, char *type)
+searchMailcap(struct mailcap *table, const char *type)
 {
     int level = 0;
     struct mailcap *mcap = NULL;
@@ -288,7 +290,7 @@ acceptableMimeTypes()
 }
 
 struct mailcap *
-searchExtViewer(char *type)
+searchExtViewer(const char *type)
 {
     struct mailcap *p;
     int i;
@@ -314,7 +316,7 @@ searchExtViewer(char *type)
 #define MCF_DQUOTED (1 << 1)
 
 Str
-quote_mailcap(char *s, int flag)
+quote_mailcap(const char *s, int flag)
 {
     Str d;
 
@@ -354,11 +356,11 @@ quote_mailcap(char *s, int flag)
 
 
 static Str
-unquote_mailcap_loop(char *qstr, char *type, char *name, char *attr,
+unquote_mailcap_loop(const char *qstr, const char *type, char *name, char *attr,
 		     int *mc_stat, int flag0)
 {
     Str str, tmp, test, then;
-    char *p;
+    const char *p;
     int status = MC_NORMAL, prev_status = MC_NORMAL, sp = 0, flag;
 
     if (mc_stat)
@@ -470,7 +472,7 @@ unquote_mailcap_loop(char *qstr, char *type, char *name, char *attr,
 }
 
 Str
-unquote_mailcap(char *qstr, char *type, char *name, char *attr, int *mc_stat)
+unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, int *mc_stat)
 {
     return unquote_mailcap_loop(qstr, type, name, attr, mc_stat, 0);
 }

@@ -20,6 +20,7 @@
 #include "cookie.h"
 #include "terms.h"
 #include "mouse.h"
+#include "mimetypes.h"
 #include <signal.h>
 
 void nulcmd()

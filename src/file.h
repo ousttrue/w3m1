@@ -64,7 +64,7 @@ char *guess_save_name(Buffer *buf, char *file);
 void examineFile(char *path, URLFile *uf);
 char *acceptableEncoding();
 int dir_exist(char *path);
-int is_html_type(char *type);
+int is_html_type(const char *type);
 Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_charset);
 Buffer *loadFile(char *path);
 int is_boundary(unsigned char *, unsigned char *);
@@ -92,7 +92,7 @@ Buffer *openPagerBuffer(InputStream *stream, Buffer *buf);
 Buffer *openGeneralPagerBuffer(InputStream *stream);
 Line *getNextPage(Buffer *buf, int plen);
 int save2tmp(URLFile uf, char *tmpf);
-int doExternal(URLFile uf, char *path, char *type, Buffer **bufp,
+int doExternal(URLFile uf, char *path, const char *type, Buffer **bufp,
                Buffer *defaultbuf);
 int _doFileCopy(char *tmpf, char *defstr, int download);
 #define doFileCopy(tmpf, defstr) _doFileCopy(tmpf, defstr, FALSE);
@@ -230,7 +230,6 @@ union frameset_element *search_frame(struct frameset *fset, char *name);
 MySignalHandler reset_exit(SIGNAL_ARG);
 MySignalHandler error_dump(SIGNAL_ARG);
 
-void initMimeTypes();
 void free_ssl_ctx();
 ParsedURL *baseURL(Buffer *buf);
 int openSocket(char *hostname, char *remoteport_name,
@@ -247,15 +246,13 @@ URLFile openURL(char *url, ParsedURL *pu, ParsedURL *current,
                 URLOption *option, FormList *request,
                 TextList *extra_header, URLFile *ouf,
                 HRequest *hr, unsigned char *status);
-int mailcapMatch(struct mailcap *mcap, char *type);
+int mailcapMatch(struct mailcap *mcap, const char *type);
 struct mailcap *searchMailcap(struct mailcap *table, char *type);
 void initMailcap();
 char *acceptableMimeTypes();
-struct mailcap *searchExtViewer(char *type);
-Str unquote_mailcap(char *qstr, char *type, char *name, char *attr,
+struct mailcap *searchExtViewer(const char *type);
+Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr,
                     int *mc_stat);
-char *guessContentType(char *filename);
-TextList *make_domain_list(char *domain_list);
 int check_no_proxy(char *domain);
 InputStream *openFTPStream(ParsedURL *pu, URLFile *uf);
 Str loadFTPDir(ParsedURL *pu, wc_ces *charset);

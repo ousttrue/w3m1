@@ -19,6 +19,7 @@
 #include "commands.h"
 #include "url.h"
 #include "file.h"
+#include "mimetypes.h"
 #include <stdlib.h>
 
 

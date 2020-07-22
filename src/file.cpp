@@ -25,6 +25,7 @@
 #include "image.h"
 #include "ctrlcode.h"
 #include "mimehead.h"
+#include "mimetypes.h"
 
 #include <sys/types.h>
 #include <signal.h>
@@ -273,7 +274,7 @@ dir_exist(char *path)
 }
 
 static int
-is_dump_text_type(char *type)
+is_dump_text_type(const char *type)
 {
     struct mailcap *mcap;
     return (type && (mcap = searchExtViewer(type)) &&
@@ -281,7 +282,7 @@ is_dump_text_type(char *type)
 }
 
 static int
-is_text_type(char *type)
+is_text_type(const char *type)
 {
     return (type == NULL || type[0] == '\0' ||
             strncasecmp(type, "text/", 5) == 0 ||
@@ -291,14 +292,13 @@ is_text_type(char *type)
 }
 
 static int
-is_plain_text_type(char *type)
+is_plain_text_type(const char *type)
 {
     return ((type && strcasecmp(type, "text/plain") == 0) ||
             (is_text_type(type) && !is_dump_text_type(type)));
 }
 
-int
-is_html_type(char *type)
+int is_html_type(const char *type)
 {
     return (type && (strcasecmp(type, "text/html") == 0 ||
                      strcasecmp(type, "application/xhtml+xml") == 0));
@@ -340,12 +340,11 @@ compress_application_type(int compression)
     return NULL;
 }
 
-static char *
+static const char *
 uncompressed_file_type(char *path, char **ext)
 {
     int len, slen;
     Str fn;
-    char *t0;
     struct compression_decoder *d;
 
     if (path == NULL)
@@ -367,7 +366,7 @@ uncompressed_file_type(char *path, char **ext)
     fn->Pop(slen);
     if (ext)
         *ext = filename_extension(fn->ptr, 0);
-    t0 = guessContentType(fn->ptr);
+    auto t0 = guessContentType(fn->ptr);
     if (t0 == NULL)
         t0 = "text/plain";
     return t0;
@@ -417,7 +416,7 @@ examineFile(char *path, URLFile *uf)
         check_compression(path, uf);
         if (uf->compression != CMP_NOCOMPRESS) {
             char *ext = uf->ext;
-            char *t0 = uncompressed_file_type(path, &ext);
+            auto t0 = uncompressed_file_type(path, &ext);
             uf->guess_type = t0;
             uf->ext = ext;
             uncompress_stream(uf, NULL);
@@ -1729,7 +1728,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
     Buffer *b = NULL;
         auto proc = loadBuffer;
     char *volatile tpath;
-    char *volatile t = "text/plain", *p, *volatile real_type = NULL;
+    char *p;
     Buffer *volatile t_buf = NULL;
     int volatile searchHeader = SearchHeader;
     int volatile searchHeader_through = TRUE;
@@ -1763,6 +1762,8 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
 #ifdef USE_M17N
     content_charset = 0;
 #endif
+    auto t = "text/plain";
+    const char* real_type = nullptr;
     if (f.stream == NULL) {
         switch (f.scheme) {
         case SCM_LOCAL:
@@ -1999,15 +2000,8 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
     else if (pu.scheme == SCM_FTP) {
         check_compression(path, &f);
         if (f.compression != CMP_NOCOMPRESS) {
-            char *t1 = uncompressed_file_type(pu.file, NULL);
+            auto t1 = uncompressed_file_type(pu.file, NULL);
             real_type = f.guess_type;
-#if 0
-            if (t1 && strncasecmp(t1, "application/", 12) == 0) {
-                f.compression = CMP_NOCOMPRESS;
-                t = real_type;
-            }
-            else
-#endif
             if (t1)
                 t = t1;
             else
@@ -5457,7 +5451,7 @@ Buffer *
 openGeneralPagerBuffer(InputStream *stream)
 {
     Buffer *buf;
-    char *t = "text/plain";
+    const char *t = "text/plain";
     Buffer *t_buf = NULL;
     URLFile uf;
 
@@ -5710,7 +5704,7 @@ save2tmp(URLFile uf, char *tmpf)
 }
 
 int
-doExternal(URLFile uf, char *path, char *type, Buffer **bufp,
+doExternal(URLFile uf, char *path, const char *type, Buffer **bufp,
            Buffer *defaultbuf)
 {
     Str tmpf, command;

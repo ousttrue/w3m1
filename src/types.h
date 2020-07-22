@@ -33,7 +33,7 @@ struct URLFile
     char *ext;
     int compression;
     int content_encoding;
-    char *guess_type;
+    const char *guess_type;
     char *ssl_certificate;
     char *url;
     time_t modtime;
@@ -251,7 +251,7 @@ struct Buffer
     short width;
     short height;
     char *type;
-    char *real_type;
+    const char *real_type;
     int allLine;
     short bufferprop;
     int currentColumn;
