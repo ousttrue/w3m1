@@ -42,7 +42,7 @@ typedef struct {
     wc_uint16 code3;
 } wc_map3;
 
-typedef wc_wchar_t (*WcConvFunc)();
+typedef wc_wchar_t (*WcConvFunc)(wc_ccs, wc_uint16);
 
 typedef struct {
     wc_ccs       ccs;

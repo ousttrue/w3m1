@@ -1,6 +1,4 @@
-
-#ifdef USE_UNICODE
-
+extern "C"{
 #include <stdlib.h>
 #include "wc.h"
 #include "ucs.h"
@@ -28,6 +26,7 @@
 #include "map/ucs_islower.map"
 #include "map/ucs_isupper.map"
 #include "map/ucs_case.map"
+}
 
 #define MAX_TAG_MAP 0x100
 static int n_tag_map = 0;
@@ -719,5 +718,3 @@ wtf_push_ucs(Str os, wc_uint32 ucs, wc_status *st)
 	wtf_push(os, ccs, ucs);
     }
 }
-
-#endif

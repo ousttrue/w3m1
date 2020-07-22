@@ -32,7 +32,7 @@ add_executable(w3mbookmark
     libwc/search.cpp
     libwc/sjis.cpp
     libwc/status.cpp
-    libwc/ucs.c
+    libwc/ucs.cpp
     libwc/uhc.cpp
     libwc/utf7.cpp
     libwc/utf8.cpp
@@ -127,7 +127,7 @@ add_executable(w3m
     libwc/search.cpp
     libwc/sjis.cpp
     libwc/status.cpp
-    libwc/ucs.c
+    libwc/ucs.cpp
     libwc/uhc.cpp
     libwc/utf7.cpp
     libwc/utf8.cpp
