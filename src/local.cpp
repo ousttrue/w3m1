@@ -86,7 +86,7 @@ loadLocalDir(char *dname)
 	return NULL;
     dirname = Strnew_charp(dname);
     if (Strlastchar(dirname) != '/')
-	Strcat_char(dirname, '/');
+	dirname->Concat( '/');
     qdir = html_quote(Str_conv_from_system(dirname)->ptr);
     /* FIXME: gettextize? */
     tmp = Strnew_m_charp("<HTML>\n<HEAD>\n<BASE HREF=\"file://",
@@ -116,7 +116,7 @@ loadLocalDir(char *dname)
 	    l = 1;
 	nrow = (n + l - 1) / l;
 	n = 1;
-	Strcat_charp(tmp, "<TABLE CELLPADDING=0>\n<TR VALIGN=TOP>\n");
+	tmp->Concat("<TABLE CELLPADDING=0>\n<TR VALIGN=TOP>\n");
     }
     qsort((void *)flist, nfile, sizeof(char *), strCmp);
     for (i = 0; i < nfile; i++) {
@@ -125,8 +125,8 @@ loadLocalDir(char *dname)
 	    continue;
 	fbuf->CopyFrom(dirname);
 	if (Strlastchar(fbuf) != '/')
-	    Strcat_char(fbuf, '/');
-	Strcat_charp(fbuf, p);
+	    fbuf->Concat( '/');
+	fbuf->Concat( p);
 #ifdef HAVE_LSTAT
 	if (lstat(fbuf->ptr, &lst) < 0)
 	    continue;
@@ -135,33 +135,33 @@ loadLocalDir(char *dname)
 	    continue;
 	if (multicolList) {
 	    if (n == 1)
-		Strcat_charp(tmp, "<TD><NOBR>");
+		tmp->Concat("<TD><NOBR>");
 	}
 	else {
 #ifdef HAVE_LSTAT
 	    if (S_ISLNK(lst.st_mode))
-		Strcat_charp(tmp, "[LINK] ");
+		tmp->Concat("[LINK] ");
 	    else
 #endif				/* HAVE_LSTAT */
 	    if (S_ISDIR(st.st_mode))
-		Strcat_charp(tmp, "[DIR]&nbsp; ");
+		tmp->Concat("[DIR]&nbsp; ");
 	    else
-		Strcat_charp(tmp, "[FILE] ");
+		tmp->Concat("[FILE] ");
 	}
 	Strcat_m_charp(tmp, "<A HREF=\"", html_quote(file_quote(p)), NULL);
 	if (S_ISDIR(st.st_mode))
-	    Strcat_char(tmp, '/');
+	    tmp->Concat('/');
 	Strcat_m_charp(tmp, "\">", html_quote(conv_from_system(p)), NULL);
 	if (S_ISDIR(st.st_mode))
-	    Strcat_char(tmp, '/');
-	Strcat_charp(tmp, "</A>");
+	    tmp->Concat('/');
+	tmp->Concat("</A>");
 	if (multicolList) {
 	    if (n++ == nrow) {
-		Strcat_charp(tmp, "</NOBR></TD>\n");
+		tmp->Concat("</NOBR></TD>\n");
 		n = 1;
 	    }
 	    else {
-		Strcat_charp(tmp, "<BR>\n");
+		tmp->Concat("<BR>\n");
 	    }
 	}
 	else {
@@ -172,17 +172,17 @@ loadLocalDir(char *dname)
 		    Strcat_m_charp(tmp, " -> ",
 				   html_quote(conv_from_system(lbuf)), NULL);
 		    if (S_ISDIR(st.st_mode))
-			Strcat_char(tmp, '/');
+			tmp->Concat('/');
 		}
 	    }
 #endif				/* HAVE_LSTAT && HAVE_READLINK */
-	    Strcat_charp(tmp, "<br>\n");
+	    tmp->Concat("<br>\n");
 	}
     }
     if (multicolList) {
-	Strcat_charp(tmp, "</TR>\n</TABLE>\n");
+	tmp->Concat("</TR>\n</TABLE>\n");
     }
-    Strcat_charp(tmp, "</BODY>\n</HTML>\n");
+    tmp->Concat("</BODY>\n</HTML>\n");
 
     return tmp;
 }
@@ -283,8 +283,8 @@ checkPath(char *fn, char *path)
 	p = strchr(path, ':');
 	tmp = Strnew_charp(expandPath(p ? allocStr(path, p - path) : path));
 	if (Strlastchar(tmp) != '/')
-	    Strcat_char(tmp, '/');
-	Strcat_charp(tmp, fn);
+	    tmp->Concat('/');
+	tmp->Concat(fn);
 	if (stat(tmp->ptr, &st) == 0)
 	    return tmp;
 	if (!p)
@@ -327,7 +327,7 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
     tmp = Strnew_charp(w3m_lib_dir());
 #endif
     if (Strlastchar(tmp) != '/')
-	Strcat_char(tmp, '/');
+	tmp->Concat('/');
     if (strncmp(uri, "/$LIB/", 6) == 0)
 	offset = 6;
     else if (strncmp(uri, tmp->ptr, tmp->length) == 0)
@@ -335,8 +335,8 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
     else if (*uri == '/' && document_root != NULL) {
 	Str tmp2 = Strnew_charp(document_root);
 	if (Strlastchar(tmp2) != '/')
-	    Strcat_char(tmp2, '/');
-	Strcat_charp(tmp2, uri + 1);
+	    tmp2->Concat( '/');
+	tmp2->Concat( uri + 1);
 	if (strncmp(tmp2->ptr, tmp->ptr, tmp->length) != 0)
 	    return CGIFN_NORMAL;
 	uri = tmp2->ptr;
@@ -347,7 +347,7 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
 	return CGIFN_NORMAL;
     if ((*path_info = strchr(uri + offset, '/')))
 	*name = allocStr(uri, *path_info - uri);
-    Strcat_charp(tmp, *name + offset);
+    tmp->Concat(*name + offset);
     *fn = tmp->ptr;
     return CGIFN_LIBDIR;
 }

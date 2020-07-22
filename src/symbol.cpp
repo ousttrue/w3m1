@@ -186,8 +186,8 @@ push_symbol(Str str, char symbol, int width, int n)
     for (i = 0; i < 2 && *p; i++, p++)
 	buf[i] = (*p == ' ') ? NBSP_CODE : *p;
 
-    Strcat(str, Sprintf("<_SYMBOL TYPE=%d>", symbol));
+    str->Concat( Sprintf("<_SYMBOL TYPE=%d>", symbol));
     for (; n > 0; n--)
-	Strcat_charp_n(str, buf, i);
-    Strcat_charp(str, "</_SYMBOL>");
+	str->Concat(buf, i);
+    str->Concat( "</_SYMBOL>");
 }

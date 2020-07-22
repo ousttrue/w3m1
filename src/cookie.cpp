@@ -104,7 +104,7 @@ make_portlist(Str port)
 	    p++;
 	tmp->Clear();
 	while (*p && IS_DIGIT(*p))
-	    Strcat_char(tmp, *(p++));
+	    tmp->Concat(*(p++));
 	if (tmp->length == 0)
 	    break;
 	pl = New(struct portlist);
@@ -123,7 +123,7 @@ portlist2str(struct portlist *first)
 
     tmp = Sprintf("%d", first->port);
     for (pl = first->next; pl; pl = pl->next)
-	Strcat(tmp, Sprintf(", %d", pl->port));
+	tmp->Concat(Sprintf(", %d", pl->port));
     return tmp;
 }
 
@@ -169,8 +169,8 @@ static Str
 make_cookie(struct cookie *cookie)
 {
     Str tmp = Strdup(cookie->name);
-    Strcat_char(tmp, '=');
-    Strcat(tmp, cookie->value);
+    tmp->Concat('=');
+    tmp->Concat(cookie->value);
     return tmp;
 }
 
@@ -241,26 +241,25 @@ find_cookie(ParsedURL *pu)
 
     tmp = Strnew();
     if (version > 0)
-	Strcat(tmp, Sprintf("$Version=\"%d\"; ", version));
+	tmp->Concat(Sprintf("$Version=\"%d\"; ", version));
 
-    Strcat(tmp, make_cookie(fco));
+    tmp->Concat(make_cookie(fco));
     for (p1 = fco->next; p1; p1 = p1->next) {
-	Strcat_charp(tmp, "; ");
-	Strcat(tmp, make_cookie(p1));
+	tmp->Concat("; ");
+	tmp->Concat(make_cookie(p1));
 	if (version > 0) {
 	    if (p1->flag & COO_PATH)
-		Strcat(tmp, Sprintf("; $Path=\"%s\"", p1->path->ptr));
+		tmp->Concat(Sprintf("; $Path=\"%s\"", p1->path->ptr));
 	    if (p1->flag & COO_DOMAIN)
-		Strcat(tmp, Sprintf("; $Domain=\"%s\"", p1->domain->ptr));
+		tmp->Concat(Sprintf("; $Domain=\"%s\"", p1->domain->ptr));
 	    if (p1->portl)
-		Strcat(tmp,
-		       Sprintf("; $Port=\"%s\"", portlist2str(p1->portl)));
+		tmp->Concat(Sprintf("; $Port=\"%s\"", portlist2str(p1->portl)));
 	}
     }
     return tmp;
 }
 
-char *special_domain[] = {
+const char *special_domain[] = {
     ".com", ".edu", ".gov", ".mil", ".net", ".org", ".int", NULL
 };
 
@@ -342,7 +341,7 @@ add_cookie(ParsedURL *pu, Str name, Str value,
 	    else if (n == 2) {
 		char **sdomain;
 		int ok = 0;
-		for (sdomain = special_domain; !ok && *sdomain; sdomain++) {
+		for (sdomain = (char**)special_domain; !ok && *sdomain; sdomain++) {
 		    int offset = domain->length - strlen(*sdomain);
 		    if (offset >= 0 &&
 			strcasecmp(*sdomain, &domain->ptr[offset]) == 0)
@@ -485,7 +484,7 @@ readcol(char **p)
 {
     Str tmp = Strnew();
     while (**p && **p != '\n' && **p != '\r' && **p != '\t')
-	Strcat_char(tmp, *((*p)++));
+	tmp->Concat(*((*p)++));
     if (**p == '\t')
 	(*p)++;
     return tmp;
@@ -589,7 +588,7 @@ cookie_list_panel(void)
     if (!use_cookie || !First_cookie)
 	return NULL;
 
-    Strcat_charp(src, "<ol>");
+    src->Concat("<ol>");
     for (p = First_cookie, i = 0; p; p = p->next, i++) {
 	tmp = html_quote(parsedURL2Str(&p->url)->ptr);
 	if (p->expires != (time_t) - 1) {
@@ -620,73 +619,71 @@ cookie_list_panel(void)
 	}
 	else
 	    tmp2[0] = '\0';
-	Strcat_charp(src, "<li>");
-	Strcat_charp(src, "<h1><a href=\"");
-	Strcat_charp(src, tmp);
-	Strcat_charp(src, "\">");
-	Strcat_charp(src, tmp);
-	Strcat_charp(src, "</a></h1>");
+	src->Concat("<li>");
+	src->Concat("<h1><a href=\"");
+	src->Concat(tmp);
+	src->Concat("\">");
+	src->Concat(tmp);
+	src->Concat("</a></h1>");
 
-	Strcat_charp(src, "<table cellpadding=0>");
+	src->Concat("<table cellpadding=0>");
 	if (!(p->flag & COO_SECURE)) {
-	    Strcat_charp(src, "<tr><td width=\"80\"><b>Cookie:</b></td><td>");
-	    Strcat_charp(src, html_quote(make_cookie(p)->ptr));
-	    Strcat_charp(src, "</td></tr>");
+	    src->Concat("<tr><td width=\"80\"><b>Cookie:</b></td><td>");
+	    src->Concat(html_quote(make_cookie(p)->ptr));
+	    src->Concat("</td></tr>");
 	}
 	if (p->comment) {
-	    Strcat_charp(src, "<tr><td width=\"80\"><b>Comment:</b></td><td>");
-	    Strcat_charp(src, html_quote(p->comment->ptr));
-	    Strcat_charp(src, "</td></tr>");
+	    src->Concat("<tr><td width=\"80\"><b>Comment:</b></td><td>");
+	    src->Concat(html_quote(p->comment->ptr));
+	    src->Concat("</td></tr>");
 	}
 	if (p->commentURL) {
-	    Strcat_charp(src,
-			 "<tr><td width=\"80\"><b>CommentURL:</b></td><td>");
-	    Strcat_charp(src, "<a href=\"");
-	    Strcat_charp(src, html_quote(p->commentURL->ptr));
-	    Strcat_charp(src, "\">");
-	    Strcat_charp(src, html_quote(p->commentURL->ptr));
-	    Strcat_charp(src, "</a>");
-	    Strcat_charp(src, "</td></tr>");
+	    src->Concat("<tr><td width=\"80\"><b>CommentURL:</b></td><td>");
+	    src->Concat("<a href=\"");
+	    src->Concat(html_quote(p->commentURL->ptr));
+	    src->Concat("\">");
+	    src->Concat(html_quote(p->commentURL->ptr));
+	    src->Concat("</a>");
+	    src->Concat("</td></tr>");
 	}
 	if (tmp2[0]) {
-	    Strcat_charp(src, "<tr><td width=\"80\"><b>Expires:</b></td><td>");
-	    Strcat_charp(src, tmp2);
+	    src->Concat("<tr><td width=\"80\"><b>Expires:</b></td><td>");
+	    src->Concat(tmp2);
 	    if (p->flag & COO_DISCARD)
-		Strcat_charp(src, " (Discard)");
-	    Strcat_charp(src, "</td></tr>");
+		src->Concat(" (Discard)");
+	    src->Concat("</td></tr>");
 	}
-	Strcat_charp(src, "<tr><td width=\"80\"><b>Version:</b></td><td>");
-	Strcat_charp(src, Sprintf("%d", p->version)->ptr);
-	Strcat_charp(src, "</td></tr><tr><td>");
+	src->Concat("<tr><td width=\"80\"><b>Version:</b></td><td>");
+	src->Concat(Sprintf("%d", p->version)->ptr);
+	src->Concat("</td></tr><tr><td>");
 	if (p->domain) {
-	    Strcat_charp(src, "<tr><td width=\"80\"><b>Domain:</b></td><td>");
-	    Strcat_charp(src, html_quote(p->domain->ptr));
-	    Strcat_charp(src, "</td></tr>");
+	    src->Concat("<tr><td width=\"80\"><b>Domain:</b></td><td>");
+	    src->Concat(html_quote(p->domain->ptr));
+	    src->Concat("</td></tr>");
 	}
 	if (p->path) {
-	    Strcat_charp(src, "<tr><td width=\"80\"><b>Path:</b></td><td>");
-	    Strcat_charp(src, html_quote(p->path->ptr));
-	    Strcat_charp(src, "</td></tr>");
+	    src->Concat("<tr><td width=\"80\"><b>Path:</b></td><td>");
+	    src->Concat(html_quote(p->path->ptr));
+	    src->Concat("</td></tr>");
 	}
 	if (p->portl) {
-	    Strcat_charp(src, "<tr><td width=\"80\"><b>Port:</b></td><td>");
-	    Strcat_charp(src, html_quote(portlist2str(p->portl)->ptr));
-	    Strcat_charp(src, "</td></tr>");
+	    src->Concat("<tr><td width=\"80\"><b>Port:</b></td><td>");
+	    src->Concat(html_quote(portlist2str(p->portl)->ptr));
+	    src->Concat("</td></tr>");
 	}
-	Strcat_charp(src, "<tr><td width=\"80\"><b>Secure:</b></td><td>");
-	Strcat_charp(src, (p->flag & COO_SECURE) ? (char*)"Yes" : (char*)"No");
-	Strcat_charp(src, "</td></tr><tr><td>");
+	src->Concat("<tr><td width=\"80\"><b>Secure:</b></td><td>");
+	src->Concat((p->flag & COO_SECURE) ? (char*)"Yes" : (char*)"No");
+	src->Concat("</td></tr><tr><td>");
 
-	Strcat(src, Sprintf("<tr><td width=\"80\"><b>Use:</b></td><td>"
+	src->Concat(Sprintf("<tr><td width=\"80\"><b>Use:</b></td><td>"
 			    "<input type=radio name=\"%d\" value=1%s>Yes"
 			    "&nbsp;&nbsp;"
 			    "<input type=radio name=\"%d\" value=0%s>No",
 			    i, (p->flag & COO_USE) ? " checked" : "",
 			    i, (!(p->flag & COO_USE)) ? " checked" : ""));
-	Strcat_charp(src,
-		     "</td></tr><tr><td><input type=submit value=\"OK\"></table><p>");
+	src->Concat("</td></tr><tr><td><input type=submit value=\"OK\"></table><p>");
     }
-    Strcat_charp(src, "</ol></form></body></html>");
+    src->Concat("</ol></form></body></html>");
     return loadHTMLString(src);
 }
 

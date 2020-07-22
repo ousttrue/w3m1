@@ -1904,8 +1904,8 @@ void curlno()
         tmp = Sprintf("line %d/%d (%d%%) col %d/%d", cur, all,
                       (int)((double)cur * 100.0 / (double)(all ? all : 1) + 0.5), col, len);
 #ifdef USE_M17N
-    Strcat_charp(tmp, "  ");
-    Strcat_charp(tmp, wc_ces_to_charset_desc(GetCurrentbuf()->document_charset));
+    tmp->Concat("  ");
+    tmp->Concat(wc_ces_to_charset_desc(GetCurrentbuf()->document_charset));
 #endif
     disp_message(tmp->ptr, FALSE);
 }

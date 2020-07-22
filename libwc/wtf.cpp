@@ -183,7 +183,7 @@ wtf_push(Str os, wc_ccs ccs, uint32_t code)
     size_t n;
 
     if (ccs == WC_CCS_US_ASCII) {
-	Strcat_char(os, (char)(code & 0x7f));
+	os->Concat((char)(code & 0x7f));
 	return;
     }
     cc.ccs = ccs;
@@ -210,7 +210,7 @@ wtf_push(Str os, wc_ccs ccs, uint32_t code)
 	    if (! wc_ces_has_ccs(WC_CCS_SET(ccs), &wtf_major_st)) {
 		cc2 = wc_any_to_any_ces(cc, &wtf_major_st);
 		if (cc2.ccs == WC_CCS_US_ASCII) {
-		    Strcat_char(os, (char)(cc2.code & 0x7f));
+		    os->Concat((char)(cc2.code & 0x7f));
 		    return;
 		}
 		if (!WC_CCS_IS_UNKNOWN(cc2.ccs) &&
@@ -362,7 +362,7 @@ wtf_push(Str os, wc_ccs ccs, uint32_t code)
 	n = 3;
 	break;
     }
-    Strcat_charp_n(os, (char *)s, n);
+    os->Concat((char *)s, n);
 }
 
 void
@@ -372,7 +372,7 @@ wtf_push_unknown(Str os, uint8_t *p, size_t len)
 	if (*p & 0x80)
 	    wtf_push(os, WC_CCS_UNKNOWN, *p);
 	else
-	    Strcat_char(os, (char)*p);
+	    os->Concat((char)*p);
     }
 }
 

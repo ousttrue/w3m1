@@ -74,7 +74,7 @@ wc_conv_to_ces(Str is, wc_ces ces)
     if (p > sp)
 	p--;	/* for precompose */
     if (p > sp)
-	Strcat_charp_n(os, is->ptr, (int)(p - sp));
+	os->Concat(is->ptr, (int)(p - sp));
 
     wc_output_init(ces, &st);
 
@@ -98,7 +98,7 @@ wc_conv_to_ces(Str is, wc_ces ces)
     default:
 	while (p < ep) {
 	    if (*p < 0x80 && wtf_width(p + 1)) {
-		Strcat_char(os, (char)*p);
+		os->Concat((char)*p);
 		p++;
 	    } else
 		(*st.ces_info->push_to)(os, wtf_parse(&p), &st);

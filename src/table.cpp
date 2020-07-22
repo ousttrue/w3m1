@@ -422,9 +422,9 @@ suspend_or_pushdata(struct table *tbl, char *line)
 }
 
 #ifdef USE_M17N
-#define PUSH_TAG(str,n) Strcat_charp_n(tagbuf, str, n)
+#define PUSH_TAG(str,n) tagbuf->Concat(str, n)
 #else
-#define PUSH_TAG(str,n) Strcat_char(tagbuf, *str)
+#define PUSH_TAG(str,n) tagbuf->Concat( *str)
 #endif
 
 int visible_length_offset = 0;
@@ -568,7 +568,7 @@ align(TextLine *lbuf, int width, int mode)
 
     if (line->length == 0) {
 	for (i = 0; i < width; i++)
-	    Strcat_char(line, ' ');
+	    line->Concat( ' ');
 	lbuf->pos = width;
 	return;
     }
@@ -579,20 +579,20 @@ align(TextLine *lbuf, int width, int mode)
 	l1 = l / 2;
 	l2 = l - l1;
 	for (i = 0; i < l1; i++)
-	    Strcat_char(buf, ' ');
-	Strcat(buf, line);
+	    buf->Concat( ' ');
+	buf->Concat( line);
 	for (i = 0; i < l2; i++)
-	    Strcat_char(buf, ' ');
+	    buf->Concat( ' ');
 	break;
     case ALIGN_LEFT:
-	Strcat(buf, line);
+	buf->Concat( line);
 	for (i = 0; i < l; i++)
-	    Strcat_char(buf, ' ');
+	    buf->Concat( ' ');
 	break;
     case ALIGN_RIGHT:
 	for (i = 0; i < l; i++)
-	    Strcat_char(buf, ' ');
-	Strcat(buf, line);
+	    buf->Concat( ' ');
+	buf->Concat( line);
 	break;
     default:
 	return;
@@ -623,12 +623,12 @@ print_item(struct table *t, int row, int col, int width, Str buf)
 	else if ((t->tabattr[row][col] & HTT_ALIGN) == HTT_CENTER)
 	    alignment = ALIGN_CENTER;
 	align(lbuf, width, alignment);
-	Strcat(buf, lbuf->line);
+	buf->Concat( lbuf->line);
     }
     else {
 	lbuf = newTextLine(NULL, 0);
 	align(lbuf, width, ALIGN_CENTER);
-	Strcat(buf, lbuf->line);
+	buf->Concat( lbuf->line);
     }
 }
 
@@ -1884,19 +1884,19 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 	vrulec = Strnew();
 	push_symbol(vrulea, TK_VERTICALBAR(t->border_mode), symbol_width, 1);
 	for (i = 0; i < t->cellpadding; i++) {
-	    Strcat_char(vrulea, ' ');
-	    Strcat_char(vruleb, ' ');
-	    Strcat_char(vrulec, ' ');
+	    vrulea->Concat( ' ');
+	    vruleb->Concat( ' ');
+	    vrulec->Concat( ' ');
 	}
 	push_symbol(vrulec, TK_VERTICALBAR(t->border_mode), symbol_width, 1);
     case BORDER_NOWIN:
 	push_symbol(vruleb, TK_VERTICALBAR(BORDER_THIN), symbol_width, 1);
 	for (i = 0; i < t->cellpadding; i++)
-	    Strcat_char(vruleb, ' ');
+	    vruleb->Concat( ' ');
 	break;
     case BORDER_NONE:
 	for (i = 0; i < t->cellspacing; i++)
-	    Strcat_char(vruleb, ' ');
+	    vruleb->Concat( ' ');
     }
 
     for (r = 0; r <= t->maxrow; r++) {
@@ -1904,12 +1904,12 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 	    renderbuf = Strnew();
 	    if (t->border_mode == BORDER_THIN
 		|| t->border_mode == BORDER_THICK)
-		Strcat(renderbuf, vrulea);
+		renderbuf->Concat( vrulea);
 #ifdef ID_EXT
 	    if (t->tridvalue[r] != NULL && h == 0) {
 		idtag = Sprintf("<_id id=\"%s\">",
 				html_quote((t->tridvalue[r])->ptr));
-		Strcat(renderbuf, idtag);
+		renderbuf->Concat( idtag);
 	    }
 #endif				/* ID_EXT */
 	    for (i = 0; i <= t->maxcol; i++) {
@@ -1918,7 +1918,7 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 		if (t->tabidvalue[r][i] != NULL && h == 0) {
 		    idtag = Sprintf("<_id id=\"%s\">",
 				    html_quote((t->tabidvalue[r][i])->ptr));
-		    Strcat(renderbuf, idtag);
+		    renderbuf->Concat( idtag);
 		}
 #endif				/* ID_EXT */
 		if (!(t->tabattr[r][i] & HTT_X)) {
@@ -1935,12 +1935,12 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 			print_item(t, r, i, w, renderbuf);
 		}
 		if (i < t->maxcol && !(t->tabattr[r][i + 1] & HTT_X))
-		    Strcat(renderbuf, vruleb);
+		    renderbuf->Concat( vruleb);
 	    }
 	    switch (t->border_mode) {
 	    case BORDER_THIN:
 	    case BORDER_THICK:
-		Strcat(renderbuf, vrulec);
+		renderbuf->Concat( vrulec);
 		t->total_height += 1;
 		break;
 	    }
@@ -2930,7 +2930,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 		{
 			Str t = getLinkNumberStr(-1);
 			feed_table_inline_tag(tbl, NULL, mode, t->length);
-			Strcat(tmp, t);
+			tmp->Concat(t);
 		}
 		pushdata(tbl, tbl->row, tbl->col, tmp->ptr);
 	    }
@@ -3146,7 +3146,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 	    return -1;
     }
     if (mode->caption) {
-	Strcat_charp(tbl->caption, line);
+	tbl->caption->Concat(line);
 	return -1;
     }
     if (mode->pre_mode & TBLM_SCRIPT)
@@ -3171,7 +3171,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 		if (!strncasecmp(p, "&amp;", 5) ||
 		    !strncasecmp(p, "&gt;", 4) || !strncasecmp(p, "&lt;", 4)) {
 		    /* do not convert */
-		    Strcat_char(tmp, *p);
+		    tmp->Concat(*p);
 		    p++;
 		}
 		else {
@@ -3179,33 +3179,33 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 		    q = p;
 		    switch (ec = getescapechar(&p)) {
 		    case '<':
-			Strcat_charp(tmp, "&lt;");
+			tmp->Concat("&lt;");
 			break;
 		    case '>':
-			Strcat_charp(tmp, "&gt;");
+			tmp->Concat("&gt;");
 			break;
 		    case '&':
-			Strcat_charp(tmp, "&amp;");
+			tmp->Concat("&amp;");
 			break;
 		    case '\r':
-			Strcat_char(tmp, '\n');
+			tmp->Concat('\n');
 			break;
 		    default:
 			r = (char*)conv_entity(ec);
 			if (r != NULL && strlen(r) == 1 &&
 			    ec == (unsigned char)*r) {
-			    Strcat_char(tmp, *r);
+			    tmp->Concat(*r);
 			    break;
 			}
 		    case -1:
-			Strcat_char(tmp, *q);
+			tmp->Concat(*q);
 			p = q + 1;
 			break;
 		    }
 		}
 	    }
 	    else {
-		Strcat_char(tmp, *p);
+		tmp->Concat(*p);
 		p++;
 	    }
 	}

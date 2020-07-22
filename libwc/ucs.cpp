@@ -697,7 +697,7 @@ wtf_push_ucs(Str os, uint32_t ucs, wc_status *st)
 	    st->tag = NULL;
 	    st->ntag = 0;
 	}  else if (st->tag && ucs >= WC_C_TAG_SPACE)
-	    Strcat_char(st->tag, (char)(ucs & 0x7f));
+	    st->tag->Concat((char)(ucs & 0x7f));
 	return;
     }
     if (st->tag) {
@@ -708,7 +708,7 @@ wtf_push_ucs(Str os, uint32_t ucs, wc_status *st)
 	if (st->ntag)
 	    wtf_push(os, WC_CCS_UCS_TAG,  wc_ucs_to_ucs_tag(ucs, st->ntag));
 	else
-	    Strcat_char(os, (char)ucs);
+	    os->Concat((char)ucs);
     } else {
 	ccs = wc_ucs_to_ccs(ucs);
 	if (st->ntag && ucs <= WC_C_UNICODE_END) {

@@ -14,9 +14,9 @@ historyBuffer(Hist *hist)
     char *p, *q;
 
     /* FIXME: gettextize? */
-    Strcat_charp(src, "<html>\n<head><title>History Page</title></head>\n");
-    Strcat_charp(src, "<body>\n<h1>History Page</h1>\n<hr>\n");
-    Strcat_charp(src, "<ol>\n");
+    src->Concat("<html>\n<head><title>History Page</title></head>\n");
+    src->Concat("<body>\n<h1>History Page</h1>\n<hr>\n");
+    src->Concat("<ol>\n");
     if (hist && hist->list) {
 	for (item = hist->list->last; item; item = item->prev) {
 	    q = html_quote((char *)item->ptr);
@@ -24,14 +24,14 @@ historyBuffer(Hist *hist)
 		p = html_quote(url_unquote_conv((char *)item->ptr, 0));
 	    else
 		p = q;
-	    Strcat_charp(src, "<li><a href=\"");
-	    Strcat_charp(src, q);
-	    Strcat_charp(src, "\">");
-	    Strcat_charp(src, p);
-	    Strcat_charp(src, "</a>\n");
+	    src->Concat("<li><a href=\"");
+	    src->Concat(q);
+	    src->Concat("\">");
+	    src->Concat(p);
+	    src->Concat("</a>\n");
 	}
     }
-    Strcat_charp(src, "</ol>\n</body>\n</html>");
+    src->Concat("</ol>\n</body>\n</html>");
     return loadHTMLString(src);
 }
 

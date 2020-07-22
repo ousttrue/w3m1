@@ -182,8 +182,8 @@ form2str(FormItemList *fi)
     Str tmp = Strnew();
 
     if (fi->type != FORM_SELECT && fi->type != FORM_TEXTAREA)
-	Strcat_charp(tmp, "input type=");
-    Strcat_charp(tmp, _formtypetbl[fi->type]);
+	tmp->Concat("input type=");
+    tmp->Concat(_formtypetbl[fi->type]);
     if (fi->name && fi->name->length)
 	Strcat_m_charp(tmp, " name=\"", fi->name->ptr, "\"", NULL);
     if ((fi->type == FORM_INPUT_RADIO || fi->type == FORM_INPUT_CHECKBOX ||
@@ -521,23 +521,23 @@ textfieldrep(Str s, int width)
 	if (k > width)
 	    break;
 	if (c_type == PC_CTRL)
-	    Strcat_char(n, ' ');
+	    n->Concat(' ');
 #ifdef USE_M17N
 	else if (c_type & PC_UNKNOWN)
-	    Strcat_char(n, ' ');
+	    n->Concat(' ');
 #endif
 	else if (s->ptr[i] == '&')
-	    Strcat_charp(n, "&amp;");
+	    n->Concat( "&amp;");
 	else if (s->ptr[i] == '<')
-	    Strcat_charp(n, "&lt;");
+	    n->Concat( "&lt;");
 	else if (s->ptr[i] == '>')
-	    Strcat_charp(n, "&gt;");
+	    n->Concat( "&gt;");
 	else
-	    Strcat_charp_n(n, &s->ptr[i], c_len);
+	    n->Concat(&s->ptr[i], c_len);
 	j = k;
     }
     for (; j < width; j++)
-	Strcat_char(n, ' ');
+	n->Concat(' ');
     return n;
 }
 
@@ -557,7 +557,7 @@ form_fputs_decode(Str s, FILE * f)
 #endif				/* !defined( __CYGWIN__ ) && !defined( __EMX__ 
 				 * ) */
 	default:
-	    Strcat_char(z, *p);
+	    z->Concat( *p);
 	    p++;
 	    break;
 	}
@@ -615,10 +615,10 @@ input_textarea(FormItemList *fi)
 	else if (tmp->length > 1 && tmp->ptr[tmp->length - 1] == '\n' &&
 		 tmp->ptr[tmp->length - 2] != '\r') {
 	    Strshrink(tmp, 1);
-	    Strcat_charp(tmp, "\r\n");
+	    tmp->Concat("\r\n");
 	}
 	tmp = convertLine(NULL, tmp, RAW_MODE, &charset, DisplayCharset);
-	Strcat(fi->value, tmp);
+	fi->value->Concat(tmp);
     }
 #ifdef USE_M17N
     WcOption.auto_detect = auto_detect;
@@ -887,7 +887,7 @@ loadPreForm(void)
 	    break;
 	if (textarea && !(!strncmp(line->ptr, "/textarea", 9) &&
 			  IS_SPACE(line->ptr[9]))) {
-	    Strcat(textarea, line);
+	    textarea->Concat( line);
 	    continue;
 	}
 	Strchop(line);

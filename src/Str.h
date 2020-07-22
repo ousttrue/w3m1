@@ -24,7 +24,7 @@ struct GCStr
     int area_size;
 
     void Clear();
-    void RequireSize(int size);
+    char* RequireSize(int size);
     void CopyFrom(const char *src, int size);
     void CopyFrom(const char *src)
     {
@@ -33,6 +33,20 @@ struct GCStr
     void CopyFrom(const GCStr *src)
     {
         CopyFrom(src->ptr, src->length);
+    }
+    void Concat(const char *src, int size);
+    void Concat(const char *src)
+    {
+        Concat(src, strlen(src));
+    }
+    void Concat(const GCStr *src)
+    {
+        Concat(src->ptr, src->length);
+    }
+    void Concat(char y)
+    {
+        Concat(&y, 1);
+        // ((length + 1 >= area_size) ? Strgrow(x), 0 : 0, ptr[length++] = (y), ptr[length] = 0);
     }
 };
 using Str = GCStr *;
@@ -44,9 +58,9 @@ Str Strnew_charp_n(char *, int);
 Str Strnew_m_charp(char *, ...);
 Str Strdup(Str);
 
-void Strcat_charp_n(Str, char *, int);
-void Strcat(Str, Str);
-void Strcat_charp(Str, char *);
+// void Str->Concat( Str);
+// void Str->Concat( char *);
+
 void Strcat_m_charp(Str, ...);
 Str Strsubstr(Str, int, int);
 void Strinsert_char(Str, int, char);
@@ -71,10 +85,6 @@ Str Strfgetall(FILE *);
 
 void Strgrow(Str s);
 
-inline void Strcat_char(Str x, char y)
-{
-    (((x)->length + 1 >= (x)->area_size) ? Strgrow(x), 0 : 0, (x)->ptr[(x)->length++] = (y), (x)->ptr[(x)->length] = 0);
-}
 
 inline int Strcmp(Str x, Str y)
 {

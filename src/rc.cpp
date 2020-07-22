@@ -1061,7 +1061,7 @@ set_param_option(char *option)
     char *p = option, *q;
 
     while (*p && !IS_SPACE(*p) && *p != '=')
-	Strcat_char(tmp, *p++);
+	tmp->Concat(*p++);
     while (*p && IS_SPACE(*p))
 	p++;
     if (*p == '=') {
@@ -1118,7 +1118,7 @@ interpret_rc(FILE * f)
 	tmp = Strnew();
 	p = line->ptr;
 	while (*p && !IS_SPACE(*p))
-	    Strcat_char(tmp, *p++);
+	    tmp->Concat(*p++);
 	while (*p && IS_SPACE(*p))
 	    p++;
 	Strlower(tmp);
@@ -1417,14 +1417,14 @@ load_option_panel(void)
 #endif
     src = Strdup(optionpanel_str);
 
-    Strcat_charp(src, "<table><tr><td>");
+    src->Concat("<table><tr><td>");
     for (i = 0; sections[i].name != NULL; i++) {
 	Strcat_m_charp(src, "<h1>", sections[i].name, "</h1>", NULL);
 	p = sections[i].params;
-	Strcat_charp(src, "<table width=100% cellpadding=0>");
+	src->Concat("<table width=100% cellpadding=0>");
 	while (p->name) {
 	    Strcat_m_charp(src, "<tr><td>", p->comment, NULL);
-	    Strcat(src, Sprintf("</td><td width=%d>",
+	    src->Concat(Sprintf("</td><td width=%d>",
 				(int)(28 * pixel_per_char)));
 	    switch (p->inputtype) {
 	    case PI_TEXT:
@@ -1447,40 +1447,40 @@ load_option_panel(void)
 		tmp = to_str(p);
 		Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
 		for (s = (struct sel_c *)p->select; s->text != NULL; s++) {
-		    Strcat_charp(src, "<option value=");
-		    Strcat(src, Sprintf("%s\n", s->cvalue));
+		    src->Concat("<option value=");
+		    src->Concat(Sprintf("%s\n", s->cvalue));
 		    if ((p->type != P_CHAR && s->value == atoi(tmp->ptr)) ||
 			(p->type == P_CHAR && (char)s->value == *(tmp->ptr)))
-			Strcat_charp(src, " selected");
-		    Strcat_char(src, '>');
-		    Strcat_charp(src, s->text);
+			src->Concat(" selected");
+		    src->Concat( '>');
+		    src->Concat(s->text);
 		}
-		Strcat_charp(src, "</select>");
+		src->Concat("</select>");
 		break;
 #ifdef USE_M17N
 	    case PI_CODE:
 		tmp = to_str(p);
 		Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
 		for (c = *(wc_ces_list **) p->select; c->desc != NULL; c++) {
-		    Strcat_charp(src, "<option value=");
-		    Strcat(src, Sprintf("%s\n", c->name));
+		    src->Concat("<option value=");
+		    src->Concat(Sprintf("%s\n", c->name));
 		    if (c->id == atoi(tmp->ptr))
-			Strcat_charp(src, " selected");
-		    Strcat_char(src, '>');
-		    Strcat_charp(src, c->desc);
+			src->Concat(" selected");
+		    src->Concat( '>');
+		    src->Concat(c->desc);
 		}
-		Strcat_charp(src, "</select>");
+		src->Concat("</select>");
 		break;
 #endif
 	    }
-	    Strcat_charp(src, "</td></tr>\n");
+	    src->Concat("</td></tr>\n");
 	    p++;
 	}
-	Strcat_charp(src,
+	src->Concat(
 		     "<tr><td></td><td><p><input type=submit value=\"OK\"></td></tr>");
-	Strcat_charp(src, "</table><hr width=50%>");
+	src->Concat("</table><hr width=50%>");
     }
-    Strcat_charp(src, "</table></form></body></html>");
+    src->Concat("</table></form></body></html>");
     buf = loadHTMLString(src);
 #ifdef USE_M17N
     if (buf)

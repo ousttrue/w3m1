@@ -207,7 +207,7 @@ wc_conv_from_sjis(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length);
     if (p > sp)
-	Strcat_charp_n(os, is->ptr, (int)(p - sp));
+	os->Concat(is->ptr, (int)(p - sp));
 
     for (; p < ep; p++) {
 	switch (state) {
@@ -231,7 +231,7 @@ wc_conv_from_sjis(Str is, wc_ces ces)
 		wtf_push_unknown(os, p, 1);
 		break;
 	    default:
-		Strcat_char(os, (char)*p);
+		os->Concat((char)*p);
 		break;
 	    }
 	    break;
@@ -287,7 +287,7 @@ wc_conv_from_sjisx0213(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length);
     if (p > sp)
-	Strcat_charp_n(os, is->ptr, (int)(p - sp));
+	os->Concat(is->ptr, (int)(p - sp));
 
     for (; p < ep; p++) {
 	switch (state) {
@@ -311,7 +311,7 @@ wc_conv_from_sjisx0213(Str is, wc_ces ces)
 		wtf_push_unknown(os, p, 1);
 		break;
 	    default:
-		Strcat_char(os, (char)*p);
+		os->Concat((char)*p);
 		break;
 	    }
 	    break;
@@ -358,11 +358,11 @@ wc_push_to_sjis(Str os, wc_wchar_t cc, wc_status *st)
   while (1) {
     switch (cc.ccs) {
     case WC_CCS_US_ASCII:
-	Strcat_char(os, cc.code);
+	os->Concat(cc.code);
 	return;
     case WC_CCS_JIS_X_0201K:
 	if (WcOption.use_jisx0201k) {
-	    Strcat_char(os, cc.code | 0x80);
+	    os->Concat(cc.code | 0x80);
 	    return;
 	} else if (WcOption.fix_width_conv)
 	    cc.ccs = WC_CCS_UNKNOWN;
@@ -373,23 +373,23 @@ wc_push_to_sjis(Str os, wc_wchar_t cc, wc_status *st)
 	ub = (cc.code >> 8) & 0x7f;
 	lb = cc.code & 0x7f;
 	jisx0208_to_sjis(ub, lb);
-	Strcat_char(os, ub);
-	Strcat_char(os, lb);
+	os->Concat(ub);
+	os->Concat(lb);
 	return;
     case WC_CCS_SJIS_EXT_1:
     case WC_CCS_SJIS_EXT_2:
 	cc = wc_cs94w_to_sjis_ext(cc);
     case WC_CCS_SJIS_EXT:
-	Strcat_char(os, (char)(cc.code >> 8));
-	Strcat_char(os, (char)(cc.code & 0xff));
+	os->Concat((char)(cc.code >> 8));
+	os->Concat((char)(cc.code & 0xff));
 	return;
     case WC_CCS_UNKNOWN_W:
 	if (!WcOption.no_replace)
-	    Strcat_charp(os, WC_REPLACE_W);
+	    os->Concat(WC_REPLACE_W);
 	return;
     case WC_CCS_UNKNOWN:
 	if (!WcOption.no_replace)
-	    Strcat_charp(os, WC_REPLACE);
+	    os->Concat(WC_REPLACE);
 	return;
     default:
 #ifdef USE_UNICODE
@@ -411,11 +411,11 @@ wc_push_to_sjisx0213(Str os, wc_wchar_t cc, wc_status *st)
   while (1) {
     switch (cc.ccs) {
     case WC_CCS_US_ASCII:
-	Strcat_char(os, cc.code);
+	os->Concat(cc.code);
 	return;
     case WC_CCS_JIS_X_0201K:
 	if (WcOption.use_jisx0201k) {
-	    Strcat_char(os, cc.code | 0x80);
+	    os->Concat(cc.code | 0x80);
 	    return;
 	} else if (WcOption.fix_width_conv)
 	    cc.ccs = WC_CCS_UNKNOWN;
@@ -431,8 +431,8 @@ wc_push_to_sjisx0213(Str os, wc_wchar_t cc, wc_status *st)
 	ub = (cc.code >> 8) & 0x7f;
 	lb = cc.code & 0x7f;
 	jisx0208_to_sjis(ub, lb);
-	Strcat_char(os, ub);
-	Strcat_char(os, lb);
+	os->Concat(ub);
+	os->Concat(lb);
 	return;
     case WC_CCS_JIS_X_0213_2:
 	if (! WcOption.use_jisx0213) {
@@ -443,17 +443,17 @@ wc_push_to_sjisx0213(Str os, wc_wchar_t cc, wc_status *st)
 	lb = cc.code & 0x7f;
 	jisx02132_to_sjis(ub, lb);
 	if (ub) {
-	    Strcat_char(os, ub);
-	    Strcat_char(os, lb);
+	    os->Concat(ub);
+	    os->Concat(lb);
 	    return;
 	}
     case WC_CCS_UNKNOWN_W:
 	if (!WcOption.no_replace)
-	    Strcat_charp(os, WC_REPLACE_W);
+	    os->Concat(WC_REPLACE_W);
 	return;
     case WC_CCS_UNKNOWN:
 	if (!WcOption.no_replace)
-	    Strcat_charp(os, WC_REPLACE);
+	    os->Concat(WC_REPLACE);
 	return;
     default:
 #ifdef USE_UNICODE
@@ -502,7 +502,7 @@ wc_char_conv_from_sjis(uint8_t c, wc_status *st)
 	case C1:
 	    break;
 	default:
-	    Strcat_char(os, (char)c);
+	    os->Concat((char)c);
 	    break;
 	}
 	break;
@@ -567,7 +567,7 @@ wc_char_conv_from_sjisx0213(uint8_t c, wc_status *st)
 	case C1:
 	    break;
 	default:
-	    Strcat_char(os, (char)c);
+	    os->Concat((char)c);
 	    break;
 	}
 	break;

@@ -68,7 +68,7 @@ Str Strnew_m_charp(char *p, ...)
     va_start(ap, p);
     while (p != NULL)
     {
-        Strcat_charp(r, p);
+        r->Concat(p);
         p = va_arg(ap, char *);
     }
     return r;
@@ -91,7 +91,7 @@ Str Strnew_charp_n(char *p, int n)
 
 Str Strdup(Str s)
 {
-    Str n = Strnew_size(s->length);   
+    Str n = Strnew_size(s->length);
     n->CopyFrom(s);
     return n;
 }
@@ -102,15 +102,16 @@ void GCStr::Clear()
     ptr[0] = '\0';
 }
 
-void GCStr::RequireSize(int size)
+char* GCStr::RequireSize(int size)
 {
     if (area_size >= size)
     {
-        return;
+        return nullptr;
     }
-    GC_free(ptr);
+    auto old = ptr;
     ptr = (char *)GC_MALLOC_ATOMIC(size);
     area_size = size;
+    return old;
 }
 
 void GCStr::CopyFrom(const char *y, int n)
@@ -120,45 +121,27 @@ void GCStr::CopyFrom(const char *y, int n)
         length = 0;
         return;
     }
-    RequireSize(n + 1);   
+    RequireSize(n + 1);
     bcopy((void *)y, (void *)ptr, n);
     ptr[n] = '\0';
     length = n;
 }
 
-void Strcat_charp_n(Str x, char *y, int n)
+void GCStr::Concat(const char *y, int n)
 {
-    int newlen;
-
-    
     if (y == NULL)
-        return;
-    newlen = x->length + n + 1;
-    if (x->area_size < newlen)
     {
-        char *old = x->ptr;
-        newlen = newlen * 3 / 2;
-        x->ptr = (char *)GC_MALLOC_ATOMIC(newlen);
-        x->area_size = newlen;
-        bcopy((void *)old, (void *)x->ptr, x->length);
-        GC_free(old);
-    }
-    bcopy((void *)y, (void *)&x->ptr[x->length], n);
-    x->length += n;
-    x->ptr[x->length] = '\0';
-}
-
-void Strcat(Str x, Str y)
-{
-    
-    Strcat_charp_n(x, y->ptr, y->length);
-}
-
-void Strcat_charp(Str x, char *y)
-{
-    if (y == NULL)
         return;
-    Strcat_charp_n(x, y, strlen(y));
+    }
+    
+    auto old = RequireSize(length + n + 1);
+    if (old)
+    {
+        bcopy((void *)old, (void *)ptr, length);
+    }
+    bcopy((void *)y, (void *)&ptr[length], n);
+    length += n;
+    ptr[length] = '\0';
 }
 
 void Strcat_m_charp(Str x, ...)
@@ -168,7 +151,7 @@ void Strcat_m_charp(Str x, ...)
 
     va_start(ap, x);
     while ((p = va_arg(ap, char *)) != NULL)
-        Strcat_charp_n(x, p, strlen(p));
+        x->Concat(p, strlen(p));
 }
 
 void Strgrow(Str x)
@@ -189,19 +172,18 @@ Str Strsubstr(Str s, int beg, int len)
     Str new_s;
     int i;
 
-    
     new_s = Strnew();
     if (beg >= s->length)
         return new_s;
     for (i = 0; i < len && beg + i < s->length; i++)
-        Strcat_char(new_s, s->ptr[beg + i]);
+        new_s->Concat( s->ptr[beg + i]);
     return new_s;
 }
 
 void Strlower(Str s)
 {
     int i;
-    
+
     for (i = 0; i < s->length; i++)
         s->ptr[i] = TOLOWER(s->ptr[i]);
 }
@@ -209,14 +191,14 @@ void Strlower(Str s)
 void Strupper(Str s)
 {
     int i;
-    
+
     for (i = 0; i < s->length; i++)
         s->ptr[i] = TOUPPER(s->ptr[i]);
 }
 
 void Strchop(Str s)
 {
-    
+
     while ((s->ptr[s->length - 1] == '\n' || s->ptr[s->length - 1] == '\r') &&
            s->length > 0)
     {
@@ -228,7 +210,7 @@ void Strchop(Str s)
 void Strinsert_char(Str s, int pos, char c)
 {
     int i;
-    
+
     if (pos < 0 || s->length < pos)
         return;
     if (s->length + 2 > s->area_size)
@@ -241,7 +223,7 @@ void Strinsert_char(Str s, int pos, char c)
 
 void Strinsert_charp(Str s, int pos, char *p)
 {
-    
+
     while (*p)
         Strinsert_char(s, pos++, *(p++));
 }
@@ -249,7 +231,7 @@ void Strinsert_charp(Str s, int pos, char *p)
 void Strdelete(Str s, int pos, int n)
 {
     int i;
-    
+
     if (s->length <= pos + n)
     {
         s->ptr[pos] = '\0';
@@ -264,14 +246,14 @@ void Strdelete(Str s, int pos, int n)
 
 void Strtruncate(Str s, int pos)
 {
-    
+
     s->ptr[pos] = '\0';
     s->length = pos;
 }
 
 void Strshrink(Str s, int n)
 {
-    
+
     if (n >= s->length)
     {
         s->length = 0;
@@ -288,7 +270,6 @@ void Strremovefirstspaces(Str s)
 {
     int i;
 
-    
     for (i = 0; i < s->length && IS_SPACE(s->ptr[i]); i++)
         ;
     if (i == 0)
@@ -300,7 +281,6 @@ void Strremovetrailingspaces(Str s)
 {
     int i;
 
-    
     for (i = s->length - 1; i >= 0 && IS_SPACE(s->ptr[i]); i--)
         ;
     s->length = i + 1;
@@ -314,40 +294,32 @@ Str Stralign_left(Str s, int width)
     auto n = Strnew_size(width);
     n->CopyFrom(s);
     for (int i = s->length; i < width; i++)
-        Strcat_char(n, ' ');
+        n->Concat(' ');
     return n;
 }
 
 Str Stralign_right(Str s, int width)
 {
-    Str n;
-    int i;
-
-    
     if (s->length >= width)
         return Strdup(s);
-    n = Strnew_size(width);
-    for (i = s->length; i < width; i++)
-        Strcat_char(n, ' ');
-    Strcat(n, s);
+    auto n = Strnew_size(width);
+    for (int i = s->length; i < width; i++)
+        n->Concat(' ');
+    n->Concat(s);
     return n;
 }
 
 Str Stralign_center(Str s, int width)
 {
-    Str n;
-    int i, w;
-
-    
     if (s->length >= width)
         return Strdup(s);
-    n = Strnew_size(width);
-    w = (width - s->length) / 2;
-    for (i = 0; i < w; i++)
-        Strcat_char(n, ' ');
-    Strcat(n, s);
-    for (i = w + s->length; i < width; i++)
-        Strcat_char(n, ' ');
+    auto n = Strnew_size(width);
+    auto w = (width - s->length) / 2;
+    for (int i = 0; i < w; i++)
+        n->Concat(' ');
+    n->Concat(s);
+    for (int i = w + s->length; i < width; i++)
+        n->Concat(' ');
     return n;
 }
 
@@ -473,7 +445,7 @@ Str Strfgets(FILE *f)
         c = fgetc(f);
         if (feof(f) || ferror(f))
             break;
-        Strcat_char(s, c);
+        s->Concat(c);
         if (c == '\n')
             break;
     }
@@ -489,7 +461,7 @@ Str Strfgetall(FILE *f)
         c = fgetc(f);
         if (feof(f) || ferror(f))
             break;
-        Strcat_char(s, c);
+        s->Concat(c);
     }
     return s;
 }

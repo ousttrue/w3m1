@@ -1830,8 +1830,8 @@ initSelectMenu(void)
             case SCM_LOCAL:
                 if (strcmp(buf->currentURL.file, "-"))
                 {
-                    Strcat_char(str, ' ');
-                    Strcat_charp(str,
+                    str->Concat( ' ');
+                    str->Concat(
                                  conv_from_system(buf->currentURL.real_file));
                 }
                 break;
@@ -1839,11 +1839,11 @@ initSelectMenu(void)
             case SCM_MISSING:
                 break;
             default:
-                Strcat_char(str, ' ');
+                str->Concat( ' ');
                 p = parsedURL2Str(&buf->currentURL)->ptr;
                 if (DecodeURL)
                     p = url_unquote_conv(p, 0);
-                Strcat_charp(str, p);
+                str->Concat( p);
                 break;
             }
         }
@@ -1859,10 +1859,10 @@ initSelectMenu(void)
     len = (len > 1) ? ((len - l + 1) / 2) : 0;
     str = Strnew();
     for (i = 0; i < len; i++)
-        Strcat_char(str, '-');
-    Strcat_charp(str, comment);
+        str->Concat( '-');
+    str->Concat( comment);
     for (i = 0; i < len; i++)
-        Strcat_char(str, '-');
+        str->Concat( '-');
     label[nitem] = str->ptr;
     label[nitem + 1] = NULL;
 
@@ -1976,8 +1976,8 @@ initSelTabMenu(void)
     //         case SCM_LOCAL:
     //             if (strcmp(buf->currentURL.file, "-"))
     //             {
-    //                 Strcat_char(str, ' ');
-    //                 Strcat_charp(str,
+    //                 str->Concat( ' ');
+    //                 str->Concat(
     //                              conv_from_system(buf->currentURL.real_file));
     //             }
     //             break;
@@ -1988,7 +1988,7 @@ initSelTabMenu(void)
     //             p = parsedURL2Str(&buf->currentURL)->ptr;
     //             if (DecodeURL)
     //                 p = url_unquote_conv(p, 0);
-    //             Strcat_charp(str, p);
+    //             str->Concat( p);
     //             break;
     //         }
     //     }
@@ -2004,10 +2004,10 @@ initSelTabMenu(void)
     // len = (len > 1) ? ((len - l + 1) / 2) : 0;
     // str = Strnew();
     // for (i = 0; i < len; i++)
-    //     Strcat_char(str, '-');
-    // Strcat_charp(str, comment);
+    //     str->Concat( '-');
+    // str->Concat( comment);
     // for (i = 0; i < len; i++)
-    //     Strcat_char(str, '-');
+    //     str->Concat( '-');
     // label[nitem] = str->ptr;
     // label[nitem + 1] = NULL;
 
@@ -2328,18 +2328,18 @@ link_menu(Buffer *buf)
     {
         str = Strnew_charp(l->title ? l->title : (char *)"(empty)");
         if (l->type == LINK_TYPE_REL)
-            Strcat_charp(str, " [Rel] ");
+            str->Concat( " [Rel] ");
         else if (l->type == LINK_TYPE_REV)
-            Strcat_charp(str, " [Rev] ");
+            str->Concat( " [Rev] ");
         else
-            Strcat_charp(str, " ");
+            str->Concat( " ");
         if (!l->url)
             p = "";
         else if (DecodeURL)
             p = url_unquote_conv(l->url, buf->document_charset);
         else
             p = l->url;
-        Strcat_charp(str, p);
+        str->Concat( p);
         label[i] = str->ptr;
         if (len < str->length)
             len = str->length;

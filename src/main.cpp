@@ -295,13 +295,13 @@ Str make_optional_header_string(char *s)
     hs->CopyFrom(s, p - s);
     if (!Strcasecmp_charp(hs, "content-type"))
         override_content_type = TRUE;
-    Strcat_charp(hs, ": ");
+    hs->Concat( ": ");
     if (*(++p))
     {                   /* not null header */
         SKIP_BLANKS(p); /* skip white spaces */
-        Strcat_charp(hs, p);
+        hs->Concat( p);
     }
-    Strcat_charp(hs, "\r\n");
+    hs->Concat( "\r\n");
     return hs;
 }
 
@@ -644,8 +644,8 @@ int main(int argc, char **argv, char **envp)
                 {
                     Str tmp = Strnew_charp(CurrentDir);
                     if (Strlastchar(tmp) != '/')
-                        Strcat_char(tmp, '/');
-                    Strcat_charp(tmp, BookmarkFile);
+                        tmp->Concat('/');
+                    tmp->Concat(BookmarkFile);
                     BookmarkFile = cleanupName(tmp->ptr);
                 }
             }
@@ -751,7 +751,7 @@ int main(int argc, char **argv, char **envp)
                     if (header_string == NULL)
                         header_string = hs;
                     else
-                        Strcat(header_string, hs);
+                        header_string->Concat( hs);
                 }
                 while (argv[i][0])
                 {
@@ -930,7 +930,7 @@ int main(int argc, char **argv, char **envp)
         {
             newbuf = loadGeneralFile(BookmarkFile, NULL, NO_REFERER, 0, NULL);
             if (newbuf == NULL)
-                Strcat_charp(err_msg, "w3m: Can't load bookmark.\n");
+                err_msg->Concat( "w3m: Can't load bookmark.\n");
         }
         else if (visual_start)
         {
@@ -938,7 +938,7 @@ int main(int argc, char **argv, char **envp)
             Str s_page;
             s_page =
                 Strnew_charp("<title>W3M startup page</title><center><b>Welcome to ");
-            Strcat_charp(s_page, "<a href='http://w3m.sourceforge.net/'>");
+            s_page->Concat( "<a href='http://w3m.sourceforge.net/'>");
             Strcat_m_charp(s_page,
                            "w3m</a>!<p><p>This is w3m version ",
                            w3m_version,
@@ -946,7 +946,7 @@ int main(int argc, char **argv, char **envp)
                            NULL);
             newbuf = loadHTMLString(s_page);
             if (newbuf == NULL)
-                Strcat_charp(err_msg, "w3m: Can't load string.\n");
+                err_msg->Concat( "w3m: Can't load string.\n");
             else if (newbuf != NO_BUFFER)
                 newbuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         }
@@ -955,7 +955,7 @@ int main(int argc, char **argv, char **envp)
         {
             newbuf = loadGeneralFile(p, NULL, NO_REFERER, 0, NULL);
             if (newbuf == NULL)
-                Strcat(err_msg, Sprintf("w3m: Can't load %s.\n", p));
+                err_msg->Concat( Sprintf("w3m: Can't load %s.\n", p));
             else if (newbuf != NO_BUFFER)
                 pushHashHist(URLHist, parsedURL2Str(&newbuf->currentURL)->ptr);
         }
@@ -1006,7 +1006,7 @@ int main(int argc, char **argv, char **envp)
                     if (fp == NULL)
                     {
                         /* FIXME: gettextize? */
-                        Strcat(err_msg,
+                        err_msg->Concat(
                                Sprintf("w3m: Can't open %s.\n", post_file));
                         continue;
                     }
@@ -1031,7 +1031,7 @@ int main(int argc, char **argv, char **envp)
             if (newbuf == NULL)
             {
                 /* FIXME: gettextize? */
-                Strcat(err_msg,
+                err_msg->Concat(
                        Sprintf("w3m: Can't load %s.\n", load_argv[i]));
                 continue;
             }

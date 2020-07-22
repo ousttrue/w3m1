@@ -176,7 +176,7 @@ wc_conv_from_gb18030(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length);
     if (p > sp)
-	Strcat_charp_n(os, (char *)is->ptr, (int)(p - sp));
+	os->Concat((char *)is->ptr, (int)(p - sp));
 
     for (; p < ep; p++) {
 	switch (state) {
@@ -189,7 +189,7 @@ wc_conv_from_gb18030(Str is, wc_ces ces)
 		wtf_push_unknown(os, p, 1);
 		break;
 	    default:
-		Strcat_char(os, (char)*p);
+		os->Concat((char)*p);
 		break;
 	    }
 	    break;
@@ -257,39 +257,39 @@ wc_push_to_gb18030(Str os, wc_wchar_t cc, wc_status *st)
   while (1) {
     switch (WC_CCS_SET(cc.ccs)) {
     case WC_CCS_US_ASCII:
-	Strcat_char(os, (char)cc.code);
+	os->Concat((char)cc.code);
 	return;
     case WC_CCS_GB_2312:
-	Strcat_char(os, (char)((cc.code >> 8) | 0x80));
-	Strcat_char(os, (char)((cc.code & 0xff) | 0x80));
+	os->Concat((char)((cc.code >> 8) | 0x80));
+	os->Concat((char)((cc.code & 0xff) | 0x80));
 	return;
     case WC_CCS_GBK_1:
     case WC_CCS_GBK_2:
 	cc = wc_cs128w_to_gbk(cc);
     case WC_CCS_GBK:
-	Strcat_char(os, (char)(cc.code >> 8));
-	Strcat_char(os, (char)(cc.code & 0xff));
+	os->Concat((char)(cc.code >> 8));
+	os->Concat((char)(cc.code & 0xff));
 	return;
     case WC_CCS_GBK_EXT_1:
     case WC_CCS_GBK_EXT_2:
 	cc = wc_cs128w_to_gbk(cc);
     case WC_CCS_GBK_EXT:
-	Strcat_char(os, (char)(cc.code >> 8));
-	Strcat_char(os, (char)(cc.code & 0xff));
+	os->Concat((char)(cc.code >> 8));
+	os->Concat((char)(cc.code & 0xff));
 	return;
     case WC_CCS_GB18030:
-	Strcat_char(os, (char)((cc.code >> 24) & 0xff));
-	Strcat_char(os, (char)((cc.code >> 16) & 0xff));
-	Strcat_char(os, (char)((cc.code >> 8)  & 0xff));
-	Strcat_char(os, (char)(cc.code & 0xff));
+	os->Concat((char)((cc.code >> 24) & 0xff));
+	os->Concat((char)((cc.code >> 16) & 0xff));
+	os->Concat((char)((cc.code >> 8)  & 0xff));
+	os->Concat((char)(cc.code & 0xff));
 	return;
     case WC_CCS_UNKNOWN_W:
 	if (!WcOption.no_replace)
-	    Strcat_charp(os, WC_REPLACE_W);
+	    os->Concat(WC_REPLACE_W);
 	return;
     case WC_CCS_UNKNOWN:
 	if (!WcOption.no_replace)
-	    Strcat_charp(os, WC_REPLACE);
+	    os->Concat(WC_REPLACE);
 	return;
     default:
 #ifdef USE_UNICODE
@@ -329,7 +329,7 @@ wc_char_conv_from_gb18030(uint8_t c, wc_status *st)
 	case C1:
 	    break;
 	default:
-	    Strcat_char(os, (char)c);
+	    os->Concat((char)c);
 	    break;
 	}
 	break;

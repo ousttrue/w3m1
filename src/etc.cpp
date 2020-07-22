@@ -519,11 +519,11 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
                 if (prev_status == R_ST_CMNT1 && !append && !pre)
                     buf->Clear();
                 if (pre)
-                    Strcat_char(buf, *p);
+                    buf->Concat( *p);
                 p++;
                 goto proc_end;
             }
-            Strcat_char(buf, (!pre && IS_SPACE(*p)) ? ' ' : *p);
+            buf->Concat( (!pre && IS_SPACE(*p)) ? ' ' : *p);
             if (ST_IS_REAL_TAG(prev_status)) {
                 *instr = p + 1;
                 if (buf->length < 2 ||
@@ -543,25 +543,25 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
             if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p)) {
                 /* it seems that this '<' is not a beginning of a tag */
                 /*
-                 * Strcat_charp(buf, "&lt;");
+                 * buf->Concat( "&lt;");
                  */
-                Strcat_char(buf, '<');
+                buf->Concat( '<');
                 *status = R_ST_NORMAL;
             }
             else
-                Strcat_char(buf, *p);
+                buf->Concat( *p);
             break;
         case R_ST_EQL:
         case R_ST_QUOTE:
         case R_ST_DQUOTE:
         case R_ST_VALUE:
         case R_ST_AMP:
-            Strcat_char(buf, *p);
+            buf->Concat( *p);
             break;
         case R_ST_CMNT:
         case R_ST_IRRTAG:
             if (pre)
-                Strcat_char(buf, *p);
+                buf->Concat( *p);
             else if (!append)
                 buf->Clear();
             break;
@@ -572,7 +572,7 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
         case R_ST_NCMNT3:
             /* do nothing */
             if (pre)
-                Strcat_char(buf, *p);
+                buf->Concat( *p);
             break;
         }
     }
@@ -617,7 +617,7 @@ correct_irrtag(int status)
             return tmp;
         }
         next_status(c, &status);
-        Strcat_char(tmp, c);
+        tmp->Concat(c);
     }
     return tmp;
 }
@@ -943,23 +943,23 @@ romanNum2(int l, int n)
     case 2:
     case 3:
         for (; n > 0; n--)
-            Strcat_char(s, roman_num1[l]);
+            s->Concat(roman_num1[l]);
         break;
     case 4:
-        Strcat_char(s, roman_num1[l]);
-        Strcat_char(s, roman_num5[l]);
+        s->Concat(roman_num1[l]);
+        s->Concat(roman_num5[l]);
         break;
     case 5:
     case 6:
     case 7:
     case 8:
-        Strcat_char(s, roman_num5[l]);
+        s->Concat(roman_num5[l]);
         for (n -= 5; n > 0; n--)
-            Strcat_char(s, roman_num1[l]);
+            s->Concat(roman_num1[l]);
         break;
     case 9:
-        Strcat_char(s, roman_num1[l]);
-        Strcat_char(s, roman_num1[l + 1]);
+        s->Concat(roman_num1[l]);
+        s->Concat(roman_num1[l + 1]);
         break;
     }
     return s;
@@ -973,13 +973,13 @@ romanNumeral(int n)
     if (n <= 0)
         return r;
     if (n >= 4000) {
-        Strcat_charp(r, "**");
+        r->Concat("**");
         return r;
     }
-    Strcat(r, romanNum2(3, n / 1000));
-    Strcat(r, romanNum2(2, (n % 1000) / 100));
-    Strcat(r, romanNum2(1, (n % 100) / 10));
-    Strcat(r, romanNum2(0, n % 10));
+    r->Concat(romanNum2(3, n / 1000));
+    r->Concat(romanNum2(2, (n % 1000) / 100));
+    r->Concat(romanNum2(1, (n % 100) / 10));
+    r->Concat(romanNum2(0, n % 10));
 
     return r;
 }
@@ -1001,7 +1001,7 @@ romanAlphabet(int n)
     }
     l--;
     for (; l >= 0; l--)
-        Strcat_char(r, buf[l]);
+        r->Concat( buf[l]);
 
     return r;
 }
@@ -1154,7 +1154,7 @@ mySystem(char *command, int background)
         }
 #else
         Str cmd = Strnew_charp("start /f ");
-        Strcat_charp(cmd, command);
+        cmd->Concat( command);
         system(cmd->ptr);
 #endif
     }
@@ -1174,13 +1174,13 @@ myExtCommand(char *cmd, char *arg, int redirect)
         if (*p == '%' && *(p + 1) == 's' && !set_arg) {
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
-            Strcat_charp(tmp, arg);
+            tmp->Concat(arg);
             set_arg = TRUE;
             p++;
         }
         else {
             if (tmp)
-                Strcat_char(tmp, *p);
+                tmp->Concat(*p);
         }
     }
     if (!set_arg) {
@@ -1203,27 +1203,27 @@ myEditor(char *cmd, char *file, int line)
         if (*p == '%' && *(p + 1) == 's' && !set_file) {
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
-            Strcat_charp(tmp, file);
+            tmp->Concat(file);
             set_file = TRUE;
             p++;
         }
         else if (*p == '%' && *(p + 1) == 'd' && !set_line && line > 0) {
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
-            Strcat(tmp, Sprintf("%d", line));
+            tmp->Concat(Sprintf("%d", line));
             set_line = TRUE;
             p++;
         }
         else {
             if (tmp)
-                Strcat_char(tmp, *p);
+                tmp->Concat(*p);
         }
     }
     if (!set_file) {
         if (tmp == NULL)
             tmp = Strnew_charp(cmd);
         if (!set_line && line > 1 && strcasestr(cmd, "vi"))
-            Strcat(tmp, Sprintf(" +%d", line));
+            tmp->Concat(Sprintf(" +%d", line));
         Strcat_m_charp(tmp, " ", file, NULL);
     }
     return tmp;
@@ -1271,7 +1271,7 @@ expandName(char *name)
             goto rest;
         if (Strcmp_charp(extpath, "/") == 0 && *p == '/')
             p++;
-        Strcat_charp(extpath, p);
+        extpath->Concat(p);
         return extpath->ptr;
     }
     else
@@ -1316,20 +1316,20 @@ file_to_url(char *file)
     if (file[0] != '/') {
         tmp = Strnew_charp(CurrentDir);
         if (Strlastchar(tmp) != '/')
-            Strcat_char(tmp, '/');
-        Strcat_charp(tmp, file);
+            tmp->Concat('/');
+        tmp->Concat(file);
         file = tmp->ptr;
     }
     tmp = Strnew_charp("file://");
 #ifdef SUPPORT_NETBIOS_SHARE
     if (host)
-        Strcat_charp(tmp, host);
+        tmp->Concat(host);
 #endif
 #ifdef SUPPORT_DOS_DRIVE_PREFIX
     if (drive)
-        Strcat_charp(tmp, drive);
+        tmp->Concat(drive);
 #endif
-    Strcat_charp(tmp, file_quote(cleanupName(file)));
+    tmp->Concat(file_quote(cleanupName(file)));
     return tmp->ptr;
 }
 
@@ -1389,7 +1389,7 @@ get_day(char **s)
         return -1;
 
     while (**s && IS_DIGIT(**s))
-        Strcat_char(tmp, *((*s)++));
+        tmp->Concat(*((*s)++));
 
     day = atoi(tmp->ptr);
 
@@ -1411,13 +1411,13 @@ get_month(char **s)
         return -1;
 
     while (**s && IS_DIGIT(**s))
-        Strcat_char(tmp, *((*s)++));
+        tmp->Concat(*((*s)++));
     if (tmp->length > 0) {
         mon = atoi(tmp->ptr);
     }
     else {
         while (**s && IS_ALPHA(**s))
-            Strcat_char(tmp, *((*s)++));
+            tmp->Concat(*((*s)++));
         for (mon = 1; mon <= 12; mon++) {
             if (strncmp(tmp->ptr, monthtbl[mon - 1], 3) == 0)
                 break;
@@ -1441,7 +1441,7 @@ get_year(char **s)
         return -1;
 
     while (**s && IS_DIGIT(**s))
-        Strcat_char(tmp, *((*s)++));
+        tmp->Concat(*((*s)++));
     if (tmp->length != 2 && tmp->length != 4) {
         *s = ss;
         return -1;
@@ -1467,7 +1467,7 @@ get_time(char **s, int *hour, int *min, int *sec)
         return -1;
 
     while (**s && IS_DIGIT(**s))
-        Strcat_char(tmp, *((*s)++));
+        tmp->Concat(*((*s)++));
     if (**s != ':') {
         *s = ss;
         return -1;
@@ -1477,7 +1477,7 @@ get_time(char **s, int *hour, int *min, int *sec)
     (*s)++;
     tmp->Clear();
     while (**s && IS_DIGIT(**s))
-        Strcat_char(tmp, *((*s)++));
+        tmp->Concat(*((*s)++));
     if (**s != ':') {
         *s = ss;
         return -1;
@@ -1487,7 +1487,7 @@ get_time(char **s, int *hour, int *min, int *sec)
     (*s)++;
     tmp->Clear();
     while (**s && IS_DIGIT(**s))
-        Strcat_char(tmp, *((*s)++));
+        tmp->Concat(*((*s)++));
     *sec = atoi(tmp->ptr);
 
     if (*hour < 0 || *hour >= 24 ||
@@ -1509,9 +1509,9 @@ get_zone(char **s, int *z_hour, int *z_min)
         return -1;
 
     if (**s == '+' || **s == '-')
-        Strcat_char(tmp, *((*s)++));
+        tmp->Concat(*((*s)++));
     while (**s && IS_DIGIT(**s))
-        Strcat_char(tmp, *((*s)++));
+        tmp->Concat(*((*s)++));
     if (!(tmp->length == 4 && IS_DIGIT(*ss)) &&
         !(tmp->length == 5 && (*ss == '+' || *ss == '-'))) {
         *s = ss;

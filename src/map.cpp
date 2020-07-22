@@ -294,7 +294,7 @@ follow_map_panel(Buffer *buf, char *name)
 		       html_quote(*a->alt ? a->alt : mybasename(a->url)),
 		       "</a><td>", p, NULL);
     }
-    Strcat_charp(mappage, "</table></body></html>");
+    mappage->Concat( "</table></body></html>");
 
     newbuf = loadHTMLString(mappage);
 #ifdef USE_M17N
@@ -434,7 +434,7 @@ append_map_info(Buffer *buf, Str tmp, FormItemList *fi)
 		       html_quote(*a->alt ? a->alt : mybasename(a->url)),
 		       "</a><td>", p, "\n", NULL);
     }
-    Strcat_charp(tmp, "</table>");
+    tmp->Concat("</table>");
 }
 
 /* append links */
@@ -448,7 +448,7 @@ append_link_info(Buffer *buf, Str html, LinkList * link)
     if (!link)
 	return;
 
-    Strcat_charp(html, "<hr width=50%><h1>Link information</h1><table>\n");
+    html->Concat( "<hr width=50%><h1>Link information</h1><table>\n");
     for (l = link; l; l = l->next) {
 	if (l->url) {
 	    parseURL2(l->url, &pu, baseURL(buf));
@@ -460,9 +460,9 @@ append_link_info(Buffer *buf, Str html, LinkList * link)
 		       l->title ? html_quote(l->title) : "(empty)", "</a><td>",
 		       NULL);
 	if (l->type == LINK_TYPE_REL)
-	    Strcat_charp(html, "[Rel]");
+	    html->Concat( "[Rel]");
 	else if (l->type == LINK_TYPE_REV)
-	    Strcat_charp(html, "[Rev]");
+	    html->Concat( "[Rev]");
 	if (!l->url)
 	    url = "(empty)";
 	else if (DecodeURL)
@@ -472,9 +472,9 @@ append_link_info(Buffer *buf, Str html, LinkList * link)
 	Strcat_m_charp(html, "<td>", url, NULL);
 	if (l->ctype)
 	    Strcat_m_charp(html, " (", html_quote(l->ctype), ")", NULL);
-	Strcat_charp(html, "\n");
+	html->Concat( "\n");
     }
-    Strcat_charp(html, "</table>\n");
+    html->Concat( "</table>\n");
 }
 
 /* append frame URL */
@@ -495,15 +495,15 @@ append_frame_info(Buffer *buf, Str html, struct frameset *set, int level)
 	    case F_BODY:
 		if (frame.body->url == NULL)
 		    break;
-		Strcat_charp(html, "<pre_int>");
+		html->Concat( "<pre_int>");
 		for (j = 0; j < level; j++)
-		    Strcat_charp(html, "   ");
+		    html->Concat( "   ");
 		q = html_quote(frame.body->url);
 		Strcat_m_charp(html, "<a href=\"", q, "\">", NULL);
 		if (frame.body->name) {
 		    p = html_quote(url_unquote_conv(frame.body->name,
 						    buf->document_charset));
-		    Strcat_charp(html, p);
+		    html->Concat( p);
 		}
 		if (DecodeURL)
 		    p = html_quote(url_unquote_conv(frame.body->url,
@@ -546,7 +546,7 @@ page_info_panel(Buffer *buf)
 #endif
     Buffer *newbuf;
 
-    Strcat_charp(tmp, "<html><head>\
+    tmp->Concat("<html><head>\
 <title>Information about current page</title>\
 </head><body>\
 <h1>Information about current page</h1>\n");
@@ -556,7 +556,7 @@ page_info_panel(Buffer *buf)
     if (all == 0 && buf->lastLine)
 	all = buf->lastLine->linenumber;
 #ifdef USE_M17N
-    Strcat_charp(tmp, "<form method=internal action=charset>");
+    tmp->Concat("<form method=internal action=charset>");
 #endif
     p = parsedURL2Str(&buf->currentURL)->ptr;
     if (DecodeURL)
@@ -573,7 +573,7 @@ page_info_panel(Buffer *buf)
 #ifdef USE_M17N
     if (buf->document_charset != InnerCharset) {
 	list = wc_get_ces_list();
-	Strcat_charp(tmp,
+	tmp->Concat(
 		     "<tr><td nowrap>Document Charset<td><select name=charset>");
 	for (; list->name != NULL; list++) {
 	    sprintf(charset, "%d", (unsigned int)list->id);
@@ -581,8 +581,8 @@ page_info_panel(Buffer *buf)
 			   (buf->document_charset == list->id) ? " selected>"
 			   : ">", list->desc, NULL);
 	}
-	Strcat_charp(tmp, "</select>");
-	Strcat_charp(tmp, "<tr><td><td><input type=submit value=Change>");
+	tmp->Concat("</select>");
+	tmp->Concat("<tr><td><td><input type=submit value=Change>");
     }
 #endif
     Strcat_m_charp(tmp,
@@ -632,19 +632,19 @@ page_info_panel(Buffer *buf)
 	    && !Strcmp_charp(fi->parent->action, "map"))
 	    append_map_info(buf, tmp, fi->parent->item);
     }
-    Strcat_charp(tmp, "</table>\n");
+    tmp->Concat("</table>\n");
 #ifdef USE_M17N
-    Strcat_charp(tmp, "</form>");
+    tmp->Concat("</form>");
 #endif
 
     append_link_info(buf, tmp, buf->linklist);
 
     if (buf->document_header != NULL) {
-	Strcat_charp(tmp, "<hr width=50%><h1>Header information</h1><pre>\n");
+	tmp->Concat("<hr width=50%><h1>Header information</h1><pre>\n");
 	for (ti = buf->document_header->first; ti != NULL; ti = ti->next)
 	    Strcat_m_charp(tmp, "<pre_int>", html_quote(ti->ptr),
 			   "</pre_int>\n", NULL);
-	Strcat_charp(tmp, "</pre>\n");
+	tmp->Concat("</pre>\n");
     }
 
     if (buf->frameset != NULL)
@@ -654,7 +654,7 @@ page_info_panel(Buffer *buf)
 	f_set = buf->nextBuffer->frameset;
 
     if (f_set) {
-	Strcat_charp(tmp, "<hr width=50%><h1>Frame information</h1>\n");
+	tmp->Concat("<hr width=50%><h1>Frame information</h1>\n");
 	append_frame_info(buf, tmp, f_set, 0);
     }
 #ifdef USE_SSL
@@ -663,7 +663,7 @@ page_info_panel(Buffer *buf)
 		       html_quote(buf->ssl_certificate), "</pre>\n", NULL);
 #endif
   end:
-    Strcat_charp(tmp, "</body></html>");
+    tmp->Concat("</body></html>");
     newbuf = loadHTMLString(tmp);
 #ifdef USE_M17N
     if (newbuf)

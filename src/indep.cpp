@@ -252,7 +252,7 @@ expandPath(char *name)
 	    goto rest;
 	if (Strcmp_charp(extpath, "/") == 0 && *p == '/')
 	    p++;
-	Strcat_charp(extpath, p);
+	extpath->Concat(p);
 	return extpath->ptr;
     }
   rest:
@@ -391,12 +391,12 @@ cleanup_line(Str s, int mode)
     if (s->length >= 2 &&
 	s->ptr[s->length - 2] == '\r' && s->ptr[s->length - 1] == '\n') {
 	Strshrink(s, 2);
-	Strcat_char(s, '\n');
+	s->Concat('\n');
     }
     else if (Strlastchar(s) == '\r')
 	s->ptr[s->length - 1] = '\n';
     else if (Strlastchar(s) != '\n')
-	Strcat_char(s, '\n');
+	s->Concat('\n');
     if (mode != PAGER_MODE) {
 	int i;
 	for (i = 0; i < s->length; i++) {
@@ -487,7 +487,7 @@ getescapecmd(char **s)
 	tmp = Strnew_charp("&");
     else
 	tmp = Strnew();
-    Strcat_charp_n(tmp, save, *s - save);
+    tmp->Concat(save, *s - save);
     return tmp->ptr;
 }
 
@@ -502,11 +502,11 @@ html_quote(char *str)
 	if (q) {
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(str, (int)(p - str));
-	    Strcat_charp(tmp, q);
+	    tmp->Concat(q);
 	}
 	else {
 	    if (tmp)
-		Strcat_char(tmp, *p);
+		tmp->Concat(*p);
 	}
     }
     if (tmp)
@@ -525,11 +525,11 @@ html_unquote(char *str)
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(str, (int)(p - str));
 	    q = getescapecmd(&p);
-	    Strcat_charp(tmp, q);
+	    tmp->Concat(q);
 	}
 	else {
 	    if (tmp)
-		Strcat_char(tmp, *p);
+		tmp->Concat(*p);
 	    p++;
 	}
     }
@@ -556,13 +556,13 @@ url_quote(char *str)
 	if (is_url_quote(*p)) {
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(str, (int)(p - str));
-	    Strcat_char(tmp, '%');
-	    Strcat_char(tmp, xdigit[((unsigned char)*p >> 4) & 0xF]);
-	    Strcat_char(tmp, xdigit[(unsigned char)*p & 0xF]);
+	    tmp->Concat('%');
+	    tmp->Concat(xdigit[((unsigned char)*p >> 4) & 0xF]);
+	    tmp->Concat(xdigit[(unsigned char)*p & 0xF]);
 	}
 	else {
 	    if (tmp)
-		Strcat_char(tmp, *p);
+		tmp->Concat(*p);
 	}
     }
     if (tmp)
@@ -582,11 +582,11 @@ file_quote(char *str)
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(str, (int)(p - str));
 	    sprintf(buf, "%%%02X", (unsigned char)*p);
-	    Strcat_charp(tmp, buf);
+	    tmp->Concat(buf);
 	}
 	else {
 	    if (tmp)
-		Strcat_char(tmp, *p);
+		tmp->Concat(*p);
 	}
     }
     if (tmp)
@@ -609,13 +609,13 @@ file_unquote(char *str)
 		if (tmp == NULL)
 		    tmp = Strnew_charp_n(str, (int)(p - str));
 		if (c != '\0' && c != '\n' && c != '\r')
-		    Strcat_char(tmp, (char)c);
+		    tmp->Concat((char)c);
 		p = q;
 		continue;
 	    }
 	}
 	if (tmp)
-	    Strcat_char(tmp, *p);
+	    tmp->Concat(*p);
 	p++;
     }
     if (tmp)
@@ -634,17 +634,17 @@ Str_form_quote(Str x)
 	if (*p == ' ') {
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(x->ptr, (int)(p - x->ptr));
-	    Strcat_char(tmp, '+');
+	    tmp->Concat('+');
 	}
 	else if (is_url_unsafe(*p)) {
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(x->ptr, (int)(p - x->ptr));
 	    sprintf(buf, "%%%02X", (unsigned char)*p);
-	    Strcat_charp(tmp, buf);
+	    tmp->Concat(buf);
 	}
 	else {
 	    if (tmp)
-		Strcat_char(tmp, *p);
+		tmp->Concat(*p);
 	}
     }
     if (tmp)
@@ -664,7 +664,7 @@ Str_url_unquote(Str x, int is_form, int safe)
 	if (is_form && *p == '+') {
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(x->ptr, (int)(p - x->ptr));
-	    Strcat_char(tmp, ' ');
+	    tmp->Concat(' ');
 	    p++;
 	    continue;
 	}
@@ -674,13 +674,13 @@ Str_url_unquote(Str x, int is_form, int safe)
 	    if (c >= 0 && (!safe || !IS_ASCII(c) || !is_file_quote(c))) {
 		if (tmp == NULL)
 		    tmp = Strnew_charp_n(x->ptr, (int)(p - x->ptr));
-		Strcat_char(tmp, (char)c);
+		tmp->Concat((char)c);
 		p = q;
 		continue;
 	    }
 	}
 	if (tmp)
-	    Strcat_char(tmp, *p);
+	    tmp->Concat(*p);
 	p++;
     }
     if (tmp)
@@ -698,12 +698,12 @@ shell_quote(char *str)
 	if (is_shell_unsafe(*p)) {
 	    if (tmp == NULL)
 		tmp = Strnew_charp_n(str, (int)(p - str));
-	    Strcat_char(tmp, '\\');
-	    Strcat_char(tmp, *p);
+	    tmp->Concat('\\');
+	    tmp->Concat(*p);
 	}
 	else {
 	    if (tmp)
-		Strcat_char(tmp, *p);
+		tmp->Concat(*p);
 	}
     }
     if (tmp)

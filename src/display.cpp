@@ -301,7 +301,7 @@ make_lastline_link(Buffer *buf, char *title, char *url)
                 *p = ' ';
         }
         if (url)
-            Strcat_charp(s, " ");
+            s->Concat(" ");
         l -= get_Str_strwidth(s);
         if (l <= 0)
             return s;
@@ -319,24 +319,24 @@ make_lastline_link(Buffer *buf, char *title, char *url)
     {
         if (!s)
             return u;
-        Strcat(s, u);
+        s->Concat(u);
         return s;
     }
     if (!s)
         s = Strnew_size(COLS);
     i = (l - 2) / 2;
-#ifdef USE_M17N
+
     while (i && pr[i] & PC_WCHAR2)
         i--;
-#endif
-    Strcat_charp_n(s, u->ptr, i);
-    Strcat_charp(s, "..");
+
+    s->Concat(u->ptr, i);
+    s->Concat("..");
     i = get_Str_strwidth(u) - (COLS - 1 - get_Str_strwidth(s));
 #ifdef USE_M17N
     while (i < u->length && pr[i] & PC_WCHAR2)
         i++;
 #endif
-    Strcat_charp(s, &u->ptr[i]);
+    s->Concat(&u->ptr[i]);
     return s;
 }
 
@@ -385,17 +385,17 @@ make_lastline_message(Buffer *buf)
         int cl = buf->currentLine->real_linenumber;
         int ll = buf->lastLine->real_linenumber;
         int r = (int)((double)cl * 100.0 / (double)(ll ? ll : 1) + 0.5);
-        Strcat(msg, Sprintf("%d/%d (%d%%)", cl, ll, r));
+        msg->Concat(Sprintf("%d/%d (%d%%)", cl, ll, r));
     }
     else
         /* FIXME: gettextize? */
-        Strcat_charp(msg, "Viewing");
+        msg->Concat("Viewing");
 #ifdef USE_SSL
     if (buf->ssl_certificate)
-        Strcat_charp(msg, "[SSL]");
+        msg->Concat("[SSL]");
 #endif
-    Strcat_charp(msg, " <");
-    Strcat_charp(msg, buf->buffername);
+    msg->Concat(" <");
+    msg->Concat(buf->buffername);
 
     if (s)
     {
@@ -414,12 +414,12 @@ make_lastline_message(Buffer *buf)
 #endif
             Strtruncate(msg, l);
         }
-        Strcat_charp(msg, "> ");
-        Strcat(msg, s);
+        msg->Concat("> ");
+        msg->Concat(s);
     }
     else
     {
-        Strcat_charp(msg, ">");
+        msg->Concat(">");
     }
     return msg;
 }
@@ -541,7 +541,7 @@ void displayBuffer(Buffer *buf, int mode)
     if (buf->firstLine == NULL)
     {
         /* FIXME: gettextize? */
-        Strcat_charp(msg, "\tNo Line");
+        msg->Concat("\tNo Line");
     }
     if (delayed_msg != NULL)
     {
@@ -1316,16 +1316,15 @@ message_list_panel(void)
     ListItem *p;
 
     /* FIXME: gettextize? */
-    Strcat_charp(tmp,
-                 "<html><head><title>List of error messages</title></head><body>"
+    tmp->Concat("<html><head><title>List of error messages</title></head><body>"
                  "<h1>List of error messages</h1><table cellpadding=0>\n");
     if (message_list)
         for (p = message_list->last; p; p = p->prev)
             Strcat_m_charp(tmp, "<tr><td><pre>", html_quote((char *)p->ptr),
                            "</pre></td></tr>\n", NULL);
     else
-        Strcat_charp(tmp, "<tr><td>(no message recorded)</td></tr>\n");
-    Strcat_charp(tmp, "</table></body></html>");
+        tmp->Concat("<tr><td>(no message recorded)</td></tr>\n");
+    tmp->Concat("</table></body></html>");
     return loadHTMLString(tmp);
 }
 

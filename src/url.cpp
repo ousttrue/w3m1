@@ -656,18 +656,18 @@ copyPath(char *orgpath, int length, int option)
 	if (IS_SPACE(*orgpath)) {
 	    switch (option) {
 	    case COPYPATH_SPC_ALLOW:
-		Strcat_char(tmp, *orgpath);
+		tmp->Concat(*orgpath);
 		break;
 	    case COPYPATH_SPC_IGNORE:
 		/* do nothing */
 		break;
 	    case COPYPATH_SPC_REPLACE:
-		Strcat_charp(tmp, "%20");
+		tmp->Concat("%20");
 		break;
 	    }
 	}
 	else
-	    Strcat_char(tmp, *orgpath);
+	    tmp->Concat(*orgpath);
 	orgpath++;
 	length--;
     }
@@ -900,10 +900,10 @@ parseURL(char *url, ParsedURL *p_url, ParsedURL *current)
     if (p_url->scheme == SCM_GOPHER && *p == 'R') {
 	p++;
 	tmp = Strnew();
-	Strcat_char(tmp, *(p++));
+	tmp->Concat(*(p++));
 	while (*p && *p != '/')
 	    p++;
-	Strcat_charp(tmp, p);
+	tmp->Concat(p);
 	while (*p)
 	    p++;
 	p_url->file = copyPath(tmp->ptr, -1, COPYPATH_SPC_IGNORE);
@@ -1030,7 +1030,7 @@ parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
 	Str drive;
 	if (IS_ALPHA(q[0]) && q[1] == ':') {
 	    drive = Strnew_charp_n(q, 2);
-	    Strcat_charp(drive, file_quote(q+2));
+	    drive->Concat( file_quote(q+2));
 	    pu->file = drive->ptr;
 	}
 	else
@@ -1078,7 +1078,7 @@ parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
 			    break;
 			Strshrink(tmp, 1);
 		    }
-		    Strcat_charp(tmp, p);
+		    tmp->Concat(p);
 		    pu->file = tmp->ptr;
 		    relative_uri = TRUE;
 		}
@@ -1117,8 +1117,8 @@ parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
 	    /* local file, relative path */
 	    tmp = Strnew_charp(CurrentDir);
 	    if (Strlastchar(tmp) != '/')
-		Strcat_char(tmp, '/');
-	    Strcat_charp(tmp, file_unquote(pu->file));
+		tmp->Concat('/');
+	    tmp->Concat(file_unquote(pu->file));
 	    pu->file = file_quote(cleanupName(tmp->ptr));
 	}
 #endif
@@ -1191,46 +1191,46 @@ _parsedURL2Str(ParsedURL *pu, int pass)
     if (pu->scheme == SCM_LOCAL && !strcmp(pu->file, "-")) {
 	tmp = Strnew_charp("-");
 	if (pu->label) {
-	    Strcat_char(tmp, '#');
-	    Strcat_charp(tmp, pu->label);
+	    tmp->Concat('#');
+	    tmp->Concat(pu->label);
 	}
 	return tmp;
     }
     tmp = Strnew_charp(scheme_str[pu->scheme]);
-    Strcat_char(tmp, ':');
+    tmp->Concat(':');
 #ifndef USE_W3MMAILER
     if (pu->scheme == SCM_MAILTO) {
-	Strcat_charp(tmp, pu->file);
+	tmp->Concat(pu->file);
 	if (pu->query) {
-	    Strcat_char(tmp, '?');
-	    Strcat_charp(tmp, pu->query);
+	    tmp->Concat('?');
+	    tmp->Concat(pu->query);
 	}
 	return tmp;
     }
 #endif
     if (pu->scheme == SCM_DATA) {
-	Strcat_charp(tmp, pu->file);
+	tmp->Concat(pu->file);
 	return tmp;
     }
 #ifdef USE_NNTP
     if (pu->scheme != SCM_NEWS && pu->scheme != SCM_NEWS_GROUP)
 #endif				/* USE_NNTP */
     {
-	Strcat_charp(tmp, "//");
+	tmp->Concat("//");
     }
     if (pu->user) {
-	Strcat_charp(tmp, pu->user);
+	tmp->Concat(pu->user);
 	if (pass && pu->pass) {
-	    Strcat_char(tmp, ':');
-	    Strcat_charp(tmp, pu->pass);
+	    tmp->Concat(':');
+	    tmp->Concat(pu->pass);
 	}
-	Strcat_char(tmp, '@');
+	tmp->Concat('@');
     }
     if (pu->host) {
-	Strcat_charp(tmp, pu->host);
+	tmp->Concat(pu->host);
 	if (pu->port != DefaultPort[pu->scheme]) {
-	    Strcat_char(tmp, ':');
-	    Strcat(tmp, Sprintf("%d", pu->port));
+	    tmp->Concat(':');
+	    tmp->Concat(Sprintf("%d", pu->port));
 	}
     }
     if (
@@ -1244,17 +1244,17 @@ _parsedURL2Str(ParsedURL *pu, int pass)
 				      && pu->host == NULL)
 #endif
 	    )))
-	Strcat_char(tmp, '/');
-    Strcat_charp(tmp, pu->file);
+	tmp->Concat('/');
+    tmp->Concat(pu->file);
     if (pu->scheme == SCM_FTPDIR && Strlastchar(tmp) != '/')
-	Strcat_char(tmp, '/');
+	tmp->Concat('/');
     if (pu->query) {
-	Strcat_char(tmp, '?');
-	Strcat_charp(tmp, pu->query);
+	tmp->Concat('?');
+	tmp->Concat(pu->query);
     }
     if (pu->label) {
-	Strcat_char(tmp, '#');
-	Strcat_charp(tmp, pu->label);
+	tmp->Concat('#');
+	tmp->Concat(pu->label);
     }
     return tmp;
 }
@@ -1293,27 +1293,27 @@ otherinfo(ParsedURL *target, ParsedURL *current, char *referer)
 {
     Str s = Strnew();
 
-    Strcat_charp(s, "User-Agent: ");
+    s->Concat( "User-Agent: ");
     if (UserAgent == NULL || *UserAgent == '\0')
-	Strcat_charp(s, w3m_version);
+	s->Concat( w3m_version);
     else
-	Strcat_charp(s, UserAgent);
-    Strcat_charp(s, "\r\n");
+	s->Concat( UserAgent);
+    s->Concat( "\r\n");
 
     Strcat_m_charp(s, "Accept: ", AcceptMedia, "\r\n", NULL);
     Strcat_m_charp(s, "Accept-Encoding: ", AcceptEncoding, "\r\n", NULL);
     Strcat_m_charp(s, "Accept-Language: ", AcceptLang, "\r\n", NULL);
 
     if (target->host) {
-	Strcat_charp(s, "Host: ");
-	Strcat_charp(s, target->host);
+	s->Concat( "Host: ");
+	s->Concat( target->host);
 	if (target->port != DefaultPort[target->scheme])
-	    Strcat(s, Sprintf(":%d", target->port));
-	Strcat_charp(s, "\r\n");
+	    s->Concat( Sprintf(":%d", target->port));
+	s->Concat( "\r\n");
     }
     if (target->is_nocache || NoCache) {
-	Strcat_charp(s, "Pragma: no-cache\r\n");
-	Strcat_charp(s, "Cache-control: no-cache\r\n");
+	s->Concat( "Pragma: no-cache\r\n");
+	s->Concat( "Cache-control: no-cache\r\n");
     }
     if (!NoSendReferer) {
 #ifdef USE_SSL
@@ -1326,20 +1326,20 @@ otherinfo(ParsedURL *target, ParsedURL *current, char *referer)
 	    (current->scheme != SCM_FTP ||
 	     (current->user == NULL && current->pass == NULL))) {
 	    char *p = current->label;
-	    Strcat_charp(s, "Referer: ");
+	    s->Concat( "Referer: ");
 	    current->label = NULL;
-	    Strcat(s, parsedURL2Str(current));
+	    s->Concat( parsedURL2Str(current));
 	    current->label = p;
-	    Strcat_charp(s, "\r\n");
+	    s->Concat( "\r\n");
 	}
 	else if (referer != NULL && referer != NO_REFERER) {
 	    char *p = strchr(referer, '#');
-	    Strcat_charp(s, "Referer: ");
+	    s->Concat( "Referer: ");
 	    if (p)
-		Strcat_charp_n(s, referer, p - referer);
+		s->Concat(referer, p - referer);
 	    else
-		Strcat_charp(s, referer);
-	    Strcat_charp(s, "\r\n");
+		s->Concat( referer);
+	    s->Concat( "\r\n");
 	}
     }
     return s->ptr;
@@ -1369,20 +1369,20 @@ HTTPrequestURI(ParsedURL *pu, HRequest *hr)
 {
     Str tmp = Strnew();
     if (hr->command == HR_COMMAND_CONNECT) {
-	Strcat_charp(tmp, pu->host);
-	Strcat(tmp, Sprintf(":%d", pu->port));
+	tmp->Concat(pu->host);
+	tmp->Concat(Sprintf(":%d", pu->port));
     }
     else if (hr->flag & HR_FLAG_LOCAL) {
-	Strcat_charp(tmp, pu->file);
+	tmp->Concat(pu->file);
 	if (pu->query) {
-	    Strcat_char(tmp, '?');
-	    Strcat_charp(tmp, pu->query);
+	    tmp->Concat('?');
+	    tmp->Concat(pu->query);
 	}
     }
     else {
 	char *save_label = pu->label;
 	pu->label = NULL;
-	Strcat(tmp, _parsedURL2Str(pu, TRUE));
+	tmp->Concat(_parsedURL2Str(pu, TRUE));
 	pu->label = save_label;
     }
     return tmp;
@@ -1398,13 +1398,13 @@ HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra)
     Str cookie;
 #endif				/* USE_COOKIE */
     tmp = HTTPrequestMethod(hr);
-    Strcat_charp(tmp, " ");
-    Strcat_charp(tmp, HTTPrequestURI(pu, hr)->ptr);
-    Strcat_charp(tmp, " HTTP/1.0\r\n");
+    tmp->Concat(" ");
+    tmp->Concat(HTTPrequestURI(pu, hr)->ptr);
+    tmp->Concat(" HTTP/1.0\r\n");
     if (hr->referer == NO_REFERER)
-	Strcat_charp(tmp, otherinfo(pu, NULL, NULL));
+	tmp->Concat(otherinfo(pu, NULL, NULL));
     else
-	Strcat_charp(tmp, otherinfo(pu, current, hr->referer));
+	tmp->Concat(otherinfo(pu, current, hr->referer));
     if (extra != NULL)
 	for (i = extra->first; i != NULL; i = i->next) {
 	    if (strncasecmp(i->ptr, "Authorization:",
@@ -1423,47 +1423,47 @@ HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra)
 		    continue;
 #endif
 	    }
-	    Strcat_charp(tmp, i->ptr);
+	    tmp->Concat(i->ptr);
 	}
 
 #ifdef USE_COOKIE
     if (hr->command != HR_COMMAND_CONNECT &&
 	use_cookie && (cookie = find_cookie(pu))) {
-	Strcat_charp(tmp, "Cookie: ");
-	Strcat(tmp, cookie);
-	Strcat_charp(tmp, "\r\n");
+	tmp->Concat("Cookie: ");
+	tmp->Concat(cookie);
+	tmp->Concat("\r\n");
 	/* [DRAFT 12] s. 10.1 */
 	if (cookie->ptr[0] != '$')
-	    Strcat_charp(tmp, "Cookie2: $Version=\"1\"\r\n");
+	    tmp->Concat("Cookie2: $Version=\"1\"\r\n");
     }
 #endif				/* USE_COOKIE */
     if (hr->command == HR_COMMAND_POST) {
 	if (hr->request->enctype == FORM_ENCTYPE_MULTIPART) {
-	    Strcat_charp(tmp, "Content-type: multipart/form-data; boundary=");
-	    Strcat_charp(tmp, hr->request->boundary);
-	    Strcat_charp(tmp, "\r\n");
-	    Strcat(tmp,
+	    tmp->Concat("Content-type: multipart/form-data; boundary=");
+	    tmp->Concat(hr->request->boundary);
+	    tmp->Concat("\r\n");
+	    tmp->Concat(
 		   Sprintf("Content-length: %ld\r\n", hr->request->length));
-	    Strcat_charp(tmp, "\r\n");
+	    tmp->Concat("\r\n");
 	}
 	else {
 	    if (!override_content_type) {
-		Strcat_charp(tmp,
+		tmp->Concat(
 			     "Content-type: application/x-www-form-urlencoded\r\n");
 	    }
-	    Strcat(tmp,
+	    tmp->Concat(
 		   Sprintf("Content-length: %ld\r\n", hr->request->length));
 	    if (header_string)
-		Strcat(tmp, header_string);
-	    Strcat_charp(tmp, "\r\n");
-	    Strcat_charp_n(tmp, hr->request->body, hr->request->length);
-	    Strcat_charp(tmp, "\r\n");
+		tmp->Concat(header_string);
+	    tmp->Concat("\r\n");
+	    tmp->Concat(hr->request->body, hr->request->length);
+	    tmp->Concat("\r\n");
 	}
     }
     else {
 	if (header_string)
-	    Strcat(tmp, header_string);
-	Strcat_charp(tmp, "\r\n");
+	    tmp->Concat(header_string);
+	tmp->Concat("\r\n");
     }
 #ifdef DEBUG
     fprintf(stderr, "HTTPrequest: [ %s ]\n\n", tmp->ptr);
@@ -1522,7 +1522,7 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 	if (pu->label != NULL) {
 	    /* #hogege is not a label but a filename */
 	    Str tmp2 = Strnew_charp("#");
-	    Strcat_charp(tmp2, pu->label);
+	    tmp2->Concat( pu->label);
 	    pu->file = tmp2->ptr;
 	    pu->real_file = cleanupName(file_unquote(pu->file));
 	    pu->label = NULL;
@@ -1574,8 +1574,8 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 	    else if (document_root != NULL) {
 		tmp = Strnew_charp(document_root);
 		if (Strlastchar(tmp) != '/' && pu->file[0] != '/')
-		    Strcat_char(tmp, '/');
-		Strcat_charp(tmp, pu->file);
+		    tmp->Concat('/');
+		tmp->Concat(pu->file);
 		p = cleanupName(tmp->ptr);
 		q = cleanupName(file_unquote(p));
 		if (dir_exist(q)) {
@@ -1774,7 +1774,7 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 	    if (pu->file == NULL)
 		pu->file = "1";
 	    tmp = Strnew_charp(file_unquote(pu->file));
-	    Strcat_char(tmp, '\n');
+	    tmp->Concat('\n');
 	}
 	write(sock, tmp->ptr, tmp->length);
 	break;
@@ -1904,7 +1904,7 @@ make_domain_list(char *domain_list)
 	    p++;
 	tmp->Clear();
 	while (*p && !IS_SPACE(*p) && *p != ',')
-	    Strcat_char(tmp, *p++);
+	    tmp->Concat(*p++);
 	if (tmp->length > 0) {
 	    if (domains == NULL)
 		domains = newTextList();
@@ -1977,7 +1977,7 @@ check_no_proxy(char *domain)
 	    sprintf(addr, "%d", h_addr_list[0][0]);
 	    for (n = 1; n < he->h_length; n++) {
 		sprintf(buf, ".%d", h_addr_list[0][n]);
-		strcat(addr, buf);
+		addr->Concat( buf);
 	    }
 	    for (tl = NO_proxy_domains->first; tl != NULL; tl = tl->next) {
 		if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0) {

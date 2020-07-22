@@ -175,17 +175,17 @@ dump_extra(Buffer *buf)
         char *p;
         for (p = buf->ssl_certificate; *p; p++)
         {
-            Strcat_char(tmp, *p);
+            tmp->Concat(*p);
             if (*p == '\n')
             {
                 for (; *(p + 1) == '\n'; p++)
                     ;
                 if (*(p + 1))
-                    Strcat_char(tmp, '\t');
+                    tmp->Concat('\t');
             }
         }
         if (Strlastchar(tmp) != '\n')
-            Strcat_char(tmp, '\n');
+            tmp->Concat('\n');
         printf("W3m-ssl-certificate: %s", tmp->ptr);
     }
 #endif
@@ -930,8 +930,8 @@ void _followForm(int submit)
         {
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
                 Strshrink(tmp2, (tmp2->ptr + tmp2->length) - p);
-            Strcat_charp(tmp2, "?");
-            Strcat(tmp2, tmp);
+            tmp2->Concat( "?");
+            tmp2->Concat( tmp);
             loadLink(tmp2->ptr, a->target, NULL, NULL);
         }
         else if (fi->parent->method == FORM_METHOD_POST)
@@ -1052,11 +1052,11 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 getMapXY(GetCurrentbuf(), retrieveCurrentImg(GetCurrentbuf()), &x, &y);
 #endif
                 *query = Strdup(conv_form_encoding(f2->name, fi, GetCurrentbuf()));
-                Strcat_charp(*query, ".x");
+                (*query)->Concat(".x");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", x)->ptr);
                 *query = Strdup(conv_form_encoding(f2->name, fi, GetCurrentbuf()));
-                Strcat_charp(*query, ".y");
+                (*query)->Concat(".y");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
             }
@@ -1088,35 +1088,35 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
 #ifdef USE_IMAGE
                 getMapXY(GetCurrentbuf(), retrieveCurrentImg(GetCurrentbuf()), &x, &y);
 #endif
-                Strcat(*query,
+                (*query)->Concat(
                        Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
-                Strcat(*query, Sprintf(".x=%d&", x));
-                Strcat(*query,
+                (*query)->Concat( Sprintf(".x=%d&", x));
+                (*query)->Concat(
                        Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
-                Strcat(*query, Sprintf(".y=%d", y));
+                (*query)->Concat( Sprintf(".y=%d", y));
             }
             else
             {
                 /* not IMAGE */
                 if (f2->name && f2->name->length > 0)
                 {
-                    Strcat(*query,
+                    (*query)->Concat(
                            Str_form_quote(conv_form_encoding(f2->name, fi, GetCurrentbuf())));
-                    Strcat_char(*query, '=');
+                    (*query)->Concat('=');
                 }
                 if (f2->value != NULL)
                 {
                     if (fi->parent->method == FORM_METHOD_INTERNAL)
-                        Strcat(*query, Str_form_quote(f2->value));
+                        (*query)->Concat( Str_form_quote(f2->value));
                     else
                     {
-                        Strcat(*query,
+                        (*query)->Concat(
                                Str_form_quote(conv_form_encoding(f2->value, fi, GetCurrentbuf())));
                     }
                 }
             }
             if (f2->next)
-                Strcat_char(*query, '&');
+                (*query)->Concat('&');
         }
     }
     if (multipart)
@@ -2128,8 +2128,8 @@ Buffer *DownloadListBuffer()
     {
         if (lstat(d->lock, &st))
             d->running = FALSE;
-        Strcat_charp(src, "<pre>\n");
-        Strcat(src, Sprintf("%s\n  --&gt; %s\n  ", html_quote(d->url),
+        src->Concat("<pre>\n");
+        src->Concat(Sprintf("%s\n  --&gt; %s\n  ", html_quote(d->url),
                             html_quote(conv_from_system(d->save))));
         duration = cur_time - d->time;
         if (!stat(d->save, &st))
@@ -2153,59 +2153,59 @@ Buffer *DownloadListBuffer()
                 i = l;
             l -= i;
             while (i-- > 0)
-                Strcat_char(src, '#');
+                src->Concat( '#');
             while (l-- > 0)
-                Strcat_char(src, '_');
-            Strcat_char(src, '\n');
+                src->Concat( '_');
+            src->Concat( '\n');
         }
         if ((d->running || d->err) && size < d->size)
-            Strcat(src, Sprintf("  %s / %s bytes (%d%%)",
+            src->Concat(Sprintf("  %s / %s bytes (%d%%)",
                                 convert_size3(size), convert_size3(d->size),
                                 (int)(100.0 * size / d->size)));
         else
-            Strcat(src, Sprintf("  %s bytes loaded", convert_size3(size)));
+            src->Concat(Sprintf("  %s bytes loaded", convert_size3(size)));
         if (duration > 0)
         {
             rate = size / duration;
-            Strcat(src, Sprintf("  %02d:%02d:%02d  rate %s/sec",
+            src->Concat(Sprintf("  %02d:%02d:%02d  rate %s/sec",
                                 duration / (60 * 60), (duration / 60) % 60,
                                 duration % 60, convert_size(rate, 1)));
             if (d->running && size < d->size && rate)
             {
                 eta = (d->size - size) / rate;
-                Strcat(src, Sprintf("  eta %02d:%02d:%02d", eta / (60 * 60),
+                src->Concat(Sprintf("  eta %02d:%02d:%02d", eta / (60 * 60),
                                     (eta / 60) % 60, eta % 60));
             }
         }
-        Strcat_char(src, '\n');
+        src->Concat( '\n');
         if (!d->running)
         {
-            Strcat(src, Sprintf("<input type=submit name=ok%d value=OK>",
+            src->Concat(Sprintf("<input type=submit name=ok%d value=OK>",
                                 d->pid));
             switch (d->err)
             {
             case 0:
                 if (size < d->size)
-                    Strcat_charp(src, " Download ended but probably not complete");
+                    src->Concat(" Download ended but probably not complete");
                 else
-                    Strcat_charp(src, " Download complete");
+                    src->Concat(" Download complete");
                 break;
             case 1:
-                Strcat_charp(src, " Error: could not open destination file");
+                src->Concat(" Error: could not open destination file");
                 break;
             case 2:
-                Strcat_charp(src, " Error: could not write to file (disk full)");
+                src->Concat(" Error: could not write to file (disk full)");
                 break;
             default:
-                Strcat_charp(src, " Error: unknown reason");
+                src->Concat(" Error: unknown reason");
             }
         }
         else
-            Strcat(src, Sprintf("<input type=submit name=stop%d value=STOP>",
+            src->Concat(Sprintf("<input type=submit name=stop%d value=STOP>",
                                 d->pid));
-        Strcat_charp(src, "\n</pre><hr>\n");
+        src->Concat("\n</pre><hr>\n");
     }
-    Strcat_charp(src, "</form></body></html>");
+    src->Concat("</form></body></html>");
     return loadHTMLString(src);
 }
 
@@ -2918,7 +2918,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                     *(color++) = 0;
 #endif
             }
-            Strcat_charp_n(s, sp, (int)(str - sp));
+            s->Concat(sp, (int)(str - sp));
         }
     }
     if (!do_copy)
@@ -3100,14 +3100,14 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 #endif
             }
             if (do_copy)
-                Strcat_charp_n(s, (char *)str, plen);
+                s->Concat((char *)str, plen);
             str += plen;
         }
         else
 #endif
         {
             if (do_copy)
-                Strcat_char(s, (char)*str);
+                s->Concat((char)*str);
             str++;
         }
         effect = PE_NORMAL;

@@ -75,7 +75,7 @@ wc_conv_from_utf7(Str is, wc_ces ces)
 	return is;
     os = Strnew_size(is->length * 4 / 3);
     if (p > sp)
-	Strcat_charp_n(os, is->ptr, (int)(p - sp));
+	os->Concat(is->ptr, (int)(p - sp));
 
     st.tag = NULL;
     st.ntag = 0;
@@ -129,7 +129,7 @@ wc_conv_from_utf7(Str is, wc_ces ces)
 	switch (WC_UTF7_MAP[*p]) {
 	case CD:
 	case CB:
-	    Strcat_char(os, (char)*p);
+	    os->Concat((char)*p);
 	    break;
 	case C1:
 	    wtf_push_unknown(os, p, 1);
@@ -160,39 +160,39 @@ wc_push_ucs_to_utf7(Str os, uint32_t ucs, wc_status *st)
 	case SD:
 	case CD:
 	    if (st->state == WC_UTF7_BASE64) {
-		Strcat_char(os, BASE64_C(st->base));
-		Strcat_char(os, WC_C_UTF7_MINUS);
+		os->Concat(BASE64_C(st->base));
+		os->Concat(WC_C_UTF7_MINUS);
 		st->state = WC_UTF7_NOSTATE;
 	    }
-	    Strcat_char(os, (char)ucs);
+	    os->Concat((char)ucs);
 	    return;
 	case BP:
 	    if (st->state == WC_UTF7_BASE64) {
-		Strcat_char(os, BASE64_C(st->base));
-		Strcat_char(os, WC_C_UTF7_MINUS);
+		os->Concat(BASE64_C(st->base));
+		os->Concat(WC_C_UTF7_MINUS);
 		st->state = WC_UTF7_NOSTATE;
 	    }
-	    Strcat_char(os, WC_C_UTF7_PLUS);
-	    Strcat_char(os, WC_C_UTF7_MINUS);
+	    os->Concat(WC_C_UTF7_PLUS);
+	    os->Concat(WC_C_UTF7_MINUS);
 	    return;
 	}
     }
     if (st->state == WC_UTF7_BASE64 && st->shift) {
 	st->shift += 16;
 	st->base |= ucs >> st->shift;
-	Strcat_char(os, BASE64_C(st->base));
+	os->Concat(BASE64_C(st->base));
     } else {
 	if (st->state != WC_UTF7_BASE64) {
-	    Strcat_char(os, WC_C_UTF7_PLUS);
+	    os->Concat(WC_C_UTF7_PLUS);
 	    st->state = WC_UTF7_BASE64;
 	}
 	st->shift = 16;
 	st->base = 0;
     }
     st->shift -= 6;
-    Strcat_char(os, BASE64_C((ucs >> st->shift) & 0x3f));
+    os->Concat(BASE64_C((ucs >> st->shift) & 0x3f));
     st->shift -= 6;
-    Strcat_char(os, BASE64_C((ucs >> st->shift) & 0x3f));
+    os->Concat(BASE64_C((ucs >> st->shift) & 0x3f));
     if (st->shift) {
 	st->shift -= 6;
 	st->base = (ucs << (- st->shift)) & 0x3f;
@@ -281,8 +281,8 @@ wc_push_to_utf7_end(Str os, wc_status *st)
 	st->ntag = wc_push_tag_to_utf7(os, 0, st);
     if (st->state == WC_UTF7_BASE64) {
 	if (st->shift)
-	    Strcat_char(os, BASE64_C(st->base));
-	Strcat_char(os, WC_C_UTF7_MINUS);
+	    os->Concat(BASE64_C(st->base));
+	os->Concat(WC_C_UTF7_MINUS);
     }
     return;
 }
@@ -351,7 +351,7 @@ wc_char_conv_from_utf7(uint8_t c, wc_status *st)
     switch (WC_UTF7_MAP[c]) {
     case CD:
     case CB:
-	Strcat_char(os, (char)c);
+	os->Concat((char)c);
 	break;
     case C1:
 	break;
