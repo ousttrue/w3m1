@@ -22,50 +22,27 @@
 #include "Str.h"
 #include "myctype.h"
 
-#define INITIAL_STR_SIZE 32
-
 Str Strnew()
 {
-    Str x = (Str)GC_MALLOC(sizeof(GCStr));
-    x->ptr = (char *)GC_MALLOC_ATOMIC(INITIAL_STR_SIZE);
-    x->ptr[0] = '\0';
-    x->area_size = INITIAL_STR_SIZE;
-    x->length = 0;
-    return x;
+    return new GCStr();
 }
 
 Str Strnew_size(int n)
 {
-    Str x = (Str)GC_MALLOC(sizeof(GCStr));
-    x->ptr = (char *)GC_MALLOC_ATOMIC(n + 1);
-    x->ptr[0] = '\0';
-    x->area_size = n + 1;
-    x->length = 0;
-    return x;
+    return new GCStr(n + 1);
 }
 
 Str Strnew_charp(char *p)
 {
-    Str x;
-    int n;
-
-    if (p == NULL)
-        return Strnew();
-    x = (Str)GC_MALLOC(sizeof(GCStr));
-    n = strlen(p) + 1;
-    x->ptr = (char *)GC_MALLOC_ATOMIC(n);
-    x->area_size = n;
-    x->length = n - 1;
-    bcopy((void *)p, (void *)x->ptr, n);
-    return x;
+    return new GCStr(p);
 }
 
 Str Strnew_m_charp(char *p, ...)
 {
     va_list ap;
-    Str r = Strnew();
-
     va_start(ap, p);
+
+    Str r = Strnew();
     while (p != NULL)
     {
         r->Concat(p);
@@ -76,17 +53,7 @@ Str Strnew_m_charp(char *p, ...)
 
 Str Strnew_charp_n(char *p, int n)
 {
-    Str x;
-
-    if (p == NULL)
-        return Strnew_size(n);
-    x = (Str)GC_MALLOC(sizeof(GCStr));
-    x->ptr = (char *)GC_MALLOC_ATOMIC(n + 1);
-    x->area_size = n + 1;
-    x->length = n;
-    bcopy((void *)p, (void *)x->ptr, n);
-    x->ptr[n] = '\0';
-    return x;
+    return new GCStr(p, n);
 }
 
 Str Strdup(Str s)
@@ -96,13 +63,37 @@ Str Strdup(Str s)
     return n;
 }
 
+GCStr::GCStr(int size)
+{
+    // Str x = (Str)GC_MALLOC(sizeof(GCStr));
+    ptr = (char *)GC_MALLOC_ATOMIC(size);
+    ptr[0] = '\0';
+    area_size = size;
+    length = 0;
+}
+
+GCStr::GCStr(const char *src, int size)
+{
+    ptr = (char *)GC_MALLOC_ATOMIC(size + 1);
+    area_size = size + 1;
+    length = size;
+    bcopy((void *)src, (void *)ptr, size);
+    ptr[size] = '\0';
+}
+
+GCStr::~GCStr()
+{
+    // GC_FREE(ptr);
+    auto a = 0;
+}
+
 void GCStr::Clear()
 {
     length = 0;
     ptr[0] = '\0';
 }
 
-char* GCStr::RequireSize(int size)
+char *GCStr::RequireSize(int size)
 {
     if (area_size >= size)
     {
@@ -133,7 +124,7 @@ void GCStr::Concat(const char *y, int n)
     {
         return;
     }
-    
+
     auto old = RequireSize(length + n + 1);
     if (old)
     {
@@ -176,7 +167,7 @@ Str Strsubstr(Str s, int beg, int len)
     if (beg >= s->length)
         return new_s;
     for (i = 0; i < len && beg + i < s->length; i++)
-        new_s->Concat( s->ptr[beg + i]);
+        new_s->Concat(s->ptr[beg + i]);
     return new_s;
 }
 

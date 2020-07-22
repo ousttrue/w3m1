@@ -16,15 +16,27 @@
 #pragma once
 #include <stdio.h>
 #include <string.h>
+#include <gc_cpp.h>
 
-struct GCStr
+//
+// http://aitoweb.world.coocan.jp/gc/gc.html
+//
+
+struct GCStr : public gc_cleanup
 {
     char *ptr;
     int length;
     int area_size;
 
+    GCStr(int size = 32);
+    GCStr(const char *src, int size);
+    GCStr(const char *src) : GCStr(src, strlen(src))
+    {
+    }
+    ~GCStr();
+
     void Clear();
-    char* RequireSize(int size);
+    char *RequireSize(int size);
     void CopyFrom(const char *src, int size);
     void CopyFrom(const char *src)
     {
@@ -84,7 +96,6 @@ Str Strfgets(FILE *);
 Str Strfgetall(FILE *);
 
 void Strgrow(Str s);
-
 
 inline int Strcmp(Str x, Str y)
 {
