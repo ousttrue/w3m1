@@ -525,7 +525,7 @@ int handleMailto(char *url)
     {
         to = Strnew_charp(url + 7);
         if ((pos = strchr(to->ptr, '?')) != NULL)
-            Strtruncate(to, pos - to->ptr);
+            to->Truncate(pos - to->ptr);
     }
     fmTerm();
     system(myExtCommand(Mailer, shell_quote(file_unquote(to->ptr)),
@@ -923,13 +923,13 @@ void _followForm(int submit)
             /* It means "current URL" */
             tmp2 = parsedURL2Str(&GetCurrentbuf()->currentURL);
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
-                Strshrink(tmp2, (tmp2->ptr + tmp2->length) - p);
+                tmp2->Pop((tmp2->ptr + tmp2->length) - p);
         }
 
         if (fi->parent->method == FORM_METHOD_GET)
         {
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
-                Strshrink(tmp2, (tmp2->ptr + tmp2->length) - p);
+                tmp2->Pop((tmp2->ptr + tmp2->length) - p);
             tmp2->Push( "?");
             tmp2->Push( tmp);
             loadLink(tmp2->ptr, a->target, NULL, NULL);
@@ -1128,7 +1128,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
     {
         /* remove trailing & */
         while (Strlastchar(*query) == '&')
-            Strshrink(*query, 1);
+            (*query)->Pop(1);
     }
 }
 
@@ -2997,7 +2997,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                         }
                         else
                         {
-                            Strshrink(s, plen);
+                            s->Pop(plen);
                             prop -= plen;
                             str += 2;
                         }
@@ -3012,7 +3012,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 {
                     if (s->length)
                     {
-#ifdef USE_M17N
+
                         clen = get_mclen(str + 1);
                         if (plen == clen &&
                             !strncmp(str - plen, str + 1, plen))
@@ -3023,23 +3023,10 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                         }
                         else
                         {
-                            Strshrink(s, plen);
+                            s->Pop(plen);
                             prop -= plen;
                             str++;
                         }
-#else
-                        if (*(str - 1) == *(str + 1))
-                        {
-                            *(prop - 1) |= PE_BOLD;
-                            str += 2;
-                        }
-                        else
-                        {
-                            Strshrink(s, 1);
-                            prop--;
-                            str++;
-                        }
-#endif
                     }
                     else
                     {

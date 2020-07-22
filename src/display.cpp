@@ -412,7 +412,7 @@ make_lastline_message(Buffer *buf)
             }
             l = p - msg->ptr;
 #endif
-            Strtruncate(msg, l);
+            msg->Truncate(l);
         }
         msg->Push("> ");
         msg->Push(s);

@@ -102,7 +102,7 @@ matchMailcapAttr(char *p, char *attr, int len, Str *value)
 		    p++;
 		}
 		if (q)
-		    Strshrink(*value, p - q - 1);
+		    (*value)->Pop(p - q - 1);
 	    }
 	    return 1;
 	}
@@ -209,10 +209,10 @@ loadMailcap(char *filename)
 	    continue;
       redo:
 	while (IS_SPACE(Strlastchar(tmp)))
-	    Strshrink(tmp, 1);
+	    tmp->Pop(1);
 	if (Strlastchar(tmp) == '\\') {
 	    /* continuation */
-	    Strshrink(tmp, 1);
+	    tmp->Pop(1);
 	    tmp->Push(Strfgets(f));
 	    goto redo;
 	}

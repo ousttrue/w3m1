@@ -61,6 +61,8 @@ struct GCStr : public gc_cleanup
         Push(&y, 1);
         // ((length + 1 >= area_size) ? Strgrow(x), 0 : 0, ptr[length++] = (y), ptr[length] = 0);
     }
+    void Truncate(int pos);
+    void Pop(int len);
     void Delete(int pos, int len);
     void StripLeft();
     void StripRight();
@@ -103,10 +105,8 @@ inline Str Strnew_charp_n(const char *src, int size)
 Str Strnew_m_charp(char *, ...);
 void Strcat_m_charp(Str, ...);
 
-void Strtruncate(Str, int);
 void Strlower(Str);
 void Strupper(Str);
-void Strshrink(Str, int);
 Str Stralign_left(Str, int);
 Str Stralign_right(Str, int);
 Str Stralign_center(Str, int);

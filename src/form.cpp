@@ -614,7 +614,7 @@ input_textarea(FormItemList *fi)
 	}
 	else if (tmp->length > 1 && tmp->ptr[tmp->length - 1] == '\n' &&
 		 tmp->ptr[tmp->length - 2] != '\r') {
-	    Strshrink(tmp, 1);
+	    tmp->Pop(1);
 	    tmp->Push("\r\n");
 	}
 	tmp = convertLine(NULL, tmp, RAW_MODE, &charset, DisplayCharset);

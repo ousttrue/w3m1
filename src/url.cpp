@@ -1076,7 +1076,7 @@ parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
 		    while (tmp->length > 0) {
 			if (Strlastchar(tmp) == '/')
 			    break;
-			Strshrink(tmp, 1);
+			tmp->Pop(1);
 		    }
 		    tmp->Push(p);
 		    pu->file = tmp->ptr;
@@ -2100,7 +2100,7 @@ loadURIMethods(char *filename)
 	if (tmp->ptr[0] == '#')
 	    continue;
 	while (IS_SPACE(Strlastchar(tmp)))
-	    Strshrink(tmp, 1);
+	    tmp->Pop(1);
 	for (up = p = tmp->ptr; *p != '\0'; p++) {
 	    if (*p == ':') {
 		um[i].item1 = Strnew_charp_n(up, p - up)->ptr;

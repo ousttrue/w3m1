@@ -364,7 +364,7 @@ uncompressed_file_type(char *path, char **ext)
         return NULL;
 
     fn = Strnew_charp(path);
-    Strshrink(fn, slen);
+    fn->Pop(slen);
     if (ext)
         *ext = filename_extension(fn->ptr, 0);
     t0 = guessContentType(fn->ptr);
@@ -554,7 +554,7 @@ matchattr(char *p, char *attr, int len, Str *value)
                     p++;
                 }
                 if (q)
-                    Strshrink(*value, p - q - 1);
+                    (*value)->Pop(p - q - 1);
             }
             return 1;
         }
@@ -818,7 +818,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
                     value->Push( *(p++));
                 }
                 if (q)
-                    Strshrink(value, p - q - 1);
+                    value->Pop(p - q - 1);
             }
             while (*p == ';') {
                 p++;
@@ -889,7 +889,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
                                           ((domain && domain->ptr)
                                            ? domain->ptr : "<localdomain>"));
                         if (msg->length > COLS - 10)
-                            Strshrink(msg, msg->length - (COLS - 10));
+                            msg->Pop(msg->length - (COLS - 10));
                         msg->Push(" (y/n)");
                         ans = inputAnswer(msg->ptr);
                     }
@@ -1129,7 +1129,7 @@ qstr_unquote(Str s)
             tmp->Push(*p);
         }
         if (Strlastchar(tmp) == '"')
-            Strshrink(tmp, 1);
+            tmp->Pop(1);
         return tmp;
     }
     else
@@ -2673,7 +2673,7 @@ passthrough(struct readbuffer *obuf, char *str, int back)
 
     if (back) {
         Str str_save = Strnew_charp(str);
-        Strshrink(obuf->line, obuf->line->ptr + obuf->line->length - str);
+        obuf->line->Pop(obuf->line->ptr + obuf->line->length - str);
         str = str_save->ptr;
     }
     while (*str) {
@@ -3452,7 +3452,7 @@ process_option(void)
     if (cur_select == NULL || cur_option == NULL)
         return;
     while (cur_option->length > 0 && IS_SPACE(Strlastchar(cur_option)))
-        Strshrink(cur_option, 1);
+        cur_option->Pop(1);
     if (cur_option_value == NULL)
         cur_option_value = cur_option;
     if (cur_option_label == NULL)
@@ -6399,7 +6399,7 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 #endif
 
     if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && Strlastchar(line) == ' ') {
-        Strshrink(line, 1);
+        line->Pop(1);
         obuf->pos--;
     }
 
@@ -6445,7 +6445,7 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
     }
     if (hidden) {
         pass = Strnew_charp(hidden);
-        Strshrink(line, line->ptr + line->length - hidden);
+        line->Pop(line->ptr + line->length - hidden);
     }
 
     if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && obuf->pos > width) {
@@ -6728,7 +6728,7 @@ close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
                 break;
         }
         if (i < 0 && obuf->anchor.hseq > 0 && Strlastchar(obuf->line) == ' ') {
-            Strshrink(obuf->line, 1);
+            obuf->line->Pop(1);
             obuf->pos--;
             is_erased = 1;
         }
@@ -8070,14 +8070,14 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
                                !strncmp(obuf->line->ptr + obuf->line->length -
                                         2, "  ", 2)
                                && obuf->pos >= h_env->envs[h_env->envc].indent) {
-                            Strshrink(obuf->line, 1);
+                            obuf->line->Pop(1);
                             obuf->pos--;
                         }
                         if (obuf->line->length >= 3 &&
                             obuf->prev_ctype == PC_KANJI1 &&
                             Strlastchar(obuf->line) == ' ' &&
                             obuf->pos >= h_env->envs[h_env->envc].indent) {
-                            Strshrink(obuf->line, 1);
+                            obuf->line->Pop(1);
                             obuf->pos--;
                         }
                     }
@@ -8103,7 +8103,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
                     Str line;
                     append_tags(obuf);
                     line = Strnew_charp(bp);
-                    Strshrink(obuf->line, obuf->line->length - obuf->bp.len);
+                    obuf->line->Pop(obuf->line->length - obuf->bp.len);
 #ifdef FORMAT_NICE
                     if (obuf->pos - i > h_env->limit)
                         obuf->flag |= RB_FILL;

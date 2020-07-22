@@ -530,7 +530,7 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
                     buf->ptr[buf->length - 2] != '<' ||
                     buf->ptr[buf->length - 1] != '>')
                     return 1;
-                Strshrink(buf, 2);
+                buf->Pop(2);
             }
             break;
         case R_ST_TAG0:

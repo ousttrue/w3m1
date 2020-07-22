@@ -384,9 +384,9 @@ add_cookie(ParsedURL *pu, Str name, Str value,
     if (!path) {
 	path = Strnew_charp(pu->file);
 	while (path->length > 0 && Strlastchar(path) != '/')
-	    Strshrink(path, 1);
+	    path->Pop(1);
 	if (Strlastchar(path) == '/')
-	    Strshrink(path, 1);
+	    path->Pop(1);
     }
 
     p = get_cookie_info(domain, path, name);

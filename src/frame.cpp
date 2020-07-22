@@ -703,7 +703,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 									d_target = url_quote_conv(q, charset);
 							}
 							tok->Delete(0, 1);
-							Strshrink(tok, 1);
+							tok->Pop(1);
 							fprintf(f1, "<!-- %s -->", html_quote(tok->ptr));
 							goto token_end;
 						case HTML_META:
@@ -750,7 +750,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 						case HTML_DOCTYPE:
 							/* prohibit_tags */
 							tok->Delete(0, 1);
-							Strshrink(tok, 1);
+							tok->Pop(1);
 							fprintf(f1, "<!-- %s -->", html_quote(tok->ptr));
 							goto token_end;
 						case HTML_TABLE:
@@ -762,7 +762,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 							{
 								t_stack = 0;
 								tok->Delete(0, 1);
-								Strshrink(tok, 1);
+								tok->Pop(1);
 								fprintf(f1,
 										"<!-- table stack underflow: %s -->",
 										html_quote(tok->ptr));
@@ -774,7 +774,7 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 							if (!t_stack)
 							{
 								tok->Delete(0, 1);
-								Strshrink(tok, 1);
+								tok->Pop(1);
 								fprintf(f1, "<!-- %s -->",
 										html_quote(tok->ptr));
 								goto token_end;

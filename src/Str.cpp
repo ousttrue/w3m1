@@ -124,6 +124,26 @@ void GCStr::Push(const char *y, int n)
     ptr[length] = '\0';
 }
 
+void GCStr::Truncate(int pos)
+{
+    ptr[pos] = '\0';
+    length = pos;
+}
+
+void GCStr::Pop(int len)
+{
+    if (len >= length)
+    {
+        length = 0;
+        ptr[0] = '\0';
+    }
+    else
+    {
+        length -= len;
+        ptr[length] = '\0';
+    }
+}
+
 void GCStr::Delete(int pos, int len)
 {
     if (length <= pos + len)
@@ -238,27 +258,7 @@ void Strupper(Str s)
         s->ptr[i] = TOUPPER(s->ptr[i]);
 }
 
-void Strtruncate(Str s, int pos)
-{
 
-    s->ptr[pos] = '\0';
-    s->length = pos;
-}
-
-void Strshrink(Str s, int n)
-{
-
-    if (n >= s->length)
-    {
-        s->length = 0;
-        s->ptr[0] = '\0';
-    }
-    else
-    {
-        s->length -= n;
-        s->ptr[s->length] = '\0';
-    }
-}
 
 Str Stralign_left(Str s, int width)
 {

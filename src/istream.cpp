@@ -344,7 +344,7 @@ int ISread(InputStream *stream, Str buf, int count)
         }
         rest -= len;
     }
-    Strtruncate(buf, count - rest);
+    buf->Truncate(count - rest);
     if (buf->length > 0)
         return 1;
     return 0;
@@ -617,7 +617,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
         {
             Str ep = emsg->Clone();
             if (ep->length > COLS - 16)
-                Strshrink(ep, ep->length - (COLS - 16));
+                ep->Pop(ep->length - (COLS - 16));
             ep->Push( ": accept? (y/n)");
             ans = inputAnswer(ep->ptr);
         }

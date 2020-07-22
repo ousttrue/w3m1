@@ -606,7 +606,7 @@ static void
 killn(void)
 {
     CLen = CPos;
-    Strtruncate(strBuf, CLen);
+    strBuf->Truncate(CLen);
 }
 
 static void
@@ -899,7 +899,7 @@ doComplete(Str ifn, int *status, int next)
             ifn = unescape_spaces(ifn);
         CompleteBuf = ifn->Clone();
         while (Strlastchar(CompleteBuf) != '/' && CompleteBuf->length > 0)
-            Strshrink(CompleteBuf, 1);
+            CompleteBuf->Pop(1);
         CDirBuf = CompleteBuf->Clone();
         if (cm_mode & CPL_URL) {
             if (strncmp(CompleteBuf->ptr, "file://localhost/", 17) == 0)
@@ -919,7 +919,7 @@ doComplete(Str ifn, int *status, int next)
             CompleteBuf->Push( '.');
         }
         if (Strlastchar(CompleteBuf) == '/' && CompleteBuf->length > 1) {
-            Strshrink(CompleteBuf, 1);
+            CompleteBuf->Pop(1);
         }
         if ((d = opendir(expandPath(CompleteBuf->ptr))) == NULL) {
             CompleteBuf = ifn->Clone();
@@ -949,7 +949,7 @@ doComplete(Str ifn, int *status, int next)
                 }
                 else {
                     for (i = 0; CFileName->ptr[i] == dir->d_name[i]; i++) ;
-                    Strtruncate(CFileName, i);
+                        CFileName->Truncate(i);
                 }
             }
         }

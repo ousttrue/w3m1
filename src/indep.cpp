@@ -390,7 +390,7 @@ cleanup_line(Str s, int mode)
 {
     if (s->length >= 2 &&
 	s->ptr[s->length - 2] == '\r' && s->ptr[s->length - 1] == '\n') {
-	Strshrink(s, 2);
+	s->Pop(2);
 	s->Push('\n');
     }
     else if (Strlastchar(s) == '\r')
