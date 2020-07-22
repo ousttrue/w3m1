@@ -350,7 +350,7 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
     }
     for (; i < len; i += delta) {
 #ifdef USE_M17N
-	delta = wtf_len((wc_uchar *) & p[i]);
+	delta = wtf_len((uint8_t *) & p[i]);
 #endif
 	ncol = calcPosition(p, pr, len, i + delta, 0, CP_AUTO);
 	if (ncol - offset > limit)

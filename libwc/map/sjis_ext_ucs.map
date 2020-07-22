@@ -1,6 +1,6 @@
 /* Shift_JIS/CP932 (Japanese) */
 
-static wc_uint16 sjis_ext_ucs_map[ 0x5E * 10 ] = {
+static uint16_t sjis_ext_ucs_map[ 0x5E * 10 ] = {
   0x2460,	/* 0x8740 */
   0x2461,	/* 0x8741 */
   0x2462,	/* 0x8742 */

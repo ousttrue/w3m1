@@ -1,6 +1,6 @@
 /* ISO-8859-1 (Latin 1) */
 
-static wc_uint16 iso88591_ucs_map[ 0x80 ] = {
+static uint16_t iso88591_ucs_map[ 0x80 ] = {
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     

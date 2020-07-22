@@ -1,6 +1,6 @@
 /* ISO-8859-16 (Romanian) */
 
-static wc_uint16 iso885916_ucs_map[ 0x80 ] = {
+static uint16_t iso885916_ucs_map[ 0x80 ] = {
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     

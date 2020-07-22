@@ -811,7 +811,7 @@ redrawLine(Buffer *buf, Line *l, int i)
         }
 #endif
 #ifdef USE_M17N
-        delta = wtf_len((wc_uchar *)&p[j]);
+        delta = wtf_len((uint8_t *)&p[j]);
 #endif
         ncol = COLPOS(l, pos + j + delta);
         if (ncol - column > buf->COLS)
@@ -1033,7 +1033,7 @@ redrawLineRegion(Buffer *buf, Line *l, int i, int bpos, int epos)
         }
 #endif
 #ifdef USE_M17N
-        delta = wtf_len((wc_uchar *)&p[j]);
+        delta = wtf_len((uint8_t *)&p[j]);
 #endif
         ncol = COLPOS(l, pos + j + delta);
         if (ncol - column > buf->COLS)
@@ -1224,7 +1224,7 @@ void addChar(char c, Lineprop mode)
 #ifdef USE_M17N
         int w = (mode & PC_KANJI) ? 2 : 1;
 
-        c = ((char)wtf_get_code((wc_uchar *)p) & 0x7f) - SYMBOL_BASE;
+        c = ((char)wtf_get_code((uint8_t *)p) & 0x7f) - SYMBOL_BASE;
 #else
         c -= SYMBOL_BASE;
 #endif
@@ -1279,7 +1279,7 @@ void addChar(char c, Lineprop mode)
     {
         char buf[5];
         sprintf(buf, "[%.2X]",
-                (unsigned char)wtf_get_code((wc_uchar *)p) | 0x80);
+                (unsigned char)wtf_get_code((uint8_t *)p) | 0x80);
         addstr(buf);
     }
     else

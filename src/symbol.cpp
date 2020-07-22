@@ -138,9 +138,9 @@ set_symbol(int width)
     for (i = 0; s->item[i]; i++) {
 	tmp = Strnew_size(4);
 	if (width == 2)
-	    wtf_push(tmp, WC_CCS_SPECIAL_W, (wc_uint32) (SYMBOL_BASE + i));
+	    wtf_push(tmp, WC_CCS_SPECIAL_W, (uint32_t) (SYMBOL_BASE + i));
 	else
-	    wtf_push(tmp, WC_CCS_SPECIAL, (wc_uint32) (SYMBOL_BASE + i));
+	    wtf_push(tmp, WC_CCS_SPECIAL, (uint32_t) (SYMBOL_BASE + i));
 	symbol_buf[i] = tmp->ptr;
     }
     save_width = width;

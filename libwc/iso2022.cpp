@@ -21,7 +21,7 @@
 #define SS2 WC_ISO_MAP_SS2
 #define SS3 WC_ISO_MAP_SS3
 
-wc_uint8 WC_ISO_MAP[ 0x100 ] = {
+uint8_t WC_ISO_MAP[ 0x100 ] = {
    C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, SO, SI,
    C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, ESC,C0, C0, C0, C0,
    GL2,GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL,
@@ -41,14 +41,14 @@ wc_uint8 WC_ISO_MAP[ 0x100 ] = {
    GR, GR, GR, GR, GR, GR, GR, GR, GR, GR, GR, GR, GR, GR, GR, GR2,
 };
 
-static wc_uchar cs94_gmap[ 0x80 - WC_F_ISO_BASE ];
-static wc_uchar cs94w_gmap[ 0x80 - WC_F_ISO_BASE ];
-static wc_uchar cs96_gmap[ 0x80 - WC_F_ISO_BASE ];
-static wc_uchar cs96w_gmap[ 0x80 - WC_F_ISO_BASE ];
-static wc_uchar cs942_gmap[ 0x80 - WC_F_ISO_BASE ];
+static uint8_t cs94_gmap[ 0x80 - WC_F_ISO_BASE ];
+static uint8_t cs94w_gmap[ 0x80 - WC_F_ISO_BASE ];
+static uint8_t cs96_gmap[ 0x80 - WC_F_ISO_BASE ];
+static uint8_t cs96w_gmap[ 0x80 - WC_F_ISO_BASE ];
+static uint8_t cs942_gmap[ 0x80 - WC_F_ISO_BASE ];
 
 static void
-wtf_push_iso2022(Str os, wc_ccs ccs, wc_uint32 code)
+wtf_push_iso2022(Str os, wc_ccs ccs, uint32_t code)
 {
     switch (ccs) {
     case WC_CCS_JIS_C_6226:
@@ -72,9 +72,9 @@ Str
 wc_conv_from_iso2022(Str is, wc_ces ces)
 {
     Str os;
-    wc_uchar *sp = (wc_uchar *)is->ptr;
-    wc_uchar *ep = sp + is->length;
-    wc_uchar *p, *q = NULL;
+    uint8_t *sp = (uint8_t *)is->ptr;
+    uint8_t *ep = sp + is->length;
+    uint8_t *p, *q = NULL;
     int state = WC_ISO_NOSTATE;
     wc_status st;
     wc_ccs gl_ccs, gr_ccs;
@@ -112,7 +112,7 @@ wc_conv_from_iso2022(Str is, wc_ces ces)
 		} else if (gl_ccs == WC_CES_US_ASCII)
 		    Strcat_char(os, (char)*p);
 		else
-		    wtf_push_iso2022(os, gl_ccs, (wc_uint32)*p);
+		    wtf_push_iso2022(os, gl_ccs, (uint32_t)*p);
 		break;
 	    case GR2:
 		gr_ccs = st.ss ? st.design[st.ss]
@@ -129,7 +129,7 @@ wc_conv_from_iso2022(Str is, wc_ces ces)
 		    state = WC_EUC_MBYTE1;
 		    continue;
 		} else if (gr_ccs)
-		    wtf_push_iso2022(os, gr_ccs, (wc_uint32)*p);
+		    wtf_push_iso2022(os, gr_ccs, (uint32_t)*p);
 		else
 		    wtf_push_unknown(os, p, 1);
 		break;
@@ -137,7 +137,7 @@ wc_conv_from_iso2022(Str is, wc_ces ces)
 		Strcat_char(os, (char)*p);
 		break;
 	    case C1:
-		wtf_push(os, WC_CCS_C1, (wc_uint32)*p);
+		wtf_push(os, WC_CCS_C1, (uint32_t)*p);
 		break;
 	    case ESC:
 		st.ss = 0;
@@ -177,7 +177,7 @@ wc_conv_from_iso2022(Str is, wc_ces ces)
 		    break;
 		}
 	    case GL:
-		wtf_push_iso2022(os, gl_ccs, ((wc_uint32)*q << 8) | *p);
+		wtf_push_iso2022(os, gl_ccs, ((uint32_t)*q << 8) | *p);
 		break;
 	    default:
 		wtf_push_unknown(os, q, 2);
@@ -196,7 +196,7 @@ wc_conv_from_iso2022(Str is, wc_ces ces)
 		    state = WC_EUC_TW_MBYTE2;
 		    continue;
 		}
-		wtf_push_iso2022(os, gr_ccs, ((wc_uint32)*q << 8) | *p);
+		wtf_push_iso2022(os, gr_ccs, ((uint32_t)*q << 8) | *p);
 		break;
 	    default:
 		wtf_push_unknown(os, q, 2);
@@ -207,12 +207,12 @@ wc_conv_from_iso2022(Str is, wc_ces ces)
 	    if (WC_ISO_MAP[*p] == GR) {
 		if (0xa1 <= *q && *q <= 0xa7) {
 		    wtf_push_iso2022(os, WC_CCS_CNS_11643_1 + (*q - 0xa1),
-			((wc_uint32)*(q+1) << 8) | *p);
+			((uint32_t)*(q+1) << 8) | *p);
 		    break;
 		}
 		if (0xa8 <= *q && *q <= 0xb0) {
 		    wtf_push_iso2022(os, WC_CCS_CNS_11643_8 + (*q - 0xa8),
-			((wc_uint32)*(q+1) << 8) | *p);
+			((uint32_t)*(q+1) << 8) | *p);
 		    break;
 		}
 	    }
@@ -252,9 +252,9 @@ wc_conv_from_iso2022(Str is, wc_ces ces)
 }
 
 int
-wc_parse_iso2022_esc(wc_uchar **ptr, wc_status *st)
+wc_parse_iso2022_esc(uint8_t **ptr, wc_status *st)
 {
-    wc_uchar *p = *ptr, state, f = 0, g = 0, cs = 0;
+    uint8_t *p = *ptr, state, f = 0, g = 0, cs = 0;
 
     if (*p != WC_C_ESC)
 	return 0;
@@ -396,7 +396,7 @@ wc_parse_iso2022_esc(wc_uchar **ptr, wc_status *st)
 void
 wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st)
 {
-    wc_uchar g = 0;
+    uint8_t g = 0;
     wc_bool is_wide = WC_FALSE, retry = WC_FALSE;
     wc_wchar_t cc2;
 
@@ -453,14 +453,14 @@ wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st)
 	is_wide = 1;
 	cc.ccs = WC_CCS_US_ASCII;
 	g = cs94_gmap[WC_CCS_INDEX(cc.ccs) - WC_F_ISO_BASE];
-	cc.code = ((wc_uint32)WC_REPLACE_W[0] << 8) | WC_REPLACE_W[1];
+	cc.code = ((uint32_t)WC_REPLACE_W[0] << 8) | WC_REPLACE_W[1];
 	break;
     case WC_CCS_A_UNKNOWN:
 	if (WcOption.no_replace)
 	    return;
 	cc.ccs = WC_CCS_US_ASCII;
 	g = cs94_gmap[WC_CCS_INDEX(cc.ccs) - WC_F_ISO_BASE];
-	cc.code = (wc_uint32)WC_REPLACE[0];
+	cc.code = (uint32_t)WC_REPLACE[0];
 	break;
     default:
 	if ((cc.ccs == WC_CCS_JOHAB || WC_CCS_JOHAB_1 ||
@@ -508,9 +508,9 @@ wc_push_to_iso2022_end(Str os, wc_status *st)
 }
 
 void
-wc_push_iso2022_esc(Str os, wc_ccs ccs, wc_uchar g, wc_uint8 invoke, wc_status *st)
+wc_push_iso2022_esc(Str os, wc_ccs ccs, uint8_t g, uint8_t invoke, wc_status *st)
 {
-    wc_uint8 g_invoke = g & 0x03;
+    uint8_t g_invoke = g & 0x03;
 
     if (st->design[g_invoke] != ccs) {
 	Strcat_char(os, WC_C_ESC);
@@ -780,7 +780,7 @@ void
 wc_create_gmap(wc_status *st)
 {
     wc_gset *gset = st->ces_info->gset;
-    wc_uchar *gset_ext = st->ces_info->gset_ext;
+    uint8_t *gset_ext = st->ces_info->gset_ext;
     int i, f;
 
     if (WcOption.strict_iso2022) {
@@ -840,12 +840,12 @@ wc_create_gmap(wc_status *st)
 }
 
 Str
-wc_char_conv_from_iso2022(wc_uchar c, wc_status *st)
+wc_char_conv_from_iso2022(uint8_t c, wc_status *st)
 {
     static Str os;
-    static wc_uchar buf[4];
+    static uint8_t buf[4];
     static size_t nbuf;
-    wc_uchar *p;
+    uint8_t *p;
     wc_ccs gl_ccs, gr_ccs;
 
     if (st->state == -1) {
@@ -873,7 +873,7 @@ wc_char_conv_from_iso2022(wc_uchar c, wc_status *st)
 	    } else if (gl_ccs == WC_CES_US_ASCII)
 		Strcat_char(os, (char)c);
 	    else
-		wtf_push_iso2022(os, gl_ccs, (wc_uint32)c);
+		wtf_push_iso2022(os, gl_ccs, (uint32_t)c);
 	    break;
 	case GR2:
 	    if (!(WC_CCS_TYPE(gr_ccs) & WC_CCS_A_CS96))
@@ -884,7 +884,7 @@ wc_char_conv_from_iso2022(wc_uchar c, wc_status *st)
 		st->state = WC_EUC_MBYTE1;
 		return NULL;
 	    } else if (gr_ccs)
-		wtf_push_iso2022(os, gr_ccs, (wc_uint32)c);
+		wtf_push_iso2022(os, gr_ccs, (uint32_t)c);
 	    break;
 	case C0:
 	    Strcat_char(os, (char)c);
@@ -920,7 +920,7 @@ wc_char_conv_from_iso2022(wc_uchar c, wc_status *st)
 		break;
 	case GL:
 	    buf[nbuf++] = c;
-	    wtf_push_iso2022(os, gl_ccs, ((wc_uint32)buf[0] << 8) | buf[1]);
+	    wtf_push_iso2022(os, gl_ccs, ((uint32_t)buf[0] << 8) | buf[1]);
 	    break;
 	}
 	st->state = WC_ISO_NOSTATE;
@@ -937,7 +937,7 @@ wc_char_conv_from_iso2022(wc_uchar c, wc_status *st)
 		return NULL;
 	    }
 	    buf[nbuf++] = c;
-	    wtf_push_iso2022(os, gr_ccs, ((wc_uint32)buf[0] << 8) | buf[1]);
+	    wtf_push_iso2022(os, gr_ccs, ((uint32_t)buf[0] << 8) | buf[1]);
 	    break;
 	}
 	st->state = WC_ISO_NOSTATE;
@@ -948,12 +948,12 @@ wc_char_conv_from_iso2022(wc_uchar c, wc_status *st)
 	    c = buf[0];
 	    if (0xa1 <= c && c <= 0xa7) {
 		wtf_push_iso2022(os, WC_CCS_CNS_11643_1 + (c - 0xa1),
-			((wc_uint32)buf[1] << 8) | buf[2]);
+			((uint32_t)buf[1] << 8) | buf[2]);
 		break;
 	    }
 	    if (0xa8 <= c && c <= 0xb0) {
 		wtf_push_iso2022(os, WC_CCS_CNS_11643_8 + (c - 0xa8),
-			((wc_uint32)buf[1] << 8) | buf[2]);
+			((uint32_t)buf[1] << 8) | buf[2]);
 		break;
 	    }
 	}

@@ -1,5 +1,5 @@
 
-static wc_uchar jisx02132_sjis_map[ 128 ] = {
+static uint8_t jisx02132_sjis_map[ 128 ] = {
   0,    0,    0,    0,    0,    0,    0,    0,
   0,    0,    0,    0,    0,    0,    0,    0,
   0,    0,    0,    0,    0,    0,    0,    0,
@@ -19,13 +19,13 @@ static wc_uchar jisx02132_sjis_map[ 128 ] = {
 };
 
 /* F0-FC 40-9E */
-static wc_uchar sjis1_jisx02132_map[ 16 ] = {
+static uint8_t sjis1_jisx02132_map[ 16 ] = {
   0x21, 0x23, 0x25, 0x2D, 0x2F, 0x6F, 0x71, 0x73,
   0x75, 0x77, 0x79, 0x7B, 0x7D, 0,    0,    0,
 };
 
 /* F0-FC 9F-FC */
-static wc_uchar sjis2_jisx02132_map[ 16 ] = {
+static uint8_t sjis2_jisx02132_map[ 16 ] = {
   0x28, 0x24, 0x2C, 0x2E, 0x6E, 0x70, 0x72, 0x74,
   0x76, 0x78, 0x7A, 0x7C, 0x7E, 0,    0,    0,
 };

@@ -101,7 +101,7 @@ while(<MAP>) {
 print OUT <<EOF;
 /* JIS X 0208, JIS X 0212, JIS X 0213 (Japanese) */
 
-static wc_uint16 jisx0208x02131_ucs_map[ 0x5E * 0x5E ] = {
+static uint16_t jisx0208x02131_ucs_map[ 0x5E * 0x5E ] = {
 EOF
 
 for $i (0x21 .. 0x7E) {
@@ -120,7 +120,7 @@ for $j (0x21 .. 0x7E) {
 print OUT <<EOF;
 };
 
-static wc_uint16 jisx0212x02132_ucs_map[ 0x5E * 0x5E ] = {
+static uint16_t jisx0212x02132_ucs_map[ 0x5E * 0x5E ] = {
 EOF
 
 for $i (0x21 .. 0x7E) {

@@ -14,7 +14,7 @@
 #include "utf8.h"
 
 
-wc_uint8 WTF_WIDTH_MAP[ 0x100 ] = {
+uint8_t WTF_WIDTH_MAP[ 0x100 ] = {
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
@@ -26,7 +26,7 @@ wc_uint8 WTF_WIDTH_MAP[ 0x100 ] = {
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
 };
 
-wc_uint8 WTF_LEN_MAP[ 0x100 ] = {
+uint8_t WTF_LEN_MAP[ 0x100 ] = {
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
@@ -38,7 +38,7 @@ wc_uint8 WTF_LEN_MAP[ 0x100 ] = {
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
 };
 
-wc_uint8 WTF_TYPE_MAP[ 0x100 ] = {
+uint8_t WTF_TYPE_MAP[ 0x100 ] = {
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
     0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
@@ -51,7 +51,7 @@ wc_uint8 WTF_TYPE_MAP[ 0x100 ] = {
     2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2,
 };
 
-static wc_uint16 CCS_MAP[ 33 ] = {
+static uint16_t CCS_MAP[ 33 ] = {
     WC_CCS_A_CS94    >> 8, WC_CCS_A_CS94W    >> 8,
     WC_CCS_A_CS96    >> 8, WC_CCS_A_CS96W    >> 8,
     WC_CCS_A_CS942   >> 8, WC_CCS_A_UNKNOWN  >> 8,
@@ -109,14 +109,14 @@ wtf_init(wc_ces ces1, wc_ces ces2)
 
 /*
 int
-wtf_width(wc_uchar *p)
+wtf_width(uint8_t *p)
 {
     return (int)WTF_WIDTH_MAP[*p];
 }
 */
 
 int
-wtf_strwidth(wc_uchar *p)
+wtf_strwidth(uint8_t *p)
 {
     int w = 0;
 
@@ -129,16 +129,16 @@ wtf_strwidth(wc_uchar *p)
 
 /*
 size_t
-wtf_len1(wc_uchar *p)
+wtf_len1(uint8_t *p)
 {
     return (size_t)WTF_LEN_MAP[*p];
 }
 */
 
 size_t
-wtf_len(wc_uchar *p)
+wtf_len(uint8_t *p)
 {
-    wc_uchar *q = p;
+    uint8_t *q = p;
 
     q += WTF_LEN_MAP[*q];
     while (*q && ! WTF_WIDTH_MAP[*q])
@@ -148,7 +148,7 @@ wtf_len(wc_uchar *p)
 
 /*
 int
-wtf_type(wc_uchar *p)
+wtf_type(uint8_t *p)
 {
     return (int)WTF_TYPE_MAP[*p];
 }
@@ -165,20 +165,20 @@ wtf_type(wc_uchar *p)
     ((p)[3] = (((c) >>  7) & 0x7f) | 0x80), \
     ((p)[4] = ( (c)        & 0x7f) | 0x80)
 #define wtf_to_wcs16(p) \
-      ((wc_uint32)((p)[0] & 0x03) << 14) \
-    | ((wc_uint32)((p)[1] & 0x7f) <<  7) \
-    | ((wc_uint32)((p)[2] & 0x7f)      )
+      ((uint32_t)((p)[0] & 0x03) << 14) \
+    | ((uint32_t)((p)[1] & 0x7f) <<  7) \
+    | ((uint32_t)((p)[2] & 0x7f)      )
 #define wtf_to_wcs32(p) \
-      ((wc_uint32)((p)[0] & 0x0f) << 28) \
-    | ((wc_uint32)((p)[1] & 0x7f) << 21) \
-    | ((wc_uint32)((p)[2] & 0x7f) << 14) \
-    | ((wc_uint32)((p)[3] & 0x7f) <<  7) \
-    | ((wc_uint32)((p)[4] & 0x7f)      )
+      ((uint32_t)((p)[0] & 0x0f) << 28) \
+    | ((uint32_t)((p)[1] & 0x7f) << 21) \
+    | ((uint32_t)((p)[2] & 0x7f) << 14) \
+    | ((uint32_t)((p)[3] & 0x7f) <<  7) \
+    | ((uint32_t)((p)[4] & 0x7f)      )
 
 void
-wtf_push(Str os, wc_ccs ccs, wc_uint32 code)
+wtf_push(Str os, wc_ccs ccs, uint32_t code)
 {
-    wc_uchar s[8];
+    uint8_t s[8];
     wc_wchar_t cc, cc2;
     size_t n;
 
@@ -366,7 +366,7 @@ wtf_push(Str os, wc_ccs ccs, wc_uint32 code)
 }
 
 void
-wtf_push_unknown(Str os, wc_uchar *p, size_t len)
+wtf_push_unknown(Str os, uint8_t *p, size_t len)
 {
     for (; len--; p++) {
 	if (*p & 0x80)
@@ -377,9 +377,9 @@ wtf_push_unknown(Str os, wc_uchar *p, size_t len)
 }
 
 wc_wchar_t
-wtf_parse1(wc_uchar **p)
+wtf_parse1(uint8_t **p)
 {
-    wc_uchar *q = *p;
+    uint8_t *q = *p;
     wc_wchar_t cc;
 
     if (*q < 0x80) {
@@ -388,12 +388,12 @@ wtf_parse1(wc_uchar **p)
     } else if (*q > 0xa0) {
 	cc.ccs = wtf_gr_ccs;
 	if (WC_CCS_IS_WIDE(cc.ccs)) {
-	    cc.code = ((wc_uint32)*q << 8) | *(q+1);
+	    cc.code = ((uint32_t)*q << 8) | *(q+1);
 	    q += 2;
 	} else
 	    cc.code = *(q++);
     } else {
-	cc.ccs = (wc_uint32)CCS_MAP[*(q++) - 0x80] << 8;
+	cc.ccs = (uint32_t)CCS_MAP[*(q++) - 0x80] << 8;
 	switch (WC_CCS_TYPE(cc.ccs)) {
 	case WC_CCS_A_CS94:
 	case WC_CCS_A_CS96:
@@ -407,7 +407,7 @@ wtf_parse1(wc_uchar **p)
 	case WC_CCS_A_CS96W:
 	case WC_CCS_A_PCSW:
 	    cc.ccs |= *(q++) & 0x7f;
-	    cc.code = ((wc_uint32)*q << 8) | *(q+1);
+	    cc.code = ((uint32_t)*q << 8) | *(q+1);
 	    q += 2;
 	    break;
 	case WC_CCS_A_WCS16:
@@ -425,7 +425,7 @@ wtf_parse1(wc_uchar **p)
 	default:
 	/* case 0: */
 	    cc.ccs = WC_CCS_US_ASCII;
-	    cc.code = (wc_uint32)' ';
+	    cc.code = (uint32_t)' ';
 	    break;
 	}
     }
@@ -459,11 +459,11 @@ wtf_parse1(wc_uchar **p)
 }
 
 wc_wchar_t
-wtf_parse(wc_uchar **p)
+wtf_parse(uint8_t **p)
 {
-    wc_uchar *q;
+    uint8_t *q;
     wc_wchar_t cc, cc2;
-    wc_uint32 ucs, ucs2;
+    uint32_t ucs, ucs2;
 
     if (**p < 0x80) {
 	cc.ccs = WC_CCS_US_ASCII;
@@ -522,36 +522,36 @@ wtf_parse(wc_uchar **p)
 }
 
 wc_ccs
-wtf_get_ccs(wc_uchar *p)
+wtf_get_ccs(uint8_t *p)
 {
    return wtf_parse1(&p).ccs;
 }
 
-wc_uint32
-wtf_get_code(wc_uchar *p)
+uint32_t
+wtf_get_code(uint8_t *p)
 {
    return wtf_parse1(&p).code;
 }
 
 wc_bool
-wtf_is_hangul(wc_uchar *p)
+wtf_is_hangul(uint8_t *p)
 {
     if (*p > 0xa0)
 	return (wtf_gr_ccs == WC_CCS_KS_X_1001 || wtf_gr_ccs == WC_CCS_JOHAB_1);
     else if (*p == WTF_C_CS94W)
 	return ((*(p + 1) & 0x7f) == WC_F_KS_X_1001);
     else if (*p == WTF_C_PCSW) {
-	wc_uchar f = *(p + 1) & 0x7f;
+	uint8_t f = *(p + 1) & 0x7f;
 	return (f == WC_F_JOHAB_1 || f == WC_F_JOHAB_2 || f == WC_F_JOHAB_3 ||
 		f == WC_F_UHC_1 || f == WC_F_UHC_2);
     }
 #ifdef USE_UNICODE
     else if (*p == WTF_C_WCS16W) {
-	wc_uchar f = (*(++p) & 0x7f) >> 2;
+	uint8_t f = (*(++p) & 0x7f) >> 2;
 	if (f == WC_F_UCS2)
 	    return wc_is_ucs_hangul(wtf_to_wcs16(p));
     } else if (*p == WTF_C_WCS32W) {
-	wc_uchar f = (*(++p) & 0x7f) >> 4;
+	uint8_t f = (*(++p) & 0x7f) >> 4;
 	if (f == WC_F_UCS_TAG)
 	    return wc_is_ucs_hangul(wc_ucs_tag_to_ucs(wtf_to_wcs32(p)));
     }
@@ -562,7 +562,7 @@ wtf_is_hangul(wc_uchar *p)
 char *
 wtf_conv_fit(char *s, wc_ces ces)
 {
-    wc_uchar *p;
+    uint8_t *p;
     Str os;
     wc_wchar_t cc;
     wc_ces major_ces;
@@ -571,14 +571,14 @@ wtf_conv_fit(char *s, wc_ces ces)
     if (ces == WC_CES_WTF || ces == WC_CES_US_ASCII)
 	return s;
 
-    for (p = (wc_uchar *)s; *p && *p < 0x80; p++)
+    for (p = (uint8_t *)s; *p && *p < 0x80; p++)
 	;
     if (! *p)
 	return s;
 
     os = Strnew_size(strlen(s));
-    if (p > (wc_uchar *)s)
-	Strcopy_charp_n(os, s, (int)(p - (wc_uchar *)s));
+    if (p > (uint8_t *)s)
+	Strcopy_charp_n(os, s, (int)(p - (uint8_t *)s));
 
     major_ces = wtf_major_ces;
     pre_conv = WcOption.pre_conv;

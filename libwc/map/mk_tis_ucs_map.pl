@@ -29,7 +29,7 @@ for $i (0xA1 .. 0xDA, 0xDF .. 0xFB) {
 print OUT <<EOF;
 /* $code */
 
-static wc_uint16 ${name}_ucs_map[ 0x80 ] = {
+static uint16_t ${name}_ucs_map[ 0x80 ] = {
 EOF
 
 foreach $i (0x10 .. 0x1F) {

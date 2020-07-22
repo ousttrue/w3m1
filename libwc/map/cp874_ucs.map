@@ -1,6 +1,6 @@
 /* CP874 (Thai) */
 
-static wc_uint16 cp874_ucs_map[ 0x80 ] = {
+static uint16_t cp874_ucs_map[ 0x80 ] = {
   0x20AC, 0,      0,      0,      0,      0x2026, 0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,

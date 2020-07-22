@@ -577,7 +577,7 @@ input_textarea(FormItemList *fi)
     FILE *f;
 #ifdef USE_M17N
     wc_ces charset = DisplayCharset;
-    wc_uint8 auto_detect;
+    uint8_t auto_detect;
 #endif
 
     f = fopen(tmpf, "w");

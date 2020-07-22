@@ -12,7 +12,7 @@
 #define LB WC_BIG5_MAP_LB
 #define UB WC_BIG5_MAP_UB
 
-wc_uint8 WC_BIG5_MAP[ 0x100 ] = {
+uint8_t WC_BIG5_MAP[ 0x100 ] = {
     C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0,
     C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0,
     GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL,
@@ -61,9 +61,9 @@ Str
 wc_conv_from_big5(Str is, wc_ces ces)
 {
     Str os;
-    wc_uchar *sp = (wc_uchar *)is->ptr;
-    wc_uchar *ep = sp + is->length;
-    wc_uchar *p;
+    uint8_t *sp = (uint8_t *)is->ptr;
+    uint8_t *ep = sp + is->length;
+    uint8_t *p;
     int state = WC_BIG5_NOSTATE;
 
     for (p = sp; p < ep && *p < 0x80; p++) 
@@ -91,7 +91,7 @@ wc_conv_from_big5(Str is, wc_ces ces)
 	    break;
 	case WC_BIG5_MBYTE1:
 	    if (WC_BIG5_MAP[*p] & LB)
-		wtf_push(os, WC_CCS_BIG5, ((wc_uint32)*(p-1) << 8) | *p);
+		wtf_push(os, WC_CCS_BIG5, ((uint32_t)*(p-1) << 8) | *p);
 	    else
 		wtf_push_unknown(os, p-1, 2);
 	    state = WC_BIG5_NOSTATE;
@@ -142,10 +142,10 @@ wc_push_to_big5(Str os, wc_wchar_t cc, wc_status *st)
 }
 
 Str
-wc_char_conv_from_big5(wc_uchar c, wc_status *st)
+wc_char_conv_from_big5(uint8_t c, wc_status *st)
 {
     static Str os;
-    static wc_uchar big5u;
+    static uint8_t big5u;
 
     if (st->state == -1) {
 	st->state = WC_BIG5_NOSTATE;
@@ -168,7 +168,7 @@ wc_char_conv_from_big5(wc_uchar c, wc_status *st)
 	break;
     case WC_BIG5_MBYTE1:
 	if (WC_BIG5_MAP[c] & LB)
-	    wtf_push(os, WC_CCS_BIG5, ((wc_uint32)big5u << 8) | c);
+	    wtf_push(os, WC_CCS_BIG5, ((uint32_t)big5u << 8) | c);
 	break;
     }
     st->state = -1;

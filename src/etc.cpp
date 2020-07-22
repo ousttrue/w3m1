@@ -185,7 +185,7 @@ nextColumn(int n, char *p, Lineprop *pr)
 #ifdef USE_M17N
     if (*pr & PC_UNKNOWN)
         return n + 4;
-    return n + wtf_width((wc_uchar *) p);
+    return n + wtf_width((uint8_t *) p);
 #else
     return n + 1;
 #endif
@@ -1342,7 +1342,7 @@ url_unquote_conv0(char *url)
 #endif
 {
 #ifdef USE_M17N
-    wc_uint8 old_auto_detect = WcOption.auto_detect;
+    uint8_t old_auto_detect = WcOption.auto_detect;
 #endif
     Str tmp;
     tmp = Str_url_unquote(Strnew_charp(url), FALSE, TRUE);

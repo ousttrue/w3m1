@@ -42,7 +42,7 @@ while(<MAP>) {
 print OUT <<EOF;
 /* $code */
 
-static wc_uint16 ${name}_ucs_map[ 0x5E * 0x5E ] = {
+static uint16_t ${name}_ucs_map[ 0x5E * 0x5E ] = {
 EOF
 
 for $i (0x21 .. 0x7E) {

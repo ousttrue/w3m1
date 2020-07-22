@@ -19,7 +19,7 @@
 #define WC_LOCALE_ZH_HK	4
 #define WC_LOCALE_KO_KR	5
 
-extern wc_uint8 WC_DETECT_MAP[];
+extern uint8_t WC_DETECT_MAP[];
 
 extern wc_ces_info WcCesInfo[];
 extern wc_option WcOption;

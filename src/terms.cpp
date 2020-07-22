@@ -946,7 +946,7 @@ addch(char pc)
     static Str tmp = NULL;
     char **p;
     char c = *pc;
-    int width = wtf_width((wc_uchar *) pc);
+    int width = wtf_width((uint8_t *) pc);
 
     if (tmp == NULL)
 	tmp = Strnew();
@@ -1678,7 +1678,7 @@ addstr(char *s)
     int len;
 
     while (*s != '\0') {
-	len = wtf_len((wc_uchar *) s);
+	len = wtf_len((uint8_t *) s);
 	addmch(s, len);
 	s += len;
     }
@@ -1696,10 +1696,10 @@ addnstr(char *s, int n)
     int len, width;
 
     for (i = 0; *s != '\0';) {
-	width = wtf_width((wc_uchar *) s);
+	width = wtf_width((uint8_t *) s);
 	if (i + width > n)
 	    break;
-	len = wtf_len((wc_uchar *) s);
+	len = wtf_len((uint8_t *) s);
 	addmch(s, len);
 	s += len;
 	i += width;
@@ -1718,10 +1718,10 @@ addnstr_sup(char *s, int n)
     int len, width;
 
     for (i = 0; *s != '\0';) {
-	width = wtf_width((wc_uchar *) s);
+	width = wtf_width((uint8_t *) s);
 	if (i + width > n)
 	    break;
-	len = wtf_len((wc_uchar *) s);
+	len = wtf_len((uint8_t *) s);
 	addmch(s, len);
 	s += len;
 	i += width;

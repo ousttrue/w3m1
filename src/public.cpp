@@ -665,12 +665,12 @@ void nextChar(int *s, Line *l)
     } while ((*s) < (l)->len && (l)->propBuf[*s] & PC_WCHAR2);
 }
 
-wc_uint32 getChar(char *p)
+uint32_t getChar(char *p)
 {
-    return wc_any_to_ucs(wtf_parse1((wc_uchar **)&p));
+    return wc_any_to_ucs(wtf_parse1((uint8_t **)&p));
 }
 
-int is_wordchar(wc_uint32 c)
+int is_wordchar(uint32_t c)
 {
     return wc_is_ucs_alnum(c);
 }

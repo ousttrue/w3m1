@@ -1,6 +1,6 @@
 /* IBM CP1006 (Arabic) */
 
-static wc_uint16 cp1006_ucs_map[ 0x80 ] = {
+static uint16_t cp1006_ucs_map[ 0x80 ] = {
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     

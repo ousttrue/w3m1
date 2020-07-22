@@ -21,20 +21,20 @@
 #define WC_SJIS_MAP_A0	(0x7 | WC_SJIS_MAP_LB)
 #define WC_SJIS_MAP_C1	0x40
 
-extern wc_uint8 WC_SJIS_MAP[];
+extern uint8_t WC_SJIS_MAP[];
 
 extern wc_wchar_t wc_sjis_to_jis(wc_wchar_t cc);
 extern wc_wchar_t wc_jis_to_sjis(wc_wchar_t cc);
 extern wc_wchar_t wc_sjis_ext_to_cs94w(wc_wchar_t cc);
 extern wc_wchar_t wc_cs94w_to_sjis_ext(wc_wchar_t cc);
-extern wc_uint32  wc_sjis_ext1_to_N(wc_uint32 cc);
-extern wc_uint32  wc_sjis_ext2_to_N(wc_uint32 cc);
+extern uint32_t  wc_sjis_ext1_to_N(uint32_t cc);
+extern uint32_t  wc_sjis_ext2_to_N(uint32_t cc);
 extern Str        wc_conv_from_sjis(Str is, wc_ces ces);
 extern Str        wc_conv_from_sjisx0213(Str is, wc_ces ces);
 extern void       wc_push_to_sjis(Str os, wc_wchar_t cc, wc_status *st);
 extern void       wc_push_to_sjisx0213(Str os, wc_wchar_t cc, wc_status *st);
-extern Str        wc_char_conv_from_sjis(wc_uchar c, wc_status *st);
-extern Str        wc_char_conv_from_sjisx0213(wc_uchar c, wc_status *st);
+extern Str        wc_char_conv_from_sjis(uint8_t c, wc_status *st);
+extern Str        wc_char_conv_from_sjisx0213(uint8_t c, wc_status *st);
 
 
 #endif

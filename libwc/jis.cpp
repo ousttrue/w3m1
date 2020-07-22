@@ -54,7 +54,7 @@ wc_jisx0213_to_jisx0212(wc_wchar_t cc)
 }
 
 wc_ccs
-wc_jisx0208_or_jisx02131(wc_uint16 code)
+wc_jisx0208_or_jisx02131(uint16_t code)
 {
     return wc_map_range_search(code & 0x7f7f,
 	jisx0208_jisx02131_map, N_jisx0208_jisx02131_map)
@@ -62,7 +62,7 @@ wc_jisx0208_or_jisx02131(wc_uint16 code)
 }
 
 wc_ccs
-wc_jisx0212_or_jisx02132(wc_uint16 code)
+wc_jisx0212_or_jisx02132(uint16_t code)
 {
     return wc_jisx0212_jisx02132_map[(code >> 8) & 0x7f]
 	? WC_CCS_JIS_X_0213_2 : WC_CCS_JIS_X_0212;

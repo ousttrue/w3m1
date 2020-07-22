@@ -14,7 +14,7 @@
 #define UB WC_HKSCS_MAP_UB
 #define UH WC_HKSCS_MAP_UH
 
-wc_uint8 WC_HKSCS_MAP[ 0x100 ] = {
+uint8_t WC_HKSCS_MAP[ 0x100 ] = {
     C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0,
     C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0,
     GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL,
@@ -59,8 +59,8 @@ wc_cs128w_to_hkscs(wc_wchar_t cc)
     return cc;
 }
 
-wc_uint32
-wc_hkscs_to_N(wc_uint32 c)
+uint32_t
+wc_hkscs_to_N(uint32_t c)
 {
     if (c < 0xA140)	/* 0x8840 - 0xA0FE */
 	return WC_HKSCS_N(c);
@@ -72,11 +72,11 @@ Str
 wc_conv_from_hkscs(Str is, wc_ces ces)
 {
     Str os;
-    wc_uchar *sp = (wc_uchar *)is->ptr;
-    wc_uchar *ep = sp + is->length;
-    wc_uchar *p;
+    uint8_t *sp = (uint8_t *)is->ptr;
+    uint8_t *ep = sp + is->length;
+    uint8_t *p;
     int state = WC_HKSCS_NOSTATE;
-    wc_uint32 hkscs;
+    uint32_t hkscs;
 
     for (p = sp; p < ep && *p < 0x80; p++) 
 	;
@@ -104,7 +104,7 @@ wc_conv_from_hkscs(Str is, wc_ces ces)
 	    break;
 	case WC_HKSCS_MBYTE1:
 	    if (WC_HKSCS_MAP[*p] & LB) {
-		hkscs = ((wc_uint32)*(p-1) << 8) | *p;
+		hkscs = ((uint32_t)*(p-1) << 8) | *p;
 		if (*(p-1) >= 0xA1 && *(p-1) <= 0xF9)
 		    wtf_push(os, WC_CCS_BIG5, hkscs);
 		else
@@ -166,11 +166,11 @@ wc_push_to_hkscs(Str os, wc_wchar_t cc, wc_status *st)
 }
 
 Str
-wc_char_conv_from_hkscs(wc_uchar c, wc_status *st)
+wc_char_conv_from_hkscs(uint8_t c, wc_status *st)
 {
     static Str os;
-    static wc_uchar hkscsu;
-    wc_uint32 hkscs;
+    static uint8_t hkscsu;
+    uint32_t hkscs;
 
     if (st->state == -1) {
 	st->state = WC_HKSCS_NOSTATE;
@@ -194,7 +194,7 @@ wc_char_conv_from_hkscs(wc_uchar c, wc_status *st)
 	break;
     case WC_HKSCS_MBYTE1:
 	if (WC_HKSCS_MAP[c] & LB) {
-	    hkscs = ((wc_uint32)hkscsu << 8) | c;
+	    hkscs = ((uint32_t)hkscsu << 8) | c;
 	    if (hkscsu >= 0xA1 && hkscsu <= 0xF9 && c >= 0xA1)
 		wtf_push(os, WC_CCS_BIG5, hkscs);
 	    else

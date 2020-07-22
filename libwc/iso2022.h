@@ -110,7 +110,7 @@
 #define WC_N_CS96WL(c)	((c) % 0x60 + 0x20)
 #define WC_N_CS96W(c)	((WC_N_CS96WU(c) << 8) + WC_N_CS96WL(c))
 
-extern wc_uint8 WC_ISO_MAP[];
+extern uint8_t WC_ISO_MAP[];
 
 extern Str  wc_conv_from_iso2022(Str is, wc_ces ces);
 extern void wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st);
@@ -119,9 +119,9 @@ extern void wc_push_to_eucjp(Str os, wc_wchar_t cc, wc_status *st);
 extern void wc_push_to_euctw(Str os, wc_wchar_t cc, wc_status *st);
 extern void wc_push_to_iso8859(Str os, wc_wchar_t cc, wc_status *st);
 extern void wc_push_to_iso2022_end(Str os, wc_status *st);
-extern int  wc_parse_iso2022_esc(wc_uchar **ptr, wc_status *st);
-extern void wc_push_iso2022_esc(Str os, wc_ccs ccs, wc_uchar g, wc_uint8 invoke, wc_status *st);
+extern int  wc_parse_iso2022_esc(uint8_t **ptr, wc_status *st);
+extern void wc_push_iso2022_esc(Str os, wc_ccs ccs, uint8_t g, uint8_t invoke, wc_status *st);
 extern void wc_create_gmap(wc_status *st);
-extern Str  wc_char_conv_from_iso2022(wc_uchar c, wc_status *st);
+extern Str  wc_char_conv_from_iso2022(uint8_t c, wc_status *st);
 
 #endif

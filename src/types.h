@@ -284,7 +284,7 @@ struct Buffer
     size_t trbyte;
     char check_url;
     wc_ces document_charset;
-    wc_uint8 auto_detect;
+    uint8_t auto_detect;
     TextList *document_header;
     FormItemList *form_submit;
     char *savecache;

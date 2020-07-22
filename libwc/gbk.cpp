@@ -15,7 +15,7 @@
 #define UB WC_GBK_MAP_UB
 #define C80 WC_GBK_MAP_80
 
-wc_uint8 WC_GBK_MAP[ 0x100 ] = {
+uint8_t WC_GBK_MAP[ 0x100 ] = {
     C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0,
     C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0,
     GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL,
@@ -36,7 +36,7 @@ wc_uint8 WC_GBK_MAP[ 0x100 ] = {
 };
 
 wc_ccs
-wc_gb2312_or_gbk(wc_uint16 code) {
+wc_gb2312_or_gbk(uint16_t code) {
     return wc_map_range_search(code,
 	gb2312_gbk_map, N_gb2312_gbk_map)
 	? WC_CCS_GBK : WC_CCS_GB_2312;
@@ -67,8 +67,8 @@ wc_cs128w_to_gbk(wc_wchar_t cc)
     return cc;
 }
 
-wc_uint32
-wc_gbk_to_N(wc_uint32 c)
+uint32_t
+wc_gbk_to_N(uint32_t c)
 {
     if (c <= 0xA1A0)	/* 0x8140 - 0xA1A0 */
 	return WC_GBK_N(c);
@@ -90,11 +90,11 @@ Str
 wc_conv_from_gbk(Str is, wc_ces ces)
 {
     Str os;
-    wc_uchar *sp = (wc_uchar *)is->ptr;
-    wc_uchar *ep = sp + is->length;
-    wc_uchar *p;
+    uint8_t *sp = (uint8_t *)is->ptr;
+    uint8_t *ep = sp + is->length;
+    uint8_t *p;
     int state = WC_GBK_NOSTATE;
-    wc_uint32 gbk;
+    uint32_t gbk;
 
     for (p = sp; p < ep && *p < 0x80; p++) 
 	;
@@ -124,7 +124,7 @@ wc_conv_from_gbk(Str is, wc_ces ces)
 	    break;
 	case WC_GBK_MBYTE1:
 	    if (WC_GBK_MAP[*p] & LB) {
-		gbk = ((wc_uint32)*(p-1) << 8) | *p;
+		gbk = ((uint32_t)*(p-1) << 8) | *p;
 		if (*(p-1) >= 0xA1 && *p >= 0xA1)
 		    wtf_push(os, wc_gb2312_or_gbk(gbk), gbk);
 		else
@@ -186,11 +186,11 @@ wc_push_to_gbk(Str os, wc_wchar_t cc, wc_status *st)
 }
 
 Str
-wc_char_conv_from_gbk(wc_uchar c, wc_status *st)
+wc_char_conv_from_gbk(uint8_t c, wc_status *st)
 {
     static Str os;
-    static wc_uchar gbku;
-    wc_uint32 gbk;
+    static uint8_t gbku;
+    uint32_t gbk;
 
     if (st->state == -1) {
 	st->state = WC_GBK_NOSTATE;
@@ -216,7 +216,7 @@ wc_char_conv_from_gbk(wc_uchar c, wc_status *st)
 	break;
     case WC_GBK_MBYTE1:
 	if (WC_GBK_MAP[c] & LB) {
-	    gbk = ((wc_uint32)gbku << 8) | c;
+	    gbk = ((uint32_t)gbku << 8) | c;
 	    if (gbku >= 0xA1 && c >= 0xA1)
 		wtf_push(os, wc_gb2312_or_gbk(gbk), gbk);
 	    else

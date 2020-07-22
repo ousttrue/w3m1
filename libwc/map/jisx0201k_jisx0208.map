@@ -1,5 +1,5 @@
 
-static wc_uint16 jisx0201k_jisx0208_map[ 0x80 ] = {
+static uint16_t jisx0201k_jisx0208_map[ 0x80 ] = {
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     
   0,      0,      0,      0,      0,      0,      0,      0,     

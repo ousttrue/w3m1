@@ -766,11 +766,11 @@ global int use_lessopen init(FALSE);
 
 global char *keymap_file init(KEYMAP_FILE);
 
-#define get_mctype(c) ((Lineprop)wtf_type((wc_uchar *)(c)) << 8)
-#define get_mclen(c) wtf_len1((wc_uchar *)(c))
-#define get_mcwidth(c) wtf_width((wc_uchar *)(c))
-#define get_strwidth(c) wtf_strwidth((wc_uchar *)(c))
-#define get_Str_strwidth(c) wtf_strwidth((wc_uchar *)((c)->ptr))
+#define get_mctype(c) ((Lineprop)wtf_type((uint8_t *)(c)) << 8)
+#define get_mclen(c) wtf_len1((uint8_t *)(c))
+#define get_mcwidth(c) wtf_width((uint8_t *)(c))
+#define get_strwidth(c) wtf_strwidth((uint8_t *)(c))
+#define get_Str_strwidth(c) wtf_strwidth((uint8_t *)((c)->ptr))
 
 global int FollowRedirection init(10);
 

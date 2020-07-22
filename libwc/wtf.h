@@ -48,32 +48,32 @@
 #define WTF_TYPE_WCHAR1W	(WTF_TYPE_WCHAR1|WTF_TYPE_WIDE)
 #define WTF_TYPE_WCHAR2W	(WTF_TYPE_WCHAR2|WTF_TYPE_WIDE)
 
-extern wc_uint8 WTF_WIDTH_MAP[];
-extern wc_uint8 WTF_LEN_MAP[];
-extern wc_uint8 WTF_TYPE_MAP[];
+extern uint8_t WTF_WIDTH_MAP[];
+extern uint8_t WTF_LEN_MAP[];
+extern uint8_t WTF_TYPE_MAP[];
 extern wc_ccs   wtf_gr_ccs;
 
 extern void       wtf_init(wc_ces ces1, wc_ces ces2);
 
-/* extern int     wtf_width(wc_uchar *p); */
-#define wtf_width(p) (WcOption.use_wide ? (int)WTF_WIDTH_MAP[(wc_uchar)*(p)] \
-		      : ((int)WTF_WIDTH_MAP[(wc_uchar)*(p)] ? 1 : 0))
-extern int        wtf_strwidth(wc_uchar *p);
-/* extern size_t  wtf_len1(wc_uchar *p); */
-#define wtf_len1(p) ((int)WTF_LEN_MAP[(wc_uchar)*(p)])
-extern size_t     wtf_len(wc_uchar *p);
-/* extern int     wtf_type(wc_uchar *p); */
-#define wtf_type(p) WTF_TYPE_MAP[(wc_uchar)*(p)]
+/* extern int     wtf_width(uint8_t *p); */
+#define wtf_width(p) (WcOption.use_wide ? (int)WTF_WIDTH_MAP[(uint8_t)*(p)] \
+		      : ((int)WTF_WIDTH_MAP[(uint8_t)*(p)] ? 1 : 0))
+extern int        wtf_strwidth(uint8_t *p);
+/* extern size_t  wtf_len1(uint8_t *p); */
+#define wtf_len1(p) ((int)WTF_LEN_MAP[(uint8_t)*(p)])
+extern size_t     wtf_len(uint8_t *p);
+/* extern int     wtf_type(uint8_t *p); */
+#define wtf_type(p) WTF_TYPE_MAP[(uint8_t)*(p)]
 
-extern void       wtf_push(Str os, wc_ccs ccs, wc_uint32 code);
-extern void       wtf_push_unknown(Str os, wc_uchar *p, size_t len);
-extern wc_wchar_t wtf_parse(wc_uchar **p);
-extern wc_wchar_t wtf_parse1(wc_uchar **p);
+extern void       wtf_push(Str os, wc_ccs ccs, uint32_t code);
+extern void       wtf_push_unknown(Str os, uint8_t *p, size_t len);
+extern wc_wchar_t wtf_parse(uint8_t **p);
+extern wc_wchar_t wtf_parse1(uint8_t **p);
 
-extern wc_ccs     wtf_get_ccs(wc_uchar *p);
-extern wc_uint32  wtf_get_code(wc_uchar *p);
+extern wc_ccs     wtf_get_ccs(uint8_t *p);
+extern uint32_t  wtf_get_code(uint8_t *p);
 
-extern wc_bool    wtf_is_hangul(wc_uchar *p);
+extern wc_bool    wtf_is_hangul(uint8_t *p);
 
 extern char      *wtf_conv_fit(char *s, wc_ces ces);
 

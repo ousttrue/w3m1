@@ -88,13 +88,13 @@ static wc_gset gset_iso2022kr[] = {
     { WC_CCS_KS_X_1001, WC_C_G1_CS94, 1 },
     { 0, 0, 0 },
 };
-static wc_uchar gset_ext_iso2022jp[] = {
+static uint8_t gset_ext_iso2022jp[] = {
     WC_C_G0_CS94, WC_C_G2_CS96, WC_C_G0_CS94, WC_C_G2_CS96
 };
-static wc_uchar gset_ext_iso2022cn[] = {
+static uint8_t gset_ext_iso2022cn[] = {
     WC_C_G2_CS94, WC_C_G2_CS96, WC_C_G2_CS94, WC_C_G2_CS96
 };
-static wc_uchar gset_ext_iso2022kr[] = {
+static uint8_t gset_ext_iso2022kr[] = {
     WC_C_G1_CS94, WC_C_G1_CS96, WC_C_G1_CS94, WC_C_G1_CS96
 };
 static wc_gset gset_eucjp[] = {

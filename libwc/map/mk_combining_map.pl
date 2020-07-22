@@ -60,7 +60,7 @@ open(OUT, "> ${name}_combining.map");
 print OUT <<EOF;
 /* $code */
 
-static wc_uint8 ${name}_combining_map[ 0x80 ] = {
+static uint8_t ${name}_combining_map[ 0x80 ] = {
 EOF
 
 foreach $i (0x8 .. 0xF) {

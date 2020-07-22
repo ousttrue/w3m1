@@ -19,10 +19,10 @@
 #define WC_N_BIG5L(c)	((c) % 0x9D + (((c) % 0x9D < 0x3F) ? 0x40 : 0x62))
 #define WC_N_BIG5(c)	((WC_N_BIG5U(c) << 8) + WC_N_BIG5L(c))
 
-extern wc_uchar WC_BIG5_MAP[];
+extern uint8_t WC_BIG5_MAP[];
 
 extern wc_wchar_t wc_big5_to_cs94w(wc_wchar_t cc);
 extern wc_wchar_t wc_cs94w_to_big5(wc_wchar_t cc);
 extern Str        wc_conv_from_big5(Str is, wc_ces ces);
 extern void       wc_push_to_big5(Str os, wc_wchar_t cc, wc_status *st);
-extern Str        wc_char_conv_from_big5(wc_uchar c, wc_status *st);
+extern Str        wc_char_conv_from_big5(uint8_t c, wc_status *st);

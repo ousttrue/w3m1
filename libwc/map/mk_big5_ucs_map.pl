@@ -43,7 +43,7 @@ open(OUT, "> ${name}_ucs.map");
 print OUT <<EOF;
 /* $desc */
 
-static wc_uint16 ${name}_ucs_map[ 0x59 * 0x9D ] = {
+static uint16_t ${name}_ucs_map[ 0x59 * 0x9D ] = {
 EOF
 
 for $i (0xA1 .. 0xF9) {

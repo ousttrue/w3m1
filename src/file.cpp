@@ -5284,7 +5284,7 @@ conv_symbol(Line *l)
     for (; p < ep; p++, pr++) {
 	if (*pr & PC_SYMBOL) {
 #ifdef USE_M17N
-	    char c = ((char)wtf_get_code((wc_uchar *) p) & 0x7f) - SYMBOL_BASE;
+	    char c = ((char)wtf_get_code((uint8_t *) p) & 0x7f) - SYMBOL_BASE;
 	    int len = get_mclen(p);
 #else
 	    char c = *p - SYMBOL_BASE;
@@ -5534,7 +5534,7 @@ getNextPage(Buffer *buf, int plen)
 #ifdef USE_M17N
     wc_ces charset;
     wc_ces volatile doc_charset = DocumentCharset;
-    wc_uint8 old_auto_detect = WcOption.auto_detect;
+    uint8_t old_auto_detect = WcOption.auto_detect;
 #endif
     int volatile squeeze_flag = FALSE;
     Lineprop *propBuffer = NULL;
@@ -8059,7 +8059,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 		else {
 #ifdef USE_M17N
 		    if (mode == PC_KANJI1)
-			is_hangul = wtf_is_hangul((wc_uchar *) str);
+			is_hangul = wtf_is_hangul((uint8_t *) str);
 		    else
 			is_hangul = 0;
 		    if (!SimplePreserveSpace && mode == PC_KANJI1 &&

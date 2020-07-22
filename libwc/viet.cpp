@@ -7,19 +7,19 @@
 #include "map/tcvn57123_tcvn5712.map"
 
 
-wc_uint8 wc_c0_tcvn57122_map[ 0x20 ] = {
+uint8_t wc_c0_tcvn57122_map[ 0x20 ] = {
     0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,     
     0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,     
 };
-wc_uint8 wc_c0_viscii112_map[ 0x20 ] = {
+uint8_t wc_c0_viscii112_map[ 0x20 ] = {
     0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,     
     0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,     
 };
-wc_uint8 wc_c0_vps2_map[ 0x20 ] = {
+uint8_t wc_c0_vps2_map[ 0x20 ] = {
     0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,     
     1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0,     
 };
-static wc_uint8 tcvn5712_precompose_map[ 0x100 ] = {
+static uint8_t tcvn5712_precompose_map[ 0x100 ] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -44,7 +44,7 @@ static wc_uint8 tcvn5712_precompose_map[ 0x100 ] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
-static wc_uint8 cp1258_precompose_map[ 0x100 ] = {
+static uint8_t cp1258_precompose_map[ 0x100 ] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -72,11 +72,11 @@ static wc_uint8 cp1258_precompose_map[ 0x100 ] = {
     0, 0, 2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
 };
 
-wc_uint32
-wc_tcvn5712_precompose(wc_uchar c1, wc_uchar c2)
+uint32_t
+wc_tcvn5712_precompose(uint8_t c1, uint8_t c2)
 {
     if (tcvn5712_precompose_map[c1] == 1 && tcvn5712_precompose_map[c2] == 2)
-	return ((wc_uint32)c1 << 8) | c2;
+	return ((uint32_t)c1 << 8) | c2;
     else
 	return 0;
 }
@@ -86,7 +86,7 @@ wc_tcvn57123_to_tcvn5712(wc_wchar_t cc)
 {
     wc_map *map;
 
-    map = wc_map_search((wc_uint16)(cc.code & 0x7f7f),
+    map = wc_map_search((uint16_t)(cc.code & 0x7f7f),
 	tcvn57123_tcvn5712_map, N_tcvn57123_tcvn5712_map);
     if (map) {
 	cc.ccs = (map->code2 < 0x20) ? WC_CCS_TCVN_5712_2 : WC_CCS_TCVN_5712_1;
@@ -97,11 +97,11 @@ wc_tcvn57123_to_tcvn5712(wc_wchar_t cc)
     return cc;
 }
 
-wc_uint32
-wc_cp1258_precompose(wc_uchar c1, wc_uchar c2)
+uint32_t
+wc_cp1258_precompose(uint8_t c1, uint8_t c2)
 {
     if (cp1258_precompose_map[c1] == 1 && cp1258_precompose_map[c2] == 2)
-	return ((wc_uint32)c1 << 8) | c2;
+	return ((uint32_t)c1 << 8) | c2;
     else
 	return 0;
 }
@@ -110,12 +110,12 @@ Str
 wc_conv_from_viet(Str is, wc_ces ces)
 {
     Str os;
-    wc_uchar *sp = (wc_uchar *)is->ptr;
-    wc_uchar *ep = sp + is->length;
-    wc_uchar *p;
+    uint8_t *sp = (uint8_t *)is->ptr;
+    uint8_t *ep = sp + is->length;
+    uint8_t *p;
     wc_ccs ccs1 = WcCesInfo[WC_CCS_INDEX(ces)].gset[1].ccs;
     wc_ccs ccs2 = WcCesInfo[WC_CCS_INDEX(ces)].gset[2].ccs;
-    wc_uint8 *map = NULL;
+    uint8_t *map = NULL;
 
     switch (ces) {
     case WC_CES_TCVN_5712:
@@ -140,9 +140,9 @@ wc_conv_from_viet(Str is, wc_ces ces)
 
     for (; p < ep; p++) {
 	if (*p & 0x80)
-	    wtf_push(os, ccs1, (wc_uint32)*p);
+	    wtf_push(os, ccs1, (uint32_t)*p);
 	else if (*p < 0x20 && map[*p])
-	    wtf_push(os, ccs2, (wc_uint32)*p);
+	    wtf_push(os, ccs2, (uint32_t)*p);
 	else
 	    Strcat_char(os, (char)*p);
     }
@@ -154,7 +154,7 @@ wc_push_to_viet(Str os, wc_wchar_t cc, wc_status *st)
 {
     wc_ccs ccs1 = st->ces_info->gset[1].ccs;
     wc_ccs ccs2 = 0, ccs3 = 0;
-    wc_uint8 *map = NULL;
+    uint8_t *map = NULL;
 
     switch (st->ces_info->id) {
     case WC_CES_CP1258:
@@ -215,10 +215,10 @@ wc_push_to_viet(Str os, wc_wchar_t cc, wc_status *st)
 }
 
 Str
-wc_char_conv_from_viet(wc_uchar c, wc_status *st)
+wc_char_conv_from_viet(uint8_t c, wc_status *st)
 {
     Str os = Strnew_size(1);
-    wc_uint8 *map = NULL;
+    uint8_t *map = NULL;
 
     switch (st->ces_info->id) {
     case WC_CES_TCVN_5712:
@@ -233,9 +233,9 @@ wc_char_conv_from_viet(wc_uchar c, wc_status *st)
     }
 
     if (c & 0x80)
-	wtf_push(os, st->ces_info->gset[1].ccs, (wc_uint32)c);
+	wtf_push(os, st->ces_info->gset[1].ccs, (uint32_t)c);
     else if (c < 0x20 && map[c])
-	wtf_push(os, st->ces_info->gset[2].ccs, (wc_uint32)c);
+	wtf_push(os, st->ces_info->gset[2].ccs, (uint32_t)c);
     else
 	Strcat_char(os, (char)c);
     return os;

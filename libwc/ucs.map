@@ -64,7 +64,7 @@
 #include "map/gbk_ucs.map"
 #include "map/uhc_ucs.map"
 
-static wc_uint16 *cs94_ucs_map[] = {
+static uint16_t *cs94_ucs_map[] = {
   NULL,			/* 40 */
   NULL,			/* 41 */
   NULL,			/* 42 (US_ASCII) */
@@ -88,7 +88,7 @@ static wc_uint16 *cs94_ucs_map[] = {
   NULL,			/* 54 (GB 1988) */
 };
 
-static wc_uint16 *cs96_ucs_map[] = {
+static uint16_t *cs96_ucs_map[] = {
   NULL,			/* 40 */
   iso88591_ucs_map,	/* 41 (ISO 8859-1) */
   iso88592_ucs_map,	/* 42 (ISO 8859-2) */
@@ -130,9 +130,9 @@ static wc_uint16 *cs96_ucs_map[] = {
   iso885916_ucs_map,	/* 66 (ISO 8859-16) */
 };
 
-static wc_uint16 **cs942_ucs_map;
+static uint16_t **cs942_ucs_map;
 
-static wc_uint16 *pcs_ucs_map[] = {
+static uint16_t *pcs_ucs_map[] = {
   cp437_ucs_map,
   cp737_ucs_map,
   cp775_ucs_map,
@@ -175,7 +175,7 @@ static wc_uint16 *pcs_ucs_map[] = {
   NULL,			/* (Raw) */
 };
 
-static wc_uint16 *cs94w_ucs_map[] = {
+static uint16_t *cs94w_ucs_map[] = {
   jisx0208x02131_ucs_map,	/* 40 (JIS C 6226) */
   gb2312_ucs_map,		/* 41 (GB 2312) */
   jisx0208x02131_ucs_map,	/* 42 (JIS X 0208) */
@@ -195,9 +195,9 @@ static wc_uint16 *cs94w_ucs_map[] = {
   jisx0212x02132_ucs_map,	/* 50 (JIS X 0213-2) */
 };
 
-static wc_uint16 **cs96w_ucs_map;
+static uint16_t **cs96w_ucs_map;
 
-static wc_uint16 *pcsw_ucs_map[] = {
+static uint16_t *pcsw_ucs_map[] = {
   big5_ucs_map,		/* Big5 */
   big5_ucs_map,		/* Big5-1 */
   big5_ucs_map,		/* Big5-2 */
@@ -234,7 +234,7 @@ static wc_uint16 *pcsw_ucs_map[] = {
 };
 
 static wc_wchar_t
-ucs_cs94_conv(wc_ccs ccs, wc_uint16 c)
+ucs_cs94_conv(wc_ccs ccs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -249,7 +249,7 @@ ucs_cs94_conv(wc_ccs ccs, wc_uint16 c)
 #define ucs_cs128w_conv ucs_cs94_conv
 
 static wc_wchar_t
-ucs_viet_conv(wc_ccs ccs, wc_uint16 c)
+ucs_viet_conv(wc_ccs ccs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -285,7 +285,7 @@ ucs_viet_conv(wc_ccs ccs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_cp1258_conv(wc_ccs ccs, wc_uint16 c)
+ucs_cp1258_conv(wc_ccs ccs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -295,7 +295,7 @@ ucs_cp1258_conv(wc_ccs ccs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_cns11643_conv(wc_ccs cs, wc_uint16 c)
+ucs_cns11643_conv(wc_ccs cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -305,7 +305,7 @@ ucs_cns11643_conv(wc_ccs cs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_big5_conv(wc_ccs cs, wc_uint16 c)
+ucs_big5_conv(wc_ccs cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -315,7 +315,7 @@ ucs_big5_conv(wc_ccs cs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_johab2_conv(wc_ccs cs, wc_uint16 c)
+ucs_johab2_conv(wc_ccs cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -325,7 +325,7 @@ ucs_johab2_conv(wc_ccs cs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_johab3_conv(wc_ccs cs, wc_uint16 c)
+ucs_johab3_conv(wc_ccs cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -340,7 +340,7 @@ ucs_johab3_conv(wc_ccs cs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_sjis_ext_conv(wc_ccs cs, wc_uint16 c)
+ucs_sjis_ext_conv(wc_ccs cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -350,7 +350,7 @@ ucs_sjis_ext_conv(wc_ccs cs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_gbk_conv(wc_ccs cs, wc_uint16 c)
+ucs_gbk_conv(wc_ccs cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -360,7 +360,7 @@ ucs_gbk_conv(wc_ccs cs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_uhc_conv(wc_ccs cs, wc_uint16 c)
+ucs_uhc_conv(wc_ccs cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -370,7 +370,7 @@ ucs_uhc_conv(wc_ccs cs, wc_uint16 c)
 }
 
 static wc_wchar_t
-ucs_hkscs_conv(wc_ccs cs, wc_uint16 c)
+ucs_hkscs_conv(wc_ccs cs, uint16_t c)
 {
   wc_wchar_t cc;
 

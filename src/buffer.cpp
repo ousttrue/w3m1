@@ -564,7 +564,7 @@ void reshapeBuffer(Buffer *buf)
 	URLFile f;
 	Buffer sbuf;
 #ifdef USE_M17N
-	wc_uint8 old_auto_detect = WcOption.auto_detect;
+	uint8_t old_auto_detect = WcOption.auto_detect;
 #endif
 
 	if (!buf->need_reshape)

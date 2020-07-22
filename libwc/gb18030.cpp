@@ -16,7 +16,7 @@
 #define UB WC_GB18030_MAP_UB
 #define L4 WC_GB18030_MAP_L4
 
-wc_uint8 WC_GB18030_MAP[ 0x100 ] = {
+uint8_t WC_GB18030_MAP[ 0x100 ] = {
     C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0,
     C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0, C0,
     GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL, GL,
@@ -62,14 +62,14 @@ wc_cs128w_to_gbk_ext(wc_wchar_t cc)
 }
 
 static wc_ccs
-wc_gbk_or_gbk_ext(wc_uint16 code) {
+wc_gbk_or_gbk_ext(uint16_t code) {
     return wc_map3_range_search(code,
         gbk_ext_ucs_map, N_gbk_ext_ucs_map)
         ? WC_CCS_GBK_EXT : WC_CCS_GBK;
 }
 
 #ifdef USE_UNICODE
-wc_uint32
+uint32_t
 wc_gb18030_to_ucs(wc_wchar_t cc)
 {
     wc_map3 *map;
@@ -79,7 +79,7 @@ wc_gb18030_to_ucs(wc_wchar_t cc)
     case WC_CCS_GBK_EXT_2:
 	cc = wc_cs128w_to_gbk_ext(cc);
     case WC_CCS_GBK_EXT:
-	map = wc_map3_range_search((wc_uint16)cc.code,
+	map = wc_map3_range_search((uint16_t)cc.code,
 		gbk_ext_ucs_map, N_gbk_ext_ucs_map);
 	if (map)
 	    return map->code3 + WC_GBK_N(cc.code) - WC_GBK_N(map->code2);
@@ -117,13 +117,13 @@ wc_gb18030_to_ucs(wc_wchar_t cc)
 }
 
 wc_wchar_t
-wc_ucs_to_gb18030(wc_uint32 ucs)
+wc_ucs_to_gb18030(uint32_t ucs)
 {
     wc_wchar_t cc;
     wc_map3 *map;
 
     if (ucs <= WC_C_UCS2_END) {
-	map = wc_map3_range_search((wc_uint16)ucs,
+	map = wc_map3_range_search((uint16_t)ucs,
 		ucs_gbk_ext_map, N_ucs_gbk_ext_map);
 	if (map) {
 	    cc.code = WC_GBK_N(map->code3) + ucs - map->code;
@@ -131,7 +131,7 @@ wc_ucs_to_gb18030(wc_uint32 ucs)
 	    cc.ccs = WC_CCS_GBK_EXT;
 	    return cc;
 	}
-	map = wc_map3_range_search((wc_uint16)ucs,
+	map = wc_map3_range_search((uint16_t)ucs,
 		ucs_gb18030_map, N_ucs_gb18030_map);
 	if (map) {
 	    cc.code = map->code3 + ucs - map->code + WC_GB18030_N(WC_C_GB18030_UCS2);
@@ -160,14 +160,14 @@ Str
 wc_conv_from_gb18030(Str is, wc_ces ces)
 {
     Str os;
-    wc_uchar *sp = (wc_uchar *)is->ptr;
-    wc_uchar *ep = sp + is->length;
-    wc_uchar *p;
+    uint8_t *sp = (uint8_t *)is->ptr;
+    uint8_t *ep = sp + is->length;
+    uint8_t *p;
     int state = WC_GB18030_NOSTATE;
-    wc_uint32 gbk;
+    uint32_t gbk;
     wc_wchar_t cc;
 #ifdef USE_UNICODE
-    wc_uint32 ucs;
+    uint32_t ucs;
 #endif
 
     for (p = sp; p < ep && *p < 0x80; p++) 
@@ -195,7 +195,7 @@ wc_conv_from_gb18030(Str is, wc_ces ces)
 	    break;
 	case WC_GB18030_MBYTE1:
 	    if (WC_GB18030_MAP[*p] & LB) {
-		gbk = ((wc_uint32)*(p-1) << 8) | *p;
+		gbk = ((uint32_t)*(p-1) << 8) | *p;
 		if (wc_gbk_or_gbk_ext(gbk) == WC_CCS_GBK_EXT)
 		    wtf_push(os, WC_CCS_GBK_EXT, gbk);
 		else if (*(p-1) >= 0xA1 && *p >= 0xA1)
@@ -220,9 +220,9 @@ wc_conv_from_gb18030(Str is, wc_ces ces)
 	case WC_GB18030_MBYTE3:
 	    if (WC_GB18030_MAP[*p] == L4) {
 		cc.ccs = WC_CCS_GB18030_W;
-		cc.code = ((wc_uint32)*(p-3) << 24)
-		        | ((wc_uint32)*(p-2) << 16)
-		        | ((wc_uint32)*(p-1) << 8)
+		cc.code = ((uint32_t)*(p-3) << 24)
+		        | ((uint32_t)*(p-2) << 16)
+		        | ((uint32_t)*(p-1) << 8)
 		        | *p;
 #ifdef USE_UNICODE
 		if (WcOption.gb18030_as_ucs &&
@@ -304,14 +304,14 @@ wc_push_to_gb18030(Str os, wc_wchar_t cc, wc_status *st)
 }
 
 Str
-wc_char_conv_from_gb18030(wc_uchar c, wc_status *st)
+wc_char_conv_from_gb18030(uint8_t c, wc_status *st)
 {
     static Str os;
-    static wc_uchar gb[4];
-    wc_uint32 gbk;
+    static uint8_t gb[4];
+    uint32_t gbk;
     wc_wchar_t cc;
 #ifdef USE_UNICODE
-    wc_uint32 ucs;
+    uint32_t ucs;
 #endif
 
     if (st->state == -1) {
@@ -335,7 +335,7 @@ wc_char_conv_from_gb18030(wc_uchar c, wc_status *st)
 	break;
     case WC_GB18030_MBYTE1:
 	if (WC_GB18030_MAP[c] & LB) {
-	    gbk = ((wc_uint32)gb[0] << 8) | c;
+	    gbk = ((uint32_t)gb[0] << 8) | c;
 	    if (wc_gbk_or_gbk_ext(gbk) == WC_CCS_GBK_EXT)
 		wtf_push(os, WC_CCS_GBK_EXT, gbk);
 	    else if (gb[0] >= 0xA1 && c >= 0xA1)
@@ -358,9 +358,9 @@ wc_char_conv_from_gb18030(wc_uchar c, wc_status *st)
     case WC_GB18030_MBYTE3:
 	if (WC_GB18030_MAP[c] == L4) {
 	    cc.ccs = WC_CCS_GB18030_W;
-	    cc.code = ((wc_uint32)gb[0] << 24)
-		    | ((wc_uint32)gb[1] << 16)
-		    | ((wc_uint32)gb[2] << 8)
+	    cc.code = ((uint32_t)gb[0] << 24)
+		    | ((uint32_t)gb[1] << 16)
+		    | ((uint32_t)gb[2] << 8)
 		    | c;
 #ifdef USE_UNICODE
 	    if (WcOption.gb18030_as_ucs &&

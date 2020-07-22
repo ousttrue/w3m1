@@ -1,51 +1,34 @@
 
-#ifndef _WC_TYPES_H
-#define _WC_TYPES_H
-
+#pragma once
 #include <Str.h>
 #include <config.h>
-#if defined(HAVE_STDINT_H)
 #include <stdint.h>
-#elif defined(HAVE_INTTYPES_H)
-#include <inttypes.h>
-#endif
 
-typedef unsigned char wc_uchar;
-#if defined(HAVE_STDINT_H) || defined(HAVE_INTTYPES_H)
-typedef uint8_t wc_uint8;
-typedef uint16_t wc_uint16;
-typedef uint32_t wc_uint32;
-#else
-typedef unsigned char wc_uint8;
-typedef unsigned short wc_uint16;
-typedef unsigned long wc_uint32;
-#endif
-
-typedef wc_uint32 wc_ccs;
-typedef wc_uint32 wc_ces;
-typedef wc_uint32 wc_locale;
-typedef wc_uchar wc_bool;
+typedef uint32_t wc_ccs;
+typedef uint32_t wc_ces;
+typedef uint32_t wc_locale;
+typedef uint8_t wc_bool;
 
 struct wc_wchar_t
 {
     wc_ccs ccs;
-    wc_uint32 code;
+    uint32_t code;
 };
 
 struct wc_map
 {
-    wc_uint16 code;
-    wc_uint16 code2;
+    uint16_t code;
+    uint16_t code2;
 };
 
 struct wc_map3
 {
-    wc_uint16 code;
-    wc_uint16 code2;
-    wc_uint16 code3;
+    uint16_t code;
+    uint16_t code2;
+    uint16_t code3;
 };
 
-typedef wc_wchar_t (*WcConvFunc)(wc_ccs, wc_uint16);
+typedef wc_wchar_t (*WcConvFunc)(wc_ccs, uint16_t);
 
 struct wc_table
 {
@@ -58,13 +41,13 @@ struct wc_table
 struct wc_gset
 {
     wc_ccs ccs;
-    wc_uchar g;
+    uint8_t g;
     wc_bool init;
 };
 
 typedef Str (*ConvFromFunc)(Str, wc_ces);
 typedef void (*PushToFunc)(Str, wc_wchar_t, struct wc_status *);
-typedef Str (*CharConvFunc)(wc_uchar, struct wc_status *);
+typedef Str (*CharConvFunc)(uint8_t, struct wc_status *);
 
 struct wc_ces_info
 {
@@ -72,7 +55,7 @@ struct wc_ces_info
     char *name;
     char *desc;
     wc_gset *gset;
-    wc_uchar *gset_ext;
+    uint8_t *gset_ext;
     ConvFromFunc conv_from;
     PushToFunc push_to;
     CharConvFunc char_conv;
@@ -87,7 +70,7 @@ struct wc_ces_list
 
 struct wc_option
 {
-    wc_uint8 auto_detect;     /* automatically charset detect */
+    uint8_t auto_detect;     /* automatically charset detect */
     wc_bool use_combining;    /* use combining characters */
     wc_bool use_language_tag; /* use language_tags */
     wc_bool ucs_conv;         /* charset conversion using Unicode */
@@ -111,9 +94,9 @@ struct wc_option
 struct wc_status
 {
     wc_ces_info *ces_info;
-    wc_uint8 gr;
-    wc_uint8 gl;
-    wc_uint8 ss;
+    uint8_t gr;
+    uint8_t gl;
+    uint8_t ss;
     wc_ccs g0_ccs;
     wc_ccs g1_ccs;
     wc_ccs design[4];
@@ -125,8 +108,6 @@ struct wc_status
 
     Str tag;
     int ntag;
-    wc_uint32 base;
+    uint32_t base;
     int shift;
 };
-
-#endif

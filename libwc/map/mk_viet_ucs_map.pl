@@ -41,7 +41,7 @@ while(<MAP>) {
 print OUT <<EOF;
 /* $code */
 
-static wc_uint16 ${name}1_ucs_map[ 0x80 ] = {
+static uint16_t ${name}1_ucs_map[ 0x80 ] = {
 EOF
 
 foreach $i (0x10 .. 0x1F) {
@@ -61,7 +61,7 @@ foreach $j (0 .. 7) {
 print OUT <<EOF;
 };
 
-static wc_uint16 ${name}2_ucs_map[ 0x20 ] = {
+static uint16_t ${name}2_ucs_map[ 0x20 ] = {
 EOF
 
 foreach $i (0x0 .. 0x3) {
