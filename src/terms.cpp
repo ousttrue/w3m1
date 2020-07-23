@@ -1711,7 +1711,7 @@ addnstr(const char *s, int n)
 }
 
 void
-addnstr_sup(char *s, int n)
+addnstr_sup(const char *s, int n)
 {
     int i;
 #ifdef USE_M17N
