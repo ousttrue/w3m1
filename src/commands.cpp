@@ -1625,7 +1625,6 @@ void reload()
 {
     BufferPtr buf;
     BufferPtr fbuf = NULL;
-    Buffer sbuf;
     wc_ces old_charset;
 
     Str url;
@@ -1650,7 +1649,7 @@ void reload()
         disp_err_message("Can't reload stdin", TRUE);
         return;
     }
-    copyBuffer(&sbuf, GetCurrentbuf());
+    auto sbuf= GetCurrentbuf()->Copy();
     if (GetCurrentbuf()->bufferprop & BP_FRAME &&
         (fbuf = GetCurrentbuf()->linkBuffer[LB_N_FRAME]))
     {
@@ -1679,8 +1678,8 @@ void reload()
         SetCurrentbuf(buf);
         if (GetCurrentbuf()->firstLine)
         {
-            COPY_BUFROOT(GetCurrentbuf(), &sbuf);
-            restorePosition(GetCurrentbuf(), &sbuf);
+            COPY_BUFROOT(GetCurrentbuf(), sbuf);
+            restorePosition(GetCurrentbuf(), sbuf);
         }
         displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
         return;
@@ -1738,22 +1737,22 @@ void reload()
     if (fbuf != NULL)
         SetFirstbuf(deleteBuffer(GetFirstbuf(), fbuf));
     repBuffer(GetCurrentbuf(), buf);
-    if ((buf->type != NULL) && (sbuf.type != NULL) &&
+    if ((buf->type != NULL) && (sbuf->type != NULL) &&
         ((!strcasecmp(buf->type, "text/plain") &&
-          is_html_type(sbuf.type)) ||
+          is_html_type(sbuf->type)) ||
          (is_html_type(buf->type) &&
-          !strcasecmp(sbuf.type, "text/plain"))))
+          !strcasecmp(sbuf->type, "text/plain"))))
     {
         vwSrc();
         if (GetCurrentbuf() != buf)
             SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
     }
-    GetCurrentbuf()->search_header = sbuf.search_header;
-    GetCurrentbuf()->form_submit = sbuf.form_submit;
+    GetCurrentbuf()->search_header = sbuf->search_header;
+    GetCurrentbuf()->form_submit = sbuf->form_submit;
     if (GetCurrentbuf()->firstLine)
     {
-        COPY_BUFROOT(GetCurrentbuf(), &sbuf);
-        restorePosition(GetCurrentbuf(), &sbuf);
+        COPY_BUFROOT(GetCurrentbuf(), sbuf);
+        restorePosition(GetCurrentbuf(), sbuf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }

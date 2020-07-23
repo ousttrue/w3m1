@@ -1523,7 +1523,6 @@ _end:
 
 void gotoLabel(char *label)
 {
-    BufferPtr buf;
     Anchor *al;
     int i;
 
@@ -1534,8 +1533,9 @@ void gotoLabel(char *label)
         disp_message(Sprintf("%s is not found", label)->ptr, TRUE);
         return;
     }
-    buf = newBuffer(GetCurrentbuf()->width);
-    copyBuffer(buf, GetCurrentbuf());
+
+    auto buf = GetCurrentbuf()->Copy();
+
     for (i = 0; i < MAX_LB; i++)
         buf->linkBuffer[i] = NULL;
     buf->currentURL.label = allocStr(label, -1);

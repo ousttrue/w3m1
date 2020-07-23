@@ -417,12 +417,11 @@ form_update_line(Line *line, char **str, int spos, int epos, int width,
 void
 formUpdateBuffer(Anchor *a, BufferPtr buf, FormItemList *form)
 {
-    Buffer save;
     char *p;
     int spos, epos, rows, c_rows, pos, col = 0;
     Line *l;
 
-    copyBuffer(&save, buf);
+    auto save = buf->Copy();
     gotoLine(buf, a->start.line);
     switch (form->type) {
     case FORM_TEXTAREA:
@@ -499,7 +498,7 @@ formUpdateBuffer(Anchor *a, BufferPtr buf, FormItemList *form)
 	}
 	break;
     }
-    copyBuffer(buf, &save);
+    buf->CopyFrom(save);
     arrangeLine(buf);
 }
 

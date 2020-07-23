@@ -226,12 +226,8 @@ TabPtr posTab(int x, int y)
 void _newT()
 {
     // setup buffer
-    auto buf = newBuffer(GetCurrentbuf()->width);
-    copyBuffer(buf, GetCurrentbuf());
-    buf->nextBuffer = NULL;
-    for (int i = 0; i < MAX_LB; i++)
-        buf->linkBuffer[i] = NULL;
-    (*buf->clone)++;
+    auto buf = GetCurrentbuf()->Copy();
+    buf->ClearLink();
 
     // new tab
     auto current = g_current.lock();

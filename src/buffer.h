@@ -17,7 +17,7 @@ void gotoRealLine(BufferPtr buf, int n);
 void gotoLine(BufferPtr buf, int n);
 BufferPtr selectBuffer(BufferPtr firstbuf, BufferPtr currentbuf, char *selectchar);
 void reshapeBuffer(BufferPtr buf);
-void copyBuffer(BufferPtr a, BufferPtr b);
+
 BufferPtr prevBuffer(BufferPtr first, BufferPtr buf);
 HmarkerList *putHmarker(HmarkerList *ml, int line, int pos, int seq);
 void shiftAnchorPosition(AnchorList *a, HmarkerList *hl, int line,

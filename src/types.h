@@ -304,6 +304,10 @@ struct Buffer
     Anchor *submit;
     BufferPos *undo;
     AlarmEvent *event;
+
+    BufferPtr Copy();
+    void CopyFrom(BufferPtr src);
+    void ClearLink();
 };
 
 struct MapArea
