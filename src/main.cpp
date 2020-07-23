@@ -1058,8 +1058,7 @@ int main(int argc, char **argv, char **envp)
         if (GetCurrentTab() == NULL)
         {
             InitializeTab();
-            SetCurrentbuf(newbuf);
-            SetFirstbuf(newbuf);
+            SetFirstbuf(newbuf, true);
         }
         else if (open_new_tab)
         {

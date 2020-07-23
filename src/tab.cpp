@@ -10,6 +10,7 @@
 #include "buffer.h"
 #include <stdexcept>
 #include <algorithm>
+#include <assert.h>
 
 std::list<TabPtr> g_tabs;
 std::weak_ptr<Tab> g_current;
@@ -22,23 +23,36 @@ void EachTab(const std::function<void(const TabPtr &)> callback)
     }
 }
 
-void Tab::SetFirstBuffer(Buffer *buffer)
+bool Tab::IsConnectFirstCurrent() const
 {
-    firstBuffer = buffer;
-
-    auto currentFound = false;
-    for(auto buf=firstBuffer; buf; buf=buf->nextBuffer)
+    for (auto buf = firstBuffer; buf; buf = buf->nextBuffer)
     {
-        if(buf==currentBuffer)
+        if (buf == currentBuffer)
         {
-            currentFound=true;
+            return true;
         }
     }
+    return false;
+}
 
-    if(!currentFound)
+void Tab::SetFirstBuffer(Buffer *buffer, bool isCurrent)
+{
+    firstBuffer = buffer;
+    if(isCurrent)
+    {
+        currentBuffer = buffer;
+    }
+
+    if (!IsConnectFirstCurrent())
     {
         currentBuffer = nullptr;
     }
+}
+
+void Tab::SetCurrentBuffer(Buffer *buffer)
+{
+    currentBuffer = buffer;
+    assert(IsConnectFirstCurrent());
 }
 
 // currentPrev -> buf -> current
@@ -50,19 +64,18 @@ void Tab::BufferPushBeforeCurrent(Buffer *buf)
         tmpClearBuffer(GetCurrentbuf());
     }
 
-    if (GetFirstbuf() == GetCurrentbuf())
+    // if (GetFirstbuf() == GetCurrentbuf())
     {
-        buf->nextBuffer = GetFirstbuf();
-        SetCurrentbuf(buf);
-        SetFirstbuf(buf);
+        buf->nextBuffer = GetCurrentBuffer();
+        SetFirstbuf(buf, true);
     }
-    else
-    {
-        auto b = prevBuffer(GetFirstbuf(), GetCurrentbuf());
-        b->nextBuffer = buf;
-        buf->nextBuffer = GetCurrentbuf();
-        SetCurrentbuf(buf);
-    }
+    // else
+    // {
+    //     auto b = prevBuffer(GetFirstbuf(), GetCurrentbuf());
+    //     b->nextBuffer = buf;
+    //     buf->nextBuffer = GetCurrentbuf();
+    //     SetCurrentbuf(buf);
+    // }
 #ifdef USE_BUFINFO
     saveBufferInfo();
 #endif
@@ -225,7 +238,7 @@ void _newT()
     auto found = std::find(g_tabs.begin(), g_tabs.end(), current);
     ++found;
     auto tab = std::make_shared<Tab>();
-    tab->firstBuffer = tab->currentBuffer = buf;
+    tab->SetFirstBuffer(buf, true);
     g_tabs.insert(found, tab);
 
     g_current = tab;
@@ -237,8 +250,8 @@ void deleteTab(TabPtr tab)
         return;
 
     // clear buffer
-    Buffer *buf, *next;
-    buf = tab->firstBuffer;
+    Buffer *next;
+    auto buf = tab->GetFirstBuffer();
     while (buf && buf != NO_BUFFER)
     {
         next = buf->nextBuffer;
@@ -365,17 +378,17 @@ Buffer *GetCurrentbuf()
     {
         return nullptr;
     }
-    return current->currentBuffer;
+    return current->GetCurrentBuffer();
 }
 
 void SetCurrentbuf(Buffer *buf)
 {
-    g_current.lock()->currentBuffer = buf;
+    g_current.lock()->SetCurrentBuffer(buf);
 }
 
 Buffer *GetFirstbuf()
 {
-    return g_current.lock()->firstBuffer;
+    return g_current.lock()->GetFirstBuffer();
 }
 
 int HasFirstBuffer()
@@ -383,9 +396,9 @@ int HasFirstBuffer()
     return GetFirstbuf() && GetFirstbuf() != NO_BUFFER;
 }
 
-void SetFirstbuf(Buffer *buffer)
+void SetFirstbuf(Buffer *buffer, bool isCurrent)
 {
-    g_current.lock()->SetFirstBuffer(buffer);
+    g_current.lock()->SetFirstBuffer(buffer, isCurrent);
 }
 
 void followTab(TabPtr tab)

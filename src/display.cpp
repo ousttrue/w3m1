@@ -662,14 +662,14 @@ redrawNLine(Buffer *buf, int n)
             if (t == GetCurrentTab())
                 bold();
             addch('[');
-            auto l = t->Width() - get_strwidth(t->currentBuffer->buffername);
+            auto l = t->Width() - get_strwidth(t->GetCurrentBuffer()->buffername);
             if (l < 0)
                 l = 0;
             if (l / 2 > 0)
                 addnstr_sup(" ", l / 2);
             if (t == GetCurrentTab())
                 EFFECT_ACTIVE_START;
-            addnstr(t->currentBuffer->buffername, t->Width());
+            addnstr(t->GetCurrentBuffer()->buffername, t->Width());
             if (t == GetCurrentTab())
                 EFFECT_ACTIVE_END;
             if ((l + 1) / 2 > 0)
@@ -1690,7 +1690,7 @@ void displayCurrentbuf(DisplayMode mode)
     auto tab = GetCurrentTab();
     if (tab)
     {
-        displayBuffer(tab->currentBuffer, mode);
+        displayBuffer(tab->GetCurrentBuffer(), mode);
     }
     else
     {

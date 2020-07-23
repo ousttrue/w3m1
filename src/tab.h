@@ -18,14 +18,14 @@ class Tab
     // avoid copy
     Tab(const Tab &) = delete;
     Tab &operator=(const Tab &) = delete;
+    Buffer *currentBuffer = nullptr;
+    Buffer *firstBuffer = nullptr;
 
 public:
     Tab() = default;
     ~Tab()
     {
     }
-    Buffer *currentBuffer = nullptr;
-    Buffer *firstBuffer = nullptr;
 
     int Left() const { return x1; }
     int Right() const { return x2; }
@@ -52,8 +52,14 @@ public:
     }
 
     // buffer
-    void SetFirstBuffer(Buffer *buf);
+    void SetFirstBuffer(Buffer *buf, bool isCurrent = false);
+    Buffer *GetFirstBuffer() { return firstBuffer; }
+    void SetCurrentBuffer(Buffer *buf);
+    Buffer *GetCurrentBuffer() { return currentBuffer; }
     void BufferPushBeforeCurrent(Buffer *buf);
+
+private:
+    bool IsConnectFirstCurrent() const;
 };
 using TabPtr = std::shared_ptr<Tab>;
 
@@ -79,7 +85,7 @@ TabPtr posTab(int x, int y);
 void SetCurrentbuf(Buffer *buf);
 Buffer *GetFirstbuf();
 int HasFirstBuffer();
-void SetFirstbuf(Buffer *buffer);
+void SetFirstbuf(Buffer *buffer, bool isCurrent = false);
 void moveTab(TabPtr src, TabPtr dst, int right);
 void calcTabPos();
 void followTab(TabPtr tab);
