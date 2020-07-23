@@ -839,14 +839,14 @@ void geom_menu(Menu *menu, int x, int y, int mselect)
 
     win_y = menu->y - mselect - 1;
     win_h = menu->height + 2;
-    if (win_y + win_h > LASTLINE)
-        win_y = LASTLINE - win_h;
+    if (win_y + win_h > (LINES-1))
+        win_y = (LINES-1) - win_h;
     if (win_y < 0)
     {
         win_y = 0;
-        if (win_y + win_h > LASTLINE)
+        if (win_y + win_h > (LINES-1))
         {
-            win_h = LASTLINE - win_y;
+            win_h = (LINES-1) - win_y;
             menu->height = win_h - 2;
             if (menu->height <= mselect)
                 menu->offset = mselect - menu->height + 1;
@@ -1596,7 +1596,7 @@ process_mMouse(int btn, int x, int y)
 
     menu = CurrentMenu;
 
-    if (x < 0 || x >= COLS || y < 0 || y > LASTLINE)
+    if (x < 0 || x >= COLS || y < 0 || y > (LINES-1))
         return (MENU_NOTHING);
 
     if (btn == MOUSE_BTN_UP)
@@ -1688,15 +1688,6 @@ mMouse(char c)
     int btn, x, y;
 
     btn = (unsigned char)getch() - 32;
-#if defined(__CYGWIN__) && CYGWIN_VERSION_DLL_MAJOR < 1005
-    if (cygwin_mouse_btn_swapped)
-    {
-        if (btn == MOUSE_BTN2_DOWN)
-            btn = MOUSE_BTN3_DOWN;
-        else if (btn == MOUSE_BTN3_DOWN)
-            btn = MOUSE_BTN2_DOWN;
-    }
-#endif
     x = (unsigned char)getch() - 33;
     if (x < 0)
         x += 0x100;
@@ -1705,7 +1696,7 @@ mMouse(char c)
         y += 0x100;
 
     /* 
-     * if (x < 0 || x >= COLS || y < 0 || y > LASTLINE) return; */
+     * if (x < 0 || x >= COLS || y < 0 || y > (LINES-1)) return; */
     return process_mMouse(btn, x, y);
 }
 
@@ -2092,7 +2083,7 @@ void optionMenu(int x, int y, char **label, int *variable, int initial,
 
     new_option_menu(&menu, label, variable, func);
     menu.cursorX = COLS - 1;
-    menu.cursorY = LASTLINE;
+    menu.cursorY = (LINES-1);
     menu.x = x;
     menu.y = y;
     menu.initial = initial;

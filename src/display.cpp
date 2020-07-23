@@ -201,7 +201,7 @@ void fmTerm(void)
 {
     if (fmInitialized)
     {
-        move(LASTLINE, 0);
+        move((LINES-1), 0);
         clrtoeolx();
         refresh();
 
@@ -254,7 +254,7 @@ static BufferPtr save_current_buf = NULL;
 static char *delayed_msg = NULL;
 
 static void drawAnchorCursor(BufferPtr buf);
-#define redrawBuffer(buf) redrawNLine(buf, LASTLINE)
+#define redrawBuffer(buf) redrawNLine(buf, (LINES-1))
 static void redrawNLine(BufferPtr buf, int n);
 static Line *redrawLine(BufferPtr buf, Line *l, int i);
 #ifdef USE_IMAGE
@@ -423,7 +423,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     if (buf->width == 0)
         buf->width = INIT_BUFFER_WIDTH;
     if (buf->height == 0)
-        buf->height = LASTLINE + 1;
+        buf->height = (LINES-1) + 1;
     if ((buf->width != INIT_BUFFER_WIDTH &&
          (is_html_type(buf->type) || FoldLine)) ||
         buf->need_reshape)
@@ -448,13 +448,13 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
             calcTabPos();
         ny = GetTabbarHeight() + 1;
-        if (ny > LASTLINE)
-            ny = LASTLINE;
+        if (ny > (LINES-1))
+            ny = (LINES-1);
     }
-    if (buf->rootY != ny || buf->LINES != LASTLINE - ny)
+    if (buf->rootY != ny || buf->LINES != (LINES-1) - ny)
     {
         buf->rootY = ny;
-        buf->LINES = LASTLINE - ny;
+        buf->LINES = (LINES-1) - ny;
         arrangeCursor(buf);
         mode = B_REDRAW_IMAGE;
     }
@@ -471,18 +471,13 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
             int n = buf->topLine->linenumber - cline->linenumber;
             if (n > 0 && n < buf->LINES)
             {
-                move(LASTLINE, 0);
+                move((LINES-1), 0);
                 clrtoeolx();
                 refresh();
                 scroll(n);
             }
             else if (n < 0 && n > -buf->LINES)
             {
-#if 0  /* defined(__CYGWIN__) */
-		move(LASTLINE + n + 1, 0);
-		clrtoeolx();
-		refresh();
-#endif /* defined(__CYGWIN__) */
                 rscroll(-n);
             }
             redrawNLine(buf, n);
@@ -953,8 +948,8 @@ redrawLineImage(BufferPtr buf, Line *l, int i)
                     h = (int)(pixel_per_line - sy);
                 if (w > (int)((buf->rootX + buf->COLS) * pixel_per_char - x))
                     w = (int)((buf->rootX + buf->COLS) * pixel_per_char - x);
-                if (h > (int)(LASTLINE * pixel_per_line - y))
-                    h = (int)(LASTLINE * pixel_per_line - y);
+                if (h > (int)((LINES-1) * pixel_per_line - y))
+                    h = (int)((LINES-1) * pixel_per_line - y);
                 addImage(cache, x, y, sx, sy, w, h);
                 image->touch = image_touch;
                 draw_image_flag = TRUE;
@@ -1315,7 +1310,7 @@ void message(const char *s, int return_x, int return_y)
 {
     if (!fmInitialized)
         return;
-    move(LASTLINE, 0);
+    move((LINES-1), 0);
     addnstr(s, COLS - 1);
     clrtoeolx();
     move(return_y, return_x);
@@ -1340,7 +1335,7 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, in
         message(s, GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
                 GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY);
     else
-        message(s, LASTLINE, 0);
+        message(s, (LINES-1), 0);
     refresh();
 #ifdef USE_MOUSE
     if (mouse && use_mouse)

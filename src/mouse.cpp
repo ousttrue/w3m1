@@ -316,7 +316,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         else
             map = &mouse_action.tab_map[(int)btn];
     }
-    else if (y == LASTLINE)
+    else if (y == (LINES-1))
     {
         if (mouse_action.lastline_str && x >= 0 &&
             x < mouse_action.lastline_width)
@@ -378,7 +378,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
 static int mouse_scroll_line()
 {
     if (relative_wheel_scroll)
-        return (relative_wheel_scroll_ratio * LASTLINE + 99) / 100;
+        return (relative_wheel_scroll_ratio * (LINES-1) + 99) / 100;
     else
         return fixed_wheel_scroll_count;
 }

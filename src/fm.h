@@ -389,11 +389,6 @@
  */
 
 extern int LINES, COLS;
-#if defined(__CYGWIN__)
-extern int LASTLINE;
-#else				/* not defined(__CYGWIN__) */
-#define LASTLINE (LINES-1)
-#endif				/* not defined(__CYGWIN__) */
 
 global int Tabstop init(8);
 global int IndentIncr init(4);

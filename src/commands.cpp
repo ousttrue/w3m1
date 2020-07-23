@@ -644,7 +644,7 @@ void susp()
 #ifndef SIGSTOP
     char *shell;
 #endif /* not SIGSTOP */
-    move(LASTLINE, 0);
+    move((LINES-1), 0);
     clrtoeolx();
     refresh();
     fmTerm();
@@ -1964,22 +1964,13 @@ void msToggle()
 void mouse()
 {
     auto btn = static_cast<MouseBtnAction>((unsigned char)getch() - 32);
-#if defined(__CYGWIN__) && CYGWIN_VERSION_DLL_MAJOR < 1005
-    if (cygwin_mouse_btn_swapped)
-    {
-        if (btn == MOUSE_BTN2_DOWN)
-            btn = MOUSE_BTN3_DOWN;
-        else if (btn == MOUSE_BTN3_DOWN)
-            btn = MOUSE_BTN2_DOWN;
-    }
-#endif
     int x = (unsigned char)getch() - 33;
     if (x < 0)
         x += 0x100;
     int y = (unsigned char)getch() - 33;
     if (y < 0)
         y += 0x100;
-    if (x < 0 || x >= COLS || y < 0 || y > LASTLINE)
+    if (x < 0 || x >= COLS || y < 0 || y > (LINES-1))
         return;
     process_mouse(btn, x, y);
 }
@@ -1995,7 +1986,7 @@ void movMs()
         y < GetTabbarHeight())
         return;
     else if (x >= GetCurrentbuf()->rootX &&
-             y < LASTLINE)
+             y < (LINES-1))
     {
         cursorXY(GetCurrentbuf(),
                  x - GetCurrentbuf()->rootX,
@@ -2021,7 +2012,7 @@ void menuMs()
         x -= FRAME_WIDTH + 1;
     }
     else if (x >= GetCurrentbuf()->rootX &&
-             y < LASTLINE)
+             y < (LINES-1))
     {
         cursorXY(GetCurrentbuf(),
                  x - GetCurrentbuf()->rootX,

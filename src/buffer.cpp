@@ -81,7 +81,7 @@ newBuffer(int width)
         return NULL;
     n->width = width;
     n->COLS = COLS;
-    n->LINES = LASTLINE;
+    n->LINES = (LINES-1);
     n->currentURL.scheme = SCM_UNKNOWN;
     n->baseURL = NULL;
     n->baseTarget = NULL;
@@ -405,7 +405,7 @@ listBuffer(BufferPtr top, BufferPtr current)
     }
 #endif /* USE_COLOR */
     clrtobotx();
-    for (i = 0; i < LASTLINE; i++)
+    for (i = 0; i < (LINES-1); i++)
     {
         if (buf == current)
         {
@@ -436,7 +436,7 @@ listBuffer(BufferPtr top, BufferPtr current)
             0);
     standend();
     /* 
-     * move(LASTLINE, COLS - 1); */
+     * move((LINES-1), COLS - 1); */
     move(c, 0);
     refresh();
     return buf->nextBuffer;
@@ -450,7 +450,7 @@ selectBuffer(BufferPtr firstbuf, BufferPtr currentbuf, char *selectchar)
 {
     int i, cpoint,                  /* Current Buffer Number */
         spoint,                     /* Current Line on Screen */
-        maxbuf, sclimit = LASTLINE; /* Upper limit of line * number in 
+        maxbuf, sclimit = (LINES-1); /* Upper limit of line * number in 
 					 * the * screen */
     BufferPtr buf;
     BufferPtr topbuf;
@@ -574,7 +574,7 @@ selectBuffer(BufferPtr firstbuf, BufferPtr currentbuf, char *selectchar)
             return currentbuf;
         }
         /* 
-	 * move(LASTLINE, COLS - 1);
+	 * move((LINES-1), COLS - 1);
 	 */
         move(spoint, 0);
         refresh();
@@ -653,7 +653,7 @@ void reshapeBuffer(BufferPtr buf)
     UseContentCharset = TRUE;
 #endif
 
-    buf->height = LASTLINE + 1;
+    buf->height = (LINES-1) + 1;
     if (buf->firstLine && sbuf->firstLine)
     {
         Line *cur = sbuf->currentLine;

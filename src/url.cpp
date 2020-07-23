@@ -617,19 +617,6 @@ parseURL(char *url, ParsedURL *p_url, ParsedURL *current)
 	    copyParsedURL(p_url, current);
 	goto do_label;
     }
-#if defined( __EMX__ ) || defined( __CYGWIN__ )
-    if (!strncmp(url, "file://localhost/", 17)) {
-	p_url->scheme = SCM_LOCAL;
-	p += 17 - 1;
-	url += 17 - 1;
-    }
-#endif
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-    if (IS_ALPHA(*p) && (p[1] == ':' || p[1] == '|')) {
-	p_url->scheme = SCM_LOCAL;
-	goto analyze_file;
-    }
-#endif				/* SUPPORT_DOS_DRIVE_PREFIX */
     /* search for scheme */
     p_url->scheme = getURLScheme(&p);
     if (p_url->scheme == SCM_MISSING) {
@@ -762,15 +749,6 @@ parseURL(char *url, ParsedURL *p_url, ParsedURL *current)
     if (p_url->scheme == SCM_LOCAL && p_url->user == NULL &&
 	p_url->host != NULL && *p_url->host != '\0' &&
 	strcmp(p_url->host, "localhost")) {
-	/*
-	 * In the environments other than CYGWIN, a URL like 
-	 * file://host/file is regarded as ftp://host/file.
-	 * On the other hand, file://host/file on CYGWIN is
-	 * regarded as local access to the file //host/file.
-	 * `host' is a netbios-hostname, drive, or any other
-	 * name; It is CYGWIN system call who interprets that.
-	 */
-
 	p_url->scheme = SCM_FTP;	/* ftp://host/... */
 	if (p_url->port == 0)
 	    p_url->port = DefaultPort[SCM_FTP];

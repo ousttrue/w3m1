@@ -4687,7 +4687,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
         cur_time = time(0);
         if (*trbyte == 0)
         {
-            move(LASTLINE, 0);
+            move((LINES-1), 0);
             clrtoeolx();
             start_time = cur_time;
         }
@@ -4696,7 +4696,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
         if (cur_time == last_time)
             return;
         last_time = cur_time;
-        move(LASTLINE, 0);
+        move((LINES-1), 0);
         ratio = 100.0 * (*trbyte) / current_content_length;
         fmtrbyte = convert_size2(*trbyte, current_content_length, 1);
         duration = cur_time - start_time;
@@ -4720,7 +4720,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
         addstr(messages->ptr);
         pos = 42;
         i = pos + (COLS - pos - 1) * (*trbyte) / current_content_length;
-        move(LASTLINE, pos);
+        move((LINES-1), pos);
         standout();
         addch(' ');
         for (j = pos + 1; j <= i; j++)
@@ -4734,7 +4734,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
         cur_time = time(0);
         if (*trbyte == 0)
         {
-            move(LASTLINE, 0);
+            move((LINES-1), 0);
             clrtoeolx();
             start_time = cur_time;
         }
@@ -4743,7 +4743,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
         if (cur_time == last_time)
             return;
         last_time = cur_time;
-        move(LASTLINE, 0);
+        move((LINES-1), 0);
         fmtrbyte = convert_size(*trbyte, 1);
         duration = cur_time - start_time;
         if (duration)
