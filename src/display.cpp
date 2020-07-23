@@ -16,6 +16,7 @@
 
 #include <signal.h>
 #include <math.h>
+#include <assert.h>
 
 /* *INDENT-OFF* */
 #ifdef USE_COLOR
@@ -293,8 +294,9 @@ make_lastline_link(Buffer *buf, char *title, char *url)
     if (title && *title)
     {
         s = Strnew_m_charp("[", title, "]", NULL);
-        s->Replace([](char &c){
-            if (IS_CNTRL(c) || IS_SPACE(c)){
+        s->Replace([](char &c) {
+            if (IS_CNTRL(c) || IS_SPACE(c))
+            {
                 c = ' ';
             }
         });
@@ -420,7 +422,7 @@ make_lastline_message(Buffer *buf)
     return msg;
 }
 
-void displayBuffer(Buffer *buf, int mode)
+void displayBuffer(Buffer *buf, DisplayMode mode)
 {
     Str msg;
     int ny = 0;
@@ -690,7 +692,7 @@ redrawNLine(Buffer *buf, int n)
             addch(']');
             if (t == GetCurrentTab())
                 boldend();
-        });       
+        });
         move(GetTabbarHeight(), 0);
         for (i = 0; i < COLS; i++)
             addch('~');
@@ -1313,7 +1315,7 @@ message_list_panel(void)
 
     /* FIXME: gettextize? */
     tmp->Push("<html><head><title>List of error messages</title></head><body>"
-                 "<h1>List of error messages</h1><table cellpadding=0>\n");
+              "<h1>List of error messages</h1><table cellpadding=0>\n");
     if (message_list)
         for (p = message_list->last; p; p = p->prev)
             Strcat_m_charp(tmp, "<tr><td><pre>", html_quote((const char *)p->ptr),
@@ -1698,10 +1700,77 @@ void restorePosition(Buffer *buf, Buffer *orig)
 /* tab-width: 8        */
 /* End:                */
 
-void displayCurrentbuf(int mode)
+void displayCurrentbuf(DisplayMode mode)
 {
-    if (GetCurrentTab())
+    auto tab = GetCurrentTab();
+    if (tab)
     {
-        displayBuffer(GetCurrentbuf(), mode);
+        displayBuffer(tab->currentBuffer, mode);
     }
+    else
+    {
+        assert(false);
+    }
+}
+
+void nscroll(int n, DisplayMode mode)
+{
+    Buffer *buf = GetCurrentbuf();
+    Line *top = buf->topLine, *cur = buf->currentLine;
+    int lnum, tlnum, llnum, diff_n;
+
+    if (buf->firstLine == NULL)
+        return;
+    lnum = cur->linenumber;
+    buf->topLine = lineSkip(buf, top, n, FALSE);
+    if (buf->topLine == top)
+    {
+        lnum += n;
+        if (lnum < buf->topLine->linenumber)
+            lnum = buf->topLine->linenumber;
+        else if (lnum > buf->lastLine->linenumber)
+            lnum = buf->lastLine->linenumber;
+    }
+    else
+    {
+        tlnum = buf->topLine->linenumber;
+        llnum = buf->topLine->linenumber + buf->LINES - 1;
+        if (nextpage_topline)
+            diff_n = 0;
+        else
+            diff_n = n - (tlnum - top->linenumber);
+        if (lnum < tlnum)
+            lnum = tlnum + diff_n;
+        if (lnum > llnum)
+            lnum = llnum + diff_n;
+    }
+    gotoLine(buf, lnum);
+    arrangeLine(buf);
+    if (n > 0)
+    {
+        if (buf->currentLine->bpos &&
+            buf->currentLine->bwidth >= buf->currentColumn + buf->visualpos)
+            cursorDown(buf, 1);
+        else
+        {
+            while (buf->currentLine->next && buf->currentLine->next->bpos &&
+                   buf->currentLine->bwidth + buf->currentLine->width <
+                       buf->currentColumn + buf->visualpos)
+                cursorDown0(buf, 1);
+        }
+    }
+    else
+    {
+        if (buf->currentLine->bwidth + buf->currentLine->width <
+            buf->currentColumn + buf->visualpos)
+            cursorUp(buf, 1);
+        else
+        {
+            while (buf->currentLine->prev && buf->currentLine->bpos &&
+                   buf->currentLine->bwidth >=
+                       buf->currentColumn + buf->visualpos)
+                cursorUp0(buf, 1);
+        }
+    }
+    displayBuffer(buf, mode);
 }

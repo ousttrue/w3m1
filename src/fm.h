@@ -143,12 +143,6 @@
 
 
 
-/* Flags for displayBuffer() */
-#define B_NORMAL	0
-#define B_FORCE_REDRAW	1
-#define B_REDRAW	2
-#define B_SCROLL        3
-#define B_REDRAW_IMAGE	4
 
 /* Buffer Property */
 #define BP_NORMAL	0x0

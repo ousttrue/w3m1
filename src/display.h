@@ -1,8 +1,19 @@
 #pragma once
 
+enum DisplayMode
+{
+    B_NORMAL = 0,
+    B_FORCE_REDRAW = 1,
+    B_REDRAW = 2,
+    B_SCROLL = 3,
+    B_REDRAW_IMAGE = 4,
+};
+void displayBuffer(struct Buffer *buf, DisplayMode mode);
+void displayCurrentbuf(DisplayMode mode);
+void nscroll(int n, DisplayMode mode);
+
+// message
 void message(const char *s, int return_x, int return_y);
-void displayBuffer(struct Buffer *buf, int mode);
-void displayCurrentbuf(int mode);
 void disp_err_message(const char *s, int redraw_current);
 void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, int mouse);
 void disp_message(const char *s, int redraw_current);
