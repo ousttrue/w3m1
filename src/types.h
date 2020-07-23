@@ -11,8 +11,6 @@
 #include <gc_cpp.h>
 #include <string>
 
-#define MAX_LB 5
-
 struct ParsedURL
 {
     int scheme;
@@ -243,8 +241,20 @@ struct BufferPos
     BufferPos *prev;
 };
 
+enum LinkBufferTypes
+{
+    LB_NOLINK = -1,
+    LB_FRAME = 0, /* rFrame() */
+    LB_N_FRAME = 1,
+    LB_INFO = 2, /* pginfo() */
+    LB_N_INFO = 3,
+    LB_SOURCE = 4, /* vwSrc() */
+    LB_N_SOURCE = LB_SOURCE
+};
+const int MAX_LB = 5;
+
 using BufferPtr = struct Buffer *;
-struct Buffer: gc_cleanup
+struct Buffer : gc_cleanup
 {
     char *filename;
     std::string buffername;
@@ -309,6 +319,8 @@ struct Buffer: gc_cleanup
     BufferPos *undo;
     AlarmEvent *event;
 
+    Buffer();
+    ~Buffer();
     BufferPtr Copy();
     void CopyFrom(BufferPtr src);
     void ClearLink();

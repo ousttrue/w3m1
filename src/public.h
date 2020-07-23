@@ -73,7 +73,6 @@ void nextX(int d, int dy);
 void nextY(int d);
 int checkBackBuffer(BufferPtr buf);
 void goURL0(char *prompt, int relative);
-void cmd_loadBuffer(BufferPtr buf, int prop, int linkid);
 void anchorMn(Anchor *(*menu_func)(BufferPtr ), int go);
 void _peekURL(int only_img);
 Str currentURL(void);

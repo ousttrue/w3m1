@@ -1953,8 +1953,6 @@ load_doc:
     {
         /* transfer interrupted */
         TRAP_OFF;
-        if (b)
-            discardBuffer(b);
         UFclose(&f);
         return NULL;
     }
@@ -4774,7 +4772,6 @@ loadHTMLString(Str page)
     if (SETJMP(AbortLoading) != 0)
     {
         TRAP_OFF;
-        discardBuffer(newBuf);
         return NULL;
     }
     TRAP_ON;

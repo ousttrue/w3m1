@@ -12,6 +12,52 @@
 #include "ctrlcode.h"
 #include "local.h"
 
+static int REV_LB[MAX_LB] = {
+    LB_N_FRAME,
+    LB_FRAME,
+    LB_N_INFO,
+    LB_INFO,
+    LB_N_SOURCE,
+};
+
+Buffer::Buffer()
+{
+}
+
+Buffer::~Buffer()
+{
+    deleteImage(this);
+    clearBuffer(this);
+    for (int i = 0; i < MAX_LB; i++)
+    {
+        auto b = linkBuffer[i];
+        if (b == NULL)
+            continue;
+        b->linkBuffer[REV_LB[i]] = NULL;
+    }
+    if (savecache)
+        unlink(savecache);
+    if (--(*clone))
+        return;
+    if (pagerSource)
+        ISclose(pagerSource);
+    if (sourcefile &&
+        (!real_type || strncasecmp(real_type, "image/", 6)))
+    {
+        if (real_scheme != SCM_LOCAL || bufferprop & BP_FRAME)
+            unlink(sourcefile);
+    }
+    if (header_source)
+        unlink(header_source);
+    if (mailcap_source)
+        unlink(mailcap_source);
+    while (frameset)
+    {
+        deleteFrameSet(frameset);
+        frameset = popFrameTree(&(frameQ));
+    }
+}
+
 BufferPtr Buffer::Copy()
 {
     auto copy = newBuffer(width);
@@ -39,15 +85,7 @@ void Buffer::ClearLink()
 char *NullLine = "";
 Lineprop NullProp[] = {0};
 
-int REV_LB[MAX_LB] = {
-    LB_N_FRAME,
-    LB_FRAME,
-    LB_N_INFO,
-    LB_INFO,
-    LB_N_SOURCE,
-};
-
-void cmd_loadBuffer(BufferPtr buf, int prop, int linkid)
+void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid)
 {
     if (buf == NULL)
     {
@@ -60,7 +98,7 @@ void cmd_loadBuffer(BufferPtr buf, int prop, int linkid)
             copyParsedURL(&buf->currentURL, &GetCurrentbuf()->currentURL);
         if (linkid != LB_NOLINK)
         {
-            buf->linkBuffer[REV_LB[linkid]] = GetCurrentbuf();
+            buf->linkBuffer[linkid] = GetCurrentbuf();
             GetCurrentbuf()->linkBuffer[linkid] = buf;
         }
         GetCurrentTab()->BufferPushBeforeCurrent(buf);
@@ -81,7 +119,7 @@ newBuffer(int width)
         return NULL;
     n->width = width;
     n->COLS = COLS;
-    n->LINES = (LINES-1);
+    n->LINES = (LINES - 1);
     n->currentURL.scheme = SCM_UNKNOWN;
     n->baseURL = NULL;
     n->baseTarget = NULL;
@@ -119,47 +157,6 @@ void clearBuffer(BufferPtr buf)
 }
 
 /* 
- * discardBuffer: free buffer structure
- */
-
-void discardBuffer(BufferPtr buf)
-{
-    int i;
-    BufferPtr b;
-
-    deleteImage(buf);
-    clearBuffer(buf);
-    for (i = 0; i < MAX_LB; i++)
-    {
-        b = buf->linkBuffer[i];
-        if (b == NULL)
-            continue;
-        b->linkBuffer[REV_LB[i]] = NULL;
-    }
-    if (buf->savecache)
-        unlink(buf->savecache);
-    if (--(*buf->clone))
-        return;
-    if (buf->pagerSource)
-        ISclose(buf->pagerSource);
-    if (buf->sourcefile &&
-        (!buf->real_type || strncasecmp(buf->real_type, "image/", 6)))
-    {
-        if (buf->real_scheme != SCM_LOCAL || buf->bufferprop & BP_FRAME)
-            unlink(buf->sourcefile);
-    }
-    if (buf->header_source)
-        unlink(buf->header_source);
-    if (buf->mailcap_source)
-        unlink(buf->mailcap_source);
-    while (buf->frameset)
-    {
-        deleteFrameSet(buf->frameset);
-        buf->frameset = popFrameTree(&(buf->frameQ));
-    }
-}
-
-/* 
  * namedBuffer: Select buffer which have specified name
  */
 BufferPtr
@@ -193,14 +190,12 @@ deleteBuffer(BufferPtr first, BufferPtr delbuf)
     if (first == delbuf && first->nextBuffer != NULL)
     {
         buf = first->nextBuffer;
-        discardBuffer(first);
         return buf;
     }
     if ((buf = prevBuffer(first, delbuf)) != NULL)
     {
         b = buf->nextBuffer;
         buf->nextBuffer = b->nextBuffer;
-        discardBuffer(b);
     }
     return first;
 }
@@ -221,14 +216,12 @@ replaceBuffer(BufferPtr first, BufferPtr delbuf, BufferPtr newbuf)
     if (first == delbuf)
     {
         newbuf->nextBuffer = delbuf->nextBuffer;
-        discardBuffer(delbuf);
         return newbuf;
     }
     if (delbuf && (buf = prevBuffer(first, delbuf)))
     {
         buf->nextBuffer = newbuf;
         newbuf->nextBuffer = delbuf->nextBuffer;
-        discardBuffer(delbuf);
         return first;
     }
     newbuf->nextBuffer = first;
@@ -405,7 +398,7 @@ listBuffer(BufferPtr top, BufferPtr current)
     }
 #endif /* USE_COLOR */
     clrtobotx();
-    for (i = 0; i < (LINES-1); i++)
+    for (i = 0; i < (LINES - 1); i++)
     {
         if (buf == current)
         {
@@ -448,9 +441,9 @@ listBuffer(BufferPtr top, BufferPtr current)
 BufferPtr
 selectBuffer(BufferPtr firstbuf, BufferPtr currentbuf, char *selectchar)
 {
-    int i, cpoint,                  /* Current Buffer Number */
-        spoint,                     /* Current Line on Screen */
-        maxbuf, sclimit = (LINES-1); /* Upper limit of line * number in 
+    int i, cpoint,                     /* Current Buffer Number */
+        spoint,                        /* Current Line on Screen */
+        maxbuf, sclimit = (LINES - 1); /* Upper limit of line * number in 
 					 * the * screen */
     BufferPtr buf;
     BufferPtr topbuf;
@@ -653,7 +646,7 @@ void reshapeBuffer(BufferPtr buf)
     UseContentCharset = TRUE;
 #endif
 
-    buf->height = (LINES-1) + 1;
+    buf->height = (LINES - 1) + 1;
     if (buf->firstLine && sbuf->firstLine)
     {
         Line *cur = sbuf->currentLine;

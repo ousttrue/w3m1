@@ -153,14 +153,6 @@
 #define BP_REDIRECTED   0x20
 #define BP_CLOSE        0x40
 
-/* Link Buffer */
-#define LB_NOLINK	-1
-#define LB_FRAME	0	/* rFrame() */
-#define LB_N_FRAME	1
-#define LB_INFO		2	/* pginfo() */
-#define LB_N_INFO	3
-#define LB_SOURCE	4	/* vwSrc() */
-#define LB_N_SOURCE	LB_SOURCE
 
 
 /* Search Result */

@@ -1201,7 +1201,6 @@ loadLink(char *url, char *target, char *referer, FormList *request)
     SetCurrentbuf(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
     resetFrameElement(f_element, buf, referer, request);
-    discardBuffer(buf);
     rFrame();
     {
         Anchor *al = NULL;

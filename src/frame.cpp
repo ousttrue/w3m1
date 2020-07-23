@@ -396,7 +396,6 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 		copyParsedURL(ret_frameset->currentURL, &buf->currentURL);
 		buf->frameset = popFrameTree(&(buf->frameQ));
 	}
-	discardBuffer(buf);
 	return ret_frameset;
 }
 

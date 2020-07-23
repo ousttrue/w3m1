@@ -251,7 +251,6 @@ void deleteTab(TabPtr tab)
     while (buf)
     {
         next = buf->nextBuffer;
-        discardBuffer(buf);
         buf = next;
     }
 
@@ -289,7 +288,6 @@ void DeleteAllTabs()
         while (HasFirstBuffer())
         {
             auto buf = GetFirstbuf()->nextBuffer;
-            discardBuffer(GetFirstbuf());
             SetFirstbuf(buf);
         }
         it = g_tabs.erase(it);
