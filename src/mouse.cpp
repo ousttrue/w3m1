@@ -411,7 +411,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                 }
                 else if (press_x >= GetCurrentbuf()->rootX)
                 {
-                    Buffer *buf = GetCurrentbuf();
+                    BufferPtr buf = GetCurrentbuf();
                     int cx = GetCurrentbuf()->cursorX, cy = GetCurrentbuf()->cursorY;
 
                     t = posTab(x, y);

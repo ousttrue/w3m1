@@ -248,28 +248,28 @@ static Linecolor color_mode = 0;
 #endif
 
 #ifdef USE_BUFINFO
-static Buffer *save_current_buf = NULL;
+static BufferPtr save_current_buf = NULL;
 #endif
 
 static char *delayed_msg = NULL;
 
-static void drawAnchorCursor(Buffer *buf);
+static void drawAnchorCursor(BufferPtr buf);
 #define redrawBuffer(buf) redrawNLine(buf, LASTLINE)
-static void redrawNLine(Buffer *buf, int n);
-static Line *redrawLine(Buffer *buf, Line *l, int i);
+static void redrawNLine(BufferPtr buf, int n);
+static Line *redrawLine(BufferPtr buf, Line *l, int i);
 #ifdef USE_IMAGE
 static int image_touch = 0;
 static int draw_image_flag = FALSE;
-static Line *redrawLineImage(Buffer *buf, Line *l, int i);
+static Line *redrawLineImage(BufferPtr buf, Line *l, int i);
 #endif
-static int redrawLineRegion(Buffer *buf, Line *l, int i, int bpos, int epos);
+static int redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos);
 static void do_effects(Lineprop m);
 #ifdef USE_ANSI_COLOR
 static void do_color(Linecolor c);
 #endif
 
 static Str
-make_lastline_link(Buffer *buf, char *title, char *url)
+make_lastline_link(BufferPtr buf, char *title, char *url)
 {
     Str s = NULL, u;
     Lineprop *pr;
@@ -327,7 +327,7 @@ make_lastline_link(Buffer *buf, char *title, char *url)
 }
 
 static Str
-make_lastline_message(Buffer *buf)
+make_lastline_message(BufferPtr buf)
 {
     Str msg, s = NULL;
     int sl = 0;
@@ -408,7 +408,7 @@ make_lastline_message(Buffer *buf)
     return msg;
 }
 
-void displayBuffer(Buffer *buf, DisplayMode mode)
+void displayBuffer(BufferPtr buf, DisplayMode mode)
 {
     Str msg;
     int ny = 0;
@@ -554,7 +554,7 @@ void displayBuffer(Buffer *buf, DisplayMode mode)
 }
 
 static void
-drawAnchorCursor0(Buffer *buf, AnchorList *al, int hseq, int prevhseq,
+drawAnchorCursor0(BufferPtr buf, AnchorList *al, int hseq, int prevhseq,
                   int tline, int eline, int active)
 {
     int i, j;
@@ -602,7 +602,7 @@ drawAnchorCursor0(Buffer *buf, AnchorList *al, int hseq, int prevhseq,
 }
 
 static void
-drawAnchorCursor(Buffer *buf)
+drawAnchorCursor(BufferPtr buf)
 {
     Anchor *an;
     int hseq, prevhseq;
@@ -638,7 +638,7 @@ drawAnchorCursor(Buffer *buf)
 }
 
 static void
-redrawNLine(Buffer *buf, int n)
+redrawNLine(BufferPtr buf, int n)
 {
     Line *l;
     int i;
@@ -710,7 +710,7 @@ redrawNLine(Buffer *buf, int n)
 }
 
 static Line *
-redrawLine(Buffer *buf, Line *l, int i)
+redrawLine(BufferPtr buf, Line *l, int i)
 {
     int j, pos, rcol, ncol, delta = 1;
     int column = buf->currentColumn;
@@ -892,7 +892,7 @@ redrawLine(Buffer *buf, Line *l, int i)
 
 #ifdef USE_IMAGE
 static Line *
-redrawLineImage(Buffer *buf, Line *l, int i)
+redrawLineImage(BufferPtr buf, Line *l, int i)
 {
     int j, pos, rcol;
     int column = buf->currentColumn;
@@ -967,7 +967,7 @@ redrawLineImage(Buffer *buf, Line *l, int i)
 #endif
 
 static int
-redrawLineRegion(Buffer *buf, Line *l, int i, int bpos, int epos)
+redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
 {
     int j, pos, rcol, ncol, delta = 1;
     int column = buf->currentColumn;
@@ -1292,7 +1292,7 @@ void record_err_message(const char *s)
 /* 
  * List of error messages
  */
-Buffer *
+BufferPtr 
 message_list_panel(void)
 {
     Str tmp = Strnew_size(LINES * COLS);
@@ -1370,7 +1370,7 @@ void set_delayed_message(const char *s)
     delayed_msg = allocStr(s, -1);
 }
 
-void cursorUp0(Buffer *buf, int n)
+void cursorUp0(BufferPtr buf, int n)
 {
     if (buf->cursorY > 0)
         cursorUpDown(buf, -1);
@@ -1383,7 +1383,7 @@ void cursorUp0(Buffer *buf, int n)
     }
 }
 
-void cursorUp(Buffer *buf, int n)
+void cursorUp(BufferPtr buf, int n)
 {
     Line *l = buf->currentLine;
     if (buf->firstLine == NULL)
@@ -1402,7 +1402,7 @@ void cursorUp(Buffer *buf, int n)
         cursorUp0(buf, n);
 }
 
-void cursorDown0(Buffer *buf, int n)
+void cursorDown0(BufferPtr buf, int n)
 {
     if (buf->cursorY < buf->LINES - 1)
         cursorUpDown(buf, 1);
@@ -1415,7 +1415,7 @@ void cursorDown0(Buffer *buf, int n)
     }
 }
 
-void cursorDown(Buffer *buf, int n)
+void cursorDown(BufferPtr buf, int n)
 {
     Line *l = buf->currentLine;
     if (buf->firstLine == NULL)
@@ -1435,7 +1435,7 @@ void cursorDown(Buffer *buf, int n)
         cursorDown0(buf, n);
 }
 
-void cursorUpDown(Buffer *buf, int n)
+void cursorUpDown(BufferPtr buf, int n)
 {
     Line *cl = buf->currentLine;
 
@@ -1446,7 +1446,7 @@ void cursorUpDown(Buffer *buf, int n)
     arrangeLine(buf);
 }
 
-void cursorRight(Buffer *buf, int n)
+void cursorRight(BufferPtr buf, int n)
 {
     int i, delta = 1, cpos, vpos2;
     Line *l = buf->currentLine;
@@ -1501,7 +1501,7 @@ void cursorRight(Buffer *buf, int n)
     buf->cursorX = buf->visualpos - l->bwidth;
 }
 
-void cursorLeft(Buffer *buf, int n)
+void cursorLeft(BufferPtr buf, int n)
 {
     int i, delta = 1, cpos;
     Line *l = buf->currentLine;
@@ -1537,7 +1537,7 @@ void cursorLeft(Buffer *buf, int n)
     buf->cursorX = buf->visualpos - l->bwidth;
 }
 
-void cursorHome(Buffer *buf)
+void cursorHome(BufferPtr buf)
 {
     buf->visualpos = 0;
     buf->cursorX = buf->cursorY = 0;
@@ -1547,7 +1547,7 @@ void cursorHome(Buffer *buf)
  * Arrange line,column and cursor position according to current line and
  * current position.
  */
-void arrangeCursor(Buffer *buf)
+void arrangeCursor(BufferPtr buf)
 {
     int col, col2, pos;
     int delta = 1;
@@ -1609,7 +1609,7 @@ void arrangeCursor(Buffer *buf)
 #endif
 }
 
-void arrangeLine(Buffer *buf)
+void arrangeLine(BufferPtr buf)
 {
     int i, cpos;
 
@@ -1641,7 +1641,7 @@ void arrangeLine(Buffer *buf)
 #endif
 }
 
-void cursorXY(Buffer *buf, int x, int y)
+void cursorXY(BufferPtr buf, int x, int y)
 {
     int oldX;
 
@@ -1668,7 +1668,7 @@ void cursorXY(Buffer *buf, int x, int y)
     }
 }
 
-void restorePosition(Buffer *buf, Buffer *orig)
+void restorePosition(BufferPtr buf, BufferPtr orig)
 {
     buf->topLine = lineSkip(buf, buf->firstLine, TOP_LINENUMBER(orig) - 1,
                             FALSE);

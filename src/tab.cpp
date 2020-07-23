@@ -35,7 +35,7 @@ bool Tab::IsConnectFirstCurrent() const
     return false;
 }
 
-void Tab::SetFirstBuffer(Buffer *buffer, bool isCurrent)
+void Tab::SetFirstBuffer(BufferPtr buffer, bool isCurrent)
 {
     firstBuffer = buffer;
     if(isCurrent)
@@ -49,14 +49,14 @@ void Tab::SetFirstBuffer(Buffer *buffer, bool isCurrent)
     }
 }
 
-void Tab::SetCurrentBuffer(Buffer *buffer)
+void Tab::SetCurrentBuffer(BufferPtr buffer)
 {
     currentBuffer = buffer;
     assert(IsConnectFirstCurrent());
 }
 
 // currentPrev -> buf -> current
-void Tab::BufferPushBeforeCurrent(Buffer *buf)
+void Tab::BufferPushBeforeCurrent(BufferPtr buf)
 {
     deleteImage(GetCurrentbuf());
     if (clear_buffer)
@@ -250,7 +250,7 @@ void deleteTab(TabPtr tab)
         return;
 
     // clear buffer
-    Buffer *next;
+    BufferPtr next;
     auto buf = tab->GetFirstBuffer();
     while (buf && buf != NO_BUFFER)
     {
@@ -371,7 +371,7 @@ void MoveTab(int x)
     moveTab(GetCurrentTab(), tab ? tab : GetLastTab(), x > 0);
 }
 
-Buffer *GetCurrentbuf()
+BufferPtr GetCurrentbuf()
 {
     auto current = g_current.lock();
     if (!current)
@@ -381,12 +381,12 @@ Buffer *GetCurrentbuf()
     return current->GetCurrentBuffer();
 }
 
-void SetCurrentbuf(Buffer *buf)
+void SetCurrentbuf(BufferPtr buf)
 {
     g_current.lock()->SetCurrentBuffer(buf);
 }
 
-Buffer *GetFirstbuf()
+BufferPtr GetFirstbuf()
 {
     return g_current.lock()->GetFirstBuffer();
 }
@@ -396,14 +396,14 @@ int HasFirstBuffer()
     return GetFirstbuf() && GetFirstbuf() != NO_BUFFER;
 }
 
-void SetFirstbuf(Buffer *buffer, bool isCurrent)
+void SetFirstbuf(BufferPtr buffer, bool isCurrent)
 {
     g_current.lock()->SetFirstBuffer(buffer, isCurrent);
 }
 
 void followTab(TabPtr tab)
 {
-    Buffer *buf;
+    BufferPtr buf;
     Anchor *a;
 
 #ifdef USE_IMAGE
@@ -436,7 +436,8 @@ void followTab(TabPtr tab)
     else if (buf != GetCurrentbuf())
     {
         /* buf <- p <- ... <- Currentbuf = c */
-        Buffer *c, *p;
+        BufferPtr c;
+        BufferPtr p;
 
         c = GetCurrentbuf();
         p = prevBuffer(c, buf);

@@ -14,7 +14,7 @@
 
 
 MapList *
-searchMapList(Buffer *buf, char *name)
+searchMapList(BufferPtr buf, char *name)
 {
     MapList *ml;
 
@@ -104,7 +104,7 @@ nearestMapArea(MapList *ml, int x, int y)
 }
 
 static int
-searchMapArea(Buffer *buf, MapList *ml, Anchor *a_img)
+searchMapArea(BufferPtr buf, MapList *ml, Anchor *a_img)
 {
     ListItem *al;
     MapArea *a;
@@ -137,7 +137,7 @@ searchMapArea(Buffer *buf, MapList *ml, Anchor *a_img)
 }
 
 MapArea *
-retrieveCurrentMapArea(Buffer *buf)
+retrieveCurrentMapArea(BufferPtr buf)
 {
     Anchor *a_img, *a_form;
     FormItemList *fi;
@@ -171,7 +171,7 @@ retrieveCurrentMapArea(Buffer *buf)
 }
 
 int
-getMapXY(Buffer *buf, Anchor *a, int *x, int *y)
+getMapXY(BufferPtr buf, Anchor *a, int *x, int *y)
 {
     if (!buf || !a || !a->image || !x || !y)
 	return 0;
@@ -189,7 +189,7 @@ getMapXY(Buffer *buf, Anchor *a, int *x, int *y)
 #endif
 
 Anchor *
-retrieveCurrentMap(Buffer *buf)
+retrieveCurrentMap(BufferPtr buf)
 {
     Anchor *a;
     FormItemList *fi;
@@ -206,7 +206,7 @@ retrieveCurrentMap(Buffer *buf)
 
 #if defined(USE_IMAGE) || defined(MENU_MAP)
 MapArea *
-follow_map_menu(Buffer *buf, char *name, Anchor *a_img, int x, int y)
+follow_map_menu(BufferPtr buf, char *name, Anchor *a_img, int x, int y)
 {
     MapList *ml;
     ListItem *al;
@@ -263,8 +263,8 @@ char *map1 = "<HTML><HEAD><TITLE>Image map links</TITLE></HEAD>\
 <BODY><H1>Image map links</H1>\
 <table>";
 
-Buffer *
-follow_map_panel(Buffer *buf, char *name)
+BufferPtr 
+follow_map_panel(BufferPtr buf, char *name)
 {
     Str mappage;
     MapList *ml;
@@ -272,7 +272,7 @@ follow_map_panel(Buffer *buf, char *name)
     MapArea *a;
     ParsedURL pu;
     char *p, *q;
-    Buffer *newbuf;
+    BufferPtr newbuf;
 
     ml = searchMapList(buf, name);
     if (ml == NULL)
@@ -404,7 +404,7 @@ newMapArea(char *url, char *target, char *alt, char *shape, char *coords)
 
 /* append image map links */
 static void
-append_map_info(Buffer *buf, Str tmp, FormItemList *fi)
+append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
 {
     MapList *ml;
     ListItem *al;
@@ -439,7 +439,7 @@ append_map_info(Buffer *buf, Str tmp, FormItemList *fi)
 
 /* append links */
 static void
-append_link_info(Buffer *buf, Str html, LinkList * link)
+append_link_info(BufferPtr buf, Str html, LinkList * link)
 {
     LinkList *l;
     ParsedURL pu;
@@ -479,7 +479,7 @@ append_link_info(Buffer *buf, Str html, LinkList * link)
 
 /* append frame URL */
 static void
-append_frame_info(Buffer *buf, Str html, struct frameset *set, int level)
+append_frame_info(BufferPtr buf, Str html, struct frameset *set, int level)
 {
     char *p, *q;
     int i, j;
@@ -530,8 +530,8 @@ append_frame_info(Buffer *buf, Str html, struct frameset *set, int level)
 /* 
  * information of current page and link 
  */
-Buffer *
-page_info_panel(Buffer *buf)
+BufferPtr 
+page_info_panel(BufferPtr buf)
 {
     Str tmp = Strnew_size(1024);
     Anchor *a;
@@ -544,7 +544,7 @@ page_info_panel(Buffer *buf)
     wc_ces_list *list;
     char charset[16];
 #endif
-    Buffer *newbuf;
+    BufferPtr newbuf;
 
     tmp->Push("<html><head>\
 <title>Information about current page</title>\

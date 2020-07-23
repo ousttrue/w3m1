@@ -1370,7 +1370,7 @@ to_str(struct param_ptr *p)
     return NULL;
 }
 
-Buffer *
+BufferPtr 
 load_option_panel(void)
 {
     Str src;
@@ -1381,7 +1381,7 @@ load_option_panel(void)
 #endif
     int x, i;
     Str tmp;
-    Buffer *buf;
+    BufferPtr buf;
 
     if (optionpanel_str == NULL)
 	optionpanel_str = Sprintf(optionpanel_src1, w3m_version,

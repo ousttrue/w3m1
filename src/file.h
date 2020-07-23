@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include "buffer.h"
 
 struct Buffer;
 
@@ -60,15 +61,15 @@ Str process_select(struct parsed_tag *tag);
 Str process_textarea(struct parsed_tag *tag, int width);
 Str process_form(struct parsed_tag *tag);
 
-Buffer *loadGeneralFile(char *path, ParsedURL *current, char *referer, int flag, FormList *request);
+BufferPtr loadGeneralFile(char *path, ParsedURL *current, char *referer, int flag, FormList *request);
 Str getLinkNumberStr(int correction);
-char *guess_save_name(Buffer *buf, char *file);
+char *guess_save_name(BufferPtr buf, char *file);
 void examineFile(char *path, URLFile *uf);
 char *acceptableEncoding();
 int dir_exist(char *path);
 int is_html_type(const char *type);
 Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_charset);
-Buffer *loadFile(char *path);
+BufferPtr loadFile(char *path);
 int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
 Str process_n_select(void);
@@ -78,24 +79,24 @@ Str process_n_textarea(void);
 void feed_textarea(char *str);
 Str process_n_form(void);
 int getMetaRefreshParam(char *q, Str *refresh_uri);
-Buffer *loadHTMLBuffer(URLFile *f, Buffer *newBuf);
+BufferPtr loadHTMLBuffer(URLFile *f, BufferPtr newBuf);
 char *convert_size(clen_t size, int usefloat);
 char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte);
-Buffer *loadHTMLString(Str page);
+BufferPtr loadHTMLString(Str page);
 
-Buffer *loadBuffer(URLFile *uf, Buffer *newBuf);
-Buffer *loadImageBuffer(URLFile *uf, Buffer *newBuf);
-void saveBuffer(Buffer *buf, FILE *f, int cont);
-void saveBufferBody(Buffer *buf, FILE *f, int cont);
-Buffer *getshell(char *cmd);
-Buffer *getpipe(char *cmd);
-Buffer *openPagerBuffer(InputStream *stream, Buffer *buf);
-Buffer *openGeneralPagerBuffer(InputStream *stream);
-Line *getNextPage(Buffer *buf, int plen);
+BufferPtr loadBuffer(URLFile *uf, BufferPtr newBuf);
+BufferPtr loadImageBuffer(URLFile *uf, BufferPtr newBuf);
+void saveBuffer(BufferPtr buf, FILE *f, int cont);
+void saveBufferBody(BufferPtr buf, FILE *f, int cont);
+BufferPtr getshell(char *cmd);
+BufferPtr getpipe(char *cmd);
+BufferPtr openPagerBuffer(InputStream *stream, BufferPtr buf);
+BufferPtr openGeneralPagerBuffer(InputStream *stream);
+Line *getNextPage(BufferPtr buf, int plen);
 int save2tmp(URLFile uf, char *tmpf);
-int doExternal(URLFile uf, char *path, const char *type, Buffer **bufp,
-               Buffer *defaultbuf);
+int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
+               BufferPtr defaultbuf);
 int _doFileCopy(char *tmpf, char *defstr, int download);
 #define doFileCopy(tmpf, defstr) _doFileCopy(tmpf, defstr, FALSE);
 int doFileMove(char *tmpf, char *defstr);
@@ -105,12 +106,12 @@ int checkSaveFile(InputStream *stream, char *path);
 int checkOverWrite(char *path);
 char *inputAnswer(char *prompt);
 int matchattr(char *p, char *attr, int len, Str *value);
-void readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu);
-char *checkHeader(Buffer *buf, char *field);
-Buffer *newBuffer(int width);
+void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu);
+char *checkHeader(BufferPtr buf, char *field);
+BufferPtr newBuffer(int width);
 
-int writeBufferCache(Buffer *buf);
-int readBufferCache(Buffer *buf);
+int writeBufferCache(BufferPtr buf);
+int readBufferCache(BufferPtr buf);
 void fmTerm(void);
 void fmInit(void);
 
@@ -118,26 +119,26 @@ void addChar(char c, Lineprop mode);
 
 void addMChar(char *c, Lineprop mode, size_t len);
 
-Buffer *message_list_panel(void);
+BufferPtr message_list_panel(void);
 
 
-void cursorUp0(Buffer *buf, int n);
-void cursorUp(Buffer *buf, int n);
-void cursorDown0(Buffer *buf, int n);
-void cursorDown(Buffer *buf, int n);
-void cursorUpDown(Buffer *buf, int n);
-void cursorRight(Buffer *buf, int n);
-void cursorLeft(Buffer *buf, int n);
-void cursorHome(Buffer *buf);
-void arrangeCursor(Buffer *buf);
-void arrangeLine(Buffer *buf);
-void cursorXY(Buffer *buf, int x, int y);
-void restorePosition(Buffer *buf, Buffer *orig);
-int columnSkip(Buffer *buf, int offset);
+void cursorUp0(BufferPtr buf, int n);
+void cursorUp(BufferPtr buf, int n);
+void cursorDown0(BufferPtr buf, int n);
+void cursorDown(BufferPtr buf, int n);
+void cursorUpDown(BufferPtr buf, int n);
+void cursorRight(BufferPtr buf, int n);
+void cursorLeft(BufferPtr buf, int n);
+void cursorHome(BufferPtr buf);
+void arrangeCursor(BufferPtr buf);
+void arrangeLine(BufferPtr buf);
+void cursorXY(BufferPtr buf, int x, int y);
+void restorePosition(BufferPtr buf, BufferPtr orig);
+int columnSkip(BufferPtr buf, int offset);
 int columnPos(Line *line, int column);
 int columnLen(Line *line, int column);
-Line *lineSkip(Buffer *buf, Line *line, int offset, int last);
-Line *currentLineSkip(Buffer *buf, Line *line, int offset, int last);
+Line *lineSkip(BufferPtr buf, Line *line, int offset, int last);
+Line *currentLineSkip(BufferPtr buf, Line *line, int offset, int last);
 int gethtmlcmd(char **s);
 
 char *lastFileName(char *path);
@@ -149,8 +150,8 @@ Str correct_irrtag(int status);
 void init_migemo(void);
 #endif
 char *conv_search_string(char *str, wc_ces f_ces);
-int forwardSearch(Buffer *buf, char *str);
-int backwardSearch(Buffer *buf, char *str);
+int forwardSearch(BufferPtr buf, char *str);
+int backwardSearch(BufferPtr buf, char *str);
 void pcmap(void);
 void escmap(void);
 void escbmap(void);
@@ -159,7 +160,7 @@ char *inputLineHistSearch(char *prompt, char *def_str, int flag,
                           Hist *hist, int (*incfunc)(int ch, Str buf, Lineprop *prop));
 Str unescape_spaces(Str s);
 #ifdef USE_HISTORY
-Buffer *historyBuffer(Hist *hist);
+BufferPtr historyBuffer(Hist *hist);
 void loadHistory(Hist *hist);
 void saveHistory(Hist *hist, size_t size);
 void ldHist(void);
@@ -188,42 +189,42 @@ FormList *newFormList(char *action, char *method, char *charset,
                               FormList *_next);
 char *form2str(FormItemList *fi);
 int formtype(char *typestr);
-void formRecheckRadio(Anchor *a, Buffer *buf, FormItemList *form);
-void formResetBuffer(Buffer *buf, AnchorList *formitem);
-void formUpdateBuffer(Anchor *a, Buffer *buf, FormItemList *form);
-void preFormUpdateBuffer(Buffer *buf);
+void formRecheckRadio(Anchor *a, BufferPtr buf, FormItemList *form);
+void formResetBuffer(BufferPtr buf, AnchorList *formitem);
+void formUpdateBuffer(Anchor *a, BufferPtr buf, FormItemList *form);
+void preFormUpdateBuffer(BufferPtr buf);
 Str textfieldrep(Str s, int width);
 void input_textarea(FormItemList *fi);
 void do_internal(char *action, char *data);
 void form_write_data(FILE *f, char *boundary, char *name, char *value);
 void form_write_from_file(FILE *f, char *boundary, char *name,
                           char *filename, char *file);
-MapList *searchMapList(Buffer *buf, char *name);
+MapList *searchMapList(BufferPtr buf, char *name);
 #ifndef MENU_MAP
-Buffer *follow_map_panel(Buffer *buf, char *name);
+BufferPtr follow_map_panel(BufferPtr buf, char *name);
 #endif
-int getMapXY(Buffer *buf, Anchor *a, int *x, int *y);
-MapArea *retrieveCurrentMapArea(Buffer *buf);
-Anchor *retrieveCurrentMap(Buffer *buf);
+int getMapXY(BufferPtr buf, Anchor *a, int *x, int *y);
+MapArea *retrieveCurrentMapArea(BufferPtr buf);
+Anchor *retrieveCurrentMap(BufferPtr buf);
 MapArea *newMapArea(char *url, char *target, char *alt, char *shape,
                     char *coords);
-Buffer *page_info_panel(Buffer *buf);
-struct frame_body *newFrame(struct parsed_tag *tag, Buffer *buf);
+BufferPtr page_info_panel(BufferPtr buf);
+struct frame_body *newFrame(struct parsed_tag *tag, BufferPtr buf);
 struct frameset *newFrameSet(struct parsed_tag *tag);
 void deleteFrame(struct frame_body *b);
 void deleteFrameSet(struct frameset *f);
 struct frameset *copyFrameSet(struct frameset *of);
 void pushFrameTree(struct frameset_queue **fqpp, struct frameset *fs,
-                   Buffer *buf);
+                   BufferPtr buf);
 struct frameset *popFrameTree(struct frameset_queue **fqpp);
-Buffer *renderFrame(Buffer *Cbuf, int force_reload);
+BufferPtr renderFrame(BufferPtr Cbuf, int force_reload);
 union frameset_element *search_frame(struct frameset *fset, char *name);
 
 MySignalHandler reset_exit(SIGNAL_ARG);
 MySignalHandler error_dump(SIGNAL_ARG);
 
 void free_ssl_ctx();
-ParsedURL *baseURL(Buffer *buf);
+ParsedURL *baseURL(BufferPtr buf);
 int openSocket(char *hostname, char *remoteport_name,
                unsigned short remoteport_num);
 void parseURL(char *url, ParsedURL *p_url, ParsedURL *current);
@@ -258,37 +259,37 @@ AnchorList *putAnchor(AnchorList *al, char *url, char *target,
                       Anchor **anchor_return, char *referer,
                       char *title, unsigned char key, int line,
                       int pos);
-Anchor *registerHref(Buffer *buf, char *url, char *target,
+Anchor *registerHref(BufferPtr buf, char *url, char *target,
                      char *referer, char *title, unsigned char key,
                      int line, int pos);
-Anchor *registerName(Buffer *buf, char *url, int line, int pos);
-Anchor *registerImg(Buffer *buf, char *url, char *title, int line,
+Anchor *registerName(BufferPtr buf, char *url, int line, int pos);
+Anchor *registerImg(BufferPtr buf, char *url, char *title, int line,
                     int pos);
 int onAnchor(Anchor *a, int line, int pos);
 Anchor *retrieveAnchor(AnchorList *al, int line, int pos);
-Anchor *retrieveCurrentAnchor(Buffer *buf);
-Anchor *retrieveCurrentImg(Buffer *buf);
-Anchor *retrieveCurrentForm(Buffer *buf);
+Anchor *retrieveCurrentAnchor(BufferPtr buf);
+Anchor *retrieveCurrentImg(BufferPtr buf);
+Anchor *retrieveCurrentForm(BufferPtr buf);
 Anchor *searchAnchor(AnchorList *al, char *str);
-Anchor *searchURLLabel(Buffer *buf, char *url);
-void reAnchorWord(Buffer *buf, Line *l, int spos, int epos);
-char *reAnchor(Buffer *buf, char *re);
+Anchor *searchURLLabel(BufferPtr buf, char *url);
+void reAnchorWord(BufferPtr buf, Line *l, int spos, int epos);
+char *reAnchor(BufferPtr buf, char *re);
 #ifdef USE_NNTP
-char *reAnchorNews(Buffer *buf, char *re);
-char *reAnchorNewsheader(Buffer *buf);
+char *reAnchorNews(BufferPtr buf, char *re);
+char *reAnchorNewsheader(BufferPtr buf);
 #endif /* USE_NNTP */
-void addMultirowsForm(Buffer *buf, AnchorList *al);
+void addMultirowsForm(BufferPtr buf, AnchorList *al);
 Anchor *closest_next_anchor(AnchorList *a, Anchor *an, int x, int y);
 Anchor *closest_prev_anchor(AnchorList *a, Anchor *an, int x, int y);
 
-void addMultirowsImg(Buffer *buf, AnchorList *al);
+void addMultirowsImg(BufferPtr buf, AnchorList *al);
 
-Buffer *link_list_panel(Buffer *buf);
+BufferPtr link_list_panel(BufferPtr buf);
 
 int set_param_option(const char *option);
 char *get_param_option(char *name);
 void init_rc(void);
-Buffer *load_option_panel(void);
+BufferPtr load_option_panel(void);
 void sync_with_option(void);
 
 char *auxbinFile(char *base);
@@ -308,7 +309,7 @@ void add_auth_user_passwd(ParsedURL *pu, char *realm,
                           Str uname, Str pwd, int is_proxy);
 void invalidate_auth_user_passwd(ParsedURL *pu, char *realm,
                                  Str uname, Str pwd, int is_proxy);
-char *last_modified(Buffer *buf);
+char *last_modified(BufferPtr buf);
 Str romanNumeral(int n);
 Str romanAlphabet(int n);
 void setup_child(int child, int i, int f);
@@ -349,7 +350,7 @@ struct html_feed_environ
 };
 
 int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
-void HTMLlineproc2(Buffer *buf, TextLineList *tl);
+void HTMLlineproc2(BufferPtr buf, TextLineList *tl);
 void HTMLlineproc0(char *istr, struct html_feed_environ *h_env,
                    int internal);
 #define HTMLlineproc1(x, y) HTMLlineproc0(x, y, TRUE)
@@ -371,5 +372,5 @@ void completeHTMLstream(struct html_feed_environ *,
                         struct readbuffer *);
 void renderTable(struct table *t, int max_width,
                  struct html_feed_environ *h_env);
-void loadHTMLstream(URLFile *f, Buffer *newBuf, FILE *src,
+void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
                     int internal);

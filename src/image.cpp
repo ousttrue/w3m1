@@ -265,9 +265,9 @@ static Hash_sv *image_hash = NULL;
 static Hash_sv *image_file = NULL;
 static GeneralList *image_list = NULL;
 static ImageCache **image_cache = NULL;
-static Buffer *image_buffer = NULL;
+static BufferPtr image_buffer = NULL;
 
-void deleteImage(Buffer *buf)
+void deleteImage(BufferPtr buf)
 {
     AnchorList *al;
     Anchor *a;
@@ -289,7 +289,7 @@ void deleteImage(Buffer *buf)
     loadImage(NULL, IMG_FLAG_STOP);
 }
 
-void getAllImage(Buffer *buf)
+void getAllImage(BufferPtr buf)
 {
     AnchorList *al;
     Anchor *a;
@@ -316,7 +316,7 @@ void getAllImage(Buffer *buf)
     }
 }
 
-void showImageProgress(Buffer *buf)
+void showImageProgress(BufferPtr buf)
 {
     AnchorList *al;
     Anchor *a;
@@ -344,7 +344,7 @@ void showImageProgress(Buffer *buf)
     }
 }
 
-void loadImage(Buffer *buf, int flag)
+void loadImage(BufferPtr buf, int flag)
 {
     ImageCache *cache;
     struct stat st;
@@ -465,7 +465,7 @@ void loadImage(Buffer *buf, int flag)
         flush_tty();
         if ((cache->pid = fork()) == 0)
         {
-            Buffer *b;
+            BufferPtr b;
             /*
 	     * setup_child(TRUE, 0, -1);
 	     */

@@ -100,7 +100,7 @@ conv_search_string(char *str, wc_ces f_ces)
 #endif
 
 int
-forwardSearch(Buffer *buf, char *str)
+forwardSearch(BufferPtr buf, char *str)
 {
     char *p, *first, *last;
     Line *l, *begin;
@@ -195,7 +195,7 @@ forwardSearch(Buffer *buf, char *str)
 }
 
 int
-backwardSearch(Buffer *buf, char *str)
+backwardSearch(BufferPtr buf, char *str)
 {
     char *p, *q, *found, *found_last, *first, *last;
     Line *l, *begin;

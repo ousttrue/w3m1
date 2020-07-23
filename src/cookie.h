@@ -11,5 +11,5 @@ int add_cookie(ParsedURL *pu, Str name, Str value, time_t expires,
 void save_cookies(void);
 void load_cookies(void);
 void initCookie(void);
-Buffer *cookie_list_panel(void);
+BufferPtr cookie_list_panel(void);
 int check_cookie_accept_domain(char *domain);

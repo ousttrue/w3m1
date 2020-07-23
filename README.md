@@ -209,7 +209,7 @@ DEFUN 由来の `void xxx(void)` という関数は、 `commands.h` に移った
 
 `CurrentTab`, `FirstTab`, `LastTab`, `CurrentBuf`, `FirstBuf` マクロを関数化する。
 
-`FirstBuffer` => `GetFirstbuf()`, `SetFirstbuf(Buffer *buf)` というふうにする。
+`FirstBuffer` => `GetFirstbuf()`, `SetFirstbuf(BufferPtr buf)` というふうにする。
 Setter は隠蔽する。
 Tabは必ず1以上。
   * CurrentTab の null check 無くせる？

@@ -322,7 +322,7 @@ loadNewsgroup0(ParsedURL *pu)
     volatile Str page;
     Str tmp;
     URLFile f;
-    Buffer *buf;
+    BufferPtr buf;
     char *qgroup, *p, *q, *s, *t, *n;
     char *volatile scheme, *volatile group, *volatile list;
     int status, i, first, last;

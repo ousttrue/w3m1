@@ -54,15 +54,15 @@ static char *guess_filename(char *file);
 static int _MoveFile(char *path1, char *path2);
 static void uncompress_stream(URLFile *uf, char **src);
 static FILE *lessopen_stream(char *path);
-static Buffer *loadcmdout(char *cmd,
-                          Buffer *(*loadproc) (URLFile *, Buffer *),
-                          Buffer *defaultbuf);
+static BufferPtr loadcmdout(char *cmd,
+                          BufferPtr (*loadproc) (URLFile *, BufferPtr ),
+                          BufferPtr defaultbuf);
 #ifndef USE_ANSI_COLOR
 #define addnewline(a,b,c,d,e,f,g) _addnewline(a,b,c,e,f,g)
 #endif
-static void addnewline(Buffer *buf, char *line, Lineprop *prop,
+static void addnewline(BufferPtr buf, char *line, Lineprop *prop,
                        Linecolor *color, int pos, int width, int nlines);
-static void addLink(Buffer *buf, struct parsed_tag *tag);
+static void addLink(BufferPtr buf, struct parsed_tag *tag);
 
 static JMP_BUF AbortLoading;
 
@@ -228,7 +228,7 @@ UFhalfclose(URLFile *f)
 }
 
 int
-currentLn(Buffer *buf)
+currentLn(BufferPtr buf)
 {
     if (buf->currentLine)
         /*     return buf->currentLine->real_linenumber + 1;      */
@@ -237,12 +237,12 @@ currentLn(Buffer *buf)
         return 1;
 }
 
-static Buffer *
+static BufferPtr 
 loadSomething(URLFile *f,
               char *path,
-              Buffer *(*loadproc) (URLFile *, Buffer *), Buffer *defaultbuf)
+              BufferPtr (*loadproc) (URLFile *, BufferPtr ), BufferPtr defaultbuf)
 {
-    Buffer *buf;
+    BufferPtr buf;
 
     if ((buf = loadproc(f, defaultbuf)) == NULL)
         return NULL;
@@ -509,10 +509,10 @@ convertLine0(URLFile *uf, Str line, int mode)
 /* 
  * loadFile: load file to buffer
  */
-Buffer *
+BufferPtr 
 loadFile(char *path)
 {
-    Buffer *buf;
+    BufferPtr buf;
     URLFile uf;
     init_stream(&uf, SCM_LOCAL, NULL);
     examineFile(path, &uf);
@@ -603,7 +603,7 @@ xface2xpm(char *xface)
 #endif
 
 void
-readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
+readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
 {
     char *p, *q;
 #ifdef USE_COOKIE
@@ -946,7 +946,7 @@ readHeader(URLFile *uf, Buffer *newBuf, int thru, ParsedURL *pu)
 }
 
 char *
-checkHeader(Buffer *buf, char *field)
+checkHeader(BufferPtr buf, char *field)
 {
     int len;
     TextListItem *i;
@@ -965,7 +965,7 @@ checkHeader(Buffer *buf, char *field)
 }
 
 char *
-checkContentType(Buffer *buf)
+checkContentType(BufferPtr buf)
 {
     char *p;
     Str r;
@@ -1490,7 +1490,7 @@ struct http_auth www_auth[] = {
 /* *INDENT-ON* */
 
 static struct http_auth *
-findAuthentication(struct http_auth *hauth, Buffer *buf, char *auth_field)
+findAuthentication(struct http_auth *hauth, BufferPtr buf, char *auth_field)
 {
     struct http_auth *ha;
     int len = strlen(auth_field), slen;
@@ -1719,17 +1719,17 @@ getLinkNumberStr(int correction)
 /* 
  * loadGeneralFile: load file to buffer
  */
-Buffer *
+BufferPtr 
 loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
                 int flag, FormList *volatile request)
 {
     URLFile f, *volatile of = NULL;
     ParsedURL pu;
-    Buffer *b = NULL;
+    BufferPtr b = NULL;
         auto proc = loadBuffer;
     char *volatile tpath;
     char *p;
-    Buffer *volatile t_buf = NULL;
+    BufferPtr volatile t_buf = NULL;
     int volatile searchHeader = SearchHeader;
     int volatile searchHeader_through = TRUE;
     TextList *extra_header = newTextList();
@@ -2189,7 +2189,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
     }
 #ifdef USE_IMAGE
     if (image_source) {
-        Buffer *b = NULL;
+        BufferPtr b = NULL;
         if (IStype(f.stream) != IST_ENCODED)
             f.stream = newEncodedStream(f.stream, f.encoding);
         if (save2tmp(f, image_source) == 0) {
@@ -3928,7 +3928,7 @@ ex_efct(int ex)
 }
 
 static void
-HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
+HTMLlineproc2body(BufferPtr buf, Str (*feed) (), int llimit)
 {
     static char *outc = NULL;
     static Lineprop *outp = NULL;
@@ -4599,7 +4599,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 }
 
 static void
-addLink(Buffer *buf, struct parsed_tag *tag)
+addLink(BufferPtr buf, struct parsed_tag *tag)
 {
     char *href = NULL, *title = NULL, *ctype = NULL, *rel = NULL, *rev = NULL;
     char type = LINK_TYPE_NONE;
@@ -4641,7 +4641,7 @@ addLink(Buffer *buf, struct parsed_tag *tag)
 }
 
 void
-HTMLlineproc2(Buffer *buf, TextLineList *tl)
+HTMLlineproc2(BufferPtr buf, TextLineList *tl)
 {
     _tl_lp2 = tl->first;
     HTMLlineproc2body(buf, textlist_feed, -1);
@@ -4662,7 +4662,7 @@ file_feed()
 }
 
 void
-HTMLlineproc3(Buffer *buf, InputStream* stream)
+HTMLlineproc3(BufferPtr buf, InputStream* stream)
 {
     _file_lp2 = stream;
     HTMLlineproc2body(buf, file_feed, -1);
@@ -4707,7 +4707,7 @@ extern Lineprop NullProp[];
 #define addnewline2(a,b,c,d,e,f) _addnewline2(a,b,c,e,f)
 #endif
 static void
-addnewline2(Buffer *buf, char *line, Lineprop *prop, Linecolor *color, int pos,
+addnewline2(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
             int nlines)
 {
     Line *l;
@@ -4747,7 +4747,7 @@ addnewline2(Buffer *buf, char *line, Lineprop *prop, Linecolor *color, int pos,
 }
 
 static void
-addnewline(Buffer *buf, char *line, Lineprop *prop, Linecolor *color, int pos,
+addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
            int width, int nlines)
 {
     char *s;
@@ -4813,8 +4813,8 @@ addnewline(Buffer *buf, char *line, Lineprop *prop, Linecolor *color, int pos,
 /* 
  * loadHTMLBuffer: read file and make new buffer
  */
-Buffer *
-loadHTMLBuffer(URLFile *f, Buffer *newBuf)
+BufferPtr 
+loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
 {
     FILE *src = NULL;
     Str tmp;
@@ -4969,12 +4969,12 @@ showProgress(clen_t * linelen, clen_t * trbyte)
 /* 
  * loadHTMLString: read string and make new buffer
  */
-Buffer *
+BufferPtr 
 loadHTMLString(Str page)
 {
     URLFile f;
     MySignalHandler prevtrap = NULL;
-    Buffer *newBuf;
+    BufferPtr newBuf;
 
     newBuf = newBuffer(INIT_BUFFER_WIDTH);
     if (SETJMP(AbortLoading) != 0) {
@@ -5102,8 +5102,8 @@ loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
 /* 
  * loadBuffer: read file and make new buffer
  */
-Buffer *
-loadBuffer(URLFile *uf, Buffer *volatile newBuf)
+BufferPtr 
+loadBuffer(URLFile *uf, BufferPtr volatile newBuf)
 {
     FILE *volatile src = NULL;
 #ifdef USE_M17N
@@ -5201,8 +5201,8 @@ loadBuffer(URLFile *uf, Buffer *volatile newBuf)
 }
 
 #ifdef USE_IMAGE
-Buffer *
-loadImageBuffer(URLFile *uf, Buffer *newBuf)
+BufferPtr 
+loadImageBuffer(URLFile *uf, BufferPtr newBuf)
 {
     Image image;
     ImageCache *cache;
@@ -5310,7 +5310,7 @@ conv_symbol(Line *l)
  * saveBuffer: write buffer to file
  */
 static void
-_saveBuffer(Buffer *buf, Line *l, FILE * f, int cont)
+_saveBuffer(BufferPtr buf, Line *l, FILE * f, int cont)
 {
     Str tmp;
     int is_html = FALSE;
@@ -5343,13 +5343,13 @@ _saveBuffer(Buffer *buf, Line *l, FILE * f, int cont)
 }
 
 void
-saveBuffer(Buffer *buf, FILE * f, int cont)
+saveBuffer(BufferPtr buf, FILE * f, int cont)
 {
     _saveBuffer(buf, buf->firstLine, f, cont);
 }
 
 void
-saveBufferBody(Buffer *buf, FILE * f, int cont)
+saveBufferBody(BufferPtr buf, FILE * f, int cont)
 {
     Line *l = buf->firstLine;
 
@@ -5358,12 +5358,12 @@ saveBufferBody(Buffer *buf, FILE * f, int cont)
     _saveBuffer(buf, l, f, cont);
 }
 
-static Buffer *
+static BufferPtr 
 loadcmdout(char *cmd,
-           Buffer *(*loadproc) (URLFile *, Buffer *), Buffer *defaultbuf)
+           BufferPtr (*loadproc) (URLFile *, BufferPtr ), BufferPtr defaultbuf)
 {
     FILE *f, *popen(const char *, const char *);
-    Buffer *buf;
+    BufferPtr buf;
     URLFile uf;
 
     if (cmd == NULL || *cmd == '\0')
@@ -5380,10 +5380,10 @@ loadcmdout(char *cmd,
 /* 
  * getshell: execute shell command and get the result into a buffer
  */
-Buffer *
+BufferPtr 
 getshell(char *cmd)
 {
-    Buffer *buf;
+    BufferPtr buf;
 
     buf = loadcmdout(cmd, loadBuffer, NULL);
     if (buf == NULL)
@@ -5397,11 +5397,11 @@ getshell(char *cmd)
 /* 
  * getpipe: execute shell command and connect pipe to the buffer
  */
-Buffer *
+BufferPtr 
 getpipe(char *cmd)
 {
     FILE *f, *popen(const char *, const char *);
-    Buffer *buf;
+    BufferPtr buf;
 
     if (cmd == NULL || *cmd == '\0')
         return NULL;
@@ -5423,8 +5423,8 @@ getpipe(char *cmd)
 /* 
  * Open pager buffer
  */
-Buffer *
-openPagerBuffer(InputStream *stream, Buffer *buf)
+BufferPtr 
+openPagerBuffer(InputStream *stream, BufferPtr buf)
 {
 
     if (buf == NULL)
@@ -5447,12 +5447,12 @@ openPagerBuffer(InputStream *stream, Buffer *buf)
     return buf;
 }
 
-Buffer *
+BufferPtr 
 openGeneralPagerBuffer(InputStream *stream)
 {
-    Buffer *buf;
+    BufferPtr buf;
     const char *t = "text/plain";
-    Buffer *t_buf = NULL;
+    BufferPtr t_buf = NULL;
     URLFile uf;
 
     init_stream(&uf, SCM_UNKNOWN, stream);
@@ -5515,7 +5515,7 @@ openGeneralPagerBuffer(InputStream *stream)
 }
 
 Line *
-getNextPage(Buffer *buf, int plen)
+getNextPage(BufferPtr buf, int plen)
 {
     Line *volatile top = buf->topLine, *volatile last = buf->lastLine,
         *volatile cur = buf->currentLine;
@@ -5704,13 +5704,13 @@ save2tmp(URLFile uf, char *tmpf)
 }
 
 int
-doExternal(URLFile uf, char *path, const char *type, Buffer **bufp,
-           Buffer *defaultbuf)
+doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
+           BufferPtr defaultbuf)
 {
     Str tmpf, command;
     struct mailcap *mcap;
     int mc_stat;
-    Buffer *buf = NULL;
+    BufferPtr buf = NULL;
     char *header, *src = NULL;
     auto ext = uf.ext;
 
@@ -6274,7 +6274,7 @@ lessopen_stream(char *path)
 
 #if 0
 void
-reloadBuffer(Buffer *buf)
+reloadBuffer(BufferPtr buf)
 {
     URLFile uf;
 
@@ -6329,7 +6329,7 @@ guess_filename(char *file)
 }
 
 char *
-guess_save_name(Buffer *buf, char *path)
+guess_save_name(BufferPtr buf, char *path)
 {
     if (buf && buf->document_header) {
         Str name = NULL;
@@ -8309,7 +8309,7 @@ print_internal_information(struct html_feed_environ *henv)
 }
 
 void
-loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
+loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE * src, int internal)
 {
     struct environment envs[MAX_ENV_LEVEL];
     clen_t linelen = 0;

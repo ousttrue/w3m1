@@ -46,7 +46,7 @@ struct auth_pass
 
 struct auth_pass *passwords = NULL;
 
-int columnSkip(Buffer *buf, int offset)
+int columnSkip(BufferPtr buf, int offset)
 {
     int i, maxColumn;
     int column = buf->currentColumn + offset;
@@ -88,7 +88,7 @@ int columnPos(Line *line, int column)
 }
 
 Line *
-lineSkip(Buffer *buf, Line *line, int offset, int last)
+lineSkip(BufferPtr buf, Line *line, int offset, int last)
 {
     int i;
     Line *l;
@@ -102,7 +102,7 @@ lineSkip(Buffer *buf, Line *line, int offset, int last)
 }
 
 Line *
-currentLineSkip(Buffer *buf, Line *line, int offset, int last)
+currentLineSkip(BufferPtr buf, Line *line, int offset, int last)
 {
     int i, n;
     Line *l = line;
@@ -939,7 +939,7 @@ void loadPasswd(void)
 
 /* get last modified time */
 char *
-last_modified(Buffer *buf)
+last_modified(BufferPtr buf)
 {
     TextListItem *ti;
     struct stat st;

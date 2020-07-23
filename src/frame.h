@@ -72,5 +72,5 @@ extern struct frameset *renderFrameSet;
 void addFrameSetElement(struct frameset *f,
                         union frameset_element element);
 void deleteFrameSetElement(union frameset_element e);
-void resetFrameElement(union frameset_element *f_element, Buffer *buf,
+void resetFrameElement(union frameset_element *f_element, BufferPtr buf,
                        char *referer, FormList *request);

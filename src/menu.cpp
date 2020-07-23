@@ -1803,7 +1803,7 @@ static void
 initSelectMenu(void)
 {
     int i, nitem, len = 0, l;
-    Buffer *buf;
+    BufferPtr buf;
     Str str;
     char **label;
     char *p;
@@ -1876,7 +1876,7 @@ static void
 smChBuf(void)
 {
     int i;
-    Buffer *buf;
+    BufferPtr buf;
 
     if (SelectV < 0 || SelectV >= SelectMenu.nitem)
         return;
@@ -1899,7 +1899,7 @@ static int
 smDelBuf(char c)
 {
     int i, x, y, mselect;
-    Buffer *buf;
+    BufferPtr buf;
 
     if (CurrentMenu->select < 0 || CurrentMenu->select >= SelectMenu.nitem)
         return (MENU_NOTHING);
@@ -1946,7 +1946,7 @@ initSelTabMenu(void)
 {
     int i, nitem, len = 0, l;
     TabPtr tab;
-    Buffer *buf;
+    BufferPtr buf;
     Str str;
     char **label;
     char *p;
@@ -2023,7 +2023,7 @@ smChTab(void)
     // TODO
 //     int i;
 //     TabBuffer *tab;
-//     Buffer *buf;
+//     BufferPtr buf;
 
 //     if (SelTabV < 0 || SelTabV >= SelTabMenu.nitem)
 //         return;
@@ -2304,7 +2304,7 @@ int getMenuN(MenuList *list, char *id)
 /* --- InitMenu (END) --- */
 
 LinkList *
-link_menu(Buffer *buf)
+link_menu(BufferPtr buf)
 {
     Menu menu;
     LinkList *l;
@@ -2367,7 +2367,7 @@ link_menu(Buffer *buf)
 /* --- LinkMenu (END) --- */
 
 Anchor *
-accesskey_menu(Buffer *buf)
+accesskey_menu(BufferPtr buf)
 {
     Menu menu;
     AnchorList *al = buf->href;
@@ -2478,7 +2478,7 @@ lmSelect(char c)
 }
 
 Anchor *
-list_menu(Buffer *buf)
+list_menu(BufferPtr buf)
 {
     Menu menu;
     AnchorList *al = buf->href;

@@ -70,7 +70,7 @@ putAnchor(AnchorList *al, char *url, char *target, Anchor **anchor_return,
 }
 
 Anchor *
-registerHref(Buffer *buf, char *url, char *target, char *referer, char *title,
+registerHref(BufferPtr buf, char *url, char *target, char *referer, char *title,
 			 unsigned char key, int line, int pos)
 {
 	Anchor *a;
@@ -80,7 +80,7 @@ registerHref(Buffer *buf, char *url, char *target, char *referer, char *title,
 }
 
 Anchor *
-registerName(Buffer *buf, char *url, int line, int pos)
+registerName(BufferPtr buf, char *url, int line, int pos)
 {
 	Anchor *a;
 	buf->name = putAnchor(buf->name, url, NULL, &a, NULL, NULL, '\0', line,
@@ -89,7 +89,7 @@ registerName(Buffer *buf, char *url, int line, int pos)
 }
 
 Anchor *
-registerImg(Buffer *buf, char *url, char *title, int line, int pos)
+registerImg(BufferPtr buf, char *url, char *title, int line, int pos)
 {
 	Anchor *a;
 	buf->img = putAnchor(buf->img, url, NULL, &a, NULL, title, '\0', line,
@@ -98,7 +98,7 @@ registerImg(Buffer *buf, char *url, char *title, int line, int pos)
 }
 
 Anchor *
-registerForm(Buffer *buf, FormList *flist, struct parsed_tag *tag, int line,
+registerForm(BufferPtr buf, FormList *flist, struct parsed_tag *tag, int line,
 			 int pos)
 {
 	Anchor *a;
@@ -155,7 +155,7 @@ retrieveAnchor(AnchorList *al, int line, int pos)
 }
 
 Anchor *
-retrieveCurrentAnchor(Buffer *buf)
+retrieveCurrentAnchor(BufferPtr buf)
 {
 	if (buf->currentLine == NULL)
 		return NULL;
@@ -163,7 +163,7 @@ retrieveCurrentAnchor(Buffer *buf)
 }
 
 Anchor *
-retrieveCurrentImg(Buffer *buf)
+retrieveCurrentImg(BufferPtr buf)
 {
 	if (buf->currentLine == NULL)
 		return NULL;
@@ -171,7 +171,7 @@ retrieveCurrentImg(Buffer *buf)
 }
 
 Anchor *
-retrieveCurrentForm(Buffer *buf)
+retrieveCurrentForm(BufferPtr buf)
 {
 	if (buf->currentLine == NULL)
 		return NULL;
@@ -198,14 +198,14 @@ searchAnchor(AnchorList *al, char *str)
 }
 
 Anchor *
-searchURLLabel(Buffer *buf, char *url)
+searchURLLabel(BufferPtr buf, char *url)
 {
 	return searchAnchor(buf->name, url);
 }
 
 #ifdef USE_NNTP
 static Anchor *
-_put_anchor_news(Buffer *buf, char *p1, char *p2, int line, int pos)
+_put_anchor_news(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
 	Str tmp;
 
@@ -224,7 +224,7 @@ _put_anchor_news(Buffer *buf, char *p1, char *p2, int line, int pos)
 #endif /* USE_NNTP */
 
 static Anchor *
-_put_anchor_all(Buffer *buf, char *p1, char *p2, int line, int pos)
+_put_anchor_all(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
 	Str tmp;
 
@@ -255,7 +255,7 @@ reseq_anchor0(AnchorList *al, short *seqmap)
 
 /* renumber anchor */
 static void
-reseq_anchor(Buffer *buf)
+reseq_anchor(BufferPtr buf)
 {
 	int i, j, n, nmark = (buf->hmarklist) ? buf->hmarklist->nmark : 0;
 	short *seqmap;
@@ -315,8 +315,8 @@ reseq_anchor(Buffer *buf)
 }
 
 static char *
-reAnchorPos(Buffer *buf, Line *l, char *p1, char *p2,
-			Anchor *(*anchorproc)(Buffer *, char *, char *, int, int))
+reAnchorPos(BufferPtr buf, Line *l, char *p1, char *p2,
+			Anchor *(*anchorproc)(BufferPtr , char *, char *, int, int))
 {
 	Anchor *a;
 	int spos, epos;
@@ -363,7 +363,7 @@ reAnchorPos(Buffer *buf, Line *l, char *p1, char *p2,
 	return p2;
 }
 
-void reAnchorWord(Buffer *buf, Line *l, int spos, int epos)
+void reAnchorWord(BufferPtr buf, Line *l, int spos, int epos)
 {
 	reAnchorPos(buf, l, &l->lineBuf[spos], &l->lineBuf[epos], _put_anchor_all);
 }
@@ -371,8 +371,8 @@ void reAnchorWord(Buffer *buf, Line *l, int spos, int epos)
 /* search regexp and register them as anchors */
 /* returns error message if any               */
 static char *
-reAnchorAny(Buffer *buf, char *re,
-			Anchor *(*anchorproc)(Buffer *, char *, char *, int, int))
+reAnchorAny(BufferPtr buf, char *re,
+			Anchor *(*anchorproc)(BufferPtr , char *, char *, int, int))
 {
 	Line *l;
 	char *p = NULL, *p1, *p2;
@@ -411,20 +411,20 @@ reAnchorAny(Buffer *buf, char *re,
 }
 
 char *
-reAnchor(Buffer *buf, char *re)
+reAnchor(BufferPtr buf, char *re)
 {
 	return reAnchorAny(buf, re, _put_anchor_all);
 }
 
 #ifdef USE_NNTP
 char *
-reAnchorNews(Buffer *buf, char *re)
+reAnchorNews(BufferPtr buf, char *re)
 {
 	return reAnchorAny(buf, re, _put_anchor_news);
 }
 
 char *
-reAnchorNewsheader(Buffer *buf)
+reAnchorNewsheader(BufferPtr buf)
 {
 	Line *l;
 	char *p, *p1, *p2;
@@ -605,7 +605,7 @@ void shiftAnchorPosition(AnchorList *al, HmarkerList *hl, int line, int pos,
 }
 
 #ifdef USE_IMAGE
-void addMultirowsImg(Buffer *buf, AnchorList *al)
+void addMultirowsImg(BufferPtr buf, AnchorList *al)
 {
 	int i, j, k, col, ecol, pos;
 	Image *img;
@@ -689,7 +689,7 @@ void addMultirowsImg(Buffer *buf, AnchorList *al)
 }
 #endif
 
-void addMultirowsForm(Buffer *buf, AnchorList *al)
+void addMultirowsForm(BufferPtr buf, AnchorList *al)
 {
 	int i, j, k, col, ecol, pos;
 	Anchor a_form, *a;
@@ -752,7 +752,7 @@ void addMultirowsForm(Buffer *buf, AnchorList *al)
 }
 
 char *
-getAnchorText(Buffer *buf, AnchorList *al, Anchor *a)
+getAnchorText(BufferPtr buf, AnchorList *al, Anchor *a)
 {
 	int hseq, i;
 	Line *l;
@@ -790,8 +790,8 @@ getAnchorText(Buffer *buf, AnchorList *al, Anchor *a)
 	return tmp ? tmp->ptr : NULL;
 }
 
-Buffer *
-link_list_panel(Buffer *buf)
+BufferPtr 
+link_list_panel(BufferPtr buf)
 {
 	LinkList *l;
 	AnchorList *al;

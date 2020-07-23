@@ -33,7 +33,7 @@ int searchKeyNum(void)
 
 void nscroll(int n)
 {
-    Buffer *buf = GetCurrentbuf();
+    BufferPtr buf = GetCurrentbuf();
     Line *top = buf->topLine, *cur = buf->currentLine;
     int lnum, tlnum, llnum, diff_n;
 
@@ -93,7 +93,7 @@ void nscroll(int n)
 }
 
 static char *SearchString = NULL;
-int (*searchRoutine)(Buffer *, char *);
+int (*searchRoutine)(BufferPtr , char *);
 
 void clear_mark(Line *l)
 {
@@ -120,7 +120,7 @@ void srch_nxtprv(int reverse)
 {
     int result;
     /* *INDENT-OFF* */
-    static int (*routine[2])(Buffer *, char *) = {
+    static int (*routine[2])(BufferPtr , char *) = {
         forwardSearch, backwardSearch};
     /* *INDENT-ON* */
 
@@ -158,7 +158,7 @@ void
 }
 
 static void
-dump_extra(Buffer *buf)
+dump_extra(BufferPtr buf)
 {
     printf("W3m-current-url: %s\n", parsedURL2Str(&buf->currentURL)->ptr);
     if (buf->baseURL)
@@ -191,7 +191,7 @@ dump_extra(Buffer *buf)
 }
 
 static void
-dump_source(Buffer *buf)
+dump_source(BufferPtr buf)
 {
     FILE *f;
     char c;
@@ -208,7 +208,7 @@ dump_source(Buffer *buf)
 }
 
 static void
-dump_head(Buffer *buf)
+dump_head(BufferPtr buf)
 {
     TextListItem *ti;
 
@@ -232,7 +232,7 @@ dump_head(Buffer *buf)
     puts("");
 }
 
-void do_dump(Buffer *buf)
+void do_dump(BufferPtr buf)
 {
     auto prevtrap = mySignal(SIGINT, intTrap);
     if (SETJMP(IntReturn) != 0)
@@ -271,7 +271,7 @@ void do_dump(Buffer *buf)
 }
 
 /* search by regular expression */
-int srchcore(char *volatile str, int (*func)(Buffer *, char *))
+int srchcore(char *volatile str, int (*func)(BufferPtr , char *))
 {
     volatile int i, result = SR_NOTFOUND;
 
@@ -380,7 +380,7 @@ done:
     return -1;
 }
 
-void isrch(int (*func)(Buffer *, char *), char *prompt)
+void isrch(int (*func)(BufferPtr , char *), char *prompt)
 {
     char *str;
     Buffer sbuf;
@@ -396,7 +396,7 @@ void isrch(int (*func)(Buffer *, char *), char *prompt)
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
-void srch(int (*func)(Buffer *, char *), char *prompt)
+void srch(int (*func)(BufferPtr , char *), char *prompt)
 {
     char *str;
     int result;
@@ -430,7 +430,7 @@ void srch(int (*func)(Buffer *, char *), char *prompt)
     searchRoutine = func;
 }
 
-void shiftvisualpos(Buffer *buf, int shift)
+void shiftvisualpos(BufferPtr buf, int shift)
 {
     Line *l = buf->currentLine;
     buf->visualpos -= shift;
@@ -446,7 +446,7 @@ void shiftvisualpos(Buffer *buf, int shift)
 
 void cmd_loadfile(char *fn)
 {
-    Buffer *buf;
+    BufferPtr buf;
 
     buf = loadGeneralFile(file_to_url(fn), NULL, NO_REFERER, 0, NULL);
     if (buf == NULL)
@@ -466,7 +466,7 @@ void cmd_loadfile(char *fn)
 
 void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request)
 {
-    Buffer *buf;
+    BufferPtr buf;
 
     if (handleMailto(url))
         return;
@@ -612,7 +612,7 @@ int next_nonnull_line(Line *line)
 }
 
 char *
-getCurWord(Buffer *buf, int *spos, int *epos)
+getCurWord(BufferPtr buf, int *spos, int *epos)
 {
     char *p;
     Line *l = buf->currentLine;
@@ -707,7 +707,7 @@ void _quitfm(int confirm)
     w3m_exit(0);
 }
 
-void delBuffer(Buffer *buf)
+void delBuffer(BufferPtr buf)
 {
     if (buf == NULL)
         return;
@@ -748,7 +748,7 @@ void _goLine(char *l)
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
-int cur_real_linenumber(Buffer *buf)
+int cur_real_linenumber(BufferPtr buf)
 {
     Line *l, *cur = buf->currentLine;
     int n;
@@ -935,7 +935,7 @@ void _followForm(int submit)
         }
         else if (fi->parent->method == FORM_METHOD_POST)
         {
-            Buffer *buf;
+            BufferPtr buf;
             if (multipart)
             {
                 struct stat st;
@@ -1136,10 +1136,11 @@ void bufferA(void)
     on_target = TRUE;
 }
 
-Buffer *
+BufferPtr 
 loadLink(char *url, char *target, char *referer, FormList *request)
 {
-    Buffer *buf, *nfbuf;
+    BufferPtr buf;
+    BufferPtr nfbuf;
     union frameset_element *f_element = NULL;
     int flag = 0;
     ParsedURL *base, pu;
@@ -1317,7 +1318,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
     return ret;
 }
 
-Str conv_form_encoding(Str val, FormItemList *fi, Buffer *buf)
+Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf)
 {
     wc_ces charset = SystemCharset;
 
@@ -1328,7 +1329,7 @@ Str conv_form_encoding(Str val, FormItemList *fi, Buffer *buf)
     return wc_Str_conv_strict(val, InnerCharset, charset);
 }
 
-Buffer *loadNormalBuf(Buffer *buf, int renderframe)
+BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 {
     GetCurrentTab()->BufferPushBeforeCurrent(buf);
     if (renderframe && RenderFrame && GetCurrentbuf()->frameset != NULL)
@@ -1526,7 +1527,7 @@ _end:
 
 void gotoLabel(char *label)
 {
-    Buffer *buf;
+    BufferPtr buf;
     Anchor *al;
     int i;
 
@@ -1673,9 +1674,9 @@ void nextY(int d)
     displayBuffer(GetCurrentbuf(), B_NORMAL);
 }
 
-int checkBackBuffer(Buffer *buf)
+int checkBackBuffer(BufferPtr buf)
 {
-    Buffer *fbuf = buf->linkBuffer[LB_N_FRAME];
+    BufferPtr fbuf = buf->linkBuffer[LB_N_FRAME];
 
     if (fbuf)
     {
@@ -1703,7 +1704,7 @@ void goURL0(char *prompt, int relative)
 {
     char *url, *referer;
     ParsedURL p_url, *current;
-    Buffer *cur_buf = GetCurrentbuf();
+    BufferPtr cur_buf = GetCurrentbuf();
 
     url = searchKeyData();
     if (url == NULL)
@@ -1781,7 +1782,7 @@ void goURL0(char *prompt, int relative)
         pushHashHist(URLHist, parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr);
 }
 
-void anchorMn(Anchor *(*menu_func)(Buffer *), int go)
+void anchorMn(Anchor *(*menu_func)(BufferPtr ), int go)
 {
     Anchor *a;
     BufferPoint *po;
@@ -1871,7 +1872,7 @@ Str currentURL(void)
     return parsedURL2Str(&GetCurrentbuf()->currentURL);
 }
 
-void repBuffer(Buffer *oldbuf, Buffer *buf)
+void repBuffer(BufferPtr oldbuf, BufferPtr buf)
 {
     SetFirstbuf(replaceBuffer(GetFirstbuf(), oldbuf, buf));
     SetCurrentbuf(buf);
@@ -1955,7 +1956,7 @@ void invoke_browser(char *url)
 void execdict(char *word)
 {
     char *w, *dictcmd;
-    Buffer *buf;
+    BufferPtr buf;
 
     if (!UseDictCommand || word == NULL || *word == '\0')
     {
@@ -1986,7 +1987,7 @@ void execdict(char *word)
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
-char *GetWord(Buffer *buf)
+char *GetWord(BufferPtr buf)
 {
     int b, e;
     char *p;
@@ -2061,7 +2062,7 @@ void SigAlarm(SIGNAL_ARG)
 
 void tabURL0(TabPtr tab, char *prompt, int relative)
 {
-    Buffer *buf;
+    BufferPtr buf;
 
     if (tab == GetCurrentTab())
     {
@@ -2081,7 +2082,8 @@ void tabURL0(TabPtr tab, char *prompt, int relative)
     else if (buf != GetCurrentbuf())
     {
         /* buf <- p <- ... <- Currentbuf = c */
-        Buffer *c, *p;
+        BufferPtr c;
+        BufferPtr p;
 
         c = GetCurrentbuf();
         p = prevBuffer(c, buf);
@@ -2098,7 +2100,7 @@ void tabURL0(TabPtr tab, char *prompt, int relative)
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
-Buffer *DownloadListBuffer()
+BufferPtr DownloadListBuffer()
 {
     DownloadList *d;
     Str src = NULL;
@@ -2230,7 +2232,7 @@ void resetPos(BufferPos *b)
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
-void save_buffer_position(Buffer *buf)
+void save_buffer_position(BufferPtr buf)
 {
     BufferPos *b = buf->undo;
 
@@ -2465,7 +2467,7 @@ int sysm_process_mouse(int x, int y, int nbs, int obs)
 // }
 
 /* mark Message-ID-like patterns as NEWS anchors */
-void chkNMIDBuffer(Buffer *buf)
+void chkNMIDBuffer(BufferPtr buf)
 {
     static char *url_like_pat[] = {
         "<[!-;=?-~]+@[a-zA-Z0-9\\.\\-_]+>",
@@ -2480,7 +2482,7 @@ void chkNMIDBuffer(Buffer *buf)
 }
 
 /* mark URL-like patterns as anchors */
-void chkURLBuffer(Buffer *buf)
+void chkURLBuffer(BufferPtr buf)
 {
     static char *url_like_pat[] = {
         "https?://[a-zA-Z0-9][a-zA-Z0-9:%\\-\\./?=~_\\&+@#,\\$;]*[a-zA-Z0-9_/=\\-]",
@@ -2514,7 +2516,7 @@ void chkURLBuffer(Buffer *buf)
 
 void change_charset(struct parsed_tagarg *arg)
 {
-    Buffer *buf = GetCurrentbuf()->linkBuffer[LB_N_INFO];
+    BufferPtr buf = GetCurrentbuf()->linkBuffer[LB_N_INFO];
     wc_ces charset;
 
     if (buf == NULL)
@@ -2549,7 +2551,7 @@ void follow_map(struct parsed_tagarg *arg)
     {
 #endif
 #ifndef MENU_MAP
-        Buffer *buf = follow_map_panel(GetCurrentbuf(), name);
+        BufferPtr buf = follow_map_panel(GetCurrentbuf(), name);
 
         if (buf != NULL)
             cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
@@ -2568,7 +2570,7 @@ void follow_map(struct parsed_tagarg *arg)
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
         _newT();
-        Buffer *buf = GetCurrentbuf();
+        BufferPtr buf = GetCurrentbuf();
         cmd_loadURL(a->url, baseURL(GetCurrentbuf()),
                     parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr, NULL);
         if (buf != GetCurrentbuf())
@@ -2639,7 +2641,7 @@ void saveBufferInfo()
     fclose(fp);
 }
 
-void tmpClearBuffer(Buffer *buf)
+void tmpClearBuffer(BufferPtr buf)
 {
     if (buf->pagerSource == NULL && writeBufferCache(buf) == 0)
     {

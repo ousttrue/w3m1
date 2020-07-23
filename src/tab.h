@@ -18,8 +18,8 @@ class Tab
     // avoid copy
     Tab(const Tab &) = delete;
     Tab &operator=(const Tab &) = delete;
-    Buffer *currentBuffer = nullptr;
-    Buffer *firstBuffer = nullptr;
+    BufferPtr currentBuffer = nullptr;
+    BufferPtr firstBuffer = nullptr;
 
 public:
     Tab() = default;
@@ -52,11 +52,11 @@ public:
     }
 
     // buffer
-    void SetFirstBuffer(Buffer *buf, bool isCurrent = false);
-    Buffer *GetFirstBuffer() { return firstBuffer; }
-    void SetCurrentBuffer(Buffer *buf);
-    Buffer *GetCurrentBuffer() { return currentBuffer; }
-    void BufferPushBeforeCurrent(Buffer *buf);
+    void SetFirstBuffer(BufferPtr buf, bool isCurrent = false);
+    BufferPtr GetFirstBuffer() { return firstBuffer; }
+    void SetCurrentBuffer(BufferPtr buf);
+    BufferPtr GetCurrentBuffer() { return currentBuffer; }
+    void BufferPushBeforeCurrent(BufferPtr buf);
 
 private:
     bool IsConnectFirstCurrent() const;
@@ -80,12 +80,12 @@ void MoveTab(int x);
 void deleteTab(TabPtr tab);
 void DeleteCurrentTab();
 void DeleteAllTabs();
-Buffer *GetCurrentbuf();
+BufferPtr GetCurrentbuf();
 TabPtr posTab(int x, int y);
-void SetCurrentbuf(Buffer *buf);
-Buffer *GetFirstbuf();
+void SetCurrentbuf(BufferPtr buf);
+BufferPtr GetFirstbuf();
 int HasFirstBuffer();
-void SetFirstbuf(Buffer *buffer, bool isCurrent = false);
+void SetFirstbuf(BufferPtr buffer, bool isCurrent = false);
 void moveTab(TabPtr src, TabPtr dst, int right);
 void calcTabPos();
 void followTab(TabPtr tab);

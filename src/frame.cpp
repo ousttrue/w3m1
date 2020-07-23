@@ -88,7 +88,7 @@ newFrameSet(struct parsed_tag *tag)
 }
 
 struct frame_body *
-newFrame(struct parsed_tag *tag, Buffer *buf)
+newFrame(struct parsed_tag *tag, BufferPtr buf)
 {
 	struct frame_body *body;
 	char *p;
@@ -245,7 +245,7 @@ void flushFrameSet(struct frameset *fs)
 	}
 }
 
-void pushFrameTree(struct frameset_queue **fqpp, struct frameset *fs, Buffer *buf)
+void pushFrameTree(struct frameset_queue **fqpp, struct frameset *fs, BufferPtr buf)
 {
 	struct frameset_queue *rfq, *cfq = *fqpp;
 
@@ -298,7 +298,7 @@ popFrameTree(struct frameset_queue **fqpp)
 }
 
 void resetFrameElement(union frameset_element *f_element,
-					   Buffer *buf, char *referer, FormList *request)
+					   BufferPtr buf, char *referer, FormList *request)
 {
 	char *f_name;
 	struct frame_body *f_body;
@@ -339,7 +339,7 @@ static struct frameset *
 frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 					  ParsedURL *baseURL, int flag)
 {
-	Buffer *buf;
+	BufferPtr buf;
 	struct frameset *ret_frameset = NULL;
 	ParsedURL url;
 
@@ -417,7 +417,7 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 	case HTML_COL
 
 static int
-createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
+createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 				int force_reload)
 {
 	int r, c, t_stack;
@@ -937,12 +937,12 @@ createFrameFile(struct frameset *f, FILE *f1, Buffer *current, int level,
 	return 0;
 }
 
-Buffer *
-renderFrame(Buffer *Cbuf, int force_reload)
+BufferPtr 
+renderFrame(BufferPtr Cbuf, int force_reload)
 {
 	Str tmp;
 	FILE *f;
-	Buffer *buf;
+	BufferPtr buf;
 	int flag;
 	struct frameset *fset;
 #ifdef USE_M17N

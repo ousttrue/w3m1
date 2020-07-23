@@ -241,6 +241,70 @@ struct BufferPos
     BufferPos *prev;
 };
 
+using BufferPtr = struct Buffer *;
+struct Buffer
+{
+    char *filename;
+    char *buffername;
+    Line *firstLine;
+    Line *topLine;
+    Line *currentLine;
+    Line *lastLine;
+    BufferPtr nextBuffer;
+    BufferPtr linkBuffer[MAX_LB];
+    short width;
+    short height;
+    char *type;
+    const char *real_type;
+    int allLine;
+    short bufferprop;
+    int currentColumn;
+    short cursorX;
+    short cursorY;
+    int pos;
+    int visualpos;
+    short rootX;
+    short rootY;
+    short COLS;
+    short LINES;
+    InputStream *pagerSource;
+    AnchorList *href;
+    AnchorList *name;
+    AnchorList *img;
+    AnchorList *formitem;
+    LinkList *linklist;
+    FormList *formlist;
+    MapList *maplist;
+    HmarkerList *hmarklist;
+    HmarkerList *imarklist;
+    ParsedURL currentURL;
+    ParsedURL *baseURL;
+    char *baseTarget;
+    int real_scheme;
+    char *sourcefile;
+    struct frameset *frameset;
+    struct frameset_queue *frameQ;
+    int *clone;
+    size_t trbyte;
+    char check_url;
+    wc_ces document_charset;
+    uint8_t auto_detect;
+    TextList *document_header;
+    FormItemList *form_submit;
+    char *savecache;
+    char *edit;
+    struct mailcap *mailcap;
+    char *mailcap_source;
+    char *header_source;
+    char search_header;
+    char *ssl_certificate;
+    char image_flag;
+    char image_loaded;
+    char need_reshape;
+    Anchor *submit;
+    BufferPos *undo;
+    AlarmEvent *event;
+};
 
 struct MapArea
 {

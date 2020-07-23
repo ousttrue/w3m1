@@ -7,7 +7,7 @@
 #include "display.h"
 
 #ifdef USE_HISTORY
-Buffer *
+BufferPtr 
 historyBuffer(Hist *hist)
 {
     Str src = Strnew();

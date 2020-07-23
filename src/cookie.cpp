@@ -574,7 +574,7 @@ initCookie(void)
     check_expired_cookies();
 }
 
-Buffer *
+BufferPtr 
 cookie_list_panel(void)
 {
     /* FIXME: gettextize? */

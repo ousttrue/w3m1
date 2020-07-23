@@ -19,7 +19,7 @@ int REV_LB[MAX_LB] = {
     LB_N_FRAME, LB_FRAME, LB_N_INFO, LB_INFO, LB_N_SOURCE,
 };
 
-void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
+void cmd_loadBuffer(BufferPtr buf, int prop, int linkid)
 {
     if (buf == NULL)
     {
@@ -43,10 +43,10 @@ void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
 /* 
  * Buffer creation
  */
-Buffer *
+BufferPtr 
 newBuffer(int width)
 {
-	Buffer *n;
+	BufferPtr n;
 
 	n = New(Buffer);
 	if (n == NULL)
@@ -75,10 +75,10 @@ newBuffer(int width)
 /* 
  * Create null buffer
  */
-Buffer *
+BufferPtr 
 nullBuffer(void)
 {
-	Buffer *b;
+	BufferPtr b;
 
 	b = newBuffer(COLS);
 	b->buffername = "*Null*";
@@ -88,7 +88,7 @@ nullBuffer(void)
 /* 
  * clearBuffer: clear buffer content
  */
-void clearBuffer(Buffer *buf)
+void clearBuffer(BufferPtr buf)
 {
 	buf->firstLine = buf->topLine = buf->currentLine = buf->lastLine = NULL;
 	buf->allLine = 0;
@@ -98,10 +98,10 @@ void clearBuffer(Buffer *buf)
  * discardBuffer: free buffer structure
  */
 
-void discardBuffer(Buffer *buf)
+void discardBuffer(BufferPtr buf)
 {
 	int i;
-	Buffer *b;
+	BufferPtr b;
 
 	deleteImage(buf);
 	clearBuffer(buf);
@@ -138,10 +138,10 @@ void discardBuffer(Buffer *buf)
 /* 
  * namedBuffer: Select buffer which have specified name
  */
-Buffer *
-namedBuffer(Buffer *first, char *name)
+BufferPtr 
+namedBuffer(BufferPtr first, char *name)
 {
-	Buffer *buf;
+	BufferPtr buf;
 
 	if (!strcmp(first->buffername, name))
 	{
@@ -160,10 +160,11 @@ namedBuffer(Buffer *first, char *name)
 /* 
  * deleteBuffer: delete buffer & return fistbuffer
  */
-Buffer *
-deleteBuffer(Buffer *first, Buffer *delbuf)
+BufferPtr 
+deleteBuffer(BufferPtr first, BufferPtr delbuf)
 {
-	Buffer *buf, *b;
+	BufferPtr buf;
+    BufferPtr b;
 
 	if (first == delbuf && first->nextBuffer != NULL)
 	{
@@ -183,10 +184,10 @@ deleteBuffer(Buffer *first, Buffer *delbuf)
 /* 
  * replaceBuffer: replace buffer
  */
-Buffer *
-replaceBuffer(Buffer *first, Buffer *delbuf, Buffer *newbuf)
+BufferPtr 
+replaceBuffer(BufferPtr first, BufferPtr delbuf, BufferPtr newbuf)
 {
-	Buffer *buf;
+	BufferPtr buf;
 
 	if (delbuf == NULL)
 	{
@@ -210,11 +211,11 @@ replaceBuffer(Buffer *first, Buffer *delbuf, Buffer *newbuf)
 	return newbuf;
 }
 
-Buffer *
-nthBuffer(Buffer *firstbuf, int n)
+BufferPtr 
+nthBuffer(BufferPtr firstbuf, int n)
 {
 	int i;
-	Buffer *buf = firstbuf;
+	BufferPtr buf = firstbuf;
 
 	if (n < 0)
 		return firstbuf;
@@ -228,7 +229,7 @@ nthBuffer(Buffer *firstbuf, int n)
 }
 
 static void
-writeBufferName(Buffer *buf, int n)
+writeBufferName(BufferPtr buf, int n)
 {
 	Str msg;
 	int all;
@@ -266,7 +267,7 @@ writeBufferName(Buffer *buf, int n)
 /* 
  * gotoLine: go to line number
  */
-void gotoLine(Buffer *buf, int n)
+void gotoLine(BufferPtr buf, int n)
 {
 	char msg[32];
 	Line *l = buf->firstLine;
@@ -316,7 +317,7 @@ void gotoLine(Buffer *buf, int n)
 /* 
  * gotoRealLine: go to real line number
  */
-void gotoRealLine(Buffer *buf, int n)
+void gotoRealLine(BufferPtr buf, int n)
 {
 	char msg[32];
 	Line *l = buf->firstLine;
@@ -363,11 +364,11 @@ void gotoRealLine(Buffer *buf, int n)
 	}
 }
 
-static Buffer *
-listBuffer(Buffer *top, Buffer *current)
+static BufferPtr 
+listBuffer(BufferPtr top, BufferPtr current)
 {
 	int i, c = 0;
-	Buffer *buf = top;
+	BufferPtr buf = top;
 
 	move(0, 0);
 #ifdef USE_COLOR
@@ -420,14 +421,15 @@ listBuffer(Buffer *top, Buffer *current)
 /* 
  * Select buffer visually
  */
-Buffer *
-selectBuffer(Buffer *firstbuf, Buffer *currentbuf, char *selectchar)
+BufferPtr 
+selectBuffer(BufferPtr firstbuf, BufferPtr currentbuf, char *selectchar)
 {
 	int i, cpoint,					/* Current Buffer Number */
 		spoint,						/* Current Line on Screen */
 		maxbuf, sclimit = LASTLINE; /* Upper limit of line * number in 
 					 * the * screen */
-	Buffer *buf, *topbuf;
+	BufferPtr buf;
+    BufferPtr topbuf;
 	char c;
 
 	i = cpoint = 0;
@@ -558,7 +560,7 @@ selectBuffer(Buffer *firstbuf, Buffer *currentbuf, char *selectchar)
 /* 
  * Reshape HTML buffer
  */
-void reshapeBuffer(Buffer *buf)
+void reshapeBuffer(BufferPtr buf)
 {
 	URLFile f;
 	Buffer sbuf;
@@ -670,16 +672,16 @@ void reshapeBuffer(Buffer *buf)
 }
 
 /* shallow copy */
-void copyBuffer(Buffer *a, Buffer *b)
+void copyBuffer(BufferPtr a, BufferPtr b)
 {
 	readBufferCache(b);
 	bcopy((void *)b, (void *)a, sizeof(Buffer));
 }
 
-Buffer *
-prevBuffer(Buffer *first, Buffer *buf)
+BufferPtr 
+prevBuffer(BufferPtr first, BufferPtr buf)
 {
-	Buffer *b;
+	BufferPtr b;
 
 	for (b = first; b != NULL && b->nextBuffer != buf; b = b->nextBuffer)
 		;
@@ -689,7 +691,7 @@ prevBuffer(Buffer *first, Buffer *buf)
 #define fwrite1(d, f) (fwrite(&d, sizeof(d), 1, f) == 0)
 #define fread1(d, f) (fread(&d, sizeof(d), 1, f) == 0)
 
-int writeBufferCache(Buffer *buf)
+int writeBufferCache(BufferPtr buf)
 {
 	Str tmp;
 	FILE *cache = NULL;
@@ -755,7 +757,7 @@ _error1:
 	return -1;
 }
 
-int readBufferCache(Buffer *buf)
+int readBufferCache(BufferPtr buf)
 {
 	FILE *cache;
 	Line *l = NULL, *prevl = NULL, *basel = NULL;
@@ -839,9 +841,9 @@ int readBufferCache(Buffer *buf)
 	return 0;
 }
 
-void set_buffer_environ(Buffer *buf)
+void set_buffer_environ(BufferPtr buf)
 {
-    static Buffer *prev_buf = NULL;
+    static BufferPtr prev_buf = NULL;
     static Line *prev_line = NULL;
     static int prev_pos = -1;
     Line *l;

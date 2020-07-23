@@ -414,7 +414,7 @@ static void mainloop()
 
 int main(int argc, char **argv, char **envp)
 {
-    Buffer *newbuf = NULL;
+    BufferPtr newbuf = NULL;
     char *p;
     int i;
     InputStream *redin;

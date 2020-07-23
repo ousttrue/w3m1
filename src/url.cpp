@@ -358,7 +358,7 @@ write_from_file(int sock, char *file)
 }
 
 ParsedURL *
-baseURL(Buffer *buf)
+baseURL(BufferPtr buf)
 {
     if (buf->bufferprop & BP_NO_URL) {
 	/* no URL is defined for the buffer */
@@ -2076,7 +2076,7 @@ searchURIMethods(ParsedURL *pu)
 
 #define URI_PATTERN	"([-;/?:@&=+$,a-zA-Z0-9_.!~*'()]|%[0-9A-Fa-f][0-9A-Fa-f])*"
 void
-chkExternalURIBuffer(Buffer *buf)
+chkExternalURIBuffer(BufferPtr buf)
 {
     int i;
     struct table2 *ump;

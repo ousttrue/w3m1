@@ -1,4 +1,5 @@
 #pragma once
+#include "buffer.h"
 
 enum DisplayMode
 {
@@ -8,7 +9,7 @@ enum DisplayMode
     B_SCROLL = 3,
     B_REDRAW_IMAGE = 4,
 };
-void displayBuffer(struct Buffer *buf, DisplayMode mode);
+void displayBuffer(BufferPtr  buf, DisplayMode mode);
 void displayCurrentbuf(DisplayMode mode);
 
 

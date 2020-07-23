@@ -195,7 +195,7 @@ void shiftr()
 
 void col1R()
 {
-    Buffer *buf = GetCurrentbuf();
+    BufferPtr buf = GetCurrentbuf();
     Line *l = buf->currentLine;
     int j, column, n = searchKeyNum();
     if (l == NULL)
@@ -213,7 +213,7 @@ void col1R()
 
 void col1L()
 {
-    Buffer *buf = GetCurrentbuf();
+    BufferPtr buf = GetCurrentbuf();
     Line *l = buf->currentLine;
     int j, n = searchKeyNum();
     if (l == NULL)
@@ -256,7 +256,7 @@ void setEnv()
 
 void pipeBuf()
 {
-    Buffer *buf;
+    BufferPtr buf;
     char *cmd, *tmpf;
     FILE *f;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
@@ -307,7 +307,7 @@ void pipeBuf()
 
 void pipesh()
 {
-    Buffer *buf;
+    BufferPtr buf;
     char *cmd;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     cmd = searchKeyData();
@@ -341,7 +341,7 @@ void pipesh()
 
 void readsh()
 {
-    Buffer *buf;
+    BufferPtr buf;
     char *cmd;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     cmd = searchKeyData();
@@ -590,7 +590,7 @@ void qquitfm()
 
 void selBuf()
 {
-    Buffer *buf;
+    BufferPtr buf;
     int ok;
     char cmd;
     ok = FALSE;
@@ -891,7 +891,7 @@ void followI()
 {
     Line *l;
     Anchor *a;
-    Buffer *buf;
+    BufferPtr buf;
     if (GetCurrentbuf()->firstLine == NULL)
         return;
     l = GetCurrentbuf()->currentLine;
@@ -1081,7 +1081,7 @@ void followA()
     if (check_target && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
-        Buffer *buf;
+        BufferPtr buf;
         _newT();
         buf = GetCurrentbuf();
         loadLink(url, a->target, a->referer, NULL);
@@ -1135,7 +1135,7 @@ void nextU()
 
 void nextBf()
 {
-    Buffer *buf;
+    BufferPtr buf;
     int i;
     for (i = 0; i < PREC_NUM(); i++)
     {
@@ -1154,7 +1154,7 @@ void nextBf()
 
 void prevBf()
 {
-    Buffer *buf;
+    BufferPtr buf;
     int i;
     for (i = 0; i < PREC_NUM(); i++)
     {
@@ -1173,7 +1173,7 @@ void prevBf()
 
 void backBf()
 {
-    Buffer *buf = GetCurrentbuf()->linkBuffer[LB_N_FRAME];
+    BufferPtr buf = GetCurrentbuf()->linkBuffer[LB_N_FRAME];
     if (!checkBackBuffer(GetCurrentbuf()))
     {
         if (close_tab_back && GetTabCount() >= 1)
@@ -1223,7 +1223,7 @@ void backBf()
 
 void deletePrevBuf()
 {
-    Buffer *buf = GetCurrentbuf()->nextBuffer;
+    BufferPtr buf = GetCurrentbuf()->nextBuffer;
     if (buf)
         delBuffer(buf);
 }
@@ -1280,7 +1280,7 @@ void msgs()
 
 void pginfo()
 {
-    Buffer *buf;
+    BufferPtr buf;
     if ((buf = GetCurrentbuf()->linkBuffer[LB_N_INFO]) != NULL)
     {
         SetCurrentbuf(buf);
@@ -1356,7 +1356,7 @@ void movlistMn()
 
 void linkLst()
 {
-    Buffer *buf;
+    BufferPtr buf;
     buf = link_list_panel(GetCurrentbuf());
     if (buf != NULL)
     {
@@ -1370,7 +1370,7 @@ void linkLst()
 
 void cooLst()
 {
-    Buffer *buf;
+    BufferPtr buf;
     buf = cookie_list_panel();
     if (buf != NULL)
         cmd_loadBuffer(buf, BP_NO_URL, LB_NOLINK);
@@ -1527,7 +1527,7 @@ void curURL()
 
 void vwSrc()
 {
-    Buffer *buf;
+    BufferPtr buf;
     if (GetCurrentbuf()->type == NULL || GetCurrentbuf()->bufferprop & BP_FRAME)
         return;
     if ((buf = GetCurrentbuf()->linkBuffer[LB_SOURCE]) != NULL ||
@@ -1623,10 +1623,11 @@ void vwSrc()
 
 void reload()
 {
-    Buffer *buf, *fbuf = NULL, sbuf;
-#ifdef USE_M17N
+    BufferPtr buf;
+    BufferPtr fbuf = NULL;
+    Buffer sbuf;
     wc_ces old_charset;
-#endif
+
     Str url;
     FormList *request;
     int multipart;
@@ -1824,7 +1825,7 @@ void chkNMID()
 
 void rFrame()
 {
-    Buffer *buf;
+    BufferPtr buf;
     if ((buf = GetCurrentbuf()->linkBuffer[LB_FRAME]) != NULL)
     {
         SetCurrentbuf(buf);
@@ -2308,7 +2309,7 @@ void tabL()
 
 void ldDL()
 {
-    Buffer *buf;
+    BufferPtr buf;
     int replace = FALSE, new_tab = FALSE;
     if (GetCurrentbuf()->bufferprop & BP_INTERNAL &&
         !strcmp(GetCurrentbuf()->buffername, DOWNLOAD_LIST_TITLE))
