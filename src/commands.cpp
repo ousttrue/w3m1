@@ -1247,9 +1247,7 @@ void ldBmark()
 
 void adBmark()
 {
-    Str tmp;
-    FormList *request;
-    tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
+    auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
                   (localCookie()->UrlEncode())->ptr,
                   (Strnew_charp(BookmarkFile)->UrlEncode())->ptr,
                   (parsedURL2Str(&GetCurrentbuf()->currentURL)->UrlEncode())->ptr,
@@ -1260,7 +1258,7 @@ void adBmark()
                        ->UrlEncode())
                       ->ptr,
                   wc_ces_to_charset(BookmarkCharset));
-    request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
+    auto request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
     request->body = tmp->ptr;
     request->length = tmp->Size();
     cmd_loadURL("file:///$LIB/" W3MBOOKMARK_CMDNAME, NULL, NO_REFERER,

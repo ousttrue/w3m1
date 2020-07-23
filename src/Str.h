@@ -29,6 +29,10 @@ class GCStr : public gc_cleanup
     int m_capacity = 0;
     int m_size = 0;
 
+private:
+    void Allocate(int size);
+    void Assign(const char *src, int size);
+
 public:
     char *ptr;
 
@@ -37,9 +41,7 @@ public:
 
     GCStr(int size = 32);
     GCStr(const char *src, int size);
-    GCStr(const char *src) : GCStr(src, strlen(src))
-    {
-    }
+    GCStr(const char *src);
     ~GCStr();
     int Size() const { return m_size; }
     int Cmp(const GCStr *y) const;

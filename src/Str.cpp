@@ -19,26 +19,48 @@
 #include "indep.h"
 #include <stdio.h>
 #include <stdlib.h>
-// #include <gc.h>
 #include <stdarg.h>
 #include <string.h>
 #include <algorithm>
+#include <assert.h>
 
-GCStr::GCStr(int size)
+void GCStr::Allocate(int size)
 {
-    // Str x = (Str)GC_MALLOC(sizeof(GCStr));
+    size = std::max(32, size);
     ptr = (char *)GC_MALLOC_ATOMIC(size);
     ptr[0] = '\0';
     m_capacity = size;
 }
 
-GCStr::GCStr(const char *src, int size)
+void GCStr::Assign(const char *src, int size)
 {
-    ptr = (char *)GC_MALLOC_ATOMIC(size + 1);
-    m_capacity = size + 1;
+    assert(src);
+    Allocate(size+1);
     m_size = size;
     bcopy((void *)src, (void *)ptr, size);
     ptr[size] = '\0';
+}
+
+GCStr::GCStr(int size)
+{
+    Allocate(size);
+}
+
+GCStr::GCStr(const char *src, int size)
+{
+    Assign(src, size);
+}
+
+GCStr::GCStr(const char *src)
+{
+    if (src)
+    {
+        Assign(src, strlen(src));
+    }
+    else
+    {
+        Allocate(0);
+    }
 }
 
 GCStr::~GCStr()
