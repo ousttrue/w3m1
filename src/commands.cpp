@@ -1248,16 +1248,16 @@ void ldBmark()
 void adBmark()
 {
     auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
-                  (localCookie()->UrlEncode())->ptr,
-                  (Strnew_charp(BookmarkFile)->UrlEncode())->ptr,
-                  (parsedURL2Str(&GetCurrentbuf()->currentURL)->UrlEncode())->ptr,
+                       (localCookie()->UrlEncode())->ptr,
+                       (Strnew_charp(BookmarkFile)->UrlEncode())->ptr,
+                       (parsedURL2Str(&GetCurrentbuf()->currentURL)->UrlEncode())->ptr,
 
-                  (wc_conv_strict(GetCurrentbuf()->buffername,
-                                  InnerCharset,
-                                  BookmarkCharset)
-                       ->UrlEncode())
-                      ->ptr,
-                  wc_ces_to_charset(BookmarkCharset));
+                       (wc_conv_strict(GetCurrentbuf()->buffername.c_str(),
+                                       InnerCharset,
+                                       BookmarkCharset)
+                            ->UrlEncode())
+                           ->ptr,
+                       wc_ces_to_charset(BookmarkCharset));
     auto request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
     request->body = tmp->ptr;
     request->length = tmp->Size();
@@ -1632,7 +1632,7 @@ void reload()
     int multipart;
     if (GetCurrentbuf()->bufferprop & BP_INTERNAL)
     {
-        if (!strcmp(GetCurrentbuf()->buffername, DOWNLOAD_LIST_TITLE))
+        if (!strcmp(GetCurrentbuf()->buffername.c_str(), DOWNLOAD_LIST_TITLE))
         {
             ldDL();
             return;
@@ -1649,7 +1649,7 @@ void reload()
         disp_err_message("Can't reload stdin", TRUE);
         return;
     }
-    auto sbuf= GetCurrentbuf()->Copy();
+    auto sbuf = GetCurrentbuf()->Copy();
     if (GetCurrentbuf()->bufferprop & BP_FRAME &&
         (fbuf = GetCurrentbuf()->linkBuffer[LB_N_FRAME]))
     {
@@ -2311,7 +2311,7 @@ void ldDL()
     BufferPtr buf;
     int replace = FALSE, new_tab = FALSE;
     if (GetCurrentbuf()->bufferprop & BP_INTERNAL &&
-        !strcmp(GetCurrentbuf()->buffername, DOWNLOAD_LIST_TITLE))
+        GetCurrentbuf()->buffername == DOWNLOAD_LIST_TITLE)
         replace = TRUE;
     if (!FirstDL)
     {

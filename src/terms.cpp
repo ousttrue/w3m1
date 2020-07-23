@@ -1688,26 +1688,22 @@ addstr(const char *s)
 #endif
 }
 
-void
-addnstr(const char *s, int n)
+void addnstr(const char *s, int n)
 {
-    int i;
-#ifdef USE_M17N
-    int len, width;
-
-    for (i = 0; *s != '\0';) {
-	width = wtf_width((uint8_t *) s);
-	if (i + width > n)
-	    break;
-	len = wtf_len((uint8_t *) s);
-	addmch(s, len);
-	s += len;
-	i += width;
+    if(!s)
+    {
+        return;
     }
-#else
-    for (i = 0; i < n && *s != '\0'; i++)
-	addch(*(s++));
-#endif
+    for (int i = 0; *s != '\0';)
+    {
+        int width = wtf_width((uint8_t *)s);
+        if (i + width > n)
+            break;
+        int len = wtf_len((uint8_t *)s);
+        addmch(s, len);
+        s += len;
+        i += width;
+    }
 }
 
 void

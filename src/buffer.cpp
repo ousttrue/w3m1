@@ -76,10 +76,9 @@ newBuffer(int width)
 {
     BufferPtr n;
 
-    n = New(Buffer);
+    n = new Buffer;
     if (n == NULL)
         return NULL;
-    bzero((void *)n, sizeof(Buffer));
     n->width = width;
     n->COLS = COLS;
     n->LINES = LASTLINE;
@@ -91,12 +90,9 @@ newBuffer(int width)
     n->clone = New(int);
     *n->clone = 1;
     n->trbyte = 0;
-#ifdef USE_SSL
     n->ssl_certificate = NULL;
-#endif
-#ifdef USE_M17N
     n->auto_detect = WcOption.auto_detect;
-#endif
+
     return n;
 }
 
@@ -171,13 +167,13 @@ namedBuffer(BufferPtr first, char *name)
 {
     BufferPtr buf;
 
-    if (!strcmp(first->buffername, name))
+    if (first->buffername == name)
     {
         return first;
     }
-    for (buf = first; buf->nextBuffer != NULL; buf = buf->nextBuffer)
+    for (buf = first; buf->nextBuffer; buf = buf->nextBuffer)
     {
-        if (!strcmp(buf->nextBuffer->buffername, name))
+        if (buf->nextBuffer->buffername == name)
         {
             return buf->nextBuffer;
         }
@@ -697,13 +693,6 @@ void reshapeBuffer(BufferPtr buf)
     formResetBuffer(buf, sbuf->formitem);
 }
 
-/* shallow copy */
-void copyBuffer(BufferPtr a, BufferPtr b)
-{
-    readBufferCache(b);
-    bcopy((void *)b, (void *)a, sizeof(Buffer));
-}
-
 BufferPtr
 prevBuffer(BufferPtr first, BufferPtr buf)
 {
@@ -880,7 +869,7 @@ void set_buffer_environ(BufferPtr buf)
     {
         set_environ("W3M_SOURCEFILE", buf->sourcefile);
         set_environ("W3M_FILENAME", buf->filename);
-        set_environ("W3M_TITLE", buf->buffername);
+        set_environ("W3M_TITLE", buf->buffername.c_str());
         set_environ("W3M_URL", parsedURL2Str(&buf->currentURL)->ptr);
         set_environ("W3M_TYPE", (char *)(buf->real_type ? buf->real_type : "unknown"));
 #ifdef USE_M17N

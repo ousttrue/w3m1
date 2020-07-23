@@ -381,7 +381,7 @@ make_lastline_message(BufferPtr buf)
         msg->Push("[SSL]");
 #endif
     msg->Push(" <");
-    msg->Push(buf->buffername);
+    msg->Push(buf->buffername.c_str());
 
     if (s)
     {
@@ -536,7 +536,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     standout();
     message(msg->c_str(), buf->cursorX + buf->rootX, buf->cursorY + buf->rootY);
     standend();
-    term_title(conv_to_system(buf->buffername));
+    term_title(conv_to_system(buf->buffername.c_str()));
     refresh();
 #ifdef USE_IMAGE
     if (activeImage && displayImage && buf->img)
@@ -658,18 +658,19 @@ redrawNLine(BufferPtr buf, int n)
 
         clrtoeolx();
         EachTab([](auto t) {
+            auto b = t->GetCurrentBuffer();
             move(t->Y(), t->Left());
             if (t == GetCurrentTab())
                 bold();
             addch('[');
-            auto l = t->Width() - get_strwidth(t->GetCurrentBuffer()->buffername);
+            auto l = t->Width() - get_strwidth(b->buffername.c_str());
             if (l < 0)
                 l = 0;
             if (l / 2 > 0)
                 addnstr_sup(" ", l / 2);
             if (t == GetCurrentTab())
                 EFFECT_ACTIVE_START;
-            addnstr(t->GetCurrentBuffer()->buffername, t->Width());
+            addnstr(b->buffername.c_str(), t->Width());
             if (t == GetCurrentTab())
                 EFFECT_ACTIVE_END;
             if ((l + 1) / 2 > 0)

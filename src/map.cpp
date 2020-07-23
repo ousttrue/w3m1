@@ -563,7 +563,7 @@ page_info_panel(BufferPtr buf)
 	p = url_unquote_conv(p, 0);
     Strcat_m_charp(tmp, "<table cellpadding=0>",
 		   "<tr valign=top><td nowrap>Title<td>",
-		   html_quote(buf->buffername),
+		   html_quote(buf->buffername.c_str()),
 		   "<tr valign=top><td nowrap>Current URL<td>",
 		   html_quote(p),
 		   "<tr valign=top><td nowrap>Document Type<td>",

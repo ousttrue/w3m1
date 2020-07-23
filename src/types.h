@@ -8,6 +8,9 @@
 #include "wc_types.h"
 #include "ucs.h"
 
+#include <gc_cpp.h>
+#include <string>
+
 #define MAX_LB 5
 
 struct ParsedURL
@@ -242,10 +245,10 @@ struct BufferPos
 };
 
 using BufferPtr = struct Buffer *;
-struct Buffer
+struct Buffer: gc_cleanup
 {
     char *filename;
-    char *buffername;
+    std::string buffername;
     Line *firstLine;
     Line *topLine;
     Line *currentLine;
