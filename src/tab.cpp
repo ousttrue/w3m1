@@ -231,7 +231,23 @@ void deleteTab(TabPtr tab)
     }
 
     auto found = std::find(g_tabs.begin(), g_tabs.end(), tab);
-    g_tabs.erase(found);
+
+    bool isCurrent = (*found == g_current.lock());
+
+    auto eraseNext = g_tabs.erase(found);
+
+    if (isCurrent)
+    {
+        // update current tab
+        if (eraseNext != g_tabs.end())
+        {
+            g_current = *eraseNext;
+        }
+        else
+        {
+            g_current = g_tabs.back();
+        }
+    }
 
     return;
 }
