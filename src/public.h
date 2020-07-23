@@ -46,7 +46,7 @@ void prevChar(int *s, Line *l);
 void nextChar(int *s, Line *l);
 uint32_t getChar(char *p);
 int is_wordchar(uint32_t c);
-int srchcore(char *volatile str, int (*func)(BufferPtr , char *));
+int srchcore(char * str, int (*func)(BufferPtr , char *));
 void _quitfm(int confirm);
 void delBuffer(BufferPtr buf);
 void _goLine(char *l);

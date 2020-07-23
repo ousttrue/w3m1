@@ -319,14 +319,14 @@ Str
 loadNewsgroup0(ParsedURL *pu)
 #endif
 {
-    volatile Str page;
+     Str page;
     Str tmp;
     URLFile f;
     BufferPtr buf;
     char *qgroup, *p, *q, *s, *t, *n;
-    char *volatile scheme, *volatile group, *volatile list;
+    char * scheme, * group, * list;
     int status, i, first, last;
-    volatile int flag = 0, start = 0, end = 0;
+     int flag = 0, start = 0, end = 0;
     MySignalHandler prevtrap = NULL;
 #ifdef USE_M17N
     wc_ces doc_charset = DocumentCharset, mime_charset;

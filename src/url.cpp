@@ -376,7 +376,7 @@ int
 openSocket(char *const hostname,
 	   char *remoteport_name, unsigned short remoteport_num)
 {
-    volatile int sock = -1;
+     int sock = -1;
 #ifdef INET6
     int *af;
     struct addrinfo hints, *res0, *res;
@@ -1811,7 +1811,7 @@ int
 check_no_proxy(char *domain)
 {
     TextListItem *tl;
-    volatile int ret = 0;
+     int ret = 0;
     MySignalHandler prevtrap = NULL;
 
     if (NO_proxy_domains == NULL || NO_proxy_domains->nitem == 0 ||

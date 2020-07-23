@@ -502,7 +502,7 @@ Str loadFTPDir0(ParsedURL *pu)
     Str FTPDIRtmp;
     Str tmp;
     int status;
-    volatile int sv_type;
+     int sv_type;
     char *realpathname, *fn, *q;
     char **flist;
     int i, nfile, nfile_max;

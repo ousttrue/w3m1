@@ -1539,7 +1539,7 @@ static void
 getAuthCookie(struct http_auth *hauth, char *auth_header,
               TextList *extra_header, ParsedURL *pu, HRequest *hr,
               FormList *request,
-              volatile Str *uname, volatile Str *pwd)
+               Str *uname,  Str *pwd)
 {
     Str ss = NULL;
     Str tmp;
@@ -1720,32 +1720,32 @@ getLinkNumberStr(int correction)
  * loadGeneralFile: load file to buffer
  */
 BufferPtr 
-loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
-                int flag, FormList *volatile request)
+loadGeneralFile(char *path, ParsedURL * current, char *referer,
+                int flag, FormList * request)
 {
-    URLFile f, *volatile of = NULL;
+    URLFile f, * of = NULL;
     ParsedURL pu;
     BufferPtr b = NULL;
         auto proc = loadBuffer;
-    char *volatile tpath;
+    char * tpath;
     char *p;
-    BufferPtr volatile t_buf = NULL;
-    int volatile searchHeader = SearchHeader;
-    int volatile searchHeader_through = TRUE;
+    BufferPtr  t_buf = NULL;
+    int  searchHeader = SearchHeader;
+    int  searchHeader_through = TRUE;
     TextList *extra_header = newTextList();
-    volatile Str uname = NULL;
-    volatile Str pwd = NULL;
-    volatile Str realm = NULL;
-    int volatile add_auth_cookie_flag;
+     Str uname = NULL;
+     Str pwd = NULL;
+     Str realm = NULL;
+    int  add_auth_cookie_flag;
     unsigned char status = HTST_NORMAL;
     URLOption url_option;
     Str tmp;
-    Str volatile page = NULL;
+    Str  page = NULL;
 #ifdef USE_M17N
     wc_ces charset = WC_CES_US_ASCII;
 #endif
     HRequest hr;
-    ParsedURL *volatile auth_pu;
+    ParsedURL * auth_pu;
 
     tpath = path;
     MySignalHandler prevtrap = NULL;
@@ -5013,9 +5013,9 @@ loadHTMLString(Str page)
 Str
 loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
 {
-    Str volatile tmp;
+    Str  tmp;
     Str lbuf, name, file, host, port;
-    char *volatile p, *volatile q;
+    char * p, * q;
     MySignalHandler prevtrap = NULL;
 #ifdef USE_M17N
     wc_ces doc_charset = DocumentCharset;
@@ -5103,15 +5103,15 @@ loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
  * loadBuffer: read file and make new buffer
  */
 BufferPtr 
-loadBuffer(URLFile *uf, BufferPtr volatile newBuf)
+loadBuffer(URLFile *uf, BufferPtr  newBuf)
 {
-    FILE *volatile src = NULL;
+    FILE * src = NULL;
 #ifdef USE_M17N
     wc_ces charset = WC_CES_US_ASCII;
-    wc_ces volatile doc_charset = DocumentCharset;
+    wc_ces  doc_charset = DocumentCharset;
 #endif
     Str lineBuf2;
-    volatile char pre_lbuf = '\0';
+     char pre_lbuf = '\0';
     int nlines;
     Str tmpf;
     clen_t linelen = 0, trbyte = 0;
@@ -5517,20 +5517,20 @@ openGeneralPagerBuffer(InputStream *stream)
 Line *
 getNextPage(BufferPtr buf, int plen)
 {
-    Line *volatile top = buf->topLine, *volatile last = buf->lastLine,
-        *volatile cur = buf->currentLine;
+    Line * top = buf->topLine, * last = buf->lastLine,
+        * cur = buf->currentLine;
     int i;
-    int volatile nlines = 0;
+    int  nlines = 0;
     clen_t linelen = 0, trbyte = buf->trbyte;
     Str lineBuf2;
-    char volatile pre_lbuf = '\0';
+    char  pre_lbuf = '\0';
     URLFile uf;
 #ifdef USE_M17N
     wc_ces charset;
-    wc_ces volatile doc_charset = DocumentCharset;
+    wc_ces  doc_charset = DocumentCharset;
     uint8_t old_auto_detect = WcOption.auto_detect;
 #endif
-    int volatile squeeze_flag = FALSE;
+    int  squeeze_flag = FALSE;
     Lineprop *propBuffer = NULL;
 
 #ifdef USE_ANSI_COLOR
@@ -8317,12 +8317,12 @@ loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE * src, int internal)
     Str lineBuf2 = Strnew();
 #ifdef USE_M17N
     wc_ces charset = WC_CES_US_ASCII;
-    wc_ces volatile doc_charset = DocumentCharset;
+    wc_ces  doc_charset = DocumentCharset;
 #endif
     struct html_feed_environ htmlenv1;
     struct readbuffer obuf;
 #ifdef USE_IMAGE
-    int volatile image_flag;
+    int  image_flag;
 #endif
     MySignalHandler prevtrap = NULL;
 

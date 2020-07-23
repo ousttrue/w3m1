@@ -271,9 +271,9 @@ void do_dump(BufferPtr buf)
 }
 
 /* search by regular expression */
-int srchcore(char *volatile str, int (*func)(BufferPtr , char *))
+int srchcore(char * str, int (*func)(BufferPtr , char *))
 {
-    volatile int i, result = SR_NOTFOUND;
+     int i, result = SR_NOTFOUND;
 
     if (str != NULL && str != SearchString)
         SearchString = str;
