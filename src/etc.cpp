@@ -25,17 +25,18 @@
 #endif
 #include <signal.h>
 
-#ifdef	__WATT32__
-#define	read(a,b,c)	read_s(a,b,c)
-#define	close(x)	close_s(x)
-#endif				/* __WATT32__ */
+#ifdef __WATT32__
+#define read(a, b, c) read_s(a, b, c)
+#define close(x) close_s(x)
+#endif /* __WATT32__ */
 
-struct auth_pass {
+struct auth_pass
+{
     int bad;
     int is_proxy;
     Str host;
     int port;
-/*    Str file; */
+    /*    Str file; */
     Str realm;
     Str uname;
     Str pwd;
@@ -44,8 +45,7 @@ struct auth_pass {
 
 struct auth_pass *passwords = NULL;
 
-int
-columnSkip(Buffer *buf, int offset)
+int columnSkip(Buffer *buf, int offset)
 {
     int i, maxColumn;
     int column = buf->currentColumn + offset;
@@ -53,9 +53,10 @@ columnSkip(Buffer *buf, int offset)
     Line *l;
 
     maxColumn = 0;
-    for (i = 0, l = buf->topLine; i < nlines && l != NULL; i++, l = l->next) {
+    for (i = 0, l = buf->topLine; i < nlines && l != NULL; i++, l = l->next)
+    {
         if (l->width < 0)
-            l->width = COLPOS(l, l->len);
+            l->CalcWidth();
         if (l->width - 1 > maxColumn)
             maxColumn = l->width - 1;
     }
@@ -71,21 +72,18 @@ columnSkip(Buffer *buf, int offset)
     return 1;
 }
 
-int
-columnPos(Line *line, int column)
+int columnPos(Line *line, int column)
 {
     int i;
 
-    for (i = 1; i < line->len; i++) {
-        if (COLPOS(line, i) > column)
+    for (i = 1; i < line->len; i++)
+    {
+        if (line->COLPOS(i) > column)
             break;
     }
-#ifdef USE_M17N
-    for (i--; i > 0 && line->propBuf[i] & PC_WCHAR2; i--) ;
+    for (i--; i > 0 && line->propBuf[i] & PC_WCHAR2; i--)
+        ;
     return i;
-#else
-    return i - 1;
-#endif
 }
 
 Line *
@@ -97,7 +95,8 @@ lineSkip(Buffer *buf, Line *line, int offset, int last)
     l = currentLineSkip(buf, line, offset, last);
     if (!nextpage_topline)
         for (i = buf->LINES - 1 - (buf->lastLine->linenumber - l->linenumber);
-             i > 0 && l->prev != NULL; i--, l = l->prev) ;
+             i > 0 && l->prev != NULL; i--, l = l->prev)
+            ;
     return l;
 }
 
@@ -107,12 +106,14 @@ currentLineSkip(Buffer *buf, Line *line, int offset, int last)
     int i, n;
     Line *l = line;
 
-    if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE)) {
+    if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
+    {
         n = line->linenumber + offset + buf->LINES;
         if (buf->lastLine->linenumber < n)
             getNextPage(buf, n - buf->lastLine->linenumber);
         while ((last || (buf->lastLine->linenumber < n)) &&
-               (getNextPage(buf, 1) != NULL)) ;
+               (getNextPage(buf, 1) != NULL))
+            ;
         if (last)
             l = buf->lastLine;
     }
@@ -120,16 +121,17 @@ currentLineSkip(Buffer *buf, Line *line, int offset, int last)
     if (offset == 0)
         return l;
     if (offset > 0)
-        for (i = 0; i < offset && l->next != NULL; i++, l = l->next) ;
+        for (i = 0; i < offset && l->next != NULL; i++, l = l->next)
+            ;
     else
-        for (i = 0; i < -offset && l->prev != NULL; i++, l = l->prev) ;
+        for (i = 0; i < -offset && l->prev != NULL; i++, l = l->prev)
+            ;
     return l;
 }
 
 #define MAX_CMD_LEN 128
 
-int
-gethtmlcmd(char **s)
+int gethtmlcmd(char **s)
 {
     char cmdstr[MAX_CMD_LEN];
     char *p = cmdstr;
@@ -137,7 +139,8 @@ gethtmlcmd(char **s)
 
     (*s)++;
     /* first character */
-    if (IS_ALNUM(**s) || **s == '_' || **s == '/') {
+    if (IS_ALNUM(**s) || **s == '_' || **s == '/')
+    {
         *(p++) = TOLOWER(**s);
         (*s)++;
     }
@@ -145,11 +148,13 @@ gethtmlcmd(char **s)
         return HTML_UNKNOWN;
     if (p[-1] == '/')
         SKIP_BLANKS(*s);
-    while ((IS_ALNUM(**s) || **s == '_') && p - cmdstr < MAX_CMD_LEN) {
+    while ((IS_ALNUM(**s) || **s == '_') && p - cmdstr < MAX_CMD_LEN)
+    {
         *(p++) = TOLOWER(**s);
         (*s)++;
     }
-    if (p - cmdstr == MAX_CMD_LEN) {
+    if (p - cmdstr == MAX_CMD_LEN)
+    {
         /* buffer overflow: perhaps caused by bad HTML source */
         *s = save + 1;
         return HTML_UNKNOWN;
@@ -157,8 +162,8 @@ gethtmlcmd(char **s)
     *p = '\0';
 
     /* hash search */
-//     extern Hash_si tagtable;
-//     int cmd = getHash_si(&tagtable, cmdstr, HTML_UNKNOWN);
+    //     extern Hash_si tagtable;
+    //     int cmd = getHash_si(&tagtable, cmdstr, HTML_UNKNOWN);
     int cmd = GetTag(cmdstr, HTML_UNKNOWN);
     while (**s && **s != '>')
         (*s)++;
@@ -173,7 +178,8 @@ gethtmlcmd(char **s)
 static int
 nextColumn(int n, char *p, Lineprop *pr)
 {
-    if (*pr & PC_CTRL) {
+    if (*pr & PC_CTRL)
+    {
         if (*p == '\t')
             return (n + Tabstop) / Tabstop * Tabstop;
         else if (*p == '\n')
@@ -182,17 +188,12 @@ nextColumn(int n, char *p, Lineprop *pr)
             return n + 2;
         return n;
     }
-#ifdef USE_M17N
     if (*pr & PC_UNKNOWN)
         return n + 4;
-    return n + wtf_width((uint8_t *) p);
-#else
-    return n + 1;
-#endif
+    return n + wtf_width((uint8_t *)p);
 }
 
-int
-calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode)
+int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode)
 {
     static int *realColumn = NULL;
     static int size = 0;
@@ -201,47 +202,47 @@ calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode)
 
     if (l == NULL || len == 0)
         return bpos;
-    if (l == prevl && mode == CP_AUTO) {
+    if (l == prevl && mode == CP_AUTO)
+    {
         if (pos <= len)
             return realColumn[pos];
     }
-    if (size < len + 1) {
+    if (size < len + 1)
+    {
         size = (len + 1 > LINELEN) ? (len + 1) : LINELEN;
         realColumn = New_N(int, size);
     }
     prevl = l;
     i = 0;
     j = bpos;
-#ifdef USE_M17N
-    if (pr[i] & PC_WCHAR2) {
+    if (pr[i] & PC_WCHAR2)
+    {
         for (; i < len && pr[i] & PC_WCHAR2; i++)
             realColumn[i] = j;
         if (i > 0 && pr[i - 1] & PC_KANJI && WcOption.use_wide)
             j++;
     }
-#endif
-    while (1) {
+    while (1)
+    {
         realColumn[i] = j;
         if (i == len)
             break;
         j = nextColumn(j, &l[i], &pr[i]);
         i++;
-#ifdef USE_M17N
         for (; i < len && pr[i] & PC_WCHAR2; i++)
             realColumn[i] = realColumn[i - 1];
-#endif
     }
     if (pos >= i)
         return j;
     return realColumn[pos];
 }
 
-int
-columnLen(Line *line, int column)
+int columnLen(Line *line, int column)
 {
     int i, j;
 
-    for (i = 0, j = 0; i < line->len;) {
+    for (i = 0, j = 0; i < line->len;)
+    {
         j = nextColumn(j, &line->lineBuf[i], &line->propBuf[i]);
         if (j > column)
             return i;
@@ -260,7 +261,8 @@ lastFileName(char *path)
     char *p, *q;
 
     p = q = path;
-    while (*p != '\0') {
+    while (*p != '\0')
+    {
         if (*p == '/')
             q = p + 1;
         p++;
@@ -276,15 +278,13 @@ static unsigned long R2 = 0x330e;
 #define A2 0xe66d
 #define C 0xb
 
-void
-srand48(long seed)
+void srand48(long seed)
 {
     R1 = (unsigned long)seed;
     R2 = 0x330e;
 }
 
-long
-lrand48(void)
+long lrand48(void)
 {
     R1 = (A1 * R1 << 16) + A1 * R2 + A2 * R1 + ((A2 * R2 + C) >> 16);
     R2 = (A2 * R2 + C) & 0xffff;
@@ -333,7 +333,7 @@ strerror(int errno)
     extern char *sys_errlist[];
     return sys_errlist[errno];
 }
-#endif				/* not HAVE_STRERROR */
+#endif /* not HAVE_STRERROR */
 
 #ifndef HAVE_SYS_ERRLIST
 char **sys_errlist;
@@ -351,18 +351,20 @@ prepare_sys_errlist()
     for (i = 1; i < n; i++)
         sys_errlist[i] = strerror(i);
 }
-#endif				/* not HAVE_SYS_ERRLIST */
+#endif /* not HAVE_SYS_ERRLIST */
 
-int
-next_status(char c, int *status)
+int next_status(char c, int *status)
 {
-    switch (*status) {
+    switch (*status)
+    {
     case R_ST_NORMAL:
-        if (c == '<') {
+        if (c == '<')
+        {
             *status = R_ST_TAG0;
             return 0;
         }
-        else if (c == '&') {
+        else if (c == '&')
+        {
             *status = R_ST_AMP;
             return 1;
         }
@@ -370,7 +372,8 @@ next_status(char c, int *status)
             return 1;
         break;
     case R_ST_TAG0:
-        if (c == '!') {
+        if (c == '!')
+        {
             *status = R_ST_CMNT1;
             return 0;
         }
@@ -409,11 +412,13 @@ next_status(char c, int *status)
             *status = R_ST_TAG;
         return 0;
     case R_ST_AMP:
-        if (c == ';') {
+        if (c == ';')
+        {
             *status = R_ST_NORMAL;
             return 0;
         }
-        else if (c != '#' && !IS_ALNUM(c) && c != '_') {
+        else if (c != '#' && !IS_ALNUM(c) && c != '_')
+        {
             /* something's wrong! */
             *status = R_ST_NORMAL;
             return 0;
@@ -421,7 +426,8 @@ next_status(char c, int *status)
         else
             return 0;
     case R_ST_CMNT1:
-        switch (c) {
+        switch (c)
+        {
         case '-':
             *status = R_ST_CMNT2;
             break;
@@ -433,7 +439,8 @@ next_status(char c, int *status)
         }
         return 0;
     case R_ST_CMNT2:
-        switch (c) {
+        switch (c)
+        {
         case '-':
             *status = R_ST_CMNT;
             break;
@@ -455,7 +462,8 @@ next_status(char c, int *status)
             *status = R_ST_CMNT;
         return 0;
     case R_ST_NCMNT2:
-        switch (c) {
+        switch (c)
+        {
         case '>':
             *status = R_ST_NORMAL;
             break;
@@ -471,7 +479,8 @@ next_status(char c, int *status)
         }
         break;
     case R_ST_NCMNT3:
-        switch (c) {
+        switch (c)
+        {
         case '>':
             *status = R_ST_NORMAL;
             break;
@@ -495,8 +504,7 @@ next_status(char c, int *status)
     return 0;
 }
 
-int
-read_token(Str buf, char **instr, int *status, int pre, int append)
+int read_token(Str buf, char **instr, int *status, int pre, int append)
 {
     char *p;
     int prev_status;
@@ -505,26 +513,31 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
         buf->Clear();
     if (**instr == '\0')
         return 0;
-    for (p = *instr; *p; p++) {
+    for (p = *instr; *p; p++)
+    {
         prev_status = *status;
         next_status(*p, status);
-        switch (*status) {
+        switch (*status)
+        {
         case R_ST_NORMAL:
-            if (prev_status == R_ST_AMP && *p != ';') {
+            if (prev_status == R_ST_AMP && *p != ';')
+            {
                 p--;
                 break;
             }
             if (prev_status == R_ST_NCMNT2 || prev_status == R_ST_NCMNT3 ||
-                prev_status == R_ST_IRRTAG || prev_status == R_ST_CMNT1) {
+                prev_status == R_ST_IRRTAG || prev_status == R_ST_CMNT1)
+            {
                 if (prev_status == R_ST_CMNT1 && !append && !pre)
                     buf->Clear();
                 if (pre)
-                    buf->Push( *p);
+                    buf->Push(*p);
                 p++;
                 goto proc_end;
             }
-            buf->Push( (!pre && IS_SPACE(*p)) ? ' ' : *p);
-            if (ST_IS_REAL_TAG(prev_status)) {
+            buf->Push((!pre && IS_SPACE(*p)) ? ' ' : *p);
+            if (ST_IS_REAL_TAG(prev_status))
+            {
                 *instr = p + 1;
                 if (buf->Size() < 2 ||
                     buf->ptr[buf->Size() - 2] != '<' ||
@@ -535,33 +548,35 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
             break;
         case R_ST_TAG0:
         case R_ST_TAG:
-            if (prev_status == R_ST_NORMAL && p != *instr) {
+            if (prev_status == R_ST_NORMAL && p != *instr)
+            {
                 *instr = p;
                 *status = prev_status;
                 return 1;
             }
-            if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p)) {
+            if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p))
+            {
                 /* it seems that this '<' is not a beginning of a tag */
                 /*
                  * buf->Push( "&lt;");
                  */
-                buf->Push( '<');
+                buf->Push('<');
                 *status = R_ST_NORMAL;
             }
             else
-                buf->Push( *p);
+                buf->Push(*p);
             break;
         case R_ST_EQL:
         case R_ST_QUOTE:
         case R_ST_DQUOTE:
         case R_ST_VALUE:
         case R_ST_AMP:
-            buf->Push( *p);
+            buf->Push(*p);
             break;
         case R_ST_CMNT:
         case R_ST_IRRTAG:
             if (pre)
-                buf->Push( *p);
+                buf->Push(*p);
             else if (!append)
                 buf->Clear();
             break;
@@ -572,25 +587,26 @@ read_token(Str buf, char **instr, int *status, int pre, int append)
         case R_ST_NCMNT3:
             /* do nothing */
             if (pre)
-                buf->Push( *p);
+                buf->Push(*p);
             break;
         }
     }
-  proc_end:
+proc_end:
     *instr = p;
     return 1;
 }
 
-Str
-correct_irrtag(int status)
+Str correct_irrtag(int status)
 {
     char c;
     Str tmp = Strnew();
 
-    while (status != R_ST_NORMAL) {
-        switch (status) {
-        case R_ST_CMNT:	/* required "-->" */
-        case R_ST_NCMNT1:	/* required "->" */
+    while (status != R_ST_NORMAL)
+    {
+        switch (status)
+        {
+        case R_ST_CMNT:   /* required "-->" */
+        case R_ST_NCMNT1: /* required "->" */
             c = '-';
             break;
         case R_ST_NCMNT2:
@@ -600,7 +616,7 @@ correct_irrtag(int status)
         case R_ST_CMNT2:
         case R_ST_TAG:
         case R_ST_TAG0:
-        case R_ST_EQL:		/* required ">" */
+        case R_ST_EQL: /* required ">" */
         case R_ST_VALUE:
             c = '>';
             break;
@@ -636,23 +652,27 @@ correct_irrtag(int status)
 static void
 add_auth_pass_entry(const struct auth_pass *ent, int netrc, int override)
 {
-    if ((ent->host || netrc)	/* netrc accept default (host == NULL) */
-        &&(ent->is_proxy || ent->realm || netrc)
-        && ent->uname && ent->pwd) {
+    if ((ent->host || netrc) /* netrc accept default (host == NULL) */
+        && (ent->is_proxy || ent->realm || netrc) && ent->uname && ent->pwd)
+    {
         struct auth_pass *newent = New(struct auth_pass);
         memcpy(newent, ent, sizeof(struct auth_pass));
-        if (override) {
+        if (override)
+        {
             newent->next = passwords;
             passwords = newent;
-        } 
-        else {
+        }
+        else
+        {
             if (passwords == NULL)
                 passwords = newent;
             else if (passwords->next == NULL)
                 passwords->next = newent;
-            else {
+            else
+            {
                 struct auth_pass *ep = passwords;
-                for (; ep->next; ep = ep->next) ;
+                for (; ep->next; ep = ep->next)
+                    ;
                 ep->next = newent;
             }
         }
@@ -661,36 +681,32 @@ add_auth_pass_entry(const struct auth_pass *ent, int netrc, int override)
 }
 
 static struct auth_pass *
-find_auth_pass_entry(char *host, int port, char *realm, char *uname, 
+find_auth_pass_entry(char *host, int port, char *realm, char *uname,
                      int is_proxy)
 {
     struct auth_pass *ent;
-    for (ent = passwords; ent != NULL; ent = ent->next) {
-        if (ent->is_proxy == is_proxy
-            && (ent->bad != TRUE)
-            && (!ent->host || ent->host->ICaseCmp(host)==0)
-            && (!ent->port || ent->port == port)
-            && (!ent->uname || !uname || ent->uname->Cmp(uname)==0)
-            && (!ent->realm || !realm || ent->realm->Cmp(realm)==0)
-            )
+    for (ent = passwords; ent != NULL; ent = ent->next)
+    {
+        if (ent->is_proxy == is_proxy && (ent->bad != TRUE) && (!ent->host || ent->host->ICaseCmp(host) == 0) && (!ent->port || ent->port == port) && (!ent->uname || !uname || ent->uname->Cmp(uname) == 0) && (!ent->realm || !realm || ent->realm->Cmp(realm) == 0))
             return ent;
     }
     return NULL;
 }
 
-int
-find_auth_user_passwd(ParsedURL *pu, char *realm,
-                      Str *uname, Str *pwd, int is_proxy)
+int find_auth_user_passwd(ParsedURL *pu, char *realm,
+                          Str *uname, Str *pwd, int is_proxy)
 {
     struct auth_pass *ent;
 
-    if (pu->user && pu->pass) {
+    if (pu->user && pu->pass)
+    {
         *uname = Strnew_charp(pu->user);
         *pwd = Strnew_charp(pu->pass);
         return 1;
     }
     ent = find_auth_pass_entry(pu->host, pu->port, realm, pu->user, is_proxy);
-    if (ent) {
+    if (ent)
+    {
         *uname = ent->uname;
         *pwd = ent->pwd;
         return 1;
@@ -698,9 +714,8 @@ find_auth_user_passwd(ParsedURL *pu, char *realm,
     return 0;
 }
 
-void
-add_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd, 
-                     int is_proxy)
+void add_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
+                          int is_proxy)
 {
     struct auth_pass ent;
     memset(&ent, 0, sizeof(ent));
@@ -714,13 +729,13 @@ add_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
     add_auth_pass_entry(&ent, 0, 1);
 }
 
-void
-invalidate_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd, 
-                            int is_proxy)
+void invalidate_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
+                                 int is_proxy)
 {
     struct auth_pass *ent;
     ent = find_auth_pass_entry(pu->host, pu->port, realm, NULL, is_proxy);
-    if (ent) {
+    if (ent)
+    {
         ent->bad = TRUE;
     }
     return;
@@ -749,7 +764,8 @@ next_token(Str arg)
     p = arg->ptr;
     q = p;
     SKIP_NON_BLANKS(q);
-    if (*q != '\0') {
+    if (*q != '\0')
+    {
         *q++ = '\0';
         SKIP_BLANKS(q);
         if (*q != '\0')
@@ -759,13 +775,14 @@ next_token(Str arg)
 }
 
 static void
-parsePasswd(FILE * fp, int netrc)
+parsePasswd(FILE *fp, int netrc)
 {
     struct auth_pass ent;
     Str line = NULL;
 
     bzero(&ent, sizeof(struct auth_pass));
-    while (1) {
+    while (1)
+    {
         Str arg = NULL;
         char *p;
 
@@ -775,63 +792,76 @@ parsePasswd(FILE * fp, int netrc)
             break;
         line->Strip();
         p = line->ptr;
-        if (*p == '#' || *p == '\0') {
+        if (*p == '#' || *p == '\0')
+        {
             line = NULL;
-            continue;		/* comment or empty line */
+            continue; /* comment or empty line */
         }
         arg = next_token(line);
 
-        if (!strcmp(p, "machine") || !strcmp(p, "host")
-            || (netrc && !strcmp(p, "default"))) {
+        if (!strcmp(p, "machine") || !strcmp(p, "host") || (netrc && !strcmp(p, "default")))
+        {
             add_auth_pass_entry(&ent, netrc, 0);
             bzero(&ent, sizeof(struct auth_pass));
             if (netrc)
-                ent.port = 21;	/* XXX: getservbyname("ftp"); ? */
-            if (strcmp(p, "default") != 0) {
+                ent.port = 21; /* XXX: getservbyname("ftp"); ? */
+            if (strcmp(p, "default") != 0)
+            {
                 line = next_token(arg);
                 ent.host = arg;
             }
-            else {
+            else
+            {
                 line = arg;
             }
         }
-        else if (!netrc && !strcmp(p, "port") && arg) {
+        else if (!netrc && !strcmp(p, "port") && arg)
+        {
             line = next_token(arg);
             ent.port = atoi(arg->ptr);
         }
-        else if (!netrc && !strcmp(p, "proxy")) {
+        else if (!netrc && !strcmp(p, "proxy"))
+        {
             ent.is_proxy = 1;
             line = arg;
         }
-        else if (!netrc && !strcmp(p, "path")) {
+        else if (!netrc && !strcmp(p, "path"))
+        {
             line = next_token(arg);
             /* ent.file = arg; */
         }
-        else if (!netrc && !strcmp(p, "realm")) {
+        else if (!netrc && !strcmp(p, "realm"))
+        {
             /* XXX: rest of line becomes arg for realm */
             line = NULL;
             ent.realm = arg;
         }
-        else if (!strcmp(p, "login")) {
+        else if (!strcmp(p, "login"))
+        {
             line = next_token(arg);
             ent.uname = arg;
         }
-        else if (!strcmp(p, "password") || !strcmp(p, "passwd")) {
+        else if (!strcmp(p, "password") || !strcmp(p, "passwd"))
+        {
             line = next_token(arg);
             ent.pwd = arg;
         }
-        else if (netrc && !strcmp(p, "machdef")) {
-            while ((line = Strfgets(fp))->Size() != 0) {
+        else if (netrc && !strcmp(p, "machdef"))
+        {
+            while ((line = Strfgets(fp))->Size() != 0)
+            {
                 if (*line->ptr == '\n')
                     break;
             }
             line = NULL;
         }
-        else if (netrc && !strcmp(p, "account")) {
+        else if (netrc && !strcmp(p, "account"))
+        {
             /* ignore */
             line = next_token(arg);
         }
-        else {
+        else
+        {
             /* ignore rest of line */
             line = NULL;
         }
@@ -864,13 +894,16 @@ openSecretFile(char *fname)
      *   [w3m-dev 03368][w3m-dev 03369][w3m-dev 03370]
      */
     if (disable_secret_security_check)
-        /* do nothing */ ;
-    else if ((st.st_mode & (S_IRWXG | S_IRWXO)) != 0) {
-        if (fmInitialized) {
+        /* do nothing */;
+    else if ((st.st_mode & (S_IRWXG | S_IRWXO)) != 0)
+    {
+        if (fmInitialized)
+        {
             message(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, 0, 0);
             refresh();
         }
-        else {
+        else
+        {
             fputs(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, stderr);
             fputc('\n', stderr);
         }
@@ -881,21 +914,22 @@ openSecretFile(char *fname)
     return fopen(efname, "r");
 }
 
-void
-loadPasswd(void)
+void loadPasswd(void)
 {
     FILE *fp;
 
     passwords = NULL;
     fp = openSecretFile(passwd_file);
-    if (fp != NULL) {
+    if (fp != NULL)
+    {
         parsePasswd(fp, 0);
         fclose(fp);
     }
 
     /* for FTP */
     fp = openSecretFile("~/.netrc");
-    if (fp != NULL) {
+    if (fp != NULL)
+    {
         parsePasswd(fp, 1);
         fclose(fp);
     }
@@ -909,15 +943,19 @@ last_modified(Buffer *buf)
     TextListItem *ti;
     struct stat st;
 
-    if (buf->document_header) {
-        for (ti = buf->document_header->first; ti; ti = ti->next) {
-            if (strncasecmp(ti->ptr, "Last-modified: ", 15) == 0) {
+    if (buf->document_header)
+    {
+        for (ti = buf->document_header->first; ti; ti = ti->next)
+        {
+            if (strncasecmp(ti->ptr, "Last-modified: ", 15) == 0)
+            {
                 return ti->ptr + 15;
             }
         }
         return "unknown";
     }
-    else if (buf->currentURL.scheme == SCM_LOCAL) {
+    else if (buf->currentURL.scheme == SCM_LOCAL)
+    {
         if (stat(buf->currentURL.file, &st) < 0)
             return "unknown";
         return ctime(&st.st_mtime);
@@ -926,10 +964,17 @@ last_modified(Buffer *buf)
 }
 
 static char roman_num1[] = {
-    'i', 'x', 'c', 'm', '*',
+    'i',
+    'x',
+    'c',
+    'm',
+    '*',
 };
 static char roman_num5[] = {
-    'v', 'l', 'd', '*',
+    'v',
+    'l',
+    'd',
+    '*',
 };
 
 static Str
@@ -937,7 +982,8 @@ romanNum2(int l, int n)
 {
     Str s = Strnew();
 
-    switch (n) {
+    switch (n)
+    {
     case 1:
     case 2:
     case 3:
@@ -964,14 +1010,14 @@ romanNum2(int l, int n)
     return s;
 }
 
-Str
-romanNumeral(int n)
+Str romanNumeral(int n)
 {
     Str r = Strnew();
 
     if (n <= 0)
         return r;
-    if (n >= 4000) {
+    if (n >= 4000)
+    {
         r->Push("**");
         return r;
     }
@@ -983,8 +1029,7 @@ romanNumeral(int n)
     return r;
 }
 
-Str
-romanAlphabet(int n)
+Str romanAlphabet(int n)
 {
     Str r = Strnew();
     int l;
@@ -994,38 +1039,39 @@ romanAlphabet(int n)
         return r;
 
     l = 0;
-    while (n) {
+    while (n)
+    {
         buf[l++] = 'a' + (n - 1) % 26;
         n = (n - 1) / 26;
     }
     l--;
     for (; l >= 0; l--)
-        r->Push( buf[l]);
+        r->Push(buf[l]);
 
     return r;
 }
 
 #ifndef SIGIOT
 #define SIGIOT SIGABRT
-#endif				/* not SIGIOT */
+#endif /* not SIGIOT */
 
 static void
 reset_signals(void)
 {
 #ifdef SIGHUP
-    mySignal(SIGHUP, SIG_DFL);	/* terminate process */
+    mySignal(SIGHUP, SIG_DFL); /* terminate process */
 #endif
-    mySignal(SIGINT, SIG_DFL);	/* terminate process */
+    mySignal(SIGINT, SIG_DFL); /* terminate process */
 #ifdef SIGQUIT
-    mySignal(SIGQUIT, SIG_DFL);	/* terminate process */
+    mySignal(SIGQUIT, SIG_DFL); /* terminate process */
 #endif
-    mySignal(SIGTERM, SIG_DFL);	/* terminate process */
-    mySignal(SIGILL, SIG_DFL);	/* create core image */
-    mySignal(SIGIOT, SIG_DFL);	/* create core image */
-    mySignal(SIGFPE, SIG_DFL);	/* create core image */
+    mySignal(SIGTERM, SIG_DFL); /* terminate process */
+    mySignal(SIGILL, SIG_DFL);  /* create core image */
+    mySignal(SIGIOT, SIG_DFL);  /* create core image */
+    mySignal(SIGFPE, SIG_DFL);  /* create core image */
 #ifdef SIGBUS
-    mySignal(SIGBUS, SIG_DFL);	/* create core image */
-#endif				/* SIGBUS */
+    mySignal(SIGBUS, SIG_DFL); /* create core image */
+#endif                         /* SIGBUS */
 #ifdef SIGCHLD
     mySignal(SIGCHLD, SIG_IGN);
 #endif
@@ -1035,13 +1081,14 @@ reset_signals(void)
 }
 
 #ifndef FOPEN_MAX
-#define FOPEN_MAX 1024		/* XXX */
+#define FOPEN_MAX 1024 /* XXX */
 #endif
 
 static void
 close_all_fds_except(int i, int f)
 {
-    switch (i) {		/* fall through */
+    switch (i)
+    { /* fall through */
     case 0:
         dup2(open(DEV_NULL_PATH, O_RDONLY), 0);
     case 1:
@@ -1050,14 +1097,14 @@ close_all_fds_except(int i, int f)
         dup2(open(DEV_NULL_PATH, O_WRONLY), 2);
     }
     /* close all other file descriptors (socket, ...) */
-    for (i = 3; i < FOPEN_MAX; i++) {
+    for (i = 3; i < FOPEN_MAX; i++)
+    {
         if (i != f)
             close(i);
     }
 }
 
-void
-setup_child(int child, int i, int f)
+void setup_child(int child, int i, int f)
 {
     reset_signals();
     mySignal(SIGINT, SIG_IGN);
@@ -1073,8 +1120,7 @@ setup_child(int child, int i, int f)
 }
 
 #ifndef __MINGW32_VERSION
-pid_t
-open_pipe_rw(FILE ** fr, FILE ** fw)
+pid_t open_pipe_rw(FILE **fr, FILE **fw)
 {
     int fdr[2];
     int fdw[2];
@@ -1089,26 +1135,32 @@ open_pipe_rw(FILE ** fr, FILE ** fw)
     pid = fork();
     if (pid < 0)
         goto err2;
-    if (pid == 0) {
+    if (pid == 0)
+    {
         /* child */
-        if (fr) {
+        if (fr)
+        {
             close(fdr[0]);
             dup2(fdr[1], 1);
         }
-        if (fw) {
+        if (fw)
+        {
             close(fdw[1]);
             dup2(fdw[0], 0);
         }
     }
-    else {
-        if (fr) {
+    else
+    {
+        if (fr)
+        {
             close(fdr[1]);
             if (*fr == stdin)
                 dup2(fdr[0], 0);
             else
                 *fr = fdopen(fdr[0], "r");
         }
-        if (fw) {
+        if (fw)
+        {
             close(fdw[0]);
             if (*fw == stdout)
                 dup2(fdw[1], 1);
@@ -1117,43 +1169,45 @@ open_pipe_rw(FILE ** fr, FILE ** fw)
         }
     }
     return pid;
-  err2:
-    if (fw) {
+err2:
+    if (fw)
+    {
         close(fdw[0]);
         close(fdw[1]);
     }
-  err1:
-    if (fr) {
+err1:
+    if (fr)
+    {
         close(fdr[0]);
         close(fdr[1]);
     }
-  err0:
-    return (pid_t) - 1;
+err0:
+    return (pid_t)-1;
 }
 #endif /* __MINGW32_VERSION */
 
-void
-myExec(char *command)
+void myExec(char *command)
 {
     mySignal(SIGINT, SIG_DFL);
     execl("/bin/sh", "sh", "-c", command, NULL);
     exit(127);
 }
 
-void
-mySystem(char *command, int background)
+void mySystem(char *command, int background)
 {
 #ifndef __MINGW32_VERSION
-    if (background) {
+    if (background)
+    {
 #ifndef __EMX__
         flush_tty();
-        if (!fork()) {
+        if (!fork())
+        {
             setup_child(FALSE, 0, -1);
             myExec(command);
         }
 #else
         Str cmd = Strnew_charp("start /f ");
-        cmd->Push( command);
+        cmd->Push(command);
         system(cmd->ptr);
 #endif
     }
@@ -1162,27 +1216,30 @@ mySystem(char *command, int background)
         system(command);
 }
 
-Str
-myExtCommand(char *cmd, char *arg, int redirect)
+Str myExtCommand(char *cmd, char *arg, int redirect)
 {
     Str tmp = NULL;
     char *p;
     int set_arg = FALSE;
 
-    for (p = cmd; *p; p++) {
-        if (*p == '%' && *(p + 1) == 's' && !set_arg) {
+    for (p = cmd; *p; p++)
+    {
+        if (*p == '%' && *(p + 1) == 's' && !set_arg)
+        {
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
             tmp->Push(arg);
             set_arg = TRUE;
             p++;
         }
-        else {
+        else
+        {
             if (tmp)
                 tmp->Push(*p);
         }
     }
-    if (!set_arg) {
+    if (!set_arg)
+    {
         if (redirect)
             tmp = Strnew_m_charp("(", cmd, ") < ", arg, NULL);
         else
@@ -1191,34 +1248,38 @@ myExtCommand(char *cmd, char *arg, int redirect)
     return tmp;
 }
 
-Str
-myEditor(char *cmd, char *file, int line)
+Str myEditor(char *cmd, char *file, int line)
 {
     Str tmp = NULL;
     char *p;
     int set_file = FALSE, set_line = FALSE;
 
-    for (p = cmd; *p; p++) {
-        if (*p == '%' && *(p + 1) == 's' && !set_file) {
+    for (p = cmd; *p; p++)
+    {
+        if (*p == '%' && *(p + 1) == 's' && !set_file)
+        {
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
             tmp->Push(file);
             set_file = TRUE;
             p++;
         }
-        else if (*p == '%' && *(p + 1) == 'd' && !set_line && line > 0) {
+        else if (*p == '%' && *(p + 1) == 'd' && !set_line && line > 0)
+        {
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
             tmp->Push(Sprintf("%d", line));
             set_line = TRUE;
             p++;
         }
-        else {
+        else
+        {
             if (tmp)
                 tmp->Push(*p);
         }
     }
-    if (!set_file) {
+    if (!set_file)
+    {
         if (tmp == NULL)
             tmp = Strnew_charp(cmd);
         if (!set_line && line > 1 && strcasestr(cmd, "vi"))
@@ -1245,17 +1306,20 @@ expandName(char *name)
     if (name == NULL)
         return NULL;
     p = name;
-    if (*p == '/') {
-        if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2)))
-            && personal_document_root) {
+    if (*p == '/')
+    {
+        if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2))) && personal_document_root)
+        {
             char *q;
             p += 2;
             q = strchr(p, '/');
-            if (q) {		/* /~user/dir... */
+            if (q)
+            { /* /~user/dir... */
                 passent = getpwnam(allocStr(p, q - p));
                 p = q;
             }
-            else {		/* /~user */
+            else
+            { /* /~user */
                 passent = getpwnam(p);
                 p = "";
             }
@@ -1275,7 +1339,7 @@ expandName(char *name)
     }
     else
         return expandPath(p);
-  rest:
+rest:
     return name;
 }
 #endif
@@ -1293,12 +1357,15 @@ file_to_url(char *file)
 
     file = expandPath(file);
 #ifdef SUPPORT_NETBIOS_SHARE
-    if (file[0] == '/' && file[1] == '/') {
+    if (file[0] == '/' && file[1] == '/')
+    {
         char *p;
         file += 2;
-        if (*file) {
+        if (*file)
+        {
             p = strchr(file, '/');
-            if (p != NULL && p != file) {
+            if (p != NULL && p != file)
+            {
                 host = allocStr(file, (p - file));
                 file = p;
             }
@@ -1306,13 +1373,15 @@ file_to_url(char *file)
     }
 #endif
 #ifdef SUPPORT_DOS_DRIVE_PREFIX
-    if (IS_ALPHA(file[0]) && file[1] == ':') {
+    if (IS_ALPHA(file[0]) && file[1] == ':')
+    {
         drive = allocStr(file, 2);
         file += 2;
     }
     else
 #endif
-    if (file[0] != '/') {
+        if (file[0] != '/')
+    {
         tmp = Strnew_charp(CurrentDir);
         if (tmp->Back() != '/')
             tmp->Push('/');
@@ -1332,7 +1401,6 @@ file_to_url(char *file)
     return tmp->ptr;
 }
 
-
 char *
 url_unquote_conv(const char *url, wc_ces charset)
 {
@@ -1346,13 +1414,16 @@ url_unquote_conv(const char *url, wc_ces charset)
     return tmp->ptr;
 }
 
-static char *tmpf_base[MAX_TMPF_TYPE] = {
-    "tmp", "src", "frame", "cache", "cookie",
+static const char *tmpf_base[MAX_TMPF_TYPE] = {
+    "tmp",
+    "src",
+    "frame",
+    "cache",
+    "cookie",
 };
 static unsigned int tmpf_seq[MAX_TMPF_TYPE];
 
-Str
-tmpfname(int type, const char *ext)
+Str tmpfname(int type, const char *ext)
 {
     Str tmpf;
     tmpf = Sprintf("%s/w3m%s%d-%d%s",
@@ -1363,10 +1434,9 @@ tmpfname(int type, const char *ext)
     return tmpf;
 }
 
-static char *monthtbl[] = {
+static const char *monthtbl[] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-};
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 static int
 get_day(char **s)
@@ -1383,7 +1453,8 @@ get_day(char **s)
 
     day = atoi(tmp->ptr);
 
-    if (day < 1 || day > 31) {
+    if (day < 1 || day > 31)
+    {
         *s = ss;
         return -1;
     }
@@ -1402,18 +1473,22 @@ get_month(char **s)
 
     while (**s && IS_DIGIT(**s))
         tmp->Push(*((*s)++));
-    if (tmp->Size() > 0) {
+    if (tmp->Size() > 0)
+    {
         mon = atoi(tmp->ptr);
     }
-    else {
+    else
+    {
         while (**s && IS_ALPHA(**s))
             tmp->Push(*((*s)++));
-        for (mon = 1; mon <= 12; mon++) {
+        for (mon = 1; mon <= 12; mon++)
+        {
             if (strncmp(tmp->ptr, monthtbl[mon - 1], 3) == 0)
                 break;
         }
     }
-    if (mon < 1 || mon > 12) {
+    if (mon < 1 || mon > 12)
+    {
         *s = ss;
         return -1;
     }
@@ -1432,13 +1507,15 @@ get_year(char **s)
 
     while (**s && IS_DIGIT(**s))
         tmp->Push(*((*s)++));
-    if (tmp->Size() != 2 && tmp->Size() != 4) {
+    if (tmp->Size() != 2 && tmp->Size() != 4)
+    {
         *s = ss;
         return -1;
     }
 
     year = atoi(tmp->ptr);
-    if (tmp->Size() == 2) {
+    if (tmp->Size() == 2)
+    {
         if (year >= 70)
             year += 1900;
         else
@@ -1458,7 +1535,8 @@ get_time(char **s, int *hour, int *min, int *sec)
 
     while (**s && IS_DIGIT(**s))
         tmp->Push(*((*s)++));
-    if (**s != ':') {
+    if (**s != ':')
+    {
         *s = ss;
         return -1;
     }
@@ -1468,7 +1546,8 @@ get_time(char **s, int *hour, int *min, int *sec)
     tmp->Clear();
     while (**s && IS_DIGIT(**s))
         tmp->Push(*((*s)++));
-    if (**s != ':') {
+    if (**s != ':')
+    {
         *s = ss;
         return -1;
     }
@@ -1481,7 +1560,8 @@ get_time(char **s, int *hour, int *min, int *sec)
     *sec = atoi(tmp->ptr);
 
     if (*hour < 0 || *hour >= 24 ||
-        *min < 0 || *min >= 60 || *sec < 0 || *sec >= 60) {
+        *min < 0 || *min >= 60 || *sec < 0 || *sec >= 60)
+    {
         *s = ss;
         return -1;
     }
@@ -1503,7 +1583,8 @@ get_zone(char **s, int *z_hour, int *z_min)
     while (**s && IS_DIGIT(**s))
         tmp->Push(*((*s)++));
     if (!(tmp->Size() == 4 && IS_DIGIT(*ss)) &&
-        !(tmp->Size() == 5 && (*ss == '+' || *ss == '-'))) {
+        !(tmp->Size() == 5 && (*ss == '+' || *ss == '-')))
+    {
         *s = ss;
         return -1;
     }
@@ -1527,14 +1608,15 @@ mymktime(char *timestr)
 
 #ifdef DEBUG
     fprintf(stderr, "mktime: %s\n", timestr);
-#endif				/* DEBUG */
+#endif /* DEBUG */
 
     while (*s && IS_ALPHA(*s))
         s++;
     while (*s && !IS_ALNUM(*s))
         s++;
 
-    if (IS_DIGIT(*s)) {
+    if (IS_DIGIT(*s))
+    {
         /* RFC 1123 or RFC 850 format */
         if ((day = get_day(&s)) == -1)
             return -1;
@@ -1551,12 +1633,14 @@ mymktime(char *timestr)
 
         while (*s && !IS_DIGIT(*s))
             s++;
-        if (!*s) {
+        if (!*s)
+        {
             hour = 0;
             min = 0;
             sec = 0;
         }
-        else {
+        else
+        {
             if (get_time(&s, &hour, &min, &sec) == -1)
                 return -1;
             while (*s && !IS_DIGIT(*s) && *s != '+' && *s != '-')
@@ -1564,7 +1648,8 @@ mymktime(char *timestr)
             get_zone(&s, &z_hour, &z_min);
         }
     }
-    else {
+    else
+    {
         /* ANSI C asctime() format. */
         while (*s && !IS_ALNUM(*s))
             s++;
@@ -1590,10 +1675,11 @@ mymktime(char *timestr)
     fprintf(stderr,
             "year=%d month=%d day=%d hour:min:sec=%d:%d:%d zone=%d:%d\n", year,
             mon, day, hour, min, sec, z_hour, z_min);
-#endif				/* DEBUG */
+#endif /* DEBUG */
 
     mon -= 3;
-    if (mon < 0) {
+    if (mon < 0)
+    {
         mon += 12;
         year--;
     }
@@ -1601,14 +1687,14 @@ mymktime(char *timestr)
     day += ((((mon * 153) + 2) / 5) - 672);
     hour -= z_hour;
     min -= z_min;
-    return (time_t) ((day * 60 * 60 * 24) +
-                     (hour * 60 * 60) + (min * 60) + sec);
+    return (time_t)((day * 60 * 60 * 24) +
+                    (hour * 60 * 60) + (min * 60) + sec);
 }
 
 #ifdef USE_COOKIE
 #ifdef INET6
 #include <sys/socket.h>
-#endif				/* INET6 */
+#endif /* INET6 */
 #ifndef __MINGW32_VERSION
 #include <netdb.h>
 #else
@@ -1620,9 +1706,9 @@ FQDN(char *host)
     char *p;
 #ifndef INET6
     struct hostent *entry;
-#else				/* INET6 */
+#else  /* INET6 */
     int *af;
-#endif				/* INET6 */
+#endif /* INET6 */
 
     if (host == NULL)
         return NULL;
@@ -1630,7 +1716,8 @@ FQDN(char *host)
     if (strcasecmp(host, "localhost") == 0)
         return host;
 
-    for (p = host; *p && *p != '.'; p++) ;
+    for (p = host; *p && *p != '.'; p++)
+        ;
 
     if (*p == '.')
         return host;
@@ -1640,8 +1727,9 @@ FQDN(char *host)
         return NULL;
 
     return allocStr(entry->h_name, -1);
-#else				/* INET6 */
-    for (af = ai_family_order_table[DNS_order];; af++) {
+#else  /* INET6 */
+    for (af = ai_family_order_table[DNS_order];; af++)
+    {
         int error;
         struct addrinfo hints;
         struct addrinfo *res, *res0;
@@ -1652,16 +1740,20 @@ FQDN(char *host)
         hints.ai_family = *af;
         hints.ai_socktype = SOCK_STREAM;
         error = getaddrinfo(host, NULL, &hints, &res0);
-        if (error) {
-            if (*af == PF_UNSPEC) {
+        if (error)
+        {
+            if (*af == PF_UNSPEC)
+            {
                 /* all done */
                 break;
             }
             /* try next address family */
             continue;
         }
-        for (res = res0; res != NULL; res = res->ai_next) {
-            if (res->ai_canonname) {
+        for (res = res0; res != NULL; res = res->ai_next)
+        {
+            if (res->ai_canonname)
+            {
                 /* found */
                 namebuf = strdup(res->ai_canonname);
                 freeaddrinfo(res0);
@@ -1669,31 +1761,35 @@ FQDN(char *host)
             }
         }
         freeaddrinfo(res0);
-        if (*af == PF_UNSPEC) {
+        if (*af == PF_UNSPEC)
+        {
             break;
         }
     }
     /* all failed */
     return NULL;
-#endif				/* INET6 */
+#endif /* INET6 */
 }
 
-#endif				/* USE_COOKIE */
+#endif /* USE_COOKIE */
 
-void (*mySignal(int signal_number, void (*action) (int))) (int) {
-#ifdef	SA_RESTART
+void (*mySignal(int signal_number, void (*action)(int)))(int)
+{
+#ifdef SA_RESTART
     struct sigaction new_action, old_action;
 
     sigemptyset(&new_action.sa_mask);
     new_action.sa_handler = action;
-    if (signal_number == SIGALRM) {
-#ifdef	SA_INTERRUPT
+    if (signal_number == SIGALRM)
+    {
+#ifdef SA_INTERRUPT
         new_action.sa_flags = SA_INTERRUPT;
 #else
         new_action.sa_flags = 0;
 #endif
     }
-    else {
+    else
+    {
         new_action.sa_flags = SA_RESTART;
     }
     sigaction(signal_number, &new_action, &old_action);

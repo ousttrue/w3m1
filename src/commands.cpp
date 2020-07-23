@@ -1887,7 +1887,7 @@ void curlno()
         while (l->next && l->next->bpos)
             l = l->next;
         if (l->width < 0)
-            l->width = COLPOS(l, l->len);
+            l->width = l->COLPOS(l->len);
         len = l->bwidth + l->width;
     }
     if (GetCurrentbuf()->lastLine)

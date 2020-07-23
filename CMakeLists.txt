@@ -75,6 +75,7 @@ add_executable(w3m
     src/tab.cpp
     src/file.cpp
     src/mimetypes.cpp
+    src/line.cpp
     # src/html_feed_environ.cpp
     src/backend.cpp
     src/cookie.cpp

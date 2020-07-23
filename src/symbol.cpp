@@ -20,8 +20,8 @@
 typedef struct {
     wc_ces ces;
     char width;
-    char **item;
-    char **conved_item;
+    const char **item;
+    const char **conved_item;
 } symbol_set;
 
 typedef struct {
@@ -37,9 +37,7 @@ static symbol_set euckr_symbol_set = { WC_CES_EUC_KR,   2, euckr_symbol, NULL };
 static symbol_set euccn_symbol_set = { WC_CES_EUC_CN,   2, euccn_symbol, NULL };
 static symbol_set euctw_symbol_set = { WC_CES_EUC_TW,   2, euctw_symbol, NULL };
 static symbol_set big5_symbol_set  = { WC_CES_BIG5,     2, big5_symbol,  NULL };
-#ifdef USE_UNICODE
 static symbol_set utf8_symbol_set  = { WC_CES_UTF_8,    1, utf8_symbol,  NULL };
-#endif
 static symbol_set cp850_symbol_set = { WC_CES_CP850,    1, cp850_symbol, NULL };
 
 static charset_symbol_set charset_symbol_list[] = {
@@ -77,14 +75,14 @@ encode_symbol(symbol_set * s)
     int i;
 
     for (i = 0; s->item[i]; i++) ;
-    s->conved_item = New_N(char *, i);
+    s->conved_item = New_N(const char *, i);
     for (i = 0; s->item[i]; i++) {
 	if (*(s->item[i]))
 	    s->conved_item[i] = wc_conv(s->item[i], s->ces, InnerCharset)->ptr;
     }
 }
 
-char **
+const char **
 get_symbol(wc_ces charset, int *width)
 {
     charset_symbol_set *p;
@@ -171,23 +169,21 @@ get_symbol(void)
 }
 #endif
 
-void
-push_symbol(Str str, char symbol, int width, int n)
+void push_symbol(Str str, char symbol, int width, int n)
 {
-    char buf[2], *p;
-    int i;
-
-#ifdef USE_M17N
+    const char *p;
     if (width == 2)
-	p = alt2_symbol[(int)symbol];
+        p = alt2_symbol[(int)symbol];
     else
-#endif
-	p = alt_symbol[(int)symbol];
-    for (i = 0; i < 2 && *p; i++, p++)
-	buf[i] = (*p == ' ') ? NBSP_CODE : *p;
+        p = alt_symbol[(int)symbol];
 
-    str->Push( Sprintf("<_SYMBOL TYPE=%d>", symbol));
+    char buf[2];
+    int i = 0;
+    for (; i < 2 && *p; i++, p++)
+        buf[i] = (*p == ' ') ? NBSP_CODE : *p;
+
+    str->Push(Sprintf("<_SYMBOL TYPE=%d>", symbol));
     for (; n > 0; n--)
-	str->Push(buf, i);
-    str->Push( "</_SYMBOL>");
+        str->Push(buf, i);
+    str->Push("</_SYMBOL>");
 }

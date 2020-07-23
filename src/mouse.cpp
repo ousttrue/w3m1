@@ -264,12 +264,9 @@ void initMouseAction(void)
           (void *)mouse_action.lastline_map[0],
           sizeof(default_lastline_action));
     {
-#ifdef USE_M17N
+
         int w = 0;
-        char **symbol = get_symbol(DisplayCharset, &w);
-#else
-        char **symbol = get_symbol();
-#endif
+        const char **symbol = get_symbol(DisplayCharset, &w);
         mouse_action.lastline_str =
             Strnew_charp(symbol[N_GRAPH_SYMBOL + 13])->ptr;
     }

@@ -179,10 +179,6 @@
 #define CHK_URL                1
 #define CHK_NMID       2
 
-/* Flags for calcPosition() */
-#define CP_AUTO		0
-#define CP_FORCE	1
-
 /* Completion status. */
 #define CPL_OK		0
 #define CPL_AMBIG	1
@@ -696,8 +692,8 @@ global char UseAltEntity init(TRUE);
 #define GRAPHIC_CHAR_DEC 1
 #define GRAPHIC_CHAR_CHARSET 0
 global char UseGraphicChar init(GRAPHIC_CHAR_CHARSET);
-extern char *graph_symbol[];
-extern char *graph2_symbol[];
+extern const char *graph_symbol[];
+extern const char *graph2_symbol[];
 extern int symbol_width;
 extern int symbol_width0;
 #define N_GRAPH_SYMBOL 32

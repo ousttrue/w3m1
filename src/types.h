@@ -10,7 +10,7 @@
 
 #define MAX_LB 5
 
-struct  ParsedURL
+struct ParsedURL
 {
     int scheme;
     char *user;
@@ -104,6 +104,9 @@ struct Line
     int size;
     int bpos;
     int bwidth;
+
+    void CalcWidth();
+    int COLPOS(int c);
 };
 
 struct BufferPoint

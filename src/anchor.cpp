@@ -649,8 +649,8 @@ void addMultirowsImg(Buffer *buf, AnchorList *al)
 			a_form = *a;
 		else
 			a_form.url = NULL;
-		col = COLPOS(ls, a_img.start.pos);
-		ecol = COLPOS(ls, a_img.end.pos);
+		col = ls->COLPOS(a_img.start.pos);
+		ecol = ls->COLPOS(a_img.end.pos);
 		for (j = 0; l && j < img->rows; l = l->next, j++)
 		{
 			if (a_img.start.line == l->linenumber)
@@ -724,8 +724,8 @@ void addMultirowsForm(Buffer *buf, AnchorList *al)
 				continue;
 		}
 		fi = (FormItemList *)a_form.url;
-		col = COLPOS(ls, a_form.start.pos);
-		ecol = COLPOS(ls, a_form.end.pos);
+		col = ls->COLPOS(a_form.start.pos);
+		ecol = ls->COLPOS(a_form.end.pos);
 		for (j = 0; l && j < a_form.rows; l = l->next, j++)
 		{
 			pos = columnPos(l, col);

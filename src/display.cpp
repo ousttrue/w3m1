@@ -770,7 +770,7 @@ redrawLine(Buffer *buf, Line *l, int i)
     }
     move(i, buf->rootX);
     if (l->width < 0)
-        l->width = COLPOS(l, l->len);
+        l->CalcWidth();
     if (l->len == 0 || l->width - 1 < column)
     {
         clrtoeolx();
@@ -786,7 +786,7 @@ redrawLine(Buffer *buf, Line *l, int i)
     else
         pc = NULL;
 #endif
-    rcol = COLPOS(l, pos);
+    rcol = l->COLPOS(pos);
 
     for (j = 0; rcol - column < buf->COLS && pos + j < l->len; j += delta)
     {
@@ -809,7 +809,7 @@ redrawLine(Buffer *buf, Line *l, int i)
 #ifdef USE_M17N
         delta = wtf_len((uint8_t *)&p[j]);
 #endif
-        ncol = COLPOS(l, pos + j + delta);
+        ncol = l->COLPOS(pos + j + delta);
         if (ncol - column > buf->COLS)
             break;
 #ifdef USE_ANSI_COLOR
@@ -914,16 +914,16 @@ redrawLineImage(Buffer *buf, Line *l, int i)
     if (l == NULL)
         return NULL;
     if (l->width < 0)
-        l->width = COLPOS(l, l->len);
+        l->CalcWidth();
     if (l->len == 0 || l->width - 1 < column)
         return l;
     pos = columnPos(l, column);
-    rcol = COLPOS(l, pos);
+    rcol = l->COLPOS(pos);
     for (j = 0; rcol - column < buf->COLS && pos + j < l->len; j++)
     {
         if (rcol - column < 0)
         {
-            rcol = COLPOS(l, pos + j + 1);
+            rcol = l->COLPOS(pos + j + 1);
             continue;
         }
         a = retrieveAnchor(buf->img, l->linenumber, pos + j);
@@ -945,7 +945,7 @@ redrawLineImage(Buffer *buf, Line *l, int i)
                 }
                 x = (int)((rcol - column + buf->rootX) * pixel_per_char);
                 y = (int)(i * pixel_per_line);
-                sx = (int)((rcol - COLPOS(l, a->start.pos)) * pixel_per_char);
+                sx = (int)((rcol - l->COLPOS(a->start.pos)) * pixel_per_char);
                 sy = (int)((l->linenumber - image->y) * pixel_per_line);
                 if (sx == 0 && x + image->xoffset >= 0)
                     x += image->xoffset;
@@ -972,7 +972,7 @@ redrawLineImage(Buffer *buf, Line *l, int i)
                 draw_image_flag = TRUE;
             }
         }
-        rcol = COLPOS(l, pos + j + 1);
+        rcol = l->COLPOS(pos + j + 1);
     }
     return l;
 }
@@ -1006,7 +1006,7 @@ redrawLineRegion(Buffer *buf, Line *l, int i, int bpos, int epos)
     else
         pc = NULL;
 #endif
-    rcol = COLPOS(l, pos);
+    rcol = l->COLPOS(pos);
     bcol = bpos - pos;
     ecol = epos - pos;
 
@@ -1031,7 +1031,7 @@ redrawLineRegion(Buffer *buf, Line *l, int i, int bpos, int epos)
 #ifdef USE_M17N
         delta = wtf_len((uint8_t *)&p[j]);
 #endif
-        ncol = COLPOS(l, pos + j + delta);
+        ncol = l->COLPOS(pos + j + delta);
         if (ncol - column > buf->COLS)
             break;
 #ifdef USE_ANSI_COLOR
@@ -1216,7 +1216,7 @@ void addChar(char c, Lineprop mode)
     do_effects(m);
     if (mode & PC_SYMBOL)
     {
-        char **symbol;
+        const char **symbol;
 #ifdef USE_M17N
         int w = (mode & PC_KANJI) ? 2 : 1;
 
@@ -1498,14 +1498,14 @@ void cursorRight(Buffer *buf, int n)
             buf->pos--;
 #endif
     }
-    cpos = COLPOS(l, buf->pos);
+    cpos = l->COLPOS(buf->pos);
     buf->visualpos = l->bwidth + cpos - buf->currentColumn;
     delta = 1;
 #ifdef USE_M17N
     while (buf->pos + delta < l->len && p[buf->pos + delta] & PC_WCHAR2)
         delta++;
 #endif
-    vpos2 = COLPOS(l, buf->pos + delta) - buf->currentColumn - 1;
+    vpos2 = l->COLPOS(buf->pos + delta) - buf->currentColumn - 1;
     if (vpos2 >= buf->COLS && n)
     {
         columnSkip(buf, n + (vpos2 - buf->COLS) - (vpos2 - buf->COLS) % n);
@@ -1539,7 +1539,7 @@ void cursorLeft(Buffer *buf, int n)
     }
     else
         buf->pos = 0;
-    cpos = COLPOS(l, buf->pos);
+    cpos = l->COLPOS(buf->pos);
     buf->visualpos = l->bwidth + cpos - buf->currentColumn;
     if (buf->visualpos - l->bwidth < 0 && n)
     {
@@ -1596,13 +1596,13 @@ void arrangeCursor(Buffer *buf)
     while (buf->pos > 0 && buf->currentLine->propBuf[buf->pos] & PC_WCHAR2)
         buf->pos--;
 #endif
-    col = COLPOS(buf->currentLine, buf->pos);
+    col = buf->currentLine->COLPOS(buf->pos);
 #ifdef USE_M17N
     while (buf->pos + delta < buf->currentLine->len &&
            buf->currentLine->propBuf[buf->pos + delta] & PC_WCHAR2)
         delta++;
 #endif
-    col2 = COLPOS(buf->currentLine, buf->pos + delta);
+    col2 = buf->currentLine->COLPOS(buf->pos + delta);
     if (col < buf->currentColumn || col2 > buf->COLS + buf->currentColumn)
     {
         buf->currentColumn = 0;
@@ -1612,7 +1612,7 @@ void arrangeCursor(Buffer *buf)
     /* Arrange cursor */
     buf->cursorY = buf->currentLine->linenumber - buf->topLine->linenumber;
     buf->visualpos = buf->currentLine->bwidth +
-                     COLPOS(buf->currentLine, buf->pos) - buf->currentColumn;
+                     buf->currentLine->COLPOS(buf->pos) - buf->currentColumn;
     buf->cursorX = buf->visualpos - buf->currentLine->bwidth;
 #ifdef DISPLAY_DEBUG
     fprintf(stderr,
@@ -1630,7 +1630,7 @@ void arrangeLine(Buffer *buf)
         return;
     buf->cursorY = buf->currentLine->linenumber - buf->topLine->linenumber;
     i = columnPos(buf->currentLine, buf->currentColumn + buf->visualpos - buf->currentLine->bwidth);
-    cpos = COLPOS(buf->currentLine, i) - buf->currentColumn;
+    cpos = buf->currentLine->COLPOS(i) - buf->currentColumn;
     if (cpos >= 0)
     {
         buf->cursorX = cpos;

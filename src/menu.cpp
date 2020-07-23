@@ -36,7 +36,7 @@ extern int do_getch();
 
 #ifdef USE_MENU
 
-static char **FRAME;
+static const char **FRAME;
 static int FRAME_WIDTH;
 static int graph_mode = FALSE;
 #define G_start           \
@@ -1196,15 +1196,11 @@ set_menu_frame(void)
     else
     {
         graph_mode = FALSE;
-#ifdef USE_M17N
+
         FRAME_WIDTH = 0;
         FRAME = get_symbol(DisplayCharset, &FRAME_WIDTH);
         if (!WcOption.use_wide)
             FRAME_WIDTH = 1;
-#else
-        FRAME_WIDTH = 1;
-        FRAME = get_symbol();
-#endif
     }
 }
 

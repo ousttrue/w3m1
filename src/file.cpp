@@ -4794,7 +4794,7 @@ addnewline(Buffer *buf, char *line, Lineprop *prop, Linecolor *color, int pos,
 #endif
         }
         l->len = i;
-        l->width = COLPOS(l, l->len);
+        l->width = l->COLPOS(l->len);
         if (pos <= i)
             return;
         bpos += l->len;
@@ -5270,7 +5270,7 @@ conv_symbol(Line *l)
     Lineprop *pr = l->propBuf;
 #ifdef USE_M17N
     int w;
-    char **symbol = NULL;
+    const char **symbol = NULL;
 #else
     char **symbol = get_symbol();
 #endif
