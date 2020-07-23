@@ -252,7 +252,7 @@ void deleteTab(TabPtr tab)
     // clear buffer
     BufferPtr next;
     auto buf = tab->GetFirstBuffer();
-    while (buf && buf != NO_BUFFER)
+    while (buf)
     {
         next = buf->nextBuffer;
         discardBuffer(buf);
@@ -393,7 +393,7 @@ BufferPtr GetFirstbuf()
 
 int HasFirstBuffer()
 {
-    return GetFirstbuf() && GetFirstbuf() != NO_BUFFER;
+    return GetFirstbuf()!=nullptr;
 }
 
 void SetFirstbuf(BufferPtr buffer, bool isCurrent)

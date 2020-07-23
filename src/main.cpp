@@ -947,7 +947,7 @@ int main(int argc, char **argv, char **envp)
             newbuf = loadHTMLString(s_page);
             if (newbuf == NULL)
                 err_msg->Push( "w3m: Can't load string.\n");
-            else if (newbuf != NO_BUFFER)
+            else
                 newbuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         }
         else if ((p = getenv("HTTP_HOME")) != NULL ||
@@ -956,7 +956,7 @@ int main(int argc, char **argv, char **envp)
             newbuf = loadGeneralFile(p, NULL, NO_REFERER, 0, NULL);
             if (newbuf == NULL)
                 err_msg->Push( Sprintf("w3m: Can't load %s.\n", p));
-            else if (newbuf != NO_BUFFER)
+            else
                 pushHashHist(URLHist, parsedURL2Str(&newbuf->currentURL)->c_str());
         }
         else
@@ -1035,8 +1035,6 @@ int main(int argc, char **argv, char **envp)
                        Sprintf("w3m: Can't load %s.\n", load_argv[i]));
                 continue;
             }
-            else if (newbuf == NO_BUFFER)
-                continue;
             switch (newbuf->real_scheme)
             {
             case SCM_MAILTO:
@@ -1049,7 +1047,7 @@ int main(int argc, char **argv, char **envp)
                 break;
             }
         }
-        else if (newbuf == NO_BUFFER)
+        else
             continue;
         if (newbuf->pagerSource ||
             (newbuf->real_scheme == SCM_LOCAL && newbuf->header_source &&
@@ -1119,24 +1117,10 @@ int main(int argc, char **argv, char **envp)
         SetCurrentTab(GetFirstTab());
     if (!GetFirstTab() || !HasFirstBuffer())
     {
-        if (newbuf == NO_BUFFER)
-        {
-            if (fmInitialized)
-                /* FIXME: gettextize? */
-                inputChar("Hit any key to quit w3m:");
-        }
         if (fmInitialized)
             fmTerm();
         if (err_msg->Size())
             fprintf(stderr, "%s", err_msg->c_str());
-        if (newbuf == NO_BUFFER)
-        {
-#ifdef USE_COOKIE
-            save_cookies();
-#endif /* USE_COOKIE */
-            if (!err_msg->Size())
-                w3m_exit(0);
-        }
         w3m_exit(2);
     }
     if (err_msg->Size())

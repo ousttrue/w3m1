@@ -25,7 +25,7 @@ void cmd_loadBuffer(BufferPtr buf, int prop, int linkid)
     {
         disp_err_message("Can't load string", FALSE);
     }
-    else if (buf != NO_BUFFER)
+    else
     {
         buf->bufferprop |= (BP_INTERNAL | prop);
         if (!(buf->bufferprop & BP_NO_URL))

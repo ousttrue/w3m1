@@ -361,20 +361,20 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 		buf = loadGeneralFile(b->url,
 							  baseURL ? baseURL : currentURL,
 							  b->referer, flag | RG_FRAME_SRC, b->request);
-#ifdef USE_SSL
+
 		/* XXX certificate? */
-		if (buf && buf != NO_BUFFER)
+		if (buf)
 			b->ssl_certificate = buf->ssl_certificate;
-#endif
+
 		w3m_dump &= ~DUMP_FRAME;
 		is_redisplay = FALSE;
 		break;
 	}
 
-	if (buf == NULL || buf == NO_BUFFER)
+	if (buf == NULL)
 	{
 		b->source = NULL;
-		b->flags = (buf == NO_BUFFER) ? FB_NO_BUFFER : 0;
+		b->flags = 0;
 		return NULL;
 	}
 	b->url = parsedURL2Str(&buf->currentURL)->ptr;
@@ -972,7 +972,7 @@ renderFrame(BufferPtr Cbuf, int force_reload)
 	DocumentCharset = doc_charset;
 #endif
 	renderFrameSet = NULL;
-	if (buf == NULL || buf == NO_BUFFER)
+	if (buf == NULL)
 		return NULL;
 	buf->sourcefile = tmp->ptr;
 #ifdef USE_M17N

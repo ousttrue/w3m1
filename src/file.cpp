@@ -1777,7 +1777,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
                                           DirBufferCommand, pu.file);
                         b = loadGeneralFile(cmd->ptr, NULL, NO_REFERER, 0,
                                             NULL);
-                        if (b != NULL && b != NO_BUFFER) {
+                        if (b != NULL) {
                             copyParsedURL(&b->currentURL, &pu);
                             b->filename = b->currentURL.real_file;
                         }
@@ -1808,7 +1808,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
             tmp = searchURIMethods(&pu);
             if (tmp != NULL) {
                 b = loadGeneralFile(tmp->ptr, current, referer, flag, request);
-                if (b != NULL && b != NO_BUFFER)
+                if (b != NULL)
                     copyParsedURL(&b->currentURL, &pu);
                 return b;
             }
@@ -2024,7 +2024,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
                 TRAP_OFF;
                 doFileMove(tmpf, guess_save_name(t_buf, pu.file));
             }
-            return NO_BUFFER;
+            return nullptr;
         }
 #endif
     }
@@ -2121,7 +2121,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
                 file = Sprintf("%s.html", file)->ptr;
 #endif
             doFileMove(tmp->ptr, file);
-            return NO_BUFFER;
+            return nullptr;
         }
         b = loadHTMLString(page);
         if (b) {
@@ -2166,7 +2166,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
             UFhalfclose(&f);
         else
             UFclose(&f);
-        return NO_BUFFER;
+        return nullptr;
     }
 
     if ((f.content_encoding != CMP_NOCOMPRESS) && AutoUncompress
@@ -2217,7 +2217,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
         if (!do_download && doExternal(f,
                                        pu.real_file ? pu.real_file : pu.file,
                                        t, &b, t_buf)) {
-            if (b && b != NO_BUFFER) {
+            if (b) {
                 b->real_scheme = f.scheme;
                 b->real_type = real_type;
                 if (b->currentURL.host == NULL && b->currentURL.file == NULL)
@@ -2243,7 +2243,7 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
                 else
                     UFclose(&f);
             }
-            return NO_BUFFER;
+            return nullptr;
         }
     }
     else if (w3m_dump & DUMP_FRAME)
@@ -5498,7 +5498,7 @@ openGeneralPagerBuffer(InputStream *stream)
     else {
         if (doExternal(uf, "-", t, &buf, t_buf)) {
             UFclose(&uf);
-            if (buf == NULL || buf == NO_BUFFER)
+            if (buf == NULL)
                 return buf;
         }
         else {			/* unknown type is regarded as text/plain */
@@ -5748,7 +5748,7 @@ doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
             UFclose(&uf);
             myExec(command->ptr);
         }
-        *bufp = NO_BUFFER;
+        *bufp = nullptr;
         return 1;
     }
     else
@@ -5771,7 +5771,7 @@ doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
     }
     if (mcap->flags & MAILCAP_HTMLOUTPUT) {
         buf = loadcmdout(command->ptr, loadHTMLBuffer, defaultbuf);
-        if (buf && buf != NO_BUFFER) {
+        if (buf) {
             buf->type = "text/html";
             buf->mailcap_source = buf->sourcefile;
             buf->sourcefile = src;
@@ -5779,7 +5779,7 @@ doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
     }
     else if (mcap->flags & MAILCAP_COPIOUSOUTPUT) {
         buf = loadcmdout(command->ptr, loadBuffer, defaultbuf);
-        if (buf && buf != NO_BUFFER) {
+        if (buf) {
             buf->type = "text/plain";
             buf->mailcap_source = buf->sourcefile;
             buf->sourcefile = src;
@@ -5796,9 +5796,9 @@ doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
         else {
             mySystem(command->ptr, 1);
         }
-        buf = NO_BUFFER;
+        buf = nullptr;
     }
-    if (buf && buf != NO_BUFFER) {
+    if (buf) {
         buf->filename = path;
         if (buf->buffername == NULL || buf->buffername[0] == '\0')
             buf->buffername = conv_from_system(lastFileName(path));

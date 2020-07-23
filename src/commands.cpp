@@ -908,7 +908,7 @@ void followI()
         char *emsg = Sprintf("Can't load %s", a->url)->ptr;
         disp_err_message(emsg, FALSE);
     }
-    else if (buf != NO_BUFFER)
+    else
     {
         GetCurrentTab()->BufferPushBeforeCurrent(buf);
     }
@@ -1730,7 +1730,7 @@ void reload()
         disp_err_message("Can't reload...", TRUE);
         return;
     }
-    else if (buf == NO_BUFFER)
+    else
     {
         displayBuffer(GetCurrentbuf(), B_NORMAL);
         return;

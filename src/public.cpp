@@ -455,7 +455,7 @@ void cmd_loadfile(char *fn)
         char *emsg = Sprintf("%s not found", conv_from_system(fn))->ptr;
         disp_err_message(emsg, FALSE);
     }
-    else if (buf != NO_BUFFER)
+    else
     {
         GetCurrentTab()->BufferPushBeforeCurrent(buf);
         if (RenderFrame && GetCurrentbuf()->frameset != NULL)
@@ -487,7 +487,7 @@ void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request
         char *emsg = Sprintf("Can't load %s", conv_from_system(url))->ptr;
         disp_err_message(emsg, FALSE);
     }
-    else if (buf != NO_BUFFER)
+    else
     {
         GetCurrentTab()->BufferPushBeforeCurrent(buf);
         if (RenderFrame && GetCurrentbuf()->frameset != NULL)
@@ -1165,10 +1165,6 @@ loadLink(char *url, char *target, char *referer, FormList *request)
     parseURL2(url, &pu, base);
     pushHashHist(URLHist, parsedURL2Str(&pu)->ptr);
 
-    if (buf == NO_BUFFER)
-    {
-        return NULL;
-    }
     if (!on_target) /* open link as an indivisual page */
         return loadNormalBuf(buf, TRUE);
 

@@ -98,7 +98,7 @@ internal_get(char *url, int flag, FormList *request)
 	do_download = flag;
 	buf = loadGeneralFile(url, NULL, NO_REFERER, 0, request);
 	do_download = FALSE;
-	if (buf != NULL && buf != NO_BUFFER)
+	if (buf != NULL)
 	{
 		if (is_html_type(buf->type) && backend_halfdump_buf)
 		{

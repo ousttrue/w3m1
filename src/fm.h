@@ -273,8 +273,6 @@
 #define TOP_LINENUMBER(buf) ((buf)->topLine ? (buf)->topLine->linenumber : 1)
 #define CUR_LINENUMBER(buf) ((buf)->currentLine ? (buf)->currentLine->linenumber : 1)
 
-#define NO_BUFFER ((BufferPtr )1)
-
 #define RB_STACK_SIZE 10
 
 #define TAG_STACK_SIZE 10
