@@ -44,36 +44,52 @@ void multimap()
     char c = getch();
     MultiKeyProc(c);
 }
-/* Move page forward */
 
+/* Move page forward */
 void pgFore()
 {
     if (vi_prec_num)
-        nscroll(searchKeyNum() * (GetCurrentbuf()->LINES - 1), B_NORMAL);
+    {
+        nscroll(searchKeyNum() * (GetCurrentbuf()->LINES - 1));
+        displayCurrentbuf(B_NORMAL);
+    }
     else
-        nscroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentbuf()->LINES - 1), prec_num() ? B_SCROLL : B_NORMAL);
+    {
+        nscroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentbuf()->LINES - 1));
+        displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
+    }
 }
-/* Move page backward */
 
+/* Move page backward */
 void pgBack()
 {
     if (vi_prec_num)
-        nscroll(-searchKeyNum() * (GetCurrentbuf()->LINES - 1), B_NORMAL);
+    {
+        nscroll(-searchKeyNum() * (GetCurrentbuf()->LINES - 1));
+        displayCurrentbuf(B_NORMAL);
+    }
     else
-        nscroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentbuf()->LINES - 1)), prec_num() ? B_SCROLL : B_NORMAL);
+    {
+        nscroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentbuf()->LINES - 1)));
+        displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
+    }
 }
+
 /* 1 line up */
 
 void lup1()
 {
-    nscroll(searchKeyNum(), B_SCROLL);
+    nscroll(searchKeyNum());
+    displayCurrentbuf(B_SCROLL);
 }
 /* 1 line down */
 
 void ldown1()
 {
-    nscroll(-searchKeyNum(), B_SCROLL);
+    nscroll(-searchKeyNum());
+    displayCurrentbuf(B_SCROLL);
 }
+
 /* move cursor position to the center of screen */
 
 void ctrCsrV()
@@ -1238,8 +1254,9 @@ void adBmark()
                   (parsedURL2Str(&GetCurrentbuf()->currentURL)->UrlEncode())->ptr,
 
                   (wc_conv_strict(GetCurrentbuf()->buffername,
-                                                 InnerCharset,
-                                                 BookmarkCharset)->UrlEncode())
+                                  InnerCharset,
+                                  BookmarkCharset)
+                       ->UrlEncode())
                       ->ptr,
                   wc_ces_to_charset(BookmarkCharset));
     request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
@@ -2225,7 +2242,7 @@ void closeT()
         return;
     TabPtr tab;
     if (prec_num())
-        tab = GetTabByIndex(PREC_NUM()-1);
+        tab = GetTabByIndex(PREC_NUM() - 1);
     else
         tab = GetCurrentTab();
     if (tab)
@@ -2249,9 +2266,9 @@ void tabA()
 {
     TabPtr tab;
     if (prec_num())
-        tab = GetTabByIndex(PREC_NUM()-1);
+        tab = GetTabByIndex(PREC_NUM() - 1);
     else
-        tab = GetCurrentTab();   
+        tab = GetCurrentTab();
     followTab(prec_num() ? tab : NULL);
 }
 
@@ -2259,9 +2276,9 @@ void tabURL()
 {
     TabPtr tab;
     if (prec_num())
-        tab = GetTabByIndex(PREC_NUM()-1);
+        tab = GetTabByIndex(PREC_NUM() - 1);
     else
-        tab = GetCurrentTab();   
+        tab = GetCurrentTab();
     tabURL0(prec_num() ? tab : NULL,
             "Goto URL on new tab: ", FALSE);
 }
@@ -2270,9 +2287,9 @@ void tabrURL()
 {
     TabPtr tab;
     if (prec_num())
-        tab = GetTabByIndex(PREC_NUM()-1);
+        tab = GetTabByIndex(PREC_NUM() - 1);
     else
-        tab = GetCurrentTab();   
+        tab = GetCurrentTab();
     tabURL0(prec_num() ? tab : NULL,
             "Goto relative URL on new tab: ", TRUE);
 }

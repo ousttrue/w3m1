@@ -23,7 +23,7 @@ global DownloadList *LastDL init(NULL);
  * Command functions: These functions are called with a keystroke.
  */
 int searchKeyNum();
-
+void nscroll(int n);
 void srch_nxtprv(int reverse);
 int dispincsrch(int ch, Str buf, Lineprop *prop);
 void isrch(int (*func)(Buffer *, char *), char *prompt);

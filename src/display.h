@@ -10,7 +10,7 @@ enum DisplayMode
 };
 void displayBuffer(struct Buffer *buf, DisplayMode mode);
 void displayCurrentbuf(DisplayMode mode);
-void nscroll(int n, DisplayMode mode);
+
 
 // message
 void message(const char *s, int return_x, int return_y);
