@@ -284,52 +284,9 @@ time_t mymktime(char *timestr);
 
 char *FQDN(char *host);
 
-struct environment
-{
-    unsigned char env;
-    int type;
-    int count;
-    char indent;
-};
 
-struct html_feed_environ
-{
-    struct readbuffer *obuf;
-    TextLineList *buf;
-    FILE *f;
-    Str tagbuf;
-    int limit;
-    int maxlimit;
-    struct environment *envs;
-    int nenv;
-    int envc;
-    int envc_real;
-    char *title;
-    int blank_lines;
-};
-
-int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
 void HTMLlineproc2(BufferPtr buf, TextLineList *tl);
-void HTMLlineproc0(char *istr, struct html_feed_environ *h_env,
-                   int internal);
-#define HTMLlineproc1(x, y) HTMLlineproc0(x, y, TRUE)
-void push_render_image(Str str, int width, int limit,
-                       struct html_feed_environ *h_env);
-void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
-               int indent, int force, int width);
-void do_blankline(struct html_feed_environ *h_env,
-                  struct readbuffer *obuf, int indent, int indent_incr,
-                  int width);
-void purgeline(struct html_feed_environ *h_env);
-void save_fonteffect(struct html_feed_environ *h_env,
-                     struct readbuffer *obuf);
-void restore_fonteffect(struct html_feed_environ *h_env,
-                        struct readbuffer *obuf);
-void init_henv(struct html_feed_environ *, struct readbuffer *,
-               struct environment *, int, TextLineList *, int, int);
 
-void renderTable(struct table *t, int max_width,
-                 struct html_feed_environ *h_env);
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
                     int internal);
 

@@ -2,10 +2,6 @@
 
 w3m を改造して遊ぶ。
 
-## TODO
-
-* [ ] current tab 削除時に手当してない
-
 ## msys2 でとりあえずビルド
 
 最近のUbuntuとかだとビルドできなかった。
@@ -248,17 +244,10 @@ ptr が boehmGC 管理になる。
 `std::shared_ptr<_Str>` など。
 ptrを取得して中身を書き換えるものをメソッド化して、ptr を private にしたい。
 
-## file.c
+## HtmlParser
 
-HtmlParse, Http, その他に分割できそうだが、グローバル変数を千切るのが大変・・・
+* loadHTMLBuffer
+* loadHTMLStream
+* HTMLlineproc0
 
-## TODO
-
-* macro 減らす
-* source と header が対応するようにする
-    * fm.h 分解
-* c++ にする
-    * 各 C struct を class化して
-        * member の private化
-        * 関数のメソッド化
-* bohem-gc やめる(遠大)
+と呼び出して、ここで token 化して解析する。

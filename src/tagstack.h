@@ -9,5 +9,31 @@
 #define IMG_SYMBOL UL_SYMBOL(12)
 #define HR_SYMBOL 26
 
+void renderTable(struct table *t, int max_width,
+                 struct html_feed_environ *h_env);
+
+void push_render_image(Str str, int width, int limit,
+                       struct html_feed_environ *h_env);
+
+void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
+               int indent, int force, int width);
+void do_blankline(struct html_feed_environ *h_env,
+                  struct readbuffer *obuf, int indent, int indent_incr,
+                  int width);
+void purgeline(struct html_feed_environ *h_env);
+
+void save_fonteffect(struct html_feed_environ *h_env,
+                     struct readbuffer *obuf);
+void restore_fonteffect(struct html_feed_environ *h_env,
+                        struct readbuffer *obuf);
+
+int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
+void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
+inline void HTMLlineproc1(const char *x, html_feed_environ *y)
+{
+    HTMLlineproc0(x, y, true);
+}
+void init_henv(struct html_feed_environ *, struct readbuffer *,
+               struct environment *, int, TextLineList *, int, int);
 void completeHTMLstream(struct html_feed_environ *, struct readbuffer *);
 void SetCurTitle(Str title);

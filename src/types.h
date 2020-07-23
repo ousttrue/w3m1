@@ -378,3 +378,35 @@ struct readbuffer
     short top_margin;
     short bottom_margin;
 };
+
+struct environment
+{
+    unsigned char env;
+    int type;
+    int count;
+    char indent;
+};
+
+struct html_feed_environ
+{
+    struct readbuffer *obuf;
+    TextLineList *buf;
+    FILE *f;
+    Str tagbuf;
+    int limit;
+    int maxlimit;
+    struct environment *envs;
+    int nenv;
+    int envc;
+    int envc_real;
+    char *title;
+    int blank_lines;
+};
+
+struct HtmlContext
+{
+    ParsedURL *BaseUrl = nullptr;
+    Str Title = nullptr;
+    wc_ces MetaCharset;
+    int HSeq = 0;
+};

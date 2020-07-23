@@ -213,8 +213,6 @@ back_to_breakpoint(struct readbuffer *obuf)
         obuf->nobr_level = obuf->bp.nobr_level;
 }
 
-
-
 static void
 push_nchars(struct readbuffer *obuf, int width,
             char *str, int len, Lineprop mode)
@@ -315,9 +313,7 @@ sloppy_parse_line(char **str)
     }
 }
 
-
-
-void fillline(struct readbuffer *obuf, int indent)
+static void fillline(struct readbuffer *obuf, int indent)
 {
     push_spaces(obuf, 1, indent - obuf->pos);
     obuf->flag &= ~RB_NFLUSHED;
@@ -1046,7 +1042,7 @@ ul_type(struct parsed_tag *tag, int default_type)
     return default_type;
 }
 
-Str process_hr(struct parsed_tag *tag, int width, int indent_width)
+static Str process_hr(struct parsed_tag *tag, int width, int indent_width)
 {
     Str tmp = Strnew_charp("<nobr>");
     int w = 0;
@@ -1470,7 +1466,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
             q = html_quote(q);
             auto hseq = GetCurHSeq();
             SetCurHSeq(hseq + 1);
-            push_tag(obuf, Sprintf("<a hseq=\"%d\" href=\"%s\">",  hseq, q)->ptr, HTML_A);
+            push_tag(obuf, Sprintf("<a hseq=\"%d\" href=\"%s\">", hseq, q)->ptr, HTML_A);
             if (r)
                 q = html_quote(r);
             push_charp(obuf, get_strwidth(q), q, PC_ASCII);
@@ -2147,22 +2143,21 @@ table_width(struct html_feed_environ *h_env, int table_level)
     return h_env->limit - h_env->envs[h_env->envc].indent;
 }
 
-
-/* HTML processing first pass */
-void HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
+// HTML processing first pass
+//
+// * from loadHtmlStream
+//
+void HTMLlineproc0(const char *line, struct html_feed_environ *h_env, bool internal)
 {
     Lineprop mode;
     int cmd;
     struct readbuffer *obuf = h_env->obuf;
     int indent, delta;
     struct parsed_tag *tag;
-    Str tokbuf;
     struct table *tbl = NULL;
     struct table_mode *tbl_mode = NULL;
     int tbl_width = 0;
-#ifdef USE_M17N
     int is_hangul, prev_is_hangul = 0;
-#endif
 
 #ifdef DEBUG
     if (w3m_debug)
@@ -2179,7 +2174,7 @@ void HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
     }
 #endif
 
-    tokbuf = Strnew();
+    auto tokbuf = Strnew();
 
 table_start:
     if (obuf->table_level >= 0)
@@ -2206,7 +2201,7 @@ table_start:
                 obuf->status = R_ST_NORMAL;
             else
             {
-                read_token(h_env->tagbuf, &line, &obuf->status,
+                read_token(h_env->tagbuf, (char **)&line, &obuf->status,
                            pre_mode & RB_PREMODE, obuf->status != R_ST_NORMAL);
                 if (obuf->status != R_ST_NORMAL)
                     return;
@@ -2228,7 +2223,7 @@ table_start:
         }
         else
         {
-            read_token(tokbuf, &line, &obuf->status, pre_mode & RB_PREMODE, 0);
+            read_token(tokbuf, (char **)&line, &obuf->status, pre_mode & RB_PREMODE, 0);
             if (obuf->status != R_ST_NORMAL) /* R_ST_AMP ? */
                 obuf->status = R_ST_NORMAL;
             str = tokbuf->ptr;
@@ -2553,9 +2548,6 @@ table_start:
         }
     }
 }
-
-
-
 
 void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf,
                struct environment *envs, int nenv, TextLineList *buf,
