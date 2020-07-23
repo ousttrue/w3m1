@@ -1,6 +1,8 @@
 #pragma once
 #include "types.h"
 
+struct Buffer;
+
 struct HRequest
 {
     char command;
@@ -294,7 +296,7 @@ char *libFile(char *base);
 char *helpFile(char *base);
 Str localCookie(void);
 Str loadLocalDir(char *dirname);
-void set_environ(char *var, char *value);
+
 FILE *localcgi_post(char *, char *, FormList *, char *);
 #define localcgi_get(u, q, r) localcgi_post((u), (q), NULL, (r))
 FILE *openSecretFile(char *fname);

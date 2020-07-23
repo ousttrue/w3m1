@@ -13,6 +13,7 @@
 #include "tagtable.h"
 #include "terms.h"
 #include "display.h"
+#include "buffer.h"
 
 // #include <sys/socket.h>
 #include <netdb.h>

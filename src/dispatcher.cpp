@@ -8,6 +8,8 @@
 #include "rc.h"
 #include "ctrlcode.h"
 #include "display.h"
+#include "buffer.h"
+#include "tab.h"
 
 static int g_prec_num = 0;
 static int g_CurrentKey = -1;

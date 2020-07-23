@@ -18,6 +18,7 @@
 #include "display.h"
 #include "tab.h"
 #include "types.h"
+#include "buffer.h"
 
 struct MouseActionMap
 {

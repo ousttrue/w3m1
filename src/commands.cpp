@@ -21,6 +21,7 @@
 #include "terms.h"
 #include "mouse.h"
 #include "mimetypes.h"
+#include "local.h"
 #include <signal.h>
 
 void nulcmd()

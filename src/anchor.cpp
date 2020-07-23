@@ -2,6 +2,7 @@
 
 #include "fm.h"
 #include "indep.h"
+#include "types.h"
 #include "etc.h"
 #include "anchor.h"
 #include "myctype.h"

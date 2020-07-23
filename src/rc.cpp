@@ -21,6 +21,7 @@
 #include "file.h"
 #include "mimetypes.h"
 #include "display.h"
+#include "buffer.h"
 #include <stdlib.h>
 
 

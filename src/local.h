@@ -43,3 +43,5 @@ typedef struct direct Directory;
 #endif				/* not HAVE_READLINK */
 
 #endif				/* not LOCAL_H */
+
+void set_environ(const char *var, const char *value);

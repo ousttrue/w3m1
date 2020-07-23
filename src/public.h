@@ -102,7 +102,7 @@ AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd,
 void w3m_exit(int i);
 void deleteFiles();
 char *searchKeyData();
-void set_buffer_environ(Buffer *buf);
+
 int sysm_process_mouse();
 // int gpm_process_mouse(Gpm_Event *, void *);
 void chkNMIDBuffer(Buffer *buf);
