@@ -22,6 +22,18 @@ static int REV_LB[MAX_LB] = {
 
 Buffer::Buffer()
 {
+    COLS = COLS;
+    LINES = (LINES - 1);
+    currentURL.scheme = SCM_UNKNOWN;
+    baseURL = NULL;
+    baseTarget = NULL;
+    buffername = "";
+    bufferprop = BP_NORMAL;
+    clone = New(int);
+    *clone = 1;
+    trbyte = 0;
+    ssl_certificate = NULL;
+    auto_detect = WcOption.auto_detect;
 }
 
 Buffer::~Buffer()
@@ -112,25 +124,8 @@ void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid)
 BufferPtr
 newBuffer(int width)
 {
-    BufferPtr n;
-
-    n = new Buffer;
-    if (n == NULL)
-        return NULL;
+    auto n = new Buffer;
     n->width = width;
-    n->COLS = COLS;
-    n->LINES = (LINES - 1);
-    n->currentURL.scheme = SCM_UNKNOWN;
-    n->baseURL = NULL;
-    n->baseTarget = NULL;
-    n->buffername = "";
-    n->bufferprop = BP_NORMAL;
-    n->clone = New(int);
-    *n->clone = 1;
-    n->trbyte = 0;
-    n->ssl_certificate = NULL;
-    n->auto_detect = WcOption.auto_detect;
-
     return n;
 }
 

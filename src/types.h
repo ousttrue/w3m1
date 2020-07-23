@@ -253,6 +253,17 @@ enum LinkBufferTypes
 };
 const int MAX_LB = 5;
 
+enum BufferProps
+{
+    BP_NORMAL = 0x0,
+    BP_PIPE = 0x1,
+    BP_FRAME = 0x2,
+    BP_INTERNAL = 0x8,
+    BP_NO_URL = 0x10,
+    BP_REDIRECTED = 0x20,
+    BP_CLOSE = 0x40,
+};
+
 using BufferPtr = struct Buffer *;
 struct Buffer : gc_cleanup
 {
