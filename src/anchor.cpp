@@ -497,7 +497,6 @@ putHmarker(HmarkerList *ml, int line, int pos, int seq)
 		ml->marks = NULL;
 		ml->nmark = 0;
 		ml->markmax = 0;
-		ml->prevhseq = -1;
 	}
 	if (ml->markmax == 0)
 	{

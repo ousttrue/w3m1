@@ -150,7 +150,7 @@ static void
 }
 
 static void
-    effect_visited_start()
+effect_visited_start()
 {
     if (useVisitedColor)
     {
@@ -191,7 +191,7 @@ static void effect_visited_end()
 #define EFFECT_ACTIVE_START bold()
 #define EFFECT_ACTIVE_END boldend()
 #define effect_visited_start() /**/
-#define EFFECT_VISITED_END   /**/
+#define EFFECT_VISITED_END     /**/
 #define EFFECT_MARK_START standout()
 #define EFFECT_MARK_END standend()
 #endif /* not USE_COLOR */
@@ -554,21 +554,19 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 }
 
 static void
-drawAnchorCursor0(BufferPtr buf, AnchorList *al, int hseq, int prevhseq,
+drawAnchorCursor0(BufferPtr buf, AnchorList *al,
+                  int hseq, int prevhseq,
                   int tline, int eline, int active)
 {
-    int i, j;
-    Line *l;
-    Anchor *an;
-
-    l = buf->topLine;
-    for (j = 0; j < al->nanchor; j++)
+    auto l = buf->topLine;
+    for (int j = 0; j < al->nanchor; j++)
     {
-        an = &al->anchors[j];
+        auto an = &al->anchors[j];
         if (an->start.line < tline)
             continue;
         if (an->start.line >= eline)
             return;
+
         for (;; l = l->next)
         {
             if (l == NULL)
@@ -576,9 +574,11 @@ drawAnchorCursor0(BufferPtr buf, AnchorList *al, int hseq, int prevhseq,
             if (l->linenumber == an->start.line)
                 break;
         }
+
         if (hseq >= 0 && an->hseq == hseq)
         {
-            for (i = an->start.pos; i < an->end.pos; i++)
+            // 
+            for (int i = an->start.pos; i < an->end.pos; i++)
             {
                 if (l->propBuf[i] & (PE_IMAGE | PE_ANCHOR | PE_FORM))
                 {
@@ -604,25 +604,24 @@ drawAnchorCursor0(BufferPtr buf, AnchorList *al, int hseq, int prevhseq,
 static void
 drawAnchorCursor(BufferPtr buf)
 {
-    Anchor *an;
-    int hseq, prevhseq;
-    int tline, eline;
-
-    if (!buf->firstLine || !buf->hmarklist)
+    if (!buf->firstLine)
         return;
     if (!buf->href && !buf->formitem)
         return;
 
-    an = retrieveCurrentAnchor(buf);
+    auto an = retrieveCurrentAnchor(buf);
     if (!an)
         an = retrieveCurrentMap(buf);
+
+    int hseq;
     if (an)
         hseq = an->hseq;
     else
         hseq = -1;
-    tline = buf->topLine->linenumber;
-    eline = tline + buf->LINES;
-    prevhseq = buf->hmarklist->prevhseq;
+
+    int tline = buf->topLine->linenumber;
+    int eline = tline + buf->LINES;
+    int prevhseq = buf->prevhseq;
 
     if (buf->href)
     {
@@ -634,7 +633,7 @@ drawAnchorCursor(BufferPtr buf)
         drawAnchorCursor0(buf, buf->formitem, hseq, prevhseq, tline, eline, 1);
         drawAnchorCursor0(buf, buf->formitem, hseq, -1, tline, eline, 0);
     }
-    buf->hmarklist->prevhseq = hseq;
+    buf->prevhseq = hseq;
 }
 
 static void
@@ -1293,7 +1292,7 @@ void record_err_message(const char *s)
 /* 
  * List of error messages
  */
-BufferPtr 
+BufferPtr
 message_list_panel(void)
 {
     Str tmp = Strnew_size(LINES * COLS);

@@ -177,7 +177,6 @@ struct HmarkerList
     BufferPoint *marks;
     int nmark;
     int markmax;
-    int prevhseq;
 };
 
 struct FormSelectOptionItem
@@ -275,6 +274,8 @@ struct Buffer: gc_cleanup
     AnchorList *name;
     AnchorList *img;
     AnchorList *formitem;
+    int prevhseq = -1;
+
     LinkList *linklist;
     FormList *formlist;
     MapList *maplist;
