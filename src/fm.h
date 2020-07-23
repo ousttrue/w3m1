@@ -273,49 +273,10 @@
 #define TOP_LINENUMBER(buf) ((buf)->topLine ? (buf)->topLine->linenumber : 1)
 #define CUR_LINENUMBER(buf) ((buf)->currentLine ? (buf)->currentLine->linenumber : 1)
 
-#define RB_STACK_SIZE 10
-
-#define TAG_STACK_SIZE 10
-
-#define FONT_STACK_SIZE 5
-
-#define FONTSTAT_SIZE 7
 
 #define _INIT_BUFFER_WIDTH (COLS - (showLineNum ? 6 : 1))
 #define INIT_BUFFER_WIDTH ((_INIT_BUFFER_WIDTH > 0) ? _INIT_BUFFER_WIDTH : 0)
 #define FOLD_BUFFER_WIDTH (FoldLine ? (INIT_BUFFER_WIDTH + 1) : -1)
-
-
-
-#define in_bold fontstat[0]
-#define in_under fontstat[1]
-#define in_italic fontstat[2]
-#define in_strike fontstat[3]
-#define in_ins fontstat[4]
-#define in_stand fontstat[5]
-
-#define RB_PRE		0x01
-#define RB_SCRIPT	0x02
-#define RB_STYLE	0x04
-#define RB_PLAIN	0x08
-#define RB_LEFT		0x10
-#define RB_CENTER	0x20
-#define RB_RIGHT	0x40
-#define RB_ALIGN	(RB_LEFT| RB_CENTER | RB_RIGHT)
-#define RB_NOBR		0x80
-#define RB_P		0x100
-#define RB_PRE_INT	0x200
-#define RB_IN_DT	0x400
-#define RB_INTXTA	0x800
-#define RB_INSELECT	0x1000
-#define RB_IGNORE_P	0x2000
-#define RB_TITLE	0x4000
-#define RB_NFLUSHED	0x8000
-#define RB_NOFRAMES	0x10000
-#define RB_INTABLE	0x20000
-#define RB_PREMODE	(RB_PRE | RB_PRE_INT | RB_SCRIPT | RB_STYLE | RB_PLAIN | RB_INTXTA)
-#define RB_SPECIAL	(RB_PRE | RB_PRE_INT | RB_SCRIPT | RB_STYLE | RB_PLAIN | RB_NOBR)
-#define RB_PLAIN_PRE	0x40000
 
 #ifdef FORMAT_NICE
 #define RB_FILL		0x80000

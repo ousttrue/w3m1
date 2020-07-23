@@ -248,6 +248,10 @@ ptr が boehmGC 管理になる。
 `std::shared_ptr<_Str>` など。
 ptrを取得して中身を書き換えるものをメソッド化して、ptr を private にしたい。
 
+## file.c
+
+HtmlParse, Http, その他に分割できそうだが、グローバル変数を千切るのが大変・・・
+
 ## TODO
 
 * macro 減らす

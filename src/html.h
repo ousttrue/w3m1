@@ -17,12 +17,6 @@
 #define UFclose(f) (void)(ISclose((f)->stream) == 0 && ((f)->stream = NULL))
 #define UFfileno(f) ISfileno((f)->stream)
 
-struct cmdtable
-{
-    char *cmdname;
-    int cmd;
-};
-
 struct mailcap
 {
     char *type;

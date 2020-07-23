@@ -18,6 +18,7 @@
 #include "etc.h"
 #include "entity.h"
 #include "file.h"
+#include "tagstack.h"
 
 int symbol_width = 0;
 int symbol_width0 = 0;

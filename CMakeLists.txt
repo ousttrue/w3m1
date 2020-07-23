@@ -74,6 +74,7 @@ add_executable(w3m
     src/buffer.cpp
     src/tab.cpp
     src/file.cpp
+    src/tagstack.cpp
     src/mimetypes.cpp
     src/line.cpp
     # src/html_feed_environ.cpp
