@@ -52,7 +52,8 @@ public:
     }
 
     // buffer
-    void BufferPushFront(Buffer *buf);
+    void SetFirstBuffer(Buffer *buf);
+    void BufferPushBeforeCurrent(Buffer *buf);
 };
 using TabPtr = std::shared_ptr<Tab>;
 

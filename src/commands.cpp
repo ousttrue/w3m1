@@ -299,7 +299,7 @@ void pipeBuf()
         if (buf->type == NULL)
             buf->type = "text/plain";
         buf->currentURL.file = "-";
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
@@ -333,7 +333,7 @@ void pipesh()
         buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         if (buf->type == NULL)
             buf->type = "text/plain";
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
@@ -372,7 +372,7 @@ void readsh()
         buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         if (buf->type == NULL)
             buf->type = "text/plain";
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
@@ -910,7 +910,7 @@ void followI()
     }
     else if (buf != NO_BUFFER)
     {
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
     }
     displayBuffer(GetCurrentbuf(), B_NORMAL);
 }
@@ -1616,7 +1616,7 @@ void vwSrc()
     (*buf->clone)++;
     buf->need_reshape = TRUE;
     reshapeBuffer(buf);
-    GetCurrentTab()->BufferPushFront(buf);
+    GetCurrentTab()->BufferPushBeforeCurrent(buf);
     displayBuffer(GetCurrentbuf(), B_NORMAL);
 }
 /* reload */
@@ -1674,7 +1674,7 @@ void reload()
         }
         fbuf->linkBuffer[LB_FRAME] = buf;
         buf->linkBuffer[LB_N_FRAME] = fbuf;
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
         SetCurrentbuf(buf);
         if (GetCurrentbuf()->firstLine)
         {
@@ -1853,7 +1853,7 @@ void rFrame()
     }
     buf->linkBuffer[LB_N_FRAME] = GetCurrentbuf();
     GetCurrentbuf()->linkBuffer[LB_FRAME] = buf;
-    GetCurrentTab()->BufferPushFront(buf);
+    GetCurrentTab()->BufferPushBeforeCurrent(buf);
     if (fmInitialized && display_ok())
         displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
@@ -2347,7 +2347,7 @@ void ldDL()
         _newT();
         new_tab = TRUE;
     }
-    GetCurrentTab()->BufferPushFront(buf);
+    GetCurrentTab()->BufferPushBeforeCurrent(buf);
     if (replace || new_tab)
         deletePrevBuf();
 

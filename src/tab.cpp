@@ -22,8 +22,27 @@ void EachTab(const std::function<void(const TabPtr &)> callback)
     }
 }
 
+void Tab::SetFirstBuffer(Buffer *buffer)
+{
+    firstBuffer = buffer;
+
+    auto currentFound = false;
+    for(auto buf=firstBuffer; buf; buf=buf->nextBuffer)
+    {
+        if(buf==currentBuffer)
+        {
+            currentFound=true;
+        }
+    }
+
+    if(!currentFound)
+    {
+        currentBuffer = nullptr;
+    }
+}
+
 // currentPrev -> buf -> current
-void Tab::BufferPushFront(Buffer *buf)
+void Tab::BufferPushBeforeCurrent(Buffer *buf)
 {
     deleteImage(GetCurrentbuf());
     if (clear_buffer)
@@ -40,12 +59,9 @@ void Tab::BufferPushFront(Buffer *buf)
     else
     {
         auto b = prevBuffer(GetFirstbuf(), GetCurrentbuf());
-        if (b != NULL)
-        {
-            b->nextBuffer = buf;
-            buf->nextBuffer = GetCurrentbuf();
-            SetCurrentbuf(buf);
-        }
+        b->nextBuffer = buf;
+        buf->nextBuffer = GetCurrentbuf();
+        SetCurrentbuf(buf);
     }
 #ifdef USE_BUFINFO
     saveBufferInfo();
@@ -369,7 +385,7 @@ int HasFirstBuffer()
 
 void SetFirstbuf(Buffer *buffer)
 {
-    g_current.lock()->firstBuffer = buffer;
+    g_current.lock()->SetFirstBuffer(buffer);
 }
 
 void followTab(TabPtr tab)
@@ -418,7 +434,7 @@ void followTab(TabPtr tab)
         for (buf = p; buf; buf = p)
         {
             p = prevBuffer(c, buf);
-            GetCurrentTab()->BufferPushFront(buf);
+            GetCurrentTab()->BufferPushBeforeCurrent(buf);
         }
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);

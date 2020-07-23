@@ -35,7 +35,7 @@ void cmd_loadBuffer(Buffer *buf, int prop, int linkid)
             buf->linkBuffer[REV_LB[linkid]] = GetCurrentbuf();
             GetCurrentbuf()->linkBuffer[linkid] = buf;
         }
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }

@@ -457,7 +457,7 @@ void cmd_loadfile(char *fn)
     }
     else if (buf != NO_BUFFER)
     {
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
         if (RenderFrame && GetCurrentbuf()->frameset != NULL)
             rFrame();
     }
@@ -489,7 +489,7 @@ void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request
     }
     else if (buf != NO_BUFFER)
     {
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
         if (RenderFrame && GetCurrentbuf()->frameset != NULL)
             rFrame();
     }
@@ -1330,7 +1330,7 @@ Str conv_form_encoding(Str val, FormItemList *fi, Buffer *buf)
 
 Buffer *loadNormalBuf(Buffer *buf, int renderframe)
 {
-    GetCurrentTab()->BufferPushFront(buf);
+    GetCurrentTab()->BufferPushBeforeCurrent(buf);
     if (renderframe && RenderFrame && GetCurrentbuf()->frameset != NULL)
         rFrame();
     return buf;
@@ -1544,7 +1544,7 @@ void gotoLabel(char *label)
     buf->currentURL.label = allocStr(label, -1);
     pushHashHist(URLHist, parsedURL2Str(&buf->currentURL)->ptr);
     (*buf->clone)++;
-    GetCurrentTab()->BufferPushFront(buf);
+    GetCurrentTab()->BufferPushBeforeCurrent(buf);
     gotoLine(GetCurrentbuf(), al->start.line);
     if (label_topline)
         GetCurrentbuf()->topLine = lineSkip(GetCurrentbuf(), GetCurrentbuf()->topLine,
@@ -1981,7 +1981,7 @@ void execdict(char *word)
         buf->buffername = Sprintf("%s %s", DICTBUFFERNAME, word)->ptr;
         if (buf->type == NULL)
             buf->type = "text/plain";
-        GetCurrentTab()->BufferPushFront(buf);
+        GetCurrentTab()->BufferPushBeforeCurrent(buf);
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
@@ -2092,7 +2092,7 @@ void tabURL0(TabPtr tab, char *prompt, int relative)
         for (buf = p; buf; buf = p)
         {
             p = prevBuffer(c, buf);
-            GetCurrentTab()->BufferPushFront(buf);
+            GetCurrentTab()->BufferPushBeforeCurrent(buf);
         }
     }
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
