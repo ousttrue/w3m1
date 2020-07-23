@@ -118,6 +118,11 @@ wtf_width(uint8_t *p)
 int
 wtf_strwidth(uint8_t *p)
 {
+    if(!p)
+    {
+        return 0;
+    }
+    
     int w = 0;
 
     while (*p) {
