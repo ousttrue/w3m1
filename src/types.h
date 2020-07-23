@@ -10,6 +10,7 @@
 
 #include <gc_cpp.h>
 #include <string>
+#include <list>
 
 struct ParsedURL
 {

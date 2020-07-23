@@ -5,7 +5,6 @@
 #include <list>
 #include <functional>
 
-struct Buffer;
 ///
 /// [ tab ]
 ///

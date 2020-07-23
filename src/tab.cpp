@@ -12,7 +12,13 @@
 #include <algorithm>
 #include <assert.h>
 
-std::list<TabPtr> g_tabs;
+using TabList = std::list<TabPtr>;
+TabList g_tabs;
+TabList::iterator find(const TabPtr &tab)
+{
+    return std::find(g_tabs.begin(), g_tabs.end(), tab);
+}
+
 std::weak_ptr<Tab> g_current;
 
 void EachTab(const std::function<void(const TabPtr &)> callback)
@@ -231,13 +237,13 @@ void _newT()
 
     // new tab
     auto current = g_current.lock();
-    auto found = std::find(g_tabs.begin(), g_tabs.end(), current);
+    auto found = find(current);
     ++found;
     auto tab = std::make_shared<Tab>();
-    tab->SetFirstBuffer(buf, true);
     g_tabs.insert(found, tab);
 
     g_current = tab;
+    tab->SetFirstBuffer(buf, true);
 }
 
 void deleteTab(TabPtr tab)
@@ -254,7 +260,7 @@ void deleteTab(TabPtr tab)
         buf = next;
     }
 
-    auto found = std::find(g_tabs.begin(), g_tabs.end(), tab);
+    auto found = find(tab);
 
     bool isCurrent = (*found == g_current.lock());
 
@@ -299,8 +305,8 @@ void moveTab(TabPtr src, TabPtr dst, int right)
     if (!src || !dst || src == dst)
         return;
 
-    auto s = std::find(g_tabs.begin(), g_tabs.end(), src);
-    auto d = std::find(g_tabs.begin(), g_tabs.end(), dst);
+    auto s = find(src);
+    auto d = find(dst);
 
     if (right)
     {
