@@ -191,7 +191,6 @@ void copyParsedURL(ParsedURL *p, ParsedURL *q);
 void parseURL2(char *url, ParsedURL *pu, ParsedURL *current);
 Str parsedURL2Str(ParsedURL *pu);
 
-void init_stream(URLFile *uf, SchemaTypes scheme, InputStream *stream);
 
 Str HTTPrequestMethod(HRequest *hr);
 Str HTTPrequestURI(ParsedURL *pu, HRequest *hr);
@@ -225,7 +224,7 @@ void init_rc(void);
 BufferPtr load_option_panel(void);
 void sync_with_option(void);
 
-char *auxbinFile(char *base);
+char *auxbinFile(const char *base);
 char *libFile(char *base);
 char *helpFile(char *base);
 Str localCookie(void);

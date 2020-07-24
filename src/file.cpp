@@ -162,14 +162,14 @@ const char *violations[COO_EMAX] = {
 /* *INDENT-OFF* */
 static struct compression_decoder
 {
-    int type;
-    char *ext;
-    char *mime_type;
+    CompressionTypes type;
+    const char *ext;
+    const char *mime_type;
     int auxbin_p;
-    char *cmd;
-    char *name;
-    char *encoding;
-    char *encodings[4];
+    const char *cmd;
+    const char *name;
+    const char *encoding;
+    const char *encodings[4];
 } compression_decoders[] = {
     {CMP_COMPRESS, ".gz", "application/x-gzip", 0, GUNZIP_CMDNAME, GUNZIP_NAME, "gzip", {"gzip", "x-gzip", NULL}},
     {CMP_COMPRESS, ".Z", "application/x-compress", 0, GUNZIP_CMDNAME, GUNZIP_NAME, "compress", {"compress", "x-compress", NULL}},
@@ -310,7 +310,7 @@ check_compression(char *path, URLFile *uf)
     }
 }
 
-static char *
+static const char *
 compress_application_type(int compression)
 {
     struct compression_decoder *d;
@@ -415,7 +415,7 @@ void examineFile(char *path, URLFile *uf)
 
 #define S_IXANY (S_IXUSR | S_IXGRP | S_IXOTH)
 
-int check_command(char *cmd, int auxbin_p)
+int check_command(const char *cmd, int auxbin_p)
 {
     static char *path = NULL;
     Str dirs;
@@ -782,7 +782,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
             uf->compression = CMP_NOCOMPRESS;
             for (d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
             {
-                char **e;
+                const char **e;
                 for (e = d->encodings; *e != NULL; e++)
                 {
                     if (strncasecmp(p, *e, strlen(*e)) == 0)
@@ -6034,10 +6034,10 @@ uncompress_stream(URLFile *uf, char **src)
 #ifndef __MINGW32_VERSION
     pid_t pid1;
     FILE *f1;
-    char *expand_cmd = GUNZIP_CMDNAME;
-    char *expand_name = GUNZIP_NAME;
+    const char *expand_cmd = GUNZIP_CMDNAME;
+    const char *expand_name = GUNZIP_NAME;
     char *tmpf = NULL;
-    char *ext = NULL;
+    const char *ext = NULL;
     struct compression_decoder *d;
 
     if (IStype(uf->stream) != IST_ENCODED)

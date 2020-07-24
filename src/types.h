@@ -13,21 +13,7 @@
 #include <string>
 #include <list>
 #include "url.h"
-
-struct URLFile
-{
-    SchemaTypes scheme;
-    char is_cgi;
-    char encoding;
-    InputStream *stream;
-    const char *ext;
-    int compression;
-    int content_encoding;
-    const char *guess_type;
-    char *ssl_certificate;
-    char *url;
-    time_t modtime;
-};
+#include "urlfile.h"
 
 struct URLOption
 {

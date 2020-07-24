@@ -1,4 +1,5 @@
 #pragma once
+#include <Str.h>
 
 enum SchemaTypes
 {
