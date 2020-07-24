@@ -99,16 +99,18 @@ int onAnchor(Anchor *a, int line, int pos)
 }
 
 Anchor *
-retrieveAnchor(const AnchorList &al, int line, int pos)
+AnchorList::RetrieveAnchor(int line, int pos) const
 {
-    if (al.nanchor == 0)
+    if (nanchor == 0)
         return NULL;
 
+    if (acache < 0 || acache >= nanchor)
+        acache = 0;
+
     size_t b, e;
-    int acache = 0;
-    for (b = 0, e = al.nanchor - 1; b <= e; acache = (b + e) / 2)
+    for (b = 0, e = nanchor - 1; b <= e; acache = (b + e) / 2)
     {
-        auto a = &al.anchors[acache];
+        auto a = &anchors[acache];
         auto cmp = onAnchor(a, line, pos);
         if (cmp == 0)
             return a;
@@ -128,7 +130,7 @@ retrieveCurrentAnchor(BufferPtr buf)
 {
     if (buf->currentLine == NULL)
         return NULL;
-    return retrieveAnchor(buf->href, buf->currentLine->linenumber, buf->pos);
+    return buf->href.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
 }
 
 Anchor *
@@ -136,7 +138,7 @@ retrieveCurrentImg(BufferPtr buf)
 {
     if (buf->currentLine == NULL)
         return NULL;
-    return retrieveAnchor(buf->img, buf->currentLine->linenumber, buf->pos);
+    return buf->img.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
 }
 
 Anchor *
@@ -144,8 +146,7 @@ retrieveCurrentForm(BufferPtr buf)
 {
     if (buf->currentLine == NULL)
         return NULL;
-    return retrieveAnchor(buf->formitem,
-                          buf->currentLine->linenumber, buf->pos);
+    return buf->formitem.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
 }
 
 Anchor *
@@ -584,7 +585,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         }
         Anchor a_href;
         {
-            auto a = retrieveAnchor(buf->href, a_img.start.line, a_img.start.pos);
+            auto a = buf->href.RetrieveAnchor(a_img.start.line, a_img.start.pos);
             if (a)
                 a_href = *a;
             else
@@ -592,7 +593,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         }
         Anchor a_form;
         {
-            auto a = retrieveAnchor(buf->formitem, a_img.start.line, a_img.start.pos);
+            auto a = buf->formitem.RetrieveAnchor(a_img.start.line, a_img.start.pos);
             if (a)
                 a_form = *a;
             else
@@ -834,7 +835,7 @@ link_list_panel(BufferPtr buf)
                 t = html_quote(a->url);
             Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
                            "\n", NULL);
-            a = retrieveAnchor(buf->formitem, a->start.line, a->start.pos);
+            a = buf->formitem.RetrieveAnchor(a->start.line, a->start.pos);
             if (!a)
                 continue;
             auto fi = (FormItemList *)a->url;

@@ -777,7 +777,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
 #ifdef USE_COLOR
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
-            a = retrieveAnchor(buf->href, l->linenumber, pos + j);
+            a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
                 parseURL2(a->url, &url, baseURL(buf));
@@ -910,7 +910,7 @@ redrawLineImage(BufferPtr buf, Line *l, int i)
             rcol = l->COLPOS(pos + j + 1);
             continue;
         }
-        a = retrieveAnchor(buf->img, l->linenumber, pos + j);
+        a = buf->img.RetrieveAnchor(l->linenumber, pos + j);
         if (a && a->image && a->image->touch < image_touch)
         {
             Image *image = a->image;
@@ -999,7 +999,7 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
 #ifdef USE_COLOR
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
-            a = retrieveAnchor(buf->href, l->linenumber, pos + j);
+            a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
                 parseURL2(a->url, &url, baseURL(buf));

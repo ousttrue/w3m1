@@ -4045,8 +4045,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         else if (iseq < 0)
                         {
                             BufferPoint *po = buf->imarklist->marks - iseq - 1;
-                            Anchor *a = retrieveAnchor(buf->img,
-                                                       po->line, po->pos);
+                            Anchor *a = buf->img.RetrieveAnchor(po->line, po->pos);
                             if (a)
                             {
                                 a_img->url = a->url;

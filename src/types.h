@@ -163,8 +163,11 @@ struct Anchor
     Image *image;
 };
 
-struct AnchorList
+class AnchorList
 {
+    mutable int acache = -1;
+    
+public:
     Anchor *anchors = nullptr;
     int nanchor = 0;
     int anchormax = 0;
@@ -185,6 +188,9 @@ struct AnchorList
     {
         return nanchor > 0;
     }
+
+    Anchor *
+    RetrieveAnchor(int line, int pos) const;
 };
 
 struct HmarkerList

@@ -477,7 +477,7 @@ formUpdateBuffer(Anchor *a, BufferPtr buf, FormItemList *form)
 	for (c_rows = 0; c_rows < rows; c_rows++, l = l->next) {
 	    if (rows > 1) {
 		pos = columnPos(l, col);
-		a = retrieveAnchor(buf->formitem, l->linenumber, pos);
+		a = buf->formitem.RetrieveAnchor(l->linenumber, pos);
 		if (a == NULL)
 		    break;
 		spos = a->start.pos;

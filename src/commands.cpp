@@ -942,9 +942,9 @@ void topA()
         if (hseq >= hl->nmark)
             return;
         po = hl->marks + hseq;
-        an = retrieveAnchor(GetCurrentbuf()->href, po->line, po->pos);
+        an = GetCurrentbuf()->href.RetrieveAnchor(po->line, po->pos);
         if (an == NULL)
-            an = retrieveAnchor(GetCurrentbuf()->formitem, po->line, po->pos);
+            an = GetCurrentbuf()->formitem.RetrieveAnchor(po->line, po->pos);
         hseq++;
     } while (an == NULL);
     gotoLine(GetCurrentbuf(), po->line);
@@ -975,9 +975,9 @@ void lastA()
         if (hseq < 0)
             return;
         po = hl->marks + hseq;
-        an = retrieveAnchor(GetCurrentbuf()->href, po->line, po->pos);
+        an = GetCurrentbuf()->href.RetrieveAnchor(po->line, po->pos);
         if (an == NULL)
-            an = retrieveAnchor(GetCurrentbuf()->formitem, po->line, po->pos);
+            an = GetCurrentbuf()->formitem.RetrieveAnchor(po->line, po->pos);
         hseq--;
     } while (an == NULL);
     gotoLine(GetCurrentbuf(), po->line);

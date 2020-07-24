@@ -1375,9 +1375,9 @@ void _nextA(int visited)
                     goto _end;
                 }
                 po = &hl->marks[hseq];
-                an = retrieveAnchor(GetCurrentbuf()->href, po->line, po->pos);
+                an = GetCurrentbuf()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
-                    an = retrieveAnchor(GetCurrentbuf()->formitem, po->line,
+                    an = GetCurrentbuf()->formitem.RetrieveAnchor(po->line,
                                         po->pos);
                 hseq++;
                 if (visited == TRUE && an)
@@ -1469,10 +1469,9 @@ void _prevA(int visited)
                     goto _end;
                 }
                 po = hl->marks + hseq;
-                an = retrieveAnchor(GetCurrentbuf()->href, po->line, po->pos);
+                an = GetCurrentbuf()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
-                    an = retrieveAnchor(GetCurrentbuf()->formitem, po->line,
-                                        po->pos);
+                    an = GetCurrentbuf()->formitem.RetrieveAnchor(po->line, po->pos);
                 hseq--;
                 if (visited == TRUE && an)
                 {
@@ -1593,9 +1592,9 @@ void nextX(int d, int dy)
         {
             for (; x >= 0 && x < l->len; x += d)
             {
-                an = retrieveAnchor(GetCurrentbuf()->href, y, x);
+                an = GetCurrentbuf()->href.RetrieveAnchor(y, x);
                 if (!an)
-                    an = retrieveAnchor(GetCurrentbuf()->formitem, y, x);
+                    an = GetCurrentbuf()->formitem.RetrieveAnchor(y, x);
                 if (an)
                 {
                     pan = an;
@@ -1650,9 +1649,9 @@ void nextY(int d)
         an = NULL;
         for (; y >= 0 && y <= GetCurrentbuf()->lastLine->linenumber; y += d)
         {
-            an = retrieveAnchor(GetCurrentbuf()->href, y, x);
+            an = GetCurrentbuf()->href.RetrieveAnchor(y, x);
             if (!an)
-                an = retrieveAnchor(GetCurrentbuf()->formitem, y, x);
+                an = GetCurrentbuf()->formitem.RetrieveAnchor(y, x);
             if (an && hseq != abs(an->hseq))
             {
                 pan = an;
