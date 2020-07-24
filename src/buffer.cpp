@@ -12,6 +12,7 @@
 #include "ctrlcode.h"
 #include "local.h"
 #include "anchor.h"
+#include "url.h"
 
 static int REV_LB[MAX_LB] = {
     LB_N_FRAME,

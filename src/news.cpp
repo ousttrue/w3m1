@@ -8,6 +8,7 @@
 #include "html.h"
 #include "mimehead.h"
 #include "display.h"
+#include "url.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

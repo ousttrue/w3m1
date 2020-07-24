@@ -9,6 +9,7 @@
 #include "file.h"
 #include "terms.h"
 #include "table.h"
+#include "url.h"
 #include <signal.h>
 #include <setjmp.h>
 

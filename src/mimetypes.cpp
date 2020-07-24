@@ -2,6 +2,7 @@
 #include "indep.h"
 #include "mimetypes.h"
 #include "textlist.h"
+#include "buffer.h"
 #include "url.h"
 
 static TextList *mimetypes_list;

@@ -1,12 +1,7 @@
-/* $Id: html.h,v 1.31 2010/08/14 01:29:40 htrb Exp $ */
-#ifndef _HTML_H
-#define _HTML_H
-#ifdef USE_SSL
+#pragma once
 #include <openssl/bio.h>
 #include <openssl/x509.h>
 #include <openssl/ssl.h>
-#endif /* USE_SSL */
-
 #include "istream.h"
 
 #define StrUFgets(f) StrISgets((f)->stream)
@@ -330,11 +325,14 @@ struct TagAttrInfo
 #define VTYPE_MLENGTH 9
 #define VTYPE_TYPE 10
 
-#define SHAPE_UNKNOWN 0
-#define SHAPE_DEFAULT 1
-#define SHAPE_RECT 2
-#define SHAPE_CIRCLE 3
-#define SHAPE_POLY 4
+enum ShapeTypes
+{
+    SHAPE_UNKNOWN = 0,
+    SHAPE_DEFAULT = 1,
+    SHAPE_RECT = 2,
+    SHAPE_CIRCLE = 3,
+    SHAPE_POLY = 4,
+};
 
 extern TagInfo TagMAP[];
 extern TagAttrInfo AttrMAP[];
@@ -344,23 +342,3 @@ extern TagAttrInfo AttrMAP[];
 
 #define INDENT_INCR IndentIncr
 
-#define SCM_UNKNOWN 255
-#define SCM_MISSING 254
-#define SCM_HTTP 0
-#define SCM_GOPHER 1
-#define SCM_FTP 2
-#define SCM_FTPDIR 3
-#define SCM_LOCAL 4
-#define SCM_LOCAL_CGI 5
-#define SCM_EXEC 6
-#define SCM_NNTP 7
-#define SCM_NNTP_GROUP 8
-#define SCM_NEWS 9
-#define SCM_NEWS_GROUP 10
-#define SCM_DATA 11
-#define SCM_MAILTO 12
-#ifdef USE_SSL
-#define SCM_HTTPS 13
-#endif /* USE_SSL */
-
-#endif /* _HTML_H */

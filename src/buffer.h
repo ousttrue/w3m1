@@ -34,3 +34,6 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);
 void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, const BufferPoint &bp, int shift);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
+
+void chkExternalURIBuffer(BufferPtr buf);
+TextList *make_domain_list(char *domain_list);

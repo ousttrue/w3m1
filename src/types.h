@@ -12,24 +12,11 @@
 #include <gc_cpp.h>
 #include <string>
 #include <list>
-
-struct ParsedURL
-{
-    int scheme;
-    char *user;
-    char *pass;
-    char *host;
-    int port;
-    char *file;
-    char *real_file;
-    char *query;
-    char *label;
-    int is_nocache;
-};
+#include "url.h"
 
 struct URLFile
 {
-    unsigned char scheme;
+    SchemaTypes scheme;
     char is_cgi;
     char encoding;
     InputStream *stream;

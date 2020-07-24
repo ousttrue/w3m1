@@ -18,6 +18,7 @@
 #include "myctype.h"
 #include "terms.h"
 #include "display.h"
+#include "url.h"
 
 #ifdef DEBUG
 #include <malloc.h>

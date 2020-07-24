@@ -30,7 +30,7 @@
 #endif
 #endif
 #include "dispatcher.h"
-
+#include "url.h"
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>

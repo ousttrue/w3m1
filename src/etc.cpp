@@ -14,6 +14,7 @@
 #include "terms.h"
 #include "display.h"
 #include "buffer.h"
+#include "url.h"
 
 // #include <sys/socket.h>
 #include <netdb.h>

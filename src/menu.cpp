@@ -17,6 +17,7 @@
 #include "etc.h"
 #include "buffer.h"
 #include "anchor.h"
+#include "url.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

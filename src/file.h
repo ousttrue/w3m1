@@ -184,14 +184,15 @@ MySignalHandler error_dump(SIGNAL_ARG);
 
 void free_ssl_ctx();
 ParsedURL *baseURL(BufferPtr buf);
-int openSocket(char *hostname, char *remoteport_name,
+int openSocket(const char *hostname, const char *remoteport_name,
                unsigned short remoteport_num);
 void parseURL(char *url, ParsedURL *p_url, ParsedURL *current);
 void copyParsedURL(ParsedURL *p, ParsedURL *q);
 void parseURL2(char *url, ParsedURL *pu, ParsedURL *current);
 Str parsedURL2Str(ParsedURL *pu);
-int getURLScheme(char **url);
-void init_stream(URLFile *uf, int scheme, InputStream *stream);
+
+void init_stream(URLFile *uf, SchemaTypes scheme, InputStream *stream);
+
 Str HTTPrequestMethod(HRequest *hr);
 Str HTTPrequestURI(ParsedURL *pu, HRequest *hr);
 URLFile openURL(char *url, ParsedURL *pu, ParsedURL *current,
