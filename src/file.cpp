@@ -3916,7 +3916,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (parsedtag_get_value(tag, ATTR_NAME, &id))
                     {
                         id = url_quote_conv(id, buf->document_charset);
-                        registerName(buf, id, currentLn(buf), pos);
+                        buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
                     }
                     if (parsedtag_get_value(tag, ATTR_HREF, &p))
                         p = url_quote_conv(remove_space(p),
@@ -3946,14 +3946,15 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         }
                     }
                     if (id && idFrame)
-                        idFrame->body->nameList.Put(id, NULL,
-                                                    NULL, NULL, '\0',
-                                                    currentLn(buf), pos);
+                    {
+                        auto a = Anchor::CreateName(id, currentLn(buf), pos);
+                        idFrame->body->nameList.Put(a);
+                    }
                     if (p)
                     {
                         effect |= PE_ANCHOR;
-                        a_href = registerHref(buf, p, q, r, s,
-                                              *t, currentLn(buf), pos);
+                        a_href = buf->href.Put(Anchor::CreateHref(p, q, r, s,
+                                                                  *t, currentLn(buf), pos));
                         a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
                         a_href->slave = (hseq > 0) ? FALSE : TRUE;
                     }
@@ -4007,7 +4008,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         parsedtag_get_value(tag, ATTR_TITLE, &s);
                         p = url_quote_conv(remove_space(p),
                                            buf->document_charset);
-                        a_img = registerImg(buf, p, s, currentLn(buf), pos);
+                        a_img = buf->img.Put(Anchor::CreateImage(p, s, currentLn(buf), pos));
 #ifdef USE_IMAGE
                         a_img->hseq = iseq;
                         a_img->image = NULL;
@@ -4121,8 +4122,26 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         }
                     }
 #endif
-                    a_form =
-                        registerForm(buf, form, tag, currentLn(buf), pos);
+
+                    auto fi = formList_addInput(form, tag);
+                    if (fi)
+                    {
+                        Anchor a;
+                        a.target = form->target;
+                        a.item = fi;
+                        BufferPoint bp = {
+                            line: currentLn(buf), 
+                            pos: pos
+                        };
+                        a.start = bp;
+                        a.end = bp;
+                        a_form = buf->formitem.Put(a);
+                    }
+                    else
+                    {
+                        a_form = nullptr;
+                    }
+
                     if (a_textarea && textareanumber >= 0)
                         a_textarea[textareanumber] = a_form;
 #ifdef MENU_SELECT
@@ -4348,7 +4367,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 if (parsedtag_get_value(tag, ATTR_ID, &id))
                 {
                     id = url_quote_conv(id, buf->document_charset);
-                    registerName(buf, id, currentLn(buf), pos);
+                    buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
                 }
                 if (renderFrameSet &&
                     parsedtag_get_value(tag, ATTR_FRAMENAME, &p))
@@ -4362,9 +4381,10 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     }
                 }
                 if (id && idFrame)
-                    idFrame->body->nameList.Put(id, NULL,
-                                                NULL, NULL, '\0',
-                                                currentLn(buf), pos);
+                {
+                    auto a = Anchor::CreateName(id, currentLn(buf), pos);
+                    idFrame->body->nameList.Put(a);
+                }
 #endif /* ID_EXT */
             }
         }

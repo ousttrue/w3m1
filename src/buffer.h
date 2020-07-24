@@ -4,7 +4,6 @@
 void deleteImage(BufferPtr buf);
 void getAllImage(BufferPtr buf);
 void loadImage(BufferPtr buf, int flag);
-Anchor *registerForm(BufferPtr buf, FormList *flist, struct parsed_tag *tag, int line, int pos);
 
 BufferPtr nullBuffer(void);
 void clearBuffer(BufferPtr buf);
@@ -23,13 +22,6 @@ void set_buffer_environ(BufferPtr buf);
 void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid);
 
 // anchor
-Anchor *registerHref(BufferPtr buf, char *url, char *target,
-                     char *referer, char *title, unsigned char key,
-                     int line, int pos);
-Anchor *registerName(BufferPtr buf, char *url, int line, int pos);
-Anchor *registerImg(BufferPtr buf, char *url, char *title, int line,
-                    int pos);
-
 const Anchor *retrieveCurrentAnchor(BufferPtr buf);
 const Anchor *retrieveCurrentImg(BufferPtr buf);
 const Anchor *retrieveCurrentForm(BufferPtr buf);

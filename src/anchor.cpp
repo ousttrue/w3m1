@@ -11,79 +11,34 @@
 
 #define FIRST_ANCHOR_SIZE 30
 
-Anchor *AnchorList::Put(char *url, char *target,
-                        char *referer, char *title, unsigned char key, int line, int pos,
-                        FormItemList *fi)
+Anchor* AnchorList::Put(const Anchor &a)
 {
-    // int n, i, j;
-    // Anchor *a;
-
-    BufferPoint bp;
-    bp.line = line;
-    bp.pos = pos;
-
-    auto n = anchors.size();
-    anchors.resize(n + 1);
+    if (anchors.empty() || anchors.back().start.Cmp(a.start) < 0)
+    {
+        // push_back
+        anchors.push_back(a);
+        return &anchors.back();
+    }
 
     // search insert position
-    int i;
-    if (!n || anchors[n - 1].start.Cmp(bp) < 0)
+    auto n = anchors.size();
+    int i = 0;
+    for (; i < n; i++)
     {
-        i = n;
-    }
-    else
-    {
-        for (i = 0; i < n; i++)
+        if (anchors[i].start.Cmp(a.start) >= 0)
         {
-            if (anchors[i].start.Cmp(bp) >= 0)
-            {
-                for (int j = n; j > i; j--)
-                    anchors[j] = anchors[j - 1];
-                break;
-            }
+            break;
         }
     }
-
-    auto a = &anchors[i];
-    a->url = url;
-    a->target = target;
-    a->referer = referer;
-    a->title = title;
-    a->accesskey = key;
-    a->slave = FALSE;
-    a->start = bp;
-    a->end = bp;
-    a->item = fi;
-    return a;
-}
-
-Anchor *
-registerHref(BufferPtr buf, char *url, char *target, char *referer,
-             char *title, unsigned char key, int line, int pos)
-{
-    return buf->href.Put(url, target, referer, title, key, line, pos);
-}
-
-Anchor *
-registerName(BufferPtr buf, char *url, int line, int pos)
-{
-    return buf->name.Put(url, NULL, NULL, NULL, '\0', line, pos);
-}
-
-Anchor *
-registerImg(BufferPtr buf, char *url, char *title, int line, int pos)
-{
-    return buf->img.Put(url, NULL, NULL, title, '\0', line, pos);
-}
-
-Anchor *
-registerForm(BufferPtr buf, FormList *flist, struct parsed_tag *tag, int line,
-             int pos)
-{
-    auto fi = formList_addInput(flist, tag);
-    if (fi == NULL)
-        return NULL;
-    return buf->formitem.Put(nullptr, flist->target, NULL, NULL, '\0', line, pos, fi);
+    // move back for insert
+    anchors.resize(n + 1);
+    for (int j = n; j > i; j--)
+    {
+        anchors[j] = anchors[j - 1];
+    }
+    // insert
+    anchors[i] = a;
+    return &anchors[i];
 }
 
 int Anchor::CmpOnAnchor(const BufferPoint &bp) const
@@ -165,33 +120,31 @@ searchURLLabel(BufferPtr buf, char *url)
     return buf->name.SearchByUrl(url);
 }
 
-static Anchor *
+static Anchor*
 _put_anchor_news(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
-    Str tmp;
-
     if (*p1 == '<')
     {
         p1++;
         if (*(p2 - 1) == '>')
             p2--;
     }
-    tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), InnerCharset,
+    auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), InnerCharset,
                              buf->document_charset);
     tmp = Sprintf("news:%s", file_quote(tmp->ptr));
-    return registerHref(buf, tmp->ptr, NULL, NO_REFERER, NULL, '\0', line,
-                        pos);
+
+    auto a= Anchor::CreateHref(tmp->ptr, NULL, NO_REFERER, NULL, '\0', line, pos);
+    return buf->href.Put(a);
 }
 
-static Anchor *
+static Anchor*
 _put_anchor_all(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
-    Str tmp;
-
-    tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), InnerCharset,
+    auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), InnerCharset,
                              buf->document_charset);
-    return registerHref(buf, url_quote(tmp->ptr), NULL, NO_REFERER, NULL,
+    auto a = Anchor::CreateHref(url_quote(tmp->ptr), NULL, NO_REFERER, NULL,
                         '\0', line, pos);
+    return buf->href.Put(a);
 }
 
 static void
@@ -242,9 +195,9 @@ reseq_anchor(BufferPtr buf)
         {
             a->hseq = n;
             auto a1 = buf->href.ClosestNext(NULL, a->start.pos,
-                                          a->start.line);
+                                            a->start.line);
             a1 = buf->formitem.ClosestNext(a1, a->start.pos,
-                                     a->start.line);
+                                           a->start.line);
             if (a1 && a1->hseq >= 0)
             {
                 seqmap[n] = seqmap[a1->hseq];
@@ -602,31 +555,42 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
             if (a_img.start.line == l->linenumber)
                 continue;
             auto pos = columnPos(l, col);
-            auto a = registerImg(buf, a_img.url, a_img.title, l->linenumber, pos);
-            a->hseq = -a_img.hseq;
-            a->slave = TRUE;
-            a->image = img;
-            a->end.pos = pos + ecol - col;
-            for (int k = pos; k < a->end.pos; k++)
-                l->propBuf[k] |= PE_IMAGE;
+            {
+                // img
+                auto a = Anchor::CreateImage(a_img.url, a_img.title, l->linenumber, pos);
+                a.hseq = -a_img.hseq;
+                a.slave = TRUE;
+                a.image = img;
+                a.end.pos = pos + ecol - col;
+                buf->img.Put(a);
+                for (int k = pos; k < a.end.pos; k++)
+                    l->propBuf[k] |= PE_IMAGE;
+            }
             if (a_href.url)
             {
-                auto a = registerHref(buf, a_href.url, a_href.target,
+                // href
+                auto a = Anchor::CreateHref(a_href.url, a_href.target,
                                       a_href.referer, a_href.title,
                                       a_href.accesskey, l->linenumber, pos);
-                a->hseq = a_href.hseq;
-                a->slave = TRUE;
-                a->end.pos = pos + ecol - col;
-                for (int k = pos; k < a->end.pos; k++)
+                a.hseq = a_href.hseq;
+                a.slave = TRUE;
+                a.end.pos = pos + ecol - col;
+                buf->href.Put(a);
+                for (int k = pos; k < a.end.pos; k++)
                     l->propBuf[k] |= PE_ANCHOR;
             }
-            if (a_form.url)
+            if (a_form.item)
             {
-                auto a = buf->formitem.Put(a_form.url,
-                                           a_form.target, NULL, NULL, '\0',
-                                           l->linenumber, pos);
-                a->hseq = a_form.hseq;
-                a->end.pos = pos + ecol - col;
+                Anchor a = a_form;
+                a.start = BufferPoint{
+                    line : l->linenumber,
+                    pos : pos
+                };
+                a.end = BufferPoint{
+                    line : l->linenumber,
+                    pos : pos + ecol - col
+                };
+                buf->formitem.Put(a);
             }
         }
         img->rows = 0;
@@ -679,15 +643,20 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
             }
             if (a_form.start.line == l->linenumber)
                 continue;
-            auto a = buf->formitem.Put(a_form.url,
-                                       a_form.target, NULL, NULL, '\0',
-                                       l->linenumber, pos);
-            a->hseq = a_form.hseq;
-            a->y = a_form.y;
-            a->end.pos = pos + ecol - col;
+
+            auto a = a_form;
+            a.start = BufferPoint{
+                line : l->linenumber,
+                pos : pos
+            };
+            a.end = BufferPoint{
+                line : l->linenumber,
+                pos : pos + ecol - col
+            };
+            buf->formitem.Put(a);
             l->lineBuf[pos - 1] = '[';
-            l->lineBuf[a->end.pos] = ']';
-            for (int k = pos; k < a->end.pos; k++)
+            l->lineBuf[a.end.pos] = ']';
+            for (int k = pos; k < a.end.pos; k++)
                 l->propBuf[k] |= PE_FORM;
         }
     }

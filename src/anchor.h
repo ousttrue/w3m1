@@ -19,6 +19,64 @@ struct Anchor
     Image *image = nullptr;
     FormItemList *item = nullptr;
 
+    static Anchor CreateHref(char *url, char *target, char *referer,
+                             char *title, unsigned char key, int line, int pos)
+    {
+        return Anchor{
+            url : url,
+            target : target,
+            referer : referer,
+            title : title,
+            accesskey : key,
+            start : {
+                line : line,
+                pos : pos,
+            },
+            end : {
+                line : line,
+                pos : pos,
+            },
+        };
+    }
+
+    static Anchor CreateName(char *url, int line, int pos)
+    {
+        return Anchor{
+            url : url,
+            target : nullptr,
+            referer : nullptr,
+            title : nullptr,
+            accesskey : '\0',
+            start : {
+                line : line,
+                pos : pos,
+            },
+            end : {
+                line : line,
+                pos : pos,
+            },
+        };
+    }
+
+    static Anchor CreateImage(char *url, char *title, int line, int pos)
+    {
+        return Anchor{
+            url : url,
+            target : nullptr,
+            referer : nullptr,
+            title : title,
+            accesskey : '\0',
+            start : {
+                line : line,
+                pos : pos,
+            },
+            end : {
+                line : line,
+                pos : pos,
+            },
+        };
+    }
+
     int CmpOnAnchor(const BufferPoint &bp) const;
 };
 
@@ -44,8 +102,7 @@ public:
         return !anchors.empty();
     }
 
-    Anchor *
-    Put(char *url, char *target, char *referer, char *title, unsigned char key, int line, int pos, FormItemList *fi = nullptr);
+    Anchor* Put(const Anchor &a);
 
     const Anchor *
     RetrieveAnchor(const BufferPoint &bp) const;
