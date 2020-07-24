@@ -868,11 +868,10 @@ void set_buffer_environ(BufferPtr buf)
     l = buf->currentLine;
     if (l && (buf != prev_buf || l != prev_line || buf->pos != prev_pos))
     {
-        Anchor *a;
         ParsedURL pu;
         char *s = GetWord(buf);
         set_environ("W3M_CURRENT_WORD", (char *)(s ? s : ""));
-        a = retrieveCurrentAnchor(buf);
+        auto a = retrieveCurrentAnchor(buf);
         if (a)
         {
             parseURL2(a->url, &pu, baseURL(buf));

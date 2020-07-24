@@ -2363,7 +2363,6 @@ accesskey_menu(BufferPtr buf)
 {
     Menu menu;
     AnchorList &al = buf->href;
-    Anchor *a;
     Anchor **ap;
     int i, n, nitem = 0, key = -1;
     char **label;
@@ -2374,7 +2373,7 @@ accesskey_menu(BufferPtr buf)
         return NULL;
     for (i = 0; i < al.size(); i++)
     {
-        a = &al.anchors[i];
+        auto a = &al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
             nitem++;
     }
@@ -2385,7 +2384,7 @@ accesskey_menu(BufferPtr buf)
     ap = New_N(Anchor *, nitem);
     for (i = 0, n = 0; i < al.size(); i++)
     {
-        a = &al.anchors[i];
+        auto a = &al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
         {
             t = getAnchorText(buf, al, a);
@@ -2424,7 +2423,7 @@ accesskey_menu(BufferPtr buf)
         menu.keyselect[(int)c] = i;
     }
 
-    a = retrieveCurrentAnchor(buf);
+    auto a = retrieveCurrentAnchor(buf);
     if (a && a->accesskey && IS_ASCII(a->accesskey))
     {
         for (i = 0; i < nitem; i++)
@@ -2474,7 +2473,6 @@ list_menu(BufferPtr buf)
 {
     Menu menu;
     AnchorList &al = buf->href;
-    Anchor *a;
     Anchor **ap;
     int i, n, nitem = 0, key = -1, two = FALSE;
     char **label;
@@ -2485,7 +2483,7 @@ list_menu(BufferPtr buf)
         return NULL;
     for (i = 0; i < al.size(); i++)
     {
-        a = &al.anchors[i];
+        auto a = &al.anchors[i];
         if (!a->slave)
             nitem++;
     }
@@ -2498,7 +2496,7 @@ list_menu(BufferPtr buf)
     ap = New_N(Anchor *, nitem);
     for (i = 0, n = 0; i < al.size(); i++)
     {
-        a = &al.anchors[i];
+        auto a = &al.anchors[i];
         if (!a->slave)
         {
             t = getAnchorText(buf, al, a);
@@ -2554,7 +2552,7 @@ list_menu(BufferPtr buf)
         }
     }
 
-    a = retrieveCurrentAnchor(buf);
+    auto a = retrieveCurrentAnchor(buf);
     if (a)
     {
         for (i = 0; i < nitem; i++)

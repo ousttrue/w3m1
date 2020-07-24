@@ -20,6 +20,7 @@
 #include "ctrlcode.h"
 #include "mouse.h"
 #include "anchor.h"
+#include "map.h"
 
 int searchKeyNum(void)
 {
@@ -94,7 +95,7 @@ void nscroll(int n)
 }
 
 static char *SearchString = NULL;
-int (*searchRoutine)(BufferPtr , char *);
+int (*searchRoutine)(BufferPtr, char *);
 
 void clear_mark(Line *l)
 {
@@ -121,7 +122,7 @@ void srch_nxtprv(int reverse)
 {
     int result;
     /* *INDENT-OFF* */
-    static int (*routine[2])(BufferPtr , char *) = {
+    static int (*routine[2])(BufferPtr, char *) = {
         forwardSearch, backwardSearch};
     /* *INDENT-ON* */
 
@@ -272,9 +273,9 @@ void do_dump(BufferPtr buf)
 }
 
 /* search by regular expression */
-int srchcore(char * str, int (*func)(BufferPtr , char *))
+int srchcore(char *str, int (*func)(BufferPtr, char *))
 {
-     int i, result = SR_NOTFOUND;
+    int i, result = SR_NOTFOUND;
 
     if (str != NULL && str != SearchString)
         SearchString = str;
@@ -381,7 +382,7 @@ done:
     return -1;
 }
 
-void isrch(int (*func)(BufferPtr , char *), char *prompt)
+void isrch(int (*func)(BufferPtr, char *), char *prompt)
 {
     char *str;
     Buffer sbuf;
@@ -397,7 +398,7 @@ void isrch(int (*func)(BufferPtr , char *), char *prompt)
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
 }
 
-void srch(int (*func)(BufferPtr , char *), char *prompt)
+void srch(int (*func)(BufferPtr, char *), char *prompt)
 {
     char *str;
     int result;
@@ -443,7 +444,6 @@ void shiftvisualpos(BufferPtr buf, int shift)
     if (buf->visualpos - l->bwidth == -shift && buf->cursorX == 0)
         buf->visualpos = l->bwidth;
 }
-
 
 void cmd_loadfile(char *fn)
 {
@@ -795,7 +795,7 @@ void SetMarkString(char *str)
 void _followForm(int submit)
 {
     Line *l;
-    Anchor *a, *a2;
+
     char *p;
     FormItemList *fi, *f2;
     Str tmp, tmp2;
@@ -805,7 +805,7 @@ void _followForm(int submit)
         return;
     l = GetCurrentbuf()->currentLine;
 
-    a = retrieveCurrentForm(GetCurrentbuf());
+    auto a = retrieveCurrentForm(GetCurrentbuf());
     if (a == NULL)
         return;
     fi = (FormItemList *)a->url;
@@ -918,7 +918,7 @@ void _followForm(int submit)
         query_from_followform(&tmp, fi, multipart);
 
         tmp2 = fi->parent->action->Clone();
-        if (tmp2->Cmp("!CURRENT_URL!")==0)
+        if (tmp2->Cmp("!CURRENT_URL!") == 0)
         {
             /* It means "current URL" */
             tmp2 = parsedURL2Str(&GetCurrentbuf()->currentURL);
@@ -930,8 +930,8 @@ void _followForm(int submit)
         {
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
                 tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
-            tmp2->Push( "?");
-            tmp2->Push( tmp);
+            tmp2->Push("?");
+            tmp2->Push(tmp);
             loadLink(tmp2->ptr, a->target, NULL, NULL);
         }
         else if (fi->parent->method == FORM_METHOD_POST)
@@ -962,7 +962,7 @@ void _followForm(int submit)
                 buf->form_submit = save_submit_formlist(fi);
             }
         }
-        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action->Cmp("map")==0 || fi->parent->action->Cmp("none")==0)) || GetCurrentbuf()->bufferprop & BP_INTERNAL)
+        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action->Cmp("map") == 0 || fi->parent->action->Cmp("none") == 0)) || GetCurrentbuf()->bufferprop & BP_INTERNAL)
         { /* internal */
             do_internal(tmp2->ptr, tmp->ptr);
         }
@@ -975,7 +975,7 @@ void _followForm(int submit)
     case FORM_INPUT_RESET:
         for (i = 0; i < GetCurrentbuf()->formitem.size(); i++)
         {
-            a2 = &GetCurrentbuf()->formitem.anchors[i];
+            auto a2 = &GetCurrentbuf()->formitem.anchors[i];
             f2 = (FormItemList *)a2->url;
             if (f2->parent == fi->parent &&
                 f2->name && f2->value &&
@@ -1087,10 +1087,10 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 int x = 0, y = 0;
                 getMapXY(GetCurrentbuf(), retrieveCurrentImg(GetCurrentbuf()), &x, &y);
                 (*query)->Push(
-                       conv_form_encoding(f2->name, fi, GetCurrentbuf())->UrlEncode());
-                (*query)->Push( Sprintf(".x=%d&", x));
+                    conv_form_encoding(f2->name, fi, GetCurrentbuf())->UrlEncode());
+                (*query)->Push(Sprintf(".x=%d&", x));
                 (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentbuf())->UrlEncode());
-                (*query)->Push( Sprintf(".y=%d", y));
+                (*query)->Push(Sprintf(".y=%d", y));
             }
             else
             {
@@ -1137,7 +1137,7 @@ void bufferA(void)
     on_target = TRUE;
 }
 
-BufferPtr 
+BufferPtr
 loadLink(char *url, char *target, char *referer, FormList *request)
 {
     BufferPtr buf;
@@ -1204,7 +1204,7 @@ loadLink(char *url, char *target, char *referer, FormList *request)
     resetFrameElement(f_element, buf, referer, request);
     rFrame();
     {
-        Anchor *al = NULL;
+        const Anchor *al = NULL;
         char *label = pu.label;
 
         if (label && f_element->element->attr == F_BODY)
@@ -1338,7 +1338,8 @@ void _nextA(int visited)
 {
     HmarkerList *hl = GetCurrentbuf()->hmarklist;
     BufferPoint *po;
-    Anchor *an, *pan;
+    const Anchor *an;
+    const Anchor *pan;
     int i, x, y, n = searchKeyNum();
     ParsedURL url;
 
@@ -1378,7 +1379,7 @@ void _nextA(int visited)
                 an = GetCurrentbuf()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
                     an = GetCurrentbuf()->formitem.RetrieveAnchor(po->line,
-                                        po->pos);
+                                                                  po->pos);
                 hseq++;
                 if (visited == TRUE && an)
                 {
@@ -1432,7 +1433,6 @@ void _prevA(int visited)
 {
     HmarkerList *hl = GetCurrentbuf()->hmarklist;
     BufferPoint *po;
-    Anchor *an, *pan;
     int i, x, y, n = searchKeyNum();
     ParsedURL url;
 
@@ -1441,7 +1441,7 @@ void _prevA(int visited)
     if (!hl || hl->nmark == 0)
         return;
 
-    an = retrieveCurrentAnchor(GetCurrentbuf());
+    auto an = retrieveCurrentAnchor(GetCurrentbuf());
     if (visited != TRUE && an == NULL)
         an = retrieveCurrentForm(GetCurrentbuf());
 
@@ -1455,7 +1455,7 @@ void _prevA(int visited)
 
     for (i = 0; i < n; i++)
     {
-        pan = an;
+        auto pan = an;
         if (an && an->hseq >= 0)
         {
             int hseq = an->hseq - 1;
@@ -1522,10 +1522,7 @@ _end:
 
 void gotoLabel(char *label)
 {
-    Anchor *al;
-    int i;
-
-    al = searchURLLabel(GetCurrentbuf(), label);
+    auto al = searchURLLabel(GetCurrentbuf(), label);
     if (al == NULL)
     {
         /* FIXME: gettextize? */
@@ -1535,7 +1532,7 @@ void gotoLabel(char *label)
 
     auto buf = GetCurrentbuf()->Copy();
 
-    for (i = 0; i < MAX_LB; i++)
+    for (int i = 0; i < MAX_LB; i++)
         buf->linkBuffer[i] = NULL;
     buf->currentURL.label = allocStr(label, -1);
     pushHashHist(URLHist, parsedURL2Str(&buf->currentURL)->ptr);
@@ -1566,7 +1563,6 @@ void set_check_target(int check)
 void nextX(int d, int dy)
 {
     HmarkerList *hl = GetCurrentbuf()->hmarklist;
-    Anchor *an, *pan;
     Line *l;
     int i, x, y, n = searchKeyNum();
 
@@ -1575,14 +1571,14 @@ void nextX(int d, int dy)
     if (!hl || hl->nmark == 0)
         return;
 
-    an = retrieveCurrentAnchor(GetCurrentbuf());
+    auto an = retrieveCurrentAnchor(GetCurrentbuf());
     if (an == NULL)
         an = retrieveCurrentForm(GetCurrentbuf());
 
     l = GetCurrentbuf()->currentLine;
     x = GetCurrentbuf()->pos;
     y = l->linenumber;
-    pan = NULL;
+    const Anchor *pan = NULL;
     for (i = 0; i < n; i++)
     {
         if (an)
@@ -1625,7 +1621,6 @@ void nextX(int d, int dy)
 void nextY(int d)
 {
     HmarkerList *hl = GetCurrentbuf()->hmarklist;
-    Anchor *an, *pan;
     int i, x, y, n = searchKeyNum();
     int hseq;
 
@@ -1634,13 +1629,13 @@ void nextY(int d)
     if (!hl || hl->nmark == 0)
         return;
 
-    an = retrieveCurrentAnchor(GetCurrentbuf());
+    auto an = retrieveCurrentAnchor(GetCurrentbuf());
     if (an == NULL)
         an = retrieveCurrentForm(GetCurrentbuf());
 
     x = GetCurrentbuf()->pos;
     y = GetCurrentbuf()->currentLine->linenumber + d;
-    pan = NULL;
+    const Anchor *pan = NULL;
     hseq = -1;
     for (i = 0; i < n; i++)
     {
@@ -1705,8 +1700,6 @@ void goURL0(char *prompt, int relative)
     if (url == NULL)
     {
         Hist *hist = copyHist(URLHist);
-        Anchor *a;
-
         current = baseURL(GetCurrentbuf());
         if (current)
         {
@@ -1720,7 +1713,7 @@ void goURL0(char *prompt, int relative)
             else
                 pushHist(hist, c_url);
         }
-        a = retrieveCurrentAnchor(GetCurrentbuf());
+        auto a = retrieveCurrentAnchor(GetCurrentbuf());
         if (a)
         {
             char *a_url;
@@ -1777,7 +1770,7 @@ void goURL0(char *prompt, int relative)
         pushHashHist(URLHist, parsedURL2Str(&GetCurrentbuf()->currentURL)->ptr);
 }
 
-void anchorMn(Anchor *(*menu_func)(BufferPtr ), int go)
+void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
 {
     Anchor *a;
     BufferPoint *po;
@@ -1798,14 +1791,11 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr ), int go)
 
 void _peekURL(int only_img)
 {
-
-    Anchor *a;
+    const Anchor *a;
     ParsedURL pu;
     static Str s = NULL;
-#ifdef USE_M17N
     static Lineprop *p = NULL;
     Lineprop *pp;
-#endif
     static int offset = 0, n;
 
     if (GetCurrentbuf()->firstLine == NULL)
@@ -1964,7 +1954,7 @@ void execdict(char *word)
         displayBuffer(GetCurrentbuf(), B_NORMAL);
         return;
     }
-    dictcmd = Sprintf("%s?%s", DictCommand,Strnew_charp(w)->UrlEncode()->ptr)->ptr;
+    dictcmd = Sprintf("%s?%s", DictCommand, Strnew_charp(w)->UrlEncode()->ptr)->ptr;
     buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, 0, NULL);
     if (buf == NULL)
     {
@@ -2117,7 +2107,7 @@ BufferPtr DownloadListBuffer()
             d->running = FALSE;
         src->Push("<pre>\n");
         src->Push(Sprintf("%s\n  --&gt; %s\n  ", html_quote(d->url),
-                            html_quote(conv_from_system(d->save))));
+                          html_quote(conv_from_system(d->save))));
         duration = cur_time - d->time;
         if (!stat(d->save, &st))
         {
@@ -2140,35 +2130,35 @@ BufferPtr DownloadListBuffer()
                 i = l;
             l -= i;
             while (i-- > 0)
-                src->Push( '#');
+                src->Push('#');
             while (l-- > 0)
-                src->Push( '_');
-            src->Push( '\n');
+                src->Push('_');
+            src->Push('\n');
         }
         if ((d->running || d->err) && size < d->size)
             src->Push(Sprintf("  %s / %s bytes (%d%%)",
-                                convert_size3(size), convert_size3(d->size),
-                                (int)(100.0 * size / d->size)));
+                              convert_size3(size), convert_size3(d->size),
+                              (int)(100.0 * size / d->size)));
         else
             src->Push(Sprintf("  %s bytes loaded", convert_size3(size)));
         if (duration > 0)
         {
             rate = size / duration;
             src->Push(Sprintf("  %02d:%02d:%02d  rate %s/sec",
-                                duration / (60 * 60), (duration / 60) % 60,
-                                duration % 60, convert_size(rate, 1)));
+                              duration / (60 * 60), (duration / 60) % 60,
+                              duration % 60, convert_size(rate, 1)));
             if (d->running && size < d->size && rate)
             {
                 eta = (d->size - size) / rate;
                 src->Push(Sprintf("  eta %02d:%02d:%02d", eta / (60 * 60),
-                                    (eta / 60) % 60, eta % 60));
+                                  (eta / 60) % 60, eta % 60));
             }
         }
-        src->Push( '\n');
+        src->Push('\n');
         if (!d->running)
         {
             src->Push(Sprintf("<input type=submit name=ok%d value=OK>",
-                                d->pid));
+                              d->pid));
             switch (d->err)
             {
             case 0:
@@ -2189,7 +2179,7 @@ BufferPtr DownloadListBuffer()
         }
         else
             src->Push(Sprintf("<input type=submit name=stop%d value=STOP>",
-                                d->pid));
+                              d->pid));
         src->Push("\n</pre><hr>\n");
     }
     src->Push("</form></body></html>");
@@ -2411,7 +2401,6 @@ char *searchKeyData()
     return allocStr(data, -1);
 }
 
-
 int sysm_process_mouse(int x, int y, int nbs, int obs)
 {
     int btn;
@@ -2532,19 +2521,18 @@ void change_charset(struct parsed_tagarg *arg)
 void follow_map(struct parsed_tagarg *arg)
 {
     char *name = tag_get_value(arg, "link");
-#if defined(MENU_MAP) || defined(USE_IMAGE)
-    Anchor *an;
+
     MapArea *a;
     int x, y;
     ParsedURL p_url;
 
-    an = retrieveCurrentImg(GetCurrentbuf());
+    auto an = retrieveCurrentImg(GetCurrentbuf());
     x = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
     y = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
     a = follow_map_menu(GetCurrentbuf(), name, an, x, y);
     if (a == NULL || a->url == NULL || *(a->url) == '\0')
     {
-#endif
+
 #ifndef MENU_MAP
         BufferPtr buf = follow_map_panel(GetCurrentbuf(), name);
 
@@ -2881,7 +2869,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                         for (i = 1; i <= plen; i++)
                             *(prop - i) |= PE_UNDER;
 #else
-                        *(prop - 1) |= PE_UNDER;
+                            *(prop - 1) |= PE_UNDER;
 #endif
                     }
                     else

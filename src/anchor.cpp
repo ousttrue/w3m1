@@ -12,38 +12,38 @@
 #define FIRST_ANCHOR_SIZE 30
 
 Anchor *AnchorList::Put(char *url, char *target,
-                  char *referer, char *title, unsigned char key, int line, int pos)
+                        char *referer, char *title, unsigned char key, int line, int pos)
 {
-    int n, i, j;
-    Anchor *a;
+    // int n, i, j;
+    // Anchor *a;
+
     BufferPoint bp;
-    if (m_anchormax == 0)
-    {
-        /* first time; allocate anchor buffer */
-        anchors = New_N(Anchor, FIRST_ANCHOR_SIZE);
-        m_anchormax = FIRST_ANCHOR_SIZE;
-    }
-    if (m_size == m_anchormax)
-    { /* need realloc */
-        m_anchormax *= 2;
-        anchors = New_Reuse(Anchor, anchors, m_anchormax);
-    }
     bp.line = line;
     bp.pos = pos;
-    n = m_size;
+
+    auto n = anchors.size();
+    anchors.resize(n + 1);
+
+    // search insert position
+    int i;
     if (!n || anchors[n - 1].start.Cmp(bp) < 0)
+    {
         i = n;
+    }
     else
+    {
         for (i = 0; i < n; i++)
         {
             if (anchors[i].start.Cmp(bp) >= 0)
             {
-                for (j = n; j > i; j--)
+                for (int j = n; j > i; j--)
                     anchors[j] = anchors[j - 1];
                 break;
             }
         }
-    a = &anchors[i];
+    }
+
+    auto a = &anchors[i];
     a->url = url;
     a->target = target;
     a->referer = referer;
@@ -52,7 +52,6 @@ Anchor *AnchorList::Put(char *url, char *target,
     a->slave = FALSE;
     a->start = bp;
     a->end = bp;
-    m_size++;
     return a;
 }
 
@@ -94,17 +93,17 @@ int Anchor::CmpOnAnchor(const BufferPoint &bp) const
     return 0;
 }
 
-Anchor *
+const Anchor *
 AnchorList::RetrieveAnchor(const BufferPoint &bp) const
 {
-    if (m_size == 0)
-        return NULL;
+    if (anchors.empty())
+        return nullptr;
 
-    if (m_acache < 0 || m_acache >= m_size)
+    if (m_acache < 0 || m_acache >= anchors.size())
         m_acache = 0;
 
     size_t b, e;
-    for (b = 0, e = m_size - 1; b <= e; m_acache = (b + e) / 2)
+    for (b = 0, e = anchors.size() - 1; b <= e; m_acache = (b + e) / 2)
     {
         auto a = &anchors[m_acache];
         auto cmp = a->CmpOnAnchor(bp);
@@ -121,7 +120,7 @@ AnchorList::RetrieveAnchor(const BufferPoint &bp) const
     return NULL;
 }
 
-Anchor *
+const Anchor *
 retrieveCurrentAnchor(BufferPtr buf)
 {
     if (buf->currentLine == NULL)
@@ -129,7 +128,7 @@ retrieveCurrentAnchor(BufferPtr buf)
     return buf->href.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
 }
 
-Anchor *
+const Anchor *
 retrieveCurrentImg(BufferPtr buf)
 {
     if (buf->currentLine == NULL)
@@ -137,7 +136,7 @@ retrieveCurrentImg(BufferPtr buf)
     return buf->img.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
 }
 
-Anchor *
+const Anchor *
 retrieveCurrentForm(BufferPtr buf)
 {
     if (buf->currentLine == NULL)
@@ -145,7 +144,7 @@ retrieveCurrentForm(BufferPtr buf)
     return buf->formitem.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
 }
 
-Anchor *
+const Anchor *
 searchAnchor(const AnchorList &al, char *str)
 {
     for (int i = 0; i < al.size(); i++)
@@ -159,7 +158,7 @@ searchAnchor(const AnchorList &al, char *str)
     return NULL;
 }
 
-Anchor *
+const Anchor *
 searchURLLabel(BufferPtr buf, char *url)
 {
     return searchAnchor(buf->name, url);
@@ -213,7 +212,6 @@ reseq_anchor(BufferPtr buf)
 {
     int i, j, n, nmark = (buf->hmarklist) ? buf->hmarklist->nmark : 0;
     short *seqmap;
-    Anchor *a, *a1;
     HmarkerList *ml = NULL;
 
     if (!buf->href)
@@ -222,7 +220,7 @@ reseq_anchor(BufferPtr buf)
     n = nmark;
     for (i = 0; i < buf->href.size(); i++)
     {
-        a = &buf->href.anchors[i];
+        auto a = &buf->href.anchors[i];
         if (a->hseq == -2)
             n++;
     }
@@ -238,12 +236,12 @@ reseq_anchor(BufferPtr buf)
     n = nmark;
     for (i = 0; i < buf->href.size(); i++)
     {
-        a = &buf->href.anchors[i];
+        auto a = &buf->href.anchors[i];
         if (a->hseq == -2)
         {
             a->hseq = n;
-            a1 = closest_next_anchor(buf->href, NULL, a->start.pos,
-                                     a->start.line);
+            auto a1 = closest_next_anchor(buf->href, NULL, a->start.pos,
+                                          a->start.line);
             a1 = closest_next_anchor(buf->formitem, a1, a->start.pos,
                                      a->start.line);
             if (a1 && a1->hseq >= 0)
@@ -471,8 +469,8 @@ putHmarker(HmarkerList *ml, int line, int pos, int seq)
     return ml;
 }
 
-Anchor *
-closest_next_anchor(AnchorList &al, Anchor *an, int x, int y)
+const Anchor *
+closest_next_anchor(AnchorList &al, const Anchor *an, int x, int y)
 {
     for (int i = 0; i < al.size(); i++)
     {
@@ -490,8 +488,8 @@ closest_next_anchor(AnchorList &al, Anchor *an, int x, int y)
     return an;
 }
 
-Anchor *
-closest_prev_anchor(AnchorList &al, Anchor *an, int x, int y)
+const Anchor *
+closest_prev_anchor(AnchorList &al, const Anchor *an, int x, int y)
 {
     for (int i = 0; i < al.size(); i++)
     {
@@ -516,7 +514,8 @@ void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, const BufferPoint &bp,
         return;
 
     auto s = al.size() / 2;
-    for (auto b = 0, e = al.size() - 1; b <= e; s = (b + e + 1) / 2)
+    auto e = al.size() - 1;
+    for (auto b = 0; b <= e; s = (b + e + 1) / 2)
     {
         auto a = &al.anchors[s];
         auto cmp = a->CmpOnAnchor(bp);
@@ -623,8 +622,8 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
             if (a_form.url)
             {
                 auto a = buf->formitem.Put(a_form.url,
-                                   a_form.target, NULL, NULL, '\0',
-                                   l->linenumber, pos);
+                                           a_form.target, NULL, NULL, '\0',
+                                           l->linenumber, pos);
                 a->hseq = a_form.hseq;
                 a->end.pos = pos + ecol - col;
             }
@@ -680,8 +679,8 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
             if (a_form.start.line == l->linenumber)
                 continue;
             auto a = buf->formitem.Put(a_form.url,
-                               a_form.target, NULL, NULL, '\0',
-                               l->linenumber, pos);
+                                       a_form.target, NULL, NULL, '\0',
+                                       l->linenumber, pos);
             a->hseq = a_form.hseq;
             a->y = a_form.y;
             a->end.pos = pos + ecol - col;
@@ -831,7 +830,7 @@ link_list_panel(BufferPtr buf)
                 t = html_quote(a->url);
             Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
                            "\n", NULL);
-            a = buf->formitem.RetrieveAnchor(a->start.line, a->start.pos);
+            a = const_cast<Anchor *>(buf->formitem.RetrieveAnchor(a->start.line, a->start.pos));
             if (!a)
                 continue;
             auto fi = (FormItemList *)a->url;

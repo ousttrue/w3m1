@@ -148,9 +148,9 @@ FormList *newFormList(char *action, const char *method, char *charset,
                               FormList *_next);
 char *form2str(FormItemList *fi);
 int formtype(char *typestr);
-void formRecheckRadio(Anchor *a, BufferPtr buf, FormItemList *form);
+
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
-void formUpdateBuffer(Anchor *a, BufferPtr buf, FormItemList *form);
+
 void preFormUpdateBuffer(BufferPtr buf);
 Str textfieldrep(Str s, int width);
 void input_textarea(FormItemList *fi);
@@ -162,9 +162,9 @@ MapList *searchMapList(BufferPtr buf, char *name);
 #ifndef MENU_MAP
 BufferPtr follow_map_panel(BufferPtr buf, char *name);
 #endif
-int getMapXY(BufferPtr buf, Anchor *a, int *x, int *y);
+int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y);
 MapArea *retrieveCurrentMapArea(BufferPtr buf);
-Anchor *retrieveCurrentMap(BufferPtr buf);
+
 MapArea *newMapArea(char *url, char *target, char *alt, char *shape,
                     char *coords);
 BufferPtr page_info_panel(BufferPtr buf);

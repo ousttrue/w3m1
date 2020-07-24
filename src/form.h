@@ -57,5 +57,8 @@ int formChooseOptionByMenu(FormItemList *fi, int x, int y);
 
 FormItemList *formList_addInput(FormList *fl,
                                          struct parsed_tag *tag);
+void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
+void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
+
 
 #endif /* not FORM_H */

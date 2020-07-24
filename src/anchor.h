@@ -1,5 +1,6 @@
-
 #pragma once
+#include <vector>
+
 struct Image;
 struct Anchor
 {
@@ -22,37 +23,32 @@ struct Anchor
 class AnchorList
 {
     mutable int m_acache = -1;
-    int m_anchormax = 0;
-    int m_size = 0;
 
 public:
-    Anchor *anchors = nullptr;
+    std::vector<Anchor> anchors;
 
     void clear()
     {
-        anchors = nullptr;
-        m_size = 0;
-        m_anchormax = 0;
         m_acache = -1;
     }
 
-    int size() const
+    size_t size() const
     {
-        return m_size;
+        return anchors.size();
     }
 
     operator bool() const
     {
-        return m_size > 0;
+        return !anchors.empty();
     }
 
     Anchor *
     Put(char *url, char *target, char *referer, char *title, unsigned char key, int line, int pos);
 
-    Anchor *
+    const Anchor *
     RetrieveAnchor(const BufferPoint &bp) const;
 
-    Anchor *
+    const Anchor *
     RetrieveAnchor(int line, int pos) const
     {
         BufferPoint bp;
@@ -62,6 +58,6 @@ public:
     }
 };
 
-Anchor *searchAnchor(const AnchorList &al, char *str);
-Anchor *closest_next_anchor(AnchorList &a, Anchor *an, int x, int y);
-Anchor *closest_prev_anchor(AnchorList &a, Anchor *an, int x, int y);
+const Anchor *searchAnchor(const AnchorList &al, char *str);
+const Anchor *closest_next_anchor(AnchorList &a, const Anchor *an, int x, int y);
+const Anchor *closest_prev_anchor(AnchorList &a, const Anchor *an, int x, int y);

@@ -891,12 +891,11 @@ void reMark()
 void followI()
 {
     Line *l;
-    Anchor *a;
     BufferPtr buf;
     if (GetCurrentbuf()->firstLine == NULL)
         return;
     l = GetCurrentbuf()->currentLine;
-    a = retrieveCurrentImg(GetCurrentbuf());
+    auto a = retrieveCurrentImg(GetCurrentbuf());
     if (a == NULL)
         return;
     /* FIXME: gettextize? */
@@ -927,7 +926,7 @@ void topA()
 {
     HmarkerList *hl = GetCurrentbuf()->hmarklist;
     BufferPoint *po;
-    Anchor *an;
+
     int hseq = 0;
     if (GetCurrentbuf()->firstLine == NULL)
         return;
@@ -937,6 +936,8 @@ void topA()
         hseq = hl->nmark - 1;
     else if (prec_num() > 0)
         hseq = prec_num() - 1;
+
+    const Anchor *an;        
     do
     {
         if (hseq >= hl->nmark)
@@ -958,7 +959,6 @@ void lastA()
 {
     HmarkerList *hl = GetCurrentbuf()->hmarklist;
     BufferPoint *po;
-    Anchor *an;
     int hseq;
     if (GetCurrentbuf()->firstLine == NULL)
         return;
@@ -970,6 +970,8 @@ void lastA()
         hseq = hl->nmark - prec_num();
     else
         hseq = hl->nmark - 1;
+
+    const Anchor *an;
     do
     {
         if (hseq < 0)
@@ -1869,11 +1871,10 @@ void extbrz()
 
 void linkbrz()
 {
-    Anchor *a;
     ParsedURL pu;
     if (GetCurrentbuf()->firstLine == NULL)
         return;
-    a = retrieveCurrentAnchor(GetCurrentbuf());
+    auto a = retrieveCurrentAnchor(GetCurrentbuf());
     if (a == NULL)
         return;
     parseURL2(a->url, &pu, baseURL(GetCurrentbuf()));

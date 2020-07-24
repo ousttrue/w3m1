@@ -5,7 +5,7 @@ void deleteImage(BufferPtr buf);
 void getAllImage(BufferPtr buf);
 void loadImage(BufferPtr buf, int flag);
 Anchor *registerForm(BufferPtr buf, FormList *flist, struct parsed_tag *tag, int line, int pos);
-MapArea *follow_map_menu(BufferPtr buf, char *name, Anchor *a_img, int x, int y);
+
 BufferPtr nullBuffer(void);
 void clearBuffer(BufferPtr buf);
 BufferPtr namedBuffer(BufferPtr first, char *name);
@@ -30,10 +30,10 @@ Anchor *registerName(BufferPtr buf, char *url, int line, int pos);
 Anchor *registerImg(BufferPtr buf, char *url, char *title, int line,
                     int pos);
 
-Anchor *retrieveCurrentAnchor(BufferPtr buf);
-Anchor *retrieveCurrentImg(BufferPtr buf);
-Anchor *retrieveCurrentForm(BufferPtr buf);
-Anchor *searchURLLabel(BufferPtr buf, char *url);
+const Anchor *retrieveCurrentAnchor(BufferPtr buf);
+const Anchor *retrieveCurrentImg(BufferPtr buf);
+const Anchor *retrieveCurrentForm(BufferPtr buf);
+const Anchor *searchURLLabel(BufferPtr buf, char *url);
 void reAnchorWord(BufferPtr buf, Line *l, int spos, int epos);
 char *reAnchor(BufferPtr buf, char *re);
 char *reAnchorNews(BufferPtr buf, char *re);

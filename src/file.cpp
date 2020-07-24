@@ -2439,8 +2439,7 @@ page_loaded:
         {
             if (proc == loadHTMLBuffer)
             {
-                Anchor *a;
-                a = searchURLLabel(b, pu.label);
+                auto a = searchURLLabel(b, pu.label);
                 if (a != NULL)
                 {
                     gotoLine(b, a->start.line);
@@ -4044,7 +4043,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         else if (iseq < 0)
                         {
                             BufferPoint *po = buf->imarklist->marks - iseq - 1;
-                            Anchor *a = buf->img.RetrieveAnchor(po->line, po->pos);
+                            auto a = buf->img.RetrieveAnchor(po->line, po->pos);
                             if (a)
                             {
                                 a_img->url = a->url;

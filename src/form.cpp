@@ -212,7 +212,7 @@ int formtype(char *typestr)
     return FORM_UNKNOWN;
 }
 
-void formRecheckRadio(Anchor *a, BufferPtr buf, FormItemList *fi)
+void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *fi)
 {
     int i;
     Anchor *a2;
@@ -441,7 +441,7 @@ form_update_line(Line *line, char **str, int spos, int epos, int width,
     return pos;
 }
 
-void formUpdateBuffer(Anchor *a, BufferPtr buf, FormItemList *form)
+void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
 {
     char *p;
     int spos, epos, rows, c_rows, pos, col = 0;
@@ -510,7 +510,7 @@ void formUpdateBuffer(Anchor *a, BufferPtr buf, FormItemList *form)
             if (rows > 1)
             {
                 pos = columnPos(l, col);
-                a = buf->formitem.RetrieveAnchor(l->linenumber, pos);
+                auto a = buf->formitem.RetrieveAnchor(l->linenumber, pos);
                 if (a == NULL)
                     break;
                 spos = a->start.pos;
