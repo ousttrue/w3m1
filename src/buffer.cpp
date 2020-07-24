@@ -95,7 +95,7 @@ void Buffer::ClearLink()
     }
 }
 
-char *NullLine = "";
+const char *NullLine = "";
 Lineprop NullProp[] = {0};
 
 void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid)

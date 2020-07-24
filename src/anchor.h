@@ -12,8 +12,7 @@ Anchor *registerHref(BufferPtr buf, char *url, char *target,
 Anchor *registerName(BufferPtr buf, char *url, int line, int pos);
 Anchor *registerImg(BufferPtr buf, char *url, char *title, int line,
                     int pos);
-int onAnchor(Anchor *a, int line, int pos);
-Anchor *retrieveAnchor(const AnchorList &al, int line, int pos);
+
 Anchor *retrieveCurrentAnchor(BufferPtr buf);
 Anchor *retrieveCurrentImg(BufferPtr buf);
 Anchor *retrieveCurrentForm(BufferPtr buf);
@@ -27,6 +26,5 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al);
 Anchor *closest_next_anchor(AnchorList &a, Anchor *an, int x, int y);
 Anchor *closest_prev_anchor(AnchorList &a, Anchor *an, int x, int y);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);
-void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, int line,
-                         int pos, int shift);
+void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, const BufferPoint &bp, int shift);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);

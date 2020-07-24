@@ -207,9 +207,6 @@
 #define IS_ENDL(c) ((c)=='\0'||(c)=='\r'||(c)=='\n')
 #define IS_ENDT(c) (IS_ENDL(c)||(c)==';')
 
-#define bpcmp(a,b) \
-  (((a).line - (b).line) ? ((a).line - (b).line) : ((a).pos - (b).pos))
-
 #define RELATIVE_WIDTH(w)   (((w)>=0)?(int)((w)/pixel_per_char):(w))
 #define REAL_WIDTH(w,limit) (((w)>=0)?(int)((w)/pixel_per_char):-(w)*(limit)/100)
 

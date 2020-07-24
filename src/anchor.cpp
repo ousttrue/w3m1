@@ -31,12 +31,12 @@ Anchor *putAnchor(AnchorList &al, char *url, char *target,
     bp.line = line;
     bp.pos = pos;
     n = al.nanchor;
-    if (!n || bpcmp(al.anchors[n - 1].start, bp) < 0)
+    if (!n || al.anchors[n - 1].start.Cmp(bp) < 0)
         i = n;
     else
         for (i = 0; i < n; i++)
         {
-            if (bpcmp(al.anchors[i].start, bp) >= 0)
+            if (al.anchors[i].start.Cmp(bp) >= 0)
             {
                 for (j = n; j > i; j--)
                     al.anchors[j] = al.anchors[j - 1];
@@ -85,21 +85,17 @@ registerForm(BufferPtr buf, FormList *flist, struct parsed_tag *tag, int line,
     return putAnchor(buf->formitem, (char *)fi, flist->target, NULL, NULL, '\0', line, pos);
 }
 
-int onAnchor(Anchor *a, int line, int pos)
+int Anchor::CmpOnAnchor(const BufferPoint &bp) const
 {
-    BufferPoint bp;
-    bp.line = line;
-    bp.pos = pos;
-
-    if (bpcmp(bp, a->start) < 0)
+    if (bp.Cmp(start) < 0)
         return -1;
-    if (bpcmp(a->end, bp) <= 0)
+    if (end.Cmp(bp) <= 0)
         return 1;
     return 0;
 }
 
 Anchor *
-AnchorList::RetrieveAnchor(int line, int pos) const
+AnchorList::RetrieveAnchor(const BufferPoint &bp) const
 {
     if (nanchor == 0)
         return NULL;
@@ -111,7 +107,7 @@ AnchorList::RetrieveAnchor(int line, int pos) const
     for (b = 0, e = nanchor - 1; b <= e; acache = (b + e) / 2)
     {
         auto a = &anchors[acache];
-        auto cmp = onAnchor(a, line, pos);
+        auto cmp = a->CmpOnAnchor(bp);
         if (cmp == 0)
             return a;
         else if (cmp > 0)
@@ -513,7 +509,7 @@ closest_prev_anchor(AnchorList &al, Anchor *an, int x, int y)
     return an;
 }
 
-void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, int line, int pos,
+void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, const BufferPoint &bp,
                          int shift)
 {
     if (al.nanchor == 0)
@@ -523,7 +519,7 @@ void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, int line, int pos,
     for (auto b = 0, e = al.nanchor - 1; b <= e; s = (b + e + 1) / 2)
     {
         auto a = &al.anchors[s];
-        auto cmp = onAnchor(a, line, pos);
+        auto cmp = a->CmpOnAnchor(bp);
         if (cmp == 0)
             break;
         else if (cmp > 0)
@@ -536,15 +532,15 @@ void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, int line, int pos,
     for (; s < al.nanchor; s++)
     {
         auto a = &al.anchors[s];
-        if (a->start.line > line)
+        if (a->start.line > bp.line)
             break;
-        if (a->start.pos > pos)
+        if (a->start.pos > bp.pos)
         {
             a->start.pos += shift;
-            if (hl->marks[a->hseq].line == line)
+            if (hl->marks[a->hseq].line == bp.line)
                 hl->marks[a->hseq].pos = a->start.pos;
         }
-        if (a->end.pos >= pos)
+        if (a->end.pos >= bp.pos)
             a->end.pos += shift;
     }
 }

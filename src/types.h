@@ -116,6 +116,11 @@ struct BufferPoint
     int line;
     int pos;
     int invalid;
+
+    int Cmp(const BufferPoint &b) const
+    {
+        return ((line - (b).line) ? (line - (b).line) : (pos - (b).pos));
+    }
 };
 
 struct ImageCache
@@ -161,12 +166,14 @@ struct Anchor
     short y;
     short rows;
     Image *image;
+
+    int CmpOnAnchor(const BufferPoint &bp) const;
 };
 
 class AnchorList
 {
     mutable int acache = -1;
-    
+
 public:
     Anchor *anchors = nullptr;
     int nanchor = 0;
@@ -190,7 +197,16 @@ public:
     }
 
     Anchor *
-    RetrieveAnchor(int line, int pos) const;
+    RetrieveAnchor(const BufferPoint &bp) const;
+
+    Anchor *
+    RetrieveAnchor(int line, int pos) const
+    {
+        BufferPoint bp;
+        bp.line = line;
+        bp.pos = pos;
+        return RetrieveAnchor(bp);
+    }
 };
 
 struct HmarkerList
