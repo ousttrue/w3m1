@@ -149,7 +149,7 @@ FormList *newFormList(char *action, char *method, char *charset,
 char *form2str(FormItemList *fi);
 int formtype(char *typestr);
 void formRecheckRadio(Anchor *a, BufferPtr buf, FormItemList *form);
-void formResetBuffer(BufferPtr buf, AnchorList *formitem);
+void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 void formUpdateBuffer(Anchor *a, BufferPtr buf, FormItemList *form);
 void preFormUpdateBuffer(BufferPtr buf);
 Str textfieldrep(Str s, int width);
@@ -214,34 +214,7 @@ InputStream *openNewsStream(ParsedURL *pu);
 Str loadNewsgroup(ParsedURL *pu, wc_ces *charset);
 void closeNews(void);
 void disconnectNews(void);
-AnchorList *putAnchor(AnchorList *al, char *url, char *target,
-                      Anchor **anchor_return, char *referer,
-                      char *title, unsigned char key, int line,
-                      int pos);
-Anchor *registerHref(BufferPtr buf, char *url, char *target,
-                     char *referer, char *title, unsigned char key,
-                     int line, int pos);
-Anchor *registerName(BufferPtr buf, char *url, int line, int pos);
-Anchor *registerImg(BufferPtr buf, char *url, char *title, int line,
-                    int pos);
-int onAnchor(Anchor *a, int line, int pos);
-Anchor *retrieveAnchor(AnchorList *al, int line, int pos);
-Anchor *retrieveCurrentAnchor(BufferPtr buf);
-Anchor *retrieveCurrentImg(BufferPtr buf);
-Anchor *retrieveCurrentForm(BufferPtr buf);
-Anchor *searchAnchor(AnchorList *al, char *str);
-Anchor *searchURLLabel(BufferPtr buf, char *url);
-void reAnchorWord(BufferPtr buf, Line *l, int spos, int epos);
-char *reAnchor(BufferPtr buf, char *re);
-#ifdef USE_NNTP
-char *reAnchorNews(BufferPtr buf, char *re);
-char *reAnchorNewsheader(BufferPtr buf);
-#endif /* USE_NNTP */
-void addMultirowsForm(BufferPtr buf, AnchorList *al);
-Anchor *closest_next_anchor(AnchorList *a, Anchor *an, int x, int y);
-Anchor *closest_prev_anchor(AnchorList *a, Anchor *an, int x, int y);
 
-void addMultirowsImg(BufferPtr buf, AnchorList *al);
 
 BufferPtr link_list_panel(BufferPtr buf);
 

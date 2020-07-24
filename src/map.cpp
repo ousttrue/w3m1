@@ -10,6 +10,7 @@
 #include "file.h"
 #include "etc.h"
 #include "ctrlcode.h"
+#include "anchor.h"
 #include <math.h>
 
 

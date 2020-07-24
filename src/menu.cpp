@@ -16,6 +16,7 @@
 #include "mouse.h"
 #include "etc.h"
 #include "buffer.h"
+#include "anchor.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM
@@ -2361,7 +2362,7 @@ Anchor *
 accesskey_menu(BufferPtr buf)
 {
     Menu menu;
-    AnchorList *al = buf->href;
+    AnchorList &al = buf->href;
     Anchor *a;
     Anchor **ap;
     int i, n, nitem = 0, key = -1;
@@ -2371,9 +2372,9 @@ accesskey_menu(BufferPtr buf)
 
     if (!al)
         return NULL;
-    for (i = 0; i < al->nanchor; i++)
+    for (i = 0; i < al.nanchor; i++)
     {
-        a = &al->anchors[i];
+        a = &al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
             nitem++;
     }
@@ -2382,9 +2383,9 @@ accesskey_menu(BufferPtr buf)
 
     label = New_N(char *, nitem + 1);
     ap = New_N(Anchor *, nitem);
-    for (i = 0, n = 0; i < al->nanchor; i++)
+    for (i = 0, n = 0; i < al.nanchor; i++)
     {
-        a = &al->anchors[i];
+        a = &al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
         {
             t = getAnchorText(buf, al, a);
@@ -2472,7 +2473,7 @@ Anchor *
 list_menu(BufferPtr buf)
 {
     Menu menu;
-    AnchorList *al = buf->href;
+    AnchorList &al = buf->href;
     Anchor *a;
     Anchor **ap;
     int i, n, nitem = 0, key = -1, two = FALSE;
@@ -2482,9 +2483,9 @@ list_menu(BufferPtr buf)
 
     if (!al)
         return NULL;
-    for (i = 0; i < al->nanchor; i++)
+    for (i = 0; i < al.nanchor; i++)
     {
-        a = &al->anchors[i];
+        a = &al.anchors[i];
         if (!a->slave)
             nitem++;
     }
@@ -2495,9 +2496,9 @@ list_menu(BufferPtr buf)
         two = TRUE;
     label = New_N(char *, nitem + 1);
     ap = New_N(Anchor *, nitem);
-    for (i = 0, n = 0; i < al->nanchor; i++)
+    for (i = 0, n = 0; i < al.nanchor; i++)
     {
-        a = &al->anchors[i];
+        a = &al.anchors[i];
         if (!a->slave)
         {
             t = getAnchorText(buf, al, a);

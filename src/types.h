@@ -165,9 +165,26 @@ struct Anchor
 
 struct AnchorList
 {
-    Anchor *anchors;
-    int nanchor;
-    int anchormax;
+    Anchor *anchors = nullptr;
+    int nanchor = 0;
+    int anchormax = 0;
+
+    void clear()
+    {
+        anchors = nullptr;
+        nanchor = 0;
+        anchormax = 0;
+    }
+
+    int size() const
+    {
+        return nanchor;
+    }
+
+    operator bool() const
+    {
+        return nanchor > 0;
+    }
 };
 
 struct HmarkerList
@@ -291,10 +308,10 @@ struct Buffer : gc_cleanup
     short COLS;
     short LINES;
     InputStream *pagerSource;
-    AnchorList *href;
-    AnchorList *name;
-    AnchorList *img;
-    AnchorList *formitem;
+    AnchorList href;
+    AnchorList name;
+    AnchorList img;
+    AnchorList formitem;
     int prevhseq = -1;
 
     LinkList *linklist;

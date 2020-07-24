@@ -9,6 +9,7 @@
 #include "terms.h"
 #include "form.h"
 #include "display.h"
+#include "anchor.h"
 
 #ifndef __MINGW32_VERSION
 #include <sys/types.h>

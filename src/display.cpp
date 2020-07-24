@@ -13,6 +13,7 @@
 #include "ctrlcode.h"
 #include "mouse.h"
 #include "buffer.h"
+#include "anchor.h"
 
 #include <signal.h>
 #include <math.h>
@@ -549,14 +550,14 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 }
 
 static void
-drawAnchorCursor0(BufferPtr buf, AnchorList *al,
+drawAnchorCursor0(BufferPtr buf, AnchorList &al,
                   int hseq, int prevhseq,
                   int tline, int eline, int active)
 {
     auto l = buf->topLine;
-    for (int j = 0; j < al->nanchor; j++)
+    for (int j = 0; j < al.nanchor; j++)
     {
-        auto an = &al->anchors[j];
+        auto an = &al.anchors[j];
         if (an->start.line < tline)
             continue;
         if (an->start.line >= eline)

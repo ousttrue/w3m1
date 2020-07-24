@@ -8,6 +8,7 @@
 #include "public.h"
 #include "commands.h"
 #include "buffer.h"
+#include "anchor.h"
 #include <stdexcept>
 #include <algorithm>
 #include <assert.h>
@@ -404,12 +405,10 @@ void SetFirstbuf(BufferPtr buffer, bool isCurrent)
 void followTab(TabPtr tab)
 {
     BufferPtr buf;
-    Anchor *a;
 
-#ifdef USE_IMAGE
-    a = retrieveCurrentImg(GetCurrentbuf());
+    auto a = retrieveCurrentImg(GetCurrentbuf());
     if (!(a && a->image && a->image->map))
-#endif
+
         a = retrieveCurrentAnchor(GetCurrentbuf());
     if (a == NULL)
         return;

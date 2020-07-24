@@ -19,6 +19,7 @@
 #include "cookie.h"
 #include "ctrlcode.h"
 #include "mouse.h"
+#include "anchor.h"
 
 int searchKeyNum(void)
 {
@@ -253,17 +254,17 @@ void do_dump(BufferPtr buf)
         if (displayLinkNumber && buf->href)
         {
             printf("\nReferences:\n\n");
-            for (i = 0; i < buf->href->nanchor; i++)
+            for (i = 0; i < buf->href.nanchor; i++)
             {
                 ParsedURL pu;
                 static Str s = NULL;
-                if (buf->href->anchors[i].slave)
+                if (buf->href.anchors[i].slave)
                     continue;
-                parseURL2(buf->href->anchors[i].url, &pu, baseURL(buf));
+                parseURL2(buf->href.anchors[i].url, &pu, baseURL(buf));
                 s = parsedURL2Str(&pu);
                 if (DecodeURL)
                     s = Strnew_charp(url_unquote_conv(s->ptr, GetCurrentbuf()->document_charset));
-                printf("[%d] %s\n", buf->href->anchors[i].hseq + 1, s->ptr);
+                printf("[%d] %s\n", buf->href.anchors[i].hseq + 1, s->ptr);
             }
         }
     }
@@ -972,9 +973,9 @@ void _followForm(int submit)
         }
         break;
     case FORM_INPUT_RESET:
-        for (i = 0; i < GetCurrentbuf()->formitem->nanchor; i++)
+        for (i = 0; i < GetCurrentbuf()->formitem.nanchor; i++)
         {
-            a2 = &GetCurrentbuf()->formitem->anchors[i];
+            a2 = &GetCurrentbuf()->formitem.anchors[i];
             f2 = (FormItemList *)a2->url;
             if (f2->parent == fi->parent &&
                 f2->name && f2->value &&

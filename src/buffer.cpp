@@ -11,6 +11,7 @@
 #include "html.h"
 #include "ctrlcode.h"
 #include "local.h"
+#include "anchor.h"
 
 static int REV_LB[MAX_LB] = {
     LB_N_FRAME,
@@ -597,10 +598,10 @@ void reshapeBuffer(BufferPtr buf)
         buf->frameset = popFrameTree(&(buf->frameQ));
     }
 
-    buf->href = NULL;
-    buf->name = NULL;
-    buf->img = NULL;
-    buf->formitem = NULL;
+    buf->href.clear();
+    buf->name.clear();
+    buf->img.clear();
+    buf->formitem.clear();
     buf->formlist = NULL;
     buf->linklist = NULL;
     buf->maplist = NULL;
@@ -672,12 +673,12 @@ void reshapeBuffer(BufferPtr buf)
     }
     if (buf->check_url & CHK_URL)
         chkURLBuffer(buf);
-#ifdef USE_NNTP
+
     if (buf->check_url & CHK_NMID)
         chkNMIDBuffer(buf);
     if (buf->real_scheme == SCM_NNTP || buf->real_scheme == SCM_NEWS)
         reAnchorNewsheader(buf);
-#endif
+
     formResetBuffer(buf, sbuf->formitem);
 }
 

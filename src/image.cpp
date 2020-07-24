@@ -9,6 +9,7 @@
 #include "etc.h"
 #include "buffer.h"
 #include "local.h"
+#include "anchor.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>
@@ -269,16 +270,15 @@ static BufferPtr image_buffer = NULL;
 
 void deleteImage(BufferPtr buf)
 {
-    AnchorList *al;
     Anchor *a;
     int i;
 
     if (!buf)
         return;
-    al = buf->img;
+    auto &al = buf->img;
     if (!al)
         return;
-    for (i = 0, a = al->anchors; i < al->nanchor; i++, a++)
+    for (i = 0, a = al.anchors; i < al.nanchor; i++, a++)
     {
         if (a->image && a->image->cache &&
             a->image->cache->loaded != IMG_FLAG_UNLOADED &&
@@ -291,7 +291,6 @@ void deleteImage(BufferPtr buf)
 
 void getAllImage(BufferPtr buf)
 {
-    AnchorList *al;
     Anchor *a;
     ParsedURL *current;
     int i;
@@ -300,11 +299,11 @@ void getAllImage(BufferPtr buf)
     if (!buf)
         return;
     buf->image_loaded = TRUE;
-    al = buf->img;
+    auto &al = buf->img;
     if (!al)
         return;
     current = baseURL(buf);
-    for (i = 0, a = al->anchors; i < al->nanchor; i++, a++)
+    for (i = 0, a = al.anchors; i < al.nanchor; i++, a++)
     {
         if (a->image)
         {
@@ -318,16 +317,15 @@ void getAllImage(BufferPtr buf)
 
 void showImageProgress(BufferPtr buf)
 {
-    AnchorList *al;
     Anchor *a;
     int i, l, n;
 
     if (!buf)
         return;
-    al = buf->img;
+    auto &al = buf->img;
     if (!al)
         return;
-    for (i = 0, l = 0, n = 0, a = al->anchors; i < al->nanchor; i++, a++)
+    for (i = 0, l = 0, n = 0, a = al.anchors; i < al.nanchor; i++, a++)
     {
         if (a->image && a->hseq >= 0)
         {

@@ -22,6 +22,7 @@
 #include "mouse.h"
 #include "mimetypes.h"
 #include "local.h"
+#include "anchor.h"
 #include <signal.h>
 
 void nulcmd()
@@ -1185,7 +1186,7 @@ void backBf()
             long top = buf->frameQ->top_linenumber;
             int pos = buf->frameQ->pos;
             int currentColumn = buf->frameQ->currentColumn;
-            AnchorList *formitem = buf->frameQ->formitem;
+            AnchorList &formitem = buf->frameQ->formitem;
             fs = popFrameTree(&(buf->frameQ));
             deleteFrameSet(buf->frameset);
             buf->frameset = fs;
