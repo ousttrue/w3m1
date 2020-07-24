@@ -145,23 +145,22 @@ retrieveCurrentForm(BufferPtr buf)
 }
 
 const Anchor *
-searchAnchor(const AnchorList &al, char *str)
+AnchorList::SearchByUrl(const char *str) const
 {
-    for (int i = 0; i < al.size(); i++)
+    for (auto &a : anchors)
     {
-        auto a = &al.anchors[i];
-        if (a->hseq < 0)
+        if (a.hseq < 0)
             continue;
-        if (!strcmp(a->url, str))
-            return a;
+        if (!strcmp(a.url, str))
+            return &a;
     }
-    return NULL;
+    return nullptr;
 }
 
 const Anchor *
 searchURLLabel(BufferPtr buf, char *url)
 {
-    return searchAnchor(buf->name, url);
+    return buf->name.SearchByUrl(url);
 }
 
 static Anchor *
@@ -240,9 +239,9 @@ reseq_anchor(BufferPtr buf)
         if (a->hseq == -2)
         {
             a->hseq = n;
-            auto a1 = closest_next_anchor(buf->href, NULL, a->start.pos,
+            auto a1 = buf->href.ClosestNext(NULL, a->start.pos,
                                           a->start.line);
-            a1 = closest_next_anchor(buf->formitem, a1, a->start.pos,
+            a1 = buf->formitem.ClosestNext(a1, a->start.pos,
                                      a->start.line);
             if (a1 && a1->hseq >= 0)
             {
@@ -470,38 +469,38 @@ putHmarker(HmarkerList *ml, int line, int pos, int seq)
 }
 
 const Anchor *
-closest_next_anchor(AnchorList &al, const Anchor *an, int x, int y)
+AnchorList::ClosestNext(const Anchor *an, int x, int y) const
 {
-    for (int i = 0; i < al.size(); i++)
+    for (auto &a : anchors)
     {
-        if (al.anchors[i].hseq < 0)
+        if (a.hseq < 0)
             continue;
-        if (al.anchors[i].start.line > y ||
-            (al.anchors[i].start.line == y && al.anchors[i].start.pos > x))
+        if (a.start.line > y ||
+            (a.start.line == y && a.start.pos > x))
         {
-            if (an == NULL || an->start.line > al.anchors[i].start.line ||
-                (an->start.line == al.anchors[i].start.line &&
-                 an->start.pos > al.anchors[i].start.pos))
-                an = &al.anchors[i];
+            if (an == NULL || an->start.line > a.start.line ||
+                (an->start.line == a.start.line &&
+                 an->start.pos > a.start.pos))
+                an = &a;
         }
     }
     return an;
 }
 
 const Anchor *
-closest_prev_anchor(AnchorList &al, const Anchor *an, int x, int y)
+AnchorList::ClosestPrev(const Anchor *an, int x, int y) const
 {
-    for (int i = 0; i < al.size(); i++)
+    for (auto &a : anchors)
     {
-        if (al.anchors[i].hseq < 0)
+        if (a.hseq < 0)
             continue;
-        if (al.anchors[i].end.line < y ||
-            (al.anchors[i].end.line == y && al.anchors[i].end.pos <= x))
+        if (a.end.line < y ||
+            (a.end.line == y && a.end.pos <= x))
         {
-            if (an == NULL || an->end.line < al.anchors[i].end.line ||
-                (an->end.line == al.anchors[i].end.line &&
-                 an->end.pos < al.anchors[i].end.pos))
-                an = &al.anchors[i];
+            if (an == NULL || an->end.line < a.end.line ||
+                (an->end.line == a.end.line &&
+                 an->end.pos < a.end.pos))
+                an = &a;
         }
     }
     return an;

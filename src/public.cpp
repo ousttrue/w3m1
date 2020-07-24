@@ -1209,7 +1209,7 @@ loadLink(char *url, char *target, char *referer, FormList *request)
 
         if (label && f_element->element->attr == F_BODY)
         {
-            al = searchAnchor(f_element->body->nameList, label);
+            al = f_element->body->nameList.SearchByUrl(label);
         }
         if (!al)
         {
@@ -1393,12 +1393,12 @@ void _nextA(int visited)
         }
         else
         {
-            an = closest_next_anchor(GetCurrentbuf()->href, NULL, x, y);
-            if (visited != TRUE)
-                an = closest_next_anchor(GetCurrentbuf()->formitem, an, x, y);
+            an = GetCurrentbuf()->href.ClosestNext(NULL, x, y);
+            if (!visited)
+                an = GetCurrentbuf()->formitem.ClosestNext(an, x, y);
             if (an == NULL)
             {
-                if (visited == TRUE)
+                if (visited)
                     return;
                 an = pan;
                 break;
@@ -1485,9 +1485,9 @@ void _prevA(int visited)
         }
         else
         {
-            an = closest_prev_anchor(GetCurrentbuf()->href, NULL, x, y);
+            an = GetCurrentbuf()->href.ClosestPrev(NULL, x, y);
             if (visited != TRUE)
-                an = closest_prev_anchor(GetCurrentbuf()->formitem, an, x, y);
+                an = GetCurrentbuf()->formitem.ClosestPrev(an, x, y);
             if (an == NULL)
             {
                 if (visited == TRUE)

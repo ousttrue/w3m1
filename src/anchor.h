@@ -56,8 +56,8 @@ public:
         bp.pos = pos;
         return RetrieveAnchor(bp);
     }
-};
 
-const Anchor *searchAnchor(const AnchorList &al, char *str);
-const Anchor *closest_next_anchor(AnchorList &a, const Anchor *an, int x, int y);
-const Anchor *closest_prev_anchor(AnchorList &a, const Anchor *an, int x, int y);
+    const Anchor *SearchByUrl(const char *str) const;
+    const Anchor *ClosestNext(const Anchor *an, int x, int y) const;
+    const Anchor *ClosestPrev(const Anchor *an, int x, int y) const;
+};
