@@ -2,16 +2,7 @@
 #include "types.h"
 #include "buffer.h"
 
-struct Buffer;
-
-struct HRequest
-{
-    char command;
-    char flag;
-    char *referer;
-    FormList *request;
-};
-
+struct HRequest;
 
 Str process_img(struct parsed_tag *tag, int width);
 Str process_anchor(struct parsed_tag *tag, char *tagbuf);
@@ -189,11 +180,9 @@ int openSocket(const char *hostname, const char *remoteport_name,
 void parseURL(char *url, ParsedURL *p_url, ParsedURL *current);
 void copyParsedURL(ParsedURL *p, ParsedURL *q);
 void parseURL2(char *url, ParsedURL *pu, ParsedURL *current);
-Str parsedURL2Str(ParsedURL *pu);
 
 
-Str HTTPrequestMethod(HRequest *hr);
-Str HTTPrequestURI(ParsedURL *pu, HRequest *hr);
+
 URLFile openURL(char *url, ParsedURL *pu, ParsedURL *current,
                 URLOption *option, FormList *request,
                 TextList *extra_header, URLFile *ouf,

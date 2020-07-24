@@ -39,3 +39,5 @@ const char *filename_extension(const char *patch, int is_url);
 void initURIMethods();
 Str searchURIMethods(ParsedURL *pu);
 ParsedURL *schemeToProxy(int scheme);
+Str parsedURL2Str(ParsedURL *pu, bool pass = false);
+char *otherinfo(ParsedURL *target, ParsedURL *current, char *referer);

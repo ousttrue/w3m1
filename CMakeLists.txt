@@ -79,6 +79,7 @@ add_executable(w3m
     src/mimetypes.cpp
     src/line.cpp
     src/urlfile.cpp
+    src/http_request.cpp
     # src/html_feed_environ.cpp
     src/backend.cpp
     src/cookie.cpp

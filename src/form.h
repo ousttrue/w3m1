@@ -31,8 +31,11 @@
 #define FORM_METHOD_INTERNAL 2
 #define FORM_METHOD_HEAD 3
 
-#define FORM_ENCTYPE_URLENCODED 0
-#define FORM_ENCTYPE_MULTIPART 1
+enum FormEncodingType
+{
+    FORM_ENCTYPE_URLENCODED = 0,
+    FORM_ENCTYPE_MULTIPART = 1,
+};
 
 #define MAX_TEXTAREA 10 /* max number of <textarea>..</textarea> \
                          * within one document */
@@ -56,9 +59,8 @@ int formChooseOptionByMenu(FormItemList *fi, int x, int y);
 #endif /* MENU_SELECT */
 
 FormItemList *formList_addInput(FormList *fl,
-                                         struct parsed_tag *tag);
+                                struct parsed_tag *tag);
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
-
 
 #endif /* not FORM_H */

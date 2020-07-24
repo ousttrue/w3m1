@@ -27,6 +27,7 @@
 #include "mimehead.h"
 #include "mimetypes.h"
 #include "tagstack.h"
+#include "http_request.h"
 
 #include <sys/types.h>
 #include <signal.h>

@@ -10,6 +10,7 @@
 #include "form.h"
 #include "display.h"
 #include "anchor.h"
+#include "http_request.h"
 
 #ifndef __MINGW32_VERSION
 #include <sys/types.h>
@@ -1173,8 +1174,7 @@ void parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
     }
 }
 
-static Str
-_parsedURL2Str(ParsedURL *pu, int pass)
+Str parsedURL2Str(ParsedURL *pu, bool pass)
 {
     Str tmp;
     static const char *scheme_str[] = {
@@ -1289,13 +1289,7 @@ _parsedURL2Str(ParsedURL *pu, int pass)
     return tmp;
 }
 
-Str parsedURL2Str(ParsedURL *pu)
-{
-    return _parsedURL2Str(pu, FALSE);
-}
-
-
-static char *
+char *
 otherinfo(ParsedURL *target, ParsedURL *current, char *referer)
 {
     Str s = Strnew();
@@ -1357,145 +1351,6 @@ otherinfo(ParsedURL *target, ParsedURL *current, char *referer)
     }
     return s->ptr;
 }
-
-Str HTTPrequestMethod(HRequest *hr)
-{
-    switch (hr->command)
-    {
-    case HR_COMMAND_CONNECT:
-        return Strnew_charp("CONNECT");
-    case HR_COMMAND_POST:
-        return Strnew_charp("POST");
-        break;
-    case HR_COMMAND_HEAD:
-        return Strnew_charp("HEAD");
-        break;
-    case HR_COMMAND_GET:
-    default:
-        return Strnew_charp("GET");
-    }
-    return NULL;
-}
-
-Str HTTPrequestURI(ParsedURL *pu, HRequest *hr)
-{
-    Str tmp = Strnew();
-    if (hr->command == HR_COMMAND_CONNECT)
-    {
-        tmp->Push(pu->host);
-        tmp->Push(Sprintf(":%d", pu->port));
-    }
-    else if (hr->flag & HR_FLAG_LOCAL)
-    {
-        tmp->Push(pu->file);
-        if (pu->query)
-        {
-            tmp->Push('?');
-            tmp->Push(pu->query);
-        }
-    }
-    else
-    {
-        char *save_label = pu->label;
-        pu->label = NULL;
-        tmp->Push(_parsedURL2Str(pu, TRUE));
-        pu->label = save_label;
-    }
-    return tmp;
-}
-
-static Str
-HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra)
-{
-    Str tmp;
-    TextListItem *i;
-    int seen_www_auth = 0;
-#ifdef USE_COOKIE
-    Str cookie;
-#endif /* USE_COOKIE */
-    tmp = HTTPrequestMethod(hr);
-    tmp->Push(" ");
-    tmp->Push(HTTPrequestURI(pu, hr)->ptr);
-    tmp->Push(" HTTP/1.0\r\n");
-    if (hr->referer == NO_REFERER)
-        tmp->Push(otherinfo(pu, NULL, NULL));
-    else
-        tmp->Push(otherinfo(pu, current, hr->referer));
-    if (extra != NULL)
-        for (i = extra->first; i != NULL; i = i->next)
-        {
-            if (strncasecmp(i->ptr, "Authorization:",
-                            sizeof("Authorization:") - 1) == 0)
-            {
-                seen_www_auth = 1;
-#ifdef USE_SSL
-                if (hr->command == HR_COMMAND_CONNECT)
-                    continue;
-#endif
-            }
-            if (strncasecmp(i->ptr, "Proxy-Authorization:",
-                            sizeof("Proxy-Authorization:") - 1) == 0)
-            {
-#ifdef USE_SSL
-                if (pu->scheme == SCM_HTTPS && hr->command != HR_COMMAND_CONNECT)
-                    continue;
-#endif
-            }
-            tmp->Push(i->ptr);
-        }
-
-#ifdef USE_COOKIE
-    if (hr->command != HR_COMMAND_CONNECT &&
-        use_cookie && (cookie = find_cookie(pu)))
-    {
-        tmp->Push("Cookie: ");
-        tmp->Push(cookie);
-        tmp->Push("\r\n");
-        /* [DRAFT 12] s. 10.1 */
-        if (cookie->ptr[0] != '$')
-            tmp->Push("Cookie2: $Version=\"1\"\r\n");
-    }
-#endif /* USE_COOKIE */
-    if (hr->command == HR_COMMAND_POST)
-    {
-        if (hr->request->enctype == FORM_ENCTYPE_MULTIPART)
-        {
-            tmp->Push("Content-type: multipart/form-data; boundary=");
-            tmp->Push(hr->request->boundary);
-            tmp->Push("\r\n");
-            tmp->Push(
-                Sprintf("Content-length: %ld\r\n", hr->request->length));
-            tmp->Push("\r\n");
-        }
-        else
-        {
-            if (!override_content_type)
-            {
-                tmp->Push(
-                    "Content-type: application/x-www-form-urlencoded\r\n");
-            }
-            tmp->Push(
-                Sprintf("Content-length: %ld\r\n", hr->request->length));
-            if (header_string)
-                tmp->Push(header_string);
-            tmp->Push("\r\n");
-            tmp->Push(hr->request->body, hr->request->length);
-            tmp->Push("\r\n");
-        }
-    }
-    else
-    {
-        if (header_string)
-            tmp->Push(header_string);
-        tmp->Push("\r\n");
-    }
-#ifdef DEBUG
-    fprintf(stderr, "HTTPrequest: [ %s ]\n\n", tmp->ptr);
-#endif /* DEBUG */
-    return tmp;
-}
-
-
 
 URLFile
 openURL(char *url, ParsedURL *pu, ParsedURL *current,
