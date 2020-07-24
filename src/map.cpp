@@ -154,7 +154,7 @@ retrieveCurrentMapArea(BufferPtr buf)
     auto a_form = retrieveCurrentForm(buf);
     if (!(a_form && a_form->url))
         return NULL;
-    fi = (FormItemList *)a_form->url;
+    fi = a_form->item;
     if (!(fi && fi->parent && fi->parent->item))
         return NULL;
     fi = fi->parent->item;
@@ -195,7 +195,7 @@ retrieveCurrentMap(BufferPtr buf)
     auto a = retrieveCurrentForm(buf);
     if (!a || !a->url)
         return NULL;
-    fi = (FormItemList *)a->url;
+    fi = a->item;
     if (fi->parent->method == FORM_METHOD_INTERNAL &&
         fi->parent->action->Cmp("map") == 0)
         return a;
@@ -647,7 +647,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentForm(buf);
     if (a != NULL)
     {
-        FormItemList *fi = (FormItemList *)a->url;
+        FormItemList *fi = a->item;
         p = form2str(fi);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));

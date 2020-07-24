@@ -12,7 +12,8 @@
 #define FIRST_ANCHOR_SIZE 30
 
 Anchor *AnchorList::Put(char *url, char *target,
-                        char *referer, char *title, unsigned char key, int line, int pos)
+                        char *referer, char *title, unsigned char key, int line, int pos,
+                        FormItemList *fi)
 {
     // int n, i, j;
     // Anchor *a;
@@ -52,6 +53,7 @@ Anchor *AnchorList::Put(char *url, char *target,
     a->slave = FALSE;
     a->start = bp;
     a->end = bp;
+    a->item = fi;
     return a;
 }
 
@@ -81,7 +83,7 @@ registerForm(BufferPtr buf, FormList *flist, struct parsed_tag *tag, int line,
     auto fi = formList_addInput(flist, tag);
     if (fi == NULL)
         return NULL;
-    return buf->formitem.Put((char *)fi, flist->target, NULL, NULL, '\0', line, pos);
+    return buf->formitem.Put(nullptr, flist->target, NULL, NULL, '\0', line, pos, fi);
 }
 
 int Anchor::CmpOnAnchor(const BufferPoint &bp) const
@@ -664,7 +666,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
             if (!ls)
                 continue;
         }
-        auto fi = (FormItemList *)a_form.url;
+        auto fi = a_form.item;
         auto col = ls->COLPOS(a_form.start.pos);
         auto ecol = ls->COLPOS(a_form.end.pos);
         for (auto j = 0; l && j < a_form.rows; l = l->next, j++)
@@ -832,7 +834,7 @@ link_list_panel(BufferPtr buf)
             a = const_cast<Anchor *>(buf->formitem.RetrieveAnchor(a->start.line, a->start.pos));
             if (!a)
                 continue;
-            auto fi = (FormItemList *)a->url;
+            auto fi = a->item;
             fi = fi->parent->item;
             if (fi->parent->method == FORM_METHOD_INTERNAL &&
                 fi->parent->action->Cmp("map") == 0 && fi->value)

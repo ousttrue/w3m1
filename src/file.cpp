@@ -3947,8 +3947,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     }
                     if (id && idFrame)
                         idFrame->body->nameList.Put(id, NULL,
-                                  NULL, NULL, '\0',
-                                  currentLn(buf), pos);
+                                                    NULL, NULL, '\0',
+                                                    currentLn(buf), pos);
                     if (p)
                     {
                         effect |= PE_ANCHOR;
@@ -4289,8 +4289,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 case HTML_N_TEXTAREA_INT:
                     if (n_textarea >= 0)
                     {
-                        FormItemList *item =
-                            (FormItemList *)a_textarea[n_textarea]->url;
+                        FormItemList *item = a_textarea[n_textarea]->item;
                         item->init_value = item->value =
                             textarea_str[n_textarea];
                     }
@@ -4308,8 +4307,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 case HTML_N_SELECT_INT:
                     if (n_select >= 0)
                     {
-                        FormItemList *item =
-                            (FormItemList *)a_select[n_select]->url;
+                        FormItemList *item = a_select[n_select]->item;
                         item->select_option = select_option[n_select].first;
                         chooseSelectOption(item, item->select_option);
                         item->init_selected = item->selected;
@@ -4365,8 +4363,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 }
                 if (id && idFrame)
                     idFrame->body->nameList.Put(id, NULL,
-                              NULL, NULL, '\0',
-                              currentLn(buf), pos);
+                                                NULL, NULL, '\0',
+                                                currentLn(buf), pos);
 #endif /* ID_EXT */
             }
         }

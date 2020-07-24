@@ -221,7 +221,7 @@ void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *fi)
     for (i = 0; i < buf->formitem.size(); i++)
     {
         a2 = &buf->formitem.anchors[i];
-        f2 = (FormItemList *)a2->url;
+        f2 = a2->item;
         if (f2->parent == fi->parent && f2 != fi &&
             f2->type == FORM_INPUT_RADIO && f2->name->Cmp(fi->name) == 0)
         {
@@ -246,8 +246,8 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
         a = &buf->formitem.anchors[i];
         if (a->y != a->start.line)
             continue;
-        f1 = (FormItemList *)a->url;
-        f2 = (FormItemList *)formitem.anchors[i].url;
+        f1 = a->item;
+        f2 = formitem.anchors[i].item;
         if (f1->type != f2->type ||
             strcmp(((f1->name == NULL) ? "" : f1->name->ptr),
                    ((f2->name == NULL) ? "" : f2->name->ptr)))
@@ -1047,7 +1047,7 @@ void preFormUpdateBuffer(BufferPtr buf)
         for (i = 0; i < buf->formitem.size(); i++)
         {
             a = &buf->formitem.anchors[i];
-            fi = (FormItemList *)a->url;
+            fi = a->item;
             fl = fi->parent;
             if (pf->name && (!fl->name || strcmp(fl->name, pf->name)))
                 continue;

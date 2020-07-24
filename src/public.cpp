@@ -808,7 +808,7 @@ void _followForm(int submit)
     auto a = retrieveCurrentForm(GetCurrentbuf());
     if (a == NULL)
         return;
-    fi = (FormItemList *)a->url;
+    fi = a->item;
     switch (fi->type)
     {
     case FORM_INPUT_TEXT:
@@ -976,7 +976,7 @@ void _followForm(int submit)
         for (i = 0; i < GetCurrentbuf()->formitem.size(); i++)
         {
             auto a2 = &GetCurrentbuf()->formitem.anchors[i];
-            f2 = (FormItemList *)a2->url;
+            f2 = a2->item;
             if (f2->parent == fi->parent &&
                 f2->name && f2->value &&
                 f2->type != FORM_INPUT_SUBMIT &&
@@ -1824,7 +1824,7 @@ void _peekURL(int only_img)
                 return;
         }
         else
-            s = Strnew_charp(form2str((FormItemList *)a->url));
+            s = Strnew_charp(form2str(a->item));
     }
     if (s == NULL)
     {

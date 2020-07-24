@@ -889,7 +889,7 @@ void set_buffer_environ(BufferPtr buf)
             set_environ("W3M_CURRENT_IMG", "");
         a = retrieveCurrentForm(buf);
         if (a)
-            set_environ("W3M_CURRENT_FORM", form2str((FormItemList *)a->url));
+            set_environ("W3M_CURRENT_FORM", form2str(a->item));
         else
             set_environ("W3M_CURRENT_FORM", "");
         set_environ("W3M_CURRENT_LINE", Sprintf("%d",

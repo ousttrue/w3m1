@@ -2,9 +2,9 @@
 
 struct BufferPoint
 {
-    int line;
-    int pos;
-    int invalid;
+    int line = 0;
+    int pos = 0;
+    int invalid = 0;
 
     bool operator==(const BufferPoint &rhs) const
     {

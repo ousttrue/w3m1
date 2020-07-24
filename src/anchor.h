@@ -2,20 +2,22 @@
 #include <vector>
 
 struct Image;
+struct FormItemList;
 struct Anchor
 {
-    char *url;
-    char *target;
-    char *referer;
-    char *title;
-    unsigned char accesskey;
+    char *url = nullptr;
+    char *target = nullptr;
+    char *referer = nullptr;
+    char *title = nullptr;
+    unsigned char accesskey = 0;
     BufferPoint start;
     BufferPoint end;
-    int hseq;
-    char slave;
-    short y;
-    short rows;
-    Image *image;
+    int hseq = 0;
+    char slave = 0;
+    short y = 0;
+    short rows = 0;
+    Image *image = nullptr;
+    FormItemList *item = nullptr;
 
     int CmpOnAnchor(const BufferPoint &bp) const;
 };
@@ -43,7 +45,7 @@ public:
     }
 
     Anchor *
-    Put(char *url, char *target, char *referer, char *title, unsigned char key, int line, int pos);
+    Put(char *url, char *target, char *referer, char *title, unsigned char key, int line, int pos, FormItemList *fi = nullptr);
 
     const Anchor *
     RetrieveAnchor(const BufferPoint &bp) const;
