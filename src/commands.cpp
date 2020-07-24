@@ -644,7 +644,7 @@ void susp()
 #ifndef SIGSTOP
     char *shell;
 #endif /* not SIGSTOP */
-    move((LINES-1), 0);
+    move((LINES - 1), 0);
     clrtoeolx();
     refresh();
     fmTerm();
@@ -1012,47 +1012,41 @@ void prevVA()
 
 void followA()
 {
-    Line *l;
-    Anchor *a;
-    ParsedURL u;
-#ifdef USE_IMAGE
-    int x = 0, y = 0, map = 0;
-#endif
-    char *url;
+    // char *url;
+
     if (GetCurrentbuf()->firstLine == NULL)
         return;
-    l = GetCurrentbuf()->currentLine;
-#ifdef USE_IMAGE
-    a = retrieveCurrentImg(GetCurrentbuf());
+    auto l = GetCurrentbuf()->currentLine;
+
+    auto a = retrieveCurrentImg(GetCurrentbuf());
     if (a && a->image && a->image->map)
     {
         _followForm(FALSE);
         return;
     }
+
+    int map = 0;
+    int x = 0;
+    int y = 0;
     if (a && a->image && a->image->ismap)
     {
         getMapXY(GetCurrentbuf(), a, &x, &y);
         map = 1;
     }
-#else
-    a = retrieveCurrentMap(GetCurrentbuf());
-    if (a)
-    {
-        _followForm(FALSE);
-        return;
-    }
-#endif
     a = retrieveCurrentAnchor(GetCurrentbuf());
     if (a == NULL)
     {
         _followForm(FALSE);
         return;
     }
+
     if (*a->url == '#')
     { /* index within this buffer */
         gotoLabel(a->url + 1);
         return;
     }
+
+    ParsedURL u;
     parseURL2(a->url, &u, baseURL(GetCurrentbuf()));
     if (parsedURL2Str(&u)->Cmp(parsedURL2Str(&GetCurrentbuf()->currentURL)) == 0)
     {
@@ -1063,21 +1057,15 @@ void followA()
             return;
         }
     }
-    if (handleMailto(a->url))
-        return;
-#if 0
-    else if (!strncasecmp(a->url, "news:", 5) && strchr(a->url, '@') == NULL) {
-        /* news:newsgroup is not supported */
-        /* FIXME: gettextize? */
-        disp_err_message("news:newsgroup_name is not supported", TRUE);
+
+    if (handleMailto(a->url)){
         return;
     }
-#endif /* USE_NNTP */
-    url = a->url;
-#ifdef USE_IMAGE
+
+    auto url = a->url;
     if (map)
         url = Sprintf("%s?%d,%d", a->url, x, y)->ptr;
-#endif
+
     if (check_target && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
@@ -1093,14 +1081,15 @@ void followA()
         return;
     }
     loadLink(url, a->target, a->referer, NULL);
-    displayBuffer(GetCurrentbuf(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
-/* go to the next left anchor */
 
+/* go to the next left anchor */
 void nextL()
 {
     nextX(-1, 0);
 }
+
 /* go to the next left-up anchor */
 
 void nextLU()
@@ -1970,7 +1959,7 @@ void mouse()
     int y = (unsigned char)getch() - 33;
     if (y < 0)
         y += 0x100;
-    if (x < 0 || x >= COLS || y < 0 || y > (LINES-1))
+    if (x < 0 || x >= COLS || y < 0 || y > (LINES - 1))
         return;
     process_mouse(btn, x, y);
 }
@@ -1986,7 +1975,7 @@ void movMs()
         y < GetTabbarHeight())
         return;
     else if (x >= GetCurrentbuf()->rootX &&
-             y < (LINES-1))
+             y < (LINES - 1))
     {
         cursorXY(GetCurrentbuf(),
                  x - GetCurrentbuf()->rootX,
@@ -2012,7 +2001,7 @@ void menuMs()
         x -= FRAME_WIDTH + 1;
     }
     else if (x >= GetCurrentbuf()->rootX &&
-             y < (LINES-1))
+             y < (LINES - 1))
     {
         cursorXY(GetCurrentbuf(),
                  x - GetCurrentbuf()->rootX,
