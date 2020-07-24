@@ -16,7 +16,7 @@
 #ifdef HAVE_READLINE
 #include <readline/readline.h>
 #else  /* ! HAVE_READLINE */
-static char *readline(char *);
+static char *readline(const char *);
 #endif /* ! HAVE_READLINE */
 static TextList *split(char *);
 
@@ -329,7 +329,7 @@ int backend(void)
 /* Dummy function of readline(). */
 #ifndef HAVE_READLINE
 static char *
-readline(char *prompt)
+readline(const char *prompt)
 {
 	Str s;
 	fputs(prompt, stdout);

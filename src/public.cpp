@@ -254,7 +254,7 @@ void do_dump(BufferPtr buf)
         if (displayLinkNumber && buf->href)
         {
             printf("\nReferences:\n\n");
-            for (i = 0; i < buf->href.nanchor; i++)
+            for (i = 0; i < buf->href.size(); i++)
             {
                 ParsedURL pu;
                 static Str s = NULL;
@@ -973,7 +973,7 @@ void _followForm(int submit)
         }
         break;
     case FORM_INPUT_RESET:
-        for (i = 0; i < GetCurrentbuf()->formitem.nanchor; i++)
+        for (i = 0; i < GetCurrentbuf()->formitem.size(); i++)
         {
             a2 = &GetCurrentbuf()->formitem.anchors[i];
             f2 = (FormItemList *)a2->url;

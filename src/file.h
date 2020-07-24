@@ -64,7 +64,7 @@ int checkCopyFile(char *path1, char *path2);
 int checkSaveFile(InputStream *stream, char *path);
 int checkOverWrite(char *path);
 char *inputAnswer(char *prompt);
-int matchattr(char *p, char *attr, int len, Str *value);
+int matchattr(char *p, const char *attr, int len, Str *value);
 void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu);
 char *checkHeader(BufferPtr buf, char *field);
 BufferPtr newBuffer(int width);
@@ -143,7 +143,7 @@ int feed_table(struct table *tbl, char *line, struct table_mode *mode,
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode,
                  int width);
 void pushTable(struct table *, struct table *);
-FormList *newFormList(char *action, char *method, char *charset,
+FormList *newFormList(char *action, const char *method, char *charset,
                               char *enctype, char *target, char *name,
                               FormList *_next);
 char *form2str(FormItemList *fi);

@@ -2,11 +2,12 @@
 #include "Str.h"
 #include "textlist.h"
 #include "istream.h"
-
 #include "wc.h"
 #include "wtf.h"
 #include "wc_types.h"
 #include "ucs.h"
+#include "bufferpoint.h"
+#include "anchor.h"
 
 #include <gc_cpp.h>
 #include <string>
@@ -111,18 +112,6 @@ struct Line
     int COLPOS(int c);
 };
 
-struct BufferPoint
-{
-    int line;
-    int pos;
-    int invalid;
-
-    int Cmp(const BufferPoint &b) const
-    {
-        return ((line - (b).line) ? (line - (b).line) : (pos - (b).pos));
-    }
-};
-
 struct ImageCache
 {
     char *url;
@@ -152,62 +141,6 @@ struct Image
     ImageCache *cache;
 };
 
-struct Anchor
-{
-    char *url;
-    char *target;
-    char *referer;
-    char *title;
-    unsigned char accesskey;
-    BufferPoint start;
-    BufferPoint end;
-    int hseq;
-    char slave;
-    short y;
-    short rows;
-    Image *image;
-
-    int CmpOnAnchor(const BufferPoint &bp) const;
-};
-
-class AnchorList
-{
-    mutable int acache = -1;
-
-public:
-    Anchor *anchors = nullptr;
-    int nanchor = 0;
-    int anchormax = 0;
-
-    void clear()
-    {
-        anchors = nullptr;
-        nanchor = 0;
-        anchormax = 0;
-    }
-
-    int size() const
-    {
-        return nanchor;
-    }
-
-    operator bool() const
-    {
-        return nanchor > 0;
-    }
-
-    Anchor *
-    RetrieveAnchor(const BufferPoint &bp) const;
-
-    Anchor *
-    RetrieveAnchor(int line, int pos) const
-    {
-        BufferPoint bp;
-        bp.line = line;
-        bp.pos = pos;
-        return RetrieveAnchor(bp);
-    }
-};
 
 struct HmarkerList
 {

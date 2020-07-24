@@ -278,7 +278,7 @@ void deleteImage(BufferPtr buf)
     auto &al = buf->img;
     if (!al)
         return;
-    for (i = 0, a = al.anchors; i < al.nanchor; i++, a++)
+    for (i = 0, a = al.anchors; i < al.size(); i++, a++)
     {
         if (a->image && a->image->cache &&
             a->image->cache->loaded != IMG_FLAG_UNLOADED &&
@@ -303,7 +303,7 @@ void getAllImage(BufferPtr buf)
     if (!al)
         return;
     current = baseURL(buf);
-    for (i = 0, a = al.anchors; i < al.nanchor; i++, a++)
+    for (i = 0, a = al.anchors; i < al.size(); i++, a++)
     {
         if (a->image)
         {
@@ -325,7 +325,7 @@ void showImageProgress(BufferPtr buf)
     auto &al = buf->img;
     if (!al)
         return;
-    for (i = 0, l = 0, n = 0, a = al.anchors; i < al.nanchor; i++, a++)
+    for (i = 0, l = 0, n = 0, a = al.anchors; i < al.size(); i++, a++)
     {
         if (a->image && a->hseq >= 0)
         {

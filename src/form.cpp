@@ -44,7 +44,7 @@ struct
 /* *INDENT-ON* */
 
 FormList *
-newFormList(char *action, char *method, char *charset, char *enctype,
+newFormList(char *action, const char *method, char *charset, char *enctype,
             char *target, char *name, FormList *_next)
 {
     FormList *l;
@@ -218,7 +218,7 @@ void formRecheckRadio(Anchor *a, BufferPtr buf, FormItemList *fi)
     Anchor *a2;
     FormItemList *f2;
 
-    for (i = 0; i < buf->formitem.nanchor; i++)
+    for (i = 0; i < buf->formitem.size(); i++)
     {
         a2 = &buf->formitem.anchors[i];
         f2 = (FormItemList *)a2->url;
@@ -239,9 +239,9 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
     Anchor *a;
     FormItemList *f1, *f2;
 
-    if (buf == NULL || buf->formitem == NULL || formitem == NULL)
+    if (buf == NULL || !buf->formitem || !formitem)
         return;
-    for (i = 0; i < buf->formitem.nanchor && i < formitem.nanchor; i++)
+    for (i = 0; i < buf->formitem.size() && i < formitem.size(); i++)
     {
         a = &buf->formitem.anchors[i];
         if (a->y != a->start.line)
@@ -1044,7 +1044,7 @@ void preFormUpdateBuffer(BufferPtr buf)
         }
         else
             continue;
-        for (i = 0; i < buf->formitem.nanchor; i++)
+        for (i = 0; i < buf->formitem.size(); i++)
         {
             a = &buf->formitem.anchors[i];
             fi = (FormItemList *)a->url;

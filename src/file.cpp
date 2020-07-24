@@ -516,7 +516,7 @@ loadFile(char *path)
     return buf;
 }
 
-int matchattr(char *p, char *attr, int len, Str *value)
+int matchattr(char *p, const char *attr, int len, Str *value)
 {
     int quoted;
     char *q = NULL;
@@ -3947,7 +3947,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         }
                     }
                     if (id && idFrame)
-                        putAnchor(idFrame->body->nameList, id, NULL,
+                        idFrame->body->nameList.Put(id, NULL,
                                   NULL, NULL, '\0',
                                   currentLn(buf), pos);
                     if (p)
@@ -3965,8 +3965,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     {
                         a_href->end.line = currentLn(buf);
                         a_href->end.pos = pos;
-                        if (a_href->start.line == a_href->end.line &&
-                            a_href->start.pos == a_href->end.pos)
+                        if (a_href->start == a_href->end)
                         {
                             if (buf->hmarklist &&
                                 a_href->hseq < buf->hmarklist->nmark)
@@ -4366,7 +4365,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     }
                 }
                 if (id && idFrame)
-                    putAnchor(idFrame->body->nameList, id, NULL,
+                    idFrame->body->nameList.Put(id, NULL,
                               NULL, NULL, '\0',
                               currentLn(buf), pos);
 #endif /* ID_EXT */

@@ -21,3 +21,24 @@ BufferPtr prevBuffer(BufferPtr first, BufferPtr buf);
 HmarkerList *putHmarker(HmarkerList *ml, int line, int pos, int seq);
 void set_buffer_environ(BufferPtr buf);
 void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid);
+
+// anchor
+Anchor *registerHref(BufferPtr buf, char *url, char *target,
+                     char *referer, char *title, unsigned char key,
+                     int line, int pos);
+Anchor *registerName(BufferPtr buf, char *url, int line, int pos);
+Anchor *registerImg(BufferPtr buf, char *url, char *title, int line,
+                    int pos);
+
+Anchor *retrieveCurrentAnchor(BufferPtr buf);
+Anchor *retrieveCurrentImg(BufferPtr buf);
+Anchor *retrieveCurrentForm(BufferPtr buf);
+Anchor *searchURLLabel(BufferPtr buf, char *url);
+void reAnchorWord(BufferPtr buf, Line *l, int spos, int epos);
+char *reAnchor(BufferPtr buf, char *re);
+char *reAnchorNews(BufferPtr buf, char *re);
+char *reAnchorNewsheader(BufferPtr buf);
+void addMultirowsForm(BufferPtr buf, AnchorList &al);
+void addMultirowsImg(BufferPtr buf, AnchorList &al);
+void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, const BufferPoint &bp, int shift);
+char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);

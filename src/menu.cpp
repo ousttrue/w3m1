@@ -2372,7 +2372,7 @@ accesskey_menu(BufferPtr buf)
 
     if (!al)
         return NULL;
-    for (i = 0; i < al.nanchor; i++)
+    for (i = 0; i < al.size(); i++)
     {
         a = &al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
@@ -2383,7 +2383,7 @@ accesskey_menu(BufferPtr buf)
 
     label = New_N(char *, nitem + 1);
     ap = New_N(Anchor *, nitem);
-    for (i = 0, n = 0; i < al.nanchor; i++)
+    for (i = 0, n = 0; i < al.size(); i++)
     {
         a = &al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
@@ -2483,7 +2483,7 @@ list_menu(BufferPtr buf)
 
     if (!al)
         return NULL;
-    for (i = 0; i < al.nanchor; i++)
+    for (i = 0; i < al.size(); i++)
     {
         a = &al.anchors[i];
         if (!a->slave)
@@ -2496,7 +2496,7 @@ list_menu(BufferPtr buf)
         two = TRUE;
     label = New_N(char *, nitem + 1);
     ap = New_N(Anchor *, nitem);
-    for (i = 0, n = 0; i < al.nanchor; i++)
+    for (i = 0, n = 0; i < al.size(); i++)
     {
         a = &al.anchors[i];
         if (!a->slave)
