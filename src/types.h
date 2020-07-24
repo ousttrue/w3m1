@@ -168,7 +168,6 @@ struct AnchorList
     Anchor *anchors;
     int nanchor;
     int anchormax;
-    int acache;
 };
 
 struct HmarkerList
