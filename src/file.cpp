@@ -502,8 +502,7 @@ BufferPtr
 loadFile(char *path)
 {
     BufferPtr buf;
-    URLFile uf;
-    init_stream(&uf, SCM_LOCAL, NULL);
+    URLFile uf(SCM_LOCAL, NULL);
     examineFile(path, &uf);
     if (uf.stream == NULL)
         return NULL;
@@ -718,12 +717,9 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
 #endif
                 if (src)
                 {
-                    URLFile f;
                     Line *l;
-#ifdef USE_M17N
                     wc_ces old_charset = newBuf->document_charset;
-#endif
-                    init_stream(&f, SCM_LOCAL, newStrStream(src));
+                    URLFile f(SCM_LOCAL, newStrStream(src));
                     loadHTMLstream(&f, newBuf, NULL, TRUE);
                     for (l = newBuf->lastLine; l && l->real_linenumber;
                          l = l->prev)
@@ -1833,7 +1829,6 @@ BufferPtr
 loadGeneralFile(char *path, ParsedURL *current, char *referer,
                 int flag, FormList *request)
 {
-    URLFile f;
     ParsedURL pu;
     BufferPtr b = NULL;
     auto proc = loadBuffer;
@@ -1866,8 +1861,8 @@ load_doc:
     TRAP_OFF;
     url_option.referer = referer;
     url_option.flag = flag;
-    f = openURL(tpath, &pu, current, &url_option, request, extra_header,
-                &hr, &status);
+    auto f = openURL(tpath, &pu, current, &url_option, request, extra_header,
+                     &hr, &status);
     content_charset = 0;
 
     auto t = "text/plain";
@@ -4128,8 +4123,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         a.target = form->target;
                         a.item = fi;
                         BufferPoint bp = {
-                            line: currentLn(buf), 
-                            pos: pos
+                            line : currentLn(buf),
+                            pos : pos
                         };
                         a.start = bp;
                         a.end = bp;
@@ -4775,7 +4770,6 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
 BufferPtr
 loadHTMLString(Str page)
 {
-    URLFile f;
     MySignalHandler prevtrap = NULL;
     BufferPtr newBuf;
 
@@ -4787,7 +4781,7 @@ loadHTMLString(Str page)
     }
     TRAP_ON;
 
-    init_stream(&f, SCM_LOCAL, newStrStream(page));
+    URLFile f(SCM_LOCAL, newStrStream(page));
 
 #ifdef USE_M17N
     newBuf->document_charset = InnerCharset;
@@ -5024,7 +5018,6 @@ loadImageBuffer(URLFile *uf, BufferPtr newBuf)
     ImageCache *cache;
     Str tmp, tmpf;
     FILE *src = NULL;
-    URLFile f;
     MySignalHandler prevtrap = NULL;
     struct stat st;
 
@@ -5066,7 +5059,7 @@ image_buffer:
     src = fopen(tmpf->ptr, "w");
     newBuf->mailcap_source = tmpf->ptr;
 
-    init_stream(&f, SCM_LOCAL, newStrStream(tmp));
+    URLFile f(SCM_LOCAL, newStrStream(tmp));
     loadHTMLstream(&f, newBuf, src, TRUE);
     if (src)
         fclose(src);
@@ -5184,14 +5177,14 @@ loadcmdout(char *cmd,
 {
     FILE *f, *popen(const char *, const char *);
     BufferPtr buf;
-    URLFile uf;
 
     if (cmd == NULL || *cmd == '\0')
         return NULL;
     f = popen(cmd, "r");
     if (f == NULL)
         return NULL;
-    init_stream(&uf, SCM_UNKNOWN, newFileStream(f, (FileStreamCloseFunc)pclose));
+
+    URLFile uf(SCM_UNKNOWN, newFileStream(f, (FileStreamCloseFunc)pclose));
     buf = loadproc(&uf, defaultbuf);
     UFclose(&uf);
     return buf;
@@ -5275,13 +5268,9 @@ openGeneralPagerBuffer(InputStream *stream)
     BufferPtr buf;
     const char *t = "text/plain";
     BufferPtr t_buf = NULL;
-    URLFile uf;
+    URLFile uf(SCM_UNKNOWN, stream);
 
-    init_stream(&uf, SCM_UNKNOWN, stream);
-
-#ifdef USE_M17N
     content_charset = 0;
-#endif
     if (SearchHeader)
     {
         t_buf = newBuffer(INIT_BUFFER_WIDTH);
@@ -5355,18 +5344,18 @@ getNextPage(BufferPtr buf, int plen)
     clen_t linelen = 0, trbyte = buf->trbyte;
     Str lineBuf2;
     char pre_lbuf = '\0';
-    URLFile uf;
-#ifdef USE_M17N
+
+
     wc_ces charset;
     wc_ces doc_charset = DocumentCharset;
     uint8_t old_auto_detect = WcOption.auto_detect;
-#endif
+
     int squeeze_flag = FALSE;
     Lineprop *propBuffer = NULL;
 
-#ifdef USE_ANSI_COLOR
+
     Linecolor *colorBuffer = NULL;
-#endif
+
     MySignalHandler prevtrap = NULL;
 
     if (buf->pagerSource == NULL)
@@ -5381,7 +5370,6 @@ getNextPage(BufferPtr buf, int plen)
         buf->currentLine = last;
     }
 
-#ifdef USE_M17N
     charset = buf->document_charset;
     if (buf->document_charset != WC_CES_US_ASCII)
         doc_charset = buf->document_charset;
@@ -5393,15 +5381,14 @@ getNextPage(BufferPtr buf, int plen)
             doc_charset = content_charset;
     }
     WcOption.auto_detect = buf->auto_detect;
-#endif
 
+    URLFile uf(SCM_UNKNOWN, NULL);
     if (SETJMP(AbortLoading) != 0)
     {
         goto pager_end;
     }
     TRAP_ON;
 
-    init_stream(&uf, SCM_UNKNOWN, NULL);
     for (i = 0; i < plen; i++)
     {
         lineBuf2 = StrmyISgets(buf->pagerSource);

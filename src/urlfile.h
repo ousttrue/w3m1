@@ -22,17 +22,19 @@ enum CompressionTypes
 union InputStream;
 struct URLFile
 {
-    SchemaTypes scheme;
-    char is_cgi;
-    EncodingTypes encoding;
-    InputStream *stream;
-    const char *ext;
-    CompressionTypes compression;
-    CompressionTypes content_encoding;
-    const char *guess_type;
-    char *ssl_certificate;
-    char *url;
-    time_t modtime;
+    SchemaTypes scheme = SCM_MISSING;
+    char is_cgi = 0;
+    EncodingTypes encoding = ENC_7BIT;
+    InputStream *stream = nullptr;
+    const char *ext = nullptr;
+    CompressionTypes compression = CMP_NOCOMPRESS;
+    CompressionTypes content_encoding = CMP_NOCOMPRESS;
+    const char *guess_type = nullptr;
+    char *ssl_certificate = nullptr;
+    char *url = nullptr;
+    time_t modtime = -1;
+
+    URLFile(SchemaTypes scheme, InputStream *stream);
 };
 
-void init_stream(URLFile *uf, SchemaTypes scheme, InputStream *stream);
+#define UFclose(f) (void)(ISclose((f)->stream) == 0 && ((f)->stream = NULL))

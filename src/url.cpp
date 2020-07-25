@@ -1364,8 +1364,7 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
     HRequest hr0;
     SSL *sslh = NULL;
 
-    URLFile uf;
-    init_stream(&uf, SCM_MISSING, NULL);
+    URLFile uf(SCM_MISSING, NULL);
 
     u = url;
     scheme = getURLScheme(&u);

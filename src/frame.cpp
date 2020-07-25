@@ -422,10 +422,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 				int force_reload)
 {
 	int r, c, t_stack;
-	URLFile f2;
-#ifdef USE_M17N
 	wc_ces charset, doc_charset;
-#endif
 	char *d_target, *p_target, *s_target, *t_target;
 	ParsedURL *currentURL, base;
 	MySignalHandler prevtrap = NULL;
@@ -521,7 +518,8 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 				}
 			/* fall through */
 			case F_BODY:
-				init_stream(&f2, SCM_LOCAL, NULL);
+            {
+                URLFile f2(SCM_LOCAL, NULL);
 				if (frame.body->source)
 				{
 					fflush(f1);
@@ -914,6 +912,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 					fputs("</TABLE>\n", f1);
 				UFclose(&f2);
 				break;
+            }
 			case F_FRAMESET:
 			render_frameset:
 				if (!frame.set->name && f->name)

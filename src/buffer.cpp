@@ -576,7 +576,6 @@ selectBuffer(BufferPtr firstbuf, BufferPtr currentbuf, char *selectchar)
  */
 void reshapeBuffer(BufferPtr buf)
 {
-    URLFile f;
     uint8_t old_auto_detect = WcOption.auto_detect;
 
     if (!buf->need_reshape)
@@ -585,7 +584,7 @@ void reshapeBuffer(BufferPtr buf)
     buf->width = INIT_BUFFER_WIDTH;
     if (buf->sourcefile == NULL)
         return;
-    init_stream(&f, SCM_LOCAL, NULL);
+    URLFile f(SCM_LOCAL, NULL);
     examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile,
                 &f);
     if (f.stream == NULL)
@@ -616,8 +615,7 @@ void reshapeBuffer(BufferPtr buf)
         if (buf->currentURL.scheme != SCM_LOCAL ||
             buf->mailcap_source || !strcmp(buf->currentURL.file, "-"))
         {
-            URLFile h;
-            init_stream(&h, SCM_LOCAL, NULL);
+            URLFile h(SCM_LOCAL, NULL);
             examineFile(buf->header_source, &h);
             if (h.stream)
             {
