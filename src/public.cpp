@@ -2067,21 +2067,23 @@ void tabURL0(TabPtr tab, char *prompt, int relative)
     }
     else if (buf != GetCurrentTab()->GetCurrentBuffer())
     {
-        /* buf <- p <- ... <- Currentbuf = c */
-        BufferPtr c;
-        BufferPtr p;
+        // TODO:
 
-        c = GetCurrentTab()->GetCurrentBuffer();
-        p = prevBuffer(c, buf);
-        p->nextBuffer = NULL;
-        GetCurrentTab()->SetFirstBuffer(buf);
+        /* buf <- p <- ... <- Currentbuf = c */
+        // BufferPtr c;
+        // BufferPtr p;
+        // c = GetCurrentTab()->GetCurrentBuffer();
+        // p = prevBuffer(c, buf);
+        // p->nextBuffer = NULL;
+        // GetCurrentTab()->SetFirstBuffer(buf);
         deleteTab(GetCurrentTab());
+        tab->SetFirstBuffer(buf);
         SetCurrentTab(tab);
-        for (buf = p; buf; buf = p)
-        {
-            p = prevBuffer(c, buf);
-            GetCurrentTab()->BufferPushBeforeCurrent(buf);
-        }
+        // for (buf = p; buf; buf = p)
+        // {
+        //     p = prevBuffer(c, buf);
+        //     GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        // }
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }

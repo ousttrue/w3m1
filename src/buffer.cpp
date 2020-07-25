@@ -154,11 +154,6 @@ void clearBuffer(BufferPtr buf)
     buf->allLine = 0;
 }
 
-
-
-
-
-
 /* 
  * gotoLine: go to line number
  */
@@ -369,18 +364,6 @@ void reshapeBuffer(BufferPtr buf)
         reAnchorNewsheader(buf);
 
     formResetBuffer(buf, sbuf->formitem);
-}
-
-BufferPtr
-prevBuffer(BufferPtr first, BufferPtr buf)
-{
-    BufferPtr b = first;
-    for (; b != NULL && b->nextBuffer != buf; b = b->nextBuffer)
-        ;
-
-    assert(b->nextBuffer == buf);
-
-    return b;
 }
 
 #define fwrite1(d, f) (fwrite(&d, sizeof(d), 1, f) == 0)

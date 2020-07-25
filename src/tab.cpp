@@ -44,6 +44,22 @@ bool Tab::IsConnectFirstCurrent() const
     return false;
 }
 
+BufferPtr Tab::PrevBuffer(BufferPtr buf) const
+{
+    BufferPtr b = firstBuffer;
+    for (; b != NULL && b->nextBuffer != buf; b = b->nextBuffer)
+        ;
+
+    assert(b->nextBuffer == buf);
+
+    return b;
+}
+
+BufferPtr Tab::NextBuffer(BufferPtr buf) const
+{
+    return buf->nextBuffer;
+}
+
 void Tab::SetFirstBuffer(BufferPtr buffer, bool isCurrent)
 {
     firstBuffer = buffer;
@@ -323,7 +339,7 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
             {
                 writeBufferName(currentbuf, spoint);
                 currentbuf = topbuf;
-                for(int i=0; i< --spoint && currentbuf; ++i)
+                for (int i = 0; i < --spoint && currentbuf; ++i)
                 {
                     currentbuf = currentbuf->nextBuffer;
                 }
@@ -373,7 +389,7 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
     }
     else
     {
-        auto buf = prevBuffer(firstBuffer, delbuf);
+        auto buf = PrevBuffer(delbuf);
         buf->nextBuffer = delbuf->nextBuffer;
         if (delbuf == currentBuffer)
         {
@@ -397,7 +413,7 @@ void Tab::ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf)
     {
         newbuf->nextBuffer = delbuf->nextBuffer;
     }
-    if (delbuf && (buf = prevBuffer(firstBuffer, delbuf)))
+    if (delbuf && (buf = PrevBuffer(delbuf)))
     {
         buf->nextBuffer = newbuf;
         newbuf->nextBuffer = delbuf->nextBuffer;
@@ -713,21 +729,20 @@ void followTab(TabPtr tab)
     }
     else if (buf != GetCurrentTab()->GetCurrentBuffer())
     {
-        /* buf <- p <- ... <- Currentbuf = c */
-        BufferPtr c;
-        BufferPtr p;
+        // TODO:
 
-        c = GetCurrentTab()->GetCurrentBuffer();
-        p = prevBuffer(c, buf);
-        p->nextBuffer = NULL;
-        GetCurrentTab()->SetFirstBuffer(buf);
+        /* buf <- p <- ... <- Currentbuf = c */
         deleteTab(GetCurrentTab());
+        // auto c = GetCurrentTab()->GetCurrentBuffer();
+        // auto p = prevBuffer(c, buf);
+        // p->nextBuffer = NULL;
+        tab->SetFirstBuffer(buf);
         SetCurrentTab(tab);
-        for (buf = p; buf; buf = p)
-        {
-            p = prevBuffer(c, buf);
-            GetCurrentTab()->BufferPushBeforeCurrent(buf);
-        }
+        // for (buf = p; buf; buf = p)
+        // {
+        //     p = prevBuffer(c, buf);
+        //     GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        // }
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }

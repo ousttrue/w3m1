@@ -53,6 +53,8 @@ public:
     // buffer
     BufferPtr GetFirstBuffer() { return firstBuffer; }
     BufferPtr GetCurrentBuffer() { return currentBuffer; }
+    BufferPtr PrevBuffer(BufferPtr buf) const;
+    BufferPtr NextBuffer(BufferPtr buf) const;
     BufferPtr GetBuffer(int n) const;
     BufferPtr NamedBuffer(const char *name) const;
     BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar) const;

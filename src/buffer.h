@@ -132,7 +132,6 @@ void gotoRealLine(BufferPtr buf, int n);
 void gotoLine(BufferPtr buf, int n);
 void reshapeBuffer(BufferPtr buf);
 
-BufferPtr prevBuffer(BufferPtr first, BufferPtr buf);
 HmarkerList *putHmarker(HmarkerList *ml, int line, int pos, int seq);
 void set_buffer_environ(BufferPtr buf);
 void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid);

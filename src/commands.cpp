@@ -1126,11 +1126,10 @@ void nextU()
 
 void nextBf()
 {
-    BufferPtr buf;
     int i;
     for (i = 0; i < PREC_NUM(); i++)
     {
-        buf = prevBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentTab()->GetCurrentBuffer());
+        auto buf = GetCurrentTab()->PrevBuffer(GetCurrentTab()->GetCurrentBuffer());
         if (!buf)
         {
             if (i == 0)
