@@ -24,15 +24,15 @@ Str HRequest::Method() const
     return NULL;
 }
 
-Str HTTPrequestURI(ParsedURL *pu, HRequest *hr)
+Str HRequest::URI(ParsedURL *pu) const
 {
     Str tmp = Strnew();
-    if (hr->command == HR_COMMAND_CONNECT)
+    if (command == HR_COMMAND_CONNECT)
     {
         tmp->Push(pu->host);
         tmp->Push(Sprintf(":%d", pu->port));
     }
-    else if (hr->flag & HR_FLAG_LOCAL)
+    else if (flag & HR_FLAG_LOCAL)
     {
         tmp->Push(pu->file);
         if (pu->query)
@@ -59,7 +59,7 @@ Str HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra
 
     auto tmp = hr->Method();
     tmp->Push(" ");
-    tmp->Push(HTTPrequestURI(pu, hr)->ptr);
+    tmp->Push(hr->URI(pu)->ptr);
     tmp->Push(" HTTP/1.0\r\n");
     if (hr->referer == NO_REFERER)
         tmp->Push(otherinfo(pu, NULL, NULL));

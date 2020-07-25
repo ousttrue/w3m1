@@ -26,6 +26,7 @@ struct HRequest
     FormList *request;
 
     Str Method() const;
+    Str URI(ParsedURL *pu) const;
 };
 
 Str HTTPrequestURI(ParsedURL *pu, HRequest *hr);

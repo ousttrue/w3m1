@@ -1338,7 +1338,7 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 {
     Str tmp, a1buf, a2buf, rd, s;
     unsigned char md5[MD5_DIGEST_LENGTH + 1];
-    Str uri = HTTPrequestURI(pu, hr);
+    Str uri = hr->URI(pu);
     char nc[] = "00000001";
 
     Str algorithm = qstr_unquote(get_auth_param(ha->param, "algorithm"));
