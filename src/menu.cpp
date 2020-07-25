@@ -1903,7 +1903,7 @@ smDelBuf(char c)
         GetCurrentTab()->SetCurrentBuffer(buf->nextBuffer);
     GetCurrentTab()->DeleteBuffer(buf);
     if (!GetCurrentTab()->GetCurrentBuffer())
-        GetCurrentTab()->SetCurrentBuffer(nthBuffer(GetCurrentTab()->GetFirstBuffer(), i - 1));
+        GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetBuffer(i - 1));
     if (GetCurrentTab()->GetFirstBuffer())
     {
         GetCurrentTab()->SetFirstBuffer(nullBuffer());

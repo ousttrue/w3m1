@@ -241,7 +241,7 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
     if (cpoint >= sclimit)
     {
         spoint = sclimit / 2;
-        topbuf = nthBuffer(firstBuffer, cpoint - spoint);
+        topbuf = GetBuffer(cpoint - spoint);
     }
     else
     {
@@ -322,7 +322,11 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
             if (spoint > 0)
             {
                 writeBufferName(currentbuf, spoint);
-                currentbuf = nthBuffer(topbuf, --spoint);
+                currentbuf = topbuf;
+                for(int i=0; i< --spoint && currentbuf; ++i)
+                {
+                    currentbuf = currentbuf->nextBuffer;
+                }
                 cpoint--;
                 standout();
                 writeBufferName(currentbuf, spoint);
@@ -337,8 +341,8 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
                     i = 0;
                 cpoint--;
                 spoint = cpoint - i;
-                currentbuf = nthBuffer(firstBuffer, cpoint);
-                topbuf = nthBuffer(firstBuffer, i);
+                currentbuf = GetBuffer(cpoint);
+                topbuf = GetBuffer(i);
                 listBuffer(topbuf, currentbuf);
             }
             break;

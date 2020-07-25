@@ -157,22 +157,6 @@ void clearBuffer(BufferPtr buf)
 
 
 
-BufferPtr
-nthBuffer(BufferPtr firstbuf, int n)
-{
-    int i;
-    BufferPtr buf = firstbuf;
-
-    if (n < 0)
-        return firstbuf;
-    for (i = 0; i < n; i++)
-    {
-        if (buf == NULL)
-            return NULL;
-        buf = buf->nextBuffer;
-    }
-    return buf;
-}
 
 
 /* 
