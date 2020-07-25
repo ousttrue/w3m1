@@ -153,27 +153,6 @@ void clearBuffer(BufferPtr buf)
     buf->allLine = 0;
 }
 
-/* 
- * namedBuffer: Select buffer which have specified name
- */
-BufferPtr
-namedBuffer(BufferPtr first, char *name)
-{
-    BufferPtr buf;
-
-    if (first->buffername == name)
-    {
-        return first;
-    }
-    for (buf = first; buf->nextBuffer; buf = buf->nextBuffer)
-    {
-        if (buf->nextBuffer->buffername == name)
-        {
-            return buf->nextBuffer;
-        }
-    }
-    return NULL;
-}
 
 /* 
  * deleteBuffer: delete buffer & return fistbuffer

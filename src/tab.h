@@ -56,6 +56,7 @@ public:
     void SetCurrentBuffer(BufferPtr buf);
     BufferPtr GetCurrentBuffer() { return currentBuffer; }
     void BufferPushBeforeCurrent(BufferPtr buf);
+    BufferPtr NamedBuffer(const char *name) const;
 
 private:
     bool IsConnectFirstCurrent() const;
@@ -82,8 +83,7 @@ void DeleteAllTabs();
 BufferPtr GetCurrentbuf();
 TabPtr posTab(int x, int y);
 void SetCurrentbuf(BufferPtr buf);
-BufferPtr GetFirstbuf();
-int HasFirstBuffer();
+
 void SetFirstbuf(BufferPtr buffer, bool isCurrent = false);
 void moveTab(TabPtr src, TabPtr dst, int right);
 void calcTabPos();

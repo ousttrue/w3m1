@@ -1803,7 +1803,7 @@ initSelectMenu(void)
     static char *comment = " SPC for select / D for delete buffer ";
 
     SelectV = -1;
-    for (i = 0, buf = GetFirstbuf(); buf != NULL; i++, buf = buf->nextBuffer)
+    for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; i++, buf = buf->nextBuffer)
     {
         if (buf == GetCurrentbuf())
             SelectV = i;
@@ -1811,7 +1811,7 @@ initSelectMenu(void)
     nitem = i;
 
     label = New_N(char *, nitem + 2);
-    for (i = 0, buf = GetFirstbuf(); i < nitem; i++, buf = buf->nextBuffer)
+    for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); i < nitem; i++, buf = buf->nextBuffer)
     {
         str = Sprintf("<%s>", buf->buffername);
         if (buf->filename != NULL)
@@ -1873,10 +1873,10 @@ smChBuf(void)
 
     if (SelectV < 0 || SelectV >= SelectMenu.nitem)
         return;
-    for (i = 0, buf = GetFirstbuf(); i < SelectV; i++, buf = buf->nextBuffer)
+    for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); i < SelectV; i++, buf = buf->nextBuffer)
         ;
     SetCurrentbuf(buf);
-    for (buf = GetFirstbuf(); buf != NULL; buf = buf->nextBuffer)
+    for (buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; buf = buf->nextBuffer)
     {
         if (buf == GetCurrentbuf())
             continue;
@@ -1896,18 +1896,18 @@ smDelBuf(char c)
 
     if (CurrentMenu->select < 0 || CurrentMenu->select >= SelectMenu.nitem)
         return (MENU_NOTHING);
-    for (i = 0, buf = GetFirstbuf(); i < CurrentMenu->select;
+    for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); i < CurrentMenu->select;
          i++, buf = buf->nextBuffer)
         ;
     if (GetCurrentbuf() == buf)
         SetCurrentbuf(buf->nextBuffer);
-    SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
+    SetFirstbuf(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
     if (!GetCurrentbuf())
-        SetCurrentbuf(nthBuffer(GetFirstbuf(), i - 1));
-    if (GetFirstbuf())
+        SetCurrentbuf(nthBuffer(GetCurrentTab()->GetFirstBuffer(), i - 1));
+    if (GetCurrentTab()->GetFirstBuffer())
     {
         SetFirstbuf(nullBuffer());
-        SetCurrentbuf(GetFirstbuf());
+        SetCurrentbuf(GetCurrentTab()->GetFirstBuffer());
     }
 
     x = CurrentMenu->x;

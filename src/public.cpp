@@ -715,9 +715,9 @@ void delBuffer(BufferPtr buf)
         return;
     if (GetCurrentbuf() == buf)
         SetCurrentbuf(buf->nextBuffer);
-    SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
+    SetFirstbuf(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
     if (!GetCurrentbuf())
-        SetCurrentbuf(GetFirstbuf());
+        SetCurrentbuf(GetCurrentTab()->GetFirstBuffer());
 }
 
 /* Go to specified line */
@@ -1860,7 +1860,7 @@ Str currentURL(void)
 
 void repBuffer(BufferPtr oldbuf, BufferPtr buf)
 {
-    SetFirstbuf(replaceBuffer(GetFirstbuf(), oldbuf, buf));
+    SetFirstbuf(replaceBuffer(GetCurrentTab()->GetFirstBuffer(), oldbuf, buf));
     SetCurrentbuf(buf);
 }
 

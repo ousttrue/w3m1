@@ -45,7 +45,7 @@ bool Tab::IsConnectFirstCurrent() const
 void Tab::SetFirstBuffer(BufferPtr buffer, bool isCurrent)
 {
     firstBuffer = buffer;
-    if(isCurrent)
+    if (isCurrent)
     {
         currentBuffer = buffer;
     }
@@ -71,14 +71,14 @@ void Tab::BufferPushBeforeCurrent(BufferPtr buf)
         tmpClearBuffer(GetCurrentbuf());
     }
 
-    // if (GetFirstbuf() == GetCurrentbuf())
+    // if (GetCurrentTab()->GetFirstBuffer() == GetCurrentbuf())
     {
         buf->nextBuffer = GetCurrentBuffer();
         SetFirstbuf(buf, true);
     }
     // else
     // {
-    //     auto b = prevBuffer(GetFirstbuf(), GetCurrentbuf());
+    //     auto b = prevBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentbuf());
     //     b->nextBuffer = buf;
     //     buf->nextBuffer = GetCurrentbuf();
     //     SetCurrentbuf(buf);
@@ -86,6 +86,28 @@ void Tab::BufferPushBeforeCurrent(BufferPtr buf)
 #ifdef USE_BUFINFO
     saveBufferInfo();
 #endif
+}
+
+/* 
+ * namedBuffer: Select buffer which have specified name
+ */
+BufferPtr
+Tab::NamedBuffer(const char *name) const
+{
+    BufferPtr buf;
+
+    if (firstBuffer->buffername == name)
+    {
+        return firstBuffer;
+    }
+    for (buf = firstBuffer; buf->nextBuffer; buf = buf->nextBuffer)
+    {
+        if (buf->nextBuffer->buffername == name)
+        {
+            return buf->nextBuffer;
+        }
+    }
+    return NULL;
 }
 
 void InitializeTab()
@@ -290,15 +312,7 @@ void DeleteCurrentTab()
 
 void DeleteAllTabs()
 {
-    for (auto it = g_tabs.begin(); it != g_tabs.end();)
-    {
-        while (HasFirstBuffer())
-        {
-            auto buf = GetFirstbuf()->nextBuffer;
-            SetFirstbuf(buf);
-        }
-        it = g_tabs.erase(it);
-    }
+    g_tabs.clear();
 }
 
 void moveTab(TabPtr src, TabPtr dst, int right)
@@ -387,14 +401,9 @@ void SetCurrentbuf(BufferPtr buf)
     g_current.lock()->SetCurrentBuffer(buf);
 }
 
-BufferPtr GetFirstbuf()
+BufferPtr GetFirstBuffer()
 {
     return g_current.lock()->GetFirstBuffer();
-}
-
-int HasFirstBuffer()
-{
-    return GetFirstbuf()!=nullptr;
 }
 
 void SetFirstbuf(BufferPtr buffer, bool isCurrent)

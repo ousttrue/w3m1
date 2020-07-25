@@ -597,7 +597,7 @@ void selBuf()
     ok = FALSE;
     do
     {
-        buf = selectBuffer(GetFirstbuf(), GetCurrentbuf(), &cmd);
+        buf = selectBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentbuf(), &cmd);
         switch (cmd)
         {
         case 'B':
@@ -610,11 +610,11 @@ void selBuf()
             break;
         case 'D':
             delBuffer(buf);
-            if (GetFirstbuf() == NULL)
+            if (GetCurrentTab()->GetFirstBuffer() == NULL)
             {
                 /* No more buffer */
                 SetFirstbuf(nullBuffer());
-                SetCurrentbuf(GetFirstbuf());
+                SetCurrentbuf(GetCurrentTab()->GetFirstBuffer());
             }
             break;
         case 'q':
@@ -626,7 +626,7 @@ void selBuf()
         }
     } while (!ok);
 
-    for (buf = GetFirstbuf(); buf != NULL; buf = buf->nextBuffer)
+    for (buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; buf = buf->nextBuffer)
     {
         if (buf == GetCurrentbuf())
             continue;
@@ -1131,7 +1131,7 @@ void nextBf()
     int i;
     for (i = 0; i < PREC_NUM(); i++)
     {
-        buf = prevBuffer(GetFirstbuf(), GetCurrentbuf());
+        buf = prevBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentbuf());
         if (!buf)
         {
             if (i == 0)
@@ -1727,7 +1727,7 @@ void reload()
         return;
     }
     if (fbuf != NULL)
-        SetFirstbuf(deleteBuffer(GetFirstbuf(), fbuf));
+        SetFirstbuf(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), fbuf));
     repBuffer(GetCurrentbuf(), buf);
     if ((buf->type != NULL) && (sbuf->type != NULL) &&
         ((!strcasecmp(buf->type, "text/plain") &&
@@ -1737,7 +1737,7 @@ void reload()
     {
         vwSrc();
         if (GetCurrentbuf() != buf)
-            SetFirstbuf(deleteBuffer(GetFirstbuf(), buf));
+            SetFirstbuf(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
     }
     GetCurrentbuf()->search_header = sbuf->search_header;
     GetCurrentbuf()->form_submit = sbuf->form_submit;
@@ -2299,7 +2299,7 @@ void ldDL()
     {
         if (replace)
         {
-            if (GetCurrentbuf() == GetFirstbuf() && GetCurrentbuf()->nextBuffer == NULL)
+            if (GetCurrentbuf() == GetCurrentTab()->GetFirstBuffer() && GetCurrentbuf()->nextBuffer == NULL)
             {
                 DeleteCurrentTab();
             }
