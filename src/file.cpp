@@ -28,6 +28,7 @@
 #include "mimetypes.h"
 #include "tagstack.h"
 #include "http_request.h"
+#include "urlfile.h"
 
 #include <sys/types.h>
 #include <signal.h>
@@ -1861,7 +1862,9 @@ load_doc:
     TRAP_OFF;
     url_option.referer = referer;
     url_option.flag = flag;
-    auto f = openURL(tpath, &pu, current, &url_option, request, extra_header,
+
+    URLFile f(SCM_MISSING, NULL);
+    f.openURL(tpath, &pu, current, &url_option, request, extra_header,
                      &hr, &status);
     content_charset = 0;
 

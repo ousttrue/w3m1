@@ -26,12 +26,15 @@
 #define FORM_I_SELECT_DEFAULT_SIZE 40
 #define FORM_I_TEXTAREA_DEFAULT_WIDTH 40
 
-#define FORM_METHOD_GET 0
-#define FORM_METHOD_POST 1
-#define FORM_METHOD_INTERNAL 2
-#define FORM_METHOD_HEAD 3
+enum FormMethodTypes
+{
+    FORM_METHOD_GET = 0,
+    FORM_METHOD_POST = 1,
+    FORM_METHOD_INTERNAL = 2,
+    FORM_METHOD_HEAD = 3,
+};
 
-enum FormEncodingType
+enum FormEncodingTypes
 {
     FORM_ENCTYPE_URLENCODED = 0,
     FORM_ENCTYPE_MULTIPART = 1,

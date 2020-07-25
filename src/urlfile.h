@@ -19,7 +19,16 @@ enum CompressionTypes
     CMP_DEFLATE = 4,
 };
 
+struct URLOption
+{
+    char *referer;
+    int flag;
+};
+
 union InputStream;
+struct FormList;
+struct TextList;
+struct HRequest;
 struct URLFile
 {
     SchemaTypes scheme = SCM_MISSING;
@@ -35,6 +44,9 @@ struct URLFile
     time_t modtime = -1;
 
     URLFile(SchemaTypes scheme, InputStream *stream);
+    void openURL(char *url, ParsedURL *pu, ParsedURL *current,
+                 URLOption *option, FormList *request, TextList *extra_header,
+                 HRequest *hr, unsigned char *status);
 };
 
 #define UFclose(f) (void)(ISclose((f)->stream) == 0 && ((f)->stream = NULL))

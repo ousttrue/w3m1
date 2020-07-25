@@ -41,3 +41,12 @@ Str searchURIMethods(ParsedURL *pu);
 ParsedURL *schemeToProxy(int scheme);
 Str parsedURL2Str(ParsedURL *pu, bool pass = false);
 char *otherinfo(ParsedURL *target, ParsedURL *current, char *referer);
+SchemaTypes getURLScheme(char **url);
+void parseURL2(char *url, ParsedURL *pu, ParsedURL *current);
+
+struct SchemeKeyValue
+{
+    std::string_view name;
+    SchemaTypes schema;
+};
+SchemeKeyValue &GetScheme(int index);

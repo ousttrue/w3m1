@@ -179,14 +179,10 @@ int openSocket(const char *hostname, const char *remoteport_name,
                unsigned short remoteport_num);
 void parseURL(char *url, ParsedURL *p_url, ParsedURL *current);
 void copyParsedURL(ParsedURL *p, ParsedURL *q);
-void parseURL2(char *url, ParsedURL *pu, ParsedURL *current);
 
 
 
-URLFile openURL(char *url, ParsedURL *pu, ParsedURL *current,
-                URLOption *option, FormList *request,
-                TextList *extra_header,
-                HRequest *hr, unsigned char *status);
+
 int mailcapMatch(struct mailcap *mcap, const char *type);
 struct mailcap *searchMailcap(struct mailcap *table, char *type);
 void initMailcap();
@@ -238,7 +234,7 @@ void myExec(char *command);
 void mySystem(char *command, int background);
 Str myExtCommand(char *cmd, char *arg, int redirect);
 Str myEditor(char *cmd, char *file, int line);
-char *file_to_url(char *file);
+
 
 char *expandName(char *name);
 Str tmpfname(int type, const char *ext);

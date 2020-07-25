@@ -15,11 +15,6 @@
 #include "url.h"
 #include "urlfile.h"
 
-struct URLOption
-{
-    char *referer;
-    int flag;
-};
 
 struct portlist
 {
