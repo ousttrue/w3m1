@@ -1726,7 +1726,7 @@ void reload()
         return;
     }
     if (fbuf != NULL)
-        GetCurrentTab()->SetFirstBuffer(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), fbuf));
+        GetCurrentTab()->DeleteBuffer(fbuf);
     repBuffer(GetCurrentTab()->GetCurrentBuffer(), buf);
     if ((buf->type != NULL) && (sbuf->type != NULL) &&
         ((!strcasecmp(buf->type, "text/plain") &&
@@ -1736,7 +1736,7 @@ void reload()
     {
         vwSrc();
         if (GetCurrentTab()->GetCurrentBuffer() != buf)
-            GetCurrentTab()->SetFirstBuffer(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
+            GetCurrentTab()->DeleteBuffer(buf);
     }
     GetCurrentTab()->GetCurrentBuffer()->search_header = sbuf->search_header;
     GetCurrentTab()->GetCurrentBuffer()->form_submit = sbuf->form_submit;

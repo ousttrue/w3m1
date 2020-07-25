@@ -13,6 +13,7 @@
 #include "local.h"
 #include "anchor.h"
 #include "url.h"
+#include <assert.h>
 
 static int REV_LB[MAX_LB] = {
     LB_N_FRAME,
@@ -154,27 +155,6 @@ void clearBuffer(BufferPtr buf)
 }
 
 
-/* 
- * deleteBuffer: delete buffer & return fistbuffer
- */
-BufferPtr
-deleteBuffer(BufferPtr first, BufferPtr delbuf)
-{
-    BufferPtr buf;
-    BufferPtr b;
-
-    if (first == delbuf && first->nextBuffer != NULL)
-    {
-        buf = first->nextBuffer;
-        return buf;
-    }
-    if ((buf = prevBuffer(first, delbuf)) != NULL)
-    {
-        b = buf->nextBuffer;
-        buf->nextBuffer = b->nextBuffer;
-    }
-    return first;
-}
 
 /* 
  * replaceBuffer: replace buffer
@@ -278,7 +258,7 @@ void gotoLine(BufferPtr buf, int n)
     if (l->linenumber > n)
     {
         /* FIXME: gettextize? */
-        sprintf(msg, "First line is #%ld", l->linenumber);
+        sprintf(msg, "First line is #%d", l->linenumber);
         set_delayed_message(msg);
         buf->topLine = buf->currentLine = l;
         return;
@@ -287,7 +267,7 @@ void gotoLine(BufferPtr buf, int n)
     {
         l = buf->lastLine;
         /* FIXME: gettextize? */
-        sprintf(msg, "Last line is #%ld", buf->lastLine->linenumber);
+        sprintf(msg, "Last line is #%d", buf->lastLine->linenumber);
         set_delayed_message(msg);
         buf->currentLine = l;
         buf->topLine = lineSkip(buf, buf->currentLine, -(buf->LINES - 1),
@@ -328,7 +308,7 @@ void gotoRealLine(BufferPtr buf, int n)
     if (l->real_linenumber > n)
     {
         /* FIXME: gettextize? */
-        sprintf(msg, "First line is #%ld", l->real_linenumber);
+        sprintf(msg, "First line is #%d", l->real_linenumber);
         set_delayed_message(msg);
         buf->topLine = buf->currentLine = l;
         return;
@@ -337,7 +317,7 @@ void gotoRealLine(BufferPtr buf, int n)
     {
         l = buf->lastLine;
         /* FIXME: gettextize? */
-        sprintf(msg, "Last line is #%ld", buf->lastLine->real_linenumber);
+        sprintf(msg, "Last line is #%d", buf->lastLine->real_linenumber);
         set_delayed_message(msg);
         buf->currentLine = l;
         buf->topLine = lineSkip(buf, buf->currentLine, -(buf->LINES - 1),
@@ -663,10 +643,12 @@ void reshapeBuffer(BufferPtr buf)
 BufferPtr
 prevBuffer(BufferPtr first, BufferPtr buf)
 {
-    BufferPtr b;
-
-    for (b = first; b != NULL && b->nextBuffer != buf; b = b->nextBuffer)
+    BufferPtr b = first;
+    for (; b != NULL && b->nextBuffer != buf; b = b->nextBuffer)
         ;
+
+    assert(b->nextBuffer == buf);
+
     return b;
 }
 

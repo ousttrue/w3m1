@@ -110,6 +110,30 @@ Tab::NamedBuffer(const char *name) const
     return NULL;
 }
 
+/* 
+ * deleteBuffer: delete buffer & return fistbuffer
+ */
+void Tab::DeleteBuffer(BufferPtr delbuf)
+{
+    if (firstBuffer == delbuf && firstBuffer->nextBuffer != NULL)
+    {
+        firstBuffer = firstBuffer->nextBuffer;
+        if (delbuf == currentBuffer)
+        {
+            currentBuffer = firstBuffer;
+        }
+    }
+    else
+    {
+        auto buf = prevBuffer(firstBuffer, delbuf);
+        buf->nextBuffer = delbuf->nextBuffer;
+        if (delbuf == currentBuffer)
+        {
+            currentBuffer = buf->nextBuffer;
+        }
+    }
+}
+
 void InitializeTab()
 {
     g_tabs.push_back(std::make_shared<Tab>());

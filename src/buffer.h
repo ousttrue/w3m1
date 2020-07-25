@@ -128,7 +128,6 @@ void loadImage(BufferPtr buf, int flag);
 
 BufferPtr nullBuffer(void);
 void clearBuffer(BufferPtr buf);
-BufferPtr deleteBuffer(BufferPtr first, BufferPtr delbuf);
 BufferPtr replaceBuffer(BufferPtr first, BufferPtr delbuf, BufferPtr newbuf);
 BufferPtr nthBuffer(BufferPtr firstbuf, int n);
 void gotoRealLine(BufferPtr buf, int n);

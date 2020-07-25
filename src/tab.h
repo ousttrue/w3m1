@@ -51,12 +51,14 @@ public:
     }
 
     // buffer
+    
     void SetFirstBuffer(BufferPtr buf, bool isCurrent = false);
     BufferPtr GetFirstBuffer() { return firstBuffer; }
     void SetCurrentBuffer(BufferPtr buf);
     BufferPtr GetCurrentBuffer() { return currentBuffer; }
     void BufferPushBeforeCurrent(BufferPtr buf);
     BufferPtr NamedBuffer(const char *name) const;
+    void DeleteBuffer(BufferPtr delbuf);
 
 private:
     bool IsConnectFirstCurrent() const;

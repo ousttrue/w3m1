@@ -715,7 +715,7 @@ void delBuffer(BufferPtr buf)
         return;
     if (GetCurrentTab()->GetCurrentBuffer() == buf)
         GetCurrentTab()->SetCurrentBuffer(buf->nextBuffer);
-    GetCurrentTab()->SetFirstBuffer(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
+    GetCurrentTab()->DeleteBuffer(buf);
     if (!GetCurrentTab()->GetCurrentBuffer())
         GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
 }
