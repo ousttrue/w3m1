@@ -185,7 +185,7 @@ void parseURL2(char *url, ParsedURL *pu, ParsedURL *current);
 
 URLFile openURL(char *url, ParsedURL *pu, ParsedURL *current,
                 URLOption *option, FormList *request,
-                TextList *extra_header, URLFile *ouf,
+                TextList *extra_header,
                 HRequest *hr, unsigned char *status);
 int mailcapMatch(struct mailcap *mcap, const char *type);
 struct mailcap *searchMailcap(struct mailcap *table, char *type);

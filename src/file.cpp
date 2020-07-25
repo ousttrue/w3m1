@@ -1833,7 +1833,7 @@ BufferPtr
 loadGeneralFile(char *path, ParsedURL *current, char *referer,
                 int flag, FormList *request)
 {
-    URLFile f, *of = NULL;
+    URLFile f;
     ParsedURL pu;
     BufferPtr b = NULL;
     auto proc = loadBuffer;
@@ -1866,12 +1866,10 @@ load_doc:
     TRAP_OFF;
     url_option.referer = referer;
     url_option.flag = flag;
-    f = openURL(tpath, &pu, current, &url_option, request, extra_header, of,
+    f = openURL(tpath, &pu, current, &url_option, request, extra_header,
                 &hr, &status);
-    of = NULL;
-#ifdef USE_M17N
     content_charset = 0;
-#endif
+
     auto t = "text/plain";
     const char *real_type = nullptr;
     if (f.stream == NULL)
@@ -2082,7 +2080,6 @@ load_doc:
 
         if (status == HTST_CONNECT)
         {
-            of = &f;
             goto load_doc;
         }
 

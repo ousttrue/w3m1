@@ -22,6 +22,7 @@
 #include <winsock.h>
 #endif /* __MINGW32_VERSION */
 
+#include <assert.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <errno.h>
@@ -1355,28 +1356,16 @@ otherinfo(ParsedURL *target, ParsedURL *current, char *referer)
 URLFile
 openURL(char *url, ParsedURL *pu, ParsedURL *current,
         URLOption *option, FormList *request, TextList *extra_header,
-        URLFile *ouf, HRequest *hr, unsigned char *status)
+        HRequest *hr, unsigned char *status)
 {
     Str tmp;
     int sock, scheme;
     char *p, *q, *u;
-    URLFile uf;
     HRequest hr0;
-#ifdef USE_SSL
     SSL *sslh = NULL;
-#endif /* USE_SSL */
 
-    if (hr == NULL)
-        hr = &hr0;
-
-    if (ouf)
-    {
-        uf = *ouf;
-    }
-    else
-    {
-        init_stream(&uf, SCM_MISSING, NULL);
-    }
+    URLFile uf;
+    init_stream(&uf, SCM_MISSING, NULL);
 
     u = url;
     scheme = getURLScheme(&u);
@@ -1511,9 +1500,9 @@ retry:
         }
         break;
     case SCM_HTTP:
-#ifdef USE_SSL
+
     case SCM_HTTPS:
-#endif /* USE_SSL */
+
         if (pu->file == NULL)
             pu->file = allocStr("/", -1);
         if (request && request->method == FORM_METHOD_POST && request->body)
@@ -1521,24 +1510,26 @@ retry:
         if (request && request->method == FORM_METHOD_HEAD)
             hr->command = HR_COMMAND_HEAD;
         if ((
-#ifdef USE_SSL
+
                 (pu->scheme == SCM_HTTPS) ? non_null(HTTPS_proxy) :
-#endif /* USE_SSL */
+
                                           non_null(HTTP_proxy)) &&
             !Do_not_use_proxy &&
             pu->host != NULL && !check_no_proxy(pu->host))
         {
             hr->flag |= HR_FLAG_PROXY;
-#ifdef USE_SSL
             if (pu->scheme == SCM_HTTPS && *status == HTST_CONNECT)
             {
-                sock = ssl_socket_of(ouf->stream);
-                if (!(sslh = openSSLHandle(sock, pu->host,
-                                           &uf.ssl_certificate)))
-                {
-                    *status = HTST_MISSING;
-                    return uf;
-                }
+                // https proxy の時に通る？
+                assert(false);
+                return uf;
+                // sock = ssl_socket_of(ouf->stream);
+                // if (!(sslh = openSSLHandle(sock, pu->host,
+                //                            &uf.ssl_certificate)))
+                // {
+                //     *status = HTST_MISSING;
+                //     return uf;
+                // }
             }
             else if (pu->scheme == SCM_HTTPS)
             {
@@ -1548,13 +1539,11 @@ retry:
             }
             else
             {
-#endif /* USE_SSL */
                 sock = openSocket(HTTP_proxy_parsed.host,
                                   schemetable[HTTP_proxy_parsed.scheme].name.data(), HTTP_proxy_parsed.port);
-#ifdef USE_SSL
                 sslh = NULL;
             }
-#endif /* USE_SSL */
+
             if (sock < 0)
             {
 #ifdef SOCK_DEBUG
@@ -1562,7 +1551,6 @@ retry:
 #endif
                 return uf;
             }
-#ifdef USE_SSL
             if (pu->scheme == SCM_HTTPS)
             {
                 if (*status == HTST_NORMAL)
@@ -1579,7 +1567,6 @@ retry:
                 }
             }
             else
-#endif /* USE_SSL */
             {
                 tmp = HTTPrequest(pu, current, hr, extra_header);
                 *status = HTST_NORMAL;
@@ -1594,7 +1581,6 @@ retry:
                 *status = HTST_MISSING;
                 return uf;
             }
-#ifdef USE_SSL
             if (pu->scheme == SCM_HTTPS)
             {
                 if (!(sslh = openSSLHandle(sock, pu->host,
@@ -1604,12 +1590,10 @@ retry:
                     return uf;
                 }
             }
-#endif /* USE_SSL */
             hr->flag |= HR_FLAG_LOCAL;
             tmp = HTTPrequest(pu, current, hr, extra_header);
             *status = HTST_NORMAL;
         }
-#ifdef USE_SSL
         if (pu->scheme == SCM_HTTPS)
         {
             uf.stream = newSSLStream(sslh, sock);
@@ -1638,7 +1622,6 @@ retry:
             return uf;
         }
         else
-#endif /* USE_SSL */
         {
             write(sock, tmp->ptr, tmp->Size());
             if (w3m_reqlog)
@@ -1652,36 +1635,6 @@ retry:
                 write_from_file(sock, request->body);
         }
         break;
-#ifdef USE_GOPHER
-    case SCM_GOPHER:
-        if (non_null(GOPHER_proxy) &&
-            !Do_not_use_proxy &&
-            pu->host != NULL && !check_no_proxy(pu->host))
-        {
-            hr->flag |= HR_FLAG_PROXY;
-            sock = openSocket(GOPHER_proxy_parsed.host,
-                              schemetable[GOPHER_proxy_parsed.scheme].cmdname,
-                              GOPHER_proxy_parsed.port);
-            if (sock < 0)
-                return uf;
-            uf.scheme = SCM_HTTP;
-            tmp = HTTPrequest(pu, current, hr, extra_header);
-        }
-        else
-        {
-            sock = openSocket(pu->host,
-                              schemetable[pu->scheme].cmdname, pu->port);
-            if (sock < 0)
-                return uf;
-            if (pu->file == NULL)
-                pu->file = "1";
-            tmp = Strnew_charp(file_unquote(pu->file));
-            tmp->Push('\n');
-        }
-        write(sock, tmp->ptr, tmp->length);
-        break;
-#endif /* USE_GOPHER */
-#ifdef USE_NNTP
     case SCM_NNTP:
     case SCM_NNTP_GROUP:
     case SCM_NEWS:
@@ -1692,7 +1645,6 @@ retry:
             uf.scheme = SCM_NEWS_GROUP;
         uf.stream = openNewsStream(pu);
         return uf;
-#endif /* USE_NNTP */
     case SCM_DATA:
         if (pu->file == NULL)
             return uf;

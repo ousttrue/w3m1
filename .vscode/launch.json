@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/w3m",
             "args": [
-                "www.google.com",
+                "https://www.google.com",
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
