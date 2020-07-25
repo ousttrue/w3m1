@@ -597,7 +597,7 @@ void selBuf()
     ok = FALSE;
     do
     {
-        buf = selectBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentTab()->GetCurrentBuffer(), &cmd);
+        buf = GetCurrentTab()->SelectBuffer(GetCurrentTab()->GetCurrentBuffer(), &cmd);
         switch (cmd)
         {
         case 'B':

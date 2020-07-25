@@ -131,7 +131,6 @@ void clearBuffer(BufferPtr buf);
 BufferPtr nthBuffer(BufferPtr firstbuf, int n);
 void gotoRealLine(BufferPtr buf, int n);
 void gotoLine(BufferPtr buf, int n);
-BufferPtr selectBuffer(BufferPtr firstbuf, BufferPtr currentbuf, char *selectchar);
 void reshapeBuffer(BufferPtr buf);
 
 BufferPtr prevBuffer(BufferPtr first, BufferPtr buf);

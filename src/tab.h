@@ -51,13 +51,15 @@ public:
     }
 
     // buffer
-    
-    void SetFirstBuffer(BufferPtr buf, bool isCurrent = false);
     BufferPtr GetFirstBuffer() { return firstBuffer; }
-    void SetCurrentBuffer(BufferPtr buf);
     BufferPtr GetCurrentBuffer() { return currentBuffer; }
-    void BufferPushBeforeCurrent(BufferPtr buf);
+    BufferPtr GetBuffer(int n) const;
     BufferPtr NamedBuffer(const char *name) const;
+    BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar) const;
+
+    void SetFirstBuffer(BufferPtr buf, bool isCurrent = false);
+    void SetCurrentBuffer(BufferPtr buf);
+    void BufferPushBeforeCurrent(BufferPtr buf);
     void DeleteBuffer(BufferPtr delbuf);
     void ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf);
 

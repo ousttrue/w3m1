@@ -9,6 +9,8 @@
 #include "commands.h"
 #include "buffer.h"
 #include "anchor.h"
+#include "terms.h"
+#include "ctrlcode.h"
 #include <stdexcept>
 #include <algorithm>
 #include <assert.h>
@@ -88,6 +90,20 @@ void Tab::BufferPushBeforeCurrent(BufferPtr buf)
 #endif
 }
 
+BufferPtr
+Tab::GetBuffer(int n) const
+{
+    if (n <= 0)
+        return firstBuffer;
+
+    BufferPtr buf = firstBuffer;
+    for (int i = 0; i < n && buf; i++)
+    {
+        buf = buf->nextBuffer;
+    }
+    return buf;
+}
+
 /* 
  * namedBuffer: Select buffer which have specified name
  */
@@ -108,6 +124,234 @@ Tab::NamedBuffer(const char *name) const
         }
     }
     return NULL;
+}
+
+static void
+writeBufferName(BufferPtr buf, int n)
+{
+    Str msg;
+    int all;
+
+    all = buf->allLine;
+    if (all == 0 && buf->lastLine != NULL)
+        all = buf->lastLine->linenumber;
+    move(n, 0);
+    /* FIXME: gettextize? */
+    msg = Sprintf("<%s> [%d lines]", buf->buffername, all);
+    if (buf->filename != NULL)
+    {
+        switch (buf->currentURL.scheme)
+        {
+        case SCM_LOCAL:
+        case SCM_LOCAL_CGI:
+            if (strcmp(buf->currentURL.file, "-"))
+            {
+                msg->Push(' ');
+                msg->Push(conv_from_system(buf->currentURL.real_file));
+            }
+            break;
+        case SCM_UNKNOWN:
+        case SCM_MISSING:
+            break;
+        default:
+            msg->Push(' ');
+            msg->Push(parsedURL2Str(&buf->currentURL));
+            break;
+        }
+    }
+    addnstr_sup(msg->ptr, COLS - 1);
+}
+
+static BufferPtr
+listBuffer(BufferPtr top, BufferPtr current)
+{
+    int i, c = 0;
+    BufferPtr buf = top;
+
+    move(0, 0);
+#ifdef USE_COLOR
+    if (useColor)
+    {
+        setfcolor(basic_color);
+#ifdef USE_BG_COLOR
+        setbcolor(bg_color);
+#endif /* USE_BG_COLOR */
+    }
+#endif /* USE_COLOR */
+    clrtobotx();
+    for (i = 0; i < (LINES - 1); i++)
+    {
+        if (buf == current)
+        {
+            c = i;
+            standout();
+        }
+        writeBufferName(buf, i);
+        if (buf == current)
+        {
+            standend();
+            clrtoeolx();
+            move(i, 0);
+            toggle_stand();
+        }
+        else
+            clrtoeolx();
+        if (buf->nextBuffer == NULL)
+        {
+            move(i + 1, 0);
+            clrtobotx();
+            break;
+        }
+        buf = buf->nextBuffer;
+    }
+    standout();
+    /* FIXME: gettextize? */
+    message("Buffer selection mode: SPC for select / D for delete buffer", 0,
+            0);
+    standend();
+    /* 
+     * move((LINES-1), COLS - 1); */
+    move(c, 0);
+    refresh();
+    return buf->nextBuffer;
+}
+
+/* 
+ * Select buffer visually
+ */
+BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
+{
+    int i, cpoint,                     /* Current Buffer Number */
+        spoint,                        /* Current Line on Screen */
+        maxbuf, sclimit = (LINES - 1); /* Upper limit of line * number in 
+					 * the * screen */
+    BufferPtr buf;
+    BufferPtr topbuf;
+    char c;
+
+    i = cpoint = 0;
+    for (buf = firstBuffer; buf != NULL; buf = buf->nextBuffer)
+    {
+        if (buf == currentbuf)
+            cpoint = i;
+        i++;
+    }
+    maxbuf = i;
+
+    if (cpoint >= sclimit)
+    {
+        spoint = sclimit / 2;
+        topbuf = nthBuffer(firstBuffer, cpoint - spoint);
+    }
+    else
+    {
+        topbuf = firstBuffer;
+        spoint = cpoint;
+    }
+    listBuffer(topbuf, currentbuf);
+
+    for (;;)
+    {
+        if ((c = getch()) == ESC_CODE)
+        {
+            if ((c = getch()) == '[' || c == 'O')
+            {
+                switch (c = getch())
+                {
+                case 'A':
+                    c = 'k';
+                    break;
+                case 'B':
+                    c = 'j';
+                    break;
+                case 'C':
+                    c = ' ';
+                    break;
+                case 'D':
+                    c = 'B';
+                    break;
+                }
+            }
+        }
+#ifdef __EMX__
+        else if (!c)
+            switch (getch())
+            {
+            case K_UP:
+                c = 'k';
+                break;
+            case K_DOWN:
+                c = 'j';
+                break;
+            case K_RIGHT:
+                c = ' ';
+                break;
+            case K_LEFT:
+                c = 'B';
+            }
+#endif
+        switch (c)
+        {
+        case CTRL_N:
+        case 'j':
+            if (spoint < sclimit - 1)
+            {
+                if (currentbuf->nextBuffer == NULL)
+                    continue;
+                writeBufferName(currentbuf, spoint);
+                currentbuf = currentbuf->nextBuffer;
+                cpoint++;
+                spoint++;
+                standout();
+                writeBufferName(currentbuf, spoint);
+                standend();
+                move(spoint, 0);
+                toggle_stand();
+            }
+            else if (cpoint < maxbuf - 1)
+            {
+                topbuf = currentbuf;
+                currentbuf = currentbuf->nextBuffer;
+                cpoint++;
+                spoint = 1;
+                listBuffer(topbuf, currentbuf);
+            }
+            break;
+        case CTRL_P:
+        case 'k':
+            if (spoint > 0)
+            {
+                writeBufferName(currentbuf, spoint);
+                currentbuf = nthBuffer(topbuf, --spoint);
+                cpoint--;
+                standout();
+                writeBufferName(currentbuf, spoint);
+                standend();
+                move(spoint, 0);
+                toggle_stand();
+            }
+            else if (cpoint > 0)
+            {
+                i = cpoint - sclimit;
+                if (i < 0)
+                    i = 0;
+                cpoint--;
+                spoint = cpoint - i;
+                currentbuf = nthBuffer(firstBuffer, cpoint);
+                topbuf = nthBuffer(firstBuffer, i);
+                listBuffer(topbuf, currentbuf);
+            }
+            break;
+        default:
+            *selectchar = c;
+            return currentbuf;
+        }
+        /* 
+	 * move((LINES-1), COLS - 1);
+	 */
+        move(spoint, 0);
+        refresh();
+    }
 }
 
 /* 
