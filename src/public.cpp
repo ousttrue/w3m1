@@ -1860,7 +1860,7 @@ Str currentURL(void)
 
 void repBuffer(BufferPtr oldbuf, BufferPtr buf)
 {
-    GetCurrentTab()->SetFirstBuffer(replaceBuffer(GetCurrentTab()->GetFirstBuffer(), oldbuf, buf));
+    GetCurrentTab()->ReplaceBuffer(oldbuf, buf);
     GetCurrentTab()->SetCurrentBuffer(buf);
 }
 

@@ -156,33 +156,6 @@ void clearBuffer(BufferPtr buf)
 
 
 
-/* 
- * replaceBuffer: replace buffer
- */
-BufferPtr
-replaceBuffer(BufferPtr first, BufferPtr delbuf, BufferPtr newbuf)
-{
-    BufferPtr buf;
-
-    if (delbuf == NULL)
-    {
-        newbuf->nextBuffer = first;
-        return newbuf;
-    }
-    if (first == delbuf)
-    {
-        newbuf->nextBuffer = delbuf->nextBuffer;
-        return newbuf;
-    }
-    if (delbuf && (buf = prevBuffer(first, delbuf)))
-    {
-        buf->nextBuffer = newbuf;
-        newbuf->nextBuffer = delbuf->nextBuffer;
-        return first;
-    }
-    newbuf->nextBuffer = first;
-    return newbuf;
-}
 
 BufferPtr
 nthBuffer(BufferPtr firstbuf, int n)

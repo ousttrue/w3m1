@@ -59,6 +59,7 @@ public:
     void BufferPushBeforeCurrent(BufferPtr buf);
     BufferPtr NamedBuffer(const char *name) const;
     void DeleteBuffer(BufferPtr delbuf);
+    void ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf);
 
 private:
     bool IsConnectFirstCurrent() const;

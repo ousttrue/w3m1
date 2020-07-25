@@ -134,6 +134,29 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
     }
 }
 
+/* 
+ * replaceBuffer: replace buffer
+ */
+void Tab::ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf)
+{
+    BufferPtr buf;
+
+    if (delbuf == NULL)
+    {
+        newbuf->nextBuffer = firstBuffer;
+    }
+    if (firstBuffer == delbuf)
+    {
+        newbuf->nextBuffer = delbuf->nextBuffer;
+    }
+    if (delbuf && (buf = prevBuffer(firstBuffer, delbuf)))
+    {
+        buf->nextBuffer = newbuf;
+        newbuf->nextBuffer = delbuf->nextBuffer;
+    }
+    newbuf->nextBuffer = firstBuffer;
+}
+
 void InitializeTab()
 {
     g_tabs.push_back(std::make_shared<Tab>());
