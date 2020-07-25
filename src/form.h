@@ -7,6 +7,7 @@
 
 #include "Str.h"
 #include "parsetagx.h"
+#include "buffer.h"
 
 #define FORM_UNKNOWN -1
 #define FORM_INPUT_TEXT 0

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "buffer.h"
 #include <memory>
 #include <list>
 #include <functional>

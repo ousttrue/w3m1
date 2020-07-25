@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "bufferpoint.h"
 
 struct Image;
 struct FormItemList;

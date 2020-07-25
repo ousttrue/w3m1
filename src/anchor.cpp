@@ -334,11 +334,12 @@ reAnchorNewsheader(BufferPtr buf)
 {
     Line *l;
     char *p, *p1, *p2;
-    static char *header_mid[] = {
+    static const char *header_mid[] = {
         "Message-Id:", "References:", "In-Reply-To:", NULL};
-    static char *header_group[] = {
+    static const char *header_group[] = {
         "Newsgroups:", NULL};
-    char **header, **q;
+    const char **header;
+    const char **q;
     int i, search = FALSE;
 
     if (!buf || !buf->firstLine)
@@ -719,8 +720,8 @@ link_list_panel(BufferPtr buf)
         tmp->Push("<hr><h2>Links</h2>\n<ol>\n");
         for (auto l = buf->linklist; l; l = l->next)
         {
-            char *u;
-            char *p;
+            const char *u;
+            const char *p;
             const char *t;
             if (l->url)
             {

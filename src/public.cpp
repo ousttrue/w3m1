@@ -21,6 +21,7 @@
 #include "mouse.h"
 #include "anchor.h"
 #include "map.h"
+#include "buffer.h"
 
 int searchKeyNum(void)
 {
