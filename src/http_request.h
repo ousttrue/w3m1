@@ -24,8 +24,9 @@ struct HRequest
     char flag;
     char *referer;
     FormList *request;
+
+    Str Method() const;
 };
 
-Str HTTPrequestMethod(HRequest *hr);
 Str HTTPrequestURI(ParsedURL *pu, HRequest *hr);
 Str HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra);

@@ -5,9 +5,9 @@
 #include "cookie.h"
 #include "form.h"
 
-Str HTTPrequestMethod(HRequest *hr)
+Str HRequest::Method() const
 {
-    switch (hr->command)
+    switch (command)
     {
     case HR_COMMAND_CONNECT:
         return Strnew_charp("CONNECT");
@@ -51,16 +51,13 @@ Str HTTPrequestURI(ParsedURL *pu, HRequest *hr)
     return tmp;
 }
 
-Str
-HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra)
+Str HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra)
 {
-    Str tmp;
     TextListItem *i;
     int seen_www_auth = 0;
-#ifdef USE_COOKIE
     Str cookie;
-#endif /* USE_COOKIE */
-    tmp = HTTPrequestMethod(hr);
+
+    auto tmp = hr->Method();
     tmp->Push(" ");
     tmp->Push(HTTPrequestURI(pu, hr)->ptr);
     tmp->Push(" HTTP/1.0\r\n");
