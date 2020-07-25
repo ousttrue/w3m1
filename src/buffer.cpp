@@ -109,15 +109,15 @@ void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid)
     {
         buf->bufferprop |= (BP_INTERNAL | prop);
         if (!(buf->bufferprop & BP_NO_URL))
-            copyParsedURL(&buf->currentURL, &GetCurrentbuf()->currentURL);
+            copyParsedURL(&buf->currentURL, &GetCurrentTab()->GetCurrentBuffer()->currentURL);
         if (linkid != LB_NOLINK)
         {
-            buf->linkBuffer[linkid] = GetCurrentbuf();
-            GetCurrentbuf()->linkBuffer[linkid] = buf;
+            buf->linkBuffer[linkid] = GetCurrentTab()->GetCurrentBuffer();
+            GetCurrentTab()->GetCurrentBuffer()->linkBuffer[linkid] = buf;
         }
         GetCurrentTab()->BufferPushBeforeCurrent(buf);
     }
-    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }
 
 /* 

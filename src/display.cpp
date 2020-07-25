@@ -1318,9 +1318,9 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, in
         fprintf(stderr, "%s\n", conv_to_system(s));
         return;
     }
-    if (GetCurrentTab() != NULL && GetCurrentbuf() != NULL)
-        message(s, GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
-                GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY);
+    if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL)
+        message(s, GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX,
+                GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY);
     else
         message(s, (LINES - 1), 0);
     refresh();
@@ -1333,7 +1333,7 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, in
     if (mouse && use_mouse)
         mouse_inactive();
 #endif
-    if (GetCurrentTab() != NULL && GetCurrentbuf() != NULL && redraw_current)
+    if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL && redraw_current)
         displayCurrentbuf(B_NORMAL);
 }
 

@@ -314,12 +314,12 @@ static void mainloop()
             set_add_download_list(FALSE);
             ldDL();
         }
-        if (GetCurrentbuf()->submit)
+        if (GetCurrentTab()->GetCurrentBuffer()->submit)
         {
-            Anchor *a = GetCurrentbuf()->submit;
-            GetCurrentbuf()->submit = NULL;
-            gotoLine(GetCurrentbuf(), a->start.line);
-            GetCurrentbuf()->pos = a->start.pos;
+            Anchor *a = GetCurrentTab()->GetCurrentBuffer()->submit;
+            GetCurrentTab()->GetCurrentBuffer()->submit = NULL;
+            gotoLine(GetCurrentTab()->GetCurrentBuffer(), a->start.line);
+            GetCurrentTab()->GetCurrentBuffer()->pos = a->start.pos;
             _followForm(TRUE);
             continue;
         }
@@ -330,14 +330,14 @@ static void mainloop()
         }
         /* get keypress event */
 #ifdef USE_ALARM
-        if (GetCurrentbuf()->event)
+        if (GetCurrentTab()->GetCurrentBuffer()->event)
         {
-            if (GetCurrentbuf()->event->status != AL_UNSET)
+            if (GetCurrentTab()->GetCurrentBuffer()->event->status != AL_UNSET)
             {
-                SetCurrentAlarm(GetCurrentbuf()->event);
+                SetCurrentAlarm(GetCurrentTab()->GetCurrentBuffer()->event);
                 if (CurrentAlarm()->sec == 0)
                 { /* refresh (0sec) */
-                    GetCurrentbuf()->event = NULL;
+                    GetCurrentTab()->GetCurrentBuffer()->event = NULL;
                     ClearCurrentKey();
                     ClearCurrentKeyData();
                     CurrentCmdData = (char *)CurrentAlarm()->data;
@@ -347,9 +347,9 @@ static void mainloop()
                 }
             }
             else
-                GetCurrentbuf()->event = NULL;
+                GetCurrentTab()->GetCurrentBuffer()->event = NULL;
         }
-        if (!GetCurrentbuf()->event)
+        if (!GetCurrentTab()->GetCurrentBuffer()->event)
             SetCurrentAlarm(DefaultAlarm());
 #endif
 
@@ -368,8 +368,8 @@ static void mainloop()
         mySignal(SIGWINCH, resize_hook);
 #endif
 #ifdef USE_IMAGE
-        if (activeImage && displayImage && GetCurrentbuf()->img &&
-            !GetCurrentbuf()->image_loaded)
+        if (activeImage && displayImage && GetCurrentTab()->GetCurrentBuffer()->img &&
+            !GetCurrentTab()->GetCurrentBuffer()->image_loaded)
         {
             do
             {
@@ -377,7 +377,7 @@ static void mainloop()
                 if (need_resize_screen())
                     resize_screen();
 #endif
-                loadImage(GetCurrentbuf(), IMG_FLAG_NEXT);
+                loadImage(GetCurrentTab()->GetCurrentBuffer(), IMG_FLAG_NEXT);
             } while (sleep_till_anykey(1, 0) <= 0);
         }
 #ifdef SIGWINCH
@@ -1061,21 +1061,21 @@ int main(int argc, char **argv, char **envp)
         else if (open_new_tab)
         {
             _newT();
-            GetCurrentbuf()->nextBuffer = newbuf;
-            delBuffer(GetCurrentbuf());
+            GetCurrentTab()->GetCurrentBuffer()->nextBuffer = newbuf;
+            delBuffer(GetCurrentTab()->GetCurrentBuffer());
         }
         else
         {
-            GetCurrentbuf()->nextBuffer = newbuf;
+            GetCurrentTab()->GetCurrentBuffer()->nextBuffer = newbuf;
             GetCurrentTab()->SetCurrentBuffer(newbuf);
         }
         if (!w3m_dump || w3m_dump == DUMP_BUFFER)
         {
-            if (GetCurrentbuf()->frameset != NULL && RenderFrame)
+            if (GetCurrentTab()->GetCurrentBuffer()->frameset != NULL && RenderFrame)
                 rFrame();
         }
         if (w3m_dump)
-            do_dump(GetCurrentbuf());
+            do_dump(GetCurrentTab()->GetCurrentBuffer());
         else
         {
             GetCurrentTab()->SetCurrentBuffer(newbuf);
@@ -1105,9 +1105,9 @@ int main(int argc, char **argv, char **envp)
         if (!GetCurrentTab()->GetFirstBuffer())
         {
             GetCurrentTab()->SetCurrentBuffer(newBuffer(INIT_BUFFER_WIDTH));
-            GetCurrentTab()->SetFirstBuffer(GetCurrentbuf());
-            GetCurrentbuf()->bufferprop = BP_INTERNAL | BP_NO_URL;
-            GetCurrentbuf()->buffername = DOWNLOAD_LIST_TITLE;
+            GetCurrentTab()->SetFirstBuffer(GetCurrentTab()->GetCurrentBuffer());
+            GetCurrentTab()->GetCurrentBuffer()->bufferprop = BP_INTERNAL | BP_NO_URL;
+            GetCurrentTab()->GetCurrentBuffer()->buffername = DOWNLOAD_LIST_TITLE;
         }
         else
             GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
@@ -1134,7 +1134,7 @@ int main(int argc, char **argv, char **envp)
 #endif
 
     GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
-    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
     if (line_str)
     {
         _goLine(line_str);

@@ -242,8 +242,8 @@
  (dstbuf)->visualpos = (srcbuf)->visualpos; \
  (dstbuf)->currentColumn = (srcbuf)->currentColumn; \
 }
-#define SAVE_BUFPOSITION(sbufp) COPY_BUFPOSITION(sbufp, GetCurrentbuf())
-#define RESTORE_BUFPOSITION(sbufp) COPY_BUFPOSITION(GetCurrentbuf(), sbufp)
+#define SAVE_BUFPOSITION(sbufp) COPY_BUFPOSITION(sbufp, GetCurrentTab()->GetCurrentBuffer())
+#define RESTORE_BUFPOSITION(sbufp) COPY_BUFPOSITION(GetCurrentTab()->GetCurrentBuffer(), sbufp)
 #define TOP_LINENUMBER(buf) ((buf)->topLine ? (buf)->topLine->linenumber : 1)
 #define CUR_LINENUMBER(buf) ((buf)->currentLine ? (buf)->currentLine->linenumber : 1)
 

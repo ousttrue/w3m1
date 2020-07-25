@@ -1124,7 +1124,7 @@ void popup_menu(Menu *parent, Menu *menu)
     while (active)
     {
         active = action_menu(CurrentMenu);
-        displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
     }
     menu->active = 0;
     CurrentMenu = parent;
@@ -1775,8 +1775,8 @@ void popupMenu(int x, int y, Menu *menu)
     initSelectMenu();
     initSelTabMenu();
 
-    menu->cursorX = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
-    menu->cursorY = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
+    menu->cursorX = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX;
+    menu->cursorY = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
     menu->x = x + FRAME_WIDTH + 1;
     menu->y = y + 2;
 
@@ -1805,7 +1805,7 @@ initSelectMenu(void)
     SelectV = -1;
     for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; i++, buf = buf->nextBuffer)
     {
-        if (buf == GetCurrentbuf())
+        if (buf == GetCurrentTab()->GetCurrentBuffer())
             SelectV = i;
     }
     nitem = i;
@@ -1859,8 +1859,8 @@ initSelectMenu(void)
 
     new_option_menu(&SelectMenu, label, &SelectV, smChBuf);
     SelectMenu.initial = SelectV;
-    SelectMenu.cursorX = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
-    SelectMenu.cursorY = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
+    SelectMenu.cursorX = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX;
+    SelectMenu.cursorY = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
     SelectMenu.keymap['D'] = smDelBuf;
     SelectMenu.item[nitem].type = MENU_NOP;
 }
@@ -1878,7 +1878,7 @@ smChBuf(void)
     GetCurrentTab()->SetCurrentBuffer(buf);
     for (buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; buf = buf->nextBuffer)
     {
-        if (buf == GetCurrentbuf())
+        if (buf == GetCurrentTab()->GetCurrentBuffer())
             continue;
 
         deleteImage(buf);
@@ -1899,10 +1899,10 @@ smDelBuf(char c)
     for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); i < CurrentMenu->select;
          i++, buf = buf->nextBuffer)
         ;
-    if (GetCurrentbuf() == buf)
+    if (GetCurrentTab()->GetCurrentBuffer() == buf)
         GetCurrentTab()->SetCurrentBuffer(buf->nextBuffer);
     GetCurrentTab()->SetFirstBuffer(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
-    if (!GetCurrentbuf())
+    if (!GetCurrentTab()->GetCurrentBuffer())
         GetCurrentTab()->SetCurrentBuffer(nthBuffer(GetCurrentTab()->GetFirstBuffer(), i - 1));
     if (GetCurrentTab()->GetFirstBuffer())
     {
@@ -1924,7 +1924,7 @@ smDelBuf(char c)
     CurrentMenu->select = (mselect <= CurrentMenu->nitem - 2) ? mselect
                                                               : (CurrentMenu->nitem - 2);
 
-    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
     draw_all_menu(CurrentMenu);
     select_menu(CurrentMenu, CurrentMenu->select);
     return (MENU_NOTHING);
@@ -2004,8 +2004,8 @@ initSelTabMenu(void)
 
     // new_option_menu(&SelTabMenu, label, &SelTabV, smChTab);
     // SelTabMenu.initial = SelTabV;
-    // SelTabMenu.cursorX = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX;
-    // SelTabMenu.cursorY = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
+    // SelTabMenu.cursorX = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX;
+    // SelTabMenu.cursorY = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
     // SelTabMenu.keymap['D'] = smDelTab;
     // SelTabMenu.item[nitem].type = MENU_NOP;
 }
@@ -2066,7 +2066,7 @@ smDelTab(char c)
     // CurrentMenu->select = (mselect <= CurrentMenu->nitem - 2) ? mselect
     //                                                           : (CurrentMenu->nitem - 2);
 
-    // displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+    // displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
     // draw_all_menu(CurrentMenu);
     // select_menu(CurrentMenu, CurrentMenu->select);
     return (MENU_NOTHING);
@@ -2578,8 +2578,8 @@ void PopupMenu()
     Menu *menu = &MainMenu;
     char *data;
     int n;
-    int x = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
-        y = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
+    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX,
+        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
 
     data = searchKeyData();
     if (data != NULL)
@@ -2595,8 +2595,8 @@ void PopupMenu()
 
 void PopupBufferMenu()
 {
-    int x = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
-        y = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
+    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX,
+        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
 
     TryGetMouseActionPosition(&x, &y);
     popupMenu(x, y, &SelectMenu);
@@ -2604,8 +2604,8 @@ void PopupBufferMenu()
 
 void PopupTabMenu()
 {
-    int x = GetCurrentbuf()->cursorX + GetCurrentbuf()->rootX,
-        y = GetCurrentbuf()->cursorY + GetCurrentbuf()->rootY;
+    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX,
+        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
     TryGetMouseActionPosition(&x, &y);
     popupMenu(x, y, &SelTabMenu);
 }

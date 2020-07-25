@@ -93,8 +93,8 @@ char *
 conv_search_string(char *str, wc_ces f_ces)
 {
     if (SearchConv && !WcOption.pre_conv &&
-	GetCurrentbuf()->document_charset != f_ces)
-	str = wtf_conv_fit(str, GetCurrentbuf()->document_charset);
+	GetCurrentTab()->GetCurrentBuffer()->document_charset != f_ces)
+	str = wtf_conv_fit(str, GetCurrentTab()->GetCurrentBuffer()->document_charset);
     return str;
 }
 #endif

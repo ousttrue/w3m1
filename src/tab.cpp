@@ -65,22 +65,22 @@ void Tab::SetCurrentBuffer(BufferPtr buffer)
 // currentPrev -> buf -> current
 void Tab::BufferPushBeforeCurrent(BufferPtr buf)
 {
-    deleteImage(GetCurrentbuf());
+    deleteImage(GetCurrentTab()->GetCurrentBuffer());
     if (clear_buffer)
     {
-        tmpClearBuffer(GetCurrentbuf());
+        tmpClearBuffer(GetCurrentTab()->GetCurrentBuffer());
     }
 
-    // if (GetCurrentTab()->GetFirstBuffer() == GetCurrentbuf())
+    // if (GetCurrentTab()->GetFirstBuffer() == GetCurrentTab()->GetCurrentBuffer())
     {
         buf->nextBuffer = GetCurrentBuffer();
         GetCurrentTab()->SetFirstBuffer(buf, true);
     }
     // else
     // {
-    //     auto b = prevBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentbuf());
+    //     auto b = prevBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentTab()->GetCurrentBuffer());
     //     b->nextBuffer = buf;
-    //     buf->nextBuffer = GetCurrentbuf();
+    //     buf->nextBuffer = GetCurrentTab()->GetCurrentBuffer();
     //     GetCurrentTab()->SetCurrentBuffer(buf);
     // }
 #ifdef USE_BUFINFO
@@ -255,7 +255,7 @@ TabPtr posTab(int x, int y)
 void _newT()
 {
     // setup buffer
-    auto buf = GetCurrentbuf()->Copy();
+    auto buf = GetCurrentTab()->GetCurrentBuffer()->Copy();
     buf->ClearLink();
 
     // new tab
@@ -386,24 +386,14 @@ void MoveTab(int x)
     moveTab(GetCurrentTab(), tab ? tab : GetLastTab(), x > 0);
 }
 
-BufferPtr GetCurrentbuf()
-{
-    auto current = g_current.lock();
-    if (!current)
-    {
-        return nullptr;
-    }
-    return current->GetCurrentBuffer();
-}
-
 void followTab(TabPtr tab)
 {
     BufferPtr buf;
 
-    auto a = retrieveCurrentImg(GetCurrentbuf());
+    auto a = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
     if (!(a && a->image && a->image->map))
 
-        a = retrieveCurrentAnchor(GetCurrentbuf());
+        a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
     if (a == NULL)
         return;
 
@@ -415,24 +405,24 @@ void followTab(TabPtr tab)
         return;
     }
     _newT();
-    buf = GetCurrentbuf();
+    buf = GetCurrentTab()->GetCurrentBuffer();
     set_check_target(FALSE);
     followA();
     set_check_target(TRUE);
     if (tab == NULL)
     {
-        if (buf != GetCurrentbuf())
+        if (buf != GetCurrentTab()->GetCurrentBuffer())
             delBuffer(buf);
         else
             deleteTab(GetCurrentTab());
     }
-    else if (buf != GetCurrentbuf())
+    else if (buf != GetCurrentTab()->GetCurrentBuffer())
     {
         /* buf <- p <- ... <- Currentbuf = c */
         BufferPtr c;
         BufferPtr p;
 
-        c = GetCurrentbuf();
+        c = GetCurrentTab()->GetCurrentBuffer();
         p = prevBuffer(c, buf);
         p->nextBuffer = NULL;
         GetCurrentTab()->SetFirstBuffer(buf);
@@ -444,5 +434,5 @@ void followTab(TabPtr tab)
             GetCurrentTab()->BufferPushBeforeCurrent(buf);
         }
     }
-    displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
+    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }

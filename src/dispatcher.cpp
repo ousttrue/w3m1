@@ -122,8 +122,8 @@ void DispatchKey(int c)
         }
         else
         {
-            set_buffer_environ(GetCurrentbuf());
-            save_buffer_position(GetCurrentbuf());
+            set_buffer_environ(GetCurrentTab()->GetCurrentBuffer());
+            save_buffer_position(GetCurrentTab()->GetCurrentBuffer());
             KeyPressEventProc((int)c);
             set_prec_num(0);
         }
