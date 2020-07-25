@@ -300,7 +300,7 @@ void pipeBuf()
         if (buf->type == NULL)
             buf->type = "text/plain";
         buf->currentURL.file = "-";
-        GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }
@@ -334,7 +334,7 @@ void pipesh()
         buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         if (buf->type == NULL)
             buf->type = "text/plain";
-        GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }
@@ -373,7 +373,7 @@ void readsh()
         buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         if (buf->type == NULL)
             buf->type = "text/plain";
-        GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }
@@ -591,50 +591,43 @@ void qquitfm()
 
 void selBuf()
 {
-    BufferPtr buf;
-    int ok;
-    char cmd;
-    ok = FALSE;
+    int ok = FALSE;
     do
     {
-        buf = GetCurrentTab()->SelectBuffer(GetCurrentTab()->GetCurrentBuffer(), &cmd);
+        char cmd;
+        auto buf = GetCurrentTab()->SelectBuffer(GetCurrentTab()->GetCurrentBuffer(), &cmd);
         switch (cmd)
         {
         case 'B':
             ok = TRUE;
             break;
+
         case '\n':
         case ' ':
             GetCurrentTab()->SetCurrentBuffer(buf);
             ok = TRUE;
             break;
+
         case 'D':
-            delBuffer(buf);
+            GetCurrentTab()->DeleteBuffer(buf);
             if (GetCurrentTab()->GetFirstBuffer() == NULL)
             {
                 /* No more buffer */
                 GetCurrentTab()->SetFirstBuffer(nullBuffer(), true);
             }
             break;
+
         case 'q':
             qquitfm();
             break;
+
         case 'Q':
             quitfm();
             break;
         }
     } while (!ok);
 
-    for (buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; buf = buf->nextBuffer)
-    {
-        if (buf == GetCurrentTab()->GetCurrentBuffer())
-            continue;
-#ifdef USE_IMAGE
-        deleteImage(buf);
-#endif
-        if (clear_buffer)
-            tmpClearBuffer(buf);
-    }
+    GetCurrentTab()->ClearExceptCurrentBuffer();
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }
 /* Suspend (on BSD), or run interactive shell (on SysV) */
@@ -711,7 +704,7 @@ void editBf()
 {
     char *fn = GetCurrentTab()->GetCurrentBuffer()->filename;
     Str cmd;
-    if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                          /* Behaving as a pager */
+    if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                                              /* Behaving as a pager */
         (GetCurrentTab()->GetCurrentBuffer()->type == NULL && GetCurrentTab()->GetCurrentBuffer()->edit == NULL) ||                            /* Reading shell */
         GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || !strcmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.file, "-") || /* file is std input  */
         GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
@@ -909,7 +902,7 @@ void followI()
     }
     else
     {
-        GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
 }
@@ -936,7 +929,7 @@ void topA()
     else if (prec_num() > 0)
         hseq = prec_num() - 1;
 
-    const Anchor *an;        
+    const Anchor *an;
     do
     {
         if (hseq >= hl->nmark)
@@ -1060,7 +1053,8 @@ void followA()
         }
     }
 
-    if (handleMailto(a->url)){
+    if (handleMailto(a->url))
+    {
         return;
     }
 
@@ -1076,7 +1070,7 @@ void followA()
         buf = GetCurrentTab()->GetCurrentBuffer();
         loadLink(url, a->target, a->referer, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
-            delBuffer(buf);
+            GetCurrentTab()->DeleteBuffer(buf);
         else
             deleteTab(GetCurrentTab());
         displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
@@ -1144,18 +1138,17 @@ void nextBf()
 
 void prevBf()
 {
-    BufferPtr buf;
-    int i;
-    for (i = 0; i < PREC_NUM(); i++)
+    auto tab = GetCurrentTab();
+    for (int i = 0; i < PREC_NUM(); i++)
     {
-        buf = GetCurrentTab()->GetCurrentBuffer()->nextBuffer;
+        auto buf = tab->NextBuffer(tab->GetCurrentBuffer());
         if (!buf)
         {
             if (i == 0)
                 return;
             break;
         }
-        GetCurrentTab()->SetCurrentBuffer(buf);
+        tab->SetCurrentBuffer(buf);
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }
@@ -1164,7 +1157,7 @@ void prevBf()
 void backBf()
 {
     BufferPtr buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
-    if (!checkBackBuffer(GetCurrentTab()->GetCurrentBuffer()))
+    if (!checkBackBuffer(GetCurrentTab(), GetCurrentTab()->GetCurrentBuffer()))
     {
         if (close_tab_back && GetTabCount() >= 1)
         {
@@ -1176,7 +1169,8 @@ void backBf()
             disp_message("Can't back...", TRUE);
         return;
     }
-    delBuffer(GetCurrentTab()->GetCurrentBuffer());
+    auto tab = GetCurrentTab();
+    tab->DeleteBuffer(tab->GetCurrentBuffer());
     if (buf)
     {
         if (buf->frameQ)
@@ -1194,8 +1188,8 @@ void backBf()
             {
                 rFrame();
                 GetCurrentTab()->GetCurrentBuffer()->topLine = lineSkip(GetCurrentTab()->GetCurrentBuffer(),
-                                                    GetCurrentTab()->GetCurrentBuffer()->firstLine, top - 1,
-                                                    FALSE);
+                                                                        GetCurrentTab()->GetCurrentBuffer()->firstLine, top - 1,
+                                                                        FALSE);
                 gotoLine(GetCurrentTab()->GetCurrentBuffer(), linenumber);
                 GetCurrentTab()->GetCurrentBuffer()->pos = pos;
                 GetCurrentTab()->GetCurrentBuffer()->currentColumn = currentColumn;
@@ -1205,7 +1199,8 @@ void backBf()
         }
         else if (RenderFrame && buf == GetCurrentTab()->GetCurrentBuffer())
         {
-            delBuffer(GetCurrentTab()->GetCurrentBuffer());
+            auto tab = GetCurrentTab();
+            tab->DeleteBuffer(tab->GetCurrentBuffer());
         }
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
@@ -1213,9 +1208,10 @@ void backBf()
 
 void deletePrevBuf()
 {
-    BufferPtr buf = GetCurrentTab()->GetCurrentBuffer()->nextBuffer;
+    auto tab = GetCurrentTab();
+    BufferPtr buf = tab->PrevBuffer(tab->GetCurrentBuffer());
     if (buf)
-        delBuffer(buf);
+        tab->DeleteBuffer(buf);
 }
 
 void goURL()
@@ -1277,8 +1273,9 @@ void pginfo()
         displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
         return;
     }
-    if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_INFO]) != NULL)
-        delBuffer(buf);
+    auto tab=GetCurrentTab();
+    if ((buf = tab->GetCurrentBuffer()->linkBuffer[LB_INFO]) != NULL)
+        tab->DeleteBuffer(buf);
     buf = page_info_panel(GetCurrentTab()->GetCurrentBuffer());
     cmd_loadBuffer(buf, BP_NORMAL, LB_INFO);
 }
@@ -1606,7 +1603,7 @@ void vwSrc()
     (*buf->clone)++;
     buf->need_reshape = TRUE;
     reshapeBuffer(buf);
-    GetCurrentTab()->BufferPushBeforeCurrent(buf);
+    GetCurrentTab()->PushBufferCurrentPrev(buf);
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
 }
 /* reload */
@@ -1660,11 +1657,12 @@ void reload()
                 !strcmp(buf->sourcefile,
                         fbuf->linkBuffer[LB_FRAME]->sourcefile))
                 fbuf->linkBuffer[LB_FRAME]->sourcefile = NULL;
-            delBuffer(fbuf->linkBuffer[LB_FRAME]);
+            auto tab=GetCurrentTab();
+            tab->DeleteBuffer(fbuf->linkBuffer[LB_FRAME]);
         }
         fbuf->linkBuffer[LB_FRAME] = buf;
         buf->linkBuffer[LB_N_FRAME] = fbuf;
-        GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
         GetCurrentTab()->SetCurrentBuffer(buf);
         if (GetCurrentTab()->GetCurrentBuffer()->firstLine)
         {
@@ -1843,7 +1841,7 @@ void rFrame()
     }
     buf->linkBuffer[LB_N_FRAME] = GetCurrentTab()->GetCurrentBuffer();
     GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME] = buf;
-    GetCurrentTab()->BufferPushBeforeCurrent(buf);
+    GetCurrentTab()->PushBufferCurrentPrev(buf);
     if (fmInitialized && display_ok())
         displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }
@@ -2290,20 +2288,21 @@ void ldDL()
 {
     BufferPtr buf;
     int replace = FALSE, new_tab = FALSE;
-    if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL &&
-        GetCurrentTab()->GetCurrentBuffer()->buffername == DOWNLOAD_LIST_TITLE)
+    auto tab = GetCurrentTab();
+    if (tab->GetCurrentBuffer()->bufferprop & BP_INTERNAL &&
+        tab->GetCurrentBuffer()->buffername == DOWNLOAD_LIST_TITLE)
         replace = TRUE;
     if (!FirstDL)
     {
         if (replace)
         {
-            if (GetCurrentTab()->GetCurrentBuffer() == GetCurrentTab()->GetFirstBuffer() && GetCurrentTab()->GetCurrentBuffer()->nextBuffer == NULL)
+            if (tab->GetCurrentBuffer() == tab->GetFirstBuffer() && tab->NextBuffer(tab->GetCurrentBuffer()))
             {
                 DeleteCurrentTab();
             }
             else
-                delBuffer(GetCurrentTab()->GetCurrentBuffer());
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+                tab->DeleteBuffer(tab->GetCurrentBuffer());
+            displayBuffer(tab->GetCurrentBuffer(), B_FORCE_REDRAW);
         }
         return;
     }
@@ -2327,13 +2326,13 @@ void ldDL()
         _newT();
         new_tab = TRUE;
     }
-    GetCurrentTab()->BufferPushBeforeCurrent(buf);
+    GetCurrentTab()->PushBufferCurrentPrev(buf);
     if (replace || new_tab)
         deletePrevBuf();
 
     if (nReload)
         GetCurrentTab()->GetCurrentBuffer()->event = setAlarmEvent(GetCurrentTab()->GetCurrentBuffer()->event, 1, AL_IMPLICIT,
-                                               &reload, NULL);
+                                                                   &reload, NULL);
 
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }

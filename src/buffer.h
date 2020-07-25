@@ -51,13 +51,19 @@ struct BufferPos
 using BufferPtr = struct Buffer *;
 struct Buffer : gc_cleanup
 {
+    friend struct Tab;
+
     char *filename;
     std::string buffername;
     Line *firstLine;
     Line *topLine;
     Line *currentLine;
     Line *lastLine;
+
+private:
     BufferPtr nextBuffer;
+
+public:
     BufferPtr linkBuffer[MAX_LB];
     short width;
     short height;

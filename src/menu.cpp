@@ -1802,17 +1802,15 @@ initSelectMenu(void)
     char *p;
     static char *comment = " SPC for select / D for delete buffer ";
 
-    SelectV = -1;
-    for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; i++, buf = buf->nextBuffer)
-    {
-        if (buf == GetCurrentTab()->GetCurrentBuffer())
-            SelectV = i;
-    }
+    SelectV = GetCurrentTab()->GetCurrentBufferIndex();
     nitem = i;
 
     label = New_N(char *, nitem + 2);
-    for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); i < nitem; i++, buf = buf->nextBuffer)
+    auto tab = GetCurrentTab();
+    for (i = 0; i < nitem; i++)
     {
+        auto buf = tab->GetBuffer(i);
+
         str = Sprintf("<%s>", buf->buffername);
         if (buf->filename != NULL)
         {
@@ -1868,47 +1866,27 @@ initSelectMenu(void)
 static void
 smChBuf(void)
 {
-    int i;
-    BufferPtr buf;
-
     if (SelectV < 0 || SelectV >= SelectMenu.nitem)
         return;
-    for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); i < SelectV; i++, buf = buf->nextBuffer)
-        ;
-    GetCurrentTab()->SetCurrentBuffer(buf);
-    for (buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; buf = buf->nextBuffer)
-    {
-        if (buf == GetCurrentTab()->GetCurrentBuffer())
-            continue;
 
-        deleteImage(buf);
-
-        if (clear_buffer)
-            tmpClearBuffer(buf);
-    }
+    auto tab=GetCurrentTab();
+    auto buf = tab->GetBuffer(SelectV);
+    tab->SetCurrentBuffer(buf);
+    tab->ClearExceptCurrentBuffer();
 }
 
 static int
 smDelBuf(char c)
 {
     int i, x, y, mselect;
-    BufferPtr buf;
 
     if (CurrentMenu->select < 0 || CurrentMenu->select >= SelectMenu.nitem)
         return (MENU_NOTHING);
-    for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); i < CurrentMenu->select;
-         i++, buf = buf->nextBuffer)
-        ;
-    if (GetCurrentTab()->GetCurrentBuffer() == buf)
-        GetCurrentTab()->SetCurrentBuffer(buf->nextBuffer);
+
+    auto tab= GetCurrentTab();
+    auto buf = tab->GetBuffer(CurrentMenu->select);
+
     GetCurrentTab()->DeleteBuffer(buf);
-    if (!GetCurrentTab()->GetCurrentBuffer())
-        GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetBuffer(i - 1));
-    if (GetCurrentTab()->GetFirstBuffer())
-    {
-        GetCurrentTab()->SetFirstBuffer(nullBuffer());
-        GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
-    }
 
     x = CurrentMenu->x;
     y = CurrentMenu->y;

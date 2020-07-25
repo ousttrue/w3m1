@@ -572,6 +572,8 @@ page_info_panel(BufferPtr buf)
 <title>Information about current page</title>\
 </head><body>\
 <h1>Information about current page</h1>\n");
+
+    auto tab=GetCurrentTab();
     if (buf == NULL)
         goto end;
     all = buf->allLine;
@@ -675,11 +677,12 @@ page_info_panel(BufferPtr buf)
         tmp->Push("</pre>\n");
     }
 
+    // TODO:
     if (buf->frameset != NULL)
         f_set = buf->frameset;
     else if (buf->bufferprop & BP_FRAME &&
-             buf->nextBuffer != NULL && buf->nextBuffer->frameset != NULL)
-        f_set = buf->nextBuffer->frameset;
+             tab->NextBuffer(buf) != NULL && tab->NextBuffer(buf)->frameset != NULL)
+        f_set = tab->NextBuffer(buf)->frameset;
 
     if (f_set)
     {

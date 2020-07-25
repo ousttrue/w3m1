@@ -24,6 +24,12 @@ public:
     Tab() = default;
     ~Tab()
     {
+        // clear buffer
+        BufferPtr next;
+        for (auto buf = firstBuffer; buf; buf = buf->nextBuffer)
+        {
+        }
+        firstBuffer = nullptr;
     }
 
     int Left() const { return x1; }
@@ -51,8 +57,9 @@ public:
     }
 
     // buffer
+    int GetCurrentBufferIndex() const;
     BufferPtr GetFirstBuffer() { return firstBuffer; }
-    BufferPtr GetCurrentBuffer() { return currentBuffer; }
+    BufferPtr GetCurrentBuffer() const { return currentBuffer; }
     BufferPtr PrevBuffer(BufferPtr buf) const;
     BufferPtr NextBuffer(BufferPtr buf) const;
     BufferPtr GetBuffer(int n) const;
@@ -61,8 +68,10 @@ public:
 
     void SetFirstBuffer(BufferPtr buf, bool isCurrent = false);
     void SetCurrentBuffer(BufferPtr buf);
-    void BufferPushBeforeCurrent(BufferPtr buf);
+    void PushBufferCurrentPrev(BufferPtr buf);
+    void PushBufferCurrentNext(BufferPtr buf);
     void DeleteBuffer(BufferPtr delbuf);
+    void ClearExceptCurrentBuffer();
     void ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf);
 
 private:

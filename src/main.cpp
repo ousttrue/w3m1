@@ -31,6 +31,7 @@
 #endif
 #include "dispatcher.h"
 #include "url.h"
+#include <assert.h>
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
@@ -1060,14 +1061,15 @@ int main(int argc, char **argv, char **envp)
         }
         else if (open_new_tab)
         {
+            assert(false);
             _newT();
-            GetCurrentTab()->GetCurrentBuffer()->nextBuffer = newbuf;
-            delBuffer(GetCurrentTab()->GetCurrentBuffer());
+            // GetCurrentTab()->GetCurrentBuffer()->nextBuffer = newbuf;
+            // delBuffer(GetCurrentTab()->GetCurrentBuffer());
         }
         else
         {
-            GetCurrentTab()->GetCurrentBuffer()->nextBuffer = newbuf;
-            GetCurrentTab()->SetCurrentBuffer(newbuf);
+            auto tab=GetCurrentTab();
+            tab->PushBufferCurrentNext(newbuf);
         }
         if (!w3m_dump || w3m_dump == DUMP_BUFFER)
         {

@@ -459,7 +459,7 @@ void cmd_loadfile(char *fn)
     }
     else
     {
-        GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
         if (RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
             rFrame();
     }
@@ -491,7 +491,7 @@ void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request
     }
     else
     {
-        GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
         if (RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
             rFrame();
     }
@@ -707,17 +707,6 @@ void _quitfm(int confirm)
         saveHistory(URLHist, URLHistSize);
 #endif /* USE_HISTORY */
     w3m_exit(0);
-}
-
-void delBuffer(BufferPtr buf)
-{
-    if (buf == NULL)
-        return;
-    if (GetCurrentTab()->GetCurrentBuffer() == buf)
-        GetCurrentTab()->SetCurrentBuffer(buf->nextBuffer);
-    GetCurrentTab()->DeleteBuffer(buf);
-    if (!GetCurrentTab()->GetCurrentBuffer())
-        GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
 }
 
 /* Go to specified line */
@@ -1173,8 +1162,8 @@ loadLink(char *url, char *target, char *referer, FormList *request)
     if (do_download) /* download (thus no need to render frame) */
         return loadNormalBuf(buf, FALSE);
 
-    if (target == NULL ||                         /* no target specified (that means this page is not a frame page) */
-        !strcmp(target, "_top") ||                /* this link is specified to be opened as an indivisual * page */
+    if (target == NULL ||                                             /* no target specified (that means this page is not a frame page) */
+        !strcmp(target, "_top") ||                                    /* this link is specified to be opened as an indivisual * page */
         !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME) /* This page is not a frame page */
     )
     {
@@ -1199,7 +1188,8 @@ loadLink(char *url, char *target, char *referer, FormList *request)
     /* stack current frameset */
     pushFrameTree(&(nfbuf->frameQ), copyFrameSet(nfbuf->frameset), GetCurrentTab()->GetCurrentBuffer());
     /* delete frame view buffer */
-    delBuffer(GetCurrentTab()->GetCurrentBuffer());
+    auto tab = GetCurrentTab();
+    tab->DeleteBuffer(tab->GetCurrentBuffer());
     GetCurrentTab()->SetCurrentBuffer(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
     resetFrameElement(f_element, buf, referer, request);
@@ -1222,9 +1212,9 @@ loadLink(char *url, char *target, char *referer, FormList *request)
             gotoLine(GetCurrentTab()->GetCurrentBuffer(), al->start.line);
             if (label_topline)
                 GetCurrentTab()->GetCurrentBuffer()->topLine = lineSkip(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->topLine,
-                                                    GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
-                                                        GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
-                                                    FALSE);
+                                                                        GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
+                                                                            GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+                                                                        FALSE);
             GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
             arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
         }
@@ -1328,7 +1318,7 @@ Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf)
 
 BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 {
-    GetCurrentTab()->BufferPushBeforeCurrent(buf);
+    GetCurrentTab()->PushBufferCurrentPrev(buf);
     if (renderframe && RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
         rFrame();
     return buf;
@@ -1380,7 +1370,7 @@ void _nextA(int visited)
                 an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
                     an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line,
-                                                                  po->pos);
+                                                                                      po->pos);
                 hseq++;
                 if (visited == TRUE && an)
                 {
@@ -1538,12 +1528,12 @@ void gotoLabel(char *label)
     buf->currentURL.label = allocStr(label, -1);
     pushHashHist(URLHist, parsedURL2Str(&buf->currentURL)->ptr);
     (*buf->clone)++;
-    GetCurrentTab()->BufferPushBeforeCurrent(buf);
+    GetCurrentTab()->PushBufferCurrentPrev(buf);
     gotoLine(GetCurrentTab()->GetCurrentBuffer(), al->start.line);
     if (label_topline)
         GetCurrentTab()->GetCurrentBuffer()->topLine = lineSkip(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->topLine,
-                                            GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
-                                            FALSE);
+                                                                GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+                                                                FALSE);
     GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
@@ -1665,7 +1655,7 @@ void nextY(int d)
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
 }
 
-int checkBackBuffer(BufferPtr buf)
+int checkBackBuffer(TabPtr tab, BufferPtr buf)
 {
     BufferPtr fbuf = buf->linkBuffer[LB_N_FRAME];
 
@@ -1675,16 +1665,16 @@ int checkBackBuffer(BufferPtr buf)
             return TRUE; /* Currentbuf has stacked frames */
         /* when no frames stacked and next is frame source, try next's
 	 * nextBuffer */
-        if (RenderFrame && fbuf == buf->nextBuffer)
+        if (RenderFrame && fbuf == tab->NextBuffer(buf))
         {
-            if (fbuf->nextBuffer != NULL)
+            if (tab->NextBuffer(fbuf) != NULL)
                 return TRUE;
             else
                 return FALSE;
         }
     }
 
-    if (buf->nextBuffer)
+    if (tab->NextBuffer(buf))
         return TRUE;
 
     return FALSE;
@@ -1968,7 +1958,7 @@ void execdict(char *word)
         buf->buffername = Sprintf("%s %s", DICTBUFFERNAME, word)->ptr;
         if (buf->type == NULL)
             buf->type = "text/plain";
-        GetCurrentTab()->BufferPushBeforeCurrent(buf);
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
     displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
 }
@@ -2061,7 +2051,7 @@ void tabURL0(TabPtr tab, char *prompt, int relative)
     if (tab == NULL)
     {
         if (buf != GetCurrentTab()->GetCurrentBuffer())
-            delBuffer(buf);
+            GetCurrentTab()->DeleteBuffer(buf);
         else
             deleteTab(GetCurrentTab());
     }
@@ -2508,7 +2498,8 @@ void change_charset(struct parsed_tagarg *arg)
 
     if (buf == NULL)
         return;
-    delBuffer(GetCurrentTab()->GetCurrentBuffer());
+    auto tab = GetCurrentTab();
+    tab->DeleteBuffer(tab->GetCurrentBuffer());
     GetCurrentTab()->SetCurrentBuffer(buf);
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
@@ -2560,7 +2551,7 @@ void follow_map(struct parsed_tagarg *arg)
         cmd_loadURL(a->url, baseURL(GetCurrentTab()->GetCurrentBuffer()),
                     parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
-            delBuffer(buf);
+            GetCurrentTab()->DeleteBuffer(buf);
         else
             deleteTab(GetCurrentTab());
         displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
