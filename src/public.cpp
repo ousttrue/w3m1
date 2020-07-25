@@ -714,10 +714,10 @@ void delBuffer(BufferPtr buf)
     if (buf == NULL)
         return;
     if (GetCurrentbuf() == buf)
-        SetCurrentbuf(buf->nextBuffer);
-    SetFirstbuf(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
+        GetCurrentTab()->SetCurrentBuffer(buf->nextBuffer);
+    GetCurrentTab()->SetFirstBuffer(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
     if (!GetCurrentbuf())
-        SetCurrentbuf(GetCurrentTab()->GetFirstBuffer());
+        GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
 }
 
 /* Go to specified line */
@@ -1200,7 +1200,7 @@ loadLink(char *url, char *target, char *referer, FormList *request)
     pushFrameTree(&(nfbuf->frameQ), copyFrameSet(nfbuf->frameset), GetCurrentbuf());
     /* delete frame view buffer */
     delBuffer(GetCurrentbuf());
-    SetCurrentbuf(nfbuf);
+    GetCurrentTab()->SetCurrentBuffer(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
     resetFrameElement(f_element, buf, referer, request);
     rFrame();
@@ -1860,8 +1860,8 @@ Str currentURL(void)
 
 void repBuffer(BufferPtr oldbuf, BufferPtr buf)
 {
-    SetFirstbuf(replaceBuffer(GetCurrentTab()->GetFirstBuffer(), oldbuf, buf));
-    SetCurrentbuf(buf);
+    GetCurrentTab()->SetFirstBuffer(replaceBuffer(GetCurrentTab()->GetFirstBuffer(), oldbuf, buf));
+    GetCurrentTab()->SetCurrentBuffer(buf);
 }
 
 void _docCSet(wc_ces charset)
@@ -2074,7 +2074,7 @@ void tabURL0(TabPtr tab, char *prompt, int relative)
         c = GetCurrentbuf();
         p = prevBuffer(c, buf);
         p->nextBuffer = NULL;
-        SetFirstbuf(buf);
+        GetCurrentTab()->SetFirstBuffer(buf);
         deleteTab(GetCurrentTab());
         SetCurrentTab(tab);
         for (buf = p; buf; buf = p)
@@ -2507,7 +2507,7 @@ void change_charset(struct parsed_tagarg *arg)
     if (buf == NULL)
         return;
     delBuffer(GetCurrentbuf());
-    SetCurrentbuf(buf);
+    GetCurrentTab()->SetCurrentBuffer(buf);
     if (GetCurrentbuf()->bufferprop & BP_INTERNAL)
         return;
     charset = GetCurrentbuf()->document_charset;

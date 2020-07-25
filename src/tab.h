@@ -82,9 +82,7 @@ void DeleteCurrentTab();
 void DeleteAllTabs();
 BufferPtr GetCurrentbuf();
 TabPtr posTab(int x, int y);
-void SetCurrentbuf(BufferPtr buf);
 
-void SetFirstbuf(BufferPtr buffer, bool isCurrent = false);
 void moveTab(TabPtr src, TabPtr dst, int right);
 void calcTabPos();
 void followTab(TabPtr tab);

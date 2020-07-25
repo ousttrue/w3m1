@@ -74,14 +74,14 @@ void Tab::BufferPushBeforeCurrent(BufferPtr buf)
     // if (GetCurrentTab()->GetFirstBuffer() == GetCurrentbuf())
     {
         buf->nextBuffer = GetCurrentBuffer();
-        SetFirstbuf(buf, true);
+        GetCurrentTab()->SetFirstBuffer(buf, true);
     }
     // else
     // {
     //     auto b = prevBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentbuf());
     //     b->nextBuffer = buf;
     //     buf->nextBuffer = GetCurrentbuf();
-    //     SetCurrentbuf(buf);
+    //     GetCurrentTab()->SetCurrentBuffer(buf);
     // }
 #ifdef USE_BUFINFO
     saveBufferInfo();
@@ -396,21 +396,6 @@ BufferPtr GetCurrentbuf()
     return current->GetCurrentBuffer();
 }
 
-void SetCurrentbuf(BufferPtr buf)
-{
-    g_current.lock()->SetCurrentBuffer(buf);
-}
-
-BufferPtr GetFirstBuffer()
-{
-    return g_current.lock()->GetFirstBuffer();
-}
-
-void SetFirstbuf(BufferPtr buffer, bool isCurrent)
-{
-    g_current.lock()->SetFirstBuffer(buffer, isCurrent);
-}
-
 void followTab(TabPtr tab)
 {
     BufferPtr buf;
@@ -450,7 +435,7 @@ void followTab(TabPtr tab)
         c = GetCurrentbuf();
         p = prevBuffer(c, buf);
         p->nextBuffer = NULL;
-        SetFirstbuf(buf);
+        GetCurrentTab()->SetFirstBuffer(buf);
         deleteTab(GetCurrentTab());
         SetCurrentTab(tab);
         for (buf = p; buf; buf = p)

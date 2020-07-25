@@ -1056,7 +1056,7 @@ int main(int argc, char **argv, char **envp)
         if (GetCurrentTab() == NULL)
         {
             InitializeTab();
-            SetFirstbuf(newbuf, true);
+            GetCurrentTab()->SetFirstBuffer(newbuf, true);
         }
         else if (open_new_tab)
         {
@@ -1067,7 +1067,7 @@ int main(int argc, char **argv, char **envp)
         else
         {
             GetCurrentbuf()->nextBuffer = newbuf;
-            SetCurrentbuf(newbuf);
+            GetCurrentTab()->SetCurrentBuffer(newbuf);
         }
         if (!w3m_dump || w3m_dump == DUMP_BUFFER)
         {
@@ -1078,7 +1078,7 @@ int main(int argc, char **argv, char **envp)
             do_dump(GetCurrentbuf());
         else
         {
-            SetCurrentbuf(newbuf);
+            GetCurrentTab()->SetCurrentBuffer(newbuf);
 #ifdef USE_BUFINFO
             saveBufferInfo();
 #endif
@@ -1104,13 +1104,13 @@ int main(int argc, char **argv, char **envp)
         }
         if (!GetCurrentTab()->GetFirstBuffer())
         {
-            SetCurrentbuf(newBuffer(INIT_BUFFER_WIDTH));
-            SetFirstbuf(GetCurrentbuf());
+            GetCurrentTab()->SetCurrentBuffer(newBuffer(INIT_BUFFER_WIDTH));
+            GetCurrentTab()->SetFirstBuffer(GetCurrentbuf());
             GetCurrentbuf()->bufferprop = BP_INTERNAL | BP_NO_URL;
             GetCurrentbuf()->buffername = DOWNLOAD_LIST_TITLE;
         }
         else
-            SetCurrentbuf(GetCurrentTab()->GetFirstBuffer());
+            GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
         ldDL();
     }
     else
@@ -1133,7 +1133,7 @@ int main(int argc, char **argv, char **envp)
     WcOption.auto_detect = auto_detect;
 #endif
 
-    SetCurrentbuf(GetCurrentTab()->GetFirstBuffer());
+    GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
     displayBuffer(GetCurrentbuf(), B_FORCE_REDRAW);
     if (line_str)
     {

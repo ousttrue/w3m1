@@ -1875,7 +1875,7 @@ smChBuf(void)
         return;
     for (i = 0, buf = GetCurrentTab()->GetFirstBuffer(); i < SelectV; i++, buf = buf->nextBuffer)
         ;
-    SetCurrentbuf(buf);
+    GetCurrentTab()->SetCurrentBuffer(buf);
     for (buf = GetCurrentTab()->GetFirstBuffer(); buf != NULL; buf = buf->nextBuffer)
     {
         if (buf == GetCurrentbuf())
@@ -1900,14 +1900,14 @@ smDelBuf(char c)
          i++, buf = buf->nextBuffer)
         ;
     if (GetCurrentbuf() == buf)
-        SetCurrentbuf(buf->nextBuffer);
-    SetFirstbuf(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
+        GetCurrentTab()->SetCurrentBuffer(buf->nextBuffer);
+    GetCurrentTab()->SetFirstBuffer(deleteBuffer(GetCurrentTab()->GetFirstBuffer(), buf));
     if (!GetCurrentbuf())
-        SetCurrentbuf(nthBuffer(GetCurrentTab()->GetFirstBuffer(), i - 1));
+        GetCurrentTab()->SetCurrentBuffer(nthBuffer(GetCurrentTab()->GetFirstBuffer(), i - 1));
     if (GetCurrentTab()->GetFirstBuffer())
     {
-        SetFirstbuf(nullBuffer());
-        SetCurrentbuf(GetCurrentTab()->GetFirstBuffer());
+        GetCurrentTab()->SetFirstBuffer(nullBuffer());
+        GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
     }
 
     x = CurrentMenu->x;
