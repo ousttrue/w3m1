@@ -521,7 +521,7 @@ load_cookies(void)
 	cookie->comment = NULL;
 	cookie->portl = NULL;
 	cookie->commentURL = NULL;
-	parseURL(readcol(&str)->ptr, &cookie->url, NULL);
+	cookie->url.Parse(readcol(&str)->ptr, NULL);
 	if (!*str)
 	    return;
 	cookie->name = readcol(&str);

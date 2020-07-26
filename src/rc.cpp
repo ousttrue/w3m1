@@ -1133,26 +1133,20 @@ interpret_rc(FILE * f)
     }
 }
 
-void
-parse_proxy()
+void parse_proxy()
 {
     if (non_null(HTTP_proxy))
-	parseURL(HTTP_proxy, &HTTP_proxy_parsed, NULL);
-#ifdef USE_SSL
+        HTTP_proxy_parsed.Parse(HTTP_proxy, NULL);
+
     if (non_null(HTTPS_proxy))
-	parseURL(HTTPS_proxy, &HTTPS_proxy_parsed, NULL);
-#endif				/* USE_SSL */
-#ifdef USE_GOPHER
-    if (non_null(GOPHER_proxy))
-	parseURL(GOPHER_proxy, &GOPHER_proxy_parsed, NULL);
-#endif
+        HTTPS_proxy_parsed.Parse(HTTPS_proxy, NULL);
+
     if (non_null(FTP_proxy))
-	parseURL(FTP_proxy, &FTP_proxy_parsed, NULL);
+        FTP_proxy_parsed.Parse(FTP_proxy, NULL);
     if (non_null(NO_proxy))
-	set_no_proxy(NO_proxy);
+        set_no_proxy(NO_proxy);
 }
 
-#ifdef USE_COOKIE
 void
 parse_cookie()
 {
@@ -1164,7 +1158,6 @@ parse_cookie()
 	Cookie_avoid_wrong_number_of_dots_domains
 	       	= make_domain_list(cookie_avoid_wrong_number_of_dots);
 }
-#endif
 
 #ifdef __EMX__
 static int

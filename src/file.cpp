@@ -4242,7 +4242,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                                            buf->document_charset);
                         if (!buf->baseURL)
                             buf->baseURL = New(ParsedURL);
-                        parseURL(p, buf->baseURL, NULL);
+                        buf->baseURL->Parse(p, NULL);
                     }
                     if (parsedtag_get_value(tag, ATTR_TARGET, &p))
                         buf->baseTarget =
@@ -5310,7 +5310,7 @@ openGeneralPagerBuffer(InputStream *stream)
              !(w3m_dump & ~DUMP_FRAME) && !strncasecmp(t, "image/", 6))
     {
         cur_baseURL = New(ParsedURL);
-        parseURL("-", cur_baseURL, NULL);
+        cur_baseURL->Parse("-", NULL);
         buf = loadImageBuffer(&uf, t_buf);
         buf->type = "text/html";
     }

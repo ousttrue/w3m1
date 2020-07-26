@@ -1,5 +1,7 @@
 #pragma once
 #include <Str.h>
+#include <string>
+#include <string_view>
 
 enum SchemaTypes
 {
@@ -33,6 +35,8 @@ struct ParsedURL
     char *query;
     char *label;
     int is_nocache;
+
+    void Parse(std::string_view url, ParsedURL *current);
 };
 
 const char *filename_extension(const char *patch, int is_url);

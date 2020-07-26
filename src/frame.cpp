@@ -690,7 +690,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 							if (parsedtag_get_value(tag, ATTR_HREF, &q))
 							{
 								q = url_quote_conv(remove_space(q), charset);
-								parseURL(q, &base, NULL);
+								base.Parse(q, NULL);
 							}
 							if (parsedtag_get_value(tag, ATTR_TARGET, &q))
 							{

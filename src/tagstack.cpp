@@ -1893,13 +1893,11 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         }
         return 1;
     case HTML_BASE:
-#ifdef USE_IMAGE
         p = NULL;
         if (parsedtag_get_value(tag, ATTR_HREF, &p))
         {
-            parseURL(p, GetCurBaseUrl(), NULL);
+            GetCurBaseUrl()->Parse(p, NULL);
         }
-#endif
     case HTML_MAP:
     case HTML_N_MAP:
     case HTML_AREA:

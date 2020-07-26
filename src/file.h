@@ -175,7 +175,7 @@ void free_ssl_ctx();
 ParsedURL *baseURL(BufferPtr buf);
 int openSocket(const char *hostname, const char *remoteport_name,
                unsigned short remoteport_num);
-void parseURL(char *url, ParsedURL *p_url, ParsedURL *current);
+
 void copyParsedURL(ParsedURL *p, ParsedURL *q);
 
 
