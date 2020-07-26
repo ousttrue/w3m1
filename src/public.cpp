@@ -2617,16 +2617,6 @@ void saveBufferInfo()
     fclose(fp);
 }
 
-void tmpClearBuffer(BufferPtr buf)
-{
-    if (buf->pagerSource == NULL && buf->WriteBufferCache() == 0)
-    {
-        buf->firstLine = NULL;
-        buf->topLine = NULL;
-        buf->currentLine = NULL;
-        buf->lastLine = NULL;
-    }
-}
 
 struct Event
 {

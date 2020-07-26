@@ -1872,7 +1872,6 @@ smChBuf(void)
     auto tab=GetCurrentTab();
     auto buf = tab->GetBuffer(SelectV);
     tab->SetCurrentBuffer(buf);
-    tab->ClearExceptCurrentBuffer();
 }
 
 static int

@@ -99,7 +99,7 @@ void Tab::SetCurrentBuffer(BufferPtr buffer)
         deleteImage(currentBuffer);
         if (clear_buffer)
         {
-            tmpClearBuffer(currentBuffer);
+            currentBuffer->TmpClear();
         }
     }
 
@@ -432,18 +432,6 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
     //     GetCurrentTab()->SetFirstBuffer(nullBuffer());
     //     GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
     // }
-}
-
-void Tab::ClearExceptCurrentBuffer()
-{
-    for (auto buf = firstBuffer; buf != NULL; buf = buf->nextBuffer)
-    {
-        if (buf == GetCurrentBuffer())
-            continue;
-        deleteImage(buf);
-        if (clear_buffer)
-            tmpClearBuffer(buf);
-    }
 }
 
 /* 

@@ -627,7 +627,6 @@ void selBuf()
         }
     } while (!ok);
 
-    GetCurrentTab()->ClearExceptCurrentBuffer();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Suspend (on BSD), or run interactive shell (on SysV) */

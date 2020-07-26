@@ -71,7 +71,6 @@ public:
     void PushBufferCurrentPrev(BufferPtr buf);
     void PushBufferCurrentNext(BufferPtr buf);
     void DeleteBuffer(BufferPtr delbuf);
-    void ClearExceptCurrentBuffer();
     void ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf);
 
 private:

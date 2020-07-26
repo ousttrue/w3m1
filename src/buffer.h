@@ -122,6 +122,7 @@ public:
 
     Buffer();
     ~Buffer();
+    void TmpClear();
     int WriteBufferCache();
     int ReadBufferCache();
     BufferPtr Copy();

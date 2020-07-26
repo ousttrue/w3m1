@@ -85,6 +85,17 @@ Buffer::~Buffer()
     }
 }
 
+void Buffer::TmpClear()
+{
+    if (this->pagerSource == NULL && this->WriteBufferCache() == 0)
+    {
+        this->firstLine = NULL;
+        this->topLine = NULL;
+        this->currentLine = NULL;
+        this->lastLine = NULL;
+    }
+}
+
 int Buffer::WriteBufferCache()
 {
     Str tmp;

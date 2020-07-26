@@ -113,7 +113,6 @@ void resize_screen();
 int need_resize_screen();
 void resize_hook(SIGNAL_ARG);
 void saveBufferInfo();
-void tmpClearBuffer(BufferPtr buf);
 void pushEvent(Command cmd, void *data);
 int ProcessEvent();
 Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);
