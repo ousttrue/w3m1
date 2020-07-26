@@ -14,7 +14,7 @@
 #include "mouse.h"
 #include "buffer.h"
 #include "anchor.h"
-
+#include <string_view>
 #include <signal.h>
 #include <math.h>
 #include <assert.h>
@@ -270,7 +270,7 @@ static void do_color(Linecolor c);
 #endif
 
 static Str
-make_lastline_link(BufferPtr buf, char *title, char *url)
+make_lastline_link(BufferPtr buf, std::string_view title, char *url)
 {
     Str s = NULL, u;
     Lineprop *pr;
@@ -278,9 +278,9 @@ make_lastline_link(BufferPtr buf, char *title, char *url)
     char *p;
     int l = COLS - 1, i;
 
-    if (title && *title)
+    if (title.size() && title[0])
     {
-        s = Strnew_m_charp("[", title, "]", NULL);
+        s = Strnew_m_charp("[", title.data(), "]", NULL);
         s->Replace([](char &c) {
             if (IS_CNTRL(c) || IS_SPACE(c))
             {
@@ -341,17 +341,19 @@ make_lastline_message(BufferPtr buf)
         else
         {
             auto a = retrieveCurrentAnchor(buf);
-            char *p = NULL;
-            if (a && a->title && *a->title)
+            std::string p = NULL;
+            if (a && a->title.size() && a->title[0])
                 p = a->title;
             else
             {
                 auto a_img = retrieveCurrentImg(buf);
-                if (a_img && a_img->title && *a_img->title)
+                if (a_img && a_img->title.size() && a_img->title[0])
                     p = a_img->title;
             }
-            if (p || a)
-                s = make_lastline_link(buf, p, a ? const_cast<char*>(a->url.c_str()) : NULL);
+            if (p.size() || a)
+                s = make_lastline_link(buf, 
+                    p, 
+                    a ? const_cast<char*>(a->url.c_str()) : NULL);
         }
         if (s)
         {

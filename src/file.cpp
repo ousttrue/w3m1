@@ -3947,7 +3947,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         a_href = buf->href.Put(Anchor::CreateHref(p,
                                                                   q ? q : "",
                                                                   r ? r : "",
-                                                                  s,
+                                                                  s ? s : "",
                                                                   *t, currentLn(buf), pos));
                         a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
                         a_href->slave = (hseq > 0) ? FALSE : TRUE;
@@ -4002,7 +4002,10 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         parsedtag_get_value(tag, ATTR_TITLE, &s);
                         p = url_quote_conv(remove_space(p),
                                            buf->document_charset);
-                        a_img = buf->img.Put(Anchor::CreateImage(p, s, currentLn(buf), pos));
+                        a_img = buf->img.Put(Anchor::CreateImage(
+                            p, 
+                            s ? s : "", 
+                            currentLn(buf), pos));
 #ifdef USE_IMAGE
                         a_img->hseq = iseq;
                         a_img->image = NULL;

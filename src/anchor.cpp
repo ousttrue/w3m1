@@ -793,8 +793,8 @@ link_list_panel(BufferPtr buf)
             else
                 p = u;
             const char *t;
-            if (a->title && *a->title)
-                t = html_quote(a->title);
+            if (a->title.size() && a->title[0])
+                t = html_quote(a->title.c_str());
             else if (DecodeURL)
                 t = html_quote(url_unquote_conv(a->url.c_str(), buf->document_charset));
             else

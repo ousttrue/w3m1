@@ -867,7 +867,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
             tmp->Push("\" REFERER=\"");
             tmp->Push(html_quote(obuf->anchor.referer));
         }
-        if (obuf->anchor.title)
+        if (obuf->anchor.title.size())
         {
             tmp->Push("\" TITLE=\"");
             tmp->Push(html_quote(obuf->anchor.title));
