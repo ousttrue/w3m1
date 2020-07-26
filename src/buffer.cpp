@@ -162,25 +162,24 @@ _error1:
 
 int Buffer::ReadBufferCache()
 {
-    FILE *cache;
-    Line *l = NULL, *prevl = NULL, *basel = NULL;
-    long lnum = 0, clnum, tlnum;
+    Line *basel = NULL;
+    long clnum, tlnum;
     int colorflag;
 
     if (this->savecache == NULL)
         return -1;
 
-    cache = fopen(this->savecache, "r");
+    auto cache = fopen(this->savecache, "r");
     if (cache == NULL || fread1(clnum, cache) || fread1(tlnum, cache))
     {
         this->savecache = NULL;
         return -1;
     }
 
-    while (!feof(cache))
+    Line *prevl = nullptr;
+    Line *l = nullptr;
+    for (int lnum = 0; !feof(cache); ++lnum, prevl=l)
     {
-        lnum++;
-        prevl = l;
         l = New(Line);
         l->prev = prevl;
         if (prevl)
@@ -532,7 +531,6 @@ void reshapeBuffer(BufferPtr buf)
 
     formResetBuffer(buf, sbuf->formitem);
 }
-
 
 void set_buffer_environ(BufferPtr buf)
 {

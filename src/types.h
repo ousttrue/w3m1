@@ -69,8 +69,8 @@ struct Line
     Line *prev;
     int len;
     int width;
-    int linenumber;      /* on buffer */
-    int real_linenumber; /* on file */
+    long linenumber;      /* on buffer */
+    long real_linenumber; /* on file */
     unsigned short usrflags;
     int size;
     int bpos;
