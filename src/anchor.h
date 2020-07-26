@@ -10,7 +10,7 @@ struct Anchor
 {
     std::string url;
     std::string target;
-    char *referer = nullptr;
+    std::string referer;
     char *title = nullptr;
     unsigned char accesskey = 0;
     BufferPoint start;
@@ -22,13 +22,13 @@ struct Anchor
     Image *image = nullptr;
     FormItemList *item = nullptr;
 
-    static Anchor CreateHref(std::string_view url, std::string_view target, char *referer,
+    static Anchor CreateHref(std::string_view url, std::string_view target, std::string_view referer,
                              char *title, unsigned char key, int line, int pos)
     {
         return Anchor{
             url : std::move(std::string(url)),
             target : std::move(std::string(target)),
-            referer : referer,
+            referer : std::move(std::string(referer)),
             title : title,
             accesskey : key,
             start : {
@@ -46,7 +46,6 @@ struct Anchor
     {
         return Anchor{
             url : std::move(std::string(url)),
-            referer : nullptr,
             title : nullptr,
             accesskey : '\0',
             start : {
@@ -64,7 +63,6 @@ struct Anchor
     {
         return Anchor{
             url : std::move(std::string(url)),
-            referer : nullptr,
             title : title,
             accesskey : '\0',
             start : {

@@ -69,9 +69,9 @@ public:
         CopyFrom(src->ptr, src->m_size);
     }
     void Push(const char *src, int size);
-    void Push(const char *src)
+    void Push(std::string_view src)
     {
-        Push(src, strlen(src));
+        Push(src.data(), src.size());
     }
     void Push(const GCStr *src)
     {

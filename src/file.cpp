@@ -1738,15 +1738,15 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
             (*uname)->StripRight();
 #ifdef HAVE_GETPASSPHRASE
             *pwd = Strnew((char *)
-                                    getpassphrase(proxy ? "Proxy Password: " : "Password: "));
+                              getpassphrase(proxy ? "Proxy Password: " : "Password: "));
 #else
 #ifndef __MINGW32_VERSION
             *pwd = Strnew((char *)
-                                    getpass(proxy ? "Proxy Password: " : "Password: "));
+                              getpass(proxy ? "Proxy Password: " : "Password: "));
 #else
             term_raw();
             *pwd = Strnew((char *)
-                                    inputLine(proxy ? "Proxy Password: " : "Password: ", NULL, IN_PASSWORD));
+                              inputLine(proxy ? "Proxy Password: " : "Password: ", NULL, IN_PASSWORD));
             term_cbreak();
 #endif /* __MINGW32_VERSION */
 #endif
@@ -1865,7 +1865,7 @@ load_doc:
 
     URLFile f(SCM_MISSING, NULL);
     f.openURL(tpath, &pu, current, &url_option, request, extra_header,
-                     &hr, &status);
+              &hr, &status);
     content_charset = 0;
 
     auto t = "text/plain";
@@ -3944,7 +3944,10 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (p)
                     {
                         effect |= PE_ANCHOR;
-                        a_href = buf->href.Put(Anchor::CreateHref(p, q ? q : "", r, s,
+                        a_href = buf->href.Put(Anchor::CreateHref(p,
+                                                                  q ? q : "",
+                                                                  r ? r : "",
+                                                                  s,
                                                                   *t, currentLn(buf), pos));
                         a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
                         a_href->slave = (hseq > 0) ? FALSE : TRUE;
@@ -5343,14 +5346,12 @@ getNextPage(BufferPtr buf, int plen)
     Str lineBuf2;
     char pre_lbuf = '\0';
 
-
     wc_ces charset;
     wc_ces doc_charset = DocumentCharset;
     uint8_t old_auto_detect = WcOption.auto_detect;
 
     int squeeze_flag = FALSE;
     Lineprop *propBuffer = NULL;
-
 
     Linecolor *colorBuffer = NULL;
 
@@ -5991,7 +5992,7 @@ int checkOverWrite(char *path)
 }
 
 char *
-inputAnswer(const char* prompt)
+inputAnswer(const char *prompt)
 {
     char *ans;
 

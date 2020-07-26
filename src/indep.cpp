@@ -1,5 +1,4 @@
-/* $Id: indep.c,v 1.38 2007/05/23 15:06:05 inu Exp $ */
-
+#include <sstream>
 #include "fm.h"
 #include <stdio.h>
 #ifndef __MINGW32_VERSION
@@ -764,6 +763,24 @@ char *getescapecmd(char **s)
         tmp = Strnew();
     tmp->Push(save, *s - save);
     return tmp->ptr;
+}
+
+std::string html_quote(std::string_view str)
+{
+    std::stringstream ss;
+    for (auto c: str)
+    {
+        auto q = html_quote_char(c);
+        if (q)
+        {
+            ss << q;
+        }
+        else
+        {
+            ss << c;
+        }
+    }
+    return ss.str();
 }
 
 char *html_quote(const char *str)

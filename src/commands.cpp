@@ -1066,7 +1066,7 @@ void followA()
     {
         auto tab = CreateTabSetCurrent();
         auto buf = tab->GetCurrentBuffer();
-        loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
+        loadLink(url.c_str(), a->target.c_str(), a->referer.c_str(), NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
             GetCurrentTab()->DeleteBuffer(buf);
         else
@@ -1076,7 +1076,7 @@ void followA()
     }
     else
     {
-        loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
+        loadLink(url.c_str(), a->target.c_str(), a->referer.c_str(), NULL);
         displayCurrentbuf(B_NORMAL);
     }
 }

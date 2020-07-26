@@ -59,7 +59,10 @@ extern int strcasemstr(char *str, char *srch[], char **ret_ptr);
 extern char *remove_space(char *str);
 extern int non_null(char *s);
 extern void cleanup_line(Str s, int mode);
+
+std::string html_quote(std::string_view str);
 char *html_quote(const char *str);
+
 extern char *html_unquote(char *str);
 extern char *file_quote(char *str);
 extern char *file_unquote(char *str);

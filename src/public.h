@@ -58,7 +58,7 @@ void SetMarkString(char *str);
 void do_dump(BufferPtr buf);
 void _followForm(int submit);
 void query_from_followform(Str *query, FormItemList *fi, int multipart);
-BufferPtr loadLink(const char *url, const char *target, char *referer, FormList *request);
+BufferPtr loadLink(const char *url, const char *target, const char *referer, FormList *request);
 FormItemList *save_submit_formlist(FormItemList *src);
 Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf);
 void bufferA();
