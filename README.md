@@ -4,6 +4,9 @@ w3m を改造して遊ぶ。
 
 ## TODO
 
+だいぶ壊れてきた。ぼちぼち
+
+* [ ] redirect が壊れた
 * [ ] tab壊れた
 * [ ] 遅くなった
 * [ ] std::string_view(std::string), nullptr に弱い
