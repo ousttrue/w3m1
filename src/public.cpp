@@ -260,7 +260,7 @@ void do_dump(BufferPtr buf)
                 static Str s = NULL;
                 if (buf->href.anchors[i].slave)
                     continue;
-                parseURL2(buf->href.anchors[i].url, &pu, baseURL(buf));
+                parseURL2(buf->href.anchors[i].url.c_str(), &pu, baseURL(buf));
                 s = parsedURL2Str(&pu);
                 if (DecodeURL)
                     s = Strnew_charp(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
@@ -497,7 +497,7 @@ void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request
     displayCurrentbuf(B_NORMAL);
 }
 
-int handleMailto(char *url)
+int handleMailto(const char *url)
 {
     Str to;
     char *pos;
@@ -519,7 +519,7 @@ int handleMailto(char *url)
     /* invoke external mailer */
     if (MailtoOptions == MAILTO_OPTIONS_USE_MAILTO_URL)
     {
-        to = Strnew_charp(html_unquote(url));
+        to = Strnew_charp(html_unquote(const_cast<char*>(url)));
     }
     else
     {
@@ -1127,7 +1127,7 @@ void bufferA(void)
 }
 
 BufferPtr
-loadLink(char *url, char *target, char *referer, FormList *request)
+loadLink(const char *url, char *target, char *referer, FormList *request)
 {
     BufferPtr buf;
     BufferPtr nfbuf;
@@ -1144,7 +1144,7 @@ loadLink(char *url, char *target, char *referer, FormList *request)
         referer = NO_REFERER;
     if (referer == NULL)
         referer = parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr;
-    buf = loadGeneralFile(url, baseURL(GetCurrentTab()->GetCurrentBuffer()), referer, flag, request);
+    buf = loadGeneralFile(const_cast<char*>(url), baseURL(GetCurrentTab()->GetCurrentBuffer()), referer, flag, request);
     if (buf == NULL)
     {
         char *emsg = Sprintf("Can't load %s", url)->ptr;
@@ -1373,7 +1373,7 @@ void _nextA(int visited)
                 hseq++;
                 if (visited == TRUE && an)
                 {
-                    parseURL2(an->url, &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+                    parseURL2(an->url.c_str(), &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
                     if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
                     {
                         goto _end;
@@ -1397,7 +1397,7 @@ void _nextA(int visited)
             y = an->start.line;
             if (visited == TRUE)
             {
-                parseURL2(an->url, &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+                parseURL2(an->url.c_str(), &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
                 if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
                 {
                     goto _end;
@@ -1465,7 +1465,7 @@ void _prevA(int visited)
                 hseq--;
                 if (visited == TRUE && an)
                 {
-                    parseURL2(an->url, &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+                    parseURL2(an->url.c_str(), &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
                     if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
                     {
                         goto _end;
@@ -1510,9 +1510,9 @@ _end:
     displayCurrentbuf(B_NORMAL);
 }
 
-void gotoLabel(char *label)
+void gotoLabel(const char *label)
 {
-    auto al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), label);
+    auto al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char*>(label));
     if (al == NULL)
     {
         /* FIXME: gettextize? */

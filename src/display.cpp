@@ -351,7 +351,7 @@ make_lastline_message(BufferPtr buf)
                     p = a_img->title;
             }
             if (p || a)
-                s = make_lastline_link(buf, p, a ? a->url : NULL);
+                s = make_lastline_link(buf, p, a ? const_cast<char*>(a->url.c_str()) : NULL);
         }
         if (s)
         {
@@ -772,7 +772,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
             auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
-                parseURL2(a->url, &url, baseURL(buf));
+                parseURL2(a->url.c_str(), &url, baseURL(buf));
                 if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
@@ -988,7 +988,7 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
             auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
-                parseURL2(a->url, &url, baseURL(buf));
+                parseURL2(a->url.c_str(), &url, baseURL(buf));
                 if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)

@@ -785,13 +785,13 @@ void copyParsedURL(ParsedURL *p, ParsedURL *q)
     p->query = ALLOC_STR(q->query);
 }
 
-void parseURL2(char *url, ParsedURL *pu, ParsedURL *current)
+void parseURL2(const char *url, ParsedURL *pu, ParsedURL *current)
 {
     char *p;
     Str tmp;
     int relative_uri = FALSE;
 
-    parseURL(url, pu, current);
+    parseURL(const_cast<char*>(url), pu, current);
 #ifndef USE_W3MMAILER
     if (pu->scheme == SCM_MAILTO)
         return;

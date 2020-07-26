@@ -11,7 +11,7 @@
 
 #define FIRST_ANCHOR_SIZE 30
 
-Anchor* AnchorList::Put(const Anchor &a)
+Anchor *AnchorList::Put(const Anchor &a)
 {
     if (anchors.empty() || anchors.back().start.Cmp(a.start) < 0)
     {
@@ -108,7 +108,7 @@ AnchorList::SearchByUrl(const char *str) const
     {
         if (a.hseq < 0)
             continue;
-        if (!strcmp(a.url, str))
+        if (a.url == str)
             return &a;
     }
     return nullptr;
@@ -120,7 +120,7 @@ searchURLLabel(BufferPtr buf, char *url)
     return buf->name.SearchByUrl(url);
 }
 
-static Anchor*
+static Anchor *
 _put_anchor_news(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
     if (*p1 == '<')
@@ -130,20 +130,20 @@ _put_anchor_news(BufferPtr buf, char *p1, char *p2, int line, int pos)
             p2--;
     }
     auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), InnerCharset,
-                             buf->document_charset);
+                                  buf->document_charset);
     tmp = Sprintf("news:%s", file_quote(tmp->ptr));
 
-    auto a= Anchor::CreateHref(tmp->ptr, NULL, NO_REFERER, NULL, '\0', line, pos);
+    auto a = Anchor::CreateHref(tmp->ptr, NULL, NO_REFERER, NULL, '\0', line, pos);
     return buf->href.Put(a);
 }
 
-static Anchor*
+static Anchor *
 _put_anchor_all(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
     auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), InnerCharset,
-                             buf->document_charset);
+                                  buf->document_charset);
     auto a = Anchor::CreateHref(url_quote(tmp->ptr), NULL, NO_REFERER, NULL,
-                        '\0', line, pos);
+                                '\0', line, pos);
     return buf->href.Put(a);
 }
 
@@ -539,7 +539,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
             if (a)
                 a_href = *a;
             else
-                a_href.url = NULL;
+                a_href.url = {};
         }
         Anchor a_form;
         {
@@ -547,7 +547,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
             if (a)
                 a_form = *a;
             else
-                a_form.url = NULL;
+                a_form.url = {};
         }
         auto col = ls->COLPOS(a_img.start.pos);
         auto ecol = ls->COLPOS(a_img.end.pos);
@@ -567,12 +567,12 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
                 for (int k = pos; k < a.end.pos; k++)
                     l->propBuf[k] |= PE_IMAGE;
             }
-            if (a_href.url)
+            if (a_href.url.size())
             {
                 // href
                 auto a = Anchor::CreateHref(a_href.url, a_href.target,
-                                      a_href.referer, a_href.title,
-                                      a_href.accesskey, l->linenumber, pos);
+                                            a_href.referer, a_href.title,
+                                            a_href.accesskey, l->linenumber, pos);
                 a.hseq = a_href.hseq;
                 a.slave = TRUE;
                 a.end.pos = pos + ecol - col;
@@ -760,7 +760,7 @@ link_list_panel(BufferPtr buf)
             if (a->hseq < 0 || a->slave)
                 continue;
             ParsedURL pu;
-            parseURL2(a->url, &pu, baseURL(buf));
+            parseURL2(const_cast<char*>(a->url.c_str()), &pu, baseURL(buf));
             auto p = parsedURL2Str(&pu)->ptr;
             auto u = html_quote(p);
             if (DecodeURL)
@@ -785,7 +785,7 @@ link_list_panel(BufferPtr buf)
             if (a->slave)
                 continue;
             ParsedURL pu;
-            parseURL2(a->url, &pu, baseURL(buf));
+            parseURL2(const_cast<char*>(a->url.c_str()), &pu, baseURL(buf));
             auto p = parsedURL2Str(&pu)->ptr;
             auto u = html_quote(p);
             if (DecodeURL)
@@ -796,9 +796,9 @@ link_list_panel(BufferPtr buf)
             if (a->title && *a->title)
                 t = html_quote(a->title);
             else if (DecodeURL)
-                t = html_quote(url_unquote_conv(a->url, buf->document_charset));
+                t = html_quote(url_unquote_conv(a->url.c_str(), buf->document_charset));
             else
-                t = html_quote(a->url);
+                t = html_quote(a->url.c_str());
             Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
                            "\n", NULL);
             a = const_cast<Anchor *>(buf->formitem.RetrieveAnchor(a->start.line, a->start.pos));

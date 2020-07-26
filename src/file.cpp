@@ -4013,7 +4013,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                             ParsedURL u;
                             Image *image;
 
-                            parseURL2(a_img->url, &u, cur_baseURL);
+                            parseURL2(a_img->url.c_str(), &u, cur_baseURL);
                             a_img->image = image = New(Image);
                             image->url = parsedURL2Str(&u)->ptr;
                             if (!uncompressed_file_type(u.file, &image->ext))

@@ -1,12 +1,14 @@
 #pragma once
 #include <vector>
+#include <string>
+#include <string_view>
 #include "bufferpoint.h"
 
 struct Image;
 struct FormItemList;
 struct Anchor
 {
-    char *url = nullptr;
+    std::string url;
     char *target = nullptr;
     char *referer = nullptr;
     char *title = nullptr;
@@ -20,11 +22,11 @@ struct Anchor
     Image *image = nullptr;
     FormItemList *item = nullptr;
 
-    static Anchor CreateHref(char *url, char *target, char *referer,
+    static Anchor CreateHref(std::string_view url, char *target, char *referer,
                              char *title, unsigned char key, int line, int pos)
     {
         return Anchor{
-            url : url,
+            url : std::move(std::string(url)),
             target : target,
             referer : referer,
             title : title,
@@ -40,10 +42,10 @@ struct Anchor
         };
     }
 
-    static Anchor CreateName(char *url, int line, int pos)
+    static Anchor CreateName(std::string_view url, int line, int pos)
     {
         return Anchor{
-            url : url,
+            url : std::move(std::string(url)),
             target : nullptr,
             referer : nullptr,
             title : nullptr,
@@ -59,10 +61,10 @@ struct Anchor
         };
     }
 
-    static Anchor CreateImage(char *url, char *title, int line, int pos)
+    static Anchor CreateImage(std::string_view url, char *title, int line, int pos)
     {
         return Anchor{
-            url : url,
+            url : std::move(std::string(url)),
             target : nullptr,
             referer : nullptr,
             title : title,

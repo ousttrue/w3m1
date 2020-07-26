@@ -578,7 +578,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
 
     append_tags(obuf);
 
-    if (obuf->anchor.url)
+    if (obuf->anchor.url.size())
         hidden = hidden_anchor = has_hidden_link(obuf, HTML_A);
     if (obuf->img_alt)
     {
@@ -648,7 +648,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
         }
     }
 
-    if (obuf->anchor.url && !hidden_anchor)
+    if (obuf->anchor.url.size() && !hidden_anchor)
         line->Push("</a>");
     if (obuf->img_alt && !hidden_img)
         line->Push("</img_alt>");
@@ -850,13 +850,13 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
     fillline(obuf, indent);
     if (pass)
         passthrough(obuf, pass->ptr, 0);
-    if (!hidden_anchor && obuf->anchor.url)
+    if (!hidden_anchor && obuf->anchor.url.size())
     {
         Str tmp;
         if (obuf->anchor.hseq > 0)
             obuf->anchor.hseq = -obuf->anchor.hseq;
         tmp = Sprintf("<A HSEQ=\"%d\" HREF=\"", obuf->anchor.hseq);
-        tmp->Push(html_quote(obuf->anchor.url));
+        tmp->Push(html_quote(obuf->anchor.url.c_str()));
         if (obuf->anchor.target)
         {
             tmp->Push("\" TARGET=\"");
@@ -935,7 +935,7 @@ void purgeline(struct html_feed_environ *h_env)
 static void
 close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
 {
-    if (obuf->anchor.url)
+    if (obuf->anchor.url.size())
     {
         int i;
         char *p = NULL;
@@ -1610,7 +1610,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         obuf->end_tag = 0;
         return 1;
     case HTML_A:
-        if (obuf->anchor.url)
+        if (obuf->anchor.url.size())
             close_anchor(h_env, obuf);
 
         hseq = 0;
@@ -1628,7 +1628,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         if (parsedtag_get_value(tag, ATTR_HSEQ, &hseq))
             obuf->anchor.hseq = hseq;
 
-        if (hseq == 0 && obuf->anchor.url)
+        if (hseq == 0 && obuf->anchor.url.size())
         {
             obuf->anchor.hseq = GetCurHSeq();
             tmp = process_anchor(tag, h_env->tagbuf->ptr);

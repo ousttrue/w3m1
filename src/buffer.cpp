@@ -561,7 +561,7 @@ void set_buffer_environ(BufferPtr buf)
         auto a = retrieveCurrentAnchor(buf);
         if (a)
         {
-            parseURL2(a->url, &pu, baseURL(buf));
+            parseURL2(const_cast<char*>(a->url.c_str()), &pu, baseURL(buf));
             set_environ("W3M_CURRENT_LINK", parsedURL2Str(&pu)->ptr);
         }
         else
@@ -569,7 +569,7 @@ void set_buffer_environ(BufferPtr buf)
         a = retrieveCurrentImg(buf);
         if (a)
         {
-            parseURL2(a->url, &pu, baseURL(buf));
+            parseURL2(const_cast<char*>(a->url.c_str()), &pu, baseURL(buf));
             set_environ("W3M_CURRENT_IMG", parsedURL2Str(&pu)->ptr);
         }
         else

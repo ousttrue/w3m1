@@ -892,7 +892,7 @@ void followI()
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    buf = loadGeneralFile(a->url, baseURL(GetCurrentTab()->GetCurrentBuffer()), NULL, 0, NULL);
+    buf = loadGeneralFile(const_cast<char*>(a->url.c_str()), baseURL(GetCurrentTab()->GetCurrentBuffer()), NULL, 0, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -1034,14 +1034,14 @@ void followA()
         return;
     }
 
-    if (*a->url == '#')
+    if (a->url.size() && a->url[0] == '#')
     { /* index within this buffer */
-        gotoLabel(a->url + 1);
+        gotoLabel(a->url.c_str() + 1);
         return;
     }
 
     ParsedURL u;
-    parseURL2(a->url, &u, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    parseURL2(a->url.c_str(), &u, baseURL(GetCurrentTab()->GetCurrentBuffer()));
     if (parsedURL2Str(&u)->Cmp(parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)) == 0)
     {
         /* index within this buffer */
@@ -1052,7 +1052,7 @@ void followA()
         }
     }
 
-    if (handleMailto(a->url))
+    if (handleMailto(a->url.c_str()))
     {
         return;
     }
@@ -1066,7 +1066,7 @@ void followA()
     {
         auto tab = CreateTabSetCurrent();
         auto buf = tab->GetCurrentBuffer();
-        loadLink(url, a->target, a->referer, NULL);
+        loadLink(url.c_str(), a->target, a->referer, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
             GetCurrentTab()->DeleteBuffer(buf);
         else
@@ -1076,7 +1076,7 @@ void followA()
     }
     else
     {
-        loadLink(url, a->target, a->referer, NULL);
+        loadLink(url.c_str(), a->target, a->referer, NULL);
         displayCurrentbuf(B_NORMAL);
     }
 }
@@ -1876,7 +1876,7 @@ void linkbrz()
     auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
     if (a == NULL)
         return;
-    parseURL2(a->url, &pu, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    parseURL2(a->url.c_str(), &pu, baseURL(GetCurrentTab()->GetCurrentBuffer()));
     invoke_browser(parsedURL2Str(&pu)->ptr);
 }
 /* show current line number and number of lines in the entire document */

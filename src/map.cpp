@@ -152,7 +152,7 @@ retrieveCurrentMapArea(BufferPtr buf)
     if (!(a_img && a_img->image && a_img->image->map))
         return NULL;
     auto a_form = retrieveCurrentForm(buf);
-    if (!(a_form && a_form->url))
+    if (!(a_form && a_form->url.size()))
         return NULL;
     fi = a_form->item;
     if (!(fi && fi->parent && fi->parent->item))
@@ -193,7 +193,7 @@ retrieveCurrentMap(BufferPtr buf)
     FormItemList *fi;
 
     auto a = retrieveCurrentForm(buf);
-    if (!a || !a->url)
+    if (!a || !a->url.size())
         return NULL;
     fi = a->item;
     if (fi->parent->method == FORM_METHOD_INTERNAL &&
@@ -621,7 +621,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentAnchor(buf);
     if (a != NULL)
     {
-        parseURL2(a->url, &pu, baseURL(buf));
+        parseURL2(a->url.c_str(), &pu, baseURL(buf));
         p = parsedURL2Str(&pu)->ptr;
         q = html_quote(p);
         if (DecodeURL)
@@ -635,7 +635,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentImg(buf);
     if (a != NULL)
     {
-        parseURL2(a->url, &pu, baseURL(buf));
+        parseURL2(a->url.c_str(), &pu, baseURL(buf));
         p = parsedURL2Str(&pu)->ptr;
         q = html_quote(p);
         if (DecodeURL)

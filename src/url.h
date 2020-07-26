@@ -42,7 +42,11 @@ ParsedURL *schemeToProxy(int scheme);
 Str parsedURL2Str(ParsedURL *pu, bool pass = false);
 char *otherinfo(ParsedURL *target, ParsedURL *current, char *referer);
 SchemaTypes getURLScheme(char **url);
-void parseURL2(char *url, ParsedURL *pu, ParsedURL *current);
+void parseURL2(const char *url, ParsedURL *pu, ParsedURL *current);
+inline void parseURL2(const std::string &url, ParsedURL *pu, ParsedURL *current)
+{
+    parseURL2(url.c_str(), pu, current);
+}
 
 struct SchemeKeyValue
 {
