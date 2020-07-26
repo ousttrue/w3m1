@@ -30,4 +30,4 @@ struct HRequest
 };
 
 Str HTTPrequestURI(ParsedURL *pu, HRequest *hr);
-Str HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra);
+Str HTTPrequest(ParsedURL *pu, const ParsedURL *current, HRequest *hr, TextList *extra);

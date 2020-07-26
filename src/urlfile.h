@@ -44,7 +44,7 @@ struct URLFile
     time_t modtime = -1;
 
     URLFile(SchemaTypes scheme, InputStream *stream);
-    void openURL(char *url, ParsedURL *pu, ParsedURL *current,
+    void openURL(char *url, ParsedURL *pu, const ParsedURL *current,
                  URLOption *option, FormList *request, TextList *extra_header,
                  HRequest *hr, unsigned char *status);
 };

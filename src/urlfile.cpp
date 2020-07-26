@@ -249,7 +249,7 @@ URLFile::URLFile(SchemaTypes scm, InputStream *strm)
 {
 }
 
-void URLFile::openURL(char *url, ParsedURL *pu, ParsedURL *current,
+void URLFile::openURL(char *url, ParsedURL *pu, const ParsedURL *current,
                       URLOption *option, FormList *request, TextList *extra_header,
                       HRequest *hr, unsigned char *status)
 {

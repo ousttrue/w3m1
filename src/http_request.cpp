@@ -51,7 +51,7 @@ Str HRequest::URI(ParsedURL *pu) const
     return tmp;
 }
 
-Str HTTPrequest(ParsedURL *pu, ParsedURL *current, HRequest *hr, TextList *extra)
+Str HTTPrequest(ParsedURL *pu, const ParsedURL *current, HRequest *hr, TextList *extra)
 {
     TextListItem *i;
     int seen_www_auth = 0;

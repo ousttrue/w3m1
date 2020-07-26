@@ -1784,7 +1784,6 @@ static bool checkRedirection(ParsedURL *pu)
     assert(pu);
     Str tmp;
 
-
     if (g_puv.size() >= FollowRedirection)
     {
         /* FIXME: gettextize? */
@@ -1807,7 +1806,7 @@ Str getLinkNumberStr(int correction)
  * loadGeneralFile: load file to buffer
  */
 BufferPtr
-loadGeneralFile(char *path, ParsedURL *current, char *referer,
+loadGeneralFile(char *path, const ParsedURL *_current, char *referer,
                 int flag, FormList *request)
 {
     ParsedURL pu;
@@ -1843,8 +1842,15 @@ load_doc:
     url_option.referer = referer;
     url_option.flag = flag;
 
+    std::shared_ptr<ParsedURL> current;
+    if (_current)
+    {
+        current = std::make_shared<ParsedURL>();
+        *current = *_current;
+    }
+
     URLFile f(SCM_MISSING, NULL);
-    f.openURL(tpath, &pu, current, &url_option, request, extra_header,
+    f.openURL(tpath, &pu, current.get(), &url_option, request, extra_header,
               &hr, &status);
     content_charset = 0;
 
@@ -1900,7 +1906,7 @@ load_doc:
             tmp = searchURIMethods(&pu);
             if (tmp != NULL)
             {
-                b = loadGeneralFile(tmp->ptr, current, referer, flag, request);
+                b = loadGeneralFile(tmp->ptr, current.get(), referer, flag, request);
                 if (b != NULL)
                     copyParsedURL(&b->currentURL, &pu);
                 return b;
@@ -1985,8 +1991,7 @@ load_doc:
             tpath = url_quote_conv(p, DocumentCharset);
             request = NULL;
             UFclose(&f);
-            current = New(ParsedURL);
-            copyParsedURL(current, &pu);
+            copyParsedURL(current.get(), &pu);
             t_buf = newBuffer(INIT_BUFFER_WIDTH);
             t_buf->bufferprop |= BP_REDIRECTED;
             status = HTST_NORMAL;
@@ -2152,8 +2157,7 @@ load_doc:
             request = NULL;
             UFclose(&f);
             add_auth_cookie_flag = 0;
-            current = New(ParsedURL);
-            copyParsedURL(current, &pu);
+            copyParsedURL(current.get(), &pu);
             t_buf = newBuffer(INIT_BUFFER_WIDTH);
             t_buf->bufferprop |= BP_REDIRECTED;
             status = HTST_NORMAL;

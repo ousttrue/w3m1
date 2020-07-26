@@ -11,7 +11,7 @@ Str process_select(struct parsed_tag *tag);
 Str process_textarea(struct parsed_tag *tag, int width);
 Str process_form(struct parsed_tag *tag);
 
-BufferPtr loadGeneralFile(char *path, ParsedURL *current, char *referer, int flag, FormList *request);
+BufferPtr loadGeneralFile(char *path, const ParsedURL *current, char *referer, int flag, FormList *request);
 Str getLinkNumberStr(int correction);
 char *guess_save_name(BufferPtr buf, char *file);
 void examineFile(char *path, URLFile *uf);
@@ -176,7 +176,7 @@ ParsedURL *baseURL(BufferPtr buf);
 int openSocket(const char *hostname, const char *remoteport_name,
                unsigned short remoteport_num);
 
-void copyParsedURL(ParsedURL *p, ParsedURL *q);
+void copyParsedURL(ParsedURL *p, const ParsedURL *q);
 
 
 

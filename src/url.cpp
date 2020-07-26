@@ -475,7 +475,7 @@ SchemaTypes getURLScheme(char **url)
     return SCM_UNKNOWN;
 }
 
-void ParsedURL::Parse(std::string_view _url, ParsedURL *current)
+void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
 {
     char *p, *q;
     Str tmp;
@@ -769,7 +769,7 @@ do_label:
         this->label = NULL;
 }
 
-void ParsedURL::Parse2(std::string_view url, ParsedURL *current)
+void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
 {
     char *p;
     Str tmp;
@@ -972,7 +972,7 @@ void ParsedURL::Parse2(std::string_view url, ParsedURL *current)
 #define initParsedURL(p) bzero(p, sizeof(ParsedURL))
 #define ALLOC_STR(s) ((s) == NULL ? NULL : allocStr(s, -1))
 
-void copyParsedURL(ParsedURL *p, ParsedURL *q)
+void copyParsedURL(ParsedURL *p, const ParsedURL *q)
 {
     p->scheme = q->scheme;
     p->port = q->port;
@@ -1083,7 +1083,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
 }
 
 char *
-otherinfo(ParsedURL *target, ParsedURL *current, char *referer)
+otherinfo(ParsedURL *target, const ParsedURL *current, char *referer)
 {
     Str s = Strnew();
 
@@ -1126,9 +1126,10 @@ otherinfo(ParsedURL *target, ParsedURL *current, char *referer)
         {
             char *p = current->label;
             s->Push("Referer: ");
-            current->label = NULL;
-            s->Push(parsedURL2Str(current));
-            current->label = p;
+            //current->label = NULL;
+            auto withoutLabel = *current;
+            withoutLabel.label = NULL;
+            s->Push(parsedURL2Str(&withoutLabel));
             s->Push("\r\n");
         }
         else if (referer != NULL && referer != NO_REFERER)
