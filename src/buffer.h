@@ -122,11 +122,12 @@ public:
 
     Buffer();
     ~Buffer();
+    int WriteBufferCache();
+    int ReadBufferCache();
     BufferPtr Copy();
     void CopyFrom(BufferPtr src);
     void ClearLink();
 };
-
 
 void deleteImage(BufferPtr buf);
 void getAllImage(BufferPtr buf);

@@ -2619,7 +2619,7 @@ void saveBufferInfo()
 
 void tmpClearBuffer(BufferPtr buf)
 {
-    if (buf->pagerSource == NULL && writeBufferCache(buf) == 0)
+    if (buf->pagerSource == NULL && buf->WriteBufferCache() == 0)
     {
         buf->firstLine = NULL;
         buf->topLine = NULL;

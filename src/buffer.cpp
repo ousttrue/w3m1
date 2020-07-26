@@ -23,6 +23,18 @@ static int REV_LB[MAX_LB] = {
     LB_N_SOURCE,
 };
 
+template <typename T>
+bool fwrite1(const T &d, FILE *f)
+{
+    return (fwrite(&d, sizeof(d), 1, f) == 0);
+}
+
+template <typename T>
+bool fread1(T &d, FILE *f)
+{
+    return (fread(&d, sizeof(d), 1, f) == 0);
+}
+
 Buffer::Buffer()
 {
     COLS = COLS;
@@ -73,6 +85,152 @@ Buffer::~Buffer()
     }
 }
 
+int Buffer::WriteBufferCache()
+{
+    Str tmp;
+    FILE *cache = NULL;
+    Line *l;
+    int colorflag;
+
+    if (this->savecache)
+        return -1;
+
+    if (this->firstLine == NULL)
+        goto _error1;
+
+    tmp = tmpfname(TMPF_CACHE, NULL);
+    this->savecache = tmp->ptr;
+    cache = fopen(this->savecache, "w");
+    if (!cache)
+        goto _error1;
+
+    if (fwrite1(this->currentLine->linenumber, cache) ||
+        fwrite1(this->topLine->linenumber, cache))
+        goto _error;
+
+    for (l = this->firstLine; l; l = l->next)
+    {
+        if (fwrite1(l->real_linenumber, cache) ||
+            fwrite1(l->usrflags, cache) ||
+            fwrite1(l->width, cache) ||
+            fwrite1(l->len, cache) ||
+            fwrite1(l->size, cache) ||
+            fwrite1(l->bpos, cache) || fwrite1(l->bwidth, cache))
+            goto _error;
+        if (l->bpos == 0)
+        {
+            if (fwrite(l->lineBuf, 1, l->size, cache) < l->size ||
+                fwrite(l->propBuf, sizeof(Lineprop), l->size, cache) < l->size)
+                goto _error;
+        }
+#ifdef USE_ANSI_COLOR
+        colorflag = l->colorBuf ? 1 : 0;
+        if (fwrite1(colorflag, cache))
+            goto _error;
+        if (colorflag)
+        {
+            if (l->bpos == 0)
+            {
+                if (fwrite(l->colorBuf, sizeof(Linecolor), l->size, cache) <
+                    l->size)
+                    goto _error;
+            }
+        }
+#endif
+    }
+
+    fclose(cache);
+    return 0;
+_error:
+    fclose(cache);
+    unlink(this->savecache);
+_error1:
+    this->savecache = NULL;
+    return -1;
+}
+
+int Buffer::ReadBufferCache()
+{
+    FILE *cache;
+    Line *l = NULL, *prevl = NULL, *basel = NULL;
+    long lnum = 0, clnum, tlnum;
+    int colorflag;
+
+    if (this->savecache == NULL)
+        return -1;
+
+    cache = fopen(this->savecache, "r");
+    if (cache == NULL || fread1(clnum, cache) || fread1(tlnum, cache))
+    {
+        this->savecache = NULL;
+        return -1;
+    }
+
+    while (!feof(cache))
+    {
+        lnum++;
+        prevl = l;
+        l = New(Line);
+        l->prev = prevl;
+        if (prevl)
+            prevl->next = l;
+        else
+            this->firstLine = l;
+        l->linenumber = lnum;
+        if (lnum == clnum)
+            this->currentLine = l;
+        if (lnum == tlnum)
+            this->topLine = l;
+        if (fread1(l->real_linenumber, cache) ||
+            fread1(l->usrflags, cache) ||
+            fread1(l->width, cache) ||
+            fread1(l->len, cache) ||
+            fread1(l->size, cache) ||
+            fread1(l->bpos, cache) || fread1(l->bwidth, cache))
+            break;
+        if (l->bpos == 0)
+        {
+            basel = l;
+            l->lineBuf = NewAtom_N(char, l->size + 1);
+            fread(l->lineBuf, 1, l->size, cache);
+            l->lineBuf[l->size] = '\0';
+            l->propBuf = NewAtom_N(Lineprop, l->size);
+            fread(l->propBuf, sizeof(Lineprop), l->size, cache);
+        }
+        else if (basel)
+        {
+            l->lineBuf = basel->lineBuf + l->bpos;
+            l->propBuf = basel->propBuf + l->bpos;
+        }
+        else
+            break;
+#ifdef USE_ANSI_COLOR
+        if (fread1(colorflag, cache))
+            break;
+        if (colorflag)
+        {
+            if (l->bpos == 0)
+            {
+                l->colorBuf = NewAtom_N(Linecolor, l->size);
+                fread(l->colorBuf, sizeof(Linecolor), l->size, cache);
+            }
+            else
+                l->colorBuf = basel->colorBuf + l->bpos;
+        }
+        else
+        {
+            l->colorBuf = NULL;
+        }
+#endif
+    }
+    this->lastLine = prevl;
+    this->lastLine->next = NULL;
+    fclose(cache);
+    unlink(this->savecache);
+    this->savecache = NULL;
+    return 0;
+}
+
 BufferPtr Buffer::Copy()
 {
     auto copy = newBuffer(width);
@@ -82,8 +240,8 @@ BufferPtr Buffer::Copy()
 
 void Buffer::CopyFrom(BufferPtr src)
 {
-    readBufferCache(src);
-    src->clone += 1;
+    src->ReadBufferCache();
+    ++(*src->clone);
 
     *this = *src;
 }
@@ -254,8 +412,6 @@ void gotoRealLine(BufferPtr buf, int n)
     }
 }
 
-
-
 /* 
  * Reshape HTML buffer
  */
@@ -366,158 +522,6 @@ void reshapeBuffer(BufferPtr buf)
     formResetBuffer(buf, sbuf->formitem);
 }
 
-#define fwrite1(d, f) (fwrite(&d, sizeof(d), 1, f) == 0)
-#define fread1(d, f) (fread(&d, sizeof(d), 1, f) == 0)
-
-int writeBufferCache(BufferPtr buf)
-{
-    Str tmp;
-    FILE *cache = NULL;
-    Line *l;
-#ifdef USE_ANSI_COLOR
-    int colorflag;
-#endif
-
-    if (buf->savecache)
-        return -1;
-
-    if (buf->firstLine == NULL)
-        goto _error1;
-
-    tmp = tmpfname(TMPF_CACHE, NULL);
-    buf->savecache = tmp->ptr;
-    cache = fopen(buf->savecache, "w");
-    if (!cache)
-        goto _error1;
-
-    if (fwrite1(buf->currentLine->linenumber, cache) ||
-        fwrite1(buf->topLine->linenumber, cache))
-        goto _error;
-
-    for (l = buf->firstLine; l; l = l->next)
-    {
-        if (fwrite1(l->real_linenumber, cache) ||
-            fwrite1(l->usrflags, cache) ||
-            fwrite1(l->width, cache) ||
-            fwrite1(l->len, cache) ||
-            fwrite1(l->size, cache) ||
-            fwrite1(l->bpos, cache) || fwrite1(l->bwidth, cache))
-            goto _error;
-        if (l->bpos == 0)
-        {
-            if (fwrite(l->lineBuf, 1, l->size, cache) < l->size ||
-                fwrite(l->propBuf, sizeof(Lineprop), l->size, cache) < l->size)
-                goto _error;
-        }
-#ifdef USE_ANSI_COLOR
-        colorflag = l->colorBuf ? 1 : 0;
-        if (fwrite1(colorflag, cache))
-            goto _error;
-        if (colorflag)
-        {
-            if (l->bpos == 0)
-            {
-                if (fwrite(l->colorBuf, sizeof(Linecolor), l->size, cache) <
-                    l->size)
-                    goto _error;
-            }
-        }
-#endif
-    }
-
-    fclose(cache);
-    return 0;
-_error:
-    fclose(cache);
-    unlink(buf->savecache);
-_error1:
-    buf->savecache = NULL;
-    return -1;
-}
-
-int readBufferCache(BufferPtr buf)
-{
-    FILE *cache;
-    Line *l = NULL, *prevl = NULL, *basel = NULL;
-    long lnum = 0, clnum, tlnum;
-#ifdef USE_ANSI_COLOR
-    int colorflag;
-#endif
-
-    if (buf->savecache == NULL)
-        return -1;
-
-    cache = fopen(buf->savecache, "r");
-    if (cache == NULL || fread1(clnum, cache) || fread1(tlnum, cache))
-    {
-        buf->savecache = NULL;
-        return -1;
-    }
-
-    while (!feof(cache))
-    {
-        lnum++;
-        prevl = l;
-        l = New(Line);
-        l->prev = prevl;
-        if (prevl)
-            prevl->next = l;
-        else
-            buf->firstLine = l;
-        l->linenumber = lnum;
-        if (lnum == clnum)
-            buf->currentLine = l;
-        if (lnum == tlnum)
-            buf->topLine = l;
-        if (fread1(l->real_linenumber, cache) ||
-            fread1(l->usrflags, cache) ||
-            fread1(l->width, cache) ||
-            fread1(l->len, cache) ||
-            fread1(l->size, cache) ||
-            fread1(l->bpos, cache) || fread1(l->bwidth, cache))
-            break;
-        if (l->bpos == 0)
-        {
-            basel = l;
-            l->lineBuf = NewAtom_N(char, l->size + 1);
-            fread(l->lineBuf, 1, l->size, cache);
-            l->lineBuf[l->size] = '\0';
-            l->propBuf = NewAtom_N(Lineprop, l->size);
-            fread(l->propBuf, sizeof(Lineprop), l->size, cache);
-        }
-        else if (basel)
-        {
-            l->lineBuf = basel->lineBuf + l->bpos;
-            l->propBuf = basel->propBuf + l->bpos;
-        }
-        else
-            break;
-#ifdef USE_ANSI_COLOR
-        if (fread1(colorflag, cache))
-            break;
-        if (colorflag)
-        {
-            if (l->bpos == 0)
-            {
-                l->colorBuf = NewAtom_N(Linecolor, l->size);
-                fread(l->colorBuf, sizeof(Linecolor), l->size, cache);
-            }
-            else
-                l->colorBuf = basel->colorBuf + l->bpos;
-        }
-        else
-        {
-            l->colorBuf = NULL;
-        }
-#endif
-    }
-    buf->lastLine = prevl;
-    buf->lastLine->next = NULL;
-    fclose(cache);
-    unlink(buf->savecache);
-    buf->savecache = NULL;
-    return 0;
-}
 
 void set_buffer_environ(BufferPtr buf)
 {

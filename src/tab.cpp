@@ -59,13 +59,19 @@ int Tab::GetCurrentBufferIndex() const
 
 BufferPtr Tab::PrevBuffer(BufferPtr buf) const
 {
-    BufferPtr b = firstBuffer;
-    for (; b != NULL && b->nextBuffer != buf; b = b->nextBuffer)
-        ;
-
-    assert(b->nextBuffer == buf);
-
-    return b;
+    if (buf == firstBuffer)
+    {
+        return nullptr;
+    }
+    for (auto b = firstBuffer; b != NULL; b = b->nextBuffer)
+    {
+        if (b->nextBuffer == buf)
+        {
+            return b;
+        }
+    }
+    assert(false);
+    return nullptr;
 }
 
 BufferPtr Tab::NextBuffer(BufferPtr buf) const
@@ -78,17 +84,25 @@ void Tab::SetFirstBuffer(BufferPtr buffer, bool isCurrent)
     firstBuffer = buffer;
     if (isCurrent)
     {
-        currentBuffer = buffer;
-    }
-
-    if (!IsConnectFirstCurrent())
-    {
-        currentBuffer = nullptr;
+        SetCurrentBuffer(buffer);
     }
 }
 
 void Tab::SetCurrentBuffer(BufferPtr buffer)
 {
+    if (currentBuffer == buffer)
+    {
+        return;
+    }
+    if (currentBuffer)
+    {
+        deleteImage(currentBuffer);
+        if (clear_buffer)
+        {
+            tmpClearBuffer(currentBuffer);
+        }
+    }
+
     currentBuffer = buffer;
     assert(IsConnectFirstCurrent());
 }
@@ -96,24 +110,17 @@ void Tab::SetCurrentBuffer(BufferPtr buffer)
 // currentPrev -> buf -> current
 void Tab::PushBufferCurrentPrev(BufferPtr buf)
 {
-    deleteImage(GetCurrentBuffer());
-    if (clear_buffer)
+    auto b = PrevBuffer(currentBuffer);
+    if (b)
     {
-        tmpClearBuffer(GetCurrentBuffer());
+        b->nextBuffer = buf;
     }
-
-    // if (GetCurrentTab()->GetFirstBuffer() == GetCurrentTab()->GetCurrentBuffer())
+    else
     {
-        buf->nextBuffer = GetCurrentBuffer();
-        SetFirstBuffer(buf, true);
+        firstBuffer = buf;
     }
-    // else
-    // {
-    //     auto b = prevBuffer(GetCurrentTab()->GetFirstBuffer(), GetCurrentTab()->GetCurrentBuffer());
-    //     b->nextBuffer = buf;
-    //     buf->nextBuffer = GetCurrentTab()->GetCurrentBuffer();
-    //     GetCurrentTab()->SetCurrentBuffer(buf);
-    // }
+    buf->nextBuffer = currentBuffer;
+    SetCurrentBuffer(buf);
 #ifdef USE_BUFINFO
     saveBufferInfo();
 #endif
@@ -121,17 +128,8 @@ void Tab::PushBufferCurrentPrev(BufferPtr buf)
 
 void Tab::PushBufferCurrentNext(BufferPtr buf)
 {
-    deleteImage(GetCurrentBuffer());
-    if (clear_buffer)
-    {
-        tmpClearBuffer(GetCurrentBuffer());
-    }
-
-    // if (GetCurrentTab()->GetFirstBuffer() == GetCurrentTab()->GetCurrentBuffer())
-    {
-        GetCurrentBuffer()->nextBuffer = buf;
-        SetCurrentBuffer(buf);
-    }
+    GetCurrentBuffer()->nextBuffer = buf;
+    SetCurrentBuffer(buf);
 }
 
 BufferPtr
@@ -616,8 +614,8 @@ TabPtr posTab(int x, int y)
 TabPtr CreateTabSetCurrent()
 {
     // setup buffer
-    auto buf = GetCurrentTab()->GetCurrentBuffer()->Copy();
-    buf->ClearLink();
+    // auto buf = GetCurrentTab()->GetCurrentBuffer()->Copy();
+    // buf->ClearLink();
 
     // new tab
     auto current = g_current.lock();
@@ -627,7 +625,7 @@ TabPtr CreateTabSetCurrent()
     g_tabs.insert(found, tab);
 
     g_current = tab;
-    tab->SetFirstBuffer(buf, true);
+    // tab->SetFirstBuffer(buf, true);
     return tab;
 }
 

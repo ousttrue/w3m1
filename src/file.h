@@ -60,8 +60,6 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu);
 char *checkHeader(BufferPtr buf, char *field);
 BufferPtr newBuffer(int width);
 
-int writeBufferCache(BufferPtr buf);
-int readBufferCache(BufferPtr buf);
 void fmTerm(void);
 void fmInit(void);
 

@@ -414,7 +414,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 
     if (!buf)
         return;
-    if (buf->topLine == NULL && readBufferCache(buf) == 0)
+    if (buf->topLine == NULL && buf->ReadBufferCache() == 0)
     { /* clear_buffer */
         mode = B_FORCE_REDRAW;
     }
