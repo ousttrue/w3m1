@@ -3944,7 +3944,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (p)
                     {
                         effect |= PE_ANCHOR;
-                        a_href = buf->href.Put(Anchor::CreateHref(p, q, r, s,
+                        a_href = buf->href.Put(Anchor::CreateHref(p, q ? q : "", r, s,
                                                                   *t, currentLn(buf), pos));
                         a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
                         a_href->slave = (hseq > 0) ? FALSE : TRUE;
@@ -4118,7 +4118,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (fi)
                     {
                         Anchor a;
-                        a.target = form->target;
+                        a.target = form->target ? form->target : "";
                         a.item = fi;
                         BufferPoint bp = {
                             line : currentLn(buf),

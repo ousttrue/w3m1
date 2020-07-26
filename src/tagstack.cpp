@@ -857,10 +857,10 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
             obuf->anchor.hseq = -obuf->anchor.hseq;
         tmp = Sprintf("<A HSEQ=\"%d\" HREF=\"", obuf->anchor.hseq);
         tmp->Push(html_quote(obuf->anchor.url.c_str()));
-        if (obuf->anchor.target)
+        if (obuf->anchor.target.size())
         {
             tmp->Push("\" TARGET=\"");
-            tmp->Push(html_quote(obuf->anchor.target));
+            tmp->Push(html_quote(obuf->anchor.target.c_str()));
         }
         if (obuf->anchor.referer)
         {

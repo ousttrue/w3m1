@@ -921,7 +921,7 @@ void _followForm(int submit)
                 tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
             tmp2->Push("?");
             tmp2->Push(tmp);
-            loadLink(tmp2->ptr, a->target, NULL, NULL);
+            loadLink(tmp2->ptr, a->target.c_str(), NULL, NULL);
         }
         else if (fi->parent->method == FORM_METHOD_POST)
         {
@@ -937,7 +937,7 @@ void _followForm(int submit)
                 fi->parent->body = tmp->ptr;
                 fi->parent->length = tmp->Size();
             }
-            buf = loadLink(tmp2->ptr, a->target, NULL, fi->parent);
+            buf = loadLink(tmp2->ptr, a->target.c_str(), NULL, fi->parent);
             if (multipart)
             {
                 unlink(fi->parent->body);
@@ -1127,7 +1127,7 @@ void bufferA(void)
 }
 
 BufferPtr
-loadLink(const char *url, char *target, char *referer, FormList *request)
+loadLink(const char *url, const char *target, char *referer, FormList *request)
 {
     BufferPtr buf;
     BufferPtr nfbuf;
@@ -1175,7 +1175,7 @@ loadLink(const char *url, char *target, char *referer, FormList *request)
         return loadNormalBuf(buf, TRUE);
     }
 
-    f_element = search_frame(nfbuf->frameset, target);
+    f_element = search_frame(nfbuf->frameset, const_cast<char*>(target));
     if (f_element == NULL)
     {
         /* specified target doesn't exist in this frameset */

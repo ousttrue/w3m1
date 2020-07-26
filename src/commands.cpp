@@ -892,7 +892,7 @@ void followI()
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    buf = loadGeneralFile(const_cast<char*>(a->url.c_str()), baseURL(GetCurrentTab()->GetCurrentBuffer()), NULL, 0, NULL);
+    buf = loadGeneralFile(const_cast<char *>(a->url.c_str()), baseURL(GetCurrentTab()->GetCurrentBuffer()), NULL, 0, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -1061,12 +1061,12 @@ void followA()
     if (map)
         url = Sprintf("%s?%d,%d", a->url, x, y)->ptr;
 
-    if (check_target && open_tab_blank && a->target &&
-        (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
+    if (check_target && open_tab_blank &&
+        (a->target == "_new" || a->target == "_blank"))
     {
         auto tab = CreateTabSetCurrent();
         auto buf = tab->GetCurrentBuffer();
-        loadLink(url.c_str(), a->target, a->referer, NULL);
+        loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
             GetCurrentTab()->DeleteBuffer(buf);
         else
@@ -1076,7 +1076,7 @@ void followA()
     }
     else
     {
-        loadLink(url.c_str(), a->target, a->referer, NULL);
+        loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
         displayCurrentbuf(B_NORMAL);
     }
 }
