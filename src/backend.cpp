@@ -329,7 +329,7 @@ int backend(void)
 /* Dummy function of readline(). */
 #ifndef HAVE_READLINE
 static char *
-readline(const char *prompt)
+readline(const char* prompt)
 {
 	Str s;
 	fputs(prompt, stdout);

@@ -46,11 +46,6 @@ void set_prec_num(int n)
     g_prec_num = n;
 }
 
-int PREC_NUM()
-{
-    return prec_num() ? prec_num() : 1;
-}
-
 int CurrentKey()
 {
     return g_CurrentKey;

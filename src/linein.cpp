@@ -77,7 +77,7 @@ static void ins_char(char c);
 #endif
 
 char *
-inputLineHistSearch(char *prompt, char *def_str, int flag, Hist *hist,
+inputLineHistSearch(const char* prompt, char *def_str, int flag, Hist *hist,
                     int (*incrfunc) (int ch, Str str, Lineprop *prop))
 {
     int opos, x, y, lpos, rpos, epos;

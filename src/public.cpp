@@ -25,13 +25,11 @@
 
 int searchKeyNum(void)
 {
-    char *d;
     int n = 1;
-
-    d = searchKeyData();
+    auto d = searchKeyData();
     if (d != NULL)
         n = atoi(d);
-    return n * PREC_NUM();
+    return n * (std::max(1, prec_num()));
 }
 
 void nscroll(int n)
@@ -107,7 +105,7 @@ void clear_mark(Line *l)
         l->propBuf[pos] &= ~PE_MARK;
 }
 
-void disp_srchresult(int result, char *prompt, char *str)
+void disp_srchresult(int result, const char* prompt, char *str)
 {
     if (str == NULL)
         str = "";
@@ -288,10 +286,11 @@ int srchcore(char *str, int (*func)(BufferPtr, char *))
     crmode();
     if (SETJMP(IntReturn) == 0)
     {
-        for (i = 0; i < PREC_NUM(); i++)
+        int prec = prec_num() ? prec_num() : 1;
+        for (i = 0; i < prec; i++)
         {
             result = func(GetCurrentTab()->GetCurrentBuffer(), str);
-            if (i < PREC_NUM() - 1 && result & SR_FOUND)
+            if (i < prec - 1 && result & SR_FOUND)
                 clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
         }
     }
@@ -383,7 +382,7 @@ done:
     return -1;
 }
 
-void isrch(int (*func)(BufferPtr, char *), char *prompt)
+void isrch(int (*func)(BufferPtr, char *), const char* prompt)
 {
     char *str;
     Buffer sbuf;
@@ -399,7 +398,7 @@ void isrch(int (*func)(BufferPtr, char *), char *prompt)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void srch(int (*func)(BufferPtr, char *), char *prompt)
+void srch(int (*func)(BufferPtr, char *), const char* prompt)
 {
     char *str;
     int result;
@@ -755,17 +754,17 @@ int cur_real_linenumber(BufferPtr buf)
     return n;
 }
 
-char *inputLineHist(char *prompt, char *def_str, int flag, Hist *hist)
+char *inputLineHist(const char* prompt, char *def_str, int flag, Hist *hist)
 {
     return inputLineHistSearch(prompt, def_str, flag, hist, NULL);
 }
 
-char *inputStrHist(char *prompt, char *def_str, Hist *hist)
+char *inputStrHist(const char* prompt, char *def_str, Hist *hist)
 {
     return inputLineHist(prompt, def_str, IN_STRING, hist);
 }
 
-char *inputLine(char *prompt, char *def_str, int flag)
+char *inputLine(const char* prompt, char *def_str, int flag)
 {
     return inputLineHist(prompt, def_str, flag, NULL);
 }
@@ -1681,7 +1680,7 @@ int checkBackBuffer(TabPtr tab, BufferPtr buf)
 }
 
 /* go to specified URL */
-void goURL0(char *prompt, int relative)
+void goURL0(const char* prompt, int relative)
 {
     char *url, *referer;
     ParsedURL p_url, *current;
@@ -2036,7 +2035,7 @@ void SigAlarm(SIGNAL_ARG)
 
 #endif
 
-void tabURL0(TabPtr tab, char *prompt, int relative)
+void tabURL0(TabPtr tab, const char* prompt, int relative)
 {
     if (tab == GetCurrentTab())
     {
@@ -2616,7 +2615,6 @@ void saveBufferInfo()
     fprintf(fp, "%s\n", currentURL()->ptr);
     fclose(fp);
 }
-
 
 struct Event
 {

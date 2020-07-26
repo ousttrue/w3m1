@@ -54,7 +54,7 @@ int doFileSave(URLFile uf, char *defstr);
 int checkCopyFile(char *path1, char *path2);
 int checkSaveFile(InputStream *stream, char *path);
 int checkOverWrite(char *path);
-char *inputAnswer(char *prompt);
+char *inputAnswer(const char* prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);
 void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu);
 char *checkHeader(BufferPtr buf, char *field);
@@ -104,7 +104,7 @@ void pcmap(void);
 void escmap(void);
 void escbmap(void);
 void multimap(void);
-char *inputLineHistSearch(char *prompt, char *def_str, int flag,
+char *inputLineHistSearch(const char* prompt, char *def_str, int flag,
                           Hist *hist, int (*incfunc)(int ch, Str buf, Lineprop *prop));
 Str unescape_spaces(Str s);
 #ifdef USE_HISTORY

@@ -5996,7 +5996,7 @@ int checkOverWrite(char *path)
 }
 
 char *
-inputAnswer(char *prompt)
+inputAnswer(const char* prompt)
 {
     char *ans;
 

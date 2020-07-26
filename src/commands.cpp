@@ -1122,7 +1122,8 @@ void nextU()
 void nextBf()
 {
     int i;
-    for (i = 0; i < PREC_NUM(); i++)
+    auto prec = prec_num() ? prec_num() : 1;
+    for (i = 0; i < prec; i++)
     {
         auto buf = GetCurrentTab()->PrevBuffer(GetCurrentTab()->GetCurrentBuffer());
         if (!buf)
@@ -1140,7 +1141,8 @@ void nextBf()
 void prevBf()
 {
     auto tab = GetCurrentTab();
-    for (int i = 0; i < PREC_NUM(); i++)
+    auto prec = prec_num() ? prec_num() : 1;
+    for (int i = 0; i < prec; i++)
     {
         auto buf = tab->NextBuffer(tab->GetCurrentBuffer());
         if (!buf)
@@ -2210,7 +2212,7 @@ void defKey()
 
 void newT()
 {
-    auto tab=CreateTabSetCurrent();
+    auto tab = CreateTabSetCurrent();
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
@@ -2220,7 +2222,7 @@ void closeT()
         return;
     TabPtr tab;
     if (prec_num())
-        tab = GetTabByIndex(PREC_NUM() - 1);
+        tab = GetTabByIndex(prec_num() - 1);
     else
         tab = GetCurrentTab();
     if (tab)
@@ -2230,13 +2232,13 @@ void closeT()
 
 void nextT()
 {
-    SelectRelativeTab(PREC_NUM());
+    SelectRelativeTab(prec_num() ? prec_num() : 1);
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
 void prevT()
 {
-    SelectRelativeTab(-PREC_NUM());
+    SelectRelativeTab(-(prec_num() ? prec_num() : 1));
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
@@ -2244,7 +2246,7 @@ void tabA()
 {
     TabPtr tab;
     if (prec_num())
-        tab = GetTabByIndex(PREC_NUM() - 1);
+        tab = GetTabByIndex(prec_num() - 1);
     else
         tab = GetCurrentTab();
     followTab(prec_num() ? tab : NULL);
@@ -2254,7 +2256,7 @@ void tabURL()
 {
     TabPtr tab;
     if (prec_num())
-        tab = GetTabByIndex(PREC_NUM() - 1);
+        tab = GetTabByIndex(prec_num() - 1);
     else
         tab = GetCurrentTab();
     tabURL0(prec_num() ? tab : NULL,
@@ -2265,7 +2267,7 @@ void tabrURL()
 {
     TabPtr tab;
     if (prec_num())
-        tab = GetTabByIndex(PREC_NUM() - 1);
+        tab = GetTabByIndex(prec_num() - 1);
     else
         tab = GetCurrentTab();
     tabURL0(prec_num() ? tab : NULL,
@@ -2274,13 +2276,13 @@ void tabrURL()
 
 void tabR()
 {
-    MoveTab(PREC_NUM());
+    MoveTab(prec_num() ? prec_num() : 1);
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void tabL()
 {
-    MoveTab(-PREC_NUM());
+    MoveTab(-(prec_num() ? prec_num() : 1));
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* download panel */
@@ -2346,7 +2348,7 @@ void undoPos()
         return;
     if (!b || !b->prev)
         return;
-    for (i = 0; i < PREC_NUM() && b->prev; i++, b = b->prev)
+    for (i = 0; i < (prec_num() ? prec_num() : 1) && b->prev; i++, b = b->prev)
         ;
     resetPos(b);
 }
@@ -2359,7 +2361,7 @@ void redoPos()
         return;
     if (!b || !b->next)
         return;
-    for (i = 0; i < PREC_NUM() && b->next; i++, b = b->next)
+    for (i = 0; i < (prec_num() ? prec_num() : 1) && b->next; i++, b = b->next)
         ;
     resetPos(b);
 }

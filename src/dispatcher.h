@@ -8,7 +8,6 @@
 
 int prec_num();
 void set_prec_num(int n);
-int PREC_NUM();
 inline int PREC_LIMIT() { return 10000; }
 int CurrentKey();
 void ClearCurrentKey();
