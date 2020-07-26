@@ -613,7 +613,7 @@ TabPtr posTab(int x, int y)
 }
 
 // setup
-void _newT()
+TabPtr CreateTabSetCurrent()
 {
     // setup buffer
     auto buf = GetCurrentTab()->GetCurrentBuffer()->Copy();
@@ -628,6 +628,7 @@ void _newT()
 
     g_current = tab;
     tab->SetFirstBuffer(buf, true);
+    return tab;
 }
 
 void deleteTab(TabPtr tab)
@@ -756,7 +757,7 @@ void followTab(TabPtr tab)
         set_check_target(TRUE);
         return;
     }
-    _newT();
+    CreateTabSetCurrent();
     buf = GetCurrentTab()->GetCurrentBuffer();
     set_check_target(FALSE);
     followA();
@@ -785,5 +786,5 @@ void followTab(TabPtr tab)
         //     GetCurrentTab()->BufferPushBeforeCurrent(buf);
         // }
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }

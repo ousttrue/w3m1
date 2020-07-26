@@ -1062,7 +1062,7 @@ int main(int argc, char **argv, char **envp)
         else if (open_new_tab)
         {
             assert(false);
-            _newT();
+            CreateTabSetCurrent();
             // GetCurrentTab()->GetCurrentBuffer()->nextBuffer = newbuf;
             // delBuffer(GetCurrentTab()->GetCurrentBuffer());
         }
@@ -1136,7 +1136,7 @@ int main(int argc, char **argv, char **envp)
 #endif
 
     GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
     if (line_str)
     {
         _goLine(line_str);

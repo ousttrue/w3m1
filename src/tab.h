@@ -80,7 +80,7 @@ private:
 using TabPtr = std::shared_ptr<Tab>;
 
 void EachTab(const std::function<void(const TabPtr &)> callback);
-void _newT();
+TabPtr CreateTabSetCurrent();
 void InitializeTab();
 int GetTabCount();
 int GetTabbarHeight();

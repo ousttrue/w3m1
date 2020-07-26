@@ -118,7 +118,7 @@ void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid)
         }
         GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 /* 

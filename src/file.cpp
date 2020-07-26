@@ -5638,7 +5638,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
             mySystem(command->ptr, 0);
             fmInit();
             if (GetCurrentTab() && GetCurrentTab()->GetCurrentBuffer())
-                displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+                displayCurrentbuf(B_FORCE_REDRAW);
         }
         else
         {

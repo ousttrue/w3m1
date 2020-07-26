@@ -110,7 +110,7 @@ void ctrCsrV()
         GetCurrentTab()->GetCurrentBuffer()->topLine =
             lineSkip(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->topLine, -offsety, FALSE);
         arrangeLine(GetCurrentTab()->GetCurrentBuffer());
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
     }
 }
 
@@ -124,7 +124,7 @@ void ctrCsrH()
     {
         columnSkip(GetCurrentTab()->GetCurrentBuffer(), offsetx);
         arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
     }
 }
 /* Redraw screen */
@@ -133,7 +133,7 @@ void rdrwSc()
 {
     clear();
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Search regular expression forward */
 
@@ -179,7 +179,7 @@ void shiftl()
     column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
     columnSkip(GetCurrentTab()->GetCurrentBuffer(), searchKeyNum() * (-GetCurrentTab()->GetCurrentBuffer()->COLS + 1) + 1);
     shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentColumn - column);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* Shift screen right */
 
@@ -191,7 +191,7 @@ void shiftr()
     column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
     columnSkip(GetCurrentTab()->GetCurrentBuffer(), searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->COLS - 1) - 1);
     shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentColumn - column);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void col1R()
@@ -209,7 +209,7 @@ void col1R()
             break;
         shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), 1);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void col1L()
@@ -226,7 +226,7 @@ void col1L()
         columnSkip(GetCurrentTab()->GetCurrentBuffer(), -1);
         shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), -1);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void setEnv()
@@ -242,7 +242,7 @@ void setEnv()
         env = inputStrHist("Set environ: ", env, TextHist);
         if (env == NULL || *env == '\0')
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
     }
@@ -252,7 +252,7 @@ void setEnv()
         value++;
         set_environ(var, value);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void pipeBuf()
@@ -271,7 +271,7 @@ void pipeBuf()
         cmd = conv_to_system(cmd);
     if (cmd == NULL || *cmd == '\0')
     {
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
@@ -302,7 +302,7 @@ void pipeBuf()
         buf->currentURL.file = "-";
         GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Execute shell command and read output ac pipe. */
 
@@ -320,7 +320,7 @@ void pipesh()
         cmd = conv_to_system(cmd);
     if (cmd == NULL || *cmd == '\0')
     {
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     buf = getpipe(cmd);
@@ -336,7 +336,7 @@ void pipesh()
             buf->type = "text/plain";
         GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Execute shell command and load entire output to buffer */
 
@@ -354,7 +354,7 @@ void readsh()
         cmd = conv_to_system(cmd);
     if (cmd == NULL || *cmd == '\0')
     {
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     MySignalHandler prevtrap = mySignal(SIGINT, intTrap);
@@ -375,7 +375,7 @@ void readsh()
             buf->type = "text/plain";
         GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Execute shell command */
 
@@ -401,7 +401,7 @@ void execsh()
         fmInit();
         getch();
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Load file */
 
@@ -418,7 +418,7 @@ void ldfile()
         fn = conv_to_system(fn);
     if (fn == NULL || *fn == '\0')
     {
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     cmd_loadfile(fn);
@@ -531,7 +531,7 @@ void movLW()
     }
 end:
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void movRW()
@@ -573,7 +573,7 @@ void movRW()
     }
 end:
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* Quit */
 
@@ -628,7 +628,7 @@ void selBuf()
     } while (!ok);
 
     GetCurrentTab()->ClearExceptCurrentBuffer();
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Suspend (on BSD), or run interactive shell (on SysV) */
 
@@ -650,7 +650,7 @@ void susp()
     kill((pid_t)0, SIGSTOP);
 #endif /* SIGSTOP */
     fmInit();
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void goLine()
@@ -684,7 +684,7 @@ void linbeg()
         cursorUp0(GetCurrentTab()->GetCurrentBuffer(), 1);
     GetCurrentTab()->GetCurrentBuffer()->pos = 0;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* Go to the bottom of the line */
 
@@ -696,7 +696,7 @@ void linend()
         cursorDown0(GetCurrentTab()->GetCurrentBuffer(), 1);
     GetCurrentTab()->GetCurrentBuffer()->pos = GetCurrentTab()->GetCurrentBuffer()->currentLine->len - 1;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* Run editor on the current buffer */
 
@@ -721,7 +721,7 @@ void editBf()
     fmTerm();
     system(cmd->ptr);
     fmInit();
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
     reload();
 }
 /* Run editor on the current screen */
@@ -746,7 +746,7 @@ void editScr()
                ->ptr);
     fmInit();
     unlink(tmpf);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Set / unset mark */
 
@@ -759,7 +759,7 @@ void _mark()
         return;
     l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
     l->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos] ^= PE_MARK;
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Go to next mark */
 
@@ -787,7 +787,7 @@ void nextMk()
                 GetCurrentTab()->GetCurrentBuffer()->currentLine = l;
                 GetCurrentTab()->GetCurrentBuffer()->pos = i;
                 arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-                displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+                displayCurrentbuf(B_NORMAL);
                 return;
             }
         }
@@ -824,7 +824,7 @@ void prevMk()
                 GetCurrentTab()->GetCurrentBuffer()->currentLine = l;
                 GetCurrentTab()->GetCurrentBuffer()->pos = i;
                 arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-                displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+                displayCurrentbuf(B_NORMAL);
                 return;
             }
         }
@@ -850,7 +850,7 @@ void reMark()
         str = inputStrHist("(Mark)Regexp: ", MarkString(), TextHist);
         if (str == NULL || *str == '\0')
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
     }
@@ -876,7 +876,7 @@ void reMark()
                 break;
         }
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* view inline image */
 
@@ -904,7 +904,7 @@ void followI()
     {
         GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* submit form */
 
@@ -943,7 +943,7 @@ void topA()
     gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* go to the last anchor */
 
@@ -977,7 +977,7 @@ void lastA()
     gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* go to the next anchor */
 
@@ -1065,19 +1065,21 @@ void followA()
     if (check_target && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
-        BufferPtr buf;
-        _newT();
-        buf = GetCurrentTab()->GetCurrentBuffer();
+        auto tab = CreateTabSetCurrent();
+        auto buf = tab->GetCurrentBuffer();
         loadLink(url, a->target, a->referer, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
             GetCurrentTab()->DeleteBuffer(buf);
         else
             deleteTab(GetCurrentTab());
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+        displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
-    loadLink(url, a->target, a->referer, NULL);
-    displayCurrentbuf(B_NORMAL);
+    else
+    {
+        loadLink(url, a->target, a->referer, NULL);
+        displayCurrentbuf(B_NORMAL);
+    }
 }
 
 /* go to the next left anchor */
@@ -1132,7 +1134,7 @@ void nextBf()
         }
         GetCurrentTab()->SetCurrentBuffer(buf);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* go to the previous bufferr */
 
@@ -1150,7 +1152,7 @@ void prevBf()
         }
         tab->SetCurrentBuffer(buf);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* delete current buffer and back to the previous buffer */
 
@@ -1162,7 +1164,7 @@ void backBf()
         if (close_tab_back && GetTabCount() >= 1)
         {
             deleteTab(GetCurrentTab());
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+            displayCurrentbuf(B_FORCE_REDRAW);
         }
         else
             /* FIXME: gettextize? */
@@ -1203,7 +1205,7 @@ void backBf()
             tab->DeleteBuffer(tab->GetCurrentBuffer());
         }
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void deletePrevBuf()
@@ -1270,10 +1272,10 @@ void pginfo()
     if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_INFO]) != NULL)
     {
         GetCurrentTab()->SetCurrentBuffer(buf);
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
-    auto tab=GetCurrentTab();
+    auto tab = GetCurrentTab();
     if ((buf = tab->GetCurrentBuffer()->linkBuffer[LB_INFO]) != NULL)
         tab->DeleteBuffer(buf);
     buf = page_info_panel(GetCurrentTab()->GetCurrentBuffer());
@@ -1320,13 +1322,13 @@ void setOpt()
         opt = inputStrHist("Set option: ", opt, TextHist);
         if (opt == NULL || *opt == '\0')
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
     }
     if (set_param_option(opt))
         sync_with_option();
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+    displayCurrentbuf(B_REDRAW_IMAGE);
 }
 /* list menu */
 
@@ -1401,7 +1403,7 @@ void svBuf()
         qfile = inputLineHist("Save buffer to: ", NULL, IN_COMMAND, SaveHist);
         if (qfile == NULL || *qfile == '\0')
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
     }
@@ -1421,7 +1423,7 @@ void svBuf()
         file = expandPath(file);
         if (checkOverWrite(file) < 0)
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
         f = fopen(file, "w");
@@ -1439,7 +1441,7 @@ void svBuf()
         pclose(f);
     else
         fclose(f);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* save source */
 
@@ -1457,7 +1459,7 @@ void svSrc()
         file = guess_save_name(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentURL.file);
     doFileCopy(GetCurrentTab()->GetCurrentBuffer()->sourcefile, file);
     PermitSaveToPipe = FALSE;
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* peek URL */
 
@@ -1521,7 +1523,7 @@ void vwSrc()
         (buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_SOURCE]) != NULL)
     {
         GetCurrentTab()->SetCurrentBuffer(buf);
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->sourcefile == NULL)
@@ -1604,7 +1606,7 @@ void vwSrc()
     buf->need_reshape = TRUE;
     reshapeBuffer(buf);
     GetCurrentTab()->PushBufferCurrentPrev(buf);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 /* reload */
 
@@ -1647,7 +1649,7 @@ void reload()
         }
         if (!(buf = renderFrame(fbuf, 1)))
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
         if (fbuf->linkBuffer[LB_FRAME])
@@ -1657,7 +1659,7 @@ void reload()
                 !strcmp(buf->sourcefile,
                         fbuf->linkBuffer[LB_FRAME]->sourcefile))
                 fbuf->linkBuffer[LB_FRAME]->sourcefile = NULL;
-            auto tab=GetCurrentTab();
+            auto tab = GetCurrentTab();
             tab->DeleteBuffer(fbuf->linkBuffer[LB_FRAME]);
         }
         fbuf->linkBuffer[LB_FRAME] = buf;
@@ -1669,7 +1671,7 @@ void reload()
             COPY_BUFROOT(GetCurrentTab()->GetCurrentBuffer(), sbuf);
             restorePosition(GetCurrentTab()->GetCurrentBuffer(), sbuf);
         }
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+        displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
     else if (GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
@@ -1719,7 +1721,7 @@ void reload()
     }
     else
     {
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     if (fbuf != NULL)
@@ -1742,7 +1744,7 @@ void reload()
         COPY_BUFROOT(GetCurrentTab()->GetCurrentBuffer(), sbuf);
         restorePosition(GetCurrentTab()->GetCurrentBuffer(), sbuf);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* reshape */
 
@@ -1750,7 +1752,7 @@ void reshape()
 {
     GetCurrentTab()->GetCurrentBuffer()->need_reshape = TRUE;
     reshapeBuffer(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void docCSet()
@@ -1765,7 +1767,7 @@ void docCSet()
     charset = wc_guess_charset_short(cs, 0);
     if (charset == 0)
     {
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     _docCSet(charset);
@@ -1783,13 +1785,13 @@ void defCSet()
     charset = wc_guess_charset_short(cs, 0);
     if (charset != 0)
         DocumentCharset = charset;
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void chkURL()
 {
     chkURLBuffer(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void chkWORD()
@@ -1800,13 +1802,13 @@ void chkWORD()
     if (p == NULL)
         return;
     reAnchorWord(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentLine, spos, epos);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void chkNMID()
 {
     chkNMIDBuffer(GetCurrentTab()->GetCurrentBuffer());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* render frame */
 
@@ -1816,7 +1818,7 @@ void rFrame()
     if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME]) != NULL)
     {
         GetCurrentTab()->SetCurrentBuffer(buf);
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->frameset == NULL)
@@ -1824,7 +1826,7 @@ void rFrame()
         if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME]) != NULL)
         {
             GetCurrentTab()->SetCurrentBuffer(buf);
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
         }
         return;
     }
@@ -1836,14 +1838,14 @@ void rFrame()
     buf = renderFrame(GetCurrentTab()->GetCurrentBuffer(), 0);
     if (buf == NULL)
     {
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     buf->linkBuffer[LB_N_FRAME] = GetCurrentTab()->GetCurrentBuffer();
     GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME] = buf;
     GetCurrentTab()->PushBufferCurrentPrev(buf);
     if (fmInitialized && display_ok())
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+        displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void extbrz()
@@ -1920,7 +1922,7 @@ void dispI()
      */
     GetCurrentTab()->GetCurrentBuffer()->image_flag = IMG_FLAG_AUTO;
     GetCurrentTab()->GetCurrentBuffer()->need_reshape = TRUE;
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+    displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
 void stopI()
@@ -1932,7 +1934,7 @@ void stopI()
      * return;
      */
     GetCurrentTab()->GetCurrentBuffer()->image_flag = IMG_FLAG_SKIP;
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+    displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
 void msToggle()
@@ -1945,7 +1947,7 @@ void msToggle()
     {
         use_mouse = TRUE;
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void mouse()
@@ -1979,7 +1981,7 @@ void movMs()
                  x - GetCurrentTab()->GetCurrentBuffer()->rootX,
                  y - GetCurrentTab()->GetCurrentBuffer()->rootY);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 #ifdef KANJI_SYMBOLS
 #define FRAME_WIDTH 2
@@ -2004,7 +2006,7 @@ void menuMs()
         cursorXY(GetCurrentTab()->GetCurrentBuffer(),
                  x - GetCurrentTab()->GetCurrentBuffer()->rootX,
                  y - GetCurrentTab()->GetCurrentBuffer()->rootY);
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
     }
     mainMenu(x, y);
 }
@@ -2017,7 +2019,7 @@ void tabMs()
         return;
     }
     SelectTabByPosition(x, y);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void closeTMs()
@@ -2031,7 +2033,7 @@ void closeTMs()
     if (!tab)
         return;
     deleteTab(tab);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void dispVer()
@@ -2076,12 +2078,12 @@ void execCmd()
         data = inputStrHist("command [; ...]: ", "", TextHist);
         if (data == NULL)
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
     }
     ExecuteCommand(data);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void setAlarm()
@@ -2096,7 +2098,7 @@ void setAlarm()
         data = inputStrHist("(Alarm)sec command: ", "", TextHist);
         if (data == NULL)
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
     }
@@ -2119,7 +2121,7 @@ void setAlarm()
     {
         setAlarmEvent(DefaultAlarm(), 0, AL_UNSET, &nulcmd, NULL);
     }
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void reinit()
@@ -2132,14 +2134,14 @@ void reinit()
 #ifdef USE_COOKIE
         initCookie();
 #endif
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+        displayCurrentbuf(B_REDRAW_IMAGE);
         return;
     }
     if (!strcasecmp(resource, "CONFIG") || !strcasecmp(resource, "RC"))
     {
         init_rc();
         sync_with_option();
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+        displayCurrentbuf(B_REDRAW_IMAGE);
         return;
     }
 #ifdef USE_COOKIE
@@ -2163,7 +2165,7 @@ void reinit()
     if (!strcasecmp(resource, "MOUSE"))
     {
         initMouseAction();
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+        displayCurrentbuf(B_REDRAW_IMAGE);
         return;
     }
 #endif
@@ -2199,18 +2201,18 @@ void defKey()
         data = inputStrHist("Key definition: ", "", TextHist);
         if (data == NULL || *data == '\0')
         {
-            displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+            displayCurrentbuf(B_NORMAL);
             return;
         }
     }
     SetKeymap(allocStr(data, -1), -1, TRUE);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayCurrentbuf(B_NORMAL);
 }
 
 void newT()
 {
-    _newT();
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+    auto tab=CreateTabSetCurrent();
+    displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
 void closeT()
@@ -2224,19 +2226,19 @@ void closeT()
         tab = GetCurrentTab();
     if (tab)
         deleteTab(tab);
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+    displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
 void nextT()
 {
     SelectRelativeTab(PREC_NUM());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+    displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
 void prevT()
 {
     SelectRelativeTab(-PREC_NUM());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_REDRAW_IMAGE);
+    displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
 void tabA()
@@ -2274,13 +2276,13 @@ void tabrURL()
 void tabR()
 {
     MoveTab(PREC_NUM());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void tabL()
 {
     MoveTab(-PREC_NUM());
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* download panel */
 
@@ -2312,7 +2314,7 @@ void ldDL()
     buf = DownloadListBuffer();
     if (!buf)
     {
-        displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+        displayCurrentbuf(B_NORMAL);
         return;
     }
     buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
@@ -2323,7 +2325,7 @@ void ldDL()
     }
     if (!replace && open_tab_dl_list)
     {
-        _newT();
+        CreateTabSetCurrent();
         new_tab = TRUE;
     }
     GetCurrentTab()->PushBufferCurrentPrev(buf);
@@ -2334,7 +2336,7 @@ void ldDL()
         GetCurrentTab()->GetCurrentBuffer()->event = setAlarmEvent(GetCurrentTab()->GetCurrentBuffer()->event, 1, AL_IMPLICIT,
                                                                    &reload, NULL);
 
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_FORCE_REDRAW);
+    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void undoPos()
