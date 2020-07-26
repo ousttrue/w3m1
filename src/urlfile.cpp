@@ -266,7 +266,7 @@ void URLFile::openURL(char *url, ParsedURL *pu, ParsedURL *current,
     else
         u = url;
 retry:
-    parseURL2(u, pu, current);
+    pu->Parse2(u, current);
     if (pu->scheme == SCM_LOCAL && pu->file == NULL)
     {
         if (pu->label != NULL)

@@ -178,7 +178,7 @@ int Buffer::ReadBufferCache()
 
     Line *prevl = nullptr;
     Line *l = nullptr;
-    for (int lnum = 0; !feof(cache); ++lnum, prevl=l)
+    for (int lnum = 0; !feof(cache); ++lnum, prevl = l)
     {
         l = New(Line);
         l->prev = prevl;
@@ -561,7 +561,7 @@ void set_buffer_environ(BufferPtr buf)
         auto a = retrieveCurrentAnchor(buf);
         if (a)
         {
-            parseURL2(const_cast<char*>(a->url.c_str()), &pu, baseURL(buf));
+            pu.Parse2(a->url, baseURL(buf));
             set_environ("W3M_CURRENT_LINK", parsedURL2Str(&pu)->ptr);
         }
         else
@@ -569,7 +569,7 @@ void set_buffer_environ(BufferPtr buf)
         a = retrieveCurrentImg(buf);
         if (a)
         {
-            parseURL2(const_cast<char*>(a->url.c_str()), &pu, baseURL(buf));
+            pu.Parse2(a->url, baseURL(buf));
             set_environ("W3M_CURRENT_IMG", parsedURL2Str(&pu)->ptr);
         }
         else

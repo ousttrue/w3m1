@@ -349,7 +349,7 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 		return NULL;
 	if (b->baseURL)
 		baseURL = b->baseURL;
-	parseURL2(b->url, &url, currentURL);
+	url.Parse2(b->url, currentURL);
 	switch (url.scheme)
 	{
 	case SCM_LOCAL:
@@ -544,18 +544,18 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 												 : "(no name)");
 					break;
 				}
-				parseURL2(frame.body->url, &base, currentURL);
+				base.Parse2(frame.body->url, currentURL);
 				p_target = f->name;
 				s_target = frame.body->name;
 				t_target = "_blank";
 				d_target = TargetSelf ? s_target : t_target;
-#ifdef USE_M17N
+
 				charset = WC_CES_US_ASCII;
 				if (current->document_charset != WC_CES_US_ASCII)
 					doc_charset = current->document_charset;
 				else
 					doc_charset = DocumentCharset;
-#endif
+
 				t_stack = 0;
 				if (frame.body->type &&
 					!strcasecmp(frame.body->type, "text/plain"))
@@ -826,11 +826,9 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 									url_quote_conv(remove_space(tag->value[j]),
 												   charset);
 								tag->need_reconstruct = TRUE;
-								parseURL2(tag->value[j], &url, &base);
+								url.Parse2(tag->value[j], &base);
 								if (url.scheme == SCM_UNKNOWN ||
-#ifndef USE_W3MMAILER
 									url.scheme == SCM_MAILTO ||
-#endif
 									url.scheme == SCM_MISSING)
 									break;
 								a_target |= 1;
@@ -838,13 +836,13 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 								parsedtag_set_value(tag,
 													ATTR_REFERER,
 													parsedURL2Str(&base)->ptr);
-#ifdef USE_M17N
+
 								if (tag->attrid[j] == ATTR_ACTION &&
 									charset != WC_CES_US_ASCII)
 									parsedtag_set_value(tag,
 														ATTR_CHARSET,
 														wc_ces_to_charset(charset));
-#endif
+
 								break;
 							case ATTR_TARGET:
 								if (!tag->value[j])

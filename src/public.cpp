@@ -260,7 +260,7 @@ void do_dump(BufferPtr buf)
                 static Str s = NULL;
                 if (buf->href.anchors[i].slave)
                     continue;
-                parseURL2(buf->href.anchors[i].url.c_str(), &pu, baseURL(buf));
+                pu.Parse2(buf->href.anchors[i].url, baseURL(buf));
                 s = parsedURL2Str(&pu);
                 if (DecodeURL)
                     s = Strnew_charp(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
@@ -1152,7 +1152,7 @@ loadLink(const char *url, char *target, char *referer, FormList *request)
         return NULL;
     }
 
-    parseURL2(url, &pu, base);
+    pu.Parse2(url, base);
     pushHashHist(URLHist, parsedURL2Str(&pu)->ptr);
 
     if (!on_target) /* open link as an indivisual page */
@@ -1373,7 +1373,7 @@ void _nextA(int visited)
                 hseq++;
                 if (visited == TRUE && an)
                 {
-                    parseURL2(an->url.c_str(), &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+                    url.Parse2(an->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
                     if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
                     {
                         goto _end;
@@ -1397,7 +1397,7 @@ void _nextA(int visited)
             y = an->start.line;
             if (visited == TRUE)
             {
-                parseURL2(an->url.c_str(), &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+                url.Parse2(an->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
                 if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
                 {
                     goto _end;
@@ -1465,7 +1465,7 @@ void _prevA(int visited)
                 hseq--;
                 if (visited == TRUE && an)
                 {
-                    parseURL2(an->url.c_str(), &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+                    url.Parse2(an->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
                     if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
                     {
                         goto _end;
@@ -1489,7 +1489,7 @@ void _prevA(int visited)
             y = an->start.line;
             if (visited == TRUE && an)
             {
-                parseURL2(an->url, &url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+                url.Parse2(an->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
                 if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
                 {
                     goto _end;
@@ -1707,7 +1707,7 @@ void goURL0(const char* prompt, int relative)
         if (a)
         {
             char *a_url;
-            parseURL2(a->url, &p_url, current);
+            p_url.Parse2(a->url, current);
             a_url = parsedURL2Str(&p_url)->ptr;
             if (DefaultURLString == DEFAULT_URL_LINK)
             {
@@ -1722,7 +1722,7 @@ void goURL0(const char* prompt, int relative)
         if (url != NULL)
             SKIP_BLANKS(url);
     }
-#ifdef USE_M17N
+
     if (url != NULL)
     {
         if ((relative || *url == '#') && GetCurrentTab()->GetCurrentBuffer()->document_charset)
@@ -1732,7 +1732,7 @@ void goURL0(const char* prompt, int relative)
         else
             url = conv_to_system(url);
     }
-#endif
+
     if (url == NULL || *url == '\0')
     {
         displayCurrentbuf(B_FORCE_REDRAW);
@@ -1753,7 +1753,7 @@ void goURL0(const char* prompt, int relative)
         current = NULL;
         referer = NULL;
     }
-    parseURL2(url, &p_url, current);
+    p_url.Parse2(url, current);
     pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
     cmd_loadURL(url, current, referer, NULL);
     if (GetCurrentTab()->GetCurrentBuffer() != cur_buf) /* success */
@@ -1818,7 +1818,7 @@ void _peekURL(int only_img)
     }
     if (s == NULL)
     {
-        parseURL2(a->url, &pu, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+        pu.Parse2(a->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
         s = parsedURL2Str(&pu);
     }
     if (DecodeURL)
@@ -2539,7 +2539,7 @@ void follow_map(struct parsed_tagarg *arg)
         gotoLabel(a->url + 1);
         return;
     }
-    parseURL2(a->url, &p_url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    p_url.Parse2(a->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
     pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
     if (check_target && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))

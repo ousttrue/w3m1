@@ -1041,7 +1041,7 @@ void followA()
     }
 
     ParsedURL u;
-    parseURL2(a->url.c_str(), &u, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    u.Parse2(a->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
     if (parsedURL2Str(&u)->Cmp(parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)) == 0)
     {
         /* index within this buffer */
@@ -1295,7 +1295,7 @@ void linkMn()
         gotoLabel(l->url + 1);
         return;
     }
-    parseURL2(l->url, &p_url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    p_url.Parse2(l->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
     pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
     cmd_loadURL(l->url, baseURL(GetCurrentTab()->GetCurrentBuffer()),
                 parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr, NULL);
@@ -1876,7 +1876,7 @@ void linkbrz()
     auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
     if (a == NULL)
         return;
-    parseURL2(a->url.c_str(), &pu, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    pu.Parse2(a->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
     invoke_browser(parsedURL2Str(&pu)->ptr);
 }
 /* show current line number and number of lines in the entire document */

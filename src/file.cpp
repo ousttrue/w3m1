@@ -2712,12 +2712,7 @@ Str process_img(struct parsed_tag *tag, int width)
             Image image;
             ParsedURL u;
 
-#ifdef USE_M17N
-            parseURL2(wc_conv(p, InnerCharset, cur_document_charset)->ptr, &u,
-                      cur_baseURL);
-#else
-            parseURL2(p, &u, cur_baseURL);
-#endif
+            u.Parse2(wc_conv(p, InnerCharset, cur_document_charset)->ptr, cur_baseURL);
             image.url = parsedURL2Str(&u)->ptr;
             if (!uncompressed_file_type(u.file, &image.ext))
                 image.ext = filename_extension(u.file, TRUE);
@@ -4013,7 +4008,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                             ParsedURL u;
                             Image *image;
 
-                            parseURL2(a_img->url.c_str(), &u, cur_baseURL);
+                            u.Parse2(a_img->url, cur_baseURL);
                             a_img->image = image = New(Image);
                             image->url = parsedURL2Str(&u)->ptr;
                             if (!uncompressed_file_type(u.file, &image->ext))

@@ -37,6 +37,7 @@ struct ParsedURL
     int is_nocache;
 
     void Parse(std::string_view url, ParsedURL *current);
+    void Parse2(std::string_view url, ParsedURL *current);
 };
 
 const char *filename_extension(const char *patch, int is_url);
@@ -46,11 +47,6 @@ ParsedURL *schemeToProxy(int scheme);
 Str parsedURL2Str(ParsedURL *pu, bool pass = false);
 char *otherinfo(ParsedURL *target, ParsedURL *current, char *referer);
 SchemaTypes getURLScheme(char **url);
-void parseURL2(const char *url, ParsedURL *pu, ParsedURL *current);
-inline void parseURL2(const std::string &url, ParsedURL *pu, ParsedURL *current)
-{
-    parseURL2(url.c_str(), pu, current);
-}
 
 struct SchemeKeyValue
 {

@@ -854,7 +854,7 @@ add_pre_form(struct pre_form *prev, char *url, char *name, char *action)
     }
     else if (url)
     {
-        parseURL2(url, &pu, NULL);
+        pu.Parse2(url, NULL);
         newForm->url = parsedURL2Str(&pu)->ptr;
         newForm->re_url = NULL;
     }

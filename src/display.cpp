@@ -295,7 +295,7 @@ make_lastline_link(BufferPtr buf, char *title, char *url)
     }
     if (!url)
         return s;
-    parseURL2(url, &pu, baseURL(buf));
+    pu.Parse2(url, baseURL(buf));
     u = parsedURL2Str(&pu);
     if (DecodeURL)
         u = Strnew_charp(url_unquote_conv(u->c_str(), buf->document_charset));
@@ -772,7 +772,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
             auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
-                parseURL2(a->url.c_str(), &url, baseURL(buf));
+                url.Parse2(a->url, baseURL(buf));
                 if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
@@ -988,7 +988,7 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
             auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
-                parseURL2(a->url.c_str(), &url, baseURL(buf));
+                url.Parse2(a->url, baseURL(buf));
                 if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
