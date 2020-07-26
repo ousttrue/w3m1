@@ -44,13 +44,12 @@ process_title(struct parsed_tag *tag)
 static Str
 process_n_title(struct parsed_tag *tag)
 {
-    Str tmp;
-
     if (!cur_title)
         return NULL;
     cur_title->Strip();
-    tmp = Strnew_m_charp("<title_alt title=\"",
-                         html_quote(cur_title->ptr), "\">", NULL);
+    auto tmp = Strnew_m_charp("<title_alt title=\"",
+                         html_quote(cur_title),
+                          "\">");
     cur_title = NULL;
     return tmp;
 }

@@ -280,7 +280,7 @@ make_lastline_link(BufferPtr buf, std::string_view title, char *url)
 
     if (title.size() && title[0])
     {
-        s = Strnew_m_charp("[", title.data(), "]", NULL);
+        s = Strnew_m_charp("[", title, "]");
         s->Replace([](char &c) {
             if (IS_CNTRL(c) || IS_SPACE(c))
             {

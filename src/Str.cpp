@@ -276,10 +276,14 @@ void GCStr::Insert(int pos, char c)
     ptr[pos] = c;
 }
 
-void GCStr::Insert(int pos, const char *p)
+void GCStr::Insert(int pos, const char *p, int size)
 {
-    while (*p)
+    // while (*p)
+    //     Insert(pos++, *(p++));
+    for(int i=0; i<size; ++i)
+    {
         Insert(pos++, *(p++));
+    }
 }
 
 void GCStr::Replace(const std::function<void(char &)> &pred)

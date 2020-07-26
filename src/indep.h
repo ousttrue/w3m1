@@ -62,6 +62,10 @@ extern void cleanup_line(Str s, int mode);
 
 std::string html_quote(std::string_view str);
 char *html_quote(const char *str);
+inline char* html_quote(Str str)
+{
+    return str->ptr;
+}
 
 extern char *html_unquote(char *str);
 extern char *file_quote(char *str);

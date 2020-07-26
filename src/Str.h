@@ -94,12 +94,16 @@ public:
 
     GCStr *Substr(int begin, int len) const;
     void Insert(int pos, char c);
-    void Insert(int pos, const char *src);
+    void Insert(int pos, const char *src, int size);
     void Insert(int pos, const GCStr *src)
     {
         Insert(pos, src->ptr);
     }
-    void Replace(const std::function<void(char&)> &pred);
+    void Insert(int pos, std::string_view src)
+    {
+        Insert(pos, src.data(), src.size());
+    }
+    void Replace(const std::function<void(char &)> &pred);
     void ToLower();
     void ToUpper();
     GCStr *AlignLeft(int width) const;
@@ -131,7 +135,20 @@ inline Str Strnew(std::string_view src)
     return new GCStr(src.data(), src.size());
 }
 
-Str Strnew_m_charp(const char *, ...);
+// Str Strnew_m_charp(const char *, ...);
+inline Str Strnew_m_charp()
+{
+    return new GCStr();
+}
+
+template <typename T, typename... ARGS>
+Str Strnew_m_charp(const T &t, ARGS... args)
+{
+    auto str = Strnew_m_charp(args...);
+    str->Insert(0, t);
+    return str;
+}
+
 void Strcat_m_charp(Str, ...);
 
 Str Sprintf(const char *fmt, ...);
