@@ -81,6 +81,19 @@ public:
     {
         Push(&y, 1);
     }
+
+    // recursive variadic template
+    void Concat()
+    {
+        // stop recursion
+    }
+    template<typename T, typename ...ARGS>
+    void Concat(const T &t, ARGS... args)
+    {
+        Push(t);
+        Concat(args...);
+    }
+
     void Truncate(int pos);
     void Pop(int len);
     void Delete(int pos, int len);
@@ -135,21 +148,21 @@ inline Str Strnew(std::string_view src)
     return new GCStr(src.data(), src.size());
 }
 
-// Str Strnew_m_charp(const char *, ...);
-inline Str Strnew_m_charp()
+// recursive variadic template
+template<typename... ARGS>
+void Strcat_m_charp(Str str, ARGS... args)
 {
-    return new GCStr();
+    str->Concat(args...);
 }
 
-template <typename T, typename... ARGS>
-Str Strnew_m_charp(const T &t, ARGS... args)
+// recursive variadic template
+template <typename... ARGS>
+Str Strnew_m_charp(ARGS... args)
 {
-    auto str = Strnew_m_charp(args...);
-    str->Insert(0, t);
+    auto str= new GCStr();
+    str->Concat(args...);
     return str;
 }
-
-void Strcat_m_charp(Str, ...);
 
 Str Sprintf(const char *fmt, ...);
 Str Strfgets(FILE *);

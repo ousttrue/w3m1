@@ -431,30 +431,30 @@ int GCStr::Puts(FILE *f) const
     return fwrite(ptr, 1, m_size, f);
 }
 
-Str Strnew_m_charp(const char *p, ...)
-{
-    va_list ap;
-    va_start(ap, p);
+// Str Strnew_m_charp(const char *p, ...)
+// {
+//     va_list ap;
+//     va_start(ap, p);
 
-    Str r = Strnew();
-    while (p != NULL)
-    {
-        r->Push(p);
-        p = va_arg(ap, char *);
-    }
-    return r;
-}
+//     Str r = Strnew();
+//     while (p != NULL)
+//     {
+//         r->Push(p);
+//         p = va_arg(ap, char *);
+//     }
+//     return r;
+// }
 
-void Strcat_m_charp(Str x, ...)
-{
-    va_list ap;
-    va_start(ap, x);
+// void Strcat_m_charp(Str x, ...)
+// {
+//     va_list ap;
+//     va_start(ap, x);
 
-    for (char *p = va_arg(ap, char *); p != NULL; p = va_arg(ap, char *))
-    {
-        x->Push(p, strlen(p));
-    }
-}
+//     for (char *p = va_arg(ap, char *); p != NULL; p = va_arg(ap, char *))
+//     {
+//         x->Push(p, strlen(p));
+//     }
+// }
 
 #define SP_NORMAL 0
 #define SP_PREC 1
