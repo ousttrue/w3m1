@@ -29,7 +29,7 @@
 #include "tagstack.h"
 #include "http_request.h"
 #include "urlfile.h"
-
+#include <assert.h>
 #include <sys/types.h>
 #include <signal.h>
 #include <setjmp.h>
@@ -1774,48 +1774,28 @@ same_url_p(ParsedURL *pu1, ParsedURL *pu2)
             (pu1->host ? pu2->host ? !strcasecmp(pu1->host, pu2->host) : 0 : 1) && (pu1->file ? pu2->file ? !strcmp(pu1->file, pu2->file) : 0 : 1));
 }
 
-static int
-checkRedirection(ParsedURL *pu)
+static std::vector<ParsedURL> g_puv;
+static void clearRedirection()
 {
-    static ParsedURL *puv = NULL;
-    static int nredir = 0;
-    static int nredir_size = 0;
+    g_puv.clear();
+}
+static bool checkRedirection(ParsedURL *pu)
+{
+    assert(pu);
     Str tmp;
 
-    if (pu == NULL)
-    {
-        nredir = 0;
-        nredir_size = 0;
-        puv = NULL;
-        return TRUE;
-    }
-    if (nredir >= FollowRedirection)
+
+    if (g_puv.size() >= FollowRedirection)
     {
         /* FIXME: gettextize? */
-        tmp = Sprintf("Number of redirections exceeded %d at %s",
-                      FollowRedirection, parsedURL2Str(pu)->ptr);
+        auto tmp = Sprintf("Number of redirections exceeded %d at %s",
+                           FollowRedirection, parsedURL2Str(pu)->ptr);
         disp_err_message(tmp->ptr, FALSE);
-        return FALSE;
+        return false;
     }
-    else if (nredir_size > 0 &&
-             (same_url_p(pu, &puv[(nredir - 1) % nredir_size]) ||
-              (!(nredir % 2) && same_url_p(pu, &puv[(nredir / 2) % nredir_size]))))
-    {
-        /* FIXME: gettextize? */
-        tmp = Sprintf("Redirection loop detected (%s)",
-                      parsedURL2Str(pu)->ptr);
-        disp_err_message(tmp->ptr, FALSE);
-        return FALSE;
-    }
-    if (!puv)
-    {
-        nredir_size = FollowRedirection / 2 + 1;
-        puv = New_N(ParsedURL, nredir_size);
-        memset(puv, 0, sizeof(ParsedURL) * nredir_size);
-    }
-    copyParsedURL(&puv[nredir % nredir_size], pu);
-    nredir++;
-    return TRUE;
+
+    g_puv.push_back(*pu);
+    return true;
 }
 
 Str getLinkNumberStr(int correction)
@@ -1857,7 +1837,7 @@ loadGeneralFile(char *path, ParsedURL *current, char *referer,
     MySignalHandler prevtrap = NULL;
     add_auth_cookie_flag = 0;
 
-    checkRedirection(NULL);
+    clearRedirection();
 load_doc:
     TRAP_OFF;
     url_option.referer = referer;
@@ -4003,8 +3983,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         p = url_quote_conv(remove_space(p),
                                            buf->document_charset);
                         a_img = buf->img.Put(Anchor::CreateImage(
-                            p, 
-                            s ? s : "", 
+                            p,
+                            s ? s : "",
                             currentLn(buf), pos));
 #ifdef USE_IMAGE
                         a_img->hseq = iseq;

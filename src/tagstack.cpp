@@ -48,8 +48,8 @@ process_n_title(struct parsed_tag *tag)
         return NULL;
     cur_title->Strip();
     auto tmp = Strnew_m_charp("<title_alt title=\"",
-                         html_quote(cur_title),
-                          "\">");
+                              html_quote(cur_title),
+                              "\">");
     cur_title = NULL;
     return tmp;
 }
@@ -99,8 +99,7 @@ set_breakpoint(struct readbuffer *obuf, int tag_length)
     if (!obuf->bp.init_flag)
         return;
 
-    bcopy((void *)&obuf->anchor, (void *)&obuf->bp.anchor,
-          sizeof(obuf->anchor));
+    obuf->bp.anchor = obuf->anchor;
     obuf->bp.img_alt = obuf->img_alt;
     obuf->bp.in_bold = obuf->in_bold;
     obuf->bp.in_italic = obuf->in_italic;
@@ -196,8 +195,7 @@ static void
 back_to_breakpoint(struct readbuffer *obuf)
 {
     obuf->flag = obuf->bp.flag;
-    bcopy((void *)&obuf->bp.anchor, (void *)&obuf->anchor,
-          sizeof(obuf->anchor));
+    obuf->anchor = obuf->bp.anchor;
     obuf->img_alt = obuf->bp.img_alt;
     obuf->in_bold = obuf->bp.in_bold;
     obuf->in_italic = obuf->bp.in_italic;
@@ -971,7 +969,7 @@ close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
                 {
                     passthrough(obuf, p, 1);
                 }
-                bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
+                obuf->anchor = {};
                 return;
             }
             is_erased = 0;
@@ -984,7 +982,7 @@ close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
 
         push_tag(obuf, "</a>", HTML_N_A);
     }
-    bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
+    obuf->anchor = {};
 }
 
 void save_fonteffect(struct html_feed_environ *h_env, struct readbuffer *obuf)
@@ -2562,7 +2560,7 @@ void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf,
     obuf->status = R_ST_NORMAL;
     obuf->table_level = -1;
     obuf->nobr_level = 0;
-    bzero((void *)&obuf->anchor, sizeof(obuf->anchor));
+    obuf->anchor = {};
     obuf->img_alt = 0;
     obuf->in_bold = 0;
     obuf->in_italic = 0;
