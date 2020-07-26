@@ -643,7 +643,7 @@ int main(int argc, char **argv, char **envp)
                 BookmarkFile = argv[i];
                 if (BookmarkFile[0] != '~' && BookmarkFile[0] != '/')
                 {
-                    Str tmp = Strnew_charp(CurrentDir);
+                    Str tmp = Strnew(CurrentDir);
                     if (tmp->Back() != '/')
                         tmp->Push('/');
                     tmp->Push(BookmarkFile);
@@ -938,7 +938,7 @@ int main(int argc, char **argv, char **envp)
             /* FIXME: gettextize? */
             Str s_page;
             s_page =
-                Strnew_charp("<title>W3M startup page</title><center><b>Welcome to ");
+                Strnew("<title>W3M startup page</title><center><b>Welcome to ");
             s_page->Push( "<a href='http://w3m.sourceforge.net/'>");
             Strcat_m_charp(s_page,
                            "w3m</a>!<p><p>This is w3m version ",

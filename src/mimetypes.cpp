@@ -81,8 +81,8 @@ loadMimeTypes(char *filename)
             d = strtok(NULL, " \t\n\r");
             if (d == NULL)
                 break;
-            mtypes[i].item1 = Strnew_charp(d)->ptr;
-            mtypes[i].item2 = Strnew_charp(type)->ptr;
+            mtypes[i].item1 = Strnew(d)->ptr;
+            mtypes[i].item2 = Strnew(type)->ptr;
             i++;
         }
     }

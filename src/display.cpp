@@ -298,7 +298,7 @@ make_lastline_link(BufferPtr buf, char *title, char *url)
     pu.Parse2(url, baseURL(buf));
     u = parsedURL2Str(&pu);
     if (DecodeURL)
-        u = Strnew_charp(url_unquote_conv(u->c_str(), buf->document_charset));
+        u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));
 #ifdef USE_M17N
     u = checkType(u, &pr, NULL);
 #endif
@@ -362,7 +362,7 @@ make_lastline_message(BufferPtr buf)
     }
 
     if (use_mouse && GetMouseActionLastlineStr())
-        msg = Strnew_charp(GetMouseActionLastlineStr());
+        msg = Strnew(GetMouseActionLastlineStr());
     else
         msg = Strnew();
     if (displayLineInfo && buf->currentLine != NULL && buf->lastLine != NULL)

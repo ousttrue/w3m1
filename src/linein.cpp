@@ -122,7 +122,7 @@ inputLineHistSearch(const char* prompt, char *def_str, int flag, Hist *hist,
     offset = 0;
 
     if (def_str) {
-        strBuf = Strnew_charp(def_str);
+        strBuf = Strnew(def_str);
         CLen = CPos = setStrType(strBuf, strProp);
     }
     else {
@@ -763,7 +763,7 @@ next_dcompl(int next)
             p = &p[7];
         else if (strncmp(p, "file:/", 6) == 0 && p[6] != '/')
             p = &p[5];
-        d = Strnew_charp(p);
+        d = Strnew(p);
     }
 
     len = 0;
@@ -945,7 +945,7 @@ doComplete(Str ifn, int *status, int next)
                     NewAtom_N(char, strlen(dir->d_name) + 1);
                 strcpy(CFileBuf[NCFileBuf - 1], dir->d_name);
                 if (NCFileBuf == 1) {
-                    CFileName = Strnew_charp(dir->d_name);
+                    CFileName = Strnew(dir->d_name);
                 }
                 else {
                     for (i = 0; CFileName->ptr[i] == dir->d_name[i]; i++) ;
@@ -972,7 +972,7 @@ doComplete(Str ifn, int *status, int next)
         }
     }
     else {
-        CFileName = Strnew_charp(CFileBuf[NCFileOffset]);
+        CFileName = Strnew(CFileBuf[NCFileOffset]);
         NCFileOffset = (NCFileOffset + next + NCFileBuf) % NCFileBuf;
         *status = CPL_MENU;
     }
@@ -1019,7 +1019,7 @@ _prev(void)
     }
     if (DecodeURL && (cm_mode & CPL_URL) )
         p = url_unquote_conv(p, 0);
-    strBuf = Strnew_charp(p);
+    strBuf = Strnew(p);
     CLen = CPos = setStrType(strBuf, strProp);
     offset = 0;
 }
@@ -1038,7 +1038,7 @@ _next(void)
     if (p) {
         if (DecodeURL && (cm_mode & CPL_URL) )
             p = url_unquote_conv(p, 0);
-        strBuf = Strnew_charp(p);
+        strBuf = Strnew(p);
     }
     else {
         strBuf = strCurrentBuf;

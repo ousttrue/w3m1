@@ -348,7 +348,7 @@ uncompressed_file_type(const char *path, const char **ext)
     if (d->type == CMP_NOCOMPRESS)
         return NULL;
 
-    fn = Strnew_charp(path);
+    fn = Strnew(path);
     fn->Pop(slen);
     if (ext)
         *ext = filename_extension(fn->ptr, 0);
@@ -428,9 +428,9 @@ int check_command(const char *cmd, int auxbin_p)
     if (path == NULL)
         path = getenv("PATH");
     if (auxbin_p)
-        dirs = Strnew_charp(w3m_auxbin_dir());
+        dirs = Strnew(w3m_auxbin_dir());
     else
-        dirs = Strnew_charp(path);
+        dirs = Strnew(path);
     for (p = dirs->ptr; p != NULL; p = np)
     {
         np = strchr(p, PATH_SEPARATOR);
@@ -973,7 +973,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
             Command f = getFuncList(funcname->ptr);
             if (f)
             {
-                tmp = Strnew_charp(p);
+                tmp = Strnew(p);
                 tmp->StripRight();
                 pushEvent(f, tmp->ptr);
             }
@@ -1703,14 +1703,14 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
             if ((pp = inputStr(Sprintf("Username for %s: ", realm)->ptr,
                                NULL)) == NULL)
                 return;
-            *uname = Str_conv_to_system(Strnew_charp(pp));
+            *uname = Str_conv_to_system(Strnew(pp));
             if ((pp = inputLine(Sprintf("Password for %s: ", realm)->ptr, NULL,
                                 IN_PASSWORD)) == NULL)
             {
                 *uname = NULL;
                 return;
             }
-            *pwd = Str_conv_to_system(Strnew_charp(pp));
+            *pwd = Str_conv_to_system(Strnew(pp));
             term_cbreak();
         }
         else
@@ -1737,15 +1737,15 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
             *uname = Strfgets(stdin);
             (*uname)->StripRight();
 #ifdef HAVE_GETPASSPHRASE
-            *pwd = Strnew_charp((char *)
+            *pwd = Strnew((char *)
                                     getpassphrase(proxy ? "Proxy Password: " : "Password: "));
 #else
 #ifndef __MINGW32_VERSION
-            *pwd = Strnew_charp((char *)
+            *pwd = Strnew((char *)
                                     getpass(proxy ? "Proxy Password: " : "Password: "));
 #else
             term_raw();
-            *pwd = Strnew_charp((char *)
+            *pwd = Strnew((char *)
                                     inputLine(proxy ? "Proxy Password: " : "Password: ", NULL, IN_PASSWORD));
             term_cbreak();
 #endif /* __MINGW32_VERSION */
@@ -1755,7 +1755,7 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
     ss = hauth->cred(hauth, *uname, *pwd, pu, hr, request);
     if (ss)
     {
-        tmp = Strnew_charp(auth_header);
+        tmp = Strnew(auth_header);
         Strcat_m_charp(tmp, " ", ss->ptr, "\r\n", NULL);
         pushText(extra_header, tmp->ptr);
     }
@@ -2422,7 +2422,7 @@ page_loaded:
             b->type = "text/html";
         else if (w3m_backend)
         {
-            Str s = Strnew_charp(t);
+            Str s = Strnew(t);
             b->type = s->ptr;
         }
 #ifdef USE_IMAGE
@@ -3099,7 +3099,7 @@ Str process_input(struct parsed_tag *tag)
         case FORM_INPUT_TEXT:
         case FORM_INPUT_FILE:
             if (q)
-                tmp->Push(textfieldrep(Strnew_charp(q), w));
+                tmp->Push(textfieldrep(Strnew(q), w));
             else
             {
                 for (i = 0; i < w; i++)
@@ -3167,13 +3167,13 @@ Str process_select(struct parsed_tag *tag)
 
     p = "";
     parsedtag_get_value(tag, ATTR_NAME, &p);
-    cur_select = Strnew_charp(p);
+    cur_select = Strnew(p);
     select_is_multiple = parsedtag_exists(tag, ATTR_MULTIPLE);
 
 #ifdef MENU_SELECT
     if (!select_is_multiple)
     {
-        select_str = Strnew_charp("<pre_int>");
+        select_str = Strnew("<pre_int>");
         if (displayLinkNumber)
             select_str->Push(getLinkNumberStr(0));
         select_str->Push(Sprintf("[<input_alt hseq=\"%d\" "
@@ -3250,11 +3250,11 @@ void feed_select(char *str)
                 process_option();
                 cur_option = Strnew();
                 if (parsedtag_get_value(tag, ATTR_VALUE, &q))
-                    cur_option_value = Strnew_charp(q);
+                    cur_option_value = Strnew(q);
                 else
                     cur_option_value = NULL;
                 if (parsedtag_get_value(tag, ATTR_LABEL, &q))
-                    cur_option_label = Strnew_charp(q);
+                    cur_option_label = Strnew(q);
                 else
                     cur_option_label = NULL;
                 cur_option_selected = parsedtag_exists(tag, ATTR_SELECTED);
@@ -3355,7 +3355,7 @@ Str process_textarea(struct parsed_tag *tag, int width)
 
     p = "";
     parsedtag_get_value(tag, ATTR_NAME, &p);
-    cur_textarea = Strnew_charp(p);
+    cur_textarea = Strnew(p);
     cur_textarea_size = 20;
     if (parsedtag_get_value(tag, ATTR_COLS, &p))
     {
@@ -4165,7 +4165,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (parsedtag_get_value(tag, ATTR_NAME, &p))
                     {
                         MapList *m = New(MapList);
-                        m->name = Strnew_charp(p);
+                        m->name = Strnew(p);
                         m->area = newGeneralList();
                         m->next = buf->maplist;
                         buf->maplist = m;
@@ -4335,7 +4335,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         parsedtag_get_value(tag, ATTR_VALUE, &p);
                         selected = parsedtag_exists(tag, ATTR_SELECTED);
                         addSelectOption(&select_option[n_select],
-                                        Strnew_charp(p), Strnew_charp(q),
+                                        Strnew(p), Strnew(q),
                                         selected);
                     }
                     break;
@@ -4818,7 +4818,7 @@ Str loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces *charset)
     tmp = parsedURL2Str(pu);
     p = html_quote(tmp->ptr);
     tmp =
-        convertLine(NULL, Strnew_charp(file_unquote(tmp->ptr)), RAW_MODE,
+        convertLine(NULL, Strnew(file_unquote(tmp->ptr)), RAW_MODE,
                     charset, doc_charset);
     q = html_quote(tmp->ptr);
     tmp = Strnew_m_charp("<html>\n<head>\n<base href=\"", p, "\">\n<title>", q,
@@ -5729,7 +5729,7 @@ int _doFileCopy(char *tmpf, char *defstr, int download)
         {
             if (q)
             {
-                p = unescape_spaces(Strnew_charp(q))->ptr;
+                p = unescape_spaces(Strnew(q))->ptr;
                 p = conv_to_system(q);
             }
             p = expandPath(p);
@@ -6248,7 +6248,7 @@ print_internal_information(struct html_feed_environ *henv)
     Str s;
     TextLineList *tl = newTextLineList();
 
-    s = Strnew_charp("<internal>");
+    s = Strnew("<internal>");
     pushTextLine(tl, newTextLine(s, 0));
     if (henv->title)
     {
@@ -6296,7 +6296,7 @@ print_internal_information(struct html_feed_environ *henv)
                             ip->checked ? " selected" : "");
                 pushTextLine(tl, newTextLine(s, 0));
             }
-            s = Strnew_charp("</select_int>");
+            s = Strnew("</select_int>");
             pushTextLine(tl, newTextLine(s, 0));
         }
     }
@@ -6307,12 +6307,12 @@ print_internal_information(struct html_feed_environ *henv)
         {
             s = Sprintf("<textarea_int textareanumber=%d>", i);
             pushTextLine(tl, newTextLine(s, 0));
-            s = Strnew_charp(html_quote(textarea_str[i]->ptr));
+            s = Strnew(html_quote(textarea_str[i]->ptr));
             s->Push("</textarea_int>");
             pushTextLine(tl, newTextLine(s, 0));
         }
     }
-    s = Strnew_charp("</internal>");
+    s = Strnew("</internal>");
     pushTextLine(tl, newTextLine(s, 0));
 
     if (henv->buf)

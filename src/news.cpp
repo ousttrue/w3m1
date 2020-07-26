@@ -452,12 +452,12 @@ Str loadNewsgroup(ParsedURL *pu, wc_ces *charset)
             if (!(q = strchr(p, '>')) && !(q = strchr(p, '\t')))
                 continue;
             *q = '\0';
-            tmp = decodeMIME(Strnew_charp(s), &mime_charset);
+            tmp = decodeMIME(Strnew(s), &mime_charset);
             s = convertLine(&f, tmp, HEADER_MODE,
                             mime_charset ? &mime_charset : charset,
                             mime_charset ? mime_charset : doc_charset)
                     ->ptr;
-            tmp = decodeMIME(Strnew_charp(n), &mime_charset);
+            tmp = decodeMIME(Strnew(n), &mime_charset);
             n = convertLine(&f, tmp, HEADER_MODE,
                             mime_charset ? &mime_charset : charset,
                             mime_charset ? mime_charset : doc_charset)

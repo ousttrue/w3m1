@@ -385,7 +385,7 @@ static Str accept_this_site;
 void ssl_accept_this_site(char *hostname)
 {
     if (hostname)
-        accept_this_site = Strnew_charp(hostname);
+        accept_this_site = Strnew(hostname);
     else
         accept_this_site = NULL;
 }
@@ -503,7 +503,7 @@ ssl_check_cert_ident(X509 *x, char *hostname)
         slen = X509_NAME_get_text_by_NID(xn, NID_commonName, buf, sizeof(buf));
         if (slen == -1)
             /* FIXME: gettextize? */
-            ret = Strnew_charp("Unable to get common name from peer cert");
+            ret = Strnew("Unable to get common name from peer cert");
         else if (slen != strlen(buf) || !ssl_match_cert_ident(buf, strlen(buf), hostname))
         {
             /* replace \0 to make full string visible to user */
@@ -548,12 +548,12 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
         else
         {
             /* FIXME: gettextize? */
-            emsg = Strnew_charp("No SSL peer certificate: accept? (y/n)");
+            emsg = Strnew("No SSL peer certificate: accept? (y/n)");
             ans = inputAnswer(emsg->ptr);
         }
         if (ans && TOLOWER(*ans) == 'y')
             /* FIXME: gettextize? */
-            amsg = Strnew_charp("Accept SSL session without any peer certificate");
+            amsg = Strnew("Accept SSL session without any peer certificate");
         else
         {
             /* FIXME: gettextize? */
@@ -567,7 +567,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
             disp_err_message(amsg->ptr, FALSE);
         ssl_accept_this_site(hostname);
         /* FIXME: gettextize? */
-        s = amsg ? amsg : Strnew_charp("valid certificate");
+        s = amsg ? amsg : Strnew("valid certificate");
         return s;
     }
 #ifdef USE_SSL_VERIFY
@@ -624,7 +624,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
         if (ans && TOLOWER(*ans) == 'y')
         {
             /* FIXME: gettextize? */
-            amsg = Strnew_charp("Accept unsecure SSL session:");
+            amsg = Strnew("Accept unsecure SSL session:");
             amsg->Push( emsg);
         }
         else
@@ -641,7 +641,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
         disp_err_message(amsg->ptr, FALSE);
     ssl_accept_this_site(hostname);
     /* FIXME: gettextize? */
-    s = amsg ? amsg : Strnew_charp("valid certificate");
+    s = amsg ? amsg : Strnew("valid certificate");
     s->Push( "\n");
     xn = X509_get_subject_name(x);
     if (X509_NAME_get_text_by_NID(xn, NID_commonName, buf, sizeof(buf)) == -1)

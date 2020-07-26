@@ -434,7 +434,7 @@ void ldhelp()
     lang = AcceptLang;
     n = strcspn(lang, ";, \t");
     tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
-                  Strnew_charp(w3m_version)->UrlEncode()->ptr,
+                  Strnew(w3m_version)->UrlEncode()->ptr,
                   Strnew_charp_n(lang, n)->UrlEncode()->ptr);
     cmd_loadURL(tmp->ptr, NULL, NO_REFERER, NULL);
 #else
@@ -1238,7 +1238,7 @@ void adBmark()
 {
     auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
                        (localCookie()->UrlEncode())->ptr,
-                       (Strnew_charp(BookmarkFile)->UrlEncode())->ptr,
+                       (Strnew(BookmarkFile)->UrlEncode())->ptr,
                        (parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->UrlEncode())->ptr,
 
                        (wc_conv_strict(GetCurrentTab()->GetCurrentBuffer()->buffername.c_str(),
@@ -1418,7 +1418,7 @@ void svBuf()
     {
         if (qfile)
         {
-            file = unescape_spaces(Strnew_charp(qfile))->ptr;
+            file = unescape_spaces(Strnew(qfile))->ptr;
             file = conv_to_system(file);
         }
         file = expandPath(file);
@@ -1497,7 +1497,7 @@ void curURL()
         offset = 0;
         s = currentURL();
         if (DecodeURL)
-            s = Strnew_charp(url_unquote_conv(s->ptr, 0));
+            s = Strnew(url_unquote_conv(s->ptr, 0));
 #ifdef USE_M17N
         s = checkType(s, &pp, NULL);
         p = NewAtom_N(Lineprop, s->Size());

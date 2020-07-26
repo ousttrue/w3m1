@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <gc_cpp.h>
 #include <functional>
+#include <string_view>
 
 //
 // http://aitoweb.world.coocan.jp/gc/gc.html
@@ -120,14 +121,14 @@ inline Str Strnew_size(int size)
     return new GCStr(size);
 }
 
-inline Str Strnew_charp(const char *src)
-{
-    return new GCStr(src);
-}
-
 inline Str Strnew_charp_n(const char *src, int size)
 {
     return new GCStr(src, size);
+}
+
+inline Str Strnew(std::string_view src)
+{
+    return new GCStr(src.data(), src.size());
 }
 
 Str Strnew_m_charp(const char *, ...);

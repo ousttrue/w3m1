@@ -272,7 +272,7 @@ retry:
         if (pu->label != NULL)
         {
             /* #hogege is not a label but a filename */
-            Str tmp2 = Strnew_charp("#");
+            Str tmp2 = Strnew("#");
             tmp2->Push(pu->label);
             pu->file = tmp2->ptr;
             pu->real_file = cleanupName(file_unquote(pu->file));
@@ -329,7 +329,7 @@ retry:
             }
             else if (document_root != NULL)
             {
-                tmp = Strnew_charp(document_root);
+                tmp = Strnew(document_root);
                 if (tmp->Back() != '/' && pu->file[0] != '/')
                     tmp->Push('/');
                 tmp->Push(pu->file);
@@ -540,12 +540,12 @@ retry:
     case SCM_DATA:
         if (pu->file == NULL)
             return;
-        p = Strnew_charp(pu->file)->ptr;
+        p = Strnew(pu->file)->ptr;
         q = strchr(p, ',');
         if (q == NULL)
             return;
         *q++ = '\0';
-        tmp = Strnew_charp(q);
+        tmp = Strnew(q);
         q = strrchr(p, ';');
         if (q != NULL && !strcmp(q, ";base64"))
         {

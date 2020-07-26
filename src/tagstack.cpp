@@ -328,7 +328,7 @@ passthrough(struct readbuffer *obuf, char *str, int back)
 
     if (back)
     {
-        Str str_save = Strnew_charp(str);
+        Str str_save = Strnew(str);
         obuf->line->Pop(obuf->line->ptr + obuf->line->Size() - str);
         str = str_save->ptr;
     }
@@ -630,7 +630,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
     }
     if (hidden)
     {
-        pass = Strnew_charp(hidden);
+        pass = Strnew(hidden);
         line->Pop(line->ptr + line->Size() - hidden);
     }
 
@@ -886,7 +886,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
     }
     if (!hidden_img && obuf->img_alt)
     {
-        Str tmp = Strnew_charp("<IMG_ALT SRC=\"");
+        Str tmp = Strnew("<IMG_ALT SRC=\"");
         tmp->Push(html_quote(obuf->img_alt->ptr));
         tmp->Push("\">");
         push_tag(obuf, tmp->ptr, HTML_IMG_ALT);
@@ -1044,7 +1044,7 @@ ul_type(struct parsed_tag *tag, int default_type)
 
 static Str process_hr(struct parsed_tag *tag, int width, int indent_width)
 {
-    Str tmp = Strnew_charp("<nobr>");
+    Str tmp = Strnew("<nobr>");
     int w = 0;
     int x = ALIGN_CENTER;
 #define HR_ATTR_WIDTH_MAX 65535
@@ -1616,13 +1616,13 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         hseq = 0;
 
         if (parsedtag_get_value(tag, ATTR_HREF, &p))
-            obuf->anchor.url = Strnew_charp(p)->ptr;
+            obuf->anchor.url = Strnew(p)->ptr;
         if (parsedtag_get_value(tag, ATTR_TARGET, &p))
-            obuf->anchor.target = Strnew_charp(p)->ptr;
+            obuf->anchor.target = Strnew(p)->ptr;
         if (parsedtag_get_value(tag, ATTR_REFERER, &p))
-            obuf->anchor.referer = Strnew_charp(p)->ptr;
+            obuf->anchor.referer = Strnew(p)->ptr;
         if (parsedtag_get_value(tag, ATTR_TITLE, &p))
-            obuf->anchor.title = Strnew_charp(p)->ptr;
+            obuf->anchor.title = Strnew(p)->ptr;
         if (parsedtag_get_value(tag, ATTR_ACCESSKEY, &p))
             obuf->anchor.accesskey = (unsigned char)*p;
         if (parsedtag_get_value(tag, ATTR_HSEQ, &hseq))
@@ -1647,7 +1647,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         return 1;
     case HTML_IMG_ALT:
         if (parsedtag_get_value(tag, ATTR_SRC, &p))
-            obuf->img_alt = Strnew_charp(p);
+            obuf->img_alt = Strnew(p);
 #ifdef USE_IMAGE
         i = 0;
         if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i))
@@ -1728,7 +1728,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         tables[obuf->table_level] = begin_table(w, x, y, z);
 #ifdef ID_EXT
         if (id != NULL)
-            tables[obuf->table_level]->id = Strnew_charp(id);
+            tables[obuf->table_level]->id = Strnew(id);
 #endif /* ID_EXT */
         table_mode[obuf->table_level].pre_mode = 0;
         table_mode[obuf->table_level].indent_level = 0;
@@ -2501,7 +2501,7 @@ table_start:
                 {
                     Str line;
                     append_tags(obuf);
-                    line = Strnew_charp(bp);
+                    line = Strnew(bp);
                     obuf->line->Pop(obuf->line->Size() - obuf->bp.len);
 #ifdef FORMAT_NICE
                     if (obuf->pos - i > h_env->limit)

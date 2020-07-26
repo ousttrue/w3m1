@@ -702,8 +702,8 @@ int find_auth_user_passwd(ParsedURL *pu, char *realm,
 
     if (pu->user && pu->pass)
     {
-        *uname = Strnew_charp(pu->user);
-        *pwd = Strnew_charp(pu->pass);
+        *uname = Strnew(pu->user);
+        *pwd = Strnew(pu->pass);
         return 1;
     }
     ent = find_auth_pass_entry(pu->host, pu->port, realm, pu->user, is_proxy);
@@ -723,9 +723,9 @@ void add_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
     memset(&ent, 0, sizeof(ent));
 
     ent.is_proxy = is_proxy;
-    ent.host = Strnew_charp(pu->host);
+    ent.host = Strnew(pu->host);
     ent.port = pu->port;
-    ent.realm = Strnew_charp(realm);
+    ent.realm = Strnew(realm);
     ent.uname = uname;
     ent.pwd = pwd;
     add_auth_pass_entry(&ent, 0, 1);
@@ -771,7 +771,7 @@ next_token(Str arg)
         *q++ = '\0';
         SKIP_BLANKS(q);
         if (*q != '\0')
-            narg = Strnew_charp(q);
+            narg = Strnew(q);
     }
     return narg;
 }
@@ -1208,7 +1208,7 @@ void mySystem(char *command, int background)
             myExec(command);
         }
 #else
-        Str cmd = Strnew_charp("start /f ");
+        Str cmd = Strnew("start /f ");
         cmd->Push(command);
         system(cmd->ptr);
 #endif
@@ -1283,7 +1283,7 @@ Str myEditor(char *cmd, char *file, int line)
     if (!set_file)
     {
         if (tmp == NULL)
-            tmp = Strnew_charp(cmd);
+            tmp = Strnew(cmd);
         if (!set_line && line > 1 && strcasestr(cmd, "vi"))
             tmp->Push(Sprintf(" +%d", line));
         Strcat_m_charp(tmp, " ", file, NULL);
@@ -1384,13 +1384,13 @@ file_to_url(char *file)
 #endif
         if (file[0] != '/')
     {
-        tmp = Strnew_charp(CurrentDir);
+        tmp = Strnew(CurrentDir);
         if (tmp->Back() != '/')
             tmp->Push('/');
         tmp->Push(file);
         file = tmp->ptr;
     }
-    tmp = Strnew_charp("file://");
+    tmp = Strnew("file://");
 #ifdef SUPPORT_NETBIOS_SHARE
     if (host)
         tmp->Push(host);
@@ -1407,7 +1407,7 @@ char *
 url_unquote_conv(const char *url, wc_ces charset)
 {
     uint8_t old_auto_detect = WcOption.auto_detect;
-    Str tmp = Strnew_charp(url)->UrlDecode(FALSE, TRUE);
+    Str tmp = Strnew(url)->UrlDecode(FALSE, TRUE);
     if (!charset || charset == WC_CES_US_ASCII)
         charset = SystemCharset;
     WcOption.auto_detect = WC_OPT_DETECT_ON;

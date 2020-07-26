@@ -1354,7 +1354,7 @@ to_str(struct param_ptr *p)
     case P_SSLPATH:
 #endif
 	/*  SystemCharset -> InnerCharset */
-	return Strnew_charp(conv_from_system(*(char **)p->varptr));
+	return Strnew(conv_from_system(*(char **)p->varptr));
     case P_PIXELS:
     case P_SCALE:
 	return Sprintf("%g", *(double *)p->varptr);

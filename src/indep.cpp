@@ -497,13 +497,13 @@ expandPath(const char *name)
             }
             if (!passent)
                 goto rest;
-            extpath = Strnew_charp(passent->pw_dir);
+            extpath = Strnew(passent->pw_dir);
         }
         else
 #endif /* __MINGW32_VERSION */
             if (*p == '/' || *p == '\0')
         { /* ~/dir... or ~ */
-            extpath = Strnew_charp(getenv("HOME"));
+            extpath = Strnew(getenv("HOME"));
         }
         else
             goto rest;
@@ -759,7 +759,7 @@ char *getescapecmd(char **s)
 
     Str tmp;
     if (*save != '&')
-        tmp = Strnew_charp("&");
+        tmp = Strnew("&");
     else
         tmp = Strnew();
     tmp->Push(save, *s - save);

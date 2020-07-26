@@ -10,16 +10,16 @@ Str HRequest::Method() const
     switch (command)
     {
     case HR_COMMAND_CONNECT:
-        return Strnew_charp("CONNECT");
+        return Strnew("CONNECT");
     case HR_COMMAND_POST:
-        return Strnew_charp("POST");
+        return Strnew("POST");
         break;
     case HR_COMMAND_HEAD:
-        return Strnew_charp("HEAD");
+        return Strnew("HEAD");
         break;
     case HR_COMMAND_GET:
     default:
-        return Strnew_charp("GET");
+        return Strnew("GET");
     }
     return NULL;
 }

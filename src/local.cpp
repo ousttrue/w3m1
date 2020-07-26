@@ -84,7 +84,7 @@ loadLocalDir(char *dname)
     d = opendir(dname);
     if (d == NULL)
 	return NULL;
-    dirname = Strnew_charp(dname);
+    dirname = Strnew(dname);
     if (dirname->Back() != '/')
 	dirname->Push( '/');
     qdir = html_quote(Str_conv_from_system(dirname)->ptr);
@@ -281,7 +281,7 @@ checkPath(char *fn, char *path)
     struct stat st;
     while (*path) {
 	p = strchr(path, ':');
-	tmp = Strnew_charp(expandPath(p ? allocStr(path, p - path) : path));
+	tmp = Strnew(expandPath(p ? allocStr(path, p - path) : path));
 	if (tmp->Back() != '/')
 	    tmp->Push('/');
 	tmp->Push(fn);
@@ -321,10 +321,10 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
     {
 	char lib[_MAX_PATH];
 	_abspath(lib, w3m_lib_dir(), _MAX_PATH);	/* Translate '\\' to '/' */
-	tmp = Strnew_charp(lib);
+	tmp = Strnew(lib);
     }
 #else
-    tmp = Strnew_charp(w3m_lib_dir());
+    tmp = Strnew(w3m_lib_dir());
 #endif
     if (tmp->Back() != '/')
 	tmp->Push('/');
@@ -333,7 +333,7 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
     else if (strncmp(uri, tmp->ptr, tmp->Size()) == 0)
 	offset = tmp->Size();
     else if (*uri == '/' && document_root != NULL) {
-	Str tmp2 = Strnew_charp(document_root);
+	Str tmp2 = Strnew(document_root);
 	if (tmp2->Back() != '/')
 	    tmp2->Push( '/');
 	tmp2->Push( uri + 1);

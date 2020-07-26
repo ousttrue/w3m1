@@ -157,7 +157,7 @@ ftp_login(FTP *ftp)
             if (!getsockname(sock, (struct sockaddr *)&sockname, &socknamelen))
             {
                 struct hostent *sockent;
-                Str tmp = Strnew_charp(ftp->pass);
+                Str tmp = Strnew(ftp->pass);
 #ifdef INET6
                 char hostbuf[NI_MAXHOST];
 
@@ -424,17 +424,17 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
             if (fmInitialized)
             {
                 term_raw();
-                pwd = Strnew_charp(inputLine("Password: ", NULL, IN_PASSWORD));
+                pwd = Strnew(inputLine("Password: ", NULL, IN_PASSWORD));
                 pwd = Str_conv_to_system(pwd);
                 term_cbreak();
             }
             else
             {
 #ifndef __MINGW32_VERSION
-                pwd = Strnew_charp((char *)getpass("Password: "));
+                pwd = Strnew((char *)getpass("Password: "));
 #else
                 term_raw();
-                pwd = Strnew_charp(inputLine("Password: ", NULL, IN_PASSWORD));
+                pwd = Strnew(inputLine("Password: ", NULL, IN_PASSWORD));
                 pwd = Str_conv_to_system(pwd);
                 term_cbreak();
 #endif /* __MINGW32_VERSION */
@@ -449,9 +449,9 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
     {
 #ifndef __MINGW32_VERSION
         struct passwd *mypw = getpwuid(getuid());
-        tmp = Strnew_charp(mypw ? mypw->pw_name : (char *)"anonymous");
+        tmp = Strnew(mypw ? mypw->pw_name : (char *)"anonymous");
 #else
-        tmp = Strnew_charp("anonymous");
+        tmp = Strnew("anonymous");
 #endif /* __MINGW32_VERSION */
         tmp->Push('@');
         pass = tmp->ptr;
@@ -553,7 +553,7 @@ Str loadFTPDir0(ParsedURL *pu)
         tmp->Push('/');
     fn = html_quote(tmp->ptr);
     tmp =
-        convertLine(NULL, Strnew_charp(file_unquote(tmp->ptr)), RAW_MODE,
+        convertLine(NULL, Strnew(file_unquote(tmp->ptr)), RAW_MODE,
                     charset, doc_charset);
     q = html_quote(tmp->ptr);
     FTPDIRtmp = Strnew_m_charp("<html>\n<head>\n<base href=\"", fn,
@@ -645,7 +645,7 @@ Str loadFTPDir0(ParsedURL *pu)
                 *(date - 1) = '\0';
             }
             date++;
-            tmp = convertLine(NULL, Strnew_charp(fn), RAW_MODE, charset,
+            tmp = convertLine(NULL, Strnew(fn), RAW_MODE, charset,
                               doc_charset);
             if (ftype == FTPDIR_LINK)
                 tmp->Push('@');
@@ -658,7 +658,7 @@ Str loadFTPDir0(ParsedURL *pu)
                 else
                     FTPDIRtmp->Push( ' ');
             }
-            tmp = convertLine(NULL, Strnew_charp(date), RAW_MODE, charset,
+            tmp = convertLine(NULL, Strnew(date), RAW_MODE, charset,
                               doc_charset);
             Strcat_m_charp(FTPDIRtmp, html_quote(tmp->ptr), "\n", NULL);
         }
@@ -680,7 +680,7 @@ Str loadFTPDir0(ParsedURL *pu)
         for (i = 0; i < nfile; i++)
         {
             fn = flist[i];
-            tmp = convertLine(NULL, Strnew_charp(fn), RAW_MODE, charset,
+            tmp = convertLine(NULL, Strnew(fn), RAW_MODE, charset,
                               doc_charset);
             Strcat_m_charp(FTPDIRtmp, "<li><a href=\"",
                            html_quote(file_quote(fn)), "\">",

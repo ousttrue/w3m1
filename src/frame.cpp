@@ -604,7 +604,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 											   RB_SCRIPT | RB_STYLE)))
 						{
 							p = Strnew_m_charp(tok->ptr + 1, p, NULL)->ptr;
-							tok = Strnew_charp("&lt;");
+							tok = Strnew("&lt;");
 						}
 					}
 					if (is_tag)

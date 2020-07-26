@@ -263,7 +263,7 @@ void do_dump(BufferPtr buf)
                 pu.Parse2(buf->href.anchors[i].url, baseURL(buf));
                 s = parsedURL2Str(&pu);
                 if (DecodeURL)
-                    s = Strnew_charp(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
+                    s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
                 printf("[%d] %s\n", buf->href.anchors[i].hseq + 1, s->ptr);
             }
         }
@@ -519,11 +519,11 @@ int handleMailto(const char *url)
     /* invoke external mailer */
     if (MailtoOptions == MAILTO_OPTIONS_USE_MAILTO_URL)
     {
-        to = Strnew_charp(html_unquote(const_cast<char*>(url)));
+        to = Strnew(html_unquote(const_cast<char*>(url)));
     }
     else
     {
-        to = Strnew_charp(url + 7);
+        to = Strnew(url + 7);
         if ((pos = strchr(to->ptr, '?')) != NULL)
             to->Truncate(pos - to->ptr);
     }
@@ -810,7 +810,7 @@ void _followForm(int submit)
         p = inputStrHist("TEXT:", fi->value ? fi->value->ptr : NULL, TextHist);
         if (p == NULL || fi->readonly)
             break;
-        fi->value = Strnew_charp(p);
+        fi->value = Strnew(p);
         formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
         if (fi->accept || fi->parent->nitems == 1)
             goto do_submit;
@@ -826,7 +826,7 @@ void _followForm(int submit)
                               NULL);
         if (p == NULL || fi->readonly)
             break;
-        fi->value = Strnew_charp(p);
+        fi->value = Strnew(p);
         formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
         if (fi->accept || fi->parent->nitems == 1)
             goto do_submit;
@@ -845,7 +845,7 @@ void _followForm(int submit)
                       IN_PASSWORD);
         if (p == NULL)
             break;
-        fi->value = Strnew_charp(p);
+        fi->value = Strnew(p);
         formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
         if (fi->accept)
             goto do_submit;
@@ -1814,7 +1814,7 @@ void _peekURL(int only_img)
                 return;
         }
         else
-            s = Strnew_charp(form2str(a->item));
+            s = Strnew(form2str(a->item));
     }
     if (s == NULL)
     {
@@ -1822,7 +1822,7 @@ void _peekURL(int only_img)
         s = parsedURL2Str(&pu);
     }
     if (DecodeURL)
-        s = Strnew_charp(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
+        s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
 #ifdef USE_M17N
     s = checkType(s, &pp, NULL);
     p = NewAtom_N(Lineprop, s->Size());
@@ -1944,7 +1944,7 @@ void execdict(char *word)
         displayCurrentbuf(B_NORMAL);
         return;
     }
-    dictcmd = Sprintf("%s?%s", DictCommand, Strnew_charp(w)->UrlEncode()->ptr)->ptr;
+    dictcmd = Sprintf("%s?%s", DictCommand, Strnew(w)->UrlEncode()->ptr)->ptr;
     buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, 0, NULL);
     if (buf == NULL)
     {
@@ -2089,7 +2089,7 @@ BufferPtr DownloadListBuffer()
         return NULL;
     cur_time = time(0);
     /* FIXME: gettextize? */
-    src = Strnew_charp("<html><head><title>" DOWNLOAD_LIST_TITLE
+    src = Strnew("<html><head><title>" DOWNLOAD_LIST_TITLE
                        "</title></head>\n<body><h1 align=center>" DOWNLOAD_LIST_TITLE "</h1>\n"
                        "<form method=internal action=download><hr>\n");
     for (d = LastDL; d != NULL; d = d->prev)

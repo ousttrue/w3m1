@@ -12,13 +12,13 @@
 
 #if LANG == JA
 /* FIXME: gettextize here */
-#define MSG_TITLE		"³°Éô¥Ó¥å¡¼¥¢¤ÎÊÔ½¸"
-#define MSG_NEW_ENTRY		"¿·µ¬ÅÐÏ¿"
-#define MSG_TYPE		"¥Ç¡¼¥¿¥¿¥¤¥×"
-#define MSG_COMMAND		"³°Éô¥³¥Þ¥ó¥É"
-#define MSG_REGISTER		"ÅÐÏ¿"
-#define MSG_DELETE		"ºï½ü"
-#define MSG_DOIT		"¼Â¹Ô"
+#define MSG_TITLE		"ï¿½ï¿½ï¿½ï¿½ï¿½Ó¥å¡¼ï¿½ï¿½ï¿½ï¿½ï¿½Ô½ï¿½"
+#define MSG_NEW_ENTRY		"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿"
+#define MSG_TYPE		"ï¿½Ç¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"
+#define MSG_COMMAND		"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¥ï¿½ï¿½"
+#define MSG_REGISTER		"ï¿½ï¿½Ï¿"
+#define MSG_DELETE		"ï¿½ï¿½ï¿½"
+#define MSG_DOIT		"ï¿½Â¹ï¿½"
 #else				/* LANG != JA */
 #define MSG_TITLE		"External Viewers Setup"
 #define MSG_NEW_ENTRY		"New Entry"
@@ -204,7 +204,7 @@ main(int argc, char *argv[], char **envp)
     }
 
     mode = tag_get_value(cgiarg, "mode");
-    mailcapfile = Strnew_charp(expandPath(USER_MAILCAP));
+    mailcapfile = Strnew(expandPath(USER_MAILCAP));
     if (mode && !strcmp(mode, "edit")) {
 	char *referer;
 	/* check if I can edit my mailcap */

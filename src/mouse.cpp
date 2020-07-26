@@ -270,7 +270,7 @@ void initMouseAction(void)
         int w = 0;
         const char **symbol = get_symbol(DisplayCharset, &w);
         mouse_action.lastline_str =
-            Strnew_charp(symbol[N_GRAPH_SYMBOL + 13])->ptr;
+            Strnew(symbol[N_GRAPH_SYMBOL + 13])->ptr;
     }
 
     if ((mf = fopen(confFile(MOUSE_FILE), "rt")) != NULL)

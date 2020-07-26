@@ -280,7 +280,7 @@ follow_map_panel(BufferPtr buf, char *name)
     if (ml == NULL)
         return NULL;
 
-    mappage = Strnew_charp(map1);
+    mappage = Strnew(map1);
     for (al = ml->area->first; al != NULL; al = al->next)
     {
         a = (MapArea *)al->ptr;

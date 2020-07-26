@@ -2293,7 +2293,7 @@ link_menu(BufferPtr buf)
     label = New_N(char *, nitem + 1);
     for (i = 0, l = buf->linklist; l; i++, l = l->next)
     {
-        str = Strnew_charp(l->title ? l->title : (char *)"(empty)");
+        str = Strnew(l->title ? l->title : (char *)"(empty)");
         if (l->type == LINK_TYPE_REL)
             str->Push( " [Rel] ");
         else if (l->type == LINK_TYPE_REV)

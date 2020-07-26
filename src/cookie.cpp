@@ -380,9 +380,9 @@ add_cookie(ParsedURL *pu, Str name, Str value,
     }
 
     if (!domain)
-	domain = Strnew_charp(domainname);
+	domain = Strnew(domainname);
     if (!path) {
-	path = Strnew_charp(pu->file);
+	path = Strnew(pu->file);
 	while (path->Size() > 0 && path->Back() != '/')
 	    path->Pop(1);
 	if (path->Back() == '/')
@@ -578,7 +578,7 @@ BufferPtr
 cookie_list_panel(void)
 {
     /* FIXME: gettextize? */
-    Str src = Strnew_charp("<html><head><title>Cookies</title></head>"
+    Str src = Strnew("<html><head><title>Cookies</title></head>"
 			   "<body><center><b>Cookies</b></center>"
 			   "<p><form method=internal action=cookie>");
     struct cookie *p;

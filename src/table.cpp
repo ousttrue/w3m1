@@ -1964,7 +1964,7 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 	break;
     }
     if (t->total_height == 0) {
-       renderbuf = Strnew_charp(" ");
+       renderbuf = Strnew(" ");
 	t->total_height++;
 	t->total_width = 1;
 	push_render_image(renderbuf, 1, t->total_width, h_env);
@@ -2557,7 +2557,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	}
 #ifdef ID_EXT
 	if (parsedtag_get_value(tag, ATTR_ID, &p))
-	    tbl->tridvalue[tbl->row] = Strnew_charp(p);
+	    tbl->tridvalue[tbl->row] = Strnew(p);
 #endif				/* ID_EXT */
 	tbl->trattr = align | valign;
 	break;
@@ -2661,7 +2661,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	}
 #ifdef ID_EXT
 	if (parsedtag_get_value(tag, ATTR_ID, &p))
-	    tbl->tabidvalue[tbl->row][tbl->col] = Strnew_charp(p);
+	    tbl->tabidvalue[tbl->row][tbl->col] = Strnew(p);
 #endif				/* ID_EXT */
 #ifdef NOWRAP
 	if (v != 0) {

@@ -862,7 +862,7 @@ void ParsedURL::Parse2(std::string_view url, ParsedURL *current)
                 p = this->file;
                 if (current->file)
                 {
-                    tmp = Strnew_charp(current->file);
+                    tmp = Strnew(current->file);
                     while (tmp->Size() > 0)
                     {
                         if (tmp->Back() == '/')
@@ -912,7 +912,7 @@ void ParsedURL::Parse2(std::string_view url, ParsedURL *current)
             strcmp(this->file, "-"))
         {
             /* local file, relative path */
-            tmp = Strnew_charp(CurrentDir);
+            tmp = Strnew(CurrentDir);
             if (tmp->Back() != '/')
                 tmp->Push('/');
             tmp->Push(file_unquote(this->file));
@@ -956,7 +956,7 @@ void ParsedURL::Parse2(std::string_view url, ParsedURL *current)
 #ifdef SUPPORT_NETBIOS_SHARE
             if (this->host && strcmp(this->host, "localhost") != 0)
             {
-                Str tmp = Strnew_charp("//");
+                Str tmp = Strnew("//");
                 Strcat_m_charp(tmp, this->host,
                                cleanupName(file_unquote(this->file)), NULL);
                 this->real_file = tmp->ptr;
@@ -991,11 +991,11 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
 {
     if (pu->scheme == SCM_MISSING)
     {
-        return Strnew_charp("???");
+        return Strnew("???");
     }
     else if (pu->scheme == SCM_UNKNOWN)
     {
-        return Strnew_charp(pu->file);
+        return Strnew(pu->file);
     }
     if (pu->host == NULL && pu->file == NULL && pu->label != NULL)
     {
@@ -1004,7 +1004,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
     }
     if (pu->scheme == SCM_LOCAL && !strcmp(pu->file, "-"))
     {
-        tmp = Strnew_charp("-");
+        tmp = Strnew("-");
         if (pu->label)
         {
             tmp->Push('#');
@@ -1012,7 +1012,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
         }
         return tmp;
     }
-    tmp = Strnew_charp(scheme_str[pu->scheme]);
+    tmp = Strnew(scheme_str[pu->scheme]);
     tmp->Push(':');
 #ifndef USE_W3MMAILER
     if (pu->scheme == SCM_MAILTO)
@@ -1392,7 +1392,7 @@ loadURIMethods(char *filename)
             continue;
         while (*p != '\0' && IS_SPACE(*p))
             p++;
-        um[i].item2 = Strnew_charp(p)->ptr;
+        um[i].item2 = Strnew(p)->ptr;
         i++;
     }
     um[i].item1 = NULL;

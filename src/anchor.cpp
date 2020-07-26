@@ -706,7 +706,7 @@ BufferPtr
 link_list_panel(BufferPtr buf)
 {
     /* FIXME: gettextize? */
-    Str tmp = Strnew_charp("<title>Link List</title>\
+    Str tmp = Strnew("<title>Link List</title>\
 <h1 align=center>Link List</h1>\n");
 
     if (buf->bufferprop & BP_INTERNAL ||

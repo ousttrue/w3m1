@@ -48,7 +48,7 @@ newFormList(char *action, const char *method, char *charset, char *enctype,
             char *target, char *name, FormList *_next)
 {
     FormList *l;
-    Str a = Strnew_charp(action);
+    Str a = Strnew(action);
     int m = FORM_METHOD_GET;
     int e = FORM_ENCTYPE_URLENCODED;
 #ifdef USE_M17N
@@ -123,9 +123,9 @@ formList_addInput(FormList *fl, struct parsed_tag *tag)
             item->size = FORM_I_TEXT_DEFAULT_SIZE;
     }
     if (parsedtag_get_value(tag, ATTR_NAME, &p))
-        item->name = Strnew_charp(p);
+        item->name = Strnew(p);
     if (parsedtag_get_value(tag, ATTR_VALUE, &p))
-        item->value = item->init_value = Strnew_charp(p);
+        item->value = item->init_value = Strnew(p);
     item->checked = item->init_checked = parsedtag_exists(tag, ATTR_CHECKED);
     item->accept = parsedtag_exists(tag, ATTR_ACCEPT);
     parsedtag_get_value(tag, ATTR_SIZE, &item->size);
@@ -644,7 +644,7 @@ void input_textarea(FormItemList *fi)
         if (tmp->Size() == 1 && tmp->ptr[tmp->Size() - 1] == '\n')
         {
             /* null line with bare LF */
-            tmp = Strnew_charp("\r\n");
+            tmp = Strnew("\r\n");
         }
         else if (tmp->Size() > 1 && tmp->ptr[tmp->Size() - 1] == '\n' &&
                  tmp->ptr[tmp->Size() - 2] != '\r')
@@ -994,7 +994,7 @@ void loadPreForm(void)
         else if (!strcmp(s, "textarea"))
         {
             type = FORM_TEXTAREA;
-            name = Strnew_charp(arg)->ptr;
+            name = Strnew(arg)->ptr;
             textarea = Strnew();
             continue;
         }
@@ -1075,7 +1075,7 @@ void preFormUpdateBuffer(BufferPtr buf)
                 case FORM_INPUT_FILE:
                 case FORM_INPUT_PASSWORD:
                 case FORM_TEXTAREA:
-                    fi->value = Strnew_charp(pi->value);
+                    fi->value = Strnew(pi->value);
                     formUpdateBuffer(a, buf, fi);
                     break;
                 case FORM_INPUT_CHECKBOX:
