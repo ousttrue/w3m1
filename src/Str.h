@@ -69,6 +69,10 @@ public:
         CopyFrom(src->ptr, src->m_size);
     }
     void Push(const char *src, int size);
+    void Push(const char *src)
+    {
+        Push(src, (int)strlen(src));
+    }
     void Push(std::string_view src)
     {
         Push(src.data(), src.size());
@@ -79,6 +83,10 @@ public:
     }
     void Push(char y)
     {
+        if (y == 0)
+        {
+            return;
+        }
         Push(&y, 1);
     }
 
@@ -87,7 +95,7 @@ public:
     {
         // stop recursion
     }
-    template<typename T, typename ...ARGS>
+    template <typename T, typename... ARGS>
     void Concat(const T &t, ARGS... args)
     {
         Push(t);
@@ -149,7 +157,7 @@ inline Str Strnew(std::string_view src)
 }
 
 // recursive variadic template
-template<typename... ARGS>
+template <typename... ARGS>
 void Strcat_m_charp(Str str, ARGS... args)
 {
     str->Concat(args...);
@@ -159,7 +167,7 @@ void Strcat_m_charp(Str str, ARGS... args)
 template <typename... ARGS>
 Str Strnew_m_charp(ARGS... args)
 {
-    auto str= new GCStr();
+    auto str = new GCStr();
     str->Concat(args...);
     return str;
 }
