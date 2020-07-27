@@ -969,7 +969,6 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
 }
 
 
-#define initParsedURL(p) bzero(p, sizeof(ParsedURL))
 #define ALLOC_STR(s) ((s) == NULL ? NULL : allocStr(s, -1))
 
 void copyParsedURL(ParsedURL *p, const ParsedURL *q)

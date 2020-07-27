@@ -25,16 +25,16 @@ enum SchemaTypes
 
 struct ParsedURL
 {
-    SchemaTypes scheme;
-    char *user;
-    char *pass;
-    char *host;
-    int port;
-    char *file;
-    char *real_file;
-    char *query;
-    char *label;
-    int is_nocache;
+    SchemaTypes scheme = SCM_MISSING;
+    char *user = nullptr;
+    char *pass = nullptr;
+    char *host = nullptr;
+    int port = 0;
+    char *file = nullptr;
+    char *real_file = nullptr;
+    char *query = nullptr;
+    char *label = nullptr;
+    int is_nocache = 0;
 
     void Parse(std::string_view url, const ParsedURL *current);
     void Parse2(std::string_view url, const ParsedURL *current);
