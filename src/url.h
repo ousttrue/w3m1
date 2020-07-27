@@ -26,8 +26,8 @@ enum SchemaTypes
 struct ParsedURL
 {
     SchemaTypes scheme = SCM_MISSING;
-    char *user = nullptr;
-    char *pass = nullptr;
+    std::string user;
+    std::string pass;
     char *host = nullptr;
     int port = 0;
     char *file = nullptr;

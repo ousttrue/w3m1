@@ -700,13 +700,13 @@ int find_auth_user_passwd(ParsedURL *pu, char *realm,
 {
     struct auth_pass *ent;
 
-    if (pu->user && pu->pass)
+    if (pu->user.size() && pu->pass.size())
     {
         *uname = Strnew(pu->user);
         *pwd = Strnew(pu->pass);
         return 1;
     }
-    ent = find_auth_pass_entry(pu->host, pu->port, realm, pu->user, is_proxy);
+    ent = find_auth_pass_entry(pu->host, pu->port, realm, const_cast<char*>(pu->user.c_str()), is_proxy);
     if (ent)
     {
         *uname = ent->uname;

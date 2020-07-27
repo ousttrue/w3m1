@@ -379,7 +379,7 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
     if (!pu->host)
         return NULL;
 
-    if (pu->user == NULL && pu->pass == NULL)
+    if (pu->user.empty() && pu->pass.empty())
     {
         if (find_auth_user_passwd(pu, NULL, &uname, &pwd, 0))
         {
@@ -391,8 +391,8 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
     }
     if (user)
         /* do nothing */;
-    else if (pu->user)
-        user = pu->user;
+    else if (pu->user.size())
+        user = Strnew(pu->user)->ptr;
     else
         user = "anonymous";
 
@@ -413,9 +413,9 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
 
     if (pass)
         /* do nothing */;
-    else if (pu->pass)
-        pass = pu->pass;
-    else if (pu->user)
+    else if (pu->pass.size())
+        pass = Strnew(pu->pass)->ptr;
+    else if (pu->user.size())
     {
         pwd = NULL;
         find_auth_user_passwd(pu, NULL, &uname, &pwd, 0);

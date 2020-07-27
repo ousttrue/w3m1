@@ -486,8 +486,8 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
     p = url;
     this->scheme = SCM_MISSING;
     this->port = 0;
-    this->user = NULL;
-    this->pass = NULL;
+    this->user.clear();
+    this->pass.clear();
     this->host = NULL;
     this->is_nocache = 0;
     this->file = NULL;
@@ -644,7 +644,7 @@ analyze_url:
     }
 analyze_file:
 #ifndef SUPPORT_NETBIOS_SHARE
-    if (this->scheme == SCM_LOCAL && this->user == NULL &&
+    if (this->scheme == SCM_LOCAL && this->user.empty() &&
         this->host != NULL && *this->host != '\0' &&
         strcmp(this->host, "localhost"))
     {
@@ -976,8 +976,8 @@ void copyParsedURL(ParsedURL *p, const ParsedURL *q)
     p->scheme = q->scheme;
     p->port = q->port;
     p->is_nocache = q->is_nocache;
-    p->user = ALLOC_STR(q->user);
-    p->pass = ALLOC_STR(q->pass);
+    p->user = q->user;
+    p->pass = q->pass;
     p->host = ALLOC_STR(q->host);
     p->file = ALLOC_STR(q->file);
     p->real_file = ALLOC_STR(q->real_file);
@@ -1036,10 +1036,10 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
     {
         tmp->Push("//");
     }
-    if (pu->user)
+    if (pu->user.size())
     {
         tmp->Push(pu->user);
-        if (pass && pu->pass)
+        if (pass && pu->pass.size())
         {
             tmp->Push(':');
             tmp->Push(pu->pass);
@@ -1121,7 +1121,7 @@ otherinfo(ParsedURL *target, const ParsedURL *current, char *referer)
 #endif
             if (referer == NULL && current && current->scheme != SCM_LOCAL &&
                 (current->scheme != SCM_FTP ||
-                 (current->user == NULL && current->pass == NULL)))
+                 (current->user.empty() && current->pass.empty())))
         {
             char *p = current->label;
             s->Push("Referer: ");
