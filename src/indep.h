@@ -38,8 +38,6 @@ extern char *HTML_QUOTE_MAP[];
    -1)
 
 extern clen_t strtoclen(const char *s);
-extern int getescapechar(char **s);
-extern char *getescapecmd(char **s);
 extern char *allocStr(const char *s, int len);
 extern int strCmp(const void *s1, const void *s2);
 extern char *currentdir(void);
