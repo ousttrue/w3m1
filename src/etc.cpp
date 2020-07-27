@@ -698,15 +698,13 @@ find_auth_pass_entry(char *host, int port, char *realm, char *uname,
 int find_auth_user_passwd(ParsedURL *pu, char *realm,
                           Str *uname, Str *pwd, int is_proxy)
 {
-    struct auth_pass *ent;
-
     if (pu->user.size() && pu->pass.size())
     {
         *uname = Strnew(pu->user);
         *pwd = Strnew(pu->pass);
         return 1;
     }
-    ent = find_auth_pass_entry(pu->host, pu->port, realm, const_cast<char*>(pu->user.c_str()), is_proxy);
+    auto ent = find_auth_pass_entry(const_cast<char*>(pu->host.c_str()), pu->port, realm, const_cast<char*>(pu->user.c_str()), is_proxy);
     if (ent)
     {
         *uname = ent->uname;
@@ -735,7 +733,7 @@ void invalidate_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
                                  int is_proxy)
 {
     struct auth_pass *ent;
-    ent = find_auth_pass_entry(pu->host, pu->port, realm, NULL, is_proxy);
+    ent = find_auth_pass_entry(const_cast<char*>(pu->host.c_str()), pu->port, realm, NULL, is_proxy);
     if (ent)
     {
         ent->bad = TRUE;

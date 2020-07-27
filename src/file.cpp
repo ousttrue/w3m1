@@ -1769,7 +1769,7 @@ static int
 same_url_p(ParsedURL *pu1, ParsedURL *pu2)
 {
     return (pu1->scheme == pu2->scheme && pu1->port == pu2->port &&
-            (pu1->host ? pu2->host ? !strcasecmp(pu1->host, pu2->host) : 0 : 1) && (pu1->file ? pu2->file ? !strcmp(pu1->file, pu2->file) : 0 : 1));
+            (pu1->host.size() ? pu2->host.size() ? pu1->host==pu2->host : 0 : 1) && (pu1->file ? pu2->file ? !strcmp(pu1->file, pu2->file) : 0 : 1));
 }
 
 static std::vector<ParsedURL> g_puv;
@@ -1957,7 +1957,7 @@ load_doc:
              (pu.scheme == SCM_GOPHER && non_null(GOPHER_proxy)) ||
 #endif /* USE_GOPHER */
              (pu.scheme == SCM_FTP && non_null(FTP_proxy))) &&
-         !Do_not_use_proxy && !check_no_proxy(pu.host)))
+         !Do_not_use_proxy && !check_no_proxy(const_cast<char*>(pu.host.c_str()))))
     {
 
         if (fmInitialized)
@@ -2347,7 +2347,7 @@ page_loaded:
             {
                 b->real_scheme = f.scheme;
                 b->real_type = real_type;
-                if (b->currentURL.host == NULL && b->currentURL.file == NULL)
+                if (b->currentURL.host.empty() && b->currentURL.file == NULL)
                     copyParsedURL(&b->currentURL, &pu);
             }
             UFclose(&f);
@@ -2396,7 +2396,7 @@ page_loaded:
     {
         b->real_scheme = f.scheme;
         b->real_type = real_type;
-        if (b->currentURL.host == NULL && b->currentURL.file == NULL)
+        if (b->currentURL.host.empty() && b->currentURL.file == NULL)
             copyParsedURL(&b->currentURL, &pu);
         if (is_html_type(t))
             b->type = "text/html";

@@ -187,7 +187,7 @@ baseURL(BufferPtr buf)
         /* no URL is defined for the buffer */
         return NULL;
     }
-    if (buf->baseURL )
+    if (buf->baseURL)
     {
         /* <BASE> tag is defined in the document */
         return &buf->baseURL;
@@ -481,14 +481,14 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
     Str tmp;
 
     /* quote 0x01-0x20, 0x7F-0xFF */
-    auto url = url_quote(const_cast<char*>(_url.data()));
+    auto url = url_quote(const_cast<char *>(_url.data()));
 
     p = url;
     this->scheme = SCM_MISSING;
     this->port = 0;
     this->user.clear();
     this->pass.clear();
-    this->host = NULL;
+    this->host.clear();
     this->is_nocache = 0;
     this->file = NULL;
     this->real_file = NULL;
@@ -561,7 +561,7 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
     /* get host and port */
     if (p[0] != '/' || p[1] != '/')
     { /* scheme:foo or scheme:/foo */
-        this->host = NULL;
+        this->host.clear();
         if (this->scheme != SCM_UNKNOWN)
             this->port = DefaultPort[this->scheme];
         else
@@ -620,7 +620,7 @@ analyze_url:
             this->pass = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
             q = ++p;
             this->user = this->host;
-            this->host = NULL;
+            this->host.clear();
             goto analyze_url;
         }
         /* scheme://host:port/ */
@@ -645,15 +645,15 @@ analyze_url:
 analyze_file:
 #ifndef SUPPORT_NETBIOS_SHARE
     if (this->scheme == SCM_LOCAL && this->user.empty() &&
-        this->host != NULL && *this->host != '\0' &&
-        strcmp(this->host, "localhost"))
+        this->host.size() && this->host[0] != '\0' &&
+        this->host != "localhost")
     {
         this->scheme = SCM_FTP; /* ftp://host/... */
         if (this->port == 0)
             this->port = DefaultPort[SCM_FTP];
     }
 #endif
-    if ((*p == '\0' || *p == '#' || *p == '?') && this->host == NULL)
+    if ((*p == '\0' || *p == '#' || *p == '?') && this->host.empty())
     {
         this->file = "";
         goto do_query;
@@ -804,7 +804,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
         if (current && (current->scheme == SCM_NNTP ||
                         current->scheme == SCM_NNTP_GROUP))
         {
-            if (this->host == NULL)
+            if (this->host.empty())
             {
                 this->host = current->host;
                 this->port = current->port;
@@ -828,7 +828,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
             this->file = file_quote(q);
     }
 
-    if (current && (this->scheme == current->scheme || (this->scheme == SCM_FTP && current->scheme == SCM_FTPDIR) || (this->scheme == SCM_LOCAL && current->scheme == SCM_LOCAL_CGI)) && this->host == NULL)
+    if (current && (this->scheme == current->scheme || (this->scheme == SCM_FTP && current->scheme == SCM_FTPDIR) || (this->scheme == SCM_LOCAL && current->scheme == SCM_LOCAL_CGI)) && this->host.empty())
     {
         /* Copy omitted element from the current URL */
         this->user = current->user;
@@ -841,10 +841,10 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
             if (this->scheme == SCM_UNKNOWN && strchr(this->file, ':') == NULL && current && (p = strchr(current->file, ':')) != NULL)
             {
                 this->file = Sprintf("%s:%s",
-                                   allocStr(current->file,
-                                            p - current->file),
-                                   this->file)
-                               ->ptr;
+                                     allocStr(current->file,
+                                              p - current->file),
+                                     this->file)
+                                 ->ptr;
             }
             else
 #endif
@@ -968,7 +968,6 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
     }
 }
 
-
 #define ALLOC_STR(s) ((s) == NULL ? NULL : allocStr(s, -1))
 
 void copyParsedURL(ParsedURL *p, const ParsedURL *q)
@@ -978,13 +977,12 @@ void copyParsedURL(ParsedURL *p, const ParsedURL *q)
     p->is_nocache = q->is_nocache;
     p->user = q->user;
     p->pass = q->pass;
-    p->host = ALLOC_STR(q->host);
+    p->host = q->host;
     p->file = ALLOC_STR(q->file);
     p->real_file = ALLOC_STR(q->real_file);
     p->label = ALLOC_STR(q->label);
     p->query = ALLOC_STR(q->query);
 }
-
 
 Str parsedURL2Str(ParsedURL *pu, bool pass)
 {
@@ -996,7 +994,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
     {
         return Strnew(pu->file);
     }
-    if (pu->host == NULL && pu->file == NULL && pu->label != NULL)
+    if (pu->host.empty() && pu->file == NULL && pu->label != NULL)
     {
         /* local label */
         return Sprintf("#%s", pu->label);
@@ -1046,7 +1044,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
         }
         tmp->Push('@');
     }
-    if (pu->host)
+    if (pu->host.size())
     {
         tmp->Push(pu->host);
         if (pu->port != DefaultPort[pu->scheme])
@@ -1097,7 +1095,7 @@ otherinfo(ParsedURL *target, const ParsedURL *current, char *referer)
     Strcat_m_charp(s, "Accept-Encoding: ", AcceptEncoding, "\r\n", NULL);
     Strcat_m_charp(s, "Accept-Language: ", AcceptLang, "\r\n", NULL);
 
-    if (target->host)
+    if (target->host.size())
     {
         s->Push("Host: ");
         s->Push(target->host);

@@ -376,7 +376,7 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
     int add_auth_cookie_flag = FALSE;
     char *realpathname = NULL;
 
-    if (!pu->host)
+    if (pu->host.empty())
         return NULL;
 
     if (pu->user.empty() && pu->pass.empty())
@@ -398,7 +398,7 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
 
     if (current_ftp.host)
     {
-        if (!strcmp(current_ftp.host, pu->host) &&
+        if (current_ftp.host == pu->host &&
             current_ftp.port == pu->port && !strcmp(current_ftp.user, user))
         {
             ftp_command(&current_ftp, "NOOP", NULL, &status);
@@ -459,7 +459,7 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
 
     if (!current_ftp.host)
     {
-        current_ftp.host = allocStr(pu->host, -1);
+        current_ftp.host = allocStr(pu->host.c_str(), -1);
         current_ftp.port = pu->port;
         current_ftp.user = allocStr(user, -1);
         current_ftp.pass = allocStr(pass, -1);

@@ -262,7 +262,7 @@ openNewsStream(ParsedURL *pu)
     if (pu->file == NULL || *pu->file == '\0')
         return NULL;
     if (pu->scheme == SCM_NNTP || pu->scheme == SCM_NNTP_GROUP)
-        host = pu->host;
+        host = Strnew(pu->host)->ptr;
     else
         host = NNTP_server;
     if (!host || *host == '\0')

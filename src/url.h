@@ -28,7 +28,7 @@ struct ParsedURL
     SchemaTypes scheme = SCM_MISSING;
     std::string user;
     std::string pass;
-    char *host = nullptr;
+    std::string host;
     int port = 0;
     char *file = nullptr;
     char *real_file = nullptr;

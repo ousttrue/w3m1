@@ -372,10 +372,10 @@ retry:
             pu->file = allocStr("/", -1);
         if (non_null(FTP_proxy) &&
             !Do_not_use_proxy &&
-            pu->host != NULL && !check_no_proxy(pu->host))
+            pu->host.size() && !check_no_proxy(const_cast<char*>(pu->host.c_str())))
         {
             hr->flag |= HR_FLAG_PROXY;
-            sock = openSocket(FTP_proxy_parsed.host,
+            sock = openSocket(FTP_proxy_parsed.host.c_str(),
                               GetScheme(FTP_proxy_parsed.scheme).name.data(),
                               FTP_proxy_parsed.port);
             if (sock < 0)
@@ -407,7 +407,7 @@ retry:
 
                                           non_null(HTTP_proxy)) &&
             !Do_not_use_proxy &&
-            pu->host != NULL && !check_no_proxy(pu->host))
+            pu->host.size() && !check_no_proxy(const_cast<char*>(pu->host.c_str())))
         {
             hr->flag |= HR_FLAG_PROXY;
             if (pu->scheme == SCM_HTTPS && *status == HTST_CONNECT)
@@ -425,13 +425,13 @@ retry:
             }
             else if (pu->scheme == SCM_HTTPS)
             {
-                sock = openSocket(HTTPS_proxy_parsed.host,
+                sock = openSocket(HTTPS_proxy_parsed.host.c_str(),
                                   GetScheme(HTTPS_proxy_parsed.scheme).name.data(), HTTPS_proxy_parsed.port);
                 sslh = NULL;
             }
             else
             {
-                sock = openSocket(HTTP_proxy_parsed.host,
+                sock = openSocket(HTTP_proxy_parsed.host.c_str(),
                                   GetScheme(HTTP_proxy_parsed.scheme).name.data(), HTTP_proxy_parsed.port);
                 sslh = NULL;
             }
@@ -466,7 +466,7 @@ retry:
         }
         else
         {
-            sock = openSocket(pu->host,
+            sock = openSocket(pu->host.c_str(),
                               GetScheme(pu->scheme).name.data(), pu->port);
             if (sock < 0)
             {
@@ -475,7 +475,7 @@ retry:
             }
             if (pu->scheme == SCM_HTTPS)
             {
-                if (!(sslh = openSSLHandle(sock, pu->host,
+                if (!(sslh = openSSLHandle(sock, const_cast<char*>(pu->host.c_str()),
                                            &this->ssl_certificate)))
                 {
                     *status = HTST_MISSING;

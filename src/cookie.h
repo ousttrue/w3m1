@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string_view>
 #include "parsetagx.h"
 #include "buffer.h"
 
@@ -12,4 +12,4 @@ void save_cookies(void);
 void load_cookies(void);
 void initCookie(void);
 BufferPtr cookie_list_panel(void);
-int check_cookie_accept_domain(char *domain);
+int check_cookie_accept_domain(std::string_view domain);
