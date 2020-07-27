@@ -35,7 +35,7 @@ Str HRequest::URI(ParsedURL *pu) const
     else if (flag & HR_FLAG_LOCAL)
     {
         tmp->Push(pu->file);
-        if (pu->query)
+        if (pu->query.size())
         {
             tmp->Push('?');
             tmp->Push(pu->query);

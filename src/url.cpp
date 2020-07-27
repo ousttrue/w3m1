@@ -502,7 +502,7 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
     this->is_nocache = 0;
     this->file.clear();
     this->real_file.clear();
-    this->query = NULL;
+    this->query.clear();
     this->label = NULL;
 
     /* RFC1808: Relative Uniform Resource Locators
@@ -891,7 +891,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
         else
         { /* scheme:[?query][#label] */
             this->file = current->file;
-            if (!this->query)
+            if (this->query.empty())
                 this->query = current->query;
         }
         /* comment: query part need not to be completed
@@ -987,7 +987,7 @@ void copyParsedURL(ParsedURL *p, const ParsedURL *q)
     p->file = q->file;
     p->real_file = q->real_file;
     p->label = ALLOC_STR(q->label);
-    p->query = ALLOC_STR(q->query);
+    p->query = q->query;
 }
 
 Str parsedURL2Str(ParsedURL *pu, bool pass)
@@ -1067,7 +1067,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
     tmp->Push(pu->file);
     if (pu->scheme == SCM_FTPDIR && tmp->Back() != '/')
         tmp->Push('/');
-    if (pu->query)
+    if (pu->query.size())
     {
         tmp->Push('?');
         tmp->Push(pu->query);

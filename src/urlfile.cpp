@@ -304,12 +304,12 @@ retry:
     case SCM_LOCAL_CGI:
         if (request && request->body)
             /* local CGI: POST */
-            this->stream = newFileStream(localcgi_post(const_cast<char*>(pu->real_file.c_str()), pu->query,
+            this->stream = newFileStream(localcgi_post(const_cast<char*>(pu->real_file.c_str()), const_cast<char*>(pu->query.c_str()),
                                                        request, option->referer),
                                          (FileStreamCloseFunc)fclose);
         else
             /* lodal CGI: GET */
-            this->stream = newFileStream(localcgi_get(const_cast<char*>(pu->real_file.c_str()), pu->query,
+            this->stream = newFileStream(localcgi_get(const_cast<char*>(pu->real_file.c_str()), const_cast<char*>(pu->query.c_str()),
                                                       option->referer),
                                          (FileStreamCloseFunc)fclose);
         if (this->stream)
