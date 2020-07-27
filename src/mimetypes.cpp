@@ -109,33 +109,43 @@ void initMimeTypes()
     }
 }
 
+static bool iequals(std::string_view l, std::string_view r)
+{
+    if(l.size()!=r.size()){
+        return false;
+    }
+    for(int i=0; l.size(); ++i)
+    {
+        if(tolower(l[i])!=tolower(r[i]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 static const char *
-guessContentTypeFromTable(struct ExtensionWithMime *table, const char *filename)
+guessContentTypeFromTable(ExtensionWithMime *table, std::string_view filename)
 {
     if (table == NULL)
         return NULL;
-    auto p = &filename[strlen(filename) - 1];
-    while (filename < p && *p != '.')
-        p--;
-    if (p == filename)
+    auto p = filename.rfind('.');
+    if (p == -1)
         return NULL;
-    p++;
+
+    auto ext = filename.substr(p + 1);
     for (auto t = table; t->item1; t++)
     {
-        if (!strcmp(p, t->item1))
+        if (iequals(ext, t->item1)){
             return t->item2;
-    }
-    for (auto t = table; t->item1; t++)
-    {
-        if (!strcasecmp(p, t->item1))
-            return t->item2;
+        }
     }
     return NULL;
 }
 
-const char *guessContentType(const char *filename)
+const char *guessContentType(std::string_view filename)
 {
-    if (!filename)
+    if (filename.empty())
     {
         return nullptr;
     }

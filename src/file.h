@@ -13,7 +13,7 @@ Str process_form(struct parsed_tag *tag);
 
 BufferPtr loadGeneralFile(char *path, const ParsedURL *current, char *referer, int flag, FormList *request);
 Str getLinkNumberStr(int correction);
-char *guess_save_name(BufferPtr buf, char *file);
+char *guess_save_name(BufferPtr buf, std::string_view file);
 void examineFile(char *path, URLFile *uf);
 char *acceptableEncoding();
 int dir_exist(char *path);
@@ -90,8 +90,8 @@ Line *currentLineSkip(BufferPtr buf, Line *line, int offset, int last);
 int gethtmlcmd(char **s);
 
 char *lastFileName(char *path);
-char *mybasename(char *s);
-char *mydirname(char *s);
+char *mybasename(const char *s);
+char *mydirname(const char *s);
 int read_token(Str buf, char **instr, int *status, int pre, int append);
 Str correct_irrtag(int status);
 #ifdef USE_MIGEMO

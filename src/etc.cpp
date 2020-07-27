@@ -295,9 +295,9 @@ long lrand48(void)
 #endif
 
 char *
-mybasename(char *s)
+mybasename(const char *s)
 {
-    char *p = s;
+    const char *p = s;
     while (*p)
         p++;
     while (s <= p && *p != '/')
@@ -310,9 +310,9 @@ mybasename(char *s)
 }
 
 char *
-mydirname(char *s)
+mydirname(const char *s)
 {
-    char *p = s;
+    const char *p = s;
     while (*p)
         p++;
     if (s != p)

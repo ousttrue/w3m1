@@ -52,7 +52,7 @@
 
 static int frame_source = 0;
 
-static char *guess_filename(char *file);
+static char *guess_filename(std::string_view file);
 static int _MoveFile(char *path1, char *path2);
 static void uncompress_stream(URLFile *uf, char **src);
 static FILE *lessopen_stream(char *path);
@@ -6178,12 +6178,12 @@ reloadBuffer(BufferPtr buf)
 #endif
 
 static char *
-guess_filename(char *file)
+guess_filename(std::string_view file)
 {
     char *p = NULL, *s;
 
-    if (file != NULL)
-        p = mybasename(file);
+    if (file.size())
+        p = mybasename(file.data());
     if (p == NULL || *p == '\0')
         return DEF_SAVE_FILE;
     s = p;
@@ -6202,7 +6202,7 @@ guess_filename(char *file)
 }
 
 char *
-guess_save_name(BufferPtr buf, char *path)
+guess_save_name(BufferPtr buf, std::string_view path)
 {
     if (buf && buf->document_header)
     {
