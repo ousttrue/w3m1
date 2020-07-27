@@ -1,5 +1,5 @@
 
-/* $Id: entity.c,v 1.7 2003/09/24 18:48:59 ukai Exp $ */
+#include <string_view>
 #include "myctype.h"
 #include "indep.h"
 #include <assert.h>
@@ -73,7 +73,7 @@ conv_entity(unsigned int c)
 #include <unordered_map>
 #include <string>
 
-static std::unordered_map<std::string, int> g_entityMap = {
+static std::unordered_map<std::string_view, int> g_entityMap = {
     /* 0 */ {"otimes", 0x2297},
     /* 1 */ {"laquo", 0xAB},
     /* 2 */ {"cap", 0x2229},
@@ -333,13 +333,13 @@ static std::unordered_map<std::string, int> g_entityMap = {
     /* 256 */ {"Ucirc", 0xDB},
 };
 
-static int GetEntity(const char *src, int value)
+static int GetEntity(std::string_view src)
 {
     auto found = g_entityMap.find(src);
     if (found == g_entityMap.end())
     {
         // not found
-        return value;
+        return -1;
     }
     return found->second;
 }
@@ -388,11 +388,69 @@ static std::pair<const char *, int> getescapechar_sharp(const char *p)
     return std::make_pair(p, -1);
 }
 
+static std::string_view g_nonstrict_entities[] = {
+    "lt",
+    "gt",
+    "amp",
+    "quot",
+    "nbsp",
+};
+
+static inline bool iequals(std::string_view l, std::string_view r)
+{
+    if (l.size() != r.size())
+    {
+        return false;
+    }
+    for (int i = 0; i < l.size(); ++i)
+    {
+        if (tolower(l[i]) != tolower(r[i]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+static std::pair<const char *, int> getescapechar_entity(const char *p)
+{
+    auto q = p;
+    for (p++; IS_ALNUM(*p); p++)
+        ;
+    auto word = std::string_view(q, p-q);
+
+    auto strict_entity = true;
+    if (*p != '=')
+    {
+        for (auto entity : g_nonstrict_entities)
+        {
+            /* a character entity MUST be terminated with ";". However,
+            * there's MANY web pages which uses &lt , &gt or something
+            * like them as &lt;, &gt;, etc. Therefore, we treat the most
+            * popular character entities (including &#xxxx;) without
+            * the last ";" as character entities. If the trailing character
+            * is "=", it must be a part of query in an URL. So &lt=, &gt=, etc.
+            * are not regarded as character entities.
+            */
+            if (iequals(word, entity))
+            {
+                strict_entity = false;
+                break;
+            }
+        }
+    }
+    if (*p == ';')
+        p++;
+    else if (strict_entity)
+    {
+        return {p, -1};
+    }
+
+    return {p, GetEntity(word)};
+}
+
 int getescapechar(const char **str)
 {
-    int dummy = -1;
-    int strict_entity = 1;
-
     const char *p = *str;
     if (*p == '&')
     {
@@ -409,31 +467,16 @@ int getescapechar(const char **str)
         *str = p;
         return -1;
     }
-    auto q = p;
-    for (p++; IS_ALNUM(*p); p++)
-        ;
-    q = allocStr(q, p - q);
-    if (strcasestr("lt gt amp quot nbsp", q) && *p != '=')
+
+    auto [r, dummy] = getescapechar_entity(p);
+    *str = r;
+#ifndef NDEBUG
+    if (dummy != -1)
     {
-        /* a character entity MUST be terminated with ";". However,
-	 * there's MANY web pages which uses &lt , &gt or something
-	 * like them as &lt;, &gt;, etc. Therefore, we treat the most
-	 * popular character entities (including &#xxxx;) without
-	 * the last ";" as character entities. If the trailing character
-	 * is "=", it must be a part of query in an URL. So &lt=, &gt=, etc.
-	 * are not regarded as character entities.
-	 */
-        strict_entity = 0;
+        auto a = 0;
     }
-    if (*p == ';')
-        p++;
-    else if (strict_entity)
-    {
-        *str = p;
-        return -1;
-    }
-    *str = p;
-    return GetEntity(q, -1);
+#endif
+    return dummy;
 }
 
 char *getescapecmd(const char **s)
