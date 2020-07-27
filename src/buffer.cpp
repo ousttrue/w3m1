@@ -98,6 +98,9 @@ void Buffer::TmpClear()
 
 int Buffer::WriteBufferCache()
 {
+    // TODO
+    return -1;
+
     Str tmp;
     FILE *cache = NULL;
     Line *l;
@@ -162,6 +165,9 @@ _error1:
 
 int Buffer::ReadBufferCache()
 {
+    // TODO:
+    return -1;
+
     Line *basel = NULL;
     long clnum, tlnum;
     int colorflag;
