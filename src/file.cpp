@@ -54,7 +54,7 @@ static int frame_source = 0;
 
 static char *guess_filename(std::string_view file);
 static int _MoveFile(char *path1, char *path2);
-static void uncompress_stream(URLFile *uf, char **src);
+static char *uncompress_stream(URLFile *uf, bool useRealFile);
 static FILE *lessopen_stream(char *path);
 static BufferPtr loadcmdout(char *cmd,
                             BufferPtr (*loadproc)(URLFile *, BufferPtr),
@@ -1769,7 +1769,7 @@ static int
 same_url_p(ParsedURL *pu1, ParsedURL *pu2)
 {
     return (pu1->scheme == pu2->scheme && pu1->port == pu2->port &&
-            (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) && 
+            (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) &&
             (pu1->file.size() ? pu2->file.size() ? pu1->file == pu2->file : 0 : 1));
 }
 
@@ -2291,7 +2291,7 @@ page_loaded:
 
     if ((f.content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3m_dump & DUMP_EXTRA))
     {
-        uncompress_stream(&f, &pu.real_file);
+        pu.real_file = uncompress_stream(&f, true);
     }
     else if (f.compression != CMP_NOCOMPRESS)
     {
@@ -2300,7 +2300,7 @@ page_loaded:
         {
             if (t_buf == NULL)
                 t_buf = newBuffer(INIT_BUFFER_WIDTH);
-            uncompress_stream(&f, &t_buf->sourcefile);
+            t_buf->sourcefile = uncompress_stream(&f, true);
             uncompressed_file_type(pu.file.c_str(), &f.ext);
         }
         else
@@ -2341,7 +2341,7 @@ page_loaded:
     else if (!(w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
     {
         if (!do_download && doExternal(f,
-                                       pu.real_file ? pu.real_file : const_cast<char*>(pu.file.c_str()),
+                                       pu.real_file ? pu.real_file : const_cast<char *>(pu.file.c_str()),
                                        t, &b, t_buf))
         {
             if (b)
@@ -2390,7 +2390,7 @@ page_loaded:
         t_buf->ssl_certificate = f.ssl_certificate;
 #endif
     frame_source = flag & RG_FRAME_SRC;
-    b = loadSomething(&f, pu.real_file ? pu.real_file : const_cast<char*>(pu.file.c_str()), proc, t_buf);
+    b = loadSomething(&f, pu.real_file ? pu.real_file : const_cast<char *>(pu.file.c_str()), proc, t_buf);
     UFclose(&f);
     frame_source = 0;
     if (b)
@@ -5873,7 +5873,7 @@ int doFileSave(URLFile uf, char *defstr)
             int err;
             if ((uf.content_encoding != CMP_NOCOMPRESS) && AutoUncompress)
             {
-                uncompress_stream(&uf, &tmpf);
+                tmpf = uncompress_stream(&uf, true);
                 if (tmpf)
                     unlink(tmpf);
             }
@@ -5918,7 +5918,7 @@ int doFileSave(URLFile uf, char *defstr)
         }
         if (uf.content_encoding != CMP_NOCOMPRESS && AutoUncompress)
         {
-            uncompress_stream(&uf, &tmpf);
+            tmpf = uncompress_stream(&uf, true);
             if (tmpf)
                 unlink(tmpf);
         }
@@ -5998,8 +5998,8 @@ inputAnswer(const char *prompt)
     return ans;
 }
 
-static void
-uncompress_stream(URLFile *uf, char **src)
+static char *
+uncompress_stream(URLFile *uf, bool useRealFile)
 {
 #ifndef __MINGW32_VERSION
     pid_t pid1;
@@ -6030,11 +6030,7 @@ uncompress_stream(URLFile *uf, char **src)
     }
     uf->compression = CMP_NOCOMPRESS;
 
-    if (uf->scheme != SCM_LOCAL
-#ifdef USE_IMAGE
-        && !image_source
-#endif
-    )
+    if (uf->scheme != SCM_LOCAL && !image_source)
     {
         tmpf = tmpfname(TMPF_DFL, ext)->ptr;
     }
@@ -6044,7 +6040,7 @@ uncompress_stream(URLFile *uf, char **src)
     if (pid1 < 0)
     {
         UFclose(uf);
-        return;
+        return nullptr;
     }
     if (pid1 == 0)
     {
@@ -6088,14 +6084,17 @@ uncompress_stream(URLFile *uf, char **src)
     }
     if (tmpf)
     {
-        if (src)
-            *src = tmpf;
-        else
+        if (useRealFile){
+        }
+        else{
+            tmpf= nullptr;
             uf->scheme = SCM_LOCAL;
+        }
     }
     UFhalfclose(uf);
     uf->stream = newFileStream(f1, (FileStreamCloseFunc)fclose);
 #endif /* __MINGW32_VERSION */
+    return tmpf;
 }
 
 static FILE *
