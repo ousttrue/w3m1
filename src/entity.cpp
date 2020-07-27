@@ -2,6 +2,7 @@
 /* $Id: entity.c,v 1.7 2003/09/24 18:48:59 ukai Exp $ */
 #include "myctype.h"
 #include "indep.h"
+#include <assert.h>
 
 #ifdef DUMMY
 #include "Str.h"
@@ -16,7 +17,6 @@
 
 #include "ctrlcode.h"
 #endif /* DUMMY */
-
 
 /* *INDENT-OFF* */
 static const char *alt_latin1[96] = {
@@ -344,10 +344,10 @@ static int GetEntity(const char *src, int value)
     return found->second;
 }
 
-int getescapechar(char **str)
+int getescapechar(const char **str)
 {
     int dummy = -1;
-    char *p = *str, *q;
+    const char *p = *str;
     int strict_entity = 1;
 
     if (*p == '&')
@@ -390,7 +390,7 @@ int getescapechar(char **str)
         *str = p;
         return -1;
     }
-    q = p;
+    auto q = p;
     for (p++; IS_ALNUM(*p); p++)
         ;
     q = allocStr(q, p - q);
@@ -417,12 +417,13 @@ int getescapechar(char **str)
     return GetEntity(q, -1);
 }
 
-char *getescapecmd(char **s)
+char *getescapecmd(const char **s)
 {
-    char *save = *s;
-    
+    const char *save = *s;
+
     int ch = getescapechar(s);
-    if (ch >= 0){
+    if (ch >= 0)
+    {
         return (char *)conv_entity(ch);
     }
 
@@ -435,30 +436,34 @@ char *getescapecmd(char **s)
     return tmp->ptr;
 }
 
+///
+/// &#12345; => \xxx\xxx\xxx
+///
 char *
-html_unquote(char *str)
+html_unquote(const char *str)
 {
-    Str tmp = NULL;
-    char *p, *q;
+#ifndef NDEBUG
+    std::string org = str;
+#endif
 
-    for (p = str; *p;)
+    Str tmp = Strnew();
+    for (auto p = str; *p;)
     {
         if (*p == '&')
         {
-            if (tmp == NULL)
-                tmp = Strnew_charp_n(str, (int)(p - str));
-            q = getescapecmd(&p);
+            auto q = getescapecmd(&p);
             tmp->Push(q);
         }
         else
         {
-            if (tmp)
-                tmp->Push(*p);
+            tmp->Push(*p);
             p++;
         }
     }
 
-    if (tmp)
-        return tmp->ptr;
-    return str;
+#ifndef NDEBUG
+    assert(org == str);
+#endif
+
+    return tmp->ptr;
 }
