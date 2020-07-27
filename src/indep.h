@@ -75,7 +75,7 @@ extern char *url_quote(char *str);
 inline Str Str_form_unquote(Str x){
     return x->UrlDecode(TRUE, FALSE);
 }
-extern char *shell_quote(char *str);
+extern char *shell_quote(std::string_view str);
 
 extern char *w3m_auxbin_dir();
 extern char *w3m_lib_dir();

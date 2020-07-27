@@ -1812,7 +1812,7 @@ initSelectMenu(void)
         auto buf = tab->GetBuffer(i);
 
         str = Sprintf("<%s>", buf->buffername);
-        if (buf->filename != NULL)
+        if (buf->filename.size())
         {
             switch (buf->currentURL.scheme)
             {

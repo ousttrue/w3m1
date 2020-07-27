@@ -701,7 +701,7 @@ void linend()
 
 void editBf()
 {
-    char *fn = GetCurrentTab()->GetCurrentBuffer()->filename;
+    const char *fn = GetCurrentTab()->GetCurrentBuffer()->filename.c_str();
     Str cmd;
     if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                                              /* Behaving as a pager */
         (GetCurrentTab()->GetCurrentBuffer()->type == NULL && GetCurrentTab()->GetCurrentBuffer()->edit == NULL) ||                            /* Reading shell */
@@ -712,7 +712,7 @@ void editBf()
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->edit)
-        cmd = unquote_mailcap(GetCurrentTab()->GetCurrentBuffer()->edit, GetCurrentTab()->GetCurrentBuffer()->real_type, fn,
+        cmd = unquote_mailcap(GetCurrentTab()->GetCurrentBuffer()->edit, GetCurrentTab()->GetCurrentBuffer()->real_type, const_cast<char*>(fn),
                               checkHeader(GetCurrentTab()->GetCurrentBuffer(), "Content-Type:"), NULL);
     else
         cmd = myEditor(Editor, shell_quote(fn),

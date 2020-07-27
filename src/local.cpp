@@ -206,11 +206,11 @@ check_local_cgi(char *file, int status)
 }
 
 void
-set_environ(const char *var, const char *value)
+set_environ(std::string_view var, std::string_view value)
 {
 #ifdef HAVE_SETENV
-    if (var != NULL && value != NULL)
-	setenv(var, value, 1);
+    if (var.size() && value.size())
+	    setenv(var.data(), value.data(), 1);
 #else				/* not HAVE_SETENV */
 #ifdef HAVE_PUTENV
     static Hash_sv *env_hash = NULL;

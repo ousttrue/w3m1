@@ -53,7 +53,7 @@ struct Buffer : gc_cleanup
 {
     friend struct Tab;
 
-    char *filename;
+    std::string filename;
     std::string buffername;
     Line *firstLine;
     Line *topLine;

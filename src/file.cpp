@@ -5380,7 +5380,7 @@ getNextPage(BufferPtr buf, int plen)
         if (lineBuf2->Size() == 0)
         {
             /* Assume that `cmd == buf->filename' */
-            if (buf->filename)
+            if (buf->filename.size())
                 buf->buffername = Sprintf("%s %s",
                                           CPIPEBUFFERNAME,
                                           conv_from_system(buf->filename))

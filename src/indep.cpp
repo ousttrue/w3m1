@@ -786,29 +786,22 @@ file_unquote(std::string_view str)
 }
 
 char *
-shell_quote(char *str)
+shell_quote(std::string_view str)
 {
-    Str tmp = NULL;
-    char *p;
-
-    for (p = str; *p; p++)
+    Str tmp = Strnew();
+    for (auto p = str.data(); *p; p++)
     {
         if (is_shell_unsafe(*p))
         {
-            if (tmp == NULL)
-                tmp = Strnew_charp_n(str, (int)(p - str));
             tmp->Push('\\');
             tmp->Push(*p);
         }
         else
         {
-            if (tmp)
-                tmp->Push(*p);
+            tmp->Push(*p);
         }
     }
-    if (tmp)
-        return tmp->ptr;
-    return str;
+    return tmp->ptr;
 }
 
 static char *

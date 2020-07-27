@@ -180,7 +180,7 @@ writeBufferName(BufferPtr buf, int n)
     move(n, 0);
     /* FIXME: gettextize? */
     msg = Sprintf("<%s> [%d lines]", buf->buffername, all);
-    if (buf->filename != NULL)
+    if (buf->filename.size())
     {
         switch (buf->currentURL.scheme)
         {

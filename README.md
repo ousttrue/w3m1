@@ -11,7 +11,7 @@ w3m を改造して遊ぶ。
 * [x] redirect が壊れた。文字列連結のミス
 * [ ] tab壊れた
 * [ ] 遅くなった
-* [ ] std::string_view(std::string), nullptr に弱い
+* [ ] std::string_view(std::string), nullptr に弱い(長さを得ようとしてstrlen時)
 
 ## msys2 でとりあえずビルド
 
