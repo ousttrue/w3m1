@@ -68,12 +68,10 @@ static void addLink(BufferPtr buf, struct parsed_tag *tag);
 
 static JMP_BUF AbortLoading;
 
-static ParsedURL *cur_baseURL = NULL;
+static ParsedURL g_cur_baseURL = {};
 ParsedURL *GetCurBaseUrl()
 {
-    if (!cur_baseURL)
-        cur_baseURL = New(ParsedURL);
-    return cur_baseURL;
+    return &g_cur_baseURL;
 }
 
 static char cur_document_charset;
@@ -2261,10 +2259,8 @@ page_loaded:
     if (real_type == NULL)
         real_type = t;
     proc = loadBuffer;
-#ifdef USE_IMAGE
-    cur_baseURL = New(ParsedURL);
-    copyParsedURL(cur_baseURL, &pu);
-#endif
+
+    copyParsedURL(GetCurBaseUrl(), &pu);
 
     current_content_length = 0;
     if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
@@ -2696,7 +2692,7 @@ Str process_img(struct parsed_tag *tag, int width)
             Image image;
             ParsedURL u;
 
-            u.Parse2(wc_conv(p, InnerCharset, cur_document_charset)->ptr, cur_baseURL);
+            u.Parse2(wc_conv(p, InnerCharset, cur_document_charset)->ptr, GetCurBaseUrl());
             image.url = parsedURL2Str(&u)->ptr;
             if (!uncompressed_file_type(u.file, &image.ext))
                 image.ext = filename_extension(u.file, TRUE);
@@ -2704,7 +2700,7 @@ Str process_img(struct parsed_tag *tag, int width)
             image.width = w;
             image.height = i;
 
-            image.cache = getImage(&image, cur_baseURL, IMG_FLAG_SKIP);
+            image.cache = getImage(&image, GetCurBaseUrl(), IMG_FLAG_SKIP);
             if (image.cache && image.cache->width > 0 &&
                 image.cache->height > 0)
             {
@@ -3998,7 +3994,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                             ParsedURL u;
                             Image *image;
 
-                            u.Parse2(a_img->url, cur_baseURL);
+                            u.Parse2(a_img->url, GetCurBaseUrl());
                             a_img->image = image = New(Image);
                             image->url = parsedURL2Str(&u)->ptr;
                             if (!uncompressed_file_type(u.file, &image->ext))
@@ -4019,7 +4015,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                             image->map = q;
                             image->ismap = ismap;
                             image->touch = 0;
-                            image->cache = getImage(image, cur_baseURL,
+                            image->cache = getImage(image, GetCurBaseUrl(),
                                                     IMG_FLAG_SKIP);
                         }
                         else if (iseq < 0)
@@ -5013,8 +5009,8 @@ loadImageBuffer(URLFile *uf, BufferPtr newBuf)
     image.width = -1;
     image.height = -1;
     image.cache = NULL;
-    cache = getImage(&image, cur_baseURL, IMG_FLAG_AUTO);
-    if (!cur_baseURL->is_nocache && cache->loaded & IMG_FLAG_LOADED &&
+    cache = getImage(&image, GetCurBaseUrl(), IMG_FLAG_AUTO);
+    if (!GetCurBaseUrl()->is_nocache && cache->loaded & IMG_FLAG_LOADED &&
         !stat(cache->file, &st))
         goto image_buffer;
 
@@ -5292,8 +5288,7 @@ openGeneralPagerBuffer(InputStream *stream)
     else if (activeImage && displayImage && !useExtImageViewer &&
              !(w3m_dump & ~DUMP_FRAME) && !strncasecmp(t, "image/", 6))
     {
-        cur_baseURL = New(ParsedURL);
-        cur_baseURL->Parse("-", NULL);
+        GetCurBaseUrl()->Parse("-", NULL);
         buf = loadImageBuffer(&uf, t_buf);
         buf->type = "text/html";
     }
@@ -6368,7 +6363,9 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     else
         image_flag = IMG_FLAG_SKIP;
     if (newBuf->currentURL.file)
-        cur_baseURL = baseURL(newBuf);
+    {
+        copyParsedURL(GetCurBaseUrl(), baseURL(newBuf));
+    }
 #endif
 
     if (w3m_halfload)
