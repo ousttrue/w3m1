@@ -267,7 +267,7 @@ void URLFile::openURL(char *url, ParsedURL *pu, const ParsedURL *current,
         u = url;
 retry:
     pu->Parse2(u, current);
-    if (pu->scheme == SCM_LOCAL && pu->file.size())
+    if (pu->scheme == SCM_LOCAL && pu->file.empty())
     {
         if (pu->label != NULL)
         {
