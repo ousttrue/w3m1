@@ -705,7 +705,7 @@ void editBf()
     Str cmd;
     if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                                              /* Behaving as a pager */
         (GetCurrentTab()->GetCurrentBuffer()->type == NULL && GetCurrentTab()->GetCurrentBuffer()->edit == NULL) ||                            /* Reading shell */
-        GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || !strcmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.file, "-") || /* file is std input  */
+        GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentTab()->GetCurrentBuffer()->currentURL.file == "-" || /* file is std input  */
         GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
     { /* Frame */
         disp_err_message("Can't edit other than local file", TRUE);
@@ -1632,7 +1632,7 @@ void reload()
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->currentURL.scheme == SCM_LOCAL &&
-        !strcmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.file, "-"))
+        GetCurrentTab()->GetCurrentBuffer()->currentURL.file == "-")
     {
         /* file is std input */
         /* FIXME: gettextize? */
@@ -1858,7 +1858,7 @@ void extbrz()
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->currentURL.scheme == SCM_LOCAL &&
-        !strcmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.file, "-"))
+        GetCurrentTab()->GetCurrentBuffer()->currentURL.file == "-")
     {
         /* file is std input */
         /* FIXME: gettextize? */

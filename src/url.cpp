@@ -475,6 +475,16 @@ SchemaTypes getURLScheme(char **url)
     return SCM_UNKNOWN;
 }
 
+const char *string_strchr(const std::string &src, int c)
+{
+    auto pos = src.find(c);
+    if (pos == std::string::npos)
+    {
+        return nullptr;
+    }
+    return src.c_str() + pos;
+}
+
 void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
 {
     char *p, *q;
@@ -490,7 +500,7 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
     this->pass.clear();
     this->host.clear();
     this->is_nocache = 0;
-    this->file = NULL;
+    this->file.clear();
     this->real_file = NULL;
     this->query = NULL;
     this->label = NULL;
@@ -771,7 +781,7 @@ do_label:
 
 void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
 {
-    char *p;
+    const char *p;
     Str tmp;
     int relative_uri = FALSE;
 
@@ -783,8 +793,8 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
         return;
     if (this->scheme == SCM_NEWS || this->scheme == SCM_NEWS_GROUP)
     {
-        if (this->file && !strchr(this->file, '@') &&
-            (!(p = strchr(this->file, '/')) || strchr(p + 1, '-') ||
+        if (this->file.size() && !string_strchr(this->file, '@') &&
+            (!(p = string_strchr(this->file, '/')) || strchr(p + 1, '-') ||
              *(p + 1) == '\0'))
             this->scheme = SCM_NEWS_GROUP;
         else
@@ -793,10 +803,10 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
     }
     if (this->scheme == SCM_NNTP || this->scheme == SCM_NNTP_GROUP)
     {
-        if (this->file && *this->file == '/')
-            this->file = allocStr(this->file + 1, -1);
-        if (this->file && !strchr(this->file, '@') &&
-            (!(p = strchr(this->file, '/')) || strchr(p + 1, '-') ||
+        if (this->file.size() && this->file[0] == '/')
+            this->file = this->file.substr(1);
+        if (this->file.size() && !string_strchr(this->file, '@') &&
+            (!(p = string_strchr(this->file.c_str(), '/')) || strchr(p + 1, '-') ||
              *(p + 1) == '\0'))
             this->scheme = SCM_NNTP_GROUP;
         else
@@ -835,16 +845,12 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
         this->pass = current->pass;
         this->host = current->host;
         this->port = current->port;
-        if (this->file && *this->file)
+        if (this->file.size() && this->file[0])
         {
 #ifdef USE_EXTERNAL_URI_LOADER
-            if (this->scheme == SCM_UNKNOWN && strchr(this->file, ':') == NULL && current && (p = strchr(current->file, ':')) != NULL)
+            if (this->scheme == SCM_UNKNOWN && strchr(const_cast<char *>(this->file.c_str()), ':') == NULL && current && (p = string_strchr(current->file, ':')) != NULL)
             {
-                this->file = Sprintf("%s:%s",
-                                     allocStr(current->file,
-                                              p - current->file),
-                                     this->file)
-                                 ->ptr;
+                this->file = Strnew_m_charp(current->file.substr(0,  p - current->file.c_str()), ":", this->file)->ptr;
             }
             else
 #endif
@@ -859,8 +865,8 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
                 )
             {
                 /* file is relative [process 1] */
-                p = this->file;
-                if (current->file)
+                p = this->file.c_str();
+                if (current->file.size())
                 {
                     tmp = Strnew(current->file);
                     while (tmp->Size() > 0)
@@ -891,7 +897,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
         /* comment: query part need not to be completed
 	 * from the current URL. */
     }
-    if (this->file)
+    if (this->file.size())
     {
 #ifdef __EMX__
         if (this->scheme == SCM_LOCAL)
@@ -909,7 +915,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
 #ifdef SUPPORT_DOS_DRIVE_PREFIX /* for 'drive:' */
             !(IS_ALPHA(this->file[0]) && this->file[1] == ':') &&
 #endif
-            strcmp(this->file, "-"))
+            this->file != "-")
         {
             /* local file, relative path */
             tmp = Strnew(CurrentDir);
@@ -934,7 +940,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
 		 * elements like `//', `..' or `.' in the this->file. It is 
 		 * server's responsibility to canonicalize such path.
 		 */
-                this->file = cleanupName(this->file);
+                this->file = cleanupName(this->file.c_str());
             }
         }
         else if (
@@ -949,7 +955,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
 	     * In both case, there must be no side effect with
 	     * cleanupName(). (I hope so...)
 	     */
-            this->file = cleanupName(this->file);
+            this->file = cleanupName(this->file.c_str());
         }
         if (this->scheme == SCM_LOCAL)
         {
@@ -978,7 +984,7 @@ void copyParsedURL(ParsedURL *p, const ParsedURL *q)
     p->user = q->user;
     p->pass = q->pass;
     p->host = q->host;
-    p->file = ALLOC_STR(q->file);
+    p->file = q->file;
     p->real_file = ALLOC_STR(q->real_file);
     p->label = ALLOC_STR(q->label);
     p->query = ALLOC_STR(q->query);
@@ -994,12 +1000,12 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
     {
         return Strnew(pu->file);
     }
-    if (pu->host.empty() && pu->file == NULL && pu->label != NULL)
+    if (pu->host.empty() && pu->file.empty() && pu->label != NULL)
     {
         /* local label */
         return Sprintf("#%s", pu->label);
     }
-    if (pu->scheme == SCM_LOCAL && !strcmp(pu->file, "-"))
+    if (pu->scheme == SCM_LOCAL && pu->file == "-")
     {
         tmp = Strnew("-");
         if (pu->label)
@@ -1054,14 +1060,9 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
         }
     }
     if (
-#ifdef USE_NNTP
+
         pu->scheme != SCM_NEWS && pu->scheme != SCM_NEWS_GROUP &&
-#endif /* USE_NNTP */
-        (pu->file == NULL || (pu->file[0] != '/'
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-                              && !(IS_ALPHA(pu->file[0]) && pu->file[1] == ':' && pu->host == NULL)
-#endif
-                                  )))
+        (pu->file.empty() || pu->file[0] != '/'))
         tmp->Push('/');
     tmp->Push(pu->file);
     if (pu->scheme == SCM_FTPDIR && tmp->Back() != '/')

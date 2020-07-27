@@ -30,7 +30,7 @@ struct ParsedURL
     std::string pass;
     std::string host;
     int port = 0;
-    char *file = nullptr;
+    std::string file;
     char *real_file = nullptr;
     char *query = nullptr;
     char *label = nullptr;

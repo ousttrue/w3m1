@@ -186,7 +186,7 @@ writeBufferName(BufferPtr buf, int n)
         {
         case SCM_LOCAL:
         case SCM_LOCAL_CGI:
-            if (strcmp(buf->currentURL.file, "-"))
+            if (buf->currentURL.file != "-")
             {
                 msg->Push(' ');
                 msg->Push(conv_from_system(buf->currentURL.real_file));

@@ -1769,7 +1769,8 @@ static int
 same_url_p(ParsedURL *pu1, ParsedURL *pu2)
 {
     return (pu1->scheme == pu2->scheme && pu1->port == pu2->port &&
-            (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) && (pu1->file ? pu2->file ? !strcmp(pu1->file, pu2->file) : 0 : 1));
+            (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) && 
+            (pu1->file.size() ? pu2->file.size() ? pu1->file == pu2->file : 0 : 1));
 }
 
 static std::vector<ParsedURL> g_puv;
@@ -1996,7 +1997,7 @@ load_doc:
             goto load_doc;
         }
         t = checkContentType(t_buf);
-        if (t == NULL && pu.file != NULL)
+        if (t == NULL && pu.file.size())
         {
             if (!((http_response_code >= 400 && http_response_code <= 407) ||
                   (http_response_code >= 500 && http_response_code <= 505)))
@@ -2108,7 +2109,7 @@ load_doc:
         check_compression(path, &f);
         if (f.compression != CMP_NOCOMPRESS)
         {
-            auto t1 = uncompressed_file_type(pu.file, NULL);
+            auto t1 = uncompressed_file_type(pu.file.c_str(), NULL);
             real_type = f.guess_type;
             if (t1)
                 t = t1;
@@ -2300,7 +2301,7 @@ page_loaded:
             if (t_buf == NULL)
                 t_buf = newBuffer(INIT_BUFFER_WIDTH);
             uncompress_stream(&f, &t_buf->sourcefile);
-            uncompressed_file_type(pu.file, &f.ext);
+            uncompressed_file_type(pu.file.c_str(), &f.ext);
         }
         else
         {
@@ -2340,14 +2341,14 @@ page_loaded:
     else if (!(w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
     {
         if (!do_download && doExternal(f,
-                                       pu.real_file ? pu.real_file : pu.file,
+                                       pu.real_file ? pu.real_file : const_cast<char*>(pu.file.c_str()),
                                        t, &b, t_buf))
         {
             if (b)
             {
                 b->real_scheme = f.scheme;
                 b->real_type = real_type;
-                if (b->currentURL.host.empty() && b->currentURL.file == NULL)
+                if (b->currentURL.host.empty() && b->currentURL.file.empty())
                     copyParsedURL(&b->currentURL, &pu);
             }
             UFclose(&f);
@@ -2389,14 +2390,14 @@ page_loaded:
         t_buf->ssl_certificate = f.ssl_certificate;
 #endif
     frame_source = flag & RG_FRAME_SRC;
-    b = loadSomething(&f, pu.real_file ? pu.real_file : pu.file, proc, t_buf);
+    b = loadSomething(&f, pu.real_file ? pu.real_file : const_cast<char*>(pu.file.c_str()), proc, t_buf);
     UFclose(&f);
     frame_source = 0;
     if (b)
     {
         b->real_scheme = f.scheme;
         b->real_type = real_type;
-        if (b->currentURL.host.empty() && b->currentURL.file == NULL)
+        if (b->currentURL.host.empty() && b->currentURL.file.empty())
             copyParsedURL(&b->currentURL, &pu);
         if (is_html_type(t))
             b->type = "text/html";
@@ -2694,8 +2695,8 @@ Str process_img(struct parsed_tag *tag, int width)
 
             u.Parse2(wc_conv(p, InnerCharset, cur_document_charset)->ptr, GetCurBaseUrl());
             image.url = parsedURL2Str(&u)->ptr;
-            if (!uncompressed_file_type(u.file, &image.ext))
-                image.ext = filename_extension(u.file, TRUE);
+            if (!uncompressed_file_type(u.file.c_str(), &image.ext))
+                image.ext = filename_extension(u.file.c_str(), TRUE);
             image.cache = NULL;
             image.width = w;
             image.height = i;
@@ -4002,8 +4003,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                             u.Parse2(a_img->url, GetCurBaseUrl());
                             a_img->image = image = New(Image);
                             image->url = parsedURL2Str(&u)->ptr;
-                            if (!uncompressed_file_type(u.file, &image->ext))
-                                image->ext = filename_extension(u.file, TRUE);
+                            if (!uncompressed_file_type(u.file.c_str(), &image->ext))
+                                image->ext = filename_extension(u.file.c_str(), TRUE);
                             image->cache = NULL;
                             image->width =
                                 (w > MAX_IMAGE_SIZE) ? MAX_IMAGE_SIZE : w;
@@ -6367,7 +6368,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         image_flag = IMG_FLAG_AUTO;
     else
         image_flag = IMG_FLAG_SKIP;
-    if (newBuf->currentURL.file)
+    if (newBuf->currentURL.file.size())
     {
         copyParsedURL(GetCurBaseUrl(), baseURL(newBuf));
     }

@@ -1052,7 +1052,7 @@ int main(int argc, char **argv, char **envp)
             continue;
         if (newbuf->pagerSource ||
             (newbuf->real_scheme == SCM_LOCAL && newbuf->header_source &&
-             newbuf->currentURL.file && strcmp(newbuf->currentURL.file, "-")))
+             newbuf->currentURL.file != "-"))
             newbuf->search_header = search_header;
         if (GetCurrentTab() == NULL)
         {

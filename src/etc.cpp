@@ -956,7 +956,7 @@ last_modified(BufferPtr buf)
     }
     else if (buf->currentURL.scheme == SCM_LOCAL)
     {
-        if (stat(buf->currentURL.file, &st) < 0)
+        if (stat(buf->currentURL.file.c_str(), &st) < 0)
             return "unknown";
         return ctime(&st.st_mtime);
     }

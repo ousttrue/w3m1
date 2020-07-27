@@ -267,7 +267,7 @@ void URLFile::openURL(char *url, ParsedURL *pu, const ParsedURL *current,
         u = url;
 retry:
     pu->Parse2(u, current);
-    if (pu->scheme == SCM_LOCAL && pu->file == NULL)
+    if (pu->scheme == SCM_LOCAL && pu->file.size())
     {
         if (pu->label != NULL)
         {
@@ -291,7 +291,7 @@ retry:
     this->scheme = pu->scheme;
     this->url = parsedURL2Str(pu)->ptr;
     pu->is_nocache = (option->flag & RG_NOCACHE);
-    this->ext = filename_extension(pu->file, 1);
+    this->ext = filename_extension(pu->file.c_str(), 1);
 
     hr->command = HR_COMMAND_GET;
     hr->flag = 0;
@@ -368,11 +368,11 @@ retry:
         return;
     case SCM_FTP:
     case SCM_FTPDIR:
-        if (pu->file == NULL)
-            pu->file = allocStr("/", -1);
+        if (pu->file.empty())
+            pu->file = "/";
         if (non_null(FTP_proxy) &&
             !Do_not_use_proxy &&
-            pu->host.size() && !check_no_proxy(const_cast<char*>(pu->host.c_str())))
+            pu->host.size() && !check_no_proxy(const_cast<char *>(pu->host.c_str())))
         {
             hr->flag |= HR_FLAG_PROXY;
             sock = openSocket(FTP_proxy_parsed.host.c_str(),
@@ -395,8 +395,8 @@ retry:
 
     case SCM_HTTPS:
 
-        if (pu->file == NULL)
-            pu->file = allocStr("/", -1);
+        if (pu->file.empty())
+            pu->file = "/";
         if (request && request->method == FORM_METHOD_POST && request->body)
             hr->command = HR_COMMAND_POST;
         if (request && request->method == FORM_METHOD_HEAD)
@@ -407,7 +407,7 @@ retry:
 
                                           non_null(HTTP_proxy)) &&
             !Do_not_use_proxy &&
-            pu->host.size() && !check_no_proxy(const_cast<char*>(pu->host.c_str())))
+            pu->host.size() && !check_no_proxy(const_cast<char *>(pu->host.c_str())))
         {
             hr->flag |= HR_FLAG_PROXY;
             if (pu->scheme == SCM_HTTPS && *status == HTST_CONNECT)
@@ -475,7 +475,7 @@ retry:
             }
             if (pu->scheme == SCM_HTTPS)
             {
-                if (!(sslh = openSSLHandle(sock, const_cast<char*>(pu->host.c_str()),
+                if (!(sslh = openSSLHandle(sock, const_cast<char *>(pu->host.c_str()),
                                            &this->ssl_certificate)))
                 {
                     *status = HTST_MISSING;
@@ -538,7 +538,7 @@ retry:
         this->stream = openNewsStream(pu);
         return;
     case SCM_DATA:
-        if (pu->file == NULL)
+        if (pu->file.empty())
             return;
         p = Strnew(pu->file)->ptr;
         q = strchr(p, ',');

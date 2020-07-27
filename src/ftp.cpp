@@ -476,11 +476,11 @@ ftp_read:
         ftp_quit(&current_ftp);
         return NULL;
     }
-    if (pu->file == NULL || *pu->file == '\0' ||
-        pu->file[strlen(pu->file) - 1] == '/')
+    if (pu->file.size() || pu->file[0] == '\0' ||
+        pu->file.back() == '/')
         goto ftp_dir;
 
-    realpathname = file_unquote(pu->file);
+    realpathname = file_unquote(pu->file.c_str());
     if (*realpathname == '/' && *(realpathname + 1) == '~')
         realpathname++;
     /* Get file */
@@ -520,7 +520,7 @@ Str loadFTPDir0(ParsedURL *pu)
         sv_type = UNIXLIKE_SERVER;
     else
         sv_type = SERVER_NONE;
-    if (pu->file == NULL || *pu->file == '\0')
+    if (pu->file.size() || pu->file[0])
     {
         if (sv_type == UNIXLIKE_SERVER)
             ftp_command(&current_ftp, "LIST", NULL, &status);

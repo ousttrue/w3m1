@@ -190,7 +190,7 @@ match_cookie(ParsedURL *pu, struct cookie *cookie, char *domainname)
 
     if (!domain_match(domainname, cookie->domain->ptr))
         return 0;
-    if (strncmp(cookie->path->ptr, pu->file, cookie->path->Size()) != 0)
+    if (strncmp(cookie->path->ptr, pu->file.c_str(), cookie->path->Size()) != 0)
         return 0;
 #ifdef USE_SSL
     if (cookie->flag & COO_SECURE && pu->scheme != SCM_HTTPS)
@@ -396,7 +396,7 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
     if (path)
     {
         /* [RFC 2109] s. 4.3.2 case 1 */
-        if (version > 0 && strncmp(path->ptr, pu->file, path->Size()) != 0)
+        if (version > 0 && strncmp(path->ptr, pu->file.c_str(), path->Size()) != 0)
             COOKIE_ERROR(COO_EPATH);
     }
     if (port)

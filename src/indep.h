@@ -70,7 +70,7 @@ inline char* html_quote(Str str)
 
 
 extern char *file_quote(char *str);
-extern char *file_unquote(char *str);
+extern char *file_unquote(std::string_view str);
 extern char *url_quote(char *str);
 inline Str Str_form_unquote(Str x){
     return x->UrlDecode(TRUE, FALSE);

@@ -259,7 +259,7 @@ openNewsStream(ParsedURL *pu)
     Str tmp;
     int port, status;
 
-    if (pu->file == NULL || *pu->file == '\0')
+    if (pu->file.size() || pu->file[0] == '\0')
         return NULL;
     if (pu->scheme == SCM_NNTP || pu->scheme == SCM_NNTP_GROUP)
         host = Strnew(pu->host)->ptr;
@@ -306,7 +306,7 @@ openNewsStream(ParsedURL *pu)
     if (pu->scheme == SCM_NNTP || pu->scheme == SCM_NEWS)
     {
         /* News article */
-        group = file_unquote(allocStr(pu->file, -1));
+        group = file_unquote(pu->file);
         p = strchr(group, '/');
         if (p == NULL)
         { /* <message-id> */
@@ -347,9 +347,9 @@ Str loadNewsgroup(ParsedURL *pu, wc_ces *charset)
 
     *charset = WC_CES_US_ASCII;
 
-    if (current_news.host == NULL || !pu->file || *pu->file == '\0')
+    if (current_news.host == NULL || pu->file.empty() || pu->file[0] == '\0')
         return NULL;
-    group = allocStr(pu->file, -1);
+    group = allocStr(pu->file.c_str(), -1);
     if (pu->scheme == SCM_NNTP_GROUP)
         scheme = "/";
     else

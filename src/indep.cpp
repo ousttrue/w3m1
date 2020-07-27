@@ -393,7 +393,7 @@ currentdir()
     return path;
 }
 
-char * cleanupName(const char *name)
+char *cleanupName(const char *name)
 {
     auto buf = allocStr(name, -1);
     auto p = buf;
@@ -512,7 +512,7 @@ expandPath(const char *name)
         return extpath->ptr;
     }
 rest:
-    return const_cast<char*>(name);
+    return const_cast<char *>(name);
 }
 
 #ifndef HAVE_STRCHR
@@ -672,7 +672,7 @@ void cleanup_line(Str s, int mode)
 std::string html_quote(std::string_view str)
 {
     std::stringstream ss;
-    for (auto c: str)
+    for (auto c : str)
     {
         auto q = html_quote_char(c);
         if (q)
@@ -704,8 +704,6 @@ char *html_quote(const char *str)
     }
     return tmp->ptr;
 }
-
-
 
 static const char xdigit[0x11] = "0123456789ABCDEF";
 
@@ -764,35 +762,27 @@ file_quote(char *str)
 }
 
 char *
-file_unquote(char *str)
+file_unquote(std::string_view str)
 {
-    Str tmp = NULL;
-    char *p, *q;
-    int c;
-
-    for (p = str; *p;)
+    Str tmp = Strnew();
+    for (auto p = str.data(); *p;)
     {
         if (*p == '%')
         {
-            q = p;
-            c = url_unquote_char(&q);
+            auto q = p;
+            auto c = url_unquote_char(&q);
             if (c >= 0)
             {
-                if (tmp == NULL)
-                    tmp = Strnew_charp_n(str, (int)(p - str));
                 if (c != '\0' && c != '\n' && c != '\r')
                     tmp->Push((char)c);
                 p = q;
                 continue;
             }
         }
-        if (tmp)
-            tmp->Push(*p);
+        tmp->Push(*p);
         p++;
     }
-    if (tmp)
-        return tmp->ptr;
-    return str;
+    return tmp->ptr;
 }
 
 char *

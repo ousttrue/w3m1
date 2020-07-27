@@ -1817,11 +1817,10 @@ initSelectMenu(void)
             switch (buf->currentURL.scheme)
             {
             case SCM_LOCAL:
-                if (strcmp(buf->currentURL.file, "-"))
+                if (buf->currentURL.file != "-")
                 {
                     str->Push( ' ');
-                    str->Push(
-                                 conv_from_system(buf->currentURL.real_file));
+                    str->Push(conv_from_system(buf->currentURL.real_file));
                 }
                 break;
                 /* case SCM_UNKNOWN: */

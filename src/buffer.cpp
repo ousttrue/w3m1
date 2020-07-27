@@ -470,7 +470,7 @@ void reshapeBuffer(BufferPtr buf)
     if (buf->header_source)
     {
         if (buf->currentURL.scheme != SCM_LOCAL ||
-            buf->mailcap_source || !strcmp(buf->currentURL.file, "-"))
+            buf->mailcap_source || buf->currentURL.file == "-")
         {
             URLFile h(SCM_LOCAL, NULL);
             examineFile(buf->header_source, &h);
