@@ -344,46 +344,65 @@ static int GetEntity(const char *src, int value)
     return found->second;
 }
 
+static std::pair<const char *, int> getescapechar_sharp(const char *p)
+{
+    if (*p == 'x' || *p == 'X')
+    {
+        // hex
+        p++;
+        if (!IS_XDIGIT(*p))
+        {
+            return std::make_pair(p, -1);
+        }
+        uint32_t dummy = 0;
+        for (; IS_XDIGIT(*p); p++)
+        {
+            dummy = dummy * 0x10 + GET_MYCDIGIT(*p);
+        }
+        if (*p == ';')
+        {
+            p++;
+        }
+        return std::make_pair(p, dummy);
+    }
+    else
+    {
+        // digit
+        if (!IS_DIGIT(*p))
+        {
+            return std::make_pair(p, -1);
+        }
+        uint32_t dummy = 0;
+        for (; IS_DIGIT(*p); p++)
+        {
+            dummy = dummy * 10 + GET_MYCDIGIT(*p);
+        }
+        if (*p == ';')
+        {
+            p++;
+        }
+        return std::make_pair(p, dummy);
+    }
+
+    assert(false);
+    return std::make_pair(p, -1);
+}
+
 int getescapechar(const char **str)
 {
     int dummy = -1;
-    const char *p = *str;
     int strict_entity = 1;
 
+    const char *p = *str;
     if (*p == '&')
-        p++;
-    if (*p == '#')
     {
         p++;
-        if (*p == 'x' || *p == 'X')
-        {
-            p++;
-            if (!IS_XDIGIT(*p))
-            {
-                *str = p;
-                return -1;
-            }
-            for (dummy = GET_MYCDIGIT(*p), p++; IS_XDIGIT(*p); p++)
-                dummy = dummy * 0x10 + GET_MYCDIGIT(*p);
-            if (*p == ';')
-                p++;
-            *str = p;
-            return dummy;
-        }
-        else
-        {
-            if (!IS_DIGIT(*p))
-            {
-                *str = p;
-                return -1;
-            }
-            for (dummy = GET_MYCDIGIT(*p), p++; IS_DIGIT(*p); p++)
-                dummy = dummy * 10 + GET_MYCDIGIT(*p);
-            if (*p == ';')
-                p++;
-            *str = p;
-            return dummy;
-        }
+    }
+    if (*p == '#')
+    {
+        auto [q, dummy] = getescapechar_sharp(p + 1);
+        *str = q;
+        return dummy;
     }
     if (!IS_ALPHA(*p))
     {
