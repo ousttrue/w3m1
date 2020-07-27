@@ -1769,7 +1769,7 @@ static int
 same_url_p(ParsedURL *pu1, ParsedURL *pu2)
 {
     return (pu1->scheme == pu2->scheme && pu1->port == pu2->port &&
-            (pu1->host.size() ? pu2->host.size() ? pu1->host==pu2->host : 0 : 1) && (pu1->file ? pu2->file ? !strcmp(pu1->file, pu2->file) : 0 : 1));
+            (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) && (pu1->file ? pu2->file ? !strcmp(pu1->file, pu2->file) : 0 : 1));
 }
 
 static std::vector<ParsedURL> g_puv;
@@ -1957,7 +1957,7 @@ load_doc:
              (pu.scheme == SCM_GOPHER && non_null(GOPHER_proxy)) ||
 #endif /* USE_GOPHER */
              (pu.scheme == SCM_FTP && non_null(FTP_proxy))) &&
-         !Do_not_use_proxy && !check_no_proxy(const_cast<char*>(pu.host.c_str()))))
+         !Do_not_use_proxy && !check_no_proxy(const_cast<char *>(pu.host.c_str()))))
     {
 
         if (fmInitialized)
@@ -3265,7 +3265,7 @@ void feed_select(char *str)
                     else
                         prev_spaces = 0;
                     if (*p == '&')
-                        cur_option->Push(getescapecmd(&p));
+                        cur_option->Push(getescapecmd(p).second);
                     else
                         cur_option->Push(*(p++));
                 }
@@ -3420,7 +3420,7 @@ void feed_textarea(char *str)
     while (*str)
     {
         if (*str == '&')
-            textarea_str[n_textarea]->Push(getescapecmd(&str));
+            textarea_str[n_textarea]->Push(getescapecmd(str).second);
         else if (*str == '\n')
         {
             textarea_str[n_textarea]->Push("\r\n");
@@ -3787,7 +3787,12 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 /* 
                  * & escape processing
                  */
-                p = getescapecmd(&str);
+                {
+                    auto [pos, view] = getescapecmd(str);
+                    str = const_cast<char *>(pos);
+                    p = const_cast<char *>(view.data());
+                }
+
                 while (*p)
                 {
                     PSIZE;

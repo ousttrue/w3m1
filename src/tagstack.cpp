@@ -55,14 +55,17 @@ process_n_title(struct parsed_tag *tag)
 }
 
 static void
-feed_title(char *str)
+feed_title(const char *str)
 {
     if (!cur_title)
         return;
     while (*str)
     {
-        if (*str == '&')
-            cur_title->Push(getescapecmd(&str));
+        if (*str == '&'){
+            auto [pos, view] = getescapecmd(str);
+            cur_title->Push(view);
+            str = pos;
+        }
         else if (*str == '\n' || *str == '\r')
         {
             cur_title->Push(' ');

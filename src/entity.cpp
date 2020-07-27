@@ -1,5 +1,4 @@
-
-#include <string_view>
+#include "entity.h"
 #include "myctype.h"
 #include "indep.h"
 #include <assert.h>
@@ -479,23 +478,22 @@ int getescapechar(const char **str)
     return dummy;
 }
 
-char *getescapecmd(const char **s)
+std::pair<const char *, std::string_view> getescapecmd(const char *s)
 {
-    const char *save = *s;
-
-    int ch = getescapechar(s);
+    auto save = s;
+    int ch = getescapechar(&s);
     if (ch >= 0)
     {
-        return (char *)conv_entity(ch);
+        return {s, std::string_view(conv_entity(ch))};
     }
 
-    Str tmp;
-    if (*save != '&')
-        tmp = Strnew("&");
-    else
-        tmp = Strnew();
-    tmp->Push(save, *s - save);
-    return tmp->ptr;
+    // Str tmp;
+    // if (*save != '&')
+    //     tmp = Strnew("&");
+    // else
+    //     tmp = Strnew();
+    // tmp->Push(save, *s - save);
+    return {s, std::string_view(save, s-save)};
 }
 
 ///
@@ -513,7 +511,12 @@ html_unquote(const char *str)
     {
         if (*p == '&')
         {
-            auto q = getescapecmd(&p);
+            auto [pos, q] = getescapecmd(p);
+            p = pos;
+            if(q[0]!='&')
+            {
+                tmp->Push('&');
+            }
             tmp->Push(q);
         }
         else
