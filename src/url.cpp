@@ -501,7 +501,7 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
     this->host.clear();
     this->is_nocache = 0;
     this->file.clear();
-    this->real_file = NULL;
+    this->real_file.clear();
     this->query = NULL;
     this->label = NULL;
 
@@ -985,7 +985,7 @@ void copyParsedURL(ParsedURL *p, const ParsedURL *q)
     p->pass = q->pass;
     p->host = q->host;
     p->file = q->file;
-    p->real_file = ALLOC_STR(q->real_file);
+    p->real_file = q->real_file;
     p->label = ALLOC_STR(q->label);
     p->query = ALLOC_STR(q->query);
 }

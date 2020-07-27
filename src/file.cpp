@@ -1863,7 +1863,7 @@ load_doc:
         case SCM_LOCAL:
         {
             struct stat st;
-            if (stat(pu.real_file, &st) < 0)
+            if (stat(pu.real_file.c_str(), &st) < 0)
                 return NULL;
             if (S_ISDIR(st.st_mode))
             {
@@ -1882,7 +1882,7 @@ load_doc:
                 }
                 else
                 {
-                    page = loadLocalDir(pu.real_file);
+                    page = loadLocalDir(const_cast<char*>(pu.real_file.c_str()));
                     t = "local:directory";
 #ifdef USE_M17N
                     charset = SystemCharset;
@@ -2277,9 +2277,9 @@ page_loaded:
         if (pu.scheme == SCM_LOCAL)
         {
             struct stat st;
-            if (PreserveTimestamp && !stat(pu.real_file, &st))
+            if (PreserveTimestamp && !stat(pu.real_file.c_str(), &st))
                 f.modtime = st.st_mtime;
-            file = conv_from_system(guess_save_name(NULL, pu.real_file));
+            file = conv_from_system(guess_save_name(NULL, pu.real_file.c_str()));
         }
         else
             file = guess_save_name(t_buf, pu.file);
@@ -2342,7 +2342,7 @@ page_loaded:
     else if (!(w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
     {
         if (!do_download && doExternal(f,
-                                       pu.real_file ? pu.real_file : const_cast<char *>(pu.file.c_str()),
+                                       pu.real_file.size() ? const_cast<char*>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()),
                                        t, &b, t_buf))
         {
             if (b)
@@ -2362,7 +2362,7 @@ page_loaded:
             if (pu.scheme == SCM_LOCAL)
             {
                 UFclose(&f);
-                _doFileCopy(pu.real_file,
+                _doFileCopy(const_cast<char*>(pu.real_file.c_str()),
                             conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
             }
             else
@@ -2391,7 +2391,7 @@ page_loaded:
         t_buf->ssl_certificate = f.ssl_certificate;
 #endif
     frame_source = flag & RG_FRAME_SRC;
-    b = loadSomething(&f, pu.real_file ? pu.real_file : const_cast<char *>(pu.file.c_str()), proc, t_buf);
+    b = loadSomething(&f, pu.real_file.size() ? const_cast<char*>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()), proc, t_buf);
     UFclose(&f);
     frame_source = 0;
     if (b)

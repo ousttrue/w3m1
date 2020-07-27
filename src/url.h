@@ -31,7 +31,7 @@ struct ParsedURL
     std::string host;
     int port = 0;
     std::string file;
-    char *real_file = nullptr;
+    std::string real_file;
     char *query = nullptr;
     char *label = nullptr;
     int is_nocache = 0;

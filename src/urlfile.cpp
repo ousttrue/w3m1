@@ -304,12 +304,12 @@ retry:
     case SCM_LOCAL_CGI:
         if (request && request->body)
             /* local CGI: POST */
-            this->stream = newFileStream(localcgi_post(pu->real_file, pu->query,
+            this->stream = newFileStream(localcgi_post(const_cast<char*>(pu->real_file.c_str()), pu->query,
                                                        request, option->referer),
                                          (FileStreamCloseFunc)fclose);
         else
             /* lodal CGI: GET */
-            this->stream = newFileStream(localcgi_get(pu->real_file, pu->query,
+            this->stream = newFileStream(localcgi_get(const_cast<char*>(pu->real_file.c_str()), pu->query,
                                                       option->referer),
                                          (FileStreamCloseFunc)fclose);
         if (this->stream)
@@ -318,10 +318,10 @@ retry:
             this->scheme = pu->scheme = SCM_LOCAL_CGI;
             return;
         }
-        examineFile(pu->real_file, this);
+        examineFile(const_cast<char*>(pu->real_file.c_str()), this);
         if (this->stream == NULL)
         {
-            if (dir_exist(pu->real_file))
+            if (dir_exist(const_cast<char*>(pu->real_file.c_str())))
             {
                 add_index_file(pu, this);
                 if (this->stream == NULL)
