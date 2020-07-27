@@ -56,8 +56,11 @@ extern int strncasecmp(const char *s1, const char *s2, size_t n);
 extern char *strcasestr(const char *s1, const char *s2);
 #endif
 extern int strcasemstr(char *str, char *srch[], char **ret_ptr);
-extern char *remove_space(char *str);
+
+char *remove_space(const char *str);
+
 extern int non_null(char *s);
+
 extern void cleanup_line(Str s, int mode);
 
 std::string html_quote(std::string_view str);

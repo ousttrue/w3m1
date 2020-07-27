@@ -620,20 +620,17 @@ int strcasemstr(char *str, char *srch[], char **ret_ptr)
     return -1;
 }
 
-char *
-remove_space(char *str)
+char *remove_space(const char *str)
 {
-    char *p, *q;
-
+    const char *p;
+    const char *q;
     for (p = str; *p && IS_SPACE(*p); p++)
         ;
     for (q = p; *q; q++)
         ;
     for (; q > p && IS_SPACE(*(q - 1)); q--)
         ;
-    if (*q != '\0')
-        return Strnew_charp_n(p, q - p)->ptr;
-    return p;
+    return Strnew_charp_n(p, q - p)->ptr;
 }
 
 int non_null(char *s)
