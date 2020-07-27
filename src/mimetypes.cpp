@@ -114,7 +114,7 @@ static bool iequals(std::string_view l, std::string_view r)
     if(l.size()!=r.size()){
         return false;
     }
-    for(int i=0; l.size(); ++i)
+    for(int i=0; i<l.size(); ++i)
     {
         if(tolower(l[i])!=tolower(r[i]))
         {
@@ -130,7 +130,7 @@ guessContentTypeFromTable(ExtensionWithMime *table, std::string_view filename)
     if (table == NULL)
         return NULL;
     auto p = filename.rfind('.');
-    if (p == -1)
+    if (p == std::string::npos)
         return NULL;
 
     auto ext = filename.substr(p + 1);

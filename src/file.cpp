@@ -230,7 +230,8 @@ loadSomething(URLFile *f,
     buf->filename = path;
     if (buf->buffername.empty() || buf->buffername[0] == '\0')
     {
-        buf->buffername = checkHeader(buf, "Subject:");
+        auto buffername = checkHeader(buf, "Subject:");
+        buf->buffername = buffername ? buffername : "";
         if (buf->buffername.empty())
             buf->buffername = conv_from_system(lastFileName(path));
     }
