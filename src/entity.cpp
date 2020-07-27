@@ -352,7 +352,7 @@ static std::pair<const char *, int> getescapechar_sharp(const char *p)
         p++;
         if (!IS_XDIGIT(*p))
         {
-            return std::make_pair(p, -1);
+            return {p, -1};
         }
         uint32_t dummy = 0;
         for (; IS_XDIGIT(*p); p++)
@@ -363,14 +363,14 @@ static std::pair<const char *, int> getescapechar_sharp(const char *p)
         {
             p++;
         }
-        return std::make_pair(p, dummy);
+        return {p, dummy};
     }
     else
     {
         // digit
         if (!IS_DIGIT(*p))
         {
-            return std::make_pair(p, -1);
+            return {p, -1};
         }
         uint32_t dummy = 0;
         for (; IS_DIGIT(*p); p++)
@@ -381,7 +381,7 @@ static std::pair<const char *, int> getescapechar_sharp(const char *p)
         {
             p++;
         }
-        return std::make_pair(p, dummy);
+        return {p, dummy};
     }
 
     assert(false);
