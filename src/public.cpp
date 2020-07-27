@@ -1194,16 +1194,16 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     rFrame();
     {
         const Anchor *al = NULL;
-        char *label = pu.label;
+        auto label = pu.label;
 
-        if (label && f_element->element->attr == F_BODY)
+        if (label.size() && f_element->element->attr == F_BODY)
         {
-            al = f_element->body->nameList.SearchByUrl(label);
+            al = f_element->body->nameList.SearchByUrl(label.c_str());
         }
         if (!al)
         {
-            label = Strnew_m_charp("_", target, NULL)->ptr;
-            al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), label);
+            label = std::string("_") + target;
+            al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char*>(label.c_str()));
         }
         if (al)
         {

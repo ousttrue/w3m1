@@ -43,8 +43,8 @@ Str HRequest::URI(ParsedURL *pu) const
     }
     else
     {
-        char *save_label = pu->label;
-        pu->label = NULL;
+        auto save_label = pu->label;
+        pu->label.clear();
         tmp->Push(parsedURL2Str(pu, true));
         pu->label = save_label;
     }

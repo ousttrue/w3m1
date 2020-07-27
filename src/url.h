@@ -33,7 +33,7 @@ struct ParsedURL
     std::string file;
     std::string real_file;
     std::string query;
-    char *label = nullptr;
+    std::string label;
     int is_nocache = 0;
 
     void Parse(std::string_view url, const ParsedURL *current);

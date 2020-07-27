@@ -503,7 +503,7 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
     this->file.clear();
     this->real_file.clear();
     this->query.clear();
-    this->label = NULL;
+    this->label.clear();
 
     /* RFC1808: Relative Uniform Resource Locators
      * 4.  Resolving Relative URLs
@@ -770,13 +770,13 @@ do_label:
     if (this->scheme == SCM_MISSING)
     {
         this->scheme = SCM_LOCAL;
-        this->file = allocStr(p, -1);
-        this->label = NULL;
+        this->file = p;
+        this->label.clear();
     }
     else if (*p == '#')
-        this->label = allocStr(p + 1, -1);
+        this->label = p + 1;
     else
-        this->label = NULL;
+        this->label.clear();
 }
 
 void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
@@ -850,7 +850,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
 #ifdef USE_EXTERNAL_URI_LOADER
             if (this->scheme == SCM_UNKNOWN && strchr(const_cast<char *>(this->file.c_str()), ':') == NULL && current && (p = string_strchr(current->file, ':')) != NULL)
             {
-                this->file = Strnew_m_charp(current->file.substr(0,  p - current->file.c_str()), ":", this->file)->ptr;
+                this->file = Strnew_m_charp(current->file.substr(0, p - current->file.c_str()), ":", this->file)->ptr;
             }
             else
 #endif
@@ -974,8 +974,6 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
     }
 }
 
-#define ALLOC_STR(s) ((s) == NULL ? NULL : allocStr(s, -1))
-
 void copyParsedURL(ParsedURL *p, const ParsedURL *q)
 {
     p->scheme = q->scheme;
@@ -986,7 +984,7 @@ void copyParsedURL(ParsedURL *p, const ParsedURL *q)
     p->host = q->host;
     p->file = q->file;
     p->real_file = q->real_file;
-    p->label = ALLOC_STR(q->label);
+    p->label = q->label;
     p->query = q->query;
 }
 
@@ -1000,7 +998,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
     {
         return Strnew(pu->file);
     }
-    if (pu->host.empty() && pu->file.empty() && pu->label != NULL)
+    if (pu->host.empty() && pu->file.empty() && pu->label.size())
     {
         /* local label */
         return Sprintf("#%s", pu->label);
@@ -1008,7 +1006,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
     if (pu->scheme == SCM_LOCAL && pu->file == "-")
     {
         tmp = Strnew("-");
-        if (pu->label)
+        if (pu->label.size())
         {
             tmp->Push('#');
             tmp->Push(pu->label);
@@ -1017,26 +1015,12 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
     }
     tmp = Strnew(scheme_str[pu->scheme]);
     tmp->Push(':');
-#ifndef USE_W3MMAILER
-    if (pu->scheme == SCM_MAILTO)
-    {
-        tmp->Push(pu->file);
-        if (pu->query)
-        {
-            tmp->Push('?');
-            tmp->Push(pu->query);
-        }
-        return tmp;
-    }
-#endif
     if (pu->scheme == SCM_DATA)
     {
         tmp->Push(pu->file);
         return tmp;
     }
-#ifdef USE_NNTP
     if (pu->scheme != SCM_NEWS && pu->scheme != SCM_NEWS_GROUP)
-#endif /* USE_NNTP */
     {
         tmp->Push("//");
     }
@@ -1059,9 +1043,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
             tmp->Push(Sprintf("%d", pu->port));
         }
     }
-    if (
-
-        pu->scheme != SCM_NEWS && pu->scheme != SCM_NEWS_GROUP &&
+    if (pu->scheme != SCM_NEWS && pu->scheme != SCM_NEWS_GROUP &&
         (pu->file.empty() || pu->file[0] != '/'))
         tmp->Push('/');
     tmp->Push(pu->file);
@@ -1072,7 +1054,7 @@ Str parsedURL2Str(ParsedURL *pu, bool pass)
         tmp->Push('?');
         tmp->Push(pu->query);
     }
-    if (pu->label)
+    if (pu->label.size())
     {
         tmp->Push('#');
         tmp->Push(pu->label);
@@ -1111,22 +1093,19 @@ otherinfo(ParsedURL *target, const ParsedURL *current, char *referer)
     }
     if (!NoSendReferer)
     {
-#ifdef USE_SSL
         if (current && current->scheme == SCM_HTTPS && target->scheme != SCM_HTTPS)
         {
             /* Don't send Referer: if https:// -> http:// */
         }
-        else
-#endif
-            if (referer == NULL && current && current->scheme != SCM_LOCAL &&
-                (current->scheme != SCM_FTP ||
-                 (current->user.empty() && current->pass.empty())))
+        else if (referer == NULL && current && current->scheme != SCM_LOCAL &&
+                 (current->scheme != SCM_FTP ||
+                  (current->user.empty() && current->pass.empty())))
         {
-            char *p = current->label;
+            // char *p = current->label;
             s->Push("Referer: ");
             //current->label = NULL;
             auto withoutLabel = *current;
-            withoutLabel.label = NULL;
+            withoutLabel.label.clear();
             s->Push(parsedURL2Str(&withoutLabel));
             s->Push("\r\n");
         }

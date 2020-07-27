@@ -2413,11 +2413,11 @@ page_loaded:
 #endif
         else
             b->type = "text/plain";
-        if (pu.label)
+        if (pu.label.size())
         {
             if (proc == loadHTMLBuffer)
             {
-                auto a = searchURLLabel(b, pu.label);
+                auto a = searchURLLabel(b, const_cast<char*>(pu.label.c_str()));
                 if (a != NULL)
                 {
                     gotoLine(b, a->start.line);
@@ -2430,7 +2430,7 @@ page_loaded:
             }
             else
             { /* plain text */
-                int l = atoi(pu.label);
+                int l = atoi(pu.label.c_str());
                 gotoRealLine(b, l);
                 b->pos = 0;
                 arrangeCursor(b);

@@ -269,14 +269,14 @@ retry:
     pu->Parse2(u, current);
     if (pu->scheme == SCM_LOCAL && pu->file.empty())
     {
-        if (pu->label != NULL)
+        if (pu->label.size())
         {
             /* #hogege is not a label but a filename */
             Str tmp2 = Strnew("#");
             tmp2->Push(pu->label);
             pu->file = tmp2->ptr;
             pu->real_file = cleanupName(file_unquote(pu->file));
-            pu->label = NULL;
+            pu->label.clear();
         }
         else
         {

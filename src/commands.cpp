@@ -1045,9 +1045,9 @@ void followA()
     if (parsedURL2Str(&u)->Cmp(parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)) == 0)
     {
         /* index within this buffer */
-        if (u.label)
+        if (u.label.size())
         {
-            gotoLabel(u.label);
+            gotoLabel(u.label.c_str());
             return;
         }
     }
