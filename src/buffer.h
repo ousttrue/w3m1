@@ -92,8 +92,8 @@ public:
     MapList *maplist;
     HmarkerList *hmarklist;
     HmarkerList *imarklist;
-    ParsedURL currentURL;
-    ParsedURL *baseURL;
+    ParsedURL currentURL = {};
+    ParsedURL baseURL = {};
     char *baseTarget;
     int real_scheme;
     char *sourcefile;

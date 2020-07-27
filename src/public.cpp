@@ -163,11 +163,10 @@ dump_extra(BufferPtr buf)
 {
     printf("W3m-current-url: %s\n", parsedURL2Str(&buf->currentURL)->ptr);
     if (buf->baseURL)
-        printf("W3m-base-url: %s\n", parsedURL2Str(buf->baseURL)->ptr);
-#ifdef USE_M17N
+        printf("W3m-base-url: %s\n", parsedURL2Str(&buf->baseURL)->ptr);
     printf("W3m-document-charset: %s\n",
            wc_ces_to_charset(buf->document_charset));
-#endif
+
 #ifdef USE_SSL
     if (buf->ssl_certificate)
     {

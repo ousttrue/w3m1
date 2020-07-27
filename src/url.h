@@ -38,6 +38,10 @@ struct ParsedURL
 
     void Parse(std::string_view url, const ParsedURL *current);
     void Parse2(std::string_view url, const ParsedURL *current);
+    operator bool() const
+    {
+        return scheme != SCM_MISSING;
+    }
 };
 
 const char *filename_extension(const char *patch, int is_url);

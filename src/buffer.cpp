@@ -40,8 +40,8 @@ Buffer::Buffer()
     COLS = COLS;
     LINES = (LINES - 1);
     currentURL.scheme = SCM_UNKNOWN;
-    baseURL = NULL;
-    baseTarget = NULL;
+    baseURL = {};
+    baseTarget = {};
     buffername = "";
     bufferprop = BP_NORMAL;
     clone = New(int);

@@ -509,7 +509,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 				fflush(f1);
 				f_frameset = frame_download_source(frame.body,
 												   currentURL,
-												   current->baseURL, flag);
+												   current->baseURL ? &current->baseURL : nullptr, flag);
 				if (f_frameset)
 				{
 					deleteFrame(frame.body);

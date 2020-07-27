@@ -4225,9 +4225,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     {
                         p = url_quote_conv(remove_space(p),
                                            buf->document_charset);
-                        if (!buf->baseURL)
-                            buf->baseURL = New(ParsedURL);
-                        buf->baseURL->Parse(p, NULL);
+                        buf->baseURL.Parse(p, NULL);
                     }
                     if (parsedtag_get_value(tag, ATTR_TARGET, &p))
                         buf->baseTarget =

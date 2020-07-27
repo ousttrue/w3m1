@@ -187,10 +187,10 @@ baseURL(BufferPtr buf)
         /* no URL is defined for the buffer */
         return NULL;
     }
-    if (buf->baseURL != NULL)
+    if (buf->baseURL )
     {
         /* <BASE> tag is defined in the document */
-        return buf->baseURL;
+        return &buf->baseURL;
     }
     else
         return &buf->currentURL;
