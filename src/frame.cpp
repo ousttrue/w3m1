@@ -74,7 +74,7 @@ newFrameSet(struct parsed_tag *tag)
 	f = New(struct frameset);
 	f->attr = F_FRAMESET;
 	f->name = NULL;
-	f->currentURL = NULL;
+	f->currentURL = {};
 	parsedtag_get_value(tag, ATTR_COLS, &cols);
 	parsedtag_get_value(tag, ATTR_ROWS, &rows);
 	f->col = parseFrameSetLength(cols, &f->width);
@@ -99,7 +99,7 @@ newFrame(struct parsed_tag *tag, BufferPtr buf)
 	bzero((void *)body, sizeof(*body));
 	body->attr = F_UNLOADED;
 	body->flags = 0;
-	body->baseURL = baseURL(buf);
+	body->baseURL = *baseURL(buf);
 	if (tag)
 	{
 		if (parsedtag_get_value(tag, ATTR_SRC, &p))
@@ -148,7 +148,7 @@ void deleteFrameSet(struct frameset *f)
 		deleteFrameSetElement(f->frame[i]);
 	}
 	f->name = NULL;
-	f->currentURL = NULL;
+	f->currentURL = {};
 	return;
 }
 
@@ -311,8 +311,7 @@ void resetFrameElement(union frameset_element *f_element,
 		/* frame cascade */
 		deleteFrameSetElement(*f_element);
 		f_element->set = buf->frameset;
-		f_element->set->currentURL = New(ParsedURL);
-		copyParsedURL(f_element->set->currentURL, &buf->currentURL);
+		copyParsedURL(&f_element->set->currentURL, &buf->currentURL);
 		buf->frameset = popFrameTree(&(buf->frameQ));
 		f_element->set->name = f_name;
 	}
@@ -348,7 +347,7 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 	if (b == NULL || b->url == NULL || b->url[0] == '\0')
 		return NULL;
 	if (b->baseURL)
-		baseURL = b->baseURL;
+		*baseURL = b->baseURL;
 	url.Parse2(b->url, currentURL);
 	switch (url.scheme)
 	{
@@ -393,8 +392,7 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 	{
 		ret_frameset = buf->frameset;
 		ret_frameset->name = b->name;
-		ret_frameset->currentURL = New(ParsedURL);
-		copyParsedURL(ret_frameset->currentURL, &buf->currentURL);
+		copyParsedURL(&ret_frameset->currentURL, &buf->currentURL);
 		buf->frameset = popFrameTree(&(buf->frameQ));
 	}
 	return ret_frameset;
@@ -457,7 +455,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 	else
 		fputs("<table hborder>\n", f1);
 
-	currentURL = f->currentURL ? f->currentURL : &current->currentURL;
+	currentURL = f->currentURL ? &f->currentURL : &current->currentURL;
 	for (r = 0; r < f->row; r++)
 	{
 		fputs("<tr valign=top>\n", f1);

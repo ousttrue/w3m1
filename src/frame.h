@@ -24,15 +24,13 @@ struct frame_body
 #define FB_NO_BUFFER 0x01
     char *name;
     char *url;
-    ParsedURL *baseURL;
+    ParsedURL baseURL = {};
     char *source;
     char *type;
     char *referer;
     AnchorList nameList;
     FormList *request;
-#ifdef USE_SSL
     char *ssl_certificate;
-#endif
 };
 
 union frameset_element {
@@ -46,7 +44,7 @@ struct frameset
     char attr;
     char dummy;
     char *name;
-    ParsedURL *currentURL;
+    ParsedURL currentURL = {};
     char **width;
     char **height;
     int col;
