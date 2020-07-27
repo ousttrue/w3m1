@@ -1964,7 +1964,7 @@ load_doc:
         {
             term_cbreak();
             /* FIXME: gettextize? */
-            message(Sprintf("%s contacted. Waiting for reply...", pu.host)->ptr, 0, 0);
+            message(Sprintf("%s contacted. Waiting for reply...", pu.host.c_str())->ptr, 0, 0);
             refresh();
         }
         if (t_buf == NULL)
