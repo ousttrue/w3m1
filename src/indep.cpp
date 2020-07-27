@@ -705,33 +705,7 @@ char *html_quote(const char *str)
     return tmp->ptr;
 }
 
-char *
-html_unquote(char *str)
-{
-    Str tmp = NULL;
-    char *p, *q;
 
-    for (p = str; *p;)
-    {
-        if (*p == '&')
-        {
-            if (tmp == NULL)
-                tmp = Strnew_charp_n(str, (int)(p - str));
-            q = getescapecmd(&p);
-            tmp->Push(q);
-        }
-        else
-        {
-            if (tmp)
-                tmp->Push(*p);
-            p++;
-        }
-    }
-
-    if (tmp)
-        return tmp->ptr;
-    return str;
-}
 
 static const char xdigit[0x11] = "0123456789ABCDEF";
 

@@ -68,7 +68,7 @@ inline char* html_quote(Str str)
     return str->ptr;
 }
 
-extern char *html_unquote(char *str);
+
 extern char *file_quote(char *str);
 extern char *file_unquote(char *str);
 extern char *url_quote(char *str);

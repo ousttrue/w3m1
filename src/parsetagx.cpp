@@ -6,6 +6,7 @@
 #include "parsetagx.h"
 #include "tagtable.h"
 #include "html.c"
+#include "entity.h"
 
 
 /* parse HTML tag */

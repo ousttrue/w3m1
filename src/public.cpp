@@ -22,6 +22,7 @@
 #include "anchor.h"
 #include "map.h"
 #include "buffer.h"
+#include "entity.h"
 
 int searchKeyNum(void)
 {

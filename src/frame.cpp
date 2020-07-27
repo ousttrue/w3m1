@@ -10,6 +10,7 @@
 #include "terms.h"
 #include "table.h"
 #include "url.h"
+#include "entity.h"
 #include <signal.h>
 #include <setjmp.h>
 
