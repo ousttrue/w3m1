@@ -44,40 +44,9 @@
 #define COO_EPORT (9)                       /* Port match failed (version 1' case 5) */
 #define COO_EMAX COO_EPORT
 
-struct portlist
-{
-    unsigned short port;
-    portlist *next;
-};
-
-struct Cookie : public gc_cleanup
-{
-    ParsedURL url;
-    Str name = nullptr;
-    Str value = nullptr;
-    time_t expires = {};
-    Str path = nullptr;
-    Str domain = nullptr;
-    Str comment = nullptr;
-    Str commentURL = nullptr;
-    std::vector<uint16_t> portl;
-    char version = 0;
-    char flag = 0;
-    Cookie *next = nullptr;
-
-    void clear()
-    {
-        *this = {};
-    }
-};
-static Cookie *First_cookie = nullptr;
-
-static int is_saved = 1;
-
-#define contain_no_dots(p, ep) (total_dot_number((p), (ep), 1) == 0)
 
 static int
-total_dot_number(char *p, char *ep, int max_count)
+total_dot_number(const char *p, const char *ep, int max_count)
 {
     int count = 0;
     if (!ep)
@@ -91,17 +60,17 @@ total_dot_number(char *p, char *ep, int max_count)
     return count;
 }
 
-static char *
-domain_match(char *host, char *domain)
-{
-    int m0, m1;
+#define contain_no_dots(p, ep) (total_dot_number((p), (ep), 1) == 0)
 
+static const char *
+domain_match(const char *host, const char *domain)
+{
     /* [RFC 2109] s. 2, "domain-match", case 1
      * (both are IP and identical)
      */
     regexCompile("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+", 0);
-    m0 = regexMatch(host, -1, 1);
-    m1 = regexMatch(domain, -1, 1);
+    auto m0 = regexMatch(const_cast<char*>(host), -1, 1);
+    auto m1 = regexMatch(const_cast<char*>(domain), -1, 1);
     if (m0 && m1)
     {
         if (strcasecmp(host, domain) == 0)
@@ -110,11 +79,11 @@ domain_match(char *host, char *domain)
     else if (!m0 && !m1)
     {
         int offset;
-        char *domain_p;
+        const char *domain_p;
         /*
-	 * "." match all domains (w3m only),
-	 * and ".local" match local domains ([DRAFT 12] s. 2)
-	 */
+        * "." match all domains (w3m only),
+        * and ".local" match local domains ([DRAFT 12] s. 2)
+        */
         if (strcasecmp(domain, ".") == 0 || strcasecmp(domain, ".local") == 0)
         {
             offset = strlen(host);
@@ -141,6 +110,58 @@ domain_match(char *host, char *domain)
     }
     return NULL;
 }
+
+static bool
+port_match(const std::vector<uint16_t> &l, int port)
+{
+    return std::find(l.begin(), l.end(), port) != l.end();
+}
+
+struct Cookie : public gc_cleanup
+{
+    ParsedURL url;
+    Str name = nullptr;
+    Str value = nullptr;
+    time_t expires = {};
+    Str path = nullptr;
+    Str domain = nullptr;
+    Str comment = nullptr;
+    Str commentURL = nullptr;
+    std::vector<uint16_t> portl;
+    char version = 0;
+    char flag = 0;
+    Cookie *next = nullptr;
+
+    bool Match(const ParsedURL *pu, const char *domainname) const
+    {
+        if (!domainname)
+        {
+            return false;
+        }
+
+        if (!domain_match(domainname, this->domain->ptr))
+            return false;
+        if (strncmp(this->path->ptr, pu->file.c_str(), this->path->Size()) != 0)
+            return false;
+        if (this->flag & COO_SECURE && pu->scheme != SCM_HTTPS)
+            return false;
+        if (this->portl.size() && !port_match(this->portl, pu->port))
+            return false;
+
+        return true;
+    }
+
+    Str ToStr() const
+    {
+        Str tmp = name->Clone();
+        tmp->Push('=');
+        tmp->Push(value);
+        return tmp;
+    }
+};
+static Cookie *First_cookie = nullptr;
+
+static int is_saved = 1;
 
 static std::vector<uint16_t> make_portlist(Str port)
 {
@@ -178,12 +199,6 @@ portlist2str(const std::vector<uint16_t> &l)
     return ss.str();
 }
 
-static bool
-port_match(const std::vector<uint16_t> &l, int port)
-{
-    return std::find(l.begin(), l.end(), port) != l.end();
-}
-
 static void
 check_expired_cookies(void)
 {
@@ -213,38 +228,6 @@ check_expired_cookies(void)
     }
 }
 
-static Str
-make_cookie(struct Cookie *cookie)
-{
-    Str tmp = cookie->name->Clone();
-    tmp->Push('=');
-    tmp->Push(cookie->value);
-    return tmp;
-}
-
-static int
-match_cookie(const ParsedURL *pu, struct Cookie *cookie, char *domainname)
-{
-    if (!domainname)
-        return 0;
-
-    if (!domain_match(domainname, cookie->domain->ptr))
-        return 0;
-    if (strncmp(cookie->path->ptr, pu->file.c_str(), cookie->path->Size()) != 0)
-        return 0;
-#ifdef USE_SSL
-    if (cookie->flag & COO_SECURE && pu->scheme != SCM_HTTPS)
-        return 0;
-#else  /* not USE_SSL */
-    if (cookie->flag & COO_SECURE)
-        return 0;
-#endif /* not USE_SSL */
-    if (cookie->portl.size() && !port_match(cookie->portl, pu->port))
-        return 0;
-
-    return 1;
-}
-
 struct Cookie *
 get_cookie_info(Str domain, Str path, Str name)
 {
@@ -271,7 +254,7 @@ Str find_cookie(const ParsedURL *pu)
     for (p = First_cookie; p; p = p->next)
     {
         const char *domainname = (p->version == 0) ? fq_domainname : pu->host.c_str();
-        if (p->flag & COO_USE && match_cookie(pu, p, const_cast<char *>(domainname)))
+        if (p->flag & COO_USE && p->Match(pu, domainname))
         {
             for (p1 = fco; p1 && p1->name->ICaseCmp(p->name);
                  p1 = p1->next)
@@ -293,11 +276,11 @@ Str find_cookie(const ParsedURL *pu)
     if (version > 0)
         tmp->Push(Sprintf("$Version=\"%d\"; ", version));
 
-    tmp->Push(make_cookie(fco));
+    tmp->Push(fco->ToStr());
     for (p1 = fco->next; p1; p1 = p1->next)
     {
         tmp->Push("; ");
-        tmp->Push(make_cookie(p1));
+        tmp->Push(p1->ToStr());
         if (version > 0)
         {
             if (p1->flag & COO_PATH)
@@ -375,13 +358,13 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
 
     if (domain)
     {
-        char *dp;
+        const char *dp;
         /* [DRAFT 12] s. 4.2.2 (does not apply in the case that
-	 * host name is the same as domain attribute for version 0
-	 * cookie)
-	 * I think that this rule has almost the same effect as the
-	 * tail match of [NETSCAPE].
-	 */
+        * host name is the same as domain attribute for version 0
+        * cookie)
+        * I think that this rule has almost the same effect as the
+        * tail match of [NETSCAPE].
+        */
         if (domain->ptr[0] != '.' &&
             (version > 0 || strcasecmp(domainname, domain->ptr) != 0))
             domain = Sprintf(".%s", domain->ptr);
@@ -425,7 +408,7 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
         }
 
         /* [RFC 2109] s. 4.3.2 case 3 */
-        if (!(dp = domain_match(const_cast<char *>(domainname), domain->ptr)))
+        if (!(dp = domain_match(domainname, domain->ptr)))
             COOKIE_ERROR(COO_EDOM);
         /* [RFC 2409] s. 4.3.2 case 4 */
         /* Invariant: dp contains matched domain */
@@ -703,7 +686,7 @@ cookie_list_panel(void)
         if (!(p->flag & COO_SECURE))
         {
             src->Push("<tr><td width=\"80\"><b>Cookie:</b></td><td>");
-            src->Push(html_quote(make_cookie(p)->ptr));
+            src->Push(html_quote(p->ToStr()));
             src->Push("</td></tr>");
         }
         if (p->comment)
@@ -985,7 +968,7 @@ void readHeaderCookie(ParsedURL *pu, Str lineBuf2)
                                 port, commentURL)))
             {
                 err = (err & ~COO_OVERRIDE_OK) - 1;
-                char *emsg;
+                const char *emsg;
                 if (err >= 0 && err < COO_EMAX)
                     emsg = Sprintf("This cookie was rejected "
                                    "to prevent security violation. [%s]",
