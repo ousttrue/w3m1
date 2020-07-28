@@ -11,7 +11,7 @@
 #include "public.h"
 #include "html/parsetag.h"
 #include "rc.h"
-#include "cookie.h"
+#include "http/cookie.h"
 #include "parsetagx.h"
 #include "myctype.h"
 #include "local.h"
@@ -19,7 +19,7 @@
 #include "menu.h"
 #include "mimetypes.h"
 #include "display.h"
-#include "anchor.h"
+#include "html/anchor.h"
 extern Str *textarea_str;
 extern FormSelectOption *select_option;
 

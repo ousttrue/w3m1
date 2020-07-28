@@ -7,7 +7,7 @@
 #include "wc_types.h"
 #include "ucs.h"
 #include "bufferpoint.h"
-#include "anchor.h"
+#include "html/anchor.h"
 #include "line.h"
 
 #include <gc_cpp.h>

@@ -8,7 +8,7 @@
  */
 
 #include <sstream>
-#include "cookie.h"
+#include "http/cookie.h"
 #include "fm.h"
 #include "indep.h"
 #include <gc_cpp.h>

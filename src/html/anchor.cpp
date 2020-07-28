@@ -2,7 +2,7 @@
 #include "indep.h"
 #include "types.h"
 #include "etc.h"
-#include "anchor.h"
+#include "html/anchor.h"
 #include "myctype.h"
 #include "regex.h"
 #include "file.h"

@@ -8,7 +8,7 @@
 #include "public.h"
 #include "commands.h"
 #include "buffer.h"
-#include "anchor.h"
+#include "html/anchor.h"
 #include "terms.h"
 #include "ctrlcode.h"
 #include <stdexcept>

@@ -9,7 +9,7 @@
 #include "html/form.h"
 #include "public.h"
 #include "commands.h"
-#include "cookie.h"
+#include "http/cookie.h"
 #include "mouse.h"
 #include "loader.h"
 #include <signal.h>

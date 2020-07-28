@@ -19,7 +19,7 @@
 #include "tab.h"
 #include "types.h"
 #include "buffer.h"
-#include "anchor.h"
+#include "html/anchor.h"
 
 struct MouseActionMap
 {

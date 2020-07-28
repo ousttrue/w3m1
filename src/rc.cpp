@@ -15,14 +15,14 @@
 #include "dispatcher.h"
 #include "mouse.h"
 #include "menu.h"
-#include "image.h"
+#include "html/image.h"
 #include "commands.h"
 #include "url.h"
 #include "file.h"
 #include "mimetypes.h"
 #include "display.h"
 #include "buffer.h"
-#include "compression.h"
+#include "http/compression.h"
 #include <stdlib.h>
 
 

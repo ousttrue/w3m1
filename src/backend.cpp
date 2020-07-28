@@ -9,7 +9,7 @@
 #include "public.h"
 #include "file.h"
 // #include "terms.h"
-#include "cookie.h"
+#include "http/cookie.h"
 #include "loader.h"
 #include "html/form.h"
 

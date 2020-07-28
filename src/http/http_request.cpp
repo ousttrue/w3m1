@@ -1,8 +1,8 @@
 #include "fm.h"
-#include "http_request.h"
+#include "http/http_request.h"
 #include "textlist.h"
 #include "url.h"
-#include "cookie.h"
+#include "http/cookie.h"
 #include "html/form.h"
 
 Str HRequest::Method() const

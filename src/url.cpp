@@ -5,12 +5,12 @@
 #include "url.h"
 #include "file.h"
 #include "indep.h"
-#include "cookie.h"
+#include "http/cookie.h"
 #include "terms.h"
 #include "html/form.h"
 #include "display.h"
-#include "anchor.h"
-#include "http_request.h"
+#include "html/anchor.h"
+#include "http/http_request.h"
 
 #ifndef __MINGW32_VERSION
 #include <sys/types.h>

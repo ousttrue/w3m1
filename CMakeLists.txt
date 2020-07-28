@@ -67,15 +67,18 @@ add_executable(w3m
     src/dispatcher.cpp
     src/commands.cpp
     src/entity.cpp
-    src/anchor.cpp
     src/public.cpp
     src/display.cpp
     src/buffer.cpp
     src/tab.cpp
     src/file.cpp
     src/loader.cpp
-    src/compression.cpp
-    src/auth.cpp
+    src/http/compression.cpp
+    src/http/auth.cpp
+    src/http/http_request.cpp
+    src/http/cookie.cpp
+    src/http/ftp.cpp
+    src/html/anchor.cpp
     src/html/tagtable.cpp
     src/html/tagstack.cpp
     src/html/html_processor.cpp
@@ -84,13 +87,12 @@ add_executable(w3m
     src/html/parsetag.cpp
     src/html/parsetagx.cpp
     src/html/frame.cpp
+    src/html/map.cpp
+    src/html/image.cpp
     src/mimetypes.cpp
     src/line.cpp
     src/urlfile.cpp
-    src/http_request.cpp
-    # src/html_feed_environ.cpp
     src/backend.cpp
-    src/cookie.cpp
     src/indep.cpp
     src/rc.cpp
     src/Str.cpp
@@ -102,14 +104,11 @@ add_executable(w3m
     src/search.cpp
     src/linein.cpp
     src/local.cpp
-    src/map.cpp
     src/menu.cpp
     src/mailcap.cpp
-    src/image.cpp
     src/symbol.cpp
     src/terms.cpp
     src/url.cpp
-    src/ftp.cpp
     src/mimehead.cpp
     src/news.cpp
     src/mouse.cpp

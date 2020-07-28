@@ -10,7 +10,7 @@
 #include "file.h"
 #include "etc.h"
 #include "ctrlcode.h"
-#include "anchor.h"
+#include "html/anchor.h"
 #include <math.h>
 
 MapList *

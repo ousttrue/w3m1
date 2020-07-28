@@ -16,7 +16,7 @@
 #include "mouse.h"
 #include "etc.h"
 #include "buffer.h"
-#include "anchor.h"
+#include "html/anchor.h"
 #include "url.h"
 
 #ifdef USE_MOUSE

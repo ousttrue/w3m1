@@ -1,7 +1,7 @@
 /* $Id: image.c,v 1.37 2010/12/21 10:13:55 htrb Exp $ */
 
 #include "fm.h"
-#include "image.h"
+#include "html/image.h"
 #include "indep.h"
 #include "file.h"
 #include "display.h"
@@ -9,7 +9,7 @@
 #include "etc.h"
 #include "buffer.h"
 #include "local.h"
-#include "anchor.h"
+#include "html/anchor.h"
 #include "loader.h"
 #include "rc.h"
 #include "myctype.h"

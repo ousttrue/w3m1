@@ -1,7 +1,7 @@
 #include "urlfile.h"
 #include "types.h"
 #include "url.h"
-#include "http_request.h"
+#include "http/http_request.h"
 #include "etc.h"
 #include "fm.h"
 #include "indep.h"
@@ -10,7 +10,7 @@
 #include "display.h"
 #include "public.h"
 #include "terms.h"
-#include "compression.h"
+#include "http/compression.h"
 #include "myctype.h"
 #include "loader.h"
 #include <assert.h>
