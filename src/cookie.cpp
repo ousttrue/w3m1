@@ -429,7 +429,7 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
         First_cookie = p;
     }
 
-    copyParsedURL(&p->url, pu);
+    p->url = *pu;
     p->name = name;
     p->value = value;
     p->expires = expires;

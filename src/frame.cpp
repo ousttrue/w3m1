@@ -312,7 +312,7 @@ void resetFrameElement(union frameset_element *f_element,
 		/* frame cascade */
 		deleteFrameSetElement(*f_element);
 		f_element->set = buf->frameset;
-		copyParsedURL(&f_element->set->currentURL, &buf->currentURL);
+		f_element->set->currentURL = buf->currentURL;
 		buf->frameset = popFrameTree(&(buf->frameQ));
 		f_element->set->name = f_name;
 	}
@@ -393,7 +393,7 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 	{
 		ret_frameset = buf->frameset;
 		ret_frameset->name = b->name;
-		copyParsedURL(&ret_frameset->currentURL, &buf->currentURL);
+		ret_frameset->currentURL = buf->currentURL;
 		buf->frameset = popFrameTree(&(buf->frameQ));
 	}
 	return ret_frameset;
@@ -942,9 +942,7 @@ renderFrame(BufferPtr Cbuf, int force_reload)
 	BufferPtr buf;
 	int flag;
 	struct frameset *fset;
-#ifdef USE_M17N
 	wc_ces doc_charset = DocumentCharset;
-#endif
 
 	tmp = tmpfname(TMPF_FRAME, ".html");
 	f = fopen(tmp->ptr, "w");
@@ -961,21 +959,15 @@ renderFrame(BufferPtr Cbuf, int force_reload)
 		flag |= RG_NOCACHE;
 	renderFrameSet = Cbuf->frameset;
 	flushFrameSet(renderFrameSet);
-#ifdef USE_M17N
 	DocumentCharset = InnerCharset;
-#endif
 	buf = loadGeneralFile(tmp->ptr, NULL, NULL, flag, NULL);
-#ifdef USE_M17N
 	DocumentCharset = doc_charset;
-#endif
 	renderFrameSet = NULL;
 	if (buf == NULL)
 		return NULL;
 	buf->sourcefile = tmp->ptr;
-#ifdef USE_M17N
 	buf->document_charset = Cbuf->document_charset;
-#endif
-	copyParsedURL(&buf->currentURL, &Cbuf->currentURL);
+	buf->currentURL = Cbuf->currentURL;
 	preFormUpdateBuffer(buf);
 	return buf;
 }

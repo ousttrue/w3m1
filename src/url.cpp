@@ -511,7 +511,7 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
     if (*url == '\0' || *url == '#')
     {
         if (current)
-            copyParsedURL(this, current);
+            *this = *current;
         goto do_label;
     }
     /* search for scheme */
@@ -972,20 +972,6 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
                 this->real_file = cleanupName(file_unquote(this->file));
         }
     }
-}
-
-void copyParsedURL(ParsedURL *p, const ParsedURL *q)
-{
-    p->scheme = q->scheme;
-    p->port = q->port;
-    p->is_nocache = q->is_nocache;
-    p->user = q->user;
-    p->pass = q->pass;
-    p->host = q->host;
-    p->file = q->file;
-    p->real_file = q->real_file;
-    p->label = q->label;
-    p->query = q->query;
 }
 
 Str parsedURL2Str(ParsedURL *pu, bool pass)

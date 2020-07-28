@@ -1875,7 +1875,7 @@ load_doc:
                                         NULL);
                     if (b != NULL)
                     {
-                        copyParsedURL(&b->currentURL, &pu);
+                        b->currentURL = pu;
                         b->filename = b->currentURL.real_file;
                     }
                     return b;
@@ -1908,7 +1908,7 @@ load_doc:
             {
                 b = loadGeneralFile(tmp->ptr, current.get(), referer, flag, request);
                 if (b != NULL)
-                    copyParsedURL(&b->currentURL, &pu);
+                    b->currentURL = pu;
                 return b;
             }
 #endif
@@ -1991,7 +1991,7 @@ load_doc:
             tpath = url_quote_conv(p, DocumentCharset);
             request = NULL;
             UFclose(&f);
-            copyParsedURL(current.get(), &pu);
+            *current = pu;
             t_buf = newBuffer(INIT_BUFFER_WIDTH);
             t_buf->bufferprop |= BP_REDIRECTED;
             status = HTST_NORMAL;
@@ -2157,7 +2157,7 @@ load_doc:
             request = NULL;
             UFclose(&f);
             add_auth_cookie_flag = 0;
-            copyParsedURL(current.get(), &pu);
+            *current = pu;
             t_buf = newBuffer(INIT_BUFFER_WIDTH);
             t_buf->bufferprop |= BP_REDIRECTED;
             status = HTST_NORMAL;
@@ -2246,7 +2246,7 @@ page_loaded:
         b = loadHTMLString(page);
         if (b)
         {
-            copyParsedURL(&b->currentURL, &pu);
+            b->currentURL = pu;
             b->real_scheme = pu.scheme;
             b->real_type = t;
             if (src)
@@ -2262,7 +2262,7 @@ page_loaded:
         real_type = t;
     proc = loadBuffer;
 
-    copyParsedURL(GetCurBaseUrl(), &pu);
+    *GetCurBaseUrl() = pu;
 
     current_content_length = 0;
     if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
@@ -2350,7 +2350,7 @@ page_loaded:
                 b->real_scheme = f.scheme;
                 b->real_type = real_type;
                 if (b->currentURL.host.empty() && b->currentURL.file.empty())
-                    copyParsedURL(&b->currentURL, &pu);
+                    b->currentURL = pu;
             }
             UFclose(&f);
             TRAP_OFF;
@@ -2399,7 +2399,7 @@ page_loaded:
         b->real_scheme = f.scheme;
         b->real_type = real_type;
         if (b->currentURL.host.empty() && b->currentURL.file.empty())
-            copyParsedURL(&b->currentURL, &pu);
+            b->currentURL = pu;
         if (is_html_type(t))
             b->type = "text/html";
         else if (w3m_backend)
@@ -6370,7 +6370,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         image_flag = IMG_FLAG_SKIP;
     if (newBuf->currentURL.file.size())
     {
-        copyParsedURL(GetCurBaseUrl(), baseURL(newBuf));
+        *GetCurBaseUrl() = *baseURL(newBuf);
     }
 #endif
 

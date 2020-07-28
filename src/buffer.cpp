@@ -284,7 +284,7 @@ void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid)
     {
         buf->bufferprop |= (BP_INTERNAL | prop);
         if (!(buf->bufferprop & BP_NO_URL))
-            copyParsedURL(&buf->currentURL, &GetCurrentTab()->GetCurrentBuffer()->currentURL);
+            buf->currentURL = GetCurrentTab()->GetCurrentBuffer()->currentURL;
         if (linkid != LB_NOLINK)
         {
             buf->linkBuffer[linkid] = GetCurrentTab()->GetCurrentBuffer();

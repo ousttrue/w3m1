@@ -176,11 +176,6 @@ ParsedURL *baseURL(BufferPtr buf);
 int openSocket(const char *hostname, const char *remoteport_name,
                unsigned short remoteport_num);
 
-void copyParsedURL(ParsedURL *p, const ParsedURL *q);
-
-
-
-
 int mailcapMatch(struct mailcap *mcap, const char *type);
 struct mailcap *searchMailcap(struct mailcap *table, char *type);
 void initMailcap();
