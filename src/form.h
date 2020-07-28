@@ -67,4 +67,9 @@ FormItemList *formList_addInput(FormList *fl,
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
 
+FormList *newFormList(char *action, const char *method, char *charset,
+                              char *enctype, char *target, char *name,
+                              FormList *_next);
+int formtype(char *typestr);
+
 #endif /* not FORM_H */

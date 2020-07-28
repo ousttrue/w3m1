@@ -6,7 +6,7 @@
 #define UL_SYMBOL_DISC UL_SYMBOL(9)
 #define UL_SYMBOL_CIRCLE UL_SYMBOL(10)
 #define UL_SYMBOL_SQUARE UL_SYMBOL(11)
-#define IMG_SYMBOL UL_SYMBOL(12)
+
 #define HR_SYMBOL 26
 
 void renderTable(struct table *t, int max_width,

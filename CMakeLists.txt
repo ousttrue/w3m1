@@ -78,6 +78,7 @@ add_executable(w3m
     src/compression.cpp
     src/auth.cpp
     src/tagstack.cpp
+    src/html/html_processor.cpp
     src/mimetypes.cpp
     src/line.cpp
     src/urlfile.cpp

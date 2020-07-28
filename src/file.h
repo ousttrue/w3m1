@@ -5,17 +5,12 @@
 struct HRequest;
 struct Hist;
 
-Str process_img(struct parsed_tag *tag, int width);
-Str process_anchor(struct parsed_tag *tag, char *tagbuf);
-Str process_input(struct parsed_tag *tag);
-Str process_select(struct parsed_tag *tag);
-Str process_textarea(struct parsed_tag *tag, int width);
-Str process_form(struct parsed_tag *tag);
 
-Str getLinkNumberStr(int correction);
+
+
 char *guess_save_name(BufferPtr buf, std::string_view file);
 void examineFile(char *path, URLFile *uf);
-int dir_exist(char *path);
+
 int is_html_type(const char *type);
 Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_charset);
 char *guess_filename(std::string_view file);
@@ -127,11 +122,8 @@ int feed_table(struct table *tbl, char *line, struct table_mode *mode,
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode,
                  int width);
 void pushTable(struct table *, struct table *);
-FormList *newFormList(char *action, const char *method, char *charset,
-                              char *enctype, char *target, char *name,
-                              FormList *_next);
 char *form2str(FormItemList *fi);
-int formtype(char *typestr);
+
 
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 
@@ -234,8 +226,6 @@ void HTMLlineproc2(BufferPtr buf, TextLineList *tl);
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
                     int internal);
 
-int GetCurHSeq();
-void SetCurHSeq(int seq);
 void SetMetaCharset(wc_ces ces);
 ParsedURL *GetCurBaseUrl();
 int setModtime(char *path, time_t modtime);

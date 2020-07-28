@@ -11,6 +11,7 @@
 #include "entity.h"
 #include "symbol.h"
 #include "ctrlcode.h"
+#include "html/html_processor.h"
 
 #define in_bold fontstat[0]
 #define in_under fontstat[1]

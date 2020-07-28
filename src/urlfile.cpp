@@ -303,6 +303,19 @@ int URLFile::UndoGetc()
     return ISundogetc(stream);
 }
 
+#define IS_DIRECTORY(m) (((m)&S_IFMT) == S_IFDIR)
+static
+int dir_exist(char *path)
+{
+    struct stat stbuf;
+
+    if (path == NULL || *path == '\0')
+        return 0;
+    if (stat(path, &stbuf) == -1)
+        return 0;
+    return IS_DIRECTORY(stbuf.st_mode);
+}
+
 void URLFile::openURL(char *url, ParsedURL *pu, const ParsedURL *current,
                       URLOption *option, FormList *request, TextList *extra_header,
                       HRequest *hr, unsigned char *status)

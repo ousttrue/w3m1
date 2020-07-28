@@ -19,6 +19,7 @@
 #include "entity.h"
 #include "file.h"
 #include "tagstack.h"
+#include "html/html_processor.h"
 
 int symbol_width = 0;
 int symbol_width0 = 0;
