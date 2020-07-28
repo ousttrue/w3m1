@@ -254,28 +254,6 @@
 #define INIT_BUFFER_WIDTH ((_INIT_BUFFER_WIDTH > 0) ? _INIT_BUFFER_WIDTH : 0)
 #define FOLD_BUFFER_WIDTH (FoldLine ? (INIT_BUFFER_WIDTH + 1) : -1)
 
-#ifdef FORMAT_NICE
-#define RB_FILL 0x80000
-#endif /* FORMAT_NICE */
-#define RB_DEL 0x100000
-#define RB_S 0x200000
-
-#define RB_GET_ALIGN(obuf) ((obuf)->flag & RB_ALIGN)
-#define RB_SET_ALIGN(obuf, align)  \
-    {                              \
-        (obuf)->flag &= ~RB_ALIGN; \
-        (obuf)->flag |= (align);   \
-    }
-#define RB_SAVE_FLAG(obuf)                                              \
-    {                                                                   \
-        if ((obuf)->flag_sp < RB_STACK_SIZE)                            \
-            (obuf)->flag_stack[(obuf)->flag_sp++] = RB_GET_ALIGN(obuf); \
-    }
-#define RB_RESTORE_FLAG(obuf)                                          \
-    {                                                                  \
-        if ((obuf)->flag_sp > 0)                                       \
-            RB_SET_ALIGN(obuf, (obuf)->flag_stack[--(obuf)->flag_sp]); \
-    }
 
 /* status flags */
 #define R_ST_NORMAL 0  /* normal */

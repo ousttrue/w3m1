@@ -15,14 +15,7 @@ enum HttpRequestFlags
     HR_FLAG_LOCAL = 1,
     HR_FLAG_PROXY = 2,
 };
-inline HttpRequestFlags operator|(HttpRequestFlags a, HttpRequestFlags b)
-{
-    return static_cast<HttpRequestFlags>(static_cast<int>(a) | static_cast<int>(b));
-}
-inline void operator|=(HttpRequestFlags &a, HttpRequestFlags b)
-{
-    *((int *)&a) |= static_cast<int>(b);
-}
+#include "enum_bit_operator.h"
 
 struct ParsedURL;
 struct FormList;

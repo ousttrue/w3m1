@@ -415,7 +415,7 @@ clear_ignore_p_flag(int cmd, struct readbuffer *obuf)
 static void
 set_alignment(struct readbuffer *obuf, struct parsed_tag *tag)
 {
-    long flag = -1;
+    ReadBufferFlags flag = (ReadBufferFlags)-1;
     int align;
 
     if (parsedtag_get_value(tag, ATTR_ALIGN, &align))
