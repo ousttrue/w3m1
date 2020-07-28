@@ -3,6 +3,7 @@
 #include "buffer.h"
 
 struct HRequest;
+struct Hist;
 
 Str process_img(struct parsed_tag *tag, int width);
 Str process_anchor(struct parsed_tag *tag, char *tagbuf);
@@ -14,7 +15,6 @@ Str process_form(struct parsed_tag *tag);
 Str getLinkNumberStr(int correction);
 char *guess_save_name(BufferPtr buf, std::string_view file);
 void examineFile(char *path, URLFile *uf);
-char *acceptableEncoding();
 int dir_exist(char *path);
 int is_html_type(const char *type);
 Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_charset);
@@ -201,7 +201,8 @@ void init_rc(void);
 BufferPtr load_option_panel(void);
 void sync_with_option(void);
 
-char *auxbinFile(const char *base);
+void UFhalfclose(URLFile *f);
+
 char *libFile(char *base);
 char *helpFile(char *base);
 Str localCookie(void);

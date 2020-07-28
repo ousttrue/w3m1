@@ -22,6 +22,7 @@
 #include "mimetypes.h"
 #include "display.h"
 #include "buffer.h"
+#include "compression.h"
 #include <stdlib.h>
 
 
