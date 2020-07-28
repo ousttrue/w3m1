@@ -13,6 +13,7 @@
 #include "local.h"
 #include "anchor.h"
 #include "url.h"
+#include "loader.h"
 #include <assert.h>
 
 static int REV_LB[MAX_LB] = {

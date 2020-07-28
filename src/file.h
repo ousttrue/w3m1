@@ -18,7 +18,7 @@ void examineFile(char *path, URLFile *uf);
 int dir_exist(char *path);
 int is_html_type(const char *type);
 Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_charset);
-BufferPtr loadFile(char *path);
+char *guess_filename(std::string_view file);
 int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
 Str process_n_select(void);
@@ -49,13 +49,14 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
 int _doFileCopy(char *tmpf, char *defstr, int download);
 #define doFileCopy(tmpf, defstr) _doFileCopy(tmpf, defstr, FALSE);
 int doFileMove(char *tmpf, char *defstr);
-
+void addnewline(BufferPtr buf, char *line, Lineprop *prop,
+                       Linecolor *color, int pos, int width, int nlines);
 int checkCopyFile(char *path1, char *path2);
 int checkSaveFile(InputStream *stream, char *path);
 int checkOverWrite(char *path);
 char *inputAnswer(const char* prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);
-void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu);
+
 char *checkHeader(BufferPtr buf, char *field);
 
 
@@ -223,7 +224,12 @@ char *expandName(char *name);
 Str tmpfname(int type, const char *ext);
 time_t mymktime(char *timestr);
 
-
+int
+is_text_type(const char *type);
+int
+is_plain_text_type(const char *type);
+int
+is_dump_text_type(const char *type);
 
 
 void HTMLlineproc2(BufferPtr buf, TextLineList *tl);

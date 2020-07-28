@@ -74,6 +74,7 @@ add_executable(w3m
     src/buffer.cpp
     src/tab.cpp
     src/file.cpp
+    src/loader.cpp
     src/compression.cpp
     src/auth.cpp
     src/tagstack.cpp

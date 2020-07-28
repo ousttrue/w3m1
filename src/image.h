@@ -9,3 +9,4 @@ void drawImage();
 void termImage();
 ImageCache *getImage(Image *image, ParsedURL *current, int flag);
 int getImageSize(ImageCache *cache);
+char *xface2xpm(char *xface);
