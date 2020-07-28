@@ -184,7 +184,7 @@ void UFhalfclose(URLFile *f)
         break;
 #endif
     default:
-        UFclose(f);
+        f->Close();
         break;
     }
 }
@@ -305,7 +305,7 @@ void examineFile(char *path, URLFile *uf)
                 return;
             if ((fp = lessopen_stream(path)))
             {
-                UFclose(uf);
+                uf->Close();
                 uf->stream = newFileStream(fp, (FileStreamCloseFunc)pclose);
                 uf->guess_type = "text/plain";
                 return;
@@ -363,7 +363,7 @@ loadFile(char *path)
     content_charset = 0;
 #endif
     buf = loadSomething(&uf, path, loadBuffer, buf);
-    UFclose(&uf);
+    uf.Close();
     return buf;
 }
 
@@ -1050,7 +1050,7 @@ load_doc:
     if (status == HTST_MISSING)
     {
         TRAP_OFF;
-        UFclose(&f);
+        f.Close();
         return NULL;
     }
 
@@ -1059,7 +1059,7 @@ load_doc:
     {
         /* transfer interrupted */
         TRAP_OFF;
-        UFclose(&f);
+        f.Close();
         return NULL;
     }
 
@@ -1113,7 +1113,7 @@ load_doc:
             /* 307: Temporary Redirect (HTTP/1.1) */
             tpath = url_quote_conv(p, DocumentCharset);
             request = NULL;
-            UFclose(&f);
+            f.Close();
             *current = pu;
             t_buf = newBuffer(INIT_BUFFER_WIDTH);
             t_buf->bufferprop |= BP_REDIRECTED;
@@ -1152,7 +1152,7 @@ load_doc:
                     TRAP_OFF;
                     goto page_loaded;
                 }
-                UFclose(&f);
+                f.Close();
                 add_auth_cookie_flag = 1;
                 status = HTST_NORMAL;
                 goto load_doc;
@@ -1175,7 +1175,7 @@ load_doc:
                     TRAP_OFF;
                     goto page_loaded;
                 }
-                UFclose(&f);
+                f.Close();
                 add_auth_cookie_flag = 1;
                 status = HTST_NORMAL;
                 add_auth_user_passwd(auth_pu, qstr_unquote(realm)->ptr, uname, pwd, 1);
@@ -1252,9 +1252,9 @@ load_doc:
             char *tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
             current_content_length = 0;
             if (save2tmp(f, tmpf) < 0)
-                UFclose(&f);
+                f.Close();
             else {
-                UFclose(&f);
+                f.Close();
                 TRAP_OFF;
                 doFileMove(tmpf, guess_save_name(t_buf, pu.file));
             }
@@ -1278,7 +1278,7 @@ load_doc:
             /* document moved */
             tpath = url_quote_conv(remove_space(p), DocumentCharset);
             request = NULL;
-            UFclose(&f);
+            f.Close();
             add_auth_cookie_flag = 0;
             *current = pu;
             t_buf = newBuffer(INIT_BUFFER_WIDTH);
@@ -1302,7 +1302,7 @@ load_doc:
                     TRAP_OFF;
                     goto page_loaded;
                 }
-                UFclose(&f);
+                f.Close();
                 add_auth_cookie_flag = 1;
                 status = HTST_NORMAL;
                 goto load_doc;
@@ -1409,7 +1409,7 @@ page_loaded:
         if (doFileSave(f, file) == 0)
             UFhalfclose(&f);
         else
-            UFclose(&f);
+            f.Close();
         return nullptr;
     }
 
@@ -1445,7 +1445,7 @@ page_loaded:
             b->sourcefile = image_source;
             b->real_type = t;
         }
-        UFclose(&f);
+        f.Close();
         TRAP_OFF;
         return b;
     }
@@ -1475,7 +1475,7 @@ page_loaded:
                 if (b->currentURL.host.empty() && b->currentURL.file.empty())
                     b->currentURL = pu;
             }
-            UFclose(&f);
+            f.Close();
             TRAP_OFF;
             return b;
         }
@@ -1484,7 +1484,7 @@ page_loaded:
             TRAP_OFF;
             if (pu.scheme == SCM_LOCAL)
             {
-                UFclose(&f);
+                f.Close();
                 _doFileCopy(const_cast<char*>(pu.real_file.c_str()),
                             conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
             }
@@ -1495,7 +1495,7 @@ page_loaded:
                 if (doFileSave(f, guess_save_name(t_buf, pu.file)) == 0)
                     UFhalfclose(&f);
                 else
-                    UFclose(&f);
+                    f.Close();
             }
             return nullptr;
         }
@@ -1515,7 +1515,7 @@ page_loaded:
 #endif
     frame_source = flag & RG_FRAME_SRC;
     b = loadSomething(&f, pu.real_file.size() ? const_cast<char*>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()), proc, t_buf);
-    UFclose(&f);
+    f.Close();
     frame_source = 0;
     if (b)
     {
@@ -4149,11 +4149,11 @@ loadImageBuffer(URLFile *uf, BufferPtr newBuf)
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
     if (save2tmp(*uf, cache->file) < 0)
     {
-        UFclose(uf);
+        uf->Close();
         TRAP_OFF;
         return NULL;
     }
-    UFclose(uf);
+    uf->Close();
     TRAP_OFF;
 
     cache->loaded = IMG_FLAG_LOADED;
@@ -4298,7 +4298,7 @@ loadcmdout(char *cmd,
 
     URLFile uf(SCM_UNKNOWN, newFileStream(f, (FileStreamCloseFunc)pclose));
     buf = loadproc(&uf, defaultbuf);
-    UFclose(&uf);
+    uf.Close();
     return buf;
 }
 
@@ -4427,7 +4427,7 @@ openGeneralPagerBuffer(InputStream *stream)
     {
         if (doExternal(uf, "-", t, &buf, t_buf))
         {
-            UFclose(&uf);
+            uf.Close();
             if (buf == NULL)
                 return buf;
         }
@@ -4690,7 +4690,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
             setup_child(FALSE, 0, UFfileno(&uf));
             if (save2tmp(uf, tmpf->ptr) < 0)
                 exit(1);
-            UFclose(&uf);
+            uf.Close();
             myExec(command->ptr);
         }
         *bufp = nullptr;
@@ -5005,7 +5005,7 @@ int doFileSave(URLFile uf, char *defstr)
             err = save2tmp(uf, p);
             if (err == 0 && PreserveTimestamp && uf.modtime != -1)
                 setModtime(p, uf.modtime);
-            UFclose(&uf);
+            uf.Close();
             unlink(lock);
             if (err != 0)
                 exit(-err);
@@ -5198,7 +5198,7 @@ reloadBuffer(BufferPtr buf)
         loadHTMLBuffer(&uf, buf);
     else
         loadBuffer(&uf, buf);
-    UFclose(&uf);
+    uf.Close();
     is_redisplay = FALSE;
 }
 #endif

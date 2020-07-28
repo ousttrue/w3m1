@@ -178,7 +178,7 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
     pid1 = open_pipe_rw(&f1, NULL);
     if (pid1 < 0)
     {
-        UFclose(uf);
+        uf->Close();
         return nullptr;
     }
     if (pid1 == 0)
@@ -191,7 +191,7 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
         pid2 = open_pipe_rw(&f2, NULL);
         if (pid2 < 0)
         {
-            UFclose(uf);
+            uf->Close();
             exit(1);
         }
         if (pid2 == 0)
@@ -210,7 +210,7 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
                 if (f)
                     buf->Puts(f);
             }
-            UFclose(uf);
+            uf->Close();
             if (f)
                 fclose(f);
             exit(0);

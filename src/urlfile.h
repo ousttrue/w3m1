@@ -44,9 +44,9 @@ struct URLFile
     time_t modtime = -1;
 
     URLFile(SchemaTypes scheme, InputStream *stream);
+    void Close();
     void openURL(char *url, ParsedURL *pu, const ParsedURL *current,
                  URLOption *option, FormList *request, TextList *extra_header,
                  HRequest *hr, unsigned char *status);
-};
 
-#define UFclose(f) (void)(ISclose((f)->stream) == 0 && ((f)->stream = NULL))
+};

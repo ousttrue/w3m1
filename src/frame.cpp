@@ -569,7 +569,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 						fprintf(f1, "%s", html_quote(tmp->ptr));
 					}
 					fprintf(f1, "</pre>\n");
-					UFclose(&f2);
+					f2.Close();
 					break;
 				}
 				do
@@ -908,7 +908,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 				}
 				while (t_stack--)
 					fputs("</TABLE>\n", f1);
-				UFclose(&f2);
+				f2.Close();
 				break;
             }
 			case F_FRAMESET:

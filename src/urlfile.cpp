@@ -249,6 +249,14 @@ URLFile::URLFile(SchemaTypes scm, InputStream *strm)
 {
 }
 
+void URLFile::Close()
+{
+    if(!ISclose(stream))
+    {
+        stream = NULL;
+    }
+}
+
 void URLFile::openURL(char *url, ParsedURL *pu, const ParsedURL *current,
                       URLOption *option, FormList *request, TextList *extra_header,
                       HRequest *hr, unsigned char *status)

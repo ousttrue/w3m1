@@ -495,26 +495,24 @@ void reshapeBuffer(BufferPtr buf)
             if (h.stream)
             {
                 readHeader(&h, buf, TRUE, NULL);
-                UFclose(&h);
+                h.Close();
             }
         }
         else if (buf->search_header) /* -m option */
             readHeader(&f, buf, TRUE, NULL);
     }
 
-#ifdef USE_M17N
     WcOption.auto_detect = WC_OPT_DETECT_OFF;
     UseContentCharset = FALSE;
-#endif
+
     if (is_html_type(buf->type))
         loadHTMLBuffer(&f, buf);
     else
         loadBuffer(&f, buf);
-    UFclose(&f);
-#ifdef USE_M17N
+    f.Close();
+
     WcOption.auto_detect = old_auto_detect;
     UseContentCharset = TRUE;
-#endif
 
     buf->height = (LINES - 1) + 1;
     if (buf->firstLine && sbuf->firstLine)
