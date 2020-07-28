@@ -10,7 +10,7 @@
 #include "file.h"
 #include "terms.h"
 #include "cookie.h"
-
+#include "loader.h"
 
 /* Prototype declaration of internal functions */
 #ifdef HAVE_READLINE

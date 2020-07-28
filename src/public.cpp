@@ -23,6 +23,7 @@
 #include "map.h"
 #include "buffer.h"
 #include "entity.h"
+#include "loader.h"
 
 int searchKeyNum(void)
 {

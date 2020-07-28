@@ -23,6 +23,7 @@
 #include "mimetypes.h"
 #include "local.h"
 #include "anchor.h"
+#include "loader.h"
 #include <signal.h>
 
 void nulcmd()

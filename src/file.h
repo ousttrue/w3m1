@@ -11,7 +11,6 @@ Str process_select(struct parsed_tag *tag);
 Str process_textarea(struct parsed_tag *tag, int width);
 Str process_form(struct parsed_tag *tag);
 
-BufferPtr loadGeneralFile(char *path, const ParsedURL *current, char *referer, int flag, FormList *request);
 Str getLinkNumberStr(int correction);
 char *guess_save_name(BufferPtr buf, std::string_view file);
 void examineFile(char *path, URLFile *uf);

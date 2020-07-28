@@ -11,6 +11,7 @@
 #include "commands.h"
 #include "cookie.h"
 #include "mouse.h"
+#include "loader.h"
 #include <signal.h>
 #include <setjmp.h>
 #include <sys/stat.h>

@@ -10,6 +10,7 @@
 #include "buffer.h"
 #include "local.h"
 #include "anchor.h"
+#include "loader.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>
