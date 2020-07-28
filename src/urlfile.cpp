@@ -8,6 +8,10 @@
 #include "file.h"
 #include "form.h"
 #include "display.h"
+#include "public.h"
+#include "terms.h"
+#include "compression.h"
+#include "myctype.h"
 #include <assert.h>
 
 /* add index_file if exists */
@@ -606,4 +610,117 @@ retry:
     }
     this->stream = newInputStream(sock);
     return;
+}
+
+int URLFile::DoFileSave(const char *defstr, long long content_length)
+{
+#ifndef __MINGW32_VERSION
+    Str msg;
+    Str filen;
+    char *p, *q;
+    pid_t pid;
+    char *lock;
+    char *tmpf = NULL;
+#if !(defined(HAVE_SYMLINK) && defined(HAVE_LSTAT))
+    FILE *f;
+#endif
+
+    if (fmInitialized)
+    {
+        p = searchKeyData();
+        if (p == NULL || *p == '\0')
+        {
+            /* FIXME: gettextize? */
+            p = inputLineHist("(Download)Save file to: ",
+                              defstr, IN_FILENAME, SaveHist);
+            if (p == NULL || *p == '\0')
+                return -1;
+            p = conv_to_system(p);
+        }
+        if (checkOverWrite(p) < 0)
+            return -1;
+        if (checkSaveFile(this->stream, p) < 0)
+        {
+            /* FIXME: gettextize? */
+            msg = Sprintf("Can't save. Load file and %s are identical.",
+                          conv_from_system(p));
+            disp_err_message(msg->ptr, FALSE);
+            return -1;
+        }
+        lock = tmpfname(TMPF_DFL, ".lock")->ptr;
+#if defined(HAVE_SYMLINK) && defined(HAVE_LSTAT)
+        symlink(p, lock);
+#else
+        f = fopen(lock, "w");
+        if (f){
+            fclose(f);
+        }
+#endif
+        flush_tty();
+        pid = fork();
+        if (!pid)
+        {
+            int err;
+            if ((this->content_encoding != CMP_NOCOMPRESS) && AutoUncompress)
+            {
+                tmpf = uncompress_stream(this, true);
+                if (tmpf)
+                    unlink(tmpf);
+            }
+            setup_child(FALSE, 0, this->FileNo());
+            err = save2tmp(*this, p);
+            if (err == 0 && PreserveTimestamp && this->modtime != -1)
+                setModtime(p, this->modtime);
+            this->Close();
+            unlink(lock);
+            if (err != 0)
+                exit(-err);
+            exit(0);
+        }
+        addDownloadList(pid, this->url, p, lock, content_length);
+    }
+    else
+    {
+        q = searchKeyData();
+        if (q == NULL || *q == '\0')
+        {
+            /* FIXME: gettextize? */
+            printf("(Download)Save file to: ");
+            fflush(stdout);
+            filen = Strfgets(stdin);
+            if (filen->Size() == 0)
+                return -1;
+            q = filen->ptr;
+        }
+        for (p = q + strlen(q) - 1; IS_SPACE(*p); p--)
+            ;
+        *(p + 1) = '\0';
+        if (*q == '\0')
+            return -1;
+        p = expandPath(q);
+        if (checkOverWrite(p) < 0)
+            return -1;
+        if (checkSaveFile(this->stream, p) < 0)
+        {
+            /* FIXME: gettextize? */
+            printf("Can't save. Load file and %s are identical.", p);
+            return -1;
+        }
+        if (this->content_encoding != CMP_NOCOMPRESS && AutoUncompress)
+        {
+            tmpf = uncompress_stream(this, true);
+            if (tmpf)
+                unlink(tmpf);
+        }
+        if (save2tmp(*this, p) < 0)
+        {
+            /* FIXME: gettextize? */
+            printf("Can't save to %s\n", p);
+            return -1;
+        }
+        if (PreserveTimestamp && this->modtime != -1)
+            setModtime(p, this->modtime);
+    }
+#endif /* __MINGW32_VERSION */
+    return 0;
 }

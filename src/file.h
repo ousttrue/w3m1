@@ -49,7 +49,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
 int _doFileCopy(char *tmpf, char *defstr, int download);
 #define doFileCopy(tmpf, defstr) _doFileCopy(tmpf, defstr, FALSE);
 int doFileMove(char *tmpf, char *defstr);
-int doFileSave(URLFile uf, char *defstr);
+
 int checkCopyFile(char *path1, char *path2);
 int checkSaveFile(InputStream *stream, char *path);
 int checkOverWrite(char *path);
@@ -103,8 +103,6 @@ void pcmap(void);
 void escmap(void);
 void escbmap(void);
 void multimap(void);
-char *inputLineHistSearch(const char* prompt, char *def_str, int flag,
-                          Hist *hist, int (*incfunc)(int ch, Str buf, Lineprop *prop));
 Str unescape_spaces(Str s);
 #ifdef USE_HISTORY
 BufferPtr historyBuffer(Hist *hist);
@@ -237,3 +235,4 @@ int GetCurHSeq();
 void SetCurHSeq(int seq);
 void SetMetaCharset(wc_ces ces);
 ParsedURL *GetCurBaseUrl();
+int setModtime(char *path, time_t modtime);

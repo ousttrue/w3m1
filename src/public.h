@@ -50,7 +50,7 @@ int srchcore(char * str, int (*func)(BufferPtr , char *));
 void _quitfm(int confirm);
 void _goLine(char *l);
 int cur_real_linenumber(BufferPtr buf);
-char *inputLineHist(const char* prompt, char *def_str, int flag, Hist *hist);
+char *inputLineHist(const char* prompt, const char *def_str, int flag, Hist *hist);
 char *inputStrHist(const char* prompt, char *def_str, Hist *hist);
 char *inputLine(const char* prompt, char *def_str, int flag);
 char *MarkString();

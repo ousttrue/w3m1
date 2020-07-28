@@ -226,6 +226,10 @@ libwc を除いてうまく C++ 化できたようだ。
 とりあえず、`struct tag` まわりの `typedef` を取り除く。
 然る後に、前方宣言を活用してヘッダの分割を推進。
 
+文字列を所有するところは `std::string` 。
+しないところは、 `std::string_view` に置き換えていく(実験)。
+bcopy, bzero, memcpy, nullptr と共存できないのに注意。 `sizeof` に注目。
+
 ## モジュールに分割
 
 機能ごとにモジュールに分割する。
@@ -241,9 +245,13 @@ libwc を除いてうまく C++ 化できたようだ。
     * 高レベル描画
     * Tab
     * Buffer
+    * Line
     * Message
     * Menu
     * Keymap
+    * LineInput
+        * SearchKey
+        * History
 * IO
     * IStream
         * polymorphism化

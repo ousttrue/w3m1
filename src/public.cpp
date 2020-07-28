@@ -8,6 +8,7 @@
 #include "parsetag.h"
 #include "public.h"
 #include "file.h"
+#include "linein.h"
 #include <setjmp.h>
 #include <signal.h>
 #include "ucs.h"
@@ -755,7 +756,7 @@ int cur_real_linenumber(BufferPtr buf)
     return n;
 }
 
-char *inputLineHist(const char* prompt, char *def_str, int flag, Hist *hist)
+char *inputLineHist(const char* prompt, const char *def_str, int flag, Hist *hist)
 {
     return inputLineHistSearch(prompt, def_str, flag, hist, NULL);
 }

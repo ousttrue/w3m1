@@ -132,7 +132,7 @@ static int forms_size = 0;
 #define cur_form_id ((form_sp >= 0) ? form_stack[form_sp] : -1)
 static int form_sp = 0;
 
-static clen_t current_content_length;
+static long long current_content_length;
 
 static int cur_hseq;
 int GetCurHSeq()
@@ -248,8 +248,7 @@ int is_html_type(const char *type)
 }
 
 
-static int
-setModtime(char *path, time_t modtime)
+int setModtime(char *path, time_t modtime)
 {
     struct utimbuf t;
     struct stat st;
@@ -1387,7 +1386,7 @@ page_loaded:
         }
         else
             file = guess_save_name(t_buf, pu.file);
-        if (doFileSave(f, file) == 0)
+        if (f.DoFileSave(file, current_content_length) == 0)
             f.HalfClose();
         else
             f.Close();
@@ -1473,7 +1472,7 @@ page_loaded:
             {
                 if (DecodeCTE && IStype(f.stream) != IST_ENCODED)
                     f.stream = newEncodedStream(f.stream, f.encoding);
-                if (doFileSave(f, guess_save_name(t_buf, pu.file)) == 0)
+                if (f.DoFileSave(guess_save_name(t_buf, pu.file), current_content_length) == 0)
                     f.HalfClose();
                 else
                     f.Close();
@@ -4922,123 +4921,6 @@ int doFileMove(char *tmpf, char *defstr)
     return ret;
 }
 
-int doFileSave(URLFile uf, char *defstr)
-{
-#ifndef __MINGW32_VERSION
-    Str msg;
-    Str filen;
-    char *p, *q;
-    pid_t pid;
-    char *lock;
-    char *tmpf = NULL;
-#if !(defined(HAVE_SYMLINK) && defined(HAVE_LSTAT))
-    FILE *f;
-#endif
-
-    if (fmInitialized)
-    {
-        p = searchKeyData();
-        if (p == NULL || *p == '\0')
-        {
-            /* FIXME: gettextize? */
-            p = inputLineHist("(Download)Save file to: ",
-                              defstr, IN_FILENAME, SaveHist);
-            if (p == NULL || *p == '\0')
-                return -1;
-            p = conv_to_system(p);
-        }
-        if (checkOverWrite(p) < 0)
-            return -1;
-        if (checkSaveFile(uf.stream, p) < 0)
-        {
-            /* FIXME: gettextize? */
-            msg = Sprintf("Can't save. Load file and %s are identical.",
-                          conv_from_system(p));
-            disp_err_message(msg->ptr, FALSE);
-            return -1;
-        }
-        /*
-         * if (save2tmp(uf, p) < 0) {
-         * msg = Sprintf("Can't save to %s", conv_from_system(p));
-         * disp_err_message(msg->ptr, FALSE);
-         * }
-         */
-        lock = tmpfname(TMPF_DFL, ".lock")->ptr;
-#if defined(HAVE_SYMLINK) && defined(HAVE_LSTAT)
-        symlink(p, lock);
-#else
-        f = fopen(lock, "w");
-        if (f)
-            fclose(f);
-#endif
-        flush_tty();
-        pid = fork();
-        if (!pid)
-        {
-            int err;
-            if ((uf.content_encoding != CMP_NOCOMPRESS) && AutoUncompress)
-            {
-                tmpf = uncompress_stream(&uf, true);
-                if (tmpf)
-                    unlink(tmpf);
-            }
-            setup_child(FALSE, 0, uf.FileNo());
-            err = save2tmp(uf, p);
-            if (err == 0 && PreserveTimestamp && uf.modtime != -1)
-                setModtime(p, uf.modtime);
-            uf.Close();
-            unlink(lock);
-            if (err != 0)
-                exit(-err);
-            exit(0);
-        }
-        addDownloadList(pid, uf.url, p, lock, current_content_length);
-    }
-    else
-    {
-        q = searchKeyData();
-        if (q == NULL || *q == '\0')
-        {
-            /* FIXME: gettextize? */
-            printf("(Download)Save file to: ");
-            fflush(stdout);
-            filen = Strfgets(stdin);
-            if (filen->Size() == 0)
-                return -1;
-            q = filen->ptr;
-        }
-        for (p = q + strlen(q) - 1; IS_SPACE(*p); p--)
-            ;
-        *(p + 1) = '\0';
-        if (*q == '\0')
-            return -1;
-        p = expandPath(q);
-        if (checkOverWrite(p) < 0)
-            return -1;
-        if (checkSaveFile(uf.stream, p) < 0)
-        {
-            /* FIXME: gettextize? */
-            printf("Can't save. Load file and %s are identical.", p);
-            return -1;
-        }
-        if (uf.content_encoding != CMP_NOCOMPRESS && AutoUncompress)
-        {
-            tmpf = uncompress_stream(&uf, true);
-            if (tmpf)
-                unlink(tmpf);
-        }
-        if (save2tmp(uf, p) < 0)
-        {
-            /* FIXME: gettextize? */
-            printf("Can't save to %s\n", p);
-            return -1;
-        }
-        if (PreserveTimestamp && uf.modtime != -1)
-            setModtime(p, uf.modtime);
-    }
-#endif /* __MINGW32_VERSION */
-    return 0;
-}
 
 int checkCopyFile(char *path1, char *path2)
 {
