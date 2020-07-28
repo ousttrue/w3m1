@@ -251,10 +251,30 @@ URLFile::URLFile(SchemaTypes scm, InputStream *strm)
 
 void URLFile::Close()
 {
-    if(!ISclose(stream))
+    if (!ISclose(stream))
     {
         stream = NULL;
     }
+}
+
+int URLFile::FileNo() const
+{
+    return ISfileno(stream);
+}
+
+int URLFile::Read(Str buf, int len)
+{
+    return ISread(stream, buf, len);
+}
+
+int URLFile::Getc()
+{
+    return ISgetc(stream);
+}
+
+int URLFile::UndoGetc()
+{
+    return ISundogetc(stream);
 }
 
 void URLFile::openURL(char *url, ParsedURL *pu, const ParsedURL *current,
@@ -306,12 +326,12 @@ retry:
     case SCM_LOCAL_CGI:
         if (request && request->body)
             /* local CGI: POST */
-            this->stream = newFileStream(localcgi_post(const_cast<char*>(pu->real_file.c_str()), const_cast<char*>(pu->query.c_str()),
+            this->stream = newFileStream(localcgi_post(const_cast<char *>(pu->real_file.c_str()), const_cast<char *>(pu->query.c_str()),
                                                        request, option->referer),
                                          (FileStreamCloseFunc)fclose);
         else
             /* lodal CGI: GET */
-            this->stream = newFileStream(localcgi_get(const_cast<char*>(pu->real_file.c_str()), const_cast<char*>(pu->query.c_str()),
+            this->stream = newFileStream(localcgi_get(const_cast<char *>(pu->real_file.c_str()), const_cast<char *>(pu->query.c_str()),
                                                       option->referer),
                                          (FileStreamCloseFunc)fclose);
         if (this->stream)
@@ -320,10 +340,10 @@ retry:
             this->scheme = pu->scheme = SCM_LOCAL_CGI;
             return;
         }
-        examineFile(const_cast<char*>(pu->real_file.c_str()), this);
+        examineFile(const_cast<char *>(pu->real_file.c_str()), this);
         if (this->stream == NULL)
         {
-            if (dir_exist(const_cast<char*>(pu->real_file.c_str())))
+            if (dir_exist(const_cast<char *>(pu->real_file.c_str())))
             {
                 add_index_file(pu, this);
                 if (this->stream == NULL)

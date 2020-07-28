@@ -6,11 +6,6 @@
 
 #define StrUFgets(f) StrISgets((f)->stream)
 #define StrmyUFgets(f) StrmyISgets((f)->stream)
-#define UFgetc(f) ISgetc((f)->stream)
-#define UFundogetc(f) ISundogetc((f)->stream)
-#define UFread(f, buf, len) ISread((f)->stream, buf, len)
-
-#define UFfileno(f) ISfileno((f)->stream)
 
 struct mailcap
 {

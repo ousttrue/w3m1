@@ -519,8 +519,8 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
             {
                 lineBuf2 = tmp;
             }
-            c = UFgetc(uf);
-            UFundogetc(uf);
+            c = uf->Getc();
+            uf->UndoGetc();
             if (c == ' ' || c == '\t')
                 /* header line is continued */
                 continue;
@@ -4599,7 +4599,7 @@ int save2tmp(URLFile uf, char *tmpf)
     if (uf.scheme == SCM_NEWS)
     {
         char c;
-        while (c = UFgetc(&uf), !iseos(uf.stream))
+        while (c = uf.Getc(), !iseos(uf.stream))
         {
             if (c == '\n')
             {
@@ -4623,7 +4623,7 @@ int save2tmp(URLFile uf, char *tmpf)
 #endif /* USE_NNTP */
     {
         Str buf = Strnew_size(SAVE_BUF_SIZE);
-        while (UFread(&uf, buf, SAVE_BUF_SIZE))
+        while (uf.Read(buf, SAVE_BUF_SIZE))
         {
             if (buf->Puts(ff) != buf->Size())
             {
@@ -4687,7 +4687,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
         flush_tty();
         if (!fork())
         {
-            setup_child(FALSE, 0, UFfileno(&uf));
+            setup_child(FALSE, 0, uf.FileNo());
             if (save2tmp(uf, tmpf->ptr) < 0)
                 exit(1);
             uf.Close();
@@ -5001,7 +5001,7 @@ int doFileSave(URLFile uf, char *defstr)
                 if (tmpf)
                     unlink(tmpf);
             }
-            setup_child(FALSE, 0, UFfileno(&uf));
+            setup_child(FALSE, 0, uf.FileNo());
             err = save2tmp(uf, p);
             if (err == 0 && PreserveTimestamp && uf.modtime != -1)
                 setModtime(p, uf.modtime);

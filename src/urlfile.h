@@ -45,8 +45,11 @@ struct URLFile
 
     URLFile(SchemaTypes scheme, InputStream *stream);
     void Close();
+    int FileNo() const;
+    int Read(Str buf, int len);
+    int Getc();
+    int UndoGetc();
     void openURL(char *url, ParsedURL *pu, const ParsedURL *current,
                  URLOption *option, FormList *request, TextList *extra_header,
                  HRequest *hr, unsigned char *status);
-
 };
