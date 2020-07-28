@@ -2,7 +2,7 @@
 #include "mimetypes.h"
 #include "textlist.h"
 #include "indep.h"
-#include "istream.h"
+#include "transport/istream.h"
 #include "rc.h"
 #include "file.h"
 #include "etc.h"

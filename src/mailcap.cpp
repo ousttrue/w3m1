@@ -6,10 +6,10 @@
 #include <stdio.h>
 #include <errno.h>
 #include "html/parsetag.h"
-#include "local.h"
+#include "transport/local.h"
 #include "file.h"
 #include "html/html.h"
-#include "url.h"
+#include "transport/url.h"
 #include "mimetypes.h"
 
 

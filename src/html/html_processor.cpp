@@ -2,7 +2,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "html/form.h"
-#include "loader.h"
+#include "transport/loader.h"
 #include "file.h"
 #include "etc.h"
 #include "myctype.h"

@@ -2,7 +2,7 @@
 
 #include "fm.h"
 #include "indep.h"
-#include "local.h"
+#include "transport/local.h"
 #include "myctype.h"
 #include "display.h"
 #include "etc.h"

@@ -8,9 +8,9 @@
 #include "terms.h"
 #include "etc.h"
 #include "buffer.h"
-#include "local.h"
+#include "transport/local.h"
 #include "html/anchor.h"
-#include "loader.h"
+#include "transport/loader.h"
 #include "rc.h"
 #include "myctype.h"
 #include <sys/types.h>

@@ -17,7 +17,7 @@
 #include "etc.h"
 #include "buffer.h"
 #include "html/anchor.h"
-#include "url.h"
+#include "transport/url.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

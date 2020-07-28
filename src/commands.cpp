@@ -14,16 +14,16 @@
 #include "mouse.h"
 #include "menu.h"
 #include "html/image.h"
-#include "url.h"
+#include "transport/url.h"
 #include "display.h"
 #include "tab.h"
 #include "http/cookie.h"
 #include "terms.h"
 #include "mouse.h"
 #include "mimetypes.h"
-#include "local.h"
+#include "transport/local.h"
 #include "html/anchor.h"
-#include "loader.h"
+#include "transport/loader.h"
 #include <signal.h>
 
 void nulcmd()

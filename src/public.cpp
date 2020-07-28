@@ -16,7 +16,7 @@
 #include "dispatcher.h"
 #include "html/image.h"
 #include "commands.h"
-#include "url.h"
+#include "transport/url.h"
 #include "http/cookie.h"
 #include "ctrlcode.h"
 #include "mouse.h"
@@ -24,7 +24,7 @@
 #include "html/map.h"
 #include "buffer.h"
 #include "entity.h"
-#include "loader.h"
+#include "transport/loader.h"
 
 int searchKeyNum(void)
 {

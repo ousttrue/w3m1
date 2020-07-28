@@ -11,7 +11,7 @@
 #include "commands.h"
 #include "http/cookie.h"
 #include "mouse.h"
-#include "loader.h"
+#include "transport/loader.h"
 #include <signal.h>
 #include <setjmp.h>
 #include <sys/stat.h>
@@ -31,7 +31,7 @@
 #endif
 #endif
 #include "dispatcher.h"
-#include "url.h"
+#include "transport/url.h"
 #include <assert.h>
 
 #ifdef __MINGW32_VERSION

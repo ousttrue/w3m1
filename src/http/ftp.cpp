@@ -18,7 +18,7 @@
 #include "myctype.h"
 #include "terms.h"
 #include "display.h"
-#include "url.h"
+#include "transport/url.h"
 #include "http/auth.h"
 
 #ifdef DEBUG

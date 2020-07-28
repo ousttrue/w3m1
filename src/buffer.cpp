@@ -9,10 +9,10 @@
 #include "display.h"
 #include "html/html.h"
 #include "ctrlcode.h"
-#include "local.h"
+#include "transport/local.h"
 #include "html/anchor.h"
-#include "url.h"
-#include "loader.h"
+#include "transport/url.h"
+#include "transport/loader.h"
 #include <assert.h>
 
 static int REV_LB[MAX_LB] = {

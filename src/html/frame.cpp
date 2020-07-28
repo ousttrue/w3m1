@@ -9,9 +9,9 @@
 #include "file.h"
 #include "terms.h"
 #include "html/table.h"
-#include "url.h"
+#include "transport/url.h"
 #include "entity.h"
-#include "loader.h"
+#include "transport/loader.h"
 #include <signal.h>
 #include <setjmp.h>
 

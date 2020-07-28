@@ -1,6 +1,6 @@
-#include "urlfile.h"
+#include "transport/urlfile.h"
 #include "types.h"
-#include "url.h"
+#include "transport/url.h"
 #include "http/http_request.h"
 #include "etc.h"
 #include "fm.h"
@@ -12,7 +12,7 @@
 #include "terms.h"
 #include "http/compression.h"
 #include "myctype.h"
-#include "loader.h"
+#include "transport/loader.h"
 #include <assert.h>
 
 /* add index_file if exists */

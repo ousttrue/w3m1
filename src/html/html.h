@@ -2,7 +2,7 @@
 #include <openssl/bio.h>
 #include <openssl/x509.h>
 #include <openssl/ssl.h>
-#include "istream.h"
+#include "transport/istream.h"
 
 
 struct mailcap

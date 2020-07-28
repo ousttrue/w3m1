@@ -62,7 +62,7 @@ PRIVATE
     gc
     )
         
-add_executable(w3m
+    add_executable(w3m
     src/main.cpp
     src/dispatcher.cpp
     src/commands.cpp
@@ -72,12 +72,17 @@ add_executable(w3m
     src/buffer.cpp
     src/tab.cpp
     src/file.cpp
-    src/loader.cpp
+    src/transport/istream.cpp
+    src/transport/loader.cpp
+    src/transport/local.cpp
+    src/transport/urlfile.cpp
+    src/transport/url.cpp
     src/http/compression.cpp
     src/http/auth.cpp
     src/http/http_request.cpp
     src/http/cookie.cpp
     src/http/ftp.cpp
+    src/http/news.cpp
     src/html/anchor.cpp
     src/html/tagtable.cpp
     src/html/tagstack.cpp
@@ -91,7 +96,6 @@ add_executable(w3m
     src/html/image.cpp
     src/mimetypes.cpp
     src/line.cpp
-    src/urlfile.cpp
     src/backend.cpp
     src/indep.cpp
     src/rc.cpp
@@ -103,18 +107,14 @@ add_executable(w3m
     src/etc.cpp
     src/search.cpp
     src/linein.cpp
-    src/local.cpp
     src/menu.cpp
     src/mailcap.cpp
     src/symbol.cpp
     src/terms.cpp
-    src/url.cpp
     src/mimehead.cpp
-    src/news.cpp
     src/mouse.cpp
     src/history.cpp
     src/version.cpp
-    src/istream.cpp
     src/keybind.cpp
     libwc/big5.cpp
     libwc/ces.cpp

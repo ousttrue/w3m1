@@ -10,7 +10,7 @@
 #include "file.h"
 // #include "terms.h"
 #include "http/cookie.h"
-#include "loader.h"
+#include "transport/loader.h"
 #include "html/form.h"
 
 /* Prototype declaration of internal functions */

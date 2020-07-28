@@ -8,8 +8,8 @@
 #include "html/html.h"
 #include "mimehead.h"
 #include "display.h"
-#include "url.h"
-#include "loader.h"
+#include "transport/url.h"
+#include "transport/loader.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

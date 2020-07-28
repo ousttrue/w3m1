@@ -14,7 +14,7 @@
 #include "http/cookie.h"
 #include "parsetagx.h"
 #include "myctype.h"
-#include "local.h"
+#include "transport/local.h"
 #include "regex.h"
 #include "menu.h"
 #include "mimetypes.h"

@@ -9,12 +9,12 @@
 #endif
 #include "myctype.h"
 #include "html/html.h"
-#include "local.h"
+#include "transport/local.h"
 #include "html/tagtable.h"
 #include "terms.h"
 #include "display.h"
 #include "buffer.h"
-#include "url.h"
+#include "transport/url.h"
 
 // #include <sys/socket.h>
 #include <netdb.h>

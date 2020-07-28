@@ -12,7 +12,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>
-#include "local.h"
+#include "transport/local.h"
 #include "html/form.h"
 
 #ifdef __MINGW32_VERSION
