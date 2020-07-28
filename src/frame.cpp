@@ -321,7 +321,7 @@ void resetFrameElement(union frameset_element *f_element,
 		f_body = newFrame(NULL, buf);
 		f_body->attr = F_BODY;
 		f_body->name = f_name;
-		f_body->url = parsedURL2Str(&buf->currentURL)->ptr;
+		f_body->url = buf->currentURL.ToStr()->ptr;
 		f_body->source = buf->sourcefile;
 		buf->sourcefile = NULL;
 		if (buf->mailcap_source)
@@ -379,7 +379,7 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
 		b->flags = 0;
 		return NULL;
 	}
-	b->url = parsedURL2Str(&buf->currentURL)->ptr;
+	b->url = buf->currentURL.ToStr()->ptr;
 	b->type = buf->type;
 	b->source = buf->sourcefile;
 	buf->sourcefile = NULL;
@@ -831,10 +831,10 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 									url.scheme == SCM_MISSING)
 									break;
 								a_target |= 1;
-								tag->value[j] = parsedURL2Str(&url)->ptr;
+								tag->value[j] = url.ToStr()->ptr;
 								parsedtag_set_value(tag,
 													ATTR_REFERER,
-													parsedURL2Str(&base)->ptr);
+													base.ToStr()->ptr);
 
 								if (tag->attrid[j] == ATTR_ACTION &&
 									charset != WC_CES_US_ASCII)

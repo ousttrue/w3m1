@@ -367,7 +367,7 @@ Str loadNewsgroup(ParsedURL *pu, wc_ces *charset)
     qgroup = html_quote(group);
     group = file_unquote(group);
     page = Strnew_m_charp("<html>\n<head>\n<base href=\"",
-                          parsedURL2Str(pu)->ptr, "\">\n<title>Newsgroup: ",
+                          pu->ToStr()->ptr, "\">\n<title>Newsgroup: ",
                           qgroup, "</title>\n</head>\n<body>\n<h1>Newsgroup: ",
                           qgroup, "</h1>\n<hr>\n", NULL);
 
@@ -411,7 +411,7 @@ Str loadNewsgroup(ParsedURL *pu, wc_ces *charset)
     page = Sprintf("<html>\n<head>\n<base href=\"%s\">\n\
 <title>Newsgroup: %s %d-%d</title>\n\
 </head>\n<body>\n<h1>Newsgroup: %s %d-%d</h1>\n<hr>\n",
-                   parsedURL2Str(pu)->ptr, qgroup, start, end, qgroup, start, end);
+                   pu->ToStr()->ptr, qgroup, start, end, qgroup, start, end);
     if (start > first)
     {
         i = start - MaxNewsMessage;

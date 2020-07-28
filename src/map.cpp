@@ -287,7 +287,7 @@ follow_map_panel(BufferPtr buf, char *name)
         if (!a)
             continue;
         parseURL2(a->url, &pu, buf->BaseURL());
-        p = parsedURL2Str(&pu)->ptr;
+        p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));
@@ -440,7 +440,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
         if (!a)
             continue;
         pu.Parse2(a->url, buf->BaseURL());
-        q = html_quote(parsedURL2Str(&pu)->ptr);
+        q = html_quote(pu.ToStr()->ptr);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(a->url, buf->document_charset));
         else
@@ -470,7 +470,7 @@ append_link_info(BufferPtr buf, Str html, LinkList *link)
         if (l->url)
         {
             pu.Parse2(l->url, buf->BaseURL());
-            url = html_quote(parsedURL2Str(&pu)->ptr);
+            url = html_quote(pu.ToStr()->ptr);
         }
         else
             url = "(empty)";
@@ -582,7 +582,7 @@ page_info_panel(BufferPtr buf)
 #ifdef USE_M17N
     tmp->Push("<form method=internal action=charset>");
 #endif
-    p = parsedURL2Str(&buf->currentURL)->ptr;
+    p = buf->currentURL.ToStr()->ptr;
     if (DecodeURL)
         p = url_unquote_conv(p, 0);
     Strcat_m_charp(tmp, "<table cellpadding=0>",
@@ -622,7 +622,7 @@ page_info_panel(BufferPtr buf)
     if (a != NULL)
     {
         pu.Parse2(a->url, buf->BaseURL());
-        p = parsedURL2Str(&pu)->ptr;
+        p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));
@@ -636,7 +636,7 @@ page_info_panel(BufferPtr buf)
     if (a != NULL)
     {
         pu.Parse2(a->url, buf->BaseURL());
-        p = parsedURL2Str(&pu)->ptr;
+        p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));

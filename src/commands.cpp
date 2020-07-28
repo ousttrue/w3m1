@@ -1042,7 +1042,7 @@ void followA()
 
     ParsedURL u;
     u.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    if (parsedURL2Str(&u)->Cmp(parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)) == 0)
+    if (u.ToStr()->Cmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()) == 0)
     {
         /* index within this buffer */
         if (u.label.size())
@@ -1239,7 +1239,7 @@ void adBmark()
     auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
                        (localCookie()->UrlEncode())->ptr,
                        (Strnew(BookmarkFile)->UrlEncode())->ptr,
-                       (parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->UrlEncode())->ptr,
+                       (GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->UrlEncode())->ptr,
 
                        (wc_conv_strict(GetCurrentTab()->GetCurrentBuffer()->buffername.c_str(),
                                        InnerCharset,
@@ -1296,9 +1296,9 @@ void linkMn()
         return;
     }
     p_url.Parse2(l->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
+    pushHashHist(URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(l->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
-                parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr, NULL);
+                GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
 }
 /* accesskey */
 
@@ -1695,7 +1695,7 @@ void reload()
     {
         request = NULL;
     }
-    url = parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL);
+    url = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr();
     /* FIXME: gettextize? */
     message("Reloading...", 0, 0);
     refresh();
@@ -1865,7 +1865,7 @@ void extbrz()
         disp_err_message("Can't browse stdin", TRUE);
         return;
     }
-    invoke_browser(parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr);
+    invoke_browser(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr);
 }
 
 void linkbrz()
@@ -1877,7 +1877,7 @@ void linkbrz()
     if (a == NULL)
         return;
     pu.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    invoke_browser(parsedURL2Str(&pu)->ptr);
+    invoke_browser(pu.ToStr()->ptr);
 }
 /* show current line number and number of lines in the entire document */
 

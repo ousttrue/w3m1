@@ -570,7 +570,7 @@ void set_buffer_environ(BufferPtr buf)
         set_environ("W3M_SOURCEFILE", buf->sourcefile);
         set_environ("W3M_FILENAME", buf->filename);
         set_environ("W3M_TITLE", buf->buffername.c_str());
-        set_environ("W3M_URL", parsedURL2Str(&buf->currentURL)->ptr);
+        set_environ("W3M_URL", buf->currentURL.ToStr()->ptr);
         set_environ("W3M_TYPE", (char *)(buf->real_type ? buf->real_type : "unknown"));
 #ifdef USE_M17N
         set_environ("W3M_CHARSET", wc_ces_to_charset(buf->document_charset));
@@ -586,7 +586,7 @@ void set_buffer_environ(BufferPtr buf)
         if (a)
         {
             pu.Parse2(a->url, buf->BaseURL());
-            set_environ("W3M_CURRENT_LINK", parsedURL2Str(&pu)->ptr);
+            set_environ("W3M_CURRENT_LINK", pu.ToStr()->ptr);
         }
         else
             set_environ("W3M_CURRENT_LINK", "");
@@ -594,7 +594,7 @@ void set_buffer_environ(BufferPtr buf)
         if (a)
         {
             pu.Parse2(a->url, buf->BaseURL());
-            set_environ("W3M_CURRENT_IMG", parsedURL2Str(&pu)->ptr);
+            set_environ("W3M_CURRENT_IMG", pu.ToStr()->ptr);
         }
         else
             set_environ("W3M_CURRENT_IMG", "");

@@ -1788,7 +1788,7 @@ static bool checkRedirection(ParsedURL *pu)
     {
         /* FIXME: gettextize? */
         auto tmp = Sprintf("Number of redirections exceeded %d at %s",
-                           FollowRedirection, parsedURL2Str(pu)->ptr);
+                           FollowRedirection, pu->ToStr()->ptr);
         disp_err_message(tmp->ptr, FALSE);
         return false;
     }
@@ -1914,7 +1914,7 @@ load_doc:
 #endif
             /* FIXME: gettextize? */
             disp_err_message(Sprintf("Unknown URI: %s",
-                                     parsedURL2Str(&pu)->ptr)
+                                     pu.ToStr()->ptr)
                                  ->ptr,
                              FALSE);
             break;
@@ -2695,7 +2695,7 @@ Str process_img(struct parsed_tag *tag, int width)
             ParsedURL u;
 
             u.Parse2(wc_conv(p, InnerCharset, cur_document_charset)->ptr, GetCurBaseUrl());
-            image.url = parsedURL2Str(&u)->ptr;
+            image.url = u.ToStr()->ptr;
             if (!uncompressed_file_type(u.file.c_str(), &image.ext))
                 image.ext = filename_extension(u.file.c_str(), TRUE);
             image.cache = NULL;
@@ -4003,7 +4003,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 
                             u.Parse2(a_img->url, GetCurBaseUrl());
                             a_img->image = image = New(Image);
-                            image->url = parsedURL2Str(&u)->ptr;
+                            image->url = u.ToStr()->ptr;
                             if (!uncompressed_file_type(u.file.c_str(), &image->ext))
                                 image->ext = filename_extension(u.file.c_str(), TRUE);
                             image->cache = NULL;
@@ -4806,7 +4806,7 @@ Str loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces *charset)
     wc_ces doc_charset = DocumentCharset;
 #endif
 
-    tmp = parsedURL2Str(pu);
+    tmp = pu->ToStr();
     p = html_quote(tmp->ptr);
     tmp =
         convertLine(NULL, Strnew(file_unquote(tmp->ptr)), RAW_MODE,

@@ -162,9 +162,9 @@ void
 static void
 dump_extra(BufferPtr buf)
 {
-    printf("W3m-current-url: %s\n", parsedURL2Str(&buf->currentURL)->ptr);
+    printf("W3m-current-url: %s\n", buf->currentURL.ToStr()->ptr);
     if (buf->baseURL)
-        printf("W3m-base-url: %s\n", parsedURL2Str(&buf->baseURL)->ptr);
+        printf("W3m-base-url: %s\n", buf->baseURL.ToStr()->ptr);
     printf("W3m-document-charset: %s\n",
            wc_ces_to_charset(buf->document_charset));
 
@@ -261,7 +261,7 @@ void do_dump(BufferPtr buf)
                 if (buf->href.anchors[i].slave)
                     continue;
                 pu.Parse2(buf->href.anchors[i].url, buf->BaseURL());
-                s = parsedURL2Str(&pu);
+                s = pu.ToStr();
                 if (DecodeURL)
                     s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
                 printf("[%d] %s\n", buf->href.anchors[i].hseq + 1, s->ptr);
@@ -910,7 +910,7 @@ void _followForm(int submit)
         if (tmp2->Cmp("!CURRENT_URL!") == 0)
         {
             /* It means "current URL" */
-            tmp2 = parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL);
+            tmp2 = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr();
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
                 tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
         }
@@ -1142,7 +1142,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
         referer = NO_REFERER;
     if (referer == NULL)
-        referer = parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr;
+        referer = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr;
     buf = loadGeneralFile(const_cast<char*>(url), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), const_cast<char*>(referer), flag, request);
     if (buf == NULL)
     {
@@ -1152,7 +1152,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     }
 
     pu.Parse2(url, base);
-    pushHashHist(URLHist, parsedURL2Str(&pu)->ptr);
+    pushHashHist(URLHist, pu.ToStr()->ptr);
 
     if (!on_target) /* open link as an indivisual page */
         return loadNormalBuf(buf, TRUE);
@@ -1373,7 +1373,7 @@ void _nextA(int visited)
                 if (visited == TRUE && an)
                 {
                     url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-                    if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
+                    if (getHashHist(URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
                     }
@@ -1397,7 +1397,7 @@ void _nextA(int visited)
             if (visited == TRUE)
             {
                 url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-                if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
+                if (getHashHist(URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
                 }
@@ -1465,7 +1465,7 @@ void _prevA(int visited)
                 if (visited == TRUE && an)
                 {
                     url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-                    if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
+                    if (getHashHist(URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
                     }
@@ -1489,7 +1489,7 @@ void _prevA(int visited)
             if (visited == TRUE && an)
             {
                 url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-                if (getHashHist(URLHist, parsedURL2Str(&url)->ptr))
+                if (getHashHist(URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
                 }
@@ -1524,7 +1524,7 @@ void gotoLabel(const char *label)
     for (int i = 0; i < MAX_LB; i++)
         buf->linkBuffer[i] = NULL;
     buf->currentURL.label = allocStr(label, -1);
-    pushHashHist(URLHist, parsedURL2Str(&buf->currentURL)->ptr);
+    pushHashHist(URLHist, buf->currentURL.ToStr()->ptr);
     (*buf->clone)++;
     GetCurrentTab()->PushBufferCurrentPrev(buf);
     gotoLine(GetCurrentTab()->GetCurrentBuffer(), al->start.line);
@@ -1692,7 +1692,7 @@ void goURL0(const char* prompt, int relative)
         current = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
         if (current)
         {
-            char *c_url = parsedURL2Str(current)->ptr;
+            char *c_url = current->ToStr()->ptr;
             if (DefaultURLString == DEFAULT_URL_CURRENT)
             {
                 url = c_url;
@@ -1707,7 +1707,7 @@ void goURL0(const char* prompt, int relative)
         {
             char *a_url;
             p_url.Parse2(a->url, current);
-            a_url = parsedURL2Str(&p_url)->ptr;
+            a_url = p_url.ToStr()->ptr;
             if (DefaultURLString == DEFAULT_URL_LINK)
             {
                 url = a_url;
@@ -1745,7 +1745,7 @@ void goURL0(const char* prompt, int relative)
     if (relative)
     {
         current = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
-        referer = parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr;
+        referer = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr;
     }
     else
     {
@@ -1753,10 +1753,10 @@ void goURL0(const char* prompt, int relative)
         referer = NULL;
     }
     p_url.Parse2(url, current);
-    pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
+    pushHashHist(URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(url, current, referer, NULL);
     if (GetCurrentTab()->GetCurrentBuffer() != cur_buf) /* success */
-        pushHashHist(URLHist, parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr);
+        pushHashHist(URLHist, GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr);
 }
 
 void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
@@ -1818,7 +1818,7 @@ void _peekURL(int only_img)
     if (s == NULL)
     {
         pu.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-        s = parsedURL2Str(&pu);
+        s = pu.ToStr();
     }
     if (DecodeURL)
         s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
@@ -1843,7 +1843,7 @@ Str currentURL(void)
 {
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return Strnew_size(0);
-    return parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL);
+    return GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr();
 }
 
 void repBuffer(BufferPtr oldbuf, BufferPtr buf)
@@ -2539,14 +2539,14 @@ void follow_map(struct parsed_tagarg *arg)
         return;
     }
     p_url.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
+    pushHashHist(URLHist, p_url.ToStr()->ptr);
     if (check_target && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
         auto tab = CreateTabSetCurrent();
         BufferPtr buf = tab->GetCurrentBuffer();
         cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
-                    parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr, NULL);
+                    GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
             GetCurrentTab()->DeleteBuffer(buf);
         else
@@ -2555,7 +2555,7 @@ void follow_map(struct parsed_tagarg *arg)
         return;
     }
     cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
-                parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr, NULL);
+                GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
 #endif
 }
 

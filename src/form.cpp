@@ -855,7 +855,7 @@ add_pre_form(struct pre_form *prev, char *url, char *name, char *action)
     else if (url)
     {
         pu.Parse2(url, NULL);
-        newForm->url = parsedURL2Str(&pu)->ptr;
+        newForm->url = pu.ToStr()->ptr;
         newForm->re_url = NULL;
     }
     newForm->name = (name && *name) ? name : NULL;
@@ -1033,13 +1033,13 @@ void preFormUpdateBuffer(BufferPtr buf)
     {
         if (pf->re_url)
         {
-            Str url = parsedURL2Str(&buf->currentURL);
+            Str url = buf->currentURL.ToStr();
             if (!RegexMatch(pf->re_url, url->ptr, url->Size(), 1))
                 continue;
         }
         else if (pf->url)
         {
-            if (parsedURL2Str(&buf->currentURL)->Cmp(pf->url) != 0)
+            if (buf->currentURL.ToStr()->Cmp(pf->url) != 0)
                 continue;
         }
         else

@@ -45,7 +45,7 @@ Str HRequest::URI(ParsedURL *pu) const
     {
         auto save_label = pu->label;
         pu->label.clear();
-        tmp->Push(parsedURL2Str(pu, true));
+        tmp->Push(pu->ToStr(true));
         pu->label = save_label;
     }
     return tmp;

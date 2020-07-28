@@ -179,7 +179,6 @@ static void
     SIGNAL_RETURN;
 }
 
-
 int openSocket(const char *hostname,
                const char *remoteport_name, unsigned short remoteport_num)
 {
@@ -958,76 +957,76 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
     }
 }
 
-Str parsedURL2Str(ParsedURL *pu, bool pass)
+Str ParsedURL::ToStr(bool pass) const
 {
-    if (pu->scheme == SCM_MISSING)
+    if (this->scheme == SCM_MISSING)
     {
         return Strnew("???");
     }
-    else if (pu->scheme == SCM_UNKNOWN)
+    else if (this->scheme == SCM_UNKNOWN)
     {
-        return Strnew(pu->file);
+        return Strnew(this->file);
     }
-    if (pu->host.empty() && pu->file.empty() && pu->label.size())
+    if (this->host.empty() && this->file.empty() && this->label.size())
     {
         /* local label */
-        return Sprintf("#%s", pu->label);
+        return Sprintf("#%s", this->label);
     }
-    if (pu->scheme == SCM_LOCAL && pu->file == "-")
+    if (this->scheme == SCM_LOCAL && this->file == "-")
     {
         tmp = Strnew("-");
-        if (pu->label.size())
+        if (this->label.size())
         {
             tmp->Push('#');
-            tmp->Push(pu->label);
+            tmp->Push(this->label);
         }
         return tmp;
     }
-    tmp = Strnew(scheme_str[pu->scheme]);
+    tmp = Strnew(scheme_str[this->scheme]);
     tmp->Push(':');
-    if (pu->scheme == SCM_DATA)
+    if (this->scheme == SCM_DATA)
     {
-        tmp->Push(pu->file);
+        tmp->Push(this->file);
         return tmp;
     }
-    if (pu->scheme != SCM_NEWS && pu->scheme != SCM_NEWS_GROUP)
+    if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP)
     {
         tmp->Push("//");
     }
-    if (pu->user.size())
+    if (this->user.size())
     {
-        tmp->Push(pu->user);
-        if (pass && pu->pass.size())
+        tmp->Push(this->user);
+        if (pass && this->pass.size())
         {
             tmp->Push(':');
-            tmp->Push(pu->pass);
+            tmp->Push(this->pass);
         }
         tmp->Push('@');
     }
-    if (pu->host.size())
+    if (this->host.size())
     {
-        tmp->Push(pu->host);
-        if (pu->port != DefaultPort[pu->scheme])
+        tmp->Push(this->host);
+        if (this->port != DefaultPort[this->scheme])
         {
             tmp->Push(':');
-            tmp->Push(Sprintf("%d", pu->port));
+            tmp->Push(Sprintf("%d", this->port));
         }
     }
-    if (pu->scheme != SCM_NEWS && pu->scheme != SCM_NEWS_GROUP &&
-        (pu->file.empty() || pu->file[0] != '/'))
+    if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP &&
+        (this->file.empty() || this->file[0] != '/'))
         tmp->Push('/');
-    tmp->Push(pu->file);
-    if (pu->scheme == SCM_FTPDIR && tmp->Back() != '/')
+    tmp->Push(this->file);
+    if (this->scheme == SCM_FTPDIR && tmp->Back() != '/')
         tmp->Push('/');
-    if (pu->query.size())
+    if (this->query.size())
     {
         tmp->Push('?');
-        tmp->Push(pu->query);
+        tmp->Push(this->query);
     }
-    if (pu->label.size())
+    if (this->label.size())
     {
         tmp->Push('#');
-        tmp->Push(pu->label);
+        tmp->Push(this->label);
     }
     return tmp;
 }
@@ -1076,7 +1075,7 @@ otherinfo(ParsedURL *target, const ParsedURL *current, char *referer)
             //current->label = NULL;
             auto withoutLabel = *current;
             withoutLabel.label.clear();
-            s->Push(parsedURL2Str(&withoutLabel));
+            s->Push(withoutLabel.ToStr());
             s->Push("\r\n");
         }
         else if (referer != NULL && referer != NO_REFERER)
@@ -1381,7 +1380,7 @@ Str searchURIMethods(ParsedURL *pu)
         return NULL; /* use internal */
     if (urimethods == NULL)
         return NULL;
-    url = parsedURL2Str(pu);
+    url = pu->ToStr();
     for (p = url->ptr; *p != '\0'; p++)
     {
         if (*p == ':')

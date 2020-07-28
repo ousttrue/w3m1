@@ -296,7 +296,7 @@ make_lastline_link(BufferPtr buf, std::string_view title, char *url)
     if (!url)
         return s;
     pu.Parse2(url, buf->BaseURL());
-    u = parsedURL2Str(&pu);
+    u = pu.ToStr();
     if (DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));
 #ifdef USE_M17N
@@ -775,7 +775,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
             if (a)
             {
                 url.Parse2(a->url, buf->BaseURL());
-                if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
+                if (getHashHist(URLHist, url.ToStr()->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
                         pr[k - pos] |= PE_VISITED;
@@ -990,7 +990,7 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
             if (a)
             {
                 url.Parse2(a->url, buf->BaseURL());
-                if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
+                if (getHashHist(URLHist, url.ToStr()->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
                         pr[k - pos] |= PE_VISITED;

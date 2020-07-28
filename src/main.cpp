@@ -958,7 +958,7 @@ int main(int argc, char **argv, char **envp)
             if (newbuf == NULL)
                 err_msg->Push( Sprintf("w3m: Can't load %s.\n", p));
             else
-                pushHashHist(URLHist, parsedURL2Str(&newbuf->currentURL)->c_str());
+                pushHashHist(URLHist, newbuf->currentURL.ToStr()->c_str());
         }
         else
         {
@@ -1044,7 +1044,7 @@ int main(int argc, char **argv, char **envp)
             case SCM_LOCAL_CGI:
                 unshiftHist(LoadHist, conv_from_system(load_argv[i]));
             default:
-                pushHashHist(URLHist, parsedURL2Str(&newbuf->currentURL)->c_str());
+                pushHashHist(URLHist, newbuf->currentURL.ToStr()->c_str());
                 break;
             }
         }

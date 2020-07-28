@@ -1828,7 +1828,7 @@ initSelectMenu(void)
                 break;
             default:
                 str->Push( ' ');
-                p = parsedURL2Str(&buf->currentURL)->ptr;
+                p = buf->currentURL.ToStr()->ptr;
                 if (DecodeURL)
                     p = url_unquote_conv(p, 0);
                 str->Push( p);
@@ -1952,7 +1952,7 @@ initSelTabMenu(void)
     //         case SCM_MISSING:
     //             break;
     //         default:
-    //             p = parsedURL2Str(&buf->currentURL)->ptr;
+    //             p = buf->currentURL.ToStr()->ptr;
     //             if (DecodeURL)
     //                 p = url_unquote_conv(p, 0);
     //             str->Push( p);

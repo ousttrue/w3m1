@@ -501,7 +501,7 @@ void save_cookies(void)
         if (!(p->flag & COO_USE) || p->flag & COO_DISCARD)
             continue;
         fprintf(fp, "%s\t%s\t%s\t%ld\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
-                parsedURL2Str(&p->url)->ptr,
+                p->url.ToStr()->ptr,
                 p->name->ptr, p->value->ptr, p->expires,
                 p->domain->ptr, p->path->ptr, p->flag,
                 p->version, str2charp(p->comment),
@@ -626,7 +626,7 @@ cookie_list_panel(void)
     src->Push("<ol>");
     for (p = First_cookie, i = 0; p; p = p->next, i++)
     {
-        tmp = html_quote(parsedURL2Str(&p->url)->ptr);
+        tmp = html_quote(p->url.ToStr()->ptr);
         if (p->expires != (time_t)-1)
         {
 #ifdef HAVE_STRFTIME

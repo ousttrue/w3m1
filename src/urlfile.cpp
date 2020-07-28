@@ -289,7 +289,7 @@ retry:
     }
 
     this->scheme = pu->scheme;
-    this->url = parsedURL2Str(pu)->ptr;
+    this->url = pu->ToStr()->ptr;
     pu->is_nocache = (option->flag & RG_NOCACHE);
     this->ext = filename_extension(pu->file.c_str(), 1);
 

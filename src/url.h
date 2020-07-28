@@ -42,13 +42,13 @@ struct ParsedURL
     {
         return scheme != SCM_MISSING;
     }
+    Str ToStr(bool pass = false) const;
 };
 
 const char *filename_extension(const char *patch, int is_url);
 void initURIMethods();
 Str searchURIMethods(ParsedURL *pu);
 ParsedURL *schemeToProxy(int scheme);
-Str parsedURL2Str(ParsedURL *pu, bool pass = false);
 char *otherinfo(ParsedURL *target, const ParsedURL *current, char *referer);
 SchemaTypes getURLScheme(char **url);
 

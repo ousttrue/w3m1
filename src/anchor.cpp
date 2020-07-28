@@ -727,7 +727,7 @@ link_list_panel(BufferPtr buf)
             {
                 ParsedURL pu;
                 pu.Parse2(l->url, buf->BaseURL());
-                p = parsedURL2Str(&pu)->ptr;
+                p = pu.ToStr()->ptr;
                 u = html_quote(p);
                 if (DecodeURL)
                     p = html_quote(url_unquote_conv(p, buf->document_charset));
@@ -761,7 +761,7 @@ link_list_panel(BufferPtr buf)
                 continue;
             ParsedURL pu;
             pu.Parse2(const_cast<char*>(a->url.c_str()), buf->BaseURL());
-            auto p = parsedURL2Str(&pu)->ptr;
+            auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (DecodeURL)
                 p = html_quote(url_unquote_conv(p, buf->document_charset));
@@ -786,7 +786,7 @@ link_list_panel(BufferPtr buf)
                 continue;
             ParsedURL pu;
             pu.Parse2(a->url, buf->BaseURL());
-            auto p = parsedURL2Str(&pu)->ptr;
+            auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (DecodeURL)
                 p = html_quote(url_unquote_conv(p, buf->document_charset));
@@ -821,7 +821,7 @@ link_list_panel(BufferPtr buf)
                     if (!m)
                         continue;
                     pu.Parse2(m->url, buf->BaseURL());
-                    p = parsedURL2Str(&pu)->ptr;
+                    p = pu.ToStr()->ptr;
                     u = html_quote(p);
                     if (DecodeURL)
                         p = html_quote(url_unquote_conv(p,

@@ -197,7 +197,7 @@ writeBufferName(BufferPtr buf, int n)
             break;
         default:
             msg->Push(' ');
-            msg->Push(parsedURL2Str(&buf->currentURL));
+            msg->Push(buf->currentURL.ToStr());
             break;
         }
     }
