@@ -7,9 +7,11 @@
  *   [DRAFT 12] http://www.ics.uci.edu/pub/ietf/http/draft-ietf-http-state-man-mec-12.txt
  */
 
+#include <sstream>
 #include "cookie.h"
 #include "fm.h"
 #include "indep.h"
+#include <gc_cpp.h>
 #include "rc.h"
 #include "commands.h"
 #include "etc.h"
@@ -48,22 +50,27 @@ struct portlist
     portlist *next;
 };
 
-struct cookie
+struct Cookie : public gc_cleanup
 {
     ParsedURL url;
-    Str name;
-    Str value;
-    time_t expires;
-    Str path;
-    Str domain;
-    Str comment;
-    Str commentURL;
-    portlist *portl;
-    char version;
-    char flag;
-    cookie *next;
+    Str name = nullptr;
+    Str value = nullptr;
+    time_t expires = {};
+    Str path = nullptr;
+    Str domain = nullptr;
+    Str comment = nullptr;
+    Str commentURL = nullptr;
+    std::vector<uint16_t> portl;
+    char version = 0;
+    char flag = 0;
+    Cookie *next = nullptr;
+
+    void clear()
+    {
+        *this = {};
+    }
 };
-static cookie *First_cookie = nullptr;
+static Cookie *First_cookie = nullptr;
 
 static int is_saved = 1;
 
@@ -135,14 +142,11 @@ domain_match(char *host, char *domain)
     return NULL;
 }
 
-static struct portlist *
-make_portlist(Str port)
+static std::vector<uint16_t> make_portlist(Str port)
 {
-    struct portlist *first = NULL, *pl;
-    char *p;
+    std::vector<uint16_t> l;
     Str tmp = Strnew();
-
-    p = port->ptr;
+    auto p = port->ptr;
     while (*p)
     {
         while (*p && !IS_DIGIT(*p))
@@ -152,43 +156,38 @@ make_portlist(Str port)
             tmp->Push(*(p++));
         if (tmp->Size() == 0)
             break;
-        pl = New(struct portlist);
-        pl->port = atoi(tmp->ptr);
-        pl->next = first;
-        first = pl;
+
+        l.push_back(atoi(tmp->ptr));
     }
-    return first;
+    return l;
 }
 
-static Str
-portlist2str(struct portlist *first)
+static std::string
+portlist2str(const std::vector<uint16_t> &l)
 {
-    struct portlist *pl;
-    Str tmp;
-
-    tmp = Sprintf("%d", first->port);
-    for (pl = first->next; pl; pl = pl->next)
-        tmp->Push(Sprintf(", %d", pl->port));
-    return tmp;
-}
-
-static int
-port_match(struct portlist *first, int port)
-{
-    struct portlist *pl;
-
-    for (pl = first; pl; pl = pl->next)
+    std::stringstream ss;
+    auto tmp = Strnew();
+    for (int i = 0; i < l.size(); ++i)
     {
-        if (pl->port == port)
-            return 1;
+        if (i)
+        {
+            ss << ", ";
+        }
+        ss << l[i];
     }
-    return 0;
+    return ss.str();
+}
+
+static bool
+port_match(const std::vector<uint16_t> &l, int port)
+{
+    return std::find(l.begin(), l.end(), port) != l.end();
 }
 
 static void
 check_expired_cookies(void)
 {
-    struct cookie *p, *p1;
+    struct Cookie *p, *p1;
     time_t now = time(NULL);
 
     if (!First_cookie)
@@ -215,7 +214,7 @@ check_expired_cookies(void)
 }
 
 static Str
-make_cookie(struct cookie *cookie)
+make_cookie(struct Cookie *cookie)
 {
     Str tmp = cookie->name->Clone();
     tmp->Push('=');
@@ -224,7 +223,7 @@ make_cookie(struct cookie *cookie)
 }
 
 static int
-match_cookie(const ParsedURL *pu, struct cookie *cookie, char *domainname)
+match_cookie(const ParsedURL *pu, struct Cookie *cookie, char *domainname)
 {
     if (!domainname)
         return 0;
@@ -240,16 +239,16 @@ match_cookie(const ParsedURL *pu, struct cookie *cookie, char *domainname)
     if (cookie->flag & COO_SECURE)
         return 0;
 #endif /* not USE_SSL */
-    if (cookie->portl && !port_match(cookie->portl, pu->port))
+    if (cookie->portl.size() && !port_match(cookie->portl, pu->port))
         return 0;
 
     return 1;
 }
 
-struct cookie *
+struct Cookie *
 get_cookie_info(Str domain, Str path, Str name)
 {
-    struct cookie *p;
+    struct Cookie *p;
 
     for (p = First_cookie; p; p = p->next)
     {
@@ -263,7 +262,7 @@ get_cookie_info(Str domain, Str path, Str name)
 Str find_cookie(const ParsedURL *pu)
 {
     Str tmp;
-    struct cookie *p, *p1, *fco = NULL;
+    struct Cookie *p, *p1, *fco = NULL;
     int version = 0;
     char *fq_domainname;
 
@@ -279,8 +278,7 @@ Str find_cookie(const ParsedURL *pu)
                 ;
             if (p1)
                 continue;
-            p1 = New(struct cookie);
-            bcopy(p, p1, sizeof(struct cookie));
+            p1 = new Cookie;
             p1->next = fco;
             fco = p1;
             if (p1->version > version)
@@ -306,7 +304,7 @@ Str find_cookie(const ParsedURL *pu)
                 tmp->Push(Sprintf("; $Path=\"%s\"", p1->path->ptr));
             if (p1->flag & COO_DOMAIN)
                 tmp->Push(Sprintf("; $Domain=\"%s\"", p1->domain->ptr));
-            if (p1->portl)
+            if (p1->portl.size())
                 tmp->Push(Sprintf("; $Port=\"%s\"", portlist2str(p1->portl)));
         }
     }
@@ -349,10 +347,10 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
                time_t expires, Str domain, Str path,
                int flag, Str comment, int version, Str port, Str commentURL)
 {
-    struct cookie *p;
+    struct Cookie *p;
     const char *domainname = (version == 0) ? FQDN(const_cast<char *>(pu->host.c_str())) : pu->host.c_str();
     Str odomain = domain, opath = path;
-    struct portlist *portlist = NULL;
+    std::vector<uint16_t> portlist;
     int use_security = !(flag & COO_OVERRIDE);
 
 #define COOKIE_ERROR(err)                         \
@@ -444,7 +442,7 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
     {
         /* [DRAFT 12] s. 4.3.2 case 5 */
         portlist = make_portlist(port);
-        if (portlist && !port_match(portlist, pu->port))
+        if (portlist.size() && !port_match(portlist, pu->port))
             COOKIE_ERROR(COO_EPORT);
     }
 
@@ -462,7 +460,7 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
     p = get_cookie_info(domain, path, name);
     if (!p)
     {
-        p = New(struct cookie);
+        p = new Cookie;
         p->flag = 0;
         if (default_use_cookie)
             p->flag |= COO_USE;
@@ -507,10 +505,10 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
     return 0;
 }
 
-struct cookie *
+struct Cookie *
 nth_cookie(int n)
 {
-    struct cookie *p;
+    struct Cookie *p;
     int i;
     for (p = First_cookie, i = 0; p; p = p->next, i++)
     {
@@ -524,7 +522,7 @@ nth_cookie(int n)
 
 void save_cookies(void)
 {
-    struct cookie *p;
+    struct Cookie *p;
     char *cookie_file;
     FILE *fp;
 
@@ -546,7 +544,7 @@ void save_cookies(void)
                 p->name->ptr, p->value->ptr, p->expires,
                 p->domain->ptr, p->path->ptr, p->flag,
                 p->version, str2charp(p->comment),
-                (p->portl) ? portlist2str(p->portl)->ptr : "",
+                portlist2str(p->portl).c_str(),
                 str2charp(p->commentURL));
     }
     fclose(fp);
@@ -566,7 +564,7 @@ readcol(char **p)
 
 void load_cookies(void)
 {
-    struct cookie *cookie, *p;
+    struct Cookie *cookie, *p;
     FILE *fp;
     Str line;
     char *str;
@@ -590,13 +588,12 @@ void load_cookies(void)
         if (line->Size() == 0)
             break;
         str = line->ptr;
-        cookie = New(struct cookie);
+        cookie = new Cookie;
         cookie->next = NULL;
         cookie->flag = 0;
         cookie->version = 0;
         cookie->expires = (time_t)-1;
         cookie->comment = NULL;
-        cookie->portl = NULL;
         cookie->commentURL = NULL;
         cookie->url.Parse(readcol(&str)->ptr, NULL);
         if (!*str)
@@ -657,7 +654,7 @@ cookie_list_panel(void)
     Str src = Strnew("<html><head><title>Cookies</title></head>"
                      "<body><center><b>Cookies</b></center>"
                      "<p><form method=internal action=cookie>");
-    struct cookie *p;
+    struct Cookie *p;
     int i;
     char *tmp, tmp2[80];
 
@@ -748,10 +745,10 @@ cookie_list_panel(void)
             src->Push(html_quote(p->path->ptr));
             src->Push("</td></tr>");
         }
-        if (p->portl)
+        if (p->portl.size())
         {
             src->Push("<tr><td width=\"80\"><b>Port:</b></td><td>");
-            src->Push(html_quote(portlist2str(p->portl)->ptr));
+            src->Push(html_quote(portlist2str(p->portl)));
             src->Push("</td></tr>");
         }
         src->Push("<tr><td width=\"80\"><b>Secure:</b></td><td>");
@@ -773,7 +770,7 @@ cookie_list_panel(void)
 void set_cookie_flag(struct parsed_tagarg *arg)
 {
     int n, v;
-    struct cookie *p;
+    struct Cookie *p;
 
     while (arg)
     {
