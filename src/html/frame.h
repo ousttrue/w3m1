@@ -4,7 +4,7 @@
  */
 #pragma once
 #include "html.h"
-#include "form.h"
+#include "html/form.h"
 #include "buffer.h"
 
 struct frame_element

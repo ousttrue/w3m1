@@ -3,7 +3,7 @@
 #include "myctype.h"
 #include "mimehead.h"
 #include "http_request.h"
-#include "form.h"
+#include "html/form.h"
 #include "display.h"
 #include "terms.h"
 #include "public.h"

@@ -9,7 +9,7 @@ add_executable(w3mbookmark
     src/indep.cpp
     src/regex.cpp
     src/textlist.cpp
-    src/parsetag.cpp
+    src/html/parsetag.cpp
     src/myctype.cpp
     src/hash.cpp
     src/entity.cpp
@@ -66,7 +66,6 @@ add_executable(w3m
     src/main.cpp
     src/dispatcher.cpp
     src/commands.cpp
-    src/tagtable.cpp
     src/entity.cpp
     src/anchor.cpp
     src/public.cpp
@@ -77,8 +76,14 @@ add_executable(w3m
     src/loader.cpp
     src/compression.cpp
     src/auth.cpp
-    src/tagstack.cpp
+    src/html/tagtable.cpp
+    src/html/tagstack.cpp
     src/html/html_processor.cpp
+    src/html/table.cpp
+    src/html/form.cpp
+    src/html/parsetag.cpp
+    src/html/parsetagx.cpp
+    src/html/frame.cpp
     src/mimetypes.cpp
     src/line.cpp
     src/urlfile.cpp
@@ -91,17 +96,13 @@ add_executable(w3m
     src/Str.cpp
     src/regex.cpp    
     src/textlist.cpp
-    src/parsetag.cpp
     src/myctype.cpp
     src/hash.cpp
     src/etc.cpp
     src/search.cpp
     src/linein.cpp
-    src/table.cpp
     src/local.cpp
-    src/form.cpp
     src/map.cpp
-    src/frame.cpp
     src/menu.cpp
     src/mailcap.cpp
     src/image.cpp
@@ -116,7 +117,6 @@ add_executable(w3m
     src/version.cpp
     src/istream.cpp
     src/keybind.cpp
-    src/parsetagx.cpp
     libwc/big5.cpp
     libwc/ces.cpp
     libwc/char_conv.cpp

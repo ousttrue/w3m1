@@ -5,7 +5,7 @@
 #include "Str.h"
 #include "indep.h"
 #include "textlist.h"
-#include "parsetag.h"
+#include "html/parsetag.h"
 
 #define BKMARK_TITLE "Register to my bookmark"
 #define BKMARK_ADD "ADD"

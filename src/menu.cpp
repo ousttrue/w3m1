@@ -12,7 +12,7 @@
 #include "commands.h"
 #include "symbol.h"
 #include "file.h"
-#include "html.h"
+#include "html/html.h"
 #include "mouse.h"
 #include "etc.h"
 #include "buffer.h"

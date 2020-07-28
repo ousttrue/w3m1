@@ -6,7 +6,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
-#include "form.h"
+#include "html/form.h"
 #include "display.h"
 #include "public.h"
 #include "terms.h"

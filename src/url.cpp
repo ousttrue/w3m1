@@ -7,7 +7,7 @@
 #include "indep.h"
 #include "cookie.h"
 #include "terms.h"
-#include "form.h"
+#include "html/form.h"
 #include "display.h"
 #include "anchor.h"
 #include "http_request.h"
@@ -33,7 +33,7 @@
 #include <io.h> /* ?? */
 #endif          /* __EMX__ */
 
-#include "html.h"
+#include "html/html.h"
 #include "Str.h"
 #include "myctype.h"
 #include "regex.h"

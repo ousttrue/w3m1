@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include "local.h"
-#include "form.h"
+#include "html/form.h"
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>

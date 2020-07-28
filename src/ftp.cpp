@@ -14,7 +14,7 @@
 #include "etc.h"
 #include "file.h"
 #include "public.h"
-#include "html.h"
+#include "html/html.h"
 #include "myctype.h"
 #include "terms.h"
 #include "display.h"

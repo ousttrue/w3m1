@@ -6,7 +6,7 @@
 #include "myctype.h"
 #include "regex.h"
 #include "file.h"
-#include "form.h"
+#include "html/form.h"
 #include "buffer.h"
 
 #define FIRST_ANCHOR_SIZE 30

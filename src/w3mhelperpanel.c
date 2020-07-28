@@ -7,7 +7,7 @@
 #include "Str.h"
 #include "indep.h"
 #include "textlist.h"
-#include "parsetag.h"
+#include "html/parsetag.h"
 #include "myctype.h"
 
 #if LANG == JA

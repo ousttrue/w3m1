@@ -1,5 +1,4 @@
 #include "dispatcher.h"
-
 #include "fm.h"
 #include "terms.h"
 #include "public.h"

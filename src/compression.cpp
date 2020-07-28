@@ -7,7 +7,7 @@
 #include "file.h"
 #include "etc.h"
 #include "fm.h"
-#include "html.h"
+#include "html/html.h"
 #include <sys/stat.h>
 
 void check_compression(char *path, URLFile *uf)

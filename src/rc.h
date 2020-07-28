@@ -1,5 +1,5 @@
 #pragma once
-#include "parsetag.h"
+#include "html/parsetag.h"
 void panel_set_option(struct parsed_tagarg *);
 char *rcFile(const char *base);
 char *etcFile(char *base);

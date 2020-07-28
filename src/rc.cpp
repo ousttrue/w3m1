@@ -6,7 +6,7 @@
 #include "fm.h"
 #include "rc.h"
 #include "indep.h"
-#include "parsetag.h"
+#include "html/parsetag.h"
 #include "symbol.h"
 #include "myctype.h"
 #include <stdio.h>

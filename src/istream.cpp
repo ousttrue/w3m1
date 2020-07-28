@@ -5,7 +5,7 @@
 #include "istream.h"
 #include "file.h"
 #include "etc.h"
-#include "html.h"
+#include "html/html.h"
 #include "mimehead.h"
 #include "display.h"
 #include <signal.h>

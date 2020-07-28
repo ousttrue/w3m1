@@ -8,9 +8,9 @@
 #include <pwd.h>
 #endif
 #include "myctype.h"
-#include "html.h"
+#include "html/html.h"
 #include "local.h"
-#include "tagtable.h"
+#include "html/tagtable.h"
 #include "terms.h"
 #include "display.h"
 #include "buffer.h"

@@ -5,7 +5,7 @@
 
 #include "fm.h"
 #include "indep.h"
-#include "frame.h"
+#include "html/frame.h"
 #include "menu.h"
 #include "file.h"
 #include "etc.h"

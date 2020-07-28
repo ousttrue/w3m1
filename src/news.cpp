@@ -5,7 +5,7 @@
 #include "file.h"
 #include "etc.h"
 #include "terms.h"
-#include "html.h"
+#include "html/html.h"
 #include "mimehead.h"
 #include "display.h"
 #include "url.h"

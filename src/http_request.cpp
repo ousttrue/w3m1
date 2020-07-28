@@ -3,7 +3,7 @@
 #include "textlist.h"
 #include "url.h"
 #include "cookie.h"
-#include "form.h"
+#include "html/form.h"
 
 Str HRequest::Method() const
 {
