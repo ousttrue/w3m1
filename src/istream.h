@@ -1,7 +1,4 @@
-/* $Id: istream.h,v 1.12 2003/10/20 16:41:56 ukai Exp $ */
-#ifndef IO_STREAM_H
-#define IO_STREAM_H
-
+#pragma once
 #include <stdio.h>
 #include <openssl/bio.h>
 #include <openssl/x509.h>
@@ -130,5 +127,8 @@ extern Str ssl_get_certificate(SSL *ssl, char *hostname);
 #define str_of(stream) ((stream)->str.handle)
 #define ssl_socket_of(stream) ((stream)->ssl.handle->sock)
 #define ssl_of(stream) ((stream)->ssl.handle->ssl)
-#define openIS(path) newInputStream(open((path), O_RDONLY))
-#endif
+
+inline InputStream* openIS(const char *path)
+{
+     return newInputStream(open(path, O_RDONLY));
+}
