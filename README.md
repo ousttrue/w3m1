@@ -217,15 +217,6 @@ DEFUN 由来の `void xxx(void)` という関数は、 `commands.h` に移った
 `proto.h` から削除する。
 適当に `file.h` ほかに分配して削除した。
 
-## Tab と Buffer
-
-`CurrentTab`, `FirstTab`, `LastTab`, `CurrentBuf`, `FirstBuf` マクロを関数化する。
-
-`FirstBuffer` => `GetCurrentTab()->GetFirstBuffer()`, `GetCurrentTab()->SetFirstBuffer(BufferPtr buf)` というふうにする。
-Setter は隠蔽する。
-Tabは必ず1以上。
-  * CurrentTab の null check 無くせる？
-
 ## C++ 化
 
 一個ずつ拡張子を `.cpp` に変えて `#include` を `extern "C"` で囲ってコンパイルを通した。
@@ -235,7 +226,48 @@ libwc を除いてうまく C++ 化できたようだ。
 とりあえず、`struct tag` まわりの `typedef` を取り除く。
 然る後に、前方宣言を活用してヘッダの分割を推進。
 
+## モジュールに分割
+
+機能ごとにモジュールに分割する。
+
+* Term
+    * 低レベル描画
+        * tputs termio/terminfo
+    * キーボード入力
+    * マウス入力
+    * リサイズイベント
+    * SIGNALハンドリング
+* UI
+    * 高レベル描画
+    * Tab
+    * Buffer
+    * Message
+    * Menu
+    * Keymap
+* IO
+    * IStream
+        * polymorphism化
+        * http
+            * cookie
+            * redirect
+            * referer
+        * https
+        * ftp
+    * Compression
+    * LocalCGI
+* String
+    * 文字コード
+    * URL
+    * html parse / term rendering
+
 ## TabBuffer, Buffer
+
+`CurrentTab`, `FirstTab`, `LastTab`, `CurrentBuf`, `FirstBuf` マクロを関数化する。
+
+`FirstBuffer` => `GetCurrentTab()->GetFirstBuffer()`, `GetCurrentTab()->SetFirstBuffer(BufferPtr buf)` というふうにする。
+Setter は隠蔽する。
+Tabは必ず1以上。
+  * CurrentTab の null check 無くせる？
 
 TabBuffer の双方向リンクリストを `std::list<std::shared_ptr<TabBuffer>>` に置き換えた。
 Buffer のリンクリストを Tab のメソッド化して、 Buffer::nextBuffer への直接アクセスを封じてからこれも、

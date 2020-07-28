@@ -170,25 +170,6 @@ static void
     SIGNAL_RETURN;
 }
 
-void UFhalfclose(URLFile *f)
-{
-    switch (f->scheme)
-    {
-    case SCM_FTP:
-        closeFTP();
-        break;
-#ifdef USE_NNTP
-    case SCM_NEWS:
-    case SCM_NNTP:
-        closeNews();
-        break;
-#endif
-    default:
-        f->Close();
-        break;
-    }
-}
-
 int currentLn(BufferPtr buf)
 {
     if (buf->currentLine)
@@ -1407,7 +1388,7 @@ page_loaded:
         else
             file = guess_save_name(t_buf, pu.file);
         if (doFileSave(f, file) == 0)
-            UFhalfclose(&f);
+            f.HalfClose();
         else
             f.Close();
         return nullptr;
@@ -1493,7 +1474,7 @@ page_loaded:
                 if (DecodeCTE && IStype(f.stream) != IST_ENCODED)
                     f.stream = newEncodedStream(f.stream, f.encoding);
                 if (doFileSave(f, guess_save_name(t_buf, pu.file)) == 0)
-                    UFhalfclose(&f);
+                    f.HalfClose();
                 else
                     f.Close();
             }

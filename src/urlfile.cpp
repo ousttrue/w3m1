@@ -249,11 +249,32 @@ URLFile::URLFile(SchemaTypes scm, InputStream *strm)
 {
 }
 
+URLFile::~URLFile()
+{
+}
+
 void URLFile::Close()
 {
     if (!ISclose(stream))
     {
         stream = NULL;
+    }
+}
+
+void URLFile::HalfClose()
+{
+    switch (scheme)
+    {
+    case SCM_FTP:
+        closeFTP();
+        break;
+    case SCM_NEWS:
+    case SCM_NNTP:
+        closeNews();
+        break;
+    default:
+        Close();
+        break;
     }
 }
 

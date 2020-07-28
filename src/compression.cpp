@@ -232,7 +232,7 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
             uf->scheme = SCM_LOCAL;
         }
     }
-    UFhalfclose(uf);
+    uf->HalfClose();
     uf->stream = newFileStream(f1, (FileStreamCloseFunc)fclose);
 #endif /* __MINGW32_VERSION */
     return tmpf;

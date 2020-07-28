@@ -201,8 +201,6 @@ void init_rc(void);
 BufferPtr load_option_panel(void);
 void sync_with_option(void);
 
-void UFhalfclose(URLFile *f);
-
 char *libFile(char *base);
 char *helpFile(char *base);
 Str localCookie(void);
