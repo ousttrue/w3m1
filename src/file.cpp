@@ -146,21 +146,6 @@ void SetCurHSeq(int seq)
 
 static int cur_iseq;
 
-#ifdef USE_COOKIE
-/* This array should be somewhere else */
-/* FIXME: gettextize? */
-const char *violations[COO_EMAX] = {
-    "internal error",
-    "tail match failed",
-    "wrong number of dots",
-    "RFC 2109 4.3.2 rule 1",
-    "RFC 2109 4.3.2 rule 2.1",
-    "RFC 2109 4.3.2 rule 2.2",
-    "RFC 2109 4.3.2 rule 3",
-    "RFC 2109 4.3.2 rule 4",
-    "RFC XXXX 4.3.2 rule 5"};
-#endif
-
 #define SAVE_BUF_SIZE 1536
 
 static void
@@ -246,7 +231,6 @@ int is_html_type(const char *type)
     return (type && (strcasecmp(type, "text/html") == 0 ||
                      strcasecmp(type, "application/xhtml+xml") == 0));
 }
-
 
 int setModtime(char *path, time_t modtime)
 {
@@ -624,172 +608,13 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
             }
             uf->content_encoding = uf->compression;
         }
-#ifdef USE_COOKIE
         else if (use_cookie && accept_cookie &&
                  pu && check_cookie_accept_domain(pu->host) &&
                  (!strncasecmp(lineBuf2->ptr, "Set-Cookie:", 11) ||
                   !strncasecmp(lineBuf2->ptr, "Set-Cookie2:", 12)))
         {
-            Str name = Strnew(), value = Strnew(), domain = NULL, path = NULL,
-                comment = NULL, commentURL = NULL, port = NULL, tmp2;
-            int version, quoted, flag = 0;
-            time_t expires = (time_t)-1;
-
-            q = NULL;
-            if (lineBuf2->ptr[10] == '2')
-            {
-                p = lineBuf2->ptr + 12;
-                version = 1;
-            }
-            else
-            {
-                p = lineBuf2->ptr + 11;
-                version = 0;
-            }
-#ifdef DEBUG
-            fprintf(stderr, "Set-Cookie: [%s]\n", p);
-#endif /* DEBUG */
-            SKIP_BLANKS(p);
-            while (*p != '=' && !IS_ENDT(*p))
-                name->Push(*(p++));
-            name->StripRight();
-            if (*p == '=')
-            {
-                p++;
-                SKIP_BLANKS(p);
-                quoted = 0;
-                while (!IS_ENDL(*p) && (quoted || *p != ';'))
-                {
-                    if (!IS_SPACE(*p))
-                        q = p;
-                    if (*p == '"')
-                        quoted = (quoted) ? 0 : 1;
-                    value->Push(*(p++));
-                }
-                if (q)
-                    value->Pop(p - q - 1);
-            }
-            while (*p == ';')
-            {
-                p++;
-                SKIP_BLANKS(p);
-                if (matchattr(p, "expires", 7, &tmp2))
-                {
-                    /* version 0 */
-                    expires = mymktime(tmp2->ptr);
-                }
-                else if (matchattr(p, "max-age", 7, &tmp2))
-                {
-                    /* XXX Is there any problem with max-age=0? (RFC 2109 ss. 4.2.1, 4.2.2 */
-                    expires = time(NULL) + atol(tmp2->ptr);
-                }
-                else if (matchattr(p, "domain", 6, &tmp2))
-                {
-                    domain = tmp2;
-                }
-                else if (matchattr(p, "path", 4, &tmp2))
-                {
-                    path = tmp2;
-                }
-                else if (matchattr(p, "secure", 6, NULL))
-                {
-                    flag |= COO_SECURE;
-                }
-                else if (matchattr(p, "comment", 7, &tmp2))
-                {
-                    comment = tmp2;
-                }
-                else if (matchattr(p, "version", 7, &tmp2))
-                {
-                    version = atoi(tmp2->ptr);
-                }
-                else if (matchattr(p, "port", 4, &tmp2))
-                {
-                    /* version 1, Set-Cookie2 */
-                    port = tmp2;
-                }
-                else if (matchattr(p, "commentURL", 10, &tmp2))
-                {
-                    /* version 1, Set-Cookie2 */
-                    commentURL = tmp2;
-                }
-                else if (matchattr(p, "discard", 7, NULL))
-                {
-                    /* version 1, Set-Cookie2 */
-                    flag |= COO_DISCARD;
-                }
-                quoted = 0;
-                while (!IS_ENDL(*p) && (quoted || *p != ';'))
-                {
-                    if (*p == '"')
-                        quoted = (quoted) ? 0 : 1;
-                    p++;
-                }
-            }
-            if (pu && name->Size() > 0)
-            {
-                int err;
-                if (show_cookie)
-                {
-                    if (flag & COO_SECURE)
-                        disp_message_nsec("Received a secured cookie", FALSE, 1,
-                                          TRUE, FALSE);
-                    else
-                        disp_message_nsec(Sprintf("Received cookie: %s=%s",
-                                                  name->ptr, value->ptr)
-                                              ->ptr,
-                                          FALSE, 1, TRUE, FALSE);
-                }
-                err =
-                    add_cookie(pu, name, value, expires, domain, path, flag,
-                               comment, version, port, commentURL);
-                if (err)
-                {
-                    char *ans = (accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
-                                    ? (char *)"y"
-                                    : NULL;
-                    if (fmInitialized && (err & COO_OVERRIDE_OK) &&
-                        accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
-                    {
-                        Str msg = Sprintf("Accept bad cookie from %s for %s?",
-                                          pu->host,
-                                          ((domain && domain->ptr)
-                                               ? domain->ptr
-                                               : "<localdomain>"));
-                        if (msg->Size() > COLS - 10)
-                            msg->Pop(msg->Size() - (COLS - 10));
-                        msg->Push(" (y/n)");
-                        ans = inputAnswer(msg->ptr);
-                    }
-                    if (ans == NULL || TOLOWER(*ans) != 'y' ||
-                        (err =
-                             add_cookie(pu, name, value, expires, domain, path,
-                                        flag | COO_OVERRIDE, comment, version,
-                                        port, commentURL)))
-                    {
-                        err = (err & ~COO_OVERRIDE_OK) - 1;
-                        if (err >= 0 && err < COO_EMAX)
-                            emsg = Sprintf("This cookie was rejected "
-                                           "to prevent security violation. [%s]",
-                                           violations[err])
-                                       ->ptr;
-                        else
-                            emsg =
-                                "This cookie was rejected to prevent security violation.";
-                        record_err_message(emsg);
-                        if (show_cookie)
-                            disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
-                    }
-                    else if (show_cookie)
-                        disp_message_nsec(Sprintf("Accepting invalid cookie: %s=%s",
-                                                  name->ptr, value->ptr)
-                                              ->ptr,
-                                          FALSE,
-                                          1, TRUE, FALSE);
-                }
-            }
+            readHeaderCookie(pu, lineBuf2);
         }
-#endif /* USE_COOKIE */
         else if (!strncasecmp(lineBuf2->ptr, "w3m-control:", 12) &&
                  uf->scheme == SCM_LOCAL_CGI)
         {
@@ -867,7 +692,6 @@ checkContentType(BufferPtr buf)
 #endif
     return r->ptr;
 }
-
 
 static int
 same_url_p(ParsedURL *pu1, ParsedURL *pu2)
@@ -985,7 +809,7 @@ load_doc:
                 }
                 else
                 {
-                    page = loadLocalDir(const_cast<char*>(pu.real_file.c_str()));
+                    page = loadLocalDir(const_cast<char *>(pu.real_file.c_str()));
                     t = "local:directory";
 #ifdef USE_M17N
                     charset = SystemCharset;
@@ -1445,7 +1269,7 @@ page_loaded:
     else if (!(w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
     {
         if (!do_download && doExternal(f,
-                                       pu.real_file.size() ? const_cast<char*>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()),
+                                       pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()),
                                        t, &b, t_buf))
         {
             if (b)
@@ -1465,7 +1289,7 @@ page_loaded:
             if (pu.scheme == SCM_LOCAL)
             {
                 f.Close();
-                _doFileCopy(const_cast<char*>(pu.real_file.c_str()),
+                _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
                             conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
             }
             else
@@ -1494,7 +1318,7 @@ page_loaded:
         t_buf->ssl_certificate = f.ssl_certificate;
 #endif
     frame_source = flag & RG_FRAME_SRC;
-    b = loadSomething(&f, pu.real_file.size() ? const_cast<char*>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()), proc, t_buf);
+    b = loadSomething(&f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()), proc, t_buf);
     f.Close();
     frame_source = 0;
     if (b)
@@ -1520,7 +1344,7 @@ page_loaded:
         {
             if (proc == loadHTMLBuffer)
             {
-                auto a = searchURLLabel(b, const_cast<char*>(pu.label.c_str()));
+                auto a = searchURLLabel(b, const_cast<char *>(pu.label.c_str()));
                 if (a != NULL)
                 {
                     gotoLine(b, a->start.line);
@@ -4921,7 +4745,6 @@ int doFileMove(char *tmpf, char *defstr)
     return ret;
 }
 
-
 int checkCopyFile(char *path1, char *path2)
 {
     struct stat st1, st2;
@@ -4984,7 +4807,6 @@ inputAnswer(const char *prompt)
     }
     return ans;
 }
-
 
 static FILE *
 lessopen_stream(char *path)

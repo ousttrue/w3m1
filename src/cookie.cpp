@@ -17,7 +17,30 @@
 #include "myctype.h"
 #include "buffer.h"
 #include "file.h"
+#include "display.h"
 #include <time.h>
+
+#define COO_USE 1
+#define COO_SECURE 2
+#define COO_DOMAIN 4
+#define COO_PATH 8
+#define COO_DISCARD 16
+#define COO_OVERRIDE 32 /* user chose to override security checks */
+
+#define COO_OVERRIDE_OK 32                  /* flag to specify that an error is overridable */
+                                            /* version 0 refers to the original cookie_spec.html */
+                                            /* version 1 refers to RFC 2109 */
+                                            /* version 1' refers to the Internet draft to obsolete RFC 2109 */
+#define COO_EINTERNAL (1)                   /* unknown error; probably forgot to convert "return 1" in cookie.c */
+#define COO_ETAIL (2 | COO_OVERRIDE_OK)     /* tail match failed (version 0) */
+#define COO_ESPECIAL (3)                    /* special domain check failed (version 0) */
+#define COO_EPATH (4)                       /* Path attribute mismatch (version 1 case 1) */
+#define COO_ENODOT (5 | COO_OVERRIDE_OK)    /* no embedded dots in Domain (version 1 case 2.1) */
+#define COO_ENOTV1DOM (6 | COO_OVERRIDE_OK) /* Domain does not start with a dot (version 1 case 2.2) */
+#define COO_EDOM (7 | COO_OVERRIDE_OK)      /* domain-match failed (version 1 case 3) */
+#define COO_EBADHOST (8 | COO_OVERRIDE_OK)  /* dot in matched host name in FQDN (version 1 case 4) */
+#define COO_EPORT (9)                       /* Port match failed (version 1' case 5) */
+#define COO_EMAX COO_EPORT
 
 struct portlist
 {
@@ -244,12 +267,12 @@ Str find_cookie(const ParsedURL *pu)
     int version = 0;
     char *fq_domainname;
 
-    fq_domainname = FQDN(const_cast<char*>(pu->host.c_str()));
+    fq_domainname = FQDN(const_cast<char *>(pu->host.c_str()));
     check_expired_cookies();
     for (p = First_cookie; p; p = p->next)
     {
         const char *domainname = (p->version == 0) ? fq_domainname : pu->host.c_str();
-        if (p->flag & COO_USE && match_cookie(pu, p, const_cast<char*>(domainname)))
+        if (p->flag & COO_USE && match_cookie(pu, p, const_cast<char *>(domainname)))
         {
             for (p1 = fco; p1 && p1->name->ICaseCmp(p->name);
                  p1 = p1->next)
@@ -327,7 +350,7 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
                int flag, Str comment, int version, Str port, Str commentURL)
 {
     struct cookie *p;
-    const char *domainname = (version == 0) ? FQDN(const_cast<char*>(pu->host.c_str())) : pu->host.c_str();
+    const char *domainname = (version == 0) ? FQDN(const_cast<char *>(pu->host.c_str())) : pu->host.c_str();
     Str odomain = domain, opath = path;
     struct portlist *portlist = NULL;
     int use_security = !(flag & COO_OVERRIDE);
@@ -404,11 +427,11 @@ int add_cookie(ParsedURL *pu, Str name, Str value,
         }
 
         /* [RFC 2109] s. 4.3.2 case 3 */
-        if (!(dp = domain_match(const_cast<char*>(domainname), domain->ptr)))
+        if (!(dp = domain_match(const_cast<char *>(domainname), domain->ptr)))
             COOKIE_ERROR(COO_EDOM);
         /* [RFC 2409] s. 4.3.2 case 4 */
         /* Invariant: dp contains matched domain */
-        if (version > 0 && !contain_no_dots(const_cast<char*>(domainname), dp))
+        if (version > 0 && !contain_no_dots(const_cast<char *>(domainname), dp))
             COOKIE_ERROR(COO_EBADHOST);
     }
     if (path)
@@ -784,7 +807,7 @@ int check_cookie_accept_domain(std::string_view domain)
     {
         for (tl = Cookie_accept_domains->first; tl != NULL; tl = tl->next)
         {
-            if (domain_match(const_cast<char*>(domain.data()), tl->ptr))
+            if (domain_match(const_cast<char *>(domain.data()), tl->ptr))
                 return 1;
         }
     }
@@ -792,9 +815,198 @@ int check_cookie_accept_domain(std::string_view domain)
     {
         for (tl = Cookie_reject_domains->first; tl != NULL; tl = tl->next)
         {
-            if (domain_match(const_cast<char*>(domain.data()), tl->ptr))
+            if (domain_match(const_cast<char *>(domain.data()), tl->ptr))
                 return 0;
         }
     }
     return 1;
+}
+
+/* This array should be somewhere else */
+/* FIXME: gettextize? */
+const char *violations[COO_EMAX] = {
+    "internal error",
+    "tail match failed",
+    "wrong number of dots",
+    "RFC 2109 4.3.2 rule 1",
+    "RFC 2109 4.3.2 rule 2.1",
+    "RFC 2109 4.3.2 rule 2.2",
+    "RFC 2109 4.3.2 rule 3",
+    "RFC 2109 4.3.2 rule 4",
+    "RFC XXXX 4.3.2 rule 5"};
+
+void readHeaderCookie(ParsedURL *pu, Str lineBuf2)
+{
+    char *p = nullptr;
+    int version;
+    if (lineBuf2->ptr[10] == '2')
+    {
+        p = lineBuf2->ptr + 12;
+        version = 1;
+    }
+    else
+    {
+        p = lineBuf2->ptr + 11;
+        version = 0;
+    }
+#ifdef DEBUG
+    fprintf(stderr, "Set-Cookie: [%s]\n", p);
+#endif /* DEBUG */
+
+    SKIP_BLANKS(p);
+
+    auto name = Strnew();
+    while (*p != '=' && !IS_ENDT(*p))
+        name->Push(*(p++));
+    name->StripRight();
+
+    auto value = Strnew();
+    if (*p == '=')
+    {
+        p++;
+        SKIP_BLANKS(p);
+        int quoted = 0;
+        char *q = nullptr;
+        while (!IS_ENDL(*p) && (quoted || *p != ';'))
+        {
+            if (!IS_SPACE(*p))
+                q = p;
+            if (*p == '"')
+                quoted = (quoted) ? 0 : 1;
+            value->Push(*(p++));
+        }
+        if (q)
+            value->Pop(p - q - 1);
+    }
+
+    Str domain = NULL;
+    Str path = NULL;
+    int flag = 0;
+    Str comment = NULL;
+    Str commentURL = NULL;
+    Str port = NULL;
+    time_t expires = (time_t)-1;
+    while (*p == ';')
+    {
+        p++;
+        SKIP_BLANKS(p);
+        Str tmp2;
+        if (matchattr(p, "expires", 7, &tmp2))
+        {
+            /* version 0 */
+            expires = mymktime(tmp2->ptr);
+        }
+        else if (matchattr(p, "max-age", 7, &tmp2))
+        {
+            /* XXX Is there any problem with max-age=0? (RFC 2109 ss. 4.2.1, 4.2.2 */
+            expires = time(NULL) + atol(tmp2->ptr);
+        }
+        else if (matchattr(p, "domain", 6, &tmp2))
+        {
+            domain = tmp2;
+        }
+        else if (matchattr(p, "path", 4, &tmp2))
+        {
+            path = tmp2;
+        }
+        else if (matchattr(p, "secure", 6, NULL))
+        {
+            flag |= COO_SECURE;
+        }
+        else if (matchattr(p, "comment", 7, &tmp2))
+        {
+            comment = tmp2;
+        }
+        else if (matchattr(p, "version", 7, &tmp2))
+        {
+            version = atoi(tmp2->ptr);
+        }
+        else if (matchattr(p, "port", 4, &tmp2))
+        {
+            /* version 1, Set-Cookie2 */
+            port = tmp2;
+        }
+        else if (matchattr(p, "commentURL", 10, &tmp2))
+        {
+            /* version 1, Set-Cookie2 */
+            commentURL = tmp2;
+        }
+        else if (matchattr(p, "discard", 7, NULL))
+        {
+            /* version 1, Set-Cookie2 */
+            flag |= COO_DISCARD;
+        }
+
+        int quoted = 0;
+        while (!IS_ENDL(*p) && (quoted || *p != ';'))
+        {
+            if (*p == '"')
+                quoted = (quoted) ? 0 : 1;
+            p++;
+        }
+    }
+
+    if (pu && name->Size() > 0)
+    {
+        int err;
+        if (show_cookie)
+        {
+            if (flag & COO_SECURE)
+                disp_message_nsec("Received a secured cookie", FALSE, 1,
+                                  TRUE, FALSE);
+            else
+                disp_message_nsec(Sprintf("Received cookie: %s=%s",
+                                          name->ptr, value->ptr)
+                                      ->ptr,
+                                  FALSE, 1, TRUE, FALSE);
+        }
+        err =
+            add_cookie(pu, name, value, expires, domain, path, flag,
+                       comment, version, port, commentURL);
+        if (err)
+        {
+            char *ans = (accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
+                            ? (char *)"y"
+                            : NULL;
+            if (fmInitialized && (err & COO_OVERRIDE_OK) &&
+                accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
+            {
+                Str msg = Sprintf("Accept bad cookie from %s for %s?",
+                                  pu->host,
+                                  ((domain && domain->ptr)
+                                       ? domain->ptr
+                                       : "<localdomain>"));
+                if (msg->Size() > COLS - 10)
+                    msg->Pop(msg->Size() - (COLS - 10));
+                msg->Push(" (y/n)");
+                ans = inputAnswer(msg->ptr);
+            }
+            if (ans == NULL || TOLOWER(*ans) != 'y' ||
+                (err =
+                     add_cookie(pu, name, value, expires, domain, path,
+                                flag | COO_OVERRIDE, comment, version,
+                                port, commentURL)))
+            {
+                err = (err & ~COO_OVERRIDE_OK) - 1;
+                char *emsg;
+                if (err >= 0 && err < COO_EMAX)
+                    emsg = Sprintf("This cookie was rejected "
+                                   "to prevent security violation. [%s]",
+                                   violations[err])
+                               ->ptr;
+                else
+                    emsg =
+                        "This cookie was rejected to prevent security violation.";
+                record_err_message(emsg);
+                if (show_cookie)
+                    disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
+            }
+            else if (show_cookie)
+                disp_message_nsec(Sprintf("Accepting invalid cookie: %s=%s",
+                                          name->ptr, value->ptr)
+                                      ->ptr,
+                                  FALSE,
+                                  1, TRUE, FALSE);
+        }
+    }
 }
