@@ -470,23 +470,12 @@ const char *string_strchr(const std::string &src, int c)
 
 void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
 {
-    char *p, *q;
-    Str tmp;
+    *this = {};
 
     /* quote 0x01-0x20, 0x7F-0xFF */
     auto url = url_quote(const_cast<char *>(_url.data()));
-
-    p = url;
-    this->scheme = SCM_MISSING;
-    this->port = 0;
-    this->user.clear();
-    this->pass.clear();
-    this->host.clear();
-    this->is_nocache = 0;
-    this->file.clear();
-    this->real_file.clear();
-    this->query.clear();
-    this->label.clear();
+    auto p = url;
+    char *q = nullptr;
 
     /* RFC1808: Relative Uniform Resource Locators
      * 4.  Resolving Relative URLs
@@ -497,14 +486,15 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
             *this = *current;
         goto do_label;
     }
+    
     /* search for scheme */
     this->scheme = getURLScheme(&p);
     if (this->scheme == SCM_MISSING)
     {
         /* scheme part is not found in the url. This means either
-	 * (a) the url is relative to the current or (b) the url
-	 * denotes a filename (therefore the scheme is SCM_LOCAL).
-	 */
+        * (a) the url is relative to the current or (b) the url
+        * denotes a filename (therefore the scheme is SCM_LOCAL).
+        */
         if (current)
         {
             switch (current->scheme)
@@ -517,7 +507,6 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
             case SCM_FTPDIR:
                 this->scheme = SCM_FTP;
                 break;
-#ifdef USE_NNTP
             case SCM_NNTP:
             case SCM_NNTP_GROUP:
                 this->scheme = SCM_NNTP;
@@ -526,14 +515,15 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
             case SCM_NEWS_GROUP:
                 this->scheme = SCM_NEWS;
                 break;
-#endif
             default:
                 this->scheme = current->scheme;
                 break;
             }
         }
         else
+        {
             this->scheme = SCM_LOCAL;
+        }
         p = url;
         if (!strncmp(p, "//", 2))
         {
@@ -687,21 +677,6 @@ analyze_file:
         this->file = DefaultFile(this->scheme);
         goto do_query;
     }
-#ifdef USE_GOPHER
-    if (this->scheme == SCM_GOPHER && *p == 'R')
-    {
-        p++;
-        tmp = Strnew();
-        tmp->Push(*(p++));
-        while (*p && *p != '/')
-            p++;
-        tmp->Push(p);
-        while (*p)
-            p++;
-        this->file = copyPath(tmp->ptr, -1, COPYPATH_SPC_IGNORE);
-    }
-    else
-#endif /* USE_GOPHER */
     {
         char *cgi = strchr(p, '?');
     again:
