@@ -127,8 +127,6 @@ struct AlarmEvent
     void *data;
 };
 
-
-
 struct MapArea
 {
     char *url;

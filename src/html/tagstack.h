@@ -14,20 +14,49 @@
 #define FONT_STACK_SIZE 5
 #define FONTSTAT_SIZE 7
 
-struct Breakpoint
+///
+/// 行の折り返し処理？
+///
+class Breakpoint
 {
-    int pos;
-    int len;
-    int tlen;
+    // line length
+    int _len;
+    // tag length
+    int _tlen;
+
+    // line position
+    int _pos;
     long flag;
+    short top_margin;
+    short bottom_margin;
+
+    char init_flag;
+    // initialize
     Anchor anchor;
     Str img_alt;
     char fontstat[FONTSTAT_SIZE];
     short nobr_level;
     Lineprop prev_ctype;
-    char init_flag;
-    short top_margin;
-    short bottom_margin;
+
+public:
+    void initialize()
+    {
+        init_flag = 1;
+    }
+    int pos() const
+    {
+        return _pos;
+    }
+    int len() const
+    {
+        return _len;
+    }
+    int tlen() const
+    {
+        return _tlen;
+    }
+    void set(const struct readbuffer *obuf, int tag_length);
+    void back_to(struct readbuffer *obuf);
 };
 
 struct cmdtable

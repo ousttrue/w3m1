@@ -20,6 +20,54 @@
 #define in_ins fontstat[4]
 #define in_stand fontstat[5]
 
+void Breakpoint::set(const struct readbuffer *obuf, int tag_length)
+{
+    _len = obuf->line->Size();
+    _tlen = tag_length;
+
+    _pos = obuf->pos;
+    flag = obuf->flag;
+#ifdef FORMAT_NICE
+    flag &= ~RB_FILL;
+#endif /* FORMAT_NICE */
+    top_margin = obuf->top_margin;
+    bottom_margin = obuf->bottom_margin;
+
+    if (init_flag)
+    {
+        init_flag = 0;
+
+        anchor = obuf->anchor;
+        img_alt = obuf->img_alt;
+        in_bold = obuf->in_bold;
+        in_italic = obuf->in_italic;
+        in_under = obuf->in_under;
+        in_strike = obuf->in_strike;
+        in_ins = obuf->in_ins;
+        nobr_level = obuf->nobr_level;
+        prev_ctype = obuf->prev_ctype;
+    }
+}
+
+void Breakpoint::back_to(struct readbuffer *obuf)
+{
+    obuf->pos = _pos;
+    obuf->flag = flag;
+    obuf->top_margin = top_margin;
+    obuf->bottom_margin = bottom_margin;
+
+    obuf->anchor = anchor;
+    obuf->img_alt = img_alt;
+    obuf->in_bold = in_bold;
+    obuf->in_italic = in_italic;
+    obuf->in_under = in_under;
+    obuf->in_strike = in_strike;
+    obuf->in_ins = in_ins;
+    obuf->prev_ctype = prev_ctype;
+    if (obuf->flag & RB_NOBR)
+        obuf->nobr_level = nobr_level;
+}
+
 // #define set_prevchar(x,y,n) Strcopy_charp_n((x),(y),(n))
 static inline void set_space_to_prevchar(Str x)
 {
@@ -62,7 +110,8 @@ feed_title(const char *str)
         return;
     while (*str)
     {
-        if (*str == '&'){
+        if (*str == '&')
+        {
             auto [pos, view] = getescapecmd(str);
             cur_title->Push(view);
             str = pos;
@@ -86,34 +135,6 @@ struct link_stack
 };
 
 static struct link_stack *link_stack = NULL;
-
-static void
-set_breakpoint(struct readbuffer *obuf, int tag_length)
-{
-    obuf->bp.len = obuf->line->Size();
-    obuf->bp.pos = obuf->pos;
-    obuf->bp.tlen = tag_length;
-    obuf->bp.flag = obuf->flag;
-#ifdef FORMAT_NICE
-    obuf->bp.flag &= ~RB_FILL;
-#endif /* FORMAT_NICE */
-    obuf->bp.top_margin = obuf->top_margin;
-    obuf->bp.bottom_margin = obuf->bottom_margin;
-
-    if (!obuf->bp.init_flag)
-        return;
-
-    obuf->bp.anchor = obuf->anchor;
-    obuf->bp.img_alt = obuf->img_alt;
-    obuf->bp.in_bold = obuf->in_bold;
-    obuf->bp.in_italic = obuf->in_italic;
-    obuf->bp.in_under = obuf->in_under;
-    obuf->bp.in_strike = obuf->in_strike;
-    obuf->bp.in_ins = obuf->in_ins;
-    obuf->bp.nobr_level = obuf->nobr_level;
-    obuf->bp.prev_ctype = obuf->prev_ctype;
-    obuf->bp.init_flag = 0;
-}
 
 static char *
 has_hidden_link(struct readbuffer *obuf, int cmd)
@@ -181,7 +202,7 @@ append_tags(struct readbuffer *obuf)
     }
     obuf->tag_sp = 0;
     if (set_bp)
-        set_breakpoint(obuf, obuf->line->Size() - len);
+        obuf->bp.set(obuf, obuf->line->Size() - len);
 }
 
 static void
@@ -193,25 +214,6 @@ push_tag(struct readbuffer *obuf, char *cmdname, int cmd)
     obuf->tag_sp++;
     if (obuf->tag_sp >= TAG_STACK_SIZE || obuf->flag & (RB_SPECIAL & ~RB_NOBR))
         append_tags(obuf);
-}
-
-static void
-back_to_breakpoint(struct readbuffer *obuf)
-{
-    obuf->flag = obuf->bp.flag;
-    obuf->anchor = obuf->bp.anchor;
-    obuf->img_alt = obuf->bp.img_alt;
-    obuf->in_bold = obuf->bp.in_bold;
-    obuf->in_italic = obuf->bp.in_italic;
-    obuf->in_under = obuf->bp.in_under;
-    obuf->in_strike = obuf->bp.in_strike;
-    obuf->in_ins = obuf->bp.in_ins;
-    obuf->prev_ctype = obuf->bp.prev_ctype;
-    obuf->pos = obuf->bp.pos;
-    obuf->top_margin = obuf->bp.top_margin;
-    obuf->bottom_margin = obuf->bp.bottom_margin;
-    if (obuf->flag & RB_NOBR)
-        obuf->nobr_level = obuf->bp.nobr_level;
 }
 
 static void
@@ -246,7 +248,7 @@ check_breakpoint(struct readbuffer *obuf, int pre_mode, char *ch)
     tlen = obuf->line->Size() - len;
     if (tlen > 0 || is_boundary((unsigned char *)obuf->prevchar->ptr,
                                 (unsigned char *)ch))
-        set_breakpoint(obuf, tlen);
+        obuf->bp.set(obuf, tlen);
 }
 
 static void
@@ -637,10 +639,10 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
 
     if (!(obuf->flag & (RB_SPECIAL & ~RB_NOBR)) && obuf->pos > width)
     {
-        char *tp = &line->ptr[obuf->bp.len - obuf->bp.tlen];
+        char *tp = &line->ptr[obuf->bp.len() - obuf->bp.tlen()];
         char *ep = &line->ptr[line->Size()];
 
-        if (obuf->bp.pos == obuf->pos && tp <= ep &&
+        if (obuf->bp.pos() == obuf->pos && tp <= ep &&
             tp > line->ptr && tp[-1] == ' ')
         {
             bcopy(tp, tp - 1, ep - tp + 1);
@@ -843,9 +845,9 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
     obuf->top_margin = 0;
     obuf->bottom_margin = 0;
     set_space_to_prevchar(obuf->prevchar);
-    obuf->bp.init_flag = 1;
+    obuf->bp.initialize();
     obuf->flag &= ~RB_NFLUSHED;
-    set_breakpoint(obuf, 0);
+    obuf->bp.set(obuf, 0);
     obuf->prev_ctype = PC_ASCII;
     link_stack = NULL;
     fillline(obuf, indent);
@@ -1513,14 +1515,14 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         append_tags(obuf);
         if (!(obuf->flag & RB_SPECIAL))
         {
-            set_breakpoint(obuf, obuf->line->Size() - i);
+            obuf->bp.set(obuf, obuf->line->Size() - i);
         }
         obuf->flag |= RB_PRE_INT;
         return 0;
     case HTML_N_PRE_INT:
         push_tag(obuf, "</pre_int>", HTML_N_PRE_INT);
         obuf->flag &= ~RB_PRE_INT;
-        if (!(obuf->flag & RB_SPECIAL) && obuf->pos > obuf->bp.pos)
+        if (!(obuf->flag & RB_SPECIAL) && obuf->pos > obuf->bp.pos())
         {
             obuf->prevchar->CopyFrom("", 0);
             obuf->prev_ctype = PC_CTRL;
@@ -2358,7 +2360,7 @@ table_start:
                 process_idattr(obuf, cmd, tag);
             }
 #endif /* ID_EXT */
-            obuf->bp.init_flag = 1;
+            obuf->bp.initialize();
             clear_ignore_p_flag(cmd, obuf);
             if (cmd == HTML_TABLE)
                 goto table_start;
@@ -2490,25 +2492,25 @@ table_start:
             }
             if (need_flushline(h_env, obuf, mode))
             {
-                char *bp = obuf->line->ptr + obuf->bp.len;
-                char *tp = bp - obuf->bp.tlen;
+                char *bp = obuf->line->ptr + obuf->bp.len();
+                char *tp = bp - obuf->bp.tlen();
                 int i = 0;
 
                 if (tp > obuf->line->ptr && tp[-1] == ' ')
                     i = 1;
 
                 indent = h_env->envs[h_env->envc].indent;
-                if (obuf->bp.pos - i > indent)
+                if (obuf->bp.pos() - i > indent)
                 {
                     Str line;
                     append_tags(obuf);
                     line = Strnew(bp);
-                    obuf->line->Pop(obuf->line->Size() - obuf->bp.len);
+                    obuf->line->Pop(obuf->line->Size() - obuf->bp.len());
 #ifdef FORMAT_NICE
                     if (obuf->pos - i > h_env->limit)
                         obuf->flag |= RB_FILL;
 #endif /* FORMAT_NICE */
-                    back_to_breakpoint(obuf);
+                    obuf->bp.back_to(obuf);
                     flushline(h_env, obuf, indent, 0, h_env->limit);
 #ifdef FORMAT_NICE
                     obuf->flag &= ~RB_FILL;
@@ -2523,9 +2525,9 @@ table_start:
         char *tp;
         int i = 0;
 
-        if (obuf->bp.pos == obuf->pos)
+        if (obuf->bp.pos() == obuf->pos)
         {
-            tp = &obuf->line->ptr[obuf->bp.len - obuf->bp.tlen];
+            tp = &obuf->line->ptr[obuf->bp.len() - obuf->bp.tlen()];
         }
         else
         {
@@ -2576,8 +2578,8 @@ void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf,
     obuf->fontstat_sp = 0;
     obuf->top_margin = 0;
     obuf->bottom_margin = 0;
-    obuf->bp.init_flag = 1;
-    set_breakpoint(obuf, 0);
+    obuf->bp.initialize();
+    obuf->bp.set(obuf, 0);
 
     h_env->buf = buf;
     h_env->f = NULL;
