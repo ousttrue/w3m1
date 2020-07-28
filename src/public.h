@@ -117,3 +117,4 @@ void pushEvent(Command cmd, void *data);
 int ProcessEvent();
 Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);
 void intTrap(SIGNAL_ARG);
+BufferPtr cookie_list_panel(void);

@@ -16,29 +16,6 @@
 #include "url.h"
 #include "urlfile.h"
 
-
-struct portlist
-{
-    unsigned short port;
-    portlist *next;
-};
-
-struct cookie
-{
-    ParsedURL url;
-    Str name;
-    Str value;
-    time_t expires;
-    Str path;
-    Str domain;
-    Str comment;
-    Str commentURL;
-    portlist *portl;
-    char version;
-    char flag;
-    cookie *next;
-};
-
 struct MapList
 {
     Str name;

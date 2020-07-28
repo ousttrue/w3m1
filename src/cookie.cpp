@@ -1,5 +1,3 @@
-/* $Id: cookie.c,v 1.11 2010/07/26 11:38:53 htrb Exp $ */
-
 /*
  * References for version 0 cookie:                                  
  *   [NETACAPE] http://www.netscape.com/newsref/std/cookie_spec.html
@@ -9,20 +7,40 @@
  *   [DRAFT 12] http://www.ics.uci.edu/pub/ietf/http/draft-ietf-http-state-man-mec-12.txt
  */
 
+#include "cookie.h"
 #include "fm.h"
 #include "indep.h"
 #include "rc.h"
-#include "parsetag.h"
-#include "cookie.h"
-#include "html.h"
 #include "commands.h"
-#include "file.h"
-#include "local.h"
+#include "etc.h"
 #include "regex.h"
 #include "myctype.h"
-#include "url.h"
-
+#include "buffer.h"
+#include "file.h"
 #include <time.h>
+
+struct portlist
+{
+    unsigned short port;
+    portlist *next;
+};
+
+struct cookie
+{
+    ParsedURL url;
+    Str name;
+    Str value;
+    time_t expires;
+    Str path;
+    Str domain;
+    Str comment;
+    Str commentURL;
+    portlist *portl;
+    char version;
+    char flag;
+    cookie *next;
+};
+static cookie *First_cookie = nullptr;
 
 static int is_saved = 1;
 

@@ -223,7 +223,7 @@ char *expandName(char *name);
 Str tmpfname(int type, const char *ext);
 time_t mymktime(char *timestr);
 
-char *FQDN(char *host);
+
 
 
 void HTMLlineproc2(BufferPtr buf, TextLineList *tl);

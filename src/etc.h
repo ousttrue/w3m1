@@ -28,3 +28,4 @@ MySignalHandler mySignal(int signal_number, MySignalHandler action);
             mySignal(SIGINT, prevtrap); \
     }
 char *url_unquote_conv(const char *url, wc_ces charset);
+char *FQDN(char *host);
