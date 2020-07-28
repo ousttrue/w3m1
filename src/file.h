@@ -58,7 +58,7 @@ char *inputAnswer(const char* prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);
 void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu);
 char *checkHeader(BufferPtr buf, char *field);
-BufferPtr newBuffer(int width);
+
 
 void fmTerm(void);
 void fmInit(void);

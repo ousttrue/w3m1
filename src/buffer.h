@@ -131,6 +131,8 @@ public:
     ParsedURL *BaseURL();
 };
 
+BufferPtr newBuffer(int width);
+
 void deleteImage(BufferPtr buf);
 void getAllImage(BufferPtr buf);
 void loadImage(BufferPtr buf, int flag);
