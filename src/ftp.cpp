@@ -19,6 +19,7 @@
 #include "terms.h"
 #include "display.h"
 #include "url.h"
+#include "auth.h"
 
 #ifdef DEBUG
 #include <malloc.h>

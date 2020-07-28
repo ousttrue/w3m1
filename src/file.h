@@ -212,12 +212,6 @@ FILE *localcgi_post(char *, char *, FormList *, char *);
 FILE *openSecretFile(char *fname);
 void loadPasswd(void);
 void loadPreForm(void);
-int find_auth_user_passwd(ParsedURL *pu, char *realm,
-                          Str *uname, Str *pwd, int is_proxy);
-void add_auth_user_passwd(ParsedURL *pu, char *realm,
-                          Str uname, Str pwd, int is_proxy);
-void invalidate_auth_user_passwd(ParsedURL *pu, char *realm,
-                                 Str uname, Str pwd, int is_proxy);
 char *last_modified(BufferPtr buf);
 Str romanNumeral(int n);
 Str romanAlphabet(int n);
