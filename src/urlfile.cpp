@@ -12,6 +12,7 @@
 #include "terms.h"
 #include "compression.h"
 #include "myctype.h"
+#include "loader.h"
 #include <assert.h>
 
 /* add index_file if exists */

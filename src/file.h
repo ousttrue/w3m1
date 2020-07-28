@@ -34,7 +34,6 @@ char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte);
 BufferPtr loadHTMLString(Str page);
 
-BufferPtr loadBuffer(URLFile *uf, BufferPtr newBuf);
 BufferPtr loadImageBuffer(URLFile *uf, BufferPtr newBuf);
 void saveBuffer(BufferPtr buf, FILE *f, int cont);
 void saveBufferBody(BufferPtr buf, FILE *f, int cont);
@@ -43,15 +42,13 @@ BufferPtr getpipe(char *cmd);
 BufferPtr openPagerBuffer(InputStream *stream, BufferPtr buf);
 BufferPtr openGeneralPagerBuffer(InputStream *stream);
 Line *getNextPage(BufferPtr buf, int plen);
-int save2tmp(URLFile uf, char *tmpf);
 int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf);
-int _doFileCopy(char *tmpf, char *defstr, int download);
-#define doFileCopy(tmpf, defstr) _doFileCopy(tmpf, defstr, FALSE);
+
 int doFileMove(char *tmpf, char *defstr);
 void addnewline(BufferPtr buf, char *line, Lineprop *prop,
                        Linecolor *color, int pos, int width, int nlines);
-int checkCopyFile(char *path1, char *path2);
+
 int checkSaveFile(InputStream *stream, char *path);
 int checkOverWrite(char *path);
 char *inputAnswer(const char* prompt);

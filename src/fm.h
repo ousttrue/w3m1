@@ -52,6 +52,8 @@
 #define init(x)
 #endif /* not MAINPROGRAM */
 
+#define SAVE_BUF_SIZE 1536
+
 /* 
  * Constants.
  */

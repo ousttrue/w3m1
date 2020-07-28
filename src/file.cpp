@@ -55,7 +55,6 @@
 #endif /* not min */
 
 
-static int _MoveFile(char *path1, char *path2);
 static FILE *lessopen_stream(char *path);
 static BufferPtr loadcmdout(char *cmd,
                             BufferPtr (*loadproc)(URLFile *, BufferPtr),
@@ -126,8 +125,6 @@ void SetCurHSeq(int seq)
 
 static int cur_iseq;
 
-#define SAVE_BUF_SIZE 1536
-
 static void KeyAbort(SIGNAL_ARG)
 {
     LONGJMP(AbortLoading, 1);
@@ -143,7 +140,6 @@ int currentLn(BufferPtr buf)
         return 1;
 }
 
-
 int dir_exist(char *path)
 {
     struct stat stbuf;
@@ -155,16 +151,14 @@ int dir_exist(char *path)
     return IS_DIRECTORY(stbuf.st_mode);
 }
 
-int
-is_dump_text_type(const char *type)
+int is_dump_text_type(const char *type)
 {
     struct mailcap *mcap;
     return (type && (mcap = searchExtViewer(type)) &&
             (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)));
 }
 
-int
-is_text_type(const char *type)
+int is_text_type(const char *type)
 {
     return (type == NULL || type[0] == '\0' ||
             strncasecmp(type, "text/", 5) == 0 ||
@@ -173,8 +167,7 @@ is_text_type(const char *type)
             strncasecmp(type, "message/", sizeof("message/") - 1) == 0);
 }
 
-int
-is_plain_text_type(const char *type)
+int is_plain_text_type(const char *type)
 {
     return ((type && strcasecmp(type, "text/plain") == 0) ||
             (is_text_type(type) && !is_dump_text_type(type)));
@@ -264,7 +257,6 @@ Str convertLine0(URLFile *uf, Str line, int mode)
     return line;
 }
 
-
 int matchattr(char *p, const char *attr, int len, Str *value)
 {
     int quoted;
@@ -308,8 +300,6 @@ int matchattr(char *p, const char *attr, int len, Str *value)
     return 0;
 }
 
-
-
 char *
 checkHeader(BufferPtr buf, char *field)
 {
@@ -330,7 +320,6 @@ checkHeader(BufferPtr buf, char *field)
     }
     return NULL;
 }
-
 
 static int
 same_url_p(ParsedURL *pu1, ParsedURL *pu2)
@@ -2414,9 +2403,8 @@ addnewline2(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos
     l = NULL;
 }
 
-void
-addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
-           int width, int nlines)
+void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
+                int width, int nlines)
 {
     char *s;
     Lineprop *p;
@@ -2571,6 +2559,8 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
 
     if (*linelen < 1024)
         return;
+
+    auto current_content_length = GetCurrentContentLength();
     if (current_content_length > 0)
     {
         double ratio;
@@ -2788,112 +2778,6 @@ gopher_end:
 }
 #endif /* USE_GOPHER */
 
-/* 
- * loadBuffer: read file and make new buffer
- */
-BufferPtr
-loadBuffer(URLFile *uf, BufferPtr newBuf)
-{
-    FILE *src = NULL;
-#ifdef USE_M17N
-    wc_ces charset = WC_CES_US_ASCII;
-    wc_ces doc_charset = DocumentCharset;
-#endif
-    Str lineBuf2;
-    char pre_lbuf = '\0';
-    int nlines;
-    Str tmpf;
-    clen_t linelen = 0, trbyte = 0;
-    Lineprop *propBuffer = NULL;
-#ifdef USE_ANSI_COLOR
-    Linecolor *colorBuffer = NULL;
-#endif
-    MySignalHandler prevtrap = NULL;
-
-    if (newBuf == NULL)
-        newBuf = newBuffer(INIT_BUFFER_WIDTH);
-    lineBuf2 = Strnew();
-
-    if (SETJMP(AbortLoading) != 0)
-    {
-        goto _end;
-    }
-    TRAP_ON;
-
-    if (newBuf->sourcefile == NULL &&
-        (uf->scheme != SCM_LOCAL || newBuf->mailcap))
-    {
-        tmpf = tmpfname(TMPF_SRC, NULL);
-        src = fopen(tmpf->ptr, "w");
-        if (src)
-            newBuf->sourcefile = tmpf->ptr;
-    }
-
-    if (newBuf->document_charset)
-        charset = doc_charset = newBuf->document_charset;
-    if (content_charset && UseContentCharset)
-        doc_charset = content_charset;
-
-    nlines = 0;
-    if (IStype(uf->stream) != IST_ENCODED)
-        uf->stream = newEncodedStream(uf->stream, uf->encoding);
-    while ((lineBuf2 = StrmyISgets(uf->stream))->Size())
-    {
-#ifdef USE_NNTP
-        if (uf->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
-        {
-            lineBuf2->Delete(0, 1);
-            if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
-                lineBuf2->ptr[0] == '\0')
-            {
-                /*
-                 * iseos(uf->stream) = TRUE;
-                 */
-                break;
-            }
-        }
-#endif /* USE_NNTP */
-        if (src)
-            lineBuf2->Puts(src);
-        linelen += lineBuf2->Size();
-        if (w3m_dump & DUMP_EXTRA)
-            printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
-        if (w3m_dump & DUMP_SOURCE)
-            continue;
-        showProgress(&linelen, &trbyte);
-        if (frame_source)
-            continue;
-        lineBuf2 =
-            convertLine(uf, lineBuf2, PAGER_MODE, &charset, doc_charset);
-        if (squeezeBlankLine)
-        {
-            if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
-            {
-                ++nlines;
-                continue;
-            }
-            pre_lbuf = lineBuf2->ptr[0];
-        }
-        ++nlines;
-        lineBuf2->StripRight();
-        lineBuf2 = checkType(lineBuf2, &propBuffer, NULL);
-        addnewline(newBuf, lineBuf2->ptr, propBuffer, colorBuffer,
-                   lineBuf2->Size(), FOLD_BUFFER_WIDTH, nlines);
-    }
-_end:
-    TRAP_OFF;
-    newBuf->topLine = newBuf->firstLine;
-    newBuf->lastLine = newBuf->currentLine;
-    newBuf->currentLine = newBuf->firstLine;
-    newBuf->trbyte = trbyte + linelen;
-#ifdef USE_M17N
-    newBuf->document_charset = charset;
-#endif
-    if (src)
-        fclose(src);
-
-    return newBuf;
-}
 
 #ifdef USE_IMAGE
 BufferPtr
@@ -3347,76 +3231,6 @@ pager_end:
     return last;
 }
 
-int save2tmp(URLFile uf, char *tmpf)
-{
-    FILE *ff;
-    int check;
-    clen_t linelen = 0, trbyte = 0;
-    MySignalHandler prevtrap = NULL;
-    static JMP_BUF env_bak;
-
-    ff = fopen(tmpf, "wb");
-    if (ff == NULL)
-    {
-        /* fclose(f); */
-        return -1;
-    }
-    bcopy(AbortLoading, env_bak, sizeof(JMP_BUF));
-    if (SETJMP(AbortLoading) != 0)
-    {
-        goto _end;
-    }
-    TRAP_ON;
-    check = 0;
-#ifdef USE_NNTP
-    if (uf.scheme == SCM_NEWS)
-    {
-        char c;
-        while (c = uf.Getc(), !iseos(uf.stream))
-        {
-            if (c == '\n')
-            {
-                if (check == 0)
-                    check++;
-                else if (check == 3)
-                    break;
-            }
-            else if (c == '.' && check == 1)
-                check++;
-            else if (c == '\r' && check == 2)
-                check++;
-            else
-                check = 0;
-            putc(c, ff);
-            linelen += sizeof(c);
-            showProgress(&linelen, &trbyte);
-        }
-    }
-    else
-#endif /* USE_NNTP */
-    {
-        Str buf = Strnew_size(SAVE_BUF_SIZE);
-        while (uf.Read(buf, SAVE_BUF_SIZE))
-        {
-            if (buf->Puts(ff) != buf->Size())
-            {
-                bcopy(env_bak, AbortLoading, sizeof(JMP_BUF));
-                TRAP_OFF;
-                fclose(ff);
-                current_content_length = 0;
-                return -2;
-            }
-            linelen += buf->Size();
-            showProgress(&linelen, &trbyte);
-        }
-    }
-_end:
-    bcopy(env_bak, AbortLoading, sizeof(JMP_BUF));
-    TRAP_OFF;
-    fclose(ff);
-    current_content_length = 0;
-    return 0;
-}
 
 int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf)
@@ -3537,175 +3351,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
     return 1;
 }
 
-static int
-_MoveFile(char *path1, char *path2)
-{
-    InputStream *f1;
-    FILE *f2;
-    int is_pipe;
-    clen_t linelen = 0, trbyte = 0;
-    Str buf;
 
-    f1 = openIS(path1);
-    if (f1 == NULL)
-        return -1;
-    if (*path2 == '|' && PermitSaveToPipe)
-    {
-        is_pipe = TRUE;
-        f2 = popen(path2 + 1, "w");
-    }
-    else
-    {
-        is_pipe = FALSE;
-        f2 = fopen(path2, "wb");
-    }
-    if (f2 == NULL)
-    {
-        ISclose(f1);
-        return -1;
-    }
-    current_content_length = 0;
-    buf = Strnew_size(SAVE_BUF_SIZE);
-    while (ISread(f1, buf, SAVE_BUF_SIZE))
-    {
-        buf->Puts(f2);
-        linelen += buf->Size();
-        showProgress(&linelen, &trbyte);
-    }
-    ISclose(f1);
-    if (is_pipe)
-        pclose(f2);
-    else
-        fclose(f2);
-    return 0;
-}
-
-int _doFileCopy(char *tmpf, char *defstr, int download)
-{
-#ifndef __MINGW32_VERSION
-    Str msg;
-    Str filen;
-    char *p, *q = NULL;
-    pid_t pid;
-    char *lock;
-#if !(defined(HAVE_SYMLINK) && defined(HAVE_LSTAT))
-    FILE *f;
-#endif
-    struct stat st;
-    clen_t size = 0;
-    int is_pipe = FALSE;
-
-    if (fmInitialized)
-    {
-        p = searchKeyData();
-        if (p == NULL || *p == '\0')
-        {
-            /* FIXME: gettextize? */
-            q = inputLineHist("(Download)Save file to: ",
-                              defstr, IN_COMMAND, SaveHist);
-            if (q == NULL || *q == '\0')
-                return FALSE;
-            p = conv_to_system(q);
-        }
-        if (*p == '|' && PermitSaveToPipe)
-            is_pipe = TRUE;
-        else
-        {
-            if (q)
-            {
-                p = unescape_spaces(Strnew(q))->ptr;
-                p = conv_to_system(q);
-            }
-            p = expandPath(p);
-            if (checkOverWrite(p) < 0)
-                return -1;
-        }
-        if (checkCopyFile(tmpf, p) < 0)
-        {
-            /* FIXME: gettextize? */
-            msg = Sprintf("Can't copy. %s and %s are identical.",
-                          conv_from_system(tmpf), conv_from_system(p));
-            disp_err_message(msg->ptr, FALSE);
-            return -1;
-        }
-        if (!download)
-        {
-            if (_MoveFile(tmpf, p) < 0)
-            {
-                /* FIXME: gettextize? */
-                msg = Sprintf("Can't save to %s", conv_from_system(p));
-                disp_err_message(msg->ptr, FALSE);
-            }
-            return -1;
-        }
-        lock = tmpfname(TMPF_DFL, ".lock")->ptr;
-#if defined(HAVE_SYMLINK) && defined(HAVE_LSTAT)
-        symlink(p, lock);
-#else
-        f = fopen(lock, "w");
-        if (f)
-            fclose(f);
-#endif
-        flush_tty();
-        pid = fork();
-        if (!pid)
-        {
-            setup_child(FALSE, 0, -1);
-            if (!_MoveFile(tmpf, p) && PreserveTimestamp && !is_pipe &&
-                !stat(tmpf, &st))
-                setModtime(p, st.st_mtime);
-            unlink(lock);
-            exit(0);
-        }
-        if (!stat(tmpf, &st))
-            size = st.st_size;
-        addDownloadList(pid, conv_from_system(tmpf), p, lock, size);
-    }
-    else
-    {
-        q = searchKeyData();
-        if (q == NULL || *q == '\0')
-        {
-            /* FIXME: gettextize? */
-            printf("(Download)Save file to: ");
-            fflush(stdout);
-            filen = Strfgets(stdin);
-            if (filen->Size() == 0)
-                return -1;
-            q = filen->ptr;
-        }
-        for (p = q + strlen(q) - 1; IS_SPACE(*p); p--)
-            ;
-        *(p + 1) = '\0';
-        if (*q == '\0')
-            return -1;
-        p = q;
-        if (*p == '|' && PermitSaveToPipe)
-            is_pipe = TRUE;
-        else
-        {
-            p = expandPath(p);
-            if (checkOverWrite(p) < 0)
-                return -1;
-        }
-        if (checkCopyFile(tmpf, p) < 0)
-        {
-            /* FIXME: gettextize? */
-            printf("Can't copy. %s and %s are identical.", tmpf, p);
-            return -1;
-        }
-        if (_MoveFile(tmpf, p) < 0)
-        {
-            /* FIXME: gettextize? */
-            printf("Can't save to %s\n", p);
-            return -1;
-        }
-        if (PreserveTimestamp && !is_pipe && !stat(tmpf, &st))
-            setModtime(p, st.st_mtime);
-    }
-#endif /* __MINGW32_VERSION */
-    return 0;
-}
 
 int doFileMove(char *tmpf, char *defstr)
 {
@@ -3714,17 +3360,6 @@ int doFileMove(char *tmpf, char *defstr)
     return ret;
 }
 
-int checkCopyFile(char *path1, char *path2)
-{
-    struct stat st1, st2;
-
-    if (*path2 == '|' && PermitSaveToPipe)
-        return 0;
-    if ((stat(path1, &st1) == 0) && (stat(path2, &st2) == 0))
-        if (st1.st_ino == st2.st_ino)
-            return -1;
-    return 0;
-}
 
 int checkSaveFile(InputStream *stream, char *path2)
 {
@@ -4121,7 +3756,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
             lineBuf2->Puts(src);
         linelen += lineBuf2->Size();
         if (w3m_dump & DUMP_EXTRA)
-            printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
+            printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
         if (w3m_dump & DUMP_SOURCE)
             continue;
         showProgress(&linelen, &trbyte);

@@ -15,7 +15,6 @@
 #include "local.h"
 #include "form.h"
 
-
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
 #endif
