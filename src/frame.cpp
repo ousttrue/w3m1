@@ -562,7 +562,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 				{
 					Str tmp;
 					fprintf(f1, "<pre>\n");
-					while ((tmp = StrmyUFgets(&f2))->Size())
+					while ((tmp = f2.StrmyISgets())->Size())
 					{
 						tmp = convertLine(NULL, tmp, HTML_MODE, &charset,
 										  doc_charset);
@@ -582,7 +582,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 					{
 						if (*p == '\0')
 						{
-							Str tmp = StrmyUFgets(&f2);
+							Str tmp = f2.StrmyISgets();
 							if (tmp->Size() == 0)
 								break;
 							tmp = convertLine(NULL, tmp, HTML_MODE, &charset,

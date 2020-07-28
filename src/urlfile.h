@@ -55,4 +55,5 @@ struct URLFile
                  URLOption *option, FormList *request, TextList *extra_header,
                  HRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
+    Str StrmyISgets();
 };

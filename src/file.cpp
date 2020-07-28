@@ -466,7 +466,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
         if (src)
             newBuf->header_source = tmpf;
     }
-    while ((tmp = StrmyUFgets(uf))->Size())
+    while ((tmp = uf->StrmyISgets())->Size())
     {
 #ifdef USE_NNTP
         if (uf->scheme == SCM_NEWS && tmp->ptr[0] == '.')
@@ -5311,7 +5311,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 #endif
     if (IStype(f->stream) != IST_ENCODED)
         f->stream = newEncodedStream(f->stream, f->encoding);
-    while ((lineBuf2 = StrmyUFgets(f))->Size())
+    while ((lineBuf2 = f->StrmyISgets())->Size())
     {
 #ifdef USE_NNTP
         if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')

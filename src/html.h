@@ -4,8 +4,6 @@
 #include <openssl/ssl.h>
 #include "istream.h"
 
-#define StrUFgets(f) StrISgets((f)->stream)
-#define StrmyUFgets(f) StrmyISgets((f)->stream)
 
 struct mailcap
 {

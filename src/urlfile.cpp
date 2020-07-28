@@ -612,6 +612,11 @@ retry:
     return;
 }
 
+Str URLFile::StrmyISgets()
+{
+    return ::StrmyISgets(this->stream);
+}
+
 int URLFile::DoFileSave(const char *defstr, long long content_length)
 {
 #ifndef __MINGW32_VERSION
