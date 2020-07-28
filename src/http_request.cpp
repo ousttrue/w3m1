@@ -24,47 +24,44 @@ Str HRequest::Method() const
     return NULL;
 }
 
-Str HRequest::URI(ParsedURL *pu) const
+Str HRequest::URI(const ParsedURL &url) const
 {
     Str tmp = Strnew();
     if (command == HR_COMMAND_CONNECT)
     {
-        tmp->Push(pu->host);
-        tmp->Push(Sprintf(":%d", pu->port));
+        tmp->Push(url.host);
+        tmp->Push(Sprintf(":%d", url.port));
     }
     else if (flag & HR_FLAG_LOCAL)
     {
-        tmp->Push(pu->file);
-        if (pu->query.size())
+        tmp->Push(url.file);
+        if (url.query.size())
         {
             tmp->Push('?');
-            tmp->Push(pu->query);
+            tmp->Push(url.query);
         }
     }
     else
     {
-        auto save_label = pu->label;
-        pu->label.clear();
-        tmp->Push(pu->ToStr(true));
-        pu->label = save_label;
+        tmp->Push(url.ToStr(true, false));
     }
     return tmp;
 }
 
-Str HTTPrequest(ParsedURL *pu, const ParsedURL *current, HRequest *hr, TextList *extra)
+Str HRequest::ToStr(const ParsedURL &url, const ParsedURL *current, const TextList *extra) const
 {
     TextListItem *i;
     int seen_www_auth = 0;
     Str cookie;
 
-    auto tmp = hr->Method();
+    auto tmp = this->Method();
     tmp->Push(" ");
-    tmp->Push(hr->URI(pu)->ptr);
+    tmp->Push(this->URI(url));
     tmp->Push(" HTTP/1.0\r\n");
-    if (hr->referer == NO_REFERER)
-        tmp->Push(otherinfo(pu, NULL, NULL));
+    if (this->referer == NO_REFERER)
+        tmp->Push(otherinfo(&url, NULL, NULL));
     else
-        tmp->Push(otherinfo(pu, current, hr->referer));
+        tmp->Push(otherinfo(&url, current, this->referer));
     if (extra != NULL)
         for (i = extra->first; i != NULL; i = i->next)
         {
@@ -72,25 +69,20 @@ Str HTTPrequest(ParsedURL *pu, const ParsedURL *current, HRequest *hr, TextList 
                             sizeof("Authorization:") - 1) == 0)
             {
                 seen_www_auth = 1;
-#ifdef USE_SSL
-                if (hr->command == HR_COMMAND_CONNECT)
+                if (this->command == HR_COMMAND_CONNECT)
                     continue;
-#endif
             }
             if (strncasecmp(i->ptr, "Proxy-Authorization:",
                             sizeof("Proxy-Authorization:") - 1) == 0)
             {
-#ifdef USE_SSL
-                if (pu->scheme == SCM_HTTPS && hr->command != HR_COMMAND_CONNECT)
+                if (url.scheme == SCM_HTTPS && this->command != HR_COMMAND_CONNECT)
                     continue;
-#endif
             }
             tmp->Push(i->ptr);
         }
 
-#ifdef USE_COOKIE
-    if (hr->command != HR_COMMAND_CONNECT &&
-        use_cookie && (cookie = find_cookie(pu)))
+    if (this->command != HR_COMMAND_CONNECT &&
+        use_cookie && (cookie = find_cookie(&url)))
     {
         tmp->Push("Cookie: ");
         tmp->Push(cookie);
@@ -99,16 +91,16 @@ Str HTTPrequest(ParsedURL *pu, const ParsedURL *current, HRequest *hr, TextList 
         if (cookie->ptr[0] != '$')
             tmp->Push("Cookie2: $Version=\"1\"\r\n");
     }
-#endif /* USE_COOKIE */
-    if (hr->command == HR_COMMAND_POST)
+
+    if (this->command == HR_COMMAND_POST)
     {
-        if (hr->request->enctype == FORM_ENCTYPE_MULTIPART)
+        if (this->request->enctype == FORM_ENCTYPE_MULTIPART)
         {
             tmp->Push("Content-type: multipart/form-data; boundary=");
-            tmp->Push(hr->request->boundary);
+            tmp->Push(this->request->boundary);
             tmp->Push("\r\n");
             tmp->Push(
-                Sprintf("Content-length: %ld\r\n", hr->request->length));
+                Sprintf("Content-length: %ld\r\n", this->request->length));
             tmp->Push("\r\n");
         }
         else
@@ -119,11 +111,11 @@ Str HTTPrequest(ParsedURL *pu, const ParsedURL *current, HRequest *hr, TextList 
                     "Content-type: application/x-www-form-urlencoded\r\n");
             }
             tmp->Push(
-                Sprintf("Content-length: %ld\r\n", hr->request->length));
+                Sprintf("Content-length: %ld\r\n", this->request->length));
             if (header_string)
                 tmp->Push(header_string);
             tmp->Push("\r\n");
-            tmp->Push(hr->request->body, hr->request->length);
+            tmp->Push(this->request->body, this->request->length);
             tmp->Push("\r\n");
         }
     }

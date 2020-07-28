@@ -11,23 +11,35 @@ enum HttpMethod
 
 enum HttpRequestFlags
 {
+    HR_FLAG_NONE = 0,
     HR_FLAG_LOCAL = 1,
     HR_FLAG_PROXY = 2,
 };
+inline HttpRequestFlags operator|(HttpRequestFlags a, HttpRequestFlags b)
+{
+    return static_cast<HttpRequestFlags>(static_cast<int>(a) | static_cast<int>(b));
+}
+inline void operator|=(HttpRequestFlags &a, HttpRequestFlags b)
+{
+    *((int *)&a) |= static_cast<int>(b);
+}
 
 struct ParsedURL;
 struct FormList;
 struct TextList;
 struct HRequest
 {
-    char command;
-    char flag;
-    char *referer;
-    FormList *request;
+    HttpMethod command = HR_COMMAND_GET;
+    HttpRequestFlags flag = HR_FLAG_NONE;
+    char *referer = nullptr;
+    FormList *request = nullptr;
+
+    HRequest(char *_referer, FormList *_request)
+        : referer(_referer), request(_request)
+    {
+    }
 
     Str Method() const;
-    Str URI(ParsedURL *pu) const;
+    Str URI(const ParsedURL &url) const;
+    Str ToStr(const ParsedURL &url, const ParsedURL *current, const TextList *extra) const;
 };
-
-Str HTTPrequestURI(ParsedURL *pu, HRequest *hr);
-Str HTTPrequest(ParsedURL *pu, const ParsedURL *current, HRequest *hr, TextList *extra);

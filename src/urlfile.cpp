@@ -256,7 +256,6 @@ void URLFile::openURL(char *url, ParsedURL *pu, const ParsedURL *current,
     Str tmp;
     int sock, scheme;
     char *p, *q, *u;
-    HRequest hr0;
     SSL *sslh = NULL;
 
     u = url;
@@ -292,11 +291,6 @@ retry:
     this->url = pu->ToStr()->ptr;
     pu->is_nocache = (option->flag & RG_NOCACHE);
     this->ext = filename_extension(pu->file.c_str(), 1);
-
-    hr->command = HR_COMMAND_GET;
-    hr->flag = 0;
-    hr->referer = option->referer;
-    hr->request = request;
 
     switch (pu->scheme)
     {
@@ -381,7 +375,7 @@ retry:
             if (sock < 0)
                 return;
             this->scheme = SCM_HTTP;
-            tmp = HTTPrequest(pu, current, hr, extra_header);
+            tmp = hr->ToStr(*pu, current, extra_header);
             write(sock, tmp->ptr, tmp->Size());
         }
         else
@@ -448,19 +442,19 @@ retry:
                 if (*status == HTST_NORMAL)
                 {
                     hr->command = HR_COMMAND_CONNECT;
-                    tmp = HTTPrequest(pu, current, hr, extra_header);
+                    tmp = hr->ToStr(*pu, current, extra_header);
                     *status = HTST_CONNECT;
                 }
                 else
                 {
                     hr->flag |= HR_FLAG_LOCAL;
-                    tmp = HTTPrequest(pu, current, hr, extra_header);
+                    tmp = hr->ToStr(*pu, current, extra_header);
                     *status = HTST_NORMAL;
                 }
             }
             else
             {
-                tmp = HTTPrequest(pu, current, hr, extra_header);
+                tmp = hr->ToStr(*pu, current, extra_header);
                 *status = HTST_NORMAL;
             }
         }
@@ -483,7 +477,7 @@ retry:
                 }
             }
             hr->flag |= HR_FLAG_LOCAL;
-            tmp = HTTPrequest(pu, current, hr, extra_header);
+            tmp = hr->ToStr(*pu, current, extra_header);
             *status = HTST_NORMAL;
         }
         if (pu->scheme == SCM_HTTPS)

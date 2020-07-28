@@ -6,6 +6,7 @@ w3m を改造して遊ぶ。
 
 だいぶ壊れてきた。ぼちぼち
 
+* [ ] logger
 * [ ] gtest
 * [x] load中のメッセージ表示が壊れた。Sprintf に std::string 投げてた
 * [ ] prev/forward 壊れた。Read/WriteBufferCacheの不整合。後で直す
@@ -205,6 +206,9 @@ std::unordered_map<std::string, Command> g_commandMap;
 | funcname2.h  | Makefile(awk)     | funcname.tab   |                                                        |
 | functable.c  | Makefile(mktable) | funcname.tab   |                                                        |
 | tagtable.c   | Makefile(mktable) | funcname.tab   |                                                        |
+
+* bzero, bcopy, memcpy
+* const char*
 
 ## proto.h
 

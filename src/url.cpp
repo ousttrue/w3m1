@@ -932,7 +932,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
     }
 }
 
-Str ParsedURL::ToStr(bool pass) const
+Str ParsedURL::ToStr(bool usePass, bool useLabel) const
 {
     if (this->scheme == SCM_MISSING)
     {
@@ -971,7 +971,7 @@ Str ParsedURL::ToStr(bool pass) const
     if (this->user.size())
     {
         tmp->Push(this->user);
-        if (pass && this->pass.size())
+        if (usePass && this->pass.size())
         {
             tmp->Push(':');
             tmp->Push(this->pass);
@@ -998,7 +998,7 @@ Str ParsedURL::ToStr(bool pass) const
         tmp->Push('?');
         tmp->Push(this->query);
     }
-    if (this->label.size())
+    if (useLabel && this->label.size())
     {
         tmp->Push('#');
         tmp->Push(this->label);
@@ -1007,7 +1007,7 @@ Str ParsedURL::ToStr(bool pass) const
 }
 
 char *
-otherinfo(ParsedURL *target, const ParsedURL *current, char *referer)
+otherinfo(const ParsedURL *target, const ParsedURL *current, char *referer)
 {
     Str s = Strnew();
 

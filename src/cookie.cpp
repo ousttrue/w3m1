@@ -183,7 +183,7 @@ make_cookie(struct cookie *cookie)
 }
 
 static int
-match_cookie(ParsedURL *pu, struct cookie *cookie, char *domainname)
+match_cookie(const ParsedURL *pu, struct cookie *cookie, char *domainname)
 {
     if (!domainname)
         return 0;
@@ -219,7 +219,7 @@ get_cookie_info(Str domain, Str path, Str name)
     return NULL;
 }
 
-Str find_cookie(ParsedURL *pu)
+Str find_cookie(const ParsedURL *pu)
 {
     Str tmp;
     struct cookie *p, *p1, *fco = NULL;

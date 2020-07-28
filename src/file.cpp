@@ -1334,7 +1334,7 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, ParsedURL *pu,
 {
     Str tmp, a1buf, a2buf, rd, s;
     unsigned char md5[MD5_DIGEST_LENGTH + 1];
-    Str uri = hr->URI(pu);
+    Str uri = hr->URI(*pu);
     char nc[] = "00000001";
 
     Str algorithm = qstr_unquote(get_auth_param(ha->param, "algorithm"));
@@ -1829,7 +1829,7 @@ loadGeneralFile(char *path, const ParsedURL *_current, char *referer,
 #ifdef USE_M17N
     wc_ces charset = WC_CES_US_ASCII;
 #endif
-    HRequest hr;
+    HRequest hr(referer, request);
     ParsedURL *auth_pu;
 
     tpath = path;
