@@ -303,7 +303,7 @@ void getAllImage(BufferPtr buf)
     auto &al = buf->img;
     if (!al)
         return;
-    current = baseURL(buf);
+    current = buf->BaseURL();
     for (auto &a: al.anchors)
     {
         if (a.image)

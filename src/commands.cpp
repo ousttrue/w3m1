@@ -892,7 +892,7 @@ void followI()
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    buf = loadGeneralFile(const_cast<char *>(a->url.c_str()), baseURL(GetCurrentTab()->GetCurrentBuffer()), NULL, 0, NULL);
+    buf = loadGeneralFile(const_cast<char *>(a->url.c_str()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), NULL, 0, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -1041,7 +1041,7 @@ void followA()
     }
 
     ParsedURL u;
-    u.Parse2(a->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    u.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     if (parsedURL2Str(&u)->Cmp(parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)) == 0)
     {
         /* index within this buffer */
@@ -1295,9 +1295,9 @@ void linkMn()
         gotoLabel(l->url + 1);
         return;
     }
-    p_url.Parse2(l->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    p_url.Parse2(l->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
-    cmd_loadURL(l->url, baseURL(GetCurrentTab()->GetCurrentBuffer()),
+    cmd_loadURL(l->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
                 parsedURL2Str(&GetCurrentTab()->GetCurrentBuffer()->currentURL)->ptr, NULL);
 }
 /* accesskey */
@@ -1876,7 +1876,7 @@ void linkbrz()
     auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
     if (a == NULL)
         return;
-    pu.Parse2(a->url, baseURL(GetCurrentTab()->GetCurrentBuffer()));
+    pu.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     invoke_browser(parsedURL2Str(&pu)->ptr);
 }
 /* show current line number and number of lines in the entire document */

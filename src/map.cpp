@@ -286,7 +286,7 @@ follow_map_panel(BufferPtr buf, char *name)
         a = (MapArea *)al->ptr;
         if (!a)
             continue;
-        parseURL2(a->url, &pu, baseURL(buf));
+        parseURL2(a->url, &pu, buf->BaseURL());
         p = parsedURL2Str(&pu)->ptr;
         q = html_quote(p);
         if (DecodeURL)
@@ -439,7 +439,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
         a = (MapArea *)al->ptr;
         if (!a)
             continue;
-        pu.Parse2(a->url, baseURL(buf));
+        pu.Parse2(a->url, buf->BaseURL());
         q = html_quote(parsedURL2Str(&pu)->ptr);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(a->url, buf->document_charset));
@@ -469,7 +469,7 @@ append_link_info(BufferPtr buf, Str html, LinkList *link)
     {
         if (l->url)
         {
-            pu.Parse2(l->url, baseURL(buf));
+            pu.Parse2(l->url, buf->BaseURL());
             url = html_quote(parsedURL2Str(&pu)->ptr);
         }
         else
@@ -621,7 +621,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentAnchor(buf);
     if (a != NULL)
     {
-        pu.Parse2(a->url, baseURL(buf));
+        pu.Parse2(a->url, buf->BaseURL());
         p = parsedURL2Str(&pu)->ptr;
         q = html_quote(p);
         if (DecodeURL)
@@ -635,7 +635,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentImg(buf);
     if (a != NULL)
     {
-        pu.Parse2(a->url, baseURL(buf));
+        pu.Parse2(a->url, buf->BaseURL());
         p = parsedURL2Str(&pu)->ptr;
         q = html_quote(p);
         if (DecodeURL)

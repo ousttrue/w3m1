@@ -6370,7 +6370,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         image_flag = IMG_FLAG_SKIP;
     if (newBuf->currentURL.file.size())
     {
-        *GetCurBaseUrl() = *baseURL(newBuf);
+        *GetCurBaseUrl() = *newBuf->BaseURL();
     }
 #endif
 

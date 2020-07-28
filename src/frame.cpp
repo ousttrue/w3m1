@@ -100,7 +100,7 @@ newFrame(struct parsed_tag *tag, BufferPtr buf)
 	bzero((void *)body, sizeof(*body));
 	body->attr = F_UNLOADED;
 	body->flags = 0;
-	body->baseURL = *baseURL(buf);
+	body->baseURL = *buf->BaseURL();
 	if (tag)
 	{
 		if (parsedtag_get_value(tag, ATTR_SRC, &p))

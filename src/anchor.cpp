@@ -726,7 +726,7 @@ link_list_panel(BufferPtr buf)
             if (l->url)
             {
                 ParsedURL pu;
-                pu.Parse2(l->url, baseURL(buf));
+                pu.Parse2(l->url, buf->BaseURL());
                 p = parsedURL2Str(&pu)->ptr;
                 u = html_quote(p);
                 if (DecodeURL)
@@ -760,7 +760,7 @@ link_list_panel(BufferPtr buf)
             if (a->hseq < 0 || a->slave)
                 continue;
             ParsedURL pu;
-            pu.Parse2(const_cast<char*>(a->url.c_str()), baseURL(buf));
+            pu.Parse2(const_cast<char*>(a->url.c_str()), buf->BaseURL());
             auto p = parsedURL2Str(&pu)->ptr;
             auto u = html_quote(p);
             if (DecodeURL)
@@ -785,7 +785,7 @@ link_list_panel(BufferPtr buf)
             if (a->slave)
                 continue;
             ParsedURL pu;
-            pu.Parse2(a->url, baseURL(buf));
+            pu.Parse2(a->url, buf->BaseURL());
             auto p = parsedURL2Str(&pu)->ptr;
             auto u = html_quote(p);
             if (DecodeURL)
@@ -820,7 +820,7 @@ link_list_panel(BufferPtr buf)
                     m = (MapArea *)mi->ptr;
                     if (!m)
                         continue;
-                    pu.Parse2(m->url, baseURL(buf));
+                    pu.Parse2(m->url, buf->BaseURL());
                     p = parsedURL2Str(&pu)->ptr;
                     u = html_quote(p);
                     if (DecodeURL)

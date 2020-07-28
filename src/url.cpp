@@ -179,22 +179,6 @@ static void
     SIGNAL_RETURN;
 }
 
-ParsedURL *
-baseURL(BufferPtr buf)
-{
-    if (buf->bufferprop & BP_NO_URL)
-    {
-        /* no URL is defined for the buffer */
-        return NULL;
-    }
-    if (buf->baseURL)
-    {
-        /* <BASE> tag is defined in the document */
-        return &buf->baseURL;
-    }
-    else
-        return &buf->currentURL;
-}
 
 int openSocket(const char *hostname,
                const char *remoteport_name, unsigned short remoteport_num)

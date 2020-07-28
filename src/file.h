@@ -172,7 +172,7 @@ MySignalHandler reset_exit(SIGNAL_ARG);
 MySignalHandler error_dump(SIGNAL_ARG);
 
 void free_ssl_ctx();
-ParsedURL *baseURL(BufferPtr buf);
+
 int openSocket(const char *hostname, const char *remoteport_name,
                unsigned short remoteport_num);
 

@@ -128,6 +128,7 @@ public:
     BufferPtr Copy();
     void CopyFrom(BufferPtr src);
     void ClearLink();
+    ParsedURL *BaseURL();
 };
 
 void deleteImage(BufferPtr buf);

@@ -295,7 +295,7 @@ make_lastline_link(BufferPtr buf, std::string_view title, char *url)
     }
     if (!url)
         return s;
-    pu.Parse2(url, baseURL(buf));
+    pu.Parse2(url, buf->BaseURL());
     u = parsedURL2Str(&pu);
     if (DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));
@@ -774,7 +774,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
             auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
-                url.Parse2(a->url, baseURL(buf));
+                url.Parse2(a->url, buf->BaseURL());
                 if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
@@ -909,8 +909,7 @@ redrawLineImage(BufferPtr buf, Line *l, int i)
             Image *image = a->image;
             ImageCache *cache;
 
-            cache = image->cache = getImage(image, baseURL(buf),
-                                            buf->image_flag);
+            cache = image->cache = getImage(image, buf->BaseURL(), buf->image_flag);
             if (cache)
             {
                 if ((image->width < 0 && cache->width > 0) ||
@@ -990,7 +989,7 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
             auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
-                url.Parse2(a->url, baseURL(buf));
+                url.Parse2(a->url, buf->BaseURL());
                 if (getHashHist(URLHist, parsedURL2Str(&url)->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)

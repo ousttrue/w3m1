@@ -271,6 +271,24 @@ void Buffer::ClearLink()
     }
 }
 
+ParsedURL *Buffer::BaseURL()
+{
+    if (bufferprop & BP_NO_URL)
+    {
+        /* no URL is defined for the buffer */
+        return NULL;
+    }
+    if (baseURL)
+    {
+        /* <BASE> tag is defined in the document */
+        return &baseURL;
+    }
+    else
+    {
+        return &currentURL;
+    }
+}
+
 const char *NullLine = "";
 Lineprop NullProp[] = {0};
 
@@ -567,7 +585,7 @@ void set_buffer_environ(BufferPtr buf)
         auto a = retrieveCurrentAnchor(buf);
         if (a)
         {
-            pu.Parse2(a->url, baseURL(buf));
+            pu.Parse2(a->url, buf->BaseURL());
             set_environ("W3M_CURRENT_LINK", parsedURL2Str(&pu)->ptr);
         }
         else
@@ -575,7 +593,7 @@ void set_buffer_environ(BufferPtr buf)
         a = retrieveCurrentImg(buf);
         if (a)
         {
-            pu.Parse2(a->url, baseURL(buf));
+            pu.Parse2(a->url, buf->BaseURL());
             set_environ("W3M_CURRENT_IMG", parsedURL2Str(&pu)->ptr);
         }
         else
