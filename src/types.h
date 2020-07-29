@@ -14,7 +14,7 @@
 #include "transport/urlfile.h"
 #include "bufferpoint.h"
 #include "html/anchor.h"
-#include "line.h"
+#include "frontend/line.h"
 
 
 struct MapList

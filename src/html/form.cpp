@@ -16,9 +16,9 @@
 #include "myctype.h"
 #include "transport/local.h"
 #include "regex.h"
-#include "menu.h"
+#include "frontend/menu.h"
 #include "mimetypes.h"
-#include "display.h"
+#include "frontend/display.h"
 #include "html/anchor.h"
 extern Str *textarea_str;
 extern FormSelectOption *select_option;

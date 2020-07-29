@@ -12,8 +12,8 @@
 #include "http/cookie.h"
 #include "public.h"
 #include "html/image.h"
-#include "display.h"
-#include "terms.h"
+#include "frontend/display.h"
+#include "frontend/terms.h"
 
 #include <assert.h>
 #include <memory>

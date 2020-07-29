@@ -2,7 +2,7 @@
 #include "indep.h"
 #include "mimetypes.h"
 #include "textlist.h"
-#include "buffer.h"
+#include "frontend/buffer.h"
 #include "transport/url.h"
 
 static TextList *mimetypes_list;

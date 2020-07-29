@@ -4,11 +4,11 @@
 #include "indep.h"
 #include "transport/local.h"
 #include "myctype.h"
-#include "display.h"
+#include "frontend/display.h"
 #include "etc.h"
 #include "file.h"
 #include "public.h"
-#include "terms.h"
+#include "frontend/terms.h"
 #include "ctrlcode.h"
 
 

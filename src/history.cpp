@@ -4,7 +4,7 @@
 #include "file.h"
 #include "rc.h"
 #include "etc.h"
-#include "display.h"
+#include "frontend/display.h"
 
 #ifdef USE_HISTORY
 BufferPtr 

@@ -12,7 +12,7 @@
 #endif /* MATRIX */
 
 #include "Str.h"
-#include "line.h"
+#include "frontend/line.h"
 
 #define MAX_TABLE 20   /* maximum nest level of table */
 #define MAX_TABLE_N 20 /* maximum number of table in same level */

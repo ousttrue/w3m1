@@ -1,14 +1,14 @@
 #include "dispatcher.h"
 #include "fm.h"
-#include "terms.h"
+#include "frontend/terms.h"
 #include "public.h"
 #include "commands.h"
 #include "file.h"
 #include "rc.h"
 #include "ctrlcode.h"
-#include "display.h"
-#include "buffer.h"
-#include "tab.h"
+#include "frontend/display.h"
+#include "frontend/buffer.h"
+#include "frontend/tab.h"
 
 static int g_prec_num = 0;
 static int g_CurrentKey = -1;

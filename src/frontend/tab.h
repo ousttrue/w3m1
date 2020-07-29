@@ -1,6 +1,6 @@
 #pragma once
 
-#include "buffer.h"
+#include "frontend/buffer.h"
 #include <memory>
 #include <list>
 #include <functional>

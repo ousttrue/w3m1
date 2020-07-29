@@ -68,9 +68,16 @@ PRIVATE
     src/commands.cpp
     src/entity.cpp
     src/public.cpp
-    src/display.cpp
-    src/buffer.cpp
-    src/tab.cpp
+    src/frontend/display.cpp
+    src/frontend/linein.cpp
+    src/frontend/line.cpp
+    src/frontend/buffer.cpp
+    src/frontend/tab.cpp
+    src/frontend/search.cpp
+    src/frontend/menu.cpp
+    src/frontend/terms.cpp
+    src/frontend/mouse.cpp
+    src/frontend/keybind.cpp
     src/file.cpp
     src/transport/istream.cpp
     src/transport/loader.cpp
@@ -95,7 +102,6 @@ PRIVATE
     src/html/map.cpp
     src/html/image.cpp
     src/mimetypes.cpp
-    src/line.cpp
     src/backend.cpp
     src/indep.cpp
     src/rc.cpp
@@ -105,17 +111,11 @@ PRIVATE
     src/myctype.cpp
     src/hash.cpp
     src/etc.cpp
-    src/search.cpp
-    src/linein.cpp
-    src/menu.cpp
     src/mailcap.cpp
     src/symbol.cpp
-    src/terms.cpp
     src/mimehead.cpp
-    src/mouse.cpp
     src/history.cpp
     src/version.cpp
-    src/keybind.cpp
     libwc/big5.cpp
     libwc/ces.cpp
     libwc/char_conv.cpp

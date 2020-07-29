@@ -1,5 +1,5 @@
 #pragma once
-#include "buffer.h"
+#include "frontend/buffer.h"
 
 enum DisplayMode
 {

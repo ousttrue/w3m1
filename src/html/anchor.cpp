@@ -7,7 +7,7 @@
 #include "regex.h"
 #include "file.h"
 #include "html/form.h"
-#include "buffer.h"
+#include "frontend/buffer.h"
 
 #define FIRST_ANCHOR_SIZE 30
 

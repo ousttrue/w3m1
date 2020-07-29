@@ -16,8 +16,8 @@
 #include "public.h"
 #include "html/html.h"
 #include "myctype.h"
-#include "terms.h"
-#include "display.h"
+#include "frontend/terms.h"
+#include "frontend/display.h"
 #include "transport/url.h"
 #include "http/auth.h"
 

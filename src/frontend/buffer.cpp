@@ -1,12 +1,12 @@
 /* $Id: buffer.c,v 1.30 2010/07/18 14:10:09 htrb Exp $ */
 
 #include "fm.h"
-#include "buffer.h"
+#include "frontend/buffer.h"
 #include "public.h"
 #include "indep.h"
 #include "file.h"
 #include "html/image.h"
-#include "display.h"
+#include "frontend/display.h"
 #include "html/html.h"
 #include "ctrlcode.h"
 #include "transport/local.h"

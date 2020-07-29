@@ -4,8 +4,8 @@
 #include "mimehead.h"
 #include "http/http_request.h"
 #include "html/form.h"
-#include "display.h"
-#include "terms.h"
+#include "frontend/display.h"
+#include "frontend/terms.h"
 #include "public.h"
 
 enum

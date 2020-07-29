@@ -6,9 +6,9 @@
 #include "file.h"
 #include "indep.h"
 #include "http/cookie.h"
-#include "terms.h"
+#include "frontend/terms.h"
 #include "html/form.h"
-#include "display.h"
+#include "frontend/display.h"
 #include "html/anchor.h"
 #include "http/http_request.h"
 

@@ -4,13 +4,13 @@
 #include "etc.h"
 #include "rc.h"
 #include "indep.h"
-#include "display.h"
+#include "frontend/display.h"
 #include "file.h"
 #include "html/form.h"
 #include "public.h"
 #include "commands.h"
 #include "http/cookie.h"
-#include "mouse.h"
+#include "frontend/mouse.h"
 #include "transport/loader.h"
 #include <signal.h>
 #include <setjmp.h>
@@ -22,7 +22,7 @@
 #include <sys/wait.h>
 #endif
 #include <time.h>
-#include "terms.h"
+#include "frontend/terms.h"
 #include "myctype.h"
 #include "regex.h"
 #ifdef USE_M17N

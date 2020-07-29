@@ -15,7 +15,7 @@
 #include "public.h"
 #include "commands.h"
 
-#include "terms.h"
+#include "frontend/terms.h"
 #include <signal.h>
 #include <setjmp.h>
 static JMP_BUF AbortLoading;

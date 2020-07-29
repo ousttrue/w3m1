@@ -7,7 +7,7 @@
 #include "etc.h"
 #include "html/html.h"
 #include "mimehead.h"
-#include "display.h"
+#include "frontend/display.h"
 #include <signal.h>
 #include <openssl/x509v3.h>
 

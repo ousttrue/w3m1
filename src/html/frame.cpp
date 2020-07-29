@@ -7,7 +7,7 @@
 #include "html/parsetagx.h"
 #include "myctype.h"
 #include "file.h"
-#include "terms.h"
+#include "frontend/terms.h"
 #include "html/table.h"
 #include "transport/url.h"
 #include "entity.h"

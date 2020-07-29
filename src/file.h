@@ -1,6 +1,6 @@
 #pragma once
 #include "types.h"
-#include "buffer.h"
+#include "frontend/buffer.h"
 
 struct HRequest;
 struct Hist;

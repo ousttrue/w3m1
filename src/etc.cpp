@@ -11,9 +11,9 @@
 #include "html/html.h"
 #include "transport/local.h"
 #include "html/tagtable.h"
-#include "terms.h"
-#include "display.h"
-#include "buffer.h"
+#include "frontend/terms.h"
+#include "frontend/display.h"
+#include "frontend/buffer.h"
 #include "transport/url.h"
 
 // #include <sys/socket.h>

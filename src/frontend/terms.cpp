@@ -7,7 +7,7 @@
 #include "fm.h"
 #include "commands.h"
 #include "etc.h"
-#include "terms.h"
+#include "frontend/terms.h"
 #include "indep.h"
 #include "public.h"
 #include "ctrlcode.h"

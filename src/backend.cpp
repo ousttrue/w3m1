@@ -8,7 +8,7 @@
 #include "indep.h"
 #include "public.h"
 #include "file.h"
-// #include "terms.h"
+// #include "frontend/terms.h"
 #include "http/cookie.h"
 #include "transport/loader.h"
 #include "html/form.h"

@@ -17,9 +17,9 @@
 #include "etc.h"
 #include "regex.h"
 #include "myctype.h"
-#include "buffer.h"
+#include "frontend/buffer.h"
 #include "file.h"
-#include "display.h"
+#include "frontend/display.h"
 #include <time.h>
 
 #define COO_USE 1

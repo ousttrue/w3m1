@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-#include "mouse.h"
+#include "frontend/mouse.h"
 #include "fm.h"
 #include "indep.h"
 #include "rc.h"
@@ -13,12 +13,12 @@
 #include "dispatcher.h"
 #include "commands.h"
 #include "symbol.h"
-#include "tab.h"
+#include "frontend/tab.h"
 #include "file.h"
-#include "display.h"
-#include "tab.h"
+#include "frontend/display.h"
+#include "frontend/tab.h"
 #include "types.h"
-#include "buffer.h"
+#include "frontend/buffer.h"
 #include "html/anchor.h"
 
 struct MouseActionMap

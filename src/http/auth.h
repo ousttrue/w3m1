@@ -1,7 +1,7 @@
 #pragma once
 #include "Str.h"
 #include "transport/url.h"
-#include "buffer.h"
+#include "frontend/buffer.h"
 
 struct HRequest;
 struct FormList;

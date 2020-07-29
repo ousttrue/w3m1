@@ -13,15 +13,15 @@
 #include <errno.h>
 #include "transport/local.h"
 #include "dispatcher.h"
-#include "mouse.h"
-#include "menu.h"
+#include "frontend/mouse.h"
+#include "frontend/menu.h"
 #include "html/image.h"
 #include "commands.h"
 #include "transport/url.h"
 #include "file.h"
 #include "mimetypes.h"
-#include "display.h"
-#include "buffer.h"
+#include "frontend/display.h"
+#include "frontend/buffer.h"
 #include "http/compression.h"
 #include <stdlib.h>
 

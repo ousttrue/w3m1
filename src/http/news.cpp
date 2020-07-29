@@ -4,10 +4,10 @@
 #include "myctype.h"
 #include "file.h"
 #include "etc.h"
-#include "terms.h"
+#include "frontend/terms.h"
 #include "html/html.h"
 #include "mimehead.h"
-#include "display.h"
+#include "frontend/display.h"
 #include "transport/url.h"
 #include "transport/loader.h"
 #include <stdio.h>

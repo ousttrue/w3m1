@@ -6,7 +6,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "html/frame.h"
-#include "menu.h"
+#include "frontend/menu.h"
 #include "file.h"
 #include "etc.h"
 #include "ctrlcode.h"
