@@ -26,7 +26,7 @@ enum LinkBufferTypes
 };
 const int MAX_LB = 5;
 
-enum BufferProps
+enum BufferProps: int16_t
 {
     BP_NORMAL = 0x0,
     BP_PIPE = 0x1,
@@ -36,6 +36,7 @@ enum BufferProps
     BP_REDIRECTED = 0x20,
     BP_CLOSE = 0x40,
 };
+#include "enum_bit_operator.h"
 
 struct BufferPos
 {
@@ -73,8 +74,8 @@ public:
     std::string real_type;
 
 public:
+    BufferProps bufferprop = BP_NORMAL;
     int allLine;
-    short bufferprop;
     int currentColumn;
     short cursorX;
     short cursorY;
@@ -98,7 +99,7 @@ public:
     std::vector<BufferPoint> imarklist;
     ParsedURL currentURL = {};
     ParsedURL baseURL = {};
-    char *baseTarget;
+    std::string baseTarget;
     int real_scheme;
     char *sourcefile;
     struct frameset *frameset;
@@ -150,7 +151,7 @@ void gotoLine(BufferPtr buf, int n);
 void reshapeBuffer(BufferPtr buf);
 
 void set_buffer_environ(BufferPtr buf);
-void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid);
+void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid);
 
 // anchor
 const Anchor *retrieveCurrentAnchor(BufferPtr buf);

@@ -1449,7 +1449,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         }
                     }
                     p = r = s = NULL;
-                    q = buf->baseTarget;
+                    q = Strnew(buf->baseTarget)->ptr;
                     t = "";
                     hseq = 0;
                     id = NULL;
@@ -1631,7 +1631,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         buf->putHmarker(currentLn(buf), hpos, hseq - 1);
                     }
                     if (!form->target)
-                        form->target = buf->baseTarget;
+                        form->target = Strnew(buf->baseTarget)->ptr;
                     if (a_textarea &&
                         parsedtag_get_value(tag, ATTR_TEXTAREANUMBER,
                                             &textareanumber))

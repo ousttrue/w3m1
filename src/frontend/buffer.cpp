@@ -338,7 +338,7 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
 const char *NullLine = "";
 Lineprop NullProp[] = {0};
 
-void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid)
+void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid)
 {
     if (buf == NULL)
     {
