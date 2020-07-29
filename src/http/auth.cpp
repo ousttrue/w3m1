@@ -1,7 +1,7 @@
 #include "http/auth.h"
 #include "fm.h"
 #include "myctype.h"
-#include "mimehead.h"
+#include "mime/mimeencoding.h"
 #include "http/http_request.h"
 #include "html/form.h"
 #include "frontend/display.h"

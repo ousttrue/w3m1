@@ -19,7 +19,7 @@
 #include "http/cookie.h"
 #include "frontend/terms.h"
 #include "frontend/mouse.h"
-#include "mimetypes.h"
+#include "mime/mimetypes.h"
 #include "transport/local.h"
 #include "html/anchor.h"
 #include "transport/loader.h"

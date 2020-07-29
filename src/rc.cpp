@@ -19,7 +19,7 @@
 #include "commands.h"
 #include "transport/url.h"
 #include "file.h"
-#include "mimetypes.h"
+#include "mime/mimetypes.h"
 #include "frontend/display.h"
 #include "frontend/buffer.h"
 #include "http/compression.h"

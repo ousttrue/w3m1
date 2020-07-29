@@ -1,6 +1,6 @@
 #include "fm.h"
 #include "indep.h"
-#include "mimetypes.h"
+#include "mime/mimetypes.h"
 #include "textlist.h"
 #include "frontend/buffer.h"
 #include "transport/url.h"

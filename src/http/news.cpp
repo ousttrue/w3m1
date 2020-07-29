@@ -6,7 +6,7 @@
 #include "etc.h"
 #include "frontend/terms.h"
 #include "html/html.h"
-#include "mimehead.h"
+#include "mime/mimeencoding.h"
 #include "frontend/display.h"
 #include "transport/url.h"
 #include "transport/loader.h"

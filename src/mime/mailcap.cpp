@@ -10,7 +10,7 @@
 #include "file.h"
 #include "html/html.h"
 #include "transport/url.h"
-#include "mimetypes.h"
+#include "mime/mimetypes.h"
 
 
 static struct mailcap DefaultMailcap[] = {

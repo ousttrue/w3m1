@@ -17,7 +17,7 @@
 #include "transport/local.h"
 #include "regex.h"
 #include "frontend/menu.h"
-#include "mimetypes.h"
+#include "mime/mimetypes.h"
 #include "frontend/display.h"
 #include "html/anchor.h"
 extern Str *textarea_str;

@@ -84,6 +84,9 @@ PRIVATE
     src/transport/local.cpp
     src/transport/urlfile.cpp
     src/transport/url.cpp
+    src/mime/mimeencoding.cpp
+    src/mime/mimetypes.cpp
+    src/mime/mailcap.cpp
     src/http/compression.cpp
     src/http/auth.cpp
     src/http/http_request.cpp
@@ -101,7 +104,6 @@ PRIVATE
     src/html/frame.cpp
     src/html/map.cpp
     src/html/image.cpp
-    src/mimetypes.cpp
     src/backend.cpp
     src/indep.cpp
     src/rc.cpp
@@ -111,9 +113,7 @@ PRIVATE
     src/myctype.cpp
     src/hash.cpp
     src/etc.cpp
-    src/mailcap.cpp
     src/symbol.cpp
-    src/mimehead.cpp
     src/history.cpp
     src/version.cpp
     libwc/big5.cpp

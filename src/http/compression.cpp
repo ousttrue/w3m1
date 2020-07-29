@@ -1,5 +1,5 @@
 #include "http/compression.h"
-#include "mimetypes.h"
+#include "mime/mimetypes.h"
 #include "textlist.h"
 #include "indep.h"
 #include "transport/istream.h"

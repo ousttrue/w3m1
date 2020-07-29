@@ -6,7 +6,7 @@
 
 #include <sys/types.h>
 #include "fm.h"
-#include "mimehead.h"
+#include "mime/mimeencoding.h"
 #include "myctype.h"
 #include "Str.h"
 
