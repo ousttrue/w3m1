@@ -289,6 +289,51 @@ ParsedURL *Buffer::BaseURL()
     }
 }
 
+void Buffer::putHmarker(int line, int pos, int seq)
+{
+    if (seq + 1 > hmarklist.size())
+        hmarklist.resize(seq + 1);
+    hmarklist[seq].line = line;
+    hmarklist[seq].pos = pos;
+    hmarklist[seq].invalid = 0;
+}
+
+void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift)
+{
+    if (al.size() == 0)
+        return;
+
+    auto s = al.size() / 2;
+    auto e = al.size() - 1;
+    for (auto b = 0; b <= e; s = (b + e + 1) / 2)
+    {
+        auto a = &al.anchors[s];
+        auto cmp = a->CmpOnAnchor(bp);
+        if (cmp == 0)
+            break;
+        else if (cmp > 0)
+            b = s + 1;
+        else if (s == 0)
+            break;
+        else
+            e = s - 1;
+    }
+    for (; s < al.size(); s++)
+    {
+        auto a = &al.anchors[s];
+        if (a->start.line > bp.line)
+            break;
+        if (a->start.pos > bp.pos)
+        {
+            a->start.pos += shift;
+            if (hmarklist[a->hseq].line == bp.line)
+                hmarklist[a->hseq].pos = a->start.pos;
+        }
+        if (a->end.pos >= bp.pos)
+            a->end.pos += shift;
+    }
+}
+
 const char *NullLine = "";
 Lineprop NullProp[] = {0};
 
@@ -480,10 +525,8 @@ void reshapeBuffer(BufferPtr buf)
     buf->formlist = NULL;
     buf->linklist = NULL;
     buf->maplist = NULL;
-    if (buf->hmarklist)
-        buf->hmarklist->nmark = 0;
-    if (buf->imarklist)
-        buf->imarklist->nmark = 0;
+    buf->hmarklist.clear();
+    buf->imarklist.clear();
 
     if (buf->header_source)
     {

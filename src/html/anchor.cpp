@@ -164,9 +164,8 @@ reseq_anchor0(AnchorList &al, short *seqmap)
 static void
 reseq_anchor(BufferPtr buf)
 {
-    int i, j, n, nmark = (buf->hmarklist) ? buf->hmarklist->nmark : 0;
+    int i, j, n, nmark = buf->hmarklist.size();
     short *seqmap;
-    HmarkerList *ml = NULL;
 
     if (!buf->href)
         return;
@@ -204,17 +203,15 @@ reseq_anchor(BufferPtr buf)
                 for (j = a1->hseq; j < nmark; j++)
                     seqmap[j]++;
             }
-            ml = putHmarker(ml, a->start.line, a->start.pos, seqmap[n]);
+            buf->putHmarker(a->start.line, a->start.pos, seqmap[n]);
             n++;
         }
     }
 
     for (i = 0; i < nmark; i++)
     {
-        ml = putHmarker(ml, buf->hmarklist->marks[i].line,
-                        buf->hmarklist->marks[i].pos, seqmap[i]);
+        buf->putHmarker(buf->hmarklist[i].line, buf->hmarklist[i].pos, seqmap[i]);
     }
-    buf->hmarklist = ml;
 
     reseq_anchor0(buf->href, seqmap);
     reseq_anchor0(buf->formitem, seqmap);
@@ -394,36 +391,6 @@ reAnchorNewsheader(BufferPtr buf)
 }
 #endif /* USE_NNTP */
 
-#define FIRST_MARKER_SIZE 30
-HmarkerList *
-putHmarker(HmarkerList *ml, int line, int pos, int seq)
-{
-    if (ml == NULL)
-    {
-        ml = New(HmarkerList);
-        ml->marks = NULL;
-        ml->nmark = 0;
-        ml->markmax = 0;
-    }
-    if (ml->markmax == 0)
-    {
-        ml->markmax = FIRST_MARKER_SIZE;
-        ml->marks = NewAtom_N(BufferPoint, ml->markmax);
-        bzero(ml->marks, sizeof(BufferPoint) * ml->markmax);
-    }
-    if (seq + 1 > ml->nmark)
-        ml->nmark = seq + 1;
-    if (ml->nmark >= ml->markmax)
-    {
-        ml->markmax = ml->nmark * 2;
-        ml->marks = New_Reuse(BufferPoint, ml->marks, ml->markmax);
-    }
-    ml->marks[seq].line = line;
-    ml->marks[seq].pos = pos;
-    ml->marks[seq].invalid = 0;
-    return ml;
-}
-
 const Anchor *
 AnchorList::ClosestNext(const Anchor *an, int x, int y) const
 {
@@ -460,43 +427,6 @@ AnchorList::ClosestPrev(const Anchor *an, int x, int y) const
         }
     }
     return an;
-}
-
-void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, const BufferPoint &bp,
-                         int shift)
-{
-    if (al.size() == 0)
-        return;
-
-    auto s = al.size() / 2;
-    auto e = al.size() - 1;
-    for (auto b = 0; b <= e; s = (b + e + 1) / 2)
-    {
-        auto a = &al.anchors[s];
-        auto cmp = a->CmpOnAnchor(bp);
-        if (cmp == 0)
-            break;
-        else if (cmp > 0)
-            b = s + 1;
-        else if (s == 0)
-            break;
-        else
-            e = s - 1;
-    }
-    for (; s < al.size(); s++)
-    {
-        auto a = &al.anchors[s];
-        if (a->start.line > bp.line)
-            break;
-        if (a->start.pos > bp.pos)
-        {
-            a->start.pos += shift;
-            if (hl->marks[a->hseq].line == bp.line)
-                hl->marks[a->hseq].pos = a->start.pos;
-        }
-        if (a->end.pos >= bp.pos)
-            a->end.pos += shift;
-    }
 }
 
 void addMultirowsImg(BufferPtr buf, AnchorList &al)
@@ -639,8 +569,8 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
             auto pos = columnPos(l, col);
             if (j == 0)
             {
-                buf->hmarklist->marks[a_form.hseq].line = l->linenumber;
-                buf->hmarklist->marks[a_form.hseq].pos = pos;
+                buf->hmarklist[a_form.hseq].line = l->linenumber;
+                buf->hmarklist[a_form.hseq].pos = pos;
             }
             if (a_form.start.line == l->linenumber)
                 continue;
@@ -760,7 +690,7 @@ link_list_panel(BufferPtr buf)
             if (a->hseq < 0 || a->slave)
                 continue;
             ParsedURL pu;
-            pu.Parse2(const_cast<char*>(a->url.c_str()), buf->BaseURL());
+            pu.Parse2(const_cast<char *>(a->url.c_str()), buf->BaseURL());
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (DecodeURL)

@@ -525,14 +525,10 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
                     line : a->start.line,
                     pos : spos,
                 };
-                shiftAnchorPosition(buf->href, buf->hmarklist,
-                                    bp, pos - epos);
-                shiftAnchorPosition(buf->name, buf->hmarklist,
-                                    bp, pos - epos);
-                shiftAnchorPosition(buf->img, buf->hmarklist,
-                                    bp, pos - epos);
-                shiftAnchorPosition(buf->formitem, buf->hmarklist,
-                                    bp, pos - epos);
+                buf->shiftAnchorPosition(buf->href, bp, pos - epos);
+                buf->shiftAnchorPosition(buf->name, bp, pos - epos);
+                buf->shiftAnchorPosition(buf->img, bp, pos - epos);
+                buf->shiftAnchorPosition(buf->formitem, bp, pos - epos);
             }
         }
         break;

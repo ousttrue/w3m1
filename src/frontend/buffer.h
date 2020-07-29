@@ -10,12 +10,6 @@ struct LinkList;
 struct FormList;
 struct FormItemList;
 struct MapList;
-struct HmarkerList
-{
-    BufferPoint *marks;
-    int nmark;
-    int markmax;
-};
 struct AlarmEvent;
 struct TextList;
 
@@ -95,8 +89,8 @@ public:
     LinkList *linklist;
     FormList *formlist;
     MapList *maplist;
-    HmarkerList *hmarklist;
-    HmarkerList *imarklist;
+    std::vector<BufferPoint> hmarklist;
+    std::vector<BufferPoint> imarklist;
     ParsedURL currentURL = {};
     ParsedURL baseURL = {};
     char *baseTarget;
@@ -134,6 +128,8 @@ public:
     void CopyFrom(BufferPtr src);
     void ClearLink();
     ParsedURL *BaseURL();
+    void putHmarker(int line, int pos, int seq);
+    void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);
 };
 
 BufferPtr newBuffer(int width);
@@ -148,7 +144,6 @@ void gotoRealLine(BufferPtr buf, int n);
 void gotoLine(BufferPtr buf, int n);
 void reshapeBuffer(BufferPtr buf);
 
-HmarkerList *putHmarker(HmarkerList *ml, int line, int pos, int seq);
 void set_buffer_environ(BufferPtr buf);
 void cmd_loadBuffer(BufferPtr buf, int prop, LinkBufferTypes linkid);
 
@@ -163,7 +158,6 @@ char *reAnchorNews(BufferPtr buf, char *re);
 char *reAnchorNewsheader(BufferPtr buf);
 void addMultirowsForm(BufferPtr buf, AnchorList &al);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);
-void shiftAnchorPosition(AnchorList &al, HmarkerList *hl, const BufferPoint &bp, int shift);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 void chkExternalURIBuffer(BufferPtr buf);

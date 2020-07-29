@@ -915,25 +915,26 @@ void submitForm()
 
 void topA()
 {
-    HmarkerList *hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
+    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     BufferPoint *po;
 
     int hseq = 0;
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
-    if (!hl || hl->nmark == 0)
+    if (hl.empty())
         return;
-    if (prec_num() > hl->nmark)
-        hseq = hl->nmark - 1;
+
+    if (prec_num() > hl.size())
+        hseq = hl.size() - 1;
     else if (prec_num() > 0)
         hseq = prec_num() - 1;
 
     const Anchor *an;
     do
     {
-        if (hseq >= hl->nmark)
+        if (hseq >= hl.size())
             return;
-        po = hl->marks + hseq;
+        po = &hl[hseq];
         an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
         if (an == NULL)
             an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);
@@ -948,26 +949,26 @@ void topA()
 
 void lastA()
 {
-    HmarkerList *hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
+    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     BufferPoint *po;
     int hseq;
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
-    if (!hl || hl->nmark == 0)
+    if (hl.empty())
         return;
-    if (prec_num() >= hl->nmark)
+    if (prec_num() >= hl.size())
         hseq = 0;
     else if (prec_num() > 0)
-        hseq = hl->nmark - prec_num();
+        hseq = hl.size() - prec_num();
     else
-        hseq = hl->nmark - 1;
+        hseq = hl.size() - 1;
 
     const Anchor *an;
     do
     {
         if (hseq < 0)
             return;
-        po = hl->marks + hseq;
+        po = &hl[hseq];
         an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
         if (an == NULL)
             an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);

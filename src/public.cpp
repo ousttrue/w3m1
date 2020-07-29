@@ -1327,7 +1327,7 @@ BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 /* go to the next [visited] anchor */
 void _nextA(int visited)
 {
-    HmarkerList *hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
+    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     BufferPoint *po;
     const Anchor *an;
     const Anchor *pan;
@@ -1336,7 +1336,7 @@ void _nextA(int visited)
 
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
-    if (!hl || hl->nmark == 0)
+    if (hl.empty())
         return;
 
     an = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
@@ -1348,7 +1348,7 @@ void _nextA(int visited)
 
     if (visited == TRUE)
     {
-        n = hl->nmark;
+        n = hl.size();
     }
 
     for (i = 0; i < n; i++)
@@ -1359,14 +1359,14 @@ void _nextA(int visited)
             int hseq = an->hseq + 1;
             do
             {
-                if (hseq >= hl->nmark)
+                if (hseq >= hl.size())
                 {
                     if (visited == TRUE)
                         return;
                     an = pan;
                     goto _end;
                 }
-                po = &hl->marks[hseq];
+                po = &hl[hseq];
                 an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
                     an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line,
@@ -1412,7 +1412,7 @@ void _nextA(int visited)
 _end:
     if (an == NULL || an->hseq < 0)
         return;
-    po = &hl->marks[an->hseq];
+    po = &hl[an->hseq];
     gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
@@ -1422,14 +1422,14 @@ _end:
 /* go to the previous anchor */
 void _prevA(int visited)
 {
-    HmarkerList *hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
+    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     BufferPoint *po;
     int i, x, y, n = searchKeyNum();
     ParsedURL url;
 
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
-    if (!hl || hl->nmark == 0)
+    if (hl.empty())
         return;
 
     auto an = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
@@ -1441,7 +1441,7 @@ void _prevA(int visited)
 
     if (visited == TRUE)
     {
-        n = hl->nmark;
+        n = hl.size();
     }
 
     for (i = 0; i < n; i++)
@@ -1459,7 +1459,7 @@ void _prevA(int visited)
                     an = pan;
                     goto _end;
                 }
-                po = hl->marks + hseq;
+                po = &hl[hseq];
                 an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
                     an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);
@@ -1504,7 +1504,7 @@ void _prevA(int visited)
 _end:
     if (an == NULL || an->hseq < 0)
         return;
-    po = hl->marks + an->hseq;
+    po = &hl[an->hseq];
     gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
@@ -1553,13 +1553,13 @@ void set_check_target(int check)
 /* go to the next left/right anchor */
 void nextX(int d, int dy)
 {
-    HmarkerList *hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
+    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     Line *l;
     int i, x, y, n = searchKeyNum();
 
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
-    if (!hl || hl->nmark == 0)
+    if (hl.empty())
         return;
 
     auto an = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
@@ -1611,13 +1611,13 @@ void nextX(int d, int dy)
 /* go to the next downward/upward anchor */
 void nextY(int d)
 {
-    HmarkerList *hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
+    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     int i, x, y, n = searchKeyNum();
     int hseq;
 
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
-    if (!hl || hl->nmark == 0)
+    if (hl.empty())
         return;
 
     auto an = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
@@ -1766,12 +1766,12 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
     Anchor *a;
     BufferPoint *po;
 
-    if (!GetCurrentTab()->GetCurrentBuffer()->href || !GetCurrentTab()->GetCurrentBuffer()->hmarklist)
+    if (!GetCurrentTab()->GetCurrentBuffer()->href || GetCurrentTab()->GetCurrentBuffer()->hmarklist.empty())
         return;
     a = menu_func(GetCurrentTab()->GetCurrentBuffer());
     if (!a || a->hseq < 0)
         return;
-    po = &GetCurrentTab()->GetCurrentBuffer()->hmarklist->marks[a->hseq];
+    po = &GetCurrentTab()->GetCurrentBuffer()->hmarklist[a->hseq];
     gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());

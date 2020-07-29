@@ -1469,19 +1469,17 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     parsedtag_get_value(tag, ATTR_ACCESSKEY, &t);
                     parsedtag_get_value(tag, ATTR_HSEQ, &hseq);
                     if (hseq > 0)
-                        buf->hmarklist =
-                            putHmarker(buf->hmarklist, currentLn(buf),
-                                       pos, hseq - 1);
+                        buf->putHmarker(currentLn(buf), pos, hseq - 1);
                     else if (hseq < 0)
                     {
                         int h = -hseq - 1;
-                        if (buf->hmarklist &&
-                            h < buf->hmarklist->nmark &&
-                            buf->hmarklist->marks[h].invalid)
+                        if (buf->hmarklist.size() &&
+                            h < buf->hmarklist.size() &&
+                            buf->hmarklist[h].invalid)
                         {
-                            buf->hmarklist->marks[h].pos = pos;
-                            buf->hmarklist->marks[h].line = currentLn(buf);
-                            buf->hmarklist->marks[h].invalid = 0;
+                            buf->hmarklist[h].pos = pos;
+                            buf->hmarklist[h].line = currentLn(buf);
+                            buf->hmarklist[h].invalid = 0;
                             hseq = -hseq;
                         }
                     }
@@ -1510,9 +1508,9 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         a_href->end.pos = pos;
                         if (a_href->start == a_href->end)
                         {
-                            if (buf->hmarklist &&
-                                a_href->hseq < buf->hmarklist->nmark)
-                                buf->hmarklist->marks[a_href->hseq].invalid = 1;
+                            if (buf->hmarklist.size() &&
+                                a_href->hseq < buf->hmarklist.size())
+                                buf->hmarklist[a_href->hseq].invalid = 1;
                             a_href->hseq = -1;
                         }
                         a_href = NULL;
@@ -1526,7 +1524,6 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 case HTML_IMG_ALT:
                     if (parsedtag_get_value(tag, ATTR_SRC, &p))
                     {
-#ifdef USE_IMAGE
                         int w = -1, h = -1, iseq = 0, ismap = 0;
                         int xoffset = 0, yoffset = 0, top = 0, bottom = 0;
                         parsedtag_get_value(tag, ATTR_HSEQ, &iseq);
@@ -1542,11 +1539,9 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         parsedtag_get_value(tag, ATTR_USEMAP, &q);
                         if (iseq > 0)
                         {
-                            buf->imarklist = putHmarker(buf->imarklist,
-                                                        currentLn(buf), pos,
-                                                        iseq - 1);
+                            buf->putHmarker(currentLn(buf), pos, iseq - 1);
                         }
-#endif
+
                         s = NULL;
                         parsedtag_get_value(tag, ATTR_TITLE, &s);
                         p = url_quote_conv(remove_space(p),
@@ -1589,7 +1584,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         }
                         else if (iseq < 0)
                         {
-                            BufferPoint *po = buf->imarklist->marks - iseq - 1;
+                            BufferPoint *po = &buf->imarklist[-iseq - 1];
                             auto a = buf->img.RetrieveAnchor(po->line, po->pos);
                             if (a)
                             {
@@ -1633,9 +1628,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         int hpos = pos;
                         if (*str == '[')
                             hpos++;
-                        buf->hmarklist =
-                            putHmarker(buf->hmarklist, currentLn(buf),
-                                       hpos, hseq - 1);
+                        buf->putHmarker(currentLn(buf), hpos, hseq - 1);
                     }
                     if (!form->target)
                         form->target = buf->baseTarget;
