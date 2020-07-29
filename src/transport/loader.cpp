@@ -725,9 +725,8 @@ loadGeneralFile(char *path, const ParsedURL *_current, char *referer,
     URLOption url_option;
     Str tmp;
     Str page = NULL;
-#ifdef USE_M17N
     wc_ces charset = WC_CES_US_ASCII;
-#endif
+
     HRequest hr(referer, request);
     ParsedURL *auth_pu;
 
