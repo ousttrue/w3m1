@@ -13,6 +13,7 @@
 #include "html/anchor.h"
 #include "transport/url.h"
 #include "transport/loader.h"
+#include "mime/mimetypes.h"
 #include <assert.h>
 
 static int REV_LB[MAX_LB] = {

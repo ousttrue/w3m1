@@ -14,6 +14,7 @@
 #include "frontend/mouse.h"
 #include "frontend/buffer.h"
 #include "html/anchor.h"
+#include "mime/mimetypes.h"
 #include <string_view>
 #include <signal.h>
 #include <math.h>

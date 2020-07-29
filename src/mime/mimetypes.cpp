@@ -165,3 +165,16 @@ const char *guessContentType(std::string_view filename)
 
     return guessContentTypeFromTable(DefaultGuess, filename);
 }
+
+bool is_html_type(std::string_view type)
+{
+    return type == "text/html" || type == "application/xhtml+xml";
+}
+
+bool is_text_type(std::string_view type)
+{
+    return type.empty() ||
+            type.starts_with("text/") ||
+            (type.starts_with("application/") && type.find("xhtml") != std::string::npos) ||
+            type.starts_with("message/");
+}

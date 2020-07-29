@@ -138,14 +138,6 @@ int is_dump_text_type(const char *type)
             (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)));
 }
 
-int is_text_type(const char *type)
-{
-    return (type == NULL || type[0] == '\0' ||
-            strncasecmp(type, "text/", 5) == 0 ||
-            (strncasecmp(type, "application/", 12) == 0 &&
-             strstr(type, "xhtml") != NULL) ||
-            strncasecmp(type, "message/", sizeof("message/") - 1) == 0);
-}
 
 int is_plain_text_type(const char *type)
 {
@@ -153,10 +145,6 @@ int is_plain_text_type(const char *type)
             (is_text_type(type) && !is_dump_text_type(type)));
 }
 
-int is_html_type(std::string_view type)
-{
-    return type == "text/html" || type == "application/xhtml+xml";
-}
 
 int setModtime(char *path, time_t modtime)
 {
