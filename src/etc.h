@@ -11,7 +11,7 @@ int next_status(char c, int *status);
 int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode);
 char *file_to_url(char *file);
 
-MySignalHandler mySignal(int signal_number, MySignalHandler action);
+
 #define TRAP_ON                                \
     if (TrapSignal)                            \
     {                                          \

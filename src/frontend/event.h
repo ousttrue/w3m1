@@ -18,6 +18,9 @@ struct AlarmEvent
     void *data;
 };
 
+// typedef RETSIGTYPE MySignalHandler;
+using MySignalHandler = void (*)(int);
+MySignalHandler mySignal(int signal_number, MySignalHandler action);
 AlarmEvent *DefaultAlarm();
 AlarmEvent *CurrentAlarm();
 void SetCurrentAlarm(AlarmEvent *);

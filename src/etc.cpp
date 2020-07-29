@@ -1772,11 +1772,10 @@ FQDN(char *host)
 
 #endif /* USE_COOKIE */
 
-void (*mySignal(int signal_number, void (*action)(int)))(int)
+MySignalHandler mySignal(int signal_number, MySignalHandler action)
 {
 #ifdef SA_RESTART
-    struct sigaction new_action, old_action;
-
+    struct sigaction new_action;
     sigemptyset(&new_action.sa_mask);
     new_action.sa_handler = action;
     if (signal_number == SIGALRM)
@@ -1791,8 +1790,11 @@ void (*mySignal(int signal_number, void (*action)(int)))(int)
     {
         new_action.sa_flags = SA_RESTART;
     }
+
+    struct sigaction old_action;
     sigaction(signal_number, &new_action, &old_action);
     return (old_action.sa_handler);
+    
 #else
     return (signal(signal_number, action));
 #endif

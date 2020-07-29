@@ -292,8 +292,10 @@ ParsedURL *Buffer::BaseURL()
 
 void Buffer::putHmarker(int line, int pos, int seq)
 {
-    if (seq + 1 > hmarklist.size())
+    if ((seq + 1) >= hmarklist.size())
+    {
         hmarklist.resize(seq + 1);
+    }
     hmarklist[seq].line = line;
     hmarklist[seq].pos = pos;
     hmarklist[seq].invalid = 0;

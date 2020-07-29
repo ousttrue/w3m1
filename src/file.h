@@ -1,12 +1,10 @@
 #pragma once
 #include "types.h"
 #include "frontend/buffer.h"
+#include "frontend/event.h"
 
 struct HRequest;
 struct Hist;
-
-
-
 
 char *guess_save_name(BufferPtr buf, std::string_view file);
 void examineFile(char *path, URLFile *uf);
