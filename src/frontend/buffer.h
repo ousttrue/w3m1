@@ -66,8 +66,12 @@ public:
     BufferPtr linkBuffer[MAX_LB];
     short width;
     short height;
-    char *type;
-    const char *real_type;
+
+    // mimetype: text/plain
+    std::string type;
+    std::string real_type;
+
+public:
     int allLine;
     short bufferprop;
     int currentColumn;

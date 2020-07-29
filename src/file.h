@@ -11,7 +11,8 @@ struct Hist;
 char *guess_save_name(BufferPtr buf, std::string_view file);
 void examineFile(char *path, URLFile *uf);
 
-int is_html_type(const char *type);
+int is_html_type(std::string_view type);
+
 Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_charset);
 char *guess_filename(std::string_view file);
 int is_boundary(unsigned char *, unsigned char *);

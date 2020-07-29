@@ -297,7 +297,7 @@ void pipeBuf()
                                   conv_from_system(cmd))
                               ->ptr;
         buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-        if (buf->type == NULL)
+        if (buf->type.empty())
             buf->type = "text/plain";
         buf->currentURL.file = "-";
         GetCurrentTab()->PushBufferCurrentPrev(buf);
@@ -332,7 +332,7 @@ void pipesh()
     else
     {
         buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-        if (buf->type == NULL)
+        if (buf->type.empty())
             buf->type = "text/plain";
         GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
@@ -371,7 +371,7 @@ void readsh()
     else
     {
         buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-        if (buf->type == NULL)
+        if (buf->type.empty())
             buf->type = "text/plain";
         GetCurrentTab()->PushBufferCurrentPrev(buf);
     }
@@ -703,8 +703,8 @@ void editBf()
 {
     const char *fn = GetCurrentTab()->GetCurrentBuffer()->filename.c_str();
     Str cmd;
-    if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                                              /* Behaving as a pager */
-        (GetCurrentTab()->GetCurrentBuffer()->type == NULL && GetCurrentTab()->GetCurrentBuffer()->edit == NULL) ||                            /* Reading shell */
+    if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                                       /* Behaving as a pager */
+        (GetCurrentTab()->GetCurrentBuffer()->type.empty() && GetCurrentTab()->GetCurrentBuffer()->edit == NULL) ||                     /* Reading shell */
         GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentTab()->GetCurrentBuffer()->currentURL.file == "-" || /* file is std input  */
         GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
     { /* Frame */
@@ -712,8 +712,11 @@ void editBf()
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->edit)
-        cmd = unquote_mailcap(GetCurrentTab()->GetCurrentBuffer()->edit, GetCurrentTab()->GetCurrentBuffer()->real_type, const_cast<char*>(fn),
-                              checkHeader(GetCurrentTab()->GetCurrentBuffer(), "Content-Type:"), NULL);
+        cmd = unquote_mailcap(
+            GetCurrentTab()->GetCurrentBuffer()->edit,
+            GetCurrentTab()->GetCurrentBuffer()->real_type.c_str(),
+            const_cast<char *>(fn),
+            checkHeader(GetCurrentTab()->GetCurrentBuffer(), "Content-Type:"), NULL);
     else
         cmd = myEditor(Editor, shell_quote(fn),
                        cur_real_linenumber(GetCurrentTab()->GetCurrentBuffer()));
@@ -1519,7 +1522,7 @@ void curURL()
 void vwSrc()
 {
     BufferPtr buf;
-    if (GetCurrentTab()->GetCurrentBuffer()->type == NULL || GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
+    if (GetCurrentTab()->GetCurrentBuffer()->type.empty() || GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
         return;
     if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_SOURCE]) != NULL ||
         (buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_SOURCE]) != NULL)
@@ -1531,25 +1534,23 @@ void vwSrc()
     if (GetCurrentTab()->GetCurrentBuffer()->sourcefile == NULL)
     {
         if (GetCurrentTab()->GetCurrentBuffer()->pagerSource &&
-            !strcasecmp(GetCurrentTab()->GetCurrentBuffer()->type, "text/plain"))
+            GetCurrentTab()->GetCurrentBuffer()->type == "text/plain")
         {
-#ifdef USE_M17N
             wc_ces old_charset;
             wc_bool old_fix_width_conv;
-#endif
-            FILE *f;
+
             Str tmpf = tmpfname(TMPF_SRC, NULL);
-            f = fopen(tmpf->ptr, "w");
+            auto f = fopen(tmpf->ptr, "w");
             if (f == NULL)
                 return;
-#ifdef USE_M17N
+
             old_charset = DisplayCharset;
             old_fix_width_conv = WcOption.fix_width_conv;
             DisplayCharset = (GetCurrentTab()->GetCurrentBuffer()->document_charset != WC_CES_US_ASCII)
                                  ? GetCurrentTab()->GetCurrentBuffer()->document_charset
                                  : 0;
             WcOption.fix_width_conv = WC_FALSE;
-#endif
+
             saveBufferBody(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
 #ifdef USE_M17N
             DisplayCharset = old_charset;
@@ -1564,11 +1565,10 @@ void vwSrc()
         }
     }
     buf = newBuffer(INIT_BUFFER_WIDTH);
-    if (is_html_type(GetCurrentTab()->GetCurrentBuffer()->type))
+    if (is_html_type(GetCurrentTab()->GetCurrentBuffer()->type.c_str()))
     {
         buf->type = "text/plain";
-        if (GetCurrentTab()->GetCurrentBuffer()->real_type &&
-            is_html_type(GetCurrentTab()->GetCurrentBuffer()->real_type))
+        if (is_html_type(GetCurrentTab()->GetCurrentBuffer()->real_type))
             buf->real_type = "text/plain";
         else
             buf->real_type = GetCurrentTab()->GetCurrentBuffer()->real_type;
@@ -1576,11 +1576,10 @@ void vwSrc()
         buf->linkBuffer[LB_N_SOURCE] = GetCurrentTab()->GetCurrentBuffer();
         GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_SOURCE] = buf;
     }
-    else if (!strcasecmp(GetCurrentTab()->GetCurrentBuffer()->type, "text/plain"))
+    else if (GetCurrentTab()->GetCurrentBuffer()->type == "text/plain")
     {
         buf->type = "text/html";
-        if (GetCurrentTab()->GetCurrentBuffer()->real_type &&
-            !strcasecmp(GetCurrentTab()->GetCurrentBuffer()->real_type, "text/plain"))
+        if (GetCurrentTab()->GetCurrentBuffer()->real_type == "text/plain")
             buf->real_type = "text/html";
         else
             buf->real_type = GetCurrentTab()->GetCurrentBuffer()->real_type;
@@ -1706,7 +1705,7 @@ void reload()
         DocumentCharset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
 #endif
     SearchHeader = GetCurrentTab()->GetCurrentBuffer()->search_header;
-    DefaultType = GetCurrentTab()->GetCurrentBuffer()->real_type;
+    DefaultType = Strnew(GetCurrentTab()->GetCurrentBuffer()->real_type)->ptr;
     buf = loadGeneralFile(url->ptr, NULL, NO_REFERER, RG_NOCACHE, request);
 #ifdef USE_M17N
     DocumentCharset = old_charset;
@@ -1729,11 +1728,11 @@ void reload()
     if (fbuf != NULL)
         GetCurrentTab()->DeleteBuffer(fbuf);
     repBuffer(GetCurrentTab()->GetCurrentBuffer(), buf);
-    if ((buf->type != NULL) && (sbuf->type != NULL) &&
-        ((!strcasecmp(buf->type, "text/plain") &&
+    if ((buf->type.size()) && (sbuf->type.size()) &&
+        ((buf->type == "text/plain" &&
           is_html_type(sbuf->type)) ||
          (is_html_type(buf->type) &&
-          !strcasecmp(sbuf->type, "text/plain"))))
+          sbuf->type == "text/plain")))
     {
         vwSrc();
         if (GetCurrentTab()->GetCurrentBuffer() != buf)

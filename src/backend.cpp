@@ -121,7 +121,7 @@ internal_get(char *url, int flag, FormList *request)
 		}
 		else
 		{
-			if (!strcasecmp(buf->type, "text/plain"))
+			if (buf->type == "text/plain")
 			{
 				Line *lp;
 				int len = 0;

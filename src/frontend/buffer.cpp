@@ -69,7 +69,7 @@ Buffer::~Buffer()
     if (pagerSource)
         ISclose(pagerSource);
     if (sourcefile &&
-        (!real_type || strncasecmp(real_type, "image/", 6)))
+        (real_type.empty() || real_type.starts_with("image/")))
     {
         if (real_scheme != SCM_LOCAL || bufferprop & BP_FRAME)
             unlink(sourcefile);
@@ -612,10 +612,8 @@ void set_buffer_environ(BufferPtr buf)
         set_environ("W3M_FILENAME", buf->filename);
         set_environ("W3M_TITLE", buf->buffername.c_str());
         set_environ("W3M_URL", buf->currentURL.ToStr()->ptr);
-        set_environ("W3M_TYPE", (char *)(buf->real_type ? buf->real_type : "unknown"));
-#ifdef USE_M17N
+        set_environ("W3M_TYPE", buf->real_type.size() ? buf->real_type : "unknown");
         set_environ("W3M_CHARSET", wc_ces_to_charset(buf->document_charset));
-#endif
     }
     l = buf->currentLine;
     if (l && (buf != prev_buf || l != prev_line || buf->pos != prev_pos))

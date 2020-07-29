@@ -474,7 +474,7 @@ void loadImage(BufferPtr buf, int flag)
             setup_child(FALSE, 0, -1);
             image_source = cache->file;
             b = loadGeneralFile(cache->url, cache->current, NULL, 0, NULL);
-            if (!b || !b->real_type || strncasecmp(b->real_type, "image/", 6))
+            if (!b || b->real_type.empty() || !b->real_type.starts_with("image/"))
                 unlink(cache->file);
 #if defined(HAVE_SYMLINK) && defined(HAVE_LSTAT)
             symlink(cache->file, cache->touch);

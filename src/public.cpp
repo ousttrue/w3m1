@@ -1956,7 +1956,7 @@ void execdict(char *word)
     {
         buf->filename = w;
         buf->buffername = Sprintf("%s %s", DICTBUFFERNAME, word)->ptr;
-        if (buf->type == NULL)
+        if (buf->type.empty())
             buf->type = "text/plain";
         GetCurrentTab()->PushBufferCurrentPrev(buf);
     }

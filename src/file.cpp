@@ -153,10 +153,9 @@ int is_plain_text_type(const char *type)
             (is_text_type(type) && !is_dump_text_type(type)));
 }
 
-int is_html_type(const char *type)
+int is_html_type(std::string_view type)
 {
-    return (type && (strcasecmp(type, "text/html") == 0 ||
-                     strcasecmp(type, "application/xhtml+xml") == 0));
+    return type == "text/html" || type == "application/xhtml+xml";
 }
 
 int setModtime(char *path, time_t modtime)
@@ -308,7 +307,6 @@ same_url_p(ParsedURL *pu1, ParsedURL *pu2)
             (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) &&
             (pu1->file.size() ? pu2->file.size() ? pu1->file == pu2->file : 0 : 1));
 }
-
 
 #define TAG_IS(s, tag, len) \
     (strncasecmp(s, tag, len) == 0 && (s[len] == '>' || IS_SPACE((int)s[len])))
@@ -596,7 +594,7 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
 }
 
 static const char *_size_unit[] = {"b", "kb", "Mb", "Gb", "Tb",
-                             "Pb", "Eb", "Zb", "Bb", "Yb", NULL};
+                                   "Pb", "Eb", "Zb", "Bb", "Yb", NULL};
 
 char *
 convert_size(clen_t size, int usefloat)
@@ -730,7 +728,6 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
     }
 }
 
-
 #ifdef USE_GOPHER
 
 /* 
@@ -830,7 +827,6 @@ gopher_end:
     return tmp;
 }
 #endif /* USE_GOPHER */
-
 
 #ifdef USE_IMAGE
 BufferPtr
@@ -1265,7 +1261,6 @@ pager_end:
     return last;
 }
 
-
 int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf)
 {
@@ -1385,15 +1380,12 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
     return 1;
 }
 
-
-
 int doFileMove(char *tmpf, char *defstr)
 {
     int ret = doFileCopy(tmpf, defstr);
     unlink(tmpf);
     return ret;
 }
-
 
 int checkSaveFile(InputStream *stream, char *path2)
 {
@@ -1445,7 +1437,6 @@ inputAnswer(const char *prompt)
     }
     return ans;
 }
-
 
 #if 0
 void
