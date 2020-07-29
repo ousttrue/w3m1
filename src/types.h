@@ -66,14 +66,6 @@ struct Image
     ImageCache *cache;
 };
 
-
-struct HmarkerList
-{
-    BufferPoint *marks;
-    int nmark;
-    int markmax;
-};
-
 struct FormSelectOptionItem
 {
     Str value;

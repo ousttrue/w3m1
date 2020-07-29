@@ -10,7 +10,12 @@ struct LinkList;
 struct FormList;
 struct FormItemList;
 struct MapList;
-struct HmarkerList;
+struct HmarkerList
+{
+    BufferPoint *marks;
+    int nmark;
+    int markmax;
+};
 struct AlarmEvent;
 struct TextList;
 
