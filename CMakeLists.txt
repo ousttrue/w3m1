@@ -102,7 +102,7 @@ PRIVATE
     src/html/parsetag.cpp
     src/html/parsetagx.cpp
     src/html/frame.cpp
-    src/html/map.cpp
+    src/html/maparea.cpp
     src/html/image.cpp
     src/backend.cpp
     src/indep.cpp

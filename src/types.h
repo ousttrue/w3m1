@@ -17,12 +17,6 @@
 #include "frontend/line.h"
 
 
-struct MapList
-{
-    Str name;
-    GeneralList *area;
-    MapList *next;
-};
 
 #define LINK_TYPE_NONE 0
 #define LINK_TYPE_REL 1
@@ -83,16 +77,4 @@ struct AlarmEvent
     short status;
     Command cmd;
     void *data;
-};
-
-struct MapArea
-{
-    char *url;
-    char *target;
-    char *alt;
-    char shape;
-    short *coords;
-    int ncoords;
-    short center_x;
-    short center_y;
 };

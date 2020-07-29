@@ -7,7 +7,7 @@
 #include "frontend/terms.h"
 #include "file.h"
 #include "symbol.h"
-#include "html/map.h"
+#include "html/maparea.h"
 #include "etc.h"
 #include "frontend/display.h"
 #include "ctrlcode.h"

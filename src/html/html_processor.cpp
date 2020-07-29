@@ -14,6 +14,7 @@
 #include "frame.h"
 #include "public.h"
 #include "commands.h"
+#include "html/maparea.h"
 
 #include "frontend/terms.h"
 #include <signal.h>

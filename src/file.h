@@ -133,15 +133,7 @@ void do_internal(char *action, char *data);
 void form_write_data(FILE *f, char *boundary, char *name, char *value);
 void form_write_from_file(FILE *f, char *boundary, char *name,
                           char *filename, char *file);
-MapList *searchMapList(BufferPtr buf, char *name);
-#ifndef MENU_MAP
-BufferPtr follow_map_panel(BufferPtr buf, char *name);
-#endif
 int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y);
-MapArea *retrieveCurrentMapArea(BufferPtr buf);
-
-MapArea *newMapArea(char *url, char *target, char *alt, char *shape,
-                    char *coords);
 BufferPtr page_info_panel(BufferPtr buf);
 struct frame_body *newFrame(struct parsed_tag *tag, BufferPtr buf);
 struct frameset *newFrameSet(struct parsed_tag *tag);

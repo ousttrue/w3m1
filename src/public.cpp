@@ -21,7 +21,7 @@
 #include "ctrlcode.h"
 #include "frontend/mouse.h"
 #include "html/anchor.h"
-#include "html/map.h"
+#include "html/maparea.h"
 #include "frontend/buffer.h"
 #include "entity.h"
 #include "transport/loader.h"

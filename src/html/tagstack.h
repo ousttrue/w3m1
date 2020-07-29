@@ -10,13 +10,6 @@
 
 #define HR_SYMBOL 26
 
-
-
-
-
-
-
-
 struct environment
 {
     unsigned char env;

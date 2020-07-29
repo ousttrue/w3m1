@@ -8,7 +8,7 @@
 #include "html/anchor.h"
 #include "public.h"
 #include "symbol.h"
-#include "html/map.h"
+#include "html/maparea.h"
 #include "frontend/display.h"
 #include "myctype.h"
 #include "html/html.h"
