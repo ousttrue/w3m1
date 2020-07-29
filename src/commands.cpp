@@ -1,6 +1,5 @@
-
 #include "commands.h"
-
+#include "dispatcher.h"
 #include "fm.h"
 #include "indep.h"
 #include "etc.h"
@@ -24,6 +23,7 @@
 #include "html/anchor.h"
 #include "transport/loader.h"
 #include "mime/mailcap.h"
+#include "frontend/event.h"
 #include <signal.h>
 
 void nulcmd()
@@ -2090,11 +2090,8 @@ void execCmd()
 
 void setAlarm()
 {
-    char *data;
-    int sec = 0;
-    Command cmd = nullptr;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    data = searchKeyData();
+    auto data = searchKeyData();
     if (data == NULL || *data == '\0')
     {
         data = inputStrHist("(Alarm)sec command: ", "", TextHist);
@@ -2104,12 +2101,16 @@ void setAlarm()
             return;
         }
     }
+
+    int sec = 0;
+    Command cmd = nullptr;
     if (*data != '\0')
     {
         sec = atoi(getWord(&data));
         if (sec > 0)
             cmd = getFuncList(getWord(&data));
     }
+
     if (cmd)
     {
         data = getQWord(&data);

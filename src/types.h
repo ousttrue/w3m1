@@ -69,12 +69,3 @@ struct FormSelectOptionItem
 };
 
 
-using Command = void (*)();
-
-struct AlarmEvent
-{
-    int sec;
-    short status;
-    Command cmd;
-    void *data;
-};

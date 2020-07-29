@@ -78,6 +78,7 @@ PRIVATE
     src/frontend/terms.cpp
     src/frontend/mouse.cpp
     src/frontend/keybind.cpp
+    src/frontend/event.cpp
     src/file.cpp
     src/transport/istream.cpp
     src/transport/loader.cpp

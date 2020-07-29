@@ -1,10 +1,6 @@
 #pragma once
 #include "types.h"
-
-#define AL_UNSET 0
-#define AL_EXPLICIT 1
-#define AL_IMPLICIT 2
-#define AL_IMPLICIT_ONCE 3
+#include "frontend/event.h"
 
 int prec_num();
 void set_prec_num(int n);
