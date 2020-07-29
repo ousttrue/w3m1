@@ -9,6 +9,7 @@
 #include "file.h"
 #include "public.h"
 #include "frontend/terms.h"
+#include "html/form.h"
 #include "ctrlcode.h"
 
 

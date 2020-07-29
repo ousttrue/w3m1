@@ -41,6 +41,41 @@ enum FormEncodingTypes
     FORM_ENCTYPE_MULTIPART = 1,
 };
 
+struct FormItemList
+{
+    int type;
+    Str name;
+    Str value, init_value;
+    int checked, init_checked;
+    int accept;
+    int size;
+    int rows;
+    int maxlength;
+    int readonly;
+    FormSelectOptionItem *select_option;
+    Str label, init_label;
+    int selected, init_selected;
+    struct FormList *parent;
+    FormItemList *next;
+};
+
+struct FormList
+{
+    FormItemList *item;
+    FormItemList *lastitem;
+    int method;
+    Str action;
+    char *target;
+    char *name;
+    wc_ces charset;
+    int enctype;
+    FormList *next;
+    int nitems;
+    char *body;
+    char *boundary;
+    unsigned long length;
+};
+
 #define MAX_TEXTAREA 10 /* max number of <textarea>..</textarea> \
                          * within one document */
 #ifdef MENU_SELECT
