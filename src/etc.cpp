@@ -294,10 +294,9 @@ long lrand48(void)
 }
 #endif
 
-char *
-mybasename(const char *s)
+char *mybasename(std::string_view s)
 {
-    const char *p = s;
+    const char *p = s.data();
     while (*p)
         p++;
     while (s <= p && *p != '/')
@@ -305,7 +304,7 @@ mybasename(const char *s)
     if (*p == '/')
         p++;
     else
-        p = s;
+        p = s.data();
     return allocStr(p, -1);
 }
 

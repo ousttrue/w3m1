@@ -131,14 +131,11 @@ ParsedURL *GetCurBaseUrl()
     return &g_cur_baseURL;
 }
 
-
-
 int is_plain_text_type(const char *type)
 {
     return ((type && strcasecmp(type, "text/plain") == 0) ||
             (is_text_type(type) && !is_dump_text_type(type)));
 }
-
 
 int setModtime(char *path, time_t modtime)
 {
@@ -1243,7 +1240,6 @@ pager_end:
     return last;
 }
 
-
 int doFileMove(char *tmpf, char *defstr)
 {
     int ret = doFileCopy(tmpf, defstr);
@@ -1304,13 +1300,13 @@ inputAnswer(const char *prompt)
 
 char *guess_filename(std::string_view file)
 {
-    char *p = NULL, *s;
-
-    if (file.size())
-        p = mybasename(file.data());
-    if (p == NULL || *p == '\0')
+    if (file.empty())
+    {
         return DEF_SAVE_FILE;
-    s = p;
+    }
+
+    auto p = mybasename(file.data());
+    auto s = p;
     if (*p == '#')
         p++;
     while (*p != '\0')
