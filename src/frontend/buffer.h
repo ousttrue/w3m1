@@ -12,6 +12,7 @@ struct FormItemList;
 struct MapList;
 struct AlarmEvent;
 struct TextList;
+struct Mailcap;
 
 enum LinkBufferTypes
 {
@@ -111,7 +112,7 @@ public:
     FormItemList *form_submit;
     char *savecache;
     char *edit;
-    struct mailcap *mailcap;
+    Mailcap *mailcap;
     char *mailcap_source;
     char *header_source;
     char search_header;

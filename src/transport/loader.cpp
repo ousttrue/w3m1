@@ -14,6 +14,7 @@
 #include "html/image.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
+#include "mime/mailcap.h"
 
 #include <assert.h>
 #include <memory>

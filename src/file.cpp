@@ -99,7 +99,7 @@ lessopen_stream(char *path)
     return fp;
 }
 
-static BufferPtr
+BufferPtr
 loadcmdout(char *cmd,
            BufferPtr (*loadproc)(URLFile *, BufferPtr), BufferPtr defaultbuf)
 {
@@ -131,12 +131,6 @@ ParsedURL *GetCurBaseUrl()
     return &g_cur_baseURL;
 }
 
-int is_dump_text_type(const char *type)
-{
-    struct mailcap *mcap;
-    return (type && (mcap = searchExtViewer(type)) &&
-            (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)));
-}
 
 
 int is_plain_text_type(const char *type)
@@ -1249,124 +1243,6 @@ pager_end:
     return last;
 }
 
-int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
-               BufferPtr defaultbuf)
-{
-    Str tmpf, command;
-    struct mailcap *mcap;
-    int mc_stat;
-    BufferPtr buf = NULL;
-    char *header, *src = NULL;
-    auto ext = uf.ext;
-
-    if (!(mcap = searchExtViewer(type)))
-        return 0;
-
-    if (mcap->nametemplate)
-    {
-        tmpf = unquote_mailcap(mcap->nametemplate, NULL, "", NULL, NULL);
-        if (tmpf->ptr[0] == '.')
-            ext = tmpf->ptr;
-    }
-    tmpf = tmpfname(TMPF_DFL, (ext && *ext) ? ext : NULL);
-
-    if (IStype(uf.stream) != IST_ENCODED)
-        uf.stream = newEncodedStream(uf.stream, uf.encoding);
-    header = checkHeader(defaultbuf, "Content-Type:");
-    if (header)
-        header = conv_to_system(header);
-    command = unquote_mailcap(mcap->viewer, type, tmpf->ptr, header, &mc_stat);
-#ifndef __EMX__
-    if (!(mc_stat & MCSTAT_REPNAME))
-    {
-        Str tmp = Sprintf("(%s) < %s", command->ptr, shell_quote(tmpf->ptr));
-        command = tmp;
-    }
-#endif
-
-#ifdef HAVE_SETPGRP
-    if (!(mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)) &&
-        !(mcap->flags & MAILCAP_NEEDSTERMINAL) && BackgroundExtViewer)
-    {
-        flush_tty();
-        if (!fork())
-        {
-            setup_child(FALSE, 0, uf.FileNo());
-            if (save2tmp(uf, tmpf->ptr) < 0)
-                exit(1);
-            uf.Close();
-            myExec(command->ptr);
-        }
-        *bufp = nullptr;
-        return 1;
-    }
-    else
-#endif
-    {
-        if (save2tmp(uf, tmpf->ptr) < 0)
-        {
-            *bufp = NULL;
-            return 1;
-        }
-    }
-    if (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT))
-    {
-        if (defaultbuf == NULL)
-            defaultbuf = newBuffer(INIT_BUFFER_WIDTH);
-        if (defaultbuf->sourcefile)
-            src = defaultbuf->sourcefile;
-        else
-            src = tmpf->ptr;
-        defaultbuf->sourcefile = NULL;
-        defaultbuf->mailcap = mcap;
-    }
-    if (mcap->flags & MAILCAP_HTMLOUTPUT)
-    {
-        buf = loadcmdout(command->ptr, loadHTMLBuffer, defaultbuf);
-        if (buf)
-        {
-            buf->type = "text/html";
-            buf->mailcap_source = buf->sourcefile;
-            buf->sourcefile = src;
-        }
-    }
-    else if (mcap->flags & MAILCAP_COPIOUSOUTPUT)
-    {
-        buf = loadcmdout(command->ptr, loadBuffer, defaultbuf);
-        if (buf)
-        {
-            buf->type = "text/plain";
-            buf->mailcap_source = buf->sourcefile;
-            buf->sourcefile = src;
-        }
-    }
-    else
-    {
-        if (mcap->flags & MAILCAP_NEEDSTERMINAL || !BackgroundExtViewer)
-        {
-            fmTerm();
-            mySystem(command->ptr, 0);
-            fmInit();
-            if (GetCurrentTab() && GetCurrentTab()->GetCurrentBuffer())
-                displayCurrentbuf(B_FORCE_REDRAW);
-        }
-        else
-        {
-            mySystem(command->ptr, 1);
-        }
-        buf = nullptr;
-    }
-    if (buf)
-    {
-        buf->filename = path;
-        if (buf->buffername.empty() || buf->buffername[0] == '\0')
-            buf->buffername = conv_from_system(lastFileName(path));
-        buf->edit = mcap->edit;
-        buf->mailcap = mcap;
-    }
-    *bufp = buf;
-    return 1;
-}
 
 int doFileMove(char *tmpf, char *defstr)
 {
@@ -1425,40 +1301,6 @@ inputAnswer(const char *prompt)
     }
     return ans;
 }
-
-#if 0
-void
-reloadBuffer(BufferPtr buf)
-{
-    URLFile uf;
-
-    if (buf->sourcefile == NULL || buf->pagerSource != NULL)
-        return;
-    init_stream(&uf, SCM_UNKNOWN, NULL);
-    examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile,
-                &uf);
-    if (uf.stream == NULL)
-        return;
-    is_redisplay = TRUE;
-    buf->allLine = 0;
-    buf->href = NULL;
-    buf->name = NULL;
-    buf->img = NULL;
-    buf->formitem = NULL;
-    buf->linklist = NULL;
-    buf->maplist = NULL;
-    if (buf->hmarklist)
-        buf->hmarklist->nmark = 0;
-    if (buf->imarklist)
-        buf->imarklist->nmark = 0;
-    if (is_html_type(buf->type))
-        loadHTMLBuffer(&uf, buf);
-    else
-        loadBuffer(&uf, buf);
-    uf.Close();
-    is_redisplay = FALSE;
-}
-#endif
 
 char *guess_filename(std::string_view file)
 {

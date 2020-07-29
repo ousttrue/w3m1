@@ -23,6 +23,7 @@
 #include "frontend/display.h"
 #include "frontend/buffer.h"
 #include "http/compression.h"
+#include "mime/mailcap.h"
 #include <stdlib.h>
 
 

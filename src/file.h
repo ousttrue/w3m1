@@ -162,13 +162,7 @@ void free_ssl_ctx();
 int openSocket(const char *hostname, const char *remoteport_name,
                unsigned short remoteport_num);
 
-int mailcapMatch(struct mailcap *mcap, const char *type);
-struct mailcap *searchMailcap(struct mailcap *table, char *type);
-void initMailcap();
 char *acceptableMimeTypes();
-struct mailcap *searchExtViewer(const char *type);
-Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr,
-                    int *mc_stat);
 int check_no_proxy(char *domain);
 InputStream *openFTPStream(ParsedURL *pu, URLFile *uf);
 Str loadFTPDir(ParsedURL *pu, wc_ces *charset);
@@ -178,7 +172,6 @@ InputStream *openNewsStream(ParsedURL *pu);
 Str loadNewsgroup(ParsedURL *pu, wc_ces *charset);
 void closeNews(void);
 void disconnectNews(void);
-
 
 BufferPtr link_list_panel(BufferPtr buf);
 
@@ -226,3 +219,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
 void SetMetaCharset(wc_ces ces);
 ParsedURL *GetCurBaseUrl();
 int setModtime(char *path, time_t modtime);
+
+BufferPtr
+loadcmdout(char *cmd,
+           BufferPtr (*loadproc)(URLFile *, BufferPtr), BufferPtr defaultbuf);

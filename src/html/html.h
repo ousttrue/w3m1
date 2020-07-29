@@ -4,21 +4,6 @@
 #include <openssl/ssl.h>
 #include "transport/istream.h"
 
-
-struct mailcap
-{
-    char *type;
-    char *viewer;
-    int flags;
-    char *test;
-    char *nametemplate;
-    char *edit;
-};
-
-#define MAILCAP_NEEDSTERMINAL 0x01
-#define MAILCAP_COPIOUSOUTPUT 0x02
-#define MAILCAP_HTMLOUTPUT 0x04
-
 #define MCSTAT_REPNAME 0x01
 #define MCSTAT_REPTYPE 0x02
 #define MCSTAT_REPPARAM 0x04
@@ -28,8 +13,6 @@ struct table2
     const char *item1;
     const char *item2;
 };
-
-
 
 #define HTML_UNKNOWN 0
 #define HTML_A 1

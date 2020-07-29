@@ -23,6 +23,7 @@
 #include "transport/local.h"
 #include "html/anchor.h"
 #include "transport/loader.h"
+#include "mime/mailcap.h"
 #include <signal.h>
 
 void nulcmd()
