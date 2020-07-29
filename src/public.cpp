@@ -451,7 +451,7 @@ void cmd_loadfile(char *fn)
 {
     BufferPtr buf;
 
-    buf = loadGeneralFile(file_to_url(fn), NULL, NO_REFERER, 0, NULL);
+    buf = loadGeneralFile(file_to_url(fn), NULL, NO_REFERER, RG_NONE, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -483,7 +483,7 @@ void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request
 #endif /* USE_NNTP */
 
     refresh();
-    buf = loadGeneralFile(url, current, referer, 0, request);
+    buf = loadGeneralFile(url, current, referer, RG_NONE, request);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -1130,10 +1130,8 @@ void bufferA(void)
 
 BufferPtr loadLink(const char *url, const char *target, const char *referer, FormList *request)
 {
-    BufferPtr buf;
     BufferPtr nfbuf;
     union frameset_element *f_element = NULL;
-    int flag = 0;
     ParsedURL *base, pu;
 
     message(Sprintf("loading %s", url)->ptr, 0, 0);
@@ -1145,7 +1143,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         referer = NO_REFERER;
     if (referer == NULL)
         referer = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr;
-    buf = loadGeneralFile(const_cast<char*>(url), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), const_cast<char*>(referer), flag, request);
+    auto buf = loadGeneralFile(const_cast<char*>(url), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), const_cast<char*>(referer), RG_NONE, request);
     if (buf == NULL)
     {
         char *emsg = Sprintf("Can't load %s", url)->ptr;
@@ -1946,7 +1944,7 @@ void execdict(char *word)
         return;
     }
     dictcmd = Sprintf("%s?%s", DictCommand, Strnew(w)->UrlEncode()->ptr)->ptr;
-    buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, 0, NULL);
+    buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, RG_NONE, NULL);
     if (buf == NULL)
     {
         disp_message("Execution failed", TRUE);

@@ -295,15 +295,15 @@ Str make_optional_header_string(char *s)
         return NULL;
     hs = Strnew_size(strlen(s) + 3);
     hs->CopyFrom(s, p - s);
-    if (hs->ICaseCmp("content-type")==0)
+    if (hs->ICaseCmp("content-type") == 0)
         override_content_type = TRUE;
-    hs->Push( ": ");
+    hs->Push(": ");
     if (*(++p))
     {                   /* not null header */
         SKIP_BLANKS(p); /* skip white spaces */
-        hs->Push( p);
+        hs->Push(p);
     }
-    hs->Push( "\r\n");
+    hs->Push("\r\n");
     return hs;
 }
 
@@ -753,7 +753,7 @@ int main(int argc, char **argv, char **envp)
                     if (header_string == NULL)
                         header_string = hs;
                     else
-                        header_string->Push( hs);
+                        header_string->Push(hs);
                 }
                 while (argv[i][0])
                 {
@@ -930,9 +930,9 @@ int main(int argc, char **argv, char **envp)
         }
         else if (load_bookmark)
         {
-            newbuf = loadGeneralFile(BookmarkFile, NULL, NO_REFERER, 0, NULL);
+            newbuf = loadGeneralFile(BookmarkFile, NULL, NO_REFERER, RG_NONE, NULL);
             if (newbuf == NULL)
-                err_msg->Push( "w3m: Can't load bookmark.\n");
+                err_msg->Push("w3m: Can't load bookmark.\n");
         }
         else if (visual_start)
         {
@@ -940,7 +940,7 @@ int main(int argc, char **argv, char **envp)
             Str s_page;
             s_page =
                 Strnew("<title>W3M startup page</title><center><b>Welcome to ");
-            s_page->Push( "<a href='http://w3m.sourceforge.net/'>");
+            s_page->Push("<a href='http://w3m.sourceforge.net/'>");
             Strcat_m_charp(s_page,
                            "w3m</a>!<p><p>This is w3m version ",
                            w3m_version,
@@ -948,16 +948,16 @@ int main(int argc, char **argv, char **envp)
                            NULL);
             newbuf = loadHTMLString(s_page);
             if (newbuf == NULL)
-                err_msg->Push( "w3m: Can't load string.\n");
+                err_msg->Push("w3m: Can't load string.\n");
             else
                 newbuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         }
         else if ((p = getenv("HTTP_HOME")) != NULL ||
                  (p = getenv("WWW_HOME")) != NULL)
         {
-            newbuf = loadGeneralFile(p, NULL, NO_REFERER, 0, NULL);
+            newbuf = loadGeneralFile(p, NULL, NO_REFERER, RG_NONE, NULL);
             if (newbuf == NULL)
-                err_msg->Push( Sprintf("w3m: Can't load %s.\n", p));
+                err_msg->Push(Sprintf("w3m: Can't load %s.\n", p));
             else
                 pushHashHist(URLHist, newbuf->currentURL.ToStr()->c_str());
         }
@@ -991,9 +991,7 @@ int main(int argc, char **argv, char **envp)
             {
                 request = New(FormList);
                 request->method = FORM_METHOD_HEAD;
-                newbuf =
-                    loadGeneralFile(load_argv[i], NULL, NO_REFERER, 0,
-                                    request);
+                newbuf = loadGeneralFile(load_argv[i], NULL, NO_REFERER, RG_NONE, request);
             }
             else
             {
@@ -1009,7 +1007,7 @@ int main(int argc, char **argv, char **envp)
                     {
                         /* FIXME: gettextize? */
                         err_msg->Push(
-                               Sprintf("w3m: Can't open %s.\n", post_file));
+                            Sprintf("w3m: Can't open %s.\n", post_file));
                         continue;
                     }
                     body = Strfgetall(fp);
@@ -1018,7 +1016,7 @@ int main(int argc, char **argv, char **envp)
                     request =
                         newFormList(NULL, "post", NULL, NULL, NULL, NULL,
                                     NULL);
-                    request->body = const_cast<char*>(body->c_str());
+                    request->body = const_cast<char *>(body->c_str());
                     request->boundary = NULL;
                     request->length = body->Size();
                 }
@@ -1026,15 +1024,13 @@ int main(int argc, char **argv, char **envp)
                 {
                     request = NULL;
                 }
-                newbuf =
-                    loadGeneralFile(load_argv[i], NULL, NO_REFERER, 0,
-                                    request);
+                newbuf = loadGeneralFile(load_argv[i], NULL, NO_REFERER, RG_NONE, request);
             }
             if (newbuf == NULL)
             {
                 /* FIXME: gettextize? */
                 err_msg->Push(
-                       Sprintf("w3m: Can't load %s.\n", load_argv[i]));
+                    Sprintf("w3m: Can't load %s.\n", load_argv[i]));
                 continue;
             }
             switch (newbuf->real_scheme)
@@ -1069,7 +1065,7 @@ int main(int argc, char **argv, char **envp)
         }
         else
         {
-            auto tab=GetCurrentTab();
+            auto tab = GetCurrentTab();
             tab->PushBufferCurrentNext(newbuf);
         }
         if (!w3m_dump || w3m_dump == DUMP_BUFFER)

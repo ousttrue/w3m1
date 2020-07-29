@@ -17,6 +17,21 @@ char *checkContentType(BufferPtr buf);
 void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu);
 
 BufferPtr loadBuffer(URLFile *uf, BufferPtr newBuf);
-BufferPtr loadGeneralFile(char *path, const ParsedURL *current, char *referer, int flag, FormList *request);
+
+enum LoadFlags
+{
+    RG_NONE = 0,
+    RG_NOCACHE = 1,
+    RG_FRAME = 2,
+    RG_FRAME_SRC = 4,
+};
+struct URLOption
+{
+    char *referer;
+    LoadFlags flag = RG_NONE;
+};
+
+BufferPtr loadGeneralFile(char *path, const ParsedURL *current, char *referer, LoadFlags flag, FormList *request);
+
 int save2tmp(URLFile uf, char *tmpf);
 int doFileCopy(const char *tmpf, const char *defstr);

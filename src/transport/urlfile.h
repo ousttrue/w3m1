@@ -19,16 +19,11 @@ enum CompressionTypes
     CMP_DEFLATE = 4,
 };
 
-struct URLOption
-{
-    char *referer;
-    int flag;
-};
-
 union InputStream;
 struct FormList;
 struct TextList;
 struct HRequest;
+struct URLOption;
 struct URLFile
 {
     SchemaTypes scheme = SCM_MISSING;

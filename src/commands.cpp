@@ -896,7 +896,7 @@ void followI()
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    buf = loadGeneralFile(const_cast<char *>(a->url.c_str()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), NULL, 0, NULL);
+    buf = loadGeneralFile(const_cast<char *>(a->url.c_str()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), NULL, RG_NONE, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */

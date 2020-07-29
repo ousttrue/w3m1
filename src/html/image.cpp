@@ -473,7 +473,7 @@ void loadImage(BufferPtr buf, int flag)
 	     */
             setup_child(FALSE, 0, -1);
             image_source = cache->file;
-            b = loadGeneralFile(cache->url, cache->current, NULL, 0, NULL);
+            b = loadGeneralFile(cache->url, cache->current, NULL, RG_NONE, NULL);
             if (!b || b->real_type.empty() || !b->real_type.starts_with("image/"))
                 unlink(cache->file);
 #if defined(HAVE_SYMLINK) && defined(HAVE_LSTAT)

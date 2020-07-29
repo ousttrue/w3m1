@@ -706,7 +706,7 @@ int doFileCopy(const char *tmpf, const char *defstr)
  */
 BufferPtr
 loadGeneralFile(char *path, const ParsedURL *_current, char *referer,
-                int flag, FormList *request)
+                LoadFlags flag, FormList *request)
 {
     ParsedURL pu;
     BufferPtr b = NULL;
@@ -770,8 +770,7 @@ load_doc:
                 {
                     Str cmd = Sprintf("%s?dir=%s#current",
                                       DirBufferCommand, pu.file);
-                    b = loadGeneralFile(cmd->ptr, NULL, NO_REFERER, 0,
-                                        NULL);
+                    b = loadGeneralFile(cmd->ptr, NULL, NO_REFERER, RG_NONE, NULL);
                     if (b != NULL)
                     {
                         b->currentURL = pu;
