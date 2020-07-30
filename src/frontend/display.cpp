@@ -908,9 +908,7 @@ redrawLineImage(BufferPtr buf, Line *l, int i)
         if (a && a->image && a->image->touch < image_touch)
         {
             Image *image = a->image;
-            ImageCache *cache;
-
-            cache = image->cache = getImage(image, buf->BaseURL(), buf->image_flag);
+            auto cache = image->cache = getImage(image, buf->BaseURL(), buf->image_flag);
             if (cache)
             {
                 if ((image->width < 0 && cache->width > 0) ||

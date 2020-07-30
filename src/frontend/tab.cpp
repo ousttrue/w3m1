@@ -9,6 +9,7 @@
 #include "commands.h"
 #include "frontend/buffer.h"
 #include "html/anchor.h"
+#include "html/image.h"
 #include "frontend/terms.h"
 #include "ctrlcode.h"
 #include <stdexcept>

@@ -9,6 +9,7 @@
 #include "html/form.h"
 #include "frontend/buffer.h"
 #include "html/maparea.h"
+#include "html/image.h"
 
 #define FIRST_ANCHOR_SIZE 30
 

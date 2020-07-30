@@ -7,6 +7,7 @@
 #include "etc.h"
 #include "ctrlcode.h"
 #include "html/anchor.h"
+#include "html/image.h"
 #include <math.h>
 
 MapList *
