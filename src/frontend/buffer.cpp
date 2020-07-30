@@ -7,6 +7,7 @@
 #include "file.h"
 #include "html/image.h"
 #include "frontend/display.h"
+#include "frontend/line.h"
 #include "html/html.h"
 #include "ctrlcode.h"
 #include "transport/local.h"
@@ -14,6 +15,7 @@
 #include "transport/url.h"
 #include "transport/loader.h"
 #include "mime/mimetypes.h"
+#include "frontend/line.h"
 #include <assert.h>
 
 static int REV_LB[MAX_LB] = {
@@ -427,8 +429,7 @@ void gotoLine(BufferPtr buf, int n)
         sprintf(msg, "Last line is #%d", buf->lastLine->linenumber);
         set_delayed_message(msg);
         buf->currentLine = l;
-        buf->topLine = lineSkip(buf, buf->currentLine, -(buf->LINES - 1),
-                                FALSE);
+        buf->topLine = lineSkip(buf, buf->currentLine, -(buf->LINES - 1), FALSE);
         return;
     }
     for (; l != NULL; l = l->next)

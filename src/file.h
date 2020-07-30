@@ -73,14 +73,8 @@ void arrangeLine(BufferPtr buf);
 void cursorXY(BufferPtr buf, int x, int y);
 void restorePosition(BufferPtr buf, BufferPtr orig);
 int columnSkip(BufferPtr buf, int offset);
-Line *lineSkip(BufferPtr buf, Line *line, int offset, int last);
-Line *currentLineSkip(BufferPtr buf, Line *line, int offset, int last);
-int gethtmlcmd(char **s);
-
 char *lastFileName(char *path);
-
 char *mydirname(const char *s);
-
 
 #ifdef USE_MIGEMO
 void init_migemo(void);

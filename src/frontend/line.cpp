@@ -1,6 +1,7 @@
 #include "fm.h"
 #include "line.h"
 #include "indep.h"
+#include "file.h"
 
 static int nextColumn(int n, char *p, Lineprop *pr)
 {
@@ -90,4 +91,47 @@ int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode)
     if (pos >= i)
         return j;
     return realColumn[pos];
+}
+
+Line *
+currentLineSkip(BufferPtr buf, Line *line, int offset, int last)
+{
+    int i, n;
+    Line *l = line;
+
+    if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
+    {
+        n = line->linenumber + offset + buf->LINES;
+        if (buf->lastLine->linenumber < n)
+            getNextPage(buf, n - buf->lastLine->linenumber);
+        while ((last || (buf->lastLine->linenumber < n)) &&
+               (getNextPage(buf, 1) != NULL))
+            ;
+        if (last)
+            l = buf->lastLine;
+    }
+
+    if (offset == 0)
+        return l;
+    if (offset > 0)
+        for (i = 0; i < offset && l->next != NULL; i++, l = l->next)
+            ;
+    else
+        for (i = 0; i < -offset && l->prev != NULL; i++, l = l->prev)
+            ;
+    return l;
+}
+
+Line *
+lineSkip(BufferPtr buf, Line *line, int offset, int last)
+{
+    int i;
+    Line *l;
+
+    l = currentLineSkip(buf, line, offset, last);
+    if (!nextpage_topline)
+        for (i = buf->LINES - 1 - (buf->lastLine->linenumber - l->linenumber);
+             i > 0 && l->prev != NULL; i--, l = l->prev)
+            ;
+    return l;
 }

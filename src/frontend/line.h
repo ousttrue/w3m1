@@ -1,4 +1,5 @@
 #pragma once
+#include "buffer.h"
 
 #define LINELEN 256          /* Initial line length */
 

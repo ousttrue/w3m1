@@ -1465,6 +1465,25 @@ void myExec(char *command)
     exit(127);
 }
 
+char *
+mydirname(const char *s)
+{
+    const char *p = s;
+    while (*p)
+        p++;
+    if (s != p)
+        p--;
+    while (s != p && *p == '/')
+        p--;
+    while (s != p && *p != '/')
+        p--;
+    if (*p != '/')
+        return ".";
+    while (s != p && *p == '/')
+        p--;
+    return allocStr(s, strlen(s) - strlen(p) + 1);
+}
+
 /* get last modified time */
 char *
 last_modified(BufferPtr buf)
@@ -1490,4 +1509,86 @@ last_modified(BufferPtr buf)
         return ctime(&st.st_mtime);
     }
     return "unknown";
+}
+
+/* FIXME: gettextize? */
+#define FILE_IS_READABLE_MSG "SECURITY NOTE: file %s must not be accessible by others"
+
+FILE *
+openSecretFile(char *fname)
+{
+    char *efname;
+    struct stat st;
+
+    if (fname == NULL)
+        return NULL;
+    efname = expandPath(fname);
+    if (stat(efname, &st) < 0)
+        return NULL;
+
+    /* check permissions, if group or others readable or writable,
+     * refuse it, because it's insecure.
+     *
+     * XXX: disable_secret_security_check will introduce some
+     *    security issues, but on some platform such as Windows
+     *    it's not possible (or feasible) to disable group|other
+     *    readable and writable.
+     *   [w3m-dev 03368][w3m-dev 03369][w3m-dev 03370]
+     */
+    if (disable_secret_security_check)
+        /* do nothing */;
+    else if ((st.st_mode & (S_IRWXG | S_IRWXO)) != 0)
+    {
+        if (fmInitialized)
+        {
+            message(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, 0, 0);
+            refresh();
+        }
+        else
+        {
+            fputs(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, stderr);
+            fputc('\n', stderr);
+        }
+        sleep(2);
+        return NULL;
+    }
+
+    return fopen(efname, "r");
+}
+
+#ifdef USE_INCLUDED_SRAND48
+static unsigned long R1 = 0x1234abcd;
+static unsigned long R2 = 0x330e;
+#define A1 0x5deec
+#define A2 0xe66d
+#define C 0xb
+
+void srand48(long seed)
+{
+    R1 = (unsigned long)seed;
+    R2 = 0x330e;
+}
+
+long lrand48(void)
+{
+    R1 = (A1 * R1 << 16) + A1 * R2 + A2 * R1 + ((A2 * R2 + C) >> 16);
+    R2 = (A2 * R2 + C) & 0xffff;
+    return (long)(R1 >> 1);
+}
+#endif
+
+char *
+lastFileName(char *path)
+{
+    char *p, *q;
+
+    p = q = path;
+    while (*p != '\0')
+    {
+        if (*p == '/')
+            q = p + 1;
+        p++;
+    }
+
+    return allocStr(q, -1);
 }

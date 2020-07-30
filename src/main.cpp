@@ -414,6 +414,33 @@ static void mainloop()
 
 #include "register_commands.h"
 
+#ifndef HAVE_SYS_ERRLIST
+char **sys_errlist;
+
+#ifndef HAVE_STRERROR
+char *
+strerror(int errno)
+{
+    extern char *sys_errlist[];
+    return sys_errlist[errno];
+}
+#endif /* not HAVE_STRERROR */
+
+prepare_sys_errlist()
+{
+    int i, n;
+
+    i = 1;
+    while (strerror(i) != NULL)
+        i++;
+    n = i;
+    sys_errlist = New_N(char *, n);
+    sys_errlist[0] = "";
+    for (i = 1; i < n; i++)
+        sys_errlist[i] = strerror(i);
+}
+#endif /* not HAVE_SYS_ERRLIST */
+
 int main(int argc, char **argv, char **envp)
 {
     BufferPtr newbuf = NULL;

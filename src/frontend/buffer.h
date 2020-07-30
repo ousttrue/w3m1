@@ -187,3 +187,5 @@ char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 void chkExternalURIBuffer(BufferPtr buf);
 TextList *make_domain_list(char *domain_list);
+Line *lineSkip(BufferPtr buf, Line *line, int offset, int last);
+Line *currentLineSkip(BufferPtr buf, Line *line, int offset, int last);
