@@ -60,12 +60,3 @@ struct Image
     ImageCache *cache;
 };
 
-struct FormSelectOptionItem
-{
-    Str value;
-    Str label;
-    int checked;
-    FormSelectOptionItem *next;
-};
-
-
