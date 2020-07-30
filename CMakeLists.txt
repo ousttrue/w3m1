@@ -106,6 +106,7 @@ PRIVATE
     src/html/maparea.cpp
     src/html/image.cpp
     src/backend.cpp
+    src/mytime.cpp
     src/indep.cpp
     src/rc.cpp
     src/Str.cpp

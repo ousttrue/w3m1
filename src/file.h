@@ -192,7 +192,7 @@ Str myEditor(char *cmd, char *file, int line);
 
 char *expandName(char *name);
 Str tmpfname(int type, const char *ext);
-time_t mymktime(char *timestr);
+
 
 int
 is_plain_text_type(const char *type);
