@@ -2,6 +2,7 @@
 #include <Str.h>
 #include <string>
 #include <string_view>
+#include <wc_types.h>
 
 enum SchemaTypes
 {
@@ -52,6 +53,7 @@ ParsedURL *schemeToProxy(int scheme);
 char *otherinfo(const ParsedURL *target, const ParsedURL *current, char *referer);
 SchemaTypes getURLScheme(char **url);
 char *mybasename(std::string_view s);
+char *url_unquote_conv(const char *url, wc_ces charset);
 
 struct SchemeKeyValue
 {
