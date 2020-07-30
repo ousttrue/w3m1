@@ -1,11 +1,9 @@
-/* $Id: form.c,v 1.35 2010/07/18 13:48:48 htrb Exp $ */
 /* 
  * HTML forms
  */
-
 #include "fm.h"
-
 #include "indep.h"
+#include "gc_helper.h"
 #include "html/form.h"
 #include "file.h"
 #include "public.h"

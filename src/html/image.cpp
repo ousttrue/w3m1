@@ -1,8 +1,7 @@
-/* $Id: image.c,v 1.37 2010/12/21 10:13:55 htrb Exp $ */
-
 #include "fm.h"
 #include "html/image.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "file.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"

@@ -1,4 +1,5 @@
 #include "fm.h"
+#include "gc_helper.h"
 #include "rc.h"
 #include "Str.h"
 #include "symbol.h"

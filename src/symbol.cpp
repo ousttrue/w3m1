@@ -1,21 +1,16 @@
-
 #include "fm.h"
-#include "indep.h"
+#include "gc_helper.h"
 #include "ctrlcode.h"
 #include "symbol.h"
 #include "Symbols/alt.sym"
 #include "Symbols/graph.sym"
-#ifdef USE_M17N
 #include "Symbols/eucjp.sym"
 #include "Symbols/euckr.sym"
 #include "Symbols/euccn.sym"
 #include "Symbols/euctw.sym"
 #include "Symbols/big5.sym"
-#ifdef USE_UNICODE
 #include "Symbols/utf8.sym"
-#endif
 #include "Symbols/cp850.sym"
-
 
 typedef struct {
     CharacterEncodingScheme ces;
@@ -145,7 +140,6 @@ set_symbol(int width)
     return symbol_buf;
 }
 
-#ifdef USE_UNICODE
 void
 update_utf8_symbol(void)
 {
@@ -158,16 +152,6 @@ update_utf8_symbol(void)
 	}
     }
 }
-#endif
-
-#else
-
-char **
-get_symbol(void)
-{
-    return alt_symbol;
-}
-#endif
 
 void push_symbol(Str str, char symbol, int width, int n)
 {

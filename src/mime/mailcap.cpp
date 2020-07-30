@@ -3,6 +3,7 @@
 #include "mailcap.h"
 #include "fm.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "myctype.h"
 #include "file.h"
 #include "mime/mimetypes.h"

@@ -1,6 +1,5 @@
-/* $Id: linein.c,v 1.35 2007/05/23 12:14:24 inu Exp $ */
-
 #include "fm.h"
+#include "gc_helper.h"
 #include "indep.h"
 #include "transport/local.h"
 #include "myctype.h"

@@ -2,6 +2,8 @@
 #include "fm.h"
 #include "rc.h"
 #include "indep.h"
+#include "gc_helper.h"
+#include "regex.h"
 #include "frontend/display.h"
 #include "public.h"
 #include "frontend/menu.h"

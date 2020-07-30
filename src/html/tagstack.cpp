@@ -1,6 +1,6 @@
 #include "tagstack.h"
 #include "indep.h"
-
+#include "gc_helper.h"
 #include "html.h"
 #include "fm.h"
 #include "file.h"

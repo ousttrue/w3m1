@@ -1,15 +1,13 @@
 #include <sstream>
-#include "fm.h"
 #include <stdio.h>
-#ifndef __MINGW32_VERSION
 #include <pwd.h>
-#endif /* __MINGW32_VERSION */
 #include <sys/param.h>
 #include <sys/types.h>
 #include <stdlib.h>
 #include "indep.h"
+#include "fm.h"
+#include "gc_helper.h"
 #include "Str.h"
-#include <gc.h>
 #include "myctype.h"
 #include "entity.h"
 

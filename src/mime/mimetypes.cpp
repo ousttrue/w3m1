@@ -1,5 +1,6 @@
 #include "fm.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "mime/mimetypes.h"
 #include "textlist.h"
 #include "frontend/buffer.h"

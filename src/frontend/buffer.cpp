@@ -4,6 +4,7 @@
 #include "frontend/buffer.h"
 #include "public.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "file.h"
 #include "html/image.h"
 #include "frontend/display.h"

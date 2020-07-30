@@ -1,9 +1,7 @@
-/* $Id: frame.c,v 1.34 2003/09/26 17:59:51 ukai Exp $ */
-
 #include "fm.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "html/frame.h"
-
 #include "html/parsetagx.h"
 #include "myctype.h"
 #include "file.h"

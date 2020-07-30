@@ -1,10 +1,10 @@
 #include "maparea.h"
 #include "fm.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "html/frame.h"
 #include "frontend/menu.h"
 #include "file.h"
-
 #include "ctrlcode.h"
 #include "html/anchor.h"
 #include "html/image.h"

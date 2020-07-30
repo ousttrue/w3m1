@@ -1,6 +1,7 @@
 
 #include "fm.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "myctype.h"
 #include "transport/istream.h"
 #include "file.h"

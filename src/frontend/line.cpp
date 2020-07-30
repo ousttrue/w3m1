@@ -1,6 +1,6 @@
 #include "fm.h"
 #include "line.h"
-#include "indep.h"
+#include "gc_helper.h"
 #include "file.h"
 
 static int nextColumn(int n, char *p, Lineprop *pr)

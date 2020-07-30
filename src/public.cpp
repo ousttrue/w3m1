@@ -1,6 +1,7 @@
 
 #include "fm.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "rc.h"
 
 #include "html/frame.h"

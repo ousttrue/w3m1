@@ -7,7 +7,7 @@
 
 #include "frontend/mouse.h"
 #include "fm.h"
-#include "indep.h"
+#include "gc_helper.h"
 #include "rc.h"
 #include "myctype.h"
 #include "dispatcher.h"

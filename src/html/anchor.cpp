@@ -1,7 +1,6 @@
 #include "fm.h"
 #include "indep.h"
-
-
+#include "gc_helper.h"
 #include "html/anchor.h"
 #include "myctype.h"
 #include "regex.h"

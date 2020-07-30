@@ -9,6 +9,7 @@
 
 #include "frontend/terms.h"
 #include "indep.h"
+#include "gc_helper.h"
 #include "public.h"
 #include "ctrlcode.h"
 
