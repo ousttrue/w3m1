@@ -305,8 +305,7 @@ int URLFile::UndoGetc()
 }
 
 #define IS_DIRECTORY(m) (((m)&S_IFMT) == S_IFDIR)
-static
-int dir_exist(char *path)
+static int dir_exist(char *path)
 {
     struct stat stbuf;
 
@@ -672,7 +671,8 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
         symlink(p, lock);
 #else
         f = fopen(lock, "w");
-        if (f){
+        if (f)
+        {
             fclose(f);
         }
 #endif
@@ -745,8 +745,6 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
     return 0;
 }
 
-#define NOT_REGULAR(m) (((m)&S_IFMT) != S_IFREG)
-
 static FILE *
 lessopen_stream(char *path)
 {
@@ -793,49 +791,60 @@ lessopen_stream(char *path)
     return fp;
 }
 
-void URLFile::examineFile(const char *path)
+void URLFile::examineFile(std::string_view path)
 {
-    struct stat stbuf;
-
     this->guess_type = NULL;
-    if (path == NULL || *path == '\0' ||
-        stat(path, &stbuf) == -1 || NOT_REGULAR(stbuf.st_mode))
+    if (path.empty())
+    {
+        return;
+    }
+
+    struct stat stbuf;
+    if (stat(path.data(), &stbuf) == -1)
+    {
+        return;
+    }
+
+    if (stbuf.st_mode & S_IFMT != S_IFREG)
     {
         this->stream = NULL;
         return;
     }
-    this->stream = openIS(path);
-    if (!do_download)
+
+    this->stream = openIS(path.data());
+    if (do_download)
     {
-        if (use_lessopen && getenv("LESSOPEN") != NULL)
+        return;
+    }
+
+    if (use_lessopen && getenv("LESSOPEN"))
+    {
+        this->guess_type = guessContentType(path);
+        if (this->guess_type == NULL)
+            this->guess_type = "text/plain";
+        if (is_html_type(this->guess_type))
+            return;
+        FILE *fp;
+        if ((fp = lessopen_stream(const_cast<char *>(path.data()))))
         {
-            FILE *fp;
-            this->guess_type = guessContentType(path);
-            if (this->guess_type == NULL)
-                this->guess_type = "text/plain";
-            if (is_html_type(this->guess_type))
-                return;
-            if ((fp = lessopen_stream(const_cast<char*>(path))))
-            {
-                this->Close();
-                this->stream = newFileStream(fp, (FileStreamCloseFunc)pclose);
-                this->guess_type = "text/plain";
-                return;
-            }
-        }
-        check_compression(const_cast<char*>(path), this);
-        if (this->compression != CMP_NOCOMPRESS)
-        {
-            const char *ext = this->ext;
-            auto t0 = uncompressed_file_type(path, &ext);
-            this->guess_type = t0;
-            this->ext = ext;
-            uncompress_stream(this, NULL);
+            this->Close();
+            this->stream = newFileStream(fp, (FileStreamCloseFunc)pclose);
+            this->guess_type = "text/plain";
             return;
         }
     }
-}
 
+    check_compression(const_cast<char *>(path.data()), this);
+    if (this->compression != CMP_NOCOMPRESS)
+    {
+        const char *ext = this->ext;
+        auto t0 = uncompressed_file_type(path.data(), &ext);
+        this->guess_type = t0;
+        this->ext = ext;
+        uncompress_stream(this, NULL);
+        return;
+    }
+}
 
 char *file_to_url(char *file)
 {

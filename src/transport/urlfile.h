@@ -51,7 +51,9 @@ struct URLFile
                  HRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
     Str StrmyISgets();
-    void examineFile(const char *path);
+
+    // open stream to local path
+    void examineFile(std::string_view path);
 };
 
 char *file_to_url(char *file);
