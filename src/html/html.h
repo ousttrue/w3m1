@@ -8,11 +8,6 @@
 #define MCSTAT_REPTYPE 0x02
 #define MCSTAT_REPPARAM 0x04
 
-struct table2
-{
-    const char *item1;
-    const char *item2;
-};
 
 #define HTML_UNKNOWN 0
 #define HTML_A 1

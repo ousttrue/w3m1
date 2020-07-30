@@ -22,11 +22,6 @@
 #include <string_view>
 
 #include <sys/stat.h>
-#ifdef __EMX__
-#include <io.h> /* ?? */
-#endif          /* __EMX__ */
-
-#include "html/html.h"
 #include "Str.h"
 #include "myctype.h"
 #include "regex.h"
@@ -1308,6 +1303,12 @@ filename_extension(const char *path, int is_url)
 }
 
 #ifdef USE_EXTERNAL_URI_LOADER
+struct table2
+{
+    const char *item1;
+    const char *item2;
+};
+
 static struct table2 **urimethods;
 static struct table2 default_urimethods[] = {
     {"mailto", "file:///$LIB/w3mmail.cgi?%s"},
