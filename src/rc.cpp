@@ -1,73 +1,221 @@
-/* $Id: rc.c,v 1.116 2010/08/20 09:47:09 htrb Exp $ */
-/* 
- * Initialization file etc.
- */
-
 #include "fm.h"
 #include "rc.h"
-#include "indep.h"
-#include "html/parsetag.h"
+#include "Str.h"
 #include "symbol.h"
 #include "myctype.h"
-#include <stdio.h>
-#include <errno.h>
-#include "transport/local.h"
+#include "indep.h"
 #include "dispatcher.h"
 #include "frontend/mouse.h"
 #include "frontend/menu.h"
 #include "html/image.h"
 #include "commands.h"
-#include "transport/url.h"
 #include "file.h"
-#include "mime/mimetypes.h"
 #include "frontend/display.h"
 #include "frontend/buffer.h"
 #include "http/compression.h"
+#include "http/cookie.h"
+#include "mime/mimetypes.h"
 #include "mime/mailcap.h"
 #include <stdlib.h>
 #include "make_array.h"
+#include <vector>
+#include <unordered_map>
+#include <assert.h>
+#include <any>
+
+enum ParamTypes
+{
+    P_INT,
+    P_SHORT,
+    P_CHARINT,
+    P_CHAR,
+    P_STRING,
+    P_SSLPATH,
+    P_COLOR,
+    P_CODE,
+    P_PIXELS,
+    P_NZINT,
+    P_SCALE,
+};
+
+enum ParamInputType
+{
+    PI_TEXT,
+    PI_ONOFF,
+    PI_SEL_C,
+    PI_CODE,
+};
+
+static int str_to_color(std::string_view value)
+{
+    if (value.empty())
+        return 8; /* terminal */
+
+    switch (TOLOWER(value[0]))
+    {
+    case '0':
+        return 0; /* black */
+    case '1':
+    case 'r':
+        return 1; /* red */
+    case '2':
+    case 'g':
+        return 2; /* green */
+    case '3':
+    case 'y':
+        return 3; /* yellow */
+    case '4':
+        return 4; /* blue */
+    case '5':
+    case 'm':
+        return 5; /* magenta */
+    case '6':
+    case 'c':
+        return 6; /* cyan */
+    case '7':
+    case 'w':
+        return 7; /* white */
+    case '8':
+    case 't':
+        return 8; /* terminal */
+    case 'b':
+        if (!strncasecmp(value.data(), "blu", 3))
+            return 4; /* blue */
+        else
+            return 0; /* black */
+    }
+    return 8; /* terminal */
+}
 
 struct Param
 {
-    char *name;
-    int type;
-    int inputtype;
-    void *varptr;
+    std::string_view name;
+    ParamTypes type;
+    ParamInputType inputtype;
+    std::any value;
+
     char *comment;
     void *select;
-};
 
-struct rc_search_table
-{
-    struct Param *param;
-    short uniq_pos;
-
-    int compare_table(const rc_search_table *b) const
+    template <typename T>
+    T Value() const
     {
-        return strcmp(param->name, b->param->name);
+        if (!value.has_value())
+        {
+            return {};
+        }
+        return std::any_cast<T>(value);
+    }
+
+    int Value(std::string_view src)
+    {
+        // double ppc;
+        switch (this->type)
+        {
+        case P_INT:
+            if (atoi(src.data()) >= 0)
+            {
+                this->value = (int)((this->inputtype == PI_ONOFF)
+                                        ? str_to_bool(src.data(), std::any_cast<int>(this->value))
+                                        : atoi(src.data()));
+            }
+            break;
+
+        case P_NZINT:
+            if (atoi(src.data()) > 0)
+            {
+                this->value = atoi(src.data());
+            }
+            break;
+
+        case P_SHORT:
+            this->value = (short)((this->inputtype == PI_ONOFF)
+                                      ? str_to_bool(src.data(), this->Value<short>())
+                                      : atoi(src.data()));
+
+            break;
+
+        case P_CHARINT:
+            this->value = (char)((this->inputtype == PI_ONOFF)
+                                     ? str_to_bool(src.data(), this->Value<char>())
+                                     : atoi(src.data()));
+            break;
+
+        case P_CHAR:
+            this->value = src[0];
+            break;
+
+        case P_STRING:
+            this->value = std::string(src);
+            break;
+
+        case P_SSLPATH:
+            if (src.size())
+                this->value = std::string(rcFile(src.data()));
+            else
+                this->value = std::string("");
+            ssl_path_modified = 1;
+            break;
+
+        case P_COLOR:
+            this->value = str_to_color(src);
+            break;
+
+        case P_CODE:
+            this->value = wc_guess_charset_short(src.data(), this->Value<wc_ces>());
+            break;
+
+        case P_PIXELS:
+        {
+            double ppc = atof(src.data());
+            if (ppc >= MINIMUM_PIXEL_PER_CHAR && ppc <= MAXIMUM_PIXEL_PER_CHAR * 2)
+            {
+                this->value = ppc;
+            }
+            break;
+        }
+
+        case P_SCALE:
+        {
+            double ppc = atof(src.data());
+            if (ppc >= 10 && ppc <= 1000)
+            {
+                this->value = ppc;
+            }
+            break;
+        }
+        }
+        return 1;
+    }
+
+    Str to_str() const
+    {
+        switch (type)
+        {
+        case P_INT:
+        case P_COLOR:
+        case P_CODE:
+        case P_NZINT:
+            return Sprintf("%d", std::any_cast<int>(value));
+        case P_SHORT:
+            return Sprintf("%d", std::any_cast<short>(value));
+        case P_CHARINT:
+            return Sprintf("%d", std::any_cast<char>(value));
+        case P_CHAR:
+            return Sprintf("%c", std::any_cast<char>(value));
+        case P_STRING:
+        case P_SSLPATH:
+            /*  SystemCharset -> InnerCharset */
+            return Strnew(conv_from_system(std::any_cast<std::string>(value)));
+        case P_PIXELS:
+        case P_SCALE:
+            return Sprintf("%g", std::any_cast<double>(value));
+        }
+        /* not reached */
+        return NULL;
     }
 };
-
-static struct rc_search_table *RC_search_table;
-static int RC_table_size;
-
-#define P_INT 0
-#define P_SHORT 1
-#define P_CHARINT 2
-#define P_CHAR 3
-#define P_STRING 4
-#if defined(USE_SSL) && defined(USE_SSL_VERIFY)
-#define P_SSLPATH 5
-#endif
-#ifdef USE_COLOR
-#define P_COLOR 6
-#endif
-#ifdef USE_M17N
-#define P_CODE 7
-#endif
-#define P_PIXELS 8
-#define P_NZINT 9
-#define P_SCALE 10
+std::unordered_map<std::string_view, Param *> RC_search_table;
 
 /* FIXME: gettextize here */
 #ifdef USE_M17N
@@ -257,13 +405,6 @@ static int OptionEncode = FALSE;
 
 #define CMT_KEYMAP_FILE N_("keymap file")
 
-#define PI_TEXT 0
-#define PI_ONOFF 1
-#define PI_SEL_C 2
-#ifdef USE_M17N
-#define PI_CODE 3
-#endif
-
 struct sel_c
 {
     int value;
@@ -361,476 +502,201 @@ static struct sel_c graphic_char_str[] = {
     {N_S(GRAPHIC_CHAR_DEC), N_("DEC special graphics")},
     {0, NULL, NULL}};
 
-struct Param params1[] = {
-    {"tabstop", P_NZINT, PI_TEXT, (void *)&Tabstop, CMT_TABSTOP, NULL},
-    {"indent_incr", P_NZINT, PI_TEXT, (void *)&IndentIncr, CMT_INDENT_INCR,
-     NULL},
-    {"pixel_per_char", P_PIXELS, PI_TEXT, (void *)&pixel_per_char,
-     CMT_PIXEL_PER_CHAR, NULL},
-#ifdef USE_IMAGE
-    {"pixel_per_line", P_PIXELS, PI_TEXT, (void *)&pixel_per_line,
-     CMT_PIXEL_PER_LINE, NULL},
-#endif
-    {"frame", P_CHARINT, PI_ONOFF, (void *)&RenderFrame, CMT_FRAME, NULL},
-    {"target_self", P_CHARINT, PI_ONOFF, (void *)&TargetSelf, CMT_TSELF, NULL},
-    {"open_tab_blank", P_INT, PI_ONOFF, (void *)&open_tab_blank,
-     CMT_OPEN_TAB_BLANK, NULL},
-    {"open_tab_dl_list", P_INT, PI_ONOFF, (void *)&open_tab_dl_list,
-     CMT_OPEN_TAB_DL_LIST, NULL},
-    {"display_link", P_INT, PI_ONOFF, (void *)&displayLink, CMT_DISPLINK,
-     NULL},
-    {"display_link_number", P_INT, PI_ONOFF, (void *)&displayLinkNumber,
-     CMT_DISPLINKNUMBER, NULL},
-    {"decode_url", P_INT, PI_ONOFF, (void *)&DecodeURL, CMT_DECODE_URL, NULL},
-    {"display_lineinfo", P_INT, PI_ONOFF, (void *)&displayLineInfo,
-     CMT_DISPLINEINFO, NULL},
-    {"ext_dirlist", P_INT, PI_ONOFF, (void *)&UseExternalDirBuffer,
-     CMT_EXT_DIRLIST, NULL},
-    {"dirlist_cmd", P_STRING, PI_TEXT, (void *)&DirBufferCommand,
-     CMT_DIRLIST_CMD, NULL},
-#ifdef USE_DICT
-    {"use_dictcommand", P_INT, PI_ONOFF, (void *)&UseDictCommand,
-     CMT_USE_DICTCOMMAND, NULL},
-    {"dictcommand", P_STRING, PI_TEXT, (void *)&DictCommand,
-     CMT_DICTCOMMAND, NULL},
-#endif /* USE_DICT */
-    {"multicol", P_INT, PI_ONOFF, (void *)&multicolList, CMT_MULTICOL, NULL},
-    {"alt_entity", P_CHARINT, PI_ONOFF, (void *)&UseAltEntity, CMT_ALT_ENTITY,
-     NULL},
-    {"graphic_char", P_CHARINT, PI_SEL_C, (void *)&UseGraphicChar,
-     CMT_GRAPHIC_CHAR, (void *)graphic_char_str},
-    {"fold_textarea", P_CHARINT, PI_ONOFF, (void *)&FoldTextarea,
-     CMT_FOLD_TEXTAREA, NULL},
-    {"display_ins_del", P_INT, PI_SEL_C, (void *)&displayInsDel,
-     CMT_DISP_INS_DEL, displayinsdel},
-    {"ignore_null_img_alt", P_INT, PI_ONOFF, (void *)&ignore_null_img_alt,
-     CMT_IGNORE_NULL_IMG_ALT, NULL},
-    {"view_unseenobject", P_INT, PI_ONOFF, (void *)&view_unseenobject,
-     CMT_VIEW_UNSEENOBJECTS, NULL},
-    /* XXX: emacs-w3m force to off display_image even if image options off */
-    {"display_image", P_INT, PI_ONOFF, (void *)&displayImage, CMT_DISP_IMAGE,
-     NULL},
-    {"pseudo_inlines", P_INT, PI_ONOFF, (void *)&pseudoInlines,
-     CMT_PSEUDO_INLINES, NULL},
-#ifdef USE_IMAGE
-    {"auto_image", P_INT, PI_ONOFF, (void *)&autoImage, CMT_AUTO_IMAGE, NULL},
-    {"max_load_image", P_INT, PI_TEXT, (void *)&maxLoadImage,
-     CMT_MAX_LOAD_IMAGE, NULL},
-    {"ext_image_viewer", P_INT, PI_ONOFF, (void *)&useExtImageViewer,
-     CMT_EXT_IMAGE_VIEWER, NULL},
-    {"image_scale", P_SCALE, PI_TEXT, (void *)&image_scale, CMT_IMAGE_SCALE,
-     NULL},
-    {"imgdisplay", P_STRING, PI_TEXT, (void *)&Imgdisplay, CMT_IMGDISPLAY,
-     NULL},
-    {"image_map_list", P_INT, PI_ONOFF, (void *)&image_map_list,
-     CMT_IMAGE_MAP_LIST, NULL},
-#endif
-    {"fold_line", P_INT, PI_ONOFF, (void *)&FoldLine, CMT_FOLD_LINE, NULL},
-    {"show_lnum", P_INT, PI_ONOFF, (void *)&showLineNum, CMT_SHOW_NUM, NULL},
-    {"show_srch_str", P_INT, PI_ONOFF, (void *)&show_srch_str,
-     CMT_SHOW_SRCH_STR, NULL},
-    {"label_topline", P_INT, PI_ONOFF, (void *)&label_topline,
-     CMT_LABEL_TOPLINE, NULL},
-    {"nextpage_topline", P_INT, PI_ONOFF, (void *)&nextpage_topline,
-     CMT_NEXTPAGE_TOPLINE, NULL},
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-
-#ifdef USE_COLOR
-struct Param params2[] = {
-    {"color", P_INT, PI_ONOFF, (void *)&useColor, CMT_COLOR, NULL},
-    {"basic_color", P_COLOR, PI_SEL_C, (void *)&basic_color, CMT_B_COLOR,
-     (void *)colorstr},
-    {"anchor_color", P_COLOR, PI_SEL_C, (void *)&anchor_color, CMT_A_COLOR,
-     (void *)colorstr},
-    {"image_color", P_COLOR, PI_SEL_C, (void *)&image_color, CMT_I_COLOR,
-     (void *)colorstr},
-    {"form_color", P_COLOR, PI_SEL_C, (void *)&form_color, CMT_F_COLOR,
-     (void *)colorstr},
-#ifdef USE_BG_COLOR
-    {"mark_color", P_COLOR, PI_SEL_C, (void *)&mark_color, CMT_MARK_COLOR,
-     (void *)colorstr},
-    {"bg_color", P_COLOR, PI_SEL_C, (void *)&bg_color, CMT_BG_COLOR,
-     (void *)colorstr},
-#endif /* USE_BG_COLOR */
-    {"active_style", P_INT, PI_ONOFF, (void *)&useActiveColor,
-     CMT_ACTIVE_STYLE, NULL},
-    {"active_color", P_COLOR, PI_SEL_C, (void *)&active_color, CMT_C_COLOR,
-     (void *)colorstr},
-    {"visited_anchor", P_INT, PI_ONOFF, (void *)&useVisitedColor,
-     CMT_VISITED_ANCHOR, NULL},
-    {"visited_color", P_COLOR, PI_SEL_C, (void *)&visited_color, CMT_V_COLOR,
-     (void *)colorstr},
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-#endif /* USE_COLOR */
-
-struct Param params3[] = {
-    {"pagerline", P_NZINT, PI_TEXT, (void *)&PagerMax, CMT_PAGERLINE, NULL},
-#ifdef USE_HISTORY
-    {"use_history", P_INT, PI_ONOFF, (void *)&UseHistory, CMT_HISTORY, NULL},
-    {"history", P_INT, PI_TEXT, (void *)&URLHistSize, CMT_HISTSIZE, NULL},
-    {"save_hist", P_INT, PI_ONOFF, (void *)&SaveURLHist, CMT_SAVEHIST, NULL},
-#endif /* USE_HISTORY */
-    {"confirm_qq", P_INT, PI_ONOFF, (void *)&confirm_on_quit, CMT_CONFIRM_QQ,
-     NULL},
-    {"close_tab_back", P_INT, PI_ONOFF, (void *)&close_tab_back,
-     CMT_CLOSE_TAB_BACK, NULL},
-#ifdef USE_MARK
-    {"mark", P_INT, PI_ONOFF, (void *)&use_mark, CMT_USE_MARK, NULL},
-#endif
-    {"emacs_like_lineedit", P_INT, PI_ONOFF, (void *)&emacs_like_lineedit,
-     CMT_EMACS_LIKE_LINEEDIT, NULL},
-    {"vi_prec_num", P_INT, PI_ONOFF, (void *)&vi_prec_num, CMT_VI_PREC_NUM,
-     NULL},
-    {"mark_all_pages", P_INT, PI_ONOFF, (void *)&MarkAllPages,
-     CMT_MARK_ALL_PAGES, NULL},
-    {"wrap_search", P_INT, PI_ONOFF, (void *)&WrapDefault, CMT_WRAP, NULL},
-    {"ignorecase_search", P_INT, PI_ONOFF, (void *)&IgnoreCase,
-     CMT_IGNORE_CASE, NULL},
-#ifdef USE_MIGEMO
-    {"use_migemo", P_INT, PI_ONOFF, (void *)&use_migemo, CMT_USE_MIGEMO,
-     NULL},
-    {"migemo_command", P_STRING, PI_TEXT, (void *)&migemo_command,
-     CMT_MIGEMO_COMMAND, NULL},
-#endif /* USE_MIGEMO */
-#ifdef USE_MOUSE
-    {"use_mouse", P_INT, PI_ONOFF, (void *)&use_mouse, CMT_MOUSE, NULL},
-    {"reverse_mouse", P_INT, PI_ONOFF, (void *)&reverse_mouse,
-     CMT_REVERSE_MOUSE, NULL},
-    {"relative_wheel_scroll", P_INT, PI_SEL_C, (void *)&relative_wheel_scroll,
-     CMT_RELATIVE_WHEEL_SCROLL, (void *)wheelmode},
-    {"relative_wheel_scroll_ratio", P_INT, PI_TEXT,
-     (void *)&relative_wheel_scroll_ratio,
-     CMT_RELATIVE_WHEEL_SCROLL_RATIO, NULL},
-    {"fixed_wheel_scroll_count", P_INT, PI_TEXT,
-     (void *)&fixed_wheel_scroll_count,
-     CMT_FIXED_WHEEL_SCROLL_COUNT, NULL},
-#endif /* USE_MOUSE */
-    {"clear_buffer", P_INT, PI_ONOFF, (void *)&clear_buffer, CMT_CLEAR_BUF,
-     NULL},
-    {"decode_cte", P_CHARINT, PI_ONOFF, (void *)&DecodeCTE, CMT_DECODE_CTE,
-     NULL},
-    {"auto_uncompress", P_CHARINT, PI_ONOFF, (void *)&AutoUncompress,
-     CMT_AUTO_UNCOMPRESS, NULL},
-    {"preserve_timestamp", P_CHARINT, PI_ONOFF, (void *)&PreserveTimestamp,
-     CMT_PRESERVE_TIMESTAMP, NULL},
-    {"keymap_file", P_STRING, PI_TEXT, (void *)&keymap_file, CMT_KEYMAP_FILE,
-     NULL},
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-
-struct Param params4[] = {
-    {"use_proxy", P_CHARINT, PI_ONOFF, (void *)&use_proxy, CMT_USE_PROXY,
-     NULL},
-    {"http_proxy", P_STRING, PI_TEXT, (void *)&HTTP_proxy, CMT_HTTP_PROXY,
-     NULL},
-#ifdef USE_SSL
-    {"https_proxy", P_STRING, PI_TEXT, (void *)&HTTPS_proxy, CMT_HTTPS_PROXY,
-     NULL},
-#endif /* USE_SSL */
-#ifdef USE_GOPHER
-    {"gopher_proxy", P_STRING, PI_TEXT, (void *)&GOPHER_proxy,
-     CMT_GOPHER_PROXY, NULL},
-#endif /* USE_GOPHER */
-    {"ftp_proxy", P_STRING, PI_TEXT, (void *)&FTP_proxy, CMT_FTP_PROXY, NULL},
-    {"no_proxy", P_STRING, PI_TEXT, (void *)&NO_proxy, CMT_NO_PROXY, NULL},
-    {"noproxy_netaddr", P_INT, PI_ONOFF, (void *)&NOproxy_netaddr,
-     CMT_NOPROXY_NETADDR, NULL},
-    {"no_cache", P_CHARINT, PI_ONOFF, (void *)&NoCache, CMT_NO_CACHE, NULL},
-
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-
-struct Param params5[] = {
-    {"document_root", P_STRING, PI_TEXT, (void *)&document_root, CMT_DROOT,
-     NULL},
-    {"personal_document_root", P_STRING, PI_TEXT,
-     (void *)&personal_document_root, CMT_PDROOT, NULL},
-    {"cgi_bin", P_STRING, PI_TEXT, (void *)&cgi_bin, CMT_CGIBIN, NULL},
-    {"index_file", P_STRING, PI_TEXT, (void *)&index_file, CMT_IFILE, NULL},
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-
-struct Param params6[] = {
-    {"mime_types", P_STRING, PI_TEXT, (void *)&mimetypes_files, CMT_MIMETYPES,
-     NULL},
-    {"mailcap", P_STRING, PI_TEXT, (void *)&mailcap_files, CMT_MAILCAP, NULL},
-#ifdef USE_EXTERNAL_URI_LOADER
-    {"urimethodmap", P_STRING, PI_TEXT, (void *)&urimethodmap_files,
-     CMT_URIMETHODMAP, NULL},
-#endif
-    {"editor", P_STRING, PI_TEXT, (void *)&Editor, CMT_EDITOR, NULL},
-    {"mailto_options", P_INT, PI_SEL_C, (void *)&MailtoOptions,
-     CMT_MAILTO_OPTIONS, (void *)mailtooptionsstr},
-    {"mailer", P_STRING, PI_TEXT, (void *)&Mailer, CMT_MAILER, NULL},
-    {"extbrowser", P_STRING, PI_TEXT, (void *)&ExtBrowser, CMT_EXTBRZ, NULL},
-    {"extbrowser2", P_STRING, PI_TEXT, (void *)&ExtBrowser2, CMT_EXTBRZ2,
-     NULL},
-    {"extbrowser3", P_STRING, PI_TEXT, (void *)&ExtBrowser3, CMT_EXTBRZ3,
-     NULL},
-    {"bgextviewer", P_INT, PI_ONOFF, (void *)&BackgroundExtViewer,
-     CMT_BGEXTVIEW, NULL},
-    {"use_lessopen", P_INT, PI_ONOFF, (void *)&use_lessopen, CMT_USE_LESSOPEN,
-     NULL},
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-
-#ifdef USE_SSL
-struct Param params7[] = {
-    {"ssl_forbid_method", P_STRING, PI_TEXT, (void *)&ssl_forbid_method,
-     CMT_SSL_FORBID_METHOD, NULL},
-#ifdef USE_SSL_VERIFY
-    {"ssl_verify_server", P_INT, PI_ONOFF, (void *)&ssl_verify_server,
-     CMT_SSL_VERIFY_SERVER, NULL},
-    {"ssl_cert_file", P_SSLPATH, PI_TEXT, (void *)&ssl_cert_file,
-     CMT_SSL_CERT_FILE, NULL},
-    {"ssl_key_file", P_SSLPATH, PI_TEXT, (void *)&ssl_key_file,
-     CMT_SSL_KEY_FILE, NULL},
-    {"ssl_ca_path", P_SSLPATH, PI_TEXT, (void *)&ssl_ca_path, CMT_SSL_CA_PATH,
-     NULL},
-    {"ssl_ca_file", P_SSLPATH, PI_TEXT, (void *)&ssl_ca_file, CMT_SSL_CA_FILE,
-     NULL},
-#endif /* USE_SSL_VERIFY */
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-#endif /* USE_SSL */
-
-#ifdef USE_COOKIE
-struct Param params8[] = {
-    {"use_cookie", P_INT, PI_ONOFF, (void *)&use_cookie, CMT_USECOOKIE, NULL},
-    {"show_cookie", P_INT, PI_ONOFF, (void *)&show_cookie,
-     CMT_SHOWCOOKIE, NULL},
-    {"accept_cookie", P_INT, PI_ONOFF, (void *)&accept_cookie,
-     CMT_ACCEPTCOOKIE, NULL},
-    {"accept_bad_cookie", P_INT, PI_SEL_C, (void *)&accept_bad_cookie,
-     CMT_ACCEPTBADCOOKIE, (void *)badcookiestr},
-    {"cookie_reject_domains", P_STRING, PI_TEXT,
-     (void *)&cookie_reject_domains, CMT_COOKIE_REJECT_DOMAINS, NULL},
-    {"cookie_accept_domains", P_STRING, PI_TEXT,
-     (void *)&cookie_accept_domains, CMT_COOKIE_ACCEPT_DOMAINS, NULL},
-    {"cookie_avoid_wrong_number_of_dots", P_STRING, PI_TEXT,
-     (void *)&cookie_avoid_wrong_number_of_dots,
-     CMT_COOKIE_AVOID_WONG_NUMBER_OF_DOTS, NULL},
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-#endif
-
-struct Param params9[] = {
-    {"passwd_file", P_STRING, PI_TEXT, (void *)&passwd_file, CMT_PASSWDFILE,
-     NULL},
-    {"disable_secret_security_check", P_INT, PI_ONOFF,
-     (void *)&disable_secret_security_check, CMT_DISABLE_SECRET_SECURITY_CHECK,
-     NULL},
-    {"ftppasswd", P_STRING, PI_TEXT, (void *)&ftppasswd, CMT_FTPPASS, NULL},
-    {"ftppass_hostnamegen", P_INT, PI_ONOFF, (void *)&ftppass_hostnamegen,
-     CMT_FTPPASS_HOSTNAMEGEN, NULL},
-    {"pre_form_file", P_STRING, PI_TEXT, (void *)&pre_form_file,
-     CMT_PRE_FORM_FILE, NULL},
-    {"user_agent", P_STRING, PI_TEXT, (void *)&UserAgent, CMT_USERAGENT, NULL},
-    {"no_referer", P_INT, PI_ONOFF, (void *)&NoSendReferer, CMT_NOSENDREFERER,
-     NULL},
-    {"accept_language", P_STRING, PI_TEXT, (void *)&AcceptLang, CMT_ACCEPTLANG,
-     NULL},
-    {"accept_encoding", P_STRING, PI_TEXT, (void *)&AcceptEncoding,
-     CMT_ACCEPTENCODING,
-     NULL},
-    {"accept_media", P_STRING, PI_TEXT, (void *)&AcceptMedia, CMT_ACCEPTMEDIA,
-     NULL},
-    {"argv_is_url", P_CHARINT, PI_ONOFF, (void *)&ArgvIsURL, CMT_ARGV_IS_URL,
-     NULL},
-    {"retry_http", P_INT, PI_ONOFF, (void *)&retryAsHttp, CMT_RETRY_HTTP,
-     NULL},
-    {"default_url", P_INT, PI_SEL_C, (void *)&DefaultURLString,
-     CMT_DEFAULT_URL, (void *)defaulturls},
-    {"follow_redirection", P_INT, PI_TEXT, &FollowRedirection,
-     CMT_FOLLOW_REDIRECTION, NULL},
-    {"meta_refresh", P_CHARINT, PI_ONOFF, (void *)&MetaRefresh,
-     CMT_META_REFRESH, NULL},
-#ifdef INET6
-    {"dns_order", P_INT, PI_SEL_C, (void *)&DNS_order, CMT_DNS_ORDER,
-     (void *)dnsorders},
-#endif /* INET6 */
-#ifdef USE_NNTP
-    {"nntpserver", P_STRING, PI_TEXT, (void *)&NNTP_server, CMT_NNTP_SERVER,
-     NULL},
-    {"nntpmode", P_STRING, PI_TEXT, (void *)&NNTP_mode, CMT_NNTP_MODE, NULL},
-    {"max_news", P_INT, PI_TEXT, (void *)&MaxNewsMessage, CMT_MAX_NEWS, NULL},
-#endif
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-
-#ifdef USE_M17N
-struct Param params10[] = {
-    {"display_charset", P_CODE, PI_CODE, (void *)&DisplayCharset,
-     CMT_DISPLAY_CHARSET, (void *)&display_charset_str},
-    {"document_charset", P_CODE, PI_CODE, (void *)&DocumentCharset,
-     CMT_DOCUMENT_CHARSET, (void *)&document_charset_str},
-    {"auto_detect", P_CHARINT, PI_SEL_C, (void *)&WcOption.auto_detect,
-     CMT_AUTO_DETECT, (void *)auto_detect_str},
-    {"system_charset", P_CODE, PI_CODE, (void *)&SystemCharset,
-     CMT_SYSTEM_CHARSET, (void *)&system_charset_str},
-    {"follow_locale", P_CHARINT, PI_ONOFF, (void *)&FollowLocale,
-     CMT_FOLLOW_LOCALE, NULL},
-    {"ext_halfdump", P_CHARINT, PI_ONOFF, (void *)&ExtHalfdump,
-     CMT_EXT_HALFDUMP, NULL},
-    {"use_wide", P_CHARINT, PI_ONOFF, (void *)&WcOption.use_wide, CMT_USE_WIDE,
-     NULL},
-    {"use_combining", P_CHARINT, PI_ONOFF, (void *)&WcOption.use_combining,
-     CMT_USE_COMBINING, NULL},
-#ifdef USE_UNICODE
-    {"east_asian_width", P_CHARINT, PI_ONOFF,
-     (void *)&WcOption.east_asian_width, CMT_EAST_ASIAN_WIDTH, NULL},
-    {"use_language_tag", P_CHARINT, PI_ONOFF,
-     (void *)&WcOption.use_language_tag, CMT_USE_LANGUAGE_TAG, NULL},
-    {"ucs_conv", P_CHARINT, PI_ONOFF, (void *)&WcOption.ucs_conv, CMT_UCS_CONV,
-     NULL},
-#endif
-    {"pre_conv", P_CHARINT, PI_ONOFF, (void *)&WcOption.pre_conv, CMT_PRE_CONV,
-     NULL},
-    {"search_conv", P_CHARINT, PI_ONOFF, (void *)&SearchConv, CMT_SEARCH_CONV,
-     NULL},
-    {"fix_width_conv", P_CHARINT, PI_ONOFF, (void *)&WcOption.fix_width_conv,
-     CMT_FIX_WIDTH_CONV, NULL},
-#ifdef USE_UNICODE
-    {"use_gb12345_map", P_CHARINT, PI_ONOFF, (void *)&WcOption.use_gb12345_map,
-     CMT_USE_GB12345_MAP, NULL},
-#endif
-    {"use_jisx0201", P_CHARINT, PI_ONOFF, (void *)&WcOption.use_jisx0201,
-     CMT_USE_JISX0201, NULL},
-    {"use_jisc6226", P_CHARINT, PI_ONOFF, (void *)&WcOption.use_jisc6226,
-     CMT_USE_JISC6226, NULL},
-    {"use_jisx0201k", P_CHARINT, PI_ONOFF, (void *)&WcOption.use_jisx0201k,
-     CMT_USE_JISX0201K, NULL},
-    {"use_jisx0212", P_CHARINT, PI_ONOFF, (void *)&WcOption.use_jisx0212,
-     CMT_USE_JISX0212, NULL},
-    {"use_jisx0213", P_CHARINT, PI_ONOFF, (void *)&WcOption.use_jisx0213,
-     CMT_USE_JISX0213, NULL},
-    {"strict_iso2022", P_CHARINT, PI_ONOFF, (void *)&WcOption.strict_iso2022,
-     CMT_STRICT_ISO2022, NULL},
-#ifdef USE_UNICODE
-    {"gb18030_as_ucs", P_CHARINT, PI_ONOFF, (void *)&WcOption.gb18030_as_ucs,
-     CMT_GB18030_AS_UCS, NULL},
-#endif
-    {"simple_preserve_space", P_CHARINT, PI_ONOFF, (void *)&SimplePreserveSpace,
-     CMT_SIMPLE_PRESERVE_SPACE, NULL},
-    {NULL, 0, 0, NULL, NULL, NULL},
-};
-#endif
-
 struct ParamSection
 {
     std::string name;
-    struct Param *params;
+    std::vector<Param> params;
 };
 auto sections = make_array(
-    ParamSection{N_("Display Settings"), params1},
-    ParamSection{N_("Color Settings"), params2},
-    ParamSection{N_("Miscellaneous Settings"), params3},
-    ParamSection{N_("Directory Settings"), params5},
-    ParamSection{N_("External Program Settings"), params6},
-    ParamSection{N_("Network Settings"), params9},
-    ParamSection{N_("Proxy Settings"), params4},
-    ParamSection{N_("SSL Settings"), params7},
-    ParamSection{N_("Cookie Settings"), params8},
-    ParamSection{N_("Charset Settings"), params10});
-
-static Str to_str(struct Param *p);
+    ParamSection{N_("Display Settings"),
+                 {
+                     {"tabstop", P_NZINT, PI_TEXT, Tabstop, CMT_TABSTOP},
+                     {"indent_incr", P_NZINT, PI_TEXT, IndentIncr, CMT_INDENT_INCR},
+                     {"pixel_per_char", P_PIXELS, PI_TEXT, pixel_per_char, CMT_PIXEL_PER_CHAR},
+                     {"pixel_per_line", P_PIXELS, PI_TEXT, pixel_per_line, CMT_PIXEL_PER_LINE},
+                     {"frame", P_CHARINT, PI_ONOFF, RenderFrame, CMT_FRAME},
+                     {"target_self", P_CHARINT, PI_ONOFF, TargetSelf, CMT_TSELF},
+                     {"open_tab_blank", P_INT, PI_ONOFF, open_tab_blank, CMT_OPEN_TAB_BLANK},
+                     {"open_tab_dl_list", P_INT, PI_ONOFF, open_tab_dl_list, CMT_OPEN_TAB_DL_LIST},
+                     {"display_link", P_INT, PI_ONOFF, displayLink, CMT_DISPLINK},
+                     {"display_link_number", P_INT, PI_ONOFF, displayLinkNumber, CMT_DISPLINKNUMBER},
+                     {"decode_url", P_INT, PI_ONOFF, DecodeURL, CMT_DECODE_URL},
+                     {"display_lineinfo", P_INT, PI_ONOFF, displayLineInfo, CMT_DISPLINEINFO},
+                     {"ext_dirlist", P_INT, PI_ONOFF, UseExternalDirBuffer, CMT_EXT_DIRLIST},
+                     {"dirlist_cmd", P_STRING, PI_TEXT, DirBufferCommand, CMT_DIRLIST_CMD},
+                     {"use_dictcommand", P_INT, PI_ONOFF, UseDictCommand, CMT_USE_DICTCOMMAND},
+                     {"dictcommand", P_STRING, PI_TEXT, DictCommand, CMT_DICTCOMMAND},
+                     {"multicol", P_INT, PI_ONOFF, multicolList, CMT_MULTICOL},
+                     {"alt_entity", P_CHARINT, PI_ONOFF, UseAltEntity, CMT_ALT_ENTITY},
+                     {"graphic_char", P_CHARINT, PI_SEL_C, UseGraphicChar, CMT_GRAPHIC_CHAR, (void *)graphic_char_str},
+                     {"fold_textarea", P_CHARINT, PI_ONOFF, FoldTextarea, CMT_FOLD_TEXTAREA},
+                     {"display_ins_del", P_INT, PI_SEL_C, displayInsDel, CMT_DISP_INS_DEL, displayinsdel},
+                     {"ignore_null_img_alt", P_INT, PI_ONOFF, ignore_null_img_alt, CMT_IGNORE_NULL_IMG_ALT},
+                     {"view_unseenobject", P_INT, PI_ONOFF, view_unseenobject, CMT_VIEW_UNSEENOBJECTS},
+                     /* XXX: emacs-w3m force to off display_image even if image options off */
+                     {"display_image", P_INT, PI_ONOFF, displayImage, CMT_DISP_IMAGE},
+                     {"pseudo_inlines", P_INT, PI_ONOFF, pseudoInlines, CMT_PSEUDO_INLINES},
+                     {"auto_image", P_INT, PI_ONOFF, autoImage, CMT_AUTO_IMAGE},
+                     {"max_load_image", P_INT, PI_TEXT, maxLoadImage, CMT_MAX_LOAD_IMAGE},
+                     {"ext_image_viewer", P_INT, PI_ONOFF, useExtImageViewer, CMT_EXT_IMAGE_VIEWER},
+                     {"image_scale", P_SCALE, PI_TEXT, image_scale, CMT_IMAGE_SCALE},
+                     {"imgdisplay", P_STRING, PI_TEXT, Imgdisplay, CMT_IMGDISPLAY},
+                     {"image_map_list", P_INT, PI_ONOFF, image_map_list, CMT_IMAGE_MAP_LIST},
+                     {"fold_line", P_INT, PI_ONOFF, FoldLine, CMT_FOLD_LINE},
+                     {"show_lnum", P_INT, PI_ONOFF, showLineNum, CMT_SHOW_NUM},
+                     {"show_srch_str", P_INT, PI_ONOFF, show_srch_str, CMT_SHOW_SRCH_STR},
+                     {"label_topline", P_INT, PI_ONOFF, label_topline, CMT_LABEL_TOPLINE},
+                     {"nextpage_topline", P_INT, PI_ONOFF, nextpage_topline, CMT_NEXTPAGE_TOPLINE},
+                 }},
+    ParamSection{N_("Color Settings"),
+                 {
+                     {"color", P_INT, PI_ONOFF, useColor, CMT_COLOR},
+                     {"basic_color", P_COLOR, PI_SEL_C, basic_color, CMT_B_COLOR, (void *)colorstr},
+                     {"anchor_color", P_COLOR, PI_SEL_C, anchor_color, CMT_A_COLOR, (void *)colorstr},
+                     {"image_color", P_COLOR, PI_SEL_C, image_color, CMT_I_COLOR, (void *)colorstr},
+                     {"form_color", P_COLOR, PI_SEL_C, form_color, CMT_F_COLOR, (void *)colorstr},
+                     {"mark_color", P_COLOR, PI_SEL_C, mark_color, CMT_MARK_COLOR, (void *)colorstr},
+                     {"bg_color", P_COLOR, PI_SEL_C, bg_color, CMT_BG_COLOR, (void *)colorstr},
+                     {"active_style", P_INT, PI_ONOFF, useActiveColor, CMT_ACTIVE_STYLE},
+                     {"active_color", P_COLOR, PI_SEL_C, active_color, CMT_C_COLOR, (void *)colorstr},
+                     {"visited_anchor", P_INT, PI_ONOFF, useVisitedColor, CMT_VISITED_ANCHOR},
+                     {"visited_color", P_COLOR, PI_SEL_C, visited_color, CMT_V_COLOR, (void *)colorstr},
+                 }},
+    ParamSection{N_("Miscellaneous Settings"),
+                 {
+                     {"pagerline", P_NZINT, PI_TEXT, PagerMax, CMT_PAGERLINE},
+                     {"use_history", P_INT, PI_ONOFF, UseHistory, CMT_HISTORY},
+                     {"history", P_INT, PI_TEXT, URLHistSize, CMT_HISTSIZE},
+                     {"save_hist", P_INT, PI_ONOFF, SaveURLHist, CMT_SAVEHIST},
+                     {"confirm_qq", P_INT, PI_ONOFF, confirm_on_quit, CMT_CONFIRM_QQ},
+                     {"close_tab_back", P_INT, PI_ONOFF, close_tab_back, CMT_CLOSE_TAB_BACK},
+                     {"mark", P_INT, PI_ONOFF, use_mark, CMT_USE_MARK},
+                     {"emacs_like_lineedit", P_INT, PI_ONOFF, emacs_like_lineedit, CMT_EMACS_LIKE_LINEEDIT},
+                     {"vi_prec_num", P_INT, PI_ONOFF, vi_prec_num, CMT_VI_PREC_NUM},
+                     {"mark_all_pages", P_INT, PI_ONOFF, MarkAllPages, CMT_MARK_ALL_PAGES},
+                     {"wrap_search", P_INT, PI_ONOFF, WrapDefault, CMT_WRAP},
+                     {"ignorecase_search", P_INT, PI_ONOFF, IgnoreCase, CMT_IGNORE_CASE},
+                     //  {"use_migemo", P_INT, PI_ONOFF, use_migemo, CMT_USE_MIGEMO},
+                     //  {"migemo_command", P_STRING, PI_TEXT, migemo_command, CMT_MIGEMO_COMMAND},
+                     {"use_mouse", P_INT, PI_ONOFF, use_mouse, CMT_MOUSE},
+                     {"reverse_mouse", P_INT, PI_ONOFF, reverse_mouse, CMT_REVERSE_MOUSE},
+                     {"relative_wheel_scroll", P_INT, PI_SEL_C, relative_wheel_scroll, CMT_RELATIVE_WHEEL_SCROLL, (void *)wheelmode},
+                     {"relative_wheel_scroll_ratio", P_INT, PI_TEXT, relative_wheel_scroll_ratio, CMT_RELATIVE_WHEEL_SCROLL_RATIO},
+                     {"fixed_wheel_scroll_count", P_INT, PI_TEXT, fixed_wheel_scroll_count, CMT_FIXED_WHEEL_SCROLL_COUNT},
+                     {"clear_buffer", P_INT, PI_ONOFF, clear_buffer, CMT_CLEAR_BUF},
+                     {"decode_cte", P_CHARINT, PI_ONOFF, DecodeCTE, CMT_DECODE_CTE},
+                     {"auto_uncompress", P_CHARINT, PI_ONOFF, AutoUncompress, CMT_AUTO_UNCOMPRESS},
+                     {"preserve_timestamp", P_CHARINT, PI_ONOFF, PreserveTimestamp, CMT_PRESERVE_TIMESTAMP},
+                     {"keymap_file", P_STRING, PI_TEXT, keymap_file, CMT_KEYMAP_FILE},
+                 }},
+    ParamSection{N_("Directory Settings"),
+                 {
+                     {"document_root", P_STRING, PI_TEXT, document_root, CMT_DROOT},
+                     {"personal_document_root", P_STRING, PI_TEXT, personal_document_root, CMT_PDROOT},
+                     {"cgi_bin", P_STRING, PI_TEXT, cgi_bin, CMT_CGIBIN},
+                     {"index_file", P_STRING, PI_TEXT, index_file, CMT_IFILE},
+                 }},
+    ParamSection{N_("External Program Settings"),
+                 {
+                     {"mime_types", P_STRING, PI_TEXT, mimetypes_files, CMT_MIMETYPES},
+                     {"mailcap", P_STRING, PI_TEXT, mailcap_files, CMT_MAILCAP},
+                     {"urimethodmap", P_STRING, PI_TEXT, urimethodmap_files, CMT_URIMETHODMAP},
+                     {"editor", P_STRING, PI_TEXT, Editor, CMT_EDITOR},
+                     {"mailto_options", P_INT, PI_SEL_C, MailtoOptions, CMT_MAILTO_OPTIONS, (void *)mailtooptionsstr},
+                     {"mailer", P_STRING, PI_TEXT, Mailer, CMT_MAILER},
+                     {"extbrowser", P_STRING, PI_TEXT, ExtBrowser, CMT_EXTBRZ},
+                     {"extbrowser2", P_STRING, PI_TEXT, ExtBrowser2, CMT_EXTBRZ2},
+                     {"extbrowser3", P_STRING, PI_TEXT, ExtBrowser3, CMT_EXTBRZ3},
+                     {"bgextviewer", P_INT, PI_ONOFF, BackgroundExtViewer, CMT_BGEXTVIEW},
+                     {"use_lessopen", P_INT, PI_ONOFF, use_lessopen, CMT_USE_LESSOPEN},
+                 }},
+    ParamSection{N_("Network Settings"),
+                 {
+                     {"passwd_file", P_STRING, PI_TEXT, passwd_file, CMT_PASSWDFILE},
+                     {"disable_secret_security_check", P_INT, PI_ONOFF, disable_secret_security_check, CMT_DISABLE_SECRET_SECURITY_CHECK},
+                     {"ftppasswd", P_STRING, PI_TEXT, ftppasswd, CMT_FTPPASS},
+                     {"ftppass_hostnamegen", P_INT, PI_ONOFF, ftppass_hostnamegen, CMT_FTPPASS_HOSTNAMEGEN},
+                     {"pre_form_file", P_STRING, PI_TEXT, pre_form_file, CMT_PRE_FORM_FILE},
+                     {"user_agent", P_STRING, PI_TEXT, UserAgent, CMT_USERAGENT},
+                     {"no_referer", P_INT, PI_ONOFF, NoSendReferer, CMT_NOSENDREFERER},
+                     {"accept_language", P_STRING, PI_TEXT, AcceptLang, CMT_ACCEPTLANG},
+                     {"accept_encoding", P_STRING, PI_TEXT, AcceptEncoding, CMT_ACCEPTENCODING},
+                     {"accept_media", P_STRING, PI_TEXT, AcceptMedia, CMT_ACCEPTMEDIA},
+                     {"argv_is_url", P_CHARINT, PI_ONOFF, ArgvIsURL, CMT_ARGV_IS_URL},
+                     {"retry_http", P_INT, PI_ONOFF, retryAsHttp, CMT_RETRY_HTTP},
+                     {"default_url", P_INT, PI_SEL_C, DefaultURLString, CMT_DEFAULT_URL, (void *)defaulturls},
+                     {"follow_redirection", P_INT, PI_TEXT, &FollowRedirection, CMT_FOLLOW_REDIRECTION},
+                     {"meta_refresh", P_CHARINT, PI_ONOFF, MetaRefresh, CMT_META_REFRESH},
+                     {"dns_order", P_INT, PI_SEL_C, DNS_order, CMT_DNS_ORDER, (void *)dnsorders},
+                     {"nntpserver", P_STRING, PI_TEXT, NNTP_server, CMT_NNTP_SERVER},
+                     {"nntpmode", P_STRING, PI_TEXT, NNTP_mode, CMT_NNTP_MODE},
+                     {"max_news", P_INT, PI_TEXT, MaxNewsMessage, CMT_MAX_NEWS},
+                 }},
+    ParamSection{N_("Proxy Settings"),
+                 {
+                     {"use_proxy", P_CHARINT, PI_ONOFF, use_proxy, CMT_USE_PROXY},
+                     {"http_proxy", P_STRING, PI_TEXT, HTTP_proxy, CMT_HTTP_PROXY},
+                     {"https_proxy", P_STRING, PI_TEXT, HTTPS_proxy, CMT_HTTPS_PROXY},
+                     {"ftp_proxy", P_STRING, PI_TEXT, FTP_proxy, CMT_FTP_PROXY},
+                     {"no_proxy", P_STRING, PI_TEXT, NO_proxy, CMT_NO_PROXY},
+                     {"noproxy_netaddr", P_INT, PI_ONOFF, NOproxy_netaddr, CMT_NOPROXY_NETADDR},
+                     {"no_cache", P_CHARINT, PI_ONOFF, NoCache, CMT_NO_CACHE},
+                 }},
+    ParamSection{N_("SSL Settings"),
+                 {
+                     {"ssl_forbid_method", P_STRING, PI_TEXT, ssl_forbid_method, CMT_SSL_FORBID_METHOD},
+                     {"ssl_verify_server", P_INT, PI_ONOFF, ssl_verify_server, CMT_SSL_VERIFY_SERVER},
+                     {"ssl_cert_file", P_SSLPATH, PI_TEXT, ssl_cert_file, CMT_SSL_CERT_FILE},
+                     {"ssl_key_file", P_SSLPATH, PI_TEXT, ssl_key_file, CMT_SSL_KEY_FILE},
+                     {"ssl_ca_path", P_SSLPATH, PI_TEXT, ssl_ca_path, CMT_SSL_CA_PATH},
+                     {"ssl_ca_file", P_SSLPATH, PI_TEXT, ssl_ca_file, CMT_SSL_CA_FILE},
+                 }},
+    ParamSection{N_("Cookie Settings"),
+                 {
+                     {"use_cookie", P_INT, PI_ONOFF, use_cookie, CMT_USECOOKIE},
+                     {"show_cookie", P_INT, PI_ONOFF, show_cookie, CMT_SHOWCOOKIE},
+                     {"accept_cookie", P_INT, PI_ONOFF, accept_cookie, CMT_ACCEPTCOOKIE},
+                     {"accept_bad_cookie", P_INT, PI_SEL_C, accept_bad_cookie, CMT_ACCEPTBADCOOKIE, (void *)badcookiestr},
+                     {"cookie_reject_domains", P_STRING, PI_TEXT, cookie_reject_domains, CMT_COOKIE_REJECT_DOMAINS},
+                     {"cookie_accept_domains", P_STRING, PI_TEXT, cookie_accept_domains, CMT_COOKIE_ACCEPT_DOMAINS},
+                     {"cookie_avoid_wrong_number_of_dots", P_STRING, PI_TEXT, cookie_avoid_wrong_number_of_dots, CMT_COOKIE_AVOID_WONG_NUMBER_OF_DOTS},
+                 }},
+    ParamSection{N_("Charset Settings"),
+                 {
+                     {"display_charset", P_CODE, PI_CODE, DisplayCharset, CMT_DISPLAY_CHARSET, display_charset_str},
+                     {"document_charset", P_CODE, PI_CODE, DocumentCharset, CMT_DOCUMENT_CHARSET, document_charset_str},
+                     {"auto_detect", P_CHARINT, PI_SEL_C, WcOption.auto_detect, CMT_AUTO_DETECT, (void *)auto_detect_str},
+                     {"system_charset", P_CODE, PI_CODE, SystemCharset, CMT_SYSTEM_CHARSET, system_charset_str},
+                     {"follow_locale", P_CHARINT, PI_ONOFF, FollowLocale, CMT_FOLLOW_LOCALE},
+                     {"ext_halfdump", P_CHARINT, PI_ONOFF, ExtHalfdump, CMT_EXT_HALFDUMP},
+                     {"use_wide", P_CHARINT, PI_ONOFF, WcOption.use_wide, CMT_USE_WIDE},
+                     {"use_combining", P_CHARINT, PI_ONOFF, WcOption.use_combining, CMT_USE_COMBINING},
+                     {"east_asian_width", P_CHARINT, PI_ONOFF, WcOption.east_asian_width, CMT_EAST_ASIAN_WIDTH},
+                     {"use_language_tag", P_CHARINT, PI_ONOFF, WcOption.use_language_tag, CMT_USE_LANGUAGE_TAG},
+                     {"ucs_conv", P_CHARINT, PI_ONOFF, WcOption.ucs_conv, CMT_UCS_CONV},
+                     {"pre_conv", P_CHARINT, PI_ONOFF, WcOption.pre_conv, CMT_PRE_CONV},
+                     {"search_conv", P_CHARINT, PI_ONOFF, SearchConv, CMT_SEARCH_CONV},
+                     {"fix_width_conv", P_CHARINT, PI_ONOFF, WcOption.fix_width_conv, CMT_FIX_WIDTH_CONV},
+                     {"use_gb12345_map", P_CHARINT, PI_ONOFF, WcOption.use_gb12345_map, CMT_USE_GB12345_MAP},
+                     {"use_jisx0201", P_CHARINT, PI_ONOFF, WcOption.use_jisx0201, CMT_USE_JISX0201},
+                     {"use_jisc6226", P_CHARINT, PI_ONOFF, WcOption.use_jisc6226, CMT_USE_JISC6226},
+                     {"use_jisx0201k", P_CHARINT, PI_ONOFF, WcOption.use_jisx0201k, CMT_USE_JISX0201K},
+                     {"use_jisx0212", P_CHARINT, PI_ONOFF, WcOption.use_jisx0212, CMT_USE_JISX0212},
+                     {"use_jisx0213", P_CHARINT, PI_ONOFF, WcOption.use_jisx0213, CMT_USE_JISX0213},
+                     {"strict_iso2022", P_CHARINT, PI_ONOFF, WcOption.strict_iso2022, CMT_STRICT_ISO2022},
+                     {"gb18030_as_ucs", P_CHARINT, PI_ONOFF, WcOption.gb18030_as_ucs, CMT_GB18030_AS_UCS},
+                     {"simple_preserve_space", P_CHARINT, PI_ONOFF, SimplePreserveSpace, CMT_SIMPLE_PRESERVE_SPACE},
+                 }});
 
 static void create_option_search_table()
 {
-    /* count table size */
-    RC_table_size = 0;
     for (auto &section : sections)
     {
-        int i = 0;
-        while (section.params[i].name)
+        for (auto &param : section.params)
         {
-            i++;
-            RC_table_size++;
+            RC_search_table.insert(std::make_pair(param.name, &param));
         }
     }
-
-    int diff1, diff2;
-    char *p, *q;
-    RC_search_table = New_N(struct rc_search_table, RC_table_size);
-    int k = 0;
-    for (auto &section : sections)
-    {
-        auto i = 0;
-        while (section.params[i].name)
-        {
-            RC_search_table[k].param = &section.params[i];
-            k++;
-            i++;
-        }
-    }
-
-    qsort(RC_search_table, RC_table_size, sizeof(struct rc_search_table),
-          [](const void *a, const void *b) {
-              return reinterpret_cast<const rc_search_table *>(a)->compare_table(
-                  reinterpret_cast<const rc_search_table *>(b));
-          });
-
-    diff1 = diff2 = 0;
-    for (int i = 0; i < RC_table_size - 1; i++)
-    {
-        p = RC_search_table[i].param->name;
-        q = RC_search_table[i + 1].param->name;
-        int j = 0;
-        for (; p[j] != '\0' && q[j] != '\0' && p[j] == q[j]; j++)
-            ;
-        int diff1 = j;
-        if (diff1 > diff2)
-            RC_search_table[i].uniq_pos = diff1 + 1;
-        else
-            RC_search_table[i].uniq_pos = diff2 + 1;
-        diff2 = diff1;
-    }
-}
-
-struct Param *
-search_param(const char *name)
-{
-    size_t b, e, i;
-    int cmp;
-    int len = strlen(name);
-
-    for (b = 0, e = RC_table_size - 1; b <= e;)
-    {
-        i = (b + e) / 2;
-        cmp = strncmp(name, RC_search_table[i].param->name, len);
-
-        if (!cmp)
-        {
-            if (len >= RC_search_table[i].uniq_pos)
-            {
-                return RC_search_table[i].param;
-            }
-            else
-            {
-                while ((cmp =
-                            strcmp(name, RC_search_table[i].param->name)) <= 0)
-                    if (!cmp)
-                        return RC_search_table[i].param;
-                    else if (i == 0)
-                        return NULL;
-                    else
-                        i--;
-                /* ambiguous */
-                return NULL;
-            }
-        }
-        else if (cmp < 0)
-        {
-            if (i == 0)
-                return NULL;
-            e = i - 1;
-        }
-        else
-            b = i + 1;
-    }
-    return NULL;
 }
 
 /* show parameter with bad options invokation */
@@ -850,20 +716,18 @@ void show_params(FILE *fp)
             cmt = section.name;
         fprintf(fp, "  section[%d]: %s\n", j, conv_to_system(cmt.data()));
 
-        int i = 0;
-        const char *t = nullptr;
-        while (section.params[i].name)
+        for (auto &param : section.params)
         {
-            switch (section.params[i].type)
+            std::string_view t;
+            switch (param.type)
             {
             case P_INT:
             case P_SHORT:
             case P_CHARINT:
             case P_NZINT:
-                t = (section.params[i].inputtype ==
-                     PI_ONOFF)
-                        ? (char *)"bool"
-                        : (char *)"number";
+                t = (param.inputtype == PI_ONOFF)
+                        ? "bool"
+                        : "number";
                 break;
             case P_CHAR:
                 t = "char";
@@ -888,18 +752,17 @@ void show_params(FILE *fp)
                 break;
             }
             if (!OptionEncode)
-                cmt = wc_conv(_(section.params[i].comment),
+                cmt = wc_conv(_(param.comment),
                               OptionCharset, InnerCharset)
                           ->ptr;
             else
-                cmt = section.params[i].comment;
-            int l = 30 - (strlen(section.params[i].name) + strlen(t));
+                cmt = param.comment;
+            int l = 30 - (param.name.size() + t.size());
             if (l < 0)
                 l = 1;
             fprintf(fp, "    -o %s=<%s>%*s%s\n",
-                    section.params[i].name, t, l, " ",
+                    param.name.data(), t.data(), l, " ",
                     conv_to_system(cmt.data()));
-            i++;
         }
     }
 }
@@ -931,120 +794,18 @@ int str_to_bool(const char *value, int old)
     return 1;
 }
 
-#ifdef USE_COLOR
 static int
-str_to_color(const char *value)
+set_param(std::string_view name, std::string_view value)
 {
-    if (value == NULL)
-        return 8; /* terminal */
-    switch (TOLOWER(*value))
+    auto found = RC_search_table.find(name);
+    if (found == RC_search_table.end())
     {
-    case '0':
-        return 0; /* black */
-    case '1':
-    case 'r':
-        return 1; /* red */
-    case '2':
-    case 'g':
-        return 2; /* green */
-    case '3':
-    case 'y':
-        return 3; /* yellow */
-    case '4':
-        return 4; /* blue */
-    case '5':
-    case 'm':
-        return 5; /* magenta */
-    case '6':
-    case 'c':
-        return 6; /* cyan */
-    case '7':
-    case 'w':
-        return 7; /* white */
-    case '8':
-    case 't':
-        return 8; /* terminal */
-    case 'b':
-        if (!strncasecmp(value, "blu", 3))
-            return 4; /* blue */
-        else
-            return 0; /* black */
-    }
-    return 8; /* terminal */
-}
-#endif
-
-static int
-set_param(const char *name, const char *value)
-{
-    struct Param *p;
-    double ppc;
-
-    if (value == NULL)
         return 0;
-    p = search_param(name);
-    if (p == NULL)
-        return 0;
-    switch (p->type)
-    {
-    case P_INT:
-        if (atoi(value) >= 0)
-            *(int *)p->varptr = (p->inputtype == PI_ONOFF)
-                                    ? str_to_bool(value, *(int *)p->varptr)
-                                    : atoi(value);
-        break;
-    case P_NZINT:
-        if (atoi(value) > 0)
-            *(int *)p->varptr = atoi(value);
-        break;
-    case P_SHORT:
-        *(short *)p->varptr = (p->inputtype == PI_ONOFF)
-                                  ? str_to_bool(value, *(short *)p->varptr)
-                                  : atoi(value);
-        break;
-    case P_CHARINT:
-        *(char *)p->varptr = (p->inputtype == PI_ONOFF)
-                                 ? str_to_bool(value, *(char *)p->varptr)
-                                 : atoi(value);
-        break;
-    case P_CHAR:
-        *(char *)p->varptr = value[0];
-        break;
-    case P_STRING:
-        *(const char **)p->varptr = value;
-        break;
-#if defined(USE_SSL) && defined(USE_SSL_VERIFY)
-    case P_SSLPATH:
-        if (value != NULL && value[0] != '\0')
-            *(char **)p->varptr = rcFile(value);
-        else
-            *(char **)p->varptr = NULL;
-        ssl_path_modified = 1;
-        break;
-#endif
-#ifdef USE_COLOR
-    case P_COLOR:
-        *(int *)p->varptr = str_to_color(value);
-        break;
-#endif
-#ifdef USE_M17N
-    case P_CODE:
-        *(wc_ces *)p->varptr =
-            wc_guess_charset_short(value, *(wc_ces *)p->varptr);
-        break;
-#endif
-    case P_PIXELS:
-        ppc = atof(value);
-        if (ppc >= MINIMUM_PIXEL_PER_CHAR && ppc <= MAXIMUM_PIXEL_PER_CHAR * 2)
-            *(double *)p->varptr = ppc;
-        break;
-    case P_SCALE:
-        ppc = atof(value);
-        if (ppc >= 10 && ppc <= 1000)
-            *(double *)p->varptr = ppc;
-        break;
     }
-    return 1;
+    auto p = found->second;
+    assert(p);
+
+    return p->Value(value);
 }
 
 int set_param_option(const char *option)
@@ -1087,10 +848,12 @@ option_assigned:
 char *
 get_param_option(char *name)
 {
-    struct Param *p;
-
-    p = search_param(name);
-    return p ? to_str(p)->ptr : NULL;
+    auto found = RC_search_table.find(name);
+    if (found == RC_search_table.end())
+    {
+        return "";
+    }
+    return found->second->to_str()->ptr;
 }
 
 static void
@@ -1591,43 +1354,12 @@ static char optionpanel_src1[] =
 
 static Str optionpanel_str = NULL;
 
-static Str to_str(struct Param *p)
-{
-    switch (p->type)
-    {
-    case P_INT:
-    case P_COLOR:
-    case P_CODE:
-        return Sprintf("%d", (int)(*(wc_ces *)p->varptr));
-    case P_NZINT:
-        return Sprintf("%d", *(int *)p->varptr);
-    case P_SHORT:
-        return Sprintf("%d", *(short *)p->varptr);
-    case P_CHARINT:
-        return Sprintf("%d", *(char *)p->varptr);
-    case P_CHAR:
-        return Sprintf("%c", *(char *)p->varptr);
-    case P_STRING:
-    case P_SSLPATH:
-        /*  SystemCharset -> InnerCharset */
-        return Strnew(conv_from_system(*(char **)p->varptr));
-    case P_PIXELS:
-    case P_SCALE:
-        return Sprintf("%g", *(double *)p->varptr);
-    }
-    /* not reached */
-    return NULL;
-}
-
 BufferPtr
 load_option_panel(void)
 {
     Str src;
-    struct Param *p;
-    struct sel_c *s;
-#ifdef USE_M17N
-    wc_ces_list *c;
-#endif
+    struct sel_c *s = nullptr;
+    wc_ces_list *c = nullptr;
     int x, i;
     Str tmp;
     BufferPtr buf;
@@ -1644,19 +1376,20 @@ load_option_panel(void)
             section.name =
                 wc_conv(_(section.name.c_str()), OptionCharset, InnerCharset)
                     ->ptr;
-            for (p = section.params; p->name; p++)
+
+            for (auto &param : section.params)
             {
-                p->comment =
-                    wc_conv(_(p->comment), OptionCharset,
+                param.comment =
+                    wc_conv(_(param.comment), OptionCharset,
                             InnerCharset)
                         ->ptr;
-                if (p->inputtype == PI_SEL_C
+                if (param.inputtype == PI_SEL_C
 
-                    && p->select != colorstr
+                    && param.select != colorstr
 
                 )
                 {
-                    for (s = (struct sel_c *)p->select; s->text != NULL; s++)
+                    for (s = (struct sel_c *)param.select; s->text != NULL; s++)
                     {
                         s->text =
                             wc_conv(_(s->text), OptionCharset,
@@ -1680,40 +1413,40 @@ load_option_panel(void)
     for (auto &section : sections)
     {
         Strcat_m_charp(src, "<h1>", section.name, "</h1>", NULL);
-        p = section.params;
+
         src->Push("<table width=100% cellpadding=0>");
-        while (p->name)
+        for (auto &param : section.params)
         {
-            Strcat_m_charp(src, "<tr><td>", p->comment, NULL);
+            Strcat_m_charp(src, "<tr><td>", param.comment, NULL);
             src->Push(Sprintf("</td><td width=%d>",
                               (int)(28 * pixel_per_char)));
-            switch (p->inputtype)
+            switch (param.inputtype)
             {
             case PI_TEXT:
                 Strcat_m_charp(src, "<input type=text name=",
-                               p->name,
+                               param.name,
                                " value=\"",
-                               html_quote(to_str(p)->ptr), "\">", NULL);
+                               html_quote(param.to_str()), "\">", NULL);
                 break;
             case PI_ONOFF:
-                x = atoi(to_str(p)->ptr);
+                x = atoi(param.to_str()->ptr);
                 Strcat_m_charp(src, "<input type=radio name=",
-                               p->name,
+                               param.name,
                                " value=1",
                                (x ? " checked" : ""),
                                ">YES&nbsp;&nbsp;<input type=radio name=",
-                               p->name,
+                               param.name,
                                " value=0", (x ? "" : " checked"), ">NO", NULL);
                 break;
             case PI_SEL_C:
-                tmp = to_str(p);
-                Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
-                for (s = (struct sel_c *)p->select; s->text != NULL; s++)
+                tmp = param.to_str();
+                Strcat_m_charp(src, "<select name=", param.name, ">", NULL);
+                for (s = (struct sel_c *)param.select; s->text != NULL; s++)
                 {
                     src->Push("<option value=");
                     src->Push(Sprintf("%s\n", s->cvalue));
-                    if ((p->type != P_CHAR && s->value == atoi(tmp->ptr)) ||
-                        (p->type == P_CHAR && (char)s->value == *(tmp->ptr)))
+                    if ((param.type != P_CHAR && s->value == atoi(tmp->ptr)) ||
+                        (param.type == P_CHAR && (char)s->value == *(tmp->ptr)))
                         src->Push(" selected");
                     src->Push('>');
                     src->Push(s->text);
@@ -1722,9 +1455,9 @@ load_option_panel(void)
                 break;
 #ifdef USE_M17N
             case PI_CODE:
-                tmp = to_str(p);
-                Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
-                for (c = *(wc_ces_list **)p->select; c->desc != NULL; c++)
+                tmp = param.to_str();
+                Strcat_m_charp(src, "<select name=", param.name, ">", NULL);
+                for (c = *(wc_ces_list **)param.select; c->desc != NULL; c++)
                 {
                     src->Push("<option value=");
                     src->Push(Sprintf("%s\n", c->name));
@@ -1738,7 +1471,6 @@ load_option_panel(void)
 #endif
             }
             src->Push("</td></tr>\n");
-            p++;
         }
         src->Push(
             "<tr><td></td><td><p><input type=submit value=\"OK\"></td></tr>");
