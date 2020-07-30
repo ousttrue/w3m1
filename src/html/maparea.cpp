@@ -4,7 +4,7 @@
 #include "html/frame.h"
 #include "frontend/menu.h"
 #include "file.h"
-#include "etc.h"
+
 #include "ctrlcode.h"
 #include "html/anchor.h"
 #include "html/image.h"

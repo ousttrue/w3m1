@@ -3,7 +3,7 @@
 #include "indep.h"
 #include "file.h"
 #include "rc.h"
-#include "etc.h"
+
 #include "frontend/display.h"
 
 #ifdef USE_HISTORY

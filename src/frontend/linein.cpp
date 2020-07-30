@@ -5,7 +5,7 @@
 #include "transport/local.h"
 #include "myctype.h"
 #include "frontend/display.h"
-#include "etc.h"
+
 #include "file.h"
 #include "public.h"
 #include "frontend/terms.h"

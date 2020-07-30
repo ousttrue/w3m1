@@ -1,7 +1,7 @@
 #include "fm.h"
 #include "html/table.h"
 #include "indep.h"
-#include "etc.h"
+
 #include "commands.h"
 #include "html/frame.h"
 #include "file.h"

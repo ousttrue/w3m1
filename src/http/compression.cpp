@@ -5,7 +5,7 @@
 #include "transport/istream.h"
 #include "rc.h"
 #include "file.h"
-#include "etc.h"
+
 #include "fm.h"
 #include "html/html.h"
 #include "transport/local.h"

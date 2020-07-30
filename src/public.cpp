@@ -2,7 +2,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "rc.h"
-#include "etc.h"
+
 #include "html/frame.h"
 #include "frontend/display.h"
 #include "html/parsetag.h"

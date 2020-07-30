@@ -8,7 +8,7 @@
 #include "file.h"
 #include "symbol.h"
 #include "html/maparea.h"
-#include "etc.h"
+
 #include "frontend/display.h"
 #include "ctrlcode.h"
 #include "frontend/mouse.h"

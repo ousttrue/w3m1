@@ -3,7 +3,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "html/frame.h"
-#include "etc.h"
+
 #include "html/parsetagx.h"
 #include "myctype.h"
 #include "file.h"

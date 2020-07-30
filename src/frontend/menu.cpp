@@ -14,7 +14,7 @@
 #include "file.h"
 #include "html/html.h"
 #include "frontend/mouse.h"
-#include "etc.h"
+
 #include "frontend/buffer.h"
 #include "html/anchor.h"
 #include "transport/url.h"

@@ -15,7 +15,7 @@
 #include "myctype.h"
 #include "symbol.h"
 #include "table.h"
-#include "etc.h"
+
 #include "entity.h"
 #include "file.h"
 #include "tagstack.h"

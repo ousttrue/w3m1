@@ -6,7 +6,7 @@
 #include "config.h"
 #include "fm.h"
 #include "commands.h"
-#include "etc.h"
+
 #include "frontend/terms.h"
 #include "indep.h"
 #include "public.h"

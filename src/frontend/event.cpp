@@ -4,7 +4,7 @@
 #include "fm.h"
 #include "terms.h"
 #include "tab.h"
-#include "etc.h"
+
 #include <signal.h>
 
 static AlarmEvent s_DefaultAlarm = {

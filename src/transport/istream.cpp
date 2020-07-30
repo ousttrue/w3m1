@@ -4,7 +4,7 @@
 #include "myctype.h"
 #include "transport/istream.h"
 #include "file.h"
-#include "etc.h"
+
 #include "html/html.h"
 #include "mime/mimeencoding.h"
 #include "frontend/display.h"

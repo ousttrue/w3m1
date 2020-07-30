@@ -6,7 +6,7 @@
 #include "file.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
-#include "etc.h"
+
 #include "frontend/buffer.h"
 #include "transport/local.h"
 #include "html/anchor.h"

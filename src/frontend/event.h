@@ -18,6 +18,23 @@ struct AlarmEvent
     void *data;
 };
 
+#define TRAP_ON                                \
+    if (TrapSignal)                            \
+    {                                          \
+        prevtrap = mySignal(SIGINT, KeyAbort); \
+        if (fmInitialized)                     \
+            term_cbreak();                     \
+    }
+
+#define TRAP_OFF                        \
+    if (TrapSignal)                     \
+    {                                   \
+        if (fmInitialized)              \
+            term_raw();                 \
+        if (prevtrap)                   \
+            mySignal(SIGINT, prevtrap); \
+    }
+
 // typedef RETSIGTYPE MySignalHandler;
 using MySignalHandler = void (*)(int);
 MySignalHandler mySignal(int signal_number, MySignalHandler action);

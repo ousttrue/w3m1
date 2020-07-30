@@ -14,7 +14,7 @@
 #include <gc_cpp.h>
 #include "rc.h"
 #include "commands.h"
-#include "etc.h"
+
 #include "regex.h"
 #include "myctype.h"
 #include "frontend/buffer.h"

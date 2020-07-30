@@ -3,7 +3,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
-#include "etc.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

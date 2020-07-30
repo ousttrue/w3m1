@@ -3,7 +3,7 @@
 #include "indep.h"
 #include "file.h"
 #include "http/http_request.h"
-#include "etc.h"
+
 #include "http/auth.h"
 #include "mime/mimetypes.h"
 #include "mime/mimeencoding.h"

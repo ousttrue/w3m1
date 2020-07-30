@@ -2,7 +2,7 @@
 #include "dispatcher.h"
 #include "fm.h"
 #include "indep.h"
-#include "etc.h"
+
 #include "file.h"
 #include "html/form.h"
 #include "myctype.h"
