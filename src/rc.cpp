@@ -41,6 +41,11 @@ struct rc_search_table
 {
     struct Param *param;
     short uniq_pos;
+
+    int compare_table(const rc_search_table *b) const
+    {
+        return strcmp(param->name, b->param->name);
+    }
 };
 
 static struct rc_search_table *RC_search_table;
@@ -732,12 +737,6 @@ auto sections = make_array(
 
 static Str to_str(struct Param *p);
 
-static int
-compare_table(struct rc_search_table *a, struct rc_search_table *b)
-{
-    return strcmp(a->param->name, b->param->name);
-}
-
 static void create_option_search_table()
 {
     /* count table size */
@@ -768,7 +767,10 @@ static void create_option_search_table()
     }
 
     qsort(RC_search_table, RC_table_size, sizeof(struct rc_search_table),
-          (int (*)(const void *, const void *))compare_table);
+          [](const void *a, const void *b) {
+              return reinterpret_cast<const rc_search_table *>(a)->compare_table(
+                  reinterpret_cast<const rc_search_table *>(b));
+          });
 
     diff1 = diff2 = 0;
     for (int i = 0; i < RC_table_size - 1; i++)
@@ -1675,7 +1677,7 @@ load_option_panel(void)
     src = optionpanel_str->Clone();
 
     src->Push("<table><tr><td>");
-    for (auto &section: sections)
+    for (auto &section : sections)
     {
         Strcat_m_charp(src, "<h1>", section.name, "</h1>", NULL);
         p = section.params;
