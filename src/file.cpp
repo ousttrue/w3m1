@@ -197,8 +197,8 @@ void examineFile(char *path, URLFile *uf)
  * convert line
  */
 #ifdef USE_M17N
-Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset,
-                wc_ces doc_charset)
+Str convertLine(URLFile *uf, Str line, int mode, CharacterEncodingScheme *charset,
+                CharacterEncodingScheme doc_charset)
 #else
 Str convertLine0(URLFile *uf, Str line, int mode)
 #endif
@@ -712,14 +712,14 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
 /* 
  * loadGopherDir: get gopher directory
  */
-Str loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces *charset)
+Str loadGopherDir(URLFile *uf, ParsedURL *pu, CharacterEncodingScheme *charset)
 {
     Str tmp;
     Str lbuf, name, file, host, port;
     char *p, *q;
     MySignalHandler prevtrap = NULL;
 #ifdef USE_M17N
-    wc_ces doc_charset = DocumentCharset;
+    CharacterEncodingScheme doc_charset = DocumentCharset;
 #endif
 
     tmp = pu->ToStr();
@@ -926,7 +926,7 @@ _saveBuffer(BufferPtr buf, Line *l, FILE *f, int cont)
     int is_html = FALSE;
 #ifdef USE_M17N
     int set_charset = !DisplayCharset;
-    wc_ces charset = DisplayCharset ? DisplayCharset : WC_CES_US_ASCII;
+    CharacterEncodingScheme charset = DisplayCharset ? DisplayCharset : WC_CES_US_ASCII;
 #endif
 
     is_html = is_html_type(buf->type);
@@ -1048,7 +1048,7 @@ openGeneralPagerBuffer(InputStream *stream)
     BufferPtr t_buf = NULL;
     URLFile uf(SCM_UNKNOWN, stream);
 
-    content_charset = 0;
+    content_charset = WC_CES_NONE;
     if (SearchHeader)
     {
         t_buf = newBuffer(INIT_BUFFER_WIDTH);
@@ -1122,8 +1122,8 @@ getNextPage(BufferPtr buf, int plen)
     Str lineBuf2;
     char pre_lbuf = '\0';
 
-    wc_ces charset;
-    wc_ces doc_charset = DocumentCharset;
+    CharacterEncodingScheme charset;
+    CharacterEncodingScheme doc_charset = DocumentCharset;
     uint8_t old_auto_detect = WcOption.auto_detect;
 
     int squeeze_flag = FALSE;
@@ -1150,7 +1150,7 @@ getNextPage(BufferPtr buf, int plen)
         doc_charset = buf->document_charset;
     else if (UseContentCharset)
     {
-        content_charset = 0;
+        content_charset = WC_CES_NONE;
         checkContentType(buf);
         if (content_charset)
             doc_charset = content_charset;

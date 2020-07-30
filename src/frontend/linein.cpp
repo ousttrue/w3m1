@@ -1019,7 +1019,7 @@ _prev(void)
         strCurrentBuf = strBuf;
     }
     if (DecodeURL && (cm_mode & CPL_URL) )
-        p = url_unquote_conv(p, 0);
+        p = url_unquote_conv(p, WC_CES_NONE);
     strBuf = Strnew(p);
     CLen = CPos = setStrType(strBuf, strProp);
     offset = 0;
@@ -1038,7 +1038,7 @@ _next(void)
     p = nextHist(hist);
     if (p) {
         if (DecodeURL && (cm_mode & CPL_URL) )
-            p = url_unquote_conv(p, 0);
+            p = url_unquote_conv(p, WC_CES_NONE);
         strBuf = Strnew(p);
     }
     else {

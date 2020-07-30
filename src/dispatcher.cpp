@@ -661,7 +661,7 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
     char *p, *s, *emsg;
     int lineno;
 #ifdef USE_M17N
-    wc_ces charset = SystemCharset;
+    CharacterEncodingScheme charset = SystemCharset;
 #endif
     int verbose = 1;
 

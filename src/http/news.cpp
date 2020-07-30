@@ -334,7 +334,7 @@ openNewsStream(ParsedURL *pu)
     return NULL;
 }
 
-Str loadNewsgroup(ParsedURL *pu, wc_ces *charset)
+Str loadNewsgroup(ParsedURL *pu, CharacterEncodingScheme *charset)
 {
     Str page;
     Str tmp;
@@ -344,7 +344,7 @@ Str loadNewsgroup(ParsedURL *pu, wc_ces *charset)
     int status, i, first, last;
     int flag = 0, start = 0, end = 0;
     MySignalHandler prevtrap = NULL;
-    wc_ces doc_charset = DocumentCharset, mime_charset;
+    CharacterEncodingScheme doc_charset = DocumentCharset, mime_charset;
 
     *charset = WC_CES_US_ASCII;
 

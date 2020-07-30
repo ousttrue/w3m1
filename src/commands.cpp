@@ -1504,7 +1504,7 @@ void curURL()
         offset = 0;
         s = currentURL();
         if (DecodeURL)
-            s = Strnew(url_unquote_conv(s->ptr, 0));
+            s = Strnew(url_unquote_conv(s->ptr, WC_CES_NONE));
 #ifdef USE_M17N
         s = checkType(s, &pp, NULL);
         p = NewAtom_N(Lineprop, s->Size());
@@ -1539,7 +1539,7 @@ void vwSrc()
         if (GetCurrentTab()->GetCurrentBuffer()->pagerSource &&
             GetCurrentTab()->GetCurrentBuffer()->type == "text/plain")
         {
-            wc_ces old_charset;
+            CharacterEncodingScheme old_charset;
             wc_bool old_fix_width_conv;
 
             Str tmpf = tmpfname(TMPF_SRC, NULL);
@@ -1551,7 +1551,7 @@ void vwSrc()
             old_fix_width_conv = WcOption.fix_width_conv;
             DisplayCharset = (GetCurrentTab()->GetCurrentBuffer()->document_charset != WC_CES_US_ASCII)
                                  ? GetCurrentTab()->GetCurrentBuffer()->document_charset
-                                 : 0;
+                                 : WC_CES_NONE;
             WcOption.fix_width_conv = WC_FALSE;
 
             saveBufferBody(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
@@ -1618,7 +1618,7 @@ void reload()
 {
     BufferPtr buf;
     BufferPtr fbuf = NULL;
-    wc_ces old_charset;
+    CharacterEncodingScheme old_charset;
 
     Str url;
     FormList *request;
@@ -1762,13 +1762,13 @@ void reshape()
 void docCSet()
 {
     char *cs;
-    wc_ces charset;
+    CharacterEncodingScheme charset;
     cs = searchKeyData();
     if (cs == NULL || *cs == '\0')
         /* FIXME: gettextize? */
         cs = inputStr("Document charset: ",
                       wc_ces_to_charset(GetCurrentTab()->GetCurrentBuffer()->document_charset));
-    charset = wc_guess_charset_short(cs, 0);
+    charset = wc_guess_charset_short(cs, WC_CES_NONE);
     if (charset == 0)
     {
         displayCurrentbuf(B_NORMAL);
@@ -1780,13 +1780,13 @@ void docCSet()
 void defCSet()
 {
     char *cs;
-    wc_ces charset;
+    CharacterEncodingScheme charset;
     cs = searchKeyData();
     if (cs == NULL || *cs == '\0')
         /* FIXME: gettextize? */
         cs = inputStr("Default document charset: ",
                       wc_ces_to_charset(DocumentCharset));
-    charset = wc_guess_charset_short(cs, 0);
+    charset = wc_guess_charset_short(cs, WC_CES_NONE);
     if (charset != 0)
         DocumentCharset = charset;
     displayCurrentbuf(B_NORMAL);

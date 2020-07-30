@@ -3,11 +3,11 @@
 #include "wtf.h"
 
 static wc_status putc_st;
-static wc_ces putc_f_ces, putc_t_ces;
+static CharacterEncodingScheme putc_f_ces, putc_t_ces;
 static Str putc_str;
 
 void
-wc_putc_init(wc_ces f_ces, wc_ces t_ces)
+wc_putc_init(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 {
     wc_output_init(t_ces, &putc_st);
     putc_str = Strnew_size(8);

@@ -308,7 +308,7 @@ wtf_push_iso2022(Str os, wc_ccs ccs, uint32_t code)
     wtf_push(os, ccs, code);
 }
 
-Str wc_conv_from_iso2022(Str is, wc_ces ces)
+Str wc_conv_from_iso2022(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

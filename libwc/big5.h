@@ -23,6 +23,6 @@ extern uint8_t WC_BIG5_MAP[];
 
 extern wc_wchar_t wc_big5_to_cs94w(wc_wchar_t cc);
 extern wc_wchar_t wc_cs94w_to_big5(wc_wchar_t cc);
-extern Str        wc_conv_from_big5(Str is, wc_ces ces);
+extern Str        wc_conv_from_big5(Str is, CharacterEncodingScheme ces);
 extern void       wc_push_to_big5(Str os, wc_wchar_t cc, wc_status *st);
 extern Str        wc_char_conv_from_big5(uint8_t c, wc_status *st);

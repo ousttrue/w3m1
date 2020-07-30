@@ -119,7 +119,7 @@ struct Param
             value = (int)v;
             break;
         case P_CODE:
-            value = (wc_ces)v;
+            value = (CharacterEncodingScheme)v;
             break;
         case P_PIXELS:
         case P_SCALE:
@@ -134,7 +134,7 @@ struct Param
         }
     }
 
-    Param(std::string_view n, ParamTypes t, ParamInputType it, wc_ces v, std::string_view c, void *s = nullptr)
+    Param(std::string_view n, ParamTypes t, ParamInputType it, CharacterEncodingScheme v, std::string_view c, void *s = nullptr)
         : name(n), type(t), inputtype(it), comment(c), select(s)
     {
         assert(t == P_CODE);
@@ -257,7 +257,7 @@ struct Param
             break;
 
         case P_CODE:
-            this->value = wc_guess_charset_short(src.data(), this->Value<wc_ces>());
+            this->value = wc_guess_charset_short(src.data(), this->Value<CharacterEncodingScheme>());
             break;
 
         case P_PIXELS:
@@ -292,7 +292,7 @@ struct Param
         case P_NZINT:
             return Sprintf("%d", std::any_cast<int>(value));
         case P_CODE:
-            return Sprintf("%d", std::any_cast<wc_ces>(value));
+            return Sprintf("%d", std::any_cast<CharacterEncodingScheme>(value));
         case P_SHORT:
             return Sprintf("%d", std::any_cast<short>(value));
         case P_CHARINT:
@@ -315,7 +315,7 @@ std::unordered_map<std::string_view, Param *> RC_search_table;
 
 /* FIXME: gettextize here */
 #ifdef USE_M17N
-static wc_ces OptionCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
+static CharacterEncodingScheme OptionCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
 static int OptionEncode = FALSE;
 #endif
 

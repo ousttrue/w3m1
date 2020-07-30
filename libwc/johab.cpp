@@ -247,7 +247,7 @@ wc_cs128w_to_johab(wc_wchar_t cc)
 }
 
 Str
-wc_conv_from_johab(Str is, wc_ces ces)
+wc_conv_from_johab(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

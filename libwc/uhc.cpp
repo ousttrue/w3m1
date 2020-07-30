@@ -70,7 +70,7 @@ wc_uhc_to_N(uint32_t c)
 }
 
 Str
-wc_conv_from_uhc(Str is, wc_ces ces)
+wc_conv_from_uhc(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

@@ -196,14 +196,14 @@ decodeQP(char **ww)
 
 #ifdef USE_M17N
 Str
-decodeWord(char **ow, wc_ces * charset)
+decodeWord(char **ow, CharacterEncodingScheme * charset)
 #else
 Str
 decodeWord0(char **ow)
 #endif
 {
 #ifdef USE_M17N
-    wc_ces c;
+    CharacterEncodingScheme c;
 #endif
     char *p, *w = *ow;
     char method;
@@ -218,15 +218,11 @@ decodeWord0(char **ow)
 	    goto convert_fail;
 	tmp->Push(*w);
     }
-#ifdef USE_M17N
-    c = wc_guess_charset(tmp->ptr, 0);
+
+    c = wc_guess_charset(tmp->ptr, WC_CES_NONE);
     if (!c)
 	goto convert_fail;
-#else
-    if (strcasecmp(tmp->ptr, "ISO-8859-1") != 0 && strcasecmp(tmp->ptr, "US_ASCII") != 0)
-	/* NOT ISO-8859-1 encoding ... don't convert */
-	goto convert_fail;
-#endif
+
     w++;
     method = *(w++);
     if (*w != '?')
@@ -263,21 +259,15 @@ decodeWord0(char **ow)
 /* 
  * convert MIME encoded string to the original one
  */
-#ifdef USE_M17N
 Str
-decodeMIME(Str orgstr, wc_ces * charset)
-#else
-Str
-decodeMIME0(Str orgstr)
-#endif
+decodeMIME(Str orgstr, CharacterEncodingScheme * charset)
 {
     char *org = orgstr->ptr, *endp = org + orgstr->Size();
     char *org0, *p;
     Str cnv = NULL;
 
-#ifdef USE_M17N
-    *charset = 0;
-#endif
+    *charset = WC_CES_NONE;
+
     while (org < endp) {
 	if (*org == '=' && *(org + 1) == '?') {
 	    if (cnv == NULL) {

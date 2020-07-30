@@ -363,12 +363,9 @@ wc_ces_info WcCesInfo[] = {
     ces_priv2(VISCII_11,  "VISCII-1.1", "Vietnamese (VISCII 1.1)", viscii11),
     ces_priv2(VPS,        "VPS",        "Vietnamese (VPS)",        vps),
 
-#ifdef USE_UNICODE
+
     ces_priv2(UTF_8, "UTF-8", "Unicode (UTF-8)", utf8),
     ces_priv2(UTF_7, "UTF-7", "Unicode (UTF-7)", utf7),
-#else
-    { WC_CES_UTF_8, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
-    { WC_CES_UTF_7, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
-#endif
-    { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+    
+    { WC_CES_NONE, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
 };

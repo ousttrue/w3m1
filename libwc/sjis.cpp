@@ -191,7 +191,7 @@ wc_sjis_ext2_to_N(uint32_t c)
 }
 
 Str
-wc_conv_from_sjis(Str is, wc_ces ces)
+wc_conv_from_sjis(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;
@@ -271,7 +271,7 @@ wc_conv_from_sjis(Str is, wc_ces ces)
 }
 
 Str
-wc_conv_from_sjisx0213(Str is, wc_ces ces)
+wc_conv_from_sjisx0213(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

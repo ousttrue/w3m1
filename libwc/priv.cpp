@@ -4,7 +4,7 @@
 
 
 Str
-wc_conv_from_priv1(Str is, wc_ces ces)
+wc_conv_from_priv1(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;
@@ -42,7 +42,7 @@ wc_char_conv_from_priv1(uint8_t c, wc_status *st)
 }
 
 Str
-wc_conv_from_ascii(Str is, wc_ces ces)
+wc_conv_from_ascii(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

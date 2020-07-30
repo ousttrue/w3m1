@@ -58,7 +58,7 @@ wc_cs94w_to_big5(wc_wchar_t cc)
     return cc;
 }
 
-Str wc_conv_from_big5(Str is, wc_ces ces)
+Str wc_conv_from_big5(Str is, CharacterEncodingScheme ces)
 {
     auto sp = is->data();
     auto ep = sp + is->Size();

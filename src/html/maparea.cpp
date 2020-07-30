@@ -581,7 +581,7 @@ page_info_panel(BufferPtr buf)
 #endif
     p = buf->currentURL.ToStr()->ptr;
     if (DecodeURL)
-        p = url_unquote_conv(p, 0);
+        p = url_unquote_conv(p, WC_CES_NONE);
     Strcat_m_charp(tmp, "<table cellpadding=0>",
                    "<tr valign=top><td nowrap>Title<td>",
                    html_quote(buf->buffername.c_str()),

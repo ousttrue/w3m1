@@ -89,7 +89,7 @@ migemostr(char *str)
 #ifdef USE_M17N
 /* normalize search string */
 char *
-conv_search_string(char *str, wc_ces f_ces)
+conv_search_string(char *str, CharacterEncodingScheme f_ces)
 {
     if (SearchConv && !WcOption.pre_conv &&
 	GetCurrentTab()->GetCurrentBuffer()->document_charset != f_ces)

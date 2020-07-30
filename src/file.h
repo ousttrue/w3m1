@@ -10,7 +10,7 @@ struct Hist;
 char *guess_save_name(BufferPtr buf, std::string_view file);
 void examineFile(char *path, URLFile *uf);
 
-Str convertLine(URLFile *uf, Str line, int mode, wc_ces *charset, wc_ces doc_charset);
+Str convertLine(URLFile *uf, Str line, int mode, CharacterEncodingScheme *charset, CharacterEncodingScheme doc_charset);
 char *guess_filename(std::string_view file);
 int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
@@ -78,7 +78,7 @@ char *mydirname(const char *s);
 #ifdef USE_MIGEMO
 void init_migemo(void);
 #endif
-char *conv_search_string(char *str, wc_ces f_ces);
+char *conv_search_string(char *str, CharacterEncodingScheme f_ces);
 int forwardSearch(BufferPtr buf, char *str);
 int backwardSearch(BufferPtr buf, char *str);
 void pcmap(void);
@@ -147,11 +147,11 @@ int openSocket(const char *hostname, const char *remoteport_name,
 char *acceptableMimeTypes();
 int check_no_proxy(char *domain);
 InputStream *openFTPStream(ParsedURL *pu, URLFile *uf);
-Str loadFTPDir(ParsedURL *pu, wc_ces *charset);
+Str loadFTPDir(ParsedURL *pu, CharacterEncodingScheme *charset);
 void closeFTP(void);
 void disconnectFTP(void);
 InputStream *openNewsStream(ParsedURL *pu);
-Str loadNewsgroup(ParsedURL *pu, wc_ces *charset);
+Str loadNewsgroup(ParsedURL *pu, CharacterEncodingScheme *charset);
 void closeNews(void);
 void disconnectNews(void);
 
@@ -193,7 +193,7 @@ void HTMLlineproc2(BufferPtr buf, TextLineList *tl);
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
                     int internal);
 
-void SetMetaCharset(wc_ces ces);
+void SetMetaCharset(CharacterEncodingScheme ces);
 ParsedURL *GetCurBaseUrl();
 int setModtime(char *path, time_t modtime);
 

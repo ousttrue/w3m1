@@ -422,7 +422,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                 int force_reload)
 {
     int r, c, t_stack;
-    wc_ces charset, doc_charset;
+    CharacterEncodingScheme charset, doc_charset;
     char *d_target, *p_target, *s_target, *t_target;
     ParsedURL *currentURL, base;
     MySignalHandler prevtrap = NULL;
@@ -730,10 +730,10 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 SKIP_BLANKS(q);
                                 if (*q == '=')
                                 {
-                                    wc_ces c;
+                                    CharacterEncodingScheme c;
                                     q++;
                                     SKIP_BLANKS(q);
-                                    if ((c = wc_guess_charset(q, 0)) != 0)
+                                    if ((c = wc_guess_charset(q, WC_CES_NONE)) != 0)
                                     {
                                         doc_charset = c;
                                         charset = WC_CES_US_ASCII;
@@ -943,7 +943,7 @@ renderFrame(BufferPtr Cbuf, int force_reload)
     BufferPtr buf;
     int flag;
     struct frameset *fset;
-    wc_ces doc_charset = DocumentCharset;
+    CharacterEncodingScheme doc_charset = DocumentCharset;
 
     tmp = tmpfname(TMPF_FRAME, ".html");
     f = fopen(tmp->ptr, "w");

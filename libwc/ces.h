@@ -2,6 +2,8 @@
 
 enum CharacterEncodingScheme : uint32_t
 {
+    WC_CES_NONE = 0,
+
     WC_CES_N_US_ASCII = 0,
     WC_CES_N_ISO_8859_1 = 1,
     WC_CES_N_ISO_8859_2 = 2,
@@ -188,3 +190,4 @@ enum CharacterEncodingScheme : uint32_t
 
     WC_CES_END = WC_CES_N_UTF_7,
 };
+#include "enum_bit_operator.h"

@@ -462,7 +462,7 @@ int main(int argc, char **argv, char **envp)
     char *Locale = NULL;
     uint8_t auto_detect;
 #ifdef __EMX__
-    wc_ces CodePage;
+    CharacterEncodingScheme CodePage;
 #endif
 #endif
     GC_INIT();

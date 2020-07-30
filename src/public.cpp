@@ -1305,7 +1305,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
 
 Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf)
 {
-    wc_ces charset = SystemCharset;
+    CharacterEncodingScheme charset = SystemCharset;
 
     if (fi->parent->charset)
         charset = fi->parent->charset;
@@ -1697,7 +1697,7 @@ void goURL0(const char* prompt, int relative)
             {
                 url = c_url;
                 if (DecodeURL)
-                    url = url_unquote_conv(url, 0);
+                    url = url_unquote_conv(url, WC_CES_NONE);
             }
             else
                 pushHist(hist, c_url);
@@ -1852,7 +1852,7 @@ void repBuffer(BufferPtr oldbuf, BufferPtr buf)
     GetCurrentTab()->SetCurrentBuffer(buf);
 }
 
-void _docCSet(wc_ces charset)
+void _docCSet(CharacterEncodingScheme charset)
 {
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
@@ -2431,7 +2431,7 @@ void chkURLBuffer(BufferPtr buf)
 void change_charset(struct parsed_tagarg *arg)
 {
     BufferPtr buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_INFO];
-    wc_ces charset;
+    CharacterEncodingScheme charset;
 
     if (buf == NULL)
         return;
@@ -2444,7 +2444,7 @@ void change_charset(struct parsed_tagarg *arg)
     for (; arg; arg = arg->next)
     {
         if (!strcmp(arg->arg, "charset"))
-            charset = atoi(arg->value);
+            charset = (CharacterEncodingScheme)atoi(arg->value);
     }
     _docCSet(charset);
 }

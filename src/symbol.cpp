@@ -18,14 +18,14 @@
 
 
 typedef struct {
-    wc_ces ces;
+    CharacterEncodingScheme ces;
     char width;
     const char **item;
     const char **conved_item;
 } symbol_set;
 
 typedef struct {
-    wc_ces charset;
+    CharacterEncodingScheme charset;
     symbol_set *symbol;
 } charset_symbol_set;
 
@@ -58,15 +58,15 @@ static charset_symbol_set charset_symbol_list[] = {
     { WC_CES_EUC_TW,        &euctw_symbol_set },
     { WC_CES_BIG5,          &big5_symbol_set  },
     { WC_CES_HKSCS,         &big5_symbol_set  },
-#ifdef USE_UNICODE
+
     { WC_CES_UTF_8,         &utf8_symbol_set  },
-#endif
+
     { WC_CES_CP850,         &cp850_symbol_set },
-    { 0, NULL },
+    { WC_CES_NONE, NULL },
 };
 /* *INDENT-ON* */
 
-static wc_ces save_charset = 0;
+static CharacterEncodingScheme save_charset = WC_CES_NONE;
 static symbol_set *save_symbol = NULL;
 
 static void
@@ -83,7 +83,7 @@ encode_symbol(symbol_set * s)
 }
 
 const char **
-get_symbol(wc_ces charset, int *width)
+get_symbol(CharacterEncodingScheme charset, int *width)
 {
     charset_symbol_set *p;
     symbol_set *s = NULL;

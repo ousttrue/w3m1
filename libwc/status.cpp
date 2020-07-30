@@ -35,7 +35,7 @@ static wc_bool output_set = WC_FALSE;
 #define wc_option_cmp(opt1, opt2) \
     memcmp((void *)(opt1), (void *)(opt2), sizeof(wc_option))
 
-void wc_input_init(wc_ces ces, wc_status *st)
+void wc_input_init(CharacterEncodingScheme ces, wc_status *st)
 {
     wc_gset *gset;
     int i, g;
@@ -69,7 +69,7 @@ void wc_input_init(wc_ces ces, wc_status *st)
 }
 
 void
-wc_output_init(wc_ces ces, wc_status *st)
+wc_output_init(CharacterEncodingScheme ces, wc_status *st)
 {
     wc_gset *gset;
 #ifdef USE_UNICODE

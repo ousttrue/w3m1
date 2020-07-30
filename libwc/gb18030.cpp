@@ -157,7 +157,7 @@ wc_ucs_to_gb18030(uint32_t ucs)
 #endif
 
 Str
-wc_conv_from_gb18030(Str is, wc_ces ces)
+wc_conv_from_gb18030(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

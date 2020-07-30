@@ -69,7 +69,7 @@ wc_hkscs_to_N(uint32_t c)
 }
 
 Str
-wc_conv_from_hkscs(Str is, wc_ces ces)
+wc_conv_from_hkscs(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

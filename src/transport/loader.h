@@ -3,8 +3,8 @@
 #include "wc_types.h"
 
 long long GetCurrentContentLength();
-extern wc_ces content_charset;
-extern wc_ces meta_charset;
+extern CharacterEncodingScheme content_charset;
+extern CharacterEncodingScheme meta_charset;
 extern int frame_source;
 char *check_accept_charset(char *ac);
 char *check_charset(char *p);

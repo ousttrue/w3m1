@@ -728,7 +728,7 @@ static int smDelTab(char c);
 static Menu MainMenu;
 #ifdef USE_M17N
 /* FIXME: gettextize here */
-static wc_ces MainMenuCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
+static CharacterEncodingScheme MainMenuCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
 static int MainMenuEncode = FALSE;
 #endif
 
@@ -1830,7 +1830,7 @@ initSelectMenu(void)
                 str->Push( ' ');
                 p = buf->currentURL.ToStr()->ptr;
                 if (DecodeURL)
-                    p = url_unquote_conv(p, 0);
+                    p = url_unquote_conv(p, WC_CES_NONE);
                 str->Push( p);
                 break;
             }
@@ -2081,7 +2081,7 @@ interpret_menu(FILE *mf)
     int in_menu = 0, nmenu = 0, nitem = 0, type;
     MenuItem *item = NULL;
 #ifdef USE_M17N
-    wc_ces charset = SystemCharset;
+    CharacterEncodingScheme charset = SystemCharset;
 #endif
 
     while (!feof(mf))

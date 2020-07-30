@@ -86,7 +86,7 @@ static int n_textarea;
 static int ignore_nl_textarea;
 static int max_textarea = MAX_TEXTAREA;
 
-static char cur_document_charset;
+static CharacterEncodingScheme cur_document_charset;
 static int cur_iseq;
 
 static void
@@ -2004,8 +2004,8 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     clen_t trbyte = 0;
     Str lineBuf2 = Strnew();
 #ifdef USE_M17N
-    wc_ces charset = WC_CES_US_ASCII;
-    wc_ces doc_charset = DocumentCharset;
+    CharacterEncodingScheme charset = WC_CES_US_ASCII;
+    CharacterEncodingScheme doc_charset = DocumentCharset;
 #endif
     struct html_feed_environ htmlenv1;
     struct readbuffer obuf;
@@ -2100,7 +2100,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         doc_charset = content_charset;
     else if (f->guess_type && !strcasecmp(f->guess_type, "application/xhtml+xml"))
         doc_charset = WC_CES_UTF_8;
-    meta_charset = 0;
+    meta_charset = WC_CES_NONE;
 #endif
 #if 0
     do_blankline(&htmlenv1, &obuf, 0, 0, htmlenv1.limit);
@@ -2136,7 +2136,6 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
          * if (frame_source)
          * continue;
          */
-#ifdef USE_M17N
         if (meta_charset)
         { /* <META> */
             if (content_charset == 0 && UseContentCharset)
@@ -2144,9 +2143,9 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
                 doc_charset = meta_charset;
                 charset = WC_CES_US_ASCII;
             }
-            meta_charset = 0;
+            meta_charset = WC_CES_NONE;
         }
-#endif
+
         lineBuf2 = convertLine(f, lineBuf2, HTML_MODE, &charset, doc_charset);
 #if defined(USE_M17N) && defined(USE_IMAGE)
         cur_document_charset = charset;

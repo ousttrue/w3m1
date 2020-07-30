@@ -76,7 +76,7 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr ), int go);
 void _peekURL(int only_img);
 Str currentURL(void);
 void repBuffer(BufferPtr oldbuf, BufferPtr buf);
-void _docCSet(wc_ces charset);
+void _docCSet(CharacterEncodingScheme charset);
 int display_ok();
 void invoke_browser(char *url);
 void execdict(char *word);

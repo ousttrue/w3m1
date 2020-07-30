@@ -7,7 +7,7 @@ int
 main(int argc, char **argv)
 {
   Str s = Strnew();
-  wc_ces old, from, to;
+  CharacterEncodingScheme old, from, to;
   FILE *f;
 
   if (argc < 3) {

@@ -107,7 +107,7 @@ wc_cp1258_precompose(uint8_t c1, uint8_t c2)
 }
 
 Str
-wc_conv_from_viet(Str is, wc_ces ces)
+wc_conv_from_viet(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

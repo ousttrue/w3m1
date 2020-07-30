@@ -15,10 +15,10 @@
 char *WcReplace = "?";
 char *WcReplaceW = "??";
 
-static Str wc_conv_to_ces(Str is, wc_ces ces);
+static Str wc_conv_to_ces(Str is, CharacterEncodingScheme ces);
 
 Str
-wc_Str_conv(Str is, wc_ces f_ces, wc_ces t_ces)
+wc_Str_conv(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 {
     if (f_ces != WC_CES_WTF)
 	is = (*WcCesInfo[WC_CES_INDEX(f_ces)].conv_from)(is, f_ces);
@@ -29,7 +29,7 @@ wc_Str_conv(Str is, wc_ces f_ces, wc_ces t_ces)
 }
 
 Str
-wc_Str_conv_strict(Str is, wc_ces f_ces, wc_ces t_ces)
+wc_Str_conv_strict(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 {
     Str os;
     wc_option opt = WcOption;
@@ -43,7 +43,7 @@ wc_Str_conv_strict(Str is, wc_ces f_ces, wc_ces t_ces)
 }
 
 static Str
-wc_conv_to_ces(Str is, wc_ces ces)
+wc_conv_to_ces(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;
@@ -112,9 +112,9 @@ wc_conv_to_ces(Str is, wc_ces ces)
 }
 
 Str
-wc_Str_conv_with_detect(Str is, wc_ces *f_ces, wc_ces hint, wc_ces t_ces)
+wc_Str_conv_with_detect(Str is, CharacterEncodingScheme *f_ces, CharacterEncodingScheme hint, CharacterEncodingScheme t_ces)
 {
-    wc_ces detect;
+    CharacterEncodingScheme detect;
 
     if (*f_ces == WC_CES_WTF || hint == WC_CES_WTF) {
 	*f_ces = WC_CES_WTF;

@@ -41,9 +41,9 @@ uint8_t WC_DETECT_MAP[ 0x100 ] = {
 #define SET_BROKEN_ERROR(x) ((x) = ((x) & DETECT_BROKEN) ? DETECT_ERROR : ((x) | DETECT_BROKEN))
 
 void
-wc_create_detect_map(wc_ces ces, wc_bool esc)
+wc_create_detect_map(CharacterEncodingScheme ces, wc_bool esc)
 {
-    static wc_ces detect_ces = WC_CES_US_ASCII;
+    static CharacterEncodingScheme detect_ces = WC_CES_US_ASCII;
     int i;
 
     if (ces != detect_ces) {
@@ -76,13 +76,13 @@ wc_create_detect_map(wc_ces ces, wc_bool esc)
     return;
 }
 
-wc_ces
-wc_auto_detect(char *is, size_t len, wc_ces hint)
+CharacterEncodingScheme
+wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 {
     uint8_t *p = (uint8_t *)is;
     uint8_t *ep = p + len;
     uint8_t *q;
-    wc_ces euc = 0, priv = 0;
+    CharacterEncodingScheme euc = WC_CES_NONE, priv = WC_CES_NONE;
     wc_status st;
     int euc_state = 0, sjis_state = 0, big5_state = 0, hz_state = 0;
     int iso_detect = DETECT_ERROR, euc_detect = DETECT_ERROR,

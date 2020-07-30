@@ -496,7 +496,7 @@ ftp_dir:
 }
 
 #ifdef USE_M17N
-Str loadFTPDir(ParsedURL *pu, wc_ces *charset)
+Str loadFTPDir(ParsedURL *pu, CharacterEncodingScheme *charset)
 #else
 Str loadFTPDir0(ParsedURL *pu)
 #endif
@@ -510,7 +510,7 @@ Str loadFTPDir0(ParsedURL *pu)
     int i, nfile, nfile_max;
     MySignalHandler prevtrap = NULL;
 #ifdef USE_M17N
-    wc_ces doc_charset = DocumentCharset;
+    CharacterEncodingScheme doc_charset = DocumentCharset;
 
     *charset = WC_CES_US_ASCII;
 #endif

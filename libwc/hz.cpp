@@ -7,7 +7,7 @@
 
 
 Str
-wc_conv_from_hz(Str is, wc_ces ces)
+wc_conv_from_hz(Str is, CharacterEncodingScheme ces)
 {
     Str os;
     uint8_t *sp = (uint8_t *)is->ptr;

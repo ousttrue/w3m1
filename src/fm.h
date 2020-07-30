@@ -509,11 +509,11 @@ global int SaveURLHist init(TRUE);
 #endif /* USE_HISTORY */
 global int multicolList init(FALSE);
 
-global wc_ces InnerCharset init(WC_CES_WTF); /* Don't change */
-global wc_ces DisplayCharset init(DISPLAY_CHARSET);
-global wc_ces DocumentCharset init(DOCUMENT_CHARSET);
-global wc_ces SystemCharset init(SYSTEM_CHARSET);
-global wc_ces BookmarkCharset init(SYSTEM_CHARSET);
+global CharacterEncodingScheme InnerCharset init(WC_CES_WTF); /* Don't change */
+global CharacterEncodingScheme DisplayCharset init(DISPLAY_CHARSET);
+global CharacterEncodingScheme DocumentCharset init(DOCUMENT_CHARSET);
+global CharacterEncodingScheme SystemCharset init(SYSTEM_CHARSET);
+global CharacterEncodingScheme BookmarkCharset init(SYSTEM_CHARSET);
 global char ExtHalfdump init(FALSE);
 global char FollowLocale init(TRUE);
 global char UseContentCharset init(TRUE);

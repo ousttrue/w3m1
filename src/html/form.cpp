@@ -51,9 +51,8 @@ newFormList(char *action, const char *method, char *charset, char *enctype,
     Str a = Strnew(action ? action : "");
     int m = FORM_METHOD_GET;
     int e = FORM_ENCTYPE_URLENCODED;
-#ifdef USE_M17N
-    wc_ces c = 0;
-#endif
+    CharacterEncodingScheme c = WC_CES_NONE;
+
 
     if (method == NULL || !strcasecmp(method, "get"))
         m = FORM_METHOD_GET;
@@ -70,10 +69,8 @@ newFormList(char *action, const char *method, char *charset, char *enctype,
             m = FORM_METHOD_POST;
     }
 
-#ifdef USE_M17N
     if (charset != NULL)
-        c = wc_guess_charset(charset, 0);
-#endif
+        c = wc_guess_charset(charset, WC_CES_NONE);
 
     l = New(FormList);
     l->item = l->lastitem = NULL;
@@ -602,7 +599,7 @@ void input_textarea(FormItemList *fi)
     Str tmp;
     FILE *f;
 #ifdef USE_M17N
-    wc_ces charset = DisplayCharset;
+    CharacterEncodingScheme charset = DisplayCharset;
     uint8_t auto_detect;
 #endif
 

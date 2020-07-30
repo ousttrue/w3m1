@@ -72,11 +72,11 @@ static uint16_t CCS_MAP[ 33 ] = {
 };
 
 wc_ccs wtf_gr_ccs = 0;
-static wc_ces wtf_major_ces = WC_CES_US_ASCII;
+static CharacterEncodingScheme wtf_major_ces = WC_CES_US_ASCII;
 static wc_status wtf_major_st;
 
 void
-wtf_init(wc_ces ces1, wc_ces ces2)
+wtf_init(CharacterEncodingScheme ces1, CharacterEncodingScheme ces2)
 {
     int i;
     wc_gset *gset;
@@ -565,12 +565,12 @@ wtf_is_hangul(uint8_t *p)
 }
 
 char *
-wtf_conv_fit(char *s, wc_ces ces)
+wtf_conv_fit(char *s, CharacterEncodingScheme ces)
 {
     uint8_t *p;
     Str os;
     wc_wchar_t cc;
-    wc_ces major_ces;
+    CharacterEncodingScheme major_ces;
     wc_bool pre_conv, ucs_conv;
 
     if (ces == WC_CES_WTF || ces == WC_CES_US_ASCII)

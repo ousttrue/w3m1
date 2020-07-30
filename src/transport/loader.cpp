@@ -69,16 +69,16 @@ static bool checkRedirection(ParsedURL *pu)
 ///
 /// charset
 ///
-wc_ces content_charset = 0;
-wc_ces meta_charset = 0;
-void SetMetaCharset(wc_ces ces)
+CharacterEncodingScheme content_charset = WC_CES_NONE;
+CharacterEncodingScheme meta_charset = WC_CES_NONE;
+void SetMetaCharset(CharacterEncodingScheme ces)
 {
     meta_charset = ces;
 }
 char *
 check_charset(char *p)
 {
-    return wc_guess_charset(p, 0) ? p : NULL;
+    return wc_guess_charset(p, WC_CES_NONE) ? p : NULL;
 }
 
 char *
@@ -95,7 +95,7 @@ check_accept_charset(char *ac)
         e = s;
         while (*e && !(IS_SPACE(*e) || *e == ','))
             e++;
-        if (wc_guess_charset(Strnew_charp_n(s, e - s)->ptr, 0))
+        if (wc_guess_charset(Strnew_charp_n(s, e - s)->ptr, WC_CES_NONE))
             return ac;
         s = e;
     }
@@ -141,7 +141,7 @@ loadFile(char *path)
         return NULL;
     buf = newBuffer(INIT_BUFFER_WIDTH);
     current_content_length = 0;
-    content_charset = 0;
+    content_charset = WC_CES_NONE;
     buf = loadSomething(&uf, path, loadBuffer, buf);
     uf.Close();
     return buf;
@@ -158,7 +158,7 @@ checkContentType(BufferPtr buf)
     r = Strnew();
     while (*p && *p != ';' && !IS_SPACE(*p))
         r->Push(*p++);
-#ifdef USE_M17N
+
     if ((p = strcasestr(p, "charset")) != NULL)
     {
         p += 7;
@@ -169,25 +169,24 @@ checkContentType(BufferPtr buf)
             SKIP_BLANKS(p);
             if (*p == '"')
                 p++;
-            content_charset = wc_guess_charset(p, 0);
+            content_charset = wc_guess_charset(p, WC_CES_NONE);
         }
     }
-#endif
+
     return r->ptr;
 }
 
 void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
 {
     char *p, *q;
-#ifdef USE_COOKIE
     char *emsg;
-#endif
+
     char c;
     Str lineBuf2 = NULL;
     Str tmp;
     TextList *headerlist;
 #ifdef USE_M17N
-    wc_ces charset = WC_CES_US_ASCII, mime_charset;
+    CharacterEncodingScheme charset = WC_CES_US_ASCII, mime_charset;
 #endif
     char *tmpf;
     FILE *src = NULL;
@@ -297,7 +296,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
                 if (src)
                 {
                     Line *l;
-                    wc_ces old_charset = newBuf->document_charset;
+                    CharacterEncodingScheme old_charset = newBuf->document_charset;
                     URLFile f(SCM_LOCAL, newStrStream(src));
                     loadHTMLstream(&f, newBuf, NULL, TRUE);
                     for (l = newBuf->lastLine; l && l->real_linenumber;
@@ -415,8 +414,8 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
 {
     FILE *src = NULL;
 #ifdef USE_M17N
-    wc_ces charset = WC_CES_US_ASCII;
-    wc_ces doc_charset = DocumentCharset;
+    CharacterEncodingScheme charset = WC_CES_US_ASCII;
+    CharacterEncodingScheme doc_charset = DocumentCharset;
 #endif
     Str lineBuf2;
     char pre_lbuf = '\0';
@@ -726,7 +725,7 @@ loadGeneralFile(char *path, const ParsedURL *_current, char *referer,
     URLOption url_option;
     Str tmp;
     Str page = NULL;
-    wc_ces charset = WC_CES_US_ASCII;
+    CharacterEncodingScheme charset = WC_CES_US_ASCII;
 
     HRequest hr(referer, request);
     ParsedURL *auth_pu;
@@ -751,7 +750,7 @@ load_doc:
     URLFile f(SCM_MISSING, NULL);
     f.openURL(tpath, &pu, current.get(), &url_option, request, extra_header,
               &hr, &status);
-    content_charset = 0;
+    content_charset = WC_CES_NONE;
 
     auto t = "text/plain";
     const char *real_type = nullptr;

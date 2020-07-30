@@ -20,7 +20,7 @@
 
 extern uint8_t WC_UTF7_MAP[];
 
-extern Str       wc_conv_from_utf7(Str is, wc_ces ces);
+extern Str       wc_conv_from_utf7(Str is, CharacterEncodingScheme ces);
 extern void      wc_push_to_utf7(Str os, wc_wchar_t cc, wc_status *st);
 extern void      wc_push_to_utf7_end(Str os, wc_status *st);
 extern Str       wc_char_conv_from_utf7(uint8_t c, wc_status *st);

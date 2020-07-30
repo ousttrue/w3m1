@@ -53,7 +53,7 @@ extern uint8_t WTF_LEN_MAP[];
 extern uint8_t WTF_TYPE_MAP[];
 extern wc_ccs wtf_gr_ccs;
 
-extern void wtf_init(wc_ces ces1, wc_ces ces2);
+extern void wtf_init(CharacterEncodingScheme ces1, CharacterEncodingScheme ces2);
 
 /* extern int     wtf_width(uint8_t *p); */
 #define wtf_width(p) (WcOption.use_wide ? (int)WTF_WIDTH_MAP[(uint8_t) * (p)] \
@@ -75,6 +75,6 @@ extern uint32_t wtf_get_code(uint8_t *p);
 
 extern wc_bool wtf_is_hangul(uint8_t *p);
 
-extern char *wtf_conv_fit(char *s, wc_ces ces);
+extern char *wtf_conv_fit(char *s, CharacterEncodingScheme ces);
 
 #endif

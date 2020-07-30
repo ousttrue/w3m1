@@ -123,7 +123,7 @@ public:
     int *clone;
     size_t trbyte;
     char check_url;
-    wc_ces document_charset;
+    CharacterEncodingScheme document_charset;
     uint8_t auto_detect;
     TextList *document_header;
     FormItemList *form_submit;

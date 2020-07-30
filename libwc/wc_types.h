@@ -3,9 +3,9 @@
 #include <Str.h>
 #include <config.h>
 #include <stdint.h>
+#include "ces.h"
 
 typedef uint32_t wc_ccs;
-typedef uint32_t wc_ces;
 typedef uint32_t wc_locale;
 typedef uint8_t wc_bool;
 
@@ -45,13 +45,13 @@ struct wc_gset
     wc_bool init;
 };
 
-typedef Str (*ConvFromFunc)(Str, wc_ces);
+typedef Str (*ConvFromFunc)(Str, CharacterEncodingScheme);
 typedef void (*PushToFunc)(Str, wc_wchar_t, struct wc_status *);
 typedef Str (*CharConvFunc)(uint8_t, struct wc_status *);
 
 struct wc_ces_info
 {
-    wc_ces id;
+    CharacterEncodingScheme id;
     char *name;
     char *desc;
     wc_gset *gset;
@@ -63,7 +63,7 @@ struct wc_ces_info
 
 struct wc_ces_list
 {
-    wc_ces id;
+    CharacterEncodingScheme id;
     char *name;
     char *desc;
 };

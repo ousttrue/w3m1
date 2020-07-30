@@ -14,8 +14,8 @@
 wc_locale WcLocale = 0;
 
 static struct {
-  char *lang;
-  wc_ces ces;
+  const char *lang;
+  CharacterEncodingScheme ces;
 } lang_ces_table[] = {
   { "cs", WC_CES_ISO_8859_2 },	/* cs_CZ */
   { "el", WC_CES_ISO_8859_7 },	/* el_GR */
@@ -30,10 +30,10 @@ static struct {
   { "sl", WC_CES_ISO_8859_2 },	/* sl_CS */
   { "tr", WC_CES_ISO_8859_9 },	/* tr_TR */
   { "zh", WC_CES_EUC_CN },	/* zh_CN */
-  { NULL, 0 }
+  { NULL, WC_CES_NONE }
 };
 
-static wc_ces
+static CharacterEncodingScheme
 wc_codepage(int n)
 {
 	switch (n) {
@@ -70,13 +70,13 @@ wc_codepage(int n)
 	case 1257: return WC_CES_CP1257;
 	case 1258: return WC_CES_CP1258;
 	}
-	return 0;
+	return WC_CES_NONE;
 }
 
-wc_ces
-wc_guess_charset(char *charset, wc_ces orig)
+CharacterEncodingScheme
+wc_guess_charset(char *charset, CharacterEncodingScheme orig)
 {
-    wc_ces guess;
+    CharacterEncodingScheme guess;
 
     if (charset == NULL || *charset == '\0')
 	return orig;
@@ -84,10 +84,10 @@ wc_guess_charset(char *charset, wc_ces orig)
     return guess ? guess : orig;
 }
 
-wc_ces
-wc_guess_charset_short(const char *charset, wc_ces orig)
+CharacterEncodingScheme
+wc_guess_charset_short(const char *charset, CharacterEncodingScheme orig)
 {
-    wc_ces guess;
+    CharacterEncodingScheme guess;
 
     if (charset == NULL || *charset == '\0')
 	return orig;
@@ -95,10 +95,10 @@ wc_guess_charset_short(const char *charset, wc_ces orig)
     return guess ? guess : orig;
 }
 
-wc_ces
-wc_guess_locale_charset(char *locale, wc_ces orig)
+CharacterEncodingScheme
+wc_guess_locale_charset(char *locale, CharacterEncodingScheme orig)
 {
-    wc_ces guess;
+    CharacterEncodingScheme guess;
 
     if (locale == NULL || *locale == '\0')
 	return orig;
@@ -106,7 +106,7 @@ wc_guess_locale_charset(char *locale, wc_ces orig)
     return guess ? guess : orig;
 }
 
-wc_ces
+CharacterEncodingScheme
 wc_charset_to_ces(const char *charset)
 {
     auto p = charset;
@@ -158,7 +158,7 @@ wc_charset_to_ces(const char *charset)
 	} else if (! strncmp(p, "iso8859", 7)) {
 	    n = atoi(p + 7);
 	    if (n >= 1 && n <= 16 && n != 12)
-		return (WC_CES_E_ISO_8859 | n);
+		return (WC_CES_E_ISO_8859 | (CharacterEncodingScheme)n);
 	    return WC_CES_ISO_8859_1;
 	} else if (! strncmp(p, "ibm", 3)) {
 	    p += 3;
@@ -274,15 +274,15 @@ wc_charset_to_ces(const char *charset)
 	    return wc_codepage(atoi(p));
 	break;
     }
-    return 0;
+    return WC_CES_NONE;
 }
 
-wc_ces
+CharacterEncodingScheme
 wc_charset_short_to_ces(const char *charset)
 {
     auto p = charset;
     char buf[16];
-    wc_ces ces;
+    CharacterEncodingScheme ces;
     int n;
 
     ces = wc_charset_to_ces(charset);
@@ -332,7 +332,7 @@ wc_charset_short_to_ces(const char *charset)
     case 'l':
 	n = atoi(p + 1);
 	if (n >= 1 && n <= 16 && n != 12)
-	    return (WC_CES_E_ISO_8859 | n);
+	    return (WC_CES_E_ISO_8859 | (CharacterEncodingScheme)n);
 	return WC_CES_ISO_8859_1;
     case 't':
 	if (*(p+1) == 'c')
@@ -362,10 +362,10 @@ wc_charset_short_to_ces(const char *charset)
     case 'r':
 	return WC_CES_RAW;
     }
-    return 0;
+    return WC_CES_NONE;
 }
 
-wc_ces
+CharacterEncodingScheme
 wc_locale_to_ces(char *locale)
 {
     char *p = locale;
@@ -425,7 +425,7 @@ wc_locale_to_ces(char *locale)
 }
 
 char *
-wc_ces_to_charset(wc_ces ces)
+wc_ces_to_charset(CharacterEncodingScheme ces)
 {
     if (ces == WC_CES_WTF)
 	return "WTF";
@@ -433,15 +433,15 @@ wc_ces_to_charset(wc_ces ces)
 }
 
 char *
-wc_ces_to_charset_desc(wc_ces ces)
+wc_ces_to_charset_desc(CharacterEncodingScheme ces)
 {
     if (ces == WC_CES_WTF)
 	return "W3M Transfer Format";
     return WcCesInfo[WC_CES_INDEX(ces)].desc;
 }
 
-wc_ces
-wc_guess_8bit_charset(wc_ces orig)
+CharacterEncodingScheme
+wc_guess_8bit_charset(CharacterEncodingScheme orig)
 {
     switch (orig) {
     case WC_CES_ISO_2022_JP:
@@ -460,7 +460,7 @@ wc_guess_8bit_charset(wc_ces orig)
 }
 
 wc_bool
-wc_check_ces(wc_ces ces)
+wc_check_ces(CharacterEncodingScheme ces)
 {
     size_t i = WC_CES_INDEX(ces);
 
@@ -496,7 +496,7 @@ wc_get_ces_list(void)
 	    n++;
 	}
     }
-    list[n].id = 0;
+    list[n].id = WC_CES_NONE;
     list[n].name = NULL;
     list[n].desc = NULL;
     qsort(list, n, sizeof(wc_ces_list), wc_ces_list_cmp);

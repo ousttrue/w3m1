@@ -31,7 +31,7 @@ extern uint8_t WC_UHC_MAP[];
 extern wc_wchar_t wc_uhc_to_cs128w(wc_wchar_t cc);
 extern wc_wchar_t wc_cs128w_to_uhc(wc_wchar_t cc);
 extern uint32_t  wc_uhc_to_N(uint32_t c);
-extern Str        wc_conv_from_uhc(Str is, wc_ces ces);
+extern Str        wc_conv_from_uhc(Str is, CharacterEncodingScheme ces);
 extern void       wc_push_to_uhc(Str os, wc_wchar_t cc, wc_status *st);
 extern Str        wc_char_conv_from_uhc(uint8_t c, wc_status *st);
 

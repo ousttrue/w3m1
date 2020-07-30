@@ -75,7 +75,7 @@ struct FormList
     Str action;
     char *target;
     char *name;
-    wc_ces charset;
+    CharacterEncodingScheme charset;
     int enctype;
     FormList *next;
     int nitems;

@@ -1511,7 +1511,7 @@ char *mybasename(std::string_view s)
 }
 
 char *
-url_unquote_conv(const char *url, wc_ces charset)
+url_unquote_conv(const char *url, CharacterEncodingScheme charset)
 {
     uint8_t old_auto_detect = WcOption.auto_detect;
     Str tmp = Strnew(url)->UrlDecode(FALSE, TRUE);

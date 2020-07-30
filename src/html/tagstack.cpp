@@ -1998,7 +1998,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
             {
                 q++;
                 SKIP_BLANKS(q);
-                SetMetaCharset(wc_guess_charset(q, 0));
+                SetMetaCharset(wc_guess_charset(q, WC_CES_NONE));
             }
         }
         else

@@ -56,7 +56,7 @@ extern uint32_t  wc_johab1_to_N(uint32_t cc);
 extern uint32_t  wc_N_to_johab1(uint32_t ucs);
 extern wc_wchar_t wc_johab_to_cs128w(wc_wchar_t cc);
 extern wc_wchar_t wc_cs128w_to_johab(wc_wchar_t cc);
-extern Str        wc_conv_from_johab(Str is, wc_ces ces);
+extern Str        wc_conv_from_johab(Str is, CharacterEncodingScheme ces);
 extern void       wc_push_to_johab(Str os, wc_wchar_t cc, wc_status *st);
 extern Str        wc_char_conv_from_johab(uint8_t c, wc_status *st);
 
