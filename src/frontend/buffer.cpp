@@ -509,7 +509,7 @@ void reshapeBuffer(BufferPtr buf)
     if (buf->sourcefile.empty())
         return;
     URLFile f(SCM_LOCAL, NULL);
-    examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile.c_str(), &f);
+    f.examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile.c_str());
     if (f.stream == NULL)
         return;
 
@@ -537,7 +537,7 @@ void reshapeBuffer(BufferPtr buf)
             buf->mailcap_source || buf->currentURL.file == "-")
         {
             URLFile h(SCM_LOCAL, NULL);
-            examineFile(buf->header_source, &h);
+            h.examineFile(buf->header_source);
             if (h.stream)
             {
                 readHeader(&h, buf, TRUE, NULL);

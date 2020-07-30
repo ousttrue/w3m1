@@ -53,52 +53,6 @@
 #define min(a, b) ((a) > (b) ? (b) : (a))
 #endif /* not min */
 
-static FILE *
-lessopen_stream(char *path)
-{
-    char *lessopen;
-    FILE *fp;
-
-    lessopen = getenv("LESSOPEN");
-    if (lessopen == NULL)
-    {
-        return NULL;
-    }
-    if (lessopen[0] == '\0')
-    {
-        return NULL;
-    }
-
-    if (lessopen[0] == '|')
-    {
-        /* pipe mode */
-        Str tmpf;
-        int c;
-
-        ++lessopen;
-        tmpf = Sprintf(lessopen, shell_quote(path));
-        fp = popen(tmpf->ptr, "r");
-        if (fp == NULL)
-        {
-            return NULL;
-        }
-        c = getc(fp);
-        if (c == EOF)
-        {
-            fclose(fp);
-            return NULL;
-        }
-        ungetc(c, fp);
-    }
-    else
-    {
-        /* filename mode */
-        /* not supported m(__)m */
-        fp = NULL;
-    }
-    return fp;
-}
-
 BufferPtr
 loadcmdout(char *cmd,
            BufferPtr (*loadproc)(URLFile *, BufferPtr), BufferPtr defaultbuf)
@@ -148,49 +102,6 @@ int setModtime(char *path, time_t modtime)
         t.actime = time(NULL);
     t.modtime = modtime;
     return utime(path, &t);
-}
-
-void examineFile(const char *path, URLFile *uf)
-{
-    struct stat stbuf;
-
-    uf->guess_type = NULL;
-    if (path == NULL || *path == '\0' ||
-        stat(path, &stbuf) == -1 || NOT_REGULAR(stbuf.st_mode))
-    {
-        uf->stream = NULL;
-        return;
-    }
-    uf->stream = openIS(path);
-    if (!do_download)
-    {
-        if (use_lessopen && getenv("LESSOPEN") != NULL)
-        {
-            FILE *fp;
-            uf->guess_type = guessContentType(path);
-            if (uf->guess_type == NULL)
-                uf->guess_type = "text/plain";
-            if (is_html_type(uf->guess_type))
-                return;
-            if ((fp = lessopen_stream(const_cast<char*>(path))))
-            {
-                uf->Close();
-                uf->stream = newFileStream(fp, (FileStreamCloseFunc)pclose);
-                uf->guess_type = "text/plain";
-                return;
-            }
-        }
-        check_compression(const_cast<char*>(path), uf);
-        if (uf->compression != CMP_NOCOMPRESS)
-        {
-            const char *ext = uf->ext;
-            auto t0 = uncompressed_file_type(path, &ext);
-            uf->guess_type = t0;
-            uf->ext = ext;
-            uncompress_stream(uf, NULL);
-            return;
-        }
-    }
 }
 
 /* 

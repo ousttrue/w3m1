@@ -523,7 +523,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                 if (frame.body->source)
                 {
                     fflush(f1);
-                    examineFile(frame.body->source, &f2);
+                    f2.examineFile(frame.body->source);
                 }
                 if (f2.stream == NULL)
                 {

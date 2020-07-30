@@ -8,7 +8,7 @@ struct HRequest;
 struct Hist;
 
 char *guess_save_name(BufferPtr buf, std::string_view file);
-void examineFile(const char *path, URLFile *uf);
+
 
 Str convertLine(URLFile *uf, Str line, int mode, CharacterEncodingScheme *charset, CharacterEncodingScheme doc_charset);
 char *guess_filename(std::string_view file);

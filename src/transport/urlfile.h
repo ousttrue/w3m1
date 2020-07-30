@@ -51,6 +51,7 @@ struct URLFile
                  HRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
     Str StrmyISgets();
+    void examineFile(const char *path);
 };
 
 char *file_to_url(char *file);

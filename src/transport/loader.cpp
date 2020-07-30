@@ -136,7 +136,7 @@ loadFile(char *path)
 {
     BufferPtr buf;
     URLFile uf(SCM_LOCAL, NULL);
-    examineFile(path, &uf);
+    uf.examineFile(path);
     if (uf.stream == NULL)
         return NULL;
     buf = newBuffer(INIT_BUFFER_WIDTH);

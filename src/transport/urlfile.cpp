@@ -13,6 +13,7 @@
 #include "http/compression.h"
 #include "myctype.h"
 #include "transport/loader.h"
+#include "mime/mimetypes.h"
 #include <assert.h>
 
 /* add index_file if exists */
@@ -35,7 +36,7 @@ add_index_file(ParsedURL *pu, URLFile *uf)
         p = Strnew_m_charp(pu->file, "/", file_quote(ti->ptr), NULL)->ptr;
         p = cleanupName(p);
         q = cleanupName(file_unquote(p));
-        examineFile(q, uf);
+        uf->examineFile(q);
         if (uf->stream != NULL)
         {
             pu->file = p;
@@ -379,7 +380,7 @@ retry:
             this->scheme = pu->scheme = SCM_LOCAL_CGI;
             return;
         }
-        examineFile(const_cast<char *>(pu->real_file.c_str()), this);
+        examineFile(const_cast<char *>(pu->real_file.c_str()));
         if (this->stream == NULL)
         {
             if (dir_exist(const_cast<char *>(pu->real_file.c_str())))
@@ -408,7 +409,7 @@ retry:
                 }
                 else
                 {
-                    examineFile(q, this);
+                    examineFile(q);
                     if (this->stream)
                     {
                         pu->file = p;
@@ -743,6 +744,98 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
 #endif /* __MINGW32_VERSION */
     return 0;
 }
+
+#define NOT_REGULAR(m) (((m)&S_IFMT) != S_IFREG)
+
+static FILE *
+lessopen_stream(char *path)
+{
+    char *lessopen;
+    FILE *fp;
+
+    lessopen = getenv("LESSOPEN");
+    if (lessopen == NULL)
+    {
+        return NULL;
+    }
+    if (lessopen[0] == '\0')
+    {
+        return NULL;
+    }
+
+    if (lessopen[0] == '|')
+    {
+        /* pipe mode */
+        Str tmpf;
+        int c;
+
+        ++lessopen;
+        tmpf = Sprintf(lessopen, shell_quote(path));
+        fp = popen(tmpf->ptr, "r");
+        if (fp == NULL)
+        {
+            return NULL;
+        }
+        c = getc(fp);
+        if (c == EOF)
+        {
+            fclose(fp);
+            return NULL;
+        }
+        ungetc(c, fp);
+    }
+    else
+    {
+        /* filename mode */
+        /* not supported m(__)m */
+        fp = NULL;
+    }
+    return fp;
+}
+
+void URLFile::examineFile(const char *path)
+{
+    struct stat stbuf;
+
+    this->guess_type = NULL;
+    if (path == NULL || *path == '\0' ||
+        stat(path, &stbuf) == -1 || NOT_REGULAR(stbuf.st_mode))
+    {
+        this->stream = NULL;
+        return;
+    }
+    this->stream = openIS(path);
+    if (!do_download)
+    {
+        if (use_lessopen && getenv("LESSOPEN") != NULL)
+        {
+            FILE *fp;
+            this->guess_type = guessContentType(path);
+            if (this->guess_type == NULL)
+                this->guess_type = "text/plain";
+            if (is_html_type(this->guess_type))
+                return;
+            if ((fp = lessopen_stream(const_cast<char*>(path))))
+            {
+                this->Close();
+                this->stream = newFileStream(fp, (FileStreamCloseFunc)pclose);
+                this->guess_type = "text/plain";
+                return;
+            }
+        }
+        check_compression(const_cast<char*>(path), this);
+        if (this->compression != CMP_NOCOMPRESS)
+        {
+            const char *ext = this->ext;
+            auto t0 = uncompressed_file_type(path, &ext);
+            this->guess_type = t0;
+            this->ext = ext;
+            uncompress_stream(this, NULL);
+            return;
+        }
+    }
+}
+
 
 char *file_to_url(char *file)
 {
