@@ -1,6 +1,7 @@
 #include "commands.h"
 #include "dispatcher.h"
 #include "fm.h"
+#include "urimethod.h"
 #include "gc_helper.h"
 #include "indep.h"
 #include "frontend/line.h"

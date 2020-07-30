@@ -3,6 +3,7 @@
 #include "indep.h"
 #include "file.h"
 #include "mytime.h"
+#include "urimethod.h"
 #include "http/http_request.h"
 
 #include "http/auth.h"

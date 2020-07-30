@@ -1,5 +1,4 @@
 #include "fm.h"
-#include "gc_helper.h"
 #include "file.h"
 #include "transport/url.h"
 #include "indep.h"
@@ -474,7 +473,7 @@ void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
             *this = *current;
         goto do_label;
     }
-    
+
     /* search for scheme */
     this->scheme = getURLScheme(&p);
     if (this->scheme == SCM_MISSING)
@@ -1301,170 +1300,6 @@ filename_extension(const char *path, int is_url)
     else
         return last_dot;
 }
-
-#ifdef USE_EXTERNAL_URI_LOADER
-struct table2
-{
-    const char *item1;
-    const char *item2;
-};
-
-static struct table2 **urimethods;
-static struct table2 default_urimethods[] = {
-    {"mailto", "file:///$LIB/w3mmail.cgi?%s"},
-    {NULL, NULL}};
-
-static struct table2 *
-loadURIMethods(char *filename)
-{
-    FILE *f;
-    int i, n;
-    Str tmp;
-    struct table2 *um;
-    char *up, *p;
-
-    f = fopen(expandPath(filename), "r");
-    if (f == NULL)
-        return NULL;
-    i = 0;
-    while (tmp = Strfgets(f), tmp->Size() > 0)
-    {
-        if (tmp->ptr[0] != '#')
-            i++;
-    }
-    fseek(f, 0, 0);
-    n = i;
-    um = New_N(struct table2, n + 1);
-    i = 0;
-    while (tmp = Strfgets(f), tmp->Size() > 0)
-    {
-        if (tmp->ptr[0] == '#')
-            continue;
-        while (IS_SPACE(tmp->Back()))
-            tmp->Pop(1);
-        for (up = p = tmp->ptr; *p != '\0'; p++)
-        {
-            if (*p == ':')
-            {
-                um[i].item1 = Strnew_charp_n(up, p - up)->ptr;
-                p++;
-                break;
-            }
-        }
-        if (*p == '\0')
-            continue;
-        while (*p != '\0' && IS_SPACE(*p))
-            p++;
-        um[i].item2 = Strnew(p)->ptr;
-        i++;
-    }
-    um[i].item1 = NULL;
-    um[i].item2 = NULL;
-    fclose(f);
-    return um;
-}
-
-void initURIMethods()
-{
-    TextList *methodmap_list = NULL;
-    TextListItem *tl;
-    int i;
-
-    if (non_null(urimethodmap_files))
-        methodmap_list = make_domain_list(urimethodmap_files);
-    if (methodmap_list == NULL)
-        return;
-    urimethods = New_N(struct table2 *, (methodmap_list->nitem + 1));
-    for (i = 0, tl = methodmap_list->first; tl; tl = tl->next)
-    {
-        urimethods[i] = loadURIMethods(tl->ptr);
-        if (urimethods[i])
-            i++;
-    }
-    urimethods[i] = NULL;
-}
-
-Str searchURIMethods(ParsedURL *pu)
-{
-    struct table2 *ump;
-    int i;
-    Str scheme = NULL;
-    Str url;
-    char *p;
-
-    if (pu->scheme != SCM_UNKNOWN)
-        return NULL; /* use internal */
-    if (urimethods == NULL)
-        return NULL;
-    url = pu->ToStr();
-    for (p = url->ptr; *p != '\0'; p++)
-    {
-        if (*p == ':')
-        {
-            scheme = Strnew_charp_n(url->ptr, p - url->ptr);
-            break;
-        }
-    }
-    if (scheme == NULL)
-        return NULL;
-
-    /*
-     * RFC2396 3.1. Scheme Component
-     * For resiliency, programs interpreting URI should treat upper case
-     * letters as equivalent to lower case in scheme names (e.g., allow
-     * "HTTP" as well as "http").
-     */
-    for (i = 0; (ump = urimethods[i]) != NULL; i++)
-    {
-        for (; ump->item1 != NULL; ump++)
-        {
-            if (strcasecmp(ump->item1, scheme->ptr) == 0)
-            {
-                return Sprintf(ump->item2, url_quote(url->ptr));
-            }
-        }
-    }
-    for (ump = default_urimethods; ump->item1 != NULL; ump++)
-    {
-        if (strcasecmp(ump->item1, scheme->ptr) == 0)
-        {
-            return Sprintf(ump->item2, url_quote(url->ptr));
-        }
-    }
-    return NULL;
-}
-
-/*
- * RFC2396: Uniform Resource Identifiers (URI): Generic Syntax
- * Appendix A. Collected BNF for URI
- * uric          = reserved | unreserved | escaped
- * reserved      = ";" | "/" | "?" | ":" | "@" | "&" | "=" | "+" |
- *                 "$" | ","
- * unreserved    = alphanum | mark
- * mark          = "-" | "_" | "." | "!" | "~" | "*" | "'" |
- *                  "(" | ")"
- * escaped       = "%" hex hex
- */
-
-#define URI_PATTERN "([-;/?:@&=+$,a-zA-Z0-9_.!~*'()]|%[0-9A-Fa-f][0-9A-Fa-f])*"
-void chkExternalURIBuffer(BufferPtr buf)
-{
-    int i;
-    struct table2 *ump;
-
-    for (i = 0; (ump = urimethods[i]) != NULL; i++)
-    {
-        for (; ump->item1 != NULL; ump++)
-        {
-            reAnchor(buf, Sprintf("%s:%s", ump->item1, URI_PATTERN)->ptr);
-        }
-    }
-    for (ump = default_urimethods; ump->item1 != NULL; ump++)
-    {
-        reAnchor(buf, Sprintf("%s:%s", ump->item1, URI_PATTERN)->ptr);
-    }
-}
-#endif
 
 ParsedURL *
 schemeToProxy(int scheme)

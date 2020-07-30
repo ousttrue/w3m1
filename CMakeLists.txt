@@ -68,6 +68,7 @@ PRIVATE
     src/commands.cpp
     src/entity.cpp
     src/public.cpp
+    src/urimethod.cpp
     src/frontend/display.cpp
     src/frontend/linein.cpp
     src/frontend/line.cpp

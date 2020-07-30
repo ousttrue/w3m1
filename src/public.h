@@ -99,7 +99,7 @@ char *searchKeyData();
 int sysm_process_mouse();
 // int gpm_process_mouse(Gpm_Event *, void *);
 void chkNMIDBuffer(BufferPtr buf);
-void chkURLBuffer(BufferPtr buf);
+
 void change_charset(struct parsed_tagarg *arg);
 void follow_map(struct parsed_tagarg *arg);
 void followForm();

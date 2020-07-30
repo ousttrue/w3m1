@@ -2,6 +2,7 @@
 
 #include "fm.h"
 #include "frontend/buffer.h"
+#include "urimethod.h"
 #include "public.h"
 #include "indep.h"
 #include "gc_helper.h"

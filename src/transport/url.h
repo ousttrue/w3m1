@@ -47,8 +47,7 @@ struct ParsedURL
 };
 
 const char *filename_extension(const char *patch, int is_url);
-void initURIMethods();
-Str searchURIMethods(ParsedURL *pu);
+
 ParsedURL *schemeToProxy(int scheme);
 char *otherinfo(const ParsedURL *target, const ParsedURL *current, char *referer);
 SchemaTypes getURLScheme(char **url);
