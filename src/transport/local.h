@@ -53,3 +53,4 @@ void set_environ(std::string_view var, std::string_view value);
 // }
 
 pid_t open_pipe_rw(FILE **fr, FILE **fw);
+Str loadLocalDir(std::string_view dname);

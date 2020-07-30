@@ -166,7 +166,7 @@ void sync_with_option(void);
 char *libFile(char *base);
 char *helpFile(char *base);
 Str localCookie(void);
-Str loadLocalDir(char *dirname);
+
 
 FILE *localcgi_post(char *, char *, FormList *, char *);
 #define localcgi_get(u, q, r) localcgi_post((u), (q), NULL, (r))
