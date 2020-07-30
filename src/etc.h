@@ -1,14 +1,13 @@
 #pragma once
 #include "config.h"
-#include "types.h"
+#include <stdio.h>
+
+#include <wc.h>
 
 pid_t open_pipe_rw(FILE **fr, FILE **fw);
 int next_status(char c, int *status);
 
-/* Flags for calcPosition() */
-#define CP_AUTO		0
-#define CP_FORCE	1
-int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode);
+
 char *file_to_url(char *file);
 
 

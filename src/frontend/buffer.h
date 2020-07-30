@@ -1,6 +1,7 @@
 #pragma once
-#include "html/anchor.h"
 #include "transport/url.h"
+#include "html/anchor.h"
+#include "line.h"
 #include <wc_types.h>
 #include <stdint.h>
 
@@ -152,6 +153,9 @@ public:
     void putHmarker(int line, int pos, int seq);
     void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);
 };
+
+#define TOP_LINENUMBER(buf) ((buf)->topLine ? (buf)->topLine->linenumber : 1)
+#define CUR_LINENUMBER(buf) ((buf)->currentLine ? (buf)->currentLine->linenumber : 1)
 
 BufferPtr newBuffer(int width);
 

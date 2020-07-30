@@ -508,8 +508,7 @@ void reshapeBuffer(BufferPtr buf)
     if (buf->sourcefile == NULL)
         return;
     URLFile f(SCM_LOCAL, NULL);
-    examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile,
-                &f);
+    examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile, &f);
     if (f.stream == NULL)
         return;
 

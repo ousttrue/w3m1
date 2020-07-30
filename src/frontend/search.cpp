@@ -1,10 +1,9 @@
-/* $Id: search.c,v 1.31 2004/03/23 16:44:02 ukai Exp $ */
-
 #include "fm.h"
 #include "regex.h"
 #include "file.h"
 #include "public.h"
 #include "frontend/buffer.h"
+#include "frontend/line.h"
 #include "frontend/display.h"
 #include <signal.h>
 #include <errno.h>

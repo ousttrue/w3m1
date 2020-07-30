@@ -1,7 +1,8 @@
 #pragma once
-#include "types.h"
+
 #include "frontend/buffer.h"
 #include "frontend/event.h"
+#include "transport/urlfile.h"
 
 struct HRequest;
 struct Hist;
@@ -72,8 +73,6 @@ void arrangeLine(BufferPtr buf);
 void cursorXY(BufferPtr buf, int x, int y);
 void restorePosition(BufferPtr buf, BufferPtr orig);
 int columnSkip(BufferPtr buf, int offset);
-int columnPos(Line *line, int column);
-int columnLen(Line *line, int column);
 Line *lineSkip(BufferPtr buf, Line *line, int offset, int last);
 Line *currentLineSkip(BufferPtr buf, Line *line, int offset, int last);
 int gethtmlcmd(char **s);

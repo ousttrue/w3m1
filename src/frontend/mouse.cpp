@@ -17,7 +17,7 @@
 #include "file.h"
 #include "frontend/display.h"
 #include "frontend/tab.h"
-#include "types.h"
+
 #include "frontend/buffer.h"
 #include "html/anchor.h"
 

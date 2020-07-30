@@ -1,5 +1,5 @@
 #pragma once
-#include "types.h"
+
 #include "readbuffer.h"
 
 #define MAX_UL_LEVEL 9
@@ -9,6 +9,8 @@
 #define UL_SYMBOL_SQUARE UL_SYMBOL(11)
 
 #define HR_SYMBOL 26
+
+struct TextLineList;
 
 struct environment
 {
@@ -32,14 +34,6 @@ struct html_feed_environ
     int envc_real;
     char *title;
     int blank_lines;
-};
-
-struct HtmlContext
-{
-    ParsedURL *BaseUrl = nullptr;
-    Str Title = nullptr;
-    wc_ces MetaCharset;
-    int HSeq = 0;
 };
 
 void renderTable(struct table *t, int max_width,

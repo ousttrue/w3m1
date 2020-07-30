@@ -1,6 +1,6 @@
 #include "fm.h"
 #include "indep.h"
-#include "types.h"
+
 #include "etc.h"
 #include "html/anchor.h"
 #include "myctype.h"

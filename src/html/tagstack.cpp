@@ -1,6 +1,6 @@
 #include "tagstack.h"
 #include "indep.h"
-#include "types.h"
+
 #include "html.h"
 #include "fm.h"
 #include "file.h"
@@ -12,6 +12,8 @@
 #include "symbol.h"
 #include "ctrlcode.h"
 #include "html/html_processor.h"
+#include "frontend/buffer.h"
+#include "frontend/line.h"
 
 #define in_bold fontstat[0]
 #define in_under fontstat[1]

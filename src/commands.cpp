@@ -24,6 +24,8 @@
 #include "transport/loader.h"
 #include "mime/mailcap.h"
 #include "frontend/event.h"
+#include "frontend/line.h"
+#include <wc.h>
 #include <signal.h>
 
 void nulcmd()

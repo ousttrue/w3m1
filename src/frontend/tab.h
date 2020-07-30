@@ -78,6 +78,9 @@ private:
 };
 using TabPtr = std::shared_ptr<Tab>;
 
+#define SAVE_BUFPOSITION(sbufp) COPY_BUFPOSITION(sbufp, GetCurrentTab()->GetCurrentBuffer())
+#define RESTORE_BUFPOSITION(sbufp) COPY_BUFPOSITION(GetCurrentTab()->GetCurrentBuffer(), sbufp)
+
 void EachTab(const std::function<void(const TabPtr &)> callback);
 TabPtr CreateTabSetCurrent();
 void InitializeTab();
