@@ -45,3 +45,4 @@ void SigAlarm(int);
 AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd, void *data);
 void pushEvent(Command cmd, void *data);
 int ProcessEvent();
+void setup_child(int child, int i, int f);

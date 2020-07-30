@@ -183,16 +183,13 @@ void loadPreForm(void);
 char *last_modified(BufferPtr buf);
 Str romanNumeral(int n);
 Str romanAlphabet(int n);
-void setup_child(int child, int i, int f);
+
 void myExec(char *command);
 void mySystem(char *command, int background);
 Str myExtCommand(char *cmd, char *arg, int redirect);
 Str myEditor(char *cmd, char *file, int line);
 
-
-char *expandName(char *name);
 Str tmpfname(int type, const char *ext);
-
 
 int
 is_plain_text_type(const char *type);

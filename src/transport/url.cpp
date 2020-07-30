@@ -1,7 +1,6 @@
 /* $Id: url.c,v 1.100 2010/12/15 10:50:24 htrb Exp $ */
 
 #include "fm.h"
-
 #include "transport/url.h"
 #include "file.h"
 #include "indep.h"
@@ -11,17 +10,12 @@
 #include "frontend/display.h"
 #include "html/anchor.h"
 #include "http/http_request.h"
-
-#ifndef __MINGW32_VERSION
+#include <pwd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#else
-#include <winsock.h>
-#endif /* __MINGW32_VERSION */
-
 #include <assert.h>
 #include <signal.h>
 #include <setjmp.h>
@@ -735,6 +729,53 @@ do_label:
         this->label = p + 1;
     else
         this->label.clear();
+}
+
+char *
+expandName(char *name)
+{
+    char *p;
+    struct passwd *passent, *getpwnam(const char *);
+    Str extpath = NULL;
+
+    if (name == NULL)
+        return NULL;
+    p = name;
+    if (*p == '/')
+    {
+        if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2))) && personal_document_root)
+        {
+            char *q;
+            p += 2;
+            q = strchr(p, '/');
+            if (q)
+            { /* /~user/dir... */
+                passent = getpwnam(allocStr(p, q - p));
+                p = q;
+            }
+            else
+            { /* /~user */
+                passent = getpwnam(p);
+                p = "";
+            }
+            if (!passent)
+                goto rest;
+            extpath = Strnew_m_charp(passent->pw_dir, "/",
+                                     personal_document_root, NULL);
+            if (*personal_document_root == '\0' && *p == '/')
+                p++;
+        }
+        else
+            goto rest;
+        if (extpath->Cmp("/") == 0 && *p == '/')
+            p++;
+        extpath->Push(p);
+        return extpath->ptr;
+    }
+    else
+        return expandPath(p);
+rest:
+    return name;
 }
 
 void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
@@ -1467,4 +1508,17 @@ char *mybasename(std::string_view s)
     else
         p = s.data();
     return allocStr(p, -1);
+}
+
+char *
+url_unquote_conv(const char *url, wc_ces charset)
+{
+    uint8_t old_auto_detect = WcOption.auto_detect;
+    Str tmp = Strnew(url)->UrlDecode(FALSE, TRUE);
+    if (!charset || charset == WC_CES_US_ASCII)
+        charset = SystemCharset;
+    WcOption.auto_detect = WC_OPT_DETECT_ON;
+    tmp = convertLine(NULL, tmp, RAW_MODE, &charset, charset);
+    WcOption.auto_detect = old_auto_detect;
+    return tmp->ptr;
 }

@@ -1341,3 +1341,126 @@ guess_save_name(BufferPtr buf, std::string_view path)
     }
     return guess_filename(path);
 }
+
+static const char *tmpf_base[MAX_TMPF_TYPE] = {
+    "tmp",
+    "src",
+    "frame",
+    "cache",
+    "cookie",
+};
+static unsigned int tmpf_seq[MAX_TMPF_TYPE];
+
+Str tmpfname(int type, const char *ext)
+{
+    Str tmpf;
+    tmpf = Sprintf("%s/w3m%s%d-%d%s",
+                   tmp_dir,
+                   tmpf_base[type],
+                   CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
+    pushText(fileToDelete, tmpf->ptr);
+    return tmpf;
+}
+
+Str myEditor(char *cmd, char *file, int line)
+{
+    Str tmp = NULL;
+    char *p;
+    int set_file = FALSE, set_line = FALSE;
+
+    for (p = cmd; *p; p++)
+    {
+        if (*p == '%' && *(p + 1) == 's' && !set_file)
+        {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(cmd, (int)(p - cmd));
+            tmp->Push(file);
+            set_file = TRUE;
+            p++;
+        }
+        else if (*p == '%' && *(p + 1) == 'd' && !set_line && line > 0)
+        {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(cmd, (int)(p - cmd));
+            tmp->Push(Sprintf("%d", line));
+            set_line = TRUE;
+            p++;
+        }
+        else
+        {
+            if (tmp)
+                tmp->Push(*p);
+        }
+    }
+    if (!set_file)
+    {
+        if (tmp == NULL)
+            tmp = Strnew(cmd);
+        if (!set_line && line > 1 && strcasestr(cmd, "vi"))
+            tmp->Push(Sprintf(" +%d", line));
+        Strcat_m_charp(tmp, " ", file, NULL);
+    }
+    return tmp;
+}
+
+Str myExtCommand(char *cmd, char *arg, int redirect)
+{
+    Str tmp = NULL;
+    char *p;
+    int set_arg = FALSE;
+
+    for (p = cmd; *p; p++)
+    {
+        if (*p == '%' && *(p + 1) == 's' && !set_arg)
+        {
+            if (tmp == NULL)
+                tmp = Strnew_charp_n(cmd, (int)(p - cmd));
+            tmp->Push(arg);
+            set_arg = TRUE;
+            p++;
+        }
+        else
+        {
+            if (tmp)
+                tmp->Push(*p);
+        }
+    }
+    if (!set_arg)
+    {
+        if (redirect)
+            tmp = Strnew_m_charp("(", cmd, ") < ", arg, NULL);
+        else
+            tmp = Strnew_m_charp(cmd, " ", arg, NULL);
+    }
+    return tmp;
+}
+
+void mySystem(char *command, int background)
+{
+#ifndef __MINGW32_VERSION
+    if (background)
+    {
+#ifndef __EMX__
+        flush_tty();
+        if (!fork())
+        {
+            setup_child(FALSE, 0, -1);
+            myExec(command);
+        }
+#else
+        Str cmd = Strnew("start /f ");
+        cmd->Push(command);
+        system(cmd->ptr);
+#endif
+    }
+    else
+#endif /* __MINGW32_VERSION */
+        system(command);
+}
+
+void myExec(char *command)
+{
+    mySignal(SIGINT, SIG_DFL);
+    execl("/bin/sh", "sh", "-c", command, NULL);
+    exit(127);
+}
