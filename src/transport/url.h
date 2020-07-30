@@ -51,6 +51,7 @@ Str searchURIMethods(ParsedURL *pu);
 ParsedURL *schemeToProxy(int scheme);
 char *otherinfo(const ParsedURL *target, const ParsedURL *current, char *referer);
 SchemaTypes getURLScheme(char **url);
+char *mybasename(std::string_view s);
 
 struct SchemeKeyValue
 {

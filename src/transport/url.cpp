@@ -1454,3 +1454,17 @@ schemeToProxy(int scheme)
     }
     return pu;
 }
+
+char *mybasename(std::string_view s)
+{
+    const char *p = s.data();
+    while (*p)
+        p++;
+    while (s <= p && *p != '/')
+        p--;
+    if (*p == '/')
+        p++;
+    else
+        p = s.data();
+    return allocStr(p, -1);
+}

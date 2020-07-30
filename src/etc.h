@@ -21,5 +21,5 @@
     }
 
 char *url_unquote_conv(const char *url, wc_ces charset);
-char *FQDN(char *host);
-char *mybasename(std::string_view s);
+
+
