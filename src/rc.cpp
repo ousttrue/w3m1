@@ -25,9 +25,10 @@
 #include "http/compression.h"
 #include "mime/mailcap.h"
 #include <stdlib.h>
+#include "make_array.h"
 
-
-struct param_ptr {
+struct Param
+{
     char *name;
     int type;
     int inputtype;
@@ -36,167 +37,163 @@ struct param_ptr {
     void *select;
 };
 
-struct param_section {
-    char *name;
-    struct param_ptr *params;
-};
-
-struct rc_search_table {
-    struct param_ptr *param;
+struct rc_search_table
+{
+    struct Param *param;
     short uniq_pos;
 };
 
 static struct rc_search_table *RC_search_table;
 static int RC_table_size;
 
-#define P_INT      0
-#define P_SHORT    1
-#define P_CHARINT  2
-#define P_CHAR     3
-#define P_STRING   4
+#define P_INT 0
+#define P_SHORT 1
+#define P_CHARINT 2
+#define P_CHAR 3
+#define P_STRING 4
 #if defined(USE_SSL) && defined(USE_SSL_VERIFY)
-#define P_SSLPATH  5
+#define P_SSLPATH 5
 #endif
 #ifdef USE_COLOR
-#define P_COLOR    6
+#define P_COLOR 6
 #endif
 #ifdef USE_M17N
-#define P_CODE     7
+#define P_CODE 7
 #endif
-#define P_PIXELS   8
-#define P_NZINT    9
-#define P_SCALE    10
+#define P_PIXELS 8
+#define P_NZINT 9
+#define P_SCALE 10
 
 /* FIXME: gettextize here */
 #ifdef USE_M17N
-static wc_ces OptionCharset = WC_CES_US_ASCII;	/* FIXME: charset of source code */
+static wc_ces OptionCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
 static int OptionEncode = FALSE;
 #endif
 
-#define CMT_HELPER	 N_("External Viewer Setup")
-#define CMT_TABSTOP      N_("Tab width in characters")
-#define CMT_INDENT_INCR  N_("Indent for HTML rendering")
+#define CMT_HELPER N_("External Viewer Setup")
+#define CMT_TABSTOP N_("Tab width in characters")
+#define CMT_INDENT_INCR N_("Indent for HTML rendering")
 #define CMT_PIXEL_PER_CHAR N_("Number of pixels per character (4.0...32.0)")
 #define CMT_PIXEL_PER_LINE N_("Number of pixels per line (4.0...64.0)")
-#define CMT_PAGERLINE    N_("Number of remembered lines when used as a pager")
-#define CMT_HISTORY	 N_("Use URL history")
-#define CMT_HISTSIZE     N_("Number of remembered URL")
-#define CMT_SAVEHIST     N_("Save URL history")
-#define CMT_FRAME        N_("Render frames automatically")
-#define CMT_ARGV_IS_URL  N_("Treat argument without scheme as URL")
-#define CMT_TSELF        N_("Use _self as default target")
+#define CMT_PAGERLINE N_("Number of remembered lines when used as a pager")
+#define CMT_HISTORY N_("Use URL history")
+#define CMT_HISTSIZE N_("Number of remembered URL")
+#define CMT_SAVEHIST N_("Save URL history")
+#define CMT_FRAME N_("Render frames automatically")
+#define CMT_ARGV_IS_URL N_("Treat argument without scheme as URL")
+#define CMT_TSELF N_("Use _self as default target")
 #define CMT_OPEN_TAB_BLANK N_("Open link on new tab if target is _blank or _new")
 #define CMT_OPEN_TAB_DL_LIST N_("Open download list panel on new tab")
-#define CMT_DISPLINK     N_("Display link URL automatically")
+#define CMT_DISPLINK N_("Display link URL automatically")
 #define CMT_DISPLINKNUMBER N_("Display link numbers")
-#define CMT_DECODE_URL   N_("Display decoded URL")
+#define CMT_DECODE_URL N_("Display decoded URL")
 #define CMT_DISPLINEINFO N_("Display current line number")
-#define CMT_DISP_IMAGE   N_("Display inline images")
+#define CMT_DISP_IMAGE N_("Display inline images")
 #define CMT_PSEUDO_INLINES N_("Display pseudo-ALTs for inline images with no ALT or TITLE string")
 #ifdef USE_IMAGE
-#define CMT_AUTO_IMAGE   N_("Load inline images automatically")
+#define CMT_AUTO_IMAGE N_("Load inline images automatically")
 #define CMT_MAX_LOAD_IMAGE N_("Maximum processes for parallel image loading")
-#define CMT_EXT_IMAGE_VIEWER   N_("Use external image viewer")
-#define CMT_IMAGE_SCALE  N_("Scale of image (%)")
-#define CMT_IMGDISPLAY   N_("External command to display image")
+#define CMT_EXT_IMAGE_VIEWER N_("Use external image viewer")
+#define CMT_IMAGE_SCALE N_("Scale of image (%)")
+#define CMT_IMGDISPLAY N_("External command to display image")
 #define CMT_IMAGE_MAP_LIST N_("Use link list of image map")
 #endif
-#define CMT_MULTICOL     N_("Display file names in multi-column format")
-#define CMT_ALT_ENTITY   N_("Use ASCII equivalents to display entities")
+#define CMT_MULTICOL N_("Display file names in multi-column format")
+#define CMT_ALT_ENTITY N_("Use ASCII equivalents to display entities")
 #define CMT_GRAPHIC_CHAR N_("Character type for border of table and menu")
 #define CMT_FOLD_TEXTAREA N_("Fold lines in TEXTAREA")
 #define CMT_DISP_INS_DEL N_("Display INS, DEL, S and STRIKE element")
-#define CMT_COLOR        N_("Display with color")
-#define CMT_B_COLOR      N_("Color of normal character")
-#define CMT_A_COLOR      N_("Color of anchor")
-#define CMT_I_COLOR      N_("Color of image link")
-#define CMT_F_COLOR      N_("Color of form")
+#define CMT_COLOR N_("Display with color")
+#define CMT_B_COLOR N_("Color of normal character")
+#define CMT_A_COLOR N_("Color of anchor")
+#define CMT_I_COLOR N_("Color of image link")
+#define CMT_F_COLOR N_("Color of form")
 #define CMT_ACTIVE_STYLE N_("Enable coloring of active link")
-#define CMT_C_COLOR	 N_("Color of currently active link")
+#define CMT_C_COLOR N_("Color of currently active link")
 #define CMT_VISITED_ANCHOR N_("Use visited link color")
-#define CMT_V_COLOR	 N_("Color of visited link")
-#define CMT_BG_COLOR     N_("Color of background")
-#define CMT_MARK_COLOR   N_("Color of mark")
-#define CMT_USE_PROXY    N_("Use proxy")
-#define CMT_HTTP_PROXY   N_("URL of HTTP proxy host")
+#define CMT_V_COLOR N_("Color of visited link")
+#define CMT_BG_COLOR N_("Color of background")
+#define CMT_MARK_COLOR N_("Color of mark")
+#define CMT_USE_PROXY N_("Use proxy")
+#define CMT_HTTP_PROXY N_("URL of HTTP proxy host")
 #ifdef USE_SSL
-#define CMT_HTTPS_PROXY  N_("URL of HTTPS proxy host")
-#endif				/* USE_SSL */
+#define CMT_HTTPS_PROXY N_("URL of HTTPS proxy host")
+#endif /* USE_SSL */
 #ifdef USE_GOPHER
 #define CMT_GOPHER_PROXY N_("URL of GOPHER proxy host")
-#endif				/* USE_GOPHER */
-#define CMT_FTP_PROXY    N_("URL of FTP proxy host")
-#define CMT_NO_PROXY     N_("Domains to be accessed directly (no proxy)")
-#define CMT_NOPROXY_NETADDR	N_("Check noproxy by network address")
-#define CMT_NO_CACHE     N_("Disable cache")
+#endif /* USE_GOPHER */
+#define CMT_FTP_PROXY N_("URL of FTP proxy host")
+#define CMT_NO_PROXY N_("Domains to be accessed directly (no proxy)")
+#define CMT_NOPROXY_NETADDR N_("Check noproxy by network address")
+#define CMT_NO_CACHE N_("Disable cache")
 #ifdef USE_NNTP
-#define CMT_NNTP_SERVER  N_("News server")
-#define CMT_NNTP_MODE    N_("Mode of news server")
-#define CMT_MAX_NEWS     N_("Number of news messages")
+#define CMT_NNTP_SERVER N_("News server")
+#define CMT_NNTP_MODE N_("Mode of news server")
+#define CMT_MAX_NEWS N_("Number of news messages")
 #endif
-#define CMT_DNS_ORDER	N_("Order of name resolution")
-#define CMT_DROOT       N_("Directory corresponding to / (document root)")
-#define CMT_PDROOT      N_("Directory corresponding to /~user")
-#define CMT_CGIBIN      N_("Directory corresponding to /cgi-bin")
-#define CMT_CONFIRM_QQ  N_("Confirm when quitting with q")
+#define CMT_DNS_ORDER N_("Order of name resolution")
+#define CMT_DROOT N_("Directory corresponding to / (document root)")
+#define CMT_PDROOT N_("Directory corresponding to /~user")
+#define CMT_CGIBIN N_("Directory corresponding to /cgi-bin")
+#define CMT_CONFIRM_QQ N_("Confirm when quitting with q")
 #define CMT_CLOSE_TAB_BACK N_("Close tab if buffer is last when back")
 #ifdef USE_MARK
-#define CMT_USE_MARK	N_("Enable mark operations")
+#define CMT_USE_MARK N_("Enable mark operations")
 #endif
-#define CMT_EMACS_LIKE_LINEEDIT	N_("Enable Emacs-style line editing")
-#define CMT_VI_PREC_NUM	 N_("Enable vi-like numeric prefix")
+#define CMT_EMACS_LIKE_LINEEDIT N_("Enable Emacs-style line editing")
+#define CMT_VI_PREC_NUM N_("Enable vi-like numeric prefix")
 #define CMT_LABEL_TOPLINE N_("Move cursor to top line when going to label")
 #define CMT_NEXTPAGE_TOPLINE N_("Move cursor to top line when moving to next page")
-#define CMT_FOLD_LINE    N_("Fold lines of plain text file")
-#define CMT_SHOW_NUM     N_("Show line numbers")
+#define CMT_FOLD_LINE N_("Fold lines of plain text file")
+#define CMT_SHOW_NUM N_("Show line numbers")
 #define CMT_SHOW_SRCH_STR N_("Show search string")
-#define CMT_MIMETYPES    N_("List of mime.types files")
-#define CMT_MAILCAP      N_("List of mailcap files")
+#define CMT_MIMETYPES N_("List of mime.types files")
+#define CMT_MAILCAP N_("List of mailcap files")
 #define CMT_URIMETHODMAP N_("List of urimethodmap files")
-#define CMT_EDITOR       N_("Editor")
-#define CMT_MAILER       N_("Mailer")
+#define CMT_EDITOR N_("Editor")
+#define CMT_MAILER N_("Mailer")
 #define CMT_MAILTO_OPTIONS N_("How to call Mailer for mailto URLs with options")
-#define CMT_EXTBRZ       N_("External Browser")
-#define CMT_EXTBRZ2      N_("Second External Browser")
-#define CMT_EXTBRZ3      N_("Third External Browser")
-#define CMT_DISABLE_SECRET_SECURITY_CHECK	N_("Disable secret file security check")
-#define CMT_PASSWDFILE	 N_("Password file")
-#define CMT_PRE_FORM_FILE	N_("File for setting form on loading")
-#define CMT_FTPPASS      N_("Password for anonymous FTP (your mail address)")
+#define CMT_EXTBRZ N_("External Browser")
+#define CMT_EXTBRZ2 N_("Second External Browser")
+#define CMT_EXTBRZ3 N_("Third External Browser")
+#define CMT_DISABLE_SECRET_SECURITY_CHECK N_("Disable secret file security check")
+#define CMT_PASSWDFILE N_("Password file")
+#define CMT_PRE_FORM_FILE N_("File for setting form on loading")
+#define CMT_FTPPASS N_("Password for anonymous FTP (your mail address)")
 #define CMT_FTPPASS_HOSTNAMEGEN N_("Generate domain part of password for FTP")
-#define CMT_USERAGENT    N_("User-Agent identification string")
-#define CMT_ACCEPTENCODING	N_("Accept-Encoding header")
-#define CMT_ACCEPTMEDIA	 N_("Accept header")
-#define CMT_ACCEPTLANG   N_("Accept-Language header")
+#define CMT_USERAGENT N_("User-Agent identification string")
+#define CMT_ACCEPTENCODING N_("Accept-Encoding header")
+#define CMT_ACCEPTMEDIA N_("Accept header")
+#define CMT_ACCEPTLANG N_("Accept-Language header")
 #define CMT_MARK_ALL_PAGES N_("Treat URL-like strings as links in all pages")
-#define CMT_WRAP         N_("Wrap search")
+#define CMT_WRAP N_("Wrap search")
 #define CMT_VIEW_UNSEENOBJECTS N_("Display unseen objects (e.g. bgimage tag)")
-#define CMT_AUTO_UNCOMPRESS	N_("Uncompress compressed data automatically when downloading")
+#define CMT_AUTO_UNCOMPRESS N_("Uncompress compressed data automatically when downloading")
 #ifdef __EMX__
-#define CMT_BGEXTVIEW	 N_("Run external viewer in a separate session")
+#define CMT_BGEXTVIEW N_("Run external viewer in a separate session")
 #else
-#define CMT_BGEXTVIEW    N_("Run external viewer in the background")
+#define CMT_BGEXTVIEW N_("Run external viewer in the background")
 #endif
-#define CMT_EXT_DIRLIST  N_("Use external program for directory listing")
-#define CMT_DIRLIST_CMD  N_("URL of directory listing command")
+#define CMT_EXT_DIRLIST N_("Use external program for directory listing")
+#define CMT_DIRLIST_CMD N_("URL of directory listing command")
 #ifdef USE_DICT
-#define CMT_USE_DICTCOMMAND  N_("Enable dictionary lookup through CGI")
-#define CMT_DICTCOMMAND  N_("URL of dictionary lookup command")
-#endif				/* USE_DICT */
-#define CMT_IGNORE_NULL_IMG_ALT	N_("Display link name for images lacking ALT")
-#define CMT_IFILE        N_("Index file for directories")
-#define CMT_RETRY_HTTP   N_("Prepend http:// to URL automatically")
-#define CMT_DEFAULT_URL  N_("Default value for open-URL command")
-#define CMT_DECODE_CTE   N_("Decode Content-Transfer-Encoding when saving")
+#define CMT_USE_DICTCOMMAND N_("Enable dictionary lookup through CGI")
+#define CMT_DICTCOMMAND N_("URL of dictionary lookup command")
+#endif /* USE_DICT */
+#define CMT_IGNORE_NULL_IMG_ALT N_("Display link name for images lacking ALT")
+#define CMT_IFILE N_("Index file for directories")
+#define CMT_RETRY_HTTP N_("Prepend http:// to URL automatically")
+#define CMT_DEFAULT_URL N_("Default value for open-URL command")
+#define CMT_DECODE_CTE N_("Decode Content-Transfer-Encoding when saving")
 #define CMT_PRESERVE_TIMESTAMP N_("Preserve timestamp when saving")
 #ifdef USE_MOUSE
-#define CMT_MOUSE         N_("Enable mouse")
+#define CMT_MOUSE N_("Enable mouse")
 #define CMT_REVERSE_MOUSE N_("Scroll in reverse direction of mouse drag")
 #define CMT_RELATIVE_WHEEL_SCROLL N_("Behavior of wheel scroll speed")
 #define CMT_RELATIVE_WHEEL_SCROLL_RATIO N_("(A only)Scroll by # (%) of screen")
 #define CMT_FIXED_WHEEL_SCROLL_COUNT N_("(B only)Scroll by # lines")
-#endif				/* USE_MOUSE */
-#define CMT_CLEAR_BUF     N_("Free memory of undisplayed buffers")
+#endif /* USE_MOUSE */
+#define CMT_CLEAR_BUF N_("Free memory of undisplayed buffers")
 #define CMT_NOSENDREFERER N_("Suppress `Referer:' header")
 #define CMT_IGNORE_CASE N_("Search case-insensitively")
 #define CMT_USE_LESSOPEN N_("Use LESSOPEN")
@@ -207,12 +204,12 @@ static int OptionEncode = FALSE;
 #define CMT_SSL_KEY_FILE N_("PEM encoded private key file of client")
 #define CMT_SSL_CA_PATH N_("Path to directory for PEM encoded certificates of CAs")
 #define CMT_SSL_CA_FILE N_("File consisting of PEM encoded certificates of CAs")
-#endif				/* USE_SSL_VERIFY */
+#endif /* USE_SSL_VERIFY */
 #define CMT_SSL_FORBID_METHOD N_("List of forbidden SSL methods (2: SSLv2, 3: SSLv3, t:TLSv1)")
-#endif				/* USE_SSL */
+#endif /* USE_SSL */
 #ifdef USE_COOKIE
-#define CMT_USECOOKIE   N_("Enable cookie processing")
-#define CMT_SHOWCOOKIE  N_("Print a message when receiving a cookie")
+#define CMT_USECOOKIE N_("Enable cookie processing")
+#define CMT_SHOWCOOKIE N_("Print a message when receiving a cookie")
 #define CMT_ACCEPTCOOKIE N_("Accept cookies")
 #define CMT_ACCEPTBADCOOKIE N_("Action to be taken on invalid cookie")
 #define CMT_COOKIE_REJECT_DOMAINS N_("Domains to reject cookies from")
@@ -225,44 +222,45 @@ static int OptionEncode = FALSE;
 #ifdef USE_MIGEMO
 #define CMT_USE_MIGEMO N_("Enable Migemo (Roma-ji search)")
 #define CMT_MIGEMO_COMMAND N_("Migemo command")
-#endif				/* USE_MIGEMO */
+#endif /* USE_MIGEMO */
 
 #ifdef USE_M17N
-#define CMT_DISPLAY_CHARSET  N_("Display charset")
+#define CMT_DISPLAY_CHARSET N_("Display charset")
 #define CMT_DOCUMENT_CHARSET N_("Default document charset")
-#define CMT_AUTO_DETECT      N_("Automatic charset detect when loading")
-#define CMT_SYSTEM_CHARSET   N_("System charset")
-#define CMT_FOLLOW_LOCALE    N_("System charset follows locale(LC_CTYPE)")
-#define CMT_EXT_HALFDUMP     N_("Output halfdump with display charset")
-#define CMT_USE_WIDE         N_("Use multi column characters")
-#define CMT_USE_COMBINING    N_("Use combining characters")
+#define CMT_AUTO_DETECT N_("Automatic charset detect when loading")
+#define CMT_SYSTEM_CHARSET N_("System charset")
+#define CMT_FOLLOW_LOCALE N_("System charset follows locale(LC_CTYPE)")
+#define CMT_EXT_HALFDUMP N_("Output halfdump with display charset")
+#define CMT_USE_WIDE N_("Use multi column characters")
+#define CMT_USE_COMBINING N_("Use combining characters")
 #define CMT_EAST_ASIAN_WIDTH N_("Use double width for some Unicode characters")
 #define CMT_USE_LANGUAGE_TAG N_("Use Unicode language tags")
-#define CMT_UCS_CONV         N_("Charset conversion using Unicode map")
-#define CMT_PRE_CONV         N_("Charset conversion when loading")
-#define CMT_SEARCH_CONV      N_("Adjust search string for document charset")
-#define CMT_FIX_WIDTH_CONV   N_("Fix character width when conversion")
-#define CMT_USE_GB12345_MAP  N_("Use GB 12345 Unicode map instead of GB 2312's")
-#define CMT_USE_JISX0201     N_("Use JIS X 0201 Roman for ISO-2022-JP")
-#define CMT_USE_JISC6226     N_("Use JIS C 6226:1978 for ISO-2022-JP")
-#define CMT_USE_JISX0201K    N_("Use JIS X 0201 Katakana")
-#define CMT_USE_JISX0212     N_("Use JIS X 0212:1990 (Supplemental Kanji)")
-#define CMT_USE_JISX0213     N_("Use JIS X 0213:2000 (2000JIS)")
-#define CMT_STRICT_ISO2022   N_("Strict ISO-2022-JP/KR/CN")
-#define CMT_GB18030_AS_UCS   N_("Treat 4 bytes char. of GB18030 as Unicode")
+#define CMT_UCS_CONV N_("Charset conversion using Unicode map")
+#define CMT_PRE_CONV N_("Charset conversion when loading")
+#define CMT_SEARCH_CONV N_("Adjust search string for document charset")
+#define CMT_FIX_WIDTH_CONV N_("Fix character width when conversion")
+#define CMT_USE_GB12345_MAP N_("Use GB 12345 Unicode map instead of GB 2312's")
+#define CMT_USE_JISX0201 N_("Use JIS X 0201 Roman for ISO-2022-JP")
+#define CMT_USE_JISC6226 N_("Use JIS C 6226:1978 for ISO-2022-JP")
+#define CMT_USE_JISX0201K N_("Use JIS X 0201 Katakana")
+#define CMT_USE_JISX0212 N_("Use JIS X 0212:1990 (Supplemental Kanji)")
+#define CMT_USE_JISX0213 N_("Use JIS X 0213:2000 (2000JIS)")
+#define CMT_STRICT_ISO2022 N_("Strict ISO-2022-JP/KR/CN")
+#define CMT_GB18030_AS_UCS N_("Treat 4 bytes char. of GB18030 as Unicode")
 #define CMT_SIMPLE_PRESERVE_SPACE N_("Simple Preserve space")
 #endif
 
 #define CMT_KEYMAP_FILE N_("keymap file")
 
-#define PI_TEXT    0
-#define PI_ONOFF   1
-#define PI_SEL_C   2
+#define PI_TEXT 0
+#define PI_ONOFF 1
+#define PI_SEL_C 2
 #ifdef USE_M17N
-#define PI_CODE    3
+#define PI_CODE 3
 #endif
 
-struct sel_c {
+struct sel_c
+{
     int value;
     char *cvalue;
     char *text;
@@ -279,14 +277,13 @@ static struct sel_c colorstr[] = {
     {6, "cyan", N_("cyan")},
     {7, "white", N_("white")},
     {8, "terminal", N_("terminal")},
-    {0, NULL, NULL}
-};
-#endif				/* USE_COLOR */
+    {0, NULL, NULL}};
+#endif /* USE_COLOR */
 
-#if 1				/* ANSI-C ? */
-#define N_STR(x)	#x
-#define N_S(x)	(x), N_STR(x)
-#else				/* for traditional cpp? */
+#if 1 /* ANSI-C ? */
+#define N_STR(x) #x
+#define N_S(x) (x), N_STR(x)
+#else /* for traditional cpp? */
 static char n_s[][2] = {
     {'0', 0},
     {'1', 0},
@@ -295,28 +292,24 @@ static char n_s[][2] = {
 #define N_S(x) (x), n_s[(x)]
 #endif
 
-
 static struct sel_c defaulturls[] = {
     {N_S(DEFAULT_URL_EMPTY), N_("none")},
     {N_S(DEFAULT_URL_CURRENT), N_("current URL")},
     {N_S(DEFAULT_URL_LINK), N_("link URL")},
-    {0, NULL, NULL}
-};
+    {0, NULL, NULL}};
 
 static struct sel_c displayinsdel[] = {
     {N_S(DISPLAY_INS_DEL_SIMPLE), N_("simple")},
     {N_S(DISPLAY_INS_DEL_NORMAL), N_("use tag")},
     {N_S(DISPLAY_INS_DEL_FONTIFY), N_("fontify")},
-    {0, NULL, NULL}
-};
+    {0, NULL, NULL}};
 
 #ifdef USE_MOUSE
 static struct sel_c wheelmode[] = {
     {TRUE, "1", N_("A:relative to screen height")},
     {FALSE, "0", N_("B:fixed speed")},
-    {0, NULL, NULL}
-};
-#endif				/* MOUSE */
+    {0, NULL, NULL}};
+#endif /* MOUSE */
 
 #ifdef INET6
 static struct sel_c dnsorders[] = {
@@ -325,9 +318,8 @@ static struct sel_c dnsorders[] = {
     {N_S(DNS_ORDER_INET6_INET), N_("inet6 inet")},
     {N_S(DNS_ORDER_INET_ONLY), N_("inet only")},
     {N_S(DNS_ORDER_INET6_ONLY), N_("inet6 only")},
-    {0, NULL, NULL}
-};
-#endif				/* INET6 */
+    {0, NULL, NULL}};
+#endif /* INET6 */
 
 #ifdef USE_COOKIE
 static struct sel_c badcookiestr[] = {
@@ -336,9 +328,8 @@ static struct sel_c badcookiestr[] = {
     {N_S(ACCEPT_BAD_COOKIE_ACCEPT), N_("accept")},
 #endif
     {N_S(ACCEPT_BAD_COOKIE_ASK), N_("ask")},
-    {0, NULL, NULL}
-};
-#endif				/* USE_COOKIE */
+    {0, NULL, NULL}};
+#endif /* USE_COOKIE */
 
 static struct sel_c mailtooptionsstr[] = {
 #ifdef USE_W3MMAILER
@@ -346,8 +337,7 @@ static struct sel_c mailtooptionsstr[] = {
 #endif
     {N_S(MAILTO_OPTIONS_IGNORE), N_("ignore options and use only the address")},
     {N_S(MAILTO_OPTIONS_USE_MAILTO_URL), N_("use full mailto URL")},
-    {0, NULL, NULL}
-};
+    {0, NULL, NULL}};
 
 #ifdef USE_M17N
 static wc_ces_list *display_charset_str = NULL;
@@ -357,18 +347,16 @@ static struct sel_c auto_detect_str[] = {
     {N_S(WC_OPT_DETECT_OFF), N_("OFF")},
     {N_S(WC_OPT_DETECT_ISO_2022), N_("Only ISO 2022")},
     {N_S(WC_OPT_DETECT_ON), N_("ON")},
-    {0, NULL, NULL}
-};
+    {0, NULL, NULL}};
 #endif
 
 static struct sel_c graphic_char_str[] = {
     {N_S(GRAPHIC_CHAR_ASCII), N_("ASCII")},
     {N_S(GRAPHIC_CHAR_CHARSET), N_("charset specific")},
     {N_S(GRAPHIC_CHAR_DEC), N_("DEC special graphics")},
-    {0, NULL, NULL}
-};
+    {0, NULL, NULL}};
 
-struct param_ptr params1[] = {
+struct Param params1[] = {
     {"tabstop", P_NZINT, PI_TEXT, (void *)&Tabstop, CMT_TABSTOP, NULL},
     {"indent_incr", P_NZINT, PI_TEXT, (void *)&IndentIncr, CMT_INDENT_INCR,
      NULL},
@@ -400,7 +388,7 @@ struct param_ptr params1[] = {
      CMT_USE_DICTCOMMAND, NULL},
     {"dictcommand", P_STRING, PI_TEXT, (void *)&DictCommand,
      CMT_DICTCOMMAND, NULL},
-#endif				/* USE_DICT */
+#endif /* USE_DICT */
     {"multicol", P_INT, PI_ONOFF, (void *)&multicolList, CMT_MULTICOL, NULL},
     {"alt_entity", P_CHARINT, PI_ONOFF, (void *)&UseAltEntity, CMT_ALT_ENTITY,
      NULL},
@@ -444,7 +432,7 @@ struct param_ptr params1[] = {
 };
 
 #ifdef USE_COLOR
-struct param_ptr params2[] = {
+struct Param params2[] = {
     {"color", P_INT, PI_ONOFF, (void *)&useColor, CMT_COLOR, NULL},
     {"basic_color", P_COLOR, PI_SEL_C, (void *)&basic_color, CMT_B_COLOR,
      (void *)colorstr},
@@ -459,7 +447,7 @@ struct param_ptr params2[] = {
      (void *)colorstr},
     {"bg_color", P_COLOR, PI_SEL_C, (void *)&bg_color, CMT_BG_COLOR,
      (void *)colorstr},
-#endif				/* USE_BG_COLOR */
+#endif /* USE_BG_COLOR */
     {"active_style", P_INT, PI_ONOFF, (void *)&useActiveColor,
      CMT_ACTIVE_STYLE, NULL},
     {"active_color", P_COLOR, PI_SEL_C, (void *)&active_color, CMT_C_COLOR,
@@ -470,16 +458,15 @@ struct param_ptr params2[] = {
      (void *)colorstr},
     {NULL, 0, 0, NULL, NULL, NULL},
 };
-#endif				/* USE_COLOR */
+#endif /* USE_COLOR */
 
-
-struct param_ptr params3[] = {
+struct Param params3[] = {
     {"pagerline", P_NZINT, PI_TEXT, (void *)&PagerMax, CMT_PAGERLINE, NULL},
 #ifdef USE_HISTORY
     {"use_history", P_INT, PI_ONOFF, (void *)&UseHistory, CMT_HISTORY, NULL},
     {"history", P_INT, PI_TEXT, (void *)&URLHistSize, CMT_HISTSIZE, NULL},
     {"save_hist", P_INT, PI_ONOFF, (void *)&SaveURLHist, CMT_SAVEHIST, NULL},
-#endif				/* USE_HISTORY */
+#endif /* USE_HISTORY */
     {"confirm_qq", P_INT, PI_ONOFF, (void *)&confirm_on_quit, CMT_CONFIRM_QQ,
      NULL},
     {"close_tab_back", P_INT, PI_ONOFF, (void *)&close_tab_back,
@@ -501,7 +488,7 @@ struct param_ptr params3[] = {
      NULL},
     {"migemo_command", P_STRING, PI_TEXT, (void *)&migemo_command,
      CMT_MIGEMO_COMMAND, NULL},
-#endif				/* USE_MIGEMO */
+#endif /* USE_MIGEMO */
 #ifdef USE_MOUSE
     {"use_mouse", P_INT, PI_ONOFF, (void *)&use_mouse, CMT_MOUSE, NULL},
     {"reverse_mouse", P_INT, PI_ONOFF, (void *)&reverse_mouse,
@@ -514,7 +501,7 @@ struct param_ptr params3[] = {
     {"fixed_wheel_scroll_count", P_INT, PI_TEXT,
      (void *)&fixed_wheel_scroll_count,
      CMT_FIXED_WHEEL_SCROLL_COUNT, NULL},
-#endif				/* USE_MOUSE */
+#endif /* USE_MOUSE */
     {"clear_buffer", P_INT, PI_ONOFF, (void *)&clear_buffer, CMT_CLEAR_BUF,
      NULL},
     {"decode_cte", P_CHARINT, PI_ONOFF, (void *)&DecodeCTE, CMT_DECODE_CTE,
@@ -528,7 +515,7 @@ struct param_ptr params3[] = {
     {NULL, 0, 0, NULL, NULL, NULL},
 };
 
-struct param_ptr params4[] = {
+struct Param params4[] = {
     {"use_proxy", P_CHARINT, PI_ONOFF, (void *)&use_proxy, CMT_USE_PROXY,
      NULL},
     {"http_proxy", P_STRING, PI_TEXT, (void *)&HTTP_proxy, CMT_HTTP_PROXY,
@@ -536,11 +523,11 @@ struct param_ptr params4[] = {
 #ifdef USE_SSL
     {"https_proxy", P_STRING, PI_TEXT, (void *)&HTTPS_proxy, CMT_HTTPS_PROXY,
      NULL},
-#endif				/* USE_SSL */
+#endif /* USE_SSL */
 #ifdef USE_GOPHER
     {"gopher_proxy", P_STRING, PI_TEXT, (void *)&GOPHER_proxy,
      CMT_GOPHER_PROXY, NULL},
-#endif				/* USE_GOPHER */
+#endif /* USE_GOPHER */
     {"ftp_proxy", P_STRING, PI_TEXT, (void *)&FTP_proxy, CMT_FTP_PROXY, NULL},
     {"no_proxy", P_STRING, PI_TEXT, (void *)&NO_proxy, CMT_NO_PROXY, NULL},
     {"noproxy_netaddr", P_INT, PI_ONOFF, (void *)&NOproxy_netaddr,
@@ -550,7 +537,7 @@ struct param_ptr params4[] = {
     {NULL, 0, 0, NULL, NULL, NULL},
 };
 
-struct param_ptr params5[] = {
+struct Param params5[] = {
     {"document_root", P_STRING, PI_TEXT, (void *)&document_root, CMT_DROOT,
      NULL},
     {"personal_document_root", P_STRING, PI_TEXT,
@@ -560,7 +547,7 @@ struct param_ptr params5[] = {
     {NULL, 0, 0, NULL, NULL, NULL},
 };
 
-struct param_ptr params6[] = {
+struct Param params6[] = {
     {"mime_types", P_STRING, PI_TEXT, (void *)&mimetypes_files, CMT_MIMETYPES,
      NULL},
     {"mailcap", P_STRING, PI_TEXT, (void *)&mailcap_files, CMT_MAILCAP, NULL},
@@ -585,7 +572,7 @@ struct param_ptr params6[] = {
 };
 
 #ifdef USE_SSL
-struct param_ptr params7[] = {
+struct Param params7[] = {
     {"ssl_forbid_method", P_STRING, PI_TEXT, (void *)&ssl_forbid_method,
      CMT_SSL_FORBID_METHOD, NULL},
 #ifdef USE_SSL_VERIFY
@@ -599,13 +586,13 @@ struct param_ptr params7[] = {
      NULL},
     {"ssl_ca_file", P_SSLPATH, PI_TEXT, (void *)&ssl_ca_file, CMT_SSL_CA_FILE,
      NULL},
-#endif				/* USE_SSL_VERIFY */
+#endif /* USE_SSL_VERIFY */
     {NULL, 0, 0, NULL, NULL, NULL},
 };
-#endif				/* USE_SSL */
+#endif /* USE_SSL */
 
 #ifdef USE_COOKIE
-struct param_ptr params8[] = {
+struct Param params8[] = {
     {"use_cookie", P_INT, PI_ONOFF, (void *)&use_cookie, CMT_USECOOKIE, NULL},
     {"show_cookie", P_INT, PI_ONOFF, (void *)&show_cookie,
      CMT_SHOWCOOKIE, NULL},
@@ -624,7 +611,7 @@ struct param_ptr params8[] = {
 };
 #endif
 
-struct param_ptr params9[] = {
+struct Param params9[] = {
     {"passwd_file", P_STRING, PI_TEXT, (void *)&passwd_file, CMT_PASSWDFILE,
      NULL},
     {"disable_secret_security_check", P_INT, PI_ONOFF,
@@ -658,7 +645,7 @@ struct param_ptr params9[] = {
 #ifdef INET6
     {"dns_order", P_INT, PI_SEL_C, (void *)&DNS_order, CMT_DNS_ORDER,
      (void *)dnsorders},
-#endif				/* INET6 */
+#endif /* INET6 */
 #ifdef USE_NNTP
     {"nntpserver", P_STRING, PI_TEXT, (void *)&NNTP_server, CMT_NNTP_SERVER,
      NULL},
@@ -669,7 +656,7 @@ struct param_ptr params9[] = {
 };
 
 #ifdef USE_M17N
-struct param_ptr params10[] = {
+struct Param params10[] = {
     {"display_charset", P_CODE, PI_CODE, (void *)&DisplayCharset,
      CMT_DISPLAY_CHARSET, (void *)&display_charset_str},
     {"document_charset", P_CODE, PI_CODE, (void *)&DocumentCharset,
@@ -726,29 +713,24 @@ struct param_ptr params10[] = {
 };
 #endif
 
-struct param_section sections[] = {
-    {N_("Display Settings"), params1},
-#ifdef USE_COLOR
-    {N_("Color Settings"), params2},
-#endif				/* USE_COLOR */
-    {N_("Miscellaneous Settings"), params3},
-    {N_("Directory Settings"), params5},
-    {N_("External Program Settings"), params6},
-    {N_("Network Settings"), params9},
-    {N_("Proxy Settings"), params4},
-#ifdef USE_SSL
-    {N_("SSL Settings"), params7},
-#endif
-#ifdef USE_COOKIE
-    {N_("Cookie Settings"), params8},
-#endif
-#ifdef USE_M17N
-    {N_("Charset Settings"), params10},
-#endif
-    {NULL, NULL}
+struct ParamSection
+{
+    std::string name;
+    struct Param *params;
 };
+auto sections = make_array(
+    ParamSection{N_("Display Settings"), params1},
+    ParamSection{N_("Color Settings"), params2},
+    ParamSection{N_("Miscellaneous Settings"), params3},
+    ParamSection{N_("Directory Settings"), params5},
+    ParamSection{N_("External Program Settings"), params6},
+    ParamSection{N_("Network Settings"), params9},
+    ParamSection{N_("Proxy Settings"), params4},
+    ParamSection{N_("SSL Settings"), params7},
+    ParamSection{N_("Cookie Settings"), params8},
+    ParamSection{N_("Charset Settings"), params10});
 
-static Str to_str(struct param_ptr *p);
+static Str to_str(struct Param *p);
 
 static int
 compare_table(struct rc_search_table *a, struct rc_search_table *b)
@@ -756,194 +738,193 @@ compare_table(struct rc_search_table *a, struct rc_search_table *b)
     return strcmp(a->param->name, b->param->name);
 }
 
-static void
-create_option_search_table()
+static void create_option_search_table()
 {
-    int i, j, k;
-    int diff1, diff2;
-    char *p, *q;
-
     /* count table size */
     RC_table_size = 0;
-    for (j = 0; sections[j].name != NULL; j++) {
-	i = 0;
-	while (sections[j].params[i].name) {
-	    i++;
-	    RC_table_size++;
-	}
+    for (auto &section : sections)
+    {
+        int i = 0;
+        while (section.params[i].name)
+        {
+            i++;
+            RC_table_size++;
+        }
     }
 
+    int diff1, diff2;
+    char *p, *q;
     RC_search_table = New_N(struct rc_search_table, RC_table_size);
-    k = 0;
-    for (j = 0; sections[j].name != NULL; j++) {
-	i = 0;
-	while (sections[j].params[i].name) {
-	    RC_search_table[k].param = &sections[j].params[i];
-	    k++;
-	    i++;
-	}
+    int k = 0;
+    for (auto &section : sections)
+    {
+        auto i = 0;
+        while (section.params[i].name)
+        {
+            RC_search_table[k].param = &section.params[i];
+            k++;
+            i++;
+        }
     }
 
     qsort(RC_search_table, RC_table_size, sizeof(struct rc_search_table),
-	  (int (*)(const void *, const void *))compare_table);
+          (int (*)(const void *, const void *))compare_table);
 
     diff1 = diff2 = 0;
-    for (i = 0; i < RC_table_size - 1; i++) {
-	p = RC_search_table[i].param->name;
-	q = RC_search_table[i + 1].param->name;
-	for (j = 0; p[j] != '\0' && q[j] != '\0' && p[j] == q[j]; j++) ;
-	diff1 = j;
-	if (diff1 > diff2)
-	    RC_search_table[i].uniq_pos = diff1 + 1;
-	else
-	    RC_search_table[i].uniq_pos = diff2 + 1;
-	diff2 = diff1;
+    for (int i = 0; i < RC_table_size - 1; i++)
+    {
+        p = RC_search_table[i].param->name;
+        q = RC_search_table[i + 1].param->name;
+        int j = 0;
+        for (; p[j] != '\0' && q[j] != '\0' && p[j] == q[j]; j++)
+            ;
+        int diff1 = j;
+        if (diff1 > diff2)
+            RC_search_table[i].uniq_pos = diff1 + 1;
+        else
+            RC_search_table[i].uniq_pos = diff2 + 1;
+        diff2 = diff1;
     }
 }
 
-struct param_ptr *
+struct Param *
 search_param(const char *name)
 {
     size_t b, e, i;
     int cmp;
     int len = strlen(name);
 
-    for (b = 0, e = RC_table_size - 1; b <= e;) {
-	i = (b + e) / 2;
-	cmp = strncmp(name, RC_search_table[i].param->name, len);
+    for (b = 0, e = RC_table_size - 1; b <= e;)
+    {
+        i = (b + e) / 2;
+        cmp = strncmp(name, RC_search_table[i].param->name, len);
 
-	if (!cmp) {
-	    if (len >= RC_search_table[i].uniq_pos) {
-		return RC_search_table[i].param;
-	    }
-	    else {
-		while ((cmp =
-			strcmp(name, RC_search_table[i].param->name)) <= 0)
-		    if (!cmp)
-			return RC_search_table[i].param;
-		    else if (i == 0)
-			return NULL;
-		    else
-			i--;
-		/* ambiguous */
-		return NULL;
-	    }
-	}
-	else if (cmp < 0) {
-	    if (i == 0)
-		return NULL;
-	    e = i - 1;
-	}
-	else
-	    b = i + 1;
+        if (!cmp)
+        {
+            if (len >= RC_search_table[i].uniq_pos)
+            {
+                return RC_search_table[i].param;
+            }
+            else
+            {
+                while ((cmp =
+                            strcmp(name, RC_search_table[i].param->name)) <= 0)
+                    if (!cmp)
+                        return RC_search_table[i].param;
+                    else if (i == 0)
+                        return NULL;
+                    else
+                        i--;
+                /* ambiguous */
+                return NULL;
+            }
+        }
+        else if (cmp < 0)
+        {
+            if (i == 0)
+                return NULL;
+            e = i - 1;
+        }
+        else
+            b = i + 1;
     }
     return NULL;
 }
 
 /* show parameter with bad options invokation */
-void
-show_params(FILE * fp)
+void show_params(FILE *fp)
 {
-    int i, j, l;
-    char *t = NULL;
-    char *cmt;
-
-#ifdef USE_M17N
-#ifdef ENABLE_NLS
-    OptionCharset = SystemCharset;	/* FIXME */
-#endif
-#endif
-
     fputs("\nconfiguration parameters\n", fp);
-    for (j = 0; sections[j].name != NULL; j++) {
-#ifdef USE_M17N
-	if (!OptionEncode)
-	    cmt =
-		wc_conv(_(sections[j].name), OptionCharset,
-			InnerCharset)->ptr;
-	else
-#endif
-	    cmt = sections[j].name;
-	fprintf(fp, "  section[%d]: %s\n", j, conv_to_system(cmt));
-	i = 0;
-	while (sections[j].params[i].name) {
-	    switch (sections[j].params[i].type) {
-	    case P_INT:
-	    case P_SHORT:
-	    case P_CHARINT:
-	    case P_NZINT:
-		t = (sections[j].params[i].inputtype ==
-		     PI_ONOFF) ? (char*)"bool" : (char*)"number";
-		break;
-	    case P_CHAR:
-		t = "char";
-		break;
-	    case P_STRING:
-		t = "string";
-		break;
-#if defined(USE_SSL) && defined(USE_SSL_VERIFY)
-	    case P_SSLPATH:
-		t = "path";
-		break;
-#endif
-#ifdef USE_COLOR
-	    case P_COLOR:
-		t = "color";
-		break;
-#endif
-#ifdef USE_M17N
-	    case P_CODE:
-		t = "charset";
-		break;
-#endif
-	    case P_PIXELS:
-		t = "number";
-		break;
-	    case P_SCALE:
-		t = "percent";
-		break;
-	    }
-#ifdef USE_M17N
-	    if (!OptionEncode)
-		cmt = wc_conv(_(sections[j].params[i].comment),
-			      OptionCharset, InnerCharset)->ptr;
-	    else
-#endif
-		cmt = sections[j].params[i].comment;
-	    l = 30 - (strlen(sections[j].params[i].name) + strlen(t));
-	    if (l < 0)
-		l = 1;
-	    fprintf(fp, "    -o %s=<%s>%*s%s\n",
-		    sections[j].params[i].name, t, l, " ",
-		    conv_to_system(cmt));
-	    i++;
-	}
+    for (auto j = 0; j < sections.size(); ++j)
+    {
+        auto &section = sections[j];
+        std::string_view cmt;
+        if (!OptionEncode)
+            cmt =
+                wc_conv(_(section.name.c_str()), OptionCharset,
+                        InnerCharset)
+                    ->ptr;
+        else
+            cmt = section.name;
+        fprintf(fp, "  section[%d]: %s\n", j, conv_to_system(cmt.data()));
+
+        int i = 0;
+        const char *t = nullptr;
+        while (section.params[i].name)
+        {
+            switch (section.params[i].type)
+            {
+            case P_INT:
+            case P_SHORT:
+            case P_CHARINT:
+            case P_NZINT:
+                t = (section.params[i].inputtype ==
+                     PI_ONOFF)
+                        ? (char *)"bool"
+                        : (char *)"number";
+                break;
+            case P_CHAR:
+                t = "char";
+                break;
+            case P_STRING:
+                t = "string";
+                break;
+            case P_SSLPATH:
+                t = "path";
+                break;
+            case P_COLOR:
+                t = "color";
+                break;
+            case P_CODE:
+                t = "charset";
+                break;
+            case P_PIXELS:
+                t = "number";
+                break;
+            case P_SCALE:
+                t = "percent";
+                break;
+            }
+            if (!OptionEncode)
+                cmt = wc_conv(_(section.params[i].comment),
+                              OptionCharset, InnerCharset)
+                          ->ptr;
+            else
+                cmt = section.params[i].comment;
+            int l = 30 - (strlen(section.params[i].name) + strlen(t));
+            if (l < 0)
+                l = 1;
+            fprintf(fp, "    -o %s=<%s>%*s%s\n",
+                    section.params[i].name, t, l, " ",
+                    conv_to_system(cmt.data()));
+            i++;
+        }
     }
 }
 
-int
-str_to_bool(const char *value, int old)
+int str_to_bool(const char *value, int old)
 {
     if (value == NULL)
-	return 1;
-    switch (TOLOWER(*value)) {
+        return 1;
+    switch (TOLOWER(*value))
+    {
     case '0':
-    case 'f':			/* false */
-    case 'n':			/* no */
-    case 'u':			/* undef */
-	return 0;
+    case 'f': /* false */
+    case 'n': /* no */
+    case 'u': /* undef */
+        return 0;
     case 'o':
-	if (TOLOWER(value[1]) == 'f')	/* off */
-	    return 0;
-	return 1;		/* on */
+        if (TOLOWER(value[1]) == 'f') /* off */
+            return 0;
+        return 1; /* on */
     case 't':
-	if (TOLOWER(value[1]) == 'o')	/* toggle */
-	    return !old;
-	return 1;		/* true */
+        if (TOLOWER(value[1]) == 'o') /* toggle */
+            return !old;
+        return 1; /* true */
     case '!':
-    case 'r':			/* reverse */
-    case 'x':			/* exchange */
-	return !old;
+    case 'r': /* reverse */
+    case 'x': /* exchange */
+        return !old;
     }
     return 1;
 }
@@ -953,47 +934,48 @@ static int
 str_to_color(const char *value)
 {
     if (value == NULL)
-	return 8;		/* terminal */
-    switch (TOLOWER(*value)) {
+        return 8; /* terminal */
+    switch (TOLOWER(*value))
+    {
     case '0':
-	return 0;		/* black */
+        return 0; /* black */
     case '1':
     case 'r':
-	return 1;		/* red */
+        return 1; /* red */
     case '2':
     case 'g':
-	return 2;		/* green */
+        return 2; /* green */
     case '3':
     case 'y':
-	return 3;		/* yellow */
+        return 3; /* yellow */
     case '4':
-	return 4;		/* blue */
+        return 4; /* blue */
     case '5':
     case 'm':
-	return 5;		/* magenta */
+        return 5; /* magenta */
     case '6':
     case 'c':
-	return 6;		/* cyan */
+        return 6; /* cyan */
     case '7':
     case 'w':
-	return 7;		/* white */
+        return 7; /* white */
     case '8':
     case 't':
-	return 8;		/* terminal */
+        return 8; /* terminal */
     case 'b':
-	if (!strncasecmp(value, "blu", 3))
-	    return 4;		/* blue */
-	else
-	    return 0;		/* black */
+        if (!strncasecmp(value, "blu", 3))
+            return 4; /* blue */
+        else
+            return 0; /* black */
     }
-    return 8;			/* terminal */
+    return 8; /* terminal */
 }
 #endif
 
 static int
 set_param(const char *name, const char *value)
 {
-    struct param_ptr *p;
+    struct Param *p;
     double ppc;
 
     if (value == NULL)
@@ -1063,75 +1045,77 @@ set_param(const char *name, const char *value)
     return 1;
 }
 
-int
-set_param_option(const char *option)
+int set_param_option(const char *option)
 {
     Str tmp = Strnew();
     auto p = option;
     char *q;
 
     while (*p && !IS_SPACE(*p) && *p != '=')
-	tmp->Push(*p++);
+        tmp->Push(*p++);
     while (*p && IS_SPACE(*p))
-	p++;
-    if (*p == '=') {
-	p++;
-	while (*p && IS_SPACE(*p))
-	    p++;
+        p++;
+    if (*p == '=')
+    {
+        p++;
+        while (*p && IS_SPACE(*p))
+            p++;
     }
     tmp->ToLower();
     if (set_param(tmp->ptr, p))
-	goto option_assigned;
+        goto option_assigned;
     q = tmp->ptr;
-    if (!strncmp(q, "no", 2)) {	/* -o noxxx, -o no-xxx, -o no_xxx */
-	q += 2;
-	if (*q == '-' || *q == '_')
-	    q++;
+    if (!strncmp(q, "no", 2))
+    { /* -o noxxx, -o no-xxx, -o no_xxx */
+        q += 2;
+        if (*q == '-' || *q == '_')
+            q++;
     }
-    else if (tmp->ptr[0] == '-')	/* -o -xxx */
-	q++;
+    else if (tmp->ptr[0] == '-') /* -o -xxx */
+        q++;
     else
-	return 0;
+        return 0;
     if (set_param(q, "0"))
-	goto option_assigned;
+        goto option_assigned;
     return 0;
-  option_assigned:
+option_assigned:
     return 1;
 }
 
 char *
 get_param_option(char *name)
 {
-    struct param_ptr *p;
+    struct Param *p;
 
     p = search_param(name);
     return p ? to_str(p)->ptr : NULL;
 }
 
 static void
-interpret_rc(FILE * f)
+interpret_rc(FILE *f)
 {
     Str line;
     Str tmp;
     char *p;
 
-    for (;;) {
-	line = Strfgets(f);
-	if (line->Size() == 0)		/* end of file */
-	    break;
-    line->Strip();
-	if (line->Size() == 0)		/* blank line */
-	    continue;
-	if (line->ptr[0] == '#')	/* comment */
-	    continue;
-	tmp = Strnew();
-	p = line->ptr;
-	while (*p && !IS_SPACE(*p))
-	    tmp->Push(*p++);
-	while (*p && IS_SPACE(*p))
-	    p++;
-	tmp->ToLower();
-	set_param(tmp->ptr, p);
+    for (;;)
+    {
+        line = Strfgets(f);
+        if (line->Size() == 0) /* end of file */
+            break;
+        line->Strip();
+        if (line->Size() == 0) /* blank line */
+            continue;
+        if (line->ptr[0] == '#') /* comment */
+            continue;
+        tmp = Strnew();
+        p = line->ptr;
+        while (*p && !IS_SPACE(*p))
+            tmp->Push(*p++);
+        while (*p && IS_SPACE(*p))
+            p++;
+        tmp->ToLower();
+        set_param(tmp->ptr, p);
     }
 }
 
@@ -1149,16 +1133,14 @@ void parse_proxy()
         set_no_proxy(NO_proxy);
 }
 
-void
-parse_cookie()
+void parse_cookie()
 {
     if (non_null(cookie_reject_domains))
-	Cookie_reject_domains = make_domain_list(cookie_reject_domains);
+        Cookie_reject_domains = make_domain_list(cookie_reject_domains);
     if (non_null(cookie_accept_domains))
-	Cookie_accept_domains = make_domain_list(cookie_accept_domains);
+        Cookie_accept_domains = make_domain_list(cookie_accept_domains);
     if (non_null(cookie_avoid_wrong_number_of_dots))
-	Cookie_avoid_wrong_number_of_dots_domains
-	       	= make_domain_list(cookie_avoid_wrong_number_of_dots);
+        Cookie_avoid_wrong_number_of_dots_domains = make_domain_list(cookie_avoid_wrong_number_of_dots);
 }
 
 #ifdef __EMX__
@@ -1168,23 +1150,23 @@ do_mkdir(const char *dir, long mode)
     char *r, abs[_MAX_PATH];
     size_t n;
 
-    _abspath(abs, rc_dir, _MAX_PATH);	/* Translate '\\' to '/' */
+    _abspath(abs, rc_dir, _MAX_PATH); /* Translate '\\' to '/' */
 
     if (!(n = strlen(abs)))
-	return -1;
+        return -1;
 
-    if (*(r = abs + n - 1) == '/')	/* Ignore tailing slash if it is */
-	*r = 0;
+    if (*(r = abs + n - 1) == '/') /* Ignore tailing slash if it is */
+        *r = 0;
 
     return mkdir(abs, mode);
 }
-#else				/* not __EMX__ */
+#else /* not __EMX__ */
 #ifdef __MINGW32_VERSION
-#define do_mkdir(dir,mode) mkdir(dir)
+#define do_mkdir(dir, mode) mkdir(dir)
 #else
-#define do_mkdir(dir,mode) mkdir(dir,mode)
-#endif				/* not __MINW32_VERSION */
-#endif				/* not __EMX__ */
+#define do_mkdir(dir, mode) mkdir(dir, mode)
+#endif /* not __MINW32_VERSION */
+#endif /* not __EMX__ */
 
 /*
  * RFC2617: 1.2 Access Authentication Framework
@@ -1279,7 +1261,7 @@ int find_auth_user_passwd(ParsedURL *pu, char *realm,
         *pwd = Strnew(pu->pass);
         return 1;
     }
-    auto ent = find_auth_pass_entry(const_cast<char*>(pu->host.c_str()), pu->port, realm, const_cast<char*>(pu->user.c_str()), is_proxy);
+    auto ent = find_auth_pass_entry(const_cast<char *>(pu->host.c_str()), pu->port, realm, const_cast<char *>(pu->user.c_str()), is_proxy);
     if (ent)
     {
         *uname = ent->uname;
@@ -1308,7 +1290,7 @@ void invalidate_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
                                  int is_proxy)
 {
     struct auth_pass *ent;
-    ent = find_auth_pass_entry(const_cast<char*>(pu->host.c_str()), pu->port, realm, NULL, is_proxy);
+    ent = find_auth_pass_entry(const_cast<char *>(pu->host.c_str()), pu->port, realm, NULL, is_proxy);
     if (ent)
     {
         ent->bad = TRUE;
@@ -1453,11 +1435,10 @@ static void loadPasswd(void)
     return;
 }
 
-void
-sync_with_option(void)
+void sync_with_option(void)
 {
     if (PagerMax < LINES)
-	PagerMax = LINES;
+        PagerMax = LINES;
     WrapSearch = WrapDefault;
     parse_proxy();
 #ifdef USE_COOKIE
@@ -1473,53 +1454,54 @@ sync_with_option(void)
 #endif
 #ifdef USE_IMAGE
     if (fmInitialized && displayImage)
-	initImage();
+        initImage();
 #else
-    displayImage = FALSE;	/* XXX */
+    displayImage = FALSE; /* XXX */
 #endif
     loadPasswd();
     loadPreForm();
 
-    if (AcceptLang == NULL || *AcceptLang == '\0') {
-	/* TRANSLATORS: 
+    if (AcceptLang == NULL || *AcceptLang == '\0')
+    {
+        /* TRANSLATORS: 
 	 * AcceptLang default: this is used in Accept-Language: HTTP request 
 	 * header. For example, ja.po should translate it as
 	 * "ja;q=1.0, en;q=0.5" like that.
 	 */
-	AcceptLang = _("en;q=1.0");
+        AcceptLang = _("en;q=1.0");
     }
     if (AcceptEncoding == NULL || *AcceptEncoding == '\0')
-	AcceptEncoding = acceptableEncoding();
+        AcceptEncoding = acceptableEncoding();
     if (AcceptMedia == NULL || *AcceptMedia == '\0')
-	AcceptMedia = acceptableMimeTypes();
+        AcceptMedia = acceptableMimeTypes();
 #ifdef USE_UNICODE
     update_utf8_symbol();
 #endif
-    if (fmInitialized) {
-	initKeymap(FALSE);
+    if (fmInitialized)
+    {
+        initKeymap(FALSE);
 #ifdef USE_MOUSE
-	initMouseAction();
-#endif				/* MOUSE */
+        initMouseAction();
+#endif /* MOUSE */
 #ifdef USE_MENU
-	initMenu();
-#endif				/* MENU */
+        initMenu();
+#endif /* MENU */
     }
 }
 
-void
-init_rc(void)
+void init_rc(void)
 {
     int i;
     struct stat st;
     FILE *f;
 
     if (rc_dir != NULL)
-	goto open_rc;
+        goto open_rc;
 
     rc_dir = expandPath(RC_DIR);
     i = strlen(rc_dir);
     if (i > 1 && rc_dir[i - 1] == '/')
-	rc_dir[i - 1] = '\0';
+        rc_dir[i - 1] = '\0';
 
 #ifdef USE_M17N
     display_charset_str = wc_get_ces_list();
@@ -1527,64 +1509,73 @@ init_rc(void)
     system_charset_str = display_charset_str;
 #endif
 
-    if (stat(rc_dir, &st) < 0) {
-	if (errno == ENOENT) {	/* no directory */
-	    if (do_mkdir(rc_dir, 0700) < 0) {
-		fprintf(stderr, "Can't create config directory (%s)!", rc_dir);
-		goto rc_dir_err;
-	    }
-	    else {
-		stat(rc_dir, &st);
-	    }
-	}
-	else {
-	    fprintf(stderr, "Can't open config directory (%s)!", rc_dir);
-	    goto rc_dir_err;
-	}
+    if (stat(rc_dir, &st) < 0)
+    {
+        if (errno == ENOENT)
+        { /* no directory */
+            if (do_mkdir(rc_dir, 0700) < 0)
+            {
+                fprintf(stderr, "Can't create config directory (%s)!", rc_dir);
+                goto rc_dir_err;
+            }
+            else
+            {
+                stat(rc_dir, &st);
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Can't open config directory (%s)!", rc_dir);
+            goto rc_dir_err;
+        }
     }
-    if (!S_ISDIR(st.st_mode)) {
-	/* not a directory */
-	fprintf(stderr, "%s is not a directory!", rc_dir);
-	goto rc_dir_err;
+    if (!S_ISDIR(st.st_mode))
+    {
+        /* not a directory */
+        fprintf(stderr, "%s is not a directory!", rc_dir);
+        goto rc_dir_err;
     }
-    if (!(st.st_mode & S_IWUSR)) {
-	fprintf(stderr, "%s is not writable!", rc_dir);
-	goto rc_dir_err;
+    if (!(st.st_mode & S_IWUSR))
+    {
+        fprintf(stderr, "%s is not writable!", rc_dir);
+        goto rc_dir_err;
     }
     no_rc_dir = FALSE;
     tmp_dir = rc_dir;
 
     if (config_file == NULL)
-	config_file = rcFile(CONFIG_FILE);
+        config_file = rcFile(CONFIG_FILE);
 
     create_option_search_table();
 
-  open_rc:
+open_rc:
     /* open config file */
-    if ((f = fopen(etcFile(W3MCONFIG), "rt")) != NULL) {
-	interpret_rc(f);
-	fclose(f);
+    if ((f = fopen(etcFile(W3MCONFIG), "rt")) != NULL)
+    {
+        interpret_rc(f);
+        fclose(f);
     }
-    if ((f = fopen(confFile(CONFIG_FILE), "rt")) != NULL) {
-	interpret_rc(f);
-	fclose(f);
+    if ((f = fopen(confFile(CONFIG_FILE), "rt")) != NULL)
+    {
+        interpret_rc(f);
+        fclose(f);
     }
-    if (config_file && (f = fopen(config_file, "rt")) != NULL) {
-	interpret_rc(f);
-	fclose(f);
+    if (config_file && (f = fopen(config_file, "rt")) != NULL)
+    {
+        interpret_rc(f);
+        fclose(f);
     }
     return;
 
-  rc_dir_err:
+rc_dir_err:
     no_rc_dir = TRUE;
     if (((tmp_dir = getenv("TMPDIR")) == NULL || *tmp_dir == '\0') &&
-	((tmp_dir = getenv("TMP")) == NULL || *tmp_dir == '\0') &&
-	((tmp_dir = getenv("TEMP")) == NULL || *tmp_dir == '\0'))
-	tmp_dir = "/tmp";
+        ((tmp_dir = getenv("TMP")) == NULL || *tmp_dir == '\0') &&
+        ((tmp_dir = getenv("TEMP")) == NULL || *tmp_dir == '\0'))
+        tmp_dir = "/tmp";
     create_option_search_table();
     goto open_rc;
 }
-
 
 static char optionpanel_src1[] =
     "<html><head><title>Option Setting Panel</title></head><body>\
@@ -1598,45 +1589,39 @@ static char optionpanel_src1[] =
 
 static Str optionpanel_str = NULL;
 
-static Str
-to_str(struct param_ptr *p)
+static Str to_str(struct Param *p)
 {
-    switch (p->type) {
+    switch (p->type)
+    {
     case P_INT:
-#ifdef USE_COLOR
     case P_COLOR:
-#endif
-#ifdef USE_M17N
     case P_CODE:
-	return Sprintf("%d", (int)(*(wc_ces *) p->varptr));
-#endif
+        return Sprintf("%d", (int)(*(wc_ces *)p->varptr));
     case P_NZINT:
-	return Sprintf("%d", *(int *)p->varptr);
+        return Sprintf("%d", *(int *)p->varptr);
     case P_SHORT:
-	return Sprintf("%d", *(short *)p->varptr);
+        return Sprintf("%d", *(short *)p->varptr);
     case P_CHARINT:
-	return Sprintf("%d", *(char *)p->varptr);
+        return Sprintf("%d", *(char *)p->varptr);
     case P_CHAR:
-	return Sprintf("%c", *(char *)p->varptr);
+        return Sprintf("%c", *(char *)p->varptr);
     case P_STRING:
-#if defined(USE_SSL) && defined(USE_SSL_VERIFY)
     case P_SSLPATH:
-#endif
-	/*  SystemCharset -> InnerCharset */
-	return Strnew(conv_from_system(*(char **)p->varptr));
+        /*  SystemCharset -> InnerCharset */
+        return Strnew(conv_from_system(*(char **)p->varptr));
     case P_PIXELS:
     case P_SCALE:
-	return Sprintf("%g", *(double *)p->varptr);
+        return Sprintf("%g", *(double *)p->varptr);
     }
     /* not reached */
     return NULL;
 }
 
-BufferPtr 
+BufferPtr
 load_option_panel(void)
 {
     Str src;
-    struct param_ptr *p;
+    struct Param *p;
     struct sel_c *s;
 #ifdef USE_M17N
     wc_ces_list *c;
@@ -1646,146 +1631,159 @@ load_option_panel(void)
     BufferPtr buf;
 
     if (optionpanel_str == NULL)
-	optionpanel_str = Sprintf(optionpanel_src1, w3m_version,
-			      html_quote(localCookie()->ptr), _(CMT_HELPER));
-#ifdef USE_M17N
-#ifdef ENABLE_NLS
-    OptionCharset = SystemCharset;	/* FIXME */
-#endif
-    if (!OptionEncode) {
-	optionpanel_str =
-	    wc_Str_conv(optionpanel_str, OptionCharset, InnerCharset);
-	for (i = 0; sections[i].name != NULL; i++) {
-	    sections[i].name =
-		wc_conv(_(sections[i].name), OptionCharset,
-			InnerCharset)->ptr;
-	    for (p = sections[i].params; p->name; p++) {
-		p->comment =
-		    wc_conv(_(p->comment), OptionCharset,
-			    InnerCharset)->ptr;
-		if (p->inputtype == PI_SEL_C
-#ifdef USE_COLOR
-			&& p->select != colorstr
-#endif
-			) {
-		    for (s = (struct sel_c *)p->select; s->text != NULL; s++) {
-			s->text =
-			    wc_conv(_(s->text), OptionCharset,
-				    InnerCharset)->ptr;
-		    }
-		}
-	    }
-	}
-#ifdef USE_COLOR
-	for (s = colorstr; s->text; s++)
-	    s->text = wc_conv(_(s->text), OptionCharset,
-			      InnerCharset)->ptr;
-#endif
-	OptionEncode = TRUE;
+        optionpanel_str = Sprintf(optionpanel_src1, w3m_version,
+                                  html_quote(localCookie()->ptr), _(CMT_HELPER));
+    if (!OptionEncode)
+    {
+        optionpanel_str =
+            wc_Str_conv(optionpanel_str, OptionCharset, InnerCharset);
+        for (auto &section : sections)
+        {
+            section.name =
+                wc_conv(_(section.name.c_str()), OptionCharset, InnerCharset)
+                    ->ptr;
+            for (p = section.params; p->name; p++)
+            {
+                p->comment =
+                    wc_conv(_(p->comment), OptionCharset,
+                            InnerCharset)
+                        ->ptr;
+                if (p->inputtype == PI_SEL_C
+
+                    && p->select != colorstr
+
+                )
+                {
+                    for (s = (struct sel_c *)p->select; s->text != NULL; s++)
+                    {
+                        s->text =
+                            wc_conv(_(s->text), OptionCharset,
+                                    InnerCharset)
+                                ->ptr;
+                    }
+                }
+            }
+        }
+
+        for (s = colorstr; s->text; s++)
+            s->text = wc_conv(_(s->text), OptionCharset,
+                              InnerCharset)
+                          ->ptr;
+
+        OptionEncode = TRUE;
     }
-#endif
     src = optionpanel_str->Clone();
 
     src->Push("<table><tr><td>");
-    for (i = 0; sections[i].name != NULL; i++) {
-	Strcat_m_charp(src, "<h1>", sections[i].name, "</h1>", NULL);
-	p = sections[i].params;
-	src->Push("<table width=100% cellpadding=0>");
-	while (p->name) {
-	    Strcat_m_charp(src, "<tr><td>", p->comment, NULL);
-	    src->Push(Sprintf("</td><td width=%d>",
-				(int)(28 * pixel_per_char)));
-	    switch (p->inputtype) {
-	    case PI_TEXT:
-		Strcat_m_charp(src, "<input type=text name=",
-			       p->name,
-			       " value=\"",
-			       html_quote(to_str(p)->ptr), "\">", NULL);
-		break;
-	    case PI_ONOFF:
-		x = atoi(to_str(p)->ptr);
-		Strcat_m_charp(src, "<input type=radio name=",
-			       p->name,
-			       " value=1",
-			       (x ? " checked" : ""),
-			       ">YES&nbsp;&nbsp;<input type=radio name=",
-			       p->name,
-			       " value=0", (x ? "" : " checked"), ">NO", NULL);
-		break;
-	    case PI_SEL_C:
-		tmp = to_str(p);
-		Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
-		for (s = (struct sel_c *)p->select; s->text != NULL; s++) {
-		    src->Push("<option value=");
-		    src->Push(Sprintf("%s\n", s->cvalue));
-		    if ((p->type != P_CHAR && s->value == atoi(tmp->ptr)) ||
-			(p->type == P_CHAR && (char)s->value == *(tmp->ptr)))
-			src->Push(" selected");
-		    src->Push( '>');
-		    src->Push(s->text);
-		}
-		src->Push("</select>");
-		break;
+    for (auto &section: sections)
+    {
+        Strcat_m_charp(src, "<h1>", section.name, "</h1>", NULL);
+        p = section.params;
+        src->Push("<table width=100% cellpadding=0>");
+        while (p->name)
+        {
+            Strcat_m_charp(src, "<tr><td>", p->comment, NULL);
+            src->Push(Sprintf("</td><td width=%d>",
+                              (int)(28 * pixel_per_char)));
+            switch (p->inputtype)
+            {
+            case PI_TEXT:
+                Strcat_m_charp(src, "<input type=text name=",
+                               p->name,
+                               " value=\"",
+                               html_quote(to_str(p)->ptr), "\">", NULL);
+                break;
+            case PI_ONOFF:
+                x = atoi(to_str(p)->ptr);
+                Strcat_m_charp(src, "<input type=radio name=",
+                               p->name,
+                               " value=1",
+                               (x ? " checked" : ""),
+                               ">YES&nbsp;&nbsp;<input type=radio name=",
+                               p->name,
+                               " value=0", (x ? "" : " checked"), ">NO", NULL);
+                break;
+            case PI_SEL_C:
+                tmp = to_str(p);
+                Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
+                for (s = (struct sel_c *)p->select; s->text != NULL; s++)
+                {
+                    src->Push("<option value=");
+                    src->Push(Sprintf("%s\n", s->cvalue));
+                    if ((p->type != P_CHAR && s->value == atoi(tmp->ptr)) ||
+                        (p->type == P_CHAR && (char)s->value == *(tmp->ptr)))
+                        src->Push(" selected");
+                    src->Push('>');
+                    src->Push(s->text);
+                }
+                src->Push("</select>");
+                break;
 #ifdef USE_M17N
-	    case PI_CODE:
-		tmp = to_str(p);
-		Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
-		for (c = *(wc_ces_list **) p->select; c->desc != NULL; c++) {
-		    src->Push("<option value=");
-		    src->Push(Sprintf("%s\n", c->name));
-		    if (c->id == atoi(tmp->ptr))
-			src->Push(" selected");
-		    src->Push( '>');
-		    src->Push(c->desc);
-		}
-		src->Push("</select>");
-		break;
+            case PI_CODE:
+                tmp = to_str(p);
+                Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
+                for (c = *(wc_ces_list **)p->select; c->desc != NULL; c++)
+                {
+                    src->Push("<option value=");
+                    src->Push(Sprintf("%s\n", c->name));
+                    if (c->id == atoi(tmp->ptr))
+                        src->Push(" selected");
+                    src->Push('>');
+                    src->Push(c->desc);
+                }
+                src->Push("</select>");
+                break;
 #endif
-	    }
-	    src->Push("</td></tr>\n");
-	    p++;
-	}
-	src->Push(
-		     "<tr><td></td><td><p><input type=submit value=\"OK\"></td></tr>");
-	src->Push("</table><hr width=50%>");
+            }
+            src->Push("</td></tr>\n");
+            p++;
+        }
+        src->Push(
+            "<tr><td></td><td><p><input type=submit value=\"OK\"></td></tr>");
+        src->Push("</table><hr width=50%>");
     }
     src->Push("</table></form></body></html>");
     buf = loadHTMLString(src);
 #ifdef USE_M17N
     if (buf)
-	buf->document_charset = OptionCharset;
+        buf->document_charset = OptionCharset;
 #endif
     return buf;
 }
 
-void
-panel_set_option(struct parsed_tagarg *arg)
+void panel_set_option(struct parsed_tagarg *arg)
 {
     FILE *f = NULL;
     char *p;
 
-    if (config_file == NULL) {
-	disp_message("There's no config file... config not saved", FALSE);
+    if (config_file == NULL)
+    {
+        disp_message("There's no config file... config not saved", FALSE);
     }
-    else {
-	f = fopen(config_file, "wt");
-	if (f == NULL) {
-	    disp_message("Can't write option!", FALSE);
-	}
+    else
+    {
+        f = fopen(config_file, "wt");
+        if (f == NULL)
+        {
+            disp_message("Can't write option!", FALSE);
+        }
     }
-    while (arg) {
-	/*  InnerCharset -> SystemCharset */
-	if (arg->value) {
-	    p = conv_to_system(arg->value);
-	    if (set_param(arg->arg, p)) {
-		if (f)
-		    fprintf(f, "%s %s\n", arg->arg, p);
-	    }
-	}
-	arg = arg->next;
+    while (arg)
+    {
+        /*  InnerCharset -> SystemCharset */
+        if (arg->value)
+        {
+            p = conv_to_system(arg->value);
+            if (set_param(arg->arg, p))
+            {
+                if (f)
+                    fprintf(f, "%s %s\n", arg->arg, p);
+            }
+        }
+        arg = arg->next;
     }
     if (f)
-	fclose(f);
+        fclose(f);
     sync_with_option();
     backBf();
 }
@@ -1794,12 +1792,10 @@ char *
 rcFile(const char *base)
 {
     if (base &&
-	(base[0] == '/' ||
-	 (base[0] == '.'
-	  && (base[1] == '/' || (base[1] == '.' && base[2] == '/')))
-	 || (base[0] == '~' && base[1] == '/')))
-	/* /file, ./file, ../file, ~/file */
-	return expandPath(base);
+        (base[0] == '/' ||
+         (base[0] == '.' && (base[1] == '/' || (base[1] == '.' && base[2] == '/'))) || (base[0] == '~' && base[1] == '/')))
+        /* /file, ./file, ../file, ~/file */
+        return expandPath(base);
     return expandPath(Strnew_m_charp(rc_dir, "/", base)->ptr);
 }
 
@@ -1809,7 +1805,7 @@ auxbinFile(const char *base)
     return expandPath(Strnew_m_charp(w3m_auxbin_dir(), "/", base, NULL)->ptr);
 }
 
-#if 0				/* not used */
+#if 0 /* not used */
 char *
 libFile(char *base)
 {
