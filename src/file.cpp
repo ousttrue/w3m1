@@ -1464,3 +1464,30 @@ void myExec(char *command)
     execl("/bin/sh", "sh", "-c", command, NULL);
     exit(127);
 }
+
+/* get last modified time */
+char *
+last_modified(BufferPtr buf)
+{
+    TextListItem *ti;
+    struct stat st;
+
+    if (buf->document_header)
+    {
+        for (ti = buf->document_header->first; ti; ti = ti->next)
+        {
+            if (strncasecmp(ti->ptr, "Last-modified: ", 15) == 0)
+            {
+                return ti->ptr + 15;
+            }
+        }
+        return "unknown";
+    }
+    else if (buf->currentURL.scheme == SCM_LOCAL)
+    {
+        if (stat(buf->currentURL.file.c_str(), &st) < 0)
+            return "unknown";
+        return ctime(&st.st_mtime);
+    }
+    return "unknown";
+}

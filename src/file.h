@@ -178,11 +178,9 @@ Str loadLocalDir(char *dirname);
 FILE *localcgi_post(char *, char *, FormList *, char *);
 #define localcgi_get(u, q, r) localcgi_post((u), (q), NULL, (r))
 FILE *openSecretFile(char *fname);
-void loadPasswd(void);
+
 void loadPreForm(void);
 char *last_modified(BufferPtr buf);
-Str romanNumeral(int n);
-Str romanAlphabet(int n);
 
 void myExec(char *command);
 void mySystem(char *command, int background);

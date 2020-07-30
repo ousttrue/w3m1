@@ -1186,6 +1186,273 @@ do_mkdir(const char *dir, long mode)
 #endif				/* not __MINW32_VERSION */
 #endif				/* not __EMX__ */
 
+/*
+ * RFC2617: 1.2 Access Authentication Framework
+ *
+ * The realm value (case-sensitive), in combination with the canonical root
+ * URL (the absoluteURI for the server whose abs_path is empty; see section
+ * 5.1.2 of RFC2616 ) of the server being accessed, defines the protection
+ * space. These realms allow the protected resources on a server to be
+ * partitioned into a set of protection spaces, each with its own
+ * authentication scheme and/or authorization database.
+ *
+ */
+
+/* passwd */
+/*
+ * machine <host>
+ * host <host>
+ * port <port>
+ * proxy
+ * path <file>	; not used
+ * realm <realm>
+ * login <login>
+ * passwd <passwd>
+ * password <passwd>
+ */
+
+struct auth_pass
+{
+    int bad;
+    int is_proxy;
+    Str host;
+    int port;
+    /*    Str file; */
+    Str realm;
+    Str uname;
+    Str pwd;
+    struct auth_pass *next;
+};
+
+struct auth_pass *passwords = NULL;
+
+static void
+add_auth_pass_entry(const struct auth_pass *ent, int netrc, int override)
+{
+    if ((ent->host || netrc) /* netrc accept default (host == NULL) */
+        && (ent->is_proxy || ent->realm || netrc) && ent->uname && ent->pwd)
+    {
+        struct auth_pass *newent = New(struct auth_pass);
+        memcpy(newent, ent, sizeof(struct auth_pass));
+        if (override)
+        {
+            newent->next = passwords;
+            passwords = newent;
+        }
+        else
+        {
+            if (passwords == NULL)
+                passwords = newent;
+            else if (passwords->next == NULL)
+                passwords->next = newent;
+            else
+            {
+                struct auth_pass *ep = passwords;
+                for (; ep->next; ep = ep->next)
+                    ;
+                ep->next = newent;
+            }
+        }
+    }
+    /* ignore invalid entries */
+}
+
+static struct auth_pass *
+find_auth_pass_entry(char *host, int port, char *realm, char *uname,
+                     int is_proxy)
+{
+    struct auth_pass *ent;
+    for (ent = passwords; ent != NULL; ent = ent->next)
+    {
+        if (ent->is_proxy == is_proxy && (ent->bad != TRUE) && (!ent->host || ent->host->ICaseCmp(host) == 0) && (!ent->port || ent->port == port) && (!ent->uname || !uname || ent->uname->Cmp(uname) == 0) && (!ent->realm || !realm || ent->realm->Cmp(realm) == 0))
+            return ent;
+    }
+    return NULL;
+}
+
+int find_auth_user_passwd(ParsedURL *pu, char *realm,
+                          Str *uname, Str *pwd, int is_proxy)
+{
+    if (pu->user.size() && pu->pass.size())
+    {
+        *uname = Strnew(pu->user);
+        *pwd = Strnew(pu->pass);
+        return 1;
+    }
+    auto ent = find_auth_pass_entry(const_cast<char*>(pu->host.c_str()), pu->port, realm, const_cast<char*>(pu->user.c_str()), is_proxy);
+    if (ent)
+    {
+        *uname = ent->uname;
+        *pwd = ent->pwd;
+        return 1;
+    }
+    return 0;
+}
+
+void add_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
+                          int is_proxy)
+{
+    struct auth_pass ent;
+    memset(&ent, 0, sizeof(ent));
+
+    ent.is_proxy = is_proxy;
+    ent.host = Strnew(pu->host);
+    ent.port = pu->port;
+    ent.realm = Strnew(realm);
+    ent.uname = uname;
+    ent.pwd = pwd;
+    add_auth_pass_entry(&ent, 0, 1);
+}
+
+void invalidate_auth_user_passwd(ParsedURL *pu, char *realm, Str uname, Str pwd,
+                                 int is_proxy)
+{
+    struct auth_pass *ent;
+    ent = find_auth_pass_entry(const_cast<char*>(pu->host.c_str()), pu->port, realm, NULL, is_proxy);
+    if (ent)
+    {
+        ent->bad = TRUE;
+    }
+    return;
+}
+
+static Str
+next_token(Str arg)
+{
+    Str narg = NULL;
+    char *p, *q;
+    if (arg == NULL || arg->Size() == 0)
+        return NULL;
+    p = arg->ptr;
+    q = p;
+    SKIP_NON_BLANKS(q);
+    if (*q != '\0')
+    {
+        *q++ = '\0';
+        SKIP_BLANKS(q);
+        if (*q != '\0')
+            narg = Strnew(q);
+    }
+    return narg;
+}
+
+static void
+parsePasswd(FILE *fp, int netrc)
+{
+    struct auth_pass ent;
+    Str line = NULL;
+
+    bzero(&ent, sizeof(struct auth_pass));
+    while (1)
+    {
+        Str arg = NULL;
+        char *p;
+
+        if (line == NULL || line->Size() == 0)
+            line = Strfgets(fp);
+        if (line->Size() == 0)
+            break;
+        line->Strip();
+        p = line->ptr;
+        if (*p == '#' || *p == '\0')
+        {
+            line = NULL;
+            continue; /* comment or empty line */
+        }
+        arg = next_token(line);
+
+        if (!strcmp(p, "machine") || !strcmp(p, "host") || (netrc && !strcmp(p, "default")))
+        {
+            add_auth_pass_entry(&ent, netrc, 0);
+            bzero(&ent, sizeof(struct auth_pass));
+            if (netrc)
+                ent.port = 21; /* XXX: getservbyname("ftp"); ? */
+            if (strcmp(p, "default") != 0)
+            {
+                line = next_token(arg);
+                ent.host = arg;
+            }
+            else
+            {
+                line = arg;
+            }
+        }
+        else if (!netrc && !strcmp(p, "port") && arg)
+        {
+            line = next_token(arg);
+            ent.port = atoi(arg->ptr);
+        }
+        else if (!netrc && !strcmp(p, "proxy"))
+        {
+            ent.is_proxy = 1;
+            line = arg;
+        }
+        else if (!netrc && !strcmp(p, "path"))
+        {
+            line = next_token(arg);
+            /* ent.file = arg; */
+        }
+        else if (!netrc && !strcmp(p, "realm"))
+        {
+            /* XXX: rest of line becomes arg for realm */
+            line = NULL;
+            ent.realm = arg;
+        }
+        else if (!strcmp(p, "login"))
+        {
+            line = next_token(arg);
+            ent.uname = arg;
+        }
+        else if (!strcmp(p, "password") || !strcmp(p, "passwd"))
+        {
+            line = next_token(arg);
+            ent.pwd = arg;
+        }
+        else if (netrc && !strcmp(p, "machdef"))
+        {
+            while ((line = Strfgets(fp))->Size() != 0)
+            {
+                if (*line->ptr == '\n')
+                    break;
+            }
+            line = NULL;
+        }
+        else if (netrc && !strcmp(p, "account"))
+        {
+            /* ignore */
+            line = next_token(arg);
+        }
+        else
+        {
+            /* ignore rest of line */
+            line = NULL;
+        }
+    }
+    add_auth_pass_entry(&ent, netrc, 0);
+}
+
+static void loadPasswd(void)
+{
+    FILE *fp;
+
+    passwords = NULL;
+    fp = openSecretFile(passwd_file);
+    if (fp != NULL)
+    {
+        parsePasswd(fp, 0);
+        fclose(fp);
+    }
+
+    /* for FTP */
+    fp = openSecretFile("~/.netrc");
+    if (fp != NULL)
+    {
+        parsePasswd(fp, 1);
+        fclose(fp);
+    }
+    return;
+}
+
 void
 sync_with_option(void)
 {
