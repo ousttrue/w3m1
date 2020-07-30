@@ -71,11 +71,11 @@ Buffer::~Buffer()
         return;
     if (pagerSource)
         ISclose(pagerSource);
-    if (sourcefile &&
+    if (sourcefile.size() &&
         (real_type.empty() || real_type.starts_with("image/")))
     {
         if (real_scheme != SCM_LOCAL || bufferprop & BP_FRAME)
-            unlink(sourcefile);
+            unlink(sourcefile.c_str());
     }
     if (header_source)
         unlink(header_source);
@@ -506,10 +506,10 @@ void reshapeBuffer(BufferPtr buf)
         return;
     buf->need_reshape = FALSE;
     buf->width = INIT_BUFFER_WIDTH;
-    if (buf->sourcefile == NULL)
+    if (buf->sourcefile.empty())
         return;
     URLFile f(SCM_LOCAL, NULL);
-    examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile, &f);
+    examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile.c_str(), &f);
     if (f.stream == NULL)
         return;
 

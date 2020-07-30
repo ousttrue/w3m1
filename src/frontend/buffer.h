@@ -117,7 +117,7 @@ public:
     ParsedURL baseURL = {};
     std::string baseTarget;
     int real_scheme;
-    char *sourcefile;
+    std::string sourcefile;
     struct frameset *frameset;
     struct frameset_queue *frameQ;
     int *clone;

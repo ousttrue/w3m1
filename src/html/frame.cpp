@@ -323,8 +323,8 @@ void resetFrameElement(union frameset_element *f_element,
         f_body->attr = F_BODY;
         f_body->name = f_name;
         f_body->url = buf->currentURL.ToStr()->ptr;
-        f_body->source = buf->sourcefile;
-        buf->sourcefile = NULL;
+        f_body->source = Strnew(buf->sourcefile)->ptr;
+        buf->sourcefile.clear();
         if (buf->mailcap_source)
         {
             f_body->source = buf->mailcap_source;
@@ -382,8 +382,8 @@ frame_download_source(struct frame_body *b, ParsedURL *currentURL,
     }
     b->url = buf->currentURL.ToStr()->ptr;
     b->type = Strnew(buf->type)->ptr;
-    b->source = buf->sourcefile;
-    buf->sourcefile = NULL;
+    b->source = Strnew(buf->sourcefile)->ptr;
+    buf->sourcefile.clear();
     if (buf->mailcap_source)
     {
         b->source = buf->mailcap_source;

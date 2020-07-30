@@ -2199,7 +2199,7 @@ loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
 
     if (newBuf == NULL)
         newBuf = newBuffer(INIT_BUFFER_WIDTH);
-    if (newBuf->sourcefile == NULL &&
+    if (newBuf->sourcefile.empty() &&
         (f->scheme != SCM_LOCAL || newBuf->mailcap))
     {
         tmp = tmpfname(TMPF_SRC, ".html");

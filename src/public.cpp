@@ -198,9 +198,9 @@ dump_source(BufferPtr buf)
 {
     FILE *f;
     char c;
-    if (buf->sourcefile == NULL)
+    if (buf->sourcefile.empty())
         return;
-    f = fopen(buf->sourcefile, "r");
+    f = fopen(buf->sourcefile.c_str(), "r");
     if (f == NULL)
         return;
     while (c = fgetc(f), !feof(f))
@@ -1856,7 +1856,7 @@ void _docCSet(CharacterEncodingScheme charset)
 {
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
-    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
     {
         disp_message("Can't reload...", FALSE);
         return;

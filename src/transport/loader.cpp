@@ -123,7 +123,7 @@ loadSomething(URLFile *f,
     if (buf->currentURL.scheme == SCM_UNKNOWN)
         buf->currentURL.scheme = f->scheme;
     buf->real_scheme = f->scheme;
-    if (f->scheme == SCM_LOCAL && buf->sourcefile == NULL)
+    if (f->scheme == SCM_LOCAL && buf->sourcefile.empty())
         buf->sourcefile = path;
     return buf;
 }
@@ -438,7 +438,7 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
     }
     TRAP_ON;
 
-    if (newBuf->sourcefile == NULL &&
+    if (newBuf->sourcefile.empty() &&
         (uf->scheme != SCM_LOCAL || newBuf->mailcap))
     {
         tmpf = tmpfname(TMPF_SRC, NULL);

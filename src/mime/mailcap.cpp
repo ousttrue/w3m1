@@ -597,11 +597,11 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
     {
         if (defaultbuf == NULL)
             defaultbuf = newBuffer(INIT_BUFFER_WIDTH);
-        if (defaultbuf->sourcefile)
-            src = defaultbuf->sourcefile;
+        if (defaultbuf->sourcefile.size())
+            src = Strnew(defaultbuf->sourcefile)->ptr;
         else
             src = tmpf->ptr;
-        defaultbuf->sourcefile = NULL;
+        defaultbuf->sourcefile.clear();
         defaultbuf->mailcap = mcap;
     }
     if (mcap->flags & MAILCAP_HTMLOUTPUT)
@@ -610,7 +610,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
         if (buf)
         {
             buf->type = "text/html";
-            buf->mailcap_source = buf->sourcefile;
+            buf->mailcap_source = Strnew(buf->sourcefile)->ptr;
             buf->sourcefile = src;
         }
     }
@@ -620,7 +620,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
         if (buf)
         {
             buf->type = "text/plain";
-            buf->mailcap_source = buf->sourcefile;
+            buf->mailcap_source = Strnew(buf->sourcefile)->ptr;
             buf->sourcefile = src;
         }
     }

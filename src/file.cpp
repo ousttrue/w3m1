@@ -150,7 +150,7 @@ int setModtime(char *path, time_t modtime)
     return utime(path, &t);
 }
 
-void examineFile(char *path, URLFile *uf)
+void examineFile(const char *path, URLFile *uf)
 {
     struct stat stbuf;
 
@@ -172,7 +172,7 @@ void examineFile(char *path, URLFile *uf)
                 uf->guess_type = "text/plain";
             if (is_html_type(uf->guess_type))
                 return;
-            if ((fp = lessopen_stream(path)))
+            if ((fp = lessopen_stream(const_cast<char*>(path))))
             {
                 uf->Close();
                 uf->stream = newFileStream(fp, (FileStreamCloseFunc)pclose);
@@ -180,7 +180,7 @@ void examineFile(char *path, URLFile *uf)
                 return;
             }
         }
-        check_compression(path, uf);
+        check_compression(const_cast<char*>(path), uf);
         if (uf->compression != CMP_NOCOMPRESS)
         {
             const char *ext = uf->ext;
@@ -848,7 +848,7 @@ image_buffer:
     if (newBuf == NULL)
         newBuf = newBuffer(INIT_BUFFER_WIDTH);
     cache->loaded |= IMG_FLAG_DONT_REMOVE;
-    if (newBuf->sourcefile == NULL && uf->scheme != SCM_LOCAL)
+    if (newBuf->sourcefile.empty() && uf->scheme != SCM_LOCAL)
         newBuf->sourcefile = cache->file;
 
     tmp = Sprintf("<img src=\"%s\"><br><br>", html_quote(image.url));

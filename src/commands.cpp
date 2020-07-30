@@ -1456,7 +1456,7 @@ void svBuf()
 void svSrc()
 {
     char *file;
-    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
         return;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     PermitSaveToPipe = TRUE;
@@ -1465,7 +1465,7 @@ void svSrc()
                                                 GetCurrentTab()->GetCurrentBuffer()->currentURL.real_file));
     else
         file = guess_save_name(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentURL.file);
-    doFileCopy(GetCurrentTab()->GetCurrentBuffer()->sourcefile, file);
+    doFileCopy(GetCurrentTab()->GetCurrentBuffer()->sourcefile.c_str(), file);
     PermitSaveToPipe = FALSE;
     displayCurrentbuf(B_NORMAL);
 }
@@ -1534,7 +1534,7 @@ void vwSrc()
         displayCurrentbuf(B_NORMAL);
         return;
     }
-    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
     {
         if (GetCurrentTab()->GetCurrentBuffer()->pagerSource &&
             GetCurrentTab()->GetCurrentBuffer()->type == "text/plain")
@@ -1658,11 +1658,10 @@ void reload()
         }
         if (fbuf->linkBuffer[LB_FRAME])
         {
-            if (buf->sourcefile &&
-                fbuf->linkBuffer[LB_FRAME]->sourcefile &&
-                !strcmp(buf->sourcefile,
-                        fbuf->linkBuffer[LB_FRAME]->sourcefile))
-                fbuf->linkBuffer[LB_FRAME]->sourcefile = NULL;
+            if (buf->sourcefile.size() &&
+                fbuf->linkBuffer[LB_FRAME]->sourcefile.size() &&
+                buf->sourcefile == fbuf->linkBuffer[LB_FRAME]->sourcefile)
+                fbuf->linkBuffer[LB_FRAME]->sourcefile.clear();
             auto tab = GetCurrentTab();
             tab->DeleteBuffer(fbuf->linkBuffer[LB_FRAME]);
         }
