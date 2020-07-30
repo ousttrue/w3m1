@@ -12,6 +12,7 @@
 #include "transport/url.h"
 #include "entity.h"
 #include "transport/loader.h"
+#include "html/html_processor.h"
 #include <signal.h>
 #include <setjmp.h>
 

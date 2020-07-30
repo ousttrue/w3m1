@@ -16,3 +16,7 @@ inline Str process_form(struct parsed_tag *tag)
 {
     return process_form_int(tag, -1);
 }
+
+int next_status(char c, int *status);
+int read_token(Str buf, char **instr, int *status, int pre, int append);
+Str correct_irrtag(int status);

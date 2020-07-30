@@ -80,8 +80,8 @@ int gethtmlcmd(char **s);
 char *lastFileName(char *path);
 
 char *mydirname(const char *s);
-int read_token(Str buf, char **instr, int *status, int pre, int append);
-Str correct_irrtag(int status);
+
+
 #ifdef USE_MIGEMO
 void init_migemo(void);
 #endif

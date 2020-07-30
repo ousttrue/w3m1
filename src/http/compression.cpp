@@ -8,6 +8,7 @@
 #include "etc.h"
 #include "fm.h"
 #include "html/html.h"
+#include "transport/local.h"
 #include <sys/stat.h>
 
 void check_compression(char *path, URLFile *uf)

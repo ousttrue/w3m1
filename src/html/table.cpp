@@ -429,6 +429,7 @@ suspend_or_pushdata(struct table *tbl, char *line)
 #define PUSH_TAG(str,n) tagbuf->Push( *str)
 #endif
 
+
 int visible_length_offset = 0;
 int visible_length(char *str)
 {

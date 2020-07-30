@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include "transport/local.h"
 #include "html/form.h"
+#include "frontend/terms.h"
 
 #ifdef __MINGW32_VERSION
 #include <winsock.h>
@@ -423,3 +424,70 @@ localcgi_post(char *uri, char *qstr, FormList *request, char *referer)
     return NULL;
 #endif
 }
+
+#ifndef __MINGW32_VERSION
+pid_t open_pipe_rw(FILE **fr, FILE **fw)
+{
+    int fdr[2];
+    int fdw[2];
+    pid_t pid;
+
+    if (fr && pipe(fdr) < 0)
+        goto err0;
+    if (fw && pipe(fdw) < 0)
+        goto err1;
+
+    flush_tty();
+    pid = fork();
+    if (pid < 0)
+        goto err2;
+    if (pid == 0)
+    {
+        /* child */
+        if (fr)
+        {
+            close(fdr[0]);
+            dup2(fdr[1], 1);
+        }
+        if (fw)
+        {
+            close(fdw[1]);
+            dup2(fdw[0], 0);
+        }
+    }
+    else
+    {
+        if (fr)
+        {
+            close(fdr[1]);
+            if (*fr == stdin)
+                dup2(fdr[0], 0);
+            else
+                *fr = fdopen(fdr[0], "r");
+        }
+        if (fw)
+        {
+            close(fdw[0]);
+            if (*fw == stdout)
+                dup2(fdw[1], 1);
+            else
+                *fw = fdopen(fdw[1], "w");
+        }
+    }
+    return pid;
+err2:
+    if (fw)
+    {
+        close(fdw[0]);
+        close(fdw[1]);
+    }
+err1:
+    if (fr)
+    {
+        close(fdr[0]);
+        close(fdr[1]);
+    }
+err0:
+    return (pid_t)-1;
+}
+#endif /* __MINGW32_VERSION */
