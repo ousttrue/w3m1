@@ -1,22 +1,21 @@
+#include "mime/mimetypes.h"
 #include "fm.h"
 #include "indep.h"
-#include "gc_helper.h"
-#include "mime/mimetypes.h"
 #include "textlist.h"
 #include "frontend/buffer.h"
-#include "transport/url.h"
-
-static TextList *mimetypes_list;
+// #include "transport/url.h"
+#include <vector>
+#include <string_view>
 
 struct ExtensionWithMime
 {
-    const char *item1;
-    const char *item2;
+    std::string extension;
+    std::string mime;
 };
 
-static struct ExtensionWithMime **UserMimeTypes;
+static std::vector<ExtensionWithMime> UserMimeTypes;
 
-static struct ExtensionWithMime DefaultGuess[] = {
+static std::vector<ExtensionWithMime> DefaultGuess = {
     {"html", "text/html"},
     {"htm", "text/html"},
     {"shtml", "text/html"},
@@ -36,21 +35,18 @@ static struct ExtensionWithMime DefaultGuess[] = {
     {"lzh", "application/x-lha"},
     {"ps", "application/postscript"},
     {"pdf", "application/pdf"},
-    {NULL, NULL}};
+};
 
-static struct ExtensionWithMime *
-loadMimeTypes(char *filename)
+static std::vector<ExtensionWithMime> loadMimeTypes(std::string_view filename)
 {
-    FILE *f;
-    char *d, *type;
-    int i, n;
-    Str tmp;
-    struct ExtensionWithMime *mtypes;
-
-    f = fopen(expandPath(filename), "r");
+    auto f = fopen(expandPath(filename.data()), "r");
     if (f == NULL)
-        return NULL;
-    n = 0;
+        return {};
+
+    char *d, *type;
+    int i;
+    Str tmp;
+    int n = 0;
     while (tmp = Strfgets(f), tmp->Size() > 0)
     {
         d = tmp->ptr;
@@ -67,7 +63,8 @@ loadMimeTypes(char *filename)
         }
     }
     fseek(f, 0, 0);
-    mtypes = New_N(struct ExtensionWithMime, n + 1);
+
+    std::vector<ExtensionWithMime> mtypes(n);
     i = 0;
     while (tmp = Strfgets(f), tmp->Size() > 0)
     {
@@ -82,42 +79,43 @@ loadMimeTypes(char *filename)
             d = strtok(NULL, " \t\n\r");
             if (d == NULL)
                 break;
-            mtypes[i].item1 = Strnew(d)->ptr;
-            mtypes[i].item2 = Strnew(type)->ptr;
+            mtypes[i].extension = Strnew(d)->ptr;
+            mtypes[i].mime = Strnew(type)->ptr;
             i++;
         }
     }
-    mtypes[i].item1 = NULL;
-    mtypes[i].item2 = NULL;
     fclose(f);
     return mtypes;
 }
 
 void initMimeTypes()
 {
+    TextList *mimetypes_list;
     if (non_null(mimetypes_files))
         mimetypes_list = make_domain_list(mimetypes_files);
     else
         mimetypes_list = NULL;
     if (mimetypes_list == NULL)
         return;
-    UserMimeTypes = New_N(struct ExtensionWithMime *, mimetypes_list->nitem);
 
-    int i = 0;
     for (auto tl = mimetypes_list->first; tl; tl = tl->next)
     {
-        UserMimeTypes[i++] = loadMimeTypes(tl->ptr);
+        for (auto &mime : loadMimeTypes(tl->ptr))
+        {
+            UserMimeTypes.push_back(mime);
+        }
     }
 }
 
 static bool iequals(std::string_view l, std::string_view r)
 {
-    if(l.size()!=r.size()){
+    if (l.size() != r.size())
+    {
         return false;
     }
-    for(int i=0; i<l.size(); ++i)
+    for (int i = 0; i < l.size(); ++i)
     {
-        if(tolower(l[i])!=tolower(r[i]))
+        if (tolower(l[i]) != tolower(r[i]))
         {
             return false;
         }
@@ -126,19 +124,18 @@ static bool iequals(std::string_view l, std::string_view r)
 }
 
 static const char *
-guessContentTypeFromTable(ExtensionWithMime *table, std::string_view filename)
+guessContentTypeFromTable(const std::vector<ExtensionWithMime> &table, std::string_view filename)
 {
-    if (table == NULL)
-        return NULL;
     auto p = filename.rfind('.');
     if (p == std::string::npos)
         return NULL;
 
     auto ext = filename.substr(p + 1);
-    for (auto t = table; t->item1; t++)
+    for (auto &em : table)
     {
-        if (iequals(ext, t->item1)){
-            return t->item2;
+        if (iequals(ext, em.extension))
+        {
+            return em.mime.c_str();
         }
     }
     return NULL;
@@ -151,17 +148,10 @@ const char *guessContentType(std::string_view filename)
         return nullptr;
     }
 
-    if (mimetypes_list)
+    auto type = guessContentTypeFromTable(UserMimeTypes, filename);
+    if (type)
     {
-
-        for (int i = 0; i < mimetypes_list->nitem; i++)
-        {
-            auto type = guessContentTypeFromTable(UserMimeTypes[i], filename);
-            if (type)
-            {
-                return type;
-            }
-        }
+        return type;
     }
 
     return guessContentTypeFromTable(DefaultGuess, filename);
@@ -175,7 +165,7 @@ bool is_html_type(std::string_view type)
 bool is_text_type(std::string_view type)
 {
     return type.empty() ||
-            type.starts_with("text/") ||
-            (type.starts_with("application/") && type.find("xhtml") != std::string::npos) ||
-            type.starts_with("message/");
+           type.starts_with("text/") ||
+           (type.starts_with("application/") && type.find("xhtml") != std::string::npos) ||
+           type.starts_with("message/");
 }
