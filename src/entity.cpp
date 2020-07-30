@@ -513,10 +513,6 @@ html_unquote(const char *str)
         {
             auto [pos, q] = getescapecmd(p);
             p = pos;
-            if(q[0]!='&')
-            {
-                tmp->Push('&');
-            }
             tmp->Push(q);
         }
         else
