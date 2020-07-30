@@ -94,8 +94,103 @@ struct Param
     ParamInputType inputtype;
     std::any value;
 
-    char *comment;
+    std::string_view comment;
     void *select;
+
+    Param(std::string_view n, ParamTypes t, ParamInputType it, int v, std::string_view c, void *s = nullptr)
+        : name(n), type(t), inputtype(it), comment(c), select(s)
+    {
+        switch (type)
+        {
+        case P_INT:
+        case P_NZINT:
+            value = (int)v;
+            break;
+        case P_SHORT:
+            value = (short)v;
+            break;
+        case P_CHARINT:
+            value = (char)v;
+            break;
+        case P_CHAR:
+            value = (char)v;
+            break;
+        case P_COLOR:
+            value = (int)v;
+            break;
+        case P_CODE:
+            value = (wc_ces)v;
+            break;
+        case P_PIXELS:
+        case P_SCALE:
+            assert(false);
+            // value = (double)v;
+            break;
+        case P_STRING:
+        case P_SSLPATH:
+            // value = std::string(v);
+            assert(false);
+            break;
+        }
+    }
+
+    Param(std::string_view n, ParamTypes t, ParamInputType it, wc_ces v, std::string_view c, void *s = nullptr)
+        : name(n), type(t), inputtype(it), comment(c), select(s)
+    {
+        assert(t == P_CODE);
+        value = v;
+    }
+
+    Param(std::string_view n, ParamTypes t, ParamInputType it, double v, std::string_view c, void *s = nullptr)
+        : name(n), type(t), inputtype(it), comment(c), select(s)
+    {
+        switch (type)
+        {
+        case P_INT:
+        case P_NZINT:
+        case P_SHORT:
+        case P_CHARINT:
+        case P_CHAR:
+        case P_COLOR:
+        case P_CODE:
+            assert(false);
+            break;
+        case P_PIXELS:
+        case P_SCALE:
+            value = (double)v;
+            break;
+        case P_STRING:
+        case P_SSLPATH:
+            // value = std::string(v);
+            assert(false);
+            break;
+        }
+    }
+    Param(std::string_view n, ParamTypes t, ParamInputType it, char *v, std::string_view c, void *s = nullptr)
+        : name(n), type(t), inputtype(it), comment(c), select(s)
+    {
+        switch (type)
+        {
+        case P_INT:
+        case P_NZINT:
+        case P_SHORT:
+        case P_CHARINT:
+        case P_CHAR:
+        case P_COLOR:
+        case P_CODE:
+            assert(false);
+            break;
+        case P_PIXELS:
+        case P_SCALE:
+            assert(false);
+            // value = (double)v;
+            break;
+        case P_STRING:
+        case P_SSLPATH:
+            value = v ? std::string(v) : "";
+            break;
+        }
+    }
 
     template <typename T>
     T Value() const
@@ -194,9 +289,10 @@ struct Param
         {
         case P_INT:
         case P_COLOR:
-        case P_CODE:
         case P_NZINT:
             return Sprintf("%d", std::any_cast<int>(value));
+        case P_CODE:
+            return Sprintf("%d", std::any_cast<wc_ces>(value));
         case P_SHORT:
             return Sprintf("%d", std::any_cast<short>(value));
         case P_CHARINT:
@@ -625,7 +721,7 @@ auto sections = make_array(
                      {"argv_is_url", P_CHARINT, PI_ONOFF, ArgvIsURL, CMT_ARGV_IS_URL},
                      {"retry_http", P_INT, PI_ONOFF, retryAsHttp, CMT_RETRY_HTTP},
                      {"default_url", P_INT, PI_SEL_C, DefaultURLString, CMT_DEFAULT_URL, (void *)defaulturls},
-                     {"follow_redirection", P_INT, PI_TEXT, &FollowRedirection, CMT_FOLLOW_REDIRECTION},
+                     {"follow_redirection", P_INT, PI_TEXT, FollowRedirection, CMT_FOLLOW_REDIRECTION},
                      {"meta_refresh", P_CHARINT, PI_ONOFF, MetaRefresh, CMT_META_REFRESH},
                      {"dns_order", P_INT, PI_SEL_C, DNS_order, CMT_DNS_ORDER, (void *)dnsorders},
                      {"nntpserver", P_STRING, PI_TEXT, NNTP_server, CMT_NNTP_SERVER},
@@ -752,7 +848,7 @@ void show_params(FILE *fp)
                 break;
             }
             if (!OptionEncode)
-                cmt = wc_conv(_(param.comment),
+                cmt = wc_conv(_(param.comment.data()),
                               OptionCharset, InnerCharset)
                           ->ptr;
             else
@@ -1380,7 +1476,7 @@ load_option_panel(void)
             for (auto &param : section.params)
             {
                 param.comment =
-                    wc_conv(_(param.comment), OptionCharset,
+                    wc_conv(_(param.comment.data()), OptionCharset,
                             InnerCharset)
                         ->ptr;
                 if (param.inputtype == PI_SEL_C
@@ -1457,6 +1553,7 @@ load_option_panel(void)
             case PI_CODE:
                 tmp = param.to_str();
                 Strcat_m_charp(src, "<select name=", param.name, ">", NULL);
+                if(param.select){ // TODO:
                 for (c = *(wc_ces_list **)param.select; c->desc != NULL; c++)
                 {
                     src->Push("<option value=");
@@ -1465,6 +1562,7 @@ load_option_panel(void)
                         src->Push(" selected");
                     src->Push('>');
                     src->Push(c->desc);
+                }
                 }
                 src->Push("</select>");
                 break;
