@@ -112,9 +112,9 @@ feed_title(const char *str)
     {
         if (*str == '&')
         {
-            auto [pos, view] = getescapecmd(str);
-            cur_title->Push(view);
+            auto [pos, cmd] = getescapecmd(str);
             str = pos;
+            cur_title->Push(cmd);
         }
         else if (*str == '\n' || *str == '\r')
         {

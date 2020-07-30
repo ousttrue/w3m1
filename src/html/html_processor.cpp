@@ -237,7 +237,11 @@ void feed_select(char *str)
                     else
                         prev_spaces = 0;
                     if (*p == '&')
-                        cur_option->Push(getescapecmd(p).second);
+                    {
+                        auto [pos, cmd] = getescapecmd(p);
+                        p = const_cast<char *>(pos);
+                        cur_option->Push(cmd);
+                    }
                     else
                         cur_option->Push(*(p++));
                 }
@@ -261,7 +265,11 @@ void feed_textarea(char *str)
     while (*str)
     {
         if (*str == '&')
-            textarea_str[n_textarea]->Push(getescapecmd(str).second);
+        {
+            auto [pos, cmd] = getescapecmd(str);
+            str = const_cast<char *>(pos);
+            textarea_str[n_textarea]->Push(cmd);
+        }
         else if (*str == '\n')
         {
             textarea_str[n_textarea]->Push("\r\n");
