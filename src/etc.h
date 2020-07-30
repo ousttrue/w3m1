@@ -2,7 +2,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <wc.h>
-char *file_to_url(char *file);
+
 
 #define TRAP_ON                                \
     if (TrapSignal)                            \
@@ -19,7 +19,7 @@ char *file_to_url(char *file);
         if (prevtrap)                   \
             mySignal(SIGINT, prevtrap); \
     }
-    
+
 char *url_unquote_conv(const char *url, wc_ces charset);
 char *FQDN(char *host);
 char *mybasename(std::string_view s);

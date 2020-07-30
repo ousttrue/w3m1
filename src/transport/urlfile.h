@@ -52,3 +52,5 @@ struct URLFile
     int DoFileSave(const char *defstr, long long content_length);
     Str StrmyISgets();
 };
+
+char *file_to_url(char *file);

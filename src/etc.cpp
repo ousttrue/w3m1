@@ -915,62 +915,6 @@ rest:
 }
 #endif
 
-char *
-file_to_url(char *file)
-{
-    Str tmp;
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-    char *drive = NULL;
-#endif
-#ifdef SUPPORT_NETBIOS_SHARE
-    char *host = NULL;
-#endif
-
-    file = expandPath(file);
-#ifdef SUPPORT_NETBIOS_SHARE
-    if (file[0] == '/' && file[1] == '/')
-    {
-        char *p;
-        file += 2;
-        if (*file)
-        {
-            p = strchr(file, '/');
-            if (p != NULL && p != file)
-            {
-                host = allocStr(file, (p - file));
-                file = p;
-            }
-        }
-    }
-#endif
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-    if (IS_ALPHA(file[0]) && file[1] == ':')
-    {
-        drive = allocStr(file, 2);
-        file += 2;
-    }
-    else
-#endif
-        if (file[0] != '/')
-    {
-        tmp = Strnew(CurrentDir);
-        if (tmp->Back() != '/')
-            tmp->Push('/');
-        tmp->Push(file);
-        file = tmp->ptr;
-    }
-    tmp = Strnew("file://");
-#ifdef SUPPORT_NETBIOS_SHARE
-    if (host)
-        tmp->Push(host);
-#endif
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-    if (drive)
-        tmp->Push(drive);
-#endif
-    tmp->Push(file_quote(cleanupName(file)));
-    return tmp->ptr;
-}
 
 char *
 url_unquote_conv(const char *url, wc_ces charset)
