@@ -114,7 +114,6 @@ PRIVATE
     src/textlist.cpp
     src/myctype.cpp
     src/hash.cpp
-    src/etc.cpp
     src/symbol.cpp
     src/history.cpp
     src/version.cpp

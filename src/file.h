@@ -72,7 +72,6 @@ void arrangeCursor(BufferPtr buf);
 void arrangeLine(BufferPtr buf);
 void cursorXY(BufferPtr buf, int x, int y);
 void restorePosition(BufferPtr buf, BufferPtr orig);
-int columnSkip(BufferPtr buf, int offset);
 char *lastFileName(char *path);
 char *mydirname(const char *s);
 
