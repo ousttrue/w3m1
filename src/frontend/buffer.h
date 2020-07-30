@@ -6,13 +6,28 @@
 
 struct Line;
 union InputStream;
-struct LinkList;
 struct FormList;
 struct FormItemList;
 struct MapList;
 struct AlarmEvent;
 struct TextList;
 struct Mailcap;
+
+enum LinkTypes : char
+{
+    LINK_TYPE_NONE = 0,
+    LINK_TYPE_REL = 1,
+    LINK_TYPE_REV = 2,
+};
+
+struct LinkList
+{
+    char *url;
+    char *title;                     /* Next, Contents, ... */
+    char *ctype;                     /* Content-Type */
+    LinkTypes type = LINK_TYPE_NONE; /* Rel, Rev */
+    LinkList *next;
+};
 
 enum LinkBufferTypes
 {

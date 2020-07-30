@@ -1167,7 +1167,7 @@ static void
 addLink(BufferPtr buf, struct parsed_tag *tag)
 {
     char *href = NULL, *title = NULL, *ctype = NULL, *rel = NULL, *rev = NULL;
-    char type = LINK_TYPE_NONE;
+    LinkTypes type = LINK_TYPE_NONE;
     LinkList *l;
 
     parsedtag_get_value(tag, ATTR_HREF, &href);
