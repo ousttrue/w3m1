@@ -219,192 +219,210 @@ wtf_type(uint8_t *p)
     | ((uint32_t)((p)[3] & 0x7f) <<  7) \
     | ((uint32_t)((p)[4] & 0x7f)      )
 
-void
-wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
+void wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
 {
     uint8_t s[8];
     wc_wchar_t cc, cc2;
     size_t n;
 
-    if (ccs == WC_CCS_US_ASCII) {
-	os->Push((char)(code & 0x7f));
-	return;
+    if (ccs == WC_CCS_US_ASCII)
+    {
+        os->Push((char)(code & 0x7f));
+        return;
     }
+    
     cc.ccs = ccs;
     cc.code = code;
-    if (WcOption.pre_conv && !(cc.ccs & WC_CCS_A_UNKNOWN)) {
-	if ((ccs == WC_CCS_JOHAB || ccs == WC_CCS_JOHAB_1 ||
-		ccs == WC_CCS_JOHAB_2 || ccs == WC_CCS_JOHAB_3) &&
-		(wtf_major_ces == WC_CES_EUC_KR ||
-		wtf_major_ces == WC_CES_ISO_2022_KR)) {
-	    cc2 = wc_johab_to_ksx1001(cc);
-	    if (!WC_CCS_IS_UNKNOWN(cc2.ccs))
-		cc = cc2;
-	} else if (ccs == WC_CCS_KS_X_1001 &&
-		wtf_major_ces == WC_CES_JOHAB) {
-	    cc2 = wc_ksx1001_to_johab(cc);
-	    if (!WC_CCS_IS_UNKNOWN(cc2.ccs))
-		cc = cc2;
-	}
-#ifdef USE_UNICODE
-	else if (WcOption.ucs_conv) {
-	    bool fix_width_conv = WcOption.fix_width_conv;
-	    WcOption.fix_width_conv = false;
-	    wc_output_init(wtf_major_ces, &wtf_major_st);
-	    if (! wc_ces_has_ccs(WC_CCS_SET(ccs), &wtf_major_st)) {
-		cc2 = wc_any_to_any_ces(cc, &wtf_major_st);
-		if (cc2.ccs == WC_CCS_US_ASCII) {
-		    os->Push((char)(cc2.code & 0x7f));
-		    return;
-		}
-		if (!WC_CCS_IS_UNKNOWN(cc2.ccs) &&
-			cc2.ccs != WC_CCS_CP1258_2 &&
-			cc2.ccs != WC_CCS_TCVN_5712_3)
-		    cc = cc2;
-	    }
-	    WcOption.fix_width_conv = fix_width_conv;
-	}
-#endif
+    if (WcOption.pre_conv && !(cc.ccs & WC_CCS_A_UNKNOWN))
+    {
+        if ((ccs == WC_CCS_JOHAB || ccs == WC_CCS_JOHAB_1 ||
+             ccs == WC_CCS_JOHAB_2 || ccs == WC_CCS_JOHAB_3) &&
+            (wtf_major_ces == WC_CES_EUC_KR ||
+             wtf_major_ces == WC_CES_ISO_2022_KR))
+        {
+            cc2 = wc_johab_to_ksx1001(cc);
+            if (!WC_CCS_IS_UNKNOWN(cc2.ccs))
+                cc = cc2;
+        }
+        else if (ccs == WC_CCS_KS_X_1001 &&
+                 wtf_major_ces == WC_CES_JOHAB)
+        {
+            cc2 = wc_ksx1001_to_johab(cc);
+            if (!WC_CCS_IS_UNKNOWN(cc2.ccs))
+                cc = cc2;
+        }
+
+        else if (WcOption.ucs_conv)
+        {
+            bool fix_width_conv = WcOption.fix_width_conv;
+            WcOption.fix_width_conv = false;
+            wc_output_init(wtf_major_ces, &wtf_major_st);
+            if (!wc_ces_has_ccs(WC_CCS_SET(ccs), &wtf_major_st))
+            {
+                cc2 = wc_any_to_any_ces(cc, &wtf_major_st);
+                if (cc2.ccs == WC_CCS_US_ASCII)
+                {
+                    os->Push((char)(cc2.code & 0x7f));
+                    return;
+                }
+                if (!WC_CCS_IS_UNKNOWN(cc2.ccs) &&
+                    cc2.ccs != WC_CCS_CP1258_2 &&
+                    cc2.ccs != WC_CCS_TCVN_5712_3)
+                    cc = cc2;
+            }
+            WcOption.fix_width_conv = fix_width_conv;
+        }
     }
 
-    switch (WC_CCS_TYPE(cc.ccs)) {
+    switch (WC_CCS_TYPE(cc.ccs))
+    {
     case WC_CCS_A_CS94:
-	if (cc.ccs == wtf_gr_ccs) {
-	    s[0] = (cc.code & 0x7f) | 0x80;
-	    n = 1;
-	    break;
-	}
-	if (cc.ccs == WC_CCS_JIS_X_0201K && !WcOption.use_jisx0201k) {
-	    cc2 = wc_jisx0201k_to_jisx0208(cc);
-	    if (!WC_CCS_IS_UNKNOWN(cc2.ccs)) {
-		wtf_push(os, cc2.ccs, cc2.code);
-		return;
-	    }
-	}
-	s[0] = WTF_C_CS94;
-	s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
-	s[2] = (cc.code & 0x7f) | 0x80;
-	n = 3;
-	break;
+        if (cc.ccs == wtf_gr_ccs)
+        {
+            s[0] = (cc.code & 0x7f) | 0x80;
+            n = 1;
+            break;
+        }
+        if (cc.ccs == WC_CCS_JIS_X_0201K && !WcOption.use_jisx0201k)
+        {
+            cc2 = wc_jisx0201k_to_jisx0208(cc);
+            if (!WC_CCS_IS_UNKNOWN(cc2.ccs))
+            {
+                wtf_push(os, cc2.ccs, cc2.code);
+                return;
+            }
+        }
+        s[0] = WTF_C_CS94;
+        s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
+        s[2] = (cc.code & 0x7f) | 0x80;
+        n = 3;
+        break;
     case WC_CCS_A_CS94W:
-	if (cc.ccs == wtf_gr_ccs) {
-	    s[0] = ((cc.code >> 8) & 0x7f) | 0x80;
-	    s[1] = ( cc.code       & 0x7f) | 0x80;
-	    n = 2;
-	    break;
-	}
-	s[0] = WTF_C_CS94W;
-	s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
-	s[2] = ((cc.code >> 8) & 0x7f) | 0x80;
-	s[3] = ( cc.code       & 0x7f) | 0x80;
-	n = 4;
-	break;
+        if (cc.ccs == wtf_gr_ccs)
+        {
+            s[0] = ((cc.code >> 8) & 0x7f) | 0x80;
+            s[1] = (cc.code & 0x7f) | 0x80;
+            n = 2;
+            break;
+        }
+        s[0] = WTF_C_CS94W;
+        s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
+        s[2] = ((cc.code >> 8) & 0x7f) | 0x80;
+        s[3] = (cc.code & 0x7f) | 0x80;
+        n = 4;
+        break;
     case WC_CCS_A_CS96:
-	if (WcOption.use_combining && wc_is_combining(cc))
-	    s[0] = WTF_C_CS96_C;
-	else if (cc.ccs == wtf_gr_ccs && (cc.code & 0x7f) > 0x20) {
-	    s[0] = (cc.code & 0x7f) | 0x80;
-	    n = 1;
-	    break;
-	} else
-	    s[0] = WTF_C_CS96;
-	s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
-	s[2] = (cc.code & 0x7f) | 0x80;
-	n = 3;
-	break;
+        if (WcOption.use_combining && wc_is_combining(cc))
+            s[0] = WTF_C_CS96_C;
+        else if (cc.ccs == wtf_gr_ccs && (cc.code & 0x7f) > 0x20)
+        {
+            s[0] = (cc.code & 0x7f) | 0x80;
+            n = 1;
+            break;
+        }
+        else
+            s[0] = WTF_C_CS96;
+        s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
+        s[2] = (cc.code & 0x7f) | 0x80;
+        n = 3;
+        break;
     case WC_CCS_A_CS96W:
-	if (cc.ccs == wtf_gr_ccs && ((cc.code >> 8) & 0x7f) > 0x20) {
-	    s[0] = ((cc.code >> 8) & 0x7f) | 0x80;
-	    s[1] = ( cc.code       & 0x7f) | 0x80;
-	    n = 2;
-	    break;
-	}
-	s[0] = WTF_C_CS96W;
-	s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
-	s[2] = ((cc.code >> 8) & 0x7f) | 0x80;
-	s[3] = ( cc.code       & 0x7f) | 0x80;
-	n = 4;
-	break;
+        if (cc.ccs == wtf_gr_ccs && ((cc.code >> 8) & 0x7f) > 0x20)
+        {
+            s[0] = ((cc.code >> 8) & 0x7f) | 0x80;
+            s[1] = (cc.code & 0x7f) | 0x80;
+            n = 2;
+            break;
+        }
+        s[0] = WTF_C_CS96W;
+        s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
+        s[2] = ((cc.code >> 8) & 0x7f) | 0x80;
+        s[3] = (cc.code & 0x7f) | 0x80;
+        n = 4;
+        break;
     case WC_CCS_A_CS942:
-	if (cc.ccs == wtf_gr_ccs) {
-	    s[0] = (cc.code & 0x7f) | 0x80;
-	    n = 1;
-	    break;
-	}
-	s[0] = WTF_C_CS942;
-	s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
-	s[2] = (cc.code & 0x7f) | 0x80;
-	n = 3;
-	break;
+        if (cc.ccs == wtf_gr_ccs)
+        {
+            s[0] = (cc.code & 0x7f) | 0x80;
+            n = 1;
+            break;
+        }
+        s[0] = WTF_C_CS942;
+        s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
+        s[2] = (cc.code & 0x7f) | 0x80;
+        n = 3;
+        break;
     case WC_CCS_A_PCS:
-	if (WcOption.use_combining && wc_is_combining(cc))
-	    s[0] = WTF_C_PCS_C;
-	else if (cc.ccs == wtf_gr_ccs && (cc.code & 0x7f) > 0x20) {
-	    s[0] = (cc.code & 0x7f) | 0x80;
-	    n = 1;
-	    break;
-	} else
-	    s[0] = WTF_C_PCS;
-	s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
-	s[2] = (cc.code & 0x7f) | 0x80;
-	n = 3;
-	break;
+        if (WcOption.use_combining && wc_is_combining(cc))
+            s[0] = WTF_C_PCS_C;
+        else if (cc.ccs == wtf_gr_ccs && (cc.code & 0x7f) > 0x20)
+        {
+            s[0] = (cc.code & 0x7f) | 0x80;
+            n = 1;
+            break;
+        }
+        else
+            s[0] = WTF_C_PCS;
+        s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
+        s[2] = (cc.code & 0x7f) | 0x80;
+        n = 3;
+        break;
     case WC_CCS_A_PCSW:
-	switch (cc.ccs) {
-	case WC_CCS_SJIS_EXT:
-	    cc = wc_sjis_ext_to_cs94w(cc);
-	    break;
-	case WC_CCS_GBK:
-	    cc = wc_gbk_to_cs128w(cc);
-	    break;
-	case WC_CCS_GBK_EXT:
-	    cc = wc_gbk_ext_to_cs128w(cc);
-	    break;
-	case WC_CCS_BIG5:
-	    cc = wc_big5_to_cs94w(cc);
-	    break;
-	case WC_CCS_HKSCS:
-	    cc = wc_hkscs_to_cs128w(cc);
-	    break;
-	case WC_CCS_JOHAB:
-	    cc = wc_johab_to_cs128w(cc);
-	    break;
-	case WC_CCS_UHC:
-	    cc = wc_uhc_to_cs128w(cc);
-	    break;
-	}
-	if (cc.ccs == wtf_gr_ccs && ((cc.code >> 8) & 0x7f) > 0x20) {
-	    s[0] = ((cc.code >> 8) & 0x7f) | 0x80;
-	    s[1] = ( cc.code       & 0x7f) | 0x80;
-	    n = 2;
-	    break;
-	}
-	s[0] = WTF_C_PCSW;
-	s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
-	s[2] = ((cc.code >> 8) & 0x7f) | 0x80;
-	s[3] = ( cc.code       & 0x7f) | 0x80;
-	n = 4;
-	break;
+        switch (cc.ccs)
+        {
+        case WC_CCS_SJIS_EXT:
+            cc = wc_sjis_ext_to_cs94w(cc);
+            break;
+        case WC_CCS_GBK:
+            cc = wc_gbk_to_cs128w(cc);
+            break;
+        case WC_CCS_GBK_EXT:
+            cc = wc_gbk_ext_to_cs128w(cc);
+            break;
+        case WC_CCS_BIG5:
+            cc = wc_big5_to_cs94w(cc);
+            break;
+        case WC_CCS_HKSCS:
+            cc = wc_hkscs_to_cs128w(cc);
+            break;
+        case WC_CCS_JOHAB:
+            cc = wc_johab_to_cs128w(cc);
+            break;
+        case WC_CCS_UHC:
+            cc = wc_uhc_to_cs128w(cc);
+            break;
+        }
+        if (cc.ccs == wtf_gr_ccs && ((cc.code >> 8) & 0x7f) > 0x20)
+        {
+            s[0] = ((cc.code >> 8) & 0x7f) | 0x80;
+            s[1] = (cc.code & 0x7f) | 0x80;
+            n = 2;
+            break;
+        }
+        s[0] = WTF_C_PCSW;
+        s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
+        s[2] = ((cc.code >> 8) & 0x7f) | 0x80;
+        s[3] = (cc.code & 0x7f) | 0x80;
+        n = 4;
+        break;
     case WC_CCS_A_WCS16:
-	s[0] = (WC_CCS_IS_WIDE(cc.ccs) ? WTF_C_WCS16W : WTF_C_WCS16)
-	     | (WC_CCS_IS_COMB(cc.ccs) ? WTF_C_COMB : 0);
-	wcs16_to_wtf(cc.code, s + 1);
-	s[1] |= (WC_CCS_INDEX(cc.ccs) << 2);
-	n = 4;
-	break;
+        s[0] = (WC_CCS_IS_WIDE(cc.ccs) ? WTF_C_WCS16W : WTF_C_WCS16) | (WC_CCS_IS_COMB(cc.ccs) ? WTF_C_COMB : 0);
+        wcs16_to_wtf(cc.code, s + 1);
+        s[1] |= (WC_CCS_INDEX(cc.ccs) << 2);
+        n = 4;
+        break;
     case WC_CCS_A_WCS32:
-	s[0] = (WC_CCS_IS_WIDE(cc.ccs) ? WTF_C_WCS32W : WTF_C_WCS32)
-	     | (WC_CCS_IS_COMB(cc.ccs) ? WTF_C_COMB : 0);
-	wcs32_to_wtf(cc.code, s + 1);
-	s[1] |= (WC_CCS_INDEX(cc.ccs) << 4);
-	n = 6;
-	break;
+        s[0] = (WC_CCS_IS_WIDE(cc.ccs) ? WTF_C_WCS32W : WTF_C_WCS32) | (WC_CCS_IS_COMB(cc.ccs) ? WTF_C_COMB : 0);
+        wcs32_to_wtf(cc.code, s + 1);
+        s[1] |= (WC_CCS_INDEX(cc.ccs) << 4);
+        n = 6;
+        break;
     default:
-	s[0] = WTF_C_UNKNOWN;
-	s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
-	s[2] = (cc.code & 0x7f) | 0x80;
-	n = 3;
-	break;
+        s[0] = WTF_C_UNKNOWN;
+        s[1] = WC_CCS_INDEX(cc.ccs) | 0x80;
+        s[2] = (cc.code & 0x7f) | 0x80;
+        n = 3;
+        break;
     }
     os->Push((char *)s, n);
 }
