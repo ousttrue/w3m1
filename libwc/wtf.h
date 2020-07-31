@@ -28,10 +28,24 @@ uint8_t wtf_len1(uint8_t *p);
 size_t wtf_len(uint8_t *p);
 uint8_t wtf_type(uint8_t *p);
 
+using Writer = void (*)(void *userdata, const void *buf, int size);
 // push code as ccs
-void wtf_push(Str os, CodedCharacterSet ccs, uint32_t code);
-
-void wtf_push_unknown(Str os, const uint8_t *p, size_t len);
+void wtf_push(Writer writer, void *data, CodedCharacterSet ccs, uint32_t code);
+inline void wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
+{
+    Writer writer = [](void *data, const void *buf, int size) {
+        ((Str)data)->Push((const char *)buf, size);
+    };
+    wtf_push(writer, os, ccs, code);
+}
+void wtf_push_unknown(Writer writer, void *data, const uint8_t *p, size_t len);
+inline void wtf_push_unknown(Str os, const uint8_t *p, size_t len)
+{
+    Writer writer = [](void *data, const void *buf, int size) {
+        ((Str)data)->Push((const char *)buf, size);
+    };
+    wtf_push_unknown(writer, os, p, len);
+}
 
 wc_wchar_t wtf_parse(uint8_t **p);
 wc_wchar_t wtf_parse1(uint8_t **p);

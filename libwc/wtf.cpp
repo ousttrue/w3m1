@@ -219,18 +219,18 @@ wtf_type(uint8_t *p)
     | ((uint32_t)((p)[3] & 0x7f) <<  7) \
     | ((uint32_t)((p)[4] & 0x7f)      )
 
-void wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
+void wtf_push(Writer writer, void *data, CodedCharacterSet ccs, uint32_t code)
 {
-    uint8_t s[8];
-    wc_wchar_t cc, cc2;
-    size_t n;
-
     if (ccs == WC_CCS_US_ASCII)
     {
-        os->Push((char)(code & 0x7f));
+        auto value =(char)(code & 0x7f);
+        writer(data, &value, 1);
         return;
     }
     
+    uint8_t s[8];
+    wc_wchar_t cc, cc2;
+    size_t n;
     cc.ccs = ccs;
     cc.code = code;
     if (WcOption.pre_conv && !(cc.ccs & WC_CCS_A_UNKNOWN))
@@ -262,7 +262,8 @@ void wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
                 cc2 = wc_any_to_any_ces(cc, &wtf_major_st);
                 if (cc2.ccs == WC_CCS_US_ASCII)
                 {
-                    os->Push((char)(cc2.code & 0x7f));
+                    auto value = (char)(cc2.code & 0x7f);
+                    writer(data, &value, 1);
                     return;
                 }
                 if (!WC_CCS_IS_UNKNOWN(cc2.ccs) &&
@@ -288,7 +289,7 @@ void wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
             cc2 = wc_jisx0201k_to_jisx0208(cc);
             if (!WC_CCS_IS_UNKNOWN(cc2.ccs))
             {
-                wtf_push(os, cc2.ccs, cc2.code);
+                wtf_push(writer, data, cc2.ccs, cc2.code);
                 return;
             }
         }
@@ -424,17 +425,19 @@ void wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
         n = 3;
         break;
     }
-    os->Push((char *)s, n);
+    writer(data, s, n);
 }
 
-void wtf_push_unknown(Str os, const uint8_t *p, size_t len)
+void wtf_push_unknown(Writer writer, void *data, const uint8_t *p, size_t len)
 {
     for (; len--; p++)
     {
-        if (*p & 0x80)
-            wtf_push(os, WC_CCS_UNKNOWN, *p);
-        else
-            os->Push((char)*p);
+        if (*p & 0x80){
+            wtf_push(writer, data, WC_CCS_UNKNOWN, *p);
+        }
+        else{
+            writer(data, p, 1);
+        }
     }
 }
 
