@@ -18,6 +18,7 @@
 #include "mime/mimetypes.h"
 #include "frontend/display.h"
 #include "html/anchor.h"
+#include "charset.h"
 extern Str *textarea_str;
 extern FormSelectOption *select_option;
 

@@ -18,6 +18,7 @@
 #include "transport/loader.h"
 #include "mime/mimetypes.h"
 #include "frontend/line.h"
+#include "charset.h"
 #include <assert.h>
 
 static int REV_LB[MAX_LB] = {

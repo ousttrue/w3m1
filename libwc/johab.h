@@ -46,6 +46,7 @@
 #define WC_N_CS128WL(c)		((c) % 0x80)
 #define WC_N_CS128W(c)		((WC_N_CS128WU(c) << 8) + WC_N_CS128WL(c))
 #endif
+#include "status.h"
 
 extern uint8_t WC_JOHAB_MAP[];
 

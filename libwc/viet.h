@@ -1,6 +1,7 @@
 
 #ifndef _WC_VIET_H
 #define _WC_VIET_H
+#include "status.h"
 
 extern uint8_t wc_c0_tcvn57122_map[];
 extern uint8_t wc_c0_viscii112_map[];

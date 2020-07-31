@@ -1,6 +1,6 @@
 #pragma once
 #include "frontend/buffer.h"
-#include "wc_types.h"
+
 
 long long GetCurrentContentLength();
 extern CharacterEncodingScheme content_charset;

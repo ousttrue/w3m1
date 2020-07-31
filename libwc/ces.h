@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 enum CharacterEncodingScheme : uint32_t
 {

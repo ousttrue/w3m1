@@ -1,5 +1,5 @@
 
-#include "wc_types.h"
+
 #include "search.h"
 #include <stdlib.h>
 #include "wc.h"

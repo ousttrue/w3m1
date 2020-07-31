@@ -1,6 +1,7 @@
 
 #ifndef _WC_UHC_H
 #define _WC_UHC_H
+#include "status.h"
 
 #define WC_C_UHC_END	0xC6FE
 

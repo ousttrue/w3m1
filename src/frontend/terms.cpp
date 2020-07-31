@@ -6,7 +6,7 @@
 #include "config.h"
 #include "fm.h"
 #include "commands.h"
-
+#include "putc.h"
 #include "frontend/terms.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -1030,9 +1030,9 @@ refresh(void)
 #endif				/* USE_BG_COLOR */
     short *dirty;
 
-#ifdef USE_M17N
+
     wc_putc_init(InnerCharset, DisplayCharset);
-#endif
+
     for (line = 0; line <= (LINES-1); line++) {
 	dirty = &ScreenImage[line]->isdirty;
 	if (*dirty & L_DIRTY) {

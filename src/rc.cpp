@@ -24,6 +24,7 @@
 #include <unordered_map>
 #include <assert.h>
 #include <any>
+#include "charset.h"
 
 enum ParamTypes
 {

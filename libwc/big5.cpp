@@ -1,7 +1,7 @@
-
 #include "wc.h"
+#include "status.h"
 #include "big5.h"
-#include "search.h"
+// #include "search.h"
 #include "wtf.h"
 #include "ucs.h"
 

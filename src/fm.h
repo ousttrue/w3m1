@@ -523,6 +523,7 @@ global char SimplePreserveSpace init(FALSE);
 #define Str_conv_to_system(x) wc_Str_conv_strict((x), InnerCharset, SystemCharset)
 #define Str_conv_to_halfdump(x) (ExtHalfdump ? wc_Str_conv((x), InnerCharset, DisplayCharset) : (x))
 
+#include "conv.h"
 inline char *conv_from_system(std::string_view x)
 {
     return wc_conv(x.data(), SystemCharset, InnerCharset)->ptr;

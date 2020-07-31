@@ -11,6 +11,7 @@
 #include "entity.h"
 #include "transport/loader.h"
 #include "html/html_processor.h"
+#include "charset.h"
 #include <signal.h>
 #include <setjmp.h>
 

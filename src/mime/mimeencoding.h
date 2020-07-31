@@ -1,6 +1,6 @@
 #pragma once
 #include "Str.h"
-#include "wc_types.h"
+
 
 Str decodeB(char **ww);
 Str decodeQ(char **ww);

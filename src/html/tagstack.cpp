@@ -15,6 +15,7 @@
 #include "html/tagtable.h"
 #include "frontend/buffer.h"
 #include "frontend/line.h"
+#include "charset.h"
 
 #define in_bold fontstat[0]
 #define in_under fontstat[1]

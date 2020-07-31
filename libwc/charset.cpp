@@ -1,16 +1,26 @@
-
+#include "charset.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <gc.h>
 #define New_N(type,n) ((type*)GC_MALLOC((n)*sizeof(type)))
 
-#include "wc.h"
+// #include "wc.h"
+#include "ces_info.h"
+#include "ces.h"
 
 #ifdef HAVE_LANGINFO_CODESET
 #include <langinfo.h>
 #endif
 
-
+enum LocaleTypes : uint32_t
+{
+    WC_LOCALE_NONE = 0,
+    WC_LOCALE_JA_JP = 1,
+    WC_LOCALE_ZH_CN = 2,
+    WC_LOCALE_ZH_TW = 3,
+    WC_LOCALE_ZH_HK = 4,
+    WC_LOCALE_KO_KR = 5,
+};
 LocaleTypes WcLocale = WC_LOCALE_NONE;
 
 static struct {

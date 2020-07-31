@@ -1,6 +1,7 @@
 
 #include "wc.h"
 #include "viet.h"
+#include "detect.h"
 #include "wtf.h"
 #include "search.h"
 #include "ucs.h"

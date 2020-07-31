@@ -6,7 +6,7 @@
 #include "urimethod.h"
 #include "local.h"
 #include "http/http_request.h"
-
+#include "charset.h"
 #include "http/auth.h"
 #include "mime/mimetypes.h"
 #include "mime/mimeencoding.h"

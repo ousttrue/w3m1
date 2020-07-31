@@ -1,7 +1,5 @@
-
-#include "wc.h"
+#include "priv.h"
 #include "wtf.h"
-
 
 Str
 wc_conv_from_priv1(Str is, CharacterEncodingScheme ces)

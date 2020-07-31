@@ -14,7 +14,7 @@ add_executable(w3mbookmark
     src/hash.cpp
     src/entity.cpp
     libwc/big5.cpp
-    libwc/ces.cpp
+    libwc/ces_info.cpp
     libwc/char_conv.cpp
     libwc/charset.cpp
     libwc/combining.cpp
@@ -119,7 +119,7 @@ PRIVATE
     src/history.cpp
     src/version.cpp
     libwc/big5.cpp
-    libwc/ces.cpp
+    libwc/ces_info.cpp
     libwc/char_conv.cpp
     libwc/charset.cpp
     libwc/combining.cpp

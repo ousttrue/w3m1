@@ -2,7 +2,6 @@
 #include "transport/url.h"
 #include "html/anchor.h"
 #include "line.h"
-#include <wc_types.h>
 #include <stdint.h>
 
 struct Line;

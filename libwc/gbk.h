@@ -1,6 +1,7 @@
 
 #ifndef _WC_GBK_H
 #define _WC_GBK_H
+#include "status.h"
 
 #define WC_GBK_NOSTATE	0
 #define WC_GBK_MBYTE1	1	/* 0x81 - 0xA0, 0xA1 - 0xFE */

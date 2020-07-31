@@ -1,6 +1,7 @@
 
 #ifndef _WC_SJIS_H
 #define _WC_SJIS_H
+#include "status.h"
 
 #define WC_C_SJIS_ERROR		0xFFFFFFFFU
 

@@ -13,6 +13,7 @@
 #include "uhc.h"
 #include "ucs.h"
 #include "utf8.h"
+#include "charset.h"
 
 
 uint8_t WTF_WIDTH_MAP[ 0x100 ] = {

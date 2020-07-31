@@ -1,6 +1,7 @@
-
-#include "wc.h"
+#include "putc.h"
+#include "status.h"
 #include "wtf.h"
+#include "conv.h"
 
 static wc_status putc_st;
 static CharacterEncodingScheme putc_f_ces, putc_t_ces;

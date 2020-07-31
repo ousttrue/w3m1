@@ -4,13 +4,13 @@
 #include "transport/local.h"
 #include "myctype.h"
 #include "frontend/display.h"
-
+#include "charset.h"
+#include "char_conv.h"
 #include "file.h"
 #include "public.h"
 #include "frontend/terms.h"
 #include "html/form.h"
 #include "ctrlcode.h"
-
 
 #define STR_LEN	1024
 #define CLEN (COLS - 2)
@@ -140,9 +140,8 @@ inputLineHistSearch(const char* prompt, const char *def_str, int flag, Hist *his
     cm_disp_next = -1;
     need_redraw = FALSE;
 
-#ifdef USE_M17N
     wc_char_conv_init(wc_guess_8bit_charset(DisplayCharset), InnerCharset);
-#endif
+
     do {
         x = calcPosition(strBuf->ptr, strProp, CLen, CPos, 0, CP_FORCE);
         if (x - rpos > offset) {

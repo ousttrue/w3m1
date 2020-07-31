@@ -1,7 +1,7 @@
 
 #define MAINPROGRAM
 #include "fm.h"
-
+#include "charset.h"
 #include "rc.h"
 #include "indep.h"
 #include "gc_helper.h"

@@ -26,6 +26,7 @@
 #include "frontend/buffer.h"
 #include "entity.h"
 #include "transport/loader.h"
+#include "charset.h"
 
 int searchKeyNum(void)
 {

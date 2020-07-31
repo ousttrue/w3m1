@@ -6,6 +6,7 @@
 #include "frontend/menu.h"
 #include "file.h"
 #include "ctrlcode.h"
+#include "charset.h"
 #include "html/anchor.h"
 #include "html/image.h"
 #include <math.h>
@@ -559,10 +560,10 @@ page_info_panel(BufferPtr buf)
     struct frameset *f_set = NULL;
     int all;
     char *p, *q;
-#ifdef USE_M17N
+
     wc_ces_list *list;
     char charset[16];
-#endif
+
     BufferPtr newbuf;
 
     tmp->Push("<html><head>\

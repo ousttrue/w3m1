@@ -16,7 +16,7 @@
 #include "file.h"
 #include "html/html.h"
 #include "frontend/mouse.h"
-
+#include "charset.h"
 #include "frontend/buffer.h"
 #include "html/anchor.h"
 #include "transport/url.h"
@@ -2128,7 +2128,6 @@ interpret_menu(FILE *mf)
             nitem = 0;
             item[nitem].type = MENU_END;
         }
-#ifdef USE_M17N
         else if (!strcmp(s, "charset") || !strcmp(s, "encoding"))
         {
             s = getQWord(&p);
@@ -2136,7 +2135,7 @@ interpret_menu(FILE *mf)
                 continue;
             charset = wc_guess_charset(s, charset);
         }
-#endif
+
     }
 }
 

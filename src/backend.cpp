@@ -3,7 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <gc.h>
-
+#include "charset.h"
 #include "fm.h"
 #include "indep.h"
 #include "public.h"
