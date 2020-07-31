@@ -14,6 +14,44 @@
 #include "utf8.h"
 #include "charset.h"
 
+enum WobblyTransformationFormatFlags: uint8_t
+{
+    WTF_C_CS94 = 0x80,
+    WTF_C_CS94W = 0x81,
+    WTF_C_CS96 = 0x82,
+    WTF_C_CS96W = 0x83 /* reserved */,
+    WTF_C_CS942 = 0x84,
+    WTF_C_UNKNOWN = 0x85,
+    WTF_C_PCS = 0x86,
+    WTF_C_PCSW = 0x87,
+    WTF_C_WCS16 = 0x88,
+    WTF_C_WCS16W = 0x89,
+    WTF_C_WCS32 = 0x8A,
+    WTF_C_WCS32W = 0x8B,
+
+    WTF_C_COMB = 0x10,
+    WTF_C_CS94_C = (WTF_C_CS94 | WTF_C_COMB) /* reserved */,
+    WTF_C_CS94W_C = (WTF_C_CS94W | WTF_C_COMB) /* reserved */,
+    WTF_C_CS96_C = (WTF_C_CS96 | WTF_C_COMB) /* reserved */,
+    WTF_C_CS96W_C = (WTF_C_CS96W | WTF_C_COMB) /* reserved */,
+    WTF_C_CS942_C = (WTF_C_CS942 | WTF_C_COMB) /* reserved */,
+    WTF_C_PCS_C = (WTF_C_PCS | WTF_C_COMB),
+    WTF_C_PCSW_C = (WTF_C_PCSW | WTF_C_COMB) /* reserved */,
+    WTF_C_WCS16_C = (WTF_C_WCS16 | WTF_C_COMB),
+    WTF_C_WCS16W_C = (WTF_C_WCS16W | WTF_C_COMB) /* reserved */,
+    WTF_C_WCS32_C = (WTF_C_WCS32 | WTF_C_COMB) /* reserved */,
+    WTF_C_WCS32W_C = (WTF_C_WCS32W | WTF_C_COMB) /* reserved */,
+
+    WTF_C_UNDEF0 = 0x8C,
+    WTF_C_UNDEF1 = 0x8D,
+    WTF_C_UNDEF2 = 0x8E,
+    WTF_C_UNDEF3 = 0x8F,
+    WTF_C_UNDEF4 = 0x9C,
+    WTF_C_UNDEF5 = 0x9D,
+    WTF_C_UNDEF6 = 0x9E,
+    WTF_C_UNDEF7 = 0x9F,
+    WTF_C_NBSP = 0xA0,
+};
 
 uint8_t WTF_WIDTH_MAP[ 0x100 ] = {
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
