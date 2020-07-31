@@ -1,5 +1,6 @@
 
 #include "wc.h"
+#include "combinding.h"
 #include "wtf.h"
 #include "sjis.h"
 #include "big5.h"
