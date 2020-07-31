@@ -60,7 +60,7 @@ inline Str wc_conv_n_with_detect(const char *is, int n, CharacterEncodingScheme 
 
 extern void wc_output_init(CharacterEncodingScheme ces, wc_status *st);
 extern void wc_push_end(Str os, wc_status *st);
-extern wc_bool wc_ces_has_ccs(wc_ccs ccs, wc_status *st);
+extern bool wc_ces_has_ccs(wc_ccs ccs, wc_status *st);
 
 extern void wc_char_conv_init(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces);
 extern Str wc_char_conv(char c);
@@ -70,7 +70,7 @@ extern void wc_putc(char *c, FILE *f);
 extern void wc_putc_end(FILE *f);
 extern void wc_putc_clear_status(void);
 
-extern void wc_create_detect_map(CharacterEncodingScheme ces, wc_bool esc);
+extern void wc_create_detect_map(CharacterEncodingScheme ces, bool esc);
 
 extern CharacterEncodingScheme wc_guess_charset(char *charset, CharacterEncodingScheme orig);
 CharacterEncodingScheme wc_guess_charset_short(const char *charset, CharacterEncodingScheme orig);
@@ -81,7 +81,7 @@ extern CharacterEncodingScheme wc_locale_to_ces(char *locale);
 extern CharacterEncodingScheme wc_guess_8bit_charset(CharacterEncodingScheme orig);
 extern char *wc_ces_to_charset(CharacterEncodingScheme ces);
 extern char *wc_ces_to_charset_desc(CharacterEncodingScheme ces);
-extern wc_bool wc_check_ces(CharacterEncodingScheme ces);
+extern bool wc_check_ces(CharacterEncodingScheme ces);
 extern wc_ces_list *wc_get_ces_list(void);
 
 #endif

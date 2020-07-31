@@ -679,7 +679,7 @@ int wc_parse_iso2022_esc(uint8_t **ptr, wc_status *st)
 void wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st)
 {
     uint8_t g = 0;
-    wc_bool is_wide = WC_FALSE, retry = WC_FALSE;
+    bool is_wide = WC_FALSE, retry = WC_FALSE;
     wc_wchar_t cc2;
 
     while (1)

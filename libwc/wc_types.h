@@ -7,7 +7,6 @@
 
 typedef uint32_t wc_ccs;
 typedef uint32_t wc_locale;
-typedef uint8_t wc_bool;
 
 struct wc_wchar_t
 {
@@ -42,7 +41,7 @@ struct wc_gset
 {
     wc_ccs ccs;
     uint8_t g;
-    wc_bool init;
+    bool init;
 };
 
 typedef Str (*ConvFromFunc)(Str, CharacterEncodingScheme);
@@ -71,24 +70,24 @@ struct wc_ces_list
 struct wc_option
 {
     uint8_t auto_detect;     /* automatically charset detect */
-    wc_bool use_combining;    /* use combining characters */
-    wc_bool use_language_tag; /* use language_tags */
-    wc_bool ucs_conv;         /* charset conversion using Unicode */
-    wc_bool pre_conv;         /* previously charset conversion */
-    wc_bool fix_width_conv;   /* not allowed conversion between different
+    bool use_combining;    /* use combining characters */
+    bool use_language_tag; /* use language_tags */
+    bool ucs_conv;         /* charset conversion using Unicode */
+    bool pre_conv;         /* previously charset conversion */
+    bool fix_width_conv;   /* not allowed conversion between different
 				   width charsets */
-    wc_bool use_gb12345_map;  /* use GB 12345 Unicode map instead of
+    bool use_gb12345_map;  /* use GB 12345 Unicode map instead of
 				   GB 2312 Unicode map */
-    wc_bool use_jisx0201;     /* use JIS X 0201 Roman instead of US_ASCII */
-    wc_bool use_jisc6226;     /* use JIS C 6226:1978 instead of JIS X 0208 */
-    wc_bool use_jisx0201k;    /* use JIS X 0201 Katakana */
-    wc_bool use_jisx0212;     /* use JIS X 0212 */
-    wc_bool use_jisx0213;     /* use JIS X 0213 */
-    wc_bool strict_iso2022;   /* strict ISO 2022 */
-    wc_bool gb18030_as_ucs;   /* treat 4 bytes char. of GB18030 as Unicode */
-    wc_bool no_replace;       /* don't output replace character */
-    wc_bool use_wide;         /* use wide characters */
-    wc_bool east_asian_width; /* East Asian Ambiguous characters are wide */
+    bool use_jisx0201;     /* use JIS X 0201 Roman instead of US_ASCII */
+    bool use_jisc6226;     /* use JIS C 6226:1978 instead of JIS X 0208 */
+    bool use_jisx0201k;    /* use JIS X 0201 Katakana */
+    bool use_jisx0212;     /* use JIS X 0212 */
+    bool use_jisx0213;     /* use JIS X 0213 */
+    bool strict_iso2022;   /* strict ISO 2022 */
+    bool gb18030_as_ucs;   /* treat 4 bytes char. of GB18030 as Unicode */
+    bool no_replace;       /* don't output replace character */
+    bool use_wide;         /* use wide characters */
+    bool east_asian_width; /* East Asian Ambiguous characters are wide */
 };
 
 struct wc_status

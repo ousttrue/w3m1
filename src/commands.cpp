@@ -1542,7 +1542,7 @@ void vwSrc()
             GetCurrentTab()->GetCurrentBuffer()->type == "text/plain")
         {
             CharacterEncodingScheme old_charset;
-            wc_bool old_fix_width_conv;
+            bool old_fix_width_conv;
 
             Str tmpf = tmpfname(TMPF_SRC, NULL);
             auto f = fopen(tmpf->ptr, "w");

@@ -41,7 +41,7 @@ uint8_t WC_DETECT_MAP[ 0x100 ] = {
 #define SET_BROKEN_ERROR(x) ((x) = ((x) & DETECT_BROKEN) ? DETECT_ERROR : ((x) | DETECT_BROKEN))
 
 void
-wc_create_detect_map(CharacterEncodingScheme ces, wc_bool esc)
+wc_create_detect_map(CharacterEncodingScheme ces, bool esc)
 {
     static CharacterEncodingScheme detect_ces = WC_CES_US_ASCII;
     int i;
@@ -90,7 +90,7 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 	hz_detect = DETECT_ERROR, latin_detect = DETECT_ERROR,
 	priv_detect = DETECT_ERROR;
     int possible = 0;
-    wc_bool iso2022jp2 = WC_FALSE, iso2022jp3 = WC_FALSE,
+    bool iso2022jp2 = WC_FALSE, iso2022jp3 = WC_FALSE,
 	iso2022cn = WC_FALSE, iso2022kr = WC_FALSE, ok = WC_FALSE;
 #ifdef USE_UNICODE
     int utf8_state = 0;

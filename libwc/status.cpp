@@ -30,7 +30,7 @@ wc_option WcOption = {
 
 static wc_status output_st;
 static wc_option output_option;
-static wc_bool output_set = WC_FALSE;
+static bool output_set = WC_FALSE;
 
 #define wc_option_cmp(opt1, opt2) \
     memcmp((void *)(opt1), (void *)(opt2), sizeof(wc_option))
@@ -161,7 +161,7 @@ wc_output_init(CharacterEncodingScheme ces, wc_status *st)
     output_option = WcOption;
 }
 
-wc_bool
+bool
 wc_ces_has_ccs(wc_ccs ccs, wc_status *st)
 {
     wc_gset *gset = st->ces_info->gset;

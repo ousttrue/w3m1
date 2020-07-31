@@ -73,7 +73,7 @@ extern wc_wchar_t wtf_parse1(uint8_t **p);
 extern wc_ccs wtf_get_ccs(uint8_t *p);
 extern uint32_t wtf_get_code(uint8_t *p);
 
-extern wc_bool wtf_is_hangul(uint8_t *p);
+extern bool wtf_is_hangul(uint8_t *p);
 
 extern char *wtf_conv_fit(char *s, CharacterEncodingScheme ces);
 
