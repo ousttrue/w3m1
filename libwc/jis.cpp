@@ -53,7 +53,7 @@ wc_jisx0213_to_jisx0212(wc_wchar_t cc)
 #endif
 }
 
-wc_ccs
+CodedCharacterSet
 wc_jisx0208_or_jisx02131(uint16_t code)
 {
     return wc_map_range_search(code & 0x7f7f,
@@ -61,7 +61,7 @@ wc_jisx0208_or_jisx02131(uint16_t code)
 	? WC_CCS_JIS_X_0213_1 : WC_CCS_JIS_X_0208;
 }
 
-wc_ccs
+CodedCharacterSet
 wc_jisx0212_or_jisx02132(uint16_t code)
 {
     return wc_jisx0212_jisx02132_map[(code >> 8) & 0x7f]

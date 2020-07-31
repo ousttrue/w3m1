@@ -626,7 +626,7 @@ TODO
  * entity �ΰ�����������
  * DocumentCharset �� UTF-8 �ξ��� auto detect �� ISO-8859-1 ��Ƚ�̤���
    ���Ȥ�ߤ᤿��ISO-2022 �Τ�Ƚ�̤��롣
- * CharacterEncodingScheme �� wc_ccs �� typo ����
+ * CharacterEncodingScheme �� CodedCharacterSet �� typo ����
  * sourcefile �� load ������Ͼ�� file_to_url() �����ͤˤ�����
 
 2000/12/20	w3m-(0.1.11-pre-kokb23)-m17n-0.5

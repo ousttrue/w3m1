@@ -33,7 +33,7 @@ static int n_tag_map = 0;
 static char *tag_map[ MAX_TAG_MAP ];
 
 wc_table *
-wc_get_ucs_table(wc_ccs ccs)
+wc_get_ucs_table(CodedCharacterSet ccs)
 {
     int f = WC_CCS_INDEX(ccs);
 
@@ -277,7 +277,7 @@ wc_any_to_ucs(wc_wchar_t cc)
 wc_wchar_t
 wc_any_to_any(wc_wchar_t cc, wc_table *t)
 {
-    wc_ccs is_wide = WC_CCS_IS_WIDE(cc.ccs);
+    CodedCharacterSet is_wide = WC_CCS_IS_WIDE(cc.ccs);
     uint32_t ucs = wc_any_to_ucs(cc);
 
     if (ucs != WC_C_UCS4_ERROR) {
@@ -319,7 +319,7 @@ wc_wchar_t
 wc_any_to_any_ces(wc_wchar_t cc, wc_status *st)
 {
     uint32_t ucs = wc_any_to_ucs(cc);
-    wc_ccs is_wide = WC_CCS_IS_WIDE(cc.ccs);
+    CodedCharacterSet is_wide = WC_CCS_IS_WIDE(cc.ccs);
 
     if (ucs < 0x80) {
 	cc.ccs = WC_CCS_US_ASCII;
@@ -383,7 +383,7 @@ wc_wchar_t
 wc_any_to_iso2022(wc_wchar_t cc, wc_status *st)
 {
     uint32_t ucs = wc_any_to_ucs(cc);
-    wc_ccs is_wide = WC_CCS_IS_WIDE(cc.ccs);
+    CodedCharacterSet is_wide = WC_CCS_IS_WIDE(cc.ccs);
 
     if (ucs < 0x80) {
 	cc.ccs = WC_CCS_US_ASCII;
@@ -512,16 +512,16 @@ wc_ucs_to_iso2022w(uint32_t ucs)
     return cc;
 }
 
-wc_ccs
+CodedCharacterSet
 wc_ucs_to_ccs(uint32_t ucs)
 {
     if (0x80 <= ucs && ucs <= 0x9F)
 	return WC_CCS_C1;
     return ((ucs <= WC_C_UCS2_END) ? WC_CCS_UCS2 : WC_CCS_UCS4)
 	| ((WcOption.east_asian_width && wc_is_ucs_ambiguous_width(ucs))
-		    ? WC_CCS_A_WIDE : 0)
-	| (wc_is_ucs_wide(ucs) ? WC_CCS_A_WIDE : 0)
-	| (wc_is_ucs_combining(ucs) ? WC_CCS_A_COMB : 0);
+		    ? WC_CCS_A_WIDE : WC_CCS_NONE)
+	| (wc_is_ucs_wide(ucs) ? WC_CCS_A_WIDE : WC_CCS_NONE)
+	| (wc_is_ucs_combining(ucs) ? WC_CCS_A_COMB : WC_CCS_NONE);
 }
 
 bool
@@ -686,7 +686,7 @@ wc_ucs_get_tag(int ntag)
 void
 wtf_push_ucs(Str os, uint32_t ucs, wc_status *st)
 {
-    wc_ccs ccs;
+    CodedCharacterSet ccs;
 
     if (ucs >= WC_C_LANGUAGE_TAG0 && ucs <= WC_C_CANCEL_TAG) {
 	if (! WcOption.use_language_tag)

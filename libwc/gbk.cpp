@@ -35,7 +35,7 @@ uint8_t WC_GBK_MAP[ 0x100 ] = {
     UB, UB, UB, UB, UB, UB, UB, UB, UB, UB, UB, UB, UB, UB, UB, C1,
 };
 
-wc_ccs
+CodedCharacterSet
 wc_gb2312_or_gbk(uint16_t code) {
     return wc_map_range_search(code,
 	gb2312_gbk_map, N_gb2312_gbk_map)

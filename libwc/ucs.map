@@ -234,7 +234,7 @@ static uint16_t *pcsw_ucs_map[] = {
 };
 
 static wc_wchar_t
-ucs_cs94_conv(wc_ccs ccs, uint16_t c)
+ucs_cs94_conv(CodedCharacterSet ccs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -249,7 +249,7 @@ ucs_cs94_conv(wc_ccs ccs, uint16_t c)
 #define ucs_cs128w_conv ucs_cs94_conv
 
 static wc_wchar_t
-ucs_viet_conv(wc_ccs ccs, uint16_t c)
+ucs_viet_conv(CodedCharacterSet ccs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -285,7 +285,7 @@ ucs_viet_conv(wc_ccs ccs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_cp1258_conv(wc_ccs ccs, uint16_t c)
+ucs_cp1258_conv(CodedCharacterSet ccs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -295,7 +295,7 @@ ucs_cp1258_conv(wc_ccs ccs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_cns11643_conv(wc_ccs cs, uint16_t c)
+ucs_cns11643_conv(CodedCharacterSet cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -305,7 +305,7 @@ ucs_cns11643_conv(wc_ccs cs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_big5_conv(wc_ccs cs, uint16_t c)
+ucs_big5_conv(CodedCharacterSet cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -315,7 +315,7 @@ ucs_big5_conv(wc_ccs cs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_johab2_conv(wc_ccs cs, uint16_t c)
+ucs_johab2_conv(CodedCharacterSet cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -325,7 +325,7 @@ ucs_johab2_conv(wc_ccs cs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_johab3_conv(wc_ccs cs, uint16_t c)
+ucs_johab3_conv(CodedCharacterSet cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -340,7 +340,7 @@ ucs_johab3_conv(wc_ccs cs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_sjis_ext_conv(wc_ccs cs, uint16_t c)
+ucs_sjis_ext_conv(CodedCharacterSet cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -350,7 +350,7 @@ ucs_sjis_ext_conv(wc_ccs cs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_gbk_conv(wc_ccs cs, uint16_t c)
+ucs_gbk_conv(CodedCharacterSet cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -360,7 +360,7 @@ ucs_gbk_conv(wc_ccs cs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_uhc_conv(wc_ccs cs, uint16_t c)
+ucs_uhc_conv(CodedCharacterSet cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -370,7 +370,7 @@ ucs_uhc_conv(wc_ccs cs, uint16_t c)
 }
 
 static wc_wchar_t
-ucs_hkscs_conv(wc_ccs cs, uint16_t c)
+ucs_hkscs_conv(CodedCharacterSet cs, uint16_t c)
 {
   wc_wchar_t cc;
 
@@ -379,7 +379,7 @@ ucs_hkscs_conv(wc_ccs cs, uint16_t c)
   return wc_hkscs_to_cs128w(cc);
 }
 
-#define null_table { 0, 0, NULL, ucs_cs94_conv }
+#define null_table { WC_CCS_NONE, 0, NULL, ucs_cs94_conv }
 
 static wc_table ucs_cs94_table[] = {
   null_table,		/* 40 */

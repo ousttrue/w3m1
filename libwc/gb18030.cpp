@@ -61,7 +61,7 @@ wc_cs128w_to_gbk_ext(wc_wchar_t cc)
     return cc;
 }
 
-static wc_ccs
+static CodedCharacterSet
 wc_gbk_or_gbk_ext(uint16_t code) {
     return wc_map3_range_search(code,
         gbk_ext_ucs_map, N_gbk_ext_ucs_map)

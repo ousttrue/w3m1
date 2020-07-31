@@ -4,12 +4,11 @@
 #include <config.h>
 #include <stdint.h>
 #include "ces.h"
-
-typedef uint32_t wc_ccs;
+#include "ccs.h"
 
 struct wc_wchar_t
 {
-    wc_ccs ccs;
+    CodedCharacterSet ccs;
     uint32_t code;
 };
 
@@ -26,11 +25,11 @@ struct wc_map3
     uint16_t code3;
 };
 
-typedef wc_wchar_t (*WcConvFunc)(wc_ccs, uint16_t);
+typedef wc_wchar_t (*WcConvFunc)(CodedCharacterSet, uint16_t);
 
 struct wc_table
 {
-    wc_ccs ccs;
+    CodedCharacterSet ccs;
     size_t n;
     wc_map *map;
     WcConvFunc conv;
@@ -38,7 +37,7 @@ struct wc_table
 
 struct wc_gset
 {
-    wc_ccs ccs;
+    CodedCharacterSet ccs;
     uint8_t g;
     bool init;
 };
@@ -95,9 +94,9 @@ struct wc_status
     uint8_t gr;
     uint8_t gl;
     uint8_t ss;
-    wc_ccs g0_ccs;
-    wc_ccs g1_ccs;
-    wc_ccs design[4];
+    CodedCharacterSet g0_ccs;
+    CodedCharacterSet g1_ccs;
+    CodedCharacterSet design[4];
 
     wc_table **tlist;
     wc_table **tlistw;
@@ -109,3 +108,16 @@ struct wc_status
     uint32_t base;
     int shift;
 };
+
+extern void wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st);
+extern void wc_push_to_euc(Str os, wc_wchar_t cc, wc_status *st);
+extern void wc_push_to_eucjp(Str os, wc_wchar_t cc, wc_status *st);
+extern void wc_push_to_euctw(Str os, wc_wchar_t cc, wc_status *st);
+extern void wc_push_to_iso8859(Str os, wc_wchar_t cc, wc_status *st);
+extern void wc_push_to_iso2022_end(Str os, wc_status *st);
+extern int  wc_parse_iso2022_esc(uint8_t **ptr, wc_status *st);
+extern void wc_push_iso2022_esc(Str os, CodedCharacterSet ccs, uint8_t g, uint8_t invoke, wc_status *st);
+extern void wc_create_gmap(wc_status *st);
+extern Str  wc_char_conv_from_iso2022(uint8_t c, wc_status *st);
+extern Str  wc_char_conv_from_priv1(uint8_t c, wc_status *st);
+extern void wc_push_to_raw(Str os, wc_wchar_t cc, wc_status *st);

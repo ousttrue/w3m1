@@ -27,7 +27,7 @@
 
 extern uint8_t WC_GBK_MAP[];
 
-extern wc_ccs     wc_gb2312_or_gbk(uint16_t code);
+extern CodedCharacterSet     wc_gb2312_or_gbk(uint16_t code);
 extern wc_wchar_t wc_gbk_to_cs128w(wc_wchar_t cc);
 extern wc_wchar_t wc_cs128w_to_gbk(wc_wchar_t cc);
 extern uint32_t  wc_gbk_to_N(uint32_t c);

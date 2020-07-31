@@ -1,5 +1,5 @@
-
 #include "wc.h"
+#include "ccs.h"
 #include "status.h"
 #include "iso2022.h"
 #include "jis.h"
@@ -287,7 +287,7 @@ static uint8_t cs96w_gmap[0x80 - WC_F_ISO_BASE];
 static uint8_t cs942_gmap[0x80 - WC_F_ISO_BASE];
 
 static void
-wtf_push_iso2022(Str os, wc_ccs ccs, uint32_t code)
+wtf_push_iso2022(Str os, CodedCharacterSet ccs, uint32_t code)
 {
     switch (ccs)
     {
@@ -316,7 +316,7 @@ Str wc_conv_from_iso2022(Str is, CharacterEncodingScheme ces)
     uint8_t *p, *q = NULL;
     int state = WC_ISO_NOSTATE;
     wc_status st;
-    wc_ccs gl_ccs, gr_ccs;
+    CodedCharacterSet gl_ccs, gr_ccs;
 
     for (p = sp; p < ep && !(WC_ISO_MAP[*p] & WC_ISO_MAP_DETECT); p++)
         ;
@@ -463,13 +463,13 @@ Str wc_conv_from_iso2022(Str is, CharacterEncodingScheme ces)
             {
                 if (0xa1 <= *q && *q <= 0xa7)
                 {
-                    wtf_push_iso2022(os, WC_CCS_CNS_11643_1 + (*q - 0xa1),
+                    wtf_push_iso2022(os, WC_CCS_CNS_11643_1 | (CodedCharacterSet)(*q - 0xa1),
                                      ((uint32_t) * (q + 1) << 8) | *p);
                     break;
                 }
                 if (0xa8 <= *q && *q <= 0xb0)
                 {
-                    wtf_push_iso2022(os, WC_CCS_CNS_11643_8 + (*q - 0xa8),
+                    wtf_push_iso2022(os, WC_CCS_CNS_11643_8 | (CodedCharacterSet)(*q - 0xa8),
                                      ((uint32_t) * (q + 1) << 8) | *p);
                     break;
                 }
@@ -798,7 +798,7 @@ void wc_push_to_iso2022_end(Str os, wc_status *st)
     wc_push_iso2022_esc(os, st->g0_ccs, WC_C_G0_CS94, 1, st);
 }
 
-void wc_push_iso2022_esc(Str os, wc_ccs ccs, uint8_t g, uint8_t invoke, wc_status *st)
+void wc_push_iso2022_esc(Str os, CodedCharacterSet ccs, uint8_t g, uint8_t invoke, wc_status *st)
 {
     uint8_t g_invoke = g & 0x03;
 
@@ -855,7 +855,7 @@ void wc_push_iso2022_esc(Str os, wc_ccs ccs, uint8_t g, uint8_t invoke, wc_statu
 
 void wc_push_to_euc(Str os, wc_wchar_t cc, wc_status *st)
 {
-    wc_ccs g1_ccs = st->ces_info->gset[1].ccs;
+    CodedCharacterSet g1_ccs = st->ces_info->gset[1].ccs;
 
     while (1)
     {
@@ -1047,7 +1047,7 @@ void wc_push_to_euctw(Str os, wc_wchar_t cc, wc_status *st)
 
 void wc_push_to_iso8859(Str os, wc_wchar_t cc, wc_status *st)
 {
-    wc_ccs g1_ccs = st->ces_info->gset[1].ccs;
+    CodedCharacterSet g1_ccs = st->ces_info->gset[1].ccs;
 
     while (1)
     {
@@ -1161,7 +1161,7 @@ Str wc_char_conv_from_iso2022(uint8_t c, wc_status *st)
     static uint8_t buf[4];
     static size_t nbuf;
     uint8_t *p;
-    wc_ccs gl_ccs, gr_ccs;
+    CodedCharacterSet gl_ccs, gr_ccs;
 
     if (st->state == -1)
     {
@@ -1275,13 +1275,13 @@ Str wc_char_conv_from_iso2022(uint8_t c, wc_status *st)
             c = buf[0];
             if (0xa1 <= c && c <= 0xa7)
             {
-                wtf_push_iso2022(os, WC_CCS_CNS_11643_1 + (c - 0xa1),
+                wtf_push_iso2022(os, WC_CCS_CNS_11643_1 | (CodedCharacterSet)(c - 0xa1),
                                  ((uint32_t)buf[1] << 8) | buf[2]);
                 break;
             }
             if (0xa8 <= c && c <= 0xb0)
             {
-                wtf_push_iso2022(os, WC_CCS_CNS_11643_8 + (c - 0xa8),
+                wtf_push_iso2022(os, WC_CCS_CNS_11643_8 | (CodedCharacterSet)(c - 0xa8),
                                  ((uint32_t)buf[1] << 8) | buf[2]);
                 break;
             }

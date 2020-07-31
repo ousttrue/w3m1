@@ -44,12 +44,12 @@ void wc_input_init(CharacterEncodingScheme ces, wc_status *st)
     gset = st->ces_info->gset;
 
     st->state = 0;
-    st->g0_ccs = 0;
-    st->g1_ccs = 0;
+    st->g0_ccs = WC_CCS_NONE;
+    st->g1_ccs = WC_CCS_NONE;
     st->design[0] = gset[0].ccs;
     st->design[1] = gset[1].ccs;	/* for ISO-2022-JP/EUC-JP */ 
-    st->design[2] = 0;
-    st->design[3] = 0;
+    st->design[2] = WC_CCS_NONE;
+    st->design[3] = WC_CCS_NONE;
     st->gl = 0;
     st->gr = 1;
     st->ss = 0;
@@ -93,9 +93,9 @@ wc_output_init(CharacterEncodingScheme ces, wc_status *st)
 	ces == WC_CES_ISO_2022_JP_3) && WcOption.use_jisc6226)
 	? WC_CCS_JIS_C_6226 : gset[1].ccs;
     st->design[0] = st->g0_ccs;
-    st->design[1] = 0;
-    st->design[2] = 0;
-    st->design[3] = 0;
+    st->design[1] = WC_CCS_NONE;
+    st->design[2] = WC_CCS_NONE;
+    st->design[3] = WC_CCS_NONE;
     st->gl = 0;
     st->gr = 0;
     st->ss = 0;
@@ -162,7 +162,7 @@ wc_output_init(CharacterEncodingScheme ces, wc_status *st)
 }
 
 bool
-wc_ces_has_ccs(wc_ccs ccs, wc_status *st)
+wc_ces_has_ccs(CodedCharacterSet ccs, wc_status *st)
 {
     wc_gset *gset = st->ces_info->gset;
     int i;

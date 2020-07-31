@@ -3,11 +3,11 @@
 #include "iso2022.h"
 #include "priv.h"
 
-#define WC_CCS_SET_CS94(c) ((c) | WC_CCS_A_CS94)
-#define WC_CCS_SET_CS94W(c) ((c) | WC_CCS_A_CS94W)
-#define WC_CCS_SET_CS96(c) ((c) | WC_CCS_A_CS96)
-#define WC_CCS_SET_CS96W(c) ((c) | WC_CCS_A_CS96W)
-#define WC_CCS_SET_CS942(c) ((c) | WC_CCS_A_CS942)
+#define WC_CCS_SET_CS94(c) ((CodedCharacterSet)(c) | WC_CCS_A_CS94)
+#define WC_CCS_SET_CS94W(c) ((CodedCharacterSet)(c) | WC_CCS_A_CS94W)
+#define WC_CCS_SET_CS96(c) ((CodedCharacterSet)(c) | WC_CCS_A_CS96)
+#define WC_CCS_SET_CS96W(c) ((CodedCharacterSet)(c) | WC_CCS_A_CS96W)
+#define WC_CCS_SET_CS942(c) ((CodedCharacterSet)(c) | WC_CCS_A_CS942)
 #define WC_CCS_SET_PCS(c) ((c) | WC_CCS_A_PCS)
 #define WC_CCS_SET_PCSW(c) ((c) | WC_CCS_A_PCSW)
 #define WC_CCS_SET_WCS16(c) ((c) | WC_CCS_A_WCS16)
@@ -27,8 +27,10 @@
 
 #define WC_CCS_IS_UNICODE(c) (WC_CCS_SET(c) == WC_CCS_UCS2 || WC_CCS_SET(c) == WC_CCS_UCS4 || WC_CCS_SET(c) == WC_CCS_UCS_TAG)
 
-enum CodedCharacterSet
+enum CodedCharacterSet: uint32_t
 {
+    WC_CCS_NONE = 0,
+
     WC_F_ISO_BASE = 0x40,
     WC_F_PCS_BASE = 0x01,
     WC_F_WCS_BASE = 0x00,

@@ -72,7 +72,7 @@ static uint16_t CCS_MAP[ 33 ] = {
     0,
 };
 
-wc_ccs wtf_gr_ccs = 0;
+CodedCharacterSet wtf_gr_ccs = WC_CCS_NONE;
 static CharacterEncodingScheme wtf_major_ces = WC_CES_US_ASCII;
 static wc_status wtf_major_st;
 
@@ -182,7 +182,7 @@ wtf_type(uint8_t *p)
     | ((uint32_t)((p)[4] & 0x7f)      )
 
 void
-wtf_push(Str os, wc_ccs ccs, uint32_t code)
+wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
 {
     uint8_t s[8];
     wc_wchar_t cc, cc2;
@@ -399,32 +399,32 @@ wtf_parse1(uint8_t **p)
 	} else
 	    cc.code = *(q++);
     } else {
-	cc.ccs = (uint32_t)CCS_MAP[*(q++) - 0x80] << 8;
+	cc.ccs = (CodedCharacterSet)((uint32_t)CCS_MAP[*(q++) - 0x80] << 8);
 	switch (WC_CCS_TYPE(cc.ccs)) {
 	case WC_CCS_A_CS94:
 	case WC_CCS_A_CS96:
 	case WC_CCS_A_CS942:
 	case WC_CCS_A_PCS:
 	case WC_CCS_A_UNKNOWN:
-	    cc.ccs |= *(q++) & 0x7f;
+	    cc.ccs |= (CodedCharacterSet)(*(q++) & 0x7f);
 	    cc.code = *(q++);
 	    break;
 	case WC_CCS_A_CS94W:
 	case WC_CCS_A_CS96W:
 	case WC_CCS_A_PCSW:
-	    cc.ccs |= *(q++) & 0x7f;
+	    cc.ccs |= (CodedCharacterSet)(*(q++) & 0x7f);
 	    cc.code = ((uint32_t)*q << 8) | *(q+1);
 	    q += 2;
 	    break;
 	case WC_CCS_A_WCS16:
 	case WC_CCS_A_WCS16W:
-	    cc.ccs |= (*q & 0x7c) >> 2;
+	    cc.ccs |= (CodedCharacterSet)((*q & 0x7c) >> 2);
 	    cc.code = wtf_to_wcs16(q);
 	    q += 3;
 	    break;
 	case WC_CCS_A_WCS32:
 	case WC_CCS_A_WCS32W:
-	    cc.ccs |= (*q & 0x70) >> 4;
+	    cc.ccs |= (CodedCharacterSet)((*q & 0x70) >> 4);
 	    cc.code = wtf_to_wcs32(q);
 	    q += 5;
 	    break;
@@ -527,7 +527,7 @@ wtf_parse(uint8_t **p)
     return cc;
 }
 
-wc_ccs
+CodedCharacterSet
 wtf_get_ccs(uint8_t *p)
 {
    return wtf_parse1(&p).ccs;

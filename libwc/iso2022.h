@@ -113,15 +113,5 @@
 extern uint8_t WC_ISO_MAP[];
 
 extern Str  wc_conv_from_iso2022(Str is, CharacterEncodingScheme ces);
-extern void wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st);
-extern void wc_push_to_euc(Str os, wc_wchar_t cc, wc_status *st);
-extern void wc_push_to_eucjp(Str os, wc_wchar_t cc, wc_status *st);
-extern void wc_push_to_euctw(Str os, wc_wchar_t cc, wc_status *st);
-extern void wc_push_to_iso8859(Str os, wc_wchar_t cc, wc_status *st);
-extern void wc_push_to_iso2022_end(Str os, wc_status *st);
-extern int  wc_parse_iso2022_esc(uint8_t **ptr, wc_status *st);
-extern void wc_push_iso2022_esc(Str os, wc_ccs ccs, uint8_t g, uint8_t invoke, wc_status *st);
-extern void wc_create_gmap(wc_status *st);
-extern Str  wc_char_conv_from_iso2022(uint8_t c, wc_status *st);
 
 #endif

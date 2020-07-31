@@ -17,14 +17,14 @@
 
 static wc_gset gset_usascii[] = {
     { WC_CCS_US_ASCII, WC_C_G0_CS94, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 
 #define gset_iso8859(no) \
 static wc_gset gset_iso8859##no[] = { \
     { WC_CCS_US_ASCII,      WC_C_G0_CS94, 1 }, \
     { WC_CCS_ISO_8859_##no, WC_C_G1_CS96 | 0x80, 1 }, \
-    { 0, 0, 0 }, \
+    { WC_CCS_NONE, 0, 0 }, \
 }
 gset_iso8859(1); gset_iso8859(2); gset_iso8859(3); gset_iso8859(4);
 gset_iso8859(5); gset_iso8859(6); gset_iso8859(7); gset_iso8859(8);
@@ -36,7 +36,7 @@ gset_iso8859(13); gset_iso8859(14); gset_iso8859(15); gset_iso8859(16);
 static wc_gset gset_##ces[] = { \
     { WC_CCS_US_ASCII, 0, 1 }, \
     { WC_CCS_##ccs,    0x80, 1 }, \
-    { 0, 0, 0 }, \
+    { WC_CCS_NONE, 0, 0 }, \
 }
 gset_cp(437); gset_cp(737); gset_cp(775); gset_cp(850); gset_cp(852);
 gset_cp(855); gset_cp(856); gset_cp(857); gset_cp(860); gset_cp(861);
@@ -51,7 +51,7 @@ gset_priv1(NEXTSTEP, nextstep);
 static wc_gset gset_iso2022jp[] = {
     { WC_CCS_US_ASCII,     WC_C_G0_CS94, 1 },
     { WC_CCS_JIS_X_0208,   WC_C_G0_CS94, 0 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_iso2022jp2[] = {
     { WC_CCS_US_ASCII,     WC_C_G0_CS94, 1 },
@@ -61,14 +61,14 @@ static wc_gset gset_iso2022jp2[] = {
     { WC_CCS_KS_X_1001,    WC_C_G0_CS94, 0 },
     { WC_CCS_ISO_8859_1,   WC_C_G2_CS96, 0 },
     { WC_CCS_ISO_8859_7,   WC_C_G2_CS96, 0 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_iso2022jp3[] = {
     { WC_CCS_US_ASCII,     WC_C_G0_CS94, 1 },
     { WC_CCS_JIS_X_0208,   WC_C_G0_CS94, 0 },
     { WC_CCS_JIS_X_0213_1, WC_C_G0_CS94, 0 },
     { WC_CCS_JIS_X_0213_2, WC_C_G0_CS94, 0 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_iso2022cn[] = {
     { WC_CCS_US_ASCII,    WC_C_G0_CS94, 1 },
@@ -81,12 +81,12 @@ static wc_gset gset_iso2022cn[] = {
     { WC_CCS_CNS_11643_5, WC_C_G3_CS94, 0 },
     { WC_CCS_CNS_11643_6, WC_C_G3_CS94, 0 },
     { WC_CCS_CNS_11643_7, WC_C_G3_CS94, 0 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_iso2022kr[] = {
     { WC_CCS_US_ASCII,  WC_C_G0_CS94, 1 },
     { WC_CCS_KS_X_1001, WC_C_G1_CS94, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static uint8_t gset_ext_iso2022jp[] = {
     WC_C_G0_CS94, WC_C_G2_CS96, WC_C_G0_CS94, WC_C_G2_CS96
@@ -104,23 +104,23 @@ static wc_gset gset_eucjp[] = {
     { WC_CCS_JIS_X_0213_1, WC_C_G1_CS94 | 0x80, 0 },
     { WC_CCS_JIS_X_0213_2, WC_C_G3_CS94 | 0x80, 0 },
     { WC_CCS_JIS_X_0212,   WC_C_G3_CS94 | 0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_euccn[] = {
     { WC_CCS_US_ASCII, WC_C_G0_CS94, 1 },
     { WC_CCS_GB_2312,  WC_C_G1_CS94 | 0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_euctw[] = {
     { WC_CCS_US_ASCII,     WC_C_G0_CS94, 1 },
     { WC_CCS_CNS_11643_1,  WC_C_G1_CS94 | 0x80, 1 },
     { WC_CCS_CNS_11643_X,  WC_C_G2_CS94 | 0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_euckr[] = {
     { WC_CCS_US_ASCII,  WC_C_G0_CS94, 1 },
     { WC_CCS_KS_X_1001, WC_C_G1_CS94 | 0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_sjis[] = {
     { WC_CCS_US_ASCII,     0, 1 },
@@ -129,7 +129,7 @@ static wc_gset gset_sjis[] = {
     { WC_CCS_SJIS_EXT_1,   0x80, 1 },
     { WC_CCS_SJIS_EXT_2,   0x80, 1 },
     { WC_CCS_SJIS_EXT,     0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_sjisx0213[] = {
     { WC_CCS_US_ASCII,     0, 1 },
@@ -137,19 +137,19 @@ static wc_gset gset_sjisx0213[] = {
     { WC_CCS_JIS_X_0201K,  0x80, 1 },
     { WC_CCS_JIS_X_0213_1, 0x80, 1 },
     { WC_CCS_JIS_X_0213_2, 0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_hz[] = {
     { WC_CCS_US_ASCII, 0, 1 },
     { WC_CCS_GB_2312,  0, 0 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_big5[] = {
     { WC_CCS_US_ASCII, 0, 1 },
     { WC_CCS_BIG5_1,   0x80, 1 },
     { WC_CCS_BIG5_2,   0x80, 1 },
     { WC_CCS_BIG5,     0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_hkscs[] = {
     { WC_CCS_US_ASCII, 0, 1 },
@@ -159,7 +159,7 @@ static wc_gset gset_hkscs[] = {
     { WC_CCS_HKSCS_1,  0x80, 1 },
     { WC_CCS_HKSCS_2,  0x80, 1 },
     { WC_CCS_HKSCS,    0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_johab[] = {
     { WC_CCS_US_ASCII, 0, 1 },
@@ -167,7 +167,7 @@ static wc_gset gset_johab[] = {
     { WC_CCS_JOHAB_2,  0x80, 1 },
     { WC_CCS_JOHAB_3,  0x80, 1 },
     { WC_CCS_JOHAB,    0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_gbk[] = {
     { WC_CCS_US_ASCII,  0, 1 },
@@ -176,7 +176,7 @@ static wc_gset gset_gbk[] = {
     { WC_CCS_GBK_1,     0x80, 1 },
     { WC_CCS_GBK_2,     0x80, 1 },
     { WC_CCS_GBK,       0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_gb18030[] = {
     { WC_CCS_US_ASCII,  0, 1 },
@@ -188,7 +188,7 @@ static wc_gset gset_gb18030[] = {
     { WC_CCS_GBK_EXT_2, 0x80, 1 },
     { WC_CCS_GBK_EXT,   0x80, 1 },
     { WC_CCS_GB18030,   0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_uhc[] = {
     { WC_CCS_US_ASCII,  0, 1 },
@@ -196,14 +196,14 @@ static wc_gset gset_uhc[] = {
     { WC_CCS_UHC_1,     0x80, 1 },
     { WC_CCS_UHC_2,     0x80, 1 },
     { WC_CCS_UHC,       0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 #define gset_priv2(ccs, ces) \
 static wc_gset gset_##ces[] = { \
     { WC_CCS_US_ASCII, 0, 1 }, \
     { WC_CCS_##ccs##_1, 0x80, 1 }, \
     { WC_CCS_##ccs##_2, 0x80, 1 }, \
-    { 0, 0, 0 }, \
+    { WC_CCS_NONE, 0, 0 }, \
 }
 gset_priv2(CP1258, cp1258);
 gset_priv2(VISCII_11, viscii11);
@@ -213,7 +213,7 @@ static wc_gset gset_tcvn5712[] = {
     { WC_CCS_TCVN_5712_1, 0x80, 1 },
     { WC_CCS_TCVN_5712_2, 0x80, 1 },
     { WC_CCS_TCVN_5712_3, 0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 
 #ifdef USE_UNICODE
@@ -222,21 +222,21 @@ static wc_gset gset_utf8[] = {
     { WC_CCS_UCS2,      0x80, 1 },
     { WC_CCS_UCS4,      0x80, 1 },
     { WC_CCS_UCS_TAG,   0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 static wc_gset gset_utf7[] = {
     { WC_CCS_US_ASCII,  0, 1 },
     { WC_CCS_UCS2,      0x80, 1 },
     { WC_CCS_UCS4,      0x80, 1 },
     { WC_CCS_UCS_TAG,   0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 #endif
 
 static wc_gset gset_raw[] = {
     { WC_CCS_US_ASCII, 0, 1 },
     { WC_CCS_RAW,      0x80, 1 },
-    { 0, 0, 0 },
+    { WC_CCS_NONE, 0, 0 },
 };
 
 #define ces_ascii(id,name,desc) \

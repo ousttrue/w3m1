@@ -113,8 +113,8 @@ wc_conv_from_viet(Str is, CharacterEncodingScheme ces)
     uint8_t *sp = (uint8_t *)is->ptr;
     uint8_t *ep = sp + is->Size();
     uint8_t *p;
-    wc_ccs ccs1 = WcCesInfo[WC_CCS_INDEX(ces)].gset[1].ccs;
-    wc_ccs ccs2 = WcCesInfo[WC_CCS_INDEX(ces)].gset[2].ccs;
+    CodedCharacterSet ccs1 = WcCesInfo[WC_CCS_INDEX(ces)].gset[1].ccs;
+    CodedCharacterSet ccs2 = WcCesInfo[WC_CCS_INDEX(ces)].gset[2].ccs;
     uint8_t *map = NULL;
 
     switch (ces) {
@@ -152,8 +152,8 @@ wc_conv_from_viet(Str is, CharacterEncodingScheme ces)
 void
 wc_push_to_viet(Str os, wc_wchar_t cc, wc_status *st)
 {
-    wc_ccs ccs1 = st->ces_info->gset[1].ccs;
-    wc_ccs ccs2 = 0, ccs3 = 0;
+    CodedCharacterSet ccs1 = st->ces_info->gset[1].ccs;
+    CodedCharacterSet ccs2 = WC_CCS_NONE, ccs3 = WC_CCS_NONE;
     uint8_t *map = NULL;
 
     switch (st->ces_info->id) {

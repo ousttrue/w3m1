@@ -34,7 +34,7 @@
 #define wc_utf16_to_ucs(high, low) \
 	(((((high) & 0x3ff) << 10) | ((low) & 0x3ff)) + WC_C_UCS4_PLANE1)
 
-extern wc_table  *wc_get_ucs_table(wc_ccs ccs);
+extern wc_table  *wc_get_ucs_table(CodedCharacterSet ccs);
 extern wc_wchar_t wc_ucs_to_any(uint32_t ucs, wc_table *t);
 extern uint32_t  wc_any_to_ucs(wc_wchar_t cc);
 extern wc_wchar_t wc_any_to_any(wc_wchar_t cc, wc_table *t);
@@ -43,7 +43,7 @@ extern wc_wchar_t wc_any_to_any_ces(wc_wchar_t cc, wc_status *st);
 extern wc_wchar_t wc_any_to_iso2022(wc_wchar_t cc, wc_status *st);
 extern wc_wchar_t wc_ucs_to_iso2022(uint32_t ucs);
 extern wc_wchar_t wc_ucs_to_iso2022w(uint32_t ucs);
-extern wc_ccs     wc_ucs_to_ccs(uint32_t ucs);
+extern CodedCharacterSet     wc_ucs_to_ccs(uint32_t ucs);
 extern bool    wc_is_ucs_ambiguous_width(uint32_t ucs);
 extern bool    wc_is_ucs_wide(uint32_t ucs);
 extern bool    wc_is_ucs_combining(uint32_t ucs);

@@ -47,10 +47,9 @@ wc_putc_clear_status(void)
 	putc_st.gl = 0;
 	putc_st.gr = 0;
 	putc_st.ss = 0;
-	putc_st.design[0] = 0;
-	putc_st.design[1] = 0;
-	putc_st.design[2] = 0;
-	putc_st.design[3] = 0;
+	putc_st.design[0] = WC_CCS_NONE;
+	putc_st.design[1] = WC_CCS_NONE;
+	putc_st.design[2] = WC_CCS_NONE;
+	putc_st.design[3] = WC_CCS_NONE;
     }
 }
-

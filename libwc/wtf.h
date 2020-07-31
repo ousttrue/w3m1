@@ -51,7 +51,7 @@
 extern uint8_t WTF_WIDTH_MAP[];
 extern uint8_t WTF_LEN_MAP[];
 extern uint8_t WTF_TYPE_MAP[];
-extern wc_ccs wtf_gr_ccs;
+extern CodedCharacterSet wtf_gr_ccs;
 
 extern void wtf_init(CharacterEncodingScheme ces1, CharacterEncodingScheme ces2);
 
@@ -65,12 +65,12 @@ extern size_t wtf_len(uint8_t *p);
 /* extern int     wtf_type(uint8_t *p); */
 #define wtf_type(p) WTF_TYPE_MAP[(uint8_t) * (p)]
 
-extern void wtf_push(Str os, wc_ccs ccs, uint32_t code);
+extern void wtf_push(Str os, CodedCharacterSet ccs, uint32_t code);
 void wtf_push_unknown(Str os, const uint8_t *p, size_t len);
 extern wc_wchar_t wtf_parse(uint8_t **p);
 extern wc_wchar_t wtf_parse1(uint8_t **p);
 
-extern wc_ccs wtf_get_ccs(uint8_t *p);
+extern CodedCharacterSet wtf_get_ccs(uint8_t *p);
 extern uint32_t wtf_get_code(uint8_t *p);
 
 extern bool wtf_is_hangul(uint8_t *p);

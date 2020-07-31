@@ -64,7 +64,7 @@ inline Str wc_conv_n_with_detect(const char *is, int n, CharacterEncodingScheme 
 
 extern void wc_output_init(CharacterEncodingScheme ces, wc_status *st);
 extern void wc_push_end(Str os, wc_status *st);
-extern bool wc_ces_has_ccs(wc_ccs ccs, wc_status *st);
+extern bool wc_ces_has_ccs(CodedCharacterSet ccs, wc_status *st);
 
 extern void wc_char_conv_init(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces);
 extern Str wc_char_conv(char c);
