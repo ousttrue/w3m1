@@ -1,5 +1,5 @@
 #include "ces_info.h"
-// #include "wc.h"
+// 
 #include "iso2022.h"
 #include "sjis.h"
 #include "hz.h"

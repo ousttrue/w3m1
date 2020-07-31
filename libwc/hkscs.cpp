@@ -1,5 +1,4 @@
-
-#include "wc.h"
+#include "option.h"
 #include "big5.h"
 #include "hkscs.h"
 #include "search.h"

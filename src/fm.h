@@ -25,9 +25,6 @@
 #include "history.h"
 #include "transport/url.h"
 
-#include <wc.h>
-#include <wtf.h>
-
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -607,11 +604,6 @@ global int use_lessopen init(FALSE);
 
 global char *keymap_file init(KEYMAP_FILE);
 
-#define get_mctype(c) ((Lineprop)wtf_type((uint8_t *)(c)) << 8)
-#define get_mclen(c) wtf_len1((uint8_t *)(c))
-#define get_mcwidth(c) wtf_width((uint8_t *)(c))
-#define get_strwidth(c) wtf_strwidth((uint8_t *)(c))
-#define get_Str_strwidth(c) wtf_strwidth((uint8_t *)((c)->ptr))
 
 global int FollowRedirection init(10);
 

@@ -28,7 +28,7 @@
 #include "frontend/event.h"
 #include "frontend/line.h"
 #include "charset.h"
-#include <wc.h>
+#include "option.h"
 #include <signal.h>
 
 void nulcmd()
@@ -1555,7 +1555,7 @@ void vwSrc()
             DisplayCharset = (GetCurrentTab()->GetCurrentBuffer()->document_charset != WC_CES_US_ASCII)
                                  ? GetCurrentTab()->GetCurrentBuffer()->document_charset
                                  : WC_CES_NONE;
-            WcOption.fix_width_conv = WC_FALSE;
+            WcOption.fix_width_conv = false;
 
             saveBufferBody(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
 #ifdef USE_M17N

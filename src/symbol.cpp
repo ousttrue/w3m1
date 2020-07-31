@@ -11,6 +11,8 @@
 #include "Symbols/big5.sym"
 #include "Symbols/utf8.sym"
 #include "Symbols/cp850.sym"
+#include "wtf.h"
+#include "option.h"
 
 typedef struct {
     CharacterEncodingScheme ces;

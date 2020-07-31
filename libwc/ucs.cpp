@@ -1,6 +1,6 @@
 
 #include <stdlib.h>
-#include "wc.h"
+#include "option.h"
 #include "ucs.h"
 #include "search.h"
 #include "big5.h"

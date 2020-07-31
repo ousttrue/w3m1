@@ -1,5 +1,4 @@
-
-#include "wc.h"
+#include "option.h"
 #include "uhc.h"
 #include "wtf.h"
 #include "ucs.h"

@@ -2,6 +2,7 @@
 #include "line.h"
 #include "gc_helper.h"
 #include "file.h"
+#include "wtf.h"
 
 static int nextColumn(int n, char *p, Lineprop *pr)
 {

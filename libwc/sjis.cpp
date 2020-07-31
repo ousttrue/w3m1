@@ -1,5 +1,4 @@
-
-#include "wc.h"
+#include "option.h"
 #include "sjis.h"
 #include "jis.h"
 #include "wtf.h"

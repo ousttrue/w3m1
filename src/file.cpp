@@ -32,6 +32,8 @@
 #include "rc.h"
 #include "transport/loader.h"
 #include "html/html_processor.h"
+#include "wtf.h"
+#include "option.h"
 #include <assert.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -1138,10 +1140,10 @@ pager_end:
     TRAP_OFF;
 
     buf->trbyte = trbyte + linelen;
-#ifdef USE_M17N
+
     buf->document_charset = charset;
-    WcOption.auto_detect = old_auto_detect;
-#endif
+    WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
+
     buf->topLine = top;
     buf->currentLine = cur;
     if (!last)

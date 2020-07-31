@@ -1,5 +1,4 @@
-
-#include "wc.h"
+#include "option.h"
 #include "combinding.h"
 #include "wtf.h"
 #include "sjis.h"
@@ -212,7 +211,7 @@ wtf_push(Str os, CodedCharacterSet ccs, uint32_t code)
 #ifdef USE_UNICODE
 	else if (WcOption.ucs_conv) {
 	    bool fix_width_conv = WcOption.fix_width_conv;
-	    WcOption.fix_width_conv = WC_FALSE;
+	    WcOption.fix_width_conv = false;
 	    wc_output_init(wtf_major_ces, &wtf_major_st);
 	    if (! wc_ces_has_ccs(WC_CCS_SET(ccs), &wtf_major_st)) {
 		cc2 = wc_any_to_any_ces(cc, &wtf_major_st);
@@ -563,7 +562,7 @@ wtf_is_hangul(uint8_t *p)
 	    return wc_is_ucs_hangul(wc_ucs_tag_to_ucs(wtf_to_wcs32(p)));
     }
 #endif
-    return WC_FALSE;
+    return false;
 }
 
 char *
@@ -591,8 +590,8 @@ wtf_conv_fit(char *s, CharacterEncodingScheme ces)
     pre_conv = WcOption.pre_conv;
     ucs_conv = WcOption.ucs_conv;
     wtf_major_ces = ces;
-    WcOption.pre_conv = WC_TRUE;
-    WcOption.ucs_conv = WC_TRUE;
+    WcOption.pre_conv = true;
+    WcOption.ucs_conv = true;
     while (*p) {
 	cc = wtf_parse1(&p);
 	wtf_push(os, cc.ccs, cc.code);

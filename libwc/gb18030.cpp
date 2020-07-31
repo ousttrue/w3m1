@@ -1,5 +1,4 @@
-
-#include "wc.h"
+#include "option.h"
 #include "gb18030.h"
 #include "search.h"
 #include "wtf.h"

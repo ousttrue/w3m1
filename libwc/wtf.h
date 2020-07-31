@@ -1,6 +1,9 @@
 
 #ifndef _WC_WTF_H
 #define _WC_WTF_H
+#include "Str.h"
+#include "ccs.h"
+#include "ces.h"
 
 #define WTF_C_CS94 0x80
 #define WTF_C_CS94W 0x81
@@ -76,5 +79,11 @@ extern uint32_t wtf_get_code(uint8_t *p);
 extern bool wtf_is_hangul(uint8_t *p);
 
 extern char *wtf_conv_fit(char *s, CharacterEncodingScheme ces);
+
+#define get_mctype(c) ((Lineprop)wtf_type((uint8_t *)(c)) << 8)
+#define get_mclen(c) wtf_len1((uint8_t *)(c))
+#define get_mcwidth(c) wtf_width((uint8_t *)(c))
+#define get_strwidth(c) wtf_strwidth((uint8_t *)(c))
+#define get_Str_strwidth(c) wtf_strwidth((uint8_t *)((c)->ptr))
 
 #endif

@@ -1,8 +1,7 @@
-
+#include "option.h"
 #include "status.h"
 #include "detect.h"
 #include "conv.h"    
-#include "wc.h"
 #include "wtf.h"
 #include "iso2022.h"
 #include "hz.h"
@@ -33,9 +32,9 @@ wc_Str_conv_strict(Str is, CharacterEncodingScheme f_ces, CharacterEncodingSchem
     Str os;
     wc_option opt = WcOption;
 
-    WcOption.strict_iso2022 = WC_TRUE;
-    WcOption.no_replace = WC_TRUE;
-    WcOption.fix_width_conv = WC_FALSE;
+    WcOption.strict_iso2022 = true;
+    WcOption.no_replace = true;
+    WcOption.fix_width_conv = false;
     os = wc_Str_conv(is, f_ces, t_ces);
     WcOption = opt;
     return os;

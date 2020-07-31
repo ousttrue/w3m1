@@ -560,7 +560,7 @@ void reshapeBuffer(BufferPtr buf)
         loadBuffer(&f, buf);
     f.Close();
 
-    WcOption.auto_detect = old_auto_detect;
+    WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
     UseContentCharset = TRUE;
 
     buf->height = (LINES - 1) + 1;

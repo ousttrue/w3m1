@@ -2,6 +2,7 @@
 #include "transport/url.h"
 #include "html/anchor.h"
 #include "line.h"
+#include "option.h"
 #include <stdint.h>
 
 struct Line;
@@ -123,7 +124,7 @@ public:
     size_t trbyte;
     char check_url;
     CharacterEncodingScheme document_charset;
-    uint8_t auto_detect;
+    AutoDetectTypes auto_detect;
     TextList *document_header;
     FormItemList *form_submit;
     char *savecache;

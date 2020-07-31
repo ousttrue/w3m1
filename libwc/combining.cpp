@@ -1,5 +1,3 @@
-
-#include "wc.h"
 #include "ucs.h"
 #include "map/iso88596_combining.map"
 #include "map/iso885911_combining.map"
@@ -9,7 +7,6 @@
 #include "map/cp1256_combining.map"
 #include "map/cp1258_combining.map"
 #include "map/tcvn5712_combining.map"
-
 
 bool
 wc_is_combining(wc_wchar_t cc)
@@ -38,5 +35,5 @@ wc_is_combining(wc_wchar_t cc)
 	return wc_is_ucs_combining(cc.code);
 #endif
     }
-    return WC_FALSE;
+    return false;
 }

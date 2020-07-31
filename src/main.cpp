@@ -929,7 +929,7 @@ int main(int argc, char **argv, char **envp)
 #ifdef USE_M17N
     wtf_init(DocumentCharset, DisplayCharset);
     /*  if (w3m_dump)
-     *    WcOption.pre_conv = WC_TRUE; 
+     *    WcOption.pre_conv = true; 
      */
 #endif
 
@@ -1155,10 +1155,9 @@ int main(int argc, char **argv, char **envp)
 
     SearchHeader = FALSE;
     DefaultType = NULL;
-#ifdef USE_M17N
+
     UseContentCharset = TRUE;
-    WcOption.auto_detect = auto_detect;
-#endif
+    WcOption.auto_detect = (AutoDetectTypes)auto_detect;
 
     GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
     displayCurrentbuf(B_FORCE_REDRAW);

@@ -1,5 +1,4 @@
-
-#include "wc.h"
+#include "option.h"
 #include "viet.h"
 #include "detect.h"
 #include "wtf.h"
@@ -130,7 +129,7 @@ wc_conv_from_viet(Str is, CharacterEncodingScheme ces)
 	break;
     }
 
-    wc_create_detect_map(ces, WC_FALSE);
+    wc_create_detect_map(ces, false);
     for (p = sp; p < ep && ! WC_DETECT_MAP[*p]; p++)
 	;
     if (p == ep)

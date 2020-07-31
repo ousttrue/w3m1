@@ -597,10 +597,9 @@ void input_textarea(FormItemList *fi)
     char *tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
     Str tmp;
     FILE *f;
-#ifdef USE_M17N
+
     CharacterEncodingScheme charset = DisplayCharset;
     uint8_t auto_detect;
-#endif
 
     f = fopen(tmpf, "w");
     if (f == NULL)
@@ -627,10 +626,10 @@ void input_textarea(FormItemList *fi)
         goto input_end;
     }
     fi->value = Strnew();
-#ifdef USE_M17N
+
     auto_detect = WcOption.auto_detect;
     WcOption.auto_detect = WC_OPT_DETECT_ON;
-#endif
+
     while (tmp = Strfgets(f), tmp->Size() > 0)
     {
         if (tmp->Size() == 1 && tmp->ptr[tmp->Size() - 1] == '\n')
@@ -647,9 +646,9 @@ void input_textarea(FormItemList *fi)
         tmp = convertLine(NULL, tmp, RAW_MODE, &charset, DisplayCharset);
         fi->value->Push(tmp);
     }
-#ifdef USE_M17N
-    WcOption.auto_detect = auto_detect;
-#endif
+
+    WcOption.auto_detect = (AutoDetectTypes)auto_detect;
+
     fclose(f);
 input_end:
     unlink(tmpf);

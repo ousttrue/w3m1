@@ -1,11 +1,8 @@
-
-#include "wc.h"
+#include "option.h"
 #include "gbk.h"
 #include "search.h"
 #include "wtf.h"
 #include "ucs.h"
-
-
 #include "map/gb2312_gbk.map"
 
 #define C0 WC_GBK_MAP_C0

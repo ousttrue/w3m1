@@ -1,10 +1,8 @@
-
-#include "wc.h"
+#include "option.h"
 #include "iso2022.h"
 #include "hz.h"
 #include "wtf.h"
 #include "ucs.h"
-
 
 Str
 wc_conv_from_hz(Str is, CharacterEncodingScheme ces)

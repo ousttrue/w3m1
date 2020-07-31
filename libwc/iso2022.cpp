@@ -1,4 +1,4 @@
-#include "wc.h"
+#include "option.h"
 #include "ccs.h"
 #include "status.h"
 #include "iso2022.h"
@@ -679,7 +679,7 @@ int wc_parse_iso2022_esc(uint8_t **ptr, wc_status *st)
 void wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st)
 {
     uint8_t g = 0;
-    bool is_wide = WC_FALSE, retry = WC_FALSE;
+    bool is_wide = false, retry = false;
     wc_wchar_t cc2;
 
     while (1)
@@ -779,7 +779,7 @@ void wc_push_to_iso2022(Str os, wc_wchar_t cc, wc_status *st)
             else
 #endif
                 cc.ccs = WC_CCS_IS_WIDE(cc.ccs) ? WC_CCS_UNKNOWN_W : WC_CCS_UNKNOWN;
-            retry = WC_TRUE;
+            retry = true;
             continue;
         }
 

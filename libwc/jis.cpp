@@ -1,5 +1,5 @@
 
-#include "wc.h"
+
 #include "jis.h"
 #include "search.h"
 #include "ucs.h"

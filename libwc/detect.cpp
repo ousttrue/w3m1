@@ -1,5 +1,4 @@
-
-#include "wc.h"
+#include "option.h"
 #include "status.h"
 #include "detect.h"
 #include "iso2022.h"
@@ -90,15 +89,15 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 	hz_detect = DETECT_ERROR, latin_detect = DETECT_ERROR,
 	priv_detect = DETECT_ERROR;
     int possible = 0;
-    bool iso2022jp2 = WC_FALSE, iso2022jp3 = WC_FALSE,
-	iso2022cn = WC_FALSE, iso2022kr = WC_FALSE, ok = WC_FALSE;
+    bool iso2022jp2 = false, iso2022jp3 = false,
+	iso2022cn = false, iso2022kr = false, ok = false;
 #ifdef USE_UNICODE
     int utf8_state = 0;
     int utf8_detect = DETECT_ERROR;
     int utf8_next = 0;
 #endif
 
-    wc_create_detect_map(hint, WC_TRUE);
+    wc_create_detect_map(hint, true);
     for (; p < ep && ! WC_DETECT_MAP[*p]; p++)
 	;
     if (p == ep)
@@ -192,24 +191,24 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 			;
 		    else if (st.design[0] == WC_CCS_JIS_X_0213_1 ||
 			     st.design[0] == WC_CCS_JIS_X_0213_2)
-			iso2022jp3 = WC_TRUE;
+			iso2022jp3 = true;
 		    else if (WC_CCS_TYPE(st.design[0]) == WC_CCS_A_CS94W)
-			iso2022jp2 = WC_TRUE;
+			iso2022jp2 = true;
 		    if (st.design[1] == WC_CCS_KS_X_1001)
-			iso2022kr = WC_TRUE;
+			iso2022kr = true;
 		    else if (st.design[1] == WC_CCS_GB_2312 ||
 			     st.design[1] == WC_CCS_ISO_IR_165 ||
 			     st.design[1] == WC_CCS_CNS_11643_1)
-			iso2022cn = WC_TRUE;
+			iso2022cn = true;
 		    if (WC_CCS_TYPE(st.design[2]) == WC_CCS_A_CS94W ||
 			WC_CCS_TYPE(st.design[3]) == WC_CCS_A_CS94W)
-			iso2022cn = WC_TRUE;
+			iso2022cn = true;
 		} else if (*(p+1) == WC_C_G2_CS96) {
 		    q = p;
 		    if (! wc_parse_iso2022_esc(&q, &st))
 			break;
 		    if (WC_CCS_TYPE(st.design[2]) == WC_CCS_A_CS96)
-			iso2022jp2 = WC_TRUE;
+			iso2022jp2 = true;
 		} else if (*(p+1) == WC_C_CSWSR) {
 		    q = p;
 		    if (! wc_parse_iso2022_esc(&q, &st))
@@ -219,14 +218,14 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 		    continue;
 		}
 		iso_detect = DETECT_OK;
-		ok = WC_TRUE;
+		ok = true;
 		break;
 	    case WC_C_SI:
 	    case WC_C_SO:
 		iso_detect = DETECT_OK;
-		ok = WC_TRUE;
-		iso2022cn = WC_TRUE;
-		iso2022kr = WC_TRUE;
+		ok = true;
+		iso2022cn = true;
+		iso2022kr = true;
 		break;
 	    default:
 		if (*p & 0x80) {
@@ -267,7 +266,7 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 	    case WC_EUC_MBYTE1:
 		if (WC_ISO_MAP[*p] == WC_ISO_MAP_GR) {
 		    SET_DETECT(euc_detect, DETECT_OK);
-		    ok = WC_TRUE;
+		    ok = true;
 		} else
 		    SET_BROKEN_ERROR(euc_detect);
 		euc_state = WC_EUC_NOSTATE;
@@ -308,7 +307,7 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 	    case WC_SJIS_SHIFT_L:
 		if (WC_SJIS_MAP[*p] & WC_SJIS_MAP_LB) {
 		    SET_DETECT(sjis_detect, DETECT_OK);
-		    ok = WC_TRUE;
+		    ok = true;
 		} else
 		    SET_BROKEN_ERROR(sjis_detect);
 		sjis_state = WC_SJIS_NOSTATE;
@@ -339,7 +338,7 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 	    case WC_BIG5_MBYTE1:
 		if (WC_BIG5_MAP[*p] & WC_BIG5_MAP_LB) {
 		    SET_DETECT(big5_detect, DETECT_OK);
-		    ok = WC_TRUE;
+		    ok = true;
 		} else
 		    SET_BROKEN_ERROR(big5_detect);
 		big5_state = WC_BIG5_NOSTATE;
@@ -378,7 +377,7 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 		break;
 	    case WC_HZ_MBYTE1:
 		hz_detect = DETECT_OK;
-		ok = WC_TRUE;
+		ok = true;
 		hz_state = WC_HZ_NOSTATE;
 		break;
 	    }
@@ -389,7 +388,7 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 	    case WC_ISO_MAP_GR:
 	    case WC_ISO_MAP_GR96:
 		SET_DETECT(latin_detect, DETECT_OK);
-		ok = WC_TRUE;
+		ok = true;
 		break;
 	    case WC_ISO_MAP_C1:
 		latin_detect = DETECT_ERROR;
@@ -401,7 +400,7 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 	if (priv_detect != DETECT_ERROR) {
 	    if (*p != WC_C_ESC && WC_DETECT_MAP[*p]) {
 		SET_DETECT(priv_detect, DETECT_OK);
-		ok = WC_TRUE;
+		ok = true;
 	    }
 /*
 	    if (priv_detect == DETECT_ERROR)
@@ -435,7 +434,7 @@ wc_auto_detect(char *is, size_t len, CharacterEncodingScheme hint)
 		utf8_next--;
 		if (! utf8_next) {
 		    SET_DETECT(utf8_detect, DETECT_OK);
-		    ok = WC_TRUE;
+		    ok = true;
 		    utf8_state = WC_UTF8_NOSTATE;
 		}
 		break;

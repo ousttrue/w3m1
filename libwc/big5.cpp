@@ -1,10 +1,8 @@
-#include "wc.h"
+#include "option.h"
 #include "status.h"
 #include "big5.h"
-// #include "search.h"
 #include "wtf.h"
 #include "ucs.h"
-
 
 #define C0 WC_BIG5_MAP_C0
 #define GL WC_BIG5_MAP_GL

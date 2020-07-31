@@ -4,7 +4,7 @@
 #include <gc.h>
 #define New_N(type,n) ((type*)GC_MALLOC((n)*sizeof(type)))
 
-// #include "wc.h"
+// 
 #include "ces_info.h"
 #include "ces.h"
 
