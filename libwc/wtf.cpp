@@ -174,13 +174,11 @@ wtf_strwidth(uint8_t *p)
     return w;
 }
 
-/*
-size_t
+uint8_t
 wtf_len1(uint8_t *p)
 {
-    return (size_t)WTF_LEN_MAP[*p];
+    return WTF_LEN_MAP[*p];
 }
-*/
 
 size_t
 wtf_len(uint8_t *p)
@@ -193,13 +191,12 @@ wtf_len(uint8_t *p)
     return q - p;
 }
 
-/*
-int
+uint8_t
 wtf_type(uint8_t *p)
 {
-    return (int)WTF_TYPE_MAP[*p];
+    return WTF_TYPE_MAP[*p];
 }
-*/
+
 
 #define wcs16_to_wtf(c, p) \
     ((p)[0] = (((c) >> 14) & 0x03) | 0x80), \

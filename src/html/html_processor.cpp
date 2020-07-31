@@ -1295,7 +1295,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
         while (str < endp)
         {
             PSIZE;
-            mode = get_mctype(str);
+            mode = get_mctype(*str);
             if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
             {
 #ifdef USE_M17N
@@ -1304,7 +1304,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 
                 p = buf[(int)symbol];
                 len = get_mclen(p);
-                mode = get_mctype(p);
+                mode = get_mctype(*p);
                 PPUSH(mode | effect | ex_efct(ex_effect), *(p++));
                 if (--len)
                 {
@@ -1369,7 +1369,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 while (*p)
                 {
                     PSIZE;
-                    mode = get_mctype((unsigned char *)p);
+                    mode = get_mctype(*p);
 #ifdef USE_M17N
                     if (mode == PC_CTRL || mode == PC_UNDEF)
                     {

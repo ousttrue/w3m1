@@ -2508,7 +2508,7 @@ table_start:
             continue;
         while (*str)
         {
-            mode = get_mctype(str);
+            mode = get_mctype(*str);
             delta = get_mcwidth(str);
             if (obuf->flag & (RB_SPECIAL & ~RB_NOBR))
             {

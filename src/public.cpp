@@ -2861,7 +2861,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 #endif
 
         plen = get_mclen(str);
-        mode = get_mctype(str) | effect;
+        mode = get_mctype(*str) | effect;
 #ifdef USE_ANSI_COLOR
         if (color)
         {

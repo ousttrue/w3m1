@@ -382,7 +382,7 @@ ins_char(Str str)
         return;
     while (p < ep) {
         len = get_mclen(p);
-        ctype = get_mctype(p);
+        ctype = get_mctype(*p);
         if (is_passwd) {
             if (ctype & PC_CTRL)
                 ctype = PC_ASCII;
@@ -1060,7 +1060,7 @@ setStrType(Str str, Lineprop *prop)
 #endif
         if (i + len > STR_LEN)
             break;
-        ctype = get_mctype(p);
+        ctype = get_mctype(*p);
         if (is_passwd) {
             if (ctype & PC_CTRL)
                 ctype = PC_ASCII;

@@ -2262,7 +2262,7 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
     while (*line) {
 	char *save = line, *c = line;
 	int ec, len, wlen, plen;
-	ctype = get_mctype(line);
+	ctype = get_mctype(*line);
 	len = get_mcwidth(line);
 	wlen = plen = get_mclen(line);
 
@@ -2277,7 +2277,7 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
 		ec = getescapechar(&line);
 		if (ec >= 0) {
 		    c = (char*)conv_entity(ec);
-		    ctype = get_mctype(c);
+		    ctype = get_mctype(*c);
 		    len = get_strwidth(c);
 		    wlen = line - save;
 		    plen = get_mclen(c);

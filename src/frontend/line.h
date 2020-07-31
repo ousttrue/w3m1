@@ -7,6 +7,11 @@
 using Lineprop = unsigned short;
 using Linecolor = unsigned char;
 
+inline Lineprop get_mctype(int c)
+{
+    return (Lineprop)(wtf_type((uint8_t *)&c) << 8);
+}
+
 /* 
  * Line Property
  */

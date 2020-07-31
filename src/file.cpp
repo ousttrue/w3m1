@@ -243,7 +243,7 @@ is_beginning_char(unsigned char *ch)
 static int
 is_word_char(unsigned char *ch)
 {
-    Lineprop ctype = get_mctype(ch);
+    Lineprop ctype = get_mctype(*ch);
 
 #ifdef USE_M17N
     if (ctype & (PC_CTRL | PC_KANJI | PC_UNKNOWN))
@@ -291,7 +291,7 @@ is_word_char(unsigned char *ch)
 static int
 is_combining_char(unsigned char *ch)
 {
-    Lineprop ctype = get_mctype(ch);
+    Lineprop ctype = get_mctype(*ch);
 
     if (ctype & PC_WCHAR2)
         return 1;
