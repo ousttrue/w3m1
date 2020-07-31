@@ -23,9 +23,8 @@ extern CodedCharacterSet wtf_gr_ccs;
 
 void wtf_init(CharacterEncodingScheme ces1, CharacterEncodingScheme ces2);
 
-/* int     wtf_width(uint8_t *p); */
-#define wtf_width(p) (WcOption.use_wide ? (int)WTF_WIDTH_MAP[(uint8_t) * (p)] \
-                                        : ((int)WTF_WIDTH_MAP[(uint8_t) * (p)] ? 1 : 0))
+int wtf_width(uint8_t *p);
+
 int wtf_strwidth(uint8_t *p);
 /* size_t  wtf_len1(uint8_t *p); */
 #define wtf_len1(p) ((int)WTF_LEN_MAP[(uint8_t) * (p)])

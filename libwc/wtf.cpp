@@ -146,13 +146,16 @@ wtf_init(CharacterEncodingScheme ces1, CharacterEncodingScheme ces2)
     }
 }
 
-/*
-int
-wtf_width(uint8_t *p)
+int wtf_width(uint8_t *p)
 {
-    return (int)WTF_WIDTH_MAP[*p];
+    // return (int)WTF_WIDTH_MAP[*p];
+    if (WcOption.use_wide)
+    {
+        return (int)WTF_WIDTH_MAP[(uint8_t)*p];
+    }
+
+    return (int)WTF_WIDTH_MAP[(uint8_t)*p] ? 1 : 0;
 }
-*/
 
 int
 wtf_strwidth(uint8_t *p)
