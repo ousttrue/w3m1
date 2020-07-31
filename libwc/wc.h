@@ -14,17 +14,21 @@
 #define WC_OPT_DETECT_ISO_2022 1
 #define WC_OPT_DETECT_ON 2
 
-#define WC_LOCALE_JA_JP 1
-#define WC_LOCALE_ZH_CN 2
-#define WC_LOCALE_ZH_TW 3
-#define WC_LOCALE_ZH_HK 4
-#define WC_LOCALE_KO_KR 5
+enum LocaleTypes : uint32_t
+{
+    WC_LOCALE_NONE = 0,
+    WC_LOCALE_JA_JP = 1,
+    WC_LOCALE_ZH_CN = 2,
+    WC_LOCALE_ZH_TW = 3,
+    WC_LOCALE_ZH_HK = 4,
+    WC_LOCALE_KO_KR = 5,
+};
 
 extern uint8_t WC_DETECT_MAP[];
 
 extern wc_ces_info WcCesInfo[];
 extern wc_option WcOption;
-extern wc_locale WcLocale;
+extern LocaleTypes WcLocale;
 extern char *WcReplace;
 extern char *WcReplaceW;
 #define WC_REPLACE WcReplace

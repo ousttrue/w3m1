@@ -11,7 +11,7 @@
 #endif
 
 
-wc_locale WcLocale = 0;
+LocaleTypes WcLocale = WC_LOCALE_NONE;
 
 static struct {
   const char *lang;
@@ -405,7 +405,7 @@ wc_locale_to_ces(char *locale)
 		    WcLocale = WC_LOCALE_ZH_CN;
 		break;
 	    default:
-		WcLocale = 0;
+		WcLocale = WC_LOCALE_NONE;
 		break;
 	    }
 	}

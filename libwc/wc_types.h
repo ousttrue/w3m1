@@ -6,7 +6,6 @@
 #include "ces.h"
 
 typedef uint32_t wc_ccs;
-typedef uint32_t wc_locale;
 
 struct wc_wchar_t
 {
