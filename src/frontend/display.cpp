@@ -254,8 +254,7 @@ static BufferPtr save_current_buf = NULL;
 static char *delayed_msg = NULL;
 
 static void drawAnchorCursor(BufferPtr buf);
-#define redrawBuffer(buf) redrawNLine(buf, (LINES - 1))
-static void redrawNLine(BufferPtr buf, int n);
+
 static Line *redrawLine(BufferPtr buf, Line *l, int i);
 #ifdef USE_IMAGE
 static int image_touch = 0;
@@ -406,146 +405,6 @@ make_lastline_message(BufferPtr buf)
     return msg;
 }
 
-void displayBuffer(BufferPtr buf, DisplayMode mode)
-{
-    Str msg;
-    int ny = 0;
-
-    if (!buf)
-        return;
-    if (buf->topLine == NULL && buf->ReadBufferCache() == 0)
-    { /* clear_buffer */
-        mode = B_FORCE_REDRAW;
-    }
-
-    if (buf->width == 0)
-        buf->width = INIT_BUFFER_WIDTH;
-    if (buf->height == 0)
-        buf->height = (LINES - 1) + 1;
-    if ((buf->width != INIT_BUFFER_WIDTH &&
-         (is_html_type(buf->type) || FoldLine)) ||
-        buf->need_reshape)
-    {
-        buf->need_reshape = TRUE;
-        reshapeBuffer(buf);
-    }
-    if (showLineNum)
-    {
-        if (buf->lastLine && buf->lastLine->real_linenumber > 0)
-            buf->rootX = (int)(log(buf->lastLine->real_linenumber + 0.1) / log(10)) + 2;
-        if (buf->rootX < 5)
-            buf->rootX = 5;
-        if (buf->rootX > COLS)
-            buf->rootX = COLS;
-    }
-    else
-        buf->rootX = 0;
-    buf->COLS = COLS - buf->rootX;
-    if (GetTabCount() > 1 || GetMouseActionMenuStr())
-    {
-        if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
-            calcTabPos();
-        ny = GetTabbarHeight() + 1;
-        if (ny > (LINES - 1))
-            ny = (LINES - 1);
-    }
-    if (buf->rootY != ny || buf->LINES != (LINES - 1) - ny)
-    {
-        buf->rootY = ny;
-        buf->LINES = (LINES - 1) - ny;
-        arrangeCursor(buf);
-        mode = B_REDRAW_IMAGE;
-    }
-    if (mode == B_FORCE_REDRAW || mode == B_SCROLL || mode == B_REDRAW_IMAGE ||
-        cline != buf->topLine || ccolumn != buf->currentColumn)
-    {
-#ifdef USE_RAW_SCROLL
-        if (
-#ifdef USE_IMAGE
-            !(activeImage && displayImage && draw_image_flag) &&
-#endif
-            mode == B_SCROLL && cline && buf->currentColumn == ccolumn)
-        {
-            int n = buf->topLine->linenumber - cline->linenumber;
-            if (n > 0 && n < buf->LINES)
-            {
-                move((LINES - 1), 0);
-                clrtoeolx();
-                refresh();
-                scroll(n);
-            }
-            else if (n < 0 && n > -buf->LINES)
-            {
-                rscroll(-n);
-            }
-            redrawNLine(buf, n);
-        }
-        else
-#endif
-        {
-#ifdef USE_IMAGE
-            if (activeImage &&
-                (mode == B_REDRAW_IMAGE ||
-                 cline != buf->topLine || ccolumn != buf->currentColumn))
-            {
-                if (draw_image_flag)
-                    clear();
-                clearImage();
-                loadImage(buf, IMG_FLAG_STOP);
-                image_touch++;
-                draw_image_flag = FALSE;
-            }
-#endif
-            redrawBuffer(buf);
-        }
-        cline = buf->topLine;
-        ccolumn = buf->currentColumn;
-    }
-    if (buf->topLine == NULL)
-        buf->topLine = buf->firstLine;
-
-#ifdef USE_IMAGE
-    if (buf->need_reshape)
-    {
-        displayBuffer(buf, B_FORCE_REDRAW);
-        return;
-    }
-#endif
-
-    drawAnchorCursor(buf);
-
-    msg = make_lastline_message(buf);
-    if (buf->firstLine == NULL)
-    {
-        /* FIXME: gettextize? */
-        msg->Push("\tNo Line");
-    }
-    if (delayed_msg != NULL)
-    {
-        disp_message(delayed_msg, FALSE);
-        delayed_msg = NULL;
-        refresh();
-    }
-    standout();
-    message(msg->c_str(), buf->cursorX + buf->rootX, buf->cursorY + buf->rootY);
-    standend();
-    term_title(conv_to_system(buf->buffername.c_str()));
-    refresh();
-#ifdef USE_IMAGE
-    if (activeImage && displayImage && buf->img)
-    {
-        drawImage();
-    }
-#endif
-#ifdef USE_BUFINFO
-    if (buf != save_current_buf)
-    {
-        saveBufferInfo();
-        save_current_buf = buf;
-    }
-#endif
-}
-
 static void
 drawAnchorCursor0(BufferPtr buf, AnchorList &al,
                   int hseq, int prevhseq,
@@ -629,77 +488,37 @@ drawAnchorCursor(BufferPtr buf)
     buf->prevhseq = hseq;
 }
 
+///
+/// term に描画する
+///
 static void
-redrawNLine(BufferPtr buf, int n)
+redrawNLine(BufferPtr buf)
 {
-    Line *l;
-    int i;
-
-    if (useColor)
+    // lines
     {
-        setfcolor(basic_color);
-        setbcolor(bg_color);
-    }
-
-    if (GetTabCount() > 1 || GetMouseActionMenuStr())
-    {
-        move(0, 0);
-
-        if (GetMouseActionMenuStr())
-            addstr(GetMouseActionMenuStr());
-
-        clrtoeolx();
-        EachTab([](auto t) {
-            auto b = t->GetCurrentBuffer();
-            move(t->Y(), t->Left());
-            if (t == GetCurrentTab())
-                bold();
-            addch('[');
-            auto l = t->Width() - get_strwidth(b->buffername.c_str());
-            if (l < 0)
-                l = 0;
-            if (l / 2 > 0)
-                addnstr_sup(" ", l / 2);
-            if (t == GetCurrentTab())
-                effect_active_start();
-            addnstr(b->buffername.c_str(), t->Width());
-            if (t == GetCurrentTab())
-                effect_active_end();
-            if ((l + 1) / 2 > 0)
-                addnstr_sup(" ", (l + 1) / 2);
-            move(t->Y(), t->Right());
-            addch(']');
-            if (t == GetCurrentTab())
-                boldend();
-        });
-        move(GetTabbarHeight(), 0);
-        for (i = 0; i < COLS; i++)
-            addch('~');
-    }
-    for (i = 0, l = buf->topLine; i < buf->LINES; i++, l = l->next)
-    {
-        if (i >= buf->LINES - n || i < -n)
+        int i = 0;
+        for (auto l = buf->topLine; i < buf->LINES; i++, l = l->next)
+        {
             l = redrawLine(buf, l, i + buf->rootY);
-        if (l == NULL)
-            break;
-    }
-    if (n > 0)
-    {
+            if (l == NULL)
+                break;
+        }
         move(i + buf->rootY, 0);
         clrtobotx();
     }
 
-#ifdef USE_IMAGE
     if (!(activeImage && displayImage && buf->img))
         return;
+
     move(buf->cursorY + buf->rootY, buf->cursorX + buf->rootX);
-    for (i = 0, l = buf->topLine; i < buf->LINES && l; i++, l = l->next)
     {
-        if (i >= buf->LINES - n || i < -n)
+        int i = 0;
+        for (auto l = buf->topLine; i < buf->LINES && l; i++, l = l->next)
+        {
             redrawLineImage(buf, l, i + buf->rootY);
+        }
     }
     getAllImage(buf);
-#endif
 }
 
 static Line *
@@ -1658,10 +1477,168 @@ void restorePosition(BufferPtr buf, BufferPtr orig)
     arrangeCursor(buf);
 }
 
-/* Local Variables:    */
-/* c-basic-offset: 4   */
-/* tab-width: 8        */
-/* End:                */
+void displayBuffer(BufferPtr buf, DisplayMode mode)
+{
+    Str msg;
+    int ny = 0;
+
+    if (!buf)
+        return;
+    if (buf->topLine == NULL && buf->ReadBufferCache() == 0)
+    { /* clear_buffer */
+        mode = B_FORCE_REDRAW;
+    }
+
+    if (buf->width == 0)
+        buf->width = INIT_BUFFER_WIDTH;
+    if (buf->height == 0)
+        buf->height = (LINES - 1) + 1;
+    if ((buf->width != INIT_BUFFER_WIDTH &&
+         (is_html_type(buf->type) || FoldLine)) ||
+        buf->need_reshape)
+    {
+        buf->need_reshape = TRUE;
+        reshapeBuffer(buf);
+    }
+
+    if (showLineNum)
+    {
+        if (buf->lastLine && buf->lastLine->real_linenumber > 0)
+            buf->rootX = (int)(log(buf->lastLine->real_linenumber + 0.1) / log(10)) + 2;
+        if (buf->rootX < 5)
+            buf->rootX = 5;
+        if (buf->rootX > COLS)
+            buf->rootX = COLS;
+    }
+    else
+    {
+        buf->rootX = 0;
+    }
+
+    buf->COLS = COLS - buf->rootX;
+    if (GetTabCount() > 1 || GetMouseActionMenuStr())
+    {
+        if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
+            calcTabPos();
+        ny = GetTabbarHeight() + 1;
+        if (ny > (LINES - 1))
+            ny = (LINES - 1);
+    }
+    if (buf->rootY != ny || buf->LINES != (LINES - 1) - ny)
+    {
+        buf->rootY = ny;
+        buf->LINES = (LINES - 1) - ny;
+        arrangeCursor(buf);
+        mode = B_REDRAW_IMAGE;
+    }
+    if (mode == B_FORCE_REDRAW || mode == B_SCROLL || mode == B_REDRAW_IMAGE ||
+        cline != buf->topLine || ccolumn != buf->currentColumn)
+    {
+        if (activeImage &&
+            (mode == B_REDRAW_IMAGE ||
+             cline != buf->topLine || ccolumn != buf->currentColumn))
+        {
+            if (draw_image_flag)
+                clear();
+            clearImage();
+            loadImage(buf, IMG_FLAG_STOP);
+            image_touch++;
+            draw_image_flag = FALSE;
+        }
+
+        if (useColor)
+        {
+            setfcolor(basic_color);
+            setbcolor(bg_color);
+        }
+
+        // TAB
+        if (GetTabCount() > 1 || GetMouseActionMenuStr())
+        {
+            move(0, 0);
+
+            if (GetMouseActionMenuStr())
+                addstr(GetMouseActionMenuStr());
+
+            clrtoeolx();
+            EachTab([](auto t) {
+                auto b = t->GetCurrentBuffer();
+                move(t->Y(), t->Left());
+                if (t == GetCurrentTab())
+                    bold();
+                addch('[');
+                auto l = t->Width() - get_strwidth(b->buffername.c_str());
+                if (l < 0)
+                    l = 0;
+                if (l / 2 > 0)
+                    addnstr_sup(" ", l / 2);
+                if (t == GetCurrentTab())
+                    effect_active_start();
+                addnstr(b->buffername.c_str(), t->Width());
+                if (t == GetCurrentTab())
+                    effect_active_end();
+                if ((l + 1) / 2 > 0)
+                    addnstr_sup(" ", (l + 1) / 2);
+                move(t->Y(), t->Right());
+                addch(']');
+                if (t == GetCurrentTab())
+                    boldend();
+            });
+            move(GetTabbarHeight(), 0);
+            for (int i = 0; i < COLS; i++)
+                addch('~');
+        }
+
+        // draw
+        redrawNLine(buf);
+
+        cline = buf->topLine;
+        ccolumn = buf->currentColumn;
+    }
+    if (buf->topLine == NULL)
+    {
+        buf->topLine = buf->firstLine;
+    }
+
+    if (buf->need_reshape)
+    {
+        displayBuffer(buf, B_FORCE_REDRAW);
+        return;
+    }
+
+    drawAnchorCursor(buf);
+
+    msg = make_lastline_message(buf);
+    if (buf->firstLine == NULL)
+    {
+        /* FIXME: gettextize? */
+        msg->Push("\tNo Line");
+    }
+    if (delayed_msg != NULL)
+    {
+        disp_message(delayed_msg, FALSE);
+        delayed_msg = NULL;
+        refresh();
+    }
+    standout();
+    message(msg->c_str(), buf->cursorX + buf->rootX, buf->cursorY + buf->rootY);
+    standend();
+    term_title(conv_to_system(buf->buffername.c_str()));
+    refresh();
+#ifdef USE_IMAGE
+    if (activeImage && displayImage && buf->img)
+    {
+        drawImage();
+    }
+#endif
+#ifdef USE_BUFINFO
+    if (buf != save_current_buf)
+    {
+        saveBufferInfo();
+        save_current_buf = buf;
+    }
+#endif
+}
 
 void displayCurrentbuf(DisplayMode mode)
 {
