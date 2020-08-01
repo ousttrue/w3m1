@@ -38,19 +38,6 @@
  *     7  white 
  */
 
-#define EFFECT_ANCHOR_START_C setfcolor(anchor_color)
-#define EFFECT_IMAGE_START_C setfcolor(image_color)
-#define EFFECT_FORM_START_C setfcolor(form_color)
-#define EFFECT_ACTIVE_START_C (setfcolor(active_color), underline())
-#define EFFECT_VISITED_START_C setfcolor(visited_color)
-#define EFFECT_MARK_START_C setbcolor(mark_color)
-#define EFFECT_IMAGE_END_C setfcolor(basic_color)
-#define EFFECT_ANCHOR_END_C setfcolor(basic_color)
-#define EFFECT_FORM_END_C setfcolor(basic_color)
-#define EFFECT_ACTIVE_END_C (setfcolor(basic_color), underlineend())
-#define EFFECT_VISITED_END_C setfcolor(basic_color)
-#define EFFECT_MARK_END_C setbcolor(bg_color)
-
 #define EFFECT_ANCHOR_START_M underline()
 #define EFFECT_ANCHOR_END_M underlineend()
 #define EFFECT_IMAGE_START_M standout()
@@ -65,6 +52,7 @@
 #define EFFECT_VISITED_END_M   /**/
 #define EFFECT_MARK_START_M standout()
 #define EFFECT_MARK_END_M standend()
+
 #define define_effect(name_start, name_end, color_start, color_end, mono_start, mono_end) \
     static void name_start                                                                \
     {                                                                                     \
@@ -89,14 +77,14 @@
         }                                                                                 \
     }
 
-define_effect(effect_anchor_start(), effect_anchor_end(), EFFECT_ANCHOR_START_C,
-              EFFECT_ANCHOR_END_C, EFFECT_ANCHOR_START_M, EFFECT_ANCHOR_END_M)
-    define_effect(effect_image_start(), effect_image_end(), EFFECT_IMAGE_START_C,
-                  EFFECT_IMAGE_END_C, EFFECT_IMAGE_START_M, EFFECT_IMAGE_END_M)
-        define_effect(effect_from_start(), effect_form_end(), EFFECT_FORM_START_C,
-                      EFFECT_FORM_END_C, EFFECT_FORM_START_M, EFFECT_FORM_END_M)
-            define_effect(effect_mark_start(), effect_mark_end(), EFFECT_MARK_START_C,
-                          EFFECT_MARK_END_C, EFFECT_MARK_START_M, EFFECT_MARK_END_M)
+define_effect(effect_anchor_start(), effect_anchor_end(), setfcolor(anchor_color),
+              setfcolor(basic_color), EFFECT_ANCHOR_START_M, EFFECT_ANCHOR_END_M)
+    define_effect(effect_image_start(), effect_image_end(), setfcolor(image_color),
+                  setfcolor(basic_color), EFFECT_IMAGE_START_M, EFFECT_IMAGE_END_M)
+        define_effect(effect_from_start(), effect_form_end(), setfcolor(form_color),
+                      setfcolor(basic_color), EFFECT_FORM_START_M, EFFECT_FORM_END_M)
+            define_effect(effect_mark_start(), effect_mark_end(), setbcolor(mark_color),
+                          setbcolor(bg_color), EFFECT_MARK_START_M, EFFECT_MARK_END_M)
 
     /*****************/
     static void effect_active_start()
@@ -111,7 +99,7 @@ define_effect(effect_anchor_start(), effect_anchor_end(), EFFECT_ANCHOR_START_C,
             else
 #endif
             {
-                EFFECT_ACTIVE_START_C;
+                (setfcolor(active_color), underline());
             }
         }
         else
@@ -132,7 +120,7 @@ static void
     {
         if (useActiveColor)
         {
-            EFFECT_ACTIVE_END_C;
+            (setfcolor(basic_color), underlineend());
         }
         else
         {
@@ -152,7 +140,7 @@ effect_visited_start()
     {
         if (useColor)
         {
-            EFFECT_VISITED_START_C;
+            setfcolor(visited_color);
         }
         else
         {
@@ -167,7 +155,7 @@ static void effect_visited_end()
     {
         if (useColor)
         {
-            EFFECT_VISITED_END_C;
+            setfcolor(basic_color);
         }
         else
         {
@@ -633,7 +621,7 @@ redrawNLine(BufferPtr buf, int n)
 
     if (useColor)
     {
-        EFFECT_ANCHOR_END_C;
+        setfcolor(basic_color);
         setbcolor(bg_color);
     }
 
