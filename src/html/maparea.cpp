@@ -456,38 +456,36 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
 static void
 append_link_info(BufferPtr buf, Str html, LinkList *link)
 {
-    LinkList *l;
-    ParsedURL pu;
-    const char *url;
-
     if (!link)
         return;
 
     html->Push("<hr width=50%><h1>Link information</h1><table>\n");
-    for (l = link; l; l = l->next)
+    for (auto l = link; l; l = l->next)
     {
-        if (l->url)
+        std::string_view url;
+        if (l->url.size())
         {
+            ParsedURL pu;
             pu.Parse2(l->url, buf->BaseURL());
             url = html_quote(pu.ToStr()->ptr);
         }
         else
             url = "(empty)";
         Strcat_m_charp(html, "<tr valign=top><td><a href=\"", url, "\">",
-                       l->title ? html_quote(l->title) : "(empty)", "</a><td>",
+                       l->title.size() ? html_quote(l->title) : "(empty)", "</a><td>",
                        NULL);
         if (l->type == LINK_TYPE_REL)
             html->Push("[Rel]");
         else if (l->type == LINK_TYPE_REV)
             html->Push("[Rev]");
-        if (!l->url)
+        if (l->url.empty())
             url = "(empty)";
         else if (DecodeURL)
             url = html_quote(url_unquote_conv(l->url, buf->document_charset));
         else
             url = html_quote(l->url);
         Strcat_m_charp(html, "<td>", url, NULL);
-        if (l->ctype)
+        if (l->ctype.size())
             Strcat_m_charp(html, " (", html_quote(l->ctype), ")", NULL);
         html->Push("\n");
     }
@@ -572,7 +570,7 @@ page_info_panel(BufferPtr buf)
 </head><body>\
 <h1>Information about current page</h1>\n");
 
-    auto tab=GetCurrentTab();
+    auto tab = GetCurrentTab();
     if (buf == NULL)
         goto end;
     all = buf->allLine;

@@ -844,14 +844,14 @@ void geom_menu(Menu *menu, int x, int y, int mselect)
 
     win_y = menu->y - mselect - 1;
     win_h = menu->height + 2;
-    if (win_y + win_h > (LINES-1))
-        win_y = (LINES-1) - win_h;
+    if (win_y + win_h > (LINES - 1))
+        win_y = (LINES - 1) - win_h;
     if (win_y < 0)
     {
         win_y = 0;
-        if (win_y + win_h > (LINES-1))
+        if (win_y + win_h > (LINES - 1))
         {
-            win_h = (LINES-1) - win_y;
+            win_h = (LINES - 1) - win_y;
             menu->height = win_h - 2;
             if (menu->height <= mselect)
                 menu->offset = mselect - menu->height + 1;
@@ -1601,7 +1601,7 @@ process_mMouse(int btn, int x, int y)
 
     menu = CurrentMenu;
 
-    if (x < 0 || x >= COLS || y < 0 || y > (LINES-1))
+    if (x < 0 || x >= COLS || y < 0 || y > (LINES - 1))
         return (MENU_NOTHING);
 
     if (btn == MOUSE_BTN_UP)
@@ -1822,7 +1822,7 @@ initSelectMenu(void)
             case SCM_LOCAL:
                 if (buf->currentURL.file != "-")
                 {
-                    str->Push( ' ');
+                    str->Push(' ');
                     str->Push(conv_from_system(buf->currentURL.real_file));
                 }
                 break;
@@ -1830,11 +1830,11 @@ initSelectMenu(void)
             case SCM_MISSING:
                 break;
             default:
-                str->Push( ' ');
+                str->Push(' ');
                 p = buf->currentURL.ToStr()->ptr;
                 if (DecodeURL)
                     p = url_unquote_conv(p, WC_CES_NONE);
-                str->Push( p);
+                str->Push(p);
                 break;
             }
         }
@@ -1850,10 +1850,10 @@ initSelectMenu(void)
     len = (len > 1) ? ((len - l + 1) / 2) : 0;
     str = Strnew();
     for (i = 0; i < len; i++)
-        str->Push( '-');
-    str->Push( comment);
+        str->Push('-');
+    str->Push(comment);
     for (i = 0; i < len; i++)
-        str->Push( '-');
+        str->Push('-');
     label[nitem] = str->ptr;
     label[nitem + 1] = NULL;
 
@@ -1871,7 +1871,7 @@ smChBuf(void)
     if (SelectV < 0 || SelectV >= SelectMenu.nitem)
         return;
 
-    auto tab=GetCurrentTab();
+    auto tab = GetCurrentTab();
     auto buf = tab->GetBuffer(SelectV);
     tab->SetCurrentBuffer(buf);
 }
@@ -1884,7 +1884,7 @@ smDelBuf(char c)
     if (CurrentMenu->select < 0 || CurrentMenu->select >= SelectMenu.nitem)
         return (MENU_NOTHING);
 
-    auto tab= GetCurrentTab();
+    auto tab = GetCurrentTab();
     auto buf = tab->GetBuffer(CurrentMenu->select);
 
     GetCurrentTab()->DeleteBuffer(buf);
@@ -1993,27 +1993,27 @@ static void
 smChTab(void)
 {
     // TODO
-//     int i;
-//     TabBuffer *tab;
-//     BufferPtr buf;
+    //     int i;
+    //     TabBuffer *tab;
+    //     BufferPtr buf;
 
-//     if (SelTabV < 0 || SelTabV >= SelTabMenu.nitem)
-//         return;
-//     for (i = 0, tab = GetLastTab(); i < SelTabV && tab != NULL;
-//          i++, tab = tab->prevTab)
-//         ;
-//     SetCurrentTab(tab);
-//     for (tab = GetLastTab(); tab != NULL; tab = tab->prevTab)
-//     {
-//         if (tab == GetCurrentTab())
-//             continue;
-//         buf = tab->currentBuffer;
-// #ifdef USE_IMAGE
-//         deleteImage(buf);
-// #endif
-//         if (clear_buffer)
-//             tmpClearBuffer(buf);
-//     }
+    //     if (SelTabV < 0 || SelTabV >= SelTabMenu.nitem)
+    //         return;
+    //     for (i = 0, tab = GetLastTab(); i < SelTabV && tab != NULL;
+    //          i++, tab = tab->prevTab)
+    //         ;
+    //     SetCurrentTab(tab);
+    //     for (tab = GetLastTab(); tab != NULL; tab = tab->prevTab)
+    //     {
+    //         if (tab == GetCurrentTab())
+    //             continue;
+    //         buf = tab->currentBuffer;
+    // #ifdef USE_IMAGE
+    //         deleteImage(buf);
+    // #endif
+    //         if (clear_buffer)
+    //             tmpClearBuffer(buf);
+    //     }
 }
 
 static int
@@ -2064,7 +2064,7 @@ void optionMenu(int x, int y, char **label, int *variable, int initial,
 
     new_option_menu(&menu, label, variable, func);
     menu.cursorX = COLS - 1;
-    menu.cursorY = (LINES-1);
+    menu.cursorY = (LINES - 1);
     menu.x = x;
     menu.y = y;
     menu.initial = initial;
@@ -2136,7 +2136,6 @@ interpret_menu(FILE *mf)
                 continue;
             charset = wc_guess_charset(s, charset);
         }
-
     }
 }
 
@@ -2282,7 +2281,6 @@ link_menu(BufferPtr buf)
     int i, nitem, len = 0, linkV = -1;
     char **label;
     Str str;
-    char *p;
 
     if (!buf->linklist)
         return NULL;
@@ -2294,20 +2292,21 @@ link_menu(BufferPtr buf)
     label = New_N(char *, nitem + 1);
     for (i = 0, l = buf->linklist; l; i++, l = l->next)
     {
-        str = Strnew(l->title ? l->title : (char *)"(empty)");
+        str = Strnew(l->title.size() ? l->title : "(empty)");
         if (l->type == LINK_TYPE_REL)
-            str->Push( " [Rel] ");
+            str->Push(" [Rel] ");
         else if (l->type == LINK_TYPE_REV)
-            str->Push( " [Rev] ");
+            str->Push(" [Rev] ");
         else
-            str->Push( " ");
-        if (!l->url)
+            str->Push(" ");
+        const char *p;
+        if (l->url.empty())
             p = "";
         else if (DecodeURL)
             p = url_unquote_conv(l->url, buf->document_charset);
         else
-            p = l->url;
-        str->Push( p);
+            p = l->url.c_str();
+        str->Push(p);
         label[i] = str->ptr;
         if (len < str->Size())
             len = str->Size();

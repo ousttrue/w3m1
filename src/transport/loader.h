@@ -31,7 +31,7 @@ struct URLOption
     LoadFlags flag = RG_NONE;
 };
 
-BufferPtr loadGeneralFile(char *path, const ParsedURL *current, char *referer, LoadFlags flag, FormList *request);
+BufferPtr loadGeneralFile(std::string_view path, const ParsedURL *current, char *referer, LoadFlags flag, FormList *request);
 
 int save2tmp(URLFile uf, char *tmpf);
 int doFileCopy(const char *tmpf, const char *defstr);

@@ -23,9 +23,9 @@ enum LinkTypes : char
 
 struct LinkList
 {
-    char *url;
-    char *title;                     /* Next, Contents, ... */
-    char *ctype;                     /* Content-Type */
+    std::string url;
+    std::string title;                     /* Next, Contents, ... */
+    std::string ctype;                     /* Content-Type */
     LinkTypes type = LINK_TYPE_NONE; /* Rel, Rev */
     LinkList *next;
 };

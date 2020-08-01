@@ -636,15 +636,15 @@ getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a)
 BufferPtr
 link_list_panel(BufferPtr buf)
 {
-    /* FIXME: gettextize? */
-    Str tmp = Strnew("<title>Link List</title>\
-<h1 align=center>Link List</h1>\n");
-
     if (buf->bufferprop & BP_INTERNAL ||
         (buf->linklist == NULL && !buf->href && !buf->img))
     {
         return NULL;
     }
+
+    /* FIXME: gettextize? */
+    Str tmp = Strnew("<title>Link List</title>\
+<h1 align=center>Link List</h1>\n");
 
     if (buf->linklist)
     {
@@ -654,7 +654,7 @@ link_list_panel(BufferPtr buf)
             const char *u;
             const char *p;
             const char *t;
-            if (l->url)
+            if (l->url.size())
             {
                 ParsedURL pu;
                 pu.Parse2(l->url, buf->BaseURL());
@@ -673,7 +673,7 @@ link_list_panel(BufferPtr buf)
                 t = " [Rev]";
             else
                 t = "";
-            t = Sprintf("%s%s\n", l->title ? l->title : "", t)->ptr;
+            t = Sprintf("%s%s\n", l->title.size() ? l->title.c_str() : "", t)->ptr;
             t = html_quote(t);
             Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
                            "\n", NULL);

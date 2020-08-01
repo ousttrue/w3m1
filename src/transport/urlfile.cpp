@@ -316,21 +316,21 @@ static int dir_exist(char *path)
     return IS_DIRECTORY(stbuf.st_mode);
 }
 
-void URLFile::openURL(char *url, ParsedURL *pu, const ParsedURL *current,
+void URLFile::openURL(std::string_view url, ParsedURL *pu, const ParsedURL *current,
                       URLOption *option, FormList *request, TextList *extra_header,
                       HRequest *hr, unsigned char *status)
 {
     Str tmp;
-    int sock, scheme;
-    char *p, *q, *u;
+    int sock;
+    char *p, *q;
     SSL *sslh = NULL;
 
-    u = url;
-    scheme = getURLScheme(&u);
+    auto u = const_cast<char*>(url.data());
+    int scheme = getURLScheme(&u);
     if (current == NULL && scheme == SCM_MISSING && !ArgvIsURL)
-        u = file_to_url(url); /* force to local file */
+        u = file_to_url(url.data()); /* force to local file */
     else
-        u = url;
+        u = const_cast<char*>(url.data());
 retry:
     pu->Parse2(u, current);
     if (pu->scheme == SCM_LOCAL && pu->file.empty())
@@ -846,7 +846,7 @@ void URLFile::examineFile(std::string_view path)
     }
 }
 
-char *file_to_url(char *file)
+char *file_to_url(std::string_view file)
 {
     Str tmp;
 #ifdef SUPPORT_DOS_DRIVE_PREFIX
@@ -856,7 +856,7 @@ char *file_to_url(char *file)
     char *host = NULL;
 #endif
 
-    file = expandPath(file);
+    file = expandPath(file.data());
 #ifdef SUPPORT_NETBIOS_SHARE
     if (file[0] == '/' && file[1] == '/')
     {
@@ -898,6 +898,6 @@ char *file_to_url(char *file)
     if (drive)
         tmp->Push(drive);
 #endif
-    tmp->Push(file_quote(cleanupName(file)));
+    tmp->Push(file_quote(cleanupName(file.data())));
     return tmp->ptr;
 }

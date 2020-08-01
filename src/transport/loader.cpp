@@ -703,13 +703,12 @@ int doFileCopy(const char *tmpf, const char *defstr)
  * loadGeneralFile: load file to buffer
  */
 BufferPtr
-loadGeneralFile(char *path, const ParsedURL *_current, char *referer,
+loadGeneralFile(std::string_view path, const ParsedURL *_current, char *referer,
                 LoadFlags flag, FormList *request)
 {
     ParsedURL pu;
     BufferPtr b = NULL;
     auto proc = loadBuffer;
-    char *tpath;
     char *p;
     BufferPtr t_buf = NULL;
     int searchHeader = SearchHeader;
@@ -728,7 +727,7 @@ loadGeneralFile(char *path, const ParsedURL *_current, char *referer,
     HRequest hr(referer, request);
     ParsedURL *auth_pu;
 
-    tpath = path;
+    auto tpath = path;
     MySignalHandler prevtrap = NULL;
     add_auth_cookie_flag = 0;
 
@@ -746,7 +745,7 @@ load_doc:
     }
 
     URLFile f(SCM_MISSING, NULL);
-    f.openURL(tpath, &pu, current.get(), &url_option, request, extra_header,
+    f.openURL(tpath.data(), &pu, current.get(), &url_option, request, extra_header,
               &hr, &status);
     content_charset = WC_CES_NONE;
 

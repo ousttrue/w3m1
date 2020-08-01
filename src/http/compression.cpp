@@ -11,17 +11,14 @@
 #include "transport/local.h"
 #include <sys/stat.h>
 
-void check_compression(char *path, URLFile *uf)
+void check_compression(std::string_view path, URLFile *uf)
 {
-    int len;
-    struct compression_decoder *d;
-
-    if (path == NULL)
+    if (path.empty())
         return;
 
-    len = strlen(path);
+    auto len = path.size();
     uf->compression = CMP_NOCOMPRESS;
-    for (d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
+    for (auto d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
     {
         int elen;
         if (d->ext == NULL)

@@ -467,11 +467,11 @@ void cmd_loadfile(char *fn)
     displayCurrentbuf(B_NORMAL);
 }
 
-void cmd_loadURL(char *url, ParsedURL *current, char *referer, FormList *request)
+void cmd_loadURL(std::string_view url, ParsedURL *current, char *referer, FormList *request)
 {
     BufferPtr buf;
 
-    if (handleMailto(url))
+    if (handleMailto(url.data()))
         return;
 #if 0
     if (!strncasecmp(url, "news:", 5) && strchr(url, '@') == NULL) {
