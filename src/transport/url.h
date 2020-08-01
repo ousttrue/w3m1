@@ -57,7 +57,7 @@ struct URL
 const char *filename_extension(const char *patch, int is_url);
 
 URL *schemeToProxy(int scheme);
-URLSchemeTypes getURLScheme(char **url);
+std::tuple<const char *, URLSchemeTypes> getURLScheme(const char *url);
 char *mybasename(std::string_view s);
 char *url_unquote_conv(std::string_view url, CharacterEncodingScheme charset);
 char *url_quote(std::string_view str);

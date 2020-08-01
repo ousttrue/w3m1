@@ -324,8 +324,9 @@ void URLFile::openURL(std::string_view url, URL *pu, const URL *current,
     char *p, *q;
     SSL *sslh = NULL;
 
-    auto u = const_cast<char*>(url.data());
-    int scheme = getURLScheme(&u);
+    auto u = url.data();
+    auto [pos, scheme]= getURLScheme(u);
+    // u = pos;
     if (current == NULL && scheme == SCM_MISSING && !ArgvIsURL)
         u = file_to_url(url.data()); /* force to local file */
     else

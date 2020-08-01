@@ -96,26 +96,6 @@ const URLScheme *GetScheme(URLSchemeTypes index)
     return nullptr;
 }
 
-// Str tmp;
-// static const char *scheme_str[] = {
-//     "http",
-//     "gopher",
-//     "ftp",
-//     "ftp",
-//     "file",
-//     "file",
-//     "exec",
-//     "nntp",
-//     "nntp",
-//     "news",
-//     "news",
-//     "data",
-//     "mailto",
-// #ifdef USE_SSL
-//     "https",
-// #endif /* USE_SSL */
-// };
-
 /* #define HTTP_DEFAULT_FILE    "/index.html" */
 
 #ifndef HTTP_DEFAULT_FILE
@@ -124,7 +104,6 @@ const URLScheme *GetScheme(URLSchemeTypes index)
 
 #ifdef SOCK_DEBUG
 #include <stdarg.h>
-
 static void
 sock_log(char *message, ...)
 {
@@ -137,37 +116,22 @@ sock_log(char *message, ...)
     vfprintf(f, message, va);
     fclose(f);
 }
-
 #endif
 
-static char *
-DefaultFile(int scheme)
+static std::string_view DefaultFile(int scheme)
 {
     switch (scheme)
     {
     case SCM_HTTP:
-#ifdef USE_SSL
     case SCM_HTTPS:
-#endif /* USE_SSL */
         return allocStr(HTTP_DEFAULT_FILE, -1);
-#ifdef USE_GOPHER
-    case SCM_GOPHER:
-        return allocStr("1", -1);
-#endif /* USE_GOPHER */
     case SCM_LOCAL:
     case SCM_LOCAL_CGI:
     case SCM_FTP:
     case SCM_FTPDIR:
         return allocStr("/", -1);
     }
-    return NULL;
-}
-
-static void
-    KeyAbort(SIGNAL_ARG)
-{
-    LONGJMP(AbortLoading, 1);
-    SIGNAL_RETURN;
+    return "";
 }
 
 int openSocket(const char *hostname,
@@ -380,7 +344,7 @@ int openSocket(const char *hostname,
 #define COPYPATH_SPC_REPLACE 2
 
 static char *
-copyPath(char *orgpath, int length, int option)
+copyPath(const char *orgpath, int length, int option)
 {
     Str tmp = Strnew();
     while (*orgpath && length != 0)
@@ -408,14 +372,12 @@ copyPath(char *orgpath, int length, int option)
     return tmp->ptr;
 }
 
-URLSchemeTypes getURLScheme(char **url)
+std::tuple<const char *, URLSchemeTypes> getURLScheme(const char *url)
 {
-    // heading
-    std::string_view view(*url);
-    size_t i = 0;
-    for (; i < view.size(); ++i, ++(*url))
+    // skip for ':'
+    auto p = url;
+    for (; *p; ++p)
     {
-        auto p = *url;
         if ((IS_ALNUM(*p) || *p == '.' || *p == '+' || *p == '-'))
         {
             continue;
@@ -425,21 +387,22 @@ URLSchemeTypes getURLScheme(char **url)
             break;
         }
     }
-    if (**url != ':')
+    if (*p != ':')
     {
-        return SCM_MISSING;
+        return {url, SCM_MISSING};
     }
-    ++(*url);
+    ++p;
 
+    std::string_view view(url);
     for (auto &scheme : schemetable)
     {
         if (view.starts_with(scheme.name) && view[scheme.name.size()] == ':')
         {
-            return scheme.schema;
+            return {p, scheme.schema};
         }
     }
 
-    return SCM_UNKNOWN;
+    return {p, SCM_MISSING};
 }
 
 const char *string_strchr(const std::string &src, int c)
@@ -479,9 +442,9 @@ void URL::Parse(std::string_view _url, const URL *current)
     *this = {};
 
     /* quote 0x01-0x20, 0x7F-0xFF */
-    auto url = url_quote(const_cast<char *>(_url.data()));
-    auto p = url;
-    char *q = nullptr;
+    auto url = url_quote(_url);
+    const char *p = url;
+    const char *q = nullptr;
 
     /* RFC1808: Relative Uniform Resource Locators
      * 4.  Resolving Relative URLs
@@ -490,249 +453,255 @@ void URL::Parse(std::string_view _url, const URL *current)
     {
         if (current)
             *this = *current;
-        goto do_label;
+        // goto do_label;
     }
-
-    /* search for scheme */
-    this->scheme = getURLScheme(&p);
-    if (this->scheme == SCM_MISSING)
+    else
     {
-        /* scheme part is not found in the url. This means either
+
+        /* search for scheme */
+        auto [pos, scheme] = getURLScheme(p);
+        p = pos;
+        this->scheme = scheme;
+        if (this->scheme == SCM_MISSING)
+        {
+            /* scheme part is not found in the url. This means either
         * (a) the url is relative to the current or (b) the url
         * denotes a filename (therefore the scheme is SCM_LOCAL).
         */
-        if (current)
-        {
-            switch (current->scheme)
+            if (current)
             {
-            case SCM_LOCAL:
-            case SCM_LOCAL_CGI:
-                this->scheme = SCM_LOCAL;
-                break;
-            case SCM_FTP:
-            case SCM_FTPDIR:
-                this->scheme = SCM_FTP;
-                break;
-            case SCM_NNTP:
-            case SCM_NNTP_GROUP:
-                this->scheme = SCM_NNTP;
-                break;
-            case SCM_NEWS:
-            case SCM_NEWS_GROUP:
-                this->scheme = SCM_NEWS;
-                break;
-            default:
-                this->scheme = current->scheme;
-                break;
-            }
-        }
-        else
-        {
-            this->scheme = SCM_LOCAL;
-        }
-        p = url;
-        if (!strncmp(p, "//", 2))
-        {
-            /* URL begins with // */
-            /* it means that 'scheme:' is abbreviated */
-            p += 2;
-            goto analyze_url;
-        }
-        /* the url doesn't begin with '//' */
-        goto analyze_file;
-    }
-    /* scheme part has been found */
-    if (this->scheme == SCM_UNKNOWN)
-    {
-        this->file = allocStr(url, -1);
-        return;
-    }
-    /* get host and port */
-    if (p[0] != '/' || p[1] != '/')
-    { /* scheme:foo or scheme:/foo */
-        this->host.clear();
-        if (this->scheme != SCM_UNKNOWN)
-            this->port = DefaultPort[this->scheme];
-        else
-            this->port = 0;
-        goto analyze_file;
-    }
-    /* after here, p begins with // */
-    if (this->scheme == SCM_LOCAL)
-    { /* file://foo           */
-#ifdef __EMX__
-        p += 2;
-        goto analyze_file;
-#else
-        if (p[2] == '/' || p[2] == '~'
-        /* <A HREF="file:///foo">file:///foo</A>  or <A HREF="file://~user">file://~user</A> */
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-            || (IS_ALPHA(p[2]) && (p[3] == ':' || p[3] == '|'))
-        /* <A HREF="file://DRIVE/foo">file://DRIVE/foo</A> */
-#endif /* SUPPORT_DOS_DRIVE_PREFIX */
-        )
-        {
-            p += 2;
-            goto analyze_file;
-        }
-#endif /* __EMX__ */
-    }
-    p += 2; /* scheme://foo         */
-            /*          ^p is here  */
-analyze_url:
-    q = p;
-#ifdef INET6
-    if (*q == '[')
-    { /* rfc2732,rfc2373 compliance */
-        p++;
-        while (IS_XDIGIT(*p) || *p == ':' || *p == '.')
-            p++;
-        if (*p != ']' || (*(p + 1) && strchr(":/?#", *(p + 1)) == NULL))
-            p = q;
-    }
-#endif
-    while (*p && strchr(":/@?#", *p) == NULL)
-        p++;
-    switch (*p)
-    {
-    case ':':
-    {
-        /* scheme://user:pass@host or
-	 * scheme://host:port
-	 */
-        this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-        q = ++p;
-        while (*p && strchr("@/?#", *p) == NULL)
-            p++;
-        if (*p == '@')
-        {
-            /* scheme://user:pass@...       */
-            this->pass = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
-            q = ++p;
-            this->user = this->host;
-            this->host.clear();
-            goto analyze_url;
-        }
-        /* scheme://host:port/ */
-        auto tmp = Strnew_charp_n(q, p - q);
-        this->port = atoi(tmp->ptr);
-        /* *p is one of ['\0', '/', '?', '#'] */
-        break;
-    }
-    case '@':
-        /* scheme://user@...            */
-        this->user = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-        q = ++p;
-        goto analyze_url;
-    case '\0':
-    /* scheme://host                */
-    case '/':
-    case '?':
-    case '#':
-        this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-        this->port = DefaultPort[this->scheme];
-        break;
-    }
-analyze_file:
-#ifndef SUPPORT_NETBIOS_SHARE
-    if (this->scheme == SCM_LOCAL && this->user.empty() &&
-        this->host.size() && this->host[0] != '\0' &&
-        this->host != "localhost")
-    {
-        this->scheme = SCM_FTP; /* ftp://host/... */
-        if (this->port == 0)
-            this->port = DefaultPort[SCM_FTP];
-    }
-#endif
-    if ((*p == '\0' || *p == '#' || *p == '?') && this->host.empty())
-    {
-        this->file = "";
-        goto do_query;
-    }
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-    if (this->scheme == SCM_LOCAL)
-    {
-        q = p;
-        if (*q == '/')
-            q++;
-        if (IS_ALPHA(q[0]) && (q[1] == ':' || q[1] == '|'))
-        {
-            if (q[1] == '|')
-            {
-                p = allocStr(q, -1);
-                p[1] = ':';
+                switch (current->scheme)
+                {
+                case SCM_LOCAL:
+                case SCM_LOCAL_CGI:
+                    this->scheme = SCM_LOCAL;
+                    break;
+                case SCM_FTP:
+                case SCM_FTPDIR:
+                    this->scheme = SCM_FTP;
+                    break;
+                case SCM_NNTP:
+                case SCM_NNTP_GROUP:
+                    this->scheme = SCM_NNTP;
+                    break;
+                case SCM_NEWS:
+                case SCM_NEWS_GROUP:
+                    this->scheme = SCM_NEWS;
+                    break;
+                default:
+                    this->scheme = current->scheme;
+                    break;
+                }
             }
             else
+            {
+                this->scheme = SCM_LOCAL;
+            }
+            // p = url;
+            if (!strncmp(p, "//", 2))
+            {
+                /* URL begins with // */
+                /* it means that 'scheme:' is abbreviated */
+                p += 2;
+                goto analyze_url;
+            }
+            /* the url doesn't begin with '//' */
+            goto analyze_file;
+        }
+        /* scheme part has been found */
+        if (this->scheme == SCM_UNKNOWN)
+        {
+            this->file = allocStr(url, -1);
+            return;
+        }
+        /* get host and port */
+        if (p[0] != '/' || p[1] != '/')
+        { /* scheme:foo or scheme:/foo */
+            this->host.clear();
+            if (this->scheme != SCM_UNKNOWN)
+                this->port = DefaultPort[this->scheme];
+            else
+                this->port = 0;
+            goto analyze_file;
+        }
+        /* after here, p begins with // */
+        if (this->scheme == SCM_LOCAL)
+        { /* file://foo           */
+#ifdef __EMX__
+            p += 2;
+            goto analyze_file;
+#else
+            if (p[2] == '/' || p[2] == '~'
+            /* <A HREF="file:///foo">file:///foo</A>  or <A HREF="file://~user">file://~user</A> */
+#ifdef SUPPORT_DOS_DRIVE_PREFIX
+                || (IS_ALPHA(p[2]) && (p[3] == ':' || p[3] == '|'))
+            /* <A HREF="file://DRIVE/foo">file://DRIVE/foo</A> */
+#endif /* SUPPORT_DOS_DRIVE_PREFIX */
+            )
+            {
+                p += 2;
+                goto analyze_file;
+            }
+#endif /* __EMX__ */
+        }
+        p += 2; /* scheme://foo         */
+                /*          ^p is here  */
+    analyze_url:
+
+        q = p;
+#ifdef INET6
+        if (*q == '[')
+        { /* rfc2732,rfc2373 compliance */
+            p++;
+            while (IS_XDIGIT(*p) || *p == ':' || *p == '.')
+                p++;
+            if (*p != ']' || (*(p + 1) && strchr(":/?#", *(p + 1)) == NULL))
                 p = q;
         }
-    }
+#endif
+        while (*p && strchr(":/@?#", *p) == NULL)
+            p++;
+        switch (*p)
+        {
+        case ':':
+        {
+            /* scheme://user:pass@host or
+	 * scheme://host:port
+	 */
+            this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+            q = ++p;
+            while (*p && strchr("@/?#", *p) == NULL)
+                p++;
+            if (*p == '@')
+            {
+                /* scheme://user:pass@...       */
+                this->pass = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+                q = ++p;
+                this->user = this->host;
+                this->host.clear();
+                goto analyze_url;
+            }
+            /* scheme://host:port/ */
+            auto tmp = Strnew_charp_n(q, p - q);
+            this->port = atoi(tmp->ptr);
+            /* *p is one of ['\0', '/', '?', '#'] */
+            break;
+        }
+        case '@':
+            /* scheme://user@...            */
+            this->user = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+            q = ++p;
+            goto analyze_url;
+        case '\0':
+        /* scheme://host                */
+        case '/':
+        case '?':
+        case '#':
+            this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+            this->port = DefaultPort[this->scheme];
+            break;
+        }
+    analyze_file:
+#ifndef SUPPORT_NETBIOS_SHARE
+        if (this->scheme == SCM_LOCAL && this->user.empty() &&
+            this->host.size() && this->host[0] != '\0' &&
+            this->host != "localhost")
+        {
+            this->scheme = SCM_FTP; /* ftp://host/... */
+            if (this->port == 0)
+                this->port = DefaultPort[SCM_FTP];
+        }
+#endif
+        if ((*p == '\0' || *p == '#' || *p == '?') && this->host.empty())
+        {
+            this->file = "";
+            goto do_query;
+        }
+#ifdef SUPPORT_DOS_DRIVE_PREFIX
+        if (this->scheme == SCM_LOCAL)
+        {
+            q = p;
+            if (*q == '/')
+                q++;
+            if (IS_ALPHA(q[0]) && (q[1] == ':' || q[1] == '|'))
+            {
+                if (q[1] == '|')
+                {
+                    p = allocStr(q, -1);
+                    p[1] = ':';
+                }
+                else
+                    p = q;
+            }
+        }
 #endif
 
-    q = p;
+        q = p;
 #ifdef USE_GOPHER
-    if (this->scheme == SCM_GOPHER)
-    {
-        if (*q == '/')
-            q++;
-        if (*q && q[0] != '/' && q[1] != '/' && q[2] == '/')
-            q++;
-    }
-#endif /* USE_GOPHER */
-    if (*p == '/')
-        p++;
-    if (*p == '\0' || *p == '#' || *p == '?')
-    { /* scheme://host[:port]/ */
-        this->file = DefaultFile(this->scheme);
-        goto do_query;
-    }
-    {
-        char *cgi = strchr(p, '?');
-    again:
-        while (*p && *p != '#' && p != cgi)
-            p++;
-        if (*p == '#' && this->scheme == SCM_LOCAL)
+        if (this->scheme == SCM_GOPHER)
         {
-            /* 
+            if (*q == '/')
+                q++;
+            if (*q && q[0] != '/' && q[1] != '/' && q[2] == '/')
+                q++;
+        }
+#endif /* USE_GOPHER */
+        if (*p == '/')
+            p++;
+        if (*p == '\0' || *p == '#' || *p == '?')
+        { /* scheme://host[:port]/ */
+            this->file = DefaultFile(this->scheme);
+            goto do_query;
+        }
+        {
+            auto cgi = strchr(p, '?');
+        again:
+            while (*p && *p != '#' && p != cgi)
+                p++;
+            if (*p == '#' && this->scheme == SCM_LOCAL)
+            {
+                /* 
 	     * According to RFC2396, # means the beginning of
 	     * URI-reference, and # should be escaped.  But,
 	     * if the scheme is SCM_LOCAL, the special
 	     * treatment will apply to # for convinience.
 	     */
-            if (p > q && *(p - 1) == '/' && (cgi == NULL || p < cgi))
-            {
-                /* 
+                if (p > q && *(p - 1) == '/' && (cgi == NULL || p < cgi))
+                {
+                    /* 
 		 * # comes as the first character of the file name
 		 * that means, # is not a label but a part of the file
 		 * name.
 		 */
-                p++;
-                goto again;
-            }
-            else if (*(p + 1) == '\0')
-            {
-                /* 
+                    p++;
+                    goto again;
+                }
+                else if (*(p + 1) == '\0')
+                {
+                    /* 
 		 * # comes as the last character of the file name that
 		 * means, # is not a label but a part of the file
 		 * name.
 		 */
-                p++;
+                    p++;
+                }
             }
+            if (this->scheme == SCM_LOCAL || this->scheme == SCM_MISSING)
+                this->file = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+            else
+                this->file = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
         }
-        if (this->scheme == SCM_LOCAL || this->scheme == SCM_MISSING)
-            this->file = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
-        else
-            this->file = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-    }
 
-do_query:
-    if (*p == '?')
-    {
-        q = ++p;
-        while (*p && *p != '#')
-            p++;
-        this->query = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+    do_query:
+        if (*p == '?')
+        {
+            q = ++p;
+            while (*p && *p != '#')
+                p++;
+            this->query = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+        }
     }
-do_label:
+    // do_label:
     if (this->scheme == SCM_MISSING)
     {
         this->scheme = SCM_LOCAL;
