@@ -111,7 +111,7 @@ void clear_mark(Line *l)
         l->propBuf[pos] &= ~PE_MARK;
 }
 
-void disp_srchresult(int result, const char* prompt, char *str)
+void disp_srchresult(int result, const char *prompt, char *str)
 {
     if (str == NULL)
         str = "";
@@ -387,7 +387,7 @@ done:
     return -1;
 }
 
-void isrch(int (*func)(BufferPtr, char *), const char* prompt)
+void isrch(int (*func)(BufferPtr, char *), const char *prompt)
 {
     char *str;
     Buffer sbuf;
@@ -403,7 +403,7 @@ void isrch(int (*func)(BufferPtr, char *), const char* prompt)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void srch(int (*func)(BufferPtr, char *), const char* prompt)
+void srch(int (*func)(BufferPtr, char *), const char *prompt)
 {
     char *str;
     int result;
@@ -524,7 +524,7 @@ int handleMailto(const char *url)
     /* invoke external mailer */
     if (MailtoOptions == MAILTO_OPTIONS_USE_MAILTO_URL)
     {
-        to = Strnew(html_unquote(const_cast<char*>(url)));
+        to = Strnew(html_unquote(const_cast<char *>(url)));
     }
     else
     {
@@ -759,17 +759,17 @@ int cur_real_linenumber(BufferPtr buf)
     return n;
 }
 
-char *inputLineHist(const char* prompt, const char *def_str, int flag, Hist *hist)
+char *inputLineHist(const char *prompt, const char *def_str, int flag, Hist *hist)
 {
     return inputLineHistSearch(prompt, def_str, flag, hist, NULL);
 }
 
-char *inputStrHist(const char* prompt, char *def_str, Hist *hist)
+char *inputStrHist(const char *prompt, char *def_str, Hist *hist)
 {
     return inputLineHist(prompt, def_str, IN_STRING, hist);
 }
 
-char *inputLine(const char* prompt, char *def_str, int flag)
+char *inputLine(const char *prompt, char *def_str, int flag)
 {
     return inputLineHist(prompt, def_str, flag, NULL);
 }
@@ -1146,7 +1146,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         referer = NO_REFERER;
     if (referer == NULL)
         referer = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr;
-    auto buf = loadGeneralFile(const_cast<char*>(url), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), const_cast<char*>(referer), RG_NONE, request);
+    auto buf = loadGeneralFile(const_cast<char *>(url), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), const_cast<char *>(referer), RG_NONE, request);
     if (buf == NULL)
     {
         char *emsg = Sprintf("Can't load %s", url)->ptr;
@@ -1177,7 +1177,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         return loadNormalBuf(buf, TRUE);
     }
 
-    f_element = search_frame(nfbuf->frameset, const_cast<char*>(target));
+    f_element = search_frame(nfbuf->frameset, const_cast<char *>(target));
     if (f_element == NULL)
     {
         /* specified target doesn't exist in this frameset */
@@ -1193,7 +1193,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     tab->DeleteBuffer(tab->GetCurrentBuffer());
     GetCurrentTab()->SetCurrentBuffer(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
-    resetFrameElement(f_element, buf, const_cast<char*>(referer), request);
+    resetFrameElement(f_element, buf, const_cast<char *>(referer), request);
     rFrame();
     {
         const Anchor *al = NULL;
@@ -1206,7 +1206,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         if (!al)
         {
             label = std::string("_") + target;
-            al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char*>(label.c_str()));
+            al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char *>(label.c_str()));
         }
         if (al)
         {
@@ -1514,7 +1514,7 @@ _end:
 
 void gotoLabel(const char *label)
 {
-    auto al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char*>(label));
+    auto al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char *>(label));
     if (al == NULL)
     {
         /* FIXME: gettextize? */
@@ -1540,7 +1540,6 @@ void gotoLabel(const char *label)
     displayCurrentbuf(B_FORCE_REDRAW);
     return;
 }
-
 
 /* go to the next left/right anchor */
 void nextX(int d, int dy)
@@ -1673,7 +1672,7 @@ int checkBackBuffer(TabPtr tab, BufferPtr buf)
 }
 
 /* go to specified URL */
-void goURL0(const char* prompt, int relative)
+void goURL0(const char *prompt, int relative)
 {
     char *url, *referer;
     ParsedURL p_url, *current;
@@ -1967,8 +1966,7 @@ char *GetWord(BufferPtr buf)
     return NULL;
 }
 
-
-void tabURL0(TabPtr tab, const char* prompt, int relative)
+void tabURL0(TabPtr tab, const char *prompt, int relative)
 {
     if (tab == GetCurrentTab())
     {
@@ -2023,8 +2021,8 @@ BufferPtr DownloadListBuffer()
     cur_time = time(0);
     /* FIXME: gettextize? */
     src = Strnew("<html><head><title>" DOWNLOAD_LIST_TITLE
-                       "</title></head>\n<body><h1 align=center>" DOWNLOAD_LIST_TITLE "</h1>\n"
-                       "<form method=internal action=download><hr>\n");
+                 "</title></head>\n<body><h1 align=center>" DOWNLOAD_LIST_TITLE "</h1>\n"
+                 "<form method=internal action=download><hr>\n");
     for (d = LastDL; d != NULL; d = d->prev)
     {
         if (lstat(d->lock, &st))
@@ -2389,7 +2387,6 @@ void chkNMIDBuffer(BufferPtr buf)
     buf->check_url |= CHK_NMID;
 }
 
-
 void change_charset(struct parsed_tagarg *arg)
 {
     BufferPtr buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_INFO];
@@ -2442,7 +2439,7 @@ void follow_map(struct parsed_tagarg *arg)
     }
     p_url.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(URLHist, p_url.ToStr()->ptr);
-    if (check_target && open_tab_blank && a->target &&
+    if (check_target() && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
         auto tab = CreateTabSetCurrent();

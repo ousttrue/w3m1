@@ -1,6 +1,5 @@
 #pragma once
 
-// #include "frontend/buffer.h"
 #include <memory>
 #include <list>
 #include <functional>
@@ -72,5 +71,4 @@ private:
 };
 using TabPtr = std::shared_ptr<Tab>;
 
-void calcTabPos();
 void followTab(TabPtr tab);

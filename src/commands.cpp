@@ -1013,12 +1013,10 @@ void prevVA()
 {
     _prevA(TRUE);
 }
-/* follow HREF link */
 
+/* follow HREF link */
 void followA()
 {
-    // char *url;
-
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
     auto l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
@@ -1072,7 +1070,7 @@ void followA()
     if (map)
         url = Sprintf("%s?%d,%d", a->url, x, y)->ptr;
 
-    if (check_target && open_tab_blank &&
+    if (check_target() && open_tab_blank &&
         (a->target == "_new" || a->target == "_blank"))
     {
         auto tab = CreateTabSetCurrent();

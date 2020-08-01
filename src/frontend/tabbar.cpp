@@ -294,15 +294,6 @@ void set_check_target(int check)
 
 void followTab(TabPtr tab)
 {
-    BufferPtr buf;
-
-    auto a = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
-    if (!(a && a->image && a->image->map))
-
-        a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
-    if (a == NULL)
-        return;
-
     if (tab == GetCurrentTab())
     {
         set_check_target(FALSE);
@@ -310,8 +301,9 @@ void followTab(TabPtr tab)
         set_check_target(TRUE);
         return;
     }
+
     CreateTabSetCurrent();
-    buf = GetCurrentTab()->GetCurrentBuffer();
+    auto buf = GetCurrentTab()->GetCurrentBuffer();
     set_check_target(FALSE);
     followA();
     set_check_target(TRUE);
