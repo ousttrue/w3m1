@@ -23,9 +23,6 @@
 #include <math.h>
 #include <assert.h>
 
-/* *INDENT-OFF* */
-#ifdef USE_COLOR
-
 /*-
  * color: 
  *     0  black 
@@ -37,55 +34,106 @@
  *     6  cyan 
  *     7  white 
  */
-
-#define define_effect(name_start, name_end, color_start, color_end, mono_start, mono_end) \
-    static void name_start                                                                \
-    {                                                                                     \
-        if (useColor)                                                                     \
-        {                                                                                 \
-            color_start;                                                                  \
-        }                                                                                 \
-        else                                                                              \
-        {                                                                                 \
-            mono_start;                                                                   \
-        }                                                                                 \
-    }                                                                                     \
-    static void name_end                                                                  \
-    {                                                                                     \
-        if (useColor)                                                                     \
-        {                                                                                 \
-            color_end;                                                                    \
-        }                                                                                 \
-        else                                                                              \
-        {                                                                                 \
-            mono_end;                                                                     \
-        }                                                                                 \
+static void effect_anchor_start()
+{
+    if (useColor)
+    {
+        setfcolor(anchor_color);
     }
+    else
+    {
+        underline();
+    }
+}
+static void effect_anchor_end()
+{
+    if (useColor)
+    {
+        setfcolor(basic_color);
+    }
+    else
+    {
+        underlineend();
+    }
+}
 
-define_effect(effect_anchor_start(), effect_anchor_end(), setfcolor(anchor_color),
-              setfcolor(basic_color), underline(), underlineend())
-    define_effect(effect_image_start(), effect_image_end(), setfcolor(image_color),
-                  setfcolor(basic_color), standout(), standend())
-        define_effect(effect_from_start(), effect_form_end(), setfcolor(form_color),
-                      setfcolor(basic_color), standout(), standend())
-            define_effect(effect_mark_start(), effect_mark_end(), setbcolor(mark_color),
-                          setbcolor(bg_color), standout(), standend())
+static void effect_image_start()
+{
+    if (useColor)
+    {
+        setfcolor(image_color);
+    }
+    else
+    {
+        standout();
+    }
+}
+static void effect_image_end()
+{
+    if (useColor)
+    {
+        setfcolor(basic_color);
+    }
+    else
+    {
+        standend();
+    }
+}
 
-    /*****************/
-    static void effect_active_start()
+static void effect_from_start()
+{
+    if (useColor)
+    {
+        setfcolor(form_color);
+    }
+    else
+    {
+        standout();
+    }
+}
+static void effect_form_end()
+{
+    if (useColor)
+    {
+        setfcolor(basic_color);
+    }
+    else
+    {
+        standend();
+    }
+}
+
+static void effect_mark_start()
+{
+    if (useColor)
+    {
+        setbcolor(mark_color);
+    }
+    else
+    {
+        standout();
+    }
+}
+static void effect_mark_end()
+{
+    if (useColor)
+    {
+        setbcolor(bg_color);
+    }
+    else
+    {
+        standend();
+    }
+}
+
+/*****************/
+static void effect_active_start()
 {
     if (useColor)
     {
         if (useActiveColor)
         {
-#ifdef __EMX__
-            if (!getenv("WINDOWID"))
-                setfcolor(active_color);
-            else
-#endif
-            {
-                (setfcolor(active_color), underline());
-            }
+            setfcolor(active_color), underline();
         }
         else
         {
@@ -99,7 +147,7 @@ define_effect(effect_anchor_start(), effect_anchor_end(), setfcolor(anchor_color
 }
 
 static void
-    effect_active_end()
+effect_active_end()
 {
     if (useColor)
     {
@@ -148,23 +196,6 @@ static void effect_visited_end()
         }
     }
 }
-
-#else /* not USE_COLOR */
-
-#define effect_anchor_start() underline()
-#define effect_anchor_end() underlineend()
-#define effect_image_start() standout()
-#define effect_image_end() standend()
-#define effect_form_start()standout()
-#define effect_form_end() standend()
-#define effect_active_start() bold()
-#define effect_active_end() boldend()
-#define effect_visited_start() /**/
-#define EFFECT_VISITED_END     /**/
-#define effect_mark_start() standout()
-#define effect_mark_end() standend()
-#endif /* not USE_COLOR */
-/* *INDENT-ON* */
 
 void fmTerm(void)
 {
@@ -319,9 +350,9 @@ make_lastline_message(BufferPtr buf)
                     p = a_img->title;
             }
             if (p.size() || a)
-                s = make_lastline_link(buf, 
-                    p, 
-                    a ? const_cast<char*>(a->url.c_str()) : NULL);
+                s = make_lastline_link(buf,
+                                       p,
+                                       a ? const_cast<char *>(a->url.c_str()) : NULL);
         }
         if (s)
         {
