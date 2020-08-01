@@ -1,6 +1,6 @@
 #pragma once
 #include "frontend/buffer.h"
-
+#include "urlfile.h"
 
 long long GetCurrentContentLength();
 extern CharacterEncodingScheme content_charset;
@@ -17,19 +17,6 @@ char *checkContentType(BufferPtr buf);
 void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu);
 
 BufferPtr loadBuffer(URLFile *uf, BufferPtr newBuf);
-
-enum LoadFlags
-{
-    RG_NONE = 0,
-    RG_NOCACHE = 1,
-    RG_FRAME = 2,
-    RG_FRAME_SRC = 4,
-};
-struct URLOption
-{
-    char *referer;
-    LoadFlags flag = RG_NONE;
-};
 
 BufferPtr loadGeneralFile(std::string_view path, const ParsedURL *current, char *referer, LoadFlags flag, FormList *request);
 

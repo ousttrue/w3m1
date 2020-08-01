@@ -19,6 +19,14 @@ enum CompressionTypes
     CMP_DEFLATE = 4,
 };
 
+enum LoadFlags
+{
+    RG_NONE = 0,
+    RG_NOCACHE = 1,
+    RG_FRAME = 2,
+    RG_FRAME_SRC = 4,
+};
+
 union InputStream;
 struct FormList;
 struct TextList;
@@ -47,7 +55,7 @@ struct URLFile
     int Getc();
     int UndoGetc();
     void openURL(std::string_view url, ParsedURL *pu, const ParsedURL *current,
-                 const URLOption &option, FormList *request, TextList *extra_header,
+                 const char* referer, LoadFlags flag, FormList *request, TextList *extra_header,
                  HRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
     Str StrmyISgets();

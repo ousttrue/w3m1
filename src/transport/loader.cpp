@@ -719,7 +719,6 @@ loadGeneralFile(std::string_view path, const ParsedURL *_current, char *referer,
     Str realm = NULL;
     int add_auth_cookie_flag;
     unsigned char status = HTST_NORMAL;
-    URLOption url_option;
     Str tmp;
     Str page = NULL;
     CharacterEncodingScheme charset = WC_CES_US_ASCII;
@@ -734,8 +733,6 @@ loadGeneralFile(std::string_view path, const ParsedURL *_current, char *referer,
     clearRedirection();
 load_doc:
     TRAP_OFF;
-    url_option.referer = referer;
-    url_option.flag = flag;
 
     std::shared_ptr<ParsedURL> current;
     if (_current)
@@ -745,7 +742,7 @@ load_doc:
     }
 
     URLFile f(SCM_MISSING, NULL);
-    f.openURL(tpath.data(), &pu, current.get(), url_option, request, extra_header,
+    f.openURL(tpath.data(), &pu, current.get(), referer, flag, request, extra_header,
               &hr, &status);
     content_charset = WC_CES_NONE;
 
