@@ -69,8 +69,8 @@ Buffer::~Buffer()
             continue;
         b->linkBuffer[REV_LB[i]] = NULL;
     }
-    if (savecache)
-        unlink(savecache);
+    if (savecache.size())
+        unlink(savecache.c_str());
     if (--(*clone))
         return;
     if (pagerSource)
@@ -108,20 +108,21 @@ int Buffer::WriteBufferCache()
     // TODO
     return -1;
 
+    if (savecache.size()){
+        // already created
+        return -1;
+    }
     Str tmp;
     FILE *cache = NULL;
     Line *l;
     int colorflag;
-
-    if (this->savecache)
-        return -1;
 
     if (this->firstLine == NULL)
         goto _error1;
 
     tmp = tmpfname(TMPF_CACHE, NULL);
     this->savecache = tmp->ptr;
-    cache = fopen(this->savecache, "w");
+    cache = fopen(this->savecache.c_str(), "w");
     if (!cache)
         goto _error1;
 
@@ -164,9 +165,9 @@ int Buffer::WriteBufferCache()
     return 0;
 _error:
     fclose(cache);
-    unlink(this->savecache);
+    unlink(this->savecache.c_str());
 _error1:
-    this->savecache = NULL;
+    this->savecache.clear();
     return -1;
 }
 
@@ -179,13 +180,13 @@ int Buffer::ReadBufferCache()
     long clnum, tlnum;
     int colorflag;
 
-    if (this->savecache == NULL)
+    if (this->savecache.empty())
         return -1;
 
-    auto cache = fopen(this->savecache, "r");
+    auto cache = fopen(this->savecache.c_str(), "r");
     if (cache == NULL || fread1(clnum, cache) || fread1(tlnum, cache))
     {
-        this->savecache = NULL;
+        this->savecache.clear();
         return -1;
     }
 
@@ -249,8 +250,8 @@ int Buffer::ReadBufferCache()
     this->lastLine = prevl;
     this->lastLine->next = NULL;
     fclose(cache);
-    unlink(this->savecache);
-    this->savecache = NULL;
+    unlink(this->savecache.c_str());
+    this->savecache.clear();
     return 0;
 }
 

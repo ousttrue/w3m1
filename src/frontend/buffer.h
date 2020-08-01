@@ -127,7 +127,8 @@ public:
     AutoDetectTypes auto_detect;
     TextList *document_header;
     FormItemList *form_submit;
-    char *savecache;
+    // ReadBufferCache, WriteBufferCache
+    std::string savecache;
     char *edit;
     Mailcap *mailcap;
     char *mailcap_source;
