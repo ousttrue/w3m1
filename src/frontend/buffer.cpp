@@ -83,8 +83,8 @@ Buffer::~Buffer()
     }
     if (header_source)
         unlink(header_source);
-    if (mailcap_source)
-        unlink(mailcap_source);
+    if (mailcap_source.size())
+        unlink(mailcap_source.c_str());
     while (frameset)
     {
         deleteFrameSet(frameset);
@@ -514,7 +514,7 @@ void reshapeBuffer(BufferPtr buf)
     if (buf->sourcefile.empty())
         return;
     URLFile f(SCM_LOCAL, NULL);
-    f.examineFile(buf->mailcap_source ? buf->mailcap_source : buf->sourcefile.c_str());
+    f.examineFile(buf->mailcap_source.size() ? buf->mailcap_source.c_str() : buf->sourcefile.c_str());
     if (f.stream == NULL)
         return;
 
@@ -539,7 +539,7 @@ void reshapeBuffer(BufferPtr buf)
     if (buf->header_source)
     {
         if (buf->currentURL.scheme != SCM_LOCAL ||
-            buf->mailcap_source || buf->currentURL.file == "-")
+            buf->mailcap_source.size() || buf->currentURL.file == "-")
         {
             URLFile h(SCM_LOCAL, NULL);
             h.examineFile(buf->header_source);

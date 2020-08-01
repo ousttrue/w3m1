@@ -129,9 +129,10 @@ public:
     FormItemList *form_submit;
     // ReadBufferCache, WriteBufferCache
     std::string savecache;
-    char *edit;
+    // editBf
+    std::string edit;
     Mailcap *mailcap;
-    char *mailcap_source;
+    std::string mailcap_source;
     char *header_source;
     char search_header;
     char *ssl_certificate;
