@@ -61,15 +61,17 @@ struct Buffer : gc_cleanup
     // list
     Line *firstLine;
     Line *lastLine;
-    int allLine;
     // scroll
     Line *topLine;
     // cursor ?
     Line *currentLine;
 
 private:
+    int allLine = 0;
 
 public:
+    int LineCount() const { return allLine; }
+    void AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines);
     void ClearLines()
     {
         firstLine = topLine = currentLine = lastLine = NULL;

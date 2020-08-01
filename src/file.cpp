@@ -370,51 +370,6 @@ int getMetaRefreshParam(char *q, Str *refresh_uri)
 extern char *NullLine;
 extern Lineprop NullProp[];
 
-#ifndef USE_ANSI_COLOR
-#define addnewline2(a, b, c, d, e, f) _addnewline2(a, b, c, e, f)
-#endif
-static void
-addnewline2(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
-            int nlines)
-{
-    Line *l;
-    l = New(Line);
-    l->next = NULL;
-    l->lineBuf = line;
-    l->propBuf = prop;
-#ifdef USE_ANSI_COLOR
-    l->colorBuf = color;
-#endif
-    l->len = pos;
-    l->width = -1;
-    l->size = pos;
-    l->bpos = 0;
-    l->bwidth = 0;
-    l->prev = buf->currentLine;
-    if (buf->currentLine)
-    {
-        l->next = buf->currentLine->next;
-        buf->currentLine->next = l;
-    }
-    else
-        l->next = NULL;
-    if (buf->lastLine == NULL || buf->lastLine == buf->currentLine)
-        buf->lastLine = l;
-    buf->currentLine = l;
-    if (buf->firstLine == NULL)
-        buf->firstLine = l;
-    l->linenumber = ++buf->allLine;
-    if (nlines < 0)
-    {
-        /*     l->real_linenumber = l->linenumber;     */
-        l->real_linenumber = 0;
-    }
-    else
-    {
-        l->real_linenumber = nlines;
-    }
-    l = NULL;
-}
 
 void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
                 int width, int nlines)
@@ -449,7 +404,7 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
         c = NULL;
     }
 #endif
-    addnewline2(buf, s, p, c, pos, nlines);
+    buf->AddLine(s, p, c, pos, nlines);
     if (pos <= 0 || width <= 0)
         return;
     bpos = 0;
@@ -463,10 +418,8 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
         if (i == 0)
         {
             i++;
-#ifdef USE_M17N
             while (i < l->len && p[i] & PC_WCHAR2)
                 i++;
-#endif
         }
         l->len = i;
         l->width = l->COLPOS(l->len);
@@ -476,12 +429,10 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
         bwidth += l->width;
         s += i;
         p += i;
-#ifdef USE_ANSI_COLOR
         if (c)
             c += i;
-#endif
         pos -= i;
-        addnewline2(buf, s, p, c, pos, nlines);
+        buf->AddLine(s, p, c, pos, nlines);
     }
 }
 

@@ -639,3 +639,44 @@ void set_buffer_environ(BufferPtr buf)
     prev_line = l;
     prev_pos = buf->pos;
 }
+
+void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines)
+{
+    Line *l;
+    l = New(Line);
+    l->next = NULL;
+    l->lineBuf = line;
+    l->propBuf = prop;
+#ifdef USE_ANSI_COLOR
+    l->colorBuf = color;
+#endif
+    l->len = pos;
+    l->width = -1;
+    l->size = pos;
+    l->bpos = 0;
+    l->bwidth = 0;
+    l->prev = this->currentLine;
+    if (this->currentLine)
+    {
+        l->next = this->currentLine->next;
+        this->currentLine->next = l;
+    }
+    else
+        l->next = NULL;
+    if (this->lastLine == NULL || this->lastLine == this->currentLine)
+        this->lastLine = l;
+    this->currentLine = l;
+    if (this->firstLine == NULL)
+        this->firstLine = l;
+    l->linenumber = ++this->allLine;
+    if (nlines < 0)
+    {
+        /*     l->real_linenumber = l->linenumber;     */
+        l->real_linenumber = 0;
+    }
+    else
+    {
+        l->real_linenumber = nlines;
+    }
+    l = NULL;
+}

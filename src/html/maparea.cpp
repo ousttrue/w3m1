@@ -460,7 +460,7 @@ append_link_info(BufferPtr buf, Str html)
         return;
 
     html->Push("<hr width=50%><h1>Link information</h1><table>\n");
-    for (auto &l: buf->linklist)
+    for (auto &l : buf->linklist)
     {
         html->Push(l.toHtml(*buf->BaseURL(), buf->document_charset));
     }
@@ -532,7 +532,6 @@ page_info_panel(BufferPtr buf)
     URL pu;
     TextListItem *ti;
     struct frameset *f_set = NULL;
-    int all;
     char *p, *q;
 
     wc_ces_list *list;
@@ -546,9 +545,10 @@ page_info_panel(BufferPtr buf)
 <h1>Information about current page</h1>\n");
 
     auto tab = GetCurrentTab();
+    int all = 0;
     if (buf == NULL)
         goto end;
-    all = buf->allLine;
+    all = buf->LineCount();
     if (all == 0 && buf->lastLine)
         all = buf->lastLine->linenumber;
 #ifdef USE_M17N

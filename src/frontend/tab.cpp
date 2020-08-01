@@ -166,15 +166,12 @@ Tab::NamedBuffer(const char *name) const
 static void
 writeBufferName(BufferPtr buf, int n)
 {
-    Str msg;
-    int all;
-
-    all = buf->allLine;
+    auto all = buf->LineCount();
     if (all == 0 && buf->lastLine != NULL)
         all = buf->lastLine->linenumber;
     move(n, 0);
     /* FIXME: gettextize? */
-    msg = Sprintf("<%s> [%d lines]", buf->buffername, all);
+    auto msg = Sprintf("<%s> [%d lines]", buf->buffername, all);
     if (buf->filename.size())
     {
         switch (buf->currentURL.scheme)
