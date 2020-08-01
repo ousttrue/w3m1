@@ -86,7 +86,6 @@ void tabURL0(TabPtr tab, const char* prompt, int relative);
 BufferPtr DownloadListBuffer();
 char *convert_size3(clen_t size);
 void resetPos(BufferPos *b);
-void save_buffer_position(BufferPtr buf);
 void stopDownload();
 void download_action(struct parsed_tagarg *arg);
 int checkDownloadList();

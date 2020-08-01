@@ -119,7 +119,7 @@ void DispatchKey(int c)
         else
         {
             set_buffer_environ(GetCurrentTab()->GetCurrentBuffer());
-            save_buffer_position(GetCurrentTab()->GetCurrentBuffer());
+            GetCurrentTab()->GetCurrentBuffer()->SavePosition();
             KeyPressEventProc((int)c);
             set_prec_num(0);
         }

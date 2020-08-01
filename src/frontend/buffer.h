@@ -91,7 +91,6 @@ public:
     Line *CurrentLineSkip(Line *line, int offset, int last);
     void LineSkip(Line *line, int offset, int last);
     void Scroll(int n);
-
     BufferPtr linkBuffer[MAX_LB];
     short width;
     short height;
@@ -165,6 +164,7 @@ public:
     URL *BaseURL();
     void putHmarker(int line, int pos, int seq);
     void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);
+    void SavePosition();
 };
 
 #define TOP_LINENUMBER(buf) ((buf)->topLine ? (buf)->topLine->linenumber : 1)

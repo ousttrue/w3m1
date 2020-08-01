@@ -751,3 +751,26 @@ void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int 
     }
     l = NULL;
 }
+
+void Buffer::SavePosition()
+{
+    if (this->LineCount()==0)
+        return;
+
+    BufferPos *b = this->undo;
+    if (b && b->top_linenumber == TOP_LINENUMBER(this) &&
+        b->cur_linenumber == CUR_LINENUMBER(this) &&
+        b->currentColumn == this->currentColumn && b->pos == this->pos)
+        return;
+    b = New(BufferPos);
+    b->top_linenumber = TOP_LINENUMBER(this);
+    b->cur_linenumber = CUR_LINENUMBER(this);
+    b->currentColumn = this->currentColumn;
+    b->pos = this->pos;
+    b->bpos = this->currentLine ? this->currentLine->bpos : 0;
+    b->next = NULL;
+    b->prev = this->undo;
+    if (this->undo)
+        this->undo->next = b;
+    this->undo = b;
+}
