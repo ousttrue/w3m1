@@ -1,9 +1,11 @@
 #pragma once
 
-#include "frontend/buffer.h"
+// #include "frontend/buffer.h"
 #include <memory>
 #include <list>
 #include <functional>
+struct Tab;
+using BufferPtr = struct Buffer *;
 
 ///
 /// [ tab ]
@@ -22,15 +24,7 @@ class Tab
 
 public:
     Tab() = default;
-    ~Tab()
-    {
-        // clear buffer
-        BufferPtr next;
-        for (auto buf = firstBuffer; buf; buf = buf->nextBuffer)
-        {
-        }
-        firstBuffer = nullptr;
-    }
+    ~Tab();
 
     int Left() const { return x1; }
     int Right() const { return x2; }

@@ -16,6 +16,10 @@
 #include <algorithm>
 #include <assert.h>
 
+Tab::~Tab()
+{   
+}
+
 bool Tab::IsConnectFirstCurrent() const
 {
     for (auto buf = firstBuffer; buf; buf = buf->nextBuffer)

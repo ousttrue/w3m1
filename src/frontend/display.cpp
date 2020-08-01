@@ -12,6 +12,7 @@
 #include "frontend/display.h"
 #include "frontend/mouse.h"
 #include "frontend/buffer.h"
+#include "frontend/tab.h"
 #include "frontend/tabbar.h"
 #include "ctrlcode.h"
 #include "html/anchor.h"
@@ -276,7 +277,6 @@ static Str
 make_lastline_link(BufferPtr buf, std::string_view title, char *url)
 {
     Str s = NULL, u;
-    Lineprop *pr;
     ParsedURL pu;
     char *p;
     int l = COLS - 1, i;
@@ -302,9 +302,10 @@ make_lastline_link(BufferPtr buf, std::string_view title, char *url)
     u = pu.ToStr();
     if (DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));
-#ifdef USE_M17N
-    u = checkType(u, &pr, NULL);
-#endif
+
+    Lineprop *pr;
+    u = checkType(u, &pr, nullptr);
+
     if (l <= 4 || l >= get_Str_strwidth(u))
     {
         if (!s)

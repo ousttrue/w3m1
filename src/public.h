@@ -1,6 +1,7 @@
 #pragma once
 #include "dispatcher.h"
 #include "frontend/tab.h"
+#include "frontend/buffer.h"
 
 struct DownloadList
 {
