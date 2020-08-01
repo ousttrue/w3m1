@@ -5,6 +5,7 @@
 #include <functional>
 struct Tab;
 using BufferPtr = struct Buffer *;
+using BufferList = std::list<BufferPtr>;
 
 ///
 /// [ tab ]
@@ -18,8 +19,13 @@ class Tab
     // avoid copy
     Tab(const Tab &) = delete;
     Tab &operator=(const Tab &) = delete;
+
+    BufferList buffers;
     BufferPtr currentBuffer = nullptr;
-    BufferPtr firstBuffer = nullptr;
+    BufferList::const_iterator find(BufferPtr b) const
+    {
+        return std::find(buffers.begin(), buffers.end(), b);
+    }
 
 public:
     Tab() = default;
@@ -51,7 +57,7 @@ public:
 
     // buffer
     int GetCurrentBufferIndex() const;
-    BufferPtr GetFirstBuffer() { return firstBuffer; }
+    BufferPtr GetFirstBuffer() { return buffers.front(); }
     BufferPtr GetCurrentBuffer() const { return currentBuffer; }
     BufferPtr PrevBuffer(BufferPtr buf) const;
     BufferPtr NextBuffer(BufferPtr buf) const;
@@ -59,7 +65,7 @@ public:
     BufferPtr NamedBuffer(const char *name) const;
     BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar) const;
 
-    void SetFirstBuffer(BufferPtr buf, bool isCurrent = false);
+    void SetFirstBuffer(BufferPtr buf);
     void SetCurrentBuffer(BufferPtr buf);
     void PushBufferCurrentPrev(BufferPtr buf);
     void PushBufferCurrentNext(BufferPtr buf);

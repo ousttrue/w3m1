@@ -345,7 +345,6 @@ void Buffer::CopyFrom(BufferPtr src)
 
 void Buffer::ClearLink()
 {
-    nextBuffer = NULL;
     for (int i = 0; i < MAX_LB; i++)
     {
         linkBuffer[i] = NULL;

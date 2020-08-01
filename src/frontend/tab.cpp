@@ -17,12 +17,12 @@
 #include <assert.h>
 
 Tab::~Tab()
-{   
+{
 }
 
 bool Tab::IsConnectFirstCurrent() const
 {
-    for (auto buf = firstBuffer; buf; buf = buf->nextBuffer)
+    for (auto &buf : buffers)
     {
         if (buf == currentBuffer)
         {
@@ -35,45 +35,51 @@ bool Tab::IsConnectFirstCurrent() const
 int Tab::GetCurrentBufferIndex() const
 {
     int i = 0;
-    for (auto buf = firstBuffer; buf; buf = buf->nextBuffer, ++i)
+    for (auto &buf : buffers)
     {
         if (buf == GetCurrentBuffer())
         {
             return i;
         }
+        ++i;
     }
     return -1;
 }
 
 BufferPtr Tab::PrevBuffer(BufferPtr buf) const
 {
-    if (buf == firstBuffer)
+    if (buf == buffers.front())
     {
         return nullptr;
     }
-    for (auto b = firstBuffer; b != NULL; b = b->nextBuffer)
-    {
-        if (b->nextBuffer == buf)
-        {
-            return b;
-        }
-    }
-    assert(false);
-    return nullptr;
+    auto it = find(buf);
+    --it;
+    return *it;
 }
 
 BufferPtr Tab::NextBuffer(BufferPtr buf) const
 {
-    return buf->nextBuffer;
+    auto it = find(buf);
+    if (it == buffers.end())
+    {
+        assert(false);
+        return nullptr;
+    }
+    ++it;
+    return *it;
 }
 
-void Tab::SetFirstBuffer(BufferPtr buffer, bool isCurrent)
+void Tab::SetFirstBuffer(BufferPtr buffer)
 {
-    firstBuffer = buffer;
-    if (isCurrent)
-    {
-        SetCurrentBuffer(buffer);
-    }
+    // firstBuffer = buffer;
+    // if (isCurrent)
+    // {
+    //     SetCurrentBuffer(buffer);
+    // }
+
+    buffers.clear();
+    buffers.push_back(buffer);
+    currentBuffer=buffer;
 }
 
 void Tab::SetCurrentBuffer(BufferPtr buffer)
@@ -98,16 +104,9 @@ void Tab::SetCurrentBuffer(BufferPtr buffer)
 // currentPrev -> buf -> current
 void Tab::PushBufferCurrentPrev(BufferPtr buf)
 {
-    auto b = PrevBuffer(currentBuffer);
-    if (b)
-    {
-        b->nextBuffer = buf;
-    }
-    else
-    {
-        firstBuffer = buf;
-    }
-    buf->nextBuffer = currentBuffer;
+    auto it = find(currentBuffer);
+    assert(it != buffers.end());
+    buffers.insert(it, buf);
     SetCurrentBuffer(buf);
 #ifdef USE_BUFINFO
     saveBufferInfo();
@@ -116,7 +115,11 @@ void Tab::PushBufferCurrentPrev(BufferPtr buf)
 
 void Tab::PushBufferCurrentNext(BufferPtr buf)
 {
-    GetCurrentBuffer()->nextBuffer = buf;
+    auto it = find(currentBuffer);
+    assert(it != buffers.end());
+    ++it;
+    buffers.insert(it, buf);
+    SetCurrentBuffer(buf);
     SetCurrentBuffer(buf);
 }
 
@@ -124,14 +127,17 @@ BufferPtr
 Tab::GetBuffer(int n) const
 {
     if (n <= 0)
-        return firstBuffer;
+        return buffers.front();
 
-    BufferPtr buf = firstBuffer;
-    for (int i = 0; i < n && buf; i++)
+    auto it = buffers.begin();
+    for (int i = 0; i < n; i++, ++it)
     {
-        buf = buf->nextBuffer;
+        if (it == buffers.end())
+        {
+            return nullptr;
+        }
     }
-    return buf;
+    return *it;
 }
 
 /* 
@@ -140,20 +146,14 @@ Tab::GetBuffer(int n) const
 BufferPtr
 Tab::NamedBuffer(const char *name) const
 {
-    BufferPtr buf;
-
-    if (firstBuffer->buffername == name)
+    for (auto &buf : buffers)
     {
-        return firstBuffer;
-    }
-    for (buf = firstBuffer; buf->nextBuffer; buf = buf->nextBuffer)
-    {
-        if (buf->nextBuffer->buffername == name)
+        if (buf->buffername == name)
         {
-            return buf->nextBuffer;
+            return buf;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 static void
@@ -255,12 +255,12 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
         spoint,                        /* Current Line on Screen */
         maxbuf, sclimit = (LINES - 1); /* Upper limit of line * number in 
 					 * the * screen */
-    BufferPtr buf;
+
     BufferPtr topbuf;
     char c;
 
     i = cpoint = 0;
-    for (buf = firstBuffer; buf != NULL; buf = buf->nextBuffer)
+    for (auto &buf : buffers)
     {
         if (buf == currentbuf)
             cpoint = i;
@@ -275,11 +275,12 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
     }
     else
     {
-        topbuf = firstBuffer;
+        topbuf = buffers.front();
         spoint = cpoint;
     }
     listBuffer(this, topbuf, currentbuf);
 
+    auto it = find(currentBuffer);
     for (;;)
     {
         if ((c = getch()) == ESC_CODE)
@@ -324,12 +325,15 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
         {
         case CTRL_N:
         case 'j':
+        {
+            auto next = it;
+            ++next;
             if (spoint < sclimit - 1)
             {
-                if (currentbuf->nextBuffer == NULL)
+                if (next == buffers.end())
                     continue;
                 writeBufferName(currentbuf, spoint);
-                currentbuf = currentbuf->nextBuffer;
+                currentbuf = *next;
                 cpoint++;
                 spoint++;
                 standout();
@@ -341,22 +345,25 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
             else if (cpoint < maxbuf - 1)
             {
                 topbuf = currentbuf;
-                currentbuf = currentbuf->nextBuffer;
+                currentbuf = *next;
                 cpoint++;
                 spoint = 1;
                 listBuffer(this, topbuf, currentbuf);
             }
             break;
+        }
         case CTRL_P:
         case 'k':
+        {
             if (spoint > 0)
             {
                 writeBufferName(currentbuf, spoint);
                 currentbuf = topbuf;
-                for (int i = 0; i < --spoint && currentbuf; ++i)
-                {
-                    currentbuf = currentbuf->nextBuffer;
-                }
+                // for (int i = 0; i < --spoint && currentbuf; ++i)
+                // {
+                //     currentbuf = currentbuf->nextBuffer;
+                // }
+                --it;
                 cpoint--;
                 standout();
                 writeBufferName(currentbuf, spoint);
@@ -376,6 +383,7 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
                 listBuffer(this, topbuf, currentbuf);
             }
             break;
+        }
         default:
             *selectchar = c;
             return currentbuf;
@@ -393,33 +401,13 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
  */
 void Tab::DeleteBuffer(BufferPtr delbuf)
 {
-    if (firstBuffer == delbuf && firstBuffer->nextBuffer != NULL)
+    auto it = find(delbuf);
+    if(*it == currentBuffer)
     {
-        firstBuffer = firstBuffer->nextBuffer;
-        if (delbuf == currentBuffer)
-        {
-            currentBuffer = firstBuffer;
-        }
+        assert(false);
+        // TODO:
     }
-    else
-    {
-        auto buf = PrevBuffer(delbuf);
-        buf->nextBuffer = delbuf->nextBuffer;
-        if (delbuf == currentBuffer)
-        {
-            currentBuffer = buf->nextBuffer;
-        }
-    }
-
-    // if (GetCurrentTab()->GetCurrentBuffer() == buf)
-    //     GetCurrentTab()->SetCurrentBuffer(buf->nextBuffer);
-    // if (!GetCurrentTab()->GetCurrentBuffer())
-    //     GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetBuffer(i - 1));
-    // if (GetCurrentTab()->GetFirstBuffer())
-    // {
-    //     GetCurrentTab()->SetFirstBuffer(nullBuffer());
-    //     GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
-    // }
+    buffers.erase(it);
 }
 
 /* 
@@ -427,20 +415,6 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
  */
 void Tab::ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf)
 {
-    BufferPtr buf;
-
-    if (delbuf == NULL)
-    {
-        newbuf->nextBuffer = firstBuffer;
-    }
-    if (firstBuffer == delbuf)
-    {
-        newbuf->nextBuffer = delbuf->nextBuffer;
-    }
-    if (delbuf && (buf = PrevBuffer(delbuf)))
-    {
-        buf->nextBuffer = newbuf;
-        newbuf->nextBuffer = delbuf->nextBuffer;
-    }
-    newbuf->nextBuffer = firstBuffer;
+    // TODO:
+    assert(false);
 }

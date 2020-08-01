@@ -620,7 +620,7 @@ void selBuf()
             if (GetCurrentTab()->GetFirstBuffer() == NULL)
             {
                 /* No more buffer */
-                GetCurrentTab()->SetFirstBuffer(nullBuffer(), true);
+                GetCurrentTab()->SetFirstBuffer(nullBuffer());
             }
             break;
 

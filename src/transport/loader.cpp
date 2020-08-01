@@ -1280,10 +1280,11 @@ page_loaded:
             t_buf = newBuffer(INIT_BUFFER_WIDTH);
         t_buf->bufferprop |= BP_FRAME;
     }
-#ifdef USE_SSL
-    if (t_buf)
+
+    if (t_buf && f.ssl_certificate){
         t_buf->ssl_certificate = f.ssl_certificate;
-#endif
+    }
+
     frame_source = flag & RG_FRAME_SRC;
     b = loadSomething(&f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()), proc, t_buf);
     f.Close();

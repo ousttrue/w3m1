@@ -1083,7 +1083,7 @@ int main(int argc, char **argv, char **envp)
         if (GetCurrentTab() == NULL)
         {
             InitializeTab();
-            GetCurrentTab()->SetFirstBuffer(newbuf, true);
+            GetCurrentTab()->SetFirstBuffer(newbuf);
         }
         else if (open_new_tab)
         {

@@ -101,9 +101,6 @@ struct Buffer : gc_cleanup
     Line *currentLine;
     Line *lastLine;
 
-private:
-    BufferPtr nextBuffer;
-
 public:
     BufferPtr linkBuffer[MAX_LB];
     short width;
