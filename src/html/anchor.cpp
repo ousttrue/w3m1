@@ -637,7 +637,7 @@ BufferPtr
 link_list_panel(BufferPtr buf)
 {
     if (buf->bufferprop & BP_INTERNAL ||
-        (buf->linklist == NULL && !buf->href && !buf->img))
+        (buf->linklist.empty() && !buf->href && !buf->img))
     {
         return NULL;
     }
@@ -646,18 +646,17 @@ link_list_panel(BufferPtr buf)
     Str tmp = Strnew("<title>Link List</title>\
 <h1 align=center>Link List</h1>\n");
 
-    if (buf->linklist)
+    if (buf->linklist.size())
     {
         tmp->Push("<hr><h2>Links</h2>\n<ol>\n");
-        for (auto l = buf->linklist; l; l = l->next)
+        for (auto &l: buf->linklist)
         {
             const char *u;
             const char *p;
-            const char *t;
-            if (l->url.size())
+            if (l.url().size())
             {
                 ParsedURL pu;
-                pu.Parse2(l->url, buf->BaseURL());
+                pu.Parse2(l.url(), buf->BaseURL());
                 p = pu.ToStr()->ptr;
                 u = html_quote(p);
                 if (DecodeURL)
@@ -667,13 +666,8 @@ link_list_panel(BufferPtr buf)
             }
             else
                 u = p = "";
-            if (l->type == LINK_TYPE_REL)
-                t = " [Rel]";
-            else if (l->type == LINK_TYPE_REV)
-                t = " [Rev]";
-            else
-                t = "";
-            t = Sprintf("%s%s\n", l->title.size() ? l->title.c_str() : "", t)->ptr;
+
+            auto t = Strnew_m_charp(l.title(), l.type(), "\n")->ptr;
             t = html_quote(t);
             Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
                            "\n", NULL);

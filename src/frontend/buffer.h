@@ -21,13 +21,37 @@ enum LinkTypes : char
     LINK_TYPE_REV = 2,
 };
 
-struct LinkList
+class Link
 {
-    std::string url;
-    std::string title;                     /* Next, Contents, ... */
-    std::string ctype;                     /* Content-Type */
-    LinkTypes type = LINK_TYPE_NONE; /* Rel, Rev */
-    LinkList *next;
+    std::string m_url;
+    std::string m_title;               /* Next, Contents, ... */
+    std::string m_ctype;               /* Content-Type */
+    LinkTypes m_type = LINK_TYPE_NONE; /* Rel, Rev */
+
+public:
+    static Link create(const struct parsed_tag &tag, CharacterEncodingScheme ces);
+
+    std::string_view url() const
+    {
+        return m_url;
+    }
+
+    std::string_view title() const
+    {
+        return m_title.size() ? m_title : "(empty)";
+    }
+
+    std::string_view type() const
+    {
+        if (m_type == LINK_TYPE_REL)
+            return " [Rel] ";
+        else if (m_type == LINK_TYPE_REV)
+            return " [Rev] ";
+        else
+            return " ";
+    }
+
+    std::string toHtml(const ParsedURL &baseUrl, CharacterEncodingScheme ces) const;
 };
 
 enum LinkBufferTypes
@@ -42,7 +66,7 @@ enum LinkBufferTypes
 };
 const int MAX_LB = 5;
 
-enum BufferProps: int16_t
+enum BufferProps : int16_t
 {
     BP_NORMAL = 0x0,
     BP_PIPE = 0x1,
@@ -108,7 +132,7 @@ public:
     AnchorList formitem;
     int prevhseq = -1;
 
-    LinkList *linklist;
+    std::vector<Link> linklist;
     FormList *formlist;
     MapList *maplist;
     std::vector<BufferPoint> hmarklist;
@@ -188,7 +212,6 @@ char *reAnchorNewsheader(BufferPtr buf);
 void addMultirowsForm(BufferPtr buf, AnchorList &al);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
-
 
 TextList *make_domain_list(char *domain_list);
 Line *lineSkip(BufferPtr buf, Line *line, int offset, int last);

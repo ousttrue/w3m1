@@ -66,7 +66,7 @@ void bufferA();
 BufferPtr loadNormalBuf(BufferPtr buf, int renderframe);
 void _nextA(int visited);
 void _prevA(int visited);
-void gotoLabel(const char *label);
+void gotoLabel(std::string_view label);
 int check_target();
 
 void nextX(int d, int dy);

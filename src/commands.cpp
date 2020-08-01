@@ -1297,20 +1297,20 @@ void pginfo()
 
 void linkMn()
 {
-    LinkList *l = link_menu(GetCurrentTab()->GetCurrentBuffer());
-    if (!l || l->url.empty())
+    auto l = link_menu(GetCurrentTab()->GetCurrentBuffer());
+    if (!l || l->url().empty())
         return;
 
-    if (l->url[0] == '#')
+    if (l->url()[0] == '#')
     {
-        gotoLabel(l->url.c_str() + 1);
+        gotoLabel(l->url().substr(1));
         return;
     }
     
     ParsedURL p_url;
-    p_url.Parse2(l->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    p_url.Parse2(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(URLHist, p_url.ToStr()->ptr);
-    cmd_loadURL(l->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(), GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
+    cmd_loadURL(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
 }
 /* accesskey */
 

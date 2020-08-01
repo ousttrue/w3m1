@@ -1164,52 +1164,6 @@ static int currentLn(BufferPtr buf)
 }
 
 static void
-addLink(BufferPtr buf, struct parsed_tag *tag)
-{
-    char *href = NULL, *title = NULL, *ctype = NULL, *rel = NULL, *rev = NULL;
-    LinkTypes type = LINK_TYPE_NONE;
-    LinkList *l;
-
-    parsedtag_get_value(tag, ATTR_HREF, &href);
-    if (href)
-        href = url_quote_conv(remove_space(href), buf->document_charset);
-    parsedtag_get_value(tag, ATTR_TITLE, &title);
-    parsedtag_get_value(tag, ATTR_TYPE, &ctype);
-    parsedtag_get_value(tag, ATTR_REL, &rel);
-    if (rel != NULL)
-    {
-        /* forward link type */
-        type = LINK_TYPE_REL;
-        if (title == NULL)
-            title = rel;
-    }
-    parsedtag_get_value(tag, ATTR_REV, &rev);
-    if (rev != NULL)
-    {
-        /* reverse link type */
-        type = LINK_TYPE_REV;
-        if (title == NULL)
-            title = rev;
-    }
-
-    l = New(LinkList);
-    l->url = href;
-    l->title = title;
-    l->ctype = ctype;
-    l->type = type;
-    l->next = NULL;
-    if (buf->linklist)
-    {
-        LinkList *i;
-        for (i = buf->linklist; i->next; i = i->next)
-            ;
-        i->next = l;
-    }
-    else
-        buf->linklist = l;
-}
-
-static void
 HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 {
     static char *outc = NULL;
@@ -1527,7 +1481,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     break;
 
                 case HTML_LINK:
-                    addLink(buf, tag);
+                    buf->linklist.push_back(Link::create(*tag, buf->document_charset));
                     break;
 
                 case HTML_IMG_ALT:

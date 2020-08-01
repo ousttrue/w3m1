@@ -2271,67 +2271,52 @@ int getMenuN(MenuList *list, char *id)
     return -1;
 }
 
-/* --- InitMenu (END) --- */
-
-LinkList *
-link_menu(BufferPtr buf)
+///
+/// Bufferのリンクリストをポップアップし、選択されたリンクを返す
+///
+Link *link_menu(BufferPtr buf)
 {
-    Menu menu;
-    LinkList *l;
-    int i, nitem, len = 0, linkV = -1;
-    char **label;
-    Str str;
-
-    if (!buf->linklist)
+    if (buf->linklist.empty())
         return NULL;
 
-    for (i = 0, l = buf->linklist; l; i++, l = l->next)
-        ;
-    nitem = i;
+    // int i, nitem, len = 0, ;
+    // Str str;
 
-    label = New_N(char *, nitem + 1);
-    for (i = 0, l = buf->linklist; l; i++, l = l->next)
+    std::vector<std::string> labelBuffer;
+    std::vector<const char *> labels;
+    auto maxLen = 0;
+    for (auto &l : buf->linklist)
     {
-        str = Strnew(l->title.size() ? l->title : "(empty)");
-        if (l->type == LINK_TYPE_REL)
-            str->Push(" [Rel] ");
-        else if (l->type == LINK_TYPE_REV)
-            str->Push(" [Rev] ");
-        else
-            str->Push(" ");
-        const char *p;
-        if (l->url.empty())
+        auto str = Strnew_m_charp(l.title(), l.type());
+        std::string_view p;
+        if (l.url().empty())
             p = "";
         else if (DecodeURL)
-            p = url_unquote_conv(l->url, buf->document_charset);
+            p = url_unquote_conv(l.url(), buf->document_charset);
         else
-            p = l->url.c_str();
+            p = l.url();
         str->Push(p);
-        label[i] = str->ptr;
-        if (len < str->Size())
-            len = str->Size();
+
+        labelBuffer.push_back(str->ptr);
+        labels.push_back(labelBuffer.back().c_str());
+        if (str->Size() > maxLen)
+            maxLen = str->Size();
     }
-    label[nitem] = NULL;
 
     set_menu_frame();
-    new_option_menu(&menu, label, &linkV, NULL);
-
+    Menu menu;
+    int linkV = -1;
+    new_option_menu(&menu, const_cast<char **>(labels.data()), &linkV, NULL);
     menu.initial = 0;
     menu.cursorX = buf->cursorX + buf->rootX;
     menu.cursorY = buf->cursorY + buf->rootY;
     menu.x = menu.cursorX + FRAME_WIDTH + 1;
     menu.y = menu.cursorY + 2;
-
     popup_menu(NULL, &menu);
 
-    if (linkV < 0)
+    if (linkV < 0 || linkV >= buf->linklist.size())
         return NULL;
-    for (i = 0, l = buf->linklist; l; i++, l = l->next)
-    {
-        if (i == linkV)
-            return l;
-    }
-    return NULL;
+    return &buf->linklist[linkV];
 }
 
 /* --- LinkMenu (END) --- */

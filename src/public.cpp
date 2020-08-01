@@ -1509,9 +1509,9 @@ _end:
     displayCurrentbuf(B_NORMAL);
 }
 
-void gotoLabel(const char *label)
+void gotoLabel(std::string_view label)
 {
-    auto al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char *>(label));
+    auto al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char *>(label.data()));
     if (al == NULL)
     {
         /* FIXME: gettextize? */
@@ -1523,7 +1523,7 @@ void gotoLabel(const char *label)
 
     for (int i = 0; i < MAX_LB; i++)
         buf->linkBuffer[i] = NULL;
-    buf->currentURL.label = allocStr(label, -1);
+    buf->currentURL.label = label;
     pushHashHist(URLHist, buf->currentURL.ToStr()->ptr);
     (*buf->clone)++;
     GetCurrentTab()->PushBufferCurrentPrev(buf);

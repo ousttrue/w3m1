@@ -82,7 +82,7 @@ void initMenu(void);
 void PopupMenu();
 void PopupBufferMenu();
 void PopupTabMenu();
-LinkList *link_menu(BufferPtr buf);
+Link *link_menu(BufferPtr buf);
 Anchor *accesskey_menu(BufferPtr buf);
 Anchor *list_menu(BufferPtr buf);
 
