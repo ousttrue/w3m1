@@ -76,6 +76,7 @@ private:
 public:
     int LineCount() const
     {
+        // linenumber is 1 origin ?
         assert(allLine == (lastLine ? lastLine->linenumber : 0));
         return allLine;
     }

@@ -710,7 +710,9 @@ void _goLine(char *l)
         GetCurrentTab()->GetCurrentBuffer()->currentLine = GetCurrentTab()->GetCurrentBuffer()->lastLine;
     }
     else
+    {
         GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(atoi(l));
+    }
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -767,7 +769,7 @@ void _followForm(int submit)
     Str tmp, tmp2;
     int multipart = 0, i;
 
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
 
@@ -1307,7 +1309,7 @@ void _nextA(int visited)
     int i, x, y, n = searchKeyNum();
     URL url;
 
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     if (hl.empty())
         return;
@@ -1400,7 +1402,7 @@ void _prevA(int visited)
     int i, x, y, n = searchKeyNum();
     URL url;
 
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     if (hl.empty())
         return;
@@ -1520,7 +1522,7 @@ void nextX(int d, int dy)
     Line *l;
     int i, x, y, n = searchKeyNum();
 
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     if (hl.empty())
         return;
@@ -1574,12 +1576,10 @@ void nextX(int d, int dy)
 /* go to the next downward/upward anchor */
 void nextY(int d)
 {
-    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
-    int i, x, y, n = searchKeyNum();
-    int hseq;
-
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
+
+    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     if (hl.empty())
         return;
 
@@ -1587,16 +1587,17 @@ void nextY(int d)
     if (an == NULL)
         an = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
 
-    x = GetCurrentTab()->GetCurrentBuffer()->pos;
-    y = GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber + d;
+    int x = GetCurrentTab()->GetCurrentBuffer()->pos;
+    int y = GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber + d;
     const Anchor *pan = NULL;
-    hseq = -1;
-    for (i = 0; i < n; i++)
+    int n = searchKeyNum();
+    int hseq = -1;
+    for (int i = 0; i < n; i++)
     {
         if (an)
             hseq = abs(an->hseq);
         an = NULL;
-        for (; y >= 0 && y <= GetCurrentTab()->GetCurrentBuffer()->lastLine->linenumber; y += d)
+        for (; y >= 0 && y <= GetCurrentTab()->GetCurrentBuffer()->LineCount(); y += d)
         {
             an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(y, x);
             if (!an)
@@ -1752,7 +1753,7 @@ void _peekURL(int only_img)
     Lineprop *pp;
     static int offset = 0, n;
 
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     if (CurrentKey == PrevKey && s != NULL)
     {

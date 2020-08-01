@@ -365,7 +365,7 @@ make_lastline_message(BufferPtr buf)
         msg = Strnew(GetMouseActionLastlineStr());
     else
         msg = Strnew();
-    if (displayLineInfo && buf->currentLine != NULL && buf->lastLine != NULL)
+    if (displayLineInfo && buf->LineCount() > 0)
     {
         int cl = buf->currentLine->real_linenumber;
         int ll = buf->lastLine->real_linenumber;
@@ -456,7 +456,7 @@ drawAnchorCursor0(BufferPtr buf, AnchorList &al,
 static void
 drawAnchorCursor(BufferPtr buf)
 {
-    if (!buf->firstLine)
+    if (buf->LineCount() == 0)
         return;
     if (!buf->href && !buf->formitem)
         return;
@@ -1183,7 +1183,7 @@ void cursorUp0(BufferPtr buf, int n)
 void cursorUp(BufferPtr buf, int n)
 {
     Line *l = buf->currentLine;
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
         return;
     while (buf->currentLine->prev && buf->currentLine->bpos)
         cursorUp0(buf, n);
@@ -1215,7 +1215,7 @@ void cursorDown0(BufferPtr buf, int n)
 void cursorDown(BufferPtr buf, int n)
 {
     Line *l = buf->currentLine;
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
         return;
     while (buf->currentLine->next && buf->currentLine->next->bpos)
         cursorDown0(buf, n);
@@ -1236,7 +1236,7 @@ void cursorUpDown(BufferPtr buf, int n)
 {
     Line *cl = buf->currentLine;
 
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
         return;
     if ((buf->currentLine = buf->CurrentLineSkip(cl, n, FALSE)) == cl)
         return;
@@ -1249,7 +1249,7 @@ void cursorRight(BufferPtr buf, int n)
     Line *l = buf->currentLine;
     Lineprop *p;
 
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
         return;
     if (buf->pos == l->len && !(l->next && l->next->bpos))
         return;
@@ -1304,7 +1304,7 @@ void cursorLeft(BufferPtr buf, int n)
     Line *l = buf->currentLine;
     Lineprop *p;
 
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
         return;
     i = buf->pos;
     p = l->propBuf;
@@ -1407,7 +1407,7 @@ void arrangeLine(BufferPtr buf)
 {
     int i, cpos;
 
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
         return;
     buf->cursorY = buf->currentLine->linenumber - buf->topLine->linenumber;
     i = columnPos(buf->currentLine, buf->currentColumn + buf->visualpos - buf->currentLine->bwidth);
@@ -1606,7 +1606,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     drawAnchorCursor(buf);
 
     msg = make_lastline_message(buf);
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
     {
         /* FIXME: gettextize? */
         msg->Push("\tNo Line");
