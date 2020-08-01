@@ -90,6 +90,7 @@ public:
     void Reshape();
     Line *CurrentLineSkip(Line *line, int offset, int last);
     void LineSkip(Line *line, int offset, int last);
+    void Scroll(int n);
 
     BufferPtr linkBuffer[MAX_LB];
     short width;

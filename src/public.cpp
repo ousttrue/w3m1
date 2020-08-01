@@ -41,35 +41,11 @@ int searchKeyNum(void)
 void nscroll(int n)
 {
     BufferPtr buf = GetCurrentTab()->GetCurrentBuffer();
-    Line *top = buf->topLine, *cur = buf->currentLine;
-    int lnum, tlnum, llnum, diff_n;
-
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
         return;
-    lnum = cur->linenumber;
-    buf->LineSkip(top, n, FALSE);
-    if (buf->topLine == top)
-    {
-        lnum += n;
-        if (lnum < buf->topLine->linenumber)
-            lnum = buf->topLine->linenumber;
-        else if (lnum > buf->lastLine->linenumber)
-            lnum = buf->lastLine->linenumber;
-    }
-    else
-    {
-        tlnum = buf->topLine->linenumber;
-        llnum = buf->topLine->linenumber + buf->LINES - 1;
-        if (nextpage_topline)
-            diff_n = 0;
-        else
-            diff_n = n - (tlnum - top->linenumber);
-        if (lnum < tlnum)
-            lnum = tlnum + diff_n;
-        if (lnum > llnum)
-            lnum = llnum + diff_n;
-    }
-    buf->GotoLine(lnum);
+
+    buf->Scroll(n);
+
     arrangeLine(buf);
     if (n > 0)
     {
@@ -543,7 +519,7 @@ int handleMailto(const char *url)
 void _movL(int n)
 {
     int i, m = searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
         cursorLeft(GetCurrentTab()->GetCurrentBuffer(), n);
@@ -554,7 +530,7 @@ void _movL(int n)
 void _movD(int n)
 {
     int i, m = searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
         cursorDown(GetCurrentTab()->GetCurrentBuffer(), n);
@@ -565,7 +541,7 @@ void _movD(int n)
 void _movU(int n)
 {
     int i, m = searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
         cursorUp(GetCurrentTab()->GetCurrentBuffer(), n);
@@ -576,7 +552,7 @@ void _movU(int n)
 void _movR(int n)
 {
     int i, m = searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
         cursorRight(GetCurrentTab()->GetCurrentBuffer(), n);
@@ -1209,9 +1185,9 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
             GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
             if (label_topline)
                 GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
-                                                                                                             GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
-                                                                                                                 GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
-                                                                                                             FALSE);
+                                                              GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
+                                                                  GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+                                                              FALSE);
             GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
             arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
         }
@@ -1529,8 +1505,8 @@ void gotoLabel(std::string_view label)
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
     if (label_topline)
         GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
-                                                                                                     GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
-                                                                                                     FALSE);
+                                                      GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+                                                      FALSE);
     GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_FORCE_REDRAW);

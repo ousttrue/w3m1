@@ -457,6 +457,37 @@ void Buffer::GotoLine(int n)
     }
 }
 
+void Buffer::Scroll(int n)
+{
+    auto lnum = currentLine->linenumber;
+    auto top = topLine;
+    this->LineSkip(top, n, FALSE);
+    if (this->topLine == top)
+    {
+        lnum += n;
+        if (lnum < this->topLine->linenumber)
+            lnum = this->topLine->linenumber;
+        else if (lnum > this->lastLine->linenumber)
+            lnum = this->lastLine->linenumber;
+    }
+    else
+    {
+        auto tlnum = this->topLine->linenumber;
+        auto llnum = this->topLine->linenumber + this->LINES - 1;
+        int diff_n;
+        if (nextpage_topline)
+            diff_n = 0;
+        else
+            diff_n = n - (tlnum - top->linenumber);
+        if (lnum < tlnum)
+            lnum = tlnum + diff_n;
+        if (lnum > llnum)
+            lnum = llnum + diff_n;
+    }
+    this->GotoLine(lnum);
+
+}
+
 /* 
  * gotoRealLine: go to real line number
  */
