@@ -6,6 +6,7 @@ w3m を改造して遊ぶ。
 
 だいぶ壊れてきた。ぼちぼち
 
+* [ ] Document Charset [Change] FollowForm でページが遷移しない
 * [ ] logger
 * [ ] gtest
 * [x] load中のメッセージ表示が壊れた。Sprintf に std::string 投げてた

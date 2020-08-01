@@ -71,7 +71,7 @@ struct FormList
 {
     FormItemList *item;
     FormItemList *lastitem;
-    int method;
+    FormMethodTypes method;
     Str action;
     char *target;
     char *name;

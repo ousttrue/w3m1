@@ -48,7 +48,7 @@ newFormList(char *action, const char *method, char *charset, char *enctype,
 {
     FormList *l;
     Str a = Strnew(action ? action : "");
-    int m = FORM_METHOD_GET;
+    FormMethodTypes m = FORM_METHOD_GET;
     int e = FORM_ENCTYPE_URLENCODED;
     CharacterEncodingScheme c = WC_CES_NONE;
 
