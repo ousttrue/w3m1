@@ -1312,7 +1312,7 @@ page_loaded:
                 auto a = searchURLLabel(b, const_cast<char *>(pu.label.c_str()));
                 if (a != NULL)
                 {
-                    gotoLine(b, a->start.line);
+                    b->GotoLine(a->start.line);
                     if (label_topline)
                         b->topLine = lineSkip(b, b->topLine,
                                               b->currentLine->linenumber - b->topLine->linenumber, FALSE);

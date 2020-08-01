@@ -61,6 +61,7 @@ struct Buffer : gc_cleanup
     // list
     Line *firstLine;
     Line *lastLine;
+
     // scroll
     Line *topLine;
     // cursor ?
@@ -77,6 +78,7 @@ public:
         firstLine = topLine = currentLine = lastLine = NULL;
         allLine = 0;
     }
+    void GotoLine(int n);
 
     BufferPtr linkBuffer[MAX_LB];
     short width;
@@ -165,7 +167,6 @@ void loadImage(BufferPtr buf, int flag);
 
 BufferPtr nullBuffer(void);
 void gotoRealLine(BufferPtr buf, int n);
-void gotoLine(BufferPtr buf, int n);
 void reshapeBuffer(BufferPtr buf);
 
 void set_buffer_environ(BufferPtr buf);

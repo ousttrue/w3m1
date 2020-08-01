@@ -322,7 +322,7 @@ static void mainloop()
         {
             Anchor *a = GetCurrentTab()->GetCurrentBuffer()->submit;
             GetCurrentTab()->GetCurrentBuffer()->submit = NULL;
-            gotoLine(GetCurrentTab()->GetCurrentBuffer(), a->start.line);
+            GetCurrentTab()->GetCurrentBuffer()->GotoLine(a->start.line);
             GetCurrentTab()->GetCurrentBuffer()->pos = a->start.pos;
             _followForm(TRUE);
             continue;

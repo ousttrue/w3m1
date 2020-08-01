@@ -1189,7 +1189,7 @@ void cursorUp(BufferPtr buf, int n)
         cursorUp0(buf, n);
     if (buf->currentLine == buf->firstLine)
     {
-        gotoLine(buf, l->linenumber);
+        buf->GotoLine(l->linenumber);
         arrangeLine(buf);
         return;
     }
@@ -1221,7 +1221,7 @@ void cursorDown(BufferPtr buf, int n)
         cursorDown0(buf, n);
     if (buf->currentLine == buf->lastLine)
     {
-        gotoLine(buf, l->linenumber);
+        buf->GotoLine(l->linenumber);
         arrangeLine(buf);
         return;
     }
@@ -1469,7 +1469,7 @@ void restorePosition(BufferPtr buf, BufferPtr orig)
 {
     buf->topLine = lineSkip(buf, buf->firstLine, TOP_LINENUMBER(orig) - 1,
                             FALSE);
-    gotoLine(buf, CUR_LINENUMBER(orig));
+    buf->GotoLine(CUR_LINENUMBER(orig));
     buf->pos = orig->pos;
     if (buf->currentLine && orig->currentLine)
         buf->pos += orig->currentLine->bpos - buf->currentLine->bpos;

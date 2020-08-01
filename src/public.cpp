@@ -69,7 +69,7 @@ void nscroll(int n)
         if (lnum > llnum)
             lnum = llnum + diff_n;
     }
-    gotoLine(buf, lnum);
+    buf->GotoLine(lnum);
     arrangeLine(buf);
     if (n > 0)
     {
@@ -1207,7 +1207,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         }
         if (al)
         {
-            gotoLine(GetCurrentTab()->GetCurrentBuffer(), al->start.line);
+            GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
             if (label_topline)
                 GetCurrentTab()->GetCurrentBuffer()->topLine = lineSkip(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->topLine,
                                                                         GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
@@ -1411,7 +1411,7 @@ _end:
     if (an == NULL || an->hseq < 0)
         return;
     po = &hl[an->hseq];
-    gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
+    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_NORMAL);
@@ -1503,7 +1503,7 @@ _end:
     if (an == NULL || an->hseq < 0)
         return;
     po = &hl[an->hseq];
-    gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
+    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_NORMAL);
@@ -1527,7 +1527,7 @@ void gotoLabel(std::string_view label)
     pushHashHist(URLHist, buf->currentURL.ToStr()->ptr);
     (*buf->clone)++;
     GetCurrentTab()->PushBufferCurrentPrev(buf);
-    gotoLine(GetCurrentTab()->GetCurrentBuffer(), al->start.line);
+    GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
     if (label_topline)
         GetCurrentTab()->GetCurrentBuffer()->topLine = lineSkip(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->topLine,
                                                                 GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
@@ -1590,7 +1590,7 @@ void nextX(int d, int dy)
 
     if (pan == NULL)
         return;
-    gotoLine(GetCurrentTab()->GetCurrentBuffer(), y);
+    GetCurrentTab()->GetCurrentBuffer()->GotoLine(y);
     GetCurrentTab()->GetCurrentBuffer()->pos = pan->start.pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_NORMAL);
@@ -1638,7 +1638,7 @@ void nextY(int d)
 
     if (pan == NULL)
         return;
-    gotoLine(GetCurrentTab()->GetCurrentBuffer(), pan->start.line);
+    GetCurrentTab()->GetCurrentBuffer()->GotoLine(pan->start.line);
     arrangeLine(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_NORMAL);
 }
@@ -1760,7 +1760,7 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
     if (!a || a->hseq < 0)
         return;
     po = &GetCurrentTab()->GetCurrentBuffer()->hmarklist[a->hseq];
-    gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
+    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_NORMAL);

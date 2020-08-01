@@ -950,7 +950,7 @@ void topA()
             an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);
         hseq++;
     } while (an == NULL);
-    gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
+    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_NORMAL);
@@ -984,7 +984,7 @@ void lastA()
             an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);
         hseq--;
     } while (an == NULL);
-    gotoLine(GetCurrentTab()->GetCurrentBuffer(), po->line);
+    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_NORMAL);
@@ -1204,7 +1204,7 @@ void backBf()
                 GetCurrentTab()->GetCurrentBuffer()->topLine = lineSkip(GetCurrentTab()->GetCurrentBuffer(),
                                                                         GetCurrentTab()->GetCurrentBuffer()->firstLine, top - 1,
                                                                         FALSE);
-                gotoLine(GetCurrentTab()->GetCurrentBuffer(), linenumber);
+                GetCurrentTab()->GetCurrentBuffer()->GotoLine(linenumber);
                 GetCurrentTab()->GetCurrentBuffer()->pos = pos;
                 GetCurrentTab()->GetCurrentBuffer()->currentColumn = currentColumn;
                 arrangeCursor(GetCurrentTab()->GetCurrentBuffer());

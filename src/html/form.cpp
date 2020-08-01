@@ -442,7 +442,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
     Line *l;
 
     auto save = buf->Copy();
-    gotoLine(buf, a->start.line);
+    buf->GotoLine(a->start.line);
     switch (form->type)
     {
     case FORM_TEXTAREA:
