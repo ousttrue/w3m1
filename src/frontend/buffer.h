@@ -15,7 +15,6 @@ struct AlarmEvent;
 struct TextList;
 struct Mailcap;
 
-
 enum LinkBufferTypes
 {
     LB_NOLINK = -1,
@@ -58,12 +57,25 @@ struct Buffer : gc_cleanup
 
     std::string filename;
     std::string buffername;
+
+    // list
     Line *firstLine;
-    Line *topLine;
-    Line *currentLine;
     Line *lastLine;
+    int allLine;
+    // scroll
+    Line *topLine;
+    // cursor ?
+    Line *currentLine;
+
+private:
 
 public:
+    void ClearLines()
+    {
+        firstLine = topLine = currentLine = lastLine = NULL;
+        allLine = 0;
+    }
+
     BufferPtr linkBuffer[MAX_LB];
     short width;
     short height;
@@ -74,7 +86,6 @@ public:
 
 public:
     BufferProps bufferprop = BP_NORMAL;
-    int allLine;
     int currentColumn;
     short cursorX;
     short cursorY;
@@ -151,7 +162,6 @@ void getAllImage(BufferPtr buf);
 void loadImage(BufferPtr buf, int flag);
 
 BufferPtr nullBuffer(void);
-void clearBuffer(BufferPtr buf);
 void gotoRealLine(BufferPtr buf, int n);
 void gotoLine(BufferPtr buf, int n);
 void reshapeBuffer(BufferPtr buf);

@@ -59,7 +59,7 @@ Buffer::Buffer()
 Buffer::~Buffer()
 {
     deleteImage(this);
-    clearBuffer(this);
+    ClearLines();
     for (int i = 0; i < MAX_LB; i++)
     {
         auto b = linkBuffer[i];
@@ -369,14 +369,6 @@ nullBuffer(void)
     return b;
 }
 
-/* 
- * clearBuffer: clear buffer content
- */
-void clearBuffer(BufferPtr buf)
-{
-    buf->firstLine = buf->topLine = buf->currentLine = buf->lastLine = NULL;
-    buf->allLine = 0;
-}
 
 /* 
  * gotoLine: go to line number
@@ -385,7 +377,6 @@ void gotoLine(BufferPtr buf, int n)
 {
     char msg[32];
     Line *l = buf->firstLine;
-
     if (l == NULL)
         return;
     if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
@@ -496,7 +487,7 @@ void reshapeBuffer(BufferPtr buf)
         return;
 
     auto sbuf = buf->Copy();
-    clearBuffer(buf);
+    buf->ClearLines();
     while (buf->frameset)
     {
         deleteFrameSet(buf->frameset);
