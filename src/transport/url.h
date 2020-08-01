@@ -49,7 +49,7 @@ struct ParsedURL
 const char *filename_extension(const char *patch, int is_url);
 
 ParsedURL *schemeToProxy(int scheme);
-char *otherinfo(const ParsedURL *target, const ParsedURL *current, char *referer);
+char *otherinfo(const ParsedURL *target, const ParsedURL *current, const char *referer);
 SchemaTypes getURLScheme(char **url);
 char *mybasename(std::string_view s);
 char *url_unquote_conv(std::string_view url, CharacterEncodingScheme charset);

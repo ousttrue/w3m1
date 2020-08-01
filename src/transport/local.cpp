@@ -234,7 +234,7 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
 }
 
 FILE *
-localcgi_post(char *uri, char *qstr, FormList *request, char *referer)
+localcgi_post(char *uri, char *qstr, FormList *request, const char *referer)
 {
     FILE *fr = NULL, *fw = NULL;
     int status;

@@ -745,7 +745,7 @@ load_doc:
     }
 
     URLFile f(SCM_MISSING, NULL);
-    f.openURL(tpath.data(), &pu, current.get(), &url_option, request, extra_header,
+    f.openURL(tpath.data(), &pu, current.get(), url_option, request, extra_header,
               &hr, &status);
     content_charset = WC_CES_NONE;
 

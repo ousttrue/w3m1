@@ -1,8 +1,7 @@
 #include "transport/urlfile.h"
-
 #include "transport/url.h"
+#include "transport/local.h"
 #include "http/http_request.h"
-
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
@@ -317,7 +316,7 @@ static int dir_exist(char *path)
 }
 
 void URLFile::openURL(std::string_view url, ParsedURL *pu, const ParsedURL *current,
-                      URLOption *option, FormList *request, TextList *extra_header,
+                      const URLOption &option, FormList *request, TextList *extra_header,
                       HRequest *hr, unsigned char *status)
 {
     Str tmp;
@@ -356,7 +355,7 @@ retry:
 
     this->scheme = pu->scheme;
     this->url = pu->ToStr()->ptr;
-    pu->is_nocache = (option->flag & RG_NOCACHE);
+    pu->is_nocache = (option.flag & RG_NOCACHE);
     this->ext = filename_extension(pu->file.c_str(), 1);
 
     switch (pu->scheme)
@@ -366,12 +365,12 @@ retry:
         if (request && request->body)
             /* local CGI: POST */
             this->stream = newFileStream(localcgi_post(const_cast<char *>(pu->real_file.c_str()), const_cast<char *>(pu->query.c_str()),
-                                                       request, option->referer),
+                                                       request, option.referer),
                                          (FileStreamCloseFunc)fclose);
         else
             /* lodal CGI: GET */
             this->stream = newFileStream(localcgi_get(const_cast<char *>(pu->real_file.c_str()), const_cast<char *>(pu->query.c_str()),
-                                                      option->referer),
+                                                      option.referer),
                                          (FileStreamCloseFunc)fclose);
         if (this->stream)
         {

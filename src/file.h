@@ -168,8 +168,6 @@ char *helpFile(char *base);
 Str localCookie(void);
 
 
-FILE *localcgi_post(char *, char *, FormList *, char *);
-#define localcgi_get(u, q, r) localcgi_post((u), (q), NULL, (r))
 FILE *openSecretFile(char *fname);
 
 void loadPreForm(void);

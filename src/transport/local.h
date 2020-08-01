@@ -54,3 +54,5 @@ void set_environ(std::string_view var, std::string_view value);
 
 pid_t open_pipe_rw(FILE **fr, FILE **fw);
 Str loadLocalDir(std::string_view dname);
+FILE *localcgi_post(char *, char *, struct FormList *, const char*);
+#define localcgi_get(u, q, r) localcgi_post((u), (q), NULL, (r))

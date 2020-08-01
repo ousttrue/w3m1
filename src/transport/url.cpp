@@ -1034,7 +1034,7 @@ Str ParsedURL::ToStr(bool usePass, bool useLabel) const
 }
 
 char *
-otherinfo(const ParsedURL *target, const ParsedURL *current, char *referer)
+otherinfo(const ParsedURL *target, const ParsedURL *current, const char *referer)
 {
     Str s = Strnew();
 
@@ -1082,7 +1082,7 @@ otherinfo(const ParsedURL *target, const ParsedURL *current, char *referer)
         }
         else if (referer != NULL && referer != NO_REFERER)
         {
-            char *p = strchr(referer, '#');
+            char *p = strchr(const_cast<char*>(referer), '#');
             s->Push("Referer: ");
             if (p)
                 s->Push(referer, p - referer);

@@ -47,7 +47,7 @@ struct URLFile
     int Getc();
     int UndoGetc();
     void openURL(std::string_view url, ParsedURL *pu, const ParsedURL *current,
-                 URLOption *option, FormList *request, TextList *extra_header,
+                 const URLOption &option, FormList *request, TextList *extra_header,
                  HRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
     Str StrmyISgets();

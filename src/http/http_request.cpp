@@ -59,7 +59,7 @@ Str HRequest::ToStr(const ParsedURL &url, const ParsedURL *current, const TextLi
     tmp->Push(this->URI(url));
     tmp->Push(" HTTP/1.0\r\n");
     if (this->referer == NO_REFERER)
-        tmp->Push(otherinfo(&url, NULL, NULL));
+        tmp->Push(otherinfo(&url, NULL, ""));
     else
         tmp->Push(otherinfo(&url, current, this->referer));
     if (extra != NULL)
