@@ -1173,7 +1173,7 @@ void cursorUp0(BufferPtr buf, int n)
         cursorUpDown(buf, -1);
     else
     {
-        buf->topLine = buf->LineSkip(buf->topLine, -n, FALSE);
+        buf->LineSkip(buf->topLine, -n, FALSE);
         if (buf->currentLine->prev != NULL)
             buf->currentLine = buf->currentLine->prev;
         arrangeLine(buf);
@@ -1205,7 +1205,7 @@ void cursorDown0(BufferPtr buf, int n)
         cursorUpDown(buf, 1);
     else
     {
-        buf->topLine = buf->LineSkip(buf->topLine, n, FALSE);
+        buf->LineSkip(buf->topLine, n, FALSE);
         if (buf->currentLine->next != NULL)
             buf->currentLine = buf->currentLine->next;
         arrangeLine(buf);
@@ -1353,10 +1353,7 @@ void arrangeCursor(BufferPtr buf)
     /* Arrange line */
     if (buf->currentLine->linenumber - buf->topLine->linenumber >= buf->LINES || buf->currentLine->linenumber < buf->topLine->linenumber)
     {
-        /*
-	 * buf->topLine = buf->currentLine;
-	 */
-        buf->topLine = buf->LineSkip(buf->currentLine, 0, FALSE);
+        buf->LineSkip(buf->currentLine, 0, FALSE);
     }
     /* Arrange column */
     while (buf->pos < 0 && buf->currentLine->prev && buf->currentLine->bpos)
@@ -1467,8 +1464,8 @@ void cursorXY(BufferPtr buf, int x, int y)
 
 void restorePosition(BufferPtr buf, BufferPtr orig)
 {
-    buf->topLine = buf->LineSkip(buf->firstLine, TOP_LINENUMBER(orig) - 1,
-                            FALSE);
+    buf->LineSkip(buf->firstLine, TOP_LINENUMBER(orig) - 1,
+                  FALSE);
     buf->GotoLine(CUR_LINENUMBER(orig));
     buf->pos = orig->pos;
     if (buf->currentLine && orig->currentLine)

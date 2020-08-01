@@ -397,7 +397,7 @@ Line *Buffer::CurrentLineSkip(Line *line, int offset, int last)
     return l;
 }
 
-Line *Buffer::LineSkip(Line *line, int offset, int last)
+void Buffer::LineSkip(Line *line, int offset, int last)
 {
     auto l = CurrentLineSkip(line, offset, last);
 
@@ -406,7 +406,7 @@ Line *Buffer::LineSkip(Line *line, int offset, int last)
         for (i = this->LINES - 1 - (this->lastLine->linenumber - l->linenumber);
              i > 0 && l->prev != NULL; i--, l = l->prev)
             ;
-    return l;
+    topLine = l;
 }
 
 /* 
@@ -441,7 +441,7 @@ void Buffer::GotoLine(int n)
         sprintf(msg, "Last line is #%d", this->lastLine->linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
-        this->topLine = LineSkip(this->currentLine, -(this->LINES - 1), FALSE);
+        LineSkip(this->currentLine, -(this->LINES - 1), FALSE);
         return;
     }
     for (; l != NULL; l = l->next)
@@ -451,7 +451,7 @@ void Buffer::GotoLine(int n)
             this->currentLine = l;
             if (n < this->topLine->linenumber ||
                 this->topLine->linenumber + this->LINES <= n)
-                this->topLine = LineSkip(l, -(this->LINES + 1) / 2, FALSE);
+                LineSkip(l, -(this->LINES + 1) / 2, FALSE);
             break;
         }
     }
@@ -490,7 +490,7 @@ void Buffer::GotoRealLine(int n)
         sprintf(msg, "Last line is #%d", this->lastLine->real_linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
-        this->topLine = LineSkip(this->currentLine, -(this->LINES - 1),
+        LineSkip(this->currentLine, -(this->LINES - 1),
                                  FALSE);
         return;
     }
@@ -501,7 +501,7 @@ void Buffer::GotoRealLine(int n)
             this->currentLine = l;
             if (n < this->topLine->real_linenumber ||
                 this->topLine->real_linenumber + this->LINES <= n)
-                this->topLine = LineSkip(l, -(this->LINES + 1) / 2, FALSE);
+                LineSkip(l, -(this->LINES + 1) / 2, FALSE);
             break;
         }
     }
@@ -589,7 +589,7 @@ void Buffer::Reshape()
         n = (this->currentLine->linenumber - this->topLine->linenumber) - (cur->linenumber - sbuf->topLine->linenumber);
         if (n)
         {
-            this->topLine = LineSkip(this->topLine, n, FALSE);
+            LineSkip(this->topLine, n, FALSE);
             if (cur->real_linenumber > 0)
                 this->GotoRealLine(cur->real_linenumber);
             else

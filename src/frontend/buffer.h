@@ -89,7 +89,7 @@ public:
     void GotoRealLine(int n);
     void Reshape();
     Line *CurrentLineSkip(Line *line, int offset, int last);
-    Line *LineSkip(Line *line, int offset, int last);
+    void LineSkip(Line *line, int offset, int last);
 
     BufferPtr linkBuffer[MAX_LB];
     short width;

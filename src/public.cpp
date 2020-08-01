@@ -47,7 +47,7 @@ void nscroll(int n)
     if (buf->firstLine == NULL)
         return;
     lnum = cur->linenumber;
-    buf->topLine = buf->LineSkip(top, n, FALSE);
+    buf->LineSkip(top, n, FALSE);
     if (buf->topLine == top)
     {
         lnum += n;
@@ -729,9 +729,8 @@ void _goLine(char *l)
     }
     else if (*l == '$')
     {
-        GetCurrentTab()->GetCurrentBuffer()->topLine =
-            GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->lastLine,
-                     -(GetCurrentTab()->GetCurrentBuffer()->LINES + 1) / 2, TRUE);
+        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->lastLine,
+                                                      -(GetCurrentTab()->GetCurrentBuffer()->LINES + 1) / 2, TRUE);
         GetCurrentTab()->GetCurrentBuffer()->currentLine = GetCurrentTab()->GetCurrentBuffer()->lastLine;
     }
     else
@@ -1209,10 +1208,10 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         {
             GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
             if (label_topline)
-                GetCurrentTab()->GetCurrentBuffer()->topLine = GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
-                                                                        GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
-                                                                            GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
-                                                                        FALSE);
+                GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
+                                                                                                             GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
+                                                                                                                 GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+                                                                                                             FALSE);
             GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
             arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
         }
@@ -1529,9 +1528,9 @@ void gotoLabel(std::string_view label)
     GetCurrentTab()->PushBufferCurrentPrev(buf);
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
     if (label_topline)
-        GetCurrentTab()->GetCurrentBuffer()->topLine = GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
-                                                                GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
-                                                                FALSE);
+        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
+                                                                                                     GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+                                                                                                     FALSE);
     GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_FORCE_REDRAW);

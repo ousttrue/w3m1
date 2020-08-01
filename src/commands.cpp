@@ -114,8 +114,8 @@ void ctrCsrV()
                                            GetCurrentTab()->GetCurrentBuffer()->currentLine, offsety,
                                            FALSE);
 #endif
-        GetCurrentTab()->GetCurrentBuffer()->topLine =
-            GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine, -offsety, FALSE);
+
+        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine, -offsety, FALSE);
         arrangeLine(GetCurrentTab()->GetCurrentBuffer());
         displayCurrentbuf(B_NORMAL);
     }
@@ -1201,9 +1201,9 @@ void backBf()
             if (buf == GetCurrentTab()->GetCurrentBuffer())
             {
                 rFrame();
-                GetCurrentTab()->GetCurrentBuffer()->topLine = GetCurrentTab()->GetCurrentBuffer()->LineSkip(
-                                                                        GetCurrentTab()->GetCurrentBuffer()->firstLine, top - 1,
-                                                                        FALSE);
+                GetCurrentTab()->GetCurrentBuffer()->LineSkip(
+                    GetCurrentTab()->GetCurrentBuffer()->firstLine, top - 1,
+                    FALSE);
                 GetCurrentTab()->GetCurrentBuffer()->GotoLine(linenumber);
                 GetCurrentTab()->GetCurrentBuffer()->pos = pos;
                 GetCurrentTab()->GetCurrentBuffer()->currentColumn = currentColumn;
@@ -1306,7 +1306,7 @@ void linkMn()
         gotoLabel(l->url().substr(1));
         return;
     }
-    
+
     URL p_url;
     p_url.Parse2(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(URLHist, p_url.ToStr()->ptr);
