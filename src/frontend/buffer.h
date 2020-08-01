@@ -58,14 +58,15 @@ struct Buffer : gc_cleanup
     std::string filename;
     std::string buffername;
 
-    // list
-    Line *firstLine;
-    Line *lastLine;
-
     // scroll
     Line *topLine;
     // cursor ?
     Line *currentLine;
+
+// private:
+    // list
+    Line *firstLine;
+    Line *lastLine;
 
 private:
     int allLine = 0;
@@ -79,6 +80,7 @@ public:
         allLine = 0;
     }
     void GotoLine(int n);
+    void GotoRealLine(int n);
 
     BufferPtr linkBuffer[MAX_LB];
     short width;
@@ -166,7 +168,6 @@ void getAllImage(BufferPtr buf);
 void loadImage(BufferPtr buf, int flag);
 
 BufferPtr nullBuffer(void);
-void gotoRealLine(BufferPtr buf, int n);
 void reshapeBuffer(BufferPtr buf);
 
 void set_buffer_environ(BufferPtr buf);

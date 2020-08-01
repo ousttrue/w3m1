@@ -721,7 +721,7 @@ void _goLine(char *l)
     GetCurrentTab()->GetCurrentBuffer()->pos = 0;
     if (((*l == '^') || (*l == '$')) && prec_num())
     {
-        gotoRealLine(GetCurrentTab()->GetCurrentBuffer(), prec_num());
+        GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(prec_num());
     }
     else if (*l == '^')
     {
@@ -735,7 +735,7 @@ void _goLine(char *l)
         GetCurrentTab()->GetCurrentBuffer()->currentLine = GetCurrentTab()->GetCurrentBuffer()->lastLine;
     }
     else
-        gotoRealLine(GetCurrentTab()->GetCurrentBuffer(), atoi(l));
+        GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(atoi(l));
     arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_FORCE_REDRAW);
 }

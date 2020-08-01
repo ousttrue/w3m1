@@ -1323,7 +1323,7 @@ page_loaded:
             else
             { /* plain text */
                 int l = atoi(pu.label.c_str());
-                gotoRealLine(b, l);
+                b->GotoRealLine(l);
                 b->pos = 0;
                 arrangeCursor(b);
             }
