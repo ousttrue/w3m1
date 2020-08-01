@@ -42,5 +42,5 @@ public:
             return " ";
     }
 
-    std::string toHtml(const ParsedURL &baseUrl, CharacterEncodingScheme ces) const;
+    std::string toHtml(const URL &baseUrl, CharacterEncodingScheme ces) const;
 };

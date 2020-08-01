@@ -1051,7 +1051,7 @@ void followA()
         return;
     }
 
-    ParsedURL u;
+    URL u;
     u.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     if (u.ToStr()->Cmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()) == 0)
     {
@@ -1307,7 +1307,7 @@ void linkMn()
         return;
     }
     
-    ParsedURL p_url;
+    URL p_url;
     p_url.Parse2(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
@@ -1877,7 +1877,7 @@ void extbrz()
 
 void linkbrz()
 {
-    ParsedURL pu;
+    URL pu;
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
     auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());

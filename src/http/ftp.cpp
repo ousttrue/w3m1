@@ -366,7 +366,7 @@ void closeFTP(void)
 }
 
 InputStream *
-openFTPStream(ParsedURL *pu, URLFile *uf)
+openFTPStream(URL *pu, URLFile *uf)
 {
     Str tmp;
     int status;
@@ -496,9 +496,9 @@ ftp_dir:
 }
 
 #ifdef USE_M17N
-Str loadFTPDir(ParsedURL *pu, CharacterEncodingScheme *charset)
+Str loadFTPDir(URL *pu, CharacterEncodingScheme *charset)
 #else
-Str loadFTPDir0(ParsedURL *pu)
+Str loadFTPDir0(URL *pu)
 #endif
 {
     Str FTPDIRtmp;

@@ -17,7 +17,7 @@ enum HttpRequestFlags
 };
 #include "enum_bit_operator.h"
 
-struct ParsedURL;
+struct URL;
 struct FormList;
 struct TextList;
 struct HRequest
@@ -33,6 +33,6 @@ struct HRequest
     }
 
     Str Method() const;
-    Str URI(const ParsedURL &url) const;
-    Str ToStr(const ParsedURL &url, const ParsedURL *current, const TextList *extra) const;
+    Str URI(const URL &url) const;
+    Str ToStr(const URL &url, const URL *current, const TextList *extra) const;
 };

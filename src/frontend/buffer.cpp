@@ -277,7 +277,7 @@ void Buffer::ClearLink()
     }
 }
 
-ParsedURL *Buffer::BaseURL()
+URL *Buffer::BaseURL()
 {
     if (bufferprop & BP_NO_URL)
     {
@@ -603,7 +603,7 @@ void set_buffer_environ(BufferPtr buf)
     l = buf->currentLine;
     if (l && (buf != prev_buf || l != prev_line || buf->pos != prev_pos))
     {
-        ParsedURL pu;
+        URL pu;
         char *s = GetWord(buf);
         set_environ("W3M_CURRENT_WORD", (char *)(s ? s : ""));
         auto a = retrieveCurrentAnchor(buf);

@@ -823,7 +823,7 @@ static struct pre_form *PreForm = NULL;
 static struct pre_form *
 add_pre_form(struct pre_form *prev, char *url, char *name, char *action)
 {
-    ParsedURL pu;
+    URL pu;
     struct pre_form *newForm;
 
     if (prev)

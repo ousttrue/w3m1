@@ -655,7 +655,7 @@ link_list_panel(BufferPtr buf)
             const char *p;
             if (l.url().size())
             {
-                ParsedURL pu;
+                URL pu;
                 pu.Parse2(l.url(), buf->BaseURL());
                 p = pu.ToStr()->ptr;
                 u = html_quote(p);
@@ -684,7 +684,7 @@ link_list_panel(BufferPtr buf)
             auto a = &al.anchors[i];
             if (a->hseq < 0 || a->slave)
                 continue;
-            ParsedURL pu;
+            URL pu;
             pu.Parse2(const_cast<char *>(a->url.c_str()), buf->BaseURL());
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
@@ -709,7 +709,7 @@ link_list_panel(BufferPtr buf)
             auto a = &al.anchors[i];
             if (a->slave)
                 continue;
-            ParsedURL pu;
+            URL pu;
             pu.Parse2(a->url, buf->BaseURL());
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);

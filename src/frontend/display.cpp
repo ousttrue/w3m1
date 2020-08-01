@@ -277,7 +277,7 @@ static Str
 make_lastline_link(BufferPtr buf, std::string_view title, char *url)
 {
     Str s = NULL, u;
-    ParsedURL pu;
+    URL pu;
     char *p;
     int l = COLS - 1, i;
 
@@ -715,7 +715,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
     char *p;
     Lineprop *pr;
     Linecolor *pc;
-    ParsedURL url;
+    URL url;
     int k, vpos = -1;
 
     if (l == NULL)
@@ -963,7 +963,7 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
     Lineprop *pr;
     Linecolor *pc;
     int bcol, ecol;
-    ParsedURL url;
+    URL url;
     int k, vpos = -1;
 
     if (l == NULL)

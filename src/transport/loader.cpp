@@ -45,12 +45,12 @@ int frame_source = 0;
 //
 // HTTP redirection
 //
-static std::vector<ParsedURL> g_puv;
+static std::vector<URL> g_puv;
 static void clearRedirection()
 {
     g_puv.clear();
 }
-static bool checkRedirection(ParsedURL *pu)
+static bool checkRedirection(URL *pu)
 {
     assert(pu);
     Str tmp;
@@ -178,7 +178,7 @@ checkContentType(BufferPtr buf)
     return r->ptr;
 }
 
-void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
+void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
 {
     char *p, *q;
     char *emsg;
@@ -703,10 +703,10 @@ int doFileCopy(const char *tmpf, const char *defstr)
  * loadGeneralFile: load file to buffer
  */
 BufferPtr
-loadGeneralFile(std::string_view path, const ParsedURL *_current, char *referer,
+loadGeneralFile(std::string_view path, const URL *_current, char *referer,
                 LoadFlags flag, FormList *request)
 {
-    ParsedURL pu;
+    URL pu;
     BufferPtr b = NULL;
     auto proc = loadBuffer;
     char *p;
@@ -724,7 +724,7 @@ loadGeneralFile(std::string_view path, const ParsedURL *_current, char *referer,
     CharacterEncodingScheme charset = WC_CES_US_ASCII;
 
     HRequest hr(referer, request);
-    ParsedURL *auth_pu;
+    URL *auth_pu;
 
     auto tpath = path;
     MySignalHandler prevtrap = NULL;
@@ -734,10 +734,10 @@ loadGeneralFile(std::string_view path, const ParsedURL *_current, char *referer,
 load_doc:
     TRAP_OFF;
 
-    std::shared_ptr<ParsedURL> current;
+    std::shared_ptr<URL> current;
     if (_current)
     {
-        current = std::make_shared<ParsedURL>();
+        current = std::make_shared<URL>();
         *current = *_current;
     }
 

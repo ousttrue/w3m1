@@ -254,7 +254,7 @@ add_news_message(Str str, int index, char *date, char *name, char *subject,
  */
 
 InputStream *
-openNewsStream(ParsedURL *pu)
+openNewsStream(URL *pu)
 {
     char *host, *mode, *group, *p;
     Str tmp;
@@ -334,7 +334,7 @@ openNewsStream(ParsedURL *pu)
     return NULL;
 }
 
-Str loadNewsgroup(ParsedURL *pu, CharacterEncodingScheme *charset)
+Str loadNewsgroup(URL *pu, CharacterEncodingScheme *charset)
 {
     Str page;
     Str tmp;

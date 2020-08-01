@@ -77,7 +77,7 @@ void initURIMethods()
     }
 }
 
-Str searchURIMethods(ParsedURL *pu)
+Str searchURIMethods(URL *pu)
 {
     struct UriMethod *ump;
     int i;

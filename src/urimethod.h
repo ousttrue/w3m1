@@ -3,6 +3,6 @@
 #include "frontend/buffer.h"
 
 void initURIMethods();
-Str searchURIMethods(ParsedURL *pu);
+Str searchURIMethods(URL *pu);
 void chkExternalURIBuffer(BufferPtr buf);
 void chkURLBuffer(BufferPtr buf);

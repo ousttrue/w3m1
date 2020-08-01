@@ -17,7 +17,7 @@
 
 /* add index_file if exists */
 static void
-add_index_file(ParsedURL *pu, URLFile *uf)
+add_index_file(URL *pu, URLFile *uf)
 {
     char *p, *q;
     TextList *index_file_list = NULL;
@@ -249,7 +249,7 @@ SSL_write_from_file(SSL *ssl, char *file)
     }
 }
 
-URLFile::URLFile(SchemaTypes scm, InputStream *strm)
+URLFile::URLFile(URLSchemeTypes scm, InputStream *strm)
     : scheme(scm), stream(strm)
 {
 }
@@ -315,7 +315,7 @@ static int dir_exist(char *path)
     return IS_DIRECTORY(stbuf.st_mode);
 }
 
-void URLFile::openURL(std::string_view url, ParsedURL *pu, const ParsedURL *current,
+void URLFile::openURL(std::string_view url, URL *pu, const URL *current,
                       const char *referer, LoadFlags flag, FormList *request, TextList *extra_header,
                       HRequest *hr, unsigned char *status)
 {
@@ -436,7 +436,7 @@ retry:
         {
             hr->flag |= HR_FLAG_PROXY;
             sock = openSocket(FTP_proxy_parsed.host.c_str(),
-                              GetScheme(FTP_proxy_parsed.scheme).name.data(),
+                              GetScheme(FTP_proxy_parsed.scheme)->name.data(),
                               FTP_proxy_parsed.port);
             if (sock < 0)
                 return;
@@ -486,13 +486,13 @@ retry:
             else if (pu->scheme == SCM_HTTPS)
             {
                 sock = openSocket(HTTPS_proxy_parsed.host.c_str(),
-                                  GetScheme(HTTPS_proxy_parsed.scheme).name.data(), HTTPS_proxy_parsed.port);
+                                  GetScheme(HTTPS_proxy_parsed.scheme)->name.data(), HTTPS_proxy_parsed.port);
                 sslh = NULL;
             }
             else
             {
                 sock = openSocket(HTTP_proxy_parsed.host.c_str(),
-                                  GetScheme(HTTP_proxy_parsed.scheme).name.data(), HTTP_proxy_parsed.port);
+                                  GetScheme(HTTP_proxy_parsed.scheme)->name.data(), HTTP_proxy_parsed.port);
                 sslh = NULL;
             }
 
@@ -527,7 +527,7 @@ retry:
         else
         {
             sock = openSocket(pu->host.c_str(),
-                              GetScheme(pu->scheme).name.data(), pu->port);
+                              GetScheme(pu->scheme)->name.data(), pu->port);
             if (sock < 0)
             {
                 *status = HTST_MISSING;

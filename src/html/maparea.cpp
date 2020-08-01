@@ -271,7 +271,7 @@ follow_map_panel(BufferPtr buf, char *name)
     MapList *ml;
     ListItem *al;
     MapArea *a;
-    ParsedURL pu;
+    URL pu;
     char *p, *q;
     BufferPtr newbuf;
 
@@ -423,7 +423,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
     MapList *ml;
     ListItem *al;
     MapArea *a;
-    ParsedURL pu;
+    URL pu;
     char *p, *q;
 
     ml = searchMapList(buf, fi->value ? fi->value->ptr : NULL);
@@ -529,7 +529,7 @@ page_info_panel(BufferPtr buf)
 {
     Str tmp = Strnew_size(1024);
     const Anchor *a;
-    ParsedURL pu;
+    URL pu;
     TextListItem *ti;
     struct frameset *f_set = NULL;
     int all;

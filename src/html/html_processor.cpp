@@ -874,7 +874,7 @@ Str process_img(struct parsed_tag *tag, int width)
         if (w < 0 || i < 0)
         {
             Image image;
-            ParsedURL u;
+            URL u;
 
             u.Parse2(wc_conv(p, InnerCharset, cur_document_charset)->ptr, GetCurBaseUrl());
             image.url = u.ToStr()->ptr;
@@ -1520,7 +1520,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         a_img->image = NULL;
                         if (iseq > 0)
                         {
-                            ParsedURL u;
+                            URL u;
                             Image *image;
 
                             u.Parse2(a_img->url, GetCurBaseUrl());

@@ -295,7 +295,7 @@ void deleteImage(BufferPtr buf)
 void getAllImage(BufferPtr buf)
 {
     Anchor *a;
-    ParsedURL *current;
+    URL *current;
     int i;
 
     image_buffer = buf;
@@ -495,7 +495,7 @@ void loadImage(BufferPtr buf, int flag)
 }
 
 ImageCache *
-getImage(Image *image, ParsedURL *current, int flag)
+getImage(Image *image, URL *current, int flag)
 {
     Str key = NULL;
     ImageCache *cache;

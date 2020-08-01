@@ -81,8 +81,8 @@ static void KeyAbort(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
-static ParsedURL g_cur_baseURL = {};
-ParsedURL *GetCurBaseUrl()
+static URL g_cur_baseURL = {};
+URL *GetCurBaseUrl()
 {
     return &g_cur_baseURL;
 }
@@ -193,7 +193,7 @@ checkHeader(BufferPtr buf, char *field)
 }
 
 static int
-same_url_p(ParsedURL *pu1, ParsedURL *pu2)
+same_url_p(URL *pu1, URL *pu2)
 {
     return (pu1->scheme == pu2->scheme && pu1->port == pu2->port &&
             (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) &&
@@ -625,7 +625,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
 /* 
  * loadGopherDir: get gopher directory
  */
-Str loadGopherDir(URLFile *uf, ParsedURL *pu, CharacterEncodingScheme *charset)
+Str loadGopherDir(URLFile *uf, URL *pu, CharacterEncodingScheme *charset)
 {
     Str tmp;
     Str lbuf, name, file, host, port;

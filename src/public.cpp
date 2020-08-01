@@ -258,7 +258,7 @@ void do_dump(BufferPtr buf)
             printf("\nReferences:\n\n");
             for (i = 0; i < buf->href.size(); i++)
             {
-                ParsedURL pu;
+                URL pu;
                 static Str s = NULL;
                 if (buf->href.anchors[i].slave)
                     continue;
@@ -467,7 +467,7 @@ void cmd_loadfile(char *fn)
     displayCurrentbuf(B_NORMAL);
 }
 
-void cmd_loadURL(std::string_view url, ParsedURL *current, char *referer, FormList *request)
+void cmd_loadURL(std::string_view url, URL *current, char *referer, FormList *request)
 {
     BufferPtr buf;
 
@@ -1132,7 +1132,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
 {
     BufferPtr nfbuf;
     union frameset_element *f_element = NULL;
-    ParsedURL *base, pu;
+    URL *base, pu;
 
     message(Sprintf("loading %s", url)->ptr, 0, 0);
     refresh();
@@ -1330,7 +1330,7 @@ void _nextA(int visited)
     const Anchor *an;
     const Anchor *pan;
     int i, x, y, n = searchKeyNum();
-    ParsedURL url;
+    URL url;
 
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
@@ -1423,7 +1423,7 @@ void _prevA(int visited)
     auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     BufferPoint *po;
     int i, x, y, n = searchKeyNum();
-    ParsedURL url;
+    URL url;
 
     if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
         return;
@@ -1672,7 +1672,7 @@ int checkBackBuffer(TabPtr tab, BufferPtr buf)
 void goURL0(const char *prompt, int relative)
 {
     char *url, *referer;
-    ParsedURL p_url, *current;
+    URL p_url, *current;
     BufferPtr cur_buf = GetCurrentTab()->GetCurrentBuffer();
 
     url = searchKeyData();
@@ -1771,7 +1771,7 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
 void _peekURL(int only_img)
 {
     const Anchor *a;
-    ParsedURL pu;
+    URL pu;
     static Str s = NULL;
     static Lineprop *p = NULL;
     Lineprop *pp;
@@ -2411,7 +2411,7 @@ void follow_map(struct parsed_tagarg *arg)
 
     MapArea *a;
     int x, y;
-    ParsedURL p_url;
+    URL p_url;
 
     auto an = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
     x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX;

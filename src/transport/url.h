@@ -4,7 +4,7 @@
 #include <string_view>
 #include "ces.h"
 
-enum SchemaTypes
+enum URLSchemeTypes
 {
     SCM_UNKNOWN = 255,
     SCM_MISSING = 254,
@@ -24,9 +24,17 @@ enum SchemaTypes
     SCM_HTTPS = 13,
 };
 
-struct ParsedURL
+struct URLScheme
 {
-    SchemaTypes scheme = SCM_MISSING;
+    std::string_view name;
+    URLSchemeTypes schema;
+    int defaultPort;
+};
+const URLScheme *GetScheme(URLSchemeTypes index);
+
+struct URL
+{
+    URLSchemeTypes scheme = SCM_MISSING;
     std::string user;
     std::string pass;
     std::string host;
@@ -37,8 +45,8 @@ struct ParsedURL
     std::string label;
     int is_nocache = 0;
 
-    void Parse(std::string_view url, const ParsedURL *current);
-    void Parse2(std::string_view url, const ParsedURL *current);
+    void Parse(std::string_view url, const URL *current);
+    void Parse2(std::string_view url, const URL *current);
     operator bool() const
     {
         return scheme != SCM_MISSING;
@@ -48,15 +56,7 @@ struct ParsedURL
 
 const char *filename_extension(const char *patch, int is_url);
 
-ParsedURL *schemeToProxy(int scheme);
-char *otherinfo(const ParsedURL *target, const ParsedURL *current, const char *referer);
-SchemaTypes getURLScheme(char **url);
+URL *schemeToProxy(int scheme);
+URLSchemeTypes getURLScheme(char **url);
 char *mybasename(std::string_view s);
 char *url_unquote_conv(std::string_view url, CharacterEncodingScheme charset);
-
-struct SchemeKeyValue
-{
-    std::string_view name;
-    SchemaTypes schema;
-};
-SchemeKeyValue &GetScheme(int index);

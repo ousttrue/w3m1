@@ -24,7 +24,7 @@ Str HRequest::Method() const
     return NULL;
 }
 
-Str HRequest::URI(const ParsedURL &url) const
+Str HRequest::URI(const URL &url) const
 {
     Str tmp = Strnew();
     if (command == HR_COMMAND_CONNECT)
@@ -48,7 +48,68 @@ Str HRequest::URI(const ParsedURL &url) const
     return tmp;
 }
 
-Str HRequest::ToStr(const ParsedURL &url, const ParsedURL *current, const TextList *extra) const
+char *
+otherinfo(const URL *target, const URL *current, const char *referer)
+{
+    Str s = Strnew();
+
+    s->Push("User-Agent: ");
+    if (UserAgent == NULL || *UserAgent == '\0')
+        s->Push(w3m_version);
+    else
+        s->Push(UserAgent);
+    s->Push("\r\n");
+
+    Strcat_m_charp(s, "Accept: ", AcceptMedia, "\r\n", NULL);
+    Strcat_m_charp(s, "Accept-Encoding: ", AcceptEncoding, "\r\n", NULL);
+    Strcat_m_charp(s, "Accept-Language: ", AcceptLang, "\r\n", NULL);
+
+    if (target->host.size())
+    {
+        s->Push("Host: ");
+        s->Push(target->host);
+        if (target->port != GetScheme(target->scheme)->defaultPort)
+            s->Push(Sprintf(":%d", target->port));
+        s->Push("\r\n");
+    }
+    if (target->is_nocache || NoCache)
+    {
+        s->Push("Pragma: no-cache\r\n");
+        s->Push("Cache-control: no-cache\r\n");
+    }
+    if (!NoSendReferer)
+    {
+        if (current && current->scheme == SCM_HTTPS && target->scheme != SCM_HTTPS)
+        {
+            /* Don't send Referer: if https:// -> http:// */
+        }
+        else if (referer == NULL && current && current->scheme != SCM_LOCAL &&
+                 (current->scheme != SCM_FTP ||
+                  (current->user.empty() && current->pass.empty())))
+        {
+            // char *p = current->label;
+            s->Push("Referer: ");
+            //current->label = NULL;
+            auto withoutLabel = *current;
+            withoutLabel.label.clear();
+            s->Push(withoutLabel.ToStr());
+            s->Push("\r\n");
+        }
+        else if (referer != NULL && referer != NO_REFERER)
+        {
+            char *p = strchr(const_cast<char*>(referer), '#');
+            s->Push("Referer: ");
+            if (p)
+                s->Push(referer, p - referer);
+            else
+                s->Push(referer);
+            s->Push("\r\n");
+        }
+    }
+    return s->ptr;
+}
+
+Str HRequest::ToStr(const URL &url, const URL *current, const TextList *extra) const
 {
     TextListItem *i;
     int seen_www_auth = 0;

@@ -65,52 +65,56 @@ static int
         119, /* news group */
         0,   /* data - not defined */
         0,   /* mailto - not defined */
-#ifdef USE_SSL
         443, /* https */
-#endif       /* USE_SSL */
 };
 
-SchemeKeyValue schemetable[] = {
-    {"http", SCM_HTTP},
-    {"gopher", SCM_GOPHER},
-    {"ftp", SCM_FTP},
-    {"local", SCM_LOCAL},
-    {"file", SCM_LOCAL},
-    /*  {"exec", SCM_EXEC}, */
-    {"nntp", SCM_NNTP},
-    /*  {"nntp", SCM_NNTP_GROUP}, */
-    {"news", SCM_NEWS},
-    /*  {"news", SCM_NEWS_GROUP}, */
-    {"data", SCM_DATA},
-    {"mailto", SCM_MAILTO},
-    {"https", SCM_HTTPS},
-    // {NULL, SCM_UNKNOWN},
+URLScheme schemetable[] = {
+    {"http", SCM_HTTP, 80},
+    {"gopher", SCM_GOPHER, 70},
+    {"ftp", SCM_FTP, 21},
+    {"local", SCM_LOCAL, 0},
+    {"file", SCM_LOCAL, 0},
+    {"exec", SCM_EXEC},
+    {"nntp", SCM_NNTP, 119},
+    {"nntp", SCM_NNTP_GROUP},
+    {"news", SCM_NEWS, 119},
+    {"news", SCM_NEWS_GROUP},
+    {"data", SCM_DATA, 0},
+    {"mailto", SCM_MAILTO, 0},
+    {"https", SCM_HTTPS, 443},
 };
 
-SchemeKeyValue &GetScheme(int index)
+const URLScheme *GetScheme(URLSchemeTypes index)
 {
-    return schemetable[index];
+    for (auto &s : schemetable)
+    {
+        if (s.schema == index)
+        {
+            return &s;
+        }
+    }
+    return nullptr;
 }
 
-Str tmp;
-static const char *scheme_str[] = {
-    "http",
-    "gopher",
-    "ftp",
-    "ftp",
-    "file",
-    "file",
-    "exec",
-    "nntp",
-    "nntp",
-    "news",
-    "news",
-    "data",
-    "mailto",
-#ifdef USE_SSL
-    "https",
-#endif /* USE_SSL */
-};
+// Str tmp;
+// static const char *scheme_str[] = {
+//     "http",
+//     "gopher",
+//     "ftp",
+//     "ftp",
+//     "file",
+//     "file",
+//     "exec",
+//     "nntp",
+//     "nntp",
+//     "news",
+//     "news",
+//     "data",
+//     "mailto",
+// #ifdef USE_SSL
+//     "https",
+// #endif /* USE_SSL */
+// };
 
 /* #define HTTP_DEFAULT_FILE    "/index.html" */
 
@@ -404,7 +408,7 @@ copyPath(char *orgpath, int length, int option)
     return tmp->ptr;
 }
 
-SchemaTypes getURLScheme(char **url)
+URLSchemeTypes getURLScheme(char **url)
 {
     // heading
     std::string_view view(*url);
@@ -448,7 +452,7 @@ const char *string_strchr(const std::string &src, int c)
     return src.c_str() + pos;
 }
 
-void ParsedURL::Parse(std::string_view _url, const ParsedURL *current)
+void URL::Parse(std::string_view _url, const URL *current)
 {
     *this = {};
 
@@ -570,6 +574,7 @@ analyze_url:
     switch (*p)
     {
     case ':':
+    {
         /* scheme://user:pass@host or
 	 * scheme://host:port
 	 */
@@ -587,10 +592,11 @@ analyze_url:
             goto analyze_url;
         }
         /* scheme://host:port/ */
-        tmp = Strnew_charp_n(q, p - q);
+        auto tmp = Strnew_charp_n(q, p - q);
         this->port = atoi(tmp->ptr);
         /* *p is one of ['\0', '/', '?', '#'] */
         break;
+    }
     case '@':
         /* scheme://user@...            */
         this->user = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
@@ -764,7 +770,7 @@ rest:
     return name;
 }
 
-void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
+void URL::Parse2(std::string_view url, const URL *current)
 {
     const char *p;
     Str tmp;
@@ -959,7 +965,7 @@ void ParsedURL::Parse2(std::string_view url, const ParsedURL *current)
     }
 }
 
-Str ParsedURL::ToStr(bool usePass, bool useLabel) const
+Str URL::ToStr(bool usePass, bool useLabel) const
 {
     if (this->scheme == SCM_MISSING)
     {
@@ -976,7 +982,7 @@ Str ParsedURL::ToStr(bool usePass, bool useLabel) const
     }
     if (this->scheme == SCM_LOCAL && this->file == "-")
     {
-        tmp = Strnew("-");
+        auto tmp = Strnew("-");
         if (this->label.size())
         {
             tmp->Push('#');
@@ -984,114 +990,56 @@ Str ParsedURL::ToStr(bool usePass, bool useLabel) const
         }
         return tmp;
     }
-    tmp = Strnew(scheme_str[this->scheme]);
-    tmp->Push(':');
-    if (this->scheme == SCM_DATA)
+
     {
+        auto tmp = Strnew(GetScheme(this->scheme)->name);
+        tmp->Push(':');
+        if (this->scheme == SCM_DATA)
+        {
+            tmp->Push(this->file);
+            return tmp;
+        }
+        if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP)
+        {
+            tmp->Push("//");
+        }
+        if (this->user.size())
+        {
+            tmp->Push(this->user);
+            if (usePass && this->pass.size())
+            {
+                tmp->Push(':');
+                tmp->Push(this->pass);
+            }
+            tmp->Push('@');
+        }
+        if (this->host.size())
+        {
+            tmp->Push(this->host);
+            if (this->port != DefaultPort[this->scheme])
+            {
+                tmp->Push(':');
+                tmp->Push(Sprintf("%d", this->port));
+            }
+        }
+        if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP &&
+            (this->file.empty() || this->file[0] != '/'))
+            tmp->Push('/');
         tmp->Push(this->file);
+        if (this->scheme == SCM_FTPDIR && tmp->Back() != '/')
+            tmp->Push('/');
+        if (this->query.size())
+        {
+            tmp->Push('?');
+            tmp->Push(this->query);
+        }
+        if (useLabel && this->label.size())
+        {
+            tmp->Push('#');
+            tmp->Push(this->label);
+        }
         return tmp;
     }
-    if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP)
-    {
-        tmp->Push("//");
-    }
-    if (this->user.size())
-    {
-        tmp->Push(this->user);
-        if (usePass && this->pass.size())
-        {
-            tmp->Push(':');
-            tmp->Push(this->pass);
-        }
-        tmp->Push('@');
-    }
-    if (this->host.size())
-    {
-        tmp->Push(this->host);
-        if (this->port != DefaultPort[this->scheme])
-        {
-            tmp->Push(':');
-            tmp->Push(Sprintf("%d", this->port));
-        }
-    }
-    if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP &&
-        (this->file.empty() || this->file[0] != '/'))
-        tmp->Push('/');
-    tmp->Push(this->file);
-    if (this->scheme == SCM_FTPDIR && tmp->Back() != '/')
-        tmp->Push('/');
-    if (this->query.size())
-    {
-        tmp->Push('?');
-        tmp->Push(this->query);
-    }
-    if (useLabel && this->label.size())
-    {
-        tmp->Push('#');
-        tmp->Push(this->label);
-    }
-    return tmp;
-}
-
-char *
-otherinfo(const ParsedURL *target, const ParsedURL *current, const char *referer)
-{
-    Str s = Strnew();
-
-    s->Push("User-Agent: ");
-    if (UserAgent == NULL || *UserAgent == '\0')
-        s->Push(w3m_version);
-    else
-        s->Push(UserAgent);
-    s->Push("\r\n");
-
-    Strcat_m_charp(s, "Accept: ", AcceptMedia, "\r\n", NULL);
-    Strcat_m_charp(s, "Accept-Encoding: ", AcceptEncoding, "\r\n", NULL);
-    Strcat_m_charp(s, "Accept-Language: ", AcceptLang, "\r\n", NULL);
-
-    if (target->host.size())
-    {
-        s->Push("Host: ");
-        s->Push(target->host);
-        if (target->port != DefaultPort[target->scheme])
-            s->Push(Sprintf(":%d", target->port));
-        s->Push("\r\n");
-    }
-    if (target->is_nocache || NoCache)
-    {
-        s->Push("Pragma: no-cache\r\n");
-        s->Push("Cache-control: no-cache\r\n");
-    }
-    if (!NoSendReferer)
-    {
-        if (current && current->scheme == SCM_HTTPS && target->scheme != SCM_HTTPS)
-        {
-            /* Don't send Referer: if https:// -> http:// */
-        }
-        else if (referer == NULL && current && current->scheme != SCM_LOCAL &&
-                 (current->scheme != SCM_FTP ||
-                  (current->user.empty() && current->pass.empty())))
-        {
-            // char *p = current->label;
-            s->Push("Referer: ");
-            //current->label = NULL;
-            auto withoutLabel = *current;
-            withoutLabel.label.clear();
-            s->Push(withoutLabel.ToStr());
-            s->Push("\r\n");
-        }
-        else if (referer != NULL && referer != NO_REFERER)
-        {
-            char *p = strchr(const_cast<char*>(referer), '#');
-            s->Push("Referer: ");
-            if (p)
-                s->Push(referer, p - referer);
-            else
-                s->Push(referer);
-            s->Push("\r\n");
-        }
-    }
-    return s->ptr;
 }
 
 TextList *
@@ -1297,10 +1245,10 @@ filename_extension(const char *path, int is_url)
         return last_dot;
 }
 
-ParsedURL *
+URL *
 schemeToProxy(int scheme)
 {
-    ParsedURL *pu = NULL; /* for gcc */
+    URL *pu = NULL; /* for gcc */
     switch (scheme)
     {
     case SCM_HTTP:

@@ -338,12 +338,12 @@ void resetFrameElement(union frameset_element *f_element,
 }
 
 static struct frameset *
-frame_download_source(struct frame_body *b, ParsedURL *currentURL,
-                      ParsedURL *baseURL, LoadFlags flag)
+frame_download_source(struct frame_body *b, URL *currentURL,
+                      URL *baseURL, LoadFlags flag)
 {
     BufferPtr buf;
     struct frameset *ret_frameset = NULL;
-    ParsedURL url;
+    URL url;
 
     if (b == NULL || b->url == NULL || b->url[0] == '\0')
         return NULL;
@@ -423,7 +423,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
     int r, c, t_stack;
     CharacterEncodingScheme charset, doc_charset;
     char *d_target, *p_target, *s_target, *t_target;
-    ParsedURL *currentURL, base;
+    URL *currentURL, base;
     MySignalHandler prevtrap = NULL;
     // LoadFlags flag;
 
@@ -666,7 +666,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                         {
                             char *q = tok->ptr;
                             int j, a_target = 0;
-                            ParsedURL url;
+                            URL url;
 
                             if (!(tag = parse_tag(&q, FALSE)))
                                 goto token_end;

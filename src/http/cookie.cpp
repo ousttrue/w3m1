@@ -127,7 +127,7 @@ port_match(const std::vector<uint16_t> &l, int port)
 
 struct Cookie : public gc_cleanup
 {
-    ParsedURL url;
+    URL url;
     Str name = nullptr;
     Str value = nullptr;
     time_t expires = {};
@@ -140,7 +140,7 @@ struct Cookie : public gc_cleanup
     char flag = 0;
     Cookie *next = nullptr;
 
-    bool Match(const ParsedURL *pu, const char *domainname) const
+    bool Match(const URL *pu, const char *domainname) const
     {
         if (!domainname)
         {
@@ -323,7 +323,7 @@ FQDN(char *host)
 
 
 
-Str find_cookie(const ParsedURL *pu)
+Str find_cookie(const URL *pu)
 {
     Str tmp;
     struct Cookie *p, *p1, *fco = NULL;
@@ -407,7 +407,7 @@ int check_avoid_wrong_number_of_dots_domain(Str domain)
     }
 }
 
-int add_cookie(ParsedURL *pu, Str name, Str value,
+int add_cookie(URL *pu, Str name, Str value,
                time_t expires, Str domain, Str path,
                int flag, Str comment, int version, Str port, Str commentURL)
 {
@@ -896,7 +896,7 @@ const char *violations[COO_EMAX] = {
     "RFC 2109 4.3.2 rule 4",
     "RFC XXXX 4.3.2 rule 5"};
 
-void readHeaderCookie(ParsedURL *pu, Str lineBuf2)
+void readHeaderCookie(URL *pu, Str lineBuf2)
 {
     char *p = nullptr;
     int version;

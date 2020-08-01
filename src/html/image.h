@@ -1,10 +1,10 @@
 #pragma once
-struct ParsedURL;
+struct URL;
 
 struct ImageCache
 {
     char *url;
-    ParsedURL *current;
+    URL *current;
     char *file;
     char *touch;
     pid_t pid;
@@ -35,6 +35,6 @@ void clearImage();
 void addImage(ImageCache *cache, int x, int y, int sx, int sy, int w, int h);
 void drawImage();
 void termImage();
-ImageCache *getImage(Image *image, ParsedURL *current, int flag);
+ImageCache *getImage(Image *image, URL *current, int flag);
 int getImageSize(ImageCache *cache);
 char *xface2xpm(char *xface);

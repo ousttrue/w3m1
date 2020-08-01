@@ -39,13 +39,13 @@ Link Link::create(const parsed_tag &tag, CharacterEncodingScheme ces)
     return link;
 }
 
-std::string Link::toHtml(const ParsedURL &baseUrl, CharacterEncodingScheme ces) const
+std::string Link::toHtml(const URL &baseUrl, CharacterEncodingScheme ces) const
 {
     // html quoted url
     std::string_view url;
     if (m_url.size())
     {
-        ParsedURL pu;
+        URL pu;
         pu.Parse2(m_url, &baseUrl);
         url = html_quote(pu.ToStr()->ptr);
     }

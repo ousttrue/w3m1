@@ -146,12 +146,12 @@ int openSocket(const char *hostname, const char *remoteport_name,
 
 char *acceptableMimeTypes();
 int check_no_proxy(char *domain);
-InputStream *openFTPStream(ParsedURL *pu, URLFile *uf);
-Str loadFTPDir(ParsedURL *pu, CharacterEncodingScheme *charset);
+InputStream *openFTPStream(URL *pu, URLFile *uf);
+Str loadFTPDir(URL *pu, CharacterEncodingScheme *charset);
 void closeFTP(void);
 void disconnectFTP(void);
-InputStream *openNewsStream(ParsedURL *pu);
-Str loadNewsgroup(ParsedURL *pu, CharacterEncodingScheme *charset);
+InputStream *openNewsStream(URL *pu);
+Str loadNewsgroup(URL *pu, CharacterEncodingScheme *charset);
 void closeNews(void);
 void disconnectNews(void);
 
@@ -192,7 +192,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
                     int internal);
 
 void SetMetaCharset(CharacterEncodingScheme ces);
-ParsedURL *GetCurBaseUrl();
+URL *GetCurBaseUrl();
 int setModtime(char *path, time_t modtime);
 
 BufferPtr

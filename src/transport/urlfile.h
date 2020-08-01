@@ -34,7 +34,7 @@ struct HRequest;
 struct URLOption;
 struct URLFile
 {
-    SchemaTypes scheme = SCM_MISSING;
+    URLSchemeTypes scheme = SCM_MISSING;
     char is_cgi = 0;
     EncodingTypes encoding = ENC_7BIT;
     InputStream *stream = nullptr;
@@ -46,7 +46,7 @@ struct URLFile
     char *url = nullptr;
     time_t modtime = -1;
 
-    URLFile(SchemaTypes scheme, InputStream *stream);
+    URLFile(URLSchemeTypes scheme, InputStream *stream);
     ~URLFile();
     void Close();
     void HalfClose();
@@ -54,7 +54,7 @@ struct URLFile
     int Read(Str buf, int len);
     int Getc();
     int UndoGetc();
-    void openURL(std::string_view url, ParsedURL *pu, const ParsedURL *current,
+    void openURL(std::string_view url, URL *pu, const URL *current,
                  const char* referer, LoadFlags flag, FormList *request, TextList *extra_header,
                  HRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);

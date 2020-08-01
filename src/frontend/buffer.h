@@ -96,8 +96,8 @@ public:
     MapList *maplist;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
-    ParsedURL currentURL = {};
-    ParsedURL baseURL = {};
+    URL currentURL = {};
+    URL baseURL = {};
     std::string baseTarget;
     int real_scheme;
     std::string sourcefile;
@@ -136,7 +136,7 @@ public:
     BufferPtr Copy();
     void CopyFrom(BufferPtr src);
     void ClearLink();
-    ParsedURL *BaseURL();
+    URL *BaseURL();
     void putHmarker(int line, int pos, int seq);
     void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);
 };
