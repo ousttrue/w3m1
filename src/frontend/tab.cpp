@@ -79,7 +79,7 @@ void Tab::SetFirstBuffer(BufferPtr buffer)
 
     buffers.clear();
     buffers.push_back(buffer);
-    currentBuffer=buffer;
+    currentBuffer = buffer;
 }
 
 void Tab::SetCurrentBuffer(BufferPtr buffer)
@@ -104,6 +104,13 @@ void Tab::SetCurrentBuffer(BufferPtr buffer)
 // currentPrev -> buf -> current
 void Tab::PushBufferCurrentPrev(BufferPtr buf)
 {
+    if (buffers.empty())
+    {
+        buffers.push_back(buf);
+        SetCurrentBuffer(buf);
+        return;
+    }
+
     auto it = find(currentBuffer);
     assert(it != buffers.end());
     buffers.insert(it, buf);
@@ -402,7 +409,12 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
 void Tab::DeleteBuffer(BufferPtr delbuf)
 {
     auto it = find(delbuf);
-    if(*it == currentBuffer)
+    if(it==buffers.end())
+    {
+        // TODO:
+        return;
+    }
+    if (*it == currentBuffer)
     {
         assert(false);
         // TODO:
