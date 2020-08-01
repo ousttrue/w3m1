@@ -59,13 +59,16 @@ struct Buffer : gc_cleanup
     std::string filename;
     std::string buffername;
 
+    char need_reshape;
+
+    // private:
     // scroll
     Line *topLine;
     // cursor ?
     Line *currentLine;
-    char need_reshape;
 
-// private:
+public:
+    // private:
     // list
     Line *firstLine;
     Line *lastLine;
@@ -76,8 +79,12 @@ private:
 public:
     int LineCount() const
     {
+        if(!firstLine)
+        {
+            return 0;
+        }
         // linenumber is 1 origin ?
-        assert(allLine == (lastLine ? lastLine->linenumber : 0));
+        // assert(allLine == (lastLine ? lastLine->linenumber : 0));
         return allLine;
     }
     void AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines);
@@ -125,6 +132,24 @@ public:
     short rootY;
     short COLS;
     short LINES;
+    void CursorHome()
+    {
+        visualpos = 0;
+        cursorX = 0;
+        cursorY = 0;
+    }
+    void CursorXY(int x, int y);
+    void CursorUp0(int n);
+    void CursorUp(int n);
+    void CursorDown0(int n);
+    void CursorDown(int n);
+    void CursorUpDown(int n);
+    void CursorRight(int n);
+    void CursorLeft(int n);
+    void ArrangeLine();
+    void ArrangeCursor();
+    int ColumnSkip(int offset);
+
     InputStream *pagerSource;
     AnchorList href;
     AnchorList name;
@@ -209,4 +234,3 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 TextList *make_domain_list(char *domain_list);
-int columnSkip(BufferPtr buf, int offset);

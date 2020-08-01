@@ -72,8 +72,9 @@ URLScheme schemetable[] = {
     {"http", SCM_HTTP, 80},
     {"gopher", SCM_GOPHER, 70},
     {"ftp", SCM_FTP, 21},
-    {"local", SCM_LOCAL, 0},
+    {"ftp", SCM_FTPDIR, 21},
     {"file", SCM_LOCAL, 0},
+    {"local", SCM_LOCAL_CGI, 0},
     {"exec", SCM_EXEC},
     {"nntp", SCM_NNTP, 119},
     {"nntp", SCM_NNTP_GROUP},
@@ -983,7 +984,8 @@ Str URL::ToStr(bool usePass, bool useLabel) const
     }
 
     {
-        auto tmp = Strnew(GetScheme(this->scheme)->name);
+        auto scheme = GetScheme(this->scheme);
+        auto tmp = Strnew(scheme->name);
         tmp->Push(':');
         if (this->scheme == SCM_DATA)
         {

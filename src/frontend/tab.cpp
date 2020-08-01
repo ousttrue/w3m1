@@ -411,10 +411,17 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
     }
     if (*it == currentBuffer)
     {
-        assert(false);
+        // assert(false);
         // TODO:
     }
-    buffers.erase(it);
+    auto next = buffers.erase(it);
+    if(next==buffers.end())
+    {
+        currentBuffer = buffers.back();
+    }
+    else{
+        currentBuffer = *next;
+    }
 }
 
 /* 

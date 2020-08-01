@@ -1315,7 +1315,7 @@ page_loaded:
                         b->LineSkip(b->topLine,
                                               b->currentLine->linenumber - b->topLine->linenumber, FALSE);
                     b->pos = a->start.pos;
-                    arrangeCursor(b);
+                    b->ArrangeCursor();
                 }
             }
             else
@@ -1323,7 +1323,7 @@ page_loaded:
                 int l = atoi(pu.label.c_str());
                 b->GotoRealLine(l);
                 b->pos = 0;
-                arrangeCursor(b);
+                b->ArrangeCursor();
             }
         }
     }

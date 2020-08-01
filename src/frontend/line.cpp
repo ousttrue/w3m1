@@ -109,29 +109,29 @@ int columnPos(Line *line, int column)
     return i;
 }
 
-int columnSkip(BufferPtr buf, int offset)
+int Buffer::ColumnSkip(int offset)
 {
     int i, maxColumn;
-    int column = buf->currentColumn + offset;
-    int nlines = buf->LINES + 1;
+    int column = this->currentColumn + offset;
+    int nlines = this->LINES + 1;
     Line *l;
 
     maxColumn = 0;
-    for (i = 0, l = buf->topLine; i < nlines && l != NULL; i++, l = l->next)
+    for (i = 0, l = this->topLine; i < nlines && l != NULL; i++, l = l->next)
     {
         if (l->width < 0)
             l->CalcWidth();
         if (l->width - 1 > maxColumn)
             maxColumn = l->width - 1;
     }
-    maxColumn -= buf->COLS - 1;
+    maxColumn -= this->COLS - 1;
     if (column < maxColumn)
         maxColumn = column;
     if (maxColumn < 0)
         maxColumn = 0;
 
-    if (buf->currentColumn == maxColumn)
+    if (this->currentColumn == maxColumn)
         return 0;
-    buf->currentColumn = maxColumn;
+    this->currentColumn = maxColumn;
     return 1;
 }

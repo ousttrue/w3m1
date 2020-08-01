@@ -317,7 +317,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         else
             map = &mouse_action.tab_map[(int)btn];
     }
-    else if (y == (LINES-1))
+    else if (y == (LINES - 1))
     {
         if (mouse_action.lastline_str && x >= 0 &&
             x < mouse_action.lastline_width)
@@ -330,7 +330,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
     {
         if (y == GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY &&
             (x == GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX || (WcOption.use_wide && GetCurrentTab()->GetCurrentBuffer()->currentLine != NULL &&
-                                                                        (CharType(GetCurrentTab()->GetCurrentBuffer()->currentLine->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && x == GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX + 1)))
+                                                                                                                (CharType(GetCurrentTab()->GetCurrentBuffer()->currentLine->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && x == GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX + 1)))
         {
             if (retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer()) ||
                 retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer()))
@@ -343,7 +343,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         else
         {
             int cx = GetCurrentTab()->GetCurrentBuffer()->cursorX, cy = GetCurrentTab()->GetCurrentBuffer()->cursorY;
-            cursorXY(GetCurrentTab()->GetCurrentBuffer(), x - GetCurrentTab()->GetCurrentBuffer()->rootX, y - GetCurrentTab()->GetCurrentBuffer()->rootY);
+            GetCurrentTab()->GetCurrentBuffer()->CursorXY(x - GetCurrentTab()->GetCurrentBuffer()->rootX, y - GetCurrentTab()->GetCurrentBuffer()->rootY);
             if (y == GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY &&
                 (x == GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX
 #ifdef USE_M17N
@@ -354,7 +354,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
                 (retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer()) ||
                  retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer())))
                 map = &mouse_action.anchor_map[(int)btn];
-            cursorXY(GetCurrentTab()->GetCurrentBuffer(), cx, cy);
+            GetCurrentTab()->GetCurrentBuffer()->CursorXY(cx, cy);
         }
     }
     else
@@ -379,7 +379,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
 static int mouse_scroll_line()
 {
     if (relative_wheel_scroll)
-        return (relative_wheel_scroll_ratio * (LINES-1) + 99) / 100;
+        return (relative_wheel_scroll_ratio * (LINES - 1) + 99) / 100;
     else
         return fixed_wheel_scroll_count;
 }
@@ -418,22 +418,22 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                     t = GetTabByPosition(x, y);
                     if (t == NULL)
                         return;
-                    cursorXY(GetCurrentTab()->GetCurrentBuffer(), press_x - GetCurrentTab()->GetCurrentBuffer()->rootX,
-                             press_y - GetCurrentTab()->GetCurrentBuffer()->rootY);
+                    GetCurrentTab()->GetCurrentBuffer()->CursorXY(press_x - GetCurrentTab()->GetCurrentBuffer()->rootX,
+                                                                  press_y - GetCurrentTab()->GetCurrentBuffer()->rootY);
                     if (GetCurrentTab()->GetCurrentBuffer()->cursorY == press_y - GetCurrentTab()->GetCurrentBuffer()->rootY &&
                         (GetCurrentTab()->GetCurrentBuffer()->cursorX == press_x - GetCurrentTab()->GetCurrentBuffer()->rootX
-#ifdef USE_M17N
+
                          || (WcOption.use_wide &&
                              GetCurrentTab()->GetCurrentBuffer()->currentLine != NULL &&
                              (CharType(GetCurrentTab()->GetCurrentBuffer()->currentLine->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && GetCurrentTab()->GetCurrentBuffer()->cursorX == press_x - GetCurrentTab()->GetCurrentBuffer()->rootX - 1)
-#endif
+
                              ))
                     {
                         displayCurrentbuf(B_NORMAL);
                         followTab(t);
                     }
                     if (buf == GetCurrentTab()->GetCurrentBuffer())
-                        cursorXY(GetCurrentTab()->GetCurrentBuffer(), cx, cy);
+                        GetCurrentTab()->GetCurrentBuffer()->CursorXY(cx, cy);
                 }
                 return;
             }

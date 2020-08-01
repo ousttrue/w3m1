@@ -146,7 +146,7 @@ forwardSearch(BufferPtr buf, char *str)
 	buf->pos = pos;
 	if (l != buf->currentLine)
 	    buf->GotoLine(l->linenumber);
-	arrangeCursor(buf);
+	buf->ArrangeCursor();
 	set_mark(l, pos, pos + last - first);
 	return SR_FOUND;
     }
@@ -184,7 +184,7 @@ forwardSearch(BufferPtr buf, char *str)
 	    buf->pos = pos;
 	    buf->currentLine = l;
 	    buf->GotoLine(l->linenumber);
-	    arrangeCursor(buf);
+	    buf->ArrangeCursor();
 	    set_mark(l, pos, pos + last - first);
 	    return SR_FOUND | (wrapped ? SR_WRAPPED : 0);
 	}
@@ -263,7 +263,7 @@ backwardSearch(BufferPtr buf, char *str)
 	    buf->pos = pos;
 	    if (l != buf->currentLine)
 		buf->GotoLine(l->linenumber);
-	    arrangeCursor(buf);
+	    buf->ArrangeCursor();
 	    set_mark(l, pos, pos + found_last - found);
 	    return SR_FOUND;
 	}
@@ -302,7 +302,7 @@ backwardSearch(BufferPtr buf, char *str)
 	    }
 	    buf->pos = pos;
 	    buf->GotoLine(l->linenumber);
-	    arrangeCursor(buf);
+	    buf->ArrangeCursor();
 	    set_mark(l, pos, pos + found_last - found);
 	    return SR_FOUND | (wrapped ? SR_WRAPPED : 0);
 	}

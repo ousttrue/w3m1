@@ -528,7 +528,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
         break;
     }
     buf->CopyFrom(save);
-    arrangeLine(buf);
+    buf->ArrangeLine();
 }
 
 Str textfieldrep(Str s, int width)

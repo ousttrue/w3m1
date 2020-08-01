@@ -46,31 +46,31 @@ void nscroll(int n)
 
     buf->Scroll(n);
 
-    arrangeLine(buf);
+    buf->ArrangeLine();
     if (n > 0)
     {
         if (buf->currentLine->bpos &&
             buf->currentLine->bwidth >= buf->currentColumn + buf->visualpos)
-            cursorDown(buf, 1);
+            buf->CursorDown(1);
         else
         {
             while (buf->currentLine->next && buf->currentLine->next->bpos &&
                    buf->currentLine->bwidth + buf->currentLine->width <
                        buf->currentColumn + buf->visualpos)
-                cursorDown0(buf, 1);
+                buf->CursorDown0(1);
         }
     }
     else
     {
         if (buf->currentLine->bwidth + buf->currentLine->width <
             buf->currentColumn + buf->visualpos)
-            cursorUp(buf, 1);
+            buf->CursorUp(1);
         else
         {
             while (buf->currentLine->prev && buf->currentLine->bpos &&
                    buf->currentLine->bwidth >=
                        buf->currentColumn + buf->visualpos)
-                cursorUp0(buf, 1);
+                buf->CursorUp0(1);
         }
     }
 }
@@ -328,7 +328,7 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
                 GetCurrentTab()->GetCurrentBuffer()->pos -= 1;
                 SAVE_BUFPOSITION(&sbuf);
             }
-            arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+            GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
             displayCurrentbuf(B_FORCE_REDRAW);
             clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
             return -1;
@@ -339,9 +339,9 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
     else if (*str)
     {
         RESTORE_BUFPOSITION(&sbuf);
-        arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+        GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
         srchcore(str, searchRoutine);
-        arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+        GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
         currentLine = GetCurrentTab()->GetCurrentBuffer()->currentLine;
         pos = GetCurrentTab()->GetCurrentBuffer()->pos;
     }
@@ -418,7 +418,7 @@ void shiftvisualpos(BufferPtr buf, int shift)
         buf->visualpos = l->bwidth + buf->COLS - 1;
     else if (buf->visualpos - l->bwidth < 0)
         buf->visualpos = l->bwidth;
-    arrangeLine(buf);
+    buf->ArrangeLine();
     if (buf->visualpos - l->bwidth == -shift && buf->cursorX == 0)
         buf->visualpos = l->bwidth;
 }
@@ -522,7 +522,7 @@ void _movL(int n)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
-        cursorLeft(GetCurrentTab()->GetCurrentBuffer(), n);
+        GetCurrentTab()->GetCurrentBuffer()->CursorLeft(n);
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -533,7 +533,7 @@ void _movD(int n)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
-        cursorDown(GetCurrentTab()->GetCurrentBuffer(), n);
+        GetCurrentTab()->GetCurrentBuffer()->CursorDown(n);
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -544,7 +544,7 @@ void _movU(int n)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
-        cursorUp(GetCurrentTab()->GetCurrentBuffer(), n);
+        GetCurrentTab()->GetCurrentBuffer()->CursorUp(n);
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -555,7 +555,7 @@ void _movR(int n)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
-        cursorRight(GetCurrentTab()->GetCurrentBuffer(), n);
+        GetCurrentTab()->GetCurrentBuffer()->CursorRight(n);
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -713,7 +713,7 @@ void _goLine(char *l)
     {
         GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(atoi(l));
     }
-    arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
@@ -1191,7 +1191,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
                                                                   GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
                                                               FALSE);
             GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
-            arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+            GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
         }
     }
     displayCurrentbuf(B_NORMAL);
@@ -1390,7 +1390,7 @@ _end:
     po = &hl[an->hseq];
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
-    arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1482,7 +1482,7 @@ _end:
     po = &hl[an->hseq];
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
-    arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1510,7 +1510,7 @@ void gotoLabel(std::string_view label)
                                                       GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
                                                       FALSE);
     GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
-    arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_FORCE_REDRAW);
     return;
 }
@@ -1569,7 +1569,7 @@ void nextX(int d, int dy)
         return;
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(y);
     GetCurrentTab()->GetCurrentBuffer()->pos = pan->start.pos;
-    arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1615,7 +1615,7 @@ void nextY(int d)
     if (pan == NULL)
         return;
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(pan->start.line);
-    arrangeLine(GetCurrentTab()->GetCurrentBuffer());
+    GetCurrentTab()->GetCurrentBuffer()->ArrangeLine();
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1738,7 +1738,7 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
     po = &GetCurrentTab()->GetCurrentBuffer()->hmarklist[a->hseq];
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
     GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
-    arrangeCursor(GetCurrentTab()->GetCurrentBuffer());
+    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
     if (go)
         followA();

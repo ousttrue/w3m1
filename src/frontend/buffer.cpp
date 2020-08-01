@@ -368,7 +368,6 @@ nullBuffer(void)
     return b;
 }
 
-
 Line *Buffer::CurrentLineSkip(Line *line, int offset, int last)
 {
     int i, n;
@@ -485,7 +484,6 @@ void Buffer::Scroll(int n)
             lnum = llnum + diff_n;
     }
     this->GotoLine(lnum);
-
 }
 
 /* 
@@ -522,7 +520,7 @@ void Buffer::GotoRealLine(int n)
         set_delayed_message(msg);
         this->currentLine = l;
         LineSkip(this->currentLine, -(this->LINES - 1),
-                                 FALSE);
+                 FALSE);
         return;
     }
     for (; l != NULL; l = l->next)
@@ -631,7 +629,7 @@ void Buffer::Reshape()
             this->currentColumn = 0;
         else
             this->currentColumn = sbuf->currentColumn;
-        arrangeCursor(this);
+        ArrangeCursor();
     }
     if (this->check_url & CHK_URL)
         chkURLBuffer(this);
@@ -754,7 +752,7 @@ void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int 
 
 void Buffer::SavePosition()
 {
-    if (this->LineCount()==0)
+    if (this->LineCount() == 0)
         return;
 
     BufferPos *b = this->undo;
@@ -773,4 +771,289 @@ void Buffer::SavePosition()
     if (this->undo)
         this->undo->next = b;
     this->undo = b;
+}
+
+void Buffer::CursorUp0(int n)
+{
+    if (this->cursorY > 0)
+        CursorUpDown(-1);
+    else
+    {
+        this->LineSkip(this->topLine, -n, FALSE);
+        if (this->currentLine->prev != NULL)
+            this->currentLine = this->currentLine->prev;
+        ArrangeLine();
+    }
+}
+
+void Buffer::CursorUp(int n)
+{
+    Line *l = this->currentLine;
+    if (this->LineCount() == 0)
+        return;
+    while (this->currentLine->prev && this->currentLine->bpos)
+        CursorUp0(n);
+    if (this->currentLine == this->firstLine)
+    {
+        this->GotoLine(l->linenumber);
+        ArrangeLine();
+        return;
+    }
+    CursorUp0(n);
+    while (this->currentLine->prev && this->currentLine->bpos &&
+           this->currentLine->bwidth >= this->currentColumn + this->visualpos)
+        CursorUp0(n);
+}
+
+void Buffer::CursorDown0(int n)
+{
+    if (this->cursorY < this->LINES - 1)
+        CursorUpDown(1);
+    else
+    {
+        this->LineSkip(this->topLine, n, FALSE);
+        if (this->currentLine->next != NULL)
+            this->currentLine = this->currentLine->next;
+        ArrangeLine();
+    }
+}
+
+void Buffer::CursorDown(int n)
+{
+    Line *l = this->currentLine;
+    if (this->LineCount() == 0)
+        return;
+    while (this->currentLine->next && this->currentLine->next->bpos)
+        CursorDown0(n);
+    if (this->currentLine == this->lastLine)
+    {
+        this->GotoLine(l->linenumber);
+        ArrangeLine();
+        return;
+    }
+    CursorDown0(n);
+    while (this->currentLine->next && this->currentLine->next->bpos &&
+           this->currentLine->bwidth + this->currentLine->width <
+               this->currentColumn + this->visualpos)
+        CursorDown0(n);
+}
+
+void Buffer::CursorUpDown(int n)
+{
+    Line *cl = this->currentLine;
+
+    if (this->LineCount() == 0)
+        return;
+    if ((this->currentLine = this->CurrentLineSkip(cl, n, FALSE)) == cl)
+        return;
+    ArrangeLine();
+}
+
+void Buffer::CursorRight(int n)
+{
+    int i, delta = 1, cpos, vpos2;
+    Line *l = this->currentLine;
+    Lineprop *p;
+
+    if (this->LineCount() == 0)
+        return;
+    if (this->pos == l->len && !(l->next && l->next->bpos))
+        return;
+    i = this->pos;
+    p = l->propBuf;
+
+    while (i + delta < l->len && p[i + delta] & PC_WCHAR2)
+        delta++;
+
+    if (i + delta < l->len)
+    {
+        this->pos = i + delta;
+    }
+    else if (l->len == 0)
+    {
+        this->pos = 0;
+    }
+    else if (l->next && l->next->bpos)
+    {
+        CursorDown0(1);
+        this->pos = 0;
+        ArrangeCursor();
+        return;
+    }
+    else
+    {
+        this->pos = l->len - 1;
+        while (this->pos && p[this->pos] & PC_WCHAR2)
+            this->pos--;
+    }
+    cpos = l->COLPOS(this->pos);
+    this->visualpos = l->bwidth + cpos - this->currentColumn;
+    delta = 1;
+
+    while (this->pos + delta < l->len && p[this->pos + delta] & PC_WCHAR2)
+        delta++;
+
+    vpos2 = l->COLPOS(this->pos + delta) - this->currentColumn - 1;
+    if (vpos2 >= this->COLS && n)
+    {
+        ColumnSkip(n + (vpos2 - this->COLS) - (vpos2 - this->COLS) % n);
+        this->visualpos = l->bwidth + cpos - this->currentColumn;
+    }
+    this->cursorX = this->visualpos - l->bwidth;
+}
+
+void Buffer::CursorLeft(int n)
+{
+    int i, delta = 1, cpos;
+    Line *l = this->currentLine;
+    Lineprop *p;
+
+    if (this->LineCount() == 0)
+        return;
+    i = this->pos;
+    p = l->propBuf;
+
+    while (i - delta > 0 && p[i - delta] & PC_WCHAR2)
+        delta++;
+
+    if (i >= delta)
+        this->pos = i - delta;
+    else if (l->prev && l->bpos)
+    {
+        CursorUp0(-1);
+        this->pos = this->currentLine->len - 1;
+        ArrangeCursor();
+        return;
+    }
+    else
+        this->pos = 0;
+    cpos = l->COLPOS(this->pos);
+    this->visualpos = l->bwidth + cpos - this->currentColumn;
+    if (this->visualpos - l->bwidth < 0 && n)
+    {
+        ColumnSkip(-n + this->visualpos - l->bwidth - (this->visualpos - l->bwidth) % n);
+        this->visualpos = l->bwidth + cpos - this->currentColumn;
+    }
+    this->cursorX = this->visualpos - l->bwidth;
+}
+
+void Buffer::CursorXY(int x, int y)
+{
+    CursorUpDown(y - cursorY);
+
+    if (this->cursorX > x)
+    {
+        while (this->cursorX > x)
+            CursorLeft(this->COLS / 2);
+    }
+    else if (this->cursorX < x)
+    {
+        while (this->cursorX < x)
+        {
+            int oldX = this->cursorX;
+
+            CursorRight(this->COLS / 2);
+
+            if (oldX == this->cursorX)
+                break;
+        }
+        if (this->cursorX > x)
+            CursorLeft(this->COLS / 2);
+    }
+}
+
+/* 
+ * Arrange line,column and cursor position according to current line and
+ * current position.
+ */
+void Buffer::ArrangeCursor()
+{
+    int col, col2, pos;
+    int delta = 1;
+    if (this->currentLine == NULL)
+        return;
+    /* Arrange line */
+    if (this->currentLine->linenumber - this->topLine->linenumber >= this->LINES || this->currentLine->linenumber < this->topLine->linenumber)
+    {
+        this->LineSkip(this->currentLine, 0, FALSE);
+    }
+    /* Arrange column */
+    while (this->pos < 0 && this->currentLine->prev && this->currentLine->bpos)
+    {
+        pos = this->pos + this->currentLine->prev->len;
+        CursorUp0(1);
+        this->pos = pos;
+    }
+    while (this->pos >= this->currentLine->len && this->currentLine->next &&
+           this->currentLine->next->bpos)
+    {
+        pos = this->pos - this->currentLine->len;
+        CursorDown0(1);
+        this->pos = pos;
+    }
+    if (this->currentLine->len == 0 || this->pos < 0)
+        this->pos = 0;
+    else if (this->pos >= this->currentLine->len)
+        this->pos = this->currentLine->len - 1;
+
+    while (this->pos > 0 && this->currentLine->propBuf[this->pos] & PC_WCHAR2)
+        this->pos--;
+
+    col = this->currentLine->COLPOS(this->pos);
+
+    while (this->pos + delta < this->currentLine->len &&
+           this->currentLine->propBuf[this->pos + delta] & PC_WCHAR2)
+        delta++;
+
+    col2 = this->currentLine->COLPOS(this->pos + delta);
+    if (col < this->currentColumn || col2 > this->COLS + this->currentColumn)
+    {
+        this->currentColumn = 0;
+        if (col2 > this->COLS)
+            ColumnSkip(col);
+    }
+    /* Arrange cursor */
+    this->cursorY = this->currentLine->linenumber - this->topLine->linenumber;
+    this->visualpos = this->currentLine->bwidth +
+                     this->currentLine->COLPOS(this->pos) - this->currentColumn;
+    this->cursorX = this->visualpos - this->currentLine->bwidth;
+    
+#ifdef DISPLAY_DEBUG
+    fprintf(stderr,
+            "arrangeCursor: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
+            this->currentColumn, this->cursorX, this->visualpos, this->pos,
+            this->currentLine->len);
+#endif
+}
+
+void Buffer::ArrangeLine()
+{
+    if (this->LineCount() == 0)
+        return;
+
+    this->cursorY = this->currentLine->linenumber - this->topLine->linenumber;
+    auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos - this->currentLine->bwidth);
+    auto cpos = this->currentLine->COLPOS(i) - this->currentColumn;
+    if (cpos >= 0)
+    {
+        this->cursorX = cpos;
+        this->pos = i;
+    }
+    else if (this->currentLine->len > i)
+    {
+        this->cursorX = 0;
+        this->pos = i + 1;
+    }
+    else
+    {
+        this->cursorX = 0;
+        this->pos = 0;
+    }
+
+#ifdef DISPLAY_DEBUG
+    fprintf(stderr,
+            "arrangeLine: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
+            this->currentColumn, this->cursorX, this->visualpos, this->pos,
+            this->currentLine->len);
+#endif
 }

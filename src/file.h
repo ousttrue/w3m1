@@ -59,18 +59,6 @@ void addMChar(char *c, Lineprop mode, size_t len);
 
 BufferPtr message_list_panel(void);
 
-
-void cursorUp0(BufferPtr buf, int n);
-void cursorUp(BufferPtr buf, int n);
-void cursorDown0(BufferPtr buf, int n);
-void cursorDown(BufferPtr buf, int n);
-void cursorUpDown(BufferPtr buf, int n);
-void cursorRight(BufferPtr buf, int n);
-void cursorLeft(BufferPtr buf, int n);
-void cursorHome(BufferPtr buf);
-void arrangeCursor(BufferPtr buf);
-void arrangeLine(BufferPtr buf);
-void cursorXY(BufferPtr buf, int x, int y);
 void restorePosition(BufferPtr buf, BufferPtr orig);
 char *lastFileName(char *path);
 char *mydirname(const char *s);
