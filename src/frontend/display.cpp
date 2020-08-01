@@ -38,21 +38,6 @@
  *     7  white 
  */
 
-#define EFFECT_ANCHOR_START_M underline()
-#define EFFECT_ANCHOR_END_M underlineend()
-#define EFFECT_IMAGE_START_M standout()
-#define EFFECT_IMAGE_END_M standend()
-#define EFFECT_FORM_START_M standout()
-#define EFFECT_FORM_END_M standend()
-#define EFFECT_ACTIVE_START_NC underline()
-#define EFFECT_ACTIVE_END_NC underlineend()
-#define EFFECT_ACTIVE_START_M bold()
-#define EFFECT_ACTIVE_END_M boldend()
-#define EFFECT_VISITED_START_M /**/
-#define EFFECT_VISITED_END_M   /**/
-#define EFFECT_MARK_START_M standout()
-#define EFFECT_MARK_END_M standend()
-
 #define define_effect(name_start, name_end, color_start, color_end, mono_start, mono_end) \
     static void name_start                                                                \
     {                                                                                     \
@@ -78,13 +63,13 @@
     }
 
 define_effect(effect_anchor_start(), effect_anchor_end(), setfcolor(anchor_color),
-              setfcolor(basic_color), EFFECT_ANCHOR_START_M, EFFECT_ANCHOR_END_M)
+              setfcolor(basic_color), underline(), underlineend())
     define_effect(effect_image_start(), effect_image_end(), setfcolor(image_color),
-                  setfcolor(basic_color), EFFECT_IMAGE_START_M, EFFECT_IMAGE_END_M)
+                  setfcolor(basic_color), standout(), standend())
         define_effect(effect_from_start(), effect_form_end(), setfcolor(form_color),
-                      setfcolor(basic_color), EFFECT_FORM_START_M, EFFECT_FORM_END_M)
+                      setfcolor(basic_color), standout(), standend())
             define_effect(effect_mark_start(), effect_mark_end(), setbcolor(mark_color),
-                          setbcolor(bg_color), EFFECT_MARK_START_M, EFFECT_MARK_END_M)
+                          setbcolor(bg_color), standout(), standend())
 
     /*****************/
     static void effect_active_start()
@@ -104,12 +89,12 @@ define_effect(effect_anchor_start(), effect_anchor_end(), setfcolor(anchor_color
         }
         else
         {
-            EFFECT_ACTIVE_START_NC;
+            underline();
         }
     }
     else
     {
-        EFFECT_ACTIVE_START_M;
+        bold();
     }
 }
 
@@ -124,12 +109,12 @@ static void
         }
         else
         {
-            EFFECT_ACTIVE_END_NC;
+            underlineend();
         }
     }
     else
     {
-        EFFECT_ACTIVE_END_M;
+        boldend();
     }
 }
 
@@ -144,7 +129,7 @@ effect_visited_start()
         }
         else
         {
-            EFFECT_VISITED_START_M;
+            ;
         }
     }
 }
@@ -159,7 +144,7 @@ static void effect_visited_end()
         }
         else
         {
-            EFFECT_VISITED_END_M;
+            ;
         }
     }
 }
