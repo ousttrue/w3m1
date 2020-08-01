@@ -104,7 +104,7 @@ void ldown1()
 void ctrCsrV()
 {
     int offsety;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     offsety = GetCurrentTab()->GetCurrentBuffer()->LINES / 2 - GetCurrentTab()->GetCurrentBuffer()->cursorY;
     if (offsety != 0)
@@ -124,7 +124,7 @@ void ctrCsrV()
 void ctrCsrH()
 {
     int offsetx;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     offsetx = GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->COLS / 2;
     if (offsetx != 0)
@@ -181,7 +181,7 @@ void srchprv()
 void shiftl()
 {
     int column;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
     columnSkip(GetCurrentTab()->GetCurrentBuffer(), searchKeyNum() * (-GetCurrentTab()->GetCurrentBuffer()->COLS + 1) + 1);
@@ -193,7 +193,7 @@ void shiftl()
 void shiftr()
 {
     int column;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
     columnSkip(GetCurrentTab()->GetCurrentBuffer(), searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->COLS - 1) - 1);
@@ -495,7 +495,7 @@ void movLW()
     Line *pline, *l;
     int ppos;
     int i, n = searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < n; i++)
     {
@@ -547,7 +547,7 @@ void movRW()
     Line *pline, *l;
     int ppos;
     int i, n = searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < n; i++)
     {
@@ -684,7 +684,7 @@ void goLineL()
 
 void linbeg()
 {
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     while (GetCurrentTab()->GetCurrentBuffer()->currentLine->prev && GetCurrentTab()->GetCurrentBuffer()->currentLine->bpos)
         cursorUp0(GetCurrentTab()->GetCurrentBuffer(), 1);
@@ -696,7 +696,7 @@ void linbeg()
 
 void linend()
 {
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     while (GetCurrentTab()->GetCurrentBuffer()->currentLine->next && GetCurrentTab()->GetCurrentBuffer()->currentLine->next->bpos)
         cursorDown0(GetCurrentTab()->GetCurrentBuffer(), 1);
@@ -764,7 +764,7 @@ void _mark()
     Line *l;
     if (!use_mark)
         return;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
     l->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos] ^= PE_MARK;
@@ -778,7 +778,7 @@ void nextMk()
     int i;
     if (!use_mark)
         return;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     i = GetCurrentTab()->GetCurrentBuffer()->pos + 1;
     l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
@@ -814,7 +814,7 @@ void prevMk()
     int i;
     if (!use_mark)
         return;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     i = GetCurrentTab()->GetCurrentBuffer()->pos - 1;
     l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
@@ -893,7 +893,7 @@ void followI()
 {
     Line *l;
     BufferPtr buf;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
     auto a = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
@@ -929,7 +929,7 @@ void topA()
     BufferPoint *po;
 
     int hseq = 0;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     if (hl.empty())
         return;
@@ -962,7 +962,7 @@ void lastA()
     auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     BufferPoint *po;
     int hseq;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     if (hl.empty())
         return;
@@ -1019,7 +1019,7 @@ void followA()
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (buf->firstLine == NULL)
+    if (buf->LineCount() == 0)
         return;
     auto l = buf->currentLine;
 
@@ -1878,7 +1878,7 @@ void extbrz()
 void linkbrz()
 {
     URL pu;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine == NULL)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
     if (a == NULL)

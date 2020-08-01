@@ -115,7 +115,7 @@ int Buffer::WriteBufferCache()
     Line *l;
     int colorflag;
 
-    if (this->firstLine == NULL)
+    if (this->LineCount() == 0)
         goto _error1;
 
     tmp = tmpfname(TMPF_CACHE, NULL);
@@ -737,7 +737,7 @@ void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int 
     if (this->lastLine == NULL || this->lastLine == this->currentLine)
         this->lastLine = l;
     this->currentLine = l;
-    if (this->firstLine == NULL)
+    if (this->LineCount() == 0)
         this->firstLine = l;
     l->linenumber = ++this->allLine;
     if (nlines < 0)
