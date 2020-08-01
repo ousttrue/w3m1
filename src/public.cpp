@@ -173,12 +173,10 @@ dump_extra(BufferPtr buf)
     printf("W3m-document-charset: %s\n",
            wc_ces_to_charset(buf->document_charset));
 
-#ifdef USE_SSL
-    if (buf->ssl_certificate)
+    if (buf->ssl_certificate.size())
     {
         Str tmp = Strnew();
-        char *p;
-        for (p = buf->ssl_certificate; *p; p++)
+        for (auto p = buf->ssl_certificate.c_str(); *p; p++)
         {
             tmp->Push(*p);
             if (*p == '\n')
@@ -193,7 +191,6 @@ dump_extra(BufferPtr buf)
             tmp->Push('\n');
         printf("W3m-ssl-certificate: %s", tmp->ptr);
     }
-#endif
 }
 
 static void

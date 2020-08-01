@@ -49,12 +49,10 @@ Buffer::Buffer()
     currentURL.scheme = SCM_UNKNOWN;
     baseURL = {};
     baseTarget = {};
-    buffername = "";
     bufferprop = BP_NORMAL;
     clone = New(int);
     *clone = 1;
     trbyte = 0;
-    ssl_certificate = NULL;
     auto_detect = WcOption.auto_detect;
 }
 
@@ -81,8 +79,8 @@ Buffer::~Buffer()
         if (real_scheme != SCM_LOCAL || bufferprop & BP_FRAME)
             unlink(sourcefile.c_str());
     }
-    if (header_source)
-        unlink(header_source);
+    if (header_source.size())
+        unlink(header_source.c_str());
     if (mailcap_source.size())
         unlink(mailcap_source.c_str());
     while (frameset)
@@ -536,7 +534,7 @@ void reshapeBuffer(BufferPtr buf)
     buf->hmarklist.clear();
     buf->imarklist.clear();
 
-    if (buf->header_source)
+    if (buf->header_source.size())
     {
         if (buf->currentURL.scheme != SCM_LOCAL ||
             buf->mailcap_source.size() || buf->currentURL.file == "-")

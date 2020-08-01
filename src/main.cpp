@@ -1077,7 +1077,7 @@ int main(int argc, char **argv, char **envp)
         else
             continue;
         if (newbuf->pagerSource ||
-            (newbuf->real_scheme == SCM_LOCAL && newbuf->header_source &&
+            (newbuf->real_scheme == SCM_LOCAL && newbuf->header_source.size() &&
              newbuf->currentURL.file != "-"))
             newbuf->search_header = search_header;
         if (GetCurrentTab() == NULL)

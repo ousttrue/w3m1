@@ -688,11 +688,11 @@ page_info_panel(BufferPtr buf)
         tmp->Push("<hr width=50%><h1>Frame information</h1>\n");
         append_frame_info(buf, tmp, f_set, 0);
     }
-#ifdef USE_SSL
-    if (buf->ssl_certificate)
+
+    if (buf->ssl_certificate.size())
         Strcat_m_charp(tmp, "<h1>SSL certificate</h1><pre>\n",
                        html_quote(buf->ssl_certificate), "</pre>\n", NULL);
-#endif
+
 end:
     tmp->Push("</body></html>");
     newbuf = loadHTMLString(tmp);

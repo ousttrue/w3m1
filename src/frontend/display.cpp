@@ -381,10 +381,8 @@ make_lastline_message(BufferPtr buf)
     else
         /* FIXME: gettextize? */
         msg->Push("Viewing");
-#ifdef USE_SSL
-    if (buf->ssl_certificate)
+    if (buf->ssl_certificate.size())
         msg->Push("[SSL]");
-#endif
     msg->Push(" <");
     msg->Push(buf->buffername.c_str());
 

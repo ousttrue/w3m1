@@ -204,11 +204,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, ParsedURL *pu)
     else
         http_response_code = 0;
 
-    if (thru && !newBuf->header_source
-#ifdef USE_IMAGE
-        && !image_source
-#endif
-    )
+    if (thru && !newBuf->header_source.size() && !image_source)
     {
         tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
         src = fopen(tmpf, "w");

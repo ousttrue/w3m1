@@ -133,9 +133,11 @@ public:
     std::string edit;
     Mailcap *mailcap;
     std::string mailcap_source;
-    char *header_source;
+    // backup stream read contents ?
+    std::string header_source;
     char search_header;
-    char *ssl_certificate;
+    // https
+    std::string ssl_certificate;
     char image_flag;
     char image_loaded;
     char need_reshape;
