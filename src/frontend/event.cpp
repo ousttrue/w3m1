@@ -4,7 +4,7 @@
 #include "fm.h"
 #include "terms.h"
 #include "tab.h"
-
+#include "tabbar.h"
 #include <fcntl.h>
 #include <signal.h>
 

@@ -3,14 +3,15 @@
 #include "indep.h"
 #include "transport/local.h"
 #include "myctype.h"
-#include "frontend/display.h"
 #include "charset.h"
 #include "char_conv.h"
 #include "file.h"
 #include "public.h"
-#include "frontend/terms.h"
 #include "html/form.h"
 #include "ctrlcode.h"
+#include "frontend/display.h"
+#include "frontend/terms.h"
+#include "frontend/tabbar.h"
 
 #define STR_LEN	1024
 #define CLEN (COLS - 2)

@@ -74,6 +74,7 @@ PRIVATE
     src/frontend/line.cpp
     src/frontend/buffer.cpp
     src/frontend/tab.cpp
+    src/frontend/tabbar.cpp
     src/frontend/search.cpp
     src/frontend/menu.cpp
     src/frontend/terms.cpp

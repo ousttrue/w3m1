@@ -3,7 +3,6 @@
 #include "dispatcher.h"
 #include "commands.h"
 
-
 void register_commands()
 {
   RegisterCommand("nulcmd", "NOTHING NULL @ @ @", "Do nothing", &nulcmd);

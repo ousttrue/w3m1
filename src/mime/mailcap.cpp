@@ -16,6 +16,7 @@
 #include "frontend/buffer.h"
 #include "frontend/terms.h"
 #include "frontend/display.h"
+#include "frontend/tabbar.h"
 
 static Mailcap DefaultMailcap[] = {
     {"image/*", DEF_IMAGE_VIEWER " %s", 0, NULL, NULL, NULL}, /* */

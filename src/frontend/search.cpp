@@ -5,6 +5,7 @@
 #include "frontend/buffer.h"
 #include "frontend/line.h"
 #include "frontend/display.h"
+#include "frontend/tabbar.h"
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>

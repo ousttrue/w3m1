@@ -2,14 +2,16 @@
 
 #include "fm.h"
 #include "frontend/buffer.h"
+#include "frontend/display.h"
+#include "frontend/line.h"
+#include "frontend/tabbar.h"
+#include "frontend/line.h"
 #include "urimethod.h"
 #include "public.h"
 #include "indep.h"
 #include "gc_helper.h"
 #include "file.h"
 #include "html/image.h"
-#include "frontend/display.h"
-#include "frontend/line.h"
 #include "html/html.h"
 #include "ctrlcode.h"
 #include "transport/local.h"
@@ -17,7 +19,6 @@
 #include "transport/url.h"
 #include "transport/loader.h"
 #include "mime/mimetypes.h"
-#include "frontend/line.h"
 #include "charset.h"
 #include <assert.h>
 

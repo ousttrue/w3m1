@@ -3,10 +3,11 @@
 #include "indep.h"
 #include "gc_helper.h"
 #include "html/frame.h"
-#include "frontend/menu.h"
 #include "file.h"
 #include "ctrlcode.h"
 #include "charset.h"
+#include "frontend/menu.h"
+#include "frontend/tabbar.h"
 #include "html/anchor.h"
 #include "html/image.h"
 #include <math.h>

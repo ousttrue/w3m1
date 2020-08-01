@@ -20,10 +20,11 @@
 #include "transport/url.h"
 #include "http/cookie.h"
 #include "ctrlcode.h"
-#include "frontend/mouse.h"
 #include "html/anchor.h"
 #include "html/maparea.h"
+#include "frontend/mouse.h"
 #include "frontend/buffer.h"
+#include "frontend/tabbar.h"
 #include "entity.h"
 #include "transport/loader.h"
 #include "charset.h"
@@ -1540,15 +1541,6 @@ void gotoLabel(const char *label)
     return;
 }
 
-static int s_check_target = TRUE;
-int check_target()
-{
-    return s_check_target;
-}
-void set_check_target(int check)
-{
-    s_check_target = check;
-}
 
 /* go to the next left/right anchor */
 void nextX(int d, int dy)

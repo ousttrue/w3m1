@@ -9,6 +9,7 @@
 #include "frontend/display.h"
 #include "frontend/buffer.h"
 #include "frontend/tab.h"
+#include "frontend/tabbar.h"
 #include "charset.h"
 
 static int g_prec_num = 0;

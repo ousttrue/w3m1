@@ -67,7 +67,7 @@ void _nextA(int visited);
 void _prevA(int visited);
 void gotoLabel(const char *label);
 int check_target();
-void set_check_target(int);
+
 void nextX(int d, int dy);
 void nextY(int d);
 int checkBackBuffer(TabPtr tab, BufferPtr buf);

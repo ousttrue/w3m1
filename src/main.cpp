@@ -6,12 +6,13 @@
 #include "indep.h"
 #include "gc_helper.h"
 #include "frontend/display.h"
+#include "frontend/tabbar.h"
+#include "frontend/mouse.h"
 #include "file.h"
 #include "html/form.h"
 #include "public.h"
 #include "commands.h"
 #include "http/cookie.h"
-#include "frontend/mouse.h"
 #include "transport/loader.h"
 #include <signal.h>
 #include <setjmp.h>
