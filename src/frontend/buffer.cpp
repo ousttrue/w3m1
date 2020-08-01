@@ -41,7 +41,6 @@ bool fread1(T &d, FILE *f)
     return (fread(&d, sizeof(d), 1, f) == 0);
 }
 
-
 Buffer::Buffer()
 {
     COLS = COLS;
@@ -369,7 +368,6 @@ nullBuffer(void)
     return b;
 }
 
-
 /* 
  * gotoLine: go to line number
  */
@@ -452,7 +450,7 @@ void Buffer::GotoRealLine(int n)
         set_delayed_message(msg);
         this->currentLine = l;
         this->topLine = lineSkip(this, this->currentLine, -(this->LINES - 1),
-                                FALSE);
+                                 FALSE);
         return;
     }
     for (; l != NULL; l = l->next)
@@ -471,106 +469,107 @@ void Buffer::GotoRealLine(int n)
 /* 
  * Reshape HTML buffer
  */
-void reshapeBuffer(BufferPtr buf)
+void Buffer::Reshape()
 {
     uint8_t old_auto_detect = WcOption.auto_detect;
 
-    if (!buf->need_reshape)
+    if (!need_reshape)
         return;
-    buf->need_reshape = FALSE;
-    buf->width = INIT_BUFFER_WIDTH;
-    if (buf->sourcefile.empty())
+    need_reshape = FALSE;
+
+    this->width = INIT_BUFFER_WIDTH;
+    if (this->sourcefile.empty())
         return;
     URLFile f(SCM_LOCAL, NULL);
-    f.examineFile(buf->mailcap_source.size() ? buf->mailcap_source.c_str() : buf->sourcefile.c_str());
+    f.examineFile(this->mailcap_source.size() ? this->mailcap_source.c_str() : this->sourcefile.c_str());
     if (f.stream == NULL)
         return;
 
-    auto sbuf = buf->Copy();
-    buf->ClearLines();
-    while (buf->frameset)
+    auto sbuf = this->Copy();
+    this->ClearLines();
+    while (this->frameset)
     {
-        deleteFrameSet(buf->frameset);
-        buf->frameset = popFrameTree(&(buf->frameQ));
+        deleteFrameSet(this->frameset);
+        this->frameset = popFrameTree(&(this->frameQ));
     }
 
-    buf->href.clear();
-    buf->name.clear();
-    buf->img.clear();
-    buf->formitem.clear();
-    buf->formlist = NULL;
-    buf->linklist.clear();
-    buf->maplist = NULL;
-    buf->hmarklist.clear();
-    buf->imarklist.clear();
+    this->href.clear();
+    this->name.clear();
+    this->img.clear();
+    this->formitem.clear();
+    this->formlist = NULL;
+    this->linklist.clear();
+    this->maplist = NULL;
+    this->hmarklist.clear();
+    this->imarklist.clear();
 
-    if (buf->header_source.size())
+    if (this->header_source.size())
     {
-        if (buf->currentURL.scheme != SCM_LOCAL ||
-            buf->mailcap_source.size() || buf->currentURL.file == "-")
+        if (this->currentURL.scheme != SCM_LOCAL ||
+            this->mailcap_source.size() || this->currentURL.file == "-")
         {
             URLFile h(SCM_LOCAL, NULL);
-            h.examineFile(buf->header_source);
+            h.examineFile(this->header_source);
             if (h.stream)
             {
-                readHeader(&h, buf, TRUE, NULL);
+                readHeader(&h, this, TRUE, NULL);
                 h.Close();
             }
         }
-        else if (buf->search_header) /* -m option */
-            readHeader(&f, buf, TRUE, NULL);
+        else if (this->search_header) /* -m option */
+            readHeader(&f, this, TRUE, NULL);
     }
 
     WcOption.auto_detect = WC_OPT_DETECT_OFF;
     UseContentCharset = FALSE;
 
-    if (is_html_type(buf->type))
-        loadHTMLBuffer(&f, buf);
+    if (is_html_type(this->type))
+        loadHTMLBuffer(&f, this);
     else
-        loadBuffer(&f, buf);
+        loadBuffer(&f, this);
     f.Close();
 
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
     UseContentCharset = TRUE;
 
-    buf->height = (LINES - 1) + 1;
-    if (buf->firstLine && sbuf->firstLine)
+    this->height = (LINES - 1) + 1;
+    if (this->firstLine && sbuf->firstLine)
     {
         Line *cur = sbuf->currentLine;
         int n;
 
-        buf->pos = sbuf->pos + cur->bpos;
+        this->pos = sbuf->pos + cur->bpos;
         while (cur->bpos && cur->prev)
             cur = cur->prev;
         if (cur->real_linenumber > 0)
-            buf->GotoRealLine(cur->real_linenumber);
+            this->GotoRealLine(cur->real_linenumber);
         else
-            buf->GotoLine(cur->linenumber);
-        n = (buf->currentLine->linenumber - buf->topLine->linenumber) - (cur->linenumber - sbuf->topLine->linenumber);
+            this->GotoLine(cur->linenumber);
+        n = (this->currentLine->linenumber - this->topLine->linenumber) - (cur->linenumber - sbuf->topLine->linenumber);
         if (n)
         {
-            buf->topLine = lineSkip(buf, buf->topLine, n, FALSE);
+            this->topLine = lineSkip(this, this->topLine, n, FALSE);
             if (cur->real_linenumber > 0)
-                buf->GotoRealLine(cur->real_linenumber);
+                this->GotoRealLine(cur->real_linenumber);
             else
-                buf->GotoLine(cur->linenumber);
+                this->GotoLine(cur->linenumber);
         }
-        buf->pos -= buf->currentLine->bpos;
-        if (FoldLine && !is_html_type(buf->type))
-            buf->currentColumn = 0;
+        this->pos -= this->currentLine->bpos;
+        if (FoldLine && !is_html_type(this->type))
+            this->currentColumn = 0;
         else
-            buf->currentColumn = sbuf->currentColumn;
-        arrangeCursor(buf);
+            this->currentColumn = sbuf->currentColumn;
+        arrangeCursor(this);
     }
-    if (buf->check_url & CHK_URL)
-        chkURLBuffer(buf);
+    if (this->check_url & CHK_URL)
+        chkURLBuffer(this);
 
-    if (buf->check_url & CHK_NMID)
-        chkNMIDBuffer(buf);
-    if (buf->real_scheme == SCM_NNTP || buf->real_scheme == SCM_NEWS)
-        reAnchorNewsheader(buf);
+    if (this->check_url & CHK_NMID)
+        chkNMIDBuffer(this);
+    if (this->real_scheme == SCM_NNTP || this->real_scheme == SCM_NEWS)
+        reAnchorNewsheader(this);
 
-    formResetBuffer(buf, sbuf->formitem);
+    formResetBuffer(this, sbuf->formitem);
 }
 
 void set_buffer_environ(BufferPtr buf)

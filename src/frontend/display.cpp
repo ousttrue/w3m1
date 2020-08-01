@@ -1498,7 +1498,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         buf->need_reshape)
     {
         buf->need_reshape = TRUE;
-        reshapeBuffer(buf);
+        buf->Reshape();
     }
 
     if (showLineNum)

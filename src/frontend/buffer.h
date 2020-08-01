@@ -67,6 +67,7 @@ struct Buffer : gc_cleanup
     // list
     Line *firstLine;
     Line *lastLine;
+    char need_reshape;
 
 private:
     int allLine = 0;
@@ -81,6 +82,7 @@ public:
     }
     void GotoLine(int n);
     void GotoRealLine(int n);
+    void Reshape();
 
     BufferPtr linkBuffer[MAX_LB];
     short width;
@@ -140,7 +142,6 @@ public:
     std::string ssl_certificate;
     char image_flag;
     char image_loaded;
-    char need_reshape;
     Anchor *submit;
     BufferPos *undo;
     AlarmEvent *event;
@@ -168,7 +169,6 @@ void getAllImage(BufferPtr buf);
 void loadImage(BufferPtr buf, int flag);
 
 BufferPtr nullBuffer(void);
-void reshapeBuffer(BufferPtr buf);
 
 void set_buffer_environ(BufferPtr buf);
 

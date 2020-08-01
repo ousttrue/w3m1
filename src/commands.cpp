@@ -1613,7 +1613,7 @@ void vwSrc()
     buf->clone = GetCurrentTab()->GetCurrentBuffer()->clone;
     (*buf->clone)++;
     buf->need_reshape = TRUE;
-    reshapeBuffer(buf);
+    buf->Reshape();
     GetCurrentTab()->PushBufferCurrentPrev(buf);
     displayCurrentbuf(B_NORMAL);
 }
@@ -1759,7 +1759,7 @@ void reload()
 void reshape()
 {
     GetCurrentTab()->GetCurrentBuffer()->need_reshape = TRUE;
-    reshapeBuffer(GetCurrentTab()->GetCurrentBuffer());
+    GetCurrentTab()->GetCurrentBuffer()->Reshape();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
