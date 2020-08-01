@@ -725,9 +725,8 @@ image_buffer:
     if (src)
         fclose(src);
 
-    newBuf->topLine = newBuf->firstLine;
-    newBuf->lastLine = newBuf->currentLine;
-    newBuf->currentLine = newBuf->firstLine;
+    newBuf->CurrentAsLast();
+
     newBuf->image_flag = IMG_FLAG_AUTO;
     return newBuf;
 }
@@ -807,6 +806,7 @@ pager_next:
         if (tmp->Back() != '\n' && !(cont && l->next && l->next->bpos))
             putc('\n', f);
     }
+
     if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
     {
         l = getNextPage(buf, PagerMax);
@@ -893,12 +893,12 @@ openPagerBuffer(InputStream *stream, BufferPtr buf)
     else
         buf->buffername = conv_from_system(buf->buffername.c_str());
     buf->bufferprop |= BP_PIPE;
-#ifdef USE_M17N
+
     if (content_charset && UseContentCharset)
         buf->document_charset = content_charset;
     else
         buf->document_charset = WC_CES_US_ASCII;
-#endif
+
     buf->currentLine = buf->firstLine;
 
     return buf;

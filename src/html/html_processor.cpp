@@ -2173,9 +2173,8 @@ loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
 
     loadHTMLstream(f, newBuf, src, newBuf->bufferprop & BP_FRAME);
 
-    newBuf->topLine = newBuf->firstLine;
-    newBuf->lastLine = newBuf->currentLine;
-    newBuf->currentLine = newBuf->firstLine;
+    newBuf->CurrentAsLast();
+
     if (n_textarea)
         formResetBuffer(newBuf, newBuf->formitem);
     if (src)
@@ -2210,9 +2209,8 @@ loadHTMLString(Str page)
         return nullptr;
     }
 
-    newBuf->topLine = newBuf->firstLine;
-    newBuf->lastLine = newBuf->currentLine;
-    newBuf->currentLine = newBuf->firstLine;
+    newBuf->CurrentAsLast();
+
     newBuf->type = "text/html";
     newBuf->real_type = newBuf->type;
     if (n_textarea)

@@ -549,11 +549,9 @@ page_info_panel(BufferPtr buf)
     if (buf == NULL)
         goto end;
     all = buf->LineCount();
-    if (all == 0 && buf->lastLine)
-        all = buf->lastLine->linenumber;
-#ifdef USE_M17N
+
     tmp->Push("<form method=internal action=charset>");
-#endif
+
     p = buf->currentURL.ToStr()->ptr;
     if (DecodeURL)
         p = url_unquote_conv(p, WC_CES_NONE);

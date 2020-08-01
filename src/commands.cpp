@@ -848,12 +848,10 @@ void prevMk()
 
 void reMark()
 {
-    Line *l;
-    char *str;
-    char *p, *p1, *p2;
     if (!use_mark)
         return;
-    str = searchKeyData();
+
+    auto str = searchKeyData();
     if (str == NULL || *str == '\0')
     {
         str = inputStrHist("(Mark)Regexp: ", MarkString(), TextHist);
@@ -870,8 +868,9 @@ void reMark()
         return;
     }
     SetMarkString(str);
-    for (l = GetCurrentTab()->GetCurrentBuffer()->firstLine; l != NULL; l = l->next)
-    {
+
+    GetCurrentTab()->GetCurrentBuffer()->EachLine([&](auto l) {
+        char *p, *p1, *p2;
         p = l->lineBuf;
         for (;;)
         {
@@ -884,7 +883,7 @@ void reMark()
             else
                 break;
         }
-    }
+    });
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* view inline image */
@@ -1674,7 +1673,7 @@ void reload()
         buf->linkBuffer[LB_N_FRAME] = fbuf;
         GetCurrentTab()->PushBufferCurrentPrev(buf);
         GetCurrentTab()->SetCurrentBuffer(buf);
-        if (GetCurrentTab()->GetCurrentBuffer()->firstLine)
+        if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
         {
             COPY_BUFROOT(GetCurrentTab()->GetCurrentBuffer(), sbuf);
             restorePosition(GetCurrentTab()->GetCurrentBuffer(), sbuf);
@@ -1747,7 +1746,7 @@ void reload()
     }
     GetCurrentTab()->GetCurrentBuffer()->search_header = sbuf->search_header;
     GetCurrentTab()->GetCurrentBuffer()->form_submit = sbuf->form_submit;
-    if (GetCurrentTab()->GetCurrentBuffer()->firstLine)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
     {
         COPY_BUFROOT(GetCurrentTab()->GetCurrentBuffer(), sbuf);
         restorePosition(GetCurrentTab()->GetCurrentBuffer(), sbuf);
@@ -1890,10 +1889,9 @@ void linkbrz()
 
 void curlno()
 {
-    Line *l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
-    Str tmp;
     int cur = 0, all = 0, col = 0, len = 0;
-    if (l != NULL)
+    Line *l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+    if (l)
     {
         cur = l->real_linenumber;
         col = l->bwidth + GetCurrentTab()->GetCurrentBuffer()->currentColumn + GetCurrentTab()->GetCurrentBuffer()->cursorX + 1;
@@ -1903,17 +1901,20 @@ void curlno()
             l->width = l->COLPOS(l->len);
         len = l->bwidth + l->width;
     }
+
     if (GetCurrentTab()->GetCurrentBuffer()->lastLine)
         all = GetCurrentTab()->GetCurrentBuffer()->lastLine->real_linenumber;
+
+    Str tmp;
     if (GetCurrentTab()->GetCurrentBuffer()->pagerSource && !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_CLOSE))
         tmp = Sprintf("line %d col %d/%d", cur, col, len);
     else
         tmp = Sprintf("line %d/%d (%d%%) col %d/%d", cur, all,
                       (int)((double)cur * 100.0 / (double)(all ? all : 1) + 0.5), col, len);
-#ifdef USE_M17N
+
     tmp->Push("  ");
     tmp->Push(wc_ces_to_charset_desc(GetCurrentTab()->GetCurrentBuffer()->document_charset));
-#endif
+
     disp_message(tmp->ptr, FALSE);
 }
 
@@ -2358,7 +2359,7 @@ void undoPos()
 {
     BufferPos *b = GetCurrentTab()->GetCurrentBuffer()->undo;
     int i;
-    if (!GetCurrentTab()->GetCurrentBuffer()->firstLine)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     if (!b || !b->prev)
         return;
@@ -2371,7 +2372,7 @@ void redoPos()
 {
     BufferPos *b = GetCurrentTab()->GetCurrentBuffer()->undo;
     int i;
-    if (!GetCurrentTab()->GetCurrentBuffer()->firstLine)
+    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     if (!b || !b->next)
         return;

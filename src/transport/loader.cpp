@@ -498,13 +498,11 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
     }
 _end:
     TRAP_OFF;
-    newBuf->topLine = newBuf->firstLine;
-    newBuf->lastLine = newBuf->currentLine;
-    newBuf->currentLine = newBuf->firstLine;
+
+    newBuf->CurrentAsLast();
+
     newBuf->trbyte = trbyte + linelen;
-#ifdef USE_M17N
     newBuf->document_charset = charset;
-#endif
     if (src)
         fclose(src);
 

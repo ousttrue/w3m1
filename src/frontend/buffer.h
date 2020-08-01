@@ -92,6 +92,20 @@ public:
     Line *CurrentLineSkip(Line *line, int offset, int last);
     void LineSkip(Line *line, int offset, int last);
     void Scroll(int n);
+    void CurrentAsLast()
+    {
+        lastLine = currentLine;
+        topLine = firstLine;
+        currentLine = firstLine;
+    }
+    void EachLine(const std::function<void(Line *)> &func)
+    {
+        for (auto l = firstLine; l; l = l->next)
+        {
+            func(l);
+        }
+    }
+
     BufferPtr linkBuffer[MAX_LB];
     short width;
     short height;
