@@ -11,14 +11,13 @@ TabPtr GetTabByIndex(int index);
 TabPtr GetFirstTab();
 TabPtr GetLastTab();
 TabPtr GetCurrentTab();
+TabPtr GetTabByPosition(int x, int y);
 void SetCurrentTab(TabPtr tab);
 void SelectRelativeTab(int prec);
-void SelectTabByPosition(int x, int y);
 void MoveTab(int x);
 void deleteTab(TabPtr tab);
 void DeleteCurrentTab();
 void DeleteAllTabs();
-TabPtr posTab(int x, int y);
 void moveTab(TabPtr src, TabPtr dst, int right);
 #define SAVE_BUFPOSITION(sbufp) COPY_BUFPOSITION(sbufp, GetCurrentTab()->GetCurrentBuffer())
 #define RESTORE_BUFPOSITION(sbufp) COPY_BUFPOSITION(GetCurrentTab()->GetCurrentBuffer(), sbufp)

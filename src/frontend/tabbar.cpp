@@ -147,7 +147,7 @@ void calcTabPos()
     }
 }
 
-TabPtr posTab(int x, int y)
+TabPtr GetTabByPosition(int x, int y)
 {
     TabPtr tab;
 
@@ -260,14 +260,6 @@ void SelectRelativeTab(int prec)
     }
 
     SetCurrentTab(GetTabByIndex(index));
-}
-
-void SelectTabByPosition(int x, int y)
-{
-    TabPtr tab = posTab(x, y);
-    if (!tab)
-        return;
-    SetCurrentTab(tab);
 }
 
 void MoveTab(int x)

@@ -2018,6 +2018,7 @@ void menuMs()
     mainMenu(x, y);
 }
 
+// mouse 位置の tab をアクティブにする
 void tabMs()
 {
     int x, y;
@@ -2025,7 +2026,12 @@ void tabMs()
     {
         return;
     }
-    SelectTabByPosition(x, y);
+
+    TabPtr tab = GetTabByPosition(x, y);
+    if (!tab)
+        return;
+    SetCurrentTab(tab);
+
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
@@ -2036,7 +2042,7 @@ void closeTMs()
     {
         return;
     }
-    auto tab = posTab(x, y);
+    auto tab = GetTabByPosition(x, y);
     if (!tab)
         return;
     deleteTab(tab);

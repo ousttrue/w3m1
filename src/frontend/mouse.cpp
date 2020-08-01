@@ -405,7 +405,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
             {
                 if (press_y < ny)
                 {
-                    moveTab(posTab(press_x, press_y), posTab(x, y),
+                    moveTab(GetTabByPosition(press_x, press_y), GetTabByPosition(x, y),
                             (press_y == y) ? (press_x < x) : (press_y < y));
                     displayCurrentbuf(B_FORCE_REDRAW);
                     return;
@@ -415,7 +415,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                     BufferPtr buf = GetCurrentTab()->GetCurrentBuffer();
                     int cx = GetCurrentTab()->GetCurrentBuffer()->cursorX, cy = GetCurrentTab()->GetCurrentBuffer()->cursorY;
 
-                    t = posTab(x, y);
+                    t = GetTabByPosition(x, y);
                     if (t == NULL)
                         return;
                     cursorXY(GetCurrentTab()->GetCurrentBuffer(), press_x - GetCurrentTab()->GetCurrentBuffer()->rootX,
