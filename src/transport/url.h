@@ -60,3 +60,4 @@ URL *schemeToProxy(int scheme);
 URLSchemeTypes getURLScheme(char **url);
 char *mybasename(std::string_view s);
 char *url_unquote_conv(std::string_view url, CharacterEncodingScheme charset);
+char *url_quote(std::string_view str);

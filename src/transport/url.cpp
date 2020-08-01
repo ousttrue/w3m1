@@ -452,6 +452,28 @@ const char *string_strchr(const std::string &src, int c)
     return src.c_str() + pos;
 }
 
+#define URL_QUOTE_MASK 0x10 /* [\0- \177-\377] */
+#define is_url_quote(c) (GET_QUOTE_TYPE(c) & URL_QUOTE_MASK)
+static const char xdigit[0x11] = "0123456789ABCDEF";
+char *url_quote(std::string_view str)
+{
+    Str tmp = Strnew();
+    for (auto p = str.data(); *p; p++)
+    {
+        if (is_url_quote(*p))
+        {
+            tmp->Push('%');
+            tmp->Push(xdigit[((unsigned char)*p >> 4) & 0xF]);
+            tmp->Push(xdigit[(unsigned char)*p & 0xF]);
+        }
+        else
+        {
+            tmp->Push(*p);
+        }
+    }
+    return tmp->ptr;
+}
+
 void URL::Parse(std::string_view _url, const URL *current)
 {
     *this = {};
@@ -1245,8 +1267,7 @@ filename_extension(const char *path, int is_url)
         return last_dot;
 }
 
-URL *
-schemeToProxy(int scheme)
+URL *schemeToProxy(int scheme)
 {
     URL *pu = NULL; /* for gcc */
     switch (scheme)

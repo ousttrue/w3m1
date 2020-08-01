@@ -703,34 +703,6 @@ char *html_quote(const char *str)
     return tmp->ptr;
 }
 
-static const char xdigit[0x11] = "0123456789ABCDEF";
-
-char *
-url_quote(char *str)
-{
-    Str tmp = NULL;
-    char *p;
-
-    for (p = str; *p; p++)
-    {
-        if (is_url_quote(*p))
-        {
-            if (tmp == NULL)
-                tmp = Strnew_charp_n(str, (int)(p - str));
-            tmp->Push('%');
-            tmp->Push(xdigit[((unsigned char)*p >> 4) & 0xF]);
-            tmp->Push(xdigit[(unsigned char)*p & 0xF]);
-        }
-        else
-        {
-            if (tmp)
-                tmp->Push(*p);
-        }
-    }
-    if (tmp)
-        return tmp->ptr;
-    return str;
-}
 char *
 file_quote(char *str)
 {
