@@ -7,6 +7,7 @@
 #define MENU_H
 
 #include "frontend/tab.h"
+#include "frontend/link.h"
 
 #define MENU_END 0
 #define MENU_NOP 1

@@ -2,6 +2,7 @@
 #include "transport/url.h"
 #include "html/anchor.h"
 #include "line.h"
+#include "link.h"
 #include "option.h"
 #include <stdint.h>
 
@@ -14,45 +15,6 @@ struct AlarmEvent;
 struct TextList;
 struct Mailcap;
 
-enum LinkTypes : char
-{
-    LINK_TYPE_NONE = 0,
-    LINK_TYPE_REL = 1,
-    LINK_TYPE_REV = 2,
-};
-
-class Link
-{
-    std::string m_url;
-    std::string m_title;               /* Next, Contents, ... */
-    std::string m_ctype;               /* Content-Type */
-    LinkTypes m_type = LINK_TYPE_NONE; /* Rel, Rev */
-
-public:
-    static Link create(const struct parsed_tag &tag, CharacterEncodingScheme ces);
-
-    std::string_view url() const
-    {
-        return m_url;
-    }
-
-    std::string_view title() const
-    {
-        return m_title.size() ? m_title : "(empty)";
-    }
-
-    std::string_view type() const
-    {
-        if (m_type == LINK_TYPE_REL)
-            return " [Rel] ";
-        else if (m_type == LINK_TYPE_REV)
-            return " [Rev] ";
-        else
-            return " ";
-    }
-
-    std::string toHtml(const ParsedURL &baseUrl, CharacterEncodingScheme ces) const;
-};
 
 enum LinkBufferTypes
 {
@@ -195,7 +157,6 @@ void gotoLine(BufferPtr buf, int n);
 void reshapeBuffer(BufferPtr buf);
 
 void set_buffer_environ(BufferPtr buf);
-void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid);
 
 // anchor
 const Anchor *retrieveCurrentAnchor(BufferPtr buf);

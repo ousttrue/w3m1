@@ -104,9 +104,9 @@ newFrame(struct parsed_tag *tag, BufferPtr buf)
     if (tag)
     {
         if (parsedtag_get_value(tag, ATTR_SRC, &p))
-            body->url = url_quote_conv(remove_space(p), buf->document_charset);
+            body->url = wc_conv_strict(remove_space(p), InnerCharset, buf->document_charset)->ptr;
         if (parsedtag_get_value(tag, ATTR_NAME, &p) && *p != '_')
-            body->name = url_quote_conv(p, buf->document_charset);
+            body->name = wc_conv_strict(p, InnerCharset, buf->document_charset)->ptr;
     }
     return body;
 }
@@ -688,7 +688,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                             /* "BASE" is prohibit tag */
                             if (parsedtag_get_value(tag, ATTR_HREF, &q))
                             {
-                                q = url_quote_conv(remove_space(q), charset);
+                                q = wc_conv_strict(remove_space(q), InnerCharset, charset)->ptr;
                                 base.Parse(q, NULL);
                             }
                             if (parsedtag_get_value(tag, ATTR_TARGET, &q))
@@ -698,7 +698,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 else if (!strcasecmp(q, "_parent"))
                                     d_target = p_target;
                                 else
-                                    d_target = url_quote_conv(q, charset);
+                                    d_target = wc_conv_strict(q, InnerCharset, charset)->ptr;
                             }
                             tok->Delete(0, 1);
                             tok->Pop(1);
@@ -822,8 +822,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 if (!tag->value[j])
                                     break;
                                 tag->value[j] =
-                                    url_quote_conv(remove_space(tag->value[j]),
-                                                   charset);
+                                    wc_conv_strict(remove_space(tag->value[j]), InnerCharset, charset)->ptr;
                                 tag->need_reconstruct = TRUE;
                                 url.Parse2(tag->value[j], &base);
                                 if (url.scheme == SCM_UNKNOWN ||

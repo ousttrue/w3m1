@@ -1,9 +1,9 @@
 #include <sstream>
+#include <assert.h>
 #include "fm.h"
 #include "frontend/buffer.h"
 #include "frontend/display.h"
 #include "frontend/line.h"
-#include "frontend/tabbar.h"
 #include "frontend/line.h"
 #include "urimethod.h"
 #include "public.h"
@@ -20,7 +20,6 @@
 #include "mime/mimetypes.h"
 #include "charset.h"
 #include "html/parsetagx.h"
-#include <assert.h>
 
 static int REV_LB[MAX_LB] = {
     LB_N_FRAME,
@@ -42,79 +41,6 @@ bool fread1(T &d, FILE *f)
     return (fread(&d, sizeof(d), 1, f) == 0);
 }
 
-Link Link::create(const parsed_tag &tag, CharacterEncodingScheme ces)
-{
-    auto href = parsedtag_get_value(tag, ATTR_HREF);
-    if (href.size())
-        href = url_quote_conv(remove_space(href.data()), ces);
-
-    auto title = parsedtag_get_value(tag, ATTR_TITLE);
-    auto ctype = parsedtag_get_value(tag, ATTR_TYPE);
-    auto rel = parsedtag_get_value(tag, ATTR_REL);
-
-    LinkTypes type = LINK_TYPE_NONE;
-    if (rel.size())
-    {
-        /* forward link type */
-        type = LINK_TYPE_REL;
-        if (title.empty())
-            title = rel;
-    }
-
-    auto rev = parsedtag_get_value(tag, ATTR_REV);
-    if (rev.size())
-    {
-        /* reverse link type */
-        type = LINK_TYPE_REV;
-        if (title.size())
-            title = rev;
-    }
-
-    Link link;
-    link.m_url = href;
-    link.m_title = title;
-    link.m_ctype = ctype;
-    link.m_type = type;
-    return link;
-}
-
-std::string Link::toHtml(const ParsedURL &baseUrl, CharacterEncodingScheme ces) const
-{
-    // html quoted url
-    std::string_view url;
-    if (m_url.size())
-    {
-        ParsedURL pu;
-        pu.Parse2(m_url, &baseUrl);
-        url = html_quote(pu.ToStr()->ptr);
-    }
-    else
-        url = "(empty)";
-
-    std::stringstream ss;
-    ss << "<tr valign=top><td><a href=\""
-       << url
-       << "\">"
-       << (m_title.size()
-               ? html_quote(m_title)
-               : "(empty)")
-       << "</a><td>"
-       << type();
-
-    if (m_url.empty())
-        url = "(empty)";
-    else if (DecodeURL)
-        url = html_quote(url_unquote_conv(m_url, ces));
-    else
-        url = html_quote(m_url);
-    ss << "<td>" << url;
-    if (m_ctype.size())
-    {
-        ss << " (" << html_quote(m_ctype) << ")";
-    }
-    ss << "\n";
-    return ss.str();
-}
 
 Buffer::Buffer()
 {
@@ -418,27 +344,6 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
 
 const char *NullLine = "";
 Lineprop NullProp[] = {0};
-
-void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid)
-{
-    if (buf == NULL)
-    {
-        disp_err_message("Can't load string", FALSE);
-    }
-    else
-    {
-        buf->bufferprop |= (BP_INTERNAL | prop);
-        if (!(buf->bufferprop & BP_NO_URL))
-            buf->currentURL = GetCurrentTab()->GetCurrentBuffer()->currentURL;
-        if (linkid != LB_NOLINK)
-        {
-            buf->linkBuffer[linkid] = GetCurrentTab()->GetCurrentBuffer();
-            GetCurrentTab()->GetCurrentBuffer()->linkBuffer[linkid] = buf;
-        }
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
-    }
-    displayCurrentbuf(B_FORCE_REDRAW);
-}
 
 /* 
  * Buffer creation

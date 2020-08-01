@@ -2892,3 +2892,24 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
 void pcmap(void)
 {
 }
+
+void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid)
+{
+    if (buf == NULL)
+    {
+        disp_err_message("Can't load string", FALSE);
+    }
+    else
+    {
+        buf->bufferprop |= (BP_INTERNAL | prop);
+        if (!(buf->bufferprop & BP_NO_URL))
+            buf->currentURL = GetCurrentTab()->GetCurrentBuffer()->currentURL;
+        if (linkid != LB_NOLINK)
+        {
+            buf->linkBuffer[linkid] = GetCurrentTab()->GetCurrentBuffer();
+            GetCurrentTab()->GetCurrentBuffer()->linkBuffer[linkid] = buf;
+        }
+        GetCurrentTab()->PushBufferCurrentPrev(buf);
+    }
+    displayCurrentbuf(B_FORCE_REDRAW);
+}

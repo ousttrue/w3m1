@@ -527,7 +527,7 @@ inline char *conv_from_system(std::string_view x)
 }
 
 #define conv_to_system(x) wc_conv_strict((x), InnerCharset, SystemCharset)->ptr
-#define url_quote_conv(x, c) url_quote(wc_conv_strict((x), InnerCharset, (c))->ptr)
+
 
 global char UseAltEntity init(TRUE);
 #define GRAPHIC_CHAR_ASCII 2

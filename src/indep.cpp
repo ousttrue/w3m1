@@ -731,7 +731,6 @@ url_quote(char *str)
         return tmp->ptr;
     return str;
 }
-
 char *
 file_quote(char *str)
 {

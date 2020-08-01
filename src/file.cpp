@@ -708,7 +708,7 @@ Str loadGopherDir(URLFile *uf, ParsedURL *pu, CharacterEncodingScheme *charset)
                            "/", file->ptr, NULL)
                 ->ptr;
         Strcat_m_charp(tmp, "<a href=\"",
-                       html_quote(url_quote_conv(q, *charset)),
+                       html_quote(wc_conv_strict(q, *charset)),
                        "\">", p, html_quote(name->ptr + 1), "</a>\n", NULL);
     }
 

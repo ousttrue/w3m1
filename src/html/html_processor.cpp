@@ -1403,7 +1403,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (renderFrameSet &&
                         parsedtag_get_value(tag, ATTR_FRAMENAME, &p))
                     {
-                        p = url_quote_conv(p, buf->document_charset);
+                        p = wc_conv_strict(p, InnerCharset, buf->document_charset)->ptr;
                         if (!idFrame || strcmp(idFrame->body->name, p))
                         {
                             idFrame = search_frame(renderFrameSet, p);
@@ -1418,16 +1418,17 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     id = NULL;
                     if (parsedtag_get_value(tag, ATTR_NAME, &id))
                     {
-                        id = url_quote_conv(id, buf->document_charset);
+                        id = wc_conv_strict(id, InnerCharset, buf->document_charset)->ptr;
                         buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
                     }
                     if (parsedtag_get_value(tag, ATTR_HREF, &p))
-                        p = url_quote_conv(remove_space(p),
-                                           buf->document_charset);
+                        p = wc_conv_strict(remove_space(p), InnerCharset,
+                                           buf->document_charset)
+                                ->ptr;
                     if (parsedtag_get_value(tag, ATTR_TARGET, &q))
-                        q = url_quote_conv(q, buf->document_charset);
+                        q = wc_conv_strict(q, InnerCharset, buf->document_charset)->ptr;
                     if (parsedtag_get_value(tag, ATTR_REFERER, &r))
-                        r = url_quote_conv(r, buf->document_charset);
+                        r = wc_conv_strict(r, InnerCharset, buf->document_charset)->ptr;
                     parsedtag_get_value(tag, ATTR_TITLE, &s);
                     parsedtag_get_value(tag, ATTR_ACCESSKEY, &t);
                     parsedtag_get_value(tag, ATTR_HSEQ, &hseq);
@@ -1507,8 +1508,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 
                         s = NULL;
                         parsedtag_get_value(tag, ATTR_TITLE, &s);
-                        p = url_quote_conv(remove_space(p),
-                                           buf->document_charset);
+                        p = wc_conv_strict(remove_space(p), InnerCharset,
+                                           buf->document_charset)->ptr;
                         a_img = buf->img.Put(Anchor::CreateImage(
                             p,
                             s ? s : "",
@@ -1691,8 +1692,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (parsedtag_get_value(tag, ATTR_HREF, &p))
                     {
                         MapArea *a;
-                        p = url_quote_conv(remove_space(p),
-                                           buf->document_charset);
+                        p = wc_conv_strict(remove_space(p), InnerCharset,
+                                           buf->document_charset)->ptr;
                         t = NULL;
                         parsedtag_get_value(tag, ATTR_TARGET, &t);
                         q = "";
@@ -1744,13 +1745,13 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 case HTML_BASE:
                     if (parsedtag_get_value(tag, ATTR_HREF, &p))
                     {
-                        p = url_quote_conv(remove_space(p),
-                                           buf->document_charset);
+                        p = wc_conv_strict(remove_space(p), InnerCharset,
+                                           buf->document_charset)->ptr;
                         buf->baseURL.Parse(p, NULL);
                     }
                     if (parsedtag_get_value(tag, ATTR_TARGET, &p))
                         buf->baseTarget =
-                            url_quote_conv(p, buf->document_charset);
+                            wc_conv_strict(p, InnerCharset, buf->document_charset)->ptr;
                     break;
                 case HTML_META:
                     p = q = NULL;
@@ -1763,8 +1764,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 #ifdef USE_ALARM
                         if (tmp)
                         {
-                            p = url_quote_conv(remove_space(tmp->ptr),
-                                               buf->document_charset);
+                            p = wc_conv_strict(remove_space(tmp->ptr), InnerCharset,
+                                               buf->document_charset)->ptr;
                             buf->event = setAlarmEvent(buf->event,
                                                        refresh_interval,
                                                        AL_IMPLICIT_ONCE,
@@ -1778,7 +1779,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 #else
                         if (tmp && refresh_interval == 0)
                         {
-                            p = url_quote_conv(remove_space(tmp->ptr),
+                            p = wc_conv_strict(remove_space(tmp->ptr),
                                                buf->document_charset);
                             pushEvent(FUNCNAME_gorURL, p);
                         }
@@ -1866,13 +1867,13 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 id = NULL;
                 if (parsedtag_get_value(tag, ATTR_ID, &id))
                 {
-                    id = url_quote_conv(id, buf->document_charset);
+                    id = wc_conv_strict(id, InnerCharset, buf->document_charset)->ptr;
                     buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
                 }
                 if (renderFrameSet &&
                     parsedtag_get_value(tag, ATTR_FRAMENAME, &p))
                 {
-                    p = url_quote_conv(p, buf->document_charset);
+                    p = wc_conv_strict(p, InnerCharset, buf->document_charset)->ptr;
                     if (!idFrame || strcmp(idFrame->body->name, p))
                     {
                         idFrame = search_frame(renderFrameSet, p);

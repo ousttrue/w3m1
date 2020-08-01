@@ -882,7 +882,7 @@ load_doc:
             /* 302: Found */
             /* 303: See Other */
             /* 307: Temporary Redirect (HTTP/1.1) */
-            tpath = url_quote_conv(p, DocumentCharset);
+            tpath = wc_conv_strict(p, InnerCharset, DocumentCharset)->ptr;
             request = NULL;
             f.Close();
             *current = pu;
@@ -1047,7 +1047,7 @@ load_doc:
             checkRedirection(&pu))
         {
             /* document moved */
-            tpath = url_quote_conv(remove_space(p), DocumentCharset);
+            tpath = wc_conv_strict(remove_space(p), InnerCharset, DocumentCharset)->ptr;
             request = NULL;
             f.Close();
             add_auth_cookie_flag = 0;

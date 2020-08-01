@@ -70,6 +70,7 @@ PRIVATE
     src/public.cpp
     src/urimethod.cpp
     src/frontend/display.cpp
+    src/frontend/link.cpp
     src/frontend/linein.cpp
     src/frontend/line.cpp
     src/frontend/buffer.cpp
