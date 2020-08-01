@@ -26,15 +26,6 @@
 /* *INDENT-OFF* */
 #ifdef USE_COLOR
 
-#define EFFECT_IMAGE_START effect_image_start()
-#define EFFECT_IMAGE_END effect_image_end()
-#define EFFECT_FORM_START effect_form_start()
-#define EFFECT_FORM_END effect_form_end()
-#define EFFECT_ACTIVE_START effect_active_start()
-#define EFFECT_ACTIVE_END effect_active_end()
-#define EFFECT_MARK_START effect_mark_start()
-#define EFFECT_MARK_END effect_mark_end()
-
 /*-
  * color: 
  *     0  black 
@@ -100,15 +91,15 @@
 
 define_effect(effect_anchor_start(), effect_anchor_end(), EFFECT_ANCHOR_START_C,
               EFFECT_ANCHOR_END_C, EFFECT_ANCHOR_START_M, EFFECT_ANCHOR_END_M)
-    define_effect(EFFECT_IMAGE_START, EFFECT_IMAGE_END, EFFECT_IMAGE_START_C,
+    define_effect(effect_image_start(), effect_image_end(), EFFECT_IMAGE_START_C,
                   EFFECT_IMAGE_END_C, EFFECT_IMAGE_START_M, EFFECT_IMAGE_END_M)
-        define_effect(EFFECT_FORM_START, EFFECT_FORM_END, EFFECT_FORM_START_C,
+        define_effect(effect_from_start(), effect_form_end(), EFFECT_FORM_START_C,
                       EFFECT_FORM_END_C, EFFECT_FORM_START_M, EFFECT_FORM_END_M)
-            define_effect(EFFECT_MARK_START, EFFECT_MARK_END, EFFECT_MARK_START_C,
+            define_effect(effect_mark_start(), effect_mark_end(), EFFECT_MARK_START_C,
                           EFFECT_MARK_END_C, EFFECT_MARK_START_M, EFFECT_MARK_END_M)
 
     /*****************/
-    static void EFFECT_ACTIVE_START
+    static void effect_active_start()
 {
     if (useColor)
     {
@@ -135,7 +126,7 @@ define_effect(effect_anchor_start(), effect_anchor_end(), EFFECT_ANCHOR_START_C,
 }
 
 static void
-    EFFECT_ACTIVE_END
+    effect_active_end()
 {
     if (useColor)
     {
@@ -189,16 +180,16 @@ static void effect_visited_end()
 
 #define effect_anchor_start() underline()
 #define effect_anchor_end() underlineend()
-#define EFFECT_IMAGE_START standout()
-#define EFFECT_IMAGE_END standend()
-#define EFFECT_FORM_START standout()
-#define EFFECT_FORM_END standend()
-#define EFFECT_ACTIVE_START bold()
-#define EFFECT_ACTIVE_END boldend()
+#define effect_image_start() standout()
+#define effect_image_end() standend()
+#define effect_form_start()standout()
+#define effect_form_end() standend()
+#define effect_active_start() bold()
+#define effect_active_end() boldend()
 #define effect_visited_start() /**/
 #define EFFECT_VISITED_END     /**/
-#define EFFECT_MARK_START standout()
-#define EFFECT_MARK_END standend()
+#define effect_mark_start() standout()
+#define effect_mark_end() standend()
 #endif /* not USE_COLOR */
 /* *INDENT-ON* */
 
@@ -666,10 +657,10 @@ redrawNLine(BufferPtr buf, int n)
             if (l / 2 > 0)
                 addnstr_sup(" ", l / 2);
             if (t == GetCurrentTab())
-                EFFECT_ACTIVE_START;
+                effect_active_start();
             addnstr(b->buffername.c_str(), t->Width());
             if (t == GetCurrentTab())
-                EFFECT_ACTIVE_END;
+                effect_active_end();
             if ((l + 1) / 2 > 0)
                 addnstr_sup(" ", (l + 1) / 2);
             move(t->Y(), t->Right());
@@ -846,12 +837,12 @@ redrawLine(BufferPtr buf, Line *l, int i)
     if (imag_mode)
     {
         imag_mode = FALSE;
-        EFFECT_IMAGE_END;
+        effect_image_end();
     }
     if (form_mode)
     {
         form_mode = FALSE;
-        EFFECT_FORM_END;
+        effect_form_end();
     }
     if (visited_mode)
     {
@@ -861,12 +852,12 @@ redrawLine(BufferPtr buf, Line *l, int i)
     if (active_mode)
     {
         active_mode = FALSE;
-        EFFECT_ACTIVE_END;
+        effect_active_end();
     }
     if (mark_mode)
     {
         mark_mode = FALSE;
-        EFFECT_MARK_END;
+        effect_mark_end();
     }
     if (graph_mode)
     {
@@ -1062,12 +1053,12 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
     if (imag_mode)
     {
         imag_mode = FALSE;
-        EFFECT_IMAGE_END;
+        effect_image_end();
     }
     if (form_mode)
     {
         form_mode = FALSE;
-        EFFECT_FORM_END;
+        effect_form_end();
     }
     if (visited_mode)
     {
@@ -1077,12 +1068,12 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
     if (active_mode)
     {
         active_mode = FALSE;
-        EFFECT_ACTIVE_END;
+        effect_active_end();
     }
     if (mark_mode)
     {
         mark_mode = FALSE;
-        EFFECT_MARK_END;
+        effect_mark_end();
     }
     if (graph_mode)
     {
@@ -1122,11 +1113,11 @@ do_effects(Lineprop m)
     do_effect2(PE_BOLD, bomode, bold(), boldend());
     do_effect2(PE_EMPH, emph_mode, bold(), boldend());
     do_effect2(PE_ANCHOR, anch_mode, effect_anchor_start(), effect_anchor_end());
-    do_effect2(PE_IMAGE, imag_mode, EFFECT_IMAGE_START, EFFECT_IMAGE_END);
-    do_effect2(PE_FORM, form_mode, EFFECT_FORM_START, EFFECT_FORM_END);
+    do_effect2(PE_IMAGE, imag_mode, effect_image_start(), effect_image_end());
+    do_effect2(PE_FORM, form_mode, effect_from_start(), effect_form_end());
     do_effect2(PE_VISITED, visited_mode, effect_visited_start(), effect_visited_end());
-    do_effect2(PE_ACTIVE, active_mode, EFFECT_ACTIVE_START, EFFECT_ACTIVE_END);
-    do_effect2(PE_MARK, mark_mode, EFFECT_MARK_START, EFFECT_MARK_END);
+    do_effect2(PE_ACTIVE, active_mode, effect_active_start(), effect_active_end());
+    do_effect2(PE_MARK, mark_mode, effect_mark_start(), effect_mark_end());
     if (graph_mode)
     {
         graphend();
@@ -1139,12 +1130,12 @@ do_effects(Lineprop m)
     do_effect1(PE_BOLD, bomode, bold(), boldend());
     do_effect1(PE_EMPH, emph_mode, bold(), boldend());
     do_effect1(PE_ANCHOR, anch_mode, effect_anchor_start(), effect_anchor_end());
-    do_effect1(PE_IMAGE, imag_mode, EFFECT_IMAGE_START, EFFECT_IMAGE_END);
-    do_effect1(PE_FORM, form_mode, EFFECT_FORM_START, EFFECT_FORM_END);
+    do_effect1(PE_IMAGE, imag_mode, effect_image_start(), effect_image_end());
+    do_effect1(PE_FORM, form_mode, effect_from_start(), effect_form_end());
     do_effect1(PE_VISITED, visited_mode, effect_visited_start(),
                EFFECT_VISITED_END);
-    do_effect1(PE_ACTIVE, active_mode, EFFECT_ACTIVE_START, EFFECT_ACTIVE_END);
-    do_effect1(PE_MARK, mark_mode, EFFECT_MARK_START, EFFECT_MARK_END);
+    do_effect1(PE_ACTIVE, active_mode, effect_active_start(), effect_active_end());
+    do_effect1(PE_MARK, mark_mode, effect_mark_start(), effect_mark_end());
 }
 
 #ifdef USE_ANSI_COLOR
