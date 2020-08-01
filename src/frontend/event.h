@@ -34,7 +34,6 @@ struct AlarmEvent
         if (prevtrap)                   \
             mySignal(SIGINT, prevtrap); \
     }
-
 // typedef RETSIGTYPE MySignalHandler;
 using MySignalHandler = void (*)(int);
 MySignalHandler mySignal(int signal_number, MySignalHandler action);
@@ -46,3 +45,10 @@ AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd,
 void pushEvent(Command cmd, void *data);
 int ProcessEvent();
 void setup_child(int child, int i, int f);
+
+#include <functional>
+bool TrapJmp(bool enable, const std::function<bool()> &func);
+inline bool TrapJmp(const std::function<bool()> &func)
+{
+    return TrapJmp(true, func);
+}

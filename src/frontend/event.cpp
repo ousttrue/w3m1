@@ -162,3 +162,59 @@ void setup_child(int child, int i, int f)
 #ifndef FOPEN_MAX
 #define FOPEN_MAX 1024 /* XXX */
 #endif
+
+#include <signal.h>
+#include <setjmp.h>
+
+static JMP_BUF AbortLoading;
+static void KeyAbort(SIGNAL_ARG)
+{
+    LONGJMP(AbortLoading, 1);
+    SIGNAL_RETURN;
+}
+
+struct ScopedTrap
+{
+    MySignalHandler prevtrap;
+
+    ScopedTrap()
+    {
+        if (TrapSignal)
+        {
+            prevtrap = mySignal(SIGINT, KeyAbort);
+            if (fmInitialized)
+                term_cbreak();
+        }
+    }
+    ~ScopedTrap()
+    {
+        if (TrapSignal)
+        {
+            if (fmInitialized)
+                term_raw();
+            if (prevtrap)
+                mySignal(SIGINT, prevtrap);
+        }
+    }
+};
+
+bool TrapJmp(bool enable, const std::function<bool()> &func)
+{
+    if (enable)
+    {
+        ScopedTrap trap;
+        if (SETJMP(AbortLoading) == 0)
+        {
+            return func();
+        }
+        else
+        {
+            // jmp from SIGINT
+            return false;
+        }
+    }
+    else
+    {
+        return func();
+    }
+}

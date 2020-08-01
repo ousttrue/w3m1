@@ -1071,73 +1071,75 @@ getNextPage(BufferPtr buf, int plen)
     WcOption.auto_detect = buf->auto_detect;
 
     URLFile uf(SCM_UNKNOWN, NULL);
-    if (SETJMP(AbortLoading) != 0)
-    {
-        goto pager_end;
-    }
-    TRAP_ON;
 
-    for (i = 0; i < plen; i++)
-    {
-        lineBuf2 = StrmyISgets(buf->pagerSource);
-        if (lineBuf2->Size() == 0)
+    auto success = TrapJmp([&]() {
+        for (i = 0; i < plen; i++)
         {
-            /* Assume that `cmd == buf->filename' */
-            if (buf->filename.size())
-                buf->buffername = Sprintf("%s %s",
-                                          CPIPEBUFFERNAME,
-                                          conv_from_system(buf->filename))
-                                      ->ptr;
-            else if (getenv("MAN_PN") == NULL)
-                buf->buffername = CPIPEBUFFERNAME;
-            buf->bufferprop |= BP_CLOSE;
-            break;
-        }
-        linelen += lineBuf2->Size();
-        showProgress(&linelen, &trbyte);
-        lineBuf2 =
-            convertLine(&uf, lineBuf2, PAGER_MODE, &charset, doc_charset);
-        if (squeezeBlankLine)
-        {
-            squeeze_flag = FALSE;
-            if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
+            lineBuf2 = StrmyISgets(buf->pagerSource);
+            if (lineBuf2->Size() == 0)
             {
-                ++nlines;
-                --i;
-                squeeze_flag = TRUE;
-                continue;
+                /* Assume that `cmd == buf->filename' */
+                if (buf->filename.size())
+                    buf->buffername = Sprintf("%s %s",
+                                              CPIPEBUFFERNAME,
+                                              conv_from_system(buf->filename))
+                                          ->ptr;
+                else if (getenv("MAN_PN") == NULL)
+                    buf->buffername = CPIPEBUFFERNAME;
+                buf->bufferprop |= BP_CLOSE;
+                break;
             }
-            pre_lbuf = lineBuf2->ptr[0];
-        }
-        ++nlines;
-        lineBuf2->StripRight();
-        lineBuf2 = checkType(lineBuf2, &propBuffer, &colorBuffer);
-        addnewline(buf, lineBuf2->ptr, propBuffer, colorBuffer,
-                   lineBuf2->Size(), FOLD_BUFFER_WIDTH, nlines);
-        if (!top)
-        {
-            top = buf->firstLine;
-            cur = top;
-        }
-        if (buf->lastLine->real_linenumber - buf->firstLine->real_linenumber >= PagerMax)
-        {
-            Line *l = buf->firstLine;
-            do
+            linelen += lineBuf2->Size();
+            showProgress(&linelen, &trbyte);
+            lineBuf2 =
+                convertLine(&uf, lineBuf2, PAGER_MODE, &charset, doc_charset);
+            if (squeezeBlankLine)
             {
-                if (top == l)
-                    top = l->next;
-                if (cur == l)
-                    cur = l->next;
-                if (last == l)
-                    last = NULL;
-                l = l->next;
-            } while (l && l->bpos);
-            buf->firstLine = l;
-            buf->firstLine->prev = NULL;
+                squeeze_flag = FALSE;
+                if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
+                {
+                    ++nlines;
+                    --i;
+                    squeeze_flag = TRUE;
+                    continue;
+                }
+                pre_lbuf = lineBuf2->ptr[0];
+            }
+            ++nlines;
+            lineBuf2->StripRight();
+            lineBuf2 = checkType(lineBuf2, &propBuffer, &colorBuffer);
+            addnewline(buf, lineBuf2->ptr, propBuffer, colorBuffer,
+                       lineBuf2->Size(), FOLD_BUFFER_WIDTH, nlines);
+            if (!top)
+            {
+                top = buf->firstLine;
+                cur = top;
+            }
+            if (buf->lastLine->real_linenumber - buf->firstLine->real_linenumber >= PagerMax)
+            {
+                Line *l = buf->firstLine;
+                do
+                {
+                    if (top == l)
+                        top = l->next;
+                    if (cur == l)
+                        cur = l->next;
+                    if (last == l)
+                        last = NULL;
+                    l = l->next;
+                } while (l && l->bpos);
+                buf->firstLine = l;
+                buf->firstLine->prev = NULL;
+            }
         }
+
+        return true;
+    });
+
+    if(!success)
+    {
+        return nullptr;
     }
-pager_end:
-    TRAP_OFF;
 
     buf->trbyte = trbyte + linelen;
 

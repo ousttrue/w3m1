@@ -430,17 +430,6 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
     if (f == NULL)
         return -1;
 
-    if (level == 0)
-    {
-        if (SETJMP(AbortLoading) != 0)
-        {
-            TRAP_OFF;
-            return -1;
-        }
-        TRAP_ON;
-        f->name = "_top";
-    }
-
     if (level > 7)
     {
         fputs("Too many frameset tasked.\n", f1);
@@ -449,486 +438,500 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 
     if (level == 0)
     {
-        fprintf(f1, "<html><head><title>%s</title></head><body>\n",
-                html_quote(current->buffername.c_str()));
-        fputs("<table hborder width=\"100%\">\n", f1);
+        f->name = "_top";
     }
-    else
-        fputs("<table hborder>\n", f1);
 
-    currentURL = f->currentURL ? &f->currentURL : &current->currentURL;
-    for (r = 0; r < f->row; r++)
-    {
-        fputs("<tr valign=top>\n", f1);
-        for (c = 0; c < f->col; c++)
+    auto success = TrapJmp(level == 0, [&]() {
+        if (level == 0)
         {
-            union frameset_element frame;
-            struct frameset *f_frameset;
-            int i = c + r * f->col;
-            char *p = "";
-            int status = R_ST_NORMAL;
-            Str tok = Strnew();
-            int pre_mode = 0;
-            int end_tag = 0;
+            fprintf(f1, "<html><head><title>%s</title></head><body>\n",
+                    html_quote(current->buffername.c_str()));
+            fputs("<table hborder width=\"100%\">\n", f1);
+        }
+        else
+            fputs("<table hborder>\n", f1);
 
-            frame = f->frame[i];
-
-            if (frame.element == NULL)
+        currentURL = f->currentURL ? &f->currentURL : &current->currentURL;
+        for (r = 0; r < f->row; r++)
+        {
+            fputs("<tr valign=top>\n", f1);
+            for (c = 0; c < f->col; c++)
             {
-                fputs("<td>\n</td>\n", f1);
-                continue;
-            }
+                union frameset_element frame;
+                struct frameset *f_frameset;
+                int i = c + r * f->col;
+                char *p = "";
+                int status = R_ST_NORMAL;
+                Str tok = Strnew();
+                int pre_mode = 0;
+                int end_tag = 0;
 
-            fputs("<td", f1);
-            if (frame.element->name)
-                fprintf(f1, " id=\"_%s\"", html_quote(frame.element->name));
-            if (!r)
-                fprintf(f1, " width=\"%s\"", f->width[c]);
-            fputs(">\n", f1);
+                frame = f->frame[i];
 
-            auto flag = RG_NONE;
-            if (force_reload)
-            {
-                flag |= RG_NOCACHE;
-                if (frame.element->attr == F_BODY)
-                    unloadFrame(frame.body);
-            }
-            switch (frame.element->attr)
-            {
-            default:
-                /* FIXME: gettextize? */
-                fprintf(f1, "Frameset \"%s\" frame %d: type unrecognized",
-                        html_quote(f->name), i + 1);
-                break;
-            case F_UNLOADED:
-                if (!frame.body->name && f->name)
+                if (frame.element == NULL)
                 {
-                    frame.body->name = Sprintf("%s_%d", f->name, i)->ptr;
+                    fputs("<td>\n</td>\n", f1);
+                    continue;
                 }
-                fflush(f1);
-                f_frameset = frame_download_source(frame.body,
-                                                   currentURL,
-                                                   current->baseURL ? &current->baseURL : nullptr, flag);
-                if (f_frameset)
+
+                fputs("<td", f1);
+                if (frame.element->name)
+                    fprintf(f1, " id=\"_%s\"", html_quote(frame.element->name));
+                if (!r)
+                    fprintf(f1, " width=\"%s\"", f->width[c]);
+                fputs(">\n", f1);
+
+                auto flag = RG_NONE;
+                if (force_reload)
                 {
-                    deleteFrame(frame.body);
-                    f->frame[i].set = frame.set = f_frameset;
-                    goto render_frameset;
+                    flag |= RG_NOCACHE;
+                    if (frame.element->attr == F_BODY)
+                        unloadFrame(frame.body);
                 }
-            /* fall through */
-            case F_BODY:
-            {
-                URLFile f2(SCM_LOCAL, NULL);
-                if (frame.body->source)
+                switch (frame.element->attr)
                 {
-                    fflush(f1);
-                    f2.examineFile(frame.body->source);
-                }
-                if (f2.stream == NULL)
-                {
-                    frame.body->attr = F_UNLOADED;
-                    if (frame.body->flags & FB_NO_BUFFER)
-                        /* FIXME: gettextize? */
-                        fprintf(f1, "Open %s with other method",
-                                html_quote(frame.body->url));
-                    else if (frame.body->url)
-                        /* FIXME: gettextize? */
-                        fprintf(f1, "Can't open %s",
-                                html_quote(frame.body->url));
-                    else
-                        /* FIXME: gettextize? */
-                        fprintf(f1,
-                                "This frame (%s) contains no src attribute",
-                                frame.body->name ? html_quote(frame.body->name)
-                                                 : "(no name)");
+                default:
+                    /* FIXME: gettextize? */
+                    fprintf(f1, "Frameset \"%s\" frame %d: type unrecognized",
+                            html_quote(f->name), i + 1);
                     break;
-                }
-                base.Parse2(frame.body->url, currentURL);
-                p_target = f->name;
-                s_target = frame.body->name;
-                t_target = "_blank";
-                d_target = TargetSelf ? s_target : t_target;
-
-                charset = WC_CES_US_ASCII;
-                if (current->document_charset != WC_CES_US_ASCII)
-                    doc_charset = current->document_charset;
-                else
-                    doc_charset = DocumentCharset;
-
-                t_stack = 0;
-                if (frame.body->type &&
-                    !strcasecmp(frame.body->type, "text/plain"))
-                {
-                    Str tmp;
-                    fprintf(f1, "<pre>\n");
-                    while ((tmp = f2.StrmyISgets())->Size())
+                case F_UNLOADED:
+                    if (!frame.body->name && f->name)
                     {
-                        tmp = convertLine(NULL, tmp, HTML_MODE, &charset,
-                                          doc_charset);
-                        fprintf(f1, "%s", html_quote(tmp->ptr));
+                        frame.body->name = Sprintf("%s_%d", f->name, i)->ptr;
                     }
-                    fprintf(f1, "</pre>\n");
-                    f2.Close();
-                    break;
-                }
-                do
-                {
-                    int is_tag = FALSE;
-                    char *q;
-                    struct parsed_tag *tag;
-
-                    do
+                    fflush(f1);
+                    f_frameset = frame_download_source(frame.body,
+                                                       currentURL,
+                                                       current->baseURL ? &current->baseURL : nullptr, flag);
+                    if (f_frameset)
                     {
-                        if (*p == '\0')
+                        deleteFrame(frame.body);
+                        f->frame[i].set = frame.set = f_frameset;
+                        goto render_frameset;
+                    }
+                /* fall through */
+                case F_BODY:
+                {
+                    URLFile f2(SCM_LOCAL, NULL);
+                    if (frame.body->source)
+                    {
+                        fflush(f1);
+                        f2.examineFile(frame.body->source);
+                    }
+                    if (f2.stream == NULL)
+                    {
+                        frame.body->attr = F_UNLOADED;
+                        if (frame.body->flags & FB_NO_BUFFER)
+                            /* FIXME: gettextize? */
+                            fprintf(f1, "Open %s with other method",
+                                    html_quote(frame.body->url));
+                        else if (frame.body->url)
+                            /* FIXME: gettextize? */
+                            fprintf(f1, "Can't open %s",
+                                    html_quote(frame.body->url));
+                        else
+                            /* FIXME: gettextize? */
+                            fprintf(f1,
+                                    "This frame (%s) contains no src attribute",
+                                    frame.body->name ? html_quote(frame.body->name)
+                                                     : "(no name)");
+                        break;
+                    }
+                    base.Parse2(frame.body->url, currentURL);
+                    p_target = f->name;
+                    s_target = frame.body->name;
+                    t_target = "_blank";
+                    d_target = TargetSelf ? s_target : t_target;
+
+                    charset = WC_CES_US_ASCII;
+                    if (current->document_charset != WC_CES_US_ASCII)
+                        doc_charset = current->document_charset;
+                    else
+                        doc_charset = DocumentCharset;
+
+                    t_stack = 0;
+                    if (frame.body->type &&
+                        !strcasecmp(frame.body->type, "text/plain"))
+                    {
+                        Str tmp;
+                        fprintf(f1, "<pre>\n");
+                        while ((tmp = f2.StrmyISgets())->Size())
                         {
-                            Str tmp = f2.StrmyISgets();
-                            if (tmp->Size() == 0)
-                                break;
                             tmp = convertLine(NULL, tmp, HTML_MODE, &charset,
                                               doc_charset);
-                            p = tmp->ptr;
+                            fprintf(f1, "%s", html_quote(tmp->ptr));
                         }
-                        read_token(tok, &p, &status, 1, status != R_ST_NORMAL);
-                    } while (status != R_ST_NORMAL);
-
-                    if (tok->Size() == 0)
-                        continue;
-
-                    if (tok->ptr[0] == '<')
-                    {
-                        if (tok->ptr[1] &&
-                            REALLY_THE_BEGINNING_OF_A_TAG(tok->ptr))
-                            is_tag = TRUE;
-                        else if (!(pre_mode & (RB_PLAIN | RB_INTXTA |
-                                               RB_SCRIPT | RB_STYLE)))
-                        {
-                            p = Strnew_m_charp(tok->ptr + 1, p, NULL)->ptr;
-                            tok = Strnew("&lt;");
-                        }
+                        fprintf(f1, "</pre>\n");
+                        f2.Close();
+                        break;
                     }
-                    if (is_tag)
+                    do
                     {
-                        if (pre_mode & (RB_PLAIN | RB_INTXTA | RB_SCRIPT |
-                                        RB_STYLE))
+                        int is_tag = FALSE;
+                        char *q;
+                        struct parsed_tag *tag;
+
+                        do
                         {
-                            q = tok->ptr;
-                            if ((tag = parse_tag(&q, FALSE)) &&
-                                tag->tagid == end_tag)
+                            if (*p == '\0')
                             {
-                                if (pre_mode & RB_PLAIN)
-                                {
-                                    fputs("</PRE_PLAIN>", f1);
-                                    pre_mode = 0;
-                                    end_tag = 0;
-                                    goto token_end;
-                                }
-                                pre_mode = 0;
-                                end_tag = 0;
-                                goto proc_normal;
+                                Str tmp = f2.StrmyISgets();
+                                if (tmp->Size() == 0)
+                                    break;
+                                tmp = convertLine(NULL, tmp, HTML_MODE, &charset,
+                                                  doc_charset);
+                                p = tmp->ptr;
                             }
-                            if (strncmp(tok->ptr, "<!--", 4) &&
-                                (q = strchr(tok->ptr + 1, '<')))
+                            read_token(tok, &p, &status, 1, status != R_ST_NORMAL);
+                        } while (status != R_ST_NORMAL);
+
+                        if (tok->Size() == 0)
+                            continue;
+
+                        if (tok->ptr[0] == '<')
+                        {
+                            if (tok->ptr[1] &&
+                                REALLY_THE_BEGINNING_OF_A_TAG(tok->ptr))
+                                is_tag = TRUE;
+                            else if (!(pre_mode & (RB_PLAIN | RB_INTXTA |
+                                                   RB_SCRIPT | RB_STYLE)))
                             {
-                                tok = Strnew_charp_n(tok->ptr, q - tok->ptr);
-                                p = Strnew_m_charp(q, p, NULL)->ptr;
-                                status = R_ST_NORMAL;
+                                p = Strnew_m_charp(tok->ptr + 1, p, NULL)->ptr;
+                                tok = Strnew("&lt;");
                             }
-                            is_tag = FALSE;
                         }
-                        else if (pre_mode & RB_INSELECT)
+                        if (is_tag)
                         {
-                            q = tok->ptr;
-                            if ((tag = parse_tag(&q, FALSE)))
+                            if (pre_mode & (RB_PLAIN | RB_INTXTA | RB_SCRIPT |
+                                            RB_STYLE))
                             {
-                                if ((tag->tagid == end_tag) ||
-                                    (tag->tagid == HTML_N_FORM))
+                                q = tok->ptr;
+                                if ((tag = parse_tag(&q, FALSE)) &&
+                                    tag->tagid == end_tag)
                                 {
-                                    if (tag->tagid == HTML_N_FORM)
-                                        fputs("</SELECT>", f1);
+                                    if (pre_mode & RB_PLAIN)
+                                    {
+                                        fputs("</PRE_PLAIN>", f1);
+                                        pre_mode = 0;
+                                        end_tag = 0;
+                                        goto token_end;
+                                    }
                                     pre_mode = 0;
                                     end_tag = 0;
                                     goto proc_normal;
                                 }
-                                if (t_stack)
+                                if (strncmp(tok->ptr, "<!--", 4) &&
+                                    (q = strchr(tok->ptr + 1, '<')))
                                 {
-                                    switch (tag->tagid)
+                                    tok = Strnew_charp_n(tok->ptr, q - tok->ptr);
+                                    p = Strnew_m_charp(q, p, NULL)->ptr;
+                                    status = R_ST_NORMAL;
+                                }
+                                is_tag = FALSE;
+                            }
+                            else if (pre_mode & RB_INSELECT)
+                            {
+                                q = tok->ptr;
+                                if ((tag = parse_tag(&q, FALSE)))
+                                {
+                                    if ((tag->tagid == end_tag) ||
+                                        (tag->tagid == HTML_N_FORM))
                                     {
-                                    case HTML_TABLE:
-                                    case HTML_N_TABLE:
-                                    CASE_TABLE_TAG:
-                                        fputs("</SELECT>", f1);
+                                        if (tag->tagid == HTML_N_FORM)
+                                            fputs("</SELECT>", f1);
                                         pre_mode = 0;
                                         end_tag = 0;
                                         goto proc_normal;
                                     }
-                                }
-                            }
-                        }
-                    }
-
-                proc_normal:
-                    if (is_tag)
-                    {
-                        char *q = tok->ptr;
-                        int j, a_target = 0;
-                        ParsedURL url;
-
-                        if (!(tag = parse_tag(&q, FALSE)))
-                            goto token_end;
-
-                        switch (tag->tagid)
-                        {
-                        case HTML_TITLE:
-                            fputs("<!-- title:", f1);
-                            goto token_end;
-                        case HTML_N_TITLE:
-                            fputs("-->", f1);
-                            goto token_end;
-                        case HTML_BASE:
-                            /* "BASE" is prohibit tag */
-                            if (parsedtag_get_value(tag, ATTR_HREF, &q))
-                            {
-                                q = wc_conv_strict(remove_space(q), InnerCharset, charset)->ptr;
-                                base.Parse(q, NULL);
-                            }
-                            if (parsedtag_get_value(tag, ATTR_TARGET, &q))
-                            {
-                                if (!strcasecmp(q, "_self"))
-                                    d_target = s_target;
-                                else if (!strcasecmp(q, "_parent"))
-                                    d_target = p_target;
-                                else
-                                    d_target = wc_conv_strict(q, InnerCharset, charset)->ptr;
-                            }
-                            tok->Delete(0, 1);
-                            tok->Pop(1);
-                            fprintf(f1, "<!-- %s -->", html_quote(tok->ptr));
-                            goto token_end;
-                        case HTML_META:
-                            if (parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "refresh"))
-                            {
-                                if (parsedtag_get_value(tag, ATTR_CONTENT, &q))
-                                {
-                                    Str s_tmp = NULL;
-                                    int refresh_interval =
-                                        getMetaRefreshParam(q, &s_tmp);
-                                    if (s_tmp)
+                                    if (t_stack)
                                     {
-                                        q = html_quote(s_tmp->ptr);
-                                        fprintf(f1,
-                                                "Refresh (%d sec) <a href=\"%s\">%s</a>\n",
-                                                refresh_interval, q, q);
+                                        switch (tag->tagid)
+                                        {
+                                        case HTML_TABLE:
+                                        case HTML_N_TABLE:
+                                        CASE_TABLE_TAG:
+                                            fputs("</SELECT>", f1);
+                                            pre_mode = 0;
+                                            end_tag = 0;
+                                            goto proc_normal;
+                                        }
                                     }
                                 }
                             }
+                        }
+
+                    proc_normal:
+                        if (is_tag)
+                        {
+                            char *q = tok->ptr;
+                            int j, a_target = 0;
+                            ParsedURL url;
+
+                            if (!(tag = parse_tag(&q, FALSE)))
+                                goto token_end;
+
+                            switch (tag->tagid)
+                            {
+                            case HTML_TITLE:
+                                fputs("<!-- title:", f1);
+                                goto token_end;
+                            case HTML_N_TITLE:
+                                fputs("-->", f1);
+                                goto token_end;
+                            case HTML_BASE:
+                                /* "BASE" is prohibit tag */
+                                if (parsedtag_get_value(tag, ATTR_HREF, &q))
+                                {
+                                    q = wc_conv_strict(remove_space(q), InnerCharset, charset)->ptr;
+                                    base.Parse(q, NULL);
+                                }
+                                if (parsedtag_get_value(tag, ATTR_TARGET, &q))
+                                {
+                                    if (!strcasecmp(q, "_self"))
+                                        d_target = s_target;
+                                    else if (!strcasecmp(q, "_parent"))
+                                        d_target = p_target;
+                                    else
+                                        d_target = wc_conv_strict(q, InnerCharset, charset)->ptr;
+                                }
+                                tok->Delete(0, 1);
+                                tok->Pop(1);
+                                fprintf(f1, "<!-- %s -->", html_quote(tok->ptr));
+                                goto token_end;
+                            case HTML_META:
+                                if (parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "refresh"))
+                                {
+                                    if (parsedtag_get_value(tag, ATTR_CONTENT, &q))
+                                    {
+                                        Str s_tmp = NULL;
+                                        int refresh_interval =
+                                            getMetaRefreshParam(q, &s_tmp);
+                                        if (s_tmp)
+                                        {
+                                            q = html_quote(s_tmp->ptr);
+                                            fprintf(f1,
+                                                    "Refresh (%d sec) <a href=\"%s\">%s</a>\n",
+                                                    refresh_interval, q, q);
+                                        }
+                                    }
+                                }
 #ifdef USE_M17N
-                            if (UseContentCharset &&
-                                parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "Content-Type") && parsedtag_get_value(tag, ATTR_CONTENT, &q) && (q = strcasestr(q, "charset")) != NULL)
-                            {
-                                q += 7;
-                                SKIP_BLANKS(q);
-                                if (*q == '=')
+                                if (UseContentCharset &&
+                                    parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "Content-Type") && parsedtag_get_value(tag, ATTR_CONTENT, &q) && (q = strcasestr(q, "charset")) != NULL)
                                 {
-                                    CharacterEncodingScheme c;
-                                    q++;
+                                    q += 7;
                                     SKIP_BLANKS(q);
-                                    if ((c = wc_guess_charset(q, WC_CES_NONE)) != 0)
+                                    if (*q == '=')
                                     {
-                                        doc_charset = c;
-                                        charset = WC_CES_US_ASCII;
+                                        CharacterEncodingScheme c;
+                                        q++;
+                                        SKIP_BLANKS(q);
+                                        if ((c = wc_guess_charset(q, WC_CES_NONE)) != 0)
+                                        {
+                                            doc_charset = c;
+                                            charset = WC_CES_US_ASCII;
+                                        }
                                     }
                                 }
-                            }
 #endif
-                            /* fall thru, "META" is prohibit tag */
-                        case HTML_HEAD:
-                        case HTML_N_HEAD:
-                        case HTML_BODY:
-                        case HTML_N_BODY:
-                        case HTML_DOCTYPE:
-                            /* prohibit_tags */
-                            tok->Delete(0, 1);
-                            tok->Pop(1);
-                            fprintf(f1, "<!-- %s -->", html_quote(tok->ptr));
-                            goto token_end;
-                        case HTML_TABLE:
-                            t_stack++;
-                            break;
-                        case HTML_N_TABLE:
-                            t_stack--;
-                            if (t_stack < 0)
-                            {
-                                t_stack = 0;
+                                /* fall thru, "META" is prohibit tag */
+                            case HTML_HEAD:
+                            case HTML_N_HEAD:
+                            case HTML_BODY:
+                            case HTML_N_BODY:
+                            case HTML_DOCTYPE:
+                                /* prohibit_tags */
                                 tok->Delete(0, 1);
                                 tok->Pop(1);
-                                fprintf(f1,
-                                        "<!-- table stack underflow: %s -->",
-                                        html_quote(tok->ptr));
+                                fprintf(f1, "<!-- %s -->", html_quote(tok->ptr));
                                 goto token_end;
-                            }
-                            break;
-                        CASE_TABLE_TAG:
-                            /* table_tags MUST be in table stack */
-                            if (!t_stack)
-                            {
-                                tok->Delete(0, 1);
-                                tok->Pop(1);
-                                fprintf(f1, "<!-- %s -->",
-                                        html_quote(tok->ptr));
-                                goto token_end;
-                            }
-                            break;
-                        case HTML_SELECT:
-                            pre_mode = RB_INSELECT;
-                            end_tag = HTML_N_SELECT;
-                            break;
-                        case HTML_TEXTAREA:
-                            pre_mode = RB_INTXTA;
-                            end_tag = HTML_N_TEXTAREA;
-                            break;
-                        case HTML_SCRIPT:
-                            pre_mode = RB_SCRIPT;
-                            end_tag = HTML_N_SCRIPT;
-                            break;
-                        case HTML_STYLE:
-                            pre_mode = RB_STYLE;
-                            end_tag = HTML_N_STYLE;
-                            break;
-                        case HTML_LISTING:
-                            pre_mode = RB_PLAIN;
-                            end_tag = HTML_N_LISTING;
-                            fputs("<PRE_PLAIN>", f1);
-                            goto token_end;
-                        case HTML_XMP:
-                            pre_mode = RB_PLAIN;
-                            end_tag = HTML_N_XMP;
-                            fputs("<PRE_PLAIN>", f1);
-                            goto token_end;
-                        case HTML_PLAINTEXT:
-                            pre_mode = RB_PLAIN;
-                            end_tag = MAX_HTMLTAG;
-                            fputs("<PRE_PLAIN>", f1);
-                            goto token_end;
-                        default:
-                            break;
-                        }
-                        for (j = 0; j < TagMAP[tag->tagid].max_attribute; j++)
-                        {
-                            switch (tag->attrid[j])
-                            {
-                            case ATTR_SRC:
-                            case ATTR_HREF:
-                            case ATTR_ACTION:
-                                if (!tag->value[j])
-                                    break;
-                                tag->value[j] =
-                                    wc_conv_strict(remove_space(tag->value[j]), InnerCharset, charset)->ptr;
-                                tag->need_reconstruct = TRUE;
-                                url.Parse2(tag->value[j], &base);
-                                if (url.scheme == SCM_UNKNOWN ||
-                                    url.scheme == SCM_MAILTO ||
-                                    url.scheme == SCM_MISSING)
-                                    break;
-                                a_target |= 1;
-                                tag->value[j] = url.ToStr()->ptr;
-                                parsedtag_set_value(tag,
-                                                    ATTR_REFERER,
-                                                    base.ToStr()->ptr);
-
-                                if (tag->attrid[j] == ATTR_ACTION &&
-                                    charset != WC_CES_US_ASCII)
-                                    parsedtag_set_value(tag,
-                                                        ATTR_CHARSET,
-                                                        wc_ces_to_charset(charset));
-
+                            case HTML_TABLE:
+                                t_stack++;
                                 break;
-                            case ATTR_TARGET:
-                                if (!tag->value[j])
-                                    break;
-                                a_target |= 2;
-                                if (!strcasecmp(tag->value[j], "_self"))
+                            case HTML_N_TABLE:
+                                t_stack--;
+                                if (t_stack < 0)
                                 {
-                                    parsedtag_set_value(tag,
-                                                        ATTR_TARGET, s_target);
-                                }
-                                else if (!strcasecmp(tag->value[j], "_parent"))
-                                {
-                                    parsedtag_set_value(tag,
-                                                        ATTR_TARGET, p_target);
+                                    t_stack = 0;
+                                    tok->Delete(0, 1);
+                                    tok->Pop(1);
+                                    fprintf(f1,
+                                            "<!-- table stack underflow: %s -->",
+                                            html_quote(tok->ptr));
+                                    goto token_end;
                                 }
                                 break;
-                            case ATTR_NAME:
-                            case ATTR_ID:
-                                if (!tag->value[j])
-                                    break;
-                                parsedtag_set_value(tag,
-                                                    ATTR_FRAMENAME, s_target);
+                            CASE_TABLE_TAG:
+                                /* table_tags MUST be in table stack */
+                                if (!t_stack)
+                                {
+                                    tok->Delete(0, 1);
+                                    tok->Pop(1);
+                                    fprintf(f1, "<!-- %s -->",
+                                            html_quote(tok->ptr));
+                                    goto token_end;
+                                }
+                                break;
+                            case HTML_SELECT:
+                                pre_mode = RB_INSELECT;
+                                end_tag = HTML_N_SELECT;
+                                break;
+                            case HTML_TEXTAREA:
+                                pre_mode = RB_INTXTA;
+                                end_tag = HTML_N_TEXTAREA;
+                                break;
+                            case HTML_SCRIPT:
+                                pre_mode = RB_SCRIPT;
+                                end_tag = HTML_N_SCRIPT;
+                                break;
+                            case HTML_STYLE:
+                                pre_mode = RB_STYLE;
+                                end_tag = HTML_N_STYLE;
+                                break;
+                            case HTML_LISTING:
+                                pre_mode = RB_PLAIN;
+                                end_tag = HTML_N_LISTING;
+                                fputs("<PRE_PLAIN>", f1);
+                                goto token_end;
+                            case HTML_XMP:
+                                pre_mode = RB_PLAIN;
+                                end_tag = HTML_N_XMP;
+                                fputs("<PRE_PLAIN>", f1);
+                                goto token_end;
+                            case HTML_PLAINTEXT:
+                                pre_mode = RB_PLAIN;
+                                end_tag = MAX_HTMLTAG;
+                                fputs("<PRE_PLAIN>", f1);
+                                goto token_end;
+                            default:
                                 break;
                             }
-                        }
-                        if (a_target == 1)
-                        {
-                            /* there is HREF attribute and no TARGET
+                            for (j = 0; j < TagMAP[tag->tagid].max_attribute; j++)
+                            {
+                                switch (tag->attrid[j])
+                                {
+                                case ATTR_SRC:
+                                case ATTR_HREF:
+                                case ATTR_ACTION:
+                                    if (!tag->value[j])
+                                        break;
+                                    tag->value[j] =
+                                        wc_conv_strict(remove_space(tag->value[j]), InnerCharset, charset)->ptr;
+                                    tag->need_reconstruct = TRUE;
+                                    url.Parse2(tag->value[j], &base);
+                                    if (url.scheme == SCM_UNKNOWN ||
+                                        url.scheme == SCM_MAILTO ||
+                                        url.scheme == SCM_MISSING)
+                                        break;
+                                    a_target |= 1;
+                                    tag->value[j] = url.ToStr()->ptr;
+                                    parsedtag_set_value(tag,
+                                                        ATTR_REFERER,
+                                                        base.ToStr()->ptr);
+
+                                    if (tag->attrid[j] == ATTR_ACTION &&
+                                        charset != WC_CES_US_ASCII)
+                                        parsedtag_set_value(tag,
+                                                            ATTR_CHARSET,
+                                                            wc_ces_to_charset(charset));
+
+                                    break;
+                                case ATTR_TARGET:
+                                    if (!tag->value[j])
+                                        break;
+                                    a_target |= 2;
+                                    if (!strcasecmp(tag->value[j], "_self"))
+                                    {
+                                        parsedtag_set_value(tag,
+                                                            ATTR_TARGET, s_target);
+                                    }
+                                    else if (!strcasecmp(tag->value[j], "_parent"))
+                                    {
+                                        parsedtag_set_value(tag,
+                                                            ATTR_TARGET, p_target);
+                                    }
+                                    break;
+                                case ATTR_NAME:
+                                case ATTR_ID:
+                                    if (!tag->value[j])
+                                        break;
+                                    parsedtag_set_value(tag,
+                                                        ATTR_FRAMENAME, s_target);
+                                    break;
+                                }
+                            }
+                            if (a_target == 1)
+                            {
+                                /* there is HREF attribute and no TARGET
 			     * attribute */
-                            parsedtag_set_value(tag, ATTR_TARGET, d_target);
-                        }
-                        if (parsedtag_need_reconstruct(tag))
-                            tok = parsedtag2str(tag);
-                        tok->Puts(f1);
-                    }
-                    else
-                    {
-                        if (pre_mode & RB_PLAIN)
-                            fprintf(f1, "%s", html_quote(tok->ptr));
-                        else if (pre_mode & RB_INTXTA)
-                            fprintf(f1, "%s",
-                                    html_quote(html_unquote(tok->ptr)));
-                        else
+                                parsedtag_set_value(tag, ATTR_TARGET, d_target);
+                            }
+                            if (parsedtag_need_reconstruct(tag))
+                                tok = parsedtag2str(tag);
                             tok->Puts(f1);
+                        }
+                        else
+                        {
+                            if (pre_mode & RB_PLAIN)
+                                fprintf(f1, "%s", html_quote(tok->ptr));
+                            else if (pre_mode & RB_INTXTA)
+                                fprintf(f1, "%s",
+                                        html_quote(html_unquote(tok->ptr)));
+                            else
+                                tok->Puts(f1);
+                        }
+                    token_end:
+                        tok->Clear();
+                    } while (*p != '\0' || !iseos(f2.stream));
+                    if (pre_mode & RB_PLAIN)
+                        fputs("</PRE_PLAIN>\n", f1);
+                    else if (pre_mode & RB_INTXTA)
+                        fputs("</TEXTAREA></FORM>\n", f1);
+                    else if (pre_mode & RB_INSELECT)
+                        fputs("</SELECT></FORM>\n", f1);
+                    else if (pre_mode & (RB_SCRIPT | RB_STYLE))
+                    {
+                        if (status != R_ST_NORMAL)
+                            fputs(correct_irrtag(status)->ptr, f1);
+                        if (pre_mode & RB_SCRIPT)
+                            fputs("</SCRIPT>\n", f1);
+                        else if (pre_mode & RB_STYLE)
+                            fputs("</STYLE>\n", f1);
                     }
-                token_end:
-                    tok->Clear();
-                } while (*p != '\0' || !iseos(f2.stream));
-                if (pre_mode & RB_PLAIN)
-                    fputs("</PRE_PLAIN>\n", f1);
-                else if (pre_mode & RB_INTXTA)
-                    fputs("</TEXTAREA></FORM>\n", f1);
-                else if (pre_mode & RB_INSELECT)
-                    fputs("</SELECT></FORM>\n", f1);
-                else if (pre_mode & (RB_SCRIPT | RB_STYLE))
-                {
-                    if (status != R_ST_NORMAL)
-                        fputs(correct_irrtag(status)->ptr, f1);
-                    if (pre_mode & RB_SCRIPT)
-                        fputs("</SCRIPT>\n", f1);
-                    else if (pre_mode & RB_STYLE)
-                        fputs("</STYLE>\n", f1);
+                    while (t_stack--)
+                        fputs("</TABLE>\n", f1);
+                    f2.Close();
+                    break;
                 }
-                while (t_stack--)
-                    fputs("</TABLE>\n", f1);
-                f2.Close();
-                break;
-            }
-            case F_FRAMESET:
-            render_frameset:
-                if (!frame.set->name && f->name)
-                {
-                    frame.set->name = Sprintf("%s_%d", f->name, i)->ptr;
+                case F_FRAMESET:
+                render_frameset:
+                    if (!frame.set->name && f->name)
+                    {
+                        frame.set->name = Sprintf("%s_%d", f->name, i)->ptr;
+                    }
+                    createFrameFile(frame.set, f1, current, level + 1,
+                                    force_reload);
+                    break;
                 }
-                createFrameFile(frame.set, f1, current, level + 1,
-                                force_reload);
-                break;
+                fputs("</td>\n", f1);
             }
-            fputs("</td>\n", f1);
+            fputs("</tr>\n", f1);
         }
-        fputs("</tr>\n", f1);
+
+        fputs("</table>\n", f1);
+
+        return true;
+    });
+
+    if (!success)
+    {
+        return -1;
     }
 
-    fputs("</table>\n", f1);
     if (level == 0)
     {
         fputs("</body></html>\n", f1);
-        TRAP_OFF;
     }
     return 0;
 }

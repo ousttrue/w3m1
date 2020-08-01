@@ -1509,7 +1509,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         s = NULL;
                         parsedtag_get_value(tag, ATTR_TITLE, &s);
                         p = wc_conv_strict(remove_space(p), InnerCharset,
-                                           buf->document_charset)->ptr;
+                                           buf->document_charset)
+                                ->ptr;
                         a_img = buf->img.Put(Anchor::CreateImage(
                             p,
                             s ? s : "",
@@ -1693,7 +1694,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     {
                         MapArea *a;
                         p = wc_conv_strict(remove_space(p), InnerCharset,
-                                           buf->document_charset)->ptr;
+                                           buf->document_charset)
+                                ->ptr;
                         t = NULL;
                         parsedtag_get_value(tag, ATTR_TARGET, &t);
                         q = "";
@@ -1746,7 +1748,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (parsedtag_get_value(tag, ATTR_HREF, &p))
                     {
                         p = wc_conv_strict(remove_space(p), InnerCharset,
-                                           buf->document_charset)->ptr;
+                                           buf->document_charset)
+                                ->ptr;
                         buf->baseURL.Parse(p, NULL);
                     }
                     if (parsedtag_get_value(tag, ATTR_TARGET, &p))
@@ -1765,7 +1768,8 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         if (tmp)
                         {
                             p = wc_conv_strict(remove_space(tmp->ptr), InnerCharset,
-                                               buf->document_charset)->ptr;
+                                               buf->document_charset)
+                                    ->ptr;
                             buf->event = setAlarmEvent(buf->event,
                                                        refresh_interval,
                                                        AL_IMPLICIT_ONCE,
@@ -2036,103 +2040,107 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     else
         htmlenv1.buf = newTextLineList();
 
-    if (SETJMP(AbortLoading) != 0)
-    {
-        HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1);
-        goto phase2;
-    }
-    TRAP_ON;
+    auto success = TrapJmp([&]() {
 
 #ifdef USE_M17N
-    if (newBuf != NULL)
-    {
-        if (newBuf->bufferprop & BP_FRAME)
-            charset = InnerCharset;
-        else if (newBuf->document_charset)
-            charset = doc_charset = newBuf->document_charset;
-    }
-    if (content_charset && UseContentCharset)
-        doc_charset = content_charset;
-    else if (f->guess_type && !strcasecmp(f->guess_type, "application/xhtml+xml"))
-        doc_charset = WC_CES_UTF_8;
-    meta_charset = WC_CES_NONE;
+        if (newBuf != NULL)
+        {
+            if (newBuf->bufferprop & BP_FRAME)
+                charset = InnerCharset;
+            else if (newBuf->document_charset)
+                charset = doc_charset = newBuf->document_charset;
+        }
+        if (content_charset && UseContentCharset)
+            doc_charset = content_charset;
+        else if (f->guess_type && !strcasecmp(f->guess_type, "application/xhtml+xml"))
+            doc_charset = WC_CES_UTF_8;
+        meta_charset = WC_CES_NONE;
 #endif
 #if 0
     do_blankline(&htmlenv1, &obuf, 0, 0, htmlenv1.limit);
     obuf.flag = RB_IGNORE_P;
 #endif
-    if (IStype(f->stream) != IST_ENCODED)
-        f->stream = newEncodedStream(f->stream, f->encoding);
-    while ((lineBuf2 = f->StrmyISgets())->Size())
-    {
-#ifdef USE_NNTP
-        if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
+        if (IStype(f->stream) != IST_ENCODED)
+            f->stream = newEncodedStream(f->stream, f->encoding);
+        while ((lineBuf2 = f->StrmyISgets())->Size())
         {
-            lineBuf2->Delete(0, 1);
-            if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
-                lineBuf2->ptr[0] == '\0')
+#ifdef USE_NNTP
+            if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
             {
-                /*
+                lineBuf2->Delete(0, 1);
+                if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
+                    lineBuf2->ptr[0] == '\0')
+                {
+                    /*
                  * iseos(f->stream) = TRUE;
                  */
-                break;
+                    break;
+                }
             }
-        }
 #endif /* USE_NNTP */
-        if (src)
-            lineBuf2->Puts(src);
-        linelen += lineBuf2->Size();
-        if (w3m_dump & DUMP_EXTRA)
-            printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
-        if (w3m_dump & DUMP_SOURCE)
-            continue;
-        showProgress(&linelen, &trbyte);
-        /*
+            if (src)
+                lineBuf2->Puts(src);
+            linelen += lineBuf2->Size();
+            if (w3m_dump & DUMP_EXTRA)
+                printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
+            if (w3m_dump & DUMP_SOURCE)
+                continue;
+            showProgress(&linelen, &trbyte);
+            /*
          * if (frame_source)
          * continue;
          */
-        if (meta_charset)
-        { /* <META> */
-            if (content_charset == 0 && UseContentCharset)
-            {
-                doc_charset = meta_charset;
-                charset = WC_CES_US_ASCII;
+            if (meta_charset)
+            { /* <META> */
+                if (content_charset == 0 && UseContentCharset)
+                {
+                    doc_charset = meta_charset;
+                    charset = WC_CES_US_ASCII;
+                }
+                meta_charset = WC_CES_NONE;
             }
-            meta_charset = WC_CES_NONE;
-        }
 
-        lineBuf2 = convertLine(f, lineBuf2, HTML_MODE, &charset, doc_charset);
+            lineBuf2 = convertLine(f, lineBuf2, HTML_MODE, &charset, doc_charset);
 #if defined(USE_M17N) && defined(USE_IMAGE)
-        cur_document_charset = charset;
+            cur_document_charset = charset;
 #endif
-        HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
-    }
-    if (obuf.status != R_ST_NORMAL)
+            HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
+        }
+        if (obuf.status != R_ST_NORMAL)
+        {
+            obuf.status = R_ST_EOL;
+            HTMLlineproc0("\n", &htmlenv1, internal);
+        }
+        obuf.status = R_ST_NORMAL;
+        completeHTMLstream(&htmlenv1, &obuf);
+        flushline(&htmlenv1, &obuf, 0, 2, htmlenv1.limit);
+        if (htmlenv1.title)
+            newBuf->buffername = htmlenv1.title;
+
+        return true;
+    });
+
+    if (!success)
     {
-        obuf.status = R_ST_EOL;
-        HTMLlineproc0("\n", &htmlenv1, internal);
+        HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1);
     }
-    obuf.status = R_ST_NORMAL;
-    completeHTMLstream(&htmlenv1, &obuf);
-    flushline(&htmlenv1, &obuf, 0, 2, htmlenv1.limit);
-    if (htmlenv1.title)
-        newBuf->buffername = htmlenv1.title;
-    if (w3m_halfdump)
+    else
     {
-        TRAP_OFF;
-        print_internal_information(&htmlenv1);
-        return;
+
+        if (w3m_halfdump)
+        {
+            print_internal_information(&htmlenv1);
+            return;
+        }
+        if (w3m_backend)
+        {
+            print_internal_information(&htmlenv1);
+            backend_halfdump_buf = htmlenv1.buf;
+            return;
+        }
     }
-    if (w3m_backend)
-    {
-        TRAP_OFF;
-        print_internal_information(&htmlenv1);
-        backend_halfdump_buf = htmlenv1.buf;
-        return;
-    }
-phase2:
+
     newBuf->trbyte = trbyte + linelen;
-    TRAP_OFF;
 #ifdef USE_M17N
     if (!(newBuf->bufferprop & BP_FRAME))
         newBuf->document_charset = charset;
@@ -2186,24 +2194,22 @@ loadHTMLString(Str page)
     BufferPtr newBuf;
 
     newBuf = newBuffer(INIT_BUFFER_WIDTH);
-    if (SETJMP(AbortLoading) != 0)
+
+    auto success = TrapJmp([&]() {
+        URLFile f(SCM_LOCAL, newStrStream(page));
+
+        newBuf->document_charset = InnerCharset;
+        loadHTMLstream(&f, newBuf, NULL, TRUE);
+        newBuf->document_charset = WC_CES_US_ASCII;
+
+        return true;
+    });
+
+    if (!success)
     {
-        TRAP_OFF;
-        return NULL;
+        return nullptr;
     }
-    TRAP_ON;
 
-    URLFile f(SCM_LOCAL, newStrStream(page));
-
-#ifdef USE_M17N
-    newBuf->document_charset = InnerCharset;
-#endif
-    loadHTMLstream(&f, newBuf, NULL, TRUE);
-#ifdef USE_M17N
-    newBuf->document_charset = WC_CES_US_ASCII;
-#endif
-
-    TRAP_OFF;
     newBuf->topLine = newBuf->firstLine;
     newBuf->lastLine = newBuf->currentLine;
     newBuf->currentLine = newBuf->firstLine;

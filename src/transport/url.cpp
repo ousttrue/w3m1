@@ -191,191 +191,184 @@ int openSocket(const char *hostname,
         message(Sprintf("Opening socket...")->ptr, 0, 0);
         refresh();
     }
-    if (SETJMP(AbortLoading) != 0)
-    {
-#ifdef SOCK_DEBUG
-        sock_log("openSocket() failed. reason: user abort\n");
-#endif
-        if (sock >= 0)
-            close(sock);
-        goto error;
-    }
-    TRAP_ON;
+
     if (hostname == NULL)
     {
 #ifdef SOCK_DEBUG
         sock_log("openSocket() failed. reason: Bad hostname \"%s\"\n",
                  hostname);
 #endif
-        goto error;
+        return -1;
     }
 
+    auto success = TrapJmp([&] {
+
 #ifdef INET6
-    /* rfc2732 compliance */
-    hname = const_cast<char *>(hostname);
-    if (hname != NULL && hname[0] == '[' && hname[strlen(hname) - 1] == ']')
-    {
-        hname = allocStr(hostname + 1, -1);
-        hname[strlen(hname) - 1] = '\0';
-        if (strspn(hname, "0123456789abcdefABCDEF:.") != strlen(hname))
-            goto error;
-    }
-    for (af = ai_family_order_table[DNS_order];; af++)
-    {
-        memset(&hints, 0, sizeof(hints));
-        hints.ai_family = *af;
-        hints.ai_socktype = SOCK_STREAM;
-        if (remoteport_num != 0)
+        /* rfc2732 compliance */
+        hname = const_cast<char *>(hostname);
+        if (hname != NULL && hname[0] == '[' && hname[strlen(hname) - 1] == ']')
         {
-            Str portbuf = Sprintf("%d", remoteport_num);
-            error = getaddrinfo(hname, portbuf->ptr, &hints, &res0);
+            hname = allocStr(hostname + 1, -1);
+            hname[strlen(hname) - 1] = '\0';
+            if (strspn(hname, "0123456789abcdefABCDEF:.") != strlen(hname))
+                return false;
         }
-        else
+        for (af = ai_family_order_table[DNS_order];; af++)
         {
-            error = -1;
-        }
-        if (error && remoteport_name && remoteport_name[0] != '\0')
-        {
-            /* try default port */
-            error = getaddrinfo(hname, remoteport_name, &hints, &res0);
-        }
-        if (error)
-        {
-            if (*af == PF_UNSPEC)
+            memset(&hints, 0, sizeof(hints));
+            hints.ai_family = *af;
+            hints.ai_socktype = SOCK_STREAM;
+            if (remoteport_num != 0)
             {
-                goto error;
+                Str portbuf = Sprintf("%d", remoteport_num);
+                error = getaddrinfo(hname, portbuf->ptr, &hints, &res0);
             }
-            /* try next ai family */
-            continue;
-        }
-        sock = -1;
-        for (res = res0; res; res = res->ai_next)
-        {
-            sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+            else
+            {
+                error = -1;
+            }
+            if (error && remoteport_name && remoteport_name[0] != '\0')
+            {
+                /* try default port */
+                error = getaddrinfo(hname, remoteport_name, &hints, &res0);
+            }
+            if (error)
+            {
+                if (*af == PF_UNSPEC)
+                {
+                    return false;
+                }
+                /* try next ai family */
+                continue;
+            }
+
+            sock = -1;
+            for (res = res0; res; res = res->ai_next)
+            {
+                sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+                if (sock < 0)
+                {
+                    continue;
+                }
+                if (connect(sock, res->ai_addr, res->ai_addrlen) < 0)
+                {
+                    close(sock);
+                    sock = -1;
+                    continue;
+                }
+                break;
+            }
             if (sock < 0)
             {
+                freeaddrinfo(res0);
+                if (*af == PF_UNSPEC)
+                {
+                    return false;
+                }
+                /* try next ai family */
                 continue;
             }
-            if (connect(sock, res->ai_addr, res->ai_addrlen) < 0)
-            {
-                close(sock);
-                sock = -1;
-                continue;
-            }
+            freeaddrinfo(res0);
             break;
         }
-        if (sock < 0)
-        {
-            freeaddrinfo(res0);
-            if (*af == PF_UNSPEC)
-            {
-                goto error;
-            }
-            /* try next ai family */
-            continue;
-        }
-        freeaddrinfo(res0);
-        break;
-    }
 #else /* not INET6 */
-    s_port = htons(remoteport_num);
-    bzero((char *)&hostaddr, sizeof(struct sockaddr_in));
-    if ((proto = getprotobyname("tcp")) == NULL)
-    {
-        /* protocol number of TCP is 6 */
-        proto = New(struct protoent);
-        proto->p_proto = 6;
-    }
-    if ((sock = socket(AF_INET, SOCK_STREAM, proto->p_proto)) < 0)
-    {
-#ifdef SOCK_DEBUG
-        sock_log("openSocket: socket() failed. reason: %s\n", strerror(errno));
-#endif
-        goto error;
-    }
-    regexCompile("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", 0);
-    if (regexMatch(hostname, -1, 1))
-    {
-        sscanf(hostname, "%d.%d.%d.%d", &a1, &a2, &a3, &a4);
-        adr = htonl((a1 << 24) | (a2 << 16) | (a3 << 8) | a4);
-        bcopy((void *)&adr, (void *)&hostaddr.sin_addr, sizeof(long));
-        hostaddr.sin_family = AF_INET;
-        hostaddr.sin_port = s_port;
-        if (fmInitialized)
+        s_port = htons(remoteport_num);
+        bzero((char *)&hostaddr, sizeof(struct sockaddr_in));
+        if ((proto = getprotobyname("tcp")) == NULL)
         {
-            message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
-            refresh();
+            /* protocol number of TCP is 6 */
+            proto = New(struct protoent);
+            proto->p_proto = 6;
         }
-        if (connect(sock, (struct sockaddr *)&hostaddr,
-                    sizeof(struct sockaddr_in)) < 0)
+        if ((sock = socket(AF_INET, SOCK_STREAM, proto->p_proto)) < 0)
         {
 #ifdef SOCK_DEBUG
-            sock_log("openSocket: connect() failed. reason: %s\n",
-                     strerror(errno));
+            sock_log("openSocket: socket() failed. reason: %s\n", strerror(errno));
 #endif
             goto error;
         }
-    }
-    else
-    {
-        char **h_addr_list;
-        int result = -1;
-        if (fmInitialized)
+        regexCompile("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", 0);
+        if (regexMatch(hostname, -1, 1))
         {
-            message(Sprintf("Performing hostname lookup on %s", hostname)->ptr,
-                    0, 0);
-            refresh();
-        }
-        if ((entry = gethostbyname(hostname)) == NULL)
-        {
-#ifdef SOCK_DEBUG
-            sock_log("openSocket: gethostbyname() failed. reason: %s\n",
-                     strerror(errno));
-#endif
-            goto error;
-        }
-        hostaddr.sin_family = AF_INET;
-        hostaddr.sin_port = s_port;
-        for (h_addr_list = entry->h_addr_list; *h_addr_list; h_addr_list++)
-        {
-            bcopy((void *)h_addr_list[0], (void *)&hostaddr.sin_addr,
-                  entry->h_length);
-#ifdef SOCK_DEBUG
-            adr = ntohl(*(long *)&hostaddr.sin_addr);
-            sock_log("openSocket: connecting %d.%d.%d.%d\n",
-                     (adr >> 24) & 0xff,
-                     (adr >> 16) & 0xff, (adr >> 8) & 0xff, adr & 0xff);
-#endif
+            sscanf(hostname, "%d.%d.%d.%d", &a1, &a2, &a3, &a4);
+            adr = htonl((a1 << 24) | (a2 << 16) | (a3 << 8) | a4);
+            bcopy((void *)&adr, (void *)&hostaddr.sin_addr, sizeof(long));
+            hostaddr.sin_family = AF_INET;
+            hostaddr.sin_port = s_port;
             if (fmInitialized)
             {
                 message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
                 refresh();
             }
-            if ((result = connect(sock, (struct sockaddr *)&hostaddr,
-                                  sizeof(struct sockaddr_in))) == 0)
+            if (connect(sock, (struct sockaddr *)&hostaddr,
+                        sizeof(struct sockaddr_in)) < 0)
             {
-                break;
-            }
 #ifdef SOCK_DEBUG
-            else
-            {
                 sock_log("openSocket: connect() failed. reason: %s\n",
                          strerror(errno));
-            }
 #endif
+                goto error;
+            }
         }
-        if (result < 0)
+        else
         {
-            goto error;
+            char **h_addr_list;
+            int result = -1;
+            if (fmInitialized)
+            {
+                message(Sprintf("Performing hostname lookup on %s", hostname)->ptr,
+                        0, 0);
+                refresh();
+            }
+            if ((entry = gethostbyname(hostname)) == NULL)
+            {
+#ifdef SOCK_DEBUG
+                sock_log("openSocket: gethostbyname() failed. reason: %s\n",
+                         strerror(errno));
+#endif
+                goto error;
+            }
+            hostaddr.sin_family = AF_INET;
+            hostaddr.sin_port = s_port;
+            for (h_addr_list = entry->h_addr_list; *h_addr_list; h_addr_list++)
+            {
+                bcopy((void *)h_addr_list[0], (void *)&hostaddr.sin_addr,
+                      entry->h_length);
+#ifdef SOCK_DEBUG
+                adr = ntohl(*(long *)&hostaddr.sin_addr);
+                sock_log("openSocket: connecting %d.%d.%d.%d\n",
+                         (adr >> 24) & 0xff,
+                         (adr >> 16) & 0xff, (adr >> 8) & 0xff, adr & 0xff);
+#endif
+                if (fmInitialized)
+                {
+                    message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
+                    refresh();
+                }
+                if ((result = connect(sock, (struct sockaddr *)&hostaddr,
+                                      sizeof(struct sockaddr_in))) == 0)
+                {
+                    break;
+                }
+#ifdef SOCK_DEBUG
+                else
+                {
+                    sock_log("openSocket: connect() failed. reason: %s\n",
+                             strerror(errno));
+                }
+#endif
+            }
+            if (result < 0)
+            {
+                goto error;
+            }
         }
-    }
 #endif /* not INET6 */
 
-    TRAP_OFF;
-    return sock;
-error:
-    TRAP_OFF;
-    return -1;
+        return true;
+    });
+
+    return success ? sock : -1;
 }
 
 #define COPYPATH_SPC_ALLOW 0
@@ -1170,101 +1163,104 @@ int check_no_proxy(char *domain)
     /* 
      * to check noproxy by network addr
      */
-    if (SETJMP(AbortLoading) != 0)
-    {
-        ret = 0;
-        goto end;
-    }
-    TRAP_ON;
-    {
+
+    auto success = TrapJmp([&]() {
+        {
 #ifndef INET6
-        struct hostent *he;
-        int n;
-        unsigned char **h_addr_list;
-        char addr[4 * 16], buf[5];
+            struct hostent *he;
+            int n;
+            unsigned char **h_addr_list;
+            char addr[4 * 16], buf[5];
 
-        he = gethostbyname(domain);
-        if (!he)
-        {
-            ret = 0;
-            goto end;
-        }
-        for (h_addr_list = (unsigned char **)he->h_addr_list; *h_addr_list;
-             h_addr_list++)
-        {
-            sprintf(addr, "%d", h_addr_list[0][0]);
-            for (n = 1; n < he->h_length; n++)
+            he = gethostbyname(domain);
+            if (!he)
             {
-                sprintf(buf, ".%d", h_addr_list[0][n]);
-                addr->Push(buf);
+                ret = 0;
+                goto end;
             }
-            for (tl = NO_proxy_domains->first; tl != NULL; tl = tl->next)
+            for (h_addr_list = (unsigned char **)he->h_addr_list; *h_addr_list;
+                 h_addr_list++)
             {
-                if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0)
+                sprintf(addr, "%d", h_addr_list[0][0]);
+                for (n = 1; n < he->h_length; n++)
                 {
-                    ret = 1;
-                    goto end;
-                }
-            }
-        }
-#else  /* INET6 */
-        int error;
-        struct addrinfo hints;
-        struct addrinfo *res, *res0;
-        char addr[4 * 16];
-        int *af;
-
-        for (af = ai_family_order_table[DNS_order];; af++)
-        {
-            memset(&hints, 0, sizeof(hints));
-            hints.ai_family = *af;
-            error = getaddrinfo(domain, NULL, &hints, &res0);
-            if (error)
-            {
-                if (*af == PF_UNSPEC)
-                {
-                    break;
-                }
-                /* try next */
-                continue;
-            }
-            for (res = res0; res != NULL; res = res->ai_next)
-            {
-                switch (res->ai_family)
-                {
-                case AF_INET:
-                    inet_ntop(AF_INET,
-                              &((struct sockaddr_in *)res->ai_addr)->sin_addr,
-                              addr, sizeof(addr));
-                    break;
-                case AF_INET6:
-                    inet_ntop(AF_INET6,
-                              &((struct sockaddr_in6 *)res->ai_addr)->sin6_addr, addr, sizeof(addr));
-                    break;
-                default:
-                    /* unknown */
-                    continue;
+                    sprintf(buf, ".%d", h_addr_list[0][n]);
+                    addr->Push(buf);
                 }
                 for (tl = NO_proxy_domains->first; tl != NULL; tl = tl->next)
                 {
                     if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0)
                     {
-                        freeaddrinfo(res0);
                         ret = 1;
                         goto end;
                     }
                 }
             }
-            freeaddrinfo(res0);
-            if (*af == PF_UNSPEC)
+#else  /* INET6 */
+            int error;
+            struct addrinfo hints;
+            struct addrinfo *res, *res0;
+            char addr[4 * 16];
+            int *af;
+
+            for (af = ai_family_order_table[DNS_order];; af++)
             {
-                break;
+                memset(&hints, 0, sizeof(hints));
+                hints.ai_family = *af;
+                error = getaddrinfo(domain, NULL, &hints, &res0);
+                if (error)
+                {
+                    if (*af == PF_UNSPEC)
+                    {
+                        break;
+                    }
+                    /* try next */
+                    continue;
+                }
+                for (res = res0; res != NULL; res = res->ai_next)
+                {
+                    switch (res->ai_family)
+                    {
+                    case AF_INET:
+                        inet_ntop(AF_INET,
+                                  &((struct sockaddr_in *)res->ai_addr)->sin_addr,
+                                  addr, sizeof(addr));
+                        break;
+                    case AF_INET6:
+                        inet_ntop(AF_INET6,
+                                  &((struct sockaddr_in6 *)res->ai_addr)->sin6_addr, addr, sizeof(addr));
+                        break;
+                    default:
+                        /* unknown */
+                        continue;
+                    }
+                    for (tl = NO_proxy_domains->first; tl != NULL; tl = tl->next)
+                    {
+                        if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0)
+                        {
+                            freeaddrinfo(res0);
+                            ret = 1;
+                            return true;
+                        }
+                    }
+                }
+                freeaddrinfo(res0);
+                if (*af == PF_UNSPEC)
+                {
+                    break;
+                }
             }
-        }
 #endif /* INET6 */
+        }
+
+        return true;
+    });
+
+    if (!success)
+    {
+        ret = 0;
     }
-end:
-    TRAP_OFF;
+
     return ret;
 }
 

@@ -373,176 +373,177 @@ Str loadNewsgroup(ParsedURL *pu, CharacterEncodingScheme *charset)
                           qgroup, "</h1>\n<hr>\n", NULL);
 
     URLFile f(SCM_MISSING, NULL);
-    if (SETJMP(AbortLoading) != 0)
-    {
-        news_close(&current_news);
-        page->Push("</table>\n<p>Transfer Interrupted!\n");
-        goto news_end;
-    }
-    TRAP_ON;
 
-    tmp = news_command(&current_news, "GROUP", group, &status);
-    if (status != 211)
-        goto news_list;
-    if (sscanf(tmp->ptr, "%d %d %d %d", &status, &i, &first, &last) != 4)
-        goto news_list;
-    if (list && *list)
-    {
-        if ((p = strchr(list, '-')))
+    auto success = TrapJmp([&]() {
+        tmp = news_command(&current_news, "GROUP", group, &status);
+        if (status != 211)
+            goto news_list;
+        if (sscanf(tmp->ptr, "%d %d %d %d", &status, &i, &first, &last) != 4)
+            goto news_list;
+        if (list && *list)
         {
-            *p++ = '\0';
-            end = atoi(p);
+            if ((p = strchr(list, '-')))
+            {
+                *p++ = '\0';
+                end = atoi(p);
+            }
+            start = atoi(list);
+            if (start > 0)
+            {
+                if (start < first)
+                    start = first;
+                if (end <= 0)
+                    end = start + MaxNewsMessage - 1;
+            }
         }
-        start = atoi(list);
-        if (start > 0)
+        if (start <= 0)
         {
-            if (start < first)
-                start = first;
-            if (end <= 0)
-                end = start + MaxNewsMessage - 1;
+            start = first;
+            end = last;
+            if (end - start > MaxNewsMessage - 1)
+                start = end - MaxNewsMessage + 1;
         }
-    }
-    if (start <= 0)
-    {
-        start = first;
-        end = last;
-        if (end - start > MaxNewsMessage - 1)
-            start = end - MaxNewsMessage + 1;
-    }
-    page = Sprintf("<html>\n<head>\n<base href=\"%s\">\n\
+        page = Sprintf("<html>\n<head>\n<base href=\"%s\">\n\
 <title>Newsgroup: %s %d-%d</title>\n\
 </head>\n<body>\n<h1>Newsgroup: %s %d-%d</h1>\n<hr>\n",
-                   pu->ToStr()->ptr, qgroup, start, end, qgroup, start, end);
-    if (start > first)
-    {
-        i = start - MaxNewsMessage;
-        if (i < first)
-            i = first;
-        page->Push(Sprintf("<a href=\"%s%s/%d-%d\">[%d-%d]</a>\n", scheme,
-                           qgroup, i, start - 1, i, start - 1));
-    }
+                       pu->ToStr()->ptr, qgroup, start, end, qgroup, start, end);
+        if (start > first)
+        {
+            i = start - MaxNewsMessage;
+            if (i < first)
+                i = first;
+            page->Push(Sprintf("<a href=\"%s%s/%d-%d\">[%d-%d]</a>\n", scheme,
+                               qgroup, i, start - 1, i, start - 1));
+        }
 
-    page->Push("<table>\n");
-    news_command(&current_news, "XOVER", Sprintf("%d-%d", start, end)->ptr,
-                 &status);
+        page->Push("<table>\n");
+        news_command(&current_news, "XOVER", Sprintf("%d-%d", start, end)->ptr,
+                     &status);
 
-    if (status == 224)
-    {
-        f.scheme = SCM_NEWS;
+        if (status == 224)
+        {
+            f.scheme = SCM_NEWS;
+            while (1)
+            {
+                tmp = StrISgets(current_news.rf);
+                if (NEWS_ENDLINE(tmp->ptr))
+                    break;
+                if (sscanf(tmp->ptr, "%d", &i) != 1)
+                    continue;
+                if (!(s = strchr(tmp->ptr, '\t')))
+                    continue;
+                s++;
+                if (!(n = strchr(s, '\t')))
+                    continue;
+                *n++ = '\0';
+                if (!(t = strchr(n, '\t')))
+                    continue;
+                *t++ = '\0';
+                if (!(p = strchr(t, '\t')))
+                    continue;
+                *p++ = '\0';
+                if (*p == '<')
+                    p++;
+                if (!(q = strchr(p, '>')) && !(q = strchr(p, '\t')))
+                    continue;
+                *q = '\0';
+                tmp = decodeMIME(Strnew(s), &mime_charset);
+                s = convertLine(&f, tmp, HEADER_MODE,
+                                mime_charset ? &mime_charset : charset,
+                                mime_charset ? mime_charset : doc_charset)
+                        ->ptr;
+                tmp = decodeMIME(Strnew(n), &mime_charset);
+                n = convertLine(&f, tmp, HEADER_MODE,
+                                mime_charset ? &mime_charset : charset,
+                                mime_charset ? mime_charset : doc_charset)
+                        ->ptr;
+                add_news_message(page, i, t, n, s, p, scheme,
+                                 pu->scheme == SCM_NNTP_GROUP ? qgroup : NULL);
+            }
+        }
+        else
+        {
+            f = URLFile(SCM_NEWS, current_news.rf);
+            buf = newBuffer(INIT_BUFFER_WIDTH);
+            for (i = start; i <= end && i <= last; i++)
+            {
+                news_command(&current_news, "HEAD", Sprintf("%d", i)->ptr,
+                             &status);
+                if (status != 221)
+                    continue;
+                readHeader(&f, buf, FALSE, NULL);
+                if (!(p = checkHeader(buf, "Message-ID:")))
+                    continue;
+                if (*p == '<')
+                    p++;
+                if (!(q = strchr(p, '>')) && !(q = strchr(p, '\t')))
+                    *q = '\0';
+                if (!(s = checkHeader(buf, "Subject:")))
+                    continue;
+                if (!(n = checkHeader(buf, "From:")))
+                    continue;
+                if (!(t = checkHeader(buf, "Date:")))
+                    continue;
+                add_news_message(page, i, t, n, s, p, scheme,
+                                 pu->scheme == SCM_NNTP_GROUP ? qgroup : NULL);
+            }
+        }
+        page->Push("</table>\n");
+
+        if (end < last)
+        {
+            i = end + MaxNewsMessage;
+            if (i > last)
+                i = last;
+            page->Push(Sprintf("<a href=\"%s%s/%d-%d\">[%d-%d]</a>\n", scheme,
+                               qgroup, end + 1, i, end + 1, i));
+        }
+        flag = 1;
+
+    news_list:
+        tmp = Sprintf("ACTIVE %s", group);
+        if (!strchr(group, '*'))
+            tmp->Push(".*");
+        news_command(&current_news, "LIST", tmp->ptr, &status);
+        if (status != 215)
+            return true;
         while (1)
         {
             tmp = StrISgets(current_news.rf);
             if (NEWS_ENDLINE(tmp->ptr))
                 break;
-            if (sscanf(tmp->ptr, "%d", &i) != 1)
-                continue;
-            if (!(s = strchr(tmp->ptr, '\t')))
-                continue;
-            s++;
-            if (!(n = strchr(s, '\t')))
-                continue;
-            *n++ = '\0';
-            if (!(t = strchr(n, '\t')))
-                continue;
-            *t++ = '\0';
-            if (!(p = strchr(t, '\t')))
-                continue;
-            *p++ = '\0';
-            if (*p == '<')
-                p++;
-            if (!(q = strchr(p, '>')) && !(q = strchr(p, '\t')))
-                continue;
-            *q = '\0';
-            tmp = decodeMIME(Strnew(s), &mime_charset);
-            s = convertLine(&f, tmp, HEADER_MODE,
-                            mime_charset ? &mime_charset : charset,
-                            mime_charset ? mime_charset : doc_charset)
-                    ->ptr;
-            tmp = decodeMIME(Strnew(n), &mime_charset);
-            n = convertLine(&f, tmp, HEADER_MODE,
-                            mime_charset ? &mime_charset : charset,
-                            mime_charset ? mime_charset : doc_charset)
-                    ->ptr;
-            add_news_message(page, i, t, n, s, p, scheme,
-                             pu->scheme == SCM_NNTP_GROUP ? qgroup : NULL);
+            if (flag < 2)
+            {
+                if (flag == 1)
+                    page->Push("<hr>\n");
+                page->Push("<table>\n");
+                flag = 2;
+            }
+            p = tmp->ptr;
+            for (q = p; *q && !IS_SPACE(*q); q++)
+                ;
+            *(q++) = '\0';
+            if (sscanf(q, "%d %d", &last, &first) == 2 && last >= first)
+                i = last - first + 1;
+            else
+                i = 0;
+            page->Push(
+                Sprintf("<tr><td align=right>%d<td><a href=\"%s%s\">%s</a>\n", i,
+                        scheme, html_quote(file_quote(p)), html_quote(p)));
         }
-    }
-    else
-    {
-        f = URLFile(SCM_NEWS, current_news.rf);
-        buf = newBuffer(INIT_BUFFER_WIDTH);
-        for (i = start; i <= end && i <= last; i++)
-        {
-            news_command(&current_news, "HEAD", Sprintf("%d", i)->ptr,
-                         &status);
-            if (status != 221)
-                continue;
-            readHeader(&f, buf, FALSE, NULL);
-            if (!(p = checkHeader(buf, "Message-ID:")))
-                continue;
-            if (*p == '<')
-                p++;
-            if (!(q = strchr(p, '>')) && !(q = strchr(p, '\t')))
-                *q = '\0';
-            if (!(s = checkHeader(buf, "Subject:")))
-                continue;
-            if (!(n = checkHeader(buf, "From:")))
-                continue;
-            if (!(t = checkHeader(buf, "Date:")))
-                continue;
-            add_news_message(page, i, t, n, s, p, scheme,
-                             pu->scheme == SCM_NNTP_GROUP ? qgroup : NULL);
-        }
-    }
-    page->Push("</table>\n");
+        if (flag == 2)
+            page->Push("</table>\n");
 
-    if (end < last)
-    {
-        i = end + MaxNewsMessage;
-        if (i > last)
-            i = last;
-        page->Push(Sprintf("<a href=\"%s%s/%d-%d\">[%d-%d]</a>\n", scheme,
-                           qgroup, end + 1, i, end + 1, i));
-    }
-    flag = 1;
+        return true;
+    });
 
-news_list:
-    tmp = Sprintf("ACTIVE %s", group);
-    if (!strchr(group, '*'))
-        tmp->Push(".*");
-    news_command(&current_news, "LIST", tmp->ptr, &status);
-    if (status != 215)
-        goto news_end;
-    while (1)
+    if (!success)
     {
-        tmp = StrISgets(current_news.rf);
-        if (NEWS_ENDLINE(tmp->ptr))
-            break;
-        if (flag < 2)
-        {
-            if (flag == 1)
-                page->Push("<hr>\n");
-            page->Push("<table>\n");
-            flag = 2;
-        }
-        p = tmp->ptr;
-        for (q = p; *q && !IS_SPACE(*q); q++)
-            ;
-        *(q++) = '\0';
-        if (sscanf(q, "%d %d", &last, &first) == 2 && last >= first)
-            i = last - first + 1;
-        else
-            i = 0;
-        page->Push(
-            Sprintf("<tr><td align=right>%d<td><a href=\"%s%s\">%s</a>\n", i,
-                    scheme, html_quote(file_quote(p)), html_quote(p)));
+        news_close(&current_news);
+        page->Push("</table>\n<p>Transfer Interrupted!\n");
     }
-    if (flag == 2)
-        page->Push("</table>\n");
 
-news_end:
     page->Push("</body>\n</html>\n");
-    TRAP_OFF;
     return page;
 }
 

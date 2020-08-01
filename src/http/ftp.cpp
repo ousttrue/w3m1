@@ -365,7 +365,7 @@ void closeFTP(void)
     ftp_close(&current_ftp);
 }
 
-InputStream*
+InputStream *
 openFTPStream(ParsedURL *pu, URLFile *uf)
 {
     Str tmp;
@@ -504,7 +504,7 @@ Str loadFTPDir0(ParsedURL *pu)
     Str FTPDIRtmp;
     Str tmp;
     int status;
-     int sv_type;
+    int sv_type;
     char *realpathname, *fn, *q;
     char **flist;
     int i, nfile, nfile_max;
@@ -562,137 +562,137 @@ Str loadFTPDir0(ParsedURL *pu)
                                "</title>\n</head>\n<body>\n<h1>Index of ", q,
                                "</h1>\n", NULL);
 
-    if (SETJMP(AbortLoading) != 0)
+    auto success = TrapJmp([&]() {
+        if (sv_type == UNIXLIKE_SERVER)
+            FTPDIRtmp->Push("<pre>\n");
+        else
+            FTPDIRtmp->Push("<ul>\n<li>");
+        FTPDIRtmp->Push("<a href=\"..\">[Upper Directory]</a>\n");
+
+        nfile_max = 100;
+        flist = New_N(char *, nfile_max);
+        nfile = 0;
+        if (sv_type == UNIXLIKE_SERVER)
+        {
+            char *name, *link, *date, *size, *type_str;
+            int ftype, max_len, len, j;
+
+            max_len = 20;
+            while (tmp = Strfgets(current_ftp.data), tmp->Size() > 0)
+            {
+                tmp->StripRight();
+                if ((ftype =
+                         ex_ftpdir_name_size_date(tmp->ptr, &name, &link, &date,
+                                                  &size)) == FTPDIR_NONE)
+                    continue;
+                if (!strcmp(".", name) || !strcmp("..", name))
+                    continue;
+                len = strlen(name);
+                if (!len)
+                    continue;
+                if (ftype == FTPDIR_DIR)
+                {
+                    len++;
+                    type_str = "/";
+                }
+                else if (ftype == FTPDIR_LINK)
+                {
+                    len++;
+                    type_str = "@";
+                }
+                else
+                {
+                    type_str = " ";
+                }
+                if (max_len < len)
+                    max_len = len;
+                flist[nfile++] = Sprintf("%s%s\n%s  %5s%s", name, type_str, date,
+                                         size, link)
+                                     ->ptr;
+                if (nfile == nfile_max)
+                {
+                    nfile_max *= 2;
+                    flist = New_Reuse(char *, flist, nfile_max);
+                }
+            }
+            qsort(flist, nfile, sizeof(char *), strCmp);
+            for (j = 0; j < nfile; j++)
+            {
+                fn = flist[j];
+                date = strchr(fn, '\n');
+                if (*(date - 1) == '/')
+                {
+                    ftype = FTPDIR_DIR;
+                    *date = '\0';
+                }
+                else if (*(date - 1) == '@')
+                {
+                    ftype = FTPDIR_LINK;
+                    *(date - 1) = '\0';
+                }
+                else
+                {
+                    ftype = FTPDIR_FILE;
+                    *(date - 1) = '\0';
+                }
+                date++;
+                tmp = convertLine(NULL, Strnew(fn), RAW_MODE, charset,
+                                  doc_charset);
+                if (ftype == FTPDIR_LINK)
+                    tmp->Push('@');
+                Strcat_m_charp(FTPDIRtmp, "<a href=\"", html_quote(file_quote(fn)),
+                               "\">", html_quote(tmp->ptr), "</a>", NULL);
+                for (i = get_Str_strwidth(tmp); i <= max_len; i++)
+                {
+                    if ((max_len % 2 + i) % 2)
+                        FTPDIRtmp->Push('.');
+                    else
+                        FTPDIRtmp->Push(' ');
+                }
+                tmp = convertLine(NULL, Strnew(date), RAW_MODE, charset,
+                                  doc_charset);
+                Strcat_m_charp(FTPDIRtmp, html_quote(tmp->ptr), "\n", NULL);
+            }
+            FTPDIRtmp->Push("</pre>\n");
+        }
+        else
+        {
+            while (tmp = Strfgets(current_ftp.data), tmp->Size() > 0)
+            {
+                tmp->StripRight();
+                flist[nfile++] = mybasename(tmp->ptr);
+                if (nfile == nfile_max)
+                {
+                    nfile_max *= 2;
+                    flist = New_Reuse(char *, flist, nfile_max);
+                }
+            }
+            qsort(flist, nfile, sizeof(char *), strCmp);
+            for (i = 0; i < nfile; i++)
+            {
+                fn = flist[i];
+                tmp = convertLine(NULL, Strnew(fn), RAW_MODE, charset,
+                                  doc_charset);
+                Strcat_m_charp(FTPDIRtmp, "<li><a href=\"",
+                               html_quote(file_quote(fn)), "\">",
+                               html_quote(tmp->ptr), "</a>\n", NULL);
+            }
+            FTPDIRtmp->Push("</ul>\n");
+        }
+
+        return true;
+    });
+
+    if (!success)
     {
         if (sv_type == UNIXLIKE_SERVER)
-            FTPDIRtmp->Push( "</a></pre>\n");
+            FTPDIRtmp->Push("</a></pre>\n");
         else
-            FTPDIRtmp->Push( "</a></ul>\n");
-        FTPDIRtmp->Push( "<p>Transfer Interrupted!\n");
-        goto ftp_end;
-    }
-    TRAP_ON;
+            FTPDIRtmp->Push("</a></ul>\n");
+        FTPDIRtmp->Push("<p>Transfer Interrupted!\n");
+    }   
 
-    if (sv_type == UNIXLIKE_SERVER)
-        FTPDIRtmp->Push( "<pre>\n");
-    else
-        FTPDIRtmp->Push( "<ul>\n<li>");
-    FTPDIRtmp->Push( "<a href=\"..\">[Upper Directory]</a>\n");
-
-    nfile_max = 100;
-    flist = New_N(char *, nfile_max);
-    nfile = 0;
-    if (sv_type == UNIXLIKE_SERVER)
-    {
-        char *name, *link, *date, *size, *type_str;
-        int ftype, max_len, len, j;
-
-        max_len = 20;
-        while (tmp = Strfgets(current_ftp.data), tmp->Size() > 0)
-        {
-            tmp->StripRight();
-            if ((ftype =
-                     ex_ftpdir_name_size_date(tmp->ptr, &name, &link, &date,
-                                              &size)) == FTPDIR_NONE)
-                continue;
-            if (!strcmp(".", name) || !strcmp("..", name))
-                continue;
-            len = strlen(name);
-            if (!len)
-                continue;
-            if (ftype == FTPDIR_DIR)
-            {
-                len++;
-                type_str = "/";
-            }
-            else if (ftype == FTPDIR_LINK)
-            {
-                len++;
-                type_str = "@";
-            }
-            else
-            {
-                type_str = " ";
-            }
-            if (max_len < len)
-                max_len = len;
-            flist[nfile++] = Sprintf("%s%s\n%s  %5s%s", name, type_str, date,
-                                     size, link)
-                                 ->ptr;
-            if (nfile == nfile_max)
-            {
-                nfile_max *= 2;
-                flist = New_Reuse(char *, flist, nfile_max);
-            }
-        }
-        qsort(flist, nfile, sizeof(char *), strCmp);
-        for (j = 0; j < nfile; j++)
-        {
-            fn = flist[j];
-            date = strchr(fn, '\n');
-            if (*(date - 1) == '/')
-            {
-                ftype = FTPDIR_DIR;
-                *date = '\0';
-            }
-            else if (*(date - 1) == '@')
-            {
-                ftype = FTPDIR_LINK;
-                *(date - 1) = '\0';
-            }
-            else
-            {
-                ftype = FTPDIR_FILE;
-                *(date - 1) = '\0';
-            }
-            date++;
-            tmp = convertLine(NULL, Strnew(fn), RAW_MODE, charset,
-                              doc_charset);
-            if (ftype == FTPDIR_LINK)
-                tmp->Push('@');
-            Strcat_m_charp(FTPDIRtmp, "<a href=\"", html_quote(file_quote(fn)),
-                           "\">", html_quote(tmp->ptr), "</a>", NULL);
-            for (i = get_Str_strwidth(tmp); i <= max_len; i++)
-            {
-                if ((max_len % 2 + i) % 2)
-                    FTPDIRtmp->Push( '.');
-                else
-                    FTPDIRtmp->Push( ' ');
-            }
-            tmp = convertLine(NULL, Strnew(date), RAW_MODE, charset,
-                              doc_charset);
-            Strcat_m_charp(FTPDIRtmp, html_quote(tmp->ptr), "\n", NULL);
-        }
-        FTPDIRtmp->Push( "</pre>\n");
-    }
-    else
-    {
-        while (tmp = Strfgets(current_ftp.data), tmp->Size() > 0)
-        {
-            tmp->StripRight();
-            flist[nfile++] = mybasename(tmp->ptr);
-            if (nfile == nfile_max)
-            {
-                nfile_max *= 2;
-                flist = New_Reuse(char *, flist, nfile_max);
-            }
-        }
-        qsort(flist, nfile, sizeof(char *), strCmp);
-        for (i = 0; i < nfile; i++)
-        {
-            fn = flist[i];
-            tmp = convertLine(NULL, Strnew(fn), RAW_MODE, charset,
-                              doc_charset);
-            Strcat_m_charp(FTPDIRtmp, "<li><a href=\"",
-                           html_quote(file_quote(fn)), "\">",
-                           html_quote(tmp->ptr), "</a>\n", NULL);
-        }
-        FTPDIRtmp->Push( "</ul>\n");
-    }
-
-ftp_end:
-    FTPDIRtmp->Push( "</body>\n</html>\n");
-    TRAP_OFF;
+    FTPDIRtmp->Push("</body>\n</html>\n");
     closeFTPdata(current_ftp.data);
     return FTPDIRtmp;
 }
