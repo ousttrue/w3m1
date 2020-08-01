@@ -1314,7 +1314,7 @@ page_loaded:
                 {
                     b->GotoLine(a->start.line);
                     if (label_topline)
-                        b->topLine = lineSkip(b, b->topLine,
+                        b->topLine = b->LineSkip(b->topLine,
                                               b->currentLine->linenumber - b->topLine->linenumber, FALSE);
                     b->pos = a->start.pos;
                     arrangeCursor(b);

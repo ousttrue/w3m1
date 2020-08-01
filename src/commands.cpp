@@ -115,7 +115,7 @@ void ctrCsrV()
                                            FALSE);
 #endif
         GetCurrentTab()->GetCurrentBuffer()->topLine =
-            lineSkip(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->topLine, -offsety, FALSE);
+            GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine, -offsety, FALSE);
         arrangeLine(GetCurrentTab()->GetCurrentBuffer());
         displayCurrentbuf(B_NORMAL);
     }
@@ -1201,7 +1201,7 @@ void backBf()
             if (buf == GetCurrentTab()->GetCurrentBuffer())
             {
                 rFrame();
-                GetCurrentTab()->GetCurrentBuffer()->topLine = lineSkip(GetCurrentTab()->GetCurrentBuffer(),
+                GetCurrentTab()->GetCurrentBuffer()->topLine = GetCurrentTab()->GetCurrentBuffer()->LineSkip(
                                                                         GetCurrentTab()->GetCurrentBuffer()->firstLine, top - 1,
                                                                         FALSE);
                 GetCurrentTab()->GetCurrentBuffer()->GotoLine(linenumber);

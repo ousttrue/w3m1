@@ -368,6 +368,47 @@ nullBuffer(void)
     return b;
 }
 
+
+Line *Buffer::CurrentLineSkip(Line *line, int offset, int last)
+{
+    int i, n;
+    Line *l = line;
+
+    if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
+    {
+        n = line->linenumber + offset + this->LINES;
+        if (this->lastLine->linenumber < n)
+            getNextPage(this, n - this->lastLine->linenumber);
+        while ((last || (this->lastLine->linenumber < n)) &&
+               (getNextPage(this, 1) != NULL))
+            ;
+        if (last)
+            l = this->lastLine;
+    }
+
+    if (offset == 0)
+        return l;
+    if (offset > 0)
+        for (i = 0; i < offset && l->next != NULL; i++, l = l->next)
+            ;
+    else
+        for (i = 0; i < -offset && l->prev != NULL; i++, l = l->prev)
+            ;
+    return l;
+}
+
+Line *Buffer::LineSkip(Line *line, int offset, int last)
+{
+    auto l = CurrentLineSkip(line, offset, last);
+
+    int i;
+    if (!nextpage_topline)
+        for (i = this->LINES - 1 - (this->lastLine->linenumber - l->linenumber);
+             i > 0 && l->prev != NULL; i--, l = l->prev)
+            ;
+    return l;
+}
+
 /* 
  * gotoLine: go to line number
  */
@@ -400,7 +441,7 @@ void Buffer::GotoLine(int n)
         sprintf(msg, "Last line is #%d", this->lastLine->linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
-        this->topLine = lineSkip(this, this->currentLine, -(this->LINES - 1), FALSE);
+        this->topLine = LineSkip(this->currentLine, -(this->LINES - 1), FALSE);
         return;
     }
     for (; l != NULL; l = l->next)
@@ -410,7 +451,7 @@ void Buffer::GotoLine(int n)
             this->currentLine = l;
             if (n < this->topLine->linenumber ||
                 this->topLine->linenumber + this->LINES <= n)
-                this->topLine = lineSkip(this, l, -(this->LINES + 1) / 2, FALSE);
+                this->topLine = LineSkip(l, -(this->LINES + 1) / 2, FALSE);
             break;
         }
     }
@@ -449,7 +490,7 @@ void Buffer::GotoRealLine(int n)
         sprintf(msg, "Last line is #%d", this->lastLine->real_linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
-        this->topLine = lineSkip(this, this->currentLine, -(this->LINES - 1),
+        this->topLine = LineSkip(this->currentLine, -(this->LINES - 1),
                                  FALSE);
         return;
     }
@@ -460,7 +501,7 @@ void Buffer::GotoRealLine(int n)
             this->currentLine = l;
             if (n < this->topLine->real_linenumber ||
                 this->topLine->real_linenumber + this->LINES <= n)
-                this->topLine = lineSkip(this, l, -(this->LINES + 1) / 2, FALSE);
+                this->topLine = LineSkip(l, -(this->LINES + 1) / 2, FALSE);
             break;
         }
     }
@@ -548,7 +589,7 @@ void Buffer::Reshape()
         n = (this->currentLine->linenumber - this->topLine->linenumber) - (cur->linenumber - sbuf->topLine->linenumber);
         if (n)
         {
-            this->topLine = lineSkip(this, this->topLine, n, FALSE);
+            this->topLine = LineSkip(this->topLine, n, FALSE);
             if (cur->real_linenumber > 0)
                 this->GotoRealLine(cur->real_linenumber);
             else

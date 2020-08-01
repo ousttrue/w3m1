@@ -5,6 +5,7 @@
 #include "link.h"
 #include "option.h"
 #include <stdint.h>
+#include <assert.h>
 
 struct Line;
 union InputStream;
@@ -62,18 +63,22 @@ struct Buffer : gc_cleanup
     Line *topLine;
     // cursor ?
     Line *currentLine;
+    char need_reshape;
 
 // private:
     // list
     Line *firstLine;
     Line *lastLine;
-    char need_reshape;
 
 private:
     int allLine = 0;
 
 public:
-    int LineCount() const { return allLine; }
+    int LineCount() const
+    {
+        assert(allLine == (lastLine ? lastLine->linenumber : 0));
+        return allLine;
+    }
     void AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines);
     void ClearLines()
     {
@@ -83,6 +88,8 @@ public:
     void GotoLine(int n);
     void GotoRealLine(int n);
     void Reshape();
+    Line *CurrentLineSkip(Line *line, int offset, int last);
+    Line *LineSkip(Line *line, int offset, int last);
 
     BufferPtr linkBuffer[MAX_LB];
     short width;
@@ -186,6 +193,4 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 TextList *make_domain_list(char *domain_list);
-Line *lineSkip(BufferPtr buf, Line *line, int offset, int last);
-Line *currentLineSkip(BufferPtr buf, Line *line, int offset, int last);
 int columnSkip(BufferPtr buf, int offset);

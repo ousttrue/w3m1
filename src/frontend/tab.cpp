@@ -167,8 +167,6 @@ static void
 writeBufferName(BufferPtr buf, int n)
 {
     auto all = buf->LineCount();
-    if (all == 0 && buf->lastLine != NULL)
-        all = buf->lastLine->linenumber;
     move(n, 0);
     /* FIXME: gettextize? */
     auto msg = Sprintf("<%s> [%d lines]", buf->buffername, all);
