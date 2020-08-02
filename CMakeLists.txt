@@ -9,7 +9,7 @@ INTERFACE
     _external/catch2
     )
 
-add_subdirectory(test)
+add_subdirectory(charutil)
 
 add_library(wc
     src/Str.cpp
