@@ -711,7 +711,7 @@ static int (*MenuPcKeymap[256])(char c) = {
 static Menu SelectMenu;
 static int SelectV = 0;
 static void initSelectMenu(void);
-static void smChBuf(void);
+static void smChBuf(w3mApp *w3m);
 static int smDelBuf(char c);
 
 /* --- SelectMenu (END) --- */
@@ -1082,7 +1082,7 @@ int action_menu(Menu *menu)
             ClearCurrentKey();
             ClearCurrentKeyData();
             CurrentCmdData = item.data;
-            (*item.func)();
+            (*item.func)(&w3mApp::Instance());
             CurrentCmdData = NULL;
         }
     }
@@ -1156,7 +1156,7 @@ void guess_menu_xy(Menu *parent, int width, int *x, int *y)
     *y = parent->y + parent->select - parent->offset;
 }
 
-void new_option_menu(Menu *menu, char **label, int *variable, void (*func)())
+void new_option_menu(Menu *menu, char **label, int *variable, Command func)
 {
     int i, nitem;
     char **p;
@@ -1409,7 +1409,7 @@ mClose(char c)
 static int
 mSusp(char c)
 {
-    susp();
+    susp(&w3mApp::Instance());
     draw_all_menu(CurrentMenu);
     select_menu(CurrentMenu, CurrentMenu->select);
     return (MENU_NOTHING);
@@ -1866,7 +1866,7 @@ initSelectMenu(void)
 }
 
 static void
-smChBuf(void)
+smChBuf(w3mApp *w3m)
 {
     if (SelectV < 0 || SelectV >= SelectMenu.nitem)
         return;
@@ -2056,7 +2056,7 @@ smDelTab(char c)
 /* --- OptionMenu --- */
 
 void optionMenu(int x, int y, char **label, int *variable, int initial,
-                void (*func)())
+                Command func)
 {
     Menu menu;
 

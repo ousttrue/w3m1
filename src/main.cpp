@@ -316,7 +316,7 @@ static void mainloop()
         if (add_download_list())
         {
             set_add_download_list(FALSE);
-            ldDL();
+            ldDL(&w3mApp::Instance());
         }
         if (GetCurrentTab()->GetCurrentBuffer()->submit)
         {
@@ -345,7 +345,7 @@ static void mainloop()
                     ClearCurrentKey();
                     ClearCurrentKeyData();
                     CurrentCmdData = (char *)CurrentAlarm()->data;
-                    CurrentAlarm()->cmd();
+                    CurrentAlarm()->cmd(&w3mApp::Instance());
                     CurrentCmdData = NULL;
                     continue;
                 }
@@ -1100,7 +1100,7 @@ int main(int argc, char **argv, char **envp)
         if (!w3m_dump || w3m_dump == DUMP_BUFFER)
         {
             if (GetCurrentTab()->GetCurrentBuffer()->frameset != NULL && RenderFrame)
-                rFrame();
+                rFrame(&w3mApp::Instance());
         }
         if (w3m_dump)
             do_dump(GetCurrentTab()->GetCurrentBuffer());
@@ -1139,7 +1139,7 @@ int main(int argc, char **argv, char **envp)
         }
         else
             GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
-        ldDL();
+        ldDL(&w3mApp::Instance());
     }
     else
         SetCurrentTab(GetFirstTab());

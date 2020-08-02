@@ -4,6 +4,7 @@
 #include "commands.h"
 #include "display.h"
 #include "html/image.h"
+#include "w3m.h"
 
 using TabList = std::list<TabPtr>;
 TabList g_tabs;
@@ -297,7 +298,7 @@ void followTab(TabPtr tab)
     if (tab == GetCurrentTab())
     {
         set_check_target(FALSE);
-        followA();
+        followA(&w3mApp::Instance());
         set_check_target(TRUE);
         return;
     }
@@ -305,7 +306,7 @@ void followTab(TabPtr tab)
     CreateTabSetCurrent();
     auto buf = GetCurrentTab()->GetCurrentBuffer();
     set_check_target(FALSE);
-    followA();
+    followA(&w3mApp::Instance());
     set_check_target(TRUE);
     if (tab == NULL)
     {

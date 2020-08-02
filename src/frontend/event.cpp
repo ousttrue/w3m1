@@ -38,7 +38,7 @@ void SigAlarm(int)
         if (use_mouse)
             mouse_inactive();
 #endif
-        CurrentAlarm()->cmd();
+        CurrentAlarm()->cmd(&w3mApp::Instance());
 #ifdef USE_MOUSE
         if (use_mouse)
             mouse_active();

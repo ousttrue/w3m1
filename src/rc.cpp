@@ -1620,7 +1620,7 @@ void panel_set_option(struct parsed_tagarg *arg)
     if (f)
         fclose(f);
     sync_with_option();
-    backBf();
+    backBf(&w3mApp::Instance());
 }
 
 char *

@@ -22,9 +22,12 @@ void DispatchKey(int c);
 void ExecuteCommand(char *data);
 char *GetKeyData(int key);
 void SetKeymap(char *p, int lineno, int verbose);
-void RegisterCommand(const char *name, const char *key, const char *description, void (*command)());
+
+void RegisterCommand(const char *name, const char *key, const char *description, Command command);
 Command getFuncList(char *name);
+
 char *getQWord(char **str);
 char *getWord(char **str);
 void initKeymap(int force);
 int getKey(char *s);
+ 

@@ -64,6 +64,7 @@ PRIVATE
         
     add_executable(w3m
     src/main.cpp
+    src/w3m.cpp
     src/dispatcher.cpp
     src/commands.cpp
     src/entity.cpp

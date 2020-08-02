@@ -1,6 +1,5 @@
 #pragma once
-
-using Command = void (*)();
+#include "w3m.h"
 
 enum AlarmStatus : short
 {

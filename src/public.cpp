@@ -387,7 +387,7 @@ void cmd_loadfile(char *fn)
     {
         GetCurrentTab()->PushBufferCurrentPrev(buf);
         if (RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
-            rFrame();
+            rFrame(&w3mApp::Instance());
     }
     displayCurrentbuf(B_NORMAL);
 }
@@ -419,7 +419,7 @@ void cmd_loadURL(std::string_view url, URL *current, char *referer, FormList *re
     {
         GetCurrentTab()->PushBufferCurrentPrev(buf);
         if (RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
-            rFrame();
+            rFrame(&w3mApp::Instance());
     }
     displayCurrentbuf(B_NORMAL);
 }
@@ -1050,7 +1050,7 @@ int on_target = 1;
 void bufferA(void)
 {
     on_target = FALSE;
-    followA();
+    followA(&w3mApp::Instance());
     on_target = TRUE;
 }
 
@@ -1117,7 +1117,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     GetCurrentTab()->SetCurrentBuffer(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
     resetFrameElement(f_element, buf, const_cast<char *>(referer), request);
-    rFrame();
+    rFrame(&w3mApp::Instance());
     {
         const Anchor *al = NULL;
         auto label = pu.label;
@@ -1244,7 +1244,7 @@ BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 {
     GetCurrentTab()->PushBufferCurrentPrev(buf);
     if (renderframe && RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
-        rFrame();
+        rFrame(&w3mApp::Instance());
     return buf;
 }
 
@@ -1690,7 +1690,7 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
     GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
     if (go)
-        followA();
+        followA(&w3mApp::Instance());
 }
 
 void _peekURL(int only_img)
@@ -2113,7 +2113,7 @@ void download_action(struct parsed_tagarg *arg)
             }
         }
     }
-    ldDL();
+    ldDL(&w3mApp::Instance());
 }
 
 int checkDownloadList()
@@ -2444,7 +2444,7 @@ int ProcessEvent()
         ClearCurrentKey();
         ClearCurrentKeyData();
         CurrentCmdData = (char *)CurrentEvent->data;
-        CurrentEvent->cmd();
+        CurrentEvent->cmd(&w3mApp::Instance());
         CurrentCmdData = NULL;
         CurrentEvent = CurrentEvent->next;
         return 1;

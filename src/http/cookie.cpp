@@ -854,7 +854,7 @@ void set_cookie_flag(struct parsed_tagarg *arg)
         }
         arg = arg->next;
     }
-    backBf();
+    backBf(&w3mApp::Instance());
 }
 
 int check_cookie_accept_domain(std::string_view domain)

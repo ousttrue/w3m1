@@ -1608,7 +1608,7 @@ getch(void)
 	if (errno == EINTR || errno == EAGAIN)
 	    continue;
 	/* error happend on read(2) */
-	quitfm();
+	quitfm(&w3mApp::Instance());
 	break;			/* unreachable */
     }
     return c;

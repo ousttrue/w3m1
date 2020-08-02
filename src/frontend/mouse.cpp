@@ -371,7 +371,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         ClearCurrentKey();
         ClearCurrentKeyData();
         CurrentCmdData = map->data;
-        (*map->func)();
+        (*map->func)(&w3mApp::Instance());
         CurrentCmdData = NULL;
     }
 }
@@ -454,22 +454,22 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                 if (delta_y > 0)
                 {
                     set_prec_num(delta_y);
-                    ldown1();
+                    ldown1(&w3mApp::Instance());
                 }
                 else if (delta_y < 0)
                 {
                     set_prec_num(-delta_y);
-                    lup1();
+                    lup1(&w3mApp::Instance());
                 }
                 if (delta_x > 0)
                 {
                     set_prec_num(delta_x);
-                    col1L();
+                    col1L(&w3mApp::Instance());
                 }
                 else if (delta_x < 0)
                 {
                     set_prec_num(-delta_x);
-                    col1R();
+                    col1R(&w3mApp::Instance());
                 }
             }
             break;
@@ -480,23 +480,23 @@ void process_mouse(MouseBtnAction btn, int x, int y)
             break;
         case MouseBtnAction::BTN4_DOWN_RXVT:
             for (i = 0; i < mouse_scroll_line(); i++)
-                ldown1();
+                ldown1(&w3mApp::Instance());
             break;
         case MouseBtnAction::BTN5_DOWN_RXVT:
             for (i = 0; i < mouse_scroll_line(); i++)
-                lup1();
+                lup1(&w3mApp::Instance());
             break;
         }
     }
     else if (btn == MouseBtnAction::BTN4_DOWN_XTERM)
     {
         for (i = 0; i < mouse_scroll_line(); i++)
-            ldown1();
+            ldown1(&w3mApp::Instance());
     }
     else if (btn == MouseBtnAction::BTN5_DOWN_XTERM)
     {
         for (i = 0; i < mouse_scroll_line(); i++)
-            lup1();
+            lup1(&w3mApp::Instance());
     }
 
     if (btn != MouseBtnAction::BTN4_DOWN_RXVT || press_btn == MouseBtnAction::BTN_RESET)

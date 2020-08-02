@@ -66,9 +66,10 @@ public:
     BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar) const;
 
     void SetFirstBuffer(BufferPtr buf);
-    void SetCurrentBuffer(BufferPtr buf);
     void PushBufferCurrentPrev(BufferPtr buf);
     void PushBufferCurrentNext(BufferPtr buf);
+
+    void SetCurrentBuffer(BufferPtr buf);
     void DeleteBuffer(BufferPtr delbuf);
     void ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf);
 

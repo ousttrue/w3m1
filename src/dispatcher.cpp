@@ -101,7 +101,7 @@ void SetPrevKey(int key)
 void KeyPressEventProc(int c)
 {
     SetCurrentKey(c);
-    GlobalKeymap[c]();
+    GlobalKeymap[c](&w3mApp::Instance());
     // w3mFuncList[index].func();
 }
 
@@ -155,7 +155,7 @@ static void _escKeyProc(int c, int esc, Command map[])
     //     esc |= (CurrentKey() & ~0xFFFF);
     // }
     SetCurrentKey(esc | c);
-    map[c]();
+    map[c](&w3mApp::Instance());
 }
 
 void escKeyProc(char c)
@@ -226,7 +226,7 @@ void ExecuteCommand(char *data)
         {
             mouse_inactive();
         }
-        cmd();
+        cmd(&w3mApp::Instance());
         if (use_mouse)
         {
             mouse_active();
@@ -376,7 +376,7 @@ void SetKeymap(char *p, int lineno, int verbose)
 
 std::unordered_map<std::string, Command> g_commandMap;
 
-void RegisterCommand(const char *name, const char *key, const char *description, void (*command)())
+void RegisterCommand(const char *name, const char *key, const char *description, Command command)
 {
     g_commandMap[key] = command;
 }

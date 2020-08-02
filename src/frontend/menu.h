@@ -5,7 +5,7 @@
 
 #ifndef MENU_H
 #define MENU_H
-
+#include "w3m.h"
 #include "frontend/tab.h"
 #include "frontend/link.h"
 
@@ -27,7 +27,7 @@ struct MenuItem
     char *label;
     int *variable;
     int value;
-    void (*func)();
+    Command func;
     Menu *popup;
     char *keys;
     char *data;
@@ -71,12 +71,12 @@ void down_menu(Menu *menu, int n);
 int action_menu(Menu *menu);
 void popup_menu(Menu *parent, Menu *menu);
 void guess_menu_xy(Menu *menu, int width, int *x, int *y);
-void new_option_menu(Menu *menu, char **label, int *variable, void (*func)());
+void new_option_menu(Menu *menu, char **label, int *variable, Command func);
 int setMenuItem(MenuItem *item, char *type, char *line);
 int addMenuList(MenuList **list, char *id);
 int getMenuN(MenuList *list, char *id);
 void popupMenu(int x, int y, Menu *menu);
-void optionMenu(int x, int y, char **label, int *variable, int initial, void (*func)());
+void optionMenu(int x, int y, char **label, int *variable, int initial, Command func);
 void mainMenu(int x, int y);
 void initMenu(void);
 
