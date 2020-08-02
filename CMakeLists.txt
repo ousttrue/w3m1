@@ -3,6 +3,14 @@ cmake_minimum_required(VERSION 3.0.0)
 set(CMAKE_CXX_STANDARD 20)
 set(W3M_PREFIX $ENV{HOME}/local)
    
+add_library(catch2 INTERFACE)
+target_include_directories(catch2
+INTERFACE
+    _external/catch2
+    )
+
+add_subdirectory(test)
+
 add_library(wc
     src/Str.cpp
     )
