@@ -38,42 +38,6 @@ int searchKeyNum(void)
     return n * (std::max(1, prec_num()));
 }
 
-void nscroll(int n)
-{
-    BufferPtr buf = GetCurrentTab()->GetCurrentBuffer();
-    if (buf->LineCount() == 0)
-        return;
-
-    buf->Scroll(n);
-
-    buf->ArrangeLine();
-    if (n > 0)
-    {
-        if (buf->currentLine->bpos &&
-            buf->currentLine->bwidth >= buf->currentColumn + buf->visualpos)
-            buf->CursorDown(1);
-        else
-        {
-            while (buf->currentLine->next && buf->currentLine->next->bpos &&
-                   buf->currentLine->bwidth + buf->currentLine->width <
-                       buf->currentColumn + buf->visualpos)
-                buf->CursorDown0(1);
-        }
-    }
-    else
-    {
-        if (buf->currentLine->bwidth + buf->currentLine->width <
-            buf->currentColumn + buf->visualpos)
-            buf->CursorUp(1);
-        else
-        {
-            while (buf->currentLine->prev && buf->currentLine->bpos &&
-                   buf->currentLine->bwidth >=
-                       buf->currentColumn + buf->visualpos)
-                buf->CursorUp0(1);
-        }
-    }
-}
 
 static char *SearchString = NULL;
 int (*searchRoutine)(BufferPtr, char *);

@@ -59,12 +59,12 @@ void pgFore()
 {
     if (vi_prec_num)
     {
-        nscroll(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        nscroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -74,12 +74,12 @@ void pgBack()
 {
     if (vi_prec_num)
     {
-        nscroll(-searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(-searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        nscroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1)));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1)));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -88,14 +88,14 @@ void pgBack()
 
 void lup1()
 {
-    nscroll(searchKeyNum());
+    GetCurrentTab()->GetCurrentBuffer()->NScroll(searchKeyNum());
     displayCurrentbuf(B_SCROLL);
 }
 /* 1 line down */
 
 void ldown1()
 {
-    nscroll(-searchKeyNum());
+    GetCurrentTab()->GetCurrentBuffer()->NScroll(-searchKeyNum());
     displayCurrentbuf(B_SCROLL);
 }
 

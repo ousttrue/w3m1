@@ -486,6 +486,42 @@ void Buffer::Scroll(int n)
     this->GotoLine(lnum);
 }
 
+void Buffer::NScroll(int n)
+{
+    if (this->LineCount() == 0)
+        return;
+
+    this->Scroll(n);
+
+    this->ArrangeLine();
+    if (n > 0)
+    {
+        if (this->currentLine->bpos &&
+            this->currentLine->bwidth >= this->currentColumn + this->visualpos)
+            this->CursorDown(1);
+        else
+        {
+            while (this->currentLine->next && this->currentLine->next->bpos &&
+                   this->currentLine->bwidth + this->currentLine->width <
+                       this->currentColumn + this->visualpos)
+                this->CursorDown0(1);
+        }
+    }
+    else
+    {
+        if (this->currentLine->bwidth + this->currentLine->width <
+            this->currentColumn + this->visualpos)
+            this->CursorUp(1);
+        else
+        {
+            while (this->currentLine->prev && this->currentLine->bpos &&
+                   this->currentLine->bwidth >=
+                       this->currentColumn + this->visualpos)
+                this->CursorUp0(1);
+        }
+    }
+}
+
 /* 
  * gotoRealLine: go to real line number
  */
@@ -1015,9 +1051,9 @@ void Buffer::ArrangeCursor()
     /* Arrange cursor */
     this->cursorY = this->currentLine->linenumber - this->topLine->linenumber;
     this->visualpos = this->currentLine->bwidth +
-                     this->currentLine->COLPOS(this->pos) - this->currentColumn;
+                      this->currentLine->COLPOS(this->pos) - this->currentColumn;
     this->cursorX = this->visualpos - this->currentLine->bwidth;
-    
+
 #ifdef DISPLAY_DEBUG
     fprintf(stderr,
             "arrangeCursor: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",

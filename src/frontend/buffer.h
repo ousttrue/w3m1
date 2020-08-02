@@ -79,7 +79,7 @@ private:
 public:
     int LineCount() const
     {
-        if(!firstLine)
+        if (!firstLine)
         {
             return 0;
         }
@@ -99,6 +99,7 @@ public:
     Line *CurrentLineSkip(Line *line, int offset, int last);
     void LineSkip(Line *line, int offset, int last);
     void Scroll(int n);
+    void NScroll(int n);
     void CurrentAsLast()
     {
         lastLine = currentLine;
