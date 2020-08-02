@@ -1,4 +1,5 @@
 #include "fm.h"
+#include "linein.h"
 #include "gc_helper.h"
 #include "indep.h"
 #include "transport/local.h"
@@ -141,7 +142,7 @@ inputLineHistSearch(const char* prompt, const char *def_str, int flag, Hist *his
     cm_disp_next = -1;
     need_redraw = FALSE;
 
-    wc_char_conv_init(wc_guess_8bit_charset(DisplayCharset), InnerCharset);
+    wc_char_conv_init(wc_guess_8bit_charset(w3mApp::Instance().DisplayCharset), w3mApp::Instance().InnerCharset);
 
     do {
         x = calcPosition(strBuf->ptr, strProp, CLen, CPos, 0, CP_FORCE);

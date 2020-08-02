@@ -12,6 +12,7 @@
 #include "Symbols/utf8.sym"
 #include "Symbols/cp850.sym"
 #include "wtf.h"
+#include "w3m.h"
 #include "option.h"
 
 typedef struct {
@@ -75,7 +76,7 @@ encode_symbol(symbol_set * s)
     s->conved_item = New_N(const char *, i);
     for (i = 0; s->item[i]; i++) {
 	if (*(s->item[i]))
-	    s->conved_item[i] = wc_conv(s->item[i], s->ces, InnerCharset)->ptr;
+	    s->conved_item[i] = wc_conv(s->item[i], s->ces, w3mApp::Instance().InnerCharset)->ptr;
     }
 }
 
@@ -85,7 +86,7 @@ get_symbol(CharacterEncodingScheme charset, int *width)
     charset_symbol_set *p;
     symbol_set *s = NULL;
 
-    if (UseGraphicChar != GRAPHIC_CHAR_ASCII) {
+    if (w3mApp::Instance().UseGraphicChar != GRAPHIC_CHAR_ASCII) {
 	if (charset == save_charset && save_symbol != NULL &&
 	    *width == save_symbol->width) {
 	    return save_symbol->conved_item;

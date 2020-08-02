@@ -21,6 +21,7 @@
 #include "frontend/mouse.h"
 #include "frontend/buffer.h"
 #include "frontend/tabbar.h"
+#include "frontend/linein.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM
@@ -1042,12 +1043,12 @@ int action_menu(Menu *menu)
     while (1)
     {
 #ifdef USE_MOUSE
-        if (use_mouse)
+        if (w3mApp::Instance().use_mouse)
             mouse_active();
 #endif /* USE_MOUSE */
         c = getch();
 #ifdef USE_MOUSE
-        if (use_mouse)
+        if (w3mApp::Instance().use_mouse)
             mouse_inactive();
 #if defined(USE_GPM) || defined(USE_SYSMOUSE)
         if (c == X_MOUSE_SELECTED)
@@ -1203,7 +1204,7 @@ set_menu_frame(void)
         graph_mode = FALSE;
 
         FRAME_WIDTH = 0;
-        FRAME = get_symbol(DisplayCharset, &FRAME_WIDTH);
+        FRAME = get_symbol(w3mApp::Instance().DisplayCharset, &FRAME_WIDTH);
         if (!WcOption.use_wide)
             FRAME_WIDTH = 1;
     }
@@ -1443,13 +1444,13 @@ menu_search_forward(Menu *menu, int from)
 {
     char *str;
     int found;
-    str = inputStrHist("Forward: ", NULL, TextHist);
+    str = inputStrHist("Forward: ", NULL, w3mApp::Instance().TextHist);
     if (str != NULL && *str == '\0')
         str = SearchString;
     if (str == NULL || *str == '\0')
         return -1;
     SearchString = str;
-    str = conv_search_string(str, DisplayCharset);
+    str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuForwardSearch;
     found = menuForwardSearch(menu, str, from + 1);
     if (WrapSearch && found == -1)
@@ -1494,13 +1495,13 @@ menu_search_backward(Menu *menu, int from)
 {
     char *str;
     int found;
-    str = inputStrHist("Backward: ", NULL, TextHist);
+    str = inputStrHist("Backward: ", NULL, w3mApp::Instance().TextHist);
     if (str != NULL && *str == '\0')
         str = SearchString;
     if (str == NULL || *str == '\0')
         return -1;
     SearchString = str;
-    str = conv_search_string(str, DisplayCharset);
+    str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuBackwardSearch;
     found = menuBackwardSearch(menu, str, from - 1);
     if (WrapSearch && found == -1)
@@ -1534,7 +1535,7 @@ menu_search_next_previous(Menu *menu, int from, int reverse)
         disp_message("No previous regular expression", TRUE);
         return -1;
     }
-    str = conv_search_string(SearchString, DisplayCharset);
+    str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
     if (reverse != 0)
         reverse = 1;
     if (menuSearchRoutine == menuBackwardSearch)
@@ -2084,7 +2085,7 @@ interpret_menu(FILE *mf)
     int in_menu = 0, nmenu = 0, nitem = 0, type;
     MenuItem *item = NULL;
 #ifdef USE_M17N
-    CharacterEncodingScheme charset = SystemCharset;
+    CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
 #endif
 
     while (!feof(mf))
@@ -2094,7 +2095,7 @@ interpret_menu(FILE *mf)
         if (line->Size() == 0)
             continue;
 #ifdef USE_M17N
-        line = wc_Str_conv(line, charset, InnerCharset);
+        line = wc_Str_conv(line, charset, w3mApp::Instance().InnerCharset);
 #endif
         p = line->ptr;
         s = getWord(&p);
@@ -2166,9 +2167,7 @@ void initMenu(void)
 #endif
         for (item = MainMenuItem; item->type != MENU_END; item++)
             item->label =
-                wc_conv(_(item->label), MainMenuCharset,
-                        InnerCharset)
-                    ->ptr;
+                wc_conv(_(item->label), MainMenuCharset, w3mApp::Instance().InnerCharset)->ptr;
         MainMenuEncode = TRUE;
     }
 #endif

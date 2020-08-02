@@ -18,7 +18,7 @@
 #include "frontend/display.h"
 #include "frontend/terms.h"
 #include "mime/mailcap.h"
-
+#include "frontend/linein.h"
 #include <assert.h>
 #include <memory>
 
@@ -141,7 +141,7 @@ loadFile(char *path)
     uf.examineFile(path);
     if (uf.stream == NULL)
         return NULL;
-    buf = newBuffer(INIT_BUFFER_WIDTH);
+    buf = newBuffer(INIT_BUFFER_WIDTH());
     current_content_length = 0;
     content_charset = WC_CES_NONE;
     buf = loadSomething(&uf, path, loadBuffer, buf);
@@ -217,10 +217,10 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
         if (uf->scheme == SCM_NEWS && tmp->ptr[0] == '.')
             tmp->Delete(0, 1);
 #endif
-        if (w3m_reqlog)
+        if (w3mApp::Instance().w3m_reqlog.size())
         {
             FILE *ff;
-            ff = fopen(w3m_reqlog, "a");
+            ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
             tmp->Puts(ff);
             fclose(ff);
         }
@@ -234,7 +234,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
                 break;
             /* last header */
         }
-        else if (!(w3m_dump & DUMP_HEAD))
+        else if (!(w3mApp::Instance().w3m_dump & DUMP_HEAD))
         {
             if (lineBuf2)
             {
@@ -253,7 +253,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
             lineBuf2 = convertLine(NULL, lineBuf2, RAW_MODE,
                                    mime_charset ? &mime_charset : &charset,
                                    mime_charset ? mime_charset
-                                                : DocumentCharset);
+                                                : w3mApp::Instance().DocumentCharset);
             /* separated with line and stored */
             tmp = Strnew_size(lineBuf2->Size());
             for (p = lineBuf2->ptr; *p; p = q)
@@ -265,12 +265,12 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
                 tmp->Push(lineBuf2);
                 if (thru)
                     addnewline(newBuf, lineBuf2->ptr, propBuffer, NULL,
-                               lineBuf2->Size(), FOLD_BUFFER_WIDTH, -1);
+                               lineBuf2->Size(), FOLD_BUFFER_WIDTH(), -1);
                 for (; *q && (*q == '\r' || *q == '\n'); q++)
                     ;
             }
 #ifdef USE_IMAGE
-            if (thru && activeImage && displayImage)
+            if (thru && w3mApp::Instance().activeImage && w3mApp::Instance().displayImage)
             {
                 Str src = NULL;
                 if (!strncasecmp(tmp->ptr, "X-Image-URL:", 12))
@@ -369,7 +369,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
             }
             uf->content_encoding = uf->compression;
         }
-        else if (use_cookie && accept_cookie &&
+        else if (w3mApp::Instance().use_cookie && w3mApp::Instance().accept_cookie &&
                  pu && check_cookie_accept_domain(pu->host) &&
                  (!strncasecmp(lineBuf2->ptr, "Set-Cookie:", 11) ||
                   !strncasecmp(lineBuf2->ptr, "Set-Cookie2:", 12)))
@@ -413,7 +413,7 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
     FILE *src = NULL;
 #ifdef USE_M17N
     CharacterEncodingScheme charset = WC_CES_US_ASCII;
-    CharacterEncodingScheme doc_charset = DocumentCharset;
+    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
 #endif
     Str lineBuf2;
     char pre_lbuf = '\0';
@@ -427,7 +427,7 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
     MySignalHandler prevtrap = NULL;
 
     if (newBuf == NULL)
-        newBuf = newBuffer(INIT_BUFFER_WIDTH);
+        newBuf = newBuffer(INIT_BUFFER_WIDTH());
     lineBuf2 = Strnew();
 
     if (SETJMP(AbortLoading) != 0)
@@ -447,7 +447,7 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
 
     if (newBuf->document_charset)
         charset = doc_charset = newBuf->document_charset;
-    if (content_charset && UseContentCharset)
+    if (content_charset && w3mApp::Instance().UseContentCharset)
         doc_charset = content_charset;
 
     nlines = 0;
@@ -472,16 +472,16 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
         if (src)
             lineBuf2->Puts(src);
         linelen += lineBuf2->Size();
-        if (w3m_dump & DUMP_EXTRA)
+        if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
             printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
-        if (w3m_dump & DUMP_SOURCE)
+        if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
             continue;
         showProgress(&linelen, &trbyte);
         if (frame_source)
             continue;
         lineBuf2 =
             convertLine(uf, lineBuf2, PAGER_MODE, &charset, doc_charset);
-        if (squeezeBlankLine)
+        if (w3mApp::Instance().squeezeBlankLine)
         {
             if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
             {
@@ -494,7 +494,7 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
         lineBuf2->StripRight();
         lineBuf2 = checkType(lineBuf2, &propBuffer, NULL);
         addnewline(newBuf, lineBuf2->ptr, propBuffer, colorBuffer,
-                   lineBuf2->Size(), FOLD_BUFFER_WIDTH, nlines);
+                   lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);
     }
 _end:
     TRAP_OFF;
@@ -587,7 +587,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
         {
             /* FIXME: gettextize? */
             q = inputLineHist("(Download)Save file to: ",
-                              defstr, IN_COMMAND, SaveHist);
+                              defstr, IN_COMMAND, w3mApp::Instance().SaveHist);
             if (q == NULL || *q == '\0')
                 return FALSE;
             p = conv_to_system(q);
@@ -709,7 +709,7 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
     auto proc = loadBuffer;
     char *p;
     BufferPtr t_buf = NULL;
-    int searchHeader = SearchHeader;
+    int searchHeader = w3mApp::Instance().SearchHeader;
     int searchHeader_through = TRUE;
     TextList *extra_header = newTextList();
     Str uname = NULL;
@@ -774,7 +774,7 @@ load_doc:
                     page = loadLocalDir(const_cast<char *>(pu.real_file.c_str()));
                     t = "local:directory";
 #ifdef USE_M17N
-                    charset = SystemCharset;
+                    charset = w3mApp::Instance().SystemCharset;
 #endif
                 }
             }
@@ -836,8 +836,8 @@ load_doc:
         searchHeader = TRUE;
         searchHeader_through = FALSE;
     }
-    if (header_string)
-        header_string = NULL;
+    if (w3mApp::Instance().header_string.size())
+        w3mApp::Instance().header_string.clear();
     TRAP_ON;
     if (pu.scheme == SCM_HTTP ||
 #ifdef USE_SSL
@@ -847,8 +847,8 @@ load_doc:
 #ifdef USE_GOPHER
              (pu.scheme == SCM_GOPHER && non_null(GOPHER_proxy)) ||
 #endif /* USE_GOPHER */
-             (pu.scheme == SCM_FTP && non_null(FTP_proxy))) &&
-         !Do_not_use_proxy && !check_no_proxy(const_cast<char *>(pu.host.c_str()))))
+             (pu.scheme == SCM_FTP && w3mApp::Instance().FTP_proxy.size())) &&
+         w3mApp::Instance().use_proxy && !check_no_proxy(const_cast<char *>(pu.host.c_str()))))
     {
 
         if (fmInitialized)
@@ -859,7 +859,7 @@ load_doc:
             refresh();
         }
         if (t_buf == NULL)
-            t_buf = newBuffer(INIT_BUFFER_WIDTH);
+            t_buf = newBuffer(INIT_BUFFER_WIDTH());
 #if 0 /* USE_SSL */
         if (IStype(f.stream) == IST_SSL) {
             Str s = ssl_get_certificate(f.stream, pu.host);
@@ -877,11 +877,11 @@ load_doc:
             /* 302: Found */
             /* 303: See Other */
             /* 307: Temporary Redirect (HTTP/1.1) */
-            tpath = wc_conv_strict(p, InnerCharset, DocumentCharset)->ptr;
+            tpath = wc_conv_strict(p, w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
             request = NULL;
             f.Close();
             *current = pu;
-            t_buf = newBuffer(INIT_BUFFER_WIDTH);
+            t_buf = newBuffer(INIT_BUFFER_WIDTH());
             t_buf->bufferprop |= BP_REDIRECTED;
             status = HTST_NORMAL;
             goto load_doc;
@@ -961,7 +961,7 @@ load_doc:
     else if (pu.scheme == SCM_NEWS || pu.scheme == SCM_NNTP)
     {
         if (t_buf == NULL)
-            t_buf = newBuffer(INIT_BUFFER_WIDTH);
+            t_buf = newBuffer(INIT_BUFFER_WIDTH());
         readHeader(&f, t_buf, TRUE, &pu);
         t = checkContentType(t_buf);
         if (t == NULL)
@@ -1034,20 +1034,20 @@ load_doc:
     }
     else if (searchHeader)
     {
-        searchHeader = SearchHeader = FALSE;
+        searchHeader = w3mApp::Instance().SearchHeader = FALSE;
         if (t_buf == NULL)
-            t_buf = newBuffer(INIT_BUFFER_WIDTH);
+            t_buf = newBuffer(INIT_BUFFER_WIDTH());
         readHeader(&f, t_buf, searchHeader_through, &pu);
         if (f.is_cgi && (p = checkHeader(t_buf, "Location:")) != NULL &&
             checkRedirection(&pu))
         {
             /* document moved */
-            tpath = wc_conv_strict(remove_space(p), InnerCharset, DocumentCharset)->ptr;
+            tpath = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
             request = NULL;
             f.Close();
             add_auth_cookie_flag = 0;
             *current = pu;
-            t_buf = newBuffer(INIT_BUFFER_WIDTH);
+            t_buf = newBuffer(INIT_BUFFER_WIDTH());
             t_buf->bufferprop |= BP_REDIRECTED;
             status = HTST_NORMAL;
             goto load_doc;
@@ -1079,10 +1079,10 @@ load_doc:
         if (t == NULL)
             t = "text/plain";
     }
-    else if (DefaultType)
+    else if (w3mApp::Instance().DefaultType.size())
     {
-        t = DefaultType;
-        DefaultType = NULL;
+        t = Strnew(w3mApp::Instance().DefaultType)->ptr;
+        w3mApp::Instance().DefaultType.clear();
     }
     else
     {
@@ -1111,7 +1111,7 @@ page_loaded:
         if (src)
         {
             Str s;
-            s = wc_Str_conv_strict(page, InnerCharset, charset);
+            s = wc_Str_conv_strict(page, w3mApp::Instance().InnerCharset, charset);
             s->Puts(src);
             fclose(src);
         }
@@ -1179,17 +1179,17 @@ page_loaded:
         return nullptr;
     }
 
-    if ((f.content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3m_dump & DUMP_EXTRA))
+    if ((f.content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
     {
         pu.real_file = uncompress_stream(&f, true);
     }
     else if (f.compression != CMP_NOCOMPRESS)
     {
-        if (!(w3m_dump & DUMP_SOURCE) &&
-            (w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
+        if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
+            (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
         {
             if (t_buf == NULL)
-                t_buf = newBuffer(INIT_BUFFER_WIDTH);
+                t_buf = newBuffer(INIT_BUFFER_WIDTH());
             t_buf->sourcefile = uncompress_stream(&f, true);
             uncompressed_file_type(pu.file.c_str(), &f.ext);
         }
@@ -1207,7 +1207,7 @@ page_loaded:
             f.stream = newEncodedStream(f.stream, f.encoding);
         if (save2tmp(f, image_source) == 0)
         {
-            b = newBuffer(INIT_BUFFER_WIDTH);
+            b = newBuffer(INIT_BUFFER_WIDTH());
             b->sourcefile = image_source;
             b->real_type = t;
         }
@@ -1222,13 +1222,13 @@ page_loaded:
     else if (is_plain_text_type(t))
         proc = loadBuffer;
 #ifdef USE_IMAGE
-    else if (activeImage && displayImage && !useExtImageViewer &&
-             !(w3m_dump & ~DUMP_FRAME) && !strncasecmp(t, "image/", 6))
+    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
+             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && !strncasecmp(t, "image/", 6))
         proc = loadImageBuffer;
 #endif
-    else if (w3m_backend)
+    else if (w3mApp::Instance().w3m_backend)
         ;
-    else if (!(w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
+    else if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
     {
         if (!do_download && doExternal(f,
                                        pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()),
@@ -1266,13 +1266,13 @@ page_loaded:
             return nullptr;
         }
     }
-    else if (w3m_dump & DUMP_FRAME)
+    else if (w3mApp::Instance().w3m_dump & DUMP_FRAME)
         return NULL;
 
     if (flag & RG_FRAME)
     {
         if (t_buf == NULL)
-            t_buf = newBuffer(INIT_BUFFER_WIDTH);
+            t_buf = newBuffer(INIT_BUFFER_WIDTH());
         t_buf->bufferprop |= BP_FRAME;
     }
 
@@ -1292,7 +1292,7 @@ page_loaded:
             b->currentURL = pu;
         if (is_html_type(t))
             b->type = "text/html";
-        else if (w3m_backend)
+        else if (w3mApp::Instance().w3m_backend)
         {
             Str s = Strnew(t);
             b->type = s->ptr;
@@ -1327,8 +1327,8 @@ page_loaded:
             }
         }
     }
-    if (header_string)
-        header_string = NULL;
+    if (w3mApp::Instance().header_string.size())
+        w3mApp::Instance().header_string.clear();
 #ifdef USE_NNTP
     if (f.scheme == SCM_NNTP || f.scheme == SCM_NEWS)
         reAnchorNewsheader(b);

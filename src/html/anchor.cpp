@@ -9,6 +9,8 @@
 #include "frontend/buffer.h"
 #include "html/maparea.h"
 #include "html/image.h"
+#include "transport/loader.h"
+#include "frontend/terms.h"
 
 #define FIRST_ANCHOR_SIZE 30
 
@@ -130,7 +132,7 @@ _put_anchor_news(BufferPtr buf, char *p1, char *p2, int line, int pos)
         if (*(p2 - 1) == '>')
             p2--;
     }
-    auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), InnerCharset,
+    auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), w3mApp::Instance().InnerCharset,
                                   buf->document_charset);
     tmp = Sprintf("news:%s", file_quote(tmp->ptr));
 
@@ -141,7 +143,7 @@ _put_anchor_news(BufferPtr buf, char *p1, char *p2, int line, int pos)
 static Anchor *
 _put_anchor_all(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
-    auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), InnerCharset,
+    auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), w3mApp::Instance().InnerCharset,
                                   buf->document_charset);
     auto a = Anchor::CreateHref(url_quote(tmp->ptr), NULL, NO_REFERER, NULL,
                                 '\0', line, pos);
@@ -290,7 +292,7 @@ reAnchorAny(BufferPtr buf, char *re,
         return re;
     }
     for (l = MarkAllPages ? buf->firstLine : buf->topLine; l != NULL &&
-                                                           (MarkAllPages || l->linenumber < buf->topLine->linenumber + LINES - 1);
+                                                           (MarkAllPages || l->linenumber < buf->topLine->linenumber + ::LINES - 1);
          l = l->next)
     {
         if (p && l->bpos)
@@ -309,7 +311,7 @@ reAnchorAny(BufferPtr buf, char *re,
     next_line:
         if (MarkAllPages && l->next == NULL && buf->pagerSource &&
             !(buf->bufferprop & BP_CLOSE))
-            getNextPage(buf, PagerMax);
+            getNextPage(buf, w3mApp::Instance().PagerMax);
     }
     return NULL;
 }
@@ -649,7 +651,7 @@ link_list_panel(BufferPtr buf)
     if (buf->linklist.size())
     {
         tmp->Push("<hr><h2>Links</h2>\n<ol>\n");
-        for (auto &l: buf->linklist)
+        for (auto &l : buf->linklist)
         {
             const char *u;
             const char *p;

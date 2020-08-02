@@ -35,12 +35,12 @@ void SigAlarm(int)
         ClearCurrentKeyData();
         CurrentCmdData = data = (char *)CurrentAlarm()->data;
 #ifdef USE_MOUSE
-        if (use_mouse)
+        if (w3mApp::Instance().use_mouse)
             mouse_inactive();
 #endif
         CurrentAlarm()->cmd(&w3mApp::Instance());
 #ifdef USE_MOUSE
-        if (use_mouse)
+        if (w3mApp::Instance().use_mouse)
             mouse_active();
 #endif
         CurrentCmdData = NULL;

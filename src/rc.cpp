@@ -18,12 +18,16 @@
 #include "http/cookie.h"
 #include "mime/mimetypes.h"
 #include "mime/mailcap.h"
-#include <stdlib.h>
+#include "html/parsetag.h"
 #include "make_array.h"
+#include "frontend/terms.h"
+#include <stdlib.h>
 #include <vector>
 #include <unordered_map>
 #include <assert.h>
 #include <any>
+#include <string>
+#include <string_view>
 #include "charset.h"
 
 enum ParamTypes
@@ -191,6 +195,31 @@ struct Param
         case P_STRING:
         case P_SSLPATH:
             value = v ? std::string(v) : "";
+            break;
+        }
+    }
+    Param(std::string_view n, ParamTypes t, ParamInputType it, const std::string &v, std::string_view c, void *s = nullptr)
+        : name(n), type(t), inputtype(it), comment(c), select(s)
+    {
+        switch (type)
+        {
+        case P_INT:
+        case P_NZINT:
+        case P_SHORT:
+        case P_CHARINT:
+        case P_CHAR:
+        case P_COLOR:
+        case P_CODE:
+            assert(false);
+            break;
+        case P_PIXELS:
+        case P_SCALE:
+            assert(false);
+            // value = (double)v;
+            break;
+        case P_STRING:
+        case P_SSLPATH:
+            value = v;
             break;
         }
     }
@@ -609,11 +638,11 @@ struct ParamSection
 auto sections = make_array(
     ParamSection{N_("Display Settings"),
                  {
-                     {"tabstop", P_NZINT, PI_TEXT, Tabstop, CMT_TABSTOP},
+                     {"tabstop", P_NZINT, PI_TEXT, w3mApp::Instance().Tabstop, CMT_TABSTOP},
                      {"indent_incr", P_NZINT, PI_TEXT, IndentIncr, CMT_INDENT_INCR},
-                     {"pixel_per_char", P_PIXELS, PI_TEXT, pixel_per_char, CMT_PIXEL_PER_CHAR},
-                     {"pixel_per_line", P_PIXELS, PI_TEXT, pixel_per_line, CMT_PIXEL_PER_LINE},
-                     {"frame", P_CHARINT, PI_ONOFF, RenderFrame, CMT_FRAME},
+                     {"pixel_per_char", P_PIXELS, PI_TEXT, w3mApp::Instance().pixel_per_char, CMT_PIXEL_PER_CHAR},
+                     {"pixel_per_line", P_PIXELS, PI_TEXT, w3mApp::Instance().pixel_per_line, CMT_PIXEL_PER_LINE},
+                     {"frame", P_CHARINT, PI_ONOFF, w3mApp::Instance().RenderFrame, CMT_FRAME},
                      {"target_self", P_CHARINT, PI_ONOFF, TargetSelf, CMT_TSELF},
                      {"open_tab_blank", P_INT, PI_ONOFF, open_tab_blank, CMT_OPEN_TAB_BLANK},
                      {"open_tab_dl_list", P_INT, PI_ONOFF, open_tab_dl_list, CMT_OPEN_TAB_DL_LIST},
@@ -627,29 +656,29 @@ auto sections = make_array(
                      {"dictcommand", P_STRING, PI_TEXT, DictCommand, CMT_DICTCOMMAND},
                      {"multicol", P_INT, PI_ONOFF, multicolList, CMT_MULTICOL},
                      {"alt_entity", P_CHARINT, PI_ONOFF, UseAltEntity, CMT_ALT_ENTITY},
-                     {"graphic_char", P_CHARINT, PI_SEL_C, UseGraphicChar, CMT_GRAPHIC_CHAR, (void *)graphic_char_str},
+                     {"graphic_char", P_CHARINT, PI_SEL_C, w3mApp::Instance().UseGraphicChar, CMT_GRAPHIC_CHAR, (void *)graphic_char_str},
                      {"fold_textarea", P_CHARINT, PI_ONOFF, FoldTextarea, CMT_FOLD_TEXTAREA},
                      {"display_ins_del", P_INT, PI_SEL_C, displayInsDel, CMT_DISP_INS_DEL, displayinsdel},
                      {"ignore_null_img_alt", P_INT, PI_ONOFF, ignore_null_img_alt, CMT_IGNORE_NULL_IMG_ALT},
                      {"view_unseenobject", P_INT, PI_ONOFF, view_unseenobject, CMT_VIEW_UNSEENOBJECTS},
                      /* XXX: emacs-w3m force to off display_image even if image options off */
-                     {"display_image", P_INT, PI_ONOFF, displayImage, CMT_DISP_IMAGE},
+                     {"display_image", P_INT, PI_ONOFF, w3mApp::Instance().displayImage, CMT_DISP_IMAGE},
                      {"pseudo_inlines", P_INT, PI_ONOFF, pseudoInlines, CMT_PSEUDO_INLINES},
                      {"auto_image", P_INT, PI_ONOFF, autoImage, CMT_AUTO_IMAGE},
                      {"max_load_image", P_INT, PI_TEXT, maxLoadImage, CMT_MAX_LOAD_IMAGE},
                      {"ext_image_viewer", P_INT, PI_ONOFF, useExtImageViewer, CMT_EXT_IMAGE_VIEWER},
-                     {"image_scale", P_SCALE, PI_TEXT, image_scale, CMT_IMAGE_SCALE},
+                     {"image_scale", P_SCALE, PI_TEXT, w3mApp::Instance().image_scale, CMT_IMAGE_SCALE},
                      {"imgdisplay", P_STRING, PI_TEXT, Imgdisplay, CMT_IMGDISPLAY},
                      {"image_map_list", P_INT, PI_ONOFF, image_map_list, CMT_IMAGE_MAP_LIST},
-                     {"fold_line", P_INT, PI_ONOFF, FoldLine, CMT_FOLD_LINE},
-                     {"show_lnum", P_INT, PI_ONOFF, showLineNum, CMT_SHOW_NUM},
+                     {"fold_line", P_INT, PI_ONOFF, w3mApp::Instance().FoldLine, CMT_FOLD_LINE},
+                     {"show_lnum", P_INT, PI_ONOFF, w3mApp::Instance().showLineNum, CMT_SHOW_NUM},
                      {"show_srch_str", P_INT, PI_ONOFF, show_srch_str, CMT_SHOW_SRCH_STR},
                      {"label_topline", P_INT, PI_ONOFF, label_topline, CMT_LABEL_TOPLINE},
                      {"nextpage_topline", P_INT, PI_ONOFF, nextpage_topline, CMT_NEXTPAGE_TOPLINE},
                  }},
     ParamSection{N_("Color Settings"),
                  {
-                     {"color", P_INT, PI_ONOFF, useColor, CMT_COLOR},
+                     {"color", P_INT, PI_ONOFF, w3mApp::Instance().useColor, CMT_COLOR},
                      {"basic_color", P_COLOR, PI_SEL_C, basic_color, CMT_B_COLOR, (void *)colorstr},
                      {"anchor_color", P_COLOR, PI_SEL_C, anchor_color, CMT_A_COLOR, (void *)colorstr},
                      {"image_color", P_COLOR, PI_SEL_C, image_color, CMT_I_COLOR, (void *)colorstr},
@@ -663,21 +692,21 @@ auto sections = make_array(
                  }},
     ParamSection{N_("Miscellaneous Settings"),
                  {
-                     {"pagerline", P_NZINT, PI_TEXT, PagerMax, CMT_PAGERLINE},
-                     {"use_history", P_INT, PI_ONOFF, UseHistory, CMT_HISTORY},
-                     {"history", P_INT, PI_TEXT, URLHistSize, CMT_HISTSIZE},
-                     {"save_hist", P_INT, PI_ONOFF, SaveURLHist, CMT_SAVEHIST},
+                     {"pagerline", P_NZINT, PI_TEXT, w3mApp::Instance().PagerMax, CMT_PAGERLINE},
+                     {"use_history", P_INT, PI_ONOFF, w3mApp::Instance().UseHistory, CMT_HISTORY},
+                     {"history", P_INT, PI_TEXT, w3mApp::Instance().URLHistSize, CMT_HISTSIZE},
+                     {"save_hist", P_INT, PI_ONOFF, w3mApp::Instance().SaveURLHist, CMT_SAVEHIST},
                      {"confirm_qq", P_INT, PI_ONOFF, confirm_on_quit, CMT_CONFIRM_QQ},
                      {"close_tab_back", P_INT, PI_ONOFF, close_tab_back, CMT_CLOSE_TAB_BACK},
                      {"mark", P_INT, PI_ONOFF, use_mark, CMT_USE_MARK},
                      {"emacs_like_lineedit", P_INT, PI_ONOFF, emacs_like_lineedit, CMT_EMACS_LIKE_LINEEDIT},
                      {"vi_prec_num", P_INT, PI_ONOFF, vi_prec_num, CMT_VI_PREC_NUM},
                      {"mark_all_pages", P_INT, PI_ONOFF, MarkAllPages, CMT_MARK_ALL_PAGES},
-                     {"wrap_search", P_INT, PI_ONOFF, WrapDefault, CMT_WRAP},
+                     {"wrap_search", P_INT, PI_ONOFF, w3mApp::Instance().WrapDefault, CMT_WRAP},
                      {"ignorecase_search", P_INT, PI_ONOFF, IgnoreCase, CMT_IGNORE_CASE},
                      //  {"use_migemo", P_INT, PI_ONOFF, use_migemo, CMT_USE_MIGEMO},
                      //  {"migemo_command", P_STRING, PI_TEXT, migemo_command, CMT_MIGEMO_COMMAND},
-                     {"use_mouse", P_INT, PI_ONOFF, use_mouse, CMT_MOUSE},
+                     {"use_mouse", P_INT, PI_ONOFF, w3mApp::Instance().use_mouse, CMT_MOUSE},
                      {"reverse_mouse", P_INT, PI_ONOFF, reverse_mouse, CMT_REVERSE_MOUSE},
                      {"relative_wheel_scroll", P_INT, PI_SEL_C, relative_wheel_scroll, CMT_RELATIVE_WHEEL_SCROLL, (void *)wheelmode},
                      {"relative_wheel_scroll_ratio", P_INT, PI_TEXT, relative_wheel_scroll_ratio, CMT_RELATIVE_WHEEL_SCROLL_RATIO},
@@ -733,10 +762,10 @@ auto sections = make_array(
                  }},
     ParamSection{N_("Proxy Settings"),
                  {
-                     {"use_proxy", P_CHARINT, PI_ONOFF, use_proxy, CMT_USE_PROXY},
-                     {"http_proxy", P_STRING, PI_TEXT, HTTP_proxy, CMT_HTTP_PROXY},
-                     {"https_proxy", P_STRING, PI_TEXT, HTTPS_proxy, CMT_HTTPS_PROXY},
-                     {"ftp_proxy", P_STRING, PI_TEXT, FTP_proxy, CMT_FTP_PROXY},
+                     {"use_proxy", P_CHARINT, PI_ONOFF, w3mApp::Instance().use_proxy, CMT_USE_PROXY},
+                     {"http_proxy", P_STRING, PI_TEXT, w3mApp::Instance().HTTP_proxy, CMT_HTTP_PROXY},
+                     {"https_proxy", P_STRING, PI_TEXT, w3mApp::Instance().HTTPS_proxy, CMT_HTTPS_PROXY},
+                     {"ftp_proxy", P_STRING, PI_TEXT, w3mApp::Instance().FTP_proxy, CMT_FTP_PROXY},
                      {"no_proxy", P_STRING, PI_TEXT, NO_proxy, CMT_NO_PROXY},
                      {"noproxy_netaddr", P_INT, PI_ONOFF, NOproxy_netaddr, CMT_NOPROXY_NETADDR},
                      {"no_cache", P_CHARINT, PI_ONOFF, NoCache, CMT_NO_CACHE},
@@ -752,9 +781,9 @@ auto sections = make_array(
                  }},
     ParamSection{N_("Cookie Settings"),
                  {
-                     {"use_cookie", P_INT, PI_ONOFF, use_cookie, CMT_USECOOKIE},
+                     {"use_cookie", P_INT, PI_ONOFF, w3mApp::Instance().use_cookie, CMT_USECOOKIE},
                      {"show_cookie", P_INT, PI_ONOFF, show_cookie, CMT_SHOWCOOKIE},
-                     {"accept_cookie", P_INT, PI_ONOFF, accept_cookie, CMT_ACCEPTCOOKIE},
+                     {"accept_cookie", P_INT, PI_ONOFF, w3mApp::Instance().accept_cookie, CMT_ACCEPTCOOKIE},
                      {"accept_bad_cookie", P_INT, PI_SEL_C, accept_bad_cookie, CMT_ACCEPTBADCOOKIE, (void *)badcookiestr},
                      {"cookie_reject_domains", P_STRING, PI_TEXT, cookie_reject_domains, CMT_COOKIE_REJECT_DOMAINS},
                      {"cookie_accept_domains", P_STRING, PI_TEXT, cookie_accept_domains, CMT_COOKIE_ACCEPT_DOMAINS},
@@ -762,12 +791,12 @@ auto sections = make_array(
                  }},
     ParamSection{N_("Charset Settings"),
                  {
-                     {"display_charset", P_CODE, PI_CODE, DisplayCharset, CMT_DISPLAY_CHARSET, display_charset_str},
-                     {"document_charset", P_CODE, PI_CODE, DocumentCharset, CMT_DOCUMENT_CHARSET, document_charset_str},
+                     {"display_charset", P_CODE, PI_CODE, w3mApp::Instance().DisplayCharset, CMT_DISPLAY_CHARSET, display_charset_str},
+                     {"document_charset", P_CODE, PI_CODE, w3mApp::Instance().DocumentCharset, CMT_DOCUMENT_CHARSET, document_charset_str},
                      {"auto_detect", P_CHARINT, PI_SEL_C, WcOption.auto_detect, CMT_AUTO_DETECT, (void *)auto_detect_str},
-                     {"system_charset", P_CODE, PI_CODE, SystemCharset, CMT_SYSTEM_CHARSET, system_charset_str},
-                     {"follow_locale", P_CHARINT, PI_ONOFF, FollowLocale, CMT_FOLLOW_LOCALE},
-                     {"ext_halfdump", P_CHARINT, PI_ONOFF, ExtHalfdump, CMT_EXT_HALFDUMP},
+                     {"system_charset", P_CODE, PI_CODE, w3mApp::Instance().SystemCharset, CMT_SYSTEM_CHARSET, system_charset_str},
+                     {"follow_locale", P_CHARINT, PI_ONOFF, w3mApp::Instance().FollowLocale, CMT_FOLLOW_LOCALE},
+                     {"ext_halfdump", P_CHARINT, PI_ONOFF, w3mApp::Instance().ExtHalfdump, CMT_EXT_HALFDUMP},
                      {"use_wide", P_CHARINT, PI_ONOFF, WcOption.use_wide, CMT_USE_WIDE},
                      {"use_combining", P_CHARINT, PI_ONOFF, WcOption.use_combining, CMT_USE_COMBINING},
                      {"east_asian_width", P_CHARINT, PI_ONOFF, WcOption.east_asian_width, CMT_EAST_ASIAN_WIDTH},
@@ -809,7 +838,7 @@ void show_params(FILE *fp)
         if (!OptionEncode)
             cmt =
                 wc_conv(_(section.name.c_str()), OptionCharset,
-                        InnerCharset)
+                        w3mApp::Instance().InnerCharset)
                     ->ptr;
         else
             cmt = section.name;
@@ -852,7 +881,7 @@ void show_params(FILE *fp)
             }
             if (!OptionEncode)
                 cmt = wc_conv(_(param.comment.data()),
-                              OptionCharset, InnerCharset)
+                              OptionCharset, w3mApp::Instance().InnerCharset)
                           ->ptr;
             else
                 cmt = param.comment;
@@ -983,16 +1012,17 @@ interpret_rc(FILE *f)
     }
 }
 
+#define set_no_proxy(domains) (w3mApp::Instance().NO_proxy_domains = make_domain_list(domains))
 void parse_proxy()
 {
-    if (non_null(HTTP_proxy))
-        HTTP_proxy_parsed.Parse(HTTP_proxy, NULL);
+    if (w3mApp::Instance().HTTP_proxy.size())
+        w3mApp::Instance().HTTP_proxy_parsed.Parse(w3mApp::Instance().HTTP_proxy, NULL);
 
-    if (non_null(HTTPS_proxy))
-        HTTPS_proxy_parsed.Parse(HTTPS_proxy, NULL);
+    if (w3mApp::Instance().HTTPS_proxy.size())
+        w3mApp::Instance().HTTPS_proxy_parsed.Parse(w3mApp::Instance().HTTPS_proxy, NULL);
 
-    if (non_null(FTP_proxy))
-        FTP_proxy_parsed.Parse(FTP_proxy, NULL);
+    if (w3mApp::Instance().FTP_proxy.size())
+        w3mApp::Instance().FTP_proxy_parsed.Parse(w3mApp::Instance().FTP_proxy, NULL);
     if (non_null(NO_proxy))
         set_no_proxy(NO_proxy);
 }
@@ -1301,9 +1331,9 @@ static void loadPasswd(void)
 
 void sync_with_option(void)
 {
-    if (PagerMax < LINES)
-        PagerMax = LINES;
-    WrapSearch = WrapDefault;
+    if (w3mApp::Instance().PagerMax < ::LINES)
+        w3mApp::Instance().PagerMax = ::LINES;
+    WrapSearch = w3mApp::Instance().WrapDefault;
     parse_proxy();
 #ifdef USE_COOKIE
     parse_cookie();
@@ -1317,7 +1347,7 @@ void sync_with_option(void)
     init_migemo();
 #endif
 #ifdef USE_IMAGE
-    if (fmInitialized && displayImage)
+    if (fmInitialized && w3mApp::Instance().displayImage)
         initImage();
 #else
     displayImage = FALSE; /* XXX */
@@ -1407,8 +1437,8 @@ void init_rc(void)
     no_rc_dir = FALSE;
     tmp_dir = rc_dir;
 
-    if (config_file == NULL)
-        config_file = rcFile(CONFIG_FILE);
+    if (w3mApp::Instance().config_file.empty())
+        w3mApp::Instance().config_file = rcFile(CONFIG_FILE);
 
     create_option_search_table();
 
@@ -1424,7 +1454,7 @@ open_rc:
         interpret_rc(f);
         fclose(f);
     }
-    if (config_file && (f = fopen(config_file, "rt")) != NULL)
+    if (w3mApp::Instance().config_file.size() && (f = fopen(w3mApp::Instance().config_file.c_str(), "rt")) != NULL)
     {
         interpret_rc(f);
         fclose(f);
@@ -1464,23 +1494,23 @@ load_option_panel(void)
     BufferPtr buf;
 
     if (optionpanel_str == NULL)
-        optionpanel_str = Sprintf(optionpanel_src1, w3m_version,
+        optionpanel_str = Sprintf(optionpanel_src1, w3mApp::w3m_version,
                                   html_quote(localCookie()->ptr), _(CMT_HELPER));
     if (!OptionEncode)
     {
         optionpanel_str =
-            wc_Str_conv(optionpanel_str, OptionCharset, InnerCharset);
+            wc_Str_conv(optionpanel_str, OptionCharset, w3mApp::Instance().InnerCharset);
         for (auto &section : sections)
         {
             section.name =
-                wc_conv(_(section.name.c_str()), OptionCharset, InnerCharset)
+                wc_conv(_(section.name.c_str()), OptionCharset, w3mApp::Instance().InnerCharset)
                     ->ptr;
 
             for (auto &param : section.params)
             {
                 param.comment =
                     wc_conv(_(param.comment.data()), OptionCharset,
-                            InnerCharset)
+                            w3mApp::Instance().InnerCharset)
                         ->ptr;
                 if (param.inputtype == PI_SEL_C
 
@@ -1492,7 +1522,7 @@ load_option_panel(void)
                     {
                         s->text =
                             wc_conv(_(s->text), OptionCharset,
-                                    InnerCharset)
+                                    w3mApp::Instance().InnerCharset)
                                 ->ptr;
                     }
                 }
@@ -1501,7 +1531,7 @@ load_option_panel(void)
 
         for (s = colorstr; s->text; s++)
             s->text = wc_conv(_(s->text), OptionCharset,
-                              InnerCharset)
+                              w3mApp::Instance().InnerCharset)
                           ->ptr;
 
         OptionEncode = TRUE;
@@ -1518,7 +1548,7 @@ load_option_panel(void)
         {
             Strcat_m_charp(src, "<tr><td>", param.comment, NULL);
             src->Push(Sprintf("</td><td width=%d>",
-                              (int)(28 * pixel_per_char)));
+                              (int)(28 * w3mApp::Instance().pixel_per_char)));
             switch (param.inputtype)
             {
             case PI_TEXT:
@@ -1591,13 +1621,13 @@ void panel_set_option(struct parsed_tagarg *arg)
     FILE *f = NULL;
     char *p;
 
-    if (config_file == NULL)
+    if (w3mApp::Instance().config_file.empty())
     {
         disp_message("There's no config file... config not saved", FALSE);
     }
     else
     {
-        f = fopen(config_file, "wt");
+        f = fopen(w3mApp::Instance().config_file.c_str(), "wt");
         if (f == NULL)
         {
             disp_message("Can't write option!", FALSE);

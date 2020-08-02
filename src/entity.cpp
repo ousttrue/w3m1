@@ -1,6 +1,7 @@
 #include "entity.h"
 #include "myctype.h"
 #include "indep.h"
+#include "w3m.h"
 #include <assert.h>
 
 #ifdef DUMMY
@@ -51,7 +52,7 @@ conv_entity(unsigned int c)
         if (UseAltEntity)
             return alt_latin1[c - 0xa0];
 #ifdef USE_M17N
-        return wc_conv_n(&b, 1, WC_CES_ISO_8859_1, InnerCharset)->ptr;
+        return wc_conv_n(&b, 1, WC_CES_ISO_8859_1, w3mApp::Instance().InnerCharset)->ptr;
 #else
         return Strnew_charp_n(&b, 1)->ptr;
 #endif
@@ -62,7 +63,7 @@ conv_entity(unsigned int c)
     { /* Unicode */
         uint8_t utf8[7];
         wc_ucs_to_utf8(c, utf8);
-        return wc_conv((char *)utf8, WC_CES_UTF_8, InnerCharset)->ptr;
+        return wc_conv((char *)utf8, WC_CES_UTF_8, w3mApp::Instance().InnerCharset)->ptr;
     }
 #endif
 #endif

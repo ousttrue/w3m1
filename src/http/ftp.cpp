@@ -20,6 +20,7 @@
 #include "frontend/display.h"
 #include "transport/url.h"
 #include "http/auth.h"
+#include "frontend/linein.h"
 
 #ifdef DEBUG
 #include <malloc.h>
@@ -510,7 +511,7 @@ Str loadFTPDir0(URL *pu)
     int i, nfile, nfile_max;
     MySignalHandler prevtrap = NULL;
 #ifdef USE_M17N
-    CharacterEncodingScheme doc_charset = DocumentCharset;
+    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
 
     *charset = WC_CES_US_ASCII;
 #endif

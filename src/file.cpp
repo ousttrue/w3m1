@@ -34,6 +34,7 @@
 #include "html/html_processor.h"
 #include "wtf.h"
 #include "option.h"
+#include "frontend/linein.h"
 #include <assert.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -117,7 +118,7 @@ Str convertLine0(URLFile *uf, Str line, int mode)
 #endif
 {
 
-    line = wc_Str_conv_with_detect(line, charset, doc_charset, InnerCharset);
+    line = wc_Str_conv_with_detect(line, charset, doc_charset, w3mApp::Instance().InnerCharset);
 
     if (mode != RAW_MODE)
         cleanup_line(line, mode);
@@ -369,7 +370,6 @@ int getMetaRefreshParam(char *q, Str *refresh_uri)
 
 extern char *NullLine;
 extern Lineprop NullProp[];
-
 
 void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
                 int width, int nlines)
@@ -710,7 +710,7 @@ loadImageBuffer(URLFile *uf, BufferPtr newBuf)
 
 image_buffer:
     if (newBuf == NULL)
-        newBuf = newBuffer(INIT_BUFFER_WIDTH);
+        newBuf = newBuffer(INIT_BUFFER_WIDTH());
     cache->loaded |= IMG_FLAG_DONT_REMOVE;
     if (newBuf->sourcefile.empty() && uf->scheme != SCM_LOCAL)
         newBuf->sourcefile = cache->file;
@@ -761,7 +761,7 @@ conv_symbol(Line *l)
                 tmp->CopyFrom(l->lineBuf, p - l->lineBuf);
 #ifdef USE_M17N
                 w = (*pr & PC_KANJI) ? 2 : 1;
-                symbol = get_symbol(DisplayCharset, &w);
+                symbol = get_symbol(w3mApp::Instance().DisplayCharset, &w);
 #endif
             }
             tmp->Push(symbol[(int)c]);
@@ -785,15 +785,12 @@ conv_symbol(Line *l)
 static void
 _saveBuffer(BufferPtr buf, Line *l, FILE *f, int cont)
 {
+    int set_charset = !w3mApp::Instance().DisplayCharset;
+    CharacterEncodingScheme charset = w3mApp::Instance().DisplayCharset ? w3mApp::Instance().DisplayCharset : WC_CES_US_ASCII;
+
+    auto is_html = is_html_type(buf->type);
+
     Str tmp;
-    int is_html = FALSE;
-#ifdef USE_M17N
-    int set_charset = !DisplayCharset;
-    CharacterEncodingScheme charset = DisplayCharset ? DisplayCharset : WC_CES_US_ASCII;
-#endif
-
-    is_html = is_html_type(buf->type);
-
 pager_next:
     for (; l != NULL; l = l->next)
     {
@@ -801,7 +798,7 @@ pager_next:
             tmp = conv_symbol(l);
         else
             tmp = Strnew_charp_n(l->lineBuf, l->len);
-        tmp = wc_Str_conv(tmp, InnerCharset, charset);
+        tmp = wc_Str_conv(tmp, w3mApp::Instance().InnerCharset, charset);
         tmp->Puts(f);
         if (tmp->Back() != '\n' && !(cont && l->next && l->next->bpos))
             putc('\n', f);
@@ -809,11 +806,10 @@ pager_next:
 
     if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
     {
-        l = getNextPage(buf, PagerMax);
-#ifdef USE_M17N
+        l = getNextPage(buf, w3mApp::Instance().PagerMax);
         if (set_charset)
             charset = buf->document_charset;
-#endif
+
         goto pager_next;
     }
 }
@@ -864,7 +860,7 @@ getpipe(char *cmd)
     f = popen(cmd, "r");
     if (f == NULL)
         return NULL;
-    buf = newBuffer(INIT_BUFFER_WIDTH);
+    buf = newBuffer(INIT_BUFFER_WIDTH());
     buf->pagerSource = newFileStream(f, (FileStreamCloseFunc)pclose);
     buf->filename = cmd;
     buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
@@ -885,7 +881,7 @@ openPagerBuffer(InputStream *stream, BufferPtr buf)
 {
 
     if (buf == NULL)
-        buf = newBuffer(INIT_BUFFER_WIDTH);
+        buf = newBuffer(INIT_BUFFER_WIDTH());
     buf->pagerSource = stream;
     buf->buffername = getenv("MAN_PN");
     if (buf->buffername.empty())
@@ -894,7 +890,7 @@ openPagerBuffer(InputStream *stream, BufferPtr buf)
         buf->buffername = conv_from_system(buf->buffername.c_str());
     buf->bufferprop |= BP_PIPE;
 
-    if (content_charset && UseContentCharset)
+    if (content_charset && w3mApp::Instance().UseContentCharset)
         buf->document_charset = content_charset;
     else
         buf->document_charset = WC_CES_US_ASCII;
@@ -908,54 +904,52 @@ BufferPtr
 openGeneralPagerBuffer(InputStream *stream)
 {
     BufferPtr buf;
-    const char *t = "text/plain";
+    std::string t = "text/plain";
     BufferPtr t_buf = NULL;
     URLFile uf(SCM_UNKNOWN, stream);
 
     content_charset = WC_CES_NONE;
-    if (SearchHeader)
+    if (w3mApp::Instance().SearchHeader)
     {
-        t_buf = newBuffer(INIT_BUFFER_WIDTH);
+        t_buf = newBuffer(INIT_BUFFER_WIDTH());
         readHeader(&uf, t_buf, TRUE, NULL);
         t = checkContentType(t_buf);
-        if (t == NULL)
+        if (t.empty())
             t = "text/plain";
         if (t_buf)
         {
             t_buf->topLine = t_buf->firstLine;
             t_buf->currentLine = t_buf->lastLine;
         }
-        SearchHeader = FALSE;
+        w3mApp::Instance().SearchHeader = FALSE;
     }
-    else if (DefaultType)
+    else if (w3mApp::Instance().DefaultType.size())
     {
-        t = DefaultType;
-        DefaultType = NULL;
+        t = w3mApp::Instance().DefaultType;
+        w3mApp::Instance().DefaultType.clear();
     }
     if (is_html_type(t))
     {
         buf = loadHTMLBuffer(&uf, t_buf);
         buf->type = "text/html";
     }
-    else if (is_plain_text_type(t))
+    else if (is_plain_text_type(t.c_str()))
     {
         if (IStype(stream) != IST_ENCODED)
             stream = newEncodedStream(stream, uf.encoding);
         buf = openPagerBuffer(stream, t_buf);
         buf->type = "text/plain";
     }
-#ifdef USE_IMAGE
-    else if (activeImage && displayImage && !useExtImageViewer &&
-             !(w3m_dump & ~DUMP_FRAME) && !strncasecmp(t, "image/", 6))
+    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
+             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     {
         GetCurBaseUrl()->Parse("-", NULL);
         buf = loadImageBuffer(&uf, t_buf);
         buf->type = "text/html";
     }
-#endif
     else
     {
-        if (doExternal(uf, "-", t, &buf, t_buf))
+        if (doExternal(uf, "-", t.c_str(), &buf, t_buf))
         {
             uf.Close();
             if (buf == NULL)
@@ -987,7 +981,7 @@ getNextPage(BufferPtr buf, int plen)
     char pre_lbuf = '\0';
 
     CharacterEncodingScheme charset;
-    CharacterEncodingScheme doc_charset = DocumentCharset;
+    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
     uint8_t old_auto_detect = WcOption.auto_detect;
 
     int squeeze_flag = FALSE;
@@ -1012,7 +1006,7 @@ getNextPage(BufferPtr buf, int plen)
     charset = buf->document_charset;
     if (buf->document_charset != WC_CES_US_ASCII)
         doc_charset = buf->document_charset;
-    else if (UseContentCharset)
+    else if (w3mApp::Instance().UseContentCharset)
     {
         content_charset = WC_CES_NONE;
         checkContentType(buf);
@@ -1044,7 +1038,7 @@ getNextPage(BufferPtr buf, int plen)
             showProgress(&linelen, &trbyte);
             lineBuf2 =
                 convertLine(&uf, lineBuf2, PAGER_MODE, &charset, doc_charset);
-            if (squeezeBlankLine)
+            if (w3mApp::Instance().squeezeBlankLine)
             {
                 squeeze_flag = FALSE;
                 if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
@@ -1060,13 +1054,13 @@ getNextPage(BufferPtr buf, int plen)
             lineBuf2->StripRight();
             lineBuf2 = checkType(lineBuf2, &propBuffer, &colorBuffer);
             addnewline(buf, lineBuf2->ptr, propBuffer, colorBuffer,
-                       lineBuf2->Size(), FOLD_BUFFER_WIDTH, nlines);
+                       lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);
             if (!top)
             {
                 top = buf->firstLine;
                 cur = top;
             }
-            if (buf->lastLine->real_linenumber - buf->firstLine->real_linenumber >= PagerMax)
+            if (buf->lastLine->real_linenumber - buf->firstLine->real_linenumber >= w3mApp::Instance().PagerMax)
             {
                 Line *l = buf->firstLine;
                 do
@@ -1087,7 +1081,7 @@ getNextPage(BufferPtr buf, int plen)
         return true;
     });
 
-    if(!success)
+    if (!success)
     {
         return nullptr;
     }
@@ -1223,8 +1217,8 @@ Str tmpfname(int type, const char *ext)
     tmpf = Sprintf("%s/w3m%s%d-%d%s",
                    tmp_dir,
                    tmpf_base[type],
-                   CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
-    pushText(fileToDelete, tmpf->ptr);
+                   w3mApp::Instance().CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
+    pushText(w3mApp::Instance().fileToDelete, tmpf->ptr);
     return tmpf;
 }
 

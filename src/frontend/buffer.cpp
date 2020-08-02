@@ -20,6 +20,7 @@
 #include "mime/mimetypes.h"
 #include "charset.h"
 #include "html/parsetagx.h"
+#include "frontend/terms.h"
 
 static int REV_LB[MAX_LB] = {
     LB_N_FRAME,
@@ -43,7 +44,7 @@ bool fread1(T &d, FILE *f)
 
 Buffer::Buffer()
 {
-    COLS = COLS;
+    COLS = ::COLS;
     LINES = (LINES - 1);
     currentURL.scheme = SCM_UNKNOWN;
     baseURL = {};
@@ -363,7 +364,7 @@ nullBuffer(void)
 {
     BufferPtr b;
 
-    b = newBuffer(COLS);
+    b = newBuffer(::COLS);
     b->buffername = "*Null*";
     return b;
 }
@@ -583,7 +584,7 @@ void Buffer::Reshape()
         return;
     need_reshape = FALSE;
 
-    this->width = INIT_BUFFER_WIDTH;
+    this->width = INIT_BUFFER_WIDTH();
     if (this->sourcefile.empty())
         return;
     URLFile f(SCM_LOCAL, NULL);
@@ -627,7 +628,7 @@ void Buffer::Reshape()
     }
 
     WcOption.auto_detect = WC_OPT_DETECT_OFF;
-    UseContentCharset = FALSE;
+    w3mApp::Instance().UseContentCharset = FALSE;
 
     if (is_html_type(this->type))
         loadHTMLBuffer(&f, this);
@@ -636,7 +637,7 @@ void Buffer::Reshape()
     f.Close();
 
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
-    UseContentCharset = TRUE;
+    w3mApp::Instance().UseContentCharset = TRUE;
 
     this->height = (LINES - 1) + 1;
     if (this->firstLine && sbuf->firstLine)
@@ -661,7 +662,7 @@ void Buffer::Reshape()
                 this->GotoLine(cur->linenumber);
         }
         this->pos -= this->currentLine->bpos;
-        if (FoldLine && !is_html_type(this->type))
+        if (w3mApp::Instance().FoldLine && !is_html_type(this->type))
             this->currentColumn = 0;
         else
             this->currentColumn = sbuf->currentColumn;
@@ -1092,4 +1093,20 @@ void Buffer::ArrangeLine()
             this->currentColumn, this->cursorX, this->visualpos, this->pos,
             this->currentLine->len);
 #endif
+}
+
+void Buffer::DumpSource()
+{
+    FILE *f;
+    char c;
+    if (sourcefile.empty())
+        return;
+    f = fopen(sourcefile.c_str(), "r");
+    if (f == NULL)
+        return;
+    while (c = fgetc(f), !feof(f))
+    {
+        putchar(c);
+    }
+    fclose(f);
 }

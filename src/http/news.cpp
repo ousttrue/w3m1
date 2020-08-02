@@ -344,7 +344,7 @@ Str loadNewsgroup(URL *pu, CharacterEncodingScheme *charset)
     int status, i, first, last;
     int flag = 0, start = 0, end = 0;
     MySignalHandler prevtrap = NULL;
-    CharacterEncodingScheme doc_charset = DocumentCharset, mime_charset;
+    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset, mime_charset;
 
     *charset = WC_CES_US_ASCII;
 
@@ -464,7 +464,7 @@ Str loadNewsgroup(URL *pu, CharacterEncodingScheme *charset)
         else
         {
             f = URLFile(SCM_NEWS, current_news.rf);
-            buf = newBuffer(INIT_BUFFER_WIDTH);
+            buf = newBuffer(INIT_BUFFER_WIDTH());
             for (i = start; i <= end && i <= last; i++)
             {
                 news_command(&current_news, "HEAD", Sprintf("%d", i)->ptr,

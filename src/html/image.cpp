@@ -50,10 +50,10 @@ int getCharSize();
 
 void initImage()
 {
-    if (activeImage)
+    if (w3mApp::Instance().activeImage)
         return;
     if (getCharSize())
-        activeImage = TRUE;
+        w3mApp::Instance().activeImage = TRUE;
 }
 
 int getCharSize()
@@ -79,16 +79,16 @@ int getCharSize()
 
     if (!(w > 0 && h > 0))
         return FALSE;
-    if (!set_pixel_per_char)
-        pixel_per_char = (int)(1.0 * w / COLS + 0.5);
-    if (!set_pixel_per_line)
-        pixel_per_line = (int)(1.0 * h / LINES + 0.5);
+    if (!w3mApp::Instance().set_pixel_per_char)
+        w3mApp::Instance().pixel_per_char = (int)(1.0 * w / COLS + 0.5);
+    if (!w3mApp::Instance().set_pixel_per_line)
+        w3mApp::Instance().pixel_per_line = (int)(1.0 * h / LINES + 0.5);
     return TRUE;
 }
 
 void termImage()
 {
-    if (!activeImage)
+    if (!w3mApp::Instance().activeImage)
         return;
     clearImage();
     if (Imgdisplay_wf)
@@ -117,11 +117,11 @@ openImgdisplay()
         myExec(cmd);
         /* XXX: ifdef __EMX__, use start /f ? */
     }
-    activeImage = TRUE;
+    w3mApp::Instance().activeImage = TRUE;
     return TRUE;
 err0:
     Imgdisplay_pid = 0;
-    activeImage = FALSE;
+    w3mApp::Instance().activeImage = FALSE;
     return FALSE;
 }
 
@@ -147,7 +147,7 @@ void addImage(ImageCache *cache, int x, int y, int sx, int sy, int w, int h)
 {
     TerminalImage *i;
 
-    if (!activeImage)
+    if (!w3mApp::Instance().activeImage)
         return;
     if (n_terminal_image >= max_terminal_image)
     {
@@ -191,7 +191,7 @@ void drawImage()
     int j, draw = FALSE;
     TerminalImage *i;
 
-    if (!activeImage)
+    if (!w3mApp::Instance().activeImage)
         return;
     if (!n_terminal_image)
         return;
@@ -236,7 +236,7 @@ void clearImage()
     int j;
     TerminalImage *i;
 
-    if (!activeImage)
+    if (!w3mApp::Instance().activeImage)
         return;
     if (!n_terminal_image)
         return;
@@ -500,7 +500,7 @@ getImage(Image *image, URL *current, int flag)
     Str key = NULL;
     ImageCache *cache;
 
-    if (!activeImage)
+    if (!w3mApp::Instance().activeImage)
         return NULL;
     if (!image_hash)
         image_hash = newHash_sv(100);
@@ -564,7 +564,7 @@ int getImageSize(ImageCache *cache)
     FILE *f;
     int w = 0, h = 0;
 
-    if (!activeImage)
+    if (!w3mApp::Instance().activeImage)
         return FALSE;
     if (!cache || !(cache->loaded & IMG_FLAG_LOADED) ||
         (cache->width > 0 && cache->height > 0))
@@ -585,10 +585,10 @@ int getImageSize(ImageCache *cache)
 
     if (!(w > 0 && h > 0))
         return FALSE;
-    w = (int)(w * image_scale / 100 + 0.5);
+    w = (int)(w * w3mApp::Instance().image_scale / 100 + 0.5);
     if (w == 0)
         w = 1;
-    h = (int)(h * image_scale / 100 + 0.5);
+    h = (int)(h * w3mApp::Instance().image_scale / 100 + 0.5);
     if (h == 0)
         h = 1;
     if (cache->width < 0 && cache->height < 0)

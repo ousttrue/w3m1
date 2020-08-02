@@ -82,7 +82,7 @@ nearestMapArea(MapList *ml, int x, int y)
 {
     ListItem *al;
     MapArea *a;
-    int i, l, n = -1, min = -1, limit = pixel_per_char * pixel_per_char + pixel_per_line * pixel_per_line;
+    int i, l, n = -1, min = -1, limit = w3mApp::Instance().pixel_per_char * w3mApp::Instance().pixel_per_char + w3mApp::Instance().pixel_per_line * w3mApp::Instance().pixel_per_line;
 
     if (!ml || !ml->area)
         return n;
@@ -176,8 +176,8 @@ int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y)
 {
     if (!buf || !a || !a->image || !x || !y)
         return 0;
-    *x = (int)((buf->currentColumn + buf->cursorX - buf->currentLine->COLPOS(a->start.pos) + 0.5) * pixel_per_char) - a->image->xoffset;
-    *y = (int)((buf->currentLine->linenumber - a->image->y + 0.5) * pixel_per_line) - a->image->yoffset;
+    *x = (int)((buf->currentColumn + buf->cursorX - buf->currentLine->COLPOS(a->start.pos) + 0.5) * w3mApp::Instance().pixel_per_char) - a->image->xoffset;
+    *y = (int)((buf->currentLine->linenumber - a->image->y + 0.5) * w3mApp::Instance().pixel_per_line) - a->image->yoffset;
     if (*x <= 0)
         *x = 1;
     if (*y <= 0)
@@ -565,7 +565,7 @@ page_info_panel(BufferPtr buf)
                    "<tr valign=top><td nowrap>Last Modified<td>",
                    html_quote(last_modified(buf)), NULL);
 #ifdef USE_M17N
-    if (buf->document_charset != InnerCharset)
+    if (buf->document_charset != w3mApp::Instance().InnerCharset)
     {
         list = wc_get_ces_list();
         tmp->Push(

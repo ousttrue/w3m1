@@ -28,6 +28,7 @@
 #include "entity.h"
 #include "transport/loader.h"
 #include "charset.h"
+#include "w3m.h"
 
 int searchKeyNum(void)
 {
@@ -120,57 +121,36 @@ dump_extra(BufferPtr buf)
 }
 
 static void
-dump_source(BufferPtr buf)
-{
-    FILE *f;
-    char c;
-    if (buf->sourcefile.empty())
-        return;
-    f = fopen(buf->sourcefile.c_str(), "r");
-    if (f == NULL)
-        return;
-    while (c = fgetc(f), !feof(f))
-    {
-        putchar(c);
-    }
-    fclose(f);
-}
-
-static void
-dump_head(BufferPtr buf)
+dump_head(w3mApp *w3m, BufferPtr buf)
 {
     TextListItem *ti;
 
     if (buf->document_header == NULL)
     {
-        if (w3m_dump & DUMP_EXTRA)
+        if (w3m->w3m_dump & DUMP_EXTRA)
             printf("\n");
         return;
     }
     for (ti = buf->document_header->first; ti; ti = ti->next)
     {
-#ifdef USE_M17N
         printf("%s",
-               wc_conv_strict(ti->ptr, InnerCharset,
+               wc_conv_strict(ti->ptr, w3m->InnerCharset,
                               buf->document_charset)
                    ->ptr);
-#else
-        printf("%s", ti->ptr);
-#endif
     }
     puts("");
 }
 
-void do_dump(BufferPtr buf)
+void do_dump(w3mApp *w3m, BufferPtr buf)
 {
-    TrapJmp([buf]() {
-        if (w3m_dump & DUMP_EXTRA)
+    TrapJmp([&]() {
+        if (w3m->w3m_dump & DUMP_EXTRA)
             dump_extra(buf);
-        if (w3m_dump & DUMP_HEAD)
-            dump_head(buf);
-        if (w3m_dump & DUMP_SOURCE)
-            dump_source(buf);
-        if (w3m_dump == DUMP_BUFFER)
+        if (w3m->w3m_dump & DUMP_HEAD)
+            dump_head(w3m, buf);
+        if (w3m->w3m_dump & DUMP_SOURCE)
+            buf->DumpSource();
+        if (w3m->w3m_dump == DUMP_BUFFER)
         {
             int i;
             saveBuffer(buf, stdout, FALSE);
@@ -206,7 +186,7 @@ int srchcore(char *str, int (*func)(BufferPtr, char *))
     if (SearchString == NULL || *SearchString == '\0')
         return SR_NOTFOUND;
 
-    str = conv_search_string(SearchString, DisplayCharset);
+    str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
     crmode();
 
     TrapJmp([&]() {
@@ -317,7 +297,7 @@ void isrch(int (*func)(BufferPtr, char *), const char *prompt)
     dispincsrch(0, NULL, NULL); /* initialize incremental search state */
 
     searchRoutine = func;
-    str = inputLineHistSearch(prompt, NULL, IN_STRING, TextHist, dispincsrch);
+    str = inputLineHistSearch(prompt, NULL, IN_STRING, w3mApp::Instance().TextHist, dispincsrch);
     if (str == NULL)
     {
         RESTORE_BUFPOSITION(&sbuf);
@@ -335,7 +315,7 @@ void srch(int (*func)(BufferPtr, char *), const char *prompt)
     str = searchKeyData();
     if (str == NULL || *str == '\0')
     {
-        str = inputStrHist(prompt, NULL, TextHist);
+        str = inputStrHist(prompt, NULL, w3mApp::Instance().TextHist);
         if (str != NULL && *str == '\0')
             str = SearchString;
         if (str == NULL)
@@ -386,7 +366,7 @@ void cmd_loadfile(char *fn)
     else
     {
         GetCurrentTab()->PushBufferCurrentPrev(buf);
-        if (RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+        if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
             rFrame(&w3mApp::Instance());
     }
     displayCurrentbuf(B_NORMAL);
@@ -418,7 +398,7 @@ void cmd_loadURL(std::string_view url, URL *current, char *referer, FormList *re
     else
     {
         GetCurrentTab()->PushBufferCurrentPrev(buf);
-        if (RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+        if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
             rFrame(&w3mApp::Instance());
     }
     displayCurrentbuf(B_NORMAL);
@@ -460,7 +440,7 @@ int handleMailto(const char *url)
                ->ptr);
     fmInit();
     displayCurrentbuf(B_FORCE_REDRAW);
-    pushHashHist(URLHist, url);
+    pushHashHist(w3mApp::Instance().URLHist, url);
     return 1;
 }
 
@@ -602,57 +582,25 @@ int is_wordchar(uint32_t c)
     return wc_is_ucs_alnum(c);
 }
 
-void _quitfm(int confirm)
-{
-    char *ans = "y";
-
-    if (checkDownloadList())
-        /* FIXME: gettextize? */
-        ans = inputChar("Download process retains. "
-                        "Do you want to exit w3m? (y/n)");
-    else if (confirm)
-        /* FIXME: gettextize? */
-        ans = inputChar("Do you want to exit w3m? (y/n)");
-    if (!(ans && TOLOWER(*ans) == 'y'))
-    {
-        displayCurrentbuf(B_NORMAL);
-        return;
-    }
-
-    term_title(""); /* XXX */
-#ifdef USE_IMAGE
-    if (activeImage)
-        termImage();
-#endif
-    fmTerm();
-#ifdef USE_COOKIE
-    save_cookies();
-#endif /* USE_COOKIE */
-#ifdef USE_HISTORY
-    if (UseHistory && SaveURLHist)
-        saveHistory(URLHist, URLHistSize);
-#endif /* USE_HISTORY */
-    w3m_exit(0);
-}
-
 /* Go to specified line */
-void _goLine(char *l)
+void _goLine(std::string_view l)
 {
-    if (l == NULL || *l == '\0' || GetCurrentTab()->GetCurrentBuffer()->currentLine == NULL)
+    if (l.empty() || GetCurrentTab()->GetCurrentBuffer()->currentLine == NULL)
     {
         displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
+
     GetCurrentTab()->GetCurrentBuffer()->pos = 0;
-    if (((*l == '^') || (*l == '$')) && prec_num())
+    if (((l[0] == '^') || (l[0] == '$')) && prec_num())
     {
         GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(prec_num());
     }
-    else if (*l == '^')
+    else if (l[0] == '^')
     {
         GetCurrentTab()->GetCurrentBuffer()->topLine = GetCurrentTab()->GetCurrentBuffer()->currentLine = GetCurrentTab()->GetCurrentBuffer()->firstLine;
     }
-    else if (*l == '$')
+    else if (l[0] == '$')
     {
         GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->lastLine,
                                                       -(GetCurrentTab()->GetCurrentBuffer()->LINES + 1) / 2, TRUE);
@@ -660,7 +608,7 @@ void _goLine(char *l)
     }
     else
     {
-        GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(atoi(l));
+        GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(atoi(l.data()));
     }
     GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_FORCE_REDRAW);
@@ -682,20 +630,7 @@ int cur_real_linenumber(BufferPtr buf)
     return n;
 }
 
-char *inputLineHist(const char *prompt, const char *def_str, int flag, Hist *hist)
-{
-    return inputLineHistSearch(prompt, def_str, flag, hist, NULL);
-}
 
-char *inputStrHist(const char *prompt, char *def_str, Hist *hist)
-{
-    return inputLineHist(prompt, def_str, IN_STRING, hist);
-}
-
-char *inputLine(const char *prompt, char *def_str, int flag)
-{
-    return inputLineHist(prompt, def_str, flag, NULL);
-}
 
 static char *s_MarkString = NULL;
 
@@ -735,7 +670,7 @@ void _followForm(int submit)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
         /* FIXME: gettextize? */
-        p = inputStrHist("TEXT:", fi->value ? fi->value->ptr : NULL, TextHist);
+        p = inputStrHist("TEXT:", fi->value ? fi->value->ptr : NULL, w3mApp::Instance().TextHist);
         if (p == NULL || fi->readonly)
             break;
         fi->value = Strnew(p);
@@ -932,7 +867,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
         }
         fi->parent->body = (*query)->ptr;
         fi->parent->boundary =
-            Sprintf("------------------------------%d%ld%ld%ld", CurrentPid,
+            Sprintf("------------------------------%d%ld%ld%ld", w3mApp::Instance().CurrentPid,
                     fi->parent, fi->parent->body, fi->parent->boundary)
                 ->ptr;
     }
@@ -1078,7 +1013,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     }
 
     pu.Parse2(url, base);
-    pushHashHist(URLHist, pu.ToStr()->ptr);
+    pushHashHist(w3mApp::Instance().URLHist, pu.ToStr()->ptr);
 
     if (!on_target) /* open link as an indivisual page */
         return loadNormalBuf(buf, TRUE);
@@ -1231,19 +1166,19 @@ FormItemList *save_submit_formlist(FormItemList *src)
 
 Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf)
 {
-    CharacterEncodingScheme charset = SystemCharset;
+    CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
 
     if (fi->parent->charset)
         charset = fi->parent->charset;
     else if (buf->document_charset && buf->document_charset != WC_CES_US_ASCII)
         charset = buf->document_charset;
-    return wc_Str_conv_strict(val, InnerCharset, charset);
+    return wc_Str_conv_strict(val, w3mApp::Instance().InnerCharset, charset);
 }
 
 BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 {
     GetCurrentTab()->PushBufferCurrentPrev(buf);
-    if (renderframe && RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+    if (renderframe && w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
         rFrame(&w3mApp::Instance());
     return buf;
 }
@@ -1299,7 +1234,7 @@ void _nextA(int visited)
                 if (visited == TRUE && an)
                 {
                     url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-                    if (getHashHist(URLHist, url.ToStr()->ptr))
+                    if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
                     }
@@ -1323,7 +1258,7 @@ void _nextA(int visited)
             if (visited == TRUE)
             {
                 url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-                if (getHashHist(URLHist, url.ToStr()->ptr))
+                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
                 }
@@ -1391,7 +1326,7 @@ void _prevA(int visited)
                 if (visited == TRUE && an)
                 {
                     url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-                    if (getHashHist(URLHist, url.ToStr()->ptr))
+                    if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
                     }
@@ -1415,7 +1350,7 @@ void _prevA(int visited)
             if (visited == TRUE && an)
             {
                 url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-                if (getHashHist(URLHist, url.ToStr()->ptr))
+                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
                 }
@@ -1450,7 +1385,7 @@ void gotoLabel(std::string_view label)
     for (int i = 0; i < MAX_LB; i++)
         buf->linkBuffer[i] = NULL;
     buf->currentURL.label = label;
-    pushHashHist(URLHist, buf->currentURL.ToStr()->ptr);
+    pushHashHist(w3mApp::Instance().URLHist, buf->currentURL.ToStr()->ptr);
     (*buf->clone)++;
     GetCurrentTab()->PushBufferCurrentPrev(buf);
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
@@ -1578,7 +1513,7 @@ int checkBackBuffer(TabPtr tab, BufferPtr buf)
             return TRUE; /* Currentbuf has stacked frames */
         /* when no frames stacked and next is frame source, try next's
 	 * nextBuffer */
-        if (RenderFrame && fbuf == tab->NextBuffer(buf))
+        if (w3mApp::Instance().RenderFrame && fbuf == tab->NextBuffer(buf))
         {
             if (tab->NextBuffer(fbuf) != NULL)
                 return TRUE;
@@ -1603,7 +1538,7 @@ void goURL0(const char *prompt, int relative)
     url = searchKeyData();
     if (url == NULL)
     {
-        Hist *hist = copyHist(URLHist);
+        Hist *hist = copyHist(w3mApp::Instance().URLHist);
         current = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
         if (current)
         {
@@ -1640,7 +1575,7 @@ void goURL0(const char *prompt, int relative)
     if (url != NULL)
     {
         if ((relative || *url == '#') && GetCurrentTab()->GetCurrentBuffer()->document_charset)
-            url = wc_conv_strict(url, InnerCharset,
+            url = wc_conv_strict(url, w3mApp::Instance().InnerCharset,
                                  GetCurrentTab()->GetCurrentBuffer()->document_charset)
                       ->ptr;
         else
@@ -1668,10 +1603,10 @@ void goURL0(const char *prompt, int relative)
         referer = NULL;
     }
     p_url.Parse2(url, current);
-    pushHashHist(URLHist, p_url.ToStr()->ptr);
+    pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(url, current, referer, NULL);
     if (GetCurrentTab()->GetCurrentBuffer() != cur_buf) /* success */
-        pushHashHist(URLHist, GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr);
+        pushHashHist(w3mApp::Instance().URLHist, GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr);
 }
 
 void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
@@ -1929,106 +1864,6 @@ void tabURL0(TabPtr tab, const char *prompt, int relative)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-BufferPtr DownloadListBuffer()
-{
-    DownloadList *d;
-    Str src = NULL;
-    struct stat st;
-    time_t cur_time;
-    int duration, rate, eta;
-    size_t size;
-
-    if (!FirstDL)
-        return NULL;
-    cur_time = time(0);
-    /* FIXME: gettextize? */
-    src = Strnew("<html><head><title>" DOWNLOAD_LIST_TITLE
-                 "</title></head>\n<body><h1 align=center>" DOWNLOAD_LIST_TITLE "</h1>\n"
-                 "<form method=internal action=download><hr>\n");
-    for (d = LastDL; d != NULL; d = d->prev)
-    {
-        if (lstat(d->lock, &st))
-            d->running = FALSE;
-        src->Push("<pre>\n");
-        src->Push(Sprintf("%s\n  --&gt; %s\n  ", html_quote(d->url),
-                          html_quote(conv_from_system(d->save))));
-        duration = cur_time - d->time;
-        if (!stat(d->save, &st))
-        {
-            size = st.st_size;
-            if (!d->running)
-            {
-                if (!d->err)
-                    d->size = size;
-                duration = st.st_mtime - d->time;
-            }
-        }
-        else
-            size = 0;
-        if (d->size)
-        {
-            int i, l = COLS - 6;
-            if (size < d->size)
-                i = 1.0 * l * size / d->size;
-            else
-                i = l;
-            l -= i;
-            while (i-- > 0)
-                src->Push('#');
-            while (l-- > 0)
-                src->Push('_');
-            src->Push('\n');
-        }
-        if ((d->running || d->err) && size < d->size)
-            src->Push(Sprintf("  %s / %s bytes (%d%%)",
-                              convert_size3(size), convert_size3(d->size),
-                              (int)(100.0 * size / d->size)));
-        else
-            src->Push(Sprintf("  %s bytes loaded", convert_size3(size)));
-        if (duration > 0)
-        {
-            rate = size / duration;
-            src->Push(Sprintf("  %02d:%02d:%02d  rate %s/sec",
-                              duration / (60 * 60), (duration / 60) % 60,
-                              duration % 60, convert_size(rate, 1)));
-            if (d->running && size < d->size && rate)
-            {
-                eta = (d->size - size) / rate;
-                src->Push(Sprintf("  eta %02d:%02d:%02d", eta / (60 * 60),
-                                  (eta / 60) % 60, eta % 60));
-            }
-        }
-        src->Push('\n');
-        if (!d->running)
-        {
-            src->Push(Sprintf("<input type=submit name=ok%d value=OK>",
-                              d->pid));
-            switch (d->err)
-            {
-            case 0:
-                if (size < d->size)
-                    src->Push(" Download ended but probably not complete");
-                else
-                    src->Push(" Download complete");
-                break;
-            case 1:
-                src->Push(" Error: could not open destination file");
-                break;
-            case 2:
-                src->Push(" Error: could not write to file (disk full)");
-                break;
-            default:
-                src->Push(" Error: unknown reason");
-            }
-        }
-        else
-            src->Push(Sprintf("<input type=submit name=stop%d value=STOP>",
-                              d->pid));
-        src->Push("\n</pre><hr>\n");
-    }
-    src->Push("</form></body></html>");
-    return loadHTMLString(src);
-}
 
 char *convert_size3(clen_t size)
 {
@@ -2061,111 +1896,6 @@ void resetPos(BufferPos *b)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void stopDownload()
-{
-    DownloadList *d;
-
-    if (!FirstDL)
-        return;
-    for (d = FirstDL; d != NULL; d = d->next)
-    {
-        if (!d->running)
-            continue;
-#ifndef __MINGW32_VERSION
-        kill(d->pid, SIGKILL);
-#endif
-        unlink(d->lock);
-    }
-}
-
-void download_action(struct parsed_tagarg *arg)
-{
-    DownloadList *d;
-    pid_t pid;
-
-    for (; arg; arg = arg->next)
-    {
-        if (!strncmp(arg->arg, "stop", 4))
-        {
-            pid = (pid_t)atoi(&arg->arg[4]);
-#ifndef __MINGW32_VERSION
-            kill(pid, SIGKILL);
-#endif
-        }
-        else if (!strncmp(arg->arg, "ok", 2))
-            pid = (pid_t)atoi(&arg->arg[2]);
-        else
-            continue;
-        for (d = FirstDL; d; d = d->next)
-        {
-            if (d->pid == pid)
-            {
-                unlink(d->lock);
-                if (d->prev)
-                    d->prev->next = d->next;
-                else
-                    FirstDL = d->next;
-                if (d->next)
-                    d->next->prev = d->prev;
-                else
-                    LastDL = d->prev;
-                break;
-            }
-        }
-    }
-    ldDL(&w3mApp::Instance());
-}
-
-int checkDownloadList()
-{
-    DownloadList *d;
-    struct stat st;
-
-    if (!FirstDL)
-        return FALSE;
-    for (d = FirstDL; d != NULL; d = d->next)
-    {
-        if (d->running && !lstat(d->lock, &st))
-            return TRUE;
-    }
-    return FALSE;
-}
-
-static int s_add_download_list = FALSE;
-int add_download_list()
-{
-    return s_add_download_list;
-}
-void set_add_download_list(int add)
-{
-    s_add_download_list = add;
-}
-
-void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
-{
-    DownloadList *d;
-
-    d = New(DownloadList);
-    d->pid = pid;
-    d->url = url;
-    if (save[0] != '/' && save[0] != '~')
-        save = Strnew_m_charp(CurrentDir, "/", save, NULL)->ptr;
-    d->save = expandPath(save);
-    d->lock = lock;
-    d->size = size;
-    d->time = time(0);
-    d->running = TRUE;
-    d->err = 0;
-    d->next = NULL;
-    d->prev = LastDL;
-    if (LastDL)
-        LastDL->next = d;
-    else
-        FirstDL = d;
-    LastDL = d;
-    set_add_download_list(TRUE);
-}
-
 AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd, void *data)
 {
     if (event == NULL)
@@ -2177,33 +1907,7 @@ AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd,
     return event;
 }
 
-void w3m_exit(int i)
-{
-#ifdef USE_MIGEMO
-    init_migemo(); /* close pipe to migemo */
-#endif
-    stopDownload();
-    DeleteAllTabs();
-    deleteFiles();
-#ifdef USE_SSL
-    free_ssl_ctx();
-#endif
-    disconnectFTP();
-#ifdef USE_NNTP
-    disconnectNews();
-#endif
-#ifdef __MINGW32_VERSION
-    WSACleanup();
-#endif
-    exit(i);
-}
 
-void deleteFiles()
-{
-    char *f;
-    while ((f = popText(fileToDelete)) != NULL)
-        unlink(f);
-}
 
 char *searchKeyData()
 {
@@ -2337,7 +2041,7 @@ void follow_map(struct parsed_tagarg *arg)
         return;
     }
     p_url.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    pushHashHist(URLHist, p_url.ToStr()->ptr);
+    pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     if (check_target() && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
@@ -2372,38 +2076,12 @@ void SigPipe(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
-static int s_need_resize_screen = FALSE;
-int need_resize_screen()
-{
-    return s_need_resize_screen;
-}
-void set_need_resize_screen(int need)
-{
-    s_need_resize_screen = need;
-}
-
-void
-    resize_hook(SIGNAL_ARG)
-{
-    s_need_resize_screen = TRUE;
-    mySignal(SIGWINCH, resize_hook);
-    SIGNAL_RETURN;
-}
-
-void resize_screen()
-{
-    s_need_resize_screen = FALSE;
-    setlinescols();
-    setupscreen();
-    if (GetCurrentTab())
-        displayCurrentbuf(B_FORCE_REDRAW);
-}
 
 void saveBufferInfo()
 {
     FILE *fp;
 
-    if (w3m_dump)
+    if (w3mApp::Instance().w3m_dump)
         return;
     if ((fp = fopen(rcFile("bufinfo"), "w")) == NULL)
     {
@@ -2561,7 +2239,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
     }
     prop = prop_buffer;
 
-    if (ShowEffect)
+    if (w3mApp::Instance().ShowEffect)
     {
         bs = (char *)memchr(str, '\b', s->Size());
 #ifdef USE_ANSI_COLOR

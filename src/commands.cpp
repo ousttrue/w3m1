@@ -28,8 +28,11 @@
 #include "mime/mailcap.h"
 #include "frontend/event.h"
 #include "frontend/line.h"
+#include "frontend/linein.h"
 #include "charset.h"
 #include "option.h"
+#include "rc.h"
+#include "w3m.h"
 #include <signal.h>
 
 void nulcmd(w3mApp *w3m)
@@ -238,7 +241,7 @@ void setEnv(w3mApp *w3m)
     {
         if (env != NULL && *env != '\0')
             env = Sprintf("%s=", env)->ptr;
-        env = inputStrHist("Set environ: ", env, TextHist);
+        env = inputStrHist("Set environ: ", env, w3mApp::Instance().TextHist);
         if (env == NULL || *env == '\0')
         {
             displayCurrentbuf(B_NORMAL);
@@ -264,7 +267,7 @@ void pipeBuf(w3mApp *w3m)
     if (cmd == NULL || *cmd == '\0')
     {
         /* FIXME: gettextize? */
-        cmd = inputLineHist("Pipe buffer to: ", "", IN_COMMAND, ShellHist);
+        cmd = inputLineHist("Pipe buffer to: ", "", IN_COMMAND, w3mApp::Instance().ShellHist);
     }
     if (cmd != NULL)
         cmd = conv_to_system(cmd);
@@ -313,7 +316,7 @@ void pipesh(w3mApp *w3m)
     cmd = searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
-        cmd = inputLineHist("(read shell[pipe])!", "", IN_COMMAND, ShellHist);
+        cmd = inputLineHist("(read shell[pipe])!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
     }
     if (cmd != NULL)
         cmd = conv_to_system(cmd);
@@ -347,7 +350,7 @@ void readsh(w3mApp *w3m)
     cmd = searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
-        cmd = inputLineHist("(read shell)!", "", IN_COMMAND, ShellHist);
+        cmd = inputLineHist("(read shell)!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
     }
     if (cmd != NULL)
         cmd = conv_to_system(cmd);
@@ -388,7 +391,7 @@ void execsh(w3mApp *w3m)
     cmd = searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
-        cmd = inputLineHist("(exec shell)!", "", IN_COMMAND, ShellHist);
+        cmd = inputLineHist("(exec shell)!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
     }
     if (cmd != NULL)
         cmd = conv_to_system(cmd);
@@ -414,7 +417,7 @@ void ldfile(w3mApp *w3m)
     if (fn == NULL || *fn == '\0')
     {
         /* FIXME: gettextize? */
-        fn = inputFilenameHist("(Load)Filename? ", NULL, LoadHist);
+        fn = inputFilenameHist("(Load)Filename? ", NULL, w3mApp::Instance().LoadHist);
     }
     if (fn != NULL)
         fn = conv_to_system(fn);
@@ -436,7 +439,7 @@ void ldhelp(w3mApp *w3m)
     lang = AcceptLang;
     n = strcspn(lang, ";, \t");
     tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
-                  Strnew(w3m_version)->UrlEncode()->ptr,
+                  Strnew(w3mApp::Instance().w3m_version)->UrlEncode()->ptr,
                   Strnew_charp_n(lang, n)->UrlEncode()->ptr);
     cmd_loadURL(tmp->ptr, NULL, NO_REFERER, NULL);
 #else
@@ -581,13 +584,13 @@ end:
 
 void quitfm(w3mApp *w3m)
 {
-    _quitfm(FALSE);
+    w3m->_quitfm(FALSE);
 }
 /* Question and Quit */
 
 void qquitfm(w3mApp *w3m)
 {
-    _quitfm(confirm_on_quit);
+    w3m->_quitfm(confirm_on_quit);
 }
 /* Select buffer */
 
@@ -849,14 +852,14 @@ void reMark(w3mApp *w3m)
     auto str = searchKeyData();
     if (str == NULL || *str == '\0')
     {
-        str = inputStrHist("(Mark)Regexp: ", MarkString(), TextHist);
+        str = inputStrHist("(Mark)Regexp: ", MarkString(), w3mApp::Instance().TextHist);
         if (str == NULL || *str == '\0')
         {
             displayCurrentbuf(B_NORMAL);
             return;
         }
     }
-    str = conv_search_string(str, DisplayCharset);
+    str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
     if ((str = regexCompile(str, 1)) != NULL)
     {
         disp_message(str, TRUE);
@@ -1205,7 +1208,7 @@ void backBf(w3mApp *w3m)
                 formResetBuffer(GetCurrentTab()->GetCurrentBuffer(), formitem);
             }
         }
-        else if (RenderFrame && buf == GetCurrentTab()->GetCurrentBuffer())
+        else if (w3mApp::Instance().RenderFrame && buf == GetCurrentTab()->GetCurrentBuffer())
         {
             auto tab = GetCurrentTab();
             tab->DeleteBuffer(tab->GetCurrentBuffer());
@@ -1235,7 +1238,7 @@ void gorURL(w3mApp *w3m)
 
 void ldBmark(w3mApp *w3m)
 {
-    cmd_loadURL(BookmarkFile, NULL, NO_REFERER, NULL);
+    cmd_loadURL(w3mApp::Instance().BookmarkFile, NULL, NO_REFERER, NULL);
 }
 /* Add current to bookmark */
 
@@ -1243,15 +1246,15 @@ void adBmark(w3mApp *w3m)
 {
     auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
                        (localCookie()->UrlEncode())->ptr,
-                       (Strnew(BookmarkFile)->UrlEncode())->ptr,
+                       (Strnew(w3mApp::Instance().BookmarkFile)->UrlEncode())->ptr,
                        (GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->UrlEncode())->ptr,
 
                        (wc_conv_strict(GetCurrentTab()->GetCurrentBuffer()->buffername.c_str(),
-                                       InnerCharset,
-                                       BookmarkCharset)
+                                       w3mApp::Instance().InnerCharset,
+                                       w3mApp::Instance().BookmarkCharset)
                             ->UrlEncode())
                            ->ptr,
-                       wc_ces_to_charset(BookmarkCharset));
+                       wc_ces_to_charset(w3mApp::Instance().BookmarkCharset));
     auto request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
     request->body = tmp->ptr;
     request->length = tmp->Size();
@@ -1303,7 +1306,7 @@ void linkMn(w3mApp *w3m)
 
     URL p_url;
     p_url.Parse2(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    pushHashHist(URLHist, p_url.ToStr()->ptr);
+    pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
 }
 /* accesskey */
@@ -1326,7 +1329,7 @@ void setOpt(w3mApp *w3m)
             char *v = get_param_option(opt);
             opt = Sprintf("%s=%s", opt, v ? v : "")->ptr;
         }
-        opt = inputStrHist("Set option: ", opt, TextHist);
+        opt = inputStrHist("Set option: ", opt, w3mApp::Instance().TextHist);
         if (opt == NULL || *opt == '\0')
         {
             displayCurrentbuf(B_NORMAL);
@@ -1375,7 +1378,7 @@ void cooLst(w3mApp *w3m)
 
 void ldHist(w3mApp *w3m)
 {
-    cmd_loadBuffer(historyBuffer(URLHist), BP_NO_URL, LB_NOLINK);
+    cmd_loadBuffer(historyBuffer(w3mApp::Instance().URLHist), BP_NO_URL, LB_NOLINK);
 }
 /* download HREF link */
 
@@ -1407,7 +1410,7 @@ void svBuf(w3mApp *w3m)
     if (file == NULL || *file == '\0')
     {
         /* FIXME: gettextize? */
-        qfile = inputLineHist("Save buffer to: ", NULL, IN_COMMAND, SaveHist);
+        qfile = inputLineHist("Save buffer to: ", NULL, IN_COMMAND, w3mApp::Instance().SaveHist);
         if (qfile == NULL || *qfile == '\0')
         {
             displayCurrentbuf(B_NORMAL);
@@ -1546,18 +1549,18 @@ void vwSrc(w3mApp *w3m)
             if (f == NULL)
                 return;
 
-            old_charset = DisplayCharset;
+            old_charset = w3mApp::Instance().DisplayCharset;
             old_fix_width_conv = WcOption.fix_width_conv;
-            DisplayCharset = (GetCurrentTab()->GetCurrentBuffer()->document_charset != WC_CES_US_ASCII)
-                                 ? GetCurrentTab()->GetCurrentBuffer()->document_charset
-                                 : WC_CES_NONE;
+            w3mApp::Instance().DisplayCharset = (GetCurrentTab()->GetCurrentBuffer()->document_charset != WC_CES_US_ASCII)
+                                                    ? GetCurrentTab()->GetCurrentBuffer()->document_charset
+                                                    : WC_CES_NONE;
             WcOption.fix_width_conv = false;
 
             saveBufferBody(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
-#ifdef USE_M17N
-            DisplayCharset = old_charset;
+
+            w3mApp::Instance().DisplayCharset = old_charset;
             WcOption.fix_width_conv = old_fix_width_conv;
-#endif
+
             fclose(f);
             GetCurrentTab()->GetCurrentBuffer()->sourcefile = tmpf->ptr;
         }
@@ -1566,7 +1569,7 @@ void vwSrc(w3mApp *w3m)
             return;
         }
     }
-    buf = newBuffer(INIT_BUFFER_WIDTH);
+    buf = newBuffer(INIT_BUFFER_WIDTH());
     if (is_html_type(GetCurrentTab()->GetCurrentBuffer()->type.c_str()))
     {
         buf->type = "text/plain";
@@ -1624,7 +1627,7 @@ void reload(w3mApp *w3m)
     int multipart;
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
     {
-        if (!strcmp(GetCurrentTab()->GetCurrentBuffer()->buffername.c_str(), DOWNLOAD_LIST_TITLE))
+        if (GetCurrentTab()->GetCurrentBuffer()->buffername == w3mApp::DOWNLOAD_LIST_TITLE)
         {
             ldDL(w3m);
             return;
@@ -1700,19 +1703,19 @@ void reload(w3mApp *w3m)
     /* FIXME: gettextize? */
     message("Reloading...", 0, 0);
     refresh();
-#ifdef USE_M17N
-    old_charset = DocumentCharset;
+
+    old_charset = w3mApp::Instance().DocumentCharset;
     if (GetCurrentTab()->GetCurrentBuffer()->document_charset != WC_CES_US_ASCII)
-        DocumentCharset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
-#endif
-    SearchHeader = GetCurrentTab()->GetCurrentBuffer()->search_header;
-    DefaultType = Strnew(GetCurrentTab()->GetCurrentBuffer()->real_type)->ptr;
+        w3mApp::Instance().DocumentCharset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
+
+    w3mApp::Instance().SearchHeader = GetCurrentTab()->GetCurrentBuffer()->search_header;
+    w3mApp::Instance().DefaultType = Strnew(GetCurrentTab()->GetCurrentBuffer()->real_type)->ptr;
     buf = loadGeneralFile(url->ptr, NULL, NO_REFERER, RG_NOCACHE, request);
-#ifdef USE_M17N
-    DocumentCharset = old_charset;
-#endif
-    SearchHeader = FALSE;
-    DefaultType = NULL;
+
+    w3mApp::Instance().DocumentCharset = old_charset;
+
+    w3mApp::Instance().SearchHeader = FALSE;
+    w3mApp::Instance().DefaultType.clear();
     if (multipart)
         unlink(request->body);
     if (buf == NULL)
@@ -1783,10 +1786,10 @@ void defCSet(w3mApp *w3m)
     if (cs == NULL || *cs == '\0')
         /* FIXME: gettextize? */
         cs = inputStr("Default document charset: ",
-                      wc_ces_to_charset(DocumentCharset));
+                      wc_ces_to_charset(w3mApp::Instance().DocumentCharset));
     charset = wc_guess_charset_short(cs, WC_CES_NONE);
     if (charset != 0)
-        DocumentCharset = charset;
+        w3mApp::Instance().DocumentCharset = charset;
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1915,11 +1918,11 @@ void curlno(w3mApp *w3m)
 
 void dispI(w3mApp *w3m)
 {
-    if (!displayImage)
+    if (!w3mApp::Instance().displayImage)
         initImage();
-    if (!activeImage)
+    if (!w3mApp::Instance().activeImage)
         return;
-    displayImage = TRUE;
+    w3mApp::Instance().displayImage = TRUE;
     /*
      * if (!(GetCurrentTab()->GetCurrentBuffer()->type && is_html_type(GetCurrentTab()->GetCurrentBuffer()->type)))
      * return;
@@ -1931,7 +1934,7 @@ void dispI(w3mApp *w3m)
 
 void stopI(w3mApp *w3m)
 {
-    if (!activeImage)
+    if (!w3mApp::Instance().activeImage)
         return;
     /*
      * if (!(GetCurrentTab()->GetCurrentBuffer()->type && is_html_type(GetCurrentTab()->GetCurrentBuffer()->type)))
@@ -1943,13 +1946,13 @@ void stopI(w3mApp *w3m)
 
 void msToggle(w3mApp *w3m)
 {
-    if (use_mouse)
+    if (w3mApp::Instance().use_mouse)
     {
-        use_mouse = FALSE;
+        w3mApp::Instance().use_mouse = FALSE;
     }
     else
     {
-        use_mouse = TRUE;
+        w3mApp::Instance().use_mouse = TRUE;
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -2048,7 +2051,7 @@ void closeTMs(w3mApp *w3m)
 
 void dispVer(w3mApp *w3m)
 {
-    disp_message(Sprintf("w3m version %s", w3m_version)->ptr, TRUE);
+    disp_message(Sprintf("w3m version %s", w3mApp::w3m_version)->ptr, TRUE);
 }
 
 void wrapToggle(w3mApp *w3m)
@@ -2085,7 +2088,7 @@ void execCmd(w3mApp *w3m)
     data = searchKeyData();
     if (data == NULL || *data == '\0')
     {
-        data = inputStrHist("command [; ...]: ", "", TextHist);
+        data = inputStrHist("command [; ...]: ", "", w3mApp::Instance().TextHist);
         if (data == NULL)
         {
             displayCurrentbuf(B_NORMAL);
@@ -2102,7 +2105,7 @@ void setAlarm(w3mApp *w3m)
     auto data = searchKeyData();
     if (data == NULL || *data == '\0')
     {
-        data = inputStrHist("(Alarm)sec command: ", "", TextHist);
+        data = inputStrHist("(Alarm)sec command: ", "", w3mApp::Instance().TextHist);
         if (data == NULL)
         {
             displayCurrentbuf(B_NORMAL);
@@ -2209,7 +2212,7 @@ void defKey(w3mApp *w3m)
     data = searchKeyData();
     if (data == NULL || *data == '\0')
     {
-        data = inputStrHist("Key definition: ", "", TextHist);
+        data = inputStrHist("Key definition: ", "", w3mApp::Instance().TextHist);
         if (data == NULL || *data == '\0')
         {
             displayCurrentbuf(B_NORMAL);
@@ -2303,26 +2306,28 @@ void ldDL(w3mApp *w3m)
     int replace = FALSE, new_tab = FALSE;
     auto tab = GetCurrentTab();
     if (tab->GetCurrentBuffer()->bufferprop & BP_INTERNAL &&
-        tab->GetCurrentBuffer()->buffername == DOWNLOAD_LIST_TITLE)
+        tab->GetCurrentBuffer()->buffername == w3mApp::Instance().DOWNLOAD_LIST_TITLE)
         replace = TRUE;
-    if (!FirstDL)
-    {
-        if (replace)
-        {
-            if (tab->GetCurrentBuffer() == tab->GetFirstBuffer() && tab->NextBuffer(tab->GetCurrentBuffer()))
-            {
-                DeleteCurrentTab();
-            }
-            else
-                tab->DeleteBuffer(tab->GetCurrentBuffer());
-            displayBuffer(tab->GetCurrentBuffer(), B_FORCE_REDRAW);
-        }
-        return;
-    }
+
+    // TOOD:
+    // if (!FirstDL)
+    // {
+    //     if (replace)
+    //     {
+    //         if (tab->GetCurrentBuffer() == tab->GetFirstBuffer() && tab->NextBuffer(tab->GetCurrentBuffer()))
+    //         {
+    //             DeleteCurrentTab();
+    //         }
+    //         else
+    //             tab->DeleteBuffer(tab->GetCurrentBuffer());
+    //         displayBuffer(tab->GetCurrentBuffer(), B_FORCE_REDRAW);
+    //     }
+    //     return;
+    // }
 
     auto nReload = checkDownloadList();
 
-    buf = DownloadListBuffer();
+    buf = DownloadListBuffer(w3m);
     if (!buf)
     {
         displayCurrentbuf(B_NORMAL);

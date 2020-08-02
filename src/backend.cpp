@@ -1,8 +1,8 @@
-/* $Id: backend.c,v 1.15 2010/08/08 09:53:42 htrb Exp $ */
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <gc.h>
+#include "backend.h"
 #include "charset.h"
 #include "fm.h"
 #include "indep.h"
@@ -12,6 +12,7 @@
 #include "http/cookie.h"
 #include "transport/loader.h"
 #include "html/form.h"
+#include "frontend/terms.h"
 
 /* Prototype declaration of internal functions */
 #ifdef HAVE_READLINE
@@ -245,7 +246,7 @@ static void
 quit(TextList *argv)
 {
     save_cookies();
-    w3m_exit(0);
+    exit(0);
 }
 
 /* Command: help */
@@ -265,7 +266,7 @@ set_column(TextList *argv)
 {
     if (argv->nitem == 1)
     {
-        COLS = atol(argv->first->ptr);
+        ::COLS = atol(argv->first->ptr);
     }
 }
 
@@ -273,7 +274,7 @@ set_column(TextList *argv)
 static void
 show_column(TextList *argv)
 {
-    fprintf(stdout, "column=%d\n", COLS);
+    fprintf(stdout, "column=%d\n", ::COLS);
 }
 
 /* Call appropriate command function based on given string */
@@ -302,16 +303,16 @@ int backend(void)
 {
     char *str;
 
-    w3m_dump = 0;
-    if (COLS == 0)
-        COLS = DEFAULT_COLS;
+    w3mApp::Instance().w3m_dump = DUMP_NONE;
+    if (::COLS == 0)
+        ::COLS = 80;
 #ifdef USE_MOUSE
-    use_mouse = FALSE;
+    w3mApp::Instance().use_mouse = FALSE;
 #endif /* USE_MOUSE */
 
-    if (backend_batch_commands)
+    if (w3mApp::Instance().backend_batch_commands)
     {
-        while ((str = popText(backend_batch_commands)))
+        while ((str = popText(w3mApp::Instance().backend_batch_commands)))
             call_command_function(str);
     }
     else

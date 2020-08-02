@@ -145,9 +145,9 @@ void disconnectNews(void);
 
 BufferPtr link_list_panel(BufferPtr buf);
 
-int set_param_option(const char *option);
+
 char *get_param_option(char *name);
-void init_rc(void);
+
 BufferPtr load_option_panel(void);
 void sync_with_option(void);
 

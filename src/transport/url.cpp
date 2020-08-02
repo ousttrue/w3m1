@@ -901,7 +901,7 @@ void URL::Parse2(std::string_view url, const URL *current)
             this->file != "-")
         {
             /* local file, relative path */
-            tmp = Strnew(CurrentDir);
+            tmp = Strnew(w3mApp::Instance().CurrentDir);
             if (tmp->Back() != '/')
                 tmp->Push('/');
             tmp->Push(file_unquote(this->file));
@@ -1089,10 +1089,10 @@ int check_no_proxy(char *domain)
     int ret = 0;
     MySignalHandler prevtrap = NULL;
 
-    if (NO_proxy_domains == NULL || NO_proxy_domains->nitem == 0 ||
+    if (w3mApp::Instance().NO_proxy_domains == NULL || w3mApp::Instance().NO_proxy_domains->nitem == 0 ||
         domain == NULL)
         return 0;
-    for (tl = NO_proxy_domains->first; tl != NULL; tl = tl->next)
+    for (tl = w3mApp::Instance().NO_proxy_domains->first; tl != NULL; tl = tl->next)
     {
         if (domain_match(tl->ptr, domain))
             return 1;
@@ -1175,7 +1175,7 @@ int check_no_proxy(char *domain)
                         /* unknown */
                         continue;
                     }
-                    for (tl = NO_proxy_domains->first; tl != NULL; tl = tl->next)
+                    for (tl = w3mApp::Instance().NO_proxy_domains->first; tl != NULL; tl = tl->next)
                     {
                         if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0)
                         {
@@ -1244,15 +1244,15 @@ URL *schemeToProxy(int scheme)
     switch (scheme)
     {
     case SCM_HTTP:
-        pu = &HTTP_proxy_parsed;
+        pu = &w3mApp::Instance().HTTP_proxy_parsed;
         break;
 #ifdef USE_SSL
     case SCM_HTTPS:
-        pu = &HTTPS_proxy_parsed;
+        pu = &w3mApp::Instance().HTTPS_proxy_parsed;
         break;
 #endif
     case SCM_FTP:
-        pu = &FTP_proxy_parsed;
+        pu = &w3mApp::Instance().FTP_proxy_parsed;
         break;
 #ifdef USE_GOPHER
     case SCM_GOPHER:
@@ -1287,7 +1287,7 @@ url_unquote_conv(std::string_view url, CharacterEncodingScheme charset)
     auto old_auto_detect = WcOption.auto_detect;
     Str tmp = Strnew(url)->UrlDecode(FALSE, TRUE);
     if (!charset || charset == WC_CES_US_ASCII)
-        charset = SystemCharset;
+        charset = w3mApp::Instance().SystemCharset;
     WcOption.auto_detect = WC_OPT_DETECT_ON;
     tmp = convertLine(NULL, tmp, RAW_MODE, &charset, charset);
     WcOption.auto_detect = old_auto_detect;

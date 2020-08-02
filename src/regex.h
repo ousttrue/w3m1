@@ -1,13 +1,12 @@
 #pragma once
+#include "ccs.h"
 
 #define REGEX_MAX	64
 #define STORAGE_MAX	256
 
 typedef struct {
     char type;
-#ifdef USE_M17N
     wc_wchar_t wch;
-#endif
     unsigned char ch;
 } longchar;
 

@@ -18,6 +18,7 @@
 #include "html/anchor.h"
 #include "mime/mimetypes.h"
 #include "wtf.h"
+#include "w3m.h"
 #include <string_view>
 #include <signal.h>
 #include <math.h>
@@ -36,7 +37,7 @@
  */
 static void effect_anchor_start()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setfcolor(anchor_color);
     }
@@ -47,7 +48,7 @@ static void effect_anchor_start()
 }
 static void effect_anchor_end()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setfcolor(basic_color);
     }
@@ -59,7 +60,7 @@ static void effect_anchor_end()
 
 static void effect_image_start()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setfcolor(image_color);
     }
@@ -70,7 +71,7 @@ static void effect_image_start()
 }
 static void effect_image_end()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setfcolor(basic_color);
     }
@@ -82,7 +83,7 @@ static void effect_image_end()
 
 static void effect_from_start()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setfcolor(form_color);
     }
@@ -93,7 +94,7 @@ static void effect_from_start()
 }
 static void effect_form_end()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setfcolor(basic_color);
     }
@@ -105,7 +106,7 @@ static void effect_form_end()
 
 static void effect_mark_start()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setbcolor(mark_color);
     }
@@ -116,7 +117,7 @@ static void effect_mark_start()
 }
 static void effect_mark_end()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setbcolor(bg_color);
     }
@@ -129,7 +130,7 @@ static void effect_mark_end()
 /*****************/
 static void effect_active_start()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         if (useActiveColor)
         {
@@ -149,7 +150,7 @@ static void effect_active_start()
 static void
 effect_active_end()
 {
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         if (useActiveColor)
         {
@@ -171,7 +172,7 @@ effect_visited_start()
 {
     if (useVisitedColor)
     {
-        if (useColor)
+        if (w3mApp::Instance().useColor)
         {
             setfcolor(visited_color);
         }
@@ -186,7 +187,7 @@ static void effect_visited_end()
 {
     if (useVisitedColor)
     {
-        if (useColor)
+        if (w3mApp::Instance().useColor)
         {
             setfcolor(basic_color);
         }
@@ -205,10 +206,10 @@ void fmTerm(void)
         clrtoeolx();
         refresh();
 
-        if (activeImage)
+        if (w3mApp::Instance().activeImage)
             loadImage(NULL, IMG_FLAG_STOP);
 
-        if (use_mouse)
+        if (w3mApp::Instance().use_mouse)
             mouse_end();
 
         reset_tty();
@@ -227,7 +228,7 @@ void fmInit(void)
         term_raw();
         term_noecho();
 #ifdef USE_IMAGE
-        if (displayImage)
+        if (w3mApp::Instance().displayImage)
             initImage();
 #endif
     }
@@ -361,7 +362,7 @@ make_lastline_message(BufferPtr buf)
         }
     }
 
-    if (use_mouse && GetMouseActionLastlineStr())
+    if (w3mApp::Instance().use_mouse && GetMouseActionLastlineStr())
         msg = Strnew(GetMouseActionLastlineStr());
     else
         msg = Strnew();
@@ -507,7 +508,7 @@ redrawNLine(BufferPtr buf)
         clrtobotx();
     }
 
-    if (!(activeImage && displayImage && buf->img))
+    if (!(w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && buf->img))
         return;
 
     move(buf->cursorY + buf->rootY, buf->cursorX + buf->rootX);
@@ -544,7 +545,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
             return NULL;
     }
     move(i, 0);
-    if (showLineNum)
+    if (w3mApp::Instance().showLineNum)
     {
         char tmp[16];
         if (!buf->rootX)
@@ -575,7 +576,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
     pos = columnPos(l, column);
     p = &(l->lineBuf[pos]);
     pr = &(l->propBuf[pos]);
-    if (useColor && l->colorBuf)
+    if (w3mApp::Instance().useColor && l->colorBuf)
         pc = &(l->colorBuf[pos]);
     else
         pc = NULL;
@@ -591,7 +592,7 @@ redrawLine(BufferPtr buf, Line *l, int i)
             if (a)
             {
                 url.Parse2(a->url, buf->BaseURL());
-                if (getHashHist(URLHist, url.ToStr()->c_str()))
+                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
                         pr[k - pos] |= PE_VISITED;
@@ -733,10 +734,10 @@ redrawLineImage(BufferPtr buf, Line *l, int i)
                     image->height = cache->height;
                     buf->need_reshape = TRUE;
                 }
-                x = (int)((rcol - column + buf->rootX) * pixel_per_char);
-                y = (int)(i * pixel_per_line);
-                sx = (int)((rcol - l->COLPOS(a->start.pos)) * pixel_per_char);
-                sy = (int)((l->linenumber - image->y) * pixel_per_line);
+                x = (int)((rcol - column + buf->rootX) * w3mApp::Instance().pixel_per_char);
+                y = (int)(i * w3mApp::Instance().pixel_per_line);
+                sx = (int)((rcol - l->COLPOS(a->start.pos)) * w3mApp::Instance().pixel_per_char);
+                sy = (int)((l->linenumber - image->y) * w3mApp::Instance().pixel_per_line);
                 if (sx == 0 && x + image->xoffset >= 0)
                     x += image->xoffset;
                 else
@@ -748,15 +749,15 @@ redrawLineImage(BufferPtr buf, Line *l, int i)
                 if (image->width > 0)
                     w = image->width - sx;
                 else
-                    w = (int)(8 * pixel_per_char - sx);
+                    w = (int)(8 * w3mApp::Instance().pixel_per_char - sx);
                 if (image->height > 0)
                     h = image->height - sy;
                 else
-                    h = (int)(pixel_per_line - sy);
-                if (w > (int)((buf->rootX + buf->COLS) * pixel_per_char - x))
-                    w = (int)((buf->rootX + buf->COLS) * pixel_per_char - x);
-                if (h > (int)((LINES - 1) * pixel_per_line - y))
-                    h = (int)((LINES - 1) * pixel_per_line - y);
+                    h = (int)(w3mApp::Instance().pixel_per_line - sy);
+                if (w > (int)((buf->rootX + buf->COLS) * w3mApp::Instance().pixel_per_char - x))
+                    w = (int)((buf->rootX + buf->COLS) * w3mApp::Instance().pixel_per_char - x);
+                if (h > (int)((LINES - 1) * w3mApp::Instance().pixel_per_line - y))
+                    h = (int)((LINES - 1) * w3mApp::Instance().pixel_per_line - y);
                 addImage(cache, x, y, sx, sy, w, h);
                 image->touch = image_touch;
                 draw_image_flag = TRUE;
@@ -786,7 +787,7 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
     p = &(l->lineBuf[pos]);
     pr = &(l->propBuf[pos]);
 #ifdef USE_ANSI_COLOR
-    if (useColor && l->colorBuf)
+    if (w3mApp::Instance().useColor && l->colorBuf)
         pc = &(l->colorBuf[pos]);
     else
         pc = NULL;
@@ -804,7 +805,7 @@ redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
             if (a)
             {
                 url.Parse2(a->url, buf->BaseURL());
-                if (getHashHist(URLHist, url.ToStr()->c_str()))
+                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
                     for (k = a->start.pos; k < a->end.pos; k++)
                         pr[k - pos] |= PE_VISITED;
@@ -1025,7 +1026,7 @@ void addChar(char c, Lineprop mode)
         else
         {
 #ifdef USE_M17N
-            symbol = get_symbol(DisplayCharset, &w);
+            symbol = get_symbol(w3mApp::Instance().DisplayCharset, &w);
             addstr(symbol[(int)c]);
 #else
             symbol = get_symbol();
@@ -1139,13 +1140,13 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, in
     else
         message(s, (LINES - 1), 0);
     refresh();
-#ifdef USE_MOUSE
-    if (mouse && use_mouse)
+#ifdef w3mApp::Instance().use_mouse
+    if (mouse && w3mApp::Instance().use_mouse)
         mouse_active();
 #endif
     sleep_till_anykey(sec, purge);
-#ifdef USE_MOUSE
-    if (mouse && use_mouse)
+#ifdef w3mApp::Instance().use_mouse
+    if (mouse && w3mApp::Instance().use_mouse)
         mouse_inactive();
 #endif
     if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL && redraw_current)
@@ -1194,18 +1195,18 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     }
 
     if (buf->width == 0)
-        buf->width = INIT_BUFFER_WIDTH;
+        buf->width = INIT_BUFFER_WIDTH();
     if (buf->height == 0)
         buf->height = (LINES - 1) + 1;
-    if ((buf->width != INIT_BUFFER_WIDTH &&
-         (is_html_type(buf->type) || FoldLine)) ||
+    if ((buf->width != INIT_BUFFER_WIDTH() &&
+         (is_html_type(buf->type) || w3mApp::Instance().FoldLine)) ||
         buf->need_reshape)
     {
         buf->need_reshape = TRUE;
         buf->Reshape();
     }
 
-    if (showLineNum)
+    if (w3mApp::Instance().showLineNum)
     {
         if (buf->lastLine && buf->lastLine->real_linenumber > 0)
             buf->rootX = (int)(log(buf->lastLine->real_linenumber + 0.1) / log(10)) + 2;
@@ -1238,7 +1239,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     if (mode == B_FORCE_REDRAW || mode == B_SCROLL || mode == B_REDRAW_IMAGE ||
         cline != buf->topLine || ccolumn != buf->currentColumn)
     {
-        if (activeImage &&
+        if (w3mApp::Instance().activeImage &&
             (mode == B_REDRAW_IMAGE ||
              cline != buf->topLine || ccolumn != buf->currentColumn))
         {
@@ -1250,7 +1251,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
             draw_image_flag = FALSE;
         }
 
-        if (useColor)
+        if (w3mApp::Instance().useColor)
         {
             setfcolor(basic_color);
             setbcolor(bg_color);
@@ -1330,7 +1331,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     term_title(conv_to_system(buf->buffername.c_str()));
     refresh();
 #ifdef USE_IMAGE
-    if (activeImage && displayImage && buf->img)
+    if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && buf->img)
     {
         drawImage();
     }

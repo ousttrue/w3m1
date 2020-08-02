@@ -20,6 +20,8 @@
 #include "frontend/buffer.h"
 #include "file.h"
 #include "frontend/display.h"
+#include "frontend/terms.h"
+#include "html/parsetag.h"
 #include <time.h>
 #ifdef INET6
 #include <sys/socket.h>
@@ -722,7 +724,7 @@ cookie_list_panel(void)
     int i;
     char *tmp, tmp2[80];
 
-    if (!use_cookie || !First_cookie)
+    if (!w3mApp::Instance().use_cookie || !First_cookie)
         return NULL;
 
     src->Push("<ol>");
@@ -1037,8 +1039,8 @@ void readHeaderCookie(URL *pu, Str lineBuf2)
                                   ((domain && domain->ptr)
                                        ? domain->ptr
                                        : "<localdomain>"));
-                if (msg->Size() > COLS - 10)
-                    msg->Pop(msg->Size() - (COLS - 10));
+                if (msg->Size() > ::COLS - 10)
+                    msg->Pop(msg->Size() - (::COLS - 10));
                 msg->Push(" (y/n)");
                 ans = inputAnswer(msg->ptr);
             }

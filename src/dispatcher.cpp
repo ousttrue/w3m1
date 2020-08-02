@@ -222,12 +222,12 @@ void ExecuteCommand(char *data)
         ClearCurrentKeyData();
         CurrentCmdData = *p ? p : NULL;
 
-        if (use_mouse)
+        if (w3mApp::Instance().use_mouse)
         {
             mouse_inactive();
         }
         cmd(&w3mApp::Instance());
-        if (use_mouse)
+        if (w3mApp::Instance().use_mouse)
         {
             mouse_active();
         }
@@ -663,7 +663,7 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
     char *p, *s, *emsg;
     int lineno;
 #ifdef USE_M17N
-    CharacterEncodingScheme charset = SystemCharset;
+    CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
 #endif
     int verbose = 1;
 
@@ -684,7 +684,7 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
         if (line->Size() == 0)
             continue;
 #ifdef USE_M17N
-        line = wc_Str_conv(line, charset, InnerCharset);
+        line = wc_Str_conv(line, charset, w3mApp::Instance().InnerCharset);
 #endif
         p = line->ptr;
         s = getWord(&p);

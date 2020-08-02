@@ -3,6 +3,9 @@
 #define TERMS_H
 
 extern int LINES, COLS;
+int INIT_BUFFER_WIDTH();
+int INIT_BUFFER_WIDTH();
+int FOLD_BUFFER_WIDTH();
 
 #ifdef USE_MOUSE
 /* Addition:mouse event */
@@ -82,4 +85,4 @@ void touch_cursor();
 int initscr(void);
 void move(int line, int column);
 
-#endif				/* not TERMS_H */
+#endif /* not TERMS_H */

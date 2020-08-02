@@ -14,7 +14,7 @@
 #include "myctype.h"
 #include "symbol.h"
 #include "table.h"
-
+#include "frontend/terms.h"
 #include "entity.h"
 #include "file.h"
 #include "tagstack.h"
@@ -80,16 +80,16 @@ static double
 weight(int x)
 {
 
-    if (x < COLS)
+    if (x < ::COLS)
 	return (double)x;
     else
-	return COLS * (log((double)x / COLS) + 1.);
+	return ::COLS * (log((double)x / ::COLS) + 1.);
 }
 
 static double
 weight2(int a)
 {
-    return (double)a / COLS * 4 + 1.;
+    return (double)a / ::COLS * 4 + 1.;
 }
 
 #define sigma_td(a)       (0.5*weight2(a))	/* <td width=...> */
@@ -502,7 +502,7 @@ int visible_length(char *str)
             do
             {
                 len++;
-            } while ((visible_length_offset + len) % Tabstop != 0);
+            } while ((visible_length_offset + len) % w3mApp::Instance().Tabstop != 0);
         }
         else if (*str == '\r' || *str == '\n')
         {
@@ -535,7 +535,7 @@ visible_length_plain(char *str)
 	if (*str == '\t') {
 	    do {
 		len++;
-	    } while ((visible_length_offset + len) % Tabstop != 0);
+	    } while ((visible_length_offset + len) % w3mApp::Instance().Tabstop != 0);
 	    str++;
 	}
 	else if (*str == '\r' || *str == '\n') {
@@ -1994,8 +1994,8 @@ begin_table(int border, int spacing, int padding, int vspace)
     struct table *t;
     int mincell = minimum_cellspacing(border);
     int rcellspacing;
-    int mincell_pixels = round(mincell * pixel_per_char);
-    int ppc = round(pixel_per_char);
+    int mincell_pixels = round(mincell * w3mApp::Instance().pixel_per_char);
+    int ppc = round(w3mApp::Instance().pixel_per_char);
 
     t = newTable();
     t->row = t->col = -1;
@@ -2661,9 +2661,9 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 #ifdef TABLE_EXPAND
 	    if (v > 0) {
 		if (tbl->real_width > 0)
-		    v = -(v * 100) / (tbl->real_width * pixel_per_char);
+		    v = -(v * 100) / (tbl->real_width * w3mApp::Instance().pixel_per_char);
 		else
-		    v = (int)(v / pixel_per_char);
+		    v = (int)(v / w3mApp::Instance().pixel_per_char);
 	    }
 #else
 	    v = RELATIVE_WIDTH(v);

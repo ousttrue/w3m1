@@ -1092,6 +1092,8 @@ ul_type(struct parsed_tag *tag, int default_type)
     return default_type;
 }
 
+#define REAL_WIDTH(w, limit) (((w) >= 0) ? (int)((w) / w3mApp::Instance().pixel_per_char) : -(w) * (limit) / 100)
+
 static Str process_hr(struct parsed_tag *tag, int width, int indent_width)
 {
     Str tmp = Strnew("<nobr>");
@@ -2023,7 +2025,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
                 do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
                              h_env->limit);
                 if (!is_redisplay &&
-                    !((obuf->flag & RB_NOFRAMES) && RenderFrame))
+                    !((obuf->flag & RB_NOFRAMES) && w3mApp::Instance().RenderFrame))
                 {
                     tag->need_reconstruct = TRUE;
                     return 0;
@@ -2549,7 +2551,7 @@ table_start:
                     do
                     {
                         PUSH(' ');
-                    } while ((h_env->envs[h_env->envc].indent + obuf->pos) % Tabstop != 0);
+                    } while ((h_env->envs[h_env->envc].indent + obuf->pos) % w3mApp::Instance().Tabstop != 0);
                     str++;
                 }
                 else if (obuf->flag & RB_PLAIN)

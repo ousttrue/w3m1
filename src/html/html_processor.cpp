@@ -15,7 +15,7 @@
 #include "public.h"
 #include "commands.h"
 #include "html/maparea.h"
-
+#include "w3m.h"
 #include "frontend/terms.h"
 #include <signal.h>
 #include <setjmp.h>
@@ -279,6 +279,8 @@ void feed_textarea(char *str)
             textarea_str[n_textarea]->Push(*(str++));
     }
 }
+
+#define w3m_halfdump (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
 
 ///
 /// process
@@ -759,7 +761,7 @@ Str process_img(struct parsed_tag *tag, int width)
 #ifdef USE_IMAGE
     int w, i, nw, ni = 1, n, w0 = -1, i0 = -1;
     int align, xoffset, yoffset, top, bottom, ismap = 0;
-    int use_image = activeImage && displayImage;
+    int use_image = w3mApp::Instance().activeImage && w3mApp::Instance().displayImage;
 #else
     int w, i, nw, n;
 #endif
@@ -781,7 +783,7 @@ Str process_img(struct parsed_tag *tag, int width)
         if (w < 0)
         {
             if (width > 0)
-                w = (int)(-width * pixel_per_char * w / 100 + 0.5);
+                w = (int)(-width * w3mApp::Instance().pixel_per_char * w / 100 + 0.5);
             else
                 w = -1;
         }
@@ -790,7 +792,7 @@ Str process_img(struct parsed_tag *tag, int width)
         {
             if (w > 0)
             {
-                w = (int)(w * image_scale / 100 + 0.5);
+                w = (int)(w * w3mApp::Instance().image_scale / 100 + 0.5);
                 if (w == 0)
                     w = 1;
                 else if (w > MAX_IMAGE_SIZE)
@@ -807,7 +809,7 @@ Str process_img(struct parsed_tag *tag, int width)
         {
             if (i > 0)
             {
-                i = (int)(i * image_scale / 100 + 0.5);
+                i = (int)(i * w3mApp::Instance().image_scale / 100 + 0.5);
                 if (i == 0)
                     i = 1;
                 else if (i > MAX_IMAGE_SIZE)
@@ -876,7 +878,7 @@ Str process_img(struct parsed_tag *tag, int width)
             Image image;
             URL u;
 
-            u.Parse2(wc_conv(p, InnerCharset, cur_document_charset)->ptr, GetCurBaseUrl());
+            u.Parse2(wc_conv(p, w3mApp::Instance().InnerCharset, cur_document_charset)->ptr, GetCurBaseUrl());
             image.url = u.ToStr()->ptr;
             if (!uncompressed_file_type(u.file.c_str(), &image.ext))
                 image.ext = filename_extension(u.file.c_str(), TRUE);
@@ -892,12 +894,12 @@ Str process_img(struct parsed_tag *tag, int width)
                 i = i0 = image.cache->height;
             }
             if (w < 0)
-                w = 8 * pixel_per_char;
+                w = 8 * w3mApp::Instance().pixel_per_char;
             if (i < 0)
-                i = pixel_per_line;
+                i = w3mApp::Instance().pixel_per_line;
         }
-        nw = (w > 3) ? (int)((w - 3) / pixel_per_char + 1) : 1;
-        ni = (i > 3) ? (int)((i - 3) / pixel_per_line + 1) : 1;
+        nw = (w > 3) ? (int)((w - 3) / w3mApp::Instance().pixel_per_char + 1) : 1;
+        ni = (i > 3) ? (int)((i - 3) / w3mApp::Instance().pixel_per_line + 1) : 1;
         tmp->Push(
             Sprintf("<pre_int><img_alt hseq=\"%d\" src=\"", cur_iseq++));
         pre_int = TRUE;
@@ -906,8 +908,8 @@ Str process_img(struct parsed_tag *tag, int width)
 #endif
     {
         if (w < 0)
-            w = 12 * pixel_per_char;
-        nw = w ? (int)((w - 1) / pixel_per_char + 1) : 1;
+            w = 12 * w3mApp::Instance().pixel_per_char;
+        nw = w ? (int)((w - 1) / w3mApp::Instance().pixel_per_char + 1) : 1;
         if (r)
         {
             tmp->Push("<pre_int>");
@@ -941,29 +943,29 @@ Str process_img(struct parsed_tag *tag, int width)
             top = ni / 2;
             bottom = top;
             if (top * 2 == ni)
-                yoffset = (int)(((ni + 1) * pixel_per_line - i) / 2);
+                yoffset = (int)(((ni + 1) * w3mApp::Instance().pixel_per_line - i) / 2);
             else
-                yoffset = (int)((ni * pixel_per_line - i) / 2);
+                yoffset = (int)((ni * w3mApp::Instance().pixel_per_line - i) / 2);
             break;
         case ALIGN_BOTTOM:
             top = ni - 1;
             bottom = 0;
-            yoffset = (int)(ni * pixel_per_line - i);
+            yoffset = (int)(ni * w3mApp::Instance().pixel_per_line - i);
             break;
         default:
             top = ni - 1;
             bottom = 0;
-            if (ni == 1 && ni * pixel_per_line > i)
+            if (ni == 1 && ni * w3mApp::Instance().pixel_per_line > i)
                 yoffset = 0;
             else
             {
-                yoffset = (int)(ni * pixel_per_line - i);
+                yoffset = (int)(ni * w3mApp::Instance().pixel_per_line - i);
                 if (yoffset <= -2)
                     yoffset++;
             }
             break;
         }
-        xoffset = (int)((nw * pixel_per_char - w) / 2);
+        xoffset = (int)((nw * w3mApp::Instance().pixel_per_char - w) / 2);
         if (xoffset)
             tmp->Push(Sprintf(" xoffset=%d", xoffset));
         if (yoffset)
@@ -1043,7 +1045,7 @@ Str process_img(struct parsed_tag *tag, int width)
                 tmp->Push("<pre_int>");
                 pre_int = TRUE;
             }
-            w = w / pixel_per_char / symbol_width;
+            w = w / w3mApp::Instance().pixel_per_char / symbol_width;
             if (w <= 0)
                 w = 1;
             push_symbol(tmp, HR_SYMBOL, symbol_width, w);
@@ -1403,7 +1405,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (renderFrameSet &&
                         parsedtag_get_value(tag, ATTR_FRAMENAME, &p))
                     {
-                        p = wc_conv_strict(p, InnerCharset, buf->document_charset)->ptr;
+                        p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
                         if (!idFrame || strcmp(idFrame->body->name, p))
                         {
                             idFrame = search_frame(renderFrameSet, p);
@@ -1418,17 +1420,17 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     id = NULL;
                     if (parsedtag_get_value(tag, ATTR_NAME, &id))
                     {
-                        id = wc_conv_strict(id, InnerCharset, buf->document_charset)->ptr;
+                        id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
                         buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
                     }
                     if (parsedtag_get_value(tag, ATTR_HREF, &p))
-                        p = wc_conv_strict(remove_space(p), InnerCharset,
+                        p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                            buf->document_charset)
                                 ->ptr;
                     if (parsedtag_get_value(tag, ATTR_TARGET, &q))
-                        q = wc_conv_strict(q, InnerCharset, buf->document_charset)->ptr;
+                        q = wc_conv_strict(q, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
                     if (parsedtag_get_value(tag, ATTR_REFERER, &r))
-                        r = wc_conv_strict(r, InnerCharset, buf->document_charset)->ptr;
+                        r = wc_conv_strict(r, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
                     parsedtag_get_value(tag, ATTR_TITLE, &s);
                     parsedtag_get_value(tag, ATTR_ACCESSKEY, &t);
                     parsedtag_get_value(tag, ATTR_HSEQ, &hseq);
@@ -1508,7 +1510,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 
                         s = NULL;
                         parsedtag_get_value(tag, ATTR_TITLE, &s);
-                        p = wc_conv_strict(remove_space(p), InnerCharset,
+                        p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                            buf->document_charset)
                                 ->ptr;
                         a_img = buf->img.Put(Anchor::CreateImage(
@@ -1693,7 +1695,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                     if (parsedtag_get_value(tag, ATTR_HREF, &p))
                     {
                         MapArea *a;
-                        p = wc_conv_strict(remove_space(p), InnerCharset,
+                        p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                            buf->document_charset)
                                 ->ptr;
                         t = NULL;
@@ -1747,14 +1749,14 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 case HTML_BASE:
                     if (parsedtag_get_value(tag, ATTR_HREF, &p))
                     {
-                        p = wc_conv_strict(remove_space(p), InnerCharset,
+                        p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                            buf->document_charset)
                                 ->ptr;
                         buf->baseURL.Parse(p, NULL);
                     }
                     if (parsedtag_get_value(tag, ATTR_TARGET, &p))
                         buf->baseTarget =
-                            wc_conv_strict(p, InnerCharset, buf->document_charset)->ptr;
+                            wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
                     break;
                 case HTML_META:
                     p = q = NULL;
@@ -1767,7 +1769,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 #ifdef USE_ALARM
                         if (tmp)
                         {
-                            p = wc_conv_strict(remove_space(tmp->ptr), InnerCharset,
+                            p = wc_conv_strict(remove_space(tmp->ptr), w3mApp::Instance().InnerCharset,
                                                buf->document_charset)
                                     ->ptr;
                             buf->event = setAlarmEvent(buf->event,
@@ -1871,13 +1873,13 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                 id = NULL;
                 if (parsedtag_get_value(tag, ATTR_ID, &id))
                 {
-                    id = wc_conv_strict(id, InnerCharset, buf->document_charset)->ptr;
+                    id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
                     buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
                 }
                 if (renderFrameSet &&
                     parsedtag_get_value(tag, ATTR_FRAMENAME, &p))
                 {
-                    p = wc_conv_strict(p, InnerCharset, buf->document_charset)->ptr;
+                    p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
                     if (!idFrame || strcmp(idFrame->body->name, p))
                     {
                         idFrame = search_frame(renderFrameSet, p);
@@ -1964,7 +1966,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     Str lineBuf2 = Strnew();
 #ifdef USE_M17N
     CharacterEncodingScheme charset = WC_CES_US_ASCII;
-    CharacterEncodingScheme doc_charset = DocumentCharset;
+    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
 #endif
     struct html_feed_environ htmlenv1;
     struct readbuffer obuf;
@@ -1981,7 +1983,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     else
     {
         symbol_width0 = 0;
-        get_symbol(DisplayCharset, &symbol_width0);
+        get_symbol(w3mApp::Instance().DisplayCharset, &symbol_width0);
         symbol_width = WcOption.use_wide ? symbol_width0 : 1;
     }
 #else
@@ -2008,7 +2010,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     cur_iseq = 1;
     if (newBuf->image_flag)
         image_flag = newBuf->image_flag;
-    else if (activeImage && displayImage && autoImage)
+    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && autoImage)
         image_flag = IMG_FLAG_AUTO;
     else
         image_flag = IMG_FLAG_SKIP;
@@ -2018,18 +2020,18 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     }
 #endif
 
-    if (w3m_halfload)
+    if (w3mApp::Instance().w3m_halfload)
     {
         newBuf->buffername = "---";
 #ifdef USE_M17N
-        newBuf->document_charset = InnerCharset;
+        newBuf->document_charset = w3mApp::Instance().InnerCharset;
 #endif
         max_textarea = 0;
 #ifdef MENU_SELECT
         max_select = 0;
 #endif
         HTMLlineproc3(newBuf, f->stream);
-        w3m_halfload = FALSE;
+        w3mApp::Instance().w3m_halfload = FALSE;
         return;
     }
 
@@ -2046,11 +2048,11 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         if (newBuf != NULL)
         {
             if (newBuf->bufferprop & BP_FRAME)
-                charset = InnerCharset;
+                charset = w3mApp::Instance().InnerCharset;
             else if (newBuf->document_charset)
                 charset = doc_charset = newBuf->document_charset;
         }
-        if (content_charset && UseContentCharset)
+        if (content_charset && w3mApp::Instance().UseContentCharset)
             doc_charset = content_charset;
         else if (f->guess_type && !strcasecmp(f->guess_type, "application/xhtml+xml"))
             doc_charset = WC_CES_UTF_8;
@@ -2081,9 +2083,9 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
             if (src)
                 lineBuf2->Puts(src);
             linelen += lineBuf2->Size();
-            if (w3m_dump & DUMP_EXTRA)
+            if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
                 printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
-            if (w3m_dump & DUMP_SOURCE)
+            if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
                 continue;
             showProgress(&linelen, &trbyte);
             /*
@@ -2092,7 +2094,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
          */
             if (meta_charset)
             { /* <META> */
-                if (content_charset == 0 && UseContentCharset)
+                if (content_charset == 0 && w3mApp::Instance().UseContentCharset)
                 {
                     doc_charset = meta_charset;
                     charset = WC_CES_US_ASCII;
@@ -2132,7 +2134,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
             print_internal_information(&htmlenv1);
             return;
         }
-        if (w3m_backend)
+        if (w3mApp::Instance().w3m_backend)
         {
             print_internal_information(&htmlenv1);
             backend_halfdump_buf = htmlenv1.buf;
@@ -2161,7 +2163,7 @@ loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
     Str tmp;
 
     if (newBuf == NULL)
-        newBuf = newBuffer(INIT_BUFFER_WIDTH);
+        newBuf = newBuffer(INIT_BUFFER_WIDTH());
     if (newBuf->sourcefile.empty() &&
         (f->scheme != SCM_LOCAL || newBuf->mailcap))
     {
@@ -2192,12 +2194,12 @@ loadHTMLString(Str page)
     MySignalHandler prevtrap = NULL;
     BufferPtr newBuf;
 
-    newBuf = newBuffer(INIT_BUFFER_WIDTH);
+    newBuf = newBuffer(INIT_BUFFER_WIDTH());
 
     auto success = TrapJmp([&]() {
         URLFile f(SCM_LOCAL, newStrStream(page));
 
-        newBuf->document_charset = InnerCharset;
+        newBuf->document_charset = w3mApp::Instance().InnerCharset;
         loadHTMLstream(&f, newBuf, NULL, TRUE);
         newBuf->document_charset = WC_CES_US_ASCII;
 

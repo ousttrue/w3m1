@@ -585,7 +585,7 @@ form_fputs_decode(Str s, FILE *f)
         }
     }
 #ifdef USE_M17N
-    z = wc_Str_conv_strict(z, InnerCharset, DisplayCharset);
+    z = wc_Str_conv_strict(z, w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset);
 #endif
     z->Puts(f);
 }
@@ -596,7 +596,7 @@ void input_textarea(FormItemList *fi)
     Str tmp;
     FILE *f;
 
-    CharacterEncodingScheme charset = DisplayCharset;
+    CharacterEncodingScheme charset = w3mApp::Instance().DisplayCharset;
     uint8_t auto_detect;
 
     f = fopen(tmpf, "w");
@@ -641,7 +641,7 @@ void input_textarea(FormItemList *fi)
             tmp->Pop(1);
             tmp->Push("\r\n");
         }
-        tmp = convertLine(NULL, tmp, RAW_MODE, &charset, DisplayCharset);
+        tmp = convertLine(NULL, tmp, RAW_MODE, &charset, w3mApp::Instance().DisplayCharset);
         fi->value->Push(tmp);
     }
 

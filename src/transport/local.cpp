@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include "transport/local.h"
+#include "transport/loader.h"
 #include "html/form.h"
 #include "frontend/terms.h"
 
@@ -138,7 +139,7 @@ void set_environ(std::string_view var, std::string_view value)
 static void
 set_cgi_environ(char *name, char *fn, char *req_uri)
 {
-    set_environ("SERVER_SOFTWARE", w3m_version);
+    set_environ("SERVER_SOFTWARE", w3mApp::w3m_version);
     set_environ("SERVER_PROTOCOL", "HTTP/1.0");
     set_environ("SERVER_NAME", "localhost");
     set_environ("SERVER_PORT", "80"); /* dummy */

@@ -32,4 +32,20 @@ extern unsigned char MYCTYPE_DIGITMAP[];
 #define	TOLOWER(x)	(IS_ALPHA(x) ? ((x)|0x20) : (x))
 #define	TOUPPER(x)	(IS_ALPHA(x) ? ((x)&~0x20) : (x))
 
+#define SKIP_BLANKS(p)                 \
+    {                                  \
+        while (*(p) && IS_SPACE(*(p))) \
+            (p)++;                     \
+    }
+#define SKIP_NON_BLANKS(p)              \
+    {                                   \
+        while (*(p) && !IS_SPACE(*(p))) \
+            (p)++;                      \
+    }
+#define IS_ENDL(c) ((c) == '\0' || (c) == '\r' || (c) == '\n')
+#define IS_ENDT(c) (IS_ENDL(c) || (c) == ';')
+
+#define EOL(l) (&(l)->ptr[(l)->length])
+#define IS_EOL(p, l) ((p) == &(l)->ptr[(l)->length])
+
 #endif

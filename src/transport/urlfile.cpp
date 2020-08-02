@@ -13,6 +13,7 @@
 #include "myctype.h"
 #include "transport/loader.h"
 #include "mime/mimetypes.h"
+#include "frontend/linein.h"
 #include <assert.h>
 
 /* add index_file if exists */
@@ -325,12 +326,12 @@ void URLFile::openURL(std::string_view url, URL *pu, const URL *current,
     SSL *sslh = NULL;
 
     auto u = url.data();
-    auto [pos, scheme]= getURLScheme(u);
+    auto [pos, scheme] = getURLScheme(u);
     // u = pos;
     if (current == NULL && scheme == SCM_MISSING && !ArgvIsURL)
         u = file_to_url(url.data()); /* force to local file */
     else
-        u = const_cast<char*>(url.data());
+        u = const_cast<char *>(url.data());
 retry:
     pu->Parse2(u, current);
     if (pu->scheme == SCM_LOCAL && pu->file.empty())
@@ -431,14 +432,14 @@ retry:
     case SCM_FTPDIR:
         if (pu->file.empty())
             pu->file = "/";
-        if (non_null(FTP_proxy) &&
-            !Do_not_use_proxy &&
+        if (w3mApp::Instance().FTP_proxy.size() &&
+            w3mApp::Instance().use_proxy &&
             pu->host.size() && !check_no_proxy(const_cast<char *>(pu->host.c_str())))
         {
             hr->flag |= HR_FLAG_PROXY;
-            sock = openSocket(FTP_proxy_parsed.host.c_str(),
-                              GetScheme(FTP_proxy_parsed.scheme)->name.data(),
-                              FTP_proxy_parsed.port);
+            sock = openSocket(w3mApp::Instance().FTP_proxy_parsed.host.c_str(),
+                              GetScheme(w3mApp::Instance().FTP_proxy_parsed.scheme)->name.data(),
+                              w3mApp::Instance().FTP_proxy_parsed.port);
             if (sock < 0)
                 return;
             this->scheme = SCM_HTTP;
@@ -462,12 +463,8 @@ retry:
             hr->command = HR_COMMAND_POST;
         if (request && request->method == FORM_METHOD_HEAD)
             hr->command = HR_COMMAND_HEAD;
-        if ((
-
-                (pu->scheme == SCM_HTTPS) ? non_null(HTTPS_proxy) :
-
-                                          non_null(HTTP_proxy)) &&
-            !Do_not_use_proxy &&
+        if (((pu->scheme == SCM_HTTPS) ? w3mApp::Instance().HTTPS_proxy.size() : w3mApp::Instance().HTTP_proxy.size()) &&
+            w3mApp::Instance().use_proxy &&
             pu->host.size() && !check_no_proxy(const_cast<char *>(pu->host.c_str())))
         {
             hr->flag |= HR_FLAG_PROXY;
@@ -486,14 +483,14 @@ retry:
             }
             else if (pu->scheme == SCM_HTTPS)
             {
-                sock = openSocket(HTTPS_proxy_parsed.host.c_str(),
-                                  GetScheme(HTTPS_proxy_parsed.scheme)->name.data(), HTTPS_proxy_parsed.port);
+                sock = openSocket(w3mApp::Instance().HTTPS_proxy_parsed.host.c_str(),
+                                  GetScheme(w3mApp::Instance().HTTPS_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTPS_proxy_parsed.port);
                 sslh = NULL;
             }
             else
             {
-                sock = openSocket(HTTP_proxy_parsed.host.c_str(),
-                                  GetScheme(HTTP_proxy_parsed.scheme)->name.data(), HTTP_proxy_parsed.port);
+                sock = openSocket(w3mApp::Instance().HTTP_proxy_parsed.host.c_str(),
+                                  GetScheme(w3mApp::Instance().HTTP_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTP_proxy_parsed.port);
                 sslh = NULL;
             }
 
@@ -554,9 +551,9 @@ retry:
                 SSL_write(sslh, tmp->ptr, tmp->Size());
             else
                 write(sock, tmp->ptr, tmp->Size());
-            if (w3m_reqlog)
+            if (w3mApp::Instance().w3m_reqlog.size())
             {
-                FILE *ff = fopen(w3m_reqlog, "a");
+                FILE *ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
                 if (sslh)
                     fputs("HTTPS: request via SSL\n", ff);
                 else
@@ -577,9 +574,9 @@ retry:
         else
         {
             write(sock, tmp->ptr, tmp->Size());
-            if (w3m_reqlog)
+            if (w3mApp::Instance().w3m_reqlog.size())
             {
-                FILE *ff = fopen(w3m_reqlog, "a");
+                FILE *ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
                 fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
                 fclose(ff);
             }
@@ -651,7 +648,7 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
         {
             /* FIXME: gettextize? */
             p = inputLineHist("(Download)Save file to: ",
-                              defstr, IN_FILENAME, SaveHist);
+                              defstr, IN_FILENAME, w3mApp::Instance().SaveHist);
             if (p == NULL || *p == '\0')
                 return -1;
             p = conv_to_system(p);
@@ -883,7 +880,7 @@ char *file_to_url(std::string_view file)
 #endif
         if (file[0] != '/')
     {
-        tmp = Strnew(CurrentDir);
+        tmp = Strnew(w3mApp::Instance().CurrentDir);
         if (tmp->Back() != '/')
             tmp->Push('/');
         tmp->Push(file);

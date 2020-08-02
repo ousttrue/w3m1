@@ -104,9 +104,9 @@ newFrame(struct parsed_tag *tag, BufferPtr buf)
     if (tag)
     {
         if (parsedtag_get_value(tag, ATTR_SRC, &p))
-            body->url = wc_conv_strict(remove_space(p), InnerCharset, buf->document_charset)->ptr;
+            body->url = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
         if (parsedtag_get_value(tag, ATTR_NAME, &p) && *p != '_')
-            body->name = wc_conv_strict(p, InnerCharset, buf->document_charset)->ptr;
+            body->name = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
     }
     return body;
 }
@@ -359,7 +359,7 @@ frame_download_source(struct frame_body *b, URL *currentURL,
         b->flags = 0;
     default:
         is_redisplay = TRUE;
-        w3m_dump |= DUMP_FRAME;
+        w3mApp::Instance().w3m_dump |= DUMP_FRAME;
         buf = loadGeneralFile(b->url,
                               baseURL ? baseURL : currentURL,
                               b->referer, flag | RG_FRAME_SRC, b->request);
@@ -368,7 +368,7 @@ frame_download_source(struct frame_body *b, URL *currentURL,
         if (buf)
             b->ssl_certificate = Strnew(buf->ssl_certificate)->ptr;
 
-        w3m_dump &= ~DUMP_FRAME;
+        w3mApp::Instance().w3m_dump &= ~DUMP_FRAME;
         is_redisplay = FALSE;
         break;
     }
@@ -548,7 +548,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     if (current->document_charset != WC_CES_US_ASCII)
                         doc_charset = current->document_charset;
                     else
-                        doc_charset = DocumentCharset;
+                        doc_charset = w3mApp::Instance().DocumentCharset;
 
                     t_stack = 0;
                     if (frame.body->type &&
@@ -683,7 +683,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 /* "BASE" is prohibit tag */
                                 if (parsedtag_get_value(tag, ATTR_HREF, &q))
                                 {
-                                    q = wc_conv_strict(remove_space(q), InnerCharset, charset)->ptr;
+                                    q = wc_conv_strict(remove_space(q), w3mApp::Instance().InnerCharset, charset)->ptr;
                                     base.Parse(q, NULL);
                                 }
                                 if (parsedtag_get_value(tag, ATTR_TARGET, &q))
@@ -693,7 +693,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     else if (!strcasecmp(q, "_parent"))
                                         d_target = p_target;
                                     else
-                                        d_target = wc_conv_strict(q, InnerCharset, charset)->ptr;
+                                        d_target = wc_conv_strict(q, w3mApp::Instance().InnerCharset, charset)->ptr;
                                 }
                                 tok->Delete(0, 1);
                                 tok->Pop(1);
@@ -717,7 +717,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     }
                                 }
 #ifdef USE_M17N
-                                if (UseContentCharset &&
+                                if (w3mApp::Instance().UseContentCharset &&
                                     parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "Content-Type") && parsedtag_get_value(tag, ATTR_CONTENT, &q) && (q = strcasestr(q, "charset")) != NULL)
                                 {
                                     q += 7;
@@ -817,7 +817,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     if (!tag->value[j])
                                         break;
                                     tag->value[j] =
-                                        wc_conv_strict(remove_space(tag->value[j]), InnerCharset, charset)->ptr;
+                                        wc_conv_strict(remove_space(tag->value[j]), w3mApp::Instance().InnerCharset, charset)->ptr;
                                     tag->need_reconstruct = TRUE;
                                     url.Parse2(tag->value[j], &base);
                                     if (url.scheme == SCM_UNKNOWN ||
@@ -944,7 +944,7 @@ renderFrame(BufferPtr Cbuf, int force_reload)
     BufferPtr buf;
     int flag;
     struct frameset *fset;
-    CharacterEncodingScheme doc_charset = DocumentCharset;
+    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
 
     tmp = tmpfname(TMPF_FRAME, ".html");
     f = fopen(tmp->ptr, "w");
@@ -962,10 +962,10 @@ renderFrame(BufferPtr Cbuf, int force_reload)
             flag |= RG_NOCACHE;
         renderFrameSet = Cbuf->frameset;
         flushFrameSet(renderFrameSet);
-        DocumentCharset = InnerCharset;
+        w3mApp::Instance().DocumentCharset = w3mApp::Instance().InnerCharset;
         buf = loadGeneralFile(tmp->ptr, NULL, NULL, flag, NULL);
     }
-    DocumentCharset = doc_charset;
+    w3mApp::Instance().DocumentCharset = doc_charset;
     renderFrameSet = NULL;
     if (buf == NULL)
         return NULL;

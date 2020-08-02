@@ -598,7 +598,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
     if (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT))
     {
         if (defaultbuf == NULL)
-            defaultbuf = newBuffer(INIT_BUFFER_WIDTH);
+            defaultbuf = newBuffer(INIT_BUFFER_WIDTH());
         if (defaultbuf->sourcefile.size())
             src = Strnew(defaultbuf->sourcefile)->ptr;
         else

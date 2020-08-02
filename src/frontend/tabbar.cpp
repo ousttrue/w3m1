@@ -5,6 +5,7 @@
 #include "display.h"
 #include "html/image.h"
 #include "w3m.h"
+#include "frontend/terms.h"
 
 using TabList = std::list<TabPtr>;
 TabList g_tabs;
@@ -103,7 +104,7 @@ void calcTabPos()
 
     if (g_tabs.size() <= 0)
         return;
-    int n1 = (COLS - lcol) / TabCols;
+    int n1 = (::COLS - lcol) / TabCols;
     int n2;
     int ny;
     if (n1 >= g_tabs.size())
@@ -115,7 +116,7 @@ void calcTabPos()
     {
         if (n1 < 0)
             n1 = 0;
-        n2 = COLS / TabCols;
+        n2 = ::COLS / TabCols;
         if (n2 == 0)
             n2 = 1;
         ny = (g_tabs.size() - n1 - 1) / n2 + 2;
@@ -133,12 +134,12 @@ void calcTabPos()
         if (iy == 0)
         {
             nx = n1;
-            col = COLS - lcol;
+            col = ::COLS - lcol;
         }
         else
         {
             nx = n2 - (na - g_tabs.size() + (iy - 1)) / (ny - 1);
-            col = COLS;
+            col = ::COLS;
         }
         int ix = 0;
         for (ix = 0; ix < nx && it != g_tabs.end(); ix++, ++it)

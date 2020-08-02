@@ -2,6 +2,8 @@
 #include "frontend/buffer.h"
 #include "urlfile.h"
 
+#define NO_REFERER ((char *)-1)
+
 long long GetCurrentContentLength();
 extern CharacterEncodingScheme content_charset;
 extern CharacterEncodingScheme meta_charset;

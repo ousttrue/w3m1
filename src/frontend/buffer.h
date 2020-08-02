@@ -206,6 +206,7 @@ public:
     void putHmarker(int line, int pos, int seq);
     void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);
     void SavePosition();
+    void DumpSource();
 };
 
 #define TOP_LINENUMBER(buf) ((buf)->topLine ? (buf)->topLine->linenumber : 1)
@@ -215,6 +216,10 @@ BufferPtr newBuffer(int width);
 
 void deleteImage(BufferPtr buf);
 void getAllImage(BufferPtr buf);
+
+#define IMG_FLAG_START 0
+#define IMG_FLAG_STOP 1
+#define IMG_FLAG_NEXT 2
 void loadImage(BufferPtr buf, int flag);
 
 BufferPtr nullBuffer(void);

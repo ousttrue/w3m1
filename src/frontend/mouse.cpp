@@ -20,6 +20,7 @@
 #include "frontend/tab.h"
 #include "frontend/tabbar.h"
 #include "frontend/buffer.h"
+#include "frontend/terms.h"
 
 struct MouseActionMap
 {
@@ -268,7 +269,7 @@ void initMouseAction(void)
     {
 
         int w = 0;
-        const char **symbol = get_symbol(DisplayCharset, &w);
+        const char **symbol = get_symbol(w3mApp::Instance().DisplayCharset, &w);
         mouse_action.lastline_str =
             Strnew(symbol[N_GRAPH_SYMBOL + 13])->ptr;
     }
@@ -317,7 +318,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         else
             map = &mouse_action.tab_map[(int)btn];
     }
-    else if (y == (LINES - 1))
+    else if (y == (::LINES - 1))
     {
         if (mouse_action.lastline_str && x >= 0 &&
             x < mouse_action.lastline_width)
@@ -379,7 +380,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
 static int mouse_scroll_line()
 {
     if (relative_wheel_scroll)
-        return (relative_wheel_scroll_ratio * (LINES - 1) + 99) / 100;
+        return (relative_wheel_scroll_ratio * (::LINES - 1) + 99) / 100;
     else
         return fixed_wheel_scroll_count;
 }

@@ -106,13 +106,11 @@ wc_guess_charset_short(const char *charset, CharacterEncodingScheme orig)
 }
 
 CharacterEncodingScheme
-wc_guess_locale_charset(char *locale, CharacterEncodingScheme orig)
+wc_guess_locale_charset(std::string_view locale, CharacterEncodingScheme orig)
 {
-    CharacterEncodingScheme guess;
-
-    if (locale == NULL || *locale == '\0')
-	return orig;
-    guess = wc_locale_to_ces(locale);
+    if (locale.empty())
+        return orig;
+    auto guess = wc_locale_to_ces(locale.data());
     return guess ? guess : orig;
 }
 
@@ -376,9 +374,9 @@ wc_charset_short_to_ces(const char *charset)
 }
 
 CharacterEncodingScheme
-wc_locale_to_ces(char *locale)
+wc_locale_to_ces(const char *locale)
 {
-    char *p = locale;
+    const char *p = locale;
     char buf[8];
     int n;
 

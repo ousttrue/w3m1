@@ -2,12 +2,13 @@
 #include "link.h"
 #include "indep.h"
 #include "fm.h"
+#include "w3m.h"
 
 Link Link::create(const parsed_tag &tag, CharacterEncodingScheme ces)
 {
     auto href = parsedtag_get_value(tag, ATTR_HREF);
     if (href.size())
-        href = wc_conv_strict(remove_space(href.data()), InnerCharset, ces)->ptr;
+        href = wc_conv_strict(remove_space(href.data()), w3mApp::Instance().InnerCharset, ces)->ptr;
 
     auto title = parsedtag_get_value(tag, ATTR_TITLE);
     auto ctype = parsedtag_get_value(tag, ATTR_TYPE);

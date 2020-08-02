@@ -202,7 +202,7 @@ listBuffer(const Tab *tab, BufferPtr top, BufferPtr current)
 
     move(0, 0);
 #ifdef USE_COLOR
-    if (useColor)
+    if (w3mApp::Instance().useColor)
     {
         setfcolor(basic_color);
 #ifdef USE_BG_COLOR

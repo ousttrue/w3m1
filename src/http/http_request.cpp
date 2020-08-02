@@ -2,8 +2,10 @@
 #include "http/http_request.h"
 #include "textlist.h"
 #include "transport/url.h"
+#include "transport/loader.h"
 #include "http/cookie.h"
 #include "html/form.h"
+#include "w3m.h"
 
 Str HRequest::Method() const
 {
@@ -55,7 +57,7 @@ otherinfo(const URL *target, const URL *current, const char *referer)
 
     s->Push("User-Agent: ");
     if (UserAgent == NULL || *UserAgent == '\0')
-        s->Push(w3m_version);
+        s->Push(w3mApp::w3m_version);
     else
         s->Push(UserAgent);
     s->Push("\r\n");
@@ -143,7 +145,7 @@ Str HRequest::ToStr(const URL &url, const URL *current, const TextList *extra) c
         }
 
     if (this->command != HR_COMMAND_CONNECT &&
-        use_cookie && (cookie = find_cookie(&url)))
+        w3mApp::Instance().use_cookie && (cookie = find_cookie(&url)))
     {
         tmp->Push("Cookie: ");
         tmp->Push(cookie);
@@ -166,15 +168,15 @@ Str HRequest::ToStr(const URL &url, const URL *current, const TextList *extra) c
         }
         else
         {
-            if (!override_content_type)
+            if (w3mApp::Instance().override_content_type)
             {
                 tmp->Push(
                     "Content-type: application/x-www-form-urlencoded\r\n");
             }
             tmp->Push(
                 Sprintf("Content-length: %ld\r\n", this->request->length));
-            if (header_string)
-                tmp->Push(header_string);
+            if (w3mApp::Instance().header_string.size())
+                tmp->Push(w3mApp::Instance().header_string);
             tmp->Push("\r\n");
             tmp->Push(this->request->body, this->request->length);
             tmp->Push("\r\n");
@@ -182,8 +184,8 @@ Str HRequest::ToStr(const URL &url, const URL *current, const TextList *extra) c
     }
     else
     {
-        if (header_string)
-            tmp->Push(header_string);
+        if (w3mApp::Instance().header_string.size())
+            tmp->Push(w3mApp::Instance().header_string);
         tmp->Push("\r\n");
     }
 #ifdef DEBUG

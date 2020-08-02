@@ -9,7 +9,7 @@ static int nextColumn(int n, char *p, Lineprop *pr)
     if (*pr & PC_CTRL)
     {
         if (*p == '\t')
-            return (n + Tabstop) / Tabstop * Tabstop;
+            return (n + w3mApp::Instance().Tabstop) / w3mApp::Instance().Tabstop * w3mApp::Instance().Tabstop;
         else if (*p == '\n')
             return n + 1;
         else if (*p != '\r')

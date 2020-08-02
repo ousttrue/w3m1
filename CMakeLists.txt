@@ -65,6 +65,8 @@ PRIVATE
     add_executable(w3m
     src/main.cpp
     src/w3m.cpp
+    src/cli.cpp
+    #
     src/dispatcher.cpp
     src/commands.cpp
     src/entity.cpp
@@ -120,7 +122,6 @@ PRIVATE
     src/hash.cpp
     src/symbol.cpp
     src/history.cpp
-    src/version.cpp
     libwc/big5.cpp
     libwc/ces_info.cpp
     libwc/char_conv.cpp

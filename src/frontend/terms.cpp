@@ -210,7 +210,7 @@ char *T_cd, *T_ce, *T_kr, *T_kl, *T_cr, *T_bt, *T_ta, *T_sc, *T_rc,
     *T_so, *T_se, *T_us, *T_ue, *T_cl, *T_cm, *T_al, *T_sr, *T_md, *T_me,
     *T_ti, *T_te, *T_nd, *T_as, *T_ae, *T_eA, *T_ac, *T_op;
 
-int LINES, COLS;
+// int LINES, COLS;
 
 static int max_LINES = 0, max_COLS = 0;
 static int tab_step = 8;
@@ -290,10 +290,10 @@ set_tty(void)
     }
     ttyf = fdopen(tty, "w");
     TerminalGet(tty, &d_ioval);
-    if (displayTitleTerm != NULL) {
+    if (w3mApp::Instance().displayTitleTerm.size()) {
 	struct w3m_term_info *p;
 	for (p = w3m_term_info_list; p->term != NULL; p++) {
-	    if (!strncmp(displayTitleTerm, p->term, strlen(p->term))) {
+	    if (!strncmp(w3mApp::Instance().displayTitleTerm.c_str(), p->term, strlen(p->term))) {
 		title_str = p->title_str;
 		break;
 	    }
@@ -393,7 +393,7 @@ reset_tty(void)
 {
     writestr(T_op);		/* turn off */
     writestr(T_me);
-    if (!Do_not_use_ti_te) {
+    if (!w3mApp::Instance().Do_not_use_ti_te) {
 	if (T_te && *T_te)
 	    writestr(T_te);
 	else
@@ -413,7 +413,8 @@ reset_exit_with_value(SIGNAL_ARG, int rval)
 	mouse_end();
 #endif				/* USE_MOUSE */
     reset_tty();
-    w3m_exit(rval);
+    // w3m_exit(rval);
+    exit(rval);
     SIGNAL_RETURN;
 }
 
@@ -628,7 +629,7 @@ initscr(void)
 	return -1;
     set_int();
     getTCstr();
-    if (T_ti && !Do_not_use_ti_te)
+    if (T_ti && !w3mApp::Instance().Do_not_use_ti_te)
 	writestr(T_ti);
     setupscreen();
     return 0;
@@ -965,7 +966,7 @@ graphend(void)
 int
 graph_ok(void)
 {
-    if (UseGraphicChar != GRAPHIC_CHAR_DEC)
+    if (w3mApp::Instance().UseGraphicChar != GRAPHIC_CHAR_DEC)
 	return 0;
     return T_as[0] != 0 && T_ae[0] != 0 && T_ac[0] != 0;
 }
@@ -1031,7 +1032,7 @@ refresh(void)
     short *dirty;
 
 
-    wc_putc_init(InnerCharset, DisplayCharset);
+    wc_putc_init(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset);
 
     for (line = 0; line <= (LINES-1); line++) {
 	dirty = &ScreenImage[line]->isdirty;
@@ -1981,3 +1982,15 @@ char *ttyname(int tty)
 
 #endif /* __MINGW32_VERSION */
 
+int _INIT_BUFFER_WIDTH()
+{
+    return COLS - (w3mApp::Instance().showLineNum ? 6 : 1);
+}
+int INIT_BUFFER_WIDTH()
+{
+    return (_INIT_BUFFER_WIDTH() > 0) ? _INIT_BUFFER_WIDTH() : 0;
+}
+int FOLD_BUFFER_WIDTH()
+{
+    return w3mApp::Instance().FoldLine ? (INIT_BUFFER_WIDTH() + 1) : -1;
+}
