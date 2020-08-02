@@ -1,4 +1,4 @@
-
+#include "w3m.h"
 #define MAINPROGRAM
 #include "fm.h"
 #include "charset.h"
@@ -443,8 +443,10 @@ prepare_sys_errlist()
 }
 #endif /* not HAVE_SYS_ERRLIST */
 
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
+    w3mApp::Instance().Main(argc, argv);
+
     BufferPtr newbuf = NULL;
     char *p;
     int i;

@@ -2,16 +2,21 @@
 
 class w3mApp
 {
-public:
     w3mApp();
     ~w3mApp();
-    
+
+    w3mApp(const w3mApp &) = delete;
+    w3mApp &operator=(const w3mApp &) = delete;
+
+public:
     // 使いわないのが目標
     static w3mApp &Instance()
     {
         static w3mApp w3m;
         return w3m;
     }
+
+    int Main(int argc, char **argv);
 };
 
 // keymap などで起動される関数。
