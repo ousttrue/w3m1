@@ -358,24 +358,27 @@ void readsh()
         displayCurrentbuf(B_NORMAL);
         return;
     }
-    MySignalHandler prevtrap = mySignal(SIGINT, intTrap);
+
     crmode();
-    buf = getshell(cmd);
-    mySignal(SIGINT, prevtrap);
+
+    auto success = TrapJmp([&]() {
+        buf = getshell(cmd);
+        return true;
+    });
+
     term_raw();
-    if (buf == NULL)
+
+    if (!success)
     {
         /* FIXME: gettextize? */
         disp_message("Execution failed", TRUE);
         return;
     }
-    else
-    {
-        buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-        if (buf->type.empty())
-            buf->type = "text/plain";
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
-    }
+
+    buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
+    if (buf->type.empty())
+        buf->type = "text/plain";
+    GetCurrentTab()->PushBufferCurrentPrev(buf);
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Execute shell command */
@@ -1981,8 +1984,8 @@ void movMs()
              y < (LINES - 1))
     {
         GetCurrentTab()->GetCurrentBuffer()->CursorXY(
-                 x - GetCurrentTab()->GetCurrentBuffer()->rootX,
-                 y - GetCurrentTab()->GetCurrentBuffer()->rootY);
+            x - GetCurrentTab()->GetCurrentBuffer()->rootX,
+            y - GetCurrentTab()->GetCurrentBuffer()->rootY);
     }
     displayCurrentbuf(B_NORMAL);
 }
@@ -2007,8 +2010,8 @@ void menuMs()
              y < (LINES - 1))
     {
         GetCurrentTab()->GetCurrentBuffer()->CursorXY(
-                 x - GetCurrentTab()->GetCurrentBuffer()->rootX,
-                 y - GetCurrentTab()->GetCurrentBuffer()->rootY);
+            x - GetCurrentTab()->GetCurrentBuffer()->rootX,
+            y - GetCurrentTab()->GetCurrentBuffer()->rootY);
         displayCurrentbuf(B_NORMAL);
     }
     mainMenu(x, y);

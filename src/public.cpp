@@ -38,7 +38,6 @@ int searchKeyNum(void)
     return n * (std::max(1, prec_num()));
 }
 
-
 static char *SearchString = NULL;
 int (*searchRoutine)(BufferPtr, char *);
 
@@ -89,19 +88,6 @@ void srch_nxtprv(int reverse)
     displayCurrentbuf(B_NORMAL);
     disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
                     SearchString);
-}
-
-#ifndef __MINGW32_VERSION
-JMP_BUF IntReturn;
-#else
-_JBTYPE IntReturn[_JBLEN];
-#endif /* __MINGW32_VERSION */
-
-void
-    intTrap(SIGNAL_ARG)
-{ /* Interrupt catcher */
-    LONGJMP(IntReturn, 0);
-    SIGNAL_RETURN;
 }
 
 static void
@@ -177,40 +163,37 @@ dump_head(BufferPtr buf)
 
 void do_dump(BufferPtr buf)
 {
-    auto prevtrap = mySignal(SIGINT, intTrap);
-    if (SETJMP(IntReturn) != 0)
-    {
-        mySignal(SIGINT, prevtrap);
-        return;
-    }
-    if (w3m_dump & DUMP_EXTRA)
-        dump_extra(buf);
-    if (w3m_dump & DUMP_HEAD)
-        dump_head(buf);
-    if (w3m_dump & DUMP_SOURCE)
-        dump_source(buf);
-    if (w3m_dump == DUMP_BUFFER)
-    {
-        int i;
-        saveBuffer(buf, stdout, FALSE);
-        if (displayLinkNumber && buf->href)
+    TrapJmp([buf]() {
+        if (w3m_dump & DUMP_EXTRA)
+            dump_extra(buf);
+        if (w3m_dump & DUMP_HEAD)
+            dump_head(buf);
+        if (w3m_dump & DUMP_SOURCE)
+            dump_source(buf);
+        if (w3m_dump == DUMP_BUFFER)
         {
-            printf("\nReferences:\n\n");
-            for (i = 0; i < buf->href.size(); i++)
+            int i;
+            saveBuffer(buf, stdout, FALSE);
+            if (displayLinkNumber && buf->href)
             {
-                URL pu;
-                static Str s = NULL;
-                if (buf->href.anchors[i].slave)
-                    continue;
-                pu.Parse2(buf->href.anchors[i].url, buf->BaseURL());
-                s = pu.ToStr();
-                if (DecodeURL)
-                    s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
-                printf("[%d] %s\n", buf->href.anchors[i].hseq + 1, s->ptr);
+                printf("\nReferences:\n\n");
+                for (i = 0; i < buf->href.size(); i++)
+                {
+                    URL pu;
+                    static Str s = NULL;
+                    if (buf->href.anchors[i].slave)
+                        continue;
+                    pu.Parse2(buf->href.anchors[i].url, buf->BaseURL());
+                    s = pu.ToStr();
+                    if (DecodeURL)
+                        s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
+                    printf("[%d] %s\n", buf->href.anchors[i].hseq + 1, s->ptr);
+                }
             }
         }
-    }
-    mySignal(SIGINT, prevtrap);
+
+        return true;
+    });
 }
 
 /* search by regular expression */
@@ -224,19 +207,21 @@ int srchcore(char *str, int (*func)(BufferPtr, char *))
         return SR_NOTFOUND;
 
     str = conv_search_string(SearchString, DisplayCharset);
-    MySignalHandler prevtrap = mySignal(SIGINT, intTrap);
     crmode();
-    if (SETJMP(IntReturn) == 0)
-    {
-        int prec = prec_num() ? prec_num() : 1;
-        for (i = 0; i < prec; i++)
+
+    TrapJmp([&]() {
         {
-            result = func(GetCurrentTab()->GetCurrentBuffer(), str);
-            if (i < prec - 1 && result & SR_FOUND)
-                clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
+            int prec = prec_num() ? prec_num() : 1;
+            for (i = 0; i < prec; i++)
+            {
+                result = func(GetCurrentTab()->GetCurrentBuffer(), str);
+                if (i < prec - 1 && result & SR_FOUND)
+                    clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
+            }
         }
-    }
-    mySignal(SIGINT, prevtrap);
+        return true;
+    });
+
     term_raw();
     return result;
 }
