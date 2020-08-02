@@ -3,9 +3,21 @@ cmake_minimum_required(VERSION 3.0.0)
 set(CMAKE_CXX_STANDARD 20)
 set(W3M_PREFIX $ENV{HOME}/local)
    
+add_library(wc
+    src/Str.cpp
+    )
+target_include_directories(wc
+PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/libwc
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    )   
+target_link_libraries(wc
+PUBLIC
+    gc
+    )
+
 add_executable(w3mbookmark
     src/w3mbookmark.cpp
-    src/Str.cpp
     src/indep.cpp
     src/regex.cpp
     src/textlist.cpp
@@ -39,11 +51,6 @@ add_executable(w3mbookmark
     libwc/viet.cpp
     libwc/wtf.cpp
     )
-target_include_directories(w3mbookmark
-PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/libwc
-    ${CMAKE_CURRENT_LIST_DIR}/src
-    )   
 target_compile_definitions(w3mbookmark
 PUBLIC
     DUMMY
@@ -59,7 +66,7 @@ PUBLIC
     )
 target_link_libraries(w3mbookmark
 PRIVATE
-    gc
+    wc
     )
         
     add_executable(w3m
@@ -148,11 +155,6 @@ PRIVATE
     libwc/viet.cpp
     libwc/wtf.cpp
 )
-target_include_directories(w3m
-PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/libwc
-    ${CMAKE_CURRENT_LIST_DIR}/src
-    )
 target_compile_definitions(w3m
 PUBLIC
     HAVE_CONFIG_H
@@ -173,7 +175,7 @@ PRIVATE
     )
 target_link_libraries(w3m
 PRIVATE
-    gc
+    wc
     m
     ncurses
     ssl
