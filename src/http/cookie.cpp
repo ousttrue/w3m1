@@ -916,7 +916,7 @@ void readHeaderCookie(URL *pu, Str lineBuf2)
     fprintf(stderr, "Set-Cookie: [%s]\n", p);
 #endif /* DEBUG */
 
-    SKIP_BLANKS(p);
+    SKIP_BLANKS(&p);
 
     auto name = Strnew();
     while (*p != '=' && !IS_ENDT(*p))
@@ -927,7 +927,7 @@ void readHeaderCookie(URL *pu, Str lineBuf2)
     if (*p == '=')
     {
         p++;
-        SKIP_BLANKS(p);
+        SKIP_BLANKS(&p);
         int quoted = 0;
         char *q = nullptr;
         while (!IS_ENDL(*p) && (quoted || *p != ';'))
@@ -952,7 +952,7 @@ void readHeaderCookie(URL *pu, Str lineBuf2)
     while (*p == ';')
     {
         p++;
-        SKIP_BLANKS(p);
+        SKIP_BLANKS(&p);
         Str tmp2;
         if (matchattr(p, "expires", 7, &tmp2))
         {

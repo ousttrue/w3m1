@@ -41,7 +41,7 @@ parseFrameSetLength(char *s, char ***ret)
 
     for (i = 0, p = s;; ++p)
     {
-        SKIP_BLANKS(p);
+        SKIP_BLANKS(&p);
         len = strtol(p, &q, 10);
 
         switch (*q)
@@ -716,17 +716,16 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                         }
                                     }
                                 }
-#ifdef USE_M17N
                                 if (w3mApp::Instance().UseContentCharset &&
                                     parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "Content-Type") && parsedtag_get_value(tag, ATTR_CONTENT, &q) && (q = strcasestr(q, "charset")) != NULL)
                                 {
                                     q += 7;
-                                    SKIP_BLANKS(q);
+                                    SKIP_BLANKS(&q);
                                     if (*q == '=')
                                     {
                                         CharacterEncodingScheme c;
                                         q++;
-                                        SKIP_BLANKS(q);
+                                        SKIP_BLANKS(&q);
                                         if ((c = wc_guess_charset(q, WC_CES_NONE)) != 0)
                                         {
                                             doc_charset = c;
@@ -734,7 +733,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                         }
                                     }
                                 }
-#endif
+
                                 /* fall thru, "META" is prohibit tag */
                             case HTML_HEAD:
                             case HTML_N_HEAD:

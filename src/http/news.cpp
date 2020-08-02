@@ -128,11 +128,11 @@ name_from_address(char *str, int n)
     int l, space = TRUE;
 
     s = allocStr(str, -1);
-    SKIP_BLANKS(s);
+    SKIP_BLANKS(&s);
     if (*s == '<' && (p = strchr(s, '>')))
     {
         *p++ = '\0';
-        SKIP_BLANKS(p);
+        SKIP_BLANKS(&p);
         if (*p == '\0') /* <address> */
             s++;
         else /* <address> name ? */

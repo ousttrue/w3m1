@@ -1201,11 +1201,11 @@ next_token(Str arg)
         return NULL;
     p = arg->ptr;
     q = p;
-    SKIP_NON_BLANKS(q);
+    SKIP_NON_BLANKS(&q);
     if (*q != '\0')
     {
         *q++ = '\0';
-        SKIP_BLANKS(q);
+        SKIP_BLANKS(&q);
         if (*q != '\0')
             narg = Strnew(q);
     }

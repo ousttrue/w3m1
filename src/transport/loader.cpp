@@ -164,11 +164,11 @@ checkContentType(BufferPtr buf)
     if ((p = strcasestr(p, "charset")) != NULL)
     {
         p += 7;
-        SKIP_BLANKS(p);
+        SKIP_BLANKS(&p);
         if (*p == '=')
         {
             p++;
-            SKIP_BLANKS(p);
+            SKIP_BLANKS(&p);
             if (*p == '"')
                 p++;
             content_charset = wc_guess_charset(p, WC_CES_NONE);
@@ -276,7 +276,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
                 if (!strncasecmp(tmp->ptr, "X-Image-URL:", 12))
                 {
                     tmpf = &tmp->ptr[12];
-                    SKIP_BLANKS(tmpf);
+                    SKIP_BLANKS(&tmpf);
                     src = Strnew_m_charp("<img src=\"", html_quote(tmpf),
                                          "\" alt=\"X-Image-URL\">", NULL);
                 }
@@ -382,10 +382,10 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
             Str funcname = Strnew();
 
             p = lineBuf2->ptr + 12;
-            SKIP_BLANKS(p);
+            SKIP_BLANKS(&p);
             while (*p && !IS_SPACE(*p))
                 funcname->Push(*(p++));
-            SKIP_BLANKS(p);
+            SKIP_BLANKS(&p);
             Command f = getFuncList(funcname->ptr);
             if (f)
             {

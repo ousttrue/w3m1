@@ -226,7 +226,7 @@ interpret_mouse_action(FILE *mf)
         b = atoi(s) - 1;
         if (!(b >= 0 && b <= 2))
             continue; /* error */
-        SKIP_BLANKS(p);
+        SKIP_BLANKS(&p);
         if (IS_DIGIT(*p))
             s = "menu";
         else

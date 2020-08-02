@@ -55,5 +55,8 @@
         "typeinfo": "cpp",
         "*.sym": "cpp",
         "any": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "myctype"
+    ]
 }

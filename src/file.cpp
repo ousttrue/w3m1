@@ -137,14 +137,14 @@ int matchattr(char *p, const char *attr, int len, Str *value)
     if (strncasecmp(p, attr, len) == 0)
     {
         p += len;
-        SKIP_BLANKS(p);
+        SKIP_BLANKS(&p);
         if (value)
         {
             *value = Strnew();
             if (*p == '=')
             {
                 p++;
-                SKIP_BLANKS(p);
+                SKIP_BLANKS(&p);
                 quoted = 0;
                 while (!IS_ENDL(*p) && (quoted || *p != ';'))
                 {

@@ -32,16 +32,53 @@ extern unsigned char MYCTYPE_DIGITMAP[];
 #define	TOLOWER(x)	(IS_ALPHA(x) ? ((x)|0x20) : (x))
 #define	TOUPPER(x)	(IS_ALPHA(x) ? ((x)&~0x20) : (x))
 
-#define SKIP_BLANKS(p)                 \
-    {                                  \
-        while (*(p) && IS_SPACE(*(p))) \
-            (p)++;                     \
+// #define SKIP_BLANKS(p)                 \
+//     {                                  \
+//         while (*(p) && IS_SPACE(*(p))) \
+//             (p)++;                     \
+//     }
+// #define SKIP_NON_BLANKS(p)              \
+//     {                                   \
+//         while (*(p) && !IS_SPACE(*(p))) \
+//             (p)++;                      \
+//     }
+
+#include <functional>
+inline void SKIP(const char **pp, const std::function<int(char)> &pred)
+{
+    auto p = *pp;
+    for (; *p; ++p)
+    {
+        if (!pred(*p))
+        {
+            *pp = p;
+            break;
+        }
     }
-#define SKIP_NON_BLANKS(p)              \
-    {                                   \
-        while (*(p) && !IS_SPACE(*(p))) \
-            (p)++;                      \
-    }
+}
+
+inline void SKIP_BLANKS(const char **pp)
+{
+    return SKIP(pp, [](auto c){ return IS_SPACE(c); });
+}
+template <typename T>
+inline void SKIP_BLANKS(T **pp)
+{
+    static_assert(sizeof(T) == 1, "require char variant");
+    return SKIP_BLANKS(const_cast<const char **>(reinterpret_cast<char **>(pp)));
+}
+
+inline void SKIP_NON_BLANKS(const char **pp)
+{
+    return SKIP(pp, [](auto c) { return !IS_SPACE(c); });
+}
+template <typename T>
+inline void SKIP_NON_BLANKS(T **pp)
+{
+    static_assert(sizeof(T) == 1, "require char variant");
+    return SKIP_NON_BLANKS(const_cast<const char **>(reinterpret_cast<char **>(pp)));
+}
+
 #define IS_ENDL(c) ((c) == '\0' || (c) == '\r' || (c) == '\n')
 #define IS_ENDT(c) (IS_ENDL(c) || (c) == ';')
 

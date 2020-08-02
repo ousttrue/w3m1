@@ -9,7 +9,9 @@ INTERFACE
     _external/catch2
     )
 
-add_subdirectory(charutil)
+add_subdirectory(
+    charutil
+    )
 
 add_library(wc
     src/Str.cpp
@@ -21,6 +23,7 @@ PUBLIC
     )   
 target_link_libraries(wc
 PUBLIC
+    # charutil
     gc
     )
 
@@ -77,7 +80,7 @@ PRIVATE
     wc
     )
         
-    add_executable(w3m
+add_executable(w3m
     src/main.cpp
     src/w3m.cpp
     src/cli.cpp
@@ -177,8 +180,8 @@ PUBLIC
     )
 target_compile_options(w3m
 PRIVATE
-    -Werror=implicit-function-declaration
-    -Werror=int-conversion
+    # -Werror=implicit-function-declaration
+    # -Werror=int-conversion
     -Werror=conversion-null
     )
 target_link_libraries(w3m

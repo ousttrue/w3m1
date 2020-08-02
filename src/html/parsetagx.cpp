@@ -126,7 +126,7 @@ parse_tag(char **s, int internal)
 	if (*q == '/')
 	{
 		*(p++) = *(q++);
-		SKIP_BLANKS(q);
+		SKIP_BLANKS(&q);
 	}
 	while (*q && !IS_SPACE(*q) && !(tagname[0] != '/' && *q == '/') &&
 		   *q != '>' && p - tagname < MAX_TAG_LEN - 1)
@@ -161,7 +161,7 @@ parse_tag(char **s, int internal)
 	}
 
 	/* Parse tag arguments */
-	SKIP_BLANKS(q);
+	SKIP_BLANKS(&q);
 	while (1)
 	{
 		Str value = NULL, value_tmp = NULL;
@@ -177,13 +177,13 @@ parse_tag(char **s, int internal)
 		*p = '\0';
 		while (*q && *q != '=' && !IS_SPACE(*q) && *q != '>')
 			q++;
-		SKIP_BLANKS(q);
+		SKIP_BLANKS(&q);
 		if (*q == '=')
 		{
 			/* get value */
 			value_tmp = Strnew();
 			q++;
-			SKIP_BLANKS(q);
+			SKIP_BLANKS(&q);
 			if (*q == '"')
 			{
 				q++;

@@ -439,7 +439,7 @@ std::string w3mApp::make_optional_header_string(const char *s)
     hs->Push(": ");
     if (*(++p))
     {                   /* not null header */
-        SKIP_BLANKS(p); /* skip white spaces */
+        SKIP_BLANKS(&p); /* skip white spaces */
         hs->Push(p);
     }
     hs->Push("\r\n");

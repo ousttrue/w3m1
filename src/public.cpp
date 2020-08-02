@@ -1569,7 +1569,7 @@ void goURL0(const char *prompt, int relative)
         }
         url = inputLineHist(prompt, url, IN_URL, hist);
         if (url != NULL)
-            SKIP_BLANKS(url);
+            SKIP_BLANKS(&url);
     }
 
     if (url != NULL)

@@ -344,7 +344,7 @@ static int gethtmlcmd(char **s)
     else
         return HTML_UNKNOWN;
     if (p[-1] == '/')
-        SKIP_BLANKS(*s);
+        SKIP_BLANKS(s);
     while ((IS_ALNUM(**s) || **s == '_') && p - cmdstr < MAX_CMD_LEN)
     {
         *(p++) = TOLOWER(**s);
@@ -1996,11 +1996,11 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
             (q = strcasestr(q, "charset")) != NULL)
         {
             q += 7;
-            SKIP_BLANKS(q);
+            SKIP_BLANKS(&q);
             if (*q == '=')
             {
                 q++;
-                SKIP_BLANKS(q);
+                SKIP_BLANKS(&q);
                 SetMetaCharset(wc_guess_charset(q, WC_CES_NONE));
             }
         }

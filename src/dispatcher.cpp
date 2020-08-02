@@ -205,7 +205,7 @@ void ExecuteCommand(char *data)
 {
     while (*data)
     {
-        SKIP_BLANKS(data);
+        SKIP_BLANKS(&data);
         if (*data == ';')
         {
             data++;
@@ -573,7 +573,7 @@ char *getWord(char **str)
     char *p, *s;
 
     p = *str;
-    SKIP_BLANKS(p);
+    SKIP_BLANKS(&p);
     for (s = p; *p && !IS_SPACE(*p) && *p != ';'; p++)
         ;
     *str = p;
@@ -587,7 +587,7 @@ char *getQWord(char **str)
     int in_q = 0, in_dq = 0, esc = 0;
 
     p = *str;
-    SKIP_BLANKS(p);
+    SKIP_BLANKS(&p);
     for (; *p; p++)
     {
         if (esc)

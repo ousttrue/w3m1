@@ -626,7 +626,7 @@ xface2xpm(char *xface)
     FILE *f;
     struct stat st;
 
-    SKIP_BLANKS(xface);
+    SKIP_BLANKS(&xface);
     image.url = xface;
     image.ext = ".xpm";
     image.width = 48;
