@@ -1285,7 +1285,7 @@ char *
 url_unquote_conv(std::string_view url, CharacterEncodingScheme charset)
 {
     auto old_auto_detect = WcOption.auto_detect;
-    Str tmp = Strnew(url)->UrlDecode(FALSE, TRUE);
+    Str tmp = UrlDecode(Strnew(url), FALSE, TRUE);
     if (!charset || charset == WC_CES_US_ASCII)
         charset = w3mApp::Instance().SystemCharset;
     WcOption.auto_detect = WC_OPT_DETECT_ON;

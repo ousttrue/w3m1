@@ -939,9 +939,9 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 int x = 0, y = 0;
                 getMapXY(GetCurrentTab()->GetCurrentBuffer(), retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer()), &x, &y);
                 (*query)->Push(
-                    conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())->UrlEncode());
+                    UrlEncode(conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())));
                 (*query)->Push(Sprintf(".x=%d&", x));
-                (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())->UrlEncode());
+                (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())));
                 (*query)->Push(Sprintf(".y=%d", y));
             }
             else
@@ -949,16 +949,16 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 /* not IMAGE */
                 if (f2->name && f2->name->Size() > 0)
                 {
-                    (*query)->Push(conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())->UrlEncode());
+                    (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())));
                     (*query)->Push('=');
                 }
                 if (f2->value != NULL)
                 {
                     if (fi->parent->method == FORM_METHOD_INTERNAL)
-                        (*query)->Push(f2->value->UrlEncode());
+                        (*query)->Push(UrlEncode(f2->value));
                     else
                     {
-                        (*query)->Push(conv_form_encoding(f2->value, fi, GetCurrentTab()->GetCurrentBuffer())->UrlEncode());
+                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value, fi, GetCurrentTab()->GetCurrentBuffer())));
                     }
                 }
             }
@@ -1793,7 +1793,7 @@ void execdict(char *word)
         displayCurrentbuf(B_NORMAL);
         return;
     }
-    dictcmd = Sprintf("%s?%s", DictCommand, Strnew(w)->UrlEncode()->ptr)->ptr;
+    dictcmd = Sprintf("%s?%s", DictCommand, UrlEncode(Strnew(w))->ptr)->ptr;
     buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, RG_NONE, NULL);
     if (buf == NULL)
     {

@@ -68,9 +68,11 @@ inline char *html_quote(Str str)
 
 extern char *file_quote(char *str);
 extern char *file_unquote(std::string_view str);
+GCStr *UrlEncode(GCStr *src);
+GCStr *UrlDecode(GCStr* src, bool is_form, bool safe);
 inline Str Str_form_unquote(Str x)
 {
-    return x->UrlDecode(TRUE, FALSE);
+    return UrlDecode(x, TRUE, FALSE);
 }
 extern char *shell_quote(std::string_view str);
 
@@ -82,5 +84,6 @@ extern char *w3m_help_dir();
 
 std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterEncodingScheme ces);
 char *html_unquote(const char *str, CharacterEncodingScheme ces);
+
 
 #endif /* INDEP_H */

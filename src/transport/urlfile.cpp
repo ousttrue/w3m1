@@ -611,7 +611,7 @@ retry:
             this->encoding = ENC_BASE64;
         }
         else
-            tmp = tmp->UrlDecode(FALSE, FALSE);
+            tmp = UrlDecode(tmp, FALSE, FALSE);
         this->stream = newStrStream(tmp);
         this->guess_type = (*p != '\0') ? p : (char *)"text/plain";
         return;

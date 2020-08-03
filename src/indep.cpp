@@ -871,3 +871,60 @@ html_unquote(const char *str, CharacterEncodingScheme ces)
 
     return tmp->ptr;
 }
+
+GCStr *UrlEncode(GCStr *src)
+{
+    GCStr *tmp = new GCStr();
+    auto end = src->ptr + src->Size();
+    for (auto p = src->ptr; p < end; p++)
+    {
+        if (*p == ' ')
+        {
+            // space
+            tmp->Push('+');
+        }
+        else if (is_url_unsafe(*p))
+        {
+            //
+            char buf[4];
+            sprintf(buf, "%%%02X", (unsigned char)*p);
+            tmp->Push(buf);
+        }
+        else
+        {
+            tmp->Push(*p);
+        }
+    }
+    return tmp;
+}
+
+GCStr *UrlDecode(GCStr *src, bool is_form, bool safe)
+{
+    Str tmp = Strnew();
+    char *p = src->ptr, *ep = src->ptr + src->Size(), *q;
+    int c;
+
+    for (; p < ep;)
+    {
+        if (is_form && *p == '+')
+        {
+            tmp->Push(' ');
+            p++;
+            continue;
+        }
+        else if (*p == '%')
+        {
+            q = p;
+            c = url_unquote_char(&q);
+            if (c >= 0 && (!safe || !IS_ASCII(c) || !is_file_quote(c)))
+            {
+                tmp->Push((char)c);
+                p = q;
+                continue;
+            }
+        }
+        tmp->Push(*p);
+        p++;
+    }
+    return tmp;
+}

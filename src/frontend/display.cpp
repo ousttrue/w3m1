@@ -279,12 +279,13 @@ make_lastline_link(BufferPtr buf, std::string_view title, char *url)
     if (title.size() && title[0])
     {
         s = Strnew_m_charp("[", title, "]");
-        s->Replace([](char &c) {
-            if (IS_CNTRL(c) || IS_SPACE(c))
+        for (auto c = s->ptr; *c; ++c)
+        {
+            if (IS_CNTRL(*c) || IS_SPACE(*c))
             {
-                c = ' ';
+                *c = ' ';
             }
-        });
+        }
         if (url)
             s->Push(" ");
         l -= get_Str_strwidth(s);
@@ -1167,8 +1168,6 @@ void set_delayed_message(const char *s)
 {
     delayed_msg = allocStr(s, -1);
 }
-
-
 
 void restorePosition(BufferPtr buf, BufferPtr orig)
 {

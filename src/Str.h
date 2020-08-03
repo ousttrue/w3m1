@@ -124,14 +124,12 @@ public:
     {
         Insert(pos, src.data(), src.size());
     }
-    void Replace(const std::function<void(char &)> &pred);
+
     void ToLower();
     void ToUpper();
     GCStr *AlignLeft(int width) const;
     GCStr *AlignRight(int width) const;
     GCStr *AlignCenter(int width) const;
-    GCStr *UrlEncode();
-    GCStr *UrlDecode(bool is_form, bool safe);
     int Puts(FILE *f) const;
 };
 using Str = GCStr *;

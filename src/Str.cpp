@@ -286,14 +286,6 @@ void GCStr::Insert(int pos, const char *p, int size)
     }
 }
 
-void GCStr::Replace(const std::function<void(char &)> &pred)
-{
-    for (auto p = ptr; *p; p++)
-    {
-        pred(*p);
-    }
-}
-
 void GCStr::ToLower()
 {
     for (int i = 0; i < m_size; i++)
@@ -353,77 +345,6 @@ GCStr *GCStr::AlignCenter(int width) const
     for (int i = w + m_size; i < width; i++)
         n->Push(' ');
     return n;
-}
-
-GCStr *GCStr::UrlEncode()
-{
-    GCStr *tmp = NULL;
-    auto end = ptr + Size();
-    for (auto p = ptr; p < end; p++)
-    {
-        if (*p == ' ')
-        {
-            // space
-            if (tmp == NULL)
-                tmp = new GCStr(ptr, (int)(p - ptr));
-            tmp->Push('+');
-        }
-        else if (is_url_unsafe(*p))
-        {
-            //
-            if (tmp == NULL)
-                tmp = new GCStr(ptr, (int)(p - ptr));
-            char buf[4];
-            sprintf(buf, "%%%02X", (unsigned char)*p);
-            tmp->Push(buf);
-        }
-        else
-        {
-            if (tmp)
-                tmp->Push(*p);
-        }
-    }
-    if (tmp)
-        return tmp;
-    return this;
-}
-
-GCStr *GCStr::UrlDecode(bool is_form, bool safe)
-{
-    Str tmp = NULL;
-    char *p = ptr, *ep = ptr + Size(), *q;
-    int c;
-
-    for (; p < ep;)
-    {
-        if (is_form && *p == '+')
-        {
-            if (tmp == NULL)
-                tmp = Strnew_charp_n(ptr, (int)(p - ptr));
-            tmp->Push(' ');
-            p++;
-            continue;
-        }
-        else if (*p == '%')
-        {
-            q = p;
-            c = url_unquote_char(&q);
-            if (c >= 0 && (!safe || !IS_ASCII(c) || !is_file_quote(c)))
-            {
-                if (tmp == NULL)
-                    tmp = Strnew_charp_n(ptr, (int)(p - ptr));
-                tmp->Push((char)c);
-                p = q;
-                continue;
-            }
-        }
-        if (tmp)
-            tmp->Push(*p);
-        p++;
-    }
-    if (tmp)
-        return tmp;
-    return this;
 }
 
 int GCStr::Puts(FILE *f) const

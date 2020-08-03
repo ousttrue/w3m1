@@ -439,8 +439,8 @@ void ldhelp(w3mApp *w3m)
     lang = AcceptLang;
     n = strcspn(lang, ";, \t");
     tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
-                  Strnew(w3mApp::Instance().w3m_version)->UrlEncode()->ptr,
-                  Strnew_charp_n(lang, n)->UrlEncode()->ptr);
+                  UrlEncode(Strnew(w3mApp::Instance().w3m_version))->ptr,
+                  UrlEncode(Strnew_charp_n(lang, n))->ptr);
     cmd_loadURL(tmp->ptr, NULL, NO_REFERER, NULL);
 #else
     cmd_loadURL(helpFile(HELP_FILE), NULL, NO_REFERER, NULL);
@@ -1245,14 +1245,13 @@ void ldBmark(w3mApp *w3m)
 void adBmark(w3mApp *w3m)
 {
     auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
-                       (localCookie()->UrlEncode())->ptr,
-                       (Strnew(w3mApp::Instance().BookmarkFile)->UrlEncode())->ptr,
-                       (GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->UrlEncode())->ptr,
+                       UrlEncode((localCookie()))->ptr,
+                       UrlEncode((Strnew(w3mApp::Instance().BookmarkFile)))->ptr,
+                       UrlEncode((GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()))->ptr,
 
-                       (wc_conv_strict(GetCurrentTab()->GetCurrentBuffer()->buffername.c_str(),
-                                       w3mApp::Instance().InnerCharset,
-                                       w3mApp::Instance().BookmarkCharset)
-                            ->UrlEncode())
+                       UrlEncode((wc_conv_strict(GetCurrentTab()->GetCurrentBuffer()->buffername.c_str(),
+                                                 w3mApp::Instance().InnerCharset,
+                                                 w3mApp::Instance().BookmarkCharset)))
                            ->ptr,
                        wc_ces_to_charset(w3mApp::Instance().BookmarkCharset));
     auto request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
