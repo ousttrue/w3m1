@@ -33,9 +33,7 @@ add_executable(w3mbookmark
     src/regex.cpp
     src/textlist.cpp
     src/html/parsetag.cpp
-    # src/myctype.cpp
     src/hash.cpp
-    src/entity.cpp
     libwc/big5.cpp
     libwc/ces_info.cpp
     libwc/char_conv.cpp
@@ -87,7 +85,6 @@ add_executable(w3m
     #
     src/dispatcher.cpp
     src/commands.cpp
-    src/entity.cpp
     src/public.cpp
     src/urimethod.cpp
     src/frontend/display.cpp
@@ -136,7 +133,6 @@ add_executable(w3m
     src/Str.cpp
     src/regex.cpp    
     src/textlist.cpp
-    # src/myctype.cpp
     src/hash.cpp
     src/symbol.cpp
     src/history.cpp

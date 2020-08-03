@@ -551,7 +551,7 @@ static void
 proc_escape(struct readbuffer *obuf, char **str_return)
 {
     char *str = *str_return, *estr;
-    int ech = getescapechar(str_return);
+    int ech = ucs4_from_entity(str_return);
     int width, n_add = *str_return - str;
     Lineprop mode = PC_ASCII;
 
@@ -2518,7 +2518,7 @@ table_start:
                 if (!(obuf->flag & RB_PLAIN) && (*str == '&'))
                 {
                     char *p = str;
-                    int ech = getescapechar(&p);
+                    int ech = ucs4_from_entity(&p);
                     if (ech == '\n' || ech == '\r')
                     {
                         ch = '\n';

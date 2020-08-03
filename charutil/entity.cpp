@@ -1,39 +1,56 @@
-#ifdef DUMMY
-#include "Str.h"
-#define NBSP " "
-#define UseAltEntity 1
-#undef USE_M17N
-#else /* DUMMY */
-#include "fm.h"
-#include "ctrlcode.h"
-#endif /* DUMMY */
 #include "entity.h"
-#include "ucs.h"
-#include "utf8.h"
-#include "conv.h"
 #include "myctype.h"
-#include "indep.h"
 #include <assert.h>
-
-/* *INDENT-OFF* */
-static const char *alt_latin1[96] = {
-    " ", "!", "-c-", "-L-", "CUR", "=Y=", "|", "S:",
-    "\"", "(C)", "-a", "<<", "NOT", "-", "(R)", "-",
-    "DEG", "+-", "^2", "^3", "'", "u", "P:", ".",
-    ",", "^1", "-o", ">>", "1/4", "1/2", "3/4", "?",
-    "A`", "A'", "A^", "A~", "A:", "AA", "AE", "C,",
-    "E`", "E'", "E^", "E:", "I`", "I'", "I^", "I:",
-    "D-", "N~", "O`", "O'", "O^", "O~", "O:", "x",
-    "O/", "U`", "U'", "U^", "U:", "Y'", "TH", "ss",
-    "a`", "a'", "a^", "a~", "a:", "aa", "ae", "c,",
-    "e`", "e'", "e^", "e:", "i`", "i'", "i^", "i:",
-    "d-", "n~", "o`", "o'", "o^", "o~", "o:", "-:",
-    "o/", "u`", "u'", "u^", "u:", "y'", "th", "y:"};
-/* *INDENT-ON* */
-
-
 #include <unordered_map>
 #include <string>
+
+///
+/// &#38; => 38
+/// &#x26; => 38
+///
+static std::pair<const char *, uint32_t> getescapechar_sharp(const char *p)
+{
+    if (*p == 'x' || *p == 'X')
+    {
+        // hex
+        p++;
+        if (!IS_XDIGIT(*p))
+        {
+            return {p, -1};
+        }
+        uint32_t dummy = 0;
+        for (; IS_XDIGIT(*p); p++)
+        {
+            dummy = dummy * 0x10 + GET_MYCDIGIT(*p);
+        }
+        if (*p == ';')
+        {
+            p++;
+        }
+        return {p, dummy};
+    }
+    else
+    {
+        // digit
+        if (!IS_DIGIT(*p))
+        {
+            return {p, -1};
+        }
+        uint32_t dummy = 0;
+        for (; IS_DIGIT(*p); p++)
+        {
+            dummy = dummy * 10 + GET_MYCDIGIT(*p);
+        }
+        if (*p == ';')
+        {
+            p++;
+        }
+        return {p, dummy};
+    }
+
+    assert(false);
+    return std::make_pair(p, -1);
+}
 
 static std::unordered_map<std::string_view, int> g_entityMap = {
     /* 0 */ {"otimes", 0x2297},
@@ -306,50 +323,6 @@ static int GetEntity(std::string_view src)
     return found->second;
 }
 
-static std::pair<const char *, int> getescapechar_sharp(const char *p)
-{
-    if (*p == 'x' || *p == 'X')
-    {
-        // hex
-        p++;
-        if (!IS_XDIGIT(*p))
-        {
-            return {p, -1};
-        }
-        uint32_t dummy = 0;
-        for (; IS_XDIGIT(*p); p++)
-        {
-            dummy = dummy * 0x10 + GET_MYCDIGIT(*p);
-        }
-        if (*p == ';')
-        {
-            p++;
-        }
-        return {p, dummy};
-    }
-    else
-    {
-        // digit
-        if (!IS_DIGIT(*p))
-        {
-            return {p, -1};
-        }
-        uint32_t dummy = 0;
-        for (; IS_DIGIT(*p); p++)
-        {
-            dummy = dummy * 10 + GET_MYCDIGIT(*p);
-        }
-        if (*p == ';')
-        {
-            p++;
-        }
-        return {p, dummy};
-    }
-
-    assert(false);
-    return std::make_pair(p, -1);
-}
-
 static std::string_view g_nonstrict_entities[] = {
     "lt",
     "gt",
@@ -374,11 +347,13 @@ static inline bool iequals(std::string_view l, std::string_view r)
     return true;
 }
 
+///
+/// amp; => 38
+///
 static std::pair<const char *, int> getescapechar_entity(const char *p)
 {
     auto q = p;
-    for (p++; IS_ALNUM(*p); p++)
-        ;
+    SKIP(&p, [](auto c) { return IS_ALNUM(c); });
     auto word = std::string_view(q, p - q);
 
     auto strict_entity = true;
@@ -402,10 +377,19 @@ static std::pair<const char *, int> getescapechar_entity(const char *p)
         }
     }
     if (*p == ';')
-        p++;
-    else if (strict_entity)
     {
-        return {p, -1};
+        p++;
+    }
+    else
+    {
+        if (strict_entity)
+        {
+            return {p, -1};
+        }
+        else
+        {
+            auto a = 0;
+        }
     }
 
     return {p, GetEntity(word)};
@@ -416,7 +400,7 @@ static std::pair<const char *, int> getescapechar_entity(const char *p)
 /// &#38; => 38: digit
 /// &#x26; => 38: hex
 ///
-uint32_t getescapechar(const char **str)
+uint32_t ucs4_from_entity(const char **str)
 {
     const char *p = *str;
 
@@ -427,9 +411,9 @@ uint32_t getescapechar(const char **str)
 
     if (*p == '#')
     {
-        auto [q, dummy] = getescapechar_sharp(p + 1);
+        auto [q, ucs4] = getescapechar_sharp(p + 1);
         *str = q;
-        return dummy;
+        return ucs4;
     }
 
     if (!IS_ALPHA(*p))
@@ -439,65 +423,15 @@ uint32_t getescapechar(const char **str)
         return -1;
     }
 
-    auto [r, dummy] = getescapechar_entity(p);
-    *str = r;   
-#ifndef NDEBUG
-    if (dummy != -1)
     {
-        auto a = 0;
-    }
-#endif
-    return dummy;
-}
-
-///
-/// &amp; => "&"
-///
-std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterEncodingScheme ces)
-{
-    auto save = s;
-    int ch = getescapechar(&s);
-    if (ch >= 0)
-    {
-        // ENTITY
-        return {s, std::string_view(from_unicode(ch, ces))};
-    }
-    else
-    {
-        // NOT ENTITY
-        return {s, std::string_view(save, s - save)};
-    }
-}
-
-///
-/// &#12345; => \xxx\xxx\xxx
-///
-char *
-html_unquote(const char *str, CharacterEncodingScheme ces)
-{
-#ifndef NDEBUG
-    std::string org = str;
-#endif
-
-    Str tmp = Strnew();
-    for (auto p = str; *p;)
-    {
-        if (*p == '&')
+        auto [r, ucs4] = getescapechar_entity(p);
+        *str = r;
+        if (ucs4 == -1)
         {
-            auto [pos, q] = getescapecmd(p, ces);
-            p = pos;
-            tmp->Push(q);
+            // no entity
+            return -1;
         }
-        else
-        {
-            tmp->Push(*p);
-            p++;
-        }
+
+        return ucs4;
     }
-
-#ifndef NDEBUG
-    assert(org == str);
-#endif
-
-    return tmp->ptr;
 }

@@ -10,6 +10,7 @@
 #include "Str.h"
 #include "myctype.h"
 #include "entity.h"
+#include "conv.h"
 
 unsigned char QUOTE_MAP[0x100] = {
     /* NUL SOH STX ETX EOT ENQ ACK BEL  BS  HT  LF  VT  FF  CR  SO  SI */
@@ -818,3 +819,55 @@ w3m_help_dir()
 /* c-basic-offset: 4   */
 /* tab-width: 8        */
 /* End:                */
+
+///
+/// &amp; => "&"
+///
+std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterEncodingScheme ces)
+{
+    auto save = s;
+    int ch = ucs4_from_entity(&s);
+    if (ch >= 0)
+    {
+        // ENTITY
+        return {s, std::string_view(from_unicode(ch, ces))};
+    }
+    else
+    {
+        // NOT ENTITY
+        return {s, std::string_view(save, s - save)};
+    }
+}
+
+///
+/// &#12345; => \xxx\xxx\xxx
+///
+char *
+html_unquote(const char *str, CharacterEncodingScheme ces)
+{
+#ifndef NDEBUG
+    std::string org = str;
+#endif
+
+    Str tmp = Strnew();
+    for (auto p = str; *p;)
+    {
+        if (*p == '&')
+        {
+            auto [pos, q] = getescapecmd(p, ces);
+            p = pos;
+            tmp->Push(q);
+        }
+        else
+        {
+            tmp->Push(*p);
+            p++;
+        }
+    }
+
+#ifndef NDEBUG
+    assert(org == str);
+#endif
+
+    return tmp->ptr;
+}

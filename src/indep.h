@@ -80,4 +80,7 @@ extern char *w3m_etc_dir();
 extern char *w3m_conf_dir();
 extern char *w3m_help_dir();
 
+std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterEncodingScheme ces);
+char *html_unquote(const char *str, CharacterEncodingScheme ces);
+
 #endif /* INDEP_H */

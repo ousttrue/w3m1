@@ -2274,7 +2274,7 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
 	}
 	else {
 	    if (*c == '&') {
-		ec = getescapechar(&line);
+		ec = ucs4_from_entity(&line);
 		if (ec >= 0) {
 		    c = (char*)from_unicode(ec, w3mApp::Instance().InnerCharset);
 		    ctype = get_mctype(*c);
@@ -3188,7 +3188,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 		else {
 		    int ec;
 		    q = p;
-		    switch (ec = getescapechar(&p)) {
+		    switch (ec = ucs4_from_entity(&p)) {
 		    case '<':
 			tmp->Push("&lt;");
 			break;

@@ -1,10 +1,42 @@
 #include <catch.hpp>
 #include "charutil.h"
+#include "entity.h"
 
-TEST_CASE("Factorials are computed", "[factorial]")
+TEST_CASE("ucs4_from_entity", "[entity]")
 {
-    REQUIRE(Factorial(1) == 1);
-    REQUIRE(Factorial(2) == 2);
-    REQUIRE(Factorial(3) == 6);
-    REQUIRE(Factorial(10) == 3628800);
+    {
+        auto src = "&amp;";
+        auto p = src;
+        auto entity = ucs4_from_entity(&p);
+        REQUIRE(entity == 38);
+        REQUIRE(p == src + 5);
+    }
+    {
+        auto src = "&amp ";
+        auto p = src;
+        auto entity = ucs4_from_entity(&p);
+        REQUIRE(entity == 38);
+        REQUIRE(p == src + 4);
+    }
+    {
+        auto src = "&#38;";
+        auto p = src;
+        auto entity = ucs4_from_entity(&p);
+        REQUIRE(entity == 38);
+        REQUIRE(p == src + 5);
+    }
+    {
+        auto src = "&#x26;";
+        auto p = src;
+        auto entity = ucs4_from_entity(&p);
+        REQUIRE(entity == 38);
+        REQUIRE(p == src + 6);
+    }
+    {
+        auto src = "&XXX;";
+        auto p = src;
+        auto entity = ucs4_from_entity(&p);
+        REQUIRE(entity == -1);
+        REQUIRE(p == src + 5);
+    }
 }
