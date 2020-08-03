@@ -563,7 +563,7 @@ proc_escape(struct readbuffer *obuf, char **str_return)
     }
     mode = IS_CNTRL(ech) ? PC_CTRL : PC_ASCII;
 
-    estr = (char *)conv_entity(ech, w3mApp::Instance().InnerCharset);
+    estr = (char *)from_unicode(ech, w3mApp::Instance().InnerCharset);
     check_breakpoint(obuf, obuf->flag & RB_SPECIAL, estr);
     width = get_strwidth(estr);
     if (width == 1 && ech == (unsigned char)*estr &&

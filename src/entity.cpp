@@ -31,41 +31,6 @@ static const char *alt_latin1[96] = {
     "o/", "u`", "u'", "u^", "u:", "y'", "th", "y:"};
 /* *INDENT-ON* */
 
-const char *
-conv_entity(unsigned int c, CharacterEncodingScheme ces)
-{
-    if (c < 0x20) /* C0 */
-
-        return " ";
-
-    char b = c & 0xff;
-    if (c < 0x7f) /* ASCII */
-        return Strnew_charp_n(&b, 1)->ptr;
-
-    if (c < 0xa0) /* DEL, C1 */
-        return " ";
-
-    if (c == 0xa0)
-        return NBSP;
-
-    if (c < 0x100)
-    {
-        /* Latin1 (ISO 8859-1) */
-        if (UseAltEntity)
-            return alt_latin1[c - 0xa0];
-        return wc_conv_n(&b, 1, WC_CES_ISO_8859_1, ces)->ptr;
-    }
-
-    if (c <= WC_C_UCS4_END)
-    {
-        /* Unicode */
-        uint8_t utf8[7];
-        wc_ucs_to_utf8(c, utf8);
-        return wc_conv((char *)utf8, WC_CES_UTF_8, ces)->ptr;
-    }
-
-    return "?";
-}
 
 #include <unordered_map>
 #include <string>
@@ -446,27 +411,36 @@ static std::pair<const char *, int> getescapechar_entity(const char *p)
     return {p, GetEntity(word)};
 }
 
-int getescapechar(const char **str)
+///
+/// &amp; => 38
+/// &#38; => 38: digit
+/// &#x26; => 38: hex
+///
+uint32_t getescapechar(const char **str)
 {
     const char *p = *str;
+
     if (*p == '&')
     {
         p++;
     }
+
     if (*p == '#')
     {
         auto [q, dummy] = getescapechar_sharp(p + 1);
         *str = q;
         return dummy;
     }
+
     if (!IS_ALPHA(*p))
     {
+        // invalid format
         *str = p;
         return -1;
     }
 
     auto [r, dummy] = getescapechar_entity(p);
-    *str = r;
+    *str = r;   
 #ifndef NDEBUG
     if (dummy != -1)
     {
@@ -476,6 +450,9 @@ int getescapechar(const char **str)
     return dummy;
 }
 
+///
+/// &amp; => "&"
+///
 std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterEncodingScheme ces)
 {
     auto save = s;
@@ -483,7 +460,7 @@ std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterE
     if (ch >= 0)
     {
         // ENTITY
-        return {s, std::string_view(conv_entity(ch, ces))};
+        return {s, std::string_view(from_unicode(ch, ces))};
     }
     else
     {

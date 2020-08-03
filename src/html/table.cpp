@@ -2276,7 +2276,7 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
 	    if (*c == '&') {
 		ec = getescapechar(&line);
 		if (ec >= 0) {
-		    c = (char*)conv_entity(ec, w3mApp::Instance().InnerCharset);
+		    c = (char*)from_unicode(ec, w3mApp::Instance().InnerCharset);
 		    ctype = get_mctype(*c);
 		    len = get_strwidth(c);
 		    wlen = line - save;
@@ -3202,7 +3202,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 			tmp->Push('\n');
 			break;
 		    default:
-			r = (char*)conv_entity(ec, w3mApp::Instance().InnerCharset);
+			r = (char*)from_unicode(ec, w3mApp::Instance().InnerCharset);
 			if (r != NULL && strlen(r) == 1 &&
 			    ec == (unsigned char)*r) {
 			    tmp->Push(*r);

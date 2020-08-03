@@ -3,10 +3,8 @@
 #include <string_view>
 #include "ces.h"
 
-const char *conv_entity(unsigned int ch, CharacterEncodingScheme ces);
-
-int getescapechar(const char **s);
-inline int getescapechar(char **s)
+uint32_t getescapechar(const char **s);
+inline uint32_t getescapechar(char **s)
 {
     return getescapechar(const_cast<const char **>(s));
 }

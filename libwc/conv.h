@@ -31,3 +31,5 @@ inline Str wc_conv_n_with_detect(const char *is, int n, CharacterEncodingScheme 
 {
     return wc_Str_conv_with_detect(Strnew_charp_n(is, n), f_ces, hint, t_ces);
 }
+
+const char *from_unicode(uint32_t codepoint, CharacterEncodingScheme ces);

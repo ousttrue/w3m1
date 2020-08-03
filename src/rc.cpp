@@ -655,7 +655,7 @@ auto sections = make_array(
                      {"use_dictcommand", P_INT, PI_ONOFF, UseDictCommand, CMT_USE_DICTCOMMAND},
                      {"dictcommand", P_STRING, PI_TEXT, DictCommand, CMT_DICTCOMMAND},
                      {"multicol", P_INT, PI_ONOFF, multicolList, CMT_MULTICOL},
-                     {"alt_entity", P_CHARINT, PI_ONOFF, UseAltEntity, CMT_ALT_ENTITY},
+                    //  {"alt_entity", P_CHARINT, PI_ONOFF, UseAltEntity, CMT_ALT_ENTITY},
                      {"graphic_char", P_CHARINT, PI_SEL_C, w3mApp::Instance().UseGraphicChar, CMT_GRAPHIC_CHAR, (void *)graphic_char_str},
                      {"fold_textarea", P_CHARINT, PI_ONOFF, FoldTextarea, CMT_FOLD_TEXTAREA},
                      {"display_ins_del", P_INT, PI_SEL_C, displayInsDel, CMT_DISP_INS_DEL, displayinsdel},

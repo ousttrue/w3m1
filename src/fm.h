@@ -385,7 +385,6 @@ global char SimplePreserveSpace init(FALSE);
 
 
 
-global char UseAltEntity init(TRUE);
 
 extern const char *graph_symbol[];
 extern const char *graph2_symbol[];
