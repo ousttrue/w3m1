@@ -3,6 +3,9 @@
 
 TEST_CASE("IS_ALNUM", "[myctype]")
 {
+    // drop high value
+    REQUIRE(IS_ALPHA('A' | 0xFF00));
+
     REQUIRE(IS_ALPHA('A'));
     REQUIRE_FALSE(IS_DIGIT('A'));
     REQUIRE(IS_ALNUM('A'));

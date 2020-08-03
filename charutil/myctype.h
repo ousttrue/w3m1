@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <functional>
 
-enum MyCTypeFlags : unsigned char
+enum MyCTypeFlags
 {
     MYCTYPE_CNTRL = 1,
     MYCTYPE_SPACE = 2,
@@ -20,9 +20,10 @@ enum MyCTypeFlags : unsigned char
 };
 
 extern unsigned char MYCTYPE_MAP[];
-inline MyCTypeFlags GET_MYCTYPE(int x)
+
+inline auto GET_MYCTYPE(int x)
 {
-    return (MyCTypeFlags)MYCTYPE_MAP[x];
+    return MYCTYPE_MAP[(int)(unsigned char)x];
 }
 inline bool IS_CNTRL(int x)
 {
@@ -65,7 +66,7 @@ inline bool IS_INTSPACE(int x)
 extern unsigned char MYCTYPE_DIGITMAP[];
 inline unsigned char GET_MYCDIGIT(int x)
 {
-    auto value = MYCTYPE_DIGITMAP[x];
+    auto value = MYCTYPE_DIGITMAP[(int)(unsigned char)x];
     assert(value != 255);
     return value;
 }

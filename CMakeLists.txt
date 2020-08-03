@@ -23,7 +23,7 @@ PUBLIC
     )   
 target_link_libraries(wc
 PUBLIC
-    # charutil
+    charutil
     gc
     )
 
@@ -33,7 +33,7 @@ add_executable(w3mbookmark
     src/regex.cpp
     src/textlist.cpp
     src/html/parsetag.cpp
-    src/myctype.cpp
+    # src/myctype.cpp
     src/hash.cpp
     src/entity.cpp
     libwc/big5.cpp
@@ -136,7 +136,7 @@ add_executable(w3m
     src/Str.cpp
     src/regex.cpp    
     src/textlist.cpp
-    src/myctype.cpp
+    # src/myctype.cpp
     src/hash.cpp
     src/symbol.cpp
     src/history.cpp
