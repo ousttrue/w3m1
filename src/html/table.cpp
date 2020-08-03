@@ -482,7 +482,7 @@ int visible_length(char *str)
         else if (status == R_ST_NORMAL && prev_status == R_ST_AMP)
         {
             PUSH_TAG(str, n);
-            auto [r2, view] = getescapecmd(tagbuf->ptr);
+            auto [r2, view] = getescapecmd(tagbuf->ptr, w3mApp::Instance().InnerCharset);
             if (r2[0] == '\0' && (view[0] == '\r' || view[0] == '\n'))
             {
                 if (len > max_len)
@@ -519,7 +519,7 @@ int visible_length(char *str)
     }
     if (status == R_ST_AMP)
     {
-        auto [r2, view] = getescapecmd(tagbuf->ptr);
+        auto [r2, view] = getescapecmd(tagbuf->ptr, w3mApp::Instance().InnerCharset);
         if (view[0] != '\r' && view[0] != '\n')
             len += get_strwidth(t) + get_strwidth(r2);
     }
@@ -2276,7 +2276,7 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
 	    if (*c == '&') {
 		ec = getescapechar(&line);
 		if (ec >= 0) {
-		    c = (char*)conv_entity(ec);
+		    c = (char*)conv_entity(ec, w3mApp::Instance().InnerCharset);
 		    ctype = get_mctype(*c);
 		    len = get_strwidth(c);
 		    wlen = line - save;
@@ -3202,7 +3202,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 			tmp->Push('\n');
 			break;
 		    default:
-			r = (char*)conv_entity(ec);
+			r = (char*)conv_entity(ec, w3mApp::Instance().InnerCharset);
 			if (r != NULL && strlen(r) == 1 &&
 			    ec == (unsigned char)*r) {
 			    tmp->Push(*r);

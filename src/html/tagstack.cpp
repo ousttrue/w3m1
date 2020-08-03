@@ -116,7 +116,7 @@ feed_title(const char *str)
     {
         if (*str == '&')
         {
-            auto [pos, cmd] = getescapecmd(str);
+            auto [pos, cmd] = getescapecmd(str, w3mApp::Instance().InnerCharset);
             str = pos;
             cur_title->Push(cmd);
         }
@@ -563,7 +563,7 @@ proc_escape(struct readbuffer *obuf, char **str_return)
     }
     mode = IS_CNTRL(ech) ? PC_CTRL : PC_ASCII;
 
-    estr = (char *)conv_entity(ech);
+    estr = (char *)conv_entity(ech, w3mApp::Instance().InnerCharset);
     check_breakpoint(obuf, obuf->flag & RB_SPECIAL, estr);
     width = get_strwidth(estr);
     if (width == 1 && ech == (unsigned char)*estr &&
@@ -1573,7 +1573,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         return 1;
     case HTML_TITLE_ALT:
         if (parsedtag_get_value(tag, ATTR_TITLE, &p))
-            h_env->title = html_unquote(p);
+            h_env->title = html_unquote(p, w3mApp::Instance().InnerCharset);
         return 0;
     case HTML_FRAMESET:
         PUSH_ENV(cmd);

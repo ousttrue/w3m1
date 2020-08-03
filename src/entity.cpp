@@ -1,9 +1,3 @@
-#include "entity.h"
-#include "myctype.h"
-#include "indep.h"
-#include "w3m.h"
-#include <assert.h>
-
 #ifdef DUMMY
 #include "Str.h"
 #define NBSP " "
@@ -11,12 +5,15 @@
 #undef USE_M17N
 #else /* DUMMY */
 #include "fm.h"
-
-#include "ucs.h"
-#include "utf8.h"
-
 #include "ctrlcode.h"
 #endif /* DUMMY */
+#include "entity.h"
+#include "ucs.h"
+#include "utf8.h"
+#include "conv.h"
+#include "myctype.h"
+#include "indep.h"
+#include <assert.h>
 
 /* *INDENT-OFF* */
 static const char *alt_latin1[96] = {
@@ -35,38 +32,38 @@ static const char *alt_latin1[96] = {
 /* *INDENT-ON* */
 
 const char *
-conv_entity(unsigned int c)
+conv_entity(unsigned int c, CharacterEncodingScheme ces)
 {
-    char b = c & 0xff;
-
     if (c < 0x20) /* C0 */
+
         return " ";
+
+    char b = c & 0xff;
     if (c < 0x7f) /* ASCII */
         return Strnew_charp_n(&b, 1)->ptr;
+
     if (c < 0xa0) /* DEL, C1 */
         return " ";
+
     if (c == 0xa0)
         return NBSP;
+
     if (c < 0x100)
-    { /* Latin1 (ISO 8859-1) */
+    {
+        /* Latin1 (ISO 8859-1) */
         if (UseAltEntity)
             return alt_latin1[c - 0xa0];
-#ifdef USE_M17N
-        return wc_conv_n(&b, 1, WC_CES_ISO_8859_1, w3mApp::Instance().InnerCharset)->ptr;
-#else
-        return Strnew_charp_n(&b, 1)->ptr;
-#endif
+        return wc_conv_n(&b, 1, WC_CES_ISO_8859_1, ces)->ptr;
     }
-#ifdef USE_M17N
-#ifdef USE_UNICODE
+
     if (c <= WC_C_UCS4_END)
-    { /* Unicode */
+    {
+        /* Unicode */
         uint8_t utf8[7];
         wc_ucs_to_utf8(c, utf8);
-        return wc_conv((char *)utf8, WC_CES_UTF_8, w3mApp::Instance().InnerCharset)->ptr;
+        return wc_conv((char *)utf8, WC_CES_UTF_8, ces)->ptr;
     }
-#endif
-#endif
+
     return "?";
 }
 
@@ -417,7 +414,7 @@ static std::pair<const char *, int> getescapechar_entity(const char *p)
     auto q = p;
     for (p++; IS_ALNUM(*p); p++)
         ;
-    auto word = std::string_view(q, p-q);
+    auto word = std::string_view(q, p - q);
 
     auto strict_entity = true;
     if (*p != '=')
@@ -479,29 +476,27 @@ int getescapechar(const char **str)
     return dummy;
 }
 
-std::pair<const char *, std::string_view> getescapecmd(const char *s)
+std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterEncodingScheme ces)
 {
     auto save = s;
     int ch = getescapechar(&s);
     if (ch >= 0)
     {
-        return {s, std::string_view(conv_entity(ch))};
+        // ENTITY
+        return {s, std::string_view(conv_entity(ch, ces))};
     }
-
-    // Str tmp;
-    // if (*save != '&')
-    //     tmp = Strnew("&");
-    // else
-    //     tmp = Strnew();
-    // tmp->Push(save, *s - save);
-    return {s, std::string_view(save, s-save)};
+    else
+    {
+        // NOT ENTITY
+        return {s, std::string_view(save, s - save)};
+    }
 }
 
 ///
 /// &#12345; => \xxx\xxx\xxx
 ///
 char *
-html_unquote(const char *str)
+html_unquote(const char *str, CharacterEncodingScheme ces)
 {
 #ifndef NDEBUG
     std::string org = str;
@@ -512,7 +507,7 @@ html_unquote(const char *str)
     {
         if (*p == '&')
         {
-            auto [pos, q] = getescapecmd(p);
+            auto [pos, q] = getescapecmd(p, ces);
             p = pos;
             tmp->Push(q);
         }

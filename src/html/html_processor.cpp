@@ -238,7 +238,7 @@ void feed_select(char *str)
                         prev_spaces = 0;
                     if (*p == '&')
                     {
-                        auto [pos, cmd] = getescapecmd(p);
+                        auto [pos, cmd] = getescapecmd(p, w3mApp::Instance().InnerCharset);
                         p = const_cast<char *>(pos);
                         cur_option->Push(cmd);
                     }
@@ -266,7 +266,7 @@ void feed_textarea(char *str)
     {
         if (*str == '&')
         {
-            auto [pos, cmd] = getescapecmd(str);
+            auto [pos, cmd] = getescapecmd(str, w3mApp::Instance().InnerCharset);
             str = const_cast<char *>(pos);
             textarea_str[n_textarea]->Push(cmd);
         }
@@ -1317,7 +1317,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                  * & escape processing
                  */
                 {
-                    auto [pos, view] = getescapecmd(str);
+                    auto [pos, view] = getescapecmd(str, w3mApp::Instance().InnerCharset);
                     str = const_cast<char *>(pos);
                     p = const_cast<char *>(view.data());
                 }
@@ -1858,7 +1858,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
 #endif
                 case HTML_TITLE_ALT:
                     if (parsedtag_get_value(tag, ATTR_TITLE, &p))
-                        buf->buffername = html_unquote(p);
+                        buf->buffername = html_unquote(p, w3mApp::Instance().InnerCharset);
                     break;
                 case HTML_SYMBOL:
                     effect |= PC_SYMBOL;

@@ -426,7 +426,7 @@ int handleMailto(const char *url)
     /* invoke external mailer */
     if (MailtoOptions == MAILTO_OPTIONS_USE_MAILTO_URL)
     {
-        to = Strnew(html_unquote(const_cast<char *>(url)));
+        to = Strnew(html_unquote(const_cast<char *>(url), w3mApp::Instance().InnerCharset));
     }
     else
     {
