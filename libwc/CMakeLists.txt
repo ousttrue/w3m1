@@ -3,7 +3,6 @@ add_library(${TARGET_NAME}
     src/Str.cpp
     src/big5.cpp
     src/ces_info.cpp
-    src/char_conv.cpp
     src/charset.cpp
     src/combining.cpp
     src/conv.cpp
