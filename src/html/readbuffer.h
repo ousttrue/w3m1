@@ -36,7 +36,7 @@ enum ReadBufferFlags
     RB_DEL = 0x100000,
     RB_S = 0x200000,
 };
-#include "enum_bit_operator.h"
+
 
 ///
 /// 行の折り返し処理？

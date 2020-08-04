@@ -38,7 +38,7 @@ enum BufferProps : int16_t
     BP_REDIRECTED = 0x20,
     BP_CLOSE = 0x40,
 };
-#include "enum_bit_operator.h"
+
 
 struct BufferPos
 {

@@ -15,7 +15,7 @@ enum HttpRequestFlags
     HR_FLAG_LOCAL = 1,
     HR_FLAG_PROXY = 2,
 };
-#include "enum_bit_operator.h"
+
 
 struct URL;
 struct FormList;
