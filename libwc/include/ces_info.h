@@ -3,9 +3,9 @@
 #include "ces.h"
 #include "ccs.h"
 
-typedef Str (*ConvFromFunc)(Str, CharacterEncodingScheme);
-typedef void (*PushToFunc)(Str, wc_wchar_t, struct wc_status *);
-typedef Str (*CharConvFunc)(uint8_t, struct wc_status *);
+using ConvFromFunc = Str (*)(Str, CharacterEncodingScheme);
+using PushToFunc = void (*)(Str, wc_wchar_t, struct wc_status *);
+using CharConvFunc = Str (*)(uint8_t, struct wc_status *);
 
 struct wc_ces_info
 {

@@ -178,7 +178,7 @@ const char *from_unicode(uint32_t codepoint, CharacterEncodingScheme ces)
     return "?";
 }
 
-static CharacterEncodingScheme char_conv_f_ces = WC_CES_NONE, char_conv_t_ces = WC_CES_WTF;
+static CharacterEncodingScheme char_conv_t_ces = WC_CES_WTF;
 static wc_status char_conv_st;
 
 void
@@ -186,7 +186,6 @@ wc_char_conv_init(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 {
     wc_input_init(f_ces, &char_conv_st);
     char_conv_st.state = -1;
-    char_conv_f_ces = f_ces;
     char_conv_t_ces = t_ces;
 }
 
