@@ -93,5 +93,6 @@ inline void Strip(Str str)
     StripLeft(str);
     StripRight(str);
 }
+Str Sprintf(const char *fmt, ...);
 
 #endif /* INDEP_H */

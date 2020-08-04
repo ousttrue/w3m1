@@ -6,6 +6,7 @@
 #include "http/cookie.h"
 #include "html/form.h"
 #include "w3m.h"
+#include "indep.h"
 
 Str HRequest::Method() const
 {

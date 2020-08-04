@@ -4,6 +4,7 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "indep.h"
 #include "fm.h"
 #include "gc_helper.h"
@@ -969,4 +970,117 @@ void StripRight(Str str)
         }
     }
     str->Pop(str->Size() - (i + 1));
+}
+
+#define SP_NORMAL 0
+#define SP_PREC 1
+#define SP_PREC2 2
+
+Str Sprintf(const char *fmt, ...)
+{
+    int len = 0;
+    int status = SP_NORMAL;
+    int p = 0;
+
+    va_list ap;
+    va_start(ap, fmt);
+    for (auto f = fmt; *f; f++)
+    {
+    redo:
+        switch (status)
+        {
+        case SP_NORMAL:
+            if (*f == '%')
+            {
+                status = SP_PREC;
+                p = 0;
+            }
+            else
+                len++;
+            break;
+        case SP_PREC:
+            if (IS_ALPHA(*f))
+            {
+                /* conversion char. */
+                double vd;
+                int vi;
+                char *vs;
+                void *vp;
+
+                switch (*f)
+                {
+                case 'l':
+                case 'h':
+                case 'L':
+                case 'w':
+                    continue;
+                case 'd':
+                case 'i':
+                case 'o':
+                case 'x':
+                case 'X':
+                case 'u':
+                    vi = va_arg(ap, int);
+                    len += (p > 0) ? p : 10;
+                    break;
+                case 'f':
+                case 'g':
+                case 'e':
+                case 'G':
+                case 'E':
+                    vd = va_arg(ap, double);
+                    len += (p > 0) ? p : 15;
+                    break;
+                case 'c':
+                    len += 1;
+                    vi = va_arg(ap, int);
+                    break;
+                case 's':
+                    vs = va_arg(ap, char *);
+                    vi = strlen(vs);
+                    len += (p > vi) ? p : vi;
+                    break;
+                case 'p':
+                    vp = va_arg(ap, void *);
+                    len += 10;
+                    break;
+                case 'n':
+                    vp = va_arg(ap, void *);
+                    break;
+                }
+                status = SP_NORMAL;
+            }
+            else if (IS_DIGIT(*f))
+                p = p * 10 + *f - '0';
+            else if (*f == '.')
+                status = SP_PREC2;
+            else if (*f == '%')
+            {
+                status = SP_NORMAL;
+                len++;
+            }
+            break;
+        case SP_PREC2:
+            if (IS_ALPHA(*f))
+            {
+                status = SP_PREC;
+                goto redo;
+            }
+            break;
+        }
+    }
+    va_end(ap);
+
+    auto s = Strnew_size(len * 2);
+    va_start(ap, fmt);
+    vsprintf(s->ptr, fmt, ap);
+    va_end(ap);
+    // s->m_size = ;
+    s->Pop(s->Size() - strlen(s->ptr));
+    if (s->Size() > len * 2)
+    {
+        fprintf(stderr, "Sprintf: string too long\n");
+        exit(1);
+    }
+    return s;
 }

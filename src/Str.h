@@ -1,4 +1,3 @@
-/* $Id: Str.h,v 1.6 2006/04/07 13:35:35 inu Exp $ */
 /* 
  * String manipulation library for Boehm GC
  *
@@ -16,14 +15,9 @@
 #pragma once
 #include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 #include <gc_cpp.h>
 #include <functional>
 #include <string_view>
-
-//
-// http://aitoweb.world.coocan.jp/gc/gc.html
-//
 
 class GCStr : public gc_cleanup
 {
@@ -161,6 +155,5 @@ Str Strnew_m_charp(ARGS... args)
     return str;
 }
 
-Str Sprintf(const char *fmt, ...);
 Str Strfgets(FILE *);
 Str Strfgetall(FILE *);
