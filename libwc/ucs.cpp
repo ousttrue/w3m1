@@ -1,4 +1,3 @@
-#include "config.h"
 #include <stdlib.h>
 #include "option.h"
 #include "ucs.h"

@@ -401,6 +401,14 @@ enum CodedCharacterSet: uint32_t
     WC_CCS_C1 = (WC_CCS_A_UNKNOWN | WC_F_C1),
     WC_CCS_UNKNOWN_W = WC_CCS_A_UNKNOWN_W,
 };
+template<class CodedCharacterSet> inline CodedCharacterSet operator~ (CodedCharacterSet a) { return (CodedCharacterSet)~(int)a; }
+template<class CodedCharacterSet> inline CodedCharacterSet operator| (CodedCharacterSet a, CodedCharacterSet b) { return (CodedCharacterSet)((int)a | (int)b); }
+template<class CodedCharacterSet> inline CodedCharacterSet operator& (CodedCharacterSet a, CodedCharacterSet b) { return (CodedCharacterSet)((int)a & (int)b); }
+template<class CodedCharacterSet> inline CodedCharacterSet operator^ (CodedCharacterSet a, CodedCharacterSet b) { return (CodedCharacterSet)((int)a ^ (int)b); }
+template<class CodedCharacterSet> inline CodedCharacterSet& operator|= (CodedCharacterSet& a, CodedCharacterSet b) { return (CodedCharacterSet&)((int&)a |= (int)b); }
+template<class CodedCharacterSet> inline CodedCharacterSet& operator&= (CodedCharacterSet& a, CodedCharacterSet b) { return (CodedCharacterSet&)((int&)a &= (int)b); }
+template<class CodedCharacterSet> inline CodedCharacterSet& operator^= (CodedCharacterSet& a, CodedCharacterSet b) { return (CodedCharacterSet&)((int&)a ^= (int)b); }
+
 
 struct wc_wchar_t
 {

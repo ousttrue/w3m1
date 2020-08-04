@@ -7,50 +7,12 @@ add_library(catch2 INTERFACE)
 target_include_directories(catch2
 INTERFACE
     _external/catch2
-    )
+)
 
-add_subdirectory(
+subdirs(
     charutil
-    )
-
-add_library(wc
-    libwc/Str.cpp
-    libwc/big5.cpp
-    libwc/ces_info.cpp
-    libwc/char_conv.cpp
-    libwc/charset.cpp
-    libwc/combining.cpp
-    libwc/conv.cpp
-    libwc/detect.cpp
-    libwc/gb18030.cpp
-    libwc/gbk.cpp
-    libwc/hkscs.cpp
-    libwc/hz.cpp
-    libwc/iso2022.cpp
-    libwc/jis.cpp
-    libwc/johab.cpp
-    libwc/priv.cpp
-    libwc/putc.cpp
-    libwc/search.cpp
-    libwc/sjis.cpp
-    libwc/status.cpp
-    libwc/ucs.cpp
-    libwc/uhc.cpp
-    libwc/utf7.cpp
-    libwc/utf8.cpp
-    libwc/viet.cpp
-    libwc/wtf.cpp
-    )
-target_include_directories(wc
-PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/libwc
-    ${CMAKE_CURRENT_LIST_DIR}/src
-    )   
-target_link_libraries(wc
-PUBLIC
-    charutil
-    gc
-    )
+    libwc
+)
 
 add_executable(w3mbookmark
     src/w3mbookmark.cpp
@@ -60,6 +22,10 @@ add_executable(w3mbookmark
     src/html/parsetag.cpp
     src/hash.cpp
     )
+target_include_directories(w3mbookmark
+PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    )  
 target_compile_definitions(w3mbookmark
 PUBLIC
     DUMMY
@@ -136,6 +102,10 @@ add_executable(w3m
     src/symbol.cpp
     src/history.cpp
 )
+target_include_directories(w3m
+PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    )
 target_compile_definitions(w3m
 PUBLIC
     HAVE_CONFIG_H

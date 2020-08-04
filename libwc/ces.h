@@ -191,4 +191,10 @@ enum CharacterEncodingScheme : uint32_t
 
     WC_CES_END = WC_CES_N_UTF_7,
 };
-#include "enum_bit_operator.h"
+inline CharacterEncodingScheme operator~ (CharacterEncodingScheme a) { return (CharacterEncodingScheme)~(int)a; }
+inline CharacterEncodingScheme operator| (CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a | (int)b); }
+inline CharacterEncodingScheme operator& (CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a & (int)b); }
+inline CharacterEncodingScheme operator^ (CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a ^ (int)b); }
+inline CharacterEncodingScheme& operator|= (CharacterEncodingScheme& a, CharacterEncodingScheme b) { return (CharacterEncodingScheme&)((int&)a |= (int)b); }
+inline CharacterEncodingScheme& operator&= (CharacterEncodingScheme& a, CharacterEncodingScheme b) { return (CharacterEncodingScheme&)((int&)a &= (int)b); }
+inline CharacterEncodingScheme& operator^= (CharacterEncodingScheme& a, CharacterEncodingScheme b) { return (CharacterEncodingScheme&)((int&)a ^= (int)b); }

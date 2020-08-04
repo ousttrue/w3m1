@@ -1,6 +1,4 @@
-#include "config.h"
 #include "ces_info.h"
-// 
 #include "iso2022.h"
 #include "sjis.h"
 #include "hz.h"
