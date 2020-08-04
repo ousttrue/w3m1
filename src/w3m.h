@@ -3,10 +3,7 @@
 #include <string_view>
 #include "config.h"
 #include "version.h"
-#include "ces.h"
-#include "conv.h"
-#include "ucs.h"
-#include "utf8.h"
+#include <wc.h>
 #include "symbol.h"
 #include "transport/url.h"
 #include "frontend/buffer.h"

@@ -33,7 +33,7 @@
 #include "transport/loader.h"
 #include "html/html_processor.h"
 #include "wtf.h"
-#include "option.h"
+
 #include "frontend/linein.h"
 #include <assert.h>
 #include <sys/types.h>

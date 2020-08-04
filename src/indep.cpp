@@ -8,10 +8,10 @@
 #include "indep.h"
 #include "fm.h"
 #include "gc_helper.h"
-#include "Str.h"
+
 #include "myctype.h"
 #include "entity.h"
-#include "conv.h"
+
 
 unsigned char QUOTE_MAP[0x100] = {
     /* NUL SOH STX ETX EOT ENQ ACK BEL  BS  HT  LF  VT  FF  CR  SO  SI */

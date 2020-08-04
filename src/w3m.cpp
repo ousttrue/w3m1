@@ -16,7 +16,7 @@
 #include "rc.h"
 #include "register_commands.h"
 #include "history.h"
-#include "option.h"
+
 #include "symbol.h"
 #include "myctype.h"
 #include "file.h"

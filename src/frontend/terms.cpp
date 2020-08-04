@@ -6,7 +6,6 @@
 #include "config.h"
 #include "fm.h"
 #include "commands.h"
-#include "putc.h"
 #include "frontend/terms.h"
 #include "indep.h"
 #include "gc_helper.h"

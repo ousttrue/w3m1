@@ -29,8 +29,7 @@
 #include "frontend/event.h"
 #include "frontend/line.h"
 #include "frontend/linein.h"
-#include "charset.h"
-#include "option.h"
+
 #include "rc.h"
 #include "w3m.h"
 #include <signal.h>

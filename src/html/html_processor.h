@@ -1,5 +1,5 @@
 #pragma once
-#include "Str.h"
+
 #include "parsetagx.h"
 
 int GetCurHSeq();

@@ -1,6 +1,7 @@
 
 #ifndef _WC_UTF7_H
 #define _WC_UTF7_H
+#include "ces.h"
 
 #define WC_C_UTF7_PLUS	'+'
 #define WC_C_UTF7_MINUS	'-'

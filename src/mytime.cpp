@@ -1,6 +1,6 @@
 #include "mytime.h"
 #include "myctype.h"
-#include "Str.h"
+#include <wc.h>
 
 static const char *monthtbl[] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",

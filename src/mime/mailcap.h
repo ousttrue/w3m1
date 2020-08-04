@@ -1,5 +1,5 @@
 #pragma once
-#include "Str.h"
+#include <wc.h>
 
 #define MAILCAP_NEEDSTERMINAL 0x01
 #define MAILCAP_COPIOUSOUTPUT 0x02

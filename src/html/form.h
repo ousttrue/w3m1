@@ -5,7 +5,7 @@
 #ifndef FORM_H
 #define FORM_H
 
-#include "Str.h"
+
 #include "parsetagx.h"
 #include "frontend/buffer.h"
 

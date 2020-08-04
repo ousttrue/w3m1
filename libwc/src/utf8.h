@@ -1,6 +1,7 @@
 
 #ifndef _WC_UTF8_H
 #define _WC_UTF8_H
+#include "ces.h"
 
 #define WC_C_UTF8_L2	0x80
 #define WC_C_UTF8_L3	0x800

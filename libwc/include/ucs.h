@@ -1,7 +1,10 @@
 
 #ifndef _WC_UCS_H
 #define _WC_UCS_H
-#include "status.h"
+#include "ccs.h"
+#include "Str.h"
+struct wc_table;
+struct wc_status;
 
 #define WC_C_UCS2_NBSP		0xA0
 #define WC_C_UCS2_BOM		0xFEFF

@@ -11,7 +11,7 @@
 #endif /* not MESCHACH */
 #endif /* MATRIX */
 
-#include "Str.h"
+
 #include "frontend/line.h"
 
 #define MAX_TABLE 20   /* maximum nest level of table */

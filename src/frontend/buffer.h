@@ -3,7 +3,7 @@
 #include "html/anchor.h"
 #include "line.h"
 #include "link.h"
-#include "option.h"
+
 #include <stdint.h>
 #include <assert.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "html.h"
-#include "Str.h"
+#include <wc.h>
 
 /* Parsed Tag structure */
 

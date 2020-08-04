@@ -3,10 +3,10 @@
 #include <openssl/bio.h>
 #include <openssl/x509.h>
 #include <openssl/ssl.h>
-#include "Str.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <wc.h>
 
 struct StreamBuffer
 {

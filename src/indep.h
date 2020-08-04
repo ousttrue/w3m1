@@ -2,9 +2,8 @@
 #ifndef INDEP_H
 #define INDEP_H
 
-#include "Str.h"
 #include "config.h"
-#include "ces.h"
+#include <wc.h>
 
 #ifndef TRUE
 #define TRUE 1

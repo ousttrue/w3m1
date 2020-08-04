@@ -21,7 +21,7 @@
 #include <string_view>
 
 #include <sys/stat.h>
-#include "Str.h"
+
 #include "myctype.h"
 #include "regex.h"
 

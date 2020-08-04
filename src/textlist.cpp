@@ -1,7 +1,7 @@
 #include "textlist.h"
 #include "gc_helper.h"
 #include "indep.h"
-#include "Str.h"
+
 
 /* General doubly linked list */
 

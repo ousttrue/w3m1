@@ -2,7 +2,7 @@
 #include "urimethod.h"
 #include "gc_helper.h"
 #include "rc.h"
-#include "Str.h"
+
 #include "symbol.h"
 #include "myctype.h"
 #include "indep.h"

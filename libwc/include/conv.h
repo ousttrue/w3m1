@@ -1,5 +1,7 @@
 #pragma once
-#include "status.h"
+#include "ces.h"
+#include "Str.h"
+struct wc_status;
 void wc_push_end(Str os, wc_status *st);
 
 Str wc_Str_conv(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces);

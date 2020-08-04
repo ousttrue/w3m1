@@ -4,8 +4,6 @@
 #include "indep.h"
 #include "transport/local.h"
 #include "myctype.h"
-#include "charset.h"
-#include "char_conv.h"
 #include "file.h"
 #include "public.h"
 #include "html/form.h"

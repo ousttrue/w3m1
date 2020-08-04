@@ -2,6 +2,7 @@
 #include "ucs.h"
 #include "utf7.h"
 #include "wtf.h"
+#include "status.h"
 
 
 #define SD WC_UTF7_MAP_SET_D

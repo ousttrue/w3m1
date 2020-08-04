@@ -1,7 +1,7 @@
 #include "myctype.h"
 #include "indep.h"
 #include "gc_helper.h"
-#include "Str.h"
+
 #include "html/parsetag.h"
 
 char *

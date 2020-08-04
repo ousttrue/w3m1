@@ -1,6 +1,5 @@
 #pragma once
-// #include "buffer.h"
-#include "wtf.h"
+#include <wc.h>
 
 #define LINELEN 256          /* Initial line length */
 

@@ -13,7 +13,7 @@
 #include "Symbols/cp850.sym"
 #include "wtf.h"
 #include "w3m.h"
-#include "option.h"
+
 #include "indep.h"
 
 typedef struct {

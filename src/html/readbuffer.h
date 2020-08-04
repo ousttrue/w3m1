@@ -1,7 +1,8 @@
 #pragma once
-#include "Str.h"
+
 #include "frontend/line.h"
 #include "anchor.h"
+#include <wc.h>
 
 #define FONTSTAT_SIZE 7
 
