@@ -933,7 +933,7 @@ void ToUpper(Str str)
 {
     auto p = str->ptr;
     auto end = p + str->Size();
-    for (; p!=end; ++p)
+    for (; p != end; ++p)
         *p = TOUPPER(*p);
 }
 
@@ -941,7 +941,7 @@ void ToLower(Str str)
 {
     auto p = str->ptr;
     auto end = p + str->Size();
-    for (; p!=end; ++p)
+    for (; p != end; ++p)
         *p = TOLOWER(*p);
 }
 
@@ -968,5 +968,5 @@ void StripRight(Str str)
             break;
         }
     }
-    str->Pop(str->Size()-i);
+    str->Pop(str->Size() - (i + 1));
 }
