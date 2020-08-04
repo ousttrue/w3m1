@@ -1770,7 +1770,7 @@ void invoke_browser(char *url)
         bg = 1;
     }
     cmd = myExtCommand(browser, shell_quote(url), FALSE);
-    cmd->StripRight();
+    StripRight(cmd);
     fmTerm();
     mySystem(cmd->ptr, bg);
     fmInit();

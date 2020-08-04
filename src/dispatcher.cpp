@@ -1,11 +1,12 @@
 #include "dispatcher.h"
 #include "fm.h"
-#include "frontend/terms.h"
 #include "public.h"
 #include "commands.h"
 #include "file.h"
 #include "rc.h"
 #include "ctrlcode.h"
+#include "indep.h"
+#include "frontend/terms.h"
 #include "frontend/display.h"
 #include "frontend/buffer.h"
 #include "frontend/tab.h"
@@ -680,7 +681,7 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
     {
         line = Strfgets(kf);
         lineno++;
-        line->Strip();
+        Strip(line);
         if (line->Size() == 0)
             continue;
 #ifdef USE_M17N

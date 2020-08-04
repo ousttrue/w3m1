@@ -1,6 +1,7 @@
 #include "http/auth.h"
 #include "fm.h"
 #include "myctype.h"
+#include "indep.h"
 #include "mime/mimeencoding.h"
 #include "http/http_request.h"
 #include "html/form.h"
@@ -688,7 +689,7 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
                    realm);
             fflush(stdout);
             *uname = Strfgets(stdin);
-            (*uname)->StripRight();
+            StripRight(*uname);
 #ifdef HAVE_GETPASSPHRASE
             *pwd = Strnew((char *)
                               getpassphrase(proxy ? "Proxy Password: " : "Password: "));

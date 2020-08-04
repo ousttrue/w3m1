@@ -50,7 +50,7 @@ loadHistory(Hist *hist)
 
     while (!feof(f)) {
 	line = Strfgets(f);
-    line->Strip();
+    Strip(line);
 	if (line->Size() == 0)
 	    continue;
 	pushHist(hist, url_quote(line->ptr));

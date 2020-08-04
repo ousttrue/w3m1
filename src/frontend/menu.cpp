@@ -2091,7 +2091,7 @@ interpret_menu(FILE *mf)
     while (!feof(mf))
     {
         line = Strfgets(mf);
-        line->Strip();
+        Strip(line);
         if (line->Size() == 0)
             continue;
 #ifdef USE_M17N

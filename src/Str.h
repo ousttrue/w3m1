@@ -105,13 +105,6 @@ public:
     void Truncate(int pos);
     void Pop(int len);
     void Delete(int pos, int len);
-    void StripLeft();
-    void StripRight();
-    void Strip()
-    {
-        StripLeft();
-        StripRight();
-    }
 
     GCStr *Substr(int begin, int len) const;
     void Insert(int pos, char c);

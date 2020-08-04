@@ -124,7 +124,7 @@ Str convertLine0(URLFile *uf, Str line, int mode)
         cleanup_line(line, mode);
 
     if (uf && uf->scheme == SCM_NEWS)
-        line->StripRight();
+        StripRight(line);
 
     return line;
 }
@@ -1051,7 +1051,7 @@ getNextPage(BufferPtr buf, int plen)
                 pre_lbuf = lineBuf2->ptr[0];
             }
             ++nlines;
-            lineBuf2->StripRight();
+            StripRight(lineBuf2);
             lineBuf2 = checkType(lineBuf2, &propBuffer, &colorBuffer);
             addnewline(buf, lineBuf2->ptr, propBuffer, colorBuffer,
                        lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);

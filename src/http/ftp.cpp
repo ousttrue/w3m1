@@ -581,7 +581,7 @@ Str loadFTPDir0(URL *pu)
             max_len = 20;
             while (tmp = Strfgets(current_ftp.data), tmp->Size() > 0)
             {
-                tmp->StripRight();
+                StripRight(tmp);
                 if ((ftype =
                          ex_ftpdir_name_size_date(tmp->ptr, &name, &link, &date,
                                                   &size)) == FTPDIR_NONE)
@@ -660,7 +660,7 @@ Str loadFTPDir0(URL *pu)
         {
             while (tmp = Strfgets(current_ftp.data), tmp->Size() > 0)
             {
-                tmp->StripRight();
+                StripRight(tmp);
                 flist[nfile++] = mybasename(tmp->ptr);
                 if (nfile == nfile_max)
                 {

@@ -86,5 +86,12 @@ std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterE
 char *html_unquote(const char *str, CharacterEncodingScheme ces);
 void ToUpper(Str str);
 void ToLower(Str str);
+void StripLeft(Str str);
+void StripRight(Str str);
+inline void Strip(Str str)
+{
+    StripLeft(str);
+    StripRight(str);
+}
 
 #endif /* INDEP_H */

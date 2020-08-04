@@ -1244,7 +1244,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
             break;
         pos = 0;
 #ifdef ENABLE_REMOVE_TRAILINGSPACES
-        line->StripRight();
+        StripRight(line);
 #endif
         str = line->ptr;
         endp = str + line->Size();

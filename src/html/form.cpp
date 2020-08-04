@@ -675,7 +675,7 @@ void addSelectOption(FormSelectOption *fso, Str value, Str label, int chk)
     if (value == NULL)
         value = label;
     o->value = value;
-    label->Strip();
+    Strip(label);
     o->label = label;
     o->checked = chk;
     o->next = NULL;
@@ -919,7 +919,7 @@ void loadPreForm(void)
             textarea->Push(line);
             continue;
         }
-        line->Strip();
+        Strip(line);
         p = line->ptr;
         if (*p == '#' || *p == '\0')
             continue; /* comment or empty line */

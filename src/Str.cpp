@@ -210,44 +210,6 @@ void GCStr::Delete(int pos, int len)
     m_size = i;
 }
 
-void GCStr::StripLeft()
-{
-    int i = 0;
-    for (; i < m_size; i++)
-    {
-        if (!IS_SPACE(ptr[i]))
-        {
-            break;
-        }
-    }
-    Delete(0, i);
-}
-
-void GCStr::StripRight()
-{
-    int i = m_size - 1;
-    for (; i >= 0; i--)
-    {
-        if (!IS_SPACE(ptr[i]))
-        {
-            break;
-        }
-    }
-    ptr[i + 1] = '\0';
-    m_size = i + 1;
-}
-
-// void GCStr::Chop(Str s)
-// {
-
-//     while ((s->ptr[s->m_size - 1] == '\n' || s->ptr[s->m_size - 1] == '\r') &&
-//            s->m_size > 0)
-//     {
-//         s->m_size--;
-//     }
-//     s->ptr[s->m_size] = '\0';
-// }
-
 GCStr *GCStr::Substr(int begin, int len) const
 {
     if (begin >= m_size)
@@ -339,31 +301,6 @@ int GCStr::Puts(FILE *f) const
 {
     return fwrite(ptr, 1, m_size, f);
 }
-
-// Str Strnew_m_charp(const char *p, ...)
-// {
-//     va_list ap;
-//     va_start(ap, p);
-
-//     Str r = Strnew();
-//     while (p != NULL)
-//     {
-//         r->Push(p);
-//         p = va_arg(ap, char *);
-//     }
-//     return r;
-// }
-
-// void Strcat_m_charp(Str x, ...)
-// {
-//     va_list ap;
-//     va_start(ap, x);
-
-//     for (char *p = va_arg(ap, char *); p != NULL; p = va_arg(ap, char *))
-//     {
-//         x->Push(p, strlen(p));
-//     }
-// }
 
 #define SP_NORMAL 0
 #define SP_PREC 1

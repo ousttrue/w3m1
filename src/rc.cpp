@@ -996,7 +996,7 @@ interpret_rc(FILE *f)
         line = Strfgets(f);
         if (line->Size() == 0) /* end of file */
             break;
-        line->Strip();
+        Strip(line);
         if (line->Size() == 0) /* blank line */
             continue;
         if (line->ptr[0] == '#') /* comment */
@@ -1228,7 +1228,7 @@ parsePasswd(FILE *fp, int netrc)
             line = Strfgets(fp);
         if (line->Size() == 0)
             break;
-        line->Strip();
+        Strip(line);
         p = line->ptr;
         if (*p == '#' || *p == '\0')
         {

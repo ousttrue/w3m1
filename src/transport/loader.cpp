@@ -390,7 +390,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
             if (f)
             {
                 tmp = Strnew(p);
-                tmp->StripRight();
+                StripRight(tmp);
                 pushEvent(f, tmp->ptr);
             }
         }
@@ -491,7 +491,7 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
             pre_lbuf = lineBuf2->ptr[0];
         }
         ++nlines;
-        lineBuf2->StripRight();
+        StripRight(lineBuf2);
         lineBuf2 = checkType(lineBuf2, &propBuffer, NULL);
         addnewline(newBuf, lineBuf2->ptr, propBuffer, colorBuffer,
                    lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);

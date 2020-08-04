@@ -921,7 +921,7 @@ void readHeaderCookie(URL *pu, Str lineBuf2)
     auto name = Strnew();
     while (*p != '=' && !IS_ENDT(*p))
         name->Push(*(p++));
-    name->StripRight();
+    StripRight(name);
 
     auto value = Strnew();
     if (*p == '=')

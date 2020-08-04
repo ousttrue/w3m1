@@ -944,3 +944,29 @@ void ToLower(Str str)
     for (; p!=end; ++p)
         *p = TOLOWER(*p);
 }
+
+void StripLeft(Str str)
+{
+    int i = 0;
+    for (; i < str->Size(); i++)
+    {
+        if (!IS_SPACE(str->ptr[i]))
+        {
+            break;
+        }
+    }
+    str->Delete(0, i);
+}
+
+void StripRight(Str str)
+{
+    int i = str->Size() - 1;
+    for (; i >= 0; i--)
+    {
+        if (!IS_SPACE(str->ptr[i]))
+        {
+            break;
+        }
+    }
+    str->Pop(str->Size()-i);
+}

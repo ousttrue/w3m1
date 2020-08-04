@@ -4,10 +4,10 @@
  */
 
 #include <stdio.h>
-
 #include "fm.h"
 #include "gc_helper.h"
 #include "rc.h"
+#include "indep.h"
 #include "myctype.h"
 #include "dispatcher.h"
 #include "commands.h"
@@ -200,7 +200,7 @@ interpret_mouse_action(FILE *mf)
     while (!feof(mf))
     {
         line = Strfgets(mf);
-        line->Strip();
+        Strip(line);
         if (line->Size() == 0)
             continue;
         p = conv_from_system(line->ptr);

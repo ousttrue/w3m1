@@ -99,7 +99,7 @@ process_n_title(struct parsed_tag *tag)
 {
     if (!cur_title)
         return NULL;
-    cur_title->Strip();
+    Strip(cur_title);
     auto tmp = Strnew_m_charp("<title_alt title=\"",
                               html_quote(cur_title),
                               "\">");
