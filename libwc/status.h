@@ -35,6 +35,5 @@ struct wc_status
 };
 
 void wc_input_init(CharacterEncodingScheme ces, wc_status *st);
-void wc_create_gmap(wc_status *st);
 void wc_output_init(CharacterEncodingScheme ces, wc_status *st);
 bool wc_ces_has_ccs(CodedCharacterSet ccs, wc_status *st);
