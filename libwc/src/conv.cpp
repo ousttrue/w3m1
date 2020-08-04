@@ -14,14 +14,36 @@ char *WcReplaceW = "??";
 
 static Str wc_conv_to_ces(Str is, CharacterEncodingScheme ces);
 
+///
+///
+///
 Str wc_Str_conv(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 {
-    if (f_ces != WC_CES_WTF)
-        is = (*GetCesInfo(f_ces).conv_from)(is, f_ces);
-    if (t_ces != WC_CES_WTF)
-        return wc_conv_to_ces(is, t_ces);
-    else
+    if (f_ces == WC_CES_WTF && t_ces == WC_CES_WTF)
+    {
+        // no conversion
         return is;
+    }
+
+    if (f_ces == WC_CES_WTF)
+    {
+        // is => wtf
+        return wc_conv_to_ces(is, t_ces);
+    }
+    else
+    {
+        // wtf <= is
+        auto &info = GetCesInfo(f_ces);
+        auto wtf = info.conv_from(is, f_ces);
+        if (t_ces == WC_CES_WTF)
+        {
+            // wtf
+            return wtf;
+        }
+
+        // wtf => to
+        return wc_conv_to_ces(wtf, t_ces);
+    }
 }
 
 Str wc_Str_conv_strict(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
@@ -156,7 +178,6 @@ void wc_push_end(Str os, wc_status *st)
         wc_push_to_utf8_end(os, st);
     else if (st->ces_info->id == WC_CES_UTF_7)
         wc_push_to_utf7_end(os, st);
-
 }
 
 //
@@ -181,8 +202,7 @@ const char *from_unicode(uint32_t codepoint, CharacterEncodingScheme ces)
 static CharacterEncodingScheme char_conv_t_ces = WC_CES_WTF;
 static wc_status char_conv_st;
 
-void
-wc_char_conv_init(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
+void wc_char_conv_init(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 {
     wc_input_init(f_ces, &char_conv_st);
     char_conv_st.state = -1;
@@ -192,5 +212,5 @@ wc_char_conv_init(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 Str wc_char_conv(char c)
 {
     return wc_Str_conv((*char_conv_st.ces_info->char_conv)((uint8_t)c, &char_conv_st),
-	WC_CES_WTF, char_conv_t_ces);
+                       WC_CES_WTF, char_conv_t_ces);
 }
