@@ -14,7 +14,7 @@ add_subdirectory(
     )
 
 add_library(wc
-    src/Str.cpp
+    libwc/Str.cpp
     )
 target_include_directories(wc
 PUBLIC
@@ -130,7 +130,6 @@ add_executable(w3m
     src/mytime.cpp
     src/indep.cpp
     src/rc.cpp
-    src/Str.cpp
     src/regex.cpp    
     src/textlist.cpp
     src/hash.cpp
