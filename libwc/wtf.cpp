@@ -557,7 +557,7 @@ wtf_parse(uint8_t **p)
 	    return cc2;
 	}
     }
-#ifdef USE_UNICODE
+
     else if ((cc.ccs == WC_CCS_US_ASCII || cc.ccs == WC_CCS_ISO_8859_1 ||
 	WC_CCS_IS_UNICODE(cc.ccs)) && WC_CCS_IS_UNICODE(cc2.ccs)) {
 	while (1) {
@@ -582,7 +582,7 @@ wtf_parse(uint8_t **p)
 		break;
 	}
     }
-#endif
+
     return cc;
 }
 
@@ -610,7 +610,7 @@ wtf_is_hangul(uint8_t *p)
 	return (f == WC_F_JOHAB_1 || f == WC_F_JOHAB_2 || f == WC_F_JOHAB_3 ||
 		f == WC_F_UHC_1 || f == WC_F_UHC_2);
     }
-#ifdef USE_UNICODE
+
     else if (*p == WTF_C_WCS16W) {
 	uint8_t f = (*(++p) & 0x7f) >> 2;
 	if (f == WC_F_UCS2)
@@ -620,7 +620,7 @@ wtf_is_hangul(uint8_t *p)
 	if (f == WC_F_UCS_TAG)
 	    return wc_is_ucs_hangul(wc_ucs_tag_to_ucs(wtf_to_wcs32(p)));
     }
-#endif
+
     return false;
 }
 

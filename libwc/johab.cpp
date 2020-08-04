@@ -71,22 +71,20 @@ static uint8_t N_johab1_map[ 3 ][ 32 ] = {
 wc_wchar_t
 wc_johab_to_ksx1001(wc_wchar_t cc)
 {
-#ifdef USE_UNICODE
     static wc_table *t = NULL;
-#endif
 
     switch (cc.ccs) {
     case WC_CCS_JOHAB:
 	return wc_johab_to_ksx1001(wc_johab_to_cs128w(cc));
     case WC_CCS_JOHAB_1:
     case WC_CCS_JOHAB_2:
-#ifdef USE_UNICODE
+
 	if (WcOption.ucs_conv) {
 	    if (t == NULL)
 		t = wc_get_ucs_table(WC_CCS_KS_X_1001);
 	    cc = wc_any_to_any(cc, t);
 	} else
-#endif
+
 	    cc.ccs = WC_CCS_UNKNOWN_W;
 	break;
     case WC_CCS_JOHAB_3:
@@ -109,16 +107,16 @@ wc_ksx1001_to_johab(wc_wchar_t cc)
 	cc.ccs = WC_CCS_JOHAB_3;
 	return cc;
     }
-#ifdef USE_UNICODE
+
     if (WcOption.ucs_conv)
 	cc = wc_ucs_to_johab(wc_any_to_ucs(cc));
     else
-#endif
+
 	cc.ccs = WC_CCS_UNKNOWN_W;
     return cc;
 }
 
-#ifdef USE_UNICODE
+
 wc_wchar_t
 wc_ucs_to_johab(uint32_t ucs)
 {
@@ -138,7 +136,7 @@ wc_ucs_to_johab(uint32_t ucs)
     }
     return cc;
 }
-#endif
+
 
 uint32_t
 wc_johab1_to_N(uint32_t code)
@@ -333,11 +331,11 @@ wc_push_to_johab(Str os, wc_wchar_t cc, wc_status *st)
 	    os->Push(WC_REPLACE);
 	return;
     default:
-#ifdef USE_UNICODE
+
 	if (WcOption.ucs_conv)
 	    cc = wc_any_to_any_ces(cc, st);
 	else
-#endif
+
 	    cc.ccs = WC_CCS_IS_WIDE(cc.ccs) ? WC_CCS_UNKNOWN_W : WC_CCS_UNKNOWN;
 	continue;
     }

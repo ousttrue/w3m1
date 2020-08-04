@@ -15,25 +15,6 @@ add_subdirectory(
 
 add_library(wc
     libwc/Str.cpp
-    )
-target_include_directories(wc
-PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/libwc
-    ${CMAKE_CURRENT_LIST_DIR}/src
-    )   
-target_link_libraries(wc
-PUBLIC
-    charutil
-    gc
-    )
-
-add_executable(w3mbookmark
-    src/w3mbookmark.cpp
-    src/indep.cpp
-    src/regex.cpp
-    src/textlist.cpp
-    src/html/parsetag.cpp
-    src/hash.cpp
     libwc/big5.cpp
     libwc/ces_info.cpp
     libwc/char_conv.cpp
@@ -59,6 +40,25 @@ add_executable(w3mbookmark
     libwc/utf8.cpp
     libwc/viet.cpp
     libwc/wtf.cpp
+    )
+target_include_directories(wc
+PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/libwc
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    )   
+target_link_libraries(wc
+PUBLIC
+    charutil
+    gc
+    )
+
+add_executable(w3mbookmark
+    src/w3mbookmark.cpp
+    src/indep.cpp
+    src/regex.cpp
+    src/textlist.cpp
+    src/html/parsetag.cpp
+    src/hash.cpp
     )
 target_compile_definitions(w3mbookmark
 PUBLIC
@@ -135,31 +135,6 @@ add_executable(w3m
     src/hash.cpp
     src/symbol.cpp
     src/history.cpp
-    libwc/big5.cpp
-    libwc/ces_info.cpp
-    libwc/char_conv.cpp
-    libwc/charset.cpp
-    libwc/combining.cpp
-    libwc/conv.cpp
-    libwc/detect.cpp
-    libwc/gb18030.cpp
-    libwc/gbk.cpp
-    libwc/hkscs.cpp
-    libwc/hz.cpp
-    libwc/iso2022.cpp
-    libwc/jis.cpp
-    libwc/johab.cpp
-    libwc/priv.cpp
-    libwc/putc.cpp
-    libwc/search.cpp
-    libwc/sjis.cpp
-    libwc/status.cpp
-    libwc/ucs.cpp
-    libwc/uhc.cpp
-    libwc/utf7.cpp
-    libwc/utf8.cpp
-    libwc/viet.cpp
-    libwc/wtf.cpp
 )
 target_compile_definitions(w3m
 PUBLIC

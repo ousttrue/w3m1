@@ -85,10 +85,10 @@ wc_conv_to_ces(Str is, CharacterEncodingScheme ces)
     case WC_CES_TCVN_5712:
     case WC_CES_VISCII_11:
     case WC_CES_VPS:
-#ifdef USE_UNICODE
+
     case WC_CES_UTF_8:
     case WC_CES_UTF_7:
-#endif
+
         while (p < ep)
             (*st.ces_info->push_to)(os, wtf_parse(&p), &st);
         break;
@@ -151,12 +151,12 @@ void wc_push_end(Str os, wc_status *st)
         wc_push_to_iso2022_end(os, st);
     else if (st->ces_info->id == WC_CES_HZ_GB_2312)
         wc_push_to_hz_end(os, st);
-#ifdef USE_UNICODE
+
     else if (st->ces_info->id == WC_CES_UTF_8)
         wc_push_to_utf8_end(os, st);
     else if (st->ces_info->id == WC_CES_UTF_7)
         wc_push_to_utf7_end(os, st);
-#endif
+
 }
 
 //

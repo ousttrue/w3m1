@@ -27,11 +27,7 @@
 #include "frontend/terms.h"
 #include "myctype.h"
 #include "regex.h"
-#ifdef USE_M17N
-#ifdef USE_UNICODE
 #include "ucs.h"
-#endif
-#endif
 #include "dispatcher.h"
 #include "transport/url.h"
 #include <assert.h>

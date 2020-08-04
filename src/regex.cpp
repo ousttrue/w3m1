@@ -86,7 +86,6 @@ set_longchar(char *str)
             r.type = RE_TYPE_SYMBOL;
             return r;
         }
-#ifdef USE_UNICODE
         if (WC_CCS_IS_UNICODE(r.wch.ccs))
         {
             if (WC_CCS_SET(r.wch.ccs) == WC_CCS_UCS_TAG)
@@ -94,7 +93,6 @@ set_longchar(char *str)
             r.wch.ccs = WC_CCS_UCS4;
         }
         else
-#endif
             r.wch.ccs = WC_CCS_SET(r.wch.ccs);
         r.type = RE_TYPE_WCHAR_T;
         return r;
@@ -740,7 +738,7 @@ match_longchar(longchar *a, longchar *b, int ignore)
         return 0;
     if (a->type == RE_TYPE_WCHAR_T)
     {
-#ifdef USE_UNICODE
+
         if (ignore)
         {
             uint32_t ua = wc_any_to_ucs(a->wch), ub = wc_any_to_ucs(b->wch);
@@ -749,7 +747,7 @@ match_longchar(longchar *a, longchar *b, int ignore)
                     ua == wc_ucs_toupper(ub) ||
                     ua == wc_ucs_totitle(ub));
         }
-#endif
+
         return (a->wch.ccs == b->wch.ccs) && (a->wch.code == b->wch.code);
     }
 #endif
@@ -769,7 +767,6 @@ match_range_longchar(longchar *a, longchar *b, longchar *c, int ignore)
     {
         if (a->wch.ccs != c->wch.ccs || c->wch.ccs != b->wch.ccs)
             return 0;
-#ifdef USE_UNICODE
         if (ignore)
         {
             uint32_t uc = wc_any_to_ucs(c->wch);
@@ -787,7 +784,6 @@ match_range_longchar(longchar *a, longchar *b, longchar *c, int ignore)
                         (ua <= title && title <= ub));
             }
         }
-#endif
         return (a->wch.code <= c->wch.code && c->wch.code <= b->wch.code);
     }
 #endif

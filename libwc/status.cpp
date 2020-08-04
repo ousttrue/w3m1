@@ -62,19 +62,18 @@ void wc_input_init(CharacterEncodingScheme ces, wc_status *st)
 	}
     }
 
-#ifdef USE_UNICODE
     st->tag = NULL;
     st->ntag = 0;
-#endif
+
 }
 
 void
 wc_output_init(CharacterEncodingScheme ces, wc_status *st)
 {
     wc_gset *gset;
-#ifdef USE_UNICODE
+
     size_t i, n, nw;
-#endif
+
 
     if (output_set && ces == output_st.ces_info->id &&
 	! wc_option_cmp(&WcOption, &output_option)) {
@@ -103,7 +102,7 @@ wc_output_init(CharacterEncodingScheme ces, wc_status *st)
     if (ces & WC_CES_T_ISO_2022)
 	wc_create_gmap(st);
 
-#ifdef USE_UNICODE
+
     st->tag = NULL;
     st->ntag = 0;
 
@@ -154,7 +153,7 @@ wc_output_init(CharacterEncodingScheme ces, wc_status *st)
     st->tlist[n] = NULL;
     st->tlistw[nw] = NULL;
     }
-#endif
+
 
     output_st = *st;
     output_set = true;

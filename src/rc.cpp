@@ -1368,9 +1368,9 @@ void sync_with_option(void)
         AcceptEncoding = acceptableEncoding();
     if (AcceptMedia == NULL || *AcceptMedia == '\0')
         AcceptMedia = acceptableMimeTypes();
-#ifdef USE_UNICODE
+
     update_utf8_symbol();
-#endif
+
     if (fmInitialized)
     {
         initKeymap(FALSE);

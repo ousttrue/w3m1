@@ -1,3 +1,4 @@
+#include "config.h"
 #include "ces_info.h"
 // 
 #include "iso2022.h"
@@ -215,7 +216,6 @@ static wc_gset gset_tcvn5712[] = {
     { WC_CCS_NONE, 0, 0 },
 };
 
-#ifdef USE_UNICODE
 static wc_gset gset_utf8[] = {
     { WC_CCS_US_ASCII,  0, 1 },
     { WC_CCS_UCS2,      0x80, 1 },
@@ -230,7 +230,6 @@ static wc_gset gset_utf7[] = {
     { WC_CCS_UCS_TAG,   0x80, 1 },
     { WC_CCS_NONE, 0, 0 },
 };
-#endif
 
 static wc_gset gset_raw[] = {
     { WC_CCS_US_ASCII, 0, 1 },
