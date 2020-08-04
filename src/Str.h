@@ -125,8 +125,6 @@ public:
         Insert(pos, src.data(), src.size());
     }
 
-    void ToLower();
-    void ToUpper();
     GCStr *AlignLeft(int width) const;
     GCStr *AlignRight(int width) const;
     GCStr *AlignCenter(int width) const;

@@ -928,3 +928,19 @@ GCStr *UrlDecode(GCStr *src, bool is_form, bool safe)
     }
     return tmp;
 }
+
+void ToUpper(Str str)
+{
+    auto p = str->ptr;
+    auto end = p + str->Size();
+    for (; p!=end; ++p)
+        *p = TOUPPER(*p);
+}
+
+void ToLower(Str str)
+{
+    auto p = str->ptr;
+    auto end = p + str->Size();
+    for (; p!=end; ++p)
+        *p = TOLOWER(*p);
+}

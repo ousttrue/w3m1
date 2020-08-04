@@ -286,18 +286,6 @@ void GCStr::Insert(int pos, const char *p, int size)
     }
 }
 
-void GCStr::ToLower()
-{
-    for (int i = 0; i < m_size; i++)
-        ptr[i] = TOLOWER(ptr[i]);
-}
-
-void GCStr::ToUpper()
-{
-    for (int i = 0; i < m_size; i++)
-        ptr[i] = TOUPPER(ptr[i]);
-}
-
 GCStr *GCStr::AlignLeft(int width) const
 {
     if (m_size >= width)
