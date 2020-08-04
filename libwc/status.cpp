@@ -1,4 +1,5 @@
 #include "option.h"
+#include "iso2022.h"
 #include <string.h>
 #include <gc.h>
 #define New_N(type,n) ((type*)GC_MALLOC((n)*sizeof(type)))
@@ -160,15 +161,3 @@ wc_output_init(CharacterEncodingScheme ces, wc_status *st)
     output_option = WcOption;
 }
 
-bool
-wc_ces_has_ccs(CodedCharacterSet ccs, wc_status *st)
-{
-    wc_gset *gset = st->ces_info->gset;
-    int i;
-
-    for (i = 0; gset[i].ccs; i++) {
-	if (ccs == gset[i].ccs)
-	    return true;
-    }
-    return false;
-}

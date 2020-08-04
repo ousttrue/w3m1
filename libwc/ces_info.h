@@ -17,6 +17,16 @@ struct wc_ces_info
     ConvFromFunc conv_from;
     PushToFunc push_to;
     CharConvFunc char_conv;
+
+    bool has_ccs(CodedCharacterSet ccs) const
+    {
+        for (auto i = 0; gset[i].ccs; i++)
+        {
+            if (ccs == gset[i].ccs)
+                return true;
+        }
+        return false;
+    }
 };
 
 bool wc_check_ces(CharacterEncodingScheme ces);

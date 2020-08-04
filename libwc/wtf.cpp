@@ -257,7 +257,7 @@ void wtf_push(Writer writer, void *data, CodedCharacterSet ccs, uint32_t code)
             bool fix_width_conv = WcOption.fix_width_conv;
             WcOption.fix_width_conv = false;
             wc_output_init(wtf_major_ces, &wtf_major_st);
-            if (!wc_ces_has_ccs(WC_CCS_SET(ccs), &wtf_major_st))
+            if (!wtf_major_st.ces_info->has_ccs(WC_CCS_SET(ccs)))
             {
                 cc2 = wc_any_to_any_ces(cc, &wtf_major_st);
                 if (cc2.ccs == WC_CCS_US_ASCII)
