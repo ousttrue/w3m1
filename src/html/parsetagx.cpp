@@ -294,7 +294,7 @@ done_parse_tag:
     return tag;
 }
 
-int parsedtag_set_value(struct parsed_tag *tag, int id, char *value)
+int parsedtag_set_value(struct parsed_tag *tag, int id, const char *value)
 {
     int i;
 

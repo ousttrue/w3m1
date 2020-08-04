@@ -77,7 +77,6 @@ enum CharacterEncodingScheme : uint32_t
     WC_CES_N_UTF_8 = 69,
     WC_CES_N_UTF_7 = 70,
 
-    WC_CES_T_INDEX = 0x0000ff,
     WC_CES_T_TYPE = 0x31ff00,
     WC_CES_T_NASCII = 0x01fe00,
     WC_CES_T_8BIT = 0x100000,
@@ -100,7 +99,6 @@ enum CharacterEncodingScheme : uint32_t
 
     WC_CES_WTF = (WC_CES_T_WTF | WC_CES_T_8BIT | WC_CES_T_MBYTE),
 
-#define WC_CES_INDEX(c) ((c)&WC_CES_T_INDEX)
 #define WC_CES_TYPE(c) ((c)&WC_CES_T_TYPE)
 
     WC_CES_US_ASCII = (WC_CES_T_ASCII | WC_CES_N_US_ASCII),

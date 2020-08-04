@@ -30,7 +30,7 @@ inline char *inputFilenameHist(const char *p, char *d, Hist *h)
     return inputLineHist(p, d, IN_FILENAME, h);
 }
 
-inline char *inputLine(const char *prompt, char *def_str, int flag)
+inline char *inputLine(const char *prompt, const char *def_str, int flag)
 {
     return inputLineHist(prompt, def_str, flag, NULL);
 }

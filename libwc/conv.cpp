@@ -17,7 +17,7 @@ static Str wc_conv_to_ces(Str is, CharacterEncodingScheme ces);
 Str wc_Str_conv(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 {
     if (f_ces != WC_CES_WTF)
-        is = (*WcCesInfo[WC_CES_INDEX(f_ces)].conv_from)(is, f_ces);
+        is = (*GetCesInfo(f_ces).conv_from)(is, f_ces);
     if (t_ces != WC_CES_WTF)
         return wc_conv_to_ces(is, t_ces);
     else

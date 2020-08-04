@@ -315,7 +315,6 @@ Str wc_conv_from_iso2022(Str is, CharacterEncodingScheme ces)
     uint8_t *ep = sp + is->Size();
     uint8_t *p, *q = NULL;
     int state = WC_ISO_NOSTATE;
-    wc_status st;
     CodedCharacterSet gl_ccs, gr_ccs;
 
     for (p = sp; p < ep && !(WC_ISO_MAP[*p] & WC_ISO_MAP_DETECT); p++)
@@ -326,6 +325,7 @@ Str wc_conv_from_iso2022(Str is, CharacterEncodingScheme ces)
     if (p > sp)
         os->Push(is->ptr, (int)(p - sp));
 
+    wc_status st;
     wc_input_init(ces, &st);
     gl_ccs = st.design[st.gl];
     gr_ccs = st.design[st.gr];

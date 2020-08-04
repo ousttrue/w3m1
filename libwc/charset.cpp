@@ -1,10 +1,7 @@
 #include "charset.h"
 #include <stdlib.h>
 #include <ctype.h>
-#include <gc.h>
-#define New_N(type,n) ((type*)GC_MALLOC((n)*sizeof(type)))
 
-// 
 #include "ces_info.h"
 #include "ces.h"
 
@@ -432,22 +429,6 @@ wc_locale_to_ces(const char *locale)
     return WC_CES_ISO_8859_1;
 }
 
-char *
-wc_ces_to_charset(CharacterEncodingScheme ces)
-{
-    if (ces == WC_CES_WTF)
-	return "WTF";
-    return WcCesInfo[WC_CES_INDEX(ces)].name;
-}
-
-char *
-wc_ces_to_charset_desc(CharacterEncodingScheme ces)
-{
-    if (ces == WC_CES_WTF)
-	return "W3M Transfer Format";
-    return WcCesInfo[WC_CES_INDEX(ces)].desc;
-}
-
 CharacterEncodingScheme
 wc_guess_8bit_charset(CharacterEncodingScheme orig)
 {
@@ -465,48 +446,4 @@ wc_guess_8bit_charset(CharacterEncodingScheme orig)
 	return WC_CES_ISO_8859_1;
     }
     return orig;
-}
-
-bool
-wc_check_ces(CharacterEncodingScheme ces)
-{
-    size_t i = WC_CES_INDEX(ces);
-
-    return (i <= WC_CES_END && WcCesInfo[i].id == ces);
-}
-
-static int
-wc_ces_list_cmp(const void *a, const void *b)
-{
-    return strcasecmp(((wc_ces_list *)a)->desc, ((wc_ces_list *)b)->desc);
-}
-
-static wc_ces_list *list = NULL;
-
-wc_ces_list *
-wc_get_ces_list(void)
-{
-    wc_ces_info *info;
-    size_t n;
-
-    if (list)
-	return list;
-    for (info = WcCesInfo, n = 0; info->id; info++) {
-	if (info->name != NULL)
-	    n++;
-    }
-    list = New_N(wc_ces_list, n + 1);
-    for (info = WcCesInfo, n = 0; info->id; info++) {
-	if (info->name != NULL) {
-	    list[n].id = info->id;
-	    list[n].name = info->name;
-	    list[n].desc = info->desc;
-	    n++;
-	}
-    }
-    list[n].id = WC_CES_NONE;
-    list[n].name = NULL;
-    list[n].desc = NULL;
-    qsort(list, n, sizeof(wc_ces_list), wc_ces_list_cmp);
-    return list;
 }

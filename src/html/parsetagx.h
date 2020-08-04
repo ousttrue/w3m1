@@ -32,5 +32,5 @@ inline std::string_view parsedtag_get_value(const struct parsed_tag &tag, int id
     return value;
 }
 
-extern int parsedtag_set_value(struct parsed_tag *tag, int id, char *value);
+extern int parsedtag_set_value(struct parsed_tag *tag, int id, const char *value);
 extern Str parsedtag2str(struct parsed_tag *tag);

@@ -125,7 +125,7 @@ wtf_init(CharacterEncodingScheme ces1, CharacterEncodingScheme ces2)
 
     if (! wc_check_ces(ces1))
 	return;
-    gset = WcCesInfo[WC_CES_INDEX(ces1)].gset;
+    gset = GetCesInfo(ces1).gset;
     if (gset == NULL || gset[1].ccs == 0 ||
 	gset[1].ccs & (WC_CCS_A_WCS16|WC_CCS_A_WCS32))
 	return;

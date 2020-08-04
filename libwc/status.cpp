@@ -40,7 +40,7 @@ void wc_input_init(CharacterEncodingScheme ces, wc_status *st)
     wc_gset *gset;
     int i, g;
 
-    st->ces_info = &WcCesInfo[WC_CES_INDEX(ces)];
+    st->ces_info = &GetCesInfo(ces);
     gset = st->ces_info->gset;
 
     st->state = 0;
@@ -82,7 +82,7 @@ wc_output_init(CharacterEncodingScheme ces, wc_status *st)
     }
 
     st->state = 0;
-    st->ces_info = &WcCesInfo[WC_CES_INDEX(ces)];
+    st->ces_info = &GetCesInfo(ces);
     gset = st->ces_info->gset;
 
     st->g0_ccs = ((ces == WC_CES_ISO_2022_JP || ces == WC_CES_ISO_2022_JP_2 ||

@@ -1494,7 +1494,7 @@ load_option_panel(void)
     BufferPtr buf;
 
     if (optionpanel_str == NULL)
-        optionpanel_str = Sprintf(optionpanel_src1, w3mApp::w3m_version,
+        optionpanel_str = Sprintf(optionpanel_src1, w3mApp::w3m_version.data(),
                                   html_quote(localCookie()->ptr), _(CMT_HELPER));
     if (!OptionEncode)
     {

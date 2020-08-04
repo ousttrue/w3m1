@@ -15,7 +15,7 @@ struct wc_table
 
 struct wc_status
 {
-    wc_ces_info *ces_info;
+    const wc_ces_info *ces_info;
     uint8_t gr;
     uint8_t gl;
     uint8_t ss;

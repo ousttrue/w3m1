@@ -113,8 +113,8 @@ wc_conv_from_viet(Str is, CharacterEncodingScheme ces)
     uint8_t *sp = (uint8_t *)is->ptr;
     uint8_t *ep = sp + is->Size();
     uint8_t *p;
-    CodedCharacterSet ccs1 = WcCesInfo[WC_CCS_INDEX(ces)].gset[1].ccs;
-    CodedCharacterSet ccs2 = WcCesInfo[WC_CCS_INDEX(ces)].gset[2].ccs;
+    CodedCharacterSet ccs1 = GetCesInfo(ces).gset[1].ccs;
+    CodedCharacterSet ccs2 = GetCesInfo(ces).gset[2].ccs;
     uint8_t *map = NULL;
 
     switch (ces) {
