@@ -7,18 +7,6 @@ int INIT_BUFFER_WIDTH();
 int INIT_BUFFER_WIDTH();
 int FOLD_BUFFER_WIDTH();
 
-#ifdef USE_MOUSE
-/* Addition:mouse event */
-#define MOUSE_BTN1_DOWN 0
-#define MOUSE_BTN2_DOWN 1
-#define MOUSE_BTN3_DOWN 2
-#define MOUSE_BTN4_DOWN_RXVT 3
-#define MOUSE_BTN5_DOWN_RXVT 4
-#define MOUSE_BTN4_DOWN_XTERM 64
-#define MOUSE_BTN5_DOWN_XTERM 65
-#define MOUSE_BTN_UP 3
-#define MOUSE_BTN_RESET -1
-#endif
 
 void mouse_active();
 void mouse_inactive();

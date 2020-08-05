@@ -25,6 +25,7 @@
 #include "frontend/mouse.h"
 #include "frontend/buffer.h"
 #include "frontend/tabbar.h"
+#include "frontend/menu.h"
 #include "entity.h"
 #include "transport/loader.h"
 #include "charset.h"
@@ -629,8 +630,6 @@ int cur_real_linenumber(BufferPtr buf)
     }
     return n;
 }
-
-
 
 static char *s_MarkString = NULL;
 
@@ -1864,7 +1863,6 @@ void tabURL0(TabPtr tab, const char *prompt, int relative)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-
 char *convert_size3(clen_t size)
 {
     Str tmp = Strnew();
@@ -1907,8 +1905,6 @@ AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd,
     return event;
 }
 
-
-
 char *searchKeyData()
 {
     char *data = NULL;
@@ -1928,15 +1924,15 @@ char *searchKeyData()
 
 int sysm_process_mouse(int x, int y, int nbs, int obs)
 {
-    int btn;
-    int bits;
-
+    MouseEventTypes btn;
     if (obs & ~nbs)
         btn = MOUSE_BTN_UP;
     else if (nbs & ~obs)
     {
-        bits = nbs & ~obs;
-        btn = bits & 0x1 ? MOUSE_BTN1_DOWN : (bits & 0x2 ? MOUSE_BTN2_DOWN : (bits & 0x4 ? MOUSE_BTN3_DOWN : 0));
+        auto bits = nbs & ~obs;
+        btn = (MouseEventTypes)((bits & 0x1)
+                                    ? MOUSE_BTN1_DOWN
+                                    : (bits & 0x2 ? MOUSE_BTN2_DOWN : (bits & 0x4 ? MOUSE_BTN3_DOWN : 0)));
     }
     else /* nbs == obs */
         return 0;
@@ -2075,7 +2071,6 @@ void SigPipe(SIGNAL_ARG)
     mySignal(SIGPIPE, SigPipe);
     SIGNAL_RETURN;
 }
-
 
 void saveBufferInfo()
 {

@@ -5,6 +5,21 @@
 
 #ifndef MENU_H
 #define MENU_H
+
+/* Addition:mouse event */
+enum MouseEventTypes
+{
+    MOUSE_BTN1_DOWN = 0,
+    MOUSE_BTN2_DOWN = 1,
+    MOUSE_BTN3_DOWN = 2,
+    MOUSE_BTN4_DOWN_RXVT = 3,
+    MOUSE_BTN5_DOWN_RXVT = 4,
+    MOUSE_BTN4_DOWN_XTERM = 64,
+    MOUSE_BTN5_DOWN_XTERM = 65,
+    MOUSE_BTN_UP = 3,
+    MOUSE_BTN_RESET = -1,
+};
+
 #include "w3m.h"
 #include "frontend/tab.h"
 #include "frontend/link.h"
