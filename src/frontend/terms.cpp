@@ -1,4 +1,3 @@
-/* $Id: terms.c,v 1.63 2010/08/20 09:34:47 htrb Exp $ */
 /* 
  * An original curses library for EUC-kanji by Akinori ITO,     December 1989
  * revised by Akinori ITO, January 1995
@@ -11,7 +10,6 @@
 #include "gc_helper.h"
 #include "public.h"
 #include "ctrlcode.h"
-
 #include "myctype.h"
 #include <stdio.h>
 #include <signal.h>
@@ -21,14 +19,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <string.h>
-#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
-#endif
-#ifndef __MINGW32_VERSION
 #include <sys/ioctl.h>
-#else
-#include <winsock.h>
-#endif /* __MINGW32_VERSION */
 
 static int is_xterm = 0;
 void mouse_init(), mouse_end();
@@ -36,25 +28,14 @@ int mouseActive = 0;
 static char *title_str = NULL;
 static int tty = -1;
 
-// char *getenv(const char *);
 void reset_exit(SIGNAL_ARG);
 void reset_error_exit(SIGNAL_ARG);
-// MySignalHandler error_dump;
 void setlinescols(void);
 void flush_tty();
 
 #ifndef SIGIOT
 #define SIGIOT SIGABRT
 #endif /* not SIGIOT */
-
-#ifdef HAVE_TERMIO_H
-#include <termio.h>
-typedef struct termio TerminalMode;
-#define TerminalSet(fd, x) ioctl(fd, TCSETA, x)
-#define TerminalGet(fd, x) ioctl(fd, TCGETA, x)
-#define MODEFLAG(d) ((d).c_lflag)
-#define IMODEFLAG(d) ((d).c_iflag)
-#endif /* HAVE_TERMIO_H */
 
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
@@ -65,50 +46,6 @@ typedef struct termios TerminalMode;
 #define MODEFLAG(d) ((d).c_lflag)
 #define IMODEFLAG(d) ((d).c_iflag)
 #endif /* HAVE_TERMIOS_H */
-
-#ifdef HAVE_SGTTY_H
-#include <sgtty.h>
-typedef struct sgttyb TerminalMode;
-#define TerminalSet(fd, x) ioctl(fd, TIOCSETP, x)
-#define TerminalGet(fd, x) ioctl(fd, TIOCGETP, x)
-#define MODEFLAG(d) ((d).sg_flags)
-#endif /* HAVE_SGTTY_H */
-
-#ifdef __MINGW32_VERSION
-/* dummy struct */
-typedef unsigned char cc_t;
-typedef unsigned int speed_t;
-typedef unsigned int tcflag_t;
-
-#define NCCS 32
-struct termios
-{
-    tcflag_t c_iflag; /* input mode flags */
-    tcflag_t c_oflag; /* output mode flags */
-    tcflag_t c_cflag; /* control mode flags */
-    tcflag_t c_lflag; /* local mode flags */
-    cc_t c_line;      /* line discipline */
-    cc_t c_cc[NCCS];  /* control characters */
-    speed_t c_ispeed; /* input speed */
-    speed_t c_ospeed; /* output speed */
-};
-typedef struct termios TerminalMode;
-#define TerminalSet(fd, x) (0)
-#define TerminalGet(fd, x) (0)
-#define MODEFLAG(d) (0)
-
-/* dummy defines */
-#define SIGHUP (0)
-#define SIGQUIT (0)
-#define ECHO (0)
-#define ISIG (0)
-#define VEOF (0)
-#define ICANON (0)
-#define IXON (0)
-#define IXOFF (0)
-
-char *ttyname(int);
-#endif /* __MINGW32_VERSION */
 
 #define MAX_LINE 200
 #define MAX_COLUMN 400
@@ -187,17 +124,13 @@ char *ttyname(int);
 
 typedef unsigned short l_prop;
 
-typedef struct scline
+struct Screen
 {
-#ifdef USE_M17N
     char **lineimage;
-#else
-    char *lineimage;
-#endif
     l_prop *lineprop;
     short isdirty;
     short eol;
-} Screen;
+};
 
 static TerminalMode d_ioval;
 static FILE *ttyf = NULL;
@@ -213,7 +146,8 @@ char *T_cd, *T_ce, *T_kr, *T_kl, *T_cr, *T_bt, *T_ta, *T_sc, *T_rc,
 static int max_LINES = 0, max_COLS = 0;
 static int tab_step = 8;
 static int CurLine, CurColumn;
-static Screen *ScreenElem = NULL, **ScreenImage = NULL;
+static Screen *ScreenElem = NULL;
+static Screen **ScreenImage = NULL;
 static l_prop CurrentMode = 0;
 static int graph_enabled = 0;
 
@@ -1029,33 +963,22 @@ bcolor_seq(int colmode)
 #define RF_NEED_TO_MOVE 0
 #define RF_CR_OK 1
 #define RF_NONEED_TO_MOVE 2
-#ifdef USE_BG_COLOR
 #define M_MEND (S_STANDOUT | S_UNDERLINE | S_BOLD | S_COLORED | S_BCOLORED | S_GRAPHICS)
-#else /* not USE_BG_COLOR */
-#define M_MEND (S_STANDOUT | S_UNDERLINE | S_BOLD | S_COLORED | S_GRAPHICS)
-#endif /* not USE_BG_COLOR */
 void refresh(void)
 {
-    int line, col, pcol;
+    int col, pcol;
     int pline = CurLine;
     int moved = RF_NEED_TO_MOVE;
-#ifdef USE_M17N
     char **pc;
-#else
-    char *pc;
-#endif
     l_prop *pr, mode = 0;
     l_prop color = COL_FTERM;
-#ifdef USE_BG_COLOR
     l_prop bcolor = COL_BTERM;
-#endif /* USE_BG_COLOR */
-    short *dirty;
 
     WCWriter writer(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset, ttyf);
 
-    for (line = 0; line <= (LINES - 1); line++)
+    for (auto line = 0; line <= (LINES - 1); line++)
     {
-        dirty = &ScreenImage[line]->isdirty;
+        auto dirty = &ScreenImage[line]->isdirty;
         if (*dirty & L_DIRTY)
         {
             *dirty &= ~L_DIRTY;
@@ -1123,15 +1046,15 @@ void refresh(void)
                     break;
 
                 /* 
-		 * some terminal emulators do linefeed when a
-		 * character is put on COLS-th column. this behavior
-		 * is different from one of vt100, but such terminal
-		 * emulators are used as vt100-compatible
-		 * emulators. This behaviour causes scroll when a
-		 * character is drawn on (COLS-1,LINES-1) point.  To
-		 * avoid the scroll, I prohibit to draw character on
-		 * (COLS-1,LINES-1).
-		 */
+                * some terminal emulators do linefeed when a
+                * character is put on COLS-th column. this behavior
+                * is different from one of vt100, but such terminal
+                * emulators are used as vt100-compatible
+                * emulators. This behaviour causes scroll when a
+                * character is drawn on (COLS-1,LINES-1) point.  To
+                * avoid the scroll, I prohibit to draw character on
+                * (COLS-1,LINES-1).
+                */
                 if ((!(pr[col] & S_STANDOUT) && (mode & S_STANDOUT)) ||
                     (!(pr[col] & S_UNDERLINE) && (mode & S_UNDERLINE)) ||
                     (!(pr[col] & S_BOLD) && (mode & S_BOLD)) ||
@@ -1174,14 +1097,14 @@ void refresh(void)
                         mode = ((mode & ~COL_FCOLOR) | color);
                         writestr(color_seq(color));
                     }
-#ifdef USE_BG_COLOR
+
                     if ((pr[col] & S_BCOLORED) && (pr[col] ^ mode) & COL_BCOLOR)
                     {
                         bcolor = (pr[col] & COL_BCOLOR);
                         mode = ((mode & ~COL_BCOLOR) | bcolor);
                         writestr(bcolor_seq(bcolor));
                     }
-#endif /* USE_BG_COLOR */
+
                     if ((pr[col] & S_GRAPHICS) && !(mode & S_GRAPHICS))
                     {
                         writer.end();
@@ -1209,12 +1132,10 @@ void refresh(void)
         *dirty &= ~(L_NEED_CE | L_CLRTOEOL);
         if (mode & M_MEND)
         {
-            if (mode & (S_COLORED
-#ifdef USE_BG_COLOR
-                        | S_BCOLORED
-#endif /* USE_BG_COLOR */
-                        ))
+            if (mode & (S_COLORED | S_BCOLORED))
+            {
                 writestr(T_op);
+            }
             if (mode & S_GRAPHICS)
             {
                 writestr(T_ae);
