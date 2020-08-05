@@ -4,6 +4,43 @@
 struct wc_status;
 void wc_push_end(Str os, wc_status *st);
 
+/// convert a character
+SingleCharacter GetCharacter(CharacterEncodingScheme ces, const uint8_t **src);
+template <typename T>
+SingleCharacter GetSingleCharacter(CharacterEncodingScheme ces, const T **src)
+{
+    static_assert(sizeof(T) == 1); // char variant
+    return GetCharacter(ces, (const uint8_t **)(src));
+}
+
+SingleCharacter ToWtf(CharacterEncodingScheme ces, SingleCharacter src);
+SingleCharacter FromWtf(CharacterEncodingScheme ces, SingleCharacter src);
+
+inline SingleCharacter wc_char_conv(SingleCharacter src, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
+{
+    if (f_ces == WC_CES_WTF && t_ces == WC_CES_WTF)
+    {
+        // no conversion
+        return src;
+    }
+
+    if (f_ces == WC_CES_WTF)
+    {
+        // src => wtf
+        return ToWtf(t_ces, src);
+    }
+
+    // wtf <= src
+    auto wtf = FromWtf(f_ces, src);
+    if (t_ces == WC_CES_WTF)
+    {
+        return wtf;
+    }
+
+    // wtf => dst
+    return ToWtf(t_ces, src);
+}
+
 Str wc_Str_conv(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces);
 inline Str wc_conv(const char *is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
 {

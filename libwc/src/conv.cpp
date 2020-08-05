@@ -12,62 +12,57 @@
 char *WcReplace = "?";
 char *WcReplaceW = "??";
 
-static Str wc_conv_to_ces(Str is, CharacterEncodingScheme ces);
-
-///
-///
-///
-Str wc_Str_conv(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
+SingleCharacter GetCharacter(CharacterEncodingScheme ces, const uint8_t **src)
 {
-    if (f_ces == WC_CES_WTF && t_ces == WC_CES_WTF)
+    if (!src)
     {
-        // no conversion
-        return is;
+        return SingleCharacter();
+    }
+    auto p = *src;
+    if (!p)
+    {
+        return SingleCharacter();
+    }
+    if (p[0] == '\0')
+    {
+        return SingleCharacter();
     }
 
-    if (f_ces == WC_CES_WTF)
+    switch (ces)
     {
-        // is => wtf
-        return wc_conv_to_ces(is, t_ces);
+    case WC_CES_US_ASCII:
+    {
+        ++(*src); // advance
+        return SingleCharacter(p[0]);
     }
-    else
+
+    case WC_CES_UTF_8:
     {
-        // wtf <= is
-        auto &info = GetCesInfo(f_ces);
-        auto wtf = info.conv_from(is, f_ces);
-        if (t_ces == WC_CES_WTF)
+        // TODO: normalize
         {
-            // wtf
-            return wtf;
+            auto size = WC_UTF8_MAP[p[0]];
+            (*src) += size; // advance
+            return SingleCharacter(p, size);
         }
-
-        // wtf => to
-        return wc_conv_to_ces(wtf, t_ces);
     }
+    }
+
+    return {};
+}
+SingleCharacter ToWtf(CharacterEncodingScheme ces, SingleCharacter src)
+{
+    return {""};
+}
+SingleCharacter FromWtf(CharacterEncodingScheme ces, SingleCharacter src)
+{
+    return {""};
 }
 
-Str wc_Str_conv_strict(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
+static Str FromWtf(Str is, CharacterEncodingScheme ces)
 {
-    Str os;
-    wc_option opt = WcOption;
-
-    WcOption.strict_iso2022 = true;
-    WcOption.no_replace = true;
-    WcOption.fix_width_conv = false;
-    os = wc_Str_conv(is, f_ces, t_ces);
-    WcOption = opt;
-    return os;
-}
-
-static Str
-wc_conv_to_ces(Str is, CharacterEncodingScheme ces)
-{
-    Str os;
+    uint8_t *p;
     uint8_t *sp = (uint8_t *)is->ptr;
     uint8_t *ep = sp + is->Size();
-    uint8_t *p;
-    wc_status st;
-
     switch (ces)
     {
     case WC_CES_HZ_GB_2312:
@@ -86,16 +81,19 @@ wc_conv_to_ces(Str is, CharacterEncodingScheme ces)
         break;
     }
     if (p == ep)
+    {
+        // all bytes is ascii range
         return is;
+    }
 
-    os = Strnew_size(is->Size());
+    auto os = Strnew_size(is->Size());
     if (p > sp)
         p--; /* for precompose */
     if (p > sp)
         os->Push(is->ptr, (int)(p - sp));
 
+    wc_status st;
     wc_output_init(ces, &st);
-
     switch (ces)
     {
     case WC_CES_ISO_2022_JP:
@@ -127,9 +125,51 @@ wc_conv_to_ces(Str is, CharacterEncodingScheme ces)
         }
         break;
     }
-
     wc_push_end(os, &st);
 
+    return os;
+}
+
+///
+///
+///
+Str wc_Str_conv(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
+{
+    if (f_ces == WC_CES_WTF && t_ces == WC_CES_WTF)
+    {
+        // no conversion
+        return is;
+    }
+
+    if (f_ces == WC_CES_WTF)
+    {
+        // is => wtf
+        return FromWtf(is, t_ces);
+    }
+
+    // wtf <= is
+    auto &info = GetCesInfo(f_ces);
+    auto wtf = info.conv_from(is, f_ces);
+    if (t_ces == WC_CES_WTF)
+    {
+        // wtf
+        return wtf;
+    }
+
+    // wtf => to
+    return FromWtf(wtf, t_ces);
+}
+
+Str wc_Str_conv_strict(Str is, CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces)
+{
+    Str os;
+    wc_option opt = WcOption;
+
+    WcOption.strict_iso2022 = true;
+    WcOption.no_replace = true;
+    WcOption.fix_width_conv = false;
+    os = wc_Str_conv(is, f_ces, t_ces);
+    WcOption = opt;
     return os;
 }
 

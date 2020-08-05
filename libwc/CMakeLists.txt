@@ -37,3 +37,17 @@ PUBLIC
     charutil
     gc
 )
+
+add_executable("${TARGET_NAME}_test"
+    test/main.cpp
+    test/wc_test.cpp
+)
+target_include_directories("${TARGET_NAME}_test"
+PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/src
+)   
+target_link_libraries("${TARGET_NAME}_test"
+PRIVATE
+    ${TARGET_NAME}
+    catch2
+)

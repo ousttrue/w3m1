@@ -1,5 +1,8 @@
 #pragma once
 #include <stdint.h>
+#include <assert.h>
+#include <array>
+#include <string_view>
 
 enum CharacterEncodingScheme : uint32_t
 {
@@ -189,10 +192,122 @@ enum CharacterEncodingScheme : uint32_t
 
     WC_CES_END = WC_CES_N_UTF_7,
 };
-inline CharacterEncodingScheme operator~ (CharacterEncodingScheme a) { return (CharacterEncodingScheme)~(int)a; }
-inline CharacterEncodingScheme operator| (CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a | (int)b); }
-inline CharacterEncodingScheme operator& (CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a & (int)b); }
-inline CharacterEncodingScheme operator^ (CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a ^ (int)b); }
-inline CharacterEncodingScheme& operator|= (CharacterEncodingScheme& a, CharacterEncodingScheme b) { return (CharacterEncodingScheme&)((int&)a |= (int)b); }
-inline CharacterEncodingScheme& operator&= (CharacterEncodingScheme& a, CharacterEncodingScheme b) { return (CharacterEncodingScheme&)((int&)a &= (int)b); }
-inline CharacterEncodingScheme& operator^= (CharacterEncodingScheme& a, CharacterEncodingScheme b) { return (CharacterEncodingScheme&)((int&)a ^= (int)b); }
+inline CharacterEncodingScheme operator~(CharacterEncodingScheme a) { return (CharacterEncodingScheme) ~(int)a; }
+inline CharacterEncodingScheme operator|(CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a | (int)b); }
+inline CharacterEncodingScheme operator&(CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a & (int)b); }
+inline CharacterEncodingScheme operator^(CharacterEncodingScheme a, CharacterEncodingScheme b) { return (CharacterEncodingScheme)((int)a ^ (int)b); }
+inline CharacterEncodingScheme &operator|=(CharacterEncodingScheme &a, CharacterEncodingScheme b) { return (CharacterEncodingScheme &)((int &)a |= (int)b); }
+inline CharacterEncodingScheme &operator&=(CharacterEncodingScheme &a, CharacterEncodingScheme b) { return (CharacterEncodingScheme &)((int &)a &= (int)b); }
+inline CharacterEncodingScheme &operator^=(CharacterEncodingScheme &a, CharacterEncodingScheme b) { return (CharacterEncodingScheme &)((int &)a ^= (int)b); }
+
+union SingleCharacter {
+    uint32_t value;
+    union {
+        uint16_t low;
+        uint16_t high;
+    };
+    std::array<uint8_t, 4> bytes;
+
+    /// src: string include a character. allow multibyte, any encoding
+    // CharacterCode(std::string_view src)
+    // {
+    //     assert(src.size() < bytes.size());
+    //     int i = 0;
+    //     for (; i < src.size(); ++i)
+    //     {
+    //         bytes[i] = src[i];
+    //     }
+    //     for (; i < bytes.size(); ++i)
+    //     {
+    //         bytes[i] = 0;
+    //     }
+    // }
+
+    template <typename T>
+    SingleCharacter(const T *src)
+    {
+        static_assert(sizeof(T) == 1); // char variant
+        uint32_t i = 0;
+        for (; i < bytes.size(); ++i, ++src)
+        {
+            if (*src == 0)
+            {
+                break;
+            }
+            bytes[i] = *src;
+        }
+        for (; i < bytes.size(); ++i, ++src)
+        {
+            bytes[i] = 0;
+        }
+    }
+
+    template <typename T>
+    SingleCharacter(const T *src, uint32_t size)
+    {
+        static_assert(sizeof(T) == 1); // char variant
+        if (size > 4)
+        {
+            throw std::runtime_error("out of range");
+        }
+        uint32_t i = 0;
+        for (; i < size; ++i, ++src)
+        {
+            assert(*src);
+            bytes[i] = *src;
+        }
+        for (; i < bytes.size(); ++i, ++src)
+        {
+            bytes[i] = 0;
+        }
+    }
+
+    SingleCharacter()
+    {
+        value = 0;
+    }
+
+    uint32_t size() const
+    {
+        if (bytes[3])
+        {
+            return 4;
+        }
+        if (bytes[2])
+        {
+            return 3;
+        }
+        if (bytes[1])
+        {
+            return 2;
+        }
+        if (bytes[0])
+        {
+            return 1;
+        }
+        return 0;
+    }
+
+    explicit SingleCharacter(uint8_t c)
+    {
+        value = 0;
+        bytes[0] = c;
+    }
+
+    explicit SingleCharacter(uint16_t c)
+    {
+        value = 0;
+        low = c;
+    }
+
+    explicit SingleCharacter(uint32_t c)
+    {
+        value = c;
+    }
+
+    bool operator==(const SingleCharacter &rhs) const
+    {
+        return value == rhs.value;
+    }
+};
+static_assert(sizeof(SingleCharacter) == 4);
