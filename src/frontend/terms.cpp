@@ -1030,8 +1030,7 @@ refresh(void)
 #endif				/* USE_BG_COLOR */
     short *dirty;
 
-
-    wc_putc_init(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset);
+    WCWriter writer(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset, ttyf);
 
     for (line = 0; line <= (LINES-1); line++) {
 	dirty = &ScreenImage[line]->isdirty;
@@ -1148,9 +1147,7 @@ refresh(void)
 		    }
 #endif				/* USE_BG_COLOR */
 		    if ((pr[col] & S_GRAPHICS) && !(mode & S_GRAPHICS)) {
-#ifdef USE_M17N
-			wc_putc_end(ttyf);
-#endif
+			    writer.end();
 			if (!graph_enabled) {
 			    graph_enabled = 1;
 			    writestr(T_eA);
@@ -1158,15 +1155,11 @@ refresh(void)
 			writestr(T_as);
 			mode |= S_GRAPHICS;
 		    }
-#ifdef USE_M17N
+
 		    if (pr[col] & S_GRAPHICS)
 			write1(graphchar(*pc[col]));
 		    else if (CHMODE(pr[col]) != C_WCHAR2)
-			wc_putc(pc[col], ttyf);
-#else
-		    write1((pr[col] & S_GRAPHICS) ? graphchar(pc[col]) :
-			   pc[col]);
-#endif
+			    writer.putc(pc[col]);
 		    pcol = col + 1;
 		}
 	    }
@@ -1184,18 +1177,16 @@ refresh(void)
 		))
 		writestr(T_op);
 	    if (mode & S_GRAPHICS) {
-		writestr(T_ae);
-#ifdef USE_M17N
-		wc_putc_clear_status();
-#endif
+    		writestr(T_ae);
+		writer.clear_status();
 	    }
 	    writestr(T_me);
 	    mode &= ~M_MEND;
 	}
     }
-#ifdef USE_M17N
-    wc_putc_end(ttyf);
-#endif
+
+    writer.end();
+
     MOVE(CurLine, CurColumn);
     flush_tty();
 }

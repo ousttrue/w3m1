@@ -20,7 +20,7 @@ inline char *inputLineHist(const char *prompt, const char *def_str, int flag, Hi
     return inputLineHistSearch(prompt, def_str, flag, hist, NULL);
 }
 
-inline char *inputStrHist(const char *prompt, char *def_str, Hist *hist)
+inline char *inputStrHist(const char *prompt, const char *def_str, Hist *hist)
 {
     return inputLineHist(prompt, def_str, IN_STRING, hist);
 }

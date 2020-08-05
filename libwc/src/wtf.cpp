@@ -14,7 +14,7 @@
 #include "utf8.h"
 #include "charset.h"
 
-enum WobblyTransformationFormatFlags: uint8_t
+enum WobblyTransformationFormatFlags : uint8_t
 {
     WTF_C_CS94 = 0x80,
     WTF_C_CS94W = 0x81,
@@ -53,96 +53,104 @@ enum WobblyTransformationFormatFlags: uint8_t
     WTF_C_NBSP = 0xA0,
 };
 
-uint8_t WTF_WIDTH_MAP[ 0x100 ] = {
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+uint8_t WTF_WIDTH_MAP[0x100] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 
-    1,2,1,2,1,1,1,2, 1,2,1,2,1,1,1,1, 0,0,0,0,0,0,0,0, 0,0,0,0,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+    1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    // keep indent
 };
 
-uint8_t WTF_LEN_MAP[ 0x100 ] = {
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+uint8_t WTF_LEN_MAP[0x100] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 
-    3,4,3,4,3,3,3,4, 4,4,6,6,1,1,1,1, 3,4,3,4,3,3,3,4, 4,4,6,6,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+    3, 4, 3, 4, 3, 3, 3, 4, 4, 4, 6, 6, 1, 1, 1, 1, 3, 4, 3, 4, 3, 3, 3, 4, 4, 4, 6, 6, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    // keep indent
 };
 
-uint8_t WTF_TYPE_MAP[ 0x100 ] = {
-    1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
-    0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,
+uint8_t WTF_TYPE_MAP[0x100] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 
-    2,  0xA,2,  0xA, 2, 0x12,2,  0xA, 2,  0xA,2,  0xA, 0x20,0x20,0x20,0x20,
-    4,  0xC,4,  0xC, 4, 0x20,4,  0xC, 4,  0xC,4,  0xC, 0x20,0x20,0x20,0x20,
- 0x20,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2,
-    2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2,
-    2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2,
+    2, 0xA, 2, 0xA, 2, 0x12, 2, 0xA, 2, 0xA, 2, 0xA, 0x20, 0x20, 0x20, 0x20,
+    4, 0xC, 4, 0xC, 4, 0x20, 4, 0xC, 4, 0xC, 4, 0xC, 0x20, 0x20, 0x20, 0x20,
+    0x20, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    // keep indent
 };
 
-static uint16_t CCS_MAP[ 33 ] = {
-    WC_CCS_A_CS94    >> 8, WC_CCS_A_CS94W    >> 8,
-    WC_CCS_A_CS96    >> 8, WC_CCS_A_CS96W    >> 8,
-    WC_CCS_A_CS942   >> 8, WC_CCS_A_UNKNOWN  >> 8,
-    WC_CCS_A_PCS     >> 8, WC_CCS_A_PCSW     >> 8,
-    WC_CCS_A_WCS16   >> 8, WC_CCS_A_WCS16W   >> 8,
-    WC_CCS_A_WCS32   >> 8, WC_CCS_A_WCS32W   >> 8,
-    0,                     0,
-    0,                     0,
-    WC_CCS_A_CS94_C  >> 8, WC_CCS_A_CS94W_C  >> 8,
-    WC_CCS_A_CS96_C  >> 8, WC_CCS_A_CS96W_C  >> 8,
+static uint16_t CCS_MAP[33] = {
+    WC_CCS_A_CS94 >> 8, WC_CCS_A_CS94W >> 8,
+    WC_CCS_A_CS96 >> 8, WC_CCS_A_CS96W >> 8,
+    WC_CCS_A_CS942 >> 8, WC_CCS_A_UNKNOWN >> 8,
+    WC_CCS_A_PCS >> 8, WC_CCS_A_PCSW >> 8,
+    WC_CCS_A_WCS16 >> 8, WC_CCS_A_WCS16W >> 8,
+    WC_CCS_A_WCS32 >> 8, WC_CCS_A_WCS32W >> 8,
+    0, 0,
+    0, 0,
+    WC_CCS_A_CS94_C >> 8, WC_CCS_A_CS94W_C >> 8,
+    WC_CCS_A_CS96_C >> 8, WC_CCS_A_CS96W_C >> 8,
     WC_CCS_A_CS942_C >> 8, 0,
-    WC_CCS_A_PCS_C   >> 8, WC_CCS_A_PCSW_C   >> 8,
+    WC_CCS_A_PCS_C >> 8, WC_CCS_A_PCSW_C >> 8,
     WC_CCS_A_WCS16_C >> 8, WC_CCS_A_WCS16W_C >> 8,
     WC_CCS_A_WCS32_C >> 8, WC_CCS_A_WCS32W_C >> 8,
-    0,                     0,
-    0,                     0,
+    0, 0,
+    0, 0,
     0,
+    // keep indent
 };
 
 CodedCharacterSet wtf_gr_ccs = WC_CCS_NONE;
 static CharacterEncodingScheme wtf_major_ces = WC_CES_US_ASCII;
 static wc_status wtf_major_st;
 
-void
-wtf_init(CharacterEncodingScheme ces1, CharacterEncodingScheme ces2)
+void wtf_init(CharacterEncodingScheme ces1, CharacterEncodingScheme ces2)
 {
     int i;
     wc_gset *gset;
 
     if (wc_check_ces(ces2))
-	wtf_major_ces = ces2;
+        wtf_major_ces = ces2;
 
-    if (! wc_check_ces(ces1))
-	return;
+    if (!wc_check_ces(ces1))
+        return;
     gset = GetCesInfo(ces1).gset;
     if (gset == NULL || gset[1].ccs == 0 ||
-	gset[1].ccs & (WC_CCS_A_WCS16|WC_CCS_A_WCS32))
-	return;
+        gset[1].ccs & (WC_CCS_A_WCS16 | WC_CCS_A_WCS32))
+        return;
     wtf_gr_ccs = gset[1].ccs;
 
-    if (WC_CCS_IS_WIDE(wtf_gr_ccs)) {
-	for (i = 0xa1; i <= 0xff; i++) {
-	    WTF_WIDTH_MAP[i] = 2;
-	    WTF_LEN_MAP[i] = 2;
-	    WTF_TYPE_MAP[i] = WTF_TYPE_WCHAR1W;
-	}
-    } else {
-	for (i = 0xa1; i <= 0xff; i++) {
-	    WTF_WIDTH_MAP[i] = 1;
-	    WTF_LEN_MAP[i] = 1;
-	    WTF_TYPE_MAP[i] = WTF_TYPE_WCHAR1;
-	}
+    if (WC_CCS_IS_WIDE(wtf_gr_ccs))
+    {
+        for (i = 0xa1; i <= 0xff; i++)
+        {
+            WTF_WIDTH_MAP[i] = 2;
+            WTF_LEN_MAP[i] = 2;
+            WTF_TYPE_MAP[i] = WTF_TYPE_WCHAR1W;
+        }
+    }
+    else
+    {
+        for (i = 0xa1; i <= 0xff; i++)
+        {
+            WTF_WIDTH_MAP[i] = 1;
+            WTF_LEN_MAP[i] = 1;
+            WTF_TYPE_MAP[i] = WTF_TYPE_WCHAR1;
+        }
     }
 }
 
@@ -157,19 +165,19 @@ int wtf_width(uint8_t *p)
     return (int)WTF_WIDTH_MAP[(uint8_t)*p] ? 1 : 0;
 }
 
-int
-wtf_strwidth(uint8_t *p)
+int wtf_strwidth(uint8_t *p)
 {
-    if(!p)
+    if (!p)
     {
         return 0;
     }
-    
+
     int w = 0;
 
-    while (*p) {
-	w += wtf_width(p);
-	p += WTF_LEN_MAP[*p];
+    while (*p)
+    {
+        w += wtf_width(p);
+        p += WTF_LEN_MAP[*p];
     }
     return w;
 }
@@ -186,8 +194,8 @@ wtf_len(uint8_t *p)
     uint8_t *q = p;
 
     q += WTF_LEN_MAP[*q];
-    while (*q && ! WTF_WIDTH_MAP[*q])
-	q += WTF_LEN_MAP[*q];
+    while (*q && !WTF_WIDTH_MAP[*q])
+        q += WTF_LEN_MAP[*q];
     return q - p;
 }
 
@@ -197,37 +205,30 @@ wtf_type(uint8_t *p)
     return WTF_TYPE_MAP[*p];
 }
 
+#define wcs16_to_wtf(c, p)                     \
+    ((p)[0] = (((c) >> 14) & 0x03) | 0x80),    \
+        ((p)[1] = (((c) >> 7) & 0x7f) | 0x80), \
+        ((p)[2] = ((c)&0x7f) | 0x80)
+#define wcs32_to_wtf(c, p)                      \
+    ((p)[0] = (((c) >> 28) & 0x0f) | 0x80),     \
+        ((p)[1] = (((c) >> 21) & 0x7f) | 0x80), \
+        ((p)[2] = (((c) >> 14) & 0x7f) | 0x80), \
+        ((p)[3] = (((c) >> 7) & 0x7f) | 0x80),  \
+        ((p)[4] = ((c)&0x7f) | 0x80)
 
-#define wcs16_to_wtf(c, p) \
-    ((p)[0] = (((c) >> 14) & 0x03) | 0x80), \
-    ((p)[1] = (((c) >>  7) & 0x7f) | 0x80), \
-    ((p)[2] = ( (c)        & 0x7f) | 0x80)
-#define wcs32_to_wtf(c, p) \
-    ((p)[0] = (((c) >> 28) & 0x0f) | 0x80), \
-    ((p)[1] = (((c) >> 21) & 0x7f) | 0x80), \
-    ((p)[2] = (((c) >> 14) & 0x7f) | 0x80), \
-    ((p)[3] = (((c) >>  7) & 0x7f) | 0x80), \
-    ((p)[4] = ( (c)        & 0x7f) | 0x80)
-#define wtf_to_wcs16(p) \
-      ((uint32_t)((p)[0] & 0x03) << 14) \
-    | ((uint32_t)((p)[1] & 0x7f) <<  7) \
-    | ((uint32_t)((p)[2] & 0x7f)      )
+   
 #define wtf_to_wcs32(p) \
-      ((uint32_t)((p)[0] & 0x0f) << 28) \
-    | ((uint32_t)((p)[1] & 0x7f) << 21) \
-    | ((uint32_t)((p)[2] & 0x7f) << 14) \
-    | ((uint32_t)((p)[3] & 0x7f) <<  7) \
-    | ((uint32_t)((p)[4] & 0x7f)      )
+    ((uint32_t)((p)[0] & 0x0f) << 28) | ((uint32_t)((p)[1] & 0x7f) << 21) | ((uint32_t)((p)[2] & 0x7f) << 14) | ((uint32_t)((p)[3] & 0x7f) << 7) | ((uint32_t)((p)[4] & 0x7f))
 
 void wtf_push(Writer writer, void *data, CodedCharacterSet ccs, uint32_t code)
 {
     if (ccs == WC_CCS_US_ASCII)
     {
-        auto value =(char)(code & 0x7f);
+        auto value = (char)(code & 0x7f);
         writer(data, &value, 1);
         return;
     }
-    
+
     uint8_t s[8];
     wc_wchar_t cc, cc2;
     size_t n;
@@ -432,155 +433,186 @@ void wtf_push_unknown(Writer writer, void *data, const uint8_t *p, size_t len)
 {
     for (; len--; p++)
     {
-        if (*p & 0x80){
+        if (*p & 0x80)
+        {
             wtf_push(writer, data, WC_CCS_UNKNOWN, *p);
         }
-        else{
+        else
+        {
             writer(data, p, 1);
         }
     }
 }
 
-wc_wchar_t
-wtf_parse1(uint8_t **p)
+inline uint32_t  wtf_to_wcs16(const uint8_t *p)
+{
+    return ((uint32_t)((p)[0] & 0x03) << 14) | ((uint32_t)((p)[1] & 0x7f) << 7) | ((uint32_t)((p)[2] & 0x7f));
+};
+
+wc_wchar_t wtf_parse1(uint8_t **p)
 {
     uint8_t *q = *p;
     wc_wchar_t cc;
 
-    if (*q < 0x80) {
-	cc.ccs = WC_CCS_US_ASCII;
-	cc.code = *(q++);
-    } else if (*q > 0xa0) {
-	cc.ccs = wtf_gr_ccs;
-	if (WC_CCS_IS_WIDE(cc.ccs)) {
-	    cc.code = ((uint32_t)*q << 8) | *(q+1);
-	    q += 2;
-	} else
-	    cc.code = *(q++);
-    } else {
-	cc.ccs = (CodedCharacterSet)((uint32_t)CCS_MAP[*(q++) - 0x80] << 8);
-	switch (WC_CCS_TYPE(cc.ccs)) {
-	case WC_CCS_A_CS94:
-	case WC_CCS_A_CS96:
-	case WC_CCS_A_CS942:
-	case WC_CCS_A_PCS:
-	case WC_CCS_A_UNKNOWN:
-	    cc.ccs |= (CodedCharacterSet)(*(q++) & 0x7f);
-	    cc.code = *(q++);
-	    break;
-	case WC_CCS_A_CS94W:
-	case WC_CCS_A_CS96W:
-	case WC_CCS_A_PCSW:
-	    cc.ccs |= (CodedCharacterSet)(*(q++) & 0x7f);
-	    cc.code = ((uint32_t)*q << 8) | *(q+1);
-	    q += 2;
-	    break;
-	case WC_CCS_A_WCS16:
-	case WC_CCS_A_WCS16W:
-	    cc.ccs |= (CodedCharacterSet)((*q & 0x7c) >> 2);
-	    cc.code = wtf_to_wcs16(q);
-	    q += 3;
-	    break;
-	case WC_CCS_A_WCS32:
-	case WC_CCS_A_WCS32W:
-	    cc.ccs |= (CodedCharacterSet)((*q & 0x70) >> 4);
-	    cc.code = wtf_to_wcs32(q);
-	    q += 5;
-	    break;
-	default:
-	/* case 0: */
-	    cc.ccs = WC_CCS_US_ASCII;
-	    cc.code = (uint32_t)' ';
-	    break;
-	}
+    if (*q < 0x80)
+    {
+        cc.ccs = WC_CCS_US_ASCII;
+        cc.code = *(q++);
+    }
+    else if (*q > 0xa0)
+    {
+        cc.ccs = wtf_gr_ccs;
+        if (WC_CCS_IS_WIDE(cc.ccs))
+        {
+            cc.code = ((uint32_t)*q << 8) | *(q + 1);
+            q += 2;
+        }
+        else
+            cc.code = *(q++);
+    }
+    else
+    {
+        cc.ccs = (CodedCharacterSet)((uint32_t)CCS_MAP[*(q++) - 0x80] << 8);
+        switch (WC_CCS_TYPE(cc.ccs))
+        {
+        case WC_CCS_A_CS94:
+        case WC_CCS_A_CS96:
+        case WC_CCS_A_CS942:
+        case WC_CCS_A_PCS:
+        case WC_CCS_A_UNKNOWN:
+            cc.ccs |= (CodedCharacterSet)(*(q++) & 0x7f);
+            cc.code = *(q++);
+            break;
+        case WC_CCS_A_CS94W:
+        case WC_CCS_A_CS96W:
+        case WC_CCS_A_PCSW:
+            cc.ccs |= (CodedCharacterSet)(*(q++) & 0x7f);
+            cc.code = ((uint32_t)*q << 8) | *(q + 1);
+            q += 2;
+            break;
+        case WC_CCS_A_WCS16:
+        case WC_CCS_A_WCS16W:
+            cc.ccs |= (CodedCharacterSet)((*q & 0x7c) >> 2);
+            cc.code = wtf_to_wcs16(q);
+            q += 3;
+            break;
+        case WC_CCS_A_WCS32:
+        case WC_CCS_A_WCS32W:
+            cc.ccs |= (CodedCharacterSet)((*q & 0x70) >> 4);
+            cc.code = wtf_to_wcs32(q);
+            q += 5;
+            break;
+        default:
+            /* case 0: */
+            cc.ccs = WC_CCS_US_ASCII;
+            cc.code = (uint32_t)' ';
+            break;
+        }
     }
 
     *p = q;
-    switch (cc.ccs) {
+    switch (cc.ccs)
+    {
     case WC_CCS_SJIS_EXT_1:
     case WC_CCS_SJIS_EXT_2:
-	return wc_cs94w_to_sjis_ext(cc);
+        return wc_cs94w_to_sjis_ext(cc);
     case WC_CCS_GBK_1:
     case WC_CCS_GBK_2:
-	return wc_cs128w_to_gbk(cc);
+        return wc_cs128w_to_gbk(cc);
     case WC_CCS_GBK_EXT_1:
     case WC_CCS_GBK_EXT_2:
-	return wc_cs128w_to_gbk_ext(cc);
+        return wc_cs128w_to_gbk_ext(cc);
     case WC_CCS_BIG5_1:
     case WC_CCS_BIG5_2:
-	return wc_cs94w_to_big5(cc);
+        return wc_cs94w_to_big5(cc);
     case WC_CCS_HKSCS_1:
     case WC_CCS_HKSCS_2:
-	return wc_cs128w_to_hkscs(cc);
+        return wc_cs128w_to_hkscs(cc);
     case WC_CCS_JOHAB_1:
     case WC_CCS_JOHAB_2:
     case WC_CCS_JOHAB_3:
-	return wc_cs128w_to_johab(cc);
+        return wc_cs128w_to_johab(cc);
     case WC_CCS_UHC_1:
     case WC_CCS_UHC_2:
-	return wc_cs128w_to_uhc(cc);
+        return wc_cs128w_to_uhc(cc);
     }
     return cc;
 }
 
-wc_wchar_t
-wtf_parse(uint8_t **p)
+//
+// parse wtf, return a character and advance p
+//
+wc_wchar_t wtf_parse(uint8_t **p)
 {
-    uint8_t *q;
-    wc_wchar_t cc, cc2;
+    if (**p < 0x80)
+    {
+        wc_wchar_t cc;
+        cc.ccs = WC_CCS_US_ASCII;
+        cc.code = *((*p)++);
+        return cc;
+    }
+
+    auto cc = wtf_parse1(p);
+    if ((!WcOption.use_combining) || WTF_WIDTH_MAP[**p])
+    {
+        return cc;
+    }
+
+    uint8_t *q = *p;
     uint32_t ucs, ucs2;
-
-    if (**p < 0x80) {
-	cc.ccs = WC_CCS_US_ASCII;
-	cc.code = *((*p)++);
-    } else
-	cc = wtf_parse1(p);
-    if ((! WcOption.use_combining) || WTF_WIDTH_MAP[**p])
-	return cc;
-
-    q = *p;
-    cc2 = wtf_parse1(&q);
+    auto cc2 = wtf_parse1(&q);
     if ((cc.ccs == WC_CCS_US_ASCII || cc.ccs == WC_CCS_CP1258_1) &&
-	WC_CCS_SET(cc2.ccs) == WC_CCS_CP1258_1) {
-	cc2.code = wc_cp1258_precompose(cc.code, cc2.code);
-	if (cc2.code) {
-	    cc2.ccs = WC_CCS_CP1258_2;
-	    *p = q;
-	    return cc2;
-	}
-    } else if ((cc.ccs == WC_CCS_US_ASCII || cc.ccs == WC_CCS_TCVN_5712_1) &&
-	WC_CCS_SET(cc2.ccs) == WC_CCS_TCVN_5712_1) {
-	cc2.code = wc_tcvn5712_precompose(cc.code, cc2.code);
-	if (cc2.code) {
-	    cc2.ccs = WC_CCS_TCVN_5712_3;
-	    *p = q;
-	    return cc2;
-	}
+        WC_CCS_SET(cc2.ccs) == WC_CCS_CP1258_1)
+    {
+        cc2.code = wc_cp1258_precompose(cc.code, cc2.code);
+        if (cc2.code)
+        {
+            cc2.ccs = WC_CCS_CP1258_2;
+            *p = q;
+            return cc2;
+        }
+    }
+    else if ((cc.ccs == WC_CCS_US_ASCII || cc.ccs == WC_CCS_TCVN_5712_1) &&
+             WC_CCS_SET(cc2.ccs) == WC_CCS_TCVN_5712_1)
+    {
+        cc2.code = wc_tcvn5712_precompose(cc.code, cc2.code);
+        if (cc2.code)
+        {
+            cc2.ccs = WC_CCS_TCVN_5712_3;
+            *p = q;
+            return cc2;
+        }
     }
 
     else if ((cc.ccs == WC_CCS_US_ASCII || cc.ccs == WC_CCS_ISO_8859_1 ||
-	WC_CCS_IS_UNICODE(cc.ccs)) && WC_CCS_IS_UNICODE(cc2.ccs)) {
-	while (1) {
-	    ucs = (WC_CCS_SET(cc.ccs) == WC_CCS_UCS_TAG)
-		? wc_ucs_tag_to_ucs(cc.code) : cc.code;
-	    ucs2 = (WC_CCS_SET(cc2.ccs) == WC_CCS_UCS_TAG)
-		? wc_ucs_tag_to_ucs(cc2.code) : cc2.code;
-	    ucs = wc_ucs_precompose(ucs, ucs2);
-	    if (ucs == WC_C_UCS4_ERROR)
-		break;
-	    if (WC_CCS_SET(cc.ccs) == WC_CCS_UCS_TAG)
-		cc.code = wc_ucs_to_ucs_tag(ucs, wc_ucs_tag_to_tag(cc.code));
-	    else {
-		cc.ccs = wc_ucs_to_ccs(ucs);
-		cc.code = ucs;
-	    }
-	    *p = q;
-	    if (! WTF_WIDTH_MAP[*q])
-		break;
-	    cc2 = wtf_parse1(&q);
-	    if (! WC_CCS_IS_UNICODE(cc2.ccs))
-		break;
-	}
+              WC_CCS_IS_UNICODE(cc.ccs)) &&
+             WC_CCS_IS_UNICODE(cc2.ccs))
+    {
+        while (1)
+        {
+            ucs = (WC_CCS_SET(cc.ccs) == WC_CCS_UCS_TAG)
+                      ? wc_ucs_tag_to_ucs(cc.code)
+                      : cc.code;
+            ucs2 = (WC_CCS_SET(cc2.ccs) == WC_CCS_UCS_TAG)
+                       ? wc_ucs_tag_to_ucs(cc2.code)
+                       : cc2.code;
+            ucs = wc_ucs_precompose(ucs, ucs2);
+            if (ucs == WC_C_UCS4_ERROR)
+                break;
+            if (WC_CCS_SET(cc.ccs) == WC_CCS_UCS_TAG)
+                cc.code = wc_ucs_to_ucs_tag(ucs, wc_ucs_tag_to_tag(cc.code));
+            else
+            {
+                cc.ccs = wc_ucs_to_ccs(ucs);
+                cc.code = ucs;
+            }
+            *p = q;
+            if (!WTF_WIDTH_MAP[*q])
+                break;
+            cc2 = wtf_parse1(&q);
+            if (!WC_CCS_IS_UNICODE(cc2.ccs))
+                break;
+        }
     }
 
     return cc;
@@ -589,36 +621,39 @@ wtf_parse(uint8_t **p)
 CodedCharacterSet
 wtf_get_ccs(uint8_t *p)
 {
-   return wtf_parse1(&p).ccs;
+    return wtf_parse1(&p).ccs;
 }
 
 uint32_t
 wtf_get_code(uint8_t *p)
 {
-   return wtf_parse1(&p).code;
+    return wtf_parse1(&p).code;
 }
 
-bool
-wtf_is_hangul(uint8_t *p)
+bool wtf_is_hangul(uint8_t *p)
 {
     if (*p > 0xa0)
-	return (wtf_gr_ccs == WC_CCS_KS_X_1001 || wtf_gr_ccs == WC_CCS_JOHAB_1);
+        return (wtf_gr_ccs == WC_CCS_KS_X_1001 || wtf_gr_ccs == WC_CCS_JOHAB_1);
     else if (*p == WTF_C_CS94W)
-	return ((*(p + 1) & 0x7f) == WC_F_KS_X_1001);
-    else if (*p == WTF_C_PCSW) {
-	uint8_t f = *(p + 1) & 0x7f;
-	return (f == WC_F_JOHAB_1 || f == WC_F_JOHAB_2 || f == WC_F_JOHAB_3 ||
-		f == WC_F_UHC_1 || f == WC_F_UHC_2);
+        return ((*(p + 1) & 0x7f) == WC_F_KS_X_1001);
+    else if (*p == WTF_C_PCSW)
+    {
+        uint8_t f = *(p + 1) & 0x7f;
+        return (f == WC_F_JOHAB_1 || f == WC_F_JOHAB_2 || f == WC_F_JOHAB_3 ||
+                f == WC_F_UHC_1 || f == WC_F_UHC_2);
     }
 
-    else if (*p == WTF_C_WCS16W) {
-	uint8_t f = (*(++p) & 0x7f) >> 2;
-	if (f == WC_F_UCS2)
-	    return wc_is_ucs_hangul(wtf_to_wcs16(p));
-    } else if (*p == WTF_C_WCS32W) {
-	uint8_t f = (*(++p) & 0x7f) >> 4;
-	if (f == WC_F_UCS_TAG)
-	    return wc_is_ucs_hangul(wc_ucs_tag_to_ucs(wtf_to_wcs32(p)));
+    else if (*p == WTF_C_WCS16W)
+    {
+        uint8_t f = (*(++p) & 0x7f) >> 2;
+        if (f == WC_F_UCS2)
+            return wc_is_ucs_hangul(wtf_to_wcs16(p));
+    }
+    else if (*p == WTF_C_WCS32W)
+    {
+        uint8_t f = (*(++p) & 0x7f) >> 4;
+        if (f == WC_F_UCS_TAG)
+            return wc_is_ucs_hangul(wc_ucs_tag_to_ucs(wtf_to_wcs32(p)));
     }
 
     return false;
@@ -634,16 +669,16 @@ wtf_conv_fit(char *s, CharacterEncodingScheme ces)
     bool pre_conv, ucs_conv;
 
     if (ces == WC_CES_WTF || ces == WC_CES_US_ASCII)
-	return s;
+        return s;
 
     for (p = (uint8_t *)s; *p && *p < 0x80; p++)
-	;
-    if (! *p)
-	return s;
+        ;
+    if (!*p)
+        return s;
 
     os = Strnew_size(strlen(s));
     if (p > (uint8_t *)s)
-	os->CopyFrom(s, (int)(p - (uint8_t *)s));
+        os->CopyFrom(s, (int)(p - (uint8_t *)s));
 
     major_ces = wtf_major_ces;
     pre_conv = WcOption.pre_conv;
@@ -651,9 +686,10 @@ wtf_conv_fit(char *s, CharacterEncodingScheme ces)
     wtf_major_ces = ces;
     WcOption.pre_conv = true;
     WcOption.ucs_conv = true;
-    while (*p) {
-	cc = wtf_parse1(&p);
-	wtf_push(os, cc.ccs, cc.code);
+    while (*p)
+    {
+        cc = wtf_parse1(&p);
+        wtf_push(os, cc.ccs, cc.code);
     }
     wtf_major_ces = major_ces;
     WcOption.pre_conv = pre_conv;

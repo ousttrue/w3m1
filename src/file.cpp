@@ -172,8 +172,7 @@ int matchattr(char *p, const char *attr, int len, Str *value)
     return 0;
 }
 
-char *
-checkHeader(BufferPtr buf, char *field)
+char *checkHeader(BufferPtr buf, const char *field)
 {
     int len;
     TextListItem *i;

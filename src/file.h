@@ -47,7 +47,7 @@ int checkOverWrite(char *path);
 char *inputAnswer(const char* prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);
 
-char *checkHeader(BufferPtr buf, char *field);
+char *checkHeader(BufferPtr buf, const char *field);
 
 
 void fmTerm(void);

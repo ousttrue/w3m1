@@ -254,3 +254,64 @@ Str wc_char_conv(char c)
     return wc_Str_conv((*char_conv_st.ces_info->char_conv)((uint8_t)c, &char_conv_st),
                        WC_CES_WTF, char_conv_t_ces);
 }
+
+static void write(Str str, FILE *f)
+{
+    if (str->Size())
+    {
+        fwrite(str->ptr, 1, str->Size(), f);
+    }
+}
+
+WCWriter::WCWriter(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces, FILE *f)
+    : m_f(f), m_from(f_ces), m_to(t_ces), m_status(new wc_status)
+{
+    wc_output_init(m_to, m_status);
+    m_buffer = Strnew();
+}
+
+WCWriter::~WCWriter()
+{
+    delete m_status;
+}
+
+void WCWriter::end()
+{
+    m_buffer->Clear();
+    wc_push_end(m_buffer, m_status);
+    write(m_buffer, m_f);
+}
+
+void WCWriter::putc(const char *c)
+{
+    auto *p = (uint8_t *)c;
+    if (m_from != WC_CES_WTF)
+    {
+        // convert
+        p = (uint8_t *)wc_conv(c, m_from, WC_CES_WTF)->ptr;
+    }
+
+    m_buffer->Clear();
+    auto func = m_status->ces_info->push_to;
+    while (*p)
+    {
+        auto c = wtf_parse(&p);
+        func(m_buffer, c, m_status);
+    }
+    write(m_buffer, m_f);
+}
+
+void WCWriter::clear_status()
+{
+    // clear ISO-2022-JP escape sequence
+    if (m_status->ces_info->id & WC_CES_T_ISO_2022)
+    {
+        m_status->gl = 0;
+        m_status->gr = 0;
+        m_status->ss = 0;
+        m_status->design[0] = WC_CCS_NONE;
+        m_status->design[1] = WC_CCS_NONE;
+        m_status->design[2] = WC_CCS_NONE;
+        m_status->design[3] = WC_CCS_NONE;
+    }
+}

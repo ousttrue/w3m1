@@ -9,4 +9,3 @@
 #include "conv.h"
 #include "Str.h"
 #include "charset.h"
-#include "putc.h"

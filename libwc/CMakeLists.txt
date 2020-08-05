@@ -15,7 +15,6 @@ add_library(${TARGET_NAME}
     src/jis.cpp
     src/johab.cpp
     src/priv.cpp
-    src/putc.cpp
     src/search.cpp
     src/sjis.cpp
     src/status.cpp

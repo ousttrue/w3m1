@@ -75,3 +75,22 @@ const char *from_unicode(uint32_t codepoint, CharacterEncodingScheme ces);
 
 void wc_char_conv_init(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces);
 Str wc_char_conv(char c);
+
+class WCWriter
+{
+    FILE *m_f;
+    CharacterEncodingScheme m_from;
+    CharacterEncodingScheme m_to;
+    struct wc_status *m_status;
+    Str m_buffer;
+
+    WCWriter(const WCWriter &) = delete;
+    WCWriter &operator=(const WCWriter &) = delete;
+
+public:
+    WCWriter(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces, FILE *f);
+    ~WCWriter();
+    void putc(const char *c);
+    void end();
+    void clear_status();
+};
