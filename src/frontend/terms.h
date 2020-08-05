@@ -7,6 +7,9 @@ int INIT_BUFFER_WIDTH();
 int INIT_BUFFER_WIDTH();
 int FOLD_BUFFER_WIDTH();
 
+class Terminal
+{
+};
 
 void mouse_active();
 void mouse_inactive();

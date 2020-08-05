@@ -552,8 +552,7 @@ _MoveFile(const char *path1, const char *path2)
     return 0;
 }
 
-static
-int checkCopyFile(const char *path1, const char *path2)
+static int checkCopyFile(const char *path1, const char *path2)
 {
     struct stat st1, st2;
 
@@ -740,7 +739,7 @@ load_doc:
     }
 
     URLFile f(SCM_MISSING, NULL);
-    f.openURL(tpath.data(), &pu, current.get(), referer, flag, request, extra_header,
+    f.openURL(tpath.data(), &pu, current ? current.get() : nullptr, referer, flag, request, extra_header,
               &hr, &status);
     content_charset = WC_CES_NONE;
 
@@ -1276,7 +1275,8 @@ page_loaded:
         t_buf->bufferprop |= BP_FRAME;
     }
 
-    if (t_buf && f.ssl_certificate){
+    if (t_buf && f.ssl_certificate)
+    {
         t_buf->ssl_certificate = f.ssl_certificate;
     }
 
@@ -1313,7 +1313,7 @@ page_loaded:
                     b->GotoLine(a->start.line);
                     if (label_topline)
                         b->LineSkip(b->topLine,
-                                              b->currentLine->linenumber - b->topLine->linenumber, FALSE);
+                                    b->currentLine->linenumber - b->topLine->linenumber, FALSE);
                     b->pos = a->start.pos;
                     b->ArrangeCursor();
                 }

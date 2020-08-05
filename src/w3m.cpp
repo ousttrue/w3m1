@@ -32,6 +32,7 @@
 #include "frontend/event.h"
 #include "frontend/tabbar.h"
 #include "frontend/display.h"
+#include "frontend/terms.h"
 
 #define MAXIMUM_COLS 1024
 #define DEFAULT_COLS 80
@@ -227,8 +228,8 @@ BufferPtr DownloadListBuffer(w3mApp *w3m)
     cur_time = time(0);
     /* FIXME: gettextize? */
     src = Strnew_m_charp("<html><head><title>", w3m->DOWNLOAD_LIST_TITLE,
-                 "</title></head>\n<body><h1 align=center>", w3m->DOWNLOAD_LIST_TITLE, "</h1>\n"
-                                                                                       "<form method=internal action=download><hr>\n");
+                         "</title></head>\n<body><h1 align=center>", w3m->DOWNLOAD_LIST_TITLE, "</h1>\n"
+                                                                                               "<form method=internal action=download><hr>\n");
     for (d = LastDL; d != NULL; d = d->prev)
     {
         if (lstat(d->lock, &st))
@@ -380,14 +381,18 @@ w3mApp::w3mApp()
 
     NO_proxy_domains = newTextList();
     fileToDelete = newTextList();
+
+    m_term = new Terminal();
 }
 
 w3mApp::~w3mApp()
 {
-    // void w3m_exit(int i)
+    delete m_term;
+
 #ifdef USE_MIGEMO
     init_migemo(); /* close pipe to migemo */
 #endif
+
     stopDownload();
 
     DeleteAllTabs();
@@ -438,7 +443,7 @@ std::string w3mApp::make_optional_header_string(const char *s)
         override_content_type = TRUE;
     hs->Push(": ");
     if (*(++p))
-    {                   /* not null header */
+    {                    /* not null header */
         SKIP_BLANKS(&p); /* skip white spaces */
         hs->Push(p);
     }
@@ -1206,7 +1211,7 @@ void w3mApp::mainloop()
                     GetCurrentTab()->GetCurrentBuffer()->event = NULL;
                     ClearCurrentKey();
                     ClearCurrentKeyData();
-                    CurrentCmdData = (char*)CurrentAlarm()->data;
+                    CurrentCmdData = (char *)CurrentAlarm()->data;
                     CurrentAlarm()->cmd(&w3mApp::Instance());
                     CurrentCmdData = NULL;
                     continue;
