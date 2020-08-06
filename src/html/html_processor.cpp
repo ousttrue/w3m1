@@ -17,6 +17,7 @@
 #include "html/maparea.h"
 #include "w3m.h"
 #include "frontend/terms.h"
+#include "transport/istream.h"
 #include <signal.h>
 #include <setjmp.h>
 static JMP_BUF AbortLoading;

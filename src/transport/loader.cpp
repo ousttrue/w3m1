@@ -19,6 +19,7 @@
 #include "frontend/terms.h"
 #include "mime/mailcap.h"
 #include "frontend/linein.h"
+#include "transport/istream.h"
 #include <assert.h>
 #include <memory>
 

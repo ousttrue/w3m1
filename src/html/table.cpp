@@ -9,7 +9,7 @@
 #include "indep.h"
 #include "gc_helper.h"
 #include "html.h"
-#include "parsetagx.h"
+#include "html/html.h"
 
 #include "myctype.h"
 #include "symbol.h"

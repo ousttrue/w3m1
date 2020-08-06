@@ -8,7 +8,6 @@
 #include <signal.h>
 #include <setjmp.h>
 #include <time.h>
-
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -18,9 +17,10 @@
 #include "myctype.h"
 #include "frontend/terms.h"
 #include "frontend/display.h"
-#include "transport/url.h"
-#include "http/auth.h"
 #include "frontend/linein.h"
+#include "transport/url.h"
+#include "transport/istream.h"
+#include "http/auth.h"
 
 #ifdef DEBUG
 #include <malloc.h>

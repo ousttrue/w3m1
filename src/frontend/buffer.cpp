@@ -19,8 +19,9 @@
 #include "transport/loader.h"
 #include "mime/mimetypes.h"
 #include "charset.h"
-#include "html/parsetagx.h"
+#include "html/html.h"
 #include "frontend/terms.h"
+#include "transport/istream.h"
 
 static int REV_LB[MAX_LB] = {
     LB_N_FRAME,

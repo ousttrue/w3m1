@@ -12,7 +12,7 @@
 #include "frontend/display.h"
 #include "myctype.h"
 #include "html/html.h"
-#include "html/parsetagx.h"
+#include "html/html.h"
 #include "transport/local.h"
 #include "regex.h"
 #include "dispatcher.h"
@@ -33,6 +33,7 @@
 #include "transport/loader.h"
 #include "html/html_processor.h"
 #include "wtf.h"
+#include "transport/istream.h"
 
 #include "frontend/linein.h"
 #include <assert.h>

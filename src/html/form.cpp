@@ -10,7 +10,7 @@
 #include "html/parsetag.h"
 #include "rc.h"
 #include "http/cookie.h"
-#include "parsetagx.h"
+#include "html/html.h"
 #include "myctype.h"
 #include "transport/local.h"
 #include "regex.h"

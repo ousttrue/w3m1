@@ -3,7 +3,7 @@
 #include <string>
 #include <wc.h>
 #include "transport/url.h"
-#include "html/parsetagx.h"
+#include "html/html.h"
 
 enum LinkTypes : char
 {

@@ -12,11 +12,16 @@
 #include "transport/local.h"
 #include "transport/loader.h"
 #include "transport/url.h"
+#include "transport/istream.h"
 #include "frontend/tab.h"
 #include "frontend/buffer.h"
 #include "frontend/terms.h"
 #include "frontend/display.h"
 #include "frontend/tabbar.h"
+
+#define MCSTAT_REPNAME 0x01
+#define MCSTAT_REPTYPE 0x02
+#define MCSTAT_REPPARAM 0x04
 
 static Mailcap DefaultMailcap[] = {
     {"image/*", DEF_IMAGE_VIEWER " %s", 0, NULL, NULL, NULL}, /* */

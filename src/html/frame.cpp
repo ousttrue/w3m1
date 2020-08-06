@@ -2,7 +2,7 @@
 #include "indep.h"
 #include "gc_helper.h"
 #include "html/frame.h"
-#include "html/parsetagx.h"
+#include "html/html.h"
 #include "myctype.h"
 #include "file.h"
 #include "frontend/terms.h"
@@ -12,6 +12,7 @@
 #include "transport/loader.h"
 #include "html/html_processor.h"
 #include "charset.h"
+#include "transport/istream.h"
 #include <signal.h>
 #include <setjmp.h>
 

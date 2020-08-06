@@ -1,6 +1,7 @@
 #pragma once
 
-#include "parsetagx.h"
+#include "html/html.h"
+#define MAX_ENV_LEVEL 20
 
 int GetCurHSeq();
 void SetCurHSeq(int seq);

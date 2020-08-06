@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include "make_array.h"
 #include "w3m.h"
 #include "cli.h"
@@ -25,6 +26,7 @@
 #include "html/form.h"
 #include "html/image.h"
 #include "transport/loader.h"
+#include "transport/istream.h"
 #include "http/cookie.h"
 #include "frontend/mouse.h"
 #include "frontend/linein.h"

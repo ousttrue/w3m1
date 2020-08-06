@@ -27,6 +27,15 @@ searchMapList(BufferPtr buf, char *name)
     return ml;
 }
 
+enum ShapeTypes
+{
+    SHAPE_UNKNOWN = 0,
+    SHAPE_DEFAULT = 1,
+    SHAPE_RECT = 2,
+    SHAPE_CIRCLE = 3,
+    SHAPE_POLY = 4,
+};
+
 #ifdef USE_IMAGE
 static int
 inMapArea(MapArea *a, int x, int y)

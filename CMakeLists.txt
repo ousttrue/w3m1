@@ -88,7 +88,7 @@ add_executable(w3m
     src/html/table.cpp
     src/html/form.cpp
     src/html/parsetag.cpp
-    src/html/parsetagx.cpp
+    src/html/html.cpp
     src/html/frame.cpp
     src/html/maparea.cpp
     src/html/image.cpp
