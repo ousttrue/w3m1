@@ -1,6 +1,7 @@
 #include "transport/urlfile.h"
 #include "transport/url.h"
 #include "transport/local.h"
+#include "transport/istream.h"
 #include "http/http_request.h"
 #include "fm.h"
 #include "indep.h"
@@ -15,6 +16,7 @@
 #include "mime/mimetypes.h"
 #include "frontend/linein.h"
 #include <assert.h>
+
 
 /* add index_file if exists */
 static void

@@ -10,6 +10,7 @@
 #include "frontend/display.h"
 #include "transport/url.h"
 #include "transport/loader.h"
+#include "transport/istream.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
