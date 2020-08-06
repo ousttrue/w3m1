@@ -2486,7 +2486,7 @@ table_start:
             if (HTMLtagproc1(tag, h_env) == 0)
             {
                 /* preserve the tag for second-stage processing */
-                if (parsedtag_need_reconstruct(tag))
+                if (tag->need_reconstruct)
                     h_env->tagbuf = parsedtag2str(tag);
                 push_tag(obuf, h_env->tagbuf->ptr, cmd);
             }

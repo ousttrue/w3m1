@@ -867,7 +867,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 			     * attribute */
                                 parsedtag_set_value(tag, ATTR_TARGET, d_target);
                             }
-                            if (parsedtag_need_reconstruct(tag))
+                            if (tag->need_reconstruct)
                                 tok = parsedtag2str(tag);
                             tok->Puts(f1);
                         }

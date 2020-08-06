@@ -271,29 +271,6 @@ struct TagInfo
 };
 extern TagInfo TagMAP[];
 
-/* HTML Tag Attribute Information Table */
-struct TagAttrInfo
-{
-    const char *name;
-    unsigned char vtype;
-    unsigned char flag;
-};
-extern TagAttrInfo AttrMAP[];
-
-#define AFLG_INT 1
-
-#define VTYPE_NONE 0
-#define VTYPE_STR 1
-#define VTYPE_NUMBER 2
-#define VTYPE_LENGTH 3
-#define VTYPE_ALIGN 4
-#define VTYPE_VALIGN 5
-#define VTYPE_ACTION 6
-#define VTYPE_ENCTYPE 7
-#define VTYPE_METHOD 8
-#define VTYPE_MLENGTH 9
-#define VTYPE_TYPE 10
-
 struct parsed_tag : gc_cleanup
 {
     HtmlTags tagid = HTML_UNKNOWN;
@@ -314,8 +291,6 @@ private:
 #define parsedtag_accepts(tag, id) ((tag)->map && (tag)->map[id] != MAX_TAGATTR)
 #define parsedtag_exists(tag, id) (parsedtag_accepts(tag, id) && ((tag)->attrid[(tag)->map[id]] != ATTR_UNKNOWN))
 #define parsedtag_delete(tag, id) (parsedtag_accepts(tag, id) && ((tag)->attrid[(tag)->map[id]] = ATTR_UNKNOWN))
-#define parsedtag_need_reconstruct(tag) ((tag)->need_reconstruct)
-#define parsedtag_attname(tag, i) (AttrMAP[(tag)->attrid[i]].name)
 
 extern struct parsed_tag *parse_tag(char **s, int internal);
 extern int parsedtag_get_value(struct parsed_tag *tag, int id, void *value);

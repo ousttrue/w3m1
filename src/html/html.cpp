@@ -8,6 +8,107 @@
 #include "entity.h"
 #include "w3m.h"
 
+/* HTML Tag Attribute Information Table */
+#define VTYPE_NONE 0
+#define VTYPE_STR 1
+#define VTYPE_NUMBER 2
+#define VTYPE_LENGTH 3
+#define VTYPE_ALIGN 4
+#define VTYPE_VALIGN 5
+#define VTYPE_ACTION 6
+#define VTYPE_ENCTYPE 7
+#define VTYPE_METHOD 8
+#define VTYPE_MLENGTH 9
+#define VTYPE_TYPE 10
+
+#define AFLG_INT 1
+
+struct TagAttrInfo
+{
+    const char *name;
+    unsigned char vtype;
+    unsigned char flag;
+};
+TagAttrInfo AttrMAP[MAX_TAGATTR] ={
+    { NULL, VTYPE_NONE, 0 },	/*  0 ATTR_UNKNOWN        */
+    { "accept", VTYPE_NONE, 0 },	/*  1 ATTR_ACCEPT         */
+    { "accept-charset", VTYPE_STR, 0 },	/*  2 ATTR_ACCEPT_CHARSET */
+    { "action", VTYPE_ACTION, 0 },	/*  3 ATTR_ACTION         */
+    { "align", VTYPE_ALIGN, 0 },	/*  4 ATTR_ALIGN          */
+    { "alt", VTYPE_STR, 0 },	/*  5 ATTR_ALT            */
+    { "archive", VTYPE_STR, 0 },	/*  6 ATTR_ARCHIVE        */
+    { "background", VTYPE_STR, 0 },	/*  7 ATTR_BACKGROUND     */
+    { "border", VTYPE_NUMBER, 0 },	/*  8 ATTR_BORDER         */
+    { "cellpadding", VTYPE_NUMBER, 0 },	/*  9 ATTR_CELLPADDING    */
+    { "cellspacing", VTYPE_NUMBER, 0 },	/* 10 ATTR_CELLSPACING    */
+    { "charset", VTYPE_STR, 0 },	/* 11 ATTR_CHARSET        */
+    { "checked", VTYPE_NONE, 0 },	/* 12 ATTR_CHECKED        */
+    { "cols", VTYPE_MLENGTH, 0 },	/* 13 ATTR_COLS           */
+    { "colspan", VTYPE_NUMBER, 0 },	/* 14 ATTR_COLSPAN        */
+    { "content", VTYPE_STR, 0 },	/* 15 ATTR_CONTENT        */
+    { "enctype", VTYPE_ENCTYPE, 0 },	/* 16 ATTR_ENCTYPE        */
+    { "height", VTYPE_LENGTH, 0 },	/* 17 ATTR_HEIGHT         */
+    { "href", VTYPE_STR, 0 },	/* 18 ATTR_HREF           */
+    { "http-equiv", VTYPE_STR, 0 },	/* 19 ATTR_HTTP_EQUIV     */
+    { "id", VTYPE_STR, 0 },	/* 20 ATTR_ID             */
+    { "link", VTYPE_STR, 0 },	/* 21 ATTR_LINK           */
+    { "maxlength", VTYPE_NUMBER, 0 },	/* 22 ATTR_MAXLENGTH      */
+    { "method", VTYPE_METHOD, 0 },	/* 23 ATTR_METHOD         */
+    { "multiple", VTYPE_NONE, 0 },	/* 24 ATTR_MULTIPLE       */
+    { "name", VTYPE_STR, 0 },	/* 25 ATTR_NAME           */
+    { "nowrap", VTYPE_NONE, 0 },	/* 26 ATTR_NOWRAP         */
+    { "prompt", VTYPE_STR, 0 },	/* 27 ATTR_PROMPT         */
+    { "rows", VTYPE_MLENGTH, 0 },	/* 28 ATTR_ROWS           */
+    { "rowspan", VTYPE_NUMBER, 0 },	/* 29 ATTR_ROWSPAN        */
+    { "size", VTYPE_NUMBER, 0 },	/* 30 ATTR_SIZE           */
+    { "src", VTYPE_STR, 0 },	/* 31 ATTR_SRC            */
+    { "target", VTYPE_STR, 0 },	/* 32 ATTR_TARGET         */
+    { "type", VTYPE_TYPE, 0 },	/* 33 ATTR_TYPE           */
+    { "usemap", VTYPE_STR, 0 },	/* 34 ATTR_USEMAP         */
+    { "valign", VTYPE_VALIGN, 0 },	/* 35 ATTR_VALIGN         */
+    { "value", VTYPE_STR, 0 },	/* 36 ATTR_VALUE          */
+    { "vspace", VTYPE_NUMBER, 0 },	/* 37 ATTR_VSPACE         */
+    { "width", VTYPE_LENGTH, 0 },	/* 38 ATTR_WIDTH          */
+    { "compact", VTYPE_NONE, 0 },	/* 39 ATTR_COMPACT        */
+    { "start", VTYPE_NUMBER, 0 },	/* 40 ATTR_START          */
+    { "selected", VTYPE_NONE, 0 },	/* 41 ATTR_SELECTED       */
+    { "label", VTYPE_STR, 0 },	/* 42 ATTR_LABEL          */
+    { "readonly", VTYPE_NONE, 0 },	/* 43 ATTR_READONLY       */
+    { "shape", VTYPE_STR, 0 },	/* 44 ATTR_SHAPE          */
+    { "coords", VTYPE_STR, 0 },	/* 45 ATTR_COORDS         */
+    { "ismap", VTYPE_NONE, 0 },	/* 46 ATTR_ISMAP          */
+    { "rel", VTYPE_STR, 0 },	/* 47 ATTR_REL            */
+    { "rev", VTYPE_STR, 0 },	/* 48 ATTR_REV            */
+    { "title", VTYPE_STR, 0 },	/* 49 ATTR_TITLE          */
+    { "accesskey", VTYPE_STR, 0 },	/* 50 ATTR_ACCESSKEY          */
+    { NULL, VTYPE_NONE, 0 },	/* 51 Undefined           */
+    { NULL, VTYPE_NONE, 0 },	/* 52 Undefined           */
+    { NULL, VTYPE_NONE, 0 },	/* 53 Undefined           */
+    { NULL, VTYPE_NONE, 0 },	/* 54 Undefined           */
+    { NULL, VTYPE_NONE, 0 },	/* 55 Undefined           */
+    { NULL, VTYPE_NONE, 0 },	/* 56 Undefined           */
+    { NULL, VTYPE_NONE, 0 },	/* 57 Undefined           */
+    { NULL, VTYPE_NONE, 0 },	/* 58 Undefined           */
+    { NULL, VTYPE_NONE, 0 },	/* 59 Undefined           */
+
+    /* Internal attribute */
+    { "xoffset", VTYPE_NUMBER, AFLG_INT },	/* 60 ATTR_XOFFSET        */
+    { "yoffset", VTYPE_NUMBER, AFLG_INT },	/* 61 ATTR_YOFFSET        */
+    { "top_margin", VTYPE_NUMBER, AFLG_INT },	/* 62 ATTR_TOP_MARGIN,    */
+    { "bottom_margin", VTYPE_NUMBER, AFLG_INT },	/* 63 ATTR_BOTTOM_MARGIN, */
+    { "tid", VTYPE_NUMBER, AFLG_INT },	/* 64 ATTR_TID            */
+    { "fid", VTYPE_NUMBER, AFLG_INT },	/* 65 ATTR_FID            */
+    { "for_table", VTYPE_NONE, AFLG_INT },	/* 66 ATTR_FOR_TABLE      */
+    { "framename", VTYPE_STR, AFLG_INT },	/* 67 ATTR_FRAMENAME      */
+    { "hborder", VTYPE_NONE, 0 },	/* 68 ATTR_HBORDER        */
+    { "hseq", VTYPE_NUMBER, AFLG_INT },	/* 69 ATTR_HSEQ           */
+    { "no_effect", VTYPE_NONE, AFLG_INT },	/* 70 ATTR_NO_EFFECT      */
+    { "referer", VTYPE_STR, AFLG_INT },	/* 71 ATTR_REFERER        */
+    { "selectnumber", VTYPE_NUMBER, AFLG_INT },	/* 72 ATTR_SELECTNUMBER   */
+    { "textareanumber", VTYPE_NUMBER, AFLG_INT },	/* 73 ATTR_TEXTAREANUMBER */
+    { "pre_int", VTYPE_NONE, AFLG_INT },	/* 74 ATTR_PRE_INT      */
+};
+
 /* parse HTML tag */
 static std::unordered_map<std::string, HtmlTags> g_tagMap ={
     /* 0 */{ "option_int", HTML_OPTION_INT },
@@ -871,82 +972,3 @@ TagInfo TagMAP[MAX_HTMLTAG] ={
     { "/div_int", NULL, 0, TFLG_INT | TFLG_END },	/*  184 HTML_N_DIV_INT  */
 };
 
-TagAttrInfo AttrMAP[MAX_TAGATTR] ={
-    { NULL, VTYPE_NONE, 0 },	/*  0 ATTR_UNKNOWN        */
-    { "accept", VTYPE_NONE, 0 },	/*  1 ATTR_ACCEPT         */
-    { "accept-charset", VTYPE_STR, 0 },	/*  2 ATTR_ACCEPT_CHARSET */
-    { "action", VTYPE_ACTION, 0 },	/*  3 ATTR_ACTION         */
-    { "align", VTYPE_ALIGN, 0 },	/*  4 ATTR_ALIGN          */
-    { "alt", VTYPE_STR, 0 },	/*  5 ATTR_ALT            */
-    { "archive", VTYPE_STR, 0 },	/*  6 ATTR_ARCHIVE        */
-    { "background", VTYPE_STR, 0 },	/*  7 ATTR_BACKGROUND     */
-    { "border", VTYPE_NUMBER, 0 },	/*  8 ATTR_BORDER         */
-    { "cellpadding", VTYPE_NUMBER, 0 },	/*  9 ATTR_CELLPADDING    */
-    { "cellspacing", VTYPE_NUMBER, 0 },	/* 10 ATTR_CELLSPACING    */
-    { "charset", VTYPE_STR, 0 },	/* 11 ATTR_CHARSET        */
-    { "checked", VTYPE_NONE, 0 },	/* 12 ATTR_CHECKED        */
-    { "cols", VTYPE_MLENGTH, 0 },	/* 13 ATTR_COLS           */
-    { "colspan", VTYPE_NUMBER, 0 },	/* 14 ATTR_COLSPAN        */
-    { "content", VTYPE_STR, 0 },	/* 15 ATTR_CONTENT        */
-    { "enctype", VTYPE_ENCTYPE, 0 },	/* 16 ATTR_ENCTYPE        */
-    { "height", VTYPE_LENGTH, 0 },	/* 17 ATTR_HEIGHT         */
-    { "href", VTYPE_STR, 0 },	/* 18 ATTR_HREF           */
-    { "http-equiv", VTYPE_STR, 0 },	/* 19 ATTR_HTTP_EQUIV     */
-    { "id", VTYPE_STR, 0 },	/* 20 ATTR_ID             */
-    { "link", VTYPE_STR, 0 },	/* 21 ATTR_LINK           */
-    { "maxlength", VTYPE_NUMBER, 0 },	/* 22 ATTR_MAXLENGTH      */
-    { "method", VTYPE_METHOD, 0 },	/* 23 ATTR_METHOD         */
-    { "multiple", VTYPE_NONE, 0 },	/* 24 ATTR_MULTIPLE       */
-    { "name", VTYPE_STR, 0 },	/* 25 ATTR_NAME           */
-    { "nowrap", VTYPE_NONE, 0 },	/* 26 ATTR_NOWRAP         */
-    { "prompt", VTYPE_STR, 0 },	/* 27 ATTR_PROMPT         */
-    { "rows", VTYPE_MLENGTH, 0 },	/* 28 ATTR_ROWS           */
-    { "rowspan", VTYPE_NUMBER, 0 },	/* 29 ATTR_ROWSPAN        */
-    { "size", VTYPE_NUMBER, 0 },	/* 30 ATTR_SIZE           */
-    { "src", VTYPE_STR, 0 },	/* 31 ATTR_SRC            */
-    { "target", VTYPE_STR, 0 },	/* 32 ATTR_TARGET         */
-    { "type", VTYPE_TYPE, 0 },	/* 33 ATTR_TYPE           */
-    { "usemap", VTYPE_STR, 0 },	/* 34 ATTR_USEMAP         */
-    { "valign", VTYPE_VALIGN, 0 },	/* 35 ATTR_VALIGN         */
-    { "value", VTYPE_STR, 0 },	/* 36 ATTR_VALUE          */
-    { "vspace", VTYPE_NUMBER, 0 },	/* 37 ATTR_VSPACE         */
-    { "width", VTYPE_LENGTH, 0 },	/* 38 ATTR_WIDTH          */
-    { "compact", VTYPE_NONE, 0 },	/* 39 ATTR_COMPACT        */
-    { "start", VTYPE_NUMBER, 0 },	/* 40 ATTR_START          */
-    { "selected", VTYPE_NONE, 0 },	/* 41 ATTR_SELECTED       */
-    { "label", VTYPE_STR, 0 },	/* 42 ATTR_LABEL          */
-    { "readonly", VTYPE_NONE, 0 },	/* 43 ATTR_READONLY       */
-    { "shape", VTYPE_STR, 0 },	/* 44 ATTR_SHAPE          */
-    { "coords", VTYPE_STR, 0 },	/* 45 ATTR_COORDS         */
-    { "ismap", VTYPE_NONE, 0 },	/* 46 ATTR_ISMAP          */
-    { "rel", VTYPE_STR, 0 },	/* 47 ATTR_REL            */
-    { "rev", VTYPE_STR, 0 },	/* 48 ATTR_REV            */
-    { "title", VTYPE_STR, 0 },	/* 49 ATTR_TITLE          */
-    { "accesskey", VTYPE_STR, 0 },	/* 50 ATTR_ACCESSKEY          */
-    { NULL, VTYPE_NONE, 0 },	/* 51 Undefined           */
-    { NULL, VTYPE_NONE, 0 },	/* 52 Undefined           */
-    { NULL, VTYPE_NONE, 0 },	/* 53 Undefined           */
-    { NULL, VTYPE_NONE, 0 },	/* 54 Undefined           */
-    { NULL, VTYPE_NONE, 0 },	/* 55 Undefined           */
-    { NULL, VTYPE_NONE, 0 },	/* 56 Undefined           */
-    { NULL, VTYPE_NONE, 0 },	/* 57 Undefined           */
-    { NULL, VTYPE_NONE, 0 },	/* 58 Undefined           */
-    { NULL, VTYPE_NONE, 0 },	/* 59 Undefined           */
-
-    /* Internal attribute */
-    { "xoffset", VTYPE_NUMBER, AFLG_INT },	/* 60 ATTR_XOFFSET        */
-    { "yoffset", VTYPE_NUMBER, AFLG_INT },	/* 61 ATTR_YOFFSET        */
-    { "top_margin", VTYPE_NUMBER, AFLG_INT },	/* 62 ATTR_TOP_MARGIN,    */
-    { "bottom_margin", VTYPE_NUMBER, AFLG_INT },	/* 63 ATTR_BOTTOM_MARGIN, */
-    { "tid", VTYPE_NUMBER, AFLG_INT },	/* 64 ATTR_TID            */
-    { "fid", VTYPE_NUMBER, AFLG_INT },	/* 65 ATTR_FID            */
-    { "for_table", VTYPE_NONE, AFLG_INT },	/* 66 ATTR_FOR_TABLE      */
-    { "framename", VTYPE_STR, AFLG_INT },	/* 67 ATTR_FRAMENAME      */
-    { "hborder", VTYPE_NONE, 0 },	/* 68 ATTR_HBORDER        */
-    { "hseq", VTYPE_NUMBER, AFLG_INT },	/* 69 ATTR_HSEQ           */
-    { "no_effect", VTYPE_NONE, AFLG_INT },	/* 70 ATTR_NO_EFFECT      */
-    { "referer", VTYPE_STR, AFLG_INT },	/* 71 ATTR_REFERER        */
-    { "selectnumber", VTYPE_NUMBER, AFLG_INT },	/* 72 ATTR_SELECTNUMBER   */
-    { "textareanumber", VTYPE_NUMBER, AFLG_INT },	/* 73 ATTR_TEXTAREANUMBER */
-    { "pre_int", VTYPE_NONE, AFLG_INT },	/* 74 ATTR_PRE_INT      */
-};

@@ -1110,7 +1110,7 @@ img_end:
 
 Str process_anchor(struct parsed_tag *tag, char *tagbuf)
 {
-    if (parsedtag_need_reconstruct(tag))
+    if (tag->need_reconstruct)
     {
         parsedtag_set_value(tag, ATTR_HSEQ, Sprintf("%d", cur_hseq++)->ptr);
         return parsedtag2str(tag);
