@@ -1279,30 +1279,20 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 }
                 str += symbol_width;
             }
-#ifdef USE_M17N
             else if (mode == PC_CTRL || mode == PC_UNDEF)
             {
-#else
-            else if (mode == PC_CTRL || IS_INTSPACE(*str))
-            {
-#endif
                 PPUSH(PC_ASCII | effect | ex_efct(ex_effect), ' ');
                 str++;
             }
-#ifdef USE_M17N
             else if (mode & PC_UNKNOWN)
             {
                 PPUSH(PC_ASCII | effect | ex_efct(ex_effect), ' ');
                 str += get_mclen(str);
             }
-#endif
             else if (*str != '<' && *str != '&')
             {
-#ifdef USE_M17N
                 int len = get_mclen(str);
-#endif
                 PPUSH(mode | effect | ex_efct(ex_effect), *(str++));
-#ifdef USE_M17N
                 if (--len)
                 {
                     mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
@@ -1312,7 +1302,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         PPUSH(mode | effect | ex_efct(ex_effect), *(str++));
                     }
                 }
-#endif
             }
             else if (*str == '&')
             {
@@ -1329,30 +1318,20 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 {
                     PSIZE;
                     mode = get_mctype(*p);
-#ifdef USE_M17N
                     if (mode == PC_CTRL || mode == PC_UNDEF)
                     {
-#else
-                    if (mode == PC_CTRL || IS_INTSPACE(*str))
-                    {
-#endif
                         PPUSH(PC_ASCII | effect | ex_efct(ex_effect), ' ');
                         p++;
                     }
-#ifdef USE_M17N
                     else if (mode & PC_UNKNOWN)
                     {
                         PPUSH(PC_ASCII | effect | ex_efct(ex_effect), ' ');
                         p += get_mclen(p);
                     }
-#endif
                     else
                     {
-#ifdef USE_M17N
                         int len = get_mclen(p);
-#endif
                         PPUSH(mode | effect | ex_efct(ex_effect), *(p++));
-#ifdef USE_M17N
                         if (--len)
                         {
                             mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
@@ -1362,7 +1341,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                 PPUSH(mode | effect | ex_efct(ex_effect), *(p++));
                             }
                         }
-#endif
                     }
                 }
             }
@@ -1520,7 +1498,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             p,
                             s ? s : "",
                             currentLn(buf), pos));
-#ifdef USE_IMAGE
+
                         a_img->hseq = iseq;
                         a_img->image = NULL;
                         if (iseq > 0)
@@ -1562,7 +1540,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                 a_img->image = a->image;
                             }
                         }
-#endif
                     }
                     effect |= PE_IMAGE;
                     break;
@@ -1580,9 +1557,8 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     FormList *form;
                     int top = 0, bottom = 0;
                     int textareanumber = -1;
-#ifdef MENU_SELECT
                     int selectnumber = -1;
-#endif
+
                     hseq = 0;
                     form_id = -1;
 
@@ -1615,7 +1591,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                                    max_textarea);
                         }
                     }
-#ifdef MENU_SELECT
+
                     if (a_select &&
                         parsedtag_get_value(tag, ATTR_SELECTNUMBER,
                                             &selectnumber))
@@ -1630,7 +1606,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                                  max_select);
                         }
                     }
-#endif
 
                     auto fi = formList_addInput(form, tag);
                     if (fi)
@@ -1653,10 +1628,10 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 
                     if (a_textarea && textareanumber >= 0)
                         a_textarea[textareanumber] = a_form;
-#ifdef MENU_SELECT
+
                     if (a_select && selectnumber >= 0)
                         a_select[selectnumber] = a_form;
-#endif
+
                     if (a_form)
                     {
                         a_form->hseq = hseq - 1;
@@ -1707,10 +1682,10 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         parsedtag_get_value(tag, ATTR_ALT, &q);
                         r = NULL;
                         s = NULL;
-#ifdef USE_IMAGE
+
                         parsedtag_get_value(tag, ATTR_SHAPE, &r);
                         parsedtag_get_value(tag, ATTR_COORDS, &s);
-#endif
+
                         a = newMapArea(p, t, q, r, s);
                         pushValue(buf->maplist->area, (void *)a);
                     }
@@ -1769,7 +1744,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     {
                         Str tmp = NULL;
                         int refresh_interval = getMetaRefreshParam(q, &tmp);
-#ifdef USE_ALARM
+
                         if (tmp)
                         {
                             p = wc_conv_strict(remove_space(tmp->ptr), w3mApp::Instance().InnerCharset,
@@ -1785,14 +1760,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                                        refresh_interval,
                                                        AL_IMPLICIT,
                                                        &reload, NULL);
-#else
-                        if (tmp && refresh_interval == 0)
-                        {
-                            p = wc_conv_strict(remove_space(tmp->ptr),
-                                               buf->document_charset);
-                            pushEvent(FUNCNAME_gorURL, p);
-                        }
-#endif
                     }
                     break;
                 case HTML_INTERNAL:
@@ -1823,7 +1790,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             textarea_str[n_textarea];
                     }
                     break;
-#ifdef MENU_SELECT
+
                 case HTML_SELECT_INT:
                     if (parsedtag_get_value(tag, ATTR_SELECTNUMBER, &n_select) && n_select < max_select)
                     {
@@ -1858,7 +1825,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                         selected);
                     }
                     break;
-#endif
+
                 case HTML_TITLE_ALT:
                     if (parsedtag_get_value(tag, ATTR_TITLE, &p))
                         buf->buffername = html_unquote(p, w3mApp::Instance().InnerCharset);
@@ -1872,7 +1839,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     effect &= ~PC_SYMBOL;
                     break;
                 }
-#ifdef ID_EXT
+
                 id = NULL;
                 if (parsedtag_get_value(tag, ATTR_ID, &id))
                 {
@@ -1895,7 +1862,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     auto a = Anchor::CreateName(id, currentLn(buf), pos);
                     idFrame->body->nameList.Put(a);
                 }
-#endif /* ID_EXT */
             }
         }
         /* end of processing for one line */
