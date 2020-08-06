@@ -1,5 +1,4 @@
 #pragma once
-#include "html.h"
 #include <wc.h>
 #include <gc_cpp.h>
 
@@ -283,6 +282,16 @@ struct parsed_tag : gc_cleanup
     bool HasAttribute(HtmlTagAttributes id)const;
     bool TryGetAttributeValue(HtmlTagAttributes id, void *value)const;
     bool SetAttributeValue(HtmlTagAttributes id, const char *value);
+    std::string_view GetAttributeValue(HtmlTagAttributes id)const
+    {
+        char *value = nullptr;
+        TryGetAttributeValue(id, &value);
+        if (!value)
+        {
+            return "";
+        }
+        return value;
+    }    
     Str ToStr()const;
 
     parsed_tag(HtmlTags tag)
@@ -295,14 +304,3 @@ private:
 };
 
 struct parsed_tag *parse_tag(char **s, int internal);
-inline std::string_view parsedtag_get_value(const struct parsed_tag &tag, HtmlTagAttributes id)
-{
-    char *value = nullptr;
-    tag.TryGetAttributeValue(id, &value);
-    if (!value)
-    {
-        return "";
-    }
-    return value;
-}
-

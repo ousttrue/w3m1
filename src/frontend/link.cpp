@@ -6,13 +6,13 @@
 
 Link Link::create(const parsed_tag &tag, CharacterEncodingScheme ces)
 {
-    auto href = parsedtag_get_value(tag, ATTR_HREF);
+    auto href = tag.GetAttributeValue(ATTR_HREF);
     if (href.size())
         href = wc_conv_strict(remove_space(href.data()), w3mApp::Instance().InnerCharset, ces)->ptr;
 
-    auto title = parsedtag_get_value(tag, ATTR_TITLE);
-    auto ctype = parsedtag_get_value(tag, ATTR_TYPE);
-    auto rel = parsedtag_get_value(tag, ATTR_REL);
+    auto title = tag.GetAttributeValue(ATTR_TITLE);
+    auto ctype = tag.GetAttributeValue(ATTR_TYPE);
+    auto rel = tag.GetAttributeValue(ATTR_REL);
 
     LinkTypes type = LINK_TYPE_NONE;
     if (rel.size())
@@ -23,7 +23,7 @@ Link Link::create(const parsed_tag &tag, CharacterEncodingScheme ces)
             title = rel;
     }
 
-    auto rev = parsedtag_get_value(tag, ATTR_REV);
+    auto rev = tag.GetAttributeValue(ATTR_REV);
     if (rev.size())
     {
         /* reverse link type */
