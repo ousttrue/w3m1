@@ -251,16 +251,22 @@ enum HtmlTagAttributes
 
     MAX_TAGATTR= 75,
 };
+HtmlTags GetTag(const char *src, HtmlTags value);
 
-/* Parsed Tag structure */
-/* Tag attribute */
+enum TFlags
+{
+    TFLG_NONE= 0,
+    TFLG_END= 1,
+    TFLG_INT= 2,
+};
+
 /* HTML Tag Information Table */
 struct TagInfo
 {
     const char *name;
-    unsigned char *accept_attribute;
+    HtmlTagAttributes *accept_attribute;
     unsigned char max_attribute;
-    unsigned char flag;
+    TFlags flag;
 };
 extern TagInfo TagMAP[];
 
@@ -289,7 +295,7 @@ extern TagAttrInfo AttrMAP[];
 
 struct parsed_tag
 {
-    unsigned char tagid;
+    HtmlTags tagid;
     unsigned char *attrid;
     char **value;
     unsigned char *map;

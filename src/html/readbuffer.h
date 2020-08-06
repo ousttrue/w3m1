@@ -2,6 +2,7 @@
 
 #include "frontend/line.h"
 #include "anchor.h"
+#include "html.h"
 #include <wc.h>
 
 #define FONTSTAT_SIZE 7
@@ -75,7 +76,7 @@ public:
 struct cmdtable
 {
     char *cmdname;
-    int cmd;
+    HtmlTags cmd;
 };
 
 #define RB_GET_ALIGN(obuf) ((obuf)->flag & RB_ALIGN)

@@ -12,7 +12,6 @@
 #include "symbol.h"
 #include "ctrlcode.h"
 #include "html/html_processor.h"
-#include "html/tagtable.h"
 #include "frontend/buffer.h"
 #include "frontend/line.h"
 #include "charset.h"
@@ -132,7 +131,7 @@ feed_title(const char *str)
 
 struct link_stack
 {
-    int cmd;
+    HtmlTags cmd;
     short offset;
     short pos;
     struct link_stack *next;
@@ -162,7 +161,7 @@ has_hidden_link(struct readbuffer *obuf, int cmd)
 }
 
 static void
-push_link(int cmd, int offset, int pos)
+push_link(HtmlTags cmd, int offset, int pos)
 {
     struct link_stack *p;
     p = New(struct link_stack);
@@ -210,7 +209,7 @@ append_tags(struct readbuffer *obuf)
 }
 
 static void
-push_tag(struct readbuffer *obuf, char *cmdname, int cmd)
+push_tag(struct readbuffer *obuf, char *cmdname, HtmlTags cmd)
 {
     obuf->tag_stack[obuf->tag_sp] = New(struct cmdtable);
     obuf->tag_stack[obuf->tag_sp]->cmdname = allocStr(cmdname, -1);
@@ -328,7 +327,7 @@ static void fillline(struct readbuffer *obuf, int indent)
 
 #define MAX_CMD_LEN 128
 
-static int gethtmlcmd(char **s)
+static HtmlTags gethtmlcmd(char **s)
 {
     char cmdstr[MAX_CMD_LEN];
     char *p = cmdstr;
@@ -361,7 +360,7 @@ static int gethtmlcmd(char **s)
     /* hash search */
     //     extern Hash_si tagtable;
     //     int cmd = getHash_si(&tagtable, cmdstr, HTML_UNKNOWN);
-    int cmd = GetTag(cmdstr, HTML_UNKNOWN);
+    auto cmd = GetTag(cmdstr, HTML_UNKNOWN);
     while (**s && **s != '>')
         (*s)++;
     if (**s == '>')
@@ -372,7 +371,6 @@ static int gethtmlcmd(char **s)
 static void
 passthrough(struct readbuffer *obuf, char *str, int back)
 {
-    int cmd;
     Str tok = Strnew();
     char *str_bak;
 
@@ -388,7 +386,7 @@ passthrough(struct readbuffer *obuf, char *str, int back)
         if (sloppy_parse_line(&str))
         {
             char *q = str_bak;
-            cmd = gethtmlcmd(&q);
+            auto cmd = gethtmlcmd(&q);
             if (back)
             {
                 struct link_stack *p;
@@ -2289,7 +2287,7 @@ table_width(struct html_feed_environ *h_env, int table_level)
 void HTMLlineproc0(const char *line, struct html_feed_environ *h_env, bool internal)
 {
     Lineprop mode;
-    int cmd;
+    HtmlTags cmd;
     struct readbuffer *obuf = h_env->obuf;
     int indent, delta;
     struct parsed_tag *tag;

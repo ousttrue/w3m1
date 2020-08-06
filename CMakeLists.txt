@@ -82,7 +82,6 @@ add_executable(w3m
     src/http/ftp.cpp
     src/http/news.cpp
     src/html/anchor.cpp
-    src/html/tagtable.cpp
     src/html/tagstack.cpp
     src/html/html_processor.cpp
     src/html/table.cpp
