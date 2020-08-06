@@ -3143,7 +3143,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 	    case TAG_ACTION_FEED:
 	    default:
 		if (tag->need_reconstruct)
-		    line = parsedtag2str(tag)->ptr;
+		    line = tag->ToStr()->ptr;
 	    }
 	}
 	else {

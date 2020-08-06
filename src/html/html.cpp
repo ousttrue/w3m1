@@ -660,22 +660,22 @@ bool parsed_tag::TryGetAttributeValue(HtmlTagAttributes id, void *value)const
     return toValFunc[AttrMAP[id].vtype](v, (int *)value);
 }
 
-Str parsedtag2str(struct parsed_tag *tag)
+Str parsed_tag::ToStr()const
 {
     int i;
-    int tag_id = tag->tagid;
+    int tag_id = this->tagid;
     int nattr = TagMAP[tag_id].max_attribute;
     Str tagstr = Strnew();
     tagstr->Push('<');
     tagstr->Push(TagMAP[tag_id].name);
     for (i = 0; i < nattr; i++)
     {
-        if (tag->attrid[i] != ATTR_UNKNOWN)
+        if (this->attrid[i] != ATTR_UNKNOWN)
         {
             tagstr->Push(' ');
-            tagstr->Push(AttrMAP[tag->attrid[i]].name);
-            if (tag->value[i])
-                tagstr->Push(Sprintf("=\"%s\"", html_quote(tag->value[i])));
+            tagstr->Push(AttrMAP[this->attrid[i]].name);
+            if (this->value[i])
+                tagstr->Push(Sprintf("=\"%s\"", html_quote(this->value[i])));
         }
     }
     tagstr->Push('>');

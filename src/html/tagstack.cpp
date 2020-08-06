@@ -2487,7 +2487,7 @@ table_start:
             {
                 /* preserve the tag for second-stage processing */
                 if (tag->need_reconstruct)
-                    h_env->tagbuf = parsedtag2str(tag);
+                    h_env->tagbuf = tag->ToStr();
                 push_tag(obuf, h_env->tagbuf->ptr, cmd);
             }
 #ifdef ID_EXT

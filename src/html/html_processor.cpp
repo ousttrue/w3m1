@@ -1113,7 +1113,7 @@ Str process_anchor(struct parsed_tag *tag, char *tagbuf)
     if (tag->need_reconstruct)
     {
         tag->SetAttributeValue( ATTR_HSEQ, Sprintf("%d", cur_hseq++)->ptr);
-        return parsedtag2str(tag);
+        return tag->ToStr();
     }
     else
     {
