@@ -1,6 +1,7 @@
 #pragma once
 #include "html.h"
 #include <wc.h>
+#include <gc_cpp.h>
 
 //
 // N is close tag
@@ -293,13 +294,21 @@ extern TagAttrInfo AttrMAP[];
 #define VTYPE_MLENGTH 9
 #define VTYPE_TYPE 10
 
-struct parsed_tag
+struct parsed_tag : gc_cleanup
 {
-    HtmlTags tagid;
-    unsigned char *attrid;
+    HtmlTags tagid = HTML_UNKNOWN;
+    unsigned char *attrid = nullptr;
     char **value;
     unsigned char *map;
-    char need_reconstruct;
+    char need_reconstruct = 0;
+
+    parsed_tag(HtmlTags tag)
+        : tagid(tag)
+    {}
+
+    void parse(char **s, bool internal);
+private:
+    bool parse_attr(char **s, int nattr, bool internal);
 };
 
 #define parsedtag_accepts(tag, id) ((tag)->map && (tag)->map[id] != MAX_TAGATTR)
