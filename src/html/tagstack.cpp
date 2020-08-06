@@ -463,7 +463,7 @@ set_alignment(struct readbuffer *obuf, struct parsed_tag *tag)
     ReadBufferFlags flag = (ReadBufferFlags)-1;
     int align;
 
-    if (parsedtag_get_value(tag, ATTR_ALIGN, &align))
+    if (tag->TryGetAttributeValue(ATTR_ALIGN, &align))
     {
         switch (align)
         {
@@ -497,8 +497,8 @@ process_idattr(struct readbuffer *obuf, int cmd, struct parsed_tag *tag)
     if (cmd == HTML_TABLE)
         return;
 
-    parsedtag_get_value(tag, ATTR_ID, &id);
-    parsedtag_get_value(tag, ATTR_FRAMENAME, &framename);
+    tag->TryGetAttributeValue(ATTR_ID, &id);
+    tag->TryGetAttributeValue(ATTR_FRAMENAME, &framename);
     if (id == NULL)
         return;
     if (framename)
@@ -1078,7 +1078,7 @@ static int
 ul_type(struct parsed_tag *tag, int default_type)
 {
     char *p;
-    if (parsedtag_get_value(tag, ATTR_TYPE, &p))
+    if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
     {
         if (!strcasecmp(p, "disc"))
             return (int)'d';
@@ -1101,7 +1101,7 @@ static Str process_hr(struct parsed_tag *tag, int width, int indent_width)
 
     if (width > indent_width)
         width -= indent_width;
-    if (parsedtag_get_value(tag, ATTR_WIDTH, &w))
+    if (tag->TryGetAttributeValue(ATTR_WIDTH, &w))
     {
         if (w > HR_ATTR_WIDTH_MAX)
         {
@@ -1114,7 +1114,7 @@ static Str process_hr(struct parsed_tag *tag, int width, int indent_width)
         w = width;
     }
 
-    parsedtag_get_value(tag, ATTR_ALIGN, &x);
+    tag->TryGetAttributeValue(ATTR_ALIGN, &x);
     switch (x)
     {
     case ALIGN_CENTER:
@@ -1372,7 +1372,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         PUSH_ENV(cmd);
         if (cmd == HTML_UL || cmd == HTML_OL)
         {
-            if (parsedtag_get_value(tag, ATTR_START, &count))
+            if (tag->TryGetAttributeValue(ATTR_START, &count))
             {
                 envs[h_env->envc].count = count - 1;
             }
@@ -1380,7 +1380,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         if (cmd == HTML_OL)
         {
             envs[h_env->envc].type = '1';
-            if (parsedtag_get_value(tag, ATTR_TYPE, &p))
+            if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
             {
                 envs[h_env->envc].type = (int)*p;
             }
@@ -1421,7 +1421,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
                              h_env->limit);
         }
         PUSH_ENV(cmd);
-        if (tag->parsedtag_exists(ATTR_COMPACT))
+        if (tag->HasAttribute(ATTR_COMPACT))
             envs[h_env->envc].env = HTML_DL_COMPACT;
         obuf->flag |= RB_IGNORE_P;
         return 1;
@@ -1434,7 +1434,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
             flushline(h_env, obuf,
                       envs[h_env->envc - 1].indent, 0, h_env->limit);
             envs[h_env->envc].count++;
-            if (parsedtag_get_value(tag, ATTR_VALUE, &p))
+            if (tag->TryGetAttributeValue(ATTR_VALUE, &p))
             {
                 count = atoi(p);
                 if (count > 0)
@@ -1476,7 +1476,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
                 set_space_to_prevchar(obuf->prevchar);
                 break;
             case HTML_OL:
-                if (parsedtag_get_value(tag, ATTR_TYPE, &p))
+                if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
                     envs[h_env->envc].type = (int)*p;
                 switch ((envs[h_env->envc].count > 0) ? envs[h_env->envc].type : '1')
                 {
@@ -1570,7 +1570,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
             HTMLlineproc1(tmp->ptr, h_env);
         return 1;
     case HTML_TITLE_ALT:
-        if (parsedtag_get_value(tag, ATTR_TITLE, &p))
+        if (tag->TryGetAttributeValue(ATTR_TITLE, &p))
             h_env->title = html_unquote(p, w3mApp::Instance().InnerCharset);
         return 0;
     case HTML_FRAMESET:
@@ -1598,8 +1598,8 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         return 1;
     case HTML_FRAME:
         q = r = NULL;
-        parsedtag_get_value(tag, ATTR_SRC, &q);
-        parsedtag_get_value(tag, ATTR_NAME, &r);
+        tag->TryGetAttributeValue(ATTR_SRC, &q);
+        tag->TryGetAttributeValue(ATTR_NAME, &r);
         if (q)
         {
             q = html_quote(q);
@@ -1620,7 +1620,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         set_space_to_prevchar(obuf->prevchar);
         return 1;
     case HTML_PRE:
-        x = tag->parsedtag_exists(ATTR_FOR_TABLE);
+        x = tag->HasAttribute(ATTR_FOR_TABLE);
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1754,17 +1754,17 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
 
         hseq = 0;
 
-        if (parsedtag_get_value(tag, ATTR_HREF, &p))
+        if (tag->TryGetAttributeValue(ATTR_HREF, &p))
             obuf->anchor.url = Strnew(p)->ptr;
-        if (parsedtag_get_value(tag, ATTR_TARGET, &p))
+        if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
             obuf->anchor.target = Strnew(p)->ptr;
-        if (parsedtag_get_value(tag, ATTR_REFERER, &p))
+        if (tag->TryGetAttributeValue(ATTR_REFERER, &p))
             obuf->anchor.referer = Strnew(p)->ptr;
-        if (parsedtag_get_value(tag, ATTR_TITLE, &p))
+        if (tag->TryGetAttributeValue(ATTR_TITLE, &p))
             obuf->anchor.title = Strnew(p)->ptr;
-        if (parsedtag_get_value(tag, ATTR_ACCESSKEY, &p))
+        if (tag->TryGetAttributeValue(ATTR_ACCESSKEY, &p))
             obuf->anchor.accesskey = (unsigned char)*p;
-        if (parsedtag_get_value(tag, ATTR_HSEQ, &hseq))
+        if (tag->TryGetAttributeValue(ATTR_HSEQ, &hseq))
             obuf->anchor.hseq = hseq;
 
         if (hseq == 0 && obuf->anchor.url.size())
@@ -1785,17 +1785,17 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         HTMLlineproc1(tmp->ptr, h_env);
         return 1;
     case HTML_IMG_ALT:
-        if (parsedtag_get_value(tag, ATTR_SRC, &p))
+        if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             obuf->img_alt = Strnew(p);
 #ifdef USE_IMAGE
         i = 0;
-        if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i))
+        if (tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &i))
         {
             if (i > obuf->top_margin)
                 obuf->top_margin = i;
         }
         i = 0;
-        if (parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &i))
+        if (tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &i))
         {
             if (i > obuf->bottom_margin)
                 obuf->bottom_margin = i;
@@ -1812,13 +1812,13 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         return 1;
     case HTML_INPUT_ALT:
         i = 0;
-        if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i))
+        if (tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &i))
         {
             if (i > obuf->top_margin)
                 obuf->top_margin = i;
         }
         i = 0;
-        if (parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &i))
+        if (tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &i))
         {
             if (i > obuf->bottom_margin)
                 obuf->bottom_margin = i;
@@ -1835,9 +1835,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         y = 1;
         z = 0;
         width = 0;
-        if (tag->parsedtag_exists(ATTR_BORDER))
+        if (tag->HasAttribute(ATTR_BORDER))
         {
-            if (parsedtag_get_value(tag, ATTR_BORDER, &w))
+            if (tag->TryGetAttributeValue(ATTR_BORDER, &w))
             {
                 if (w > 2)
                     w = BORDER_THICK;
@@ -1849,20 +1849,20 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
             else
                 w = BORDER_THIN;
         }
-        if (parsedtag_get_value(tag, ATTR_WIDTH, &i))
+        if (tag->TryGetAttributeValue(ATTR_WIDTH, &i))
         {
             if (obuf->table_level == 0)
                 width = REAL_WIDTH(i, h_env->limit - envs[h_env->envc].indent);
             else
                 width = RELATIVE_WIDTH(i);
         }
-        if (tag->parsedtag_exists(ATTR_HBORDER))
+        if (tag->HasAttribute(ATTR_HBORDER))
             w = BORDER_NOWIN;
-        parsedtag_get_value(tag, ATTR_CELLSPACING, &x);
-        parsedtag_get_value(tag, ATTR_CELLPADDING, &y);
-        parsedtag_get_value(tag, ATTR_VSPACE, &z);
+        tag->TryGetAttributeValue(ATTR_CELLSPACING, &x);
+        tag->TryGetAttributeValue(ATTR_CELLPADDING, &y);
+        tag->TryGetAttributeValue(ATTR_VSPACE, &z);
 #ifdef ID_EXT
-        parsedtag_get_value(tag, ATTR_ID, &id);
+        tag->TryGetAttributeValue(ATTR_ID, &id);
 #endif /* ID_EXT */
         tables[obuf->table_level] = begin_table(w, x, y, z);
 #ifdef ID_EXT
@@ -1975,8 +1975,8 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_ISINDEX:
         p = "";
         q = "!CURRENT_URL!";
-        parsedtag_get_value(tag, ATTR_PROMPT, &p);
-        parsedtag_get_value(tag, ATTR_ACTION, &q);
+        tag->TryGetAttributeValue(ATTR_PROMPT, &p);
+        tag->TryGetAttributeValue(ATTR_ACTION, &q);
         tmp = Strnew_m_charp("<form method=get action=\"",
                              html_quote(q),
                              "\">",
@@ -1987,8 +1987,8 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         return 1;
     case HTML_META:
         p = q = NULL;
-        parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &p);
-        parsedtag_get_value(tag, ATTR_CONTENT, &q);
+        tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
+        tag->TryGetAttributeValue(ATTR_CONTENT, &q);
 #ifdef USE_M17N
         if (p && q && !strcasecmp(p, "Content-Type") &&
             (q = strcasestr(q, "charset")) != NULL)
@@ -2033,7 +2033,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         return 1;
     case HTML_BASE:
         p = NULL;
-        if (parsedtag_get_value(tag, ATTR_HREF, &p))
+        if (tag->TryGetAttributeValue(ATTR_HREF, &p))
         {
             GetCurBaseUrl()->Parse(p, NULL);
         }
@@ -2187,7 +2187,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_BGSOUND:
         if (view_unseenobject)
         {
-            if (parsedtag_get_value(tag, ATTR_SRC, &p))
+            if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             {
                 Str s;
                 q = html_quote(p);
@@ -2199,7 +2199,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_EMBED:
         if (view_unseenobject)
         {
-            if (parsedtag_get_value(tag, ATTR_SRC, &p))
+            if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             {
                 Str s;
                 q = html_quote(p);
@@ -2211,7 +2211,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_APPLET:
         if (view_unseenobject)
         {
-            if (parsedtag_get_value(tag, ATTR_ARCHIVE, &p))
+            if (tag->TryGetAttributeValue(ATTR_ARCHIVE, &p))
             {
                 Str s;
                 q = html_quote(p);
@@ -2223,7 +2223,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_BODY:
         if (view_unseenobject)
         {
-            if (parsedtag_get_value(tag, ATTR_BACKGROUND, &p))
+            if (tag->TryGetAttributeValue(ATTR_BACKGROUND, &p))
             {
                 Str s;
                 q = html_quote(p);

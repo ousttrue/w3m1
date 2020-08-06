@@ -780,7 +780,7 @@ do_refill(struct table *tbl, int row, int col, int maxlimit)
 	    char *p = l->ptr;
 	    struct parsed_tag *tag;
 	    if ((tag = parse_tag(&p, TRUE)) != NULL)
-		parsedtag_get_value(tag, ATTR_TID, &id);
+		tag->TryGetAttributeValue(ATTR_TID, &id);
 	    if (id >= 0 && id < tbl->ntable) {
 		int alignment;
 		TextLineListItem *ti;
@@ -2539,7 +2539,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	tbl->flag &= ~TBL_IN_COL;
 	align = 0;
 	valign = 0;
-	if (parsedtag_get_value(tag, ATTR_ALIGN, &i)) {
+	if (tag->TryGetAttributeValue(ATTR_ALIGN, &i)) {
 	    switch (i) {
 	    case ALIGN_LEFT:
 		align = (HTT_LEFT | HTT_TRSET);
@@ -2552,7 +2552,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 		break;
 	    }
 	}
-	if (parsedtag_get_value(tag, ATTR_VALIGN, &i)) {
+	if (tag->TryGetAttributeValue(ATTR_VALIGN, &i)) {
 	    switch (i) {
 	    case VALIGN_TOP:
 		valign = (HTT_TOP | HTT_VTRSET);
@@ -2566,7 +2566,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	    }
 	}
 #ifdef ID_EXT
-	if (parsedtag_get_value(tag, ATTR_ID, &p))
+	if (tag->TryGetAttributeValue(ATTR_ID, &p))
 	    tbl->tridvalue[tbl->row] = Strnew(p);
 #endif				/* ID_EXT */
 	tbl->trattr = align | valign;
@@ -2613,20 +2613,20 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	    valign = (tbl->trattr & HTT_VALIGN);
 	else
 	    valign = HTT_MIDDLE;
-	if (parsedtag_get_value(tag, ATTR_ROWSPAN, &rowspan)) {
+	if (tag->TryGetAttributeValue(ATTR_ROWSPAN, &rowspan)) {
 	    if(rowspan > ATTR_ROWSPAN_MAX) {
 		rowspan = ATTR_ROWSPAN_MAX;
 	    }
 	    if ((tbl->row + rowspan) >= tbl->max_rowsize)
 		check_row(tbl, tbl->row + rowspan);
 	}
-	if (parsedtag_get_value(tag, ATTR_COLSPAN, &colspan)) {
+	if (tag->TryGetAttributeValue(ATTR_COLSPAN, &colspan)) {
 	    if ((tbl->col + colspan) >= MAXCOL) {
 		/* Can't expand column */
 		colspan = MAXCOL - tbl->col;
 	    }
 	}
-	if (parsedtag_get_value(tag, ATTR_ALIGN, &i)) {
+	if (tag->TryGetAttributeValue(ATTR_ALIGN, &i)) {
 	    switch (i) {
 	    case ALIGN_LEFT:
 		align = HTT_LEFT;
@@ -2639,7 +2639,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 		break;
 	    }
 	}
-	if (parsedtag_get_value(tag, ATTR_VALIGN, &i)) {
+	if (tag->TryGetAttributeValue(ATTR_VALIGN, &i)) {
 	    switch (i) {
 	    case VALIGN_TOP:
 		valign = HTT_TOP;
@@ -2653,11 +2653,11 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	    }
 	}
 #ifdef NOWRAP
-	if (tag->parsedtag_exists(ATTR_NOWRAP))
+	if (tag->HasAttribute(ATTR_NOWRAP))
 	    tbl->tabattr[tbl->row][tbl->col] |= HTT_NOWRAP;
 #endif				/* NOWRAP */
 	v = 0;
-	if (parsedtag_get_value(tag, ATTR_WIDTH, &v)) {
+	if (tag->TryGetAttributeValue(ATTR_WIDTH, &v)) {
 #ifdef TABLE_EXPAND
 	    if (v > 0) {
 		if (tbl->real_width > 0)
@@ -2670,7 +2670,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 #endif				/* not TABLE_EXPAND */
 	}
 #ifdef ID_EXT
-	if (parsedtag_get_value(tag, ATTR_ID, &p))
+	if (tag->TryGetAttributeValue(ATTR_ID, &p))
 	    tbl->tabidvalue[tbl->row][tbl->col] = Strnew(p);
 #endif				/* ID_EXT */
 #ifdef NOWRAP
@@ -2931,8 +2931,8 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	table_close_anchor0(tbl, mode);
 	anchor = NULL;
 	i = 0;
-	parsedtag_get_value(tag, ATTR_HREF, &anchor);
-	parsedtag_get_value(tag, ATTR_HSEQ, &i);
+	tag->TryGetAttributeValue(ATTR_HREF, &anchor);
+	tag->TryGetAttributeValue(ATTR_HSEQ, &i);
 	if (anchor) {
 	    check_rowcol(tbl, mode);
 	    if (i == 0) {
@@ -3031,7 +3031,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
     case HTML_TABLE_ALT:
 	id = -1;
 	w = 0;
-	parsedtag_get_value(tag, ATTR_TID, &id);
+	tag->TryGetAttributeValue(ATTR_TID, &id);
 	if (id >= 0 && id < tbl->ntable) {
 	    struct table *tbl1 = tbl->tables[id].ptr;
 	    feed_table_block_tag(tbl, line, mode, 0, cmd);

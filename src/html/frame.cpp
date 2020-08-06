@@ -77,8 +77,8 @@ newFrameSet(struct parsed_tag *tag)
     f->attr = F_FRAMESET;
     f->name = NULL;
     f->currentURL = {};
-    parsedtag_get_value(tag, ATTR_COLS, &cols);
-    parsedtag_get_value(tag, ATTR_ROWS, &rows);
+    tag->TryGetAttributeValue(ATTR_COLS, &cols);
+    tag->TryGetAttributeValue(ATTR_ROWS, &rows);
     f->col = parseFrameSetLength(cols, &f->width);
     f->row = parseFrameSetLength(rows, &f->height);
     f->i = 0;
@@ -104,9 +104,9 @@ newFrame(struct parsed_tag *tag, BufferPtr buf)
     body->baseURL = *buf->BaseURL();
     if (tag)
     {
-        if (parsedtag_get_value(tag, ATTR_SRC, &p))
+        if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             body->url = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-        if (parsedtag_get_value(tag, ATTR_NAME, &p) && *p != '_')
+        if (tag->TryGetAttributeValue(ATTR_NAME, &p) && *p != '_')
             body->name = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
     }
     return body;
@@ -682,12 +682,12 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 goto token_end;
                             case HTML_BASE:
                                 /* "BASE" is prohibit tag */
-                                if (parsedtag_get_value(tag, ATTR_HREF, &q))
+                                if (tag->TryGetAttributeValue(ATTR_HREF, &q))
                                 {
                                     q = wc_conv_strict(remove_space(q), w3mApp::Instance().InnerCharset, charset)->ptr;
                                     base.Parse(q, NULL);
                                 }
-                                if (parsedtag_get_value(tag, ATTR_TARGET, &q))
+                                if (tag->TryGetAttributeValue(ATTR_TARGET, &q))
                                 {
                                     if (!strcasecmp(q, "_self"))
                                         d_target = s_target;
@@ -701,9 +701,9 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 fprintf(f1, "<!-- %s -->", html_quote(tok->ptr));
                                 goto token_end;
                             case HTML_META:
-                                if (parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "refresh"))
+                                if (tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "refresh"))
                                 {
-                                    if (parsedtag_get_value(tag, ATTR_CONTENT, &q))
+                                    if (tag->TryGetAttributeValue(ATTR_CONTENT, &q))
                                     {
                                         Str s_tmp = NULL;
                                         int refresh_interval =
@@ -718,7 +718,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     }
                                 }
                                 if (w3mApp::Instance().UseContentCharset &&
-                                    parsedtag_get_value(tag, ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "Content-Type") && parsedtag_get_value(tag, ATTR_CONTENT, &q) && (q = strcasestr(q, "charset")) != NULL)
+                                    tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &q) && !strcasecmp(q, "Content-Type") && tag->TryGetAttributeValue(ATTR_CONTENT, &q) && (q = strcasestr(q, "charset")) != NULL)
                                 {
                                     q += 7;
                                     SKIP_BLANKS(&q);

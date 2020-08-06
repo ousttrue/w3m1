@@ -615,21 +615,21 @@ void parsed_tag::parse(char **s, bool internal)
     *s = q;
 }
 
-bool parsed_tag::parsedtag_accepts(HtmlTagAttributes id)const
+bool parsed_tag::CanAcceptAttribute(HtmlTagAttributes id)const
 {
     return (this->map && this->map[id] != MAX_TAGATTR);
 }
 
-bool parsed_tag::parsedtag_exists(HtmlTagAttributes id)const
+bool parsed_tag::HasAttribute(HtmlTagAttributes id)const
 {
-    return parsedtag_accepts(id) && (this->attrid[this->map[id]] != ATTR_UNKNOWN);
+    return CanAcceptAttribute(id) && (this->attrid[this->map[id]] != ATTR_UNKNOWN);
 }
 
 int parsedtag_set_value(struct parsed_tag *tag, HtmlTagAttributes id, const char *value)
 {
     int i;
 
-    if (!tag->parsedtag_accepts(id))
+    if (!tag->CanAcceptAttribute(id))
         return 0;
 
     i = tag->map[id];
@@ -642,16 +642,22 @@ int parsedtag_set_value(struct parsed_tag *tag, HtmlTagAttributes id, const char
     return 1;
 }
 
-int parsedtag_get_value(struct parsed_tag *tag, HtmlTagAttributes id, void *value)
+bool parsed_tag::TryGetAttributeValue(HtmlTagAttributes id, void *value)const
 {
-    if(!tag->map)
+    if (!HasAttribute(id))
     {
+        return false;
+    }
+    if (!map)
+    {
+        return false;
+    }
+    int i=map[id];
+    auto v = this->value[i];
+    if (!v) {
         return 0;
     }
-    int i=tag->map[id];
-    if (!tag->parsedtag_exists(id) || !tag->value[i])
-        return 0;
-    return toValFunc[AttrMAP[id].vtype](tag->value[i], (int *)value);
+    return toValFunc[AttrMAP[id].vtype](v, (int *)value);
 }
 
 Str parsedtag2str(struct parsed_tag *tag)

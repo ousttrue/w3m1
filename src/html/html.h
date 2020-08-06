@@ -279,8 +279,9 @@ struct parsed_tag : gc_cleanup
     unsigned char *map;
     char need_reconstruct = 0;
 
-    bool parsedtag_accepts(HtmlTagAttributes id)const;
-    bool parsedtag_exists(HtmlTagAttributes id)const;
+    bool CanAcceptAttribute(HtmlTagAttributes id)const;
+    bool HasAttribute(HtmlTagAttributes id)const;
+    bool TryGetAttributeValue(HtmlTagAttributes id, void *value)const;
 
     parsed_tag(HtmlTags tag)
         : tagid(tag)
@@ -292,11 +293,10 @@ private:
 };
 
 struct parsed_tag *parse_tag(char **s, int internal);
-int parsedtag_get_value(struct parsed_tag *tag, HtmlTagAttributes id, void *value);
 inline std::string_view parsedtag_get_value(const struct parsed_tag &tag, HtmlTagAttributes id)
 {
-    char *value;
-    parsedtag_get_value(const_cast<struct parsed_tag *>(&tag), id, &value);
+    char *value = nullptr;
+    tag.TryGetAttributeValue(id, &value);
     if (!value)
     {
         return "";

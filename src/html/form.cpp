@@ -109,7 +109,7 @@ formList_addInput(FormList *fl, struct parsed_tag *tag)
     item->name = NULL;
     item->value = item->init_value = NULL;
     item->readonly = 0;
-    if (parsedtag_get_value(tag, ATTR_TYPE, &p))
+    if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
     {
         item->type = formtype(p);
         if (item->size < 0 &&
@@ -118,22 +118,22 @@ formList_addInput(FormList *fl, struct parsed_tag *tag)
              item->type == FORM_INPUT_PASSWORD))
             item->size = FORM_I_TEXT_DEFAULT_SIZE;
     }
-    if (parsedtag_get_value(tag, ATTR_NAME, &p))
+    if (tag->TryGetAttributeValue(ATTR_NAME, &p))
         item->name = Strnew(p);
-    if (parsedtag_get_value(tag, ATTR_VALUE, &p))
+    if (tag->TryGetAttributeValue(ATTR_VALUE, &p))
         item->value = item->init_value = Strnew(p);
-    item->checked = item->init_checked = tag->parsedtag_exists(ATTR_CHECKED);
-    item->accept = tag->parsedtag_exists(ATTR_ACCEPT);
-    parsedtag_get_value(tag, ATTR_SIZE, &item->size);
-    parsedtag_get_value(tag, ATTR_MAXLENGTH, &item->maxlength);
-    item->readonly = tag->parsedtag_exists(ATTR_READONLY);
-    if (parsedtag_get_value(tag, ATTR_TEXTAREANUMBER, &i))
+    item->checked = item->init_checked = tag->HasAttribute(ATTR_CHECKED);
+    item->accept = tag->HasAttribute(ATTR_ACCEPT);
+    tag->TryGetAttributeValue(ATTR_SIZE, &item->size);
+    tag->TryGetAttributeValue(ATTR_MAXLENGTH, &item->maxlength);
+    item->readonly = tag->HasAttribute(ATTR_READONLY);
+    if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &i))
         item->value = item->init_value = textarea_str[i];
 #ifdef MENU_SELECT
-    if (parsedtag_get_value(tag, ATTR_SELECTNUMBER, &i))
+    if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
         item->select_option = select_option[i].first;
 #endif /* MENU_SELECT */
-    if (parsedtag_get_value(tag, ATTR_ROWS, &p))
+    if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
         item->rows = atoi(p);
     if (item->type == FORM_UNKNOWN)
     {
