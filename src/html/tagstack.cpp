@@ -1421,7 +1421,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
                              h_env->limit);
         }
         PUSH_ENV(cmd);
-        if (parsedtag_exists(tag, ATTR_COMPACT))
+        if (tag->parsedtag_exists(ATTR_COMPACT))
             envs[h_env->envc].env = HTML_DL_COMPACT;
         obuf->flag |= RB_IGNORE_P;
         return 1;
@@ -1620,7 +1620,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         set_space_to_prevchar(obuf->prevchar);
         return 1;
     case HTML_PRE:
-        x = parsedtag_exists(tag, ATTR_FOR_TABLE);
+        x = tag->parsedtag_exists(ATTR_FOR_TABLE);
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1835,7 +1835,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
         y = 1;
         z = 0;
         width = 0;
-        if (parsedtag_exists(tag, ATTR_BORDER))
+        if (tag->parsedtag_exists(ATTR_BORDER))
         {
             if (parsedtag_get_value(tag, ATTR_BORDER, &w))
             {
@@ -1856,7 +1856,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
             else
                 width = RELATIVE_WIDTH(i);
         }
-        if (parsedtag_exists(tag, ATTR_HBORDER))
+        if (tag->parsedtag_exists(ATTR_HBORDER))
             w = BORDER_NOWIN;
         parsedtag_get_value(tag, ATTR_CELLSPACING, &x);
         parsedtag_get_value(tag, ATTR_CELLPADDING, &y);

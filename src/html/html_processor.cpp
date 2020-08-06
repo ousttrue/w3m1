@@ -210,7 +210,7 @@ void feed_select(char *str)
                     cur_option_label = Strnew(q);
                 else
                     cur_option_label = NULL;
-                cur_option_selected = parsedtag_exists(tag, ATTR_SELECTED);
+                cur_option_selected = tag->parsedtag_exists(ATTR_SELECTED);
                 prev_spaces = -1;
                 break;
             case HTML_N_OPTION:
@@ -384,9 +384,9 @@ Str process_input(struct parsed_tag *tag)
     parsedtag_get_value(tag, ATTR_MAXLENGTH, &i);
     p2 = NULL;
     parsedtag_get_value(tag, ATTR_ALT, &p2);
-    x = parsedtag_exists(tag, ATTR_CHECKED);
-    y = parsedtag_exists(tag, ATTR_ACCEPT);
-    z = parsedtag_exists(tag, ATTR_READONLY);
+    x = tag->parsedtag_exists(ATTR_CHECKED);
+    y = tag->parsedtag_exists(ATTR_ACCEPT);
+    z = tag->parsedtag_exists(ATTR_READONLY);
 
     v = formtype(p);
     if (v == FORM_UNKNOWN)
@@ -568,7 +568,7 @@ Str process_select(struct parsed_tag *tag)
     p = "";
     parsedtag_get_value(tag, ATTR_NAME, &p);
     cur_select = Strnew(p);
-    select_is_multiple = parsedtag_exists(tag, ATTR_MULTIPLE);
+    select_is_multiple = tag->parsedtag_exists(ATTR_MULTIPLE);
 
 #ifdef MENU_SELECT
     if (!select_is_multiple)
@@ -714,7 +714,7 @@ Str process_textarea(struct parsed_tag *tag, int width)
             cur_textarea_rows = TEXTAREA_ATTR_ROWS_MAX;
         }
     }
-    cur_textarea_readonly = parsedtag_exists(tag, ATTR_READONLY);
+    cur_textarea_readonly = tag->parsedtag_exists(ATTR_READONLY);
     if (n_textarea >= max_textarea)
     {
         max_textarea *= 2;
@@ -824,7 +824,7 @@ Str process_img(struct parsed_tag *tag, int width)
         align = -1;
         parsedtag_get_value(tag, ATTR_ALIGN, &align);
         ismap = 0;
-        if (parsedtag_exists(tag, ATTR_ISMAP))
+        if (tag->parsedtag_exists(ATTR_ISMAP))
             ismap = 1;
     }
     else
@@ -832,7 +832,7 @@ Str process_img(struct parsed_tag *tag, int width)
         parsedtag_get_value(tag, ATTR_HEIGHT, &i);
     r = NULL;
     parsedtag_get_value(tag, ATTR_USEMAP, &r);
-    if (parsedtag_exists(tag, ATTR_PRE_INT))
+    if (tag->parsedtag_exists(ATTR_PRE_INT))
         ext_pre_int = TRUE;
 
     tmp = Strnew_size(128);
@@ -1481,7 +1481,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         parsedtag_get_value(tag, ATTR_YOFFSET, &yoffset);
                         parsedtag_get_value(tag, ATTR_TOP_MARGIN, &top);
                         parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &bottom);
-                        if (parsedtag_exists(tag, ATTR_ISMAP))
+                        if (tag->parsedtag_exists(ATTR_ISMAP))
                             ismap = 1;
                         q = NULL;
                         parsedtag_get_value(tag, ATTR_USEMAP, &q);
@@ -1638,7 +1638,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         a_form->hseq = hseq - 1;
                         a_form->y = currentLn(buf) - top;
                         a_form->rows = 1 + top + bottom;
-                        if (!parsedtag_exists(tag, ATTR_NO_EFFECT))
+                        if (!tag->parsedtag_exists(ATTR_NO_EFFECT))
                             effect |= PE_FORM;
                         break;
                     }
@@ -1820,7 +1820,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         parsedtag_get_value(tag, ATTR_LABEL, &q);
                         p = q;
                         parsedtag_get_value(tag, ATTR_VALUE, &p);
-                        selected = parsedtag_exists(tag, ATTR_SELECTED);
+                        selected = tag->parsedtag_exists(ATTR_SELECTED);
                         addSelectOption(&select_option[n_select],
                                         Strnew(p), Strnew(q),
                                         selected);

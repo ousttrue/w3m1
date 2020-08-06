@@ -122,11 +122,11 @@ formList_addInput(FormList *fl, struct parsed_tag *tag)
         item->name = Strnew(p);
     if (parsedtag_get_value(tag, ATTR_VALUE, &p))
         item->value = item->init_value = Strnew(p);
-    item->checked = item->init_checked = parsedtag_exists(tag, ATTR_CHECKED);
-    item->accept = parsedtag_exists(tag, ATTR_ACCEPT);
+    item->checked = item->init_checked = tag->parsedtag_exists(ATTR_CHECKED);
+    item->accept = tag->parsedtag_exists(ATTR_ACCEPT);
     parsedtag_get_value(tag, ATTR_SIZE, &item->size);
     parsedtag_get_value(tag, ATTR_MAXLENGTH, &item->maxlength);
-    item->readonly = parsedtag_exists(tag, ATTR_READONLY);
+    item->readonly = tag->parsedtag_exists(ATTR_READONLY);
     if (parsedtag_get_value(tag, ATTR_TEXTAREANUMBER, &i))
         item->value = item->init_value = textarea_str[i];
 #ifdef MENU_SELECT

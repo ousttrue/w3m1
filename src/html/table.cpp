@@ -2653,7 +2653,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	    }
 	}
 #ifdef NOWRAP
-	if (parsedtag_exists(tag, ATTR_NOWRAP))
+	if (tag->parsedtag_exists(ATTR_NOWRAP))
 	    tbl->tabattr[tbl->row][tbl->col] |= HTT_NOWRAP;
 #endif				/* NOWRAP */
 	v = 0;
