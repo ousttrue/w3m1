@@ -1122,20 +1122,6 @@ Str process_anchor(struct parsed_tag *tag, char *tagbuf)
     }
 }
 
-#define PPUSH(p, c)      \
-    {                    \
-        outp[pos] = (p); \
-        outc[pos] = (c); \
-        pos++;           \
-    }
-#define PSIZE                                       \
-    if (out_size <= pos + 1)                        \
-    {                                               \
-        out_size = pos * 3 / 2;                     \
-        outc = New_Reuse(char, outc, out_size);     \
-        outp = New_Reuse(Lineprop, outp, out_size); \
-    }
-
 static int
 ex_efct(int ex)
 {
@@ -1165,33 +1151,44 @@ static int currentLn(BufferPtr buf)
         return 1;
 }
 
-static void
-HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
+static char *outc = NULL;
+static Lineprop *outp = NULL;
+static int out_size = 0;
+
+#define PPUSH(p, c)      \
+    {                    \
+        outp[pos] = (p); \
+        outc[pos] = (c); \
+        pos++;           \
+    }
+    
+#define PSIZE                                       \
+    if (out_size <= pos + 1)                        \
+    {                                               \
+        out_size = pos * 3 / 2;                     \
+        outc = New_Reuse(char, outc, out_size);     \
+        outp = New_Reuse(Lineprop, outp, out_size); \
+    }
+
+using FeedFunc = Str(*)();
+static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 {
-    static char *outc = NULL;
-    static Lineprop *outp = NULL;
-    static int out_size = 0;
     Anchor *a_href = NULL, *a_img = NULL, *a_form = NULL;
-    char *p, *q, *r, *s, *t, *str;
-    Lineprop mode, effect, ex_effect;
-    int pos;
-    int nlines;
+    char *p, *q, *r, *s, *t;
+    Lineprop mode;
 #ifdef DEBUG
     FILE *debug = NULL;
 #endif
+
     struct frameset *frameset_s[FRAMESTACK_SIZE];
     int frameset_sp = -1;
     union frameset_element *idFrame = NULL;
     char *id = NULL;
     int hseq, form_id;
-    Str line;
-    char *endp;
     char symbol = '\0';
     int internal = 0;
     Anchor **a_textarea = NULL;
-#ifdef MENU_SELECT
     Anchor **a_select = NULL;
-#endif
 
     if (out_size == 0)
     {
@@ -1207,7 +1204,7 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
         textarea_str = New_N(Str, max_textarea);
         a_textarea = New_N(Anchor *, max_textarea);
     }
-#ifdef MENU_SELECT
+
     n_select = -1;
     if (!max_select)
     { /* halfload */
@@ -1215,17 +1212,19 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
         select_option = New_N(FormSelectOption, max_select);
         a_select = New_N(Anchor *, max_select);
     }
-#endif
 
 #ifdef DEBUG
     if (w3m_debug)
         debug = fopen("zzzerr", "a");
 #endif
 
-    effect = 0;
-    ex_effect = 0;
-    nlines = 0;
-    while ((line = feed()) != NULL)
+    //
+    // each line
+    //
+    Lineprop effect = 0;
+    Lineprop ex_effect = 0;
+    Str line;
+    for(int nlines = 0; line = feed();)
     {
 #ifdef DEBUG
         if (w3m_debug)
@@ -1234,27 +1233,34 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
             fputc('\n', debug);
         }
 #endif
+
         if (n_textarea >= 0 && *(line->ptr) != '<')
         { /* halfload */
             textarea_str[n_textarea]->Push(line);
             continue;
         }
+
     proc_again:
         if (++nlines == llimit)
             break;
-        pos = 0;
+
 #ifdef ENABLE_REMOVE_TRAILINGSPACES
         StripRight(line);
 #endif
-        str = line->ptr;
-        endp = str + line->Size();
+
+        //
+        // each char
+        //
+        auto str = line->ptr;
+        auto endp = str + line->Size();
+        int pos = 0;
         while (str < endp)
         {
             PSIZE;
             mode = get_mctype(*str);
             if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
             {
-#ifdef USE_M17N
+
                 char **buf = set_symbol(symbol_width0);
                 int len;
 
@@ -1271,9 +1277,6 @@ HTMLlineproc2body(BufferPtr buf, Str (*feed)(), int llimit)
                         PPUSH(mode | effect | ex_efct(ex_effect), *(p++));
                     }
                 }
-#else
-                PPUSH(PC_ASCII | effect | ex_efct(ex_effect), SYMBOL_BASE + symbol);
-#endif
                 str += symbol_width;
             }
 #ifdef USE_M17N
