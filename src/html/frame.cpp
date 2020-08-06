@@ -826,13 +826,13 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                         break;
                                     a_target |= 1;
                                     tag->value[j] = url.ToStr()->ptr;
-                                    parsedtag_set_value(tag,
+                                    tag->SetAttributeValue(
                                                         ATTR_REFERER,
                                                         base.ToStr()->ptr);
 
                                     if (tag->attrid[j] == ATTR_ACTION &&
                                         charset != WC_CES_US_ASCII)
-                                        parsedtag_set_value(tag,
+                                        tag->SetAttributeValue(
                                                             ATTR_CHARSET,
                                                             wc_ces_to_charset(charset));
 
@@ -843,12 +843,12 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     a_target |= 2;
                                     if (!strcasecmp(tag->value[j], "_self"))
                                     {
-                                        parsedtag_set_value(tag,
+                                        tag->SetAttributeValue(
                                                             ATTR_TARGET, s_target);
                                     }
                                     else if (!strcasecmp(tag->value[j], "_parent"))
                                     {
-                                        parsedtag_set_value(tag,
+                                        tag->SetAttributeValue(
                                                             ATTR_TARGET, p_target);
                                     }
                                     break;
@@ -856,7 +856,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 case ATTR_ID:
                                     if (!tag->value[j])
                                         break;
-                                    parsedtag_set_value(tag,
+                                    tag->SetAttributeValue(
                                                         ATTR_FRAMENAME, s_target);
                                     break;
                                 }
@@ -865,7 +865,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                             {
                                 /* there is HREF attribute and no TARGET
 			     * attribute */
-                                parsedtag_set_value(tag, ATTR_TARGET, d_target);
+                                tag->SetAttributeValue( ATTR_TARGET, d_target);
                             }
                             if (tag->need_reconstruct)
                                 tok = parsedtag2str(tag);

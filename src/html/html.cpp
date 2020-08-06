@@ -625,20 +625,20 @@ bool parsed_tag::HasAttribute(HtmlTagAttributes id)const
     return CanAcceptAttribute(id) && (this->attrid[this->map[id]] != ATTR_UNKNOWN);
 }
 
-int parsedtag_set_value(struct parsed_tag *tag, HtmlTagAttributes id, const char *value)
+bool parsed_tag::SetAttributeValue(HtmlTagAttributes id, const char *value)
 {
     int i;
 
-    if (!tag->CanAcceptAttribute(id))
+    if (!this->CanAcceptAttribute(id))
         return 0;
 
-    i = tag->map[id];
-    tag->attrid[i] = id;
+    i = this->map[id];
+    this->attrid[i] = id;
     if (value)
-        tag->value[i] = allocStr(value, -1);
+        this->value[i] = allocStr(value, -1);
     else
-        tag->value[i] = NULL;
-    tag->need_reconstruct = TRUE;
+        this->value[i] = NULL;
+    this->need_reconstruct = TRUE;
     return 1;
 }
 

@@ -282,6 +282,7 @@ struct parsed_tag : gc_cleanup
     bool CanAcceptAttribute(HtmlTagAttributes id)const;
     bool HasAttribute(HtmlTagAttributes id)const;
     bool TryGetAttributeValue(HtmlTagAttributes id, void *value)const;
+    bool SetAttributeValue(HtmlTagAttributes id, const char *value);
 
     parsed_tag(HtmlTags tag)
         : tagid(tag)
@@ -304,5 +305,4 @@ inline std::string_view parsedtag_get_value(const struct parsed_tag &tag, HtmlTa
     return value;
 }
 
-int parsedtag_set_value(struct parsed_tag *tag, HtmlTagAttributes id, const char *value);
 Str parsedtag2str(struct parsed_tag *tag);
