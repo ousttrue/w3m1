@@ -1197,9 +1197,9 @@ void Buffer::DrawLine(LinePtr l, int line)
     ///
     /// show line number
     ///
+    move(line, 0);
     if (w3mApp::Instance().showLineNum)
     {
-        move(line, 0);
         char tmp[16];
         if (!this->rootX)
         {
