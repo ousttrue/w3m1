@@ -128,8 +128,8 @@ forwardSearch(BufferPtr buf, char *str)
     pos = buf->pos;
     if (l->bpos) {
 	pos += l->bpos;
-	while (l->bpos && l->prev)
-	    l = l->prev;
+	while (l->bpos && buf->PrevLine(l))
+	    l = buf->PrevLine(l);
     }
     begin = l;
 #ifdef USE_M17N
@@ -223,8 +223,8 @@ backwardSearch(BufferPtr buf, char *str)
     pos = buf->pos;
     if (l->bpos) {
 	pos += l->bpos;
-	while (l->bpos && l->prev)
-	    l = l->prev;
+	while (l->bpos && buf->PrevLine(l))
+	    l = buf->PrevLine(l);
     }
     begin = l;
     if (pos > 0) {
@@ -268,7 +268,7 @@ backwardSearch(BufferPtr buf, char *str)
 	    return SR_FOUND;
 	}
     }
-    for (l = l->prev;; l = l->prev) {
+    for (l = buf->PrevLine(l);; l = buf->PrevLine(l)) {
 	if (l == NULL) {
 	    if (WrapSearch) {
 		l = buf->lastLine;

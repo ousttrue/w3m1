@@ -121,6 +121,14 @@ public:
     {
         line->next = next;
     }
+    Line* PrevLine(Line* line)const
+    {
+        return line->prev;
+    }
+    void SetPrevLine(Line* line, Line* prev)
+    {
+        line->prev = prev;
+    }
 
     BufferPtr linkBuffer[MAX_LB];
     short width;

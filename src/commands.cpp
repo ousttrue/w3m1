@@ -516,7 +516,7 @@ void movLW(w3mApp *w3m)
             }
             if (buf->pos > 0)
                 break;
-            if (prev_nonnull_line(buf, buf->currentLine->prev) < 0)
+            if (prev_nonnull_line(buf, buf->PrevLine(buf->currentLine)) < 0)
             {
                 buf->currentLine = pline;
                 buf->pos = ppos;
@@ -685,12 +685,14 @@ void goLineL(w3mApp *w3m)
 /* Go to the beginning of the line */
 void linbeg(w3mApp *w3m)
 {
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    while (GetCurrentTab()->GetCurrentBuffer()->currentLine->prev && GetCurrentTab()->GetCurrentBuffer()->currentLine->bpos)
-        GetCurrentTab()->GetCurrentBuffer()->CursorUp0(1);
-    GetCurrentTab()->GetCurrentBuffer()->pos = 0;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    while (buf->PrevLine(buf->currentLine) && buf->currentLine->bpos)
+        buf->CursorUp0(1);
+    buf->pos = 0;
+    buf->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -819,13 +821,15 @@ void prevMk(w3mApp *w3m)
     int i;
     if (!use_mark)
         return;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab=GetCurrentTab();
+    auto buf=tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    i = GetCurrentTab()->GetCurrentBuffer()->pos - 1;
-    l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+    i = buf->pos - 1;
+    l = buf->currentLine;
     if (i < 0)
     {
-        l = l->prev;
+        l = buf->PrevLine(l);
         if (l != NULL)
             i = l->len - 1;
     }
@@ -835,14 +839,14 @@ void prevMk(w3mApp *w3m)
         {
             if (l->propBuf[i] & PE_MARK)
             {
-                GetCurrentTab()->GetCurrentBuffer()->currentLine = l;
-                GetCurrentTab()->GetCurrentBuffer()->pos = i;
-                GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+                buf->currentLine = l;
+                buf->pos = i;
+                buf->ArrangeCursor();
                 displayCurrentbuf(B_NORMAL);
                 return;
             }
         }
-        l = l->prev;
+        l = buf->PrevLine(l);
         if (l != NULL)
             i = l->len - 1;
     }

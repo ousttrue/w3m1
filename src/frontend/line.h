@@ -73,8 +73,8 @@ struct Line
 private:
     friend struct Buffer;
     Line *next;
-public:
     Line *prev;
+public:
     int len;
     int width;
     long linenumber;      /* on buffer */

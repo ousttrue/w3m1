@@ -489,10 +489,10 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
         {
             int n = a->y - buf->currentLine->linenumber;
             if (n > 0)
-                for (; l && n; l = l->prev, n--)
+                for (; l && n; l = buf->PrevLine(l), n--)
                     ;
             else if (n < 0)
-                for (; l && n; l = l->prev, n++)
+                for (; l && n; l = buf->PrevLine(l), n++)
                     ;
             if (!l)
                 break;

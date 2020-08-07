@@ -493,7 +493,7 @@ int prev_nonnull_line(BufferPtr buf, Line *line)
 {
     Line *l;
 
-    for (l = line; l != NULL && l->len == 0; l = l->prev)
+    for (l = line; l != NULL && l->len == 0; l = buf->PrevLine(l))
         ;
     if (l == NULL || l->len == 0)
         return -1;
@@ -1440,7 +1440,7 @@ void nextX(int d, int dy)
             }
             if (!dy || an)
                 break;
-            l = (dy > 0) ? buf->NextLine(l) : l->prev;
+            l = (dy > 0) ? buf->NextLine(l) : buf->PrevLine(l);
             if (!l)
                 break;
             x = (d > 0) ? 0 : l->len - 1;

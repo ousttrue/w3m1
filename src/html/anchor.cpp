@@ -458,7 +458,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         else
         {
             for (ls = l; ls != NULL;
-                 ls = (a_img.y < a_img.start.line) ? buf->NextLine(ls) : ls->prev)
+                 ls = (a_img.y < a_img.start.line) ? buf->NextLine(ls) : buf->PrevLine(ls))
             {
                 if (ls->linenumber == a_img.start.line)
                     break;
@@ -556,7 +556,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
         else
         {
             for (ls = l; ls != NULL;
-                 ls = (a_form.y < a_form.start.line) ? buf->NextLine(ls) : ls->prev)
+                 ls = (a_form.y < a_form.start.line) ? buf->NextLine(ls) : buf->PrevLine(ls))
             {
                 if (ls->linenumber == a_form.start.line)
                     break;

@@ -1074,7 +1074,7 @@ getNextPage(BufferPtr buf, int plen)
                     l = buf->NextLine(l);
                 } while (l && l->bpos);
                 buf->firstLine = l;
-                buf->firstLine->prev = NULL;
+                buf->SetPrevLine(buf->firstLine, NULL);
             }
         }
 

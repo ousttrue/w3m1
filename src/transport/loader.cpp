@@ -299,7 +299,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
                     URLFile f(SCM_LOCAL, newStrStream(src));
                     loadHTMLstream(&f, newBuf, NULL, TRUE);
                     for (l = newBuf->lastLine; l && l->real_linenumber;
-                         l = l->prev)
+                         l = newBuf->PrevLine(l))
                         l->real_linenumber = 0;
 #ifdef USE_M17N
                     newBuf->document_charset = old_charset;
