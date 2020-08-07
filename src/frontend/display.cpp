@@ -1,39 +1,39 @@
 /* $Id: display.c,v 1.71 2010/07/18 14:10:09 htrb Exp $ */
 
-#include "fm.h"
-#include "indep.h"
-#include "public.h"
-#include "html/image.h"
-#include "file.h"
-#include "symbol.h"
-#include "html/maparea.h"
-#include "frontend/terms.h"
-#include "frontend/line.h"
 #include "frontend/display.h"
-#include "frontend/mouse.h"
+#include "ctrlcode.h"
+#include "file.h"
+#include "fm.h"
 #include "frontend/buffer.h"
+#include "frontend/line.h"
+#include "frontend/mouse.h"
 #include "frontend/tab.h"
 #include "frontend/tabbar.h"
-#include "ctrlcode.h"
+#include "frontend/terms.h"
 #include "html/anchor.h"
+#include "html/image.h"
+#include "html/maparea.h"
+#include "indep.h"
 #include "mime/mimetypes.h"
-#include "wtf.h"
+#include "public.h"
+#include "symbol.h"
 #include "w3m.h"
-#include <string_view>
-#include <signal.h>
-#include <math.h>
+#include "wtf.h"
 #include <assert.h>
+#include <math.h>
+#include <signal.h>
+#include <string_view>
 
 /*-
- * color: 
- *     0  black 
- *     1  red 
- *     2  green 
+ * color:
+ *     0  black
+ *     1  red
+ *     2  green
  *     3  yellow
- *     4  blue 
- *     5  magenta 
- *     6  cyan 
- *     7  white 
+ *     4  blue
+ *     5  magenta
+ *     6  cyan
+ *     7  white
  */
 static void effect_anchor_start()
 {
@@ -147,8 +147,7 @@ static void effect_active_start()
     }
 }
 
-static void
-effect_active_end()
+static void effect_active_end()
 {
     if (w3mApp::Instance().useColor)
     {
@@ -167,8 +166,7 @@ effect_active_end()
     }
 }
 
-static void
-effect_visited_start()
+static void effect_visited_start()
 {
     if (useVisitedColor)
     {
@@ -217,7 +215,7 @@ void fmTerm(void)
     }
 }
 
-/* 
+/*
  * Initialize routine.
  */
 void fmInit(void)
@@ -235,7 +233,7 @@ void fmInit(void)
     fmInitialized = TRUE;
 }
 
-/* 
+/*
  * Display some lines.
  */
 static LinePtr cline = NULL;
@@ -313,22 +311,20 @@ void clear_effect()
 
     if (color_mode)
         do_color(0);
-
 }
 
 static void drawAnchorCursor(BufferPtr buf);
-
-
 
 static int image_touch = 0;
 static int draw_image_flag = FALSE;
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i);
 
-static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos, int epos);
+static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos,
+                            int epos);
 static void do_effects(Lineprop m);
 
-static Str
-make_lastline_link(BufferPtr buf, std::string_view title, char *url)
+static Str make_lastline_link(BufferPtr buf, std::string_view title,
+                              char *url)
 {
     Str s = NULL, u;
     URL pu;
@@ -386,8 +382,7 @@ make_lastline_link(BufferPtr buf, std::string_view title, char *url)
     return s;
 }
 
-static Str
-make_lastline_message(BufferPtr buf)
+static Str make_lastline_message(BufferPtr buf)
 {
     Str msg, s = NULL;
     int sl = 0;
@@ -410,8 +405,7 @@ make_lastline_message(BufferPtr buf)
                     p = a_img->title;
             }
             if (p.size() || a)
-                s = make_lastline_link(buf,
-                                       p,
+                s = make_lastline_link(buf, p,
                                        a ? const_cast<char *>(a->url.c_str()) : NULL);
         }
         if (s)
@@ -466,10 +460,8 @@ make_lastline_message(BufferPtr buf)
     return msg;
 }
 
-static void
-drawAnchorCursor0(BufferPtr buf, AnchorList &al,
-                  int hseq, int prevhseq,
-                  int tline, int eline, int active)
+static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
+                              int prevhseq, int tline, int eline, int active)
 {
     auto l = buf->TopLine();
     for (int j = 0; j < al.size(); j++)
@@ -480,19 +472,19 @@ drawAnchorCursor0(BufferPtr buf, AnchorList &al,
         if (an->start.line >= eline)
             return;
 
-        while(l)
+        while (l)
         {
             if (l->linenumber == an->start.line)
                 break;
 
             auto next = buf->NextLine(l);
-            if(!next)
+            if (!next)
             {
                 return;
             }
-            if(next->linenumber<l->linenumber)            
+            if (next->linenumber < l->linenumber)
             {
-auto a=0;
+                auto a = 0;
             }
             l = next;
         }
@@ -523,8 +515,7 @@ auto a=0;
     }
 }
 
-static void
-drawAnchorCursor(BufferPtr buf)
+static void drawAnchorCursor(BufferPtr buf)
 {
     if (buf->LineCount() == 0)
         return;
@@ -561,8 +552,7 @@ drawAnchorCursor(BufferPtr buf)
 ///
 /// term に描画する
 ///
-static void
-redrawNLine(BufferPtr buf)
+static void redrawNLine(BufferPtr buf)
 {
     // lines
     {
@@ -577,13 +567,15 @@ redrawNLine(BufferPtr buf)
         clrtobotx();
     }
 
-    if (!(w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && buf->img))
+    if (!(w3mApp::Instance().activeImage && w3mApp::Instance().displayImage &&
+          buf->img))
         return;
 
     move(buf->cursorY + buf->rootY, buf->cursorX + buf->rootX);
     {
         int i = 0;
-        for (auto l = buf->TopLine(); i < buf->LINES && l; i++, l = buf->NextLine(l))
+        for (auto l = buf->TopLine(); i < buf->LINES && l;
+             i++, l = buf->NextLine(l))
         {
             redrawLineImage(buf, l, i + buf->rootY);
         }
@@ -591,10 +583,8 @@ redrawNLine(BufferPtr buf)
     getAllImage(buf);
 }
 
-
 #ifdef USE_IMAGE
-static LinePtr 
-redrawLineImage(BufferPtr buf, LinePtr l, int i)
+static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
 {
     int j, pos, rcol;
     int column = buf->currentColumn;
@@ -619,7 +609,8 @@ redrawLineImage(BufferPtr buf, LinePtr l, int i)
         if (a && a->image && a->image->touch < image_touch)
         {
             Image *image = a->image;
-            auto cache = image->cache = getImage(image, buf->BaseURL(), buf->image_flag);
+            auto cache = image->cache =
+                getImage(image, buf->BaseURL(), buf->image_flag);
             if (cache)
             {
                 if ((image->width < 0 && cache->width > 0) ||
@@ -629,10 +620,13 @@ redrawLineImage(BufferPtr buf, LinePtr l, int i)
                     image->height = cache->height;
                     buf->need_reshape = TRUE;
                 }
-                x = (int)((rcol - column + buf->rootX) * w3mApp::Instance().pixel_per_char);
+                x = (int)((rcol - column + buf->rootX) *
+                          w3mApp::Instance().pixel_per_char);
                 y = (int)(i * w3mApp::Instance().pixel_per_line);
-                sx = (int)((rcol - l->COLPOS(a->start.pos)) * w3mApp::Instance().pixel_per_char);
-                sy = (int)((l->linenumber - image->y) * w3mApp::Instance().pixel_per_line);
+                sx = (int)((rcol - l->COLPOS(a->start.pos)) *
+                           w3mApp::Instance().pixel_per_char);
+                sy = (int)((l->linenumber - image->y) *
+                           w3mApp::Instance().pixel_per_line);
                 if (sx == 0 && x + image->xoffset >= 0)
                     x += image->xoffset;
                 else
@@ -649,8 +643,12 @@ redrawLineImage(BufferPtr buf, LinePtr l, int i)
                     h = image->height - sy;
                 else
                     h = (int)(w3mApp::Instance().pixel_per_line - sy);
-                if (w > (int)((buf->rootX + buf->COLS) * w3mApp::Instance().pixel_per_char - x))
-                    w = (int)((buf->rootX + buf->COLS) * w3mApp::Instance().pixel_per_char - x);
+                if (w >
+                    (int)((buf->rootX + buf->COLS) * w3mApp::Instance().pixel_per_char -
+                          x))
+                    w = (int)((buf->rootX + buf->COLS) *
+                                  w3mApp::Instance().pixel_per_char -
+                              x);
                 if (h > (int)((LINES - 1) * w3mApp::Instance().pixel_per_line - y))
                     h = (int)((LINES - 1) * w3mApp::Instance().pixel_per_line - y);
                 addImage(cache, x, y, sx, sy, w, h);
@@ -664,8 +662,8 @@ redrawLineImage(BufferPtr buf, LinePtr l, int i)
 }
 #endif
 
-static int
-redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos, int epos)
+static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos,
+                            int epos)
 {
     int j, pos, rcol, ncol, delta = 1;
     int column = buf->currentColumn;
@@ -823,8 +821,7 @@ redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos, int epos)
         modeflag = FALSE;                                      \
     }
 
-static void
-do_effects(Lineprop m)
+static void do_effects(Lineprop m)
 {
     /* effect end */
     do_effect2(PE_UNDER, ulmode, underline(), underlineend());
@@ -834,8 +831,10 @@ do_effects(Lineprop m)
     do_effect2(PE_ANCHOR, anch_mode, effect_anchor_start(), effect_anchor_end());
     do_effect2(PE_IMAGE, imag_mode, effect_image_start(), effect_image_end());
     do_effect2(PE_FORM, form_mode, effect_from_start(), effect_form_end());
-    do_effect2(PE_VISITED, visited_mode, effect_visited_start(), effect_visited_end());
-    do_effect2(PE_ACTIVE, active_mode, effect_active_start(), effect_active_end());
+    do_effect2(PE_VISITED, visited_mode, effect_visited_start(),
+               effect_visited_end());
+    do_effect2(PE_ACTIVE, active_mode, effect_active_start(),
+               effect_active_end());
     do_effect2(PE_MARK, mark_mode, effect_mark_start(), effect_mark_end());
     if (graph_mode)
     {
@@ -853,7 +852,8 @@ do_effects(Lineprop m)
     do_effect1(PE_FORM, form_mode, effect_from_start(), effect_form_end());
     do_effect1(PE_VISITED, visited_mode, effect_visited_start(),
                EFFECT_VISITED_END);
-    do_effect1(PE_ACTIVE, active_mode, effect_active_start(), effect_active_end());
+    do_effect1(PE_ACTIVE, active_mode, effect_active_start(),
+               effect_active_end());
     do_effect1(PE_MARK, mark_mode, effect_mark_start(), effect_mark_end());
 }
 
@@ -871,7 +871,6 @@ void do_color(Linecolor c)
 #endif
     color_mode = c;
 }
-
 
 #ifdef USE_M17N
 void addChar(char c, Lineprop mode)
@@ -952,8 +951,7 @@ void addChar(char c, Lineprop mode)
     else if (mode & PC_UNKNOWN)
     {
         char buf[5];
-        sprintf(buf, "[%.2X]",
-                (unsigned char)wtf_get_code((uint8_t *)p) | 0x80);
+        sprintf(buf, "[%.2X]", (unsigned char)wtf_get_code((uint8_t *)p) | 0x80);
         addstr(buf);
     }
     else
@@ -980,11 +978,10 @@ void record_err_message(const char *s)
     }
 }
 
-/* 
+/*
  * List of error messages
  */
-BufferPtr
-message_list_panel(void)
+BufferPtr message_list_panel(void)
 {
     Str tmp = Strnew_size(LINES * COLS);
     ListItem *p;
@@ -1018,7 +1015,8 @@ void disp_err_message(const char *s, int redraw_current)
     disp_message(s, redraw_current);
 }
 
-void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, int mouse)
+void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
+                       int mouse)
 {
     if (QuietMessage)
         return;
@@ -1028,8 +1026,11 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, in
         return;
     }
     if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL)
-        message(s, GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX,
-                GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY);
+        message(s,
+                GetCurrentTab()->GetCurrentBuffer()->cursorX +
+                    GetCurrentTab()->GetCurrentBuffer()->rootX,
+                GetCurrentTab()->GetCurrentBuffer()->cursorY +
+                    GetCurrentTab()->GetCurrentBuffer()->rootY);
     else
         message(s, (LINES - 1), 0);
     refresh();
@@ -1042,7 +1043,8 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge, in
     if (mouse && w3mApp::Instance().use_mouse)
         mouse_inactive();
 #endif
-    if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL && redraw_current)
+    if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL &&
+        redraw_current)
         displayCurrentbuf(B_NORMAL);
 }
 
@@ -1056,10 +1058,7 @@ void disp_message_nomouse(const char *s, int redraw_current)
     disp_message_nsec(s, redraw_current, 10, FALSE, FALSE);
 }
 
-void set_delayed_message(const char *s)
-{
-    delayed_msg = allocStr(s, -1);
-}
+void set_delayed_message(const char *s) { delayed_msg = allocStr(s, -1); }
 
 void displayBuffer(BufferPtr buf, DisplayMode mode)
 {
@@ -1068,7 +1067,8 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 
     if (!buf)
         return;
-    if (buf->TopLine() == NULL && buf->ReadBufferCache() == 0)
+    if (buf->TopLine() == NULL &&
+        buf->ReadBufferCache() == 0)
     { /* clear_buffer */
         mode = B_FORCE_REDRAW;
     }
@@ -1088,7 +1088,8 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     if (w3mApp::Instance().showLineNum)
     {
         if (buf->LastLine() && buf->LastLine()->real_linenumber > 0)
-            buf->rootX = (int)(log(buf->LastLine()->real_linenumber + 0.1) / log(10)) + 2;
+            buf->rootX =
+                (int)(log(buf->LastLine()->real_linenumber + 0.1) / log(10)) + 2;
         if (buf->rootX < 5)
             buf->rootX = 5;
         if (buf->rootX > COLS)
@@ -1119,8 +1120,8 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         cline != buf->TopLine() || ccolumn != buf->currentColumn)
     {
         if (w3mApp::Instance().activeImage &&
-            (mode == B_REDRAW_IMAGE ||
-             cline != buf->TopLine() || ccolumn != buf->currentColumn))
+            (mode == B_REDRAW_IMAGE || cline != buf->TopLine() ||
+             ccolumn != buf->currentColumn))
         {
             if (draw_image_flag)
                 clear();
@@ -1210,7 +1211,8 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     term_title(conv_to_system(buf->buffername.c_str()));
     refresh();
 #ifdef USE_IMAGE
-    if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && buf->img)
+    if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage &&
+        buf->img)
     {
         drawImage();
     }

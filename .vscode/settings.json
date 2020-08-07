@@ -58,5 +58,6 @@
     },
     "cSpell.words": [
         "myctype"
-    ]
+    ],
+    "C_Cpp.clang_format_style": "file"
 }
