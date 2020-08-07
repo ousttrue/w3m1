@@ -1,5 +1,6 @@
 #pragma once
 #include <wc.h>
+#include <gc_cpp.h>
 
 #define LINELEN 256          /* Initial line length */
 
@@ -65,21 +66,43 @@ inline void SetCharType(LineProperties &v, int c) {
     ((v) = (LineProperties)(((v) & ~P_CHARTYPE) | (c)));
 }
 
-struct Line
+struct Line : gc_cleanup
 {
-    char *lineBuf;
-    Lineprop *propBuf;
-    Linecolor *colorBuf;
+    char *lineBuf = nullptr;
+    Lineprop *propBuf= nullptr;
+    Linecolor *colorBuf= nullptr;
+    bool m_destroy = false;
+
+    Line()
+    {
+    }
+
+    Line(char *line, Lineprop *prop, Linecolor *color, int pos)
+    {
+        lineBuf = line;
+        propBuf = prop;
+        colorBuf = color;
+        len = pos;
+        width = -1;
+        size = pos;
+        bpos = 0;
+        bwidth = 0;
+    }
+
+    ~Line()
+    {
+        m_destroy = true;
+    }
 
 public:
-    int len;
-    int width;
-    long linenumber;      /* on buffer */
-    long real_linenumber; /* on file */
-    unsigned short usrflags;
-    int size;
-    int bpos;
-    int bwidth;
+    int len = 0;
+    int width = 0;
+    long linenumber = 0;      /* on buffer */
+    long real_linenumber =0; /* on file */
+    unsigned short usrflags =0;
+    int size =0;
+    int bpos = 0;
+    int bwidth =0;
 
     void CalcWidth();
     int COLPOS(int c);

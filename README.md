@@ -15,4 +15,4 @@ w3m を改造して遊ぶ。
 * [ ] tab壊れた
 * [x] 遅くなった。なんか、元に戻った
 
-* [ ] STL化(Tab, Buffer, )
+* [ ] STL化(Tab, Buffer, Line)

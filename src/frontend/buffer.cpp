@@ -755,18 +755,7 @@ void set_buffer_environ(BufferPtr buf)
 
 void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines)
 {
-    Line *l;
-    l = New(Line);
-    l->lineBuf = line;
-    l->propBuf = prop;
-    #ifdef USE_ANSI_COLOR
-    l->colorBuf = color;
-    #endif
-    l->len = pos;
-    l->width = -1;
-    l->size = pos;
-    l->bpos = 0;
-    l->bwidth = 0;
+    auto l = new Line(line, prop, color, pos);
 
     auto it = lines.end();
     if (currentLine)
