@@ -139,9 +139,9 @@ forwardSearch(BufferPtr buf, char *str)
     if (pos < l->size && regexMatch(&l->lineBuf[pos], l->size - pos, 0) == 1) {
 	matchedPosition(&first, &last);
 	pos = first - l->lineBuf;
-	while (pos >= l->len && l->next && l->next->bpos) {
+	while (pos >= l->len && buf->NextLine(l) && buf->NextLine(l)->bpos) {
 	    pos -= l->len;
-	    l = l->next;
+	    l = buf->NextLine(l);
 	}
 	buf->pos = pos;
 	if (l != buf->currentLine)
@@ -150,7 +150,7 @@ forwardSearch(BufferPtr buf, char *str)
 	set_mark(l, pos, pos + last - first);
 	return SR_FOUND;
     }
-    for (l = l->next;; l = l->next) {
+    for (l = buf->NextLine(l);; l = buf->NextLine(l)) {
 	if (l == NULL) {
 	    if (buf->pagerSource) {
 		l = getNextPage(buf, 1);
@@ -177,9 +177,9 @@ forwardSearch(BufferPtr buf, char *str)
 	if (regexMatch(l->lineBuf, l->size, 1) == 1) {
 	    matchedPosition(&first, &last);
 	    pos = first - l->lineBuf;
-	    while (pos >= l->len && l->next && l->next->bpos) {
+	    while (pos >= l->len && buf->NextLine(l) && buf->NextLine(l)->bpos) {
 		pos -= l->len;
-		l = l->next;
+		l = buf->NextLine(l);
 	    }
 	    buf->pos = pos;
 	    buf->currentLine = l;
@@ -256,9 +256,9 @@ backwardSearch(BufferPtr buf, char *str)
 	}
 	if (found) {
 	    pos = found - l->lineBuf;
-	    while (pos >= l->len && l->next && l->next->bpos) {
+	    while (pos >= l->len && buf->NextLine(l) && buf->NextLine(l)->bpos) {
 		pos -= l->len;
-		l = l->next;
+		l = buf->NextLine(l);
 	    }
 	    buf->pos = pos;
 	    if (l != buf->currentLine)
@@ -296,9 +296,9 @@ backwardSearch(BufferPtr buf, char *str)
 	}
 	if (found) {
 	    pos = found - l->lineBuf;
-	    while (pos >= l->len && l->next && l->next->bpos) {
+	    while (pos >= l->len && buf->NextLine(l) && buf->NextLine(l)->bpos) {
 		pos -= l->len;
-		l = l->next;
+		l = buf->NextLine(l);
 	    }
 	    buf->pos = pos;
 	    buf->GotoLine(l->linenumber);

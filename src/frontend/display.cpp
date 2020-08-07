@@ -421,7 +421,7 @@ drawAnchorCursor0(BufferPtr buf, AnchorList &al,
         if (an->start.line >= eline)
             return;
 
-        for (;; l = l->next)
+        for (;; l = buf->NextLine(l))
         {
             if (l == NULL)
                 return;
@@ -499,7 +499,7 @@ redrawNLine(BufferPtr buf)
     // lines
     {
         int i = 0;
-        for (auto l = buf->topLine; i < buf->LINES; i++, l = l->next)
+        for (auto l = buf->topLine; i < buf->LINES; i++, l = buf->NextLine(l))
         {
             l = redrawLine(buf, l, i + buf->rootY);
             if (l == NULL)
@@ -515,7 +515,7 @@ redrawNLine(BufferPtr buf)
     move(buf->cursorY + buf->rootY, buf->cursorX + buf->rootX);
     {
         int i = 0;
-        for (auto l = buf->topLine; i < buf->LINES && l; i++, l = l->next)
+        for (auto l = buf->topLine; i < buf->LINES && l; i++, l = buf->NextLine(l))
         {
             redrawLineImage(buf, l, i + buf->rootY);
         }

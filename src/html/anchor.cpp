@@ -237,11 +237,11 @@ reAnchorPos(BufferPtr buf, Line *l, char *p1, char *p2,
     }
     for (i = spos; i < epos; i++)
         l->propBuf[i] |= PE_ANCHOR;
-    while (spos > l->len && l->next && l->next->bpos)
+    while (spos > l->len && buf->NextLine(l) && buf->NextLine(l)->bpos)
     {
         spos -= l->len;
         epos -= l->len;
-        l = l->next;
+        l = buf->NextLine(l);
     }
     while (1)
     {
@@ -253,12 +253,12 @@ reAnchorPos(BufferPtr buf, Line *l, char *p1, char *p2,
             hseq = a->hseq;
         }
         a->end.line = l->linenumber;
-        if (epos > l->len && l->next && l->next->bpos)
+        if (epos > l->len && buf->NextLine(l) && buf->NextLine(l)->bpos)
         {
             a->end.pos = l->len;
             spos = 0;
             epos -= l->len;
-            l = l->next;
+            l = buf->NextLine(l);
         }
         else
         {
@@ -293,7 +293,7 @@ reAnchorAny(BufferPtr buf, char *re,
     }
     for (l = MarkAllPages ? buf->firstLine : buf->topLine; l != NULL &&
                                                            (MarkAllPages || l->linenumber < buf->topLine->linenumber + ::LINES - 1);
-         l = l->next)
+         l = buf->NextLine(l))
     {
         if (p && l->bpos)
             goto next_line;
@@ -309,7 +309,7 @@ reAnchorAny(BufferPtr buf, char *re,
                 break;
         }
     next_line:
-        if (MarkAllPages && l->next == NULL && buf->pagerSource &&
+        if (MarkAllPages && buf->NextLine(l) == NULL && buf->pagerSource &&
             !(buf->bufferprop & BP_CLOSE))
             getNextPage(buf, w3mApp::Instance().PagerMax);
     }
@@ -357,7 +357,7 @@ reAnchorNewsheader(BufferPtr buf)
             header = header_group;
         }
         for (l = buf->firstLine; l != NULL && l->real_linenumber == 0;
-             l = l->next)
+             l = buf->NextLine(l))
         {
             if (l->bpos)
                 continue;
@@ -444,7 +444,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         if (a_img.hseq < 0 || !img || img->rows <= 1)
             continue;
         auto l = buf->firstLine;
-        for (; l != NULL; l = l->next)
+        for (; l != NULL; l = buf->NextLine(l))
         {
             if (l->linenumber == img->y)
                 break;
@@ -458,7 +458,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         else
         {
             for (ls = l; ls != NULL;
-                 ls = (a_img.y < a_img.start.line) ? ls->next : ls->prev)
+                 ls = (a_img.y < a_img.start.line) ? buf->NextLine(ls) : ls->prev)
             {
                 if (ls->linenumber == a_img.start.line)
                     break;
@@ -484,7 +484,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         }
         auto col = ls->COLPOS(a_img.start.pos);
         auto ecol = ls->COLPOS(a_img.end.pos);
-        for (int j = 0; l && j < img->rows; l = l->next, j++)
+        for (int j = 0; l && j < img->rows; l = buf->NextLine(l), j++)
         {
             if (a_img.start.line == l->linenumber)
                 continue;
@@ -543,7 +543,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
         if (a_form.hseq < 0 || a_form.rows <= 1)
             continue;
         auto l = buf->firstLine;
-        for (; l != NULL; l = l->next)
+        for (; l != NULL; l = buf->NextLine(l))
         {
             if (l->linenumber == a_form.y)
                 break;
@@ -556,7 +556,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
         else
         {
             for (ls = l; ls != NULL;
-                 ls = (a_form.y < a_form.start.line) ? ls->next : ls->prev)
+                 ls = (a_form.y < a_form.start.line) ? buf->NextLine(ls) : ls->prev)
             {
                 if (ls->linenumber == a_form.start.line)
                     break;
@@ -567,7 +567,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
         auto fi = a_form.item;
         auto col = ls->COLPOS(a_form.start.pos);
         auto ecol = ls->COLPOS(a_form.end.pos);
-        for (auto j = 0; l && j < a_form.rows; l = l->next, j++)
+        for (auto j = 0; l && j < a_form.rows; l = buf->NextLine(l), j++)
         {
             auto pos = columnPos(l, col);
             if (j == 0)
@@ -613,7 +613,7 @@ getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a)
         a = &al.anchors[i];
         if (a->hseq != hseq)
             continue;
-        for (; l; l = l->next)
+        for (; l; l = buf->NextLine(l))
         {
             if (l->linenumber == a->start.line)
                 break;

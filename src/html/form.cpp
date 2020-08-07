@@ -499,7 +499,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
         }
         rows = form->rows ? form->rows : 1;
         col = l->COLPOS(a->start.pos);
-        for (c_rows = 0; c_rows < rows; c_rows++, l = l->next)
+        for (c_rows = 0; c_rows < rows; c_rows++, l = buf->NextLine(l))
         {
             if (rows > 1)
             {

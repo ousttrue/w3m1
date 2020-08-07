@@ -492,49 +492,51 @@ void movLW(w3mApp *w3m)
     Line *pline, *l;
     int ppos;
     int i, n = searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
     for (i = 0; i < n; i++)
     {
-        pline = GetCurrentTab()->GetCurrentBuffer()->currentLine;
-        ppos = GetCurrentTab()->GetCurrentBuffer()->pos;
-        if (prev_nonnull_line(GetCurrentTab()->GetCurrentBuffer()->currentLine) < 0)
+        pline = buf->currentLine;
+        ppos = buf->pos;
+        if (prev_nonnull_line(buf, buf->currentLine) < 0)
             goto end;
         while (1)
         {
-            l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+            l = buf->currentLine;
             lb = l->lineBuf;
-            while (GetCurrentTab()->GetCurrentBuffer()->pos > 0)
+            while (buf->pos > 0)
             {
-                int tmp = GetCurrentTab()->GetCurrentBuffer()->pos;
+                int tmp = buf->pos;
                 prevChar(&tmp, l);
                 if (is_wordchar(getChar(&lb[tmp])))
                     break;
-                GetCurrentTab()->GetCurrentBuffer()->pos = tmp;
+                buf->pos = tmp;
             }
-            if (GetCurrentTab()->GetCurrentBuffer()->pos > 0)
+            if (buf->pos > 0)
                 break;
-            if (prev_nonnull_line(GetCurrentTab()->GetCurrentBuffer()->currentLine->prev) < 0)
+            if (prev_nonnull_line(buf, buf->currentLine->prev) < 0)
             {
-                GetCurrentTab()->GetCurrentBuffer()->currentLine = pline;
-                GetCurrentTab()->GetCurrentBuffer()->pos = ppos;
+                buf->currentLine = pline;
+                buf->pos = ppos;
                 goto end;
             }
-            GetCurrentTab()->GetCurrentBuffer()->pos = GetCurrentTab()->GetCurrentBuffer()->currentLine->len;
+            buf->pos = buf->currentLine->len;
         }
-        l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+        l = buf->currentLine;
         lb = l->lineBuf;
-        while (GetCurrentTab()->GetCurrentBuffer()->pos > 0)
+        while (buf->pos > 0)
         {
-            int tmp = GetCurrentTab()->GetCurrentBuffer()->pos;
+            int tmp = buf->pos;
             prevChar(&tmp, l);
             if (!is_wordchar(getChar(&lb[tmp])))
                 break;
-            GetCurrentTab()->GetCurrentBuffer()->pos = tmp;
+            buf->pos = tmp;
         }
     }
 end:
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    buf->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -544,39 +546,41 @@ void movRW(w3mApp *w3m)
     Line *pline, *l;
     int ppos;
     int i, n = searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
     for (i = 0; i < n; i++)
     {
-        pline = GetCurrentTab()->GetCurrentBuffer()->currentLine;
-        ppos = GetCurrentTab()->GetCurrentBuffer()->pos;
-        if (next_nonnull_line(GetCurrentTab()->GetCurrentBuffer()->currentLine) < 0)
+        pline = buf->currentLine;
+        ppos = buf->pos;
+        if (next_nonnull_line(buf, buf->currentLine) < 0)
             goto end;
-        l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+        l = buf->currentLine;
         lb = l->lineBuf;
-        while (GetCurrentTab()->GetCurrentBuffer()->pos < l->len &&
-               is_wordchar(getChar(&lb[GetCurrentTab()->GetCurrentBuffer()->pos])))
-            nextChar(&GetCurrentTab()->GetCurrentBuffer()->pos, l);
+        while (buf->pos < l->len &&
+               is_wordchar(getChar(&lb[buf->pos])))
+            nextChar(&buf->pos, l);
         while (1)
         {
-            while (GetCurrentTab()->GetCurrentBuffer()->pos < l->len &&
-                   !is_wordchar(getChar(&lb[GetCurrentTab()->GetCurrentBuffer()->pos])))
-                nextChar(&GetCurrentTab()->GetCurrentBuffer()->pos, l);
-            if (GetCurrentTab()->GetCurrentBuffer()->pos < l->len)
+            while (buf->pos < l->len &&
+                   !is_wordchar(getChar(&lb[buf->pos])))
+                nextChar(&buf->pos, l);
+            if (buf->pos < l->len)
                 break;
-            if (next_nonnull_line(GetCurrentTab()->GetCurrentBuffer()->currentLine->next) < 0)
+            if (next_nonnull_line(buf, buf->NextLine(buf->currentLine)) < 0)
             {
-                GetCurrentTab()->GetCurrentBuffer()->currentLine = pline;
-                GetCurrentTab()->GetCurrentBuffer()->pos = ppos;
+                buf->currentLine = pline;
+                buf->pos = ppos;
                 goto end;
             }
-            GetCurrentTab()->GetCurrentBuffer()->pos = 0;
-            l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+            buf->pos = 0;
+            l = buf->currentLine;
             lb = l->lineBuf;
         }
     }
 end:
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    buf->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
 /* Quit */
@@ -693,12 +697,14 @@ void linbeg(w3mApp *w3m)
 /* Go to the bottom of the line */
 void linend(w3mApp *w3m)
 {
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    while (GetCurrentTab()->GetCurrentBuffer()->currentLine->next && GetCurrentTab()->GetCurrentBuffer()->currentLine->next->bpos)
-        GetCurrentTab()->GetCurrentBuffer()->CursorDown0(1);
-    GetCurrentTab()->GetCurrentBuffer()->pos = GetCurrentTab()->GetCurrentBuffer()->currentLine->len - 1;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    while (buf->NextLine(buf->currentLine) && buf->NextLine(buf->currentLine)->bpos)
+        buf->CursorDown0(1);
+    buf->pos = buf->currentLine->len - 1;
+    buf->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -775,14 +781,16 @@ void nextMk(w3mApp *w3m)
     int i;
     if (!use_mark)
         return;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    i = GetCurrentTab()->GetCurrentBuffer()->pos + 1;
-    l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+    i = buf->pos + 1;
+    l = buf->currentLine;
     if (i >= l->len)
     {
         i = 0;
-        l = l->next;
+        l = buf->NextLine(l);
     }
     while (l != NULL)
     {
@@ -790,14 +798,14 @@ void nextMk(w3mApp *w3m)
         {
             if (l->propBuf[i] & PE_MARK)
             {
-                GetCurrentTab()->GetCurrentBuffer()->currentLine = l;
-                GetCurrentTab()->GetCurrentBuffer()->pos = i;
-                GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+                buf->currentLine = l;
+                buf->pos = i;
+                buf->ArrangeCursor();
                 displayCurrentbuf(B_NORMAL);
                 return;
             }
         }
-        l = l->next;
+        l = buf->NextLine(l);
         i = 0;
     }
     /* FIXME: gettextize? */
@@ -1886,30 +1894,32 @@ void linkbrz(w3mApp *w3m)
 void curlno(w3mApp *w3m)
 {
     int cur = 0, all = 0, col = 0, len = 0;
-    Line *l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    Line *l = buf->currentLine;
     if (l)
     {
         cur = l->real_linenumber;
-        col = l->bwidth + GetCurrentTab()->GetCurrentBuffer()->currentColumn + GetCurrentTab()->GetCurrentBuffer()->cursorX + 1;
-        while (l->next && l->next->bpos)
-            l = l->next;
+        col = l->bwidth + buf->currentColumn + buf->cursorX + 1;
+        while (buf->NextLine(l) && buf->NextLine(l)->bpos)
+            l = buf->NextLine(l);
         if (l->width < 0)
             l->width = l->COLPOS(l->len);
         len = l->bwidth + l->width;
     }
 
-    if (GetCurrentTab()->GetCurrentBuffer()->lastLine)
-        all = GetCurrentTab()->GetCurrentBuffer()->lastLine->real_linenumber;
+    if (buf->lastLine)
+        all = buf->lastLine->real_linenumber;
 
     Str tmp;
-    if (GetCurrentTab()->GetCurrentBuffer()->pagerSource && !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_CLOSE))
+    if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
         tmp = Sprintf("line %d col %d/%d", cur, col, len);
     else
         tmp = Sprintf("line %d/%d (%d%%) col %d/%d", cur, all,
                       (int)((double)cur * 100.0 / (double)(all ? all : 1) + 0.5), col, len);
 
     tmp->Push("  ");
-    tmp->Push(wc_ces_to_charset_desc(GetCurrentTab()->GetCurrentBuffer()->document_charset));
+    tmp->Push(wc_ces_to_charset_desc(buf->document_charset));
 
     disp_message(tmp->ptr, FALSE);
 }

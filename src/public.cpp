@@ -68,8 +68,8 @@ void srch_nxtprv(int reverse)
 {
     int result;
     /* *INDENT-OFF* */
-    static int (*routine[2])(BufferPtr, char *) = {
-        forwardSearch, backwardSearch};
+    static int (*routine[2])(BufferPtr, char *) ={
+        forwardSearch, backwardSearch };
     /* *INDENT-ON* */
 
     if (searchRoutine == NULL)
@@ -89,7 +89,7 @@ void srch_nxtprv(int reverse)
         clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
     displayCurrentbuf(B_NORMAL);
     disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
-                    SearchString);
+        SearchString);
 }
 
 static void
@@ -99,7 +99,7 @@ dump_extra(BufferPtr buf)
     if (buf->baseURL)
         printf("W3m-base-url: %s\n", buf->baseURL.ToStr()->ptr);
     printf("W3m-document-charset: %s\n",
-           wc_ces_to_charset(buf->document_charset));
+        wc_ces_to_charset(buf->document_charset));
 
     if (buf->ssl_certificate.size())
     {
@@ -135,9 +135,9 @@ dump_head(w3mApp *w3m, BufferPtr buf)
     for (ti = buf->document_header->first; ti; ti = ti->next)
     {
         printf("%s",
-               wc_conv_strict(ti->ptr, w3m->InnerCharset,
-                              buf->document_charset)
-                   ->ptr);
+            wc_conv_strict(ti->ptr, w3m->InnerCharset,
+                buf->document_charset)
+            ->ptr);
     }
     puts("");
 }
@@ -174,7 +174,7 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
         }
 
         return true;
-    });
+        });
 }
 
 /* search by regular expression */
@@ -201,7 +201,7 @@ int srchcore(char *str, int (*func)(BufferPtr, char *))
             }
         }
         return true;
-    });
+        });
 
     term_raw();
     return result;
@@ -235,11 +235,11 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
         do_next_search = TRUE;
         break;
 
-#ifdef USE_MIGEMO
+        #ifdef USE_MIGEMO
     case 034:
         migemo_active = -migemo_active;
         goto done;
-#endif
+        #endif
 
     default:
         if (ch >= 0)
@@ -277,8 +277,8 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
     }
     displayCurrentbuf(B_FORCE_REDRAW);
     clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
-#ifdef USE_MIGEMO
-done:
+    #ifdef USE_MIGEMO
+    done:
     while (*str++ != '\0')
     {
         if (migemo_active > 0)
@@ -286,7 +286,7 @@ done:
         else
             *prop++ &= ~PE_UNDER;
     }
-#endif
+    #endif
     return -1;
 }
 
@@ -379,14 +379,14 @@ void cmd_loadURL(std::string_view url, URL *current, char *referer, FormList *re
 
     if (handleMailto(url.data()))
         return;
-#if 0
+    #if 0
     if (!strncasecmp(url, "news:", 5) && strchr(url, '@') == NULL) {
-	/* news:newsgroup is not supported */
-	/* FIXME: gettextize? */
-	disp_err_message("news:newsgroup_name is not supported", TRUE);
-	return;
+        /* news:newsgroup is not supported */
+        /* FIXME: gettextize? */
+        disp_err_message("news:newsgroup_name is not supported", TRUE);
+        return;
     }
-#endif /* USE_NNTP */
+    #endif /* USE_NNTP */
 
     refresh();
     buf = loadGeneralFile(url, current, referer, RG_NONE, request);
@@ -412,17 +412,17 @@ int handleMailto(const char *url)
 
     if (strncasecmp(url, "mailto:", 7))
         return 0;
-#ifdef USE_W3MMAILER
+    #ifdef USE_W3MMAILER
     if (!non_null(Mailer) || MailtoOptions == MAILTO_OPTIONS_USE_W3MMAILER)
         return 0;
-#else
+    #else
     if (!non_null(Mailer))
     {
         /* FIXME: gettextize? */
         disp_err_message("no mailer is specified", TRUE);
         return 1;
     }
-#endif
+    #endif
 
     /* invoke external mailer */
     if (MailtoOptions == MAILTO_OPTIONS_USE_MAILTO_URL)
@@ -437,8 +437,8 @@ int handleMailto(const char *url)
     }
     fmTerm();
     system(myExtCommand(Mailer, shell_quote(file_unquote(to->ptr)),
-                        FALSE)
-               ->ptr);
+        FALSE)
+        ->ptr);
     fmInit();
     displayCurrentbuf(B_FORCE_REDRAW);
     pushHashHist(w3mApp::Instance().URLHist, url);
@@ -489,7 +489,7 @@ void _movR(int n)
     displayCurrentbuf(B_NORMAL);
 }
 
-int prev_nonnull_line(Line *line)
+int prev_nonnull_line(BufferPtr buf, Line *line)
 {
     Line *l;
 
@@ -504,11 +504,11 @@ int prev_nonnull_line(Line *line)
     return 0;
 }
 
-int next_nonnull_line(Line *line)
+int next_nonnull_line(BufferPtr buf, Line *line)
 {
     Line *l;
 
-    for (l = line; l != NULL && l->len == 0; l = l->next)
+    for (l = line; l != NULL && l->len == 0; l = buf->NextLine(l))
         ;
 
     if (l == NULL || l->len == 0)
@@ -553,9 +553,9 @@ getCurWord(BufferPtr buf, int *spos, int *epos)
     return &p[b];
 }
 
-/* 
+/*
  * From: Takashi Nishimoto <g96p0935@mse.waseda.ac.jp> Date: Mon, 14 Jun
- * 1999 09:29:56 +0900 
+ * 1999 09:29:56 +0900
  */
 void prevChar(int *s, Line *l)
 {
@@ -604,7 +604,7 @@ void _goLine(std::string_view l)
     else if (l[0] == '$')
     {
         GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->lastLine,
-                                                      -(GetCurrentTab()->GetCurrentBuffer()->LINES + 1) / 2, TRUE);
+            -(GetCurrentTab()->GetCurrentBuffer()->LINES + 1) / 2, TRUE);
         GetCurrentTab()->GetCurrentBuffer()->currentLine = GetCurrentTab()->GetCurrentBuffer()->lastLine;
     }
     else
@@ -623,7 +623,7 @@ int cur_real_linenumber(BufferPtr buf)
     if (!cur)
         return 1;
     n = cur->real_linenumber ? cur->real_linenumber : 1;
-    for (l = buf->firstLine; l && l != cur && l->real_linenumber == 0; l = l->next)
+    for (l = buf->firstLine; l && l != cur && l->real_linenumber == 0; l = buf->NextLine(l))
     { /* header */
         if (l->bpos == 0)
             n++;
@@ -685,7 +685,7 @@ void _followForm(int submit)
             disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
         /* FIXME: gettextize? */
         p = inputFilenameHist("Filename:", fi->value ? fi->value->ptr : NULL,
-                              NULL);
+            NULL);
         if (p == NULL || fi->readonly)
             break;
         fi->value = Strnew(p);
@@ -704,7 +704,7 @@ void _followForm(int submit)
         }
         /* FIXME: gettextize? */
         p = inputLine("Password:", fi->value ? fi->value->ptr : NULL,
-                      IN_PASSWORD);
+            IN_PASSWORD);
         if (p == NULL)
             break;
         fi->value = Strnew(p);
@@ -744,28 +744,28 @@ void _followForm(int submit)
         fi->checked = !fi->checked;
         formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
         break;
-#ifdef MENU_SELECT
+        #ifdef MENU_SELECT
     case FORM_SELECT:
         if (submit)
             goto do_submit;
         if (!formChooseOptionByMenu(fi,
-                                    GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->pos +
-                                        a->start.pos + GetCurrentTab()->GetCurrentBuffer()->rootX,
-                                    GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY))
+            GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->pos +
+            a->start.pos + GetCurrentTab()->GetCurrentBuffer()->rootX,
+            GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY))
             break;
         formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
         if (fi->parent->nitems == 1)
             goto do_submit;
         break;
-#endif /* MENU_SELECT */
+        #endif /* MENU_SELECT */
     case FORM_INPUT_IMAGE:
     case FORM_INPUT_SUBMIT:
     case FORM_INPUT_BUTTON:
-    do_submit:
+        do_submit:
         tmp = Strnew();
         tmp2 = Strnew();
         multipart = (fi->parent->method == FORM_METHOD_POST &&
-                     fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
+            fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
         query_from_followform(&tmp, fi, multipart);
 
         tmp2 = fi->parent->action->Clone();
@@ -807,9 +807,9 @@ void _followForm(int submit)
             if (buf && !(buf->bufferprop & BP_REDIRECTED))
             { /* buf must be Currentbuf */
                 /* BP_REDIRECTED means that the buffer is obtained through
-		 * Location: header. In this case, buf->form_submit must not be set
-		 * because the page is not loaded by POST method but GET method.
-		 */
+         * Location: header. In this case, buf->form_submit must not be set
+         * because the page is not loaded by POST method but GET method.
+         */
                 buf->form_submit = save_submit_formlist(fi);
             }
         }
@@ -820,7 +820,7 @@ void _followForm(int submit)
         else
         {
             disp_err_message("Can't send form because of illegal method.",
-                             FALSE);
+                FALSE);
         }
         break;
     case FORM_INPUT_RESET:
@@ -836,10 +836,10 @@ void _followForm(int submit)
             {
                 f2->value = f2->init_value;
                 f2->checked = f2->init_checked;
-#ifdef MENU_SELECT
+                #ifdef MENU_SELECT
                 f2->label = f2->init_label;
                 f2->selected = f2->init_selected;
-#endif /* MENU_SELECT */
+                #endif /* MENU_SELECT */
                 formUpdateBuffer(a2, GetCurrentTab()->GetCurrentBuffer(), f2);
             }
         }
@@ -867,8 +867,8 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
         fi->parent->body = (*query)->ptr;
         fi->parent->boundary =
             Sprintf("------------------------------%d%ld%ld%ld", w3mApp::Instance().CurrentPid,
-                    fi->parent, fi->parent->body, fi->parent->boundary)
-                ->ptr;
+                fi->parent, fi->parent->body, fi->parent->boundary)
+            ->ptr;
     }
     *query = Strnew();
     for (f2 = fi->parent->item; f2; f2 = f2->next)
@@ -899,17 +899,17 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
             if (f2->type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
-#ifdef USE_IMAGE
+                #ifdef USE_IMAGE
                 getMapXY(GetCurrentTab()->GetCurrentBuffer(), retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer()), &x, &y);
-#endif
+                #endif
                 *query = conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())->Clone();
                 (*query)->Push(".x");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
-                                Sprintf("%d", x)->ptr);
+                    Sprintf("%d", x)->ptr);
                 *query = conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())->Clone();
                 (*query)->Push(".y");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
-                                Sprintf("%d", y)->ptr);
+                    Sprintf("%d", y)->ptr);
             }
             else if (f2->name && f2->name->Size() > 0 && f2->value != NULL)
             {
@@ -917,17 +917,17 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 *query = conv_form_encoding(f2->value, fi, GetCurrentTab()->GetCurrentBuffer());
                 if (f2->type == FORM_INPUT_FILE)
                     form_write_from_file(body, fi->parent->boundary,
-                                         conv_form_encoding(f2->name, fi,
-                                                            GetCurrentTab()->GetCurrentBuffer())
-                                             ->ptr,
-                                         (*query)->ptr,
-                                         Str_conv_to_system(f2->value)->ptr);
+                        conv_form_encoding(f2->name, fi,
+                            GetCurrentTab()->GetCurrentBuffer())
+                        ->ptr,
+                        (*query)->ptr,
+                        Str_conv_to_system(f2->value)->ptr);
                 else
                     form_write_data(body, fi->parent->boundary,
-                                    conv_form_encoding(f2->name, fi,
-                                                       GetCurrentTab()->GetCurrentBuffer())
-                                        ->ptr,
-                                    (*query)->ptr);
+                        conv_form_encoding(f2->name, fi,
+                            GetCurrentTab()->GetCurrentBuffer())
+                        ->ptr,
+                        (*query)->ptr);
             }
         }
         else
@@ -1023,7 +1023,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     if (target == NULL ||                                             /* no target specified (that means this page is not a frame page) */
         !strcmp(target, "_top") ||                                    /* this link is specified to be opened as an indivisual * page */
         !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME) /* This page is not a frame page */
-    )
+        )
     {
         return loadNormalBuf(buf, TRUE);
     }
@@ -1070,9 +1070,9 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
             GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
             if (label_topline)
                 GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
-                                                              GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
-                                                                  GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
-                                                              FALSE);
+                    GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
+                    GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+                    FALSE);
             GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
             GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
         }
@@ -1088,11 +1088,11 @@ FormItemList *save_submit_formlist(FormItemList *src)
     FormItemList *srcitem;
     FormItemList *item;
     FormItemList *ret = NULL;
-#ifdef MENU_SELECT
+    #ifdef MENU_SELECT
     FormSelectOptionItem *opt;
     FormSelectOptionItem *curopt;
     FormSelectOptionItem *srcopt;
-#endif /* MENU_SELECT */
+    #endif /* MENU_SELECT */
 
     if (src == NULL)
         return NULL;
@@ -1119,7 +1119,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
         item->rows = srcitem->rows;
         item->maxlength = srcitem->maxlength;
         item->readonly = srcitem->readonly;
-#ifdef MENU_SELECT
+        #ifdef MENU_SELECT
         opt = curopt = NULL;
         for (srcopt = srcitem->select_option; srcopt; srcopt = srcopt->next)
         {
@@ -1142,7 +1142,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
         item->select_option = opt;
         if (srcitem->label)
             item->label = srcitem->label->Clone();
-#endif /* MENU_SELECT */
+        #endif /* MENU_SELECT */
         item->parent = list;
         item->next = NULL;
 
@@ -1228,7 +1228,7 @@ void _nextA(int visited)
                 an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
                     an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line,
-                                                                                      po->pos);
+                        po->pos);
                 hseq++;
                 if (visited == TRUE && an)
                 {
@@ -1267,7 +1267,7 @@ void _nextA(int visited)
     if (visited == TRUE)
         return;
 
-_end:
+    _end:
     if (an == NULL || an->hseq < 0)
         return;
     po = &hl[an->hseq];
@@ -1359,7 +1359,7 @@ void _prevA(int visited)
     if (visited == TRUE)
         return;
 
-_end:
+    _end:
     if (an == NULL || an->hseq < 0)
         return;
     po = &hl[an->hseq];
@@ -1390,8 +1390,8 @@ void gotoLabel(std::string_view label)
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
     if (label_topline)
         GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
-                                                      GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
-                                                      FALSE);
+            GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+            FALSE);
     GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
     GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
     displayCurrentbuf(B_FORCE_REDRAW);
@@ -1401,21 +1401,23 @@ void gotoLabel(std::string_view label)
 /* go to the next left/right anchor */
 void nextX(int d, int dy)
 {
-    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    auto &hl = buf->hmarklist;
     Line *l;
     int i, x, y, n = searchKeyNum();
 
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    if (buf->LineCount() == 0)
         return;
     if (hl.empty())
         return;
 
-    auto an = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
+    auto an = retrieveCurrentAnchor(buf);
     if (an == NULL)
-        an = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
+        an = retrieveCurrentForm(buf);
 
-    l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
-    x = GetCurrentTab()->GetCurrentBuffer()->pos;
+    l = buf->currentLine;
+    x = buf->pos;
     y = l->linenumber;
     const Anchor *pan = NULL;
     for (i = 0; i < n; i++)
@@ -1427,9 +1429,9 @@ void nextX(int d, int dy)
         {
             for (; x >= 0 && x < l->len; x += d)
             {
-                an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(y, x);
+                an = buf->href.RetrieveAnchor(y, x);
                 if (!an)
-                    an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(y, x);
+                    an = buf->formitem.RetrieveAnchor(y, x);
                 if (an)
                 {
                     pan = an;
@@ -1438,7 +1440,7 @@ void nextX(int d, int dy)
             }
             if (!dy || an)
                 break;
-            l = (dy > 0) ? l->next : l->prev;
+            l = (dy > 0) ? buf->NextLine(l) : l->prev;
             if (!l)
                 break;
             x = (d > 0) ? 0 : l->len - 1;
@@ -1450,9 +1452,9 @@ void nextX(int d, int dy)
 
     if (pan == NULL)
         return;
-    GetCurrentTab()->GetCurrentBuffer()->GotoLine(y);
-    GetCurrentTab()->GetCurrentBuffer()->pos = pan->start.pos;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    buf->GotoLine(y);
+    buf->pos = pan->start.pos;
+    buf->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1511,7 +1513,7 @@ int checkBackBuffer(TabPtr tab, BufferPtr buf)
         if (fbuf->frameQ)
             return TRUE; /* Currentbuf has stacked frames */
         /* when no frames stacked and next is frame source, try next's
-	 * nextBuffer */
+     * nextBuffer */
         if (w3mApp::Instance().RenderFrame && fbuf == tab->NextBuffer(buf))
         {
             if (tab->NextBuffer(fbuf) != NULL)
@@ -1575,8 +1577,8 @@ void goURL0(const char *prompt, int relative)
     {
         if ((relative || *url == '#') && GetCurrentTab()->GetCurrentBuffer()->document_charset)
             url = wc_conv_strict(url, w3mApp::Instance().InnerCharset,
-                                 GetCurrentTab()->GetCurrentBuffer()->document_charset)
-                      ->ptr;
+                GetCurrentTab()->GetCurrentBuffer()->document_charset)
+            ->ptr;
         else
             url = conv_to_system(url);
     }
@@ -1671,19 +1673,19 @@ void _peekURL(int only_img)
     }
     if (DecodeURL)
         s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
-#ifdef USE_M17N
+    #ifdef USE_M17N
     s = checkType(s, &pp, NULL);
     p = NewAtom_N(Lineprop, s->Size());
     bcopy((void *)pp, (void *)p, s->Size() * sizeof(Lineprop));
-#endif
-disp:
+    #endif
+    disp:
     n = searchKeyNum();
     if (n > 1 && s->Size() > (n - 1) * (COLS - 1))
         offset = (n - 1) * (COLS - 1);
-#ifdef USE_M17N
+    #ifdef USE_M17N
     while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;
-#endif
+    #endif
     disp_message_nomouse(&s->ptr[offset], TRUE);
 }
 
@@ -1931,8 +1933,8 @@ int sysm_process_mouse(int x, int y, int nbs, int obs)
     {
         auto bits = nbs & ~obs;
         btn = (MouseEventTypes)((bits & 0x1)
-                                    ? MOUSE_BTN1_DOWN
-                                    : (bits & 0x2 ? MOUSE_BTN2_DOWN : (bits & 0x4 ? MOUSE_BTN3_DOWN : 0)));
+            ? MOUSE_BTN1_DOWN
+            : (bits & 0x2 ? MOUSE_BTN2_DOWN : (bits & 0x4 ? MOUSE_BTN3_DOWN : 0)));
     }
     else /* nbs == obs */
         return 0;
@@ -1974,7 +1976,7 @@ int sysm_process_mouse(int x, int y, int nbs, int obs)
 /* mark Message-ID-like patterns as NEWS anchors */
 void chkNMIDBuffer(BufferPtr buf)
 {
-    static char *url_like_pat[] = {
+    static char *url_like_pat[] ={
         "<[!-;=?-~]+@[a-zA-Z0-9\\.\\-_]+>",
         NULL,
     };
@@ -2022,13 +2024,13 @@ void follow_map(struct parsed_tagarg *arg)
     if (a == NULL || a->url == NULL || *(a->url) == '\0')
     {
 
-#ifndef MENU_MAP
+        #ifndef MENU_MAP
         BufferPtr buf = follow_map_panel(GetCurrentTab()->GetCurrentBuffer(), name);
 
         if (buf != NULL)
             cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
-#endif
-#if defined(MENU_MAP) || defined(USE_IMAGE)
+        #endif
+        #if defined(MENU_MAP) || defined(USE_IMAGE)
         return;
     }
     if (*(a->url) == '#')
@@ -2044,7 +2046,7 @@ void follow_map(struct parsed_tagarg *arg)
         auto tab = CreateTabSetCurrent();
         BufferPtr buf = tab->GetCurrentBuffer();
         cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
-                    GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
+            GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
             GetCurrentTab()->DeleteBuffer(buf);
         else
@@ -2053,8 +2055,8 @@ void follow_map(struct parsed_tagarg *arg)
         return;
     }
     cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
-                GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
-#endif
+        GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
+    #endif
 }
 
 /* process form */
@@ -2065,9 +2067,9 @@ void followForm(void)
 
 void SigPipe(SIGNAL_ARG)
 {
-#ifdef USE_MIGEMO
+    #ifdef USE_MIGEMO
     init_migemo();
-#endif
+    #endif
     mySignal(SIGPIPE, SigPipe);
     SIGNAL_RETURN;
 }
@@ -2203,7 +2205,7 @@ parse_ansi_color(char **str, Lineprop *effect, Linecolor *color)
     return 1;
 }
 
-/* 
+/*
  * Check character type
  */
 Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
@@ -2214,7 +2216,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
     static Lineprop *prop_buffer = NULL;
     static int prop_size = 0;
     char *str = s->ptr, *endp = &s->ptr[s->Size()], *bs = NULL;
-#ifdef USE_ANSI_COLOR
+    #ifdef USE_ANSI_COLOR
     Lineprop ceffect = PE_NORMAL;
     Linecolor cmode = 0;
     int check_color = FALSE;
@@ -2222,7 +2224,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
     static Linecolor *color_buffer = NULL;
     static int color_size = 0;
     char *es = NULL;
-#endif
+    #endif
     int do_copy = FALSE;
     int i;
     int plen = 0, clen;
@@ -2237,7 +2239,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
     if (w3mApp::Instance().ShowEffect)
     {
         bs = (char *)memchr(str, '\b', s->Size());
-#ifdef USE_ANSI_COLOR
+        #ifdef USE_ANSI_COLOR
         if (ocolor)
         {
             es = (char *)memchr(str, ESC_CODE, s->Size());
@@ -2247,33 +2249,33 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 {
                     color_size = (s->Size() > LINELEN) ? s->Size() : LINELEN;
                     color_buffer = New_Reuse(Linecolor, color_buffer,
-                                             color_size);
+                        color_size);
                 }
                 color = color_buffer;
             }
         }
-#endif
+        #endif
         if ((bs != NULL)
-#ifdef USE_ANSI_COLOR
+            #ifdef USE_ANSI_COLOR
             || (es != NULL)
-#endif
-        )
+            #endif
+            )
         {
             char *sp = str, *ep;
             s = Strnew_size(s->Size());
             do_copy = TRUE;
             ep = bs ? (bs - 2) : endp;
-#ifdef USE_ANSI_COLOR
+            #ifdef USE_ANSI_COLOR
             if (es && ep > es - 2)
                 ep = es - 2;
-#endif
+            #endif
             for (; str < ep && IS_ASCII(*str); str++)
             {
                 *(prop++) = PE_NORMAL | (IS_CNTRL(*str) ? PC_CTRL : PC_ASCII);
-#ifdef USE_ANSI_COLOR
+                #ifdef USE_ANSI_COLOR
                 if (color)
                     *(color++) = 0;
-#endif
+                #endif
             }
             s->Push(sp, (int)(str - sp));
         }
@@ -2290,7 +2292,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
             break;
         if (bs != NULL)
         {
-#ifdef USE_M17N
+            #ifdef USE_M17N
             if (str == bs - 2 && !strncmp(str, "__\b\b", 4))
             {
                 str += 4;
@@ -2300,108 +2302,108 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 continue;
             }
             else
-#endif
+                #endif
                 if (str == bs - 1 && *str == '_')
-            {
-                str += 2;
-                effect = PE_UNDER;
-                if (str < endp)
-                    bs = (char *)memchr(str, '\b', endp - str);
-                continue;
-            }
-            else if (str == bs)
-            {
-                if (*(str + 1) == '_')
                 {
-                    if (s->Size())
-                    {
-                        str += 2;
-#ifdef USE_M17N
-                        for (i = 1; i <= plen; i++)
-                            *(prop - i) |= PE_UNDER;
-#else
-                            *(prop - 1) |= PE_UNDER;
-#endif
-                    }
-                    else
-                    {
-                        str++;
-                    }
+                    str += 2;
+                    effect = PE_UNDER;
+                    if (str < endp)
+                        bs = (char *)memchr(str, '\b', endp - str);
+                    continue;
                 }
-#ifdef USE_M17N
-                else if (!strncmp(str + 1, "\b__", 3))
+                else if (str == bs)
                 {
-                    if (s->Size())
+                    if (*(str + 1) == '_')
                     {
-                        str += (plen == 1) ? 3 : 4;
-                        for (i = 1; i <= plen; i++)
-                            *(prop - i) |= PE_UNDER;
-                    }
-                    else
-                    {
-                        str += 2;
-                    }
-                }
-                else if (*(str + 1) == '\b')
-                {
-                    if (s->Size())
-                    {
-                        clen = get_mclen(str + 2);
-                        if (plen == clen &&
-                            !strncmp(str - plen, str + 2, plen))
+                        if (s->Size())
                         {
-                            for (i = 1; i <= plen; i++)
-                                *(prop - i) |= PE_BOLD;
-                            str += 2 + clen;
-                        }
-                        else
-                        {
-                            s->Pop(plen);
-                            prop -= plen;
                             str += 2;
-                        }
-                    }
-                    else
-                    {
-                        str += 2;
-                    }
-                }
-#endif
-                else
-                {
-                    if (s->Size())
-                    {
-
-                        clen = get_mclen(str + 1);
-                        if (plen == clen &&
-                            !strncmp(str - plen, str + 1, plen))
-                        {
+                            #ifdef USE_M17N
                             for (i = 1; i <= plen; i++)
-                                *(prop - i) |= PE_BOLD;
-                            str += 1 + clen;
+                                *(prop - i) |= PE_UNDER;
+                            #else
+                            *(prop - 1) |= PE_UNDER;
+                            #endif
                         }
                         else
                         {
-                            s->Pop(plen);
-                            prop -= plen;
                             str++;
                         }
                     }
+                    #ifdef USE_M17N
+                    else if (!strncmp(str + 1, "\b__", 3))
+                    {
+                        if (s->Size())
+                        {
+                            str += (plen == 1) ? 3 : 4;
+                            for (i = 1; i <= plen; i++)
+                                *(prop - i) |= PE_UNDER;
+                        }
+                        else
+                        {
+                            str += 2;
+                        }
+                    }
+                    else if (*(str + 1) == '\b')
+                    {
+                        if (s->Size())
+                        {
+                            clen = get_mclen(str + 2);
+                            if (plen == clen &&
+                                !strncmp(str - plen, str + 2, plen))
+                            {
+                                for (i = 1; i <= plen; i++)
+                                    *(prop - i) |= PE_BOLD;
+                                str += 2 + clen;
+                            }
+                            else
+                            {
+                                s->Pop(plen);
+                                prop -= plen;
+                                str += 2;
+                            }
+                        }
+                        else
+                        {
+                            str += 2;
+                        }
+                    }
+                    #endif
                     else
                     {
-                        str++;
+                        if (s->Size())
+                        {
+
+                            clen = get_mclen(str + 1);
+                            if (plen == clen &&
+                                !strncmp(str - plen, str + 1, plen))
+                            {
+                                for (i = 1; i <= plen; i++)
+                                    *(prop - i) |= PE_BOLD;
+                                str += 1 + clen;
+                            }
+                            else
+                            {
+                                s->Pop(plen);
+                                prop -= plen;
+                                str++;
+                            }
+                        }
+                        else
+                        {
+                            str++;
+                        }
                     }
+                    if (str < endp)
+                        bs = (char *)memchr(str, '\b', endp - str);
+                    continue;
                 }
-                if (str < endp)
+            #ifdef USE_ANSI_COLOR
+                else if (str > bs)
                     bs = (char *)memchr(str, '\b', endp - str);
-                continue;
-            }
-#ifdef USE_ANSI_COLOR
-            else if (str > bs)
-                bs = (char *)memchr(str, '\b', endp - str);
-#endif
+            #endif
         }
-#ifdef USE_ANSI_COLOR
+        #ifdef USE_ANSI_COLOR
         if (es != NULL)
         {
             if (str == es)
@@ -2419,36 +2421,36 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
             else if (str > es)
                 es = (char *)memchr(str, ESC_CODE, endp - str);
         }
-#endif
+        #endif
 
         plen = get_mclen(str);
         mode = get_mctype(*str) | effect;
-#ifdef USE_ANSI_COLOR
+        #ifdef USE_ANSI_COLOR
         if (color)
         {
             *(color++) = cmode;
             mode |= ceffect;
         }
-#endif
+        #endif
         *(prop++) = mode;
-#ifdef USE_M17N
+        #ifdef USE_M17N
         if (plen > 1)
         {
             mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
             for (i = 1; i < plen; i++)
             {
                 *(prop++) = mode;
-#ifdef USE_ANSI_COLOR
+                #ifdef USE_ANSI_COLOR
                 if (color)
                     *(color++) = cmode;
-#endif
+                #endif
             }
             if (do_copy)
                 s->Push((char *)str, plen);
             str += plen;
         }
         else
-#endif
+            #endif
         {
             if (do_copy)
                 s->Push((char)*str);
@@ -2457,10 +2459,10 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
         effect = PE_NORMAL;
     }
     *oprop = prop_buffer;
-#ifdef USE_ANSI_COLOR
+    #ifdef USE_ANSI_COLOR
     if (ocolor)
         *ocolor = check_color ? color_buffer : NULL;
-#endif
+    #endif
     return s;
 }
 

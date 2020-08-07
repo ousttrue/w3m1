@@ -113,6 +113,14 @@ public:
             func(l);
         }
     }
+    Line* NextLine(Line* line)const
+    {
+        return line->next;
+    }
+    void SetNextLine(Line* line, Line* next)
+    {
+        line->next = next;
+    }
 
     BufferPtr linkBuffer[MAX_LB];
     short width;
@@ -163,8 +171,8 @@ public:
     MapList *maplist;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
-    URL currentURL = {};
-    URL baseURL = {};
+    URL currentURL ={};
+    URL baseURL ={};
     std::string baseTarget;
     int real_scheme;
     std::string sourcefile;
