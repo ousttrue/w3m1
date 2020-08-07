@@ -342,9 +342,6 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
     }
 }
 
-const char *NullLine = "";
-Lineprop NullProp[] ={ P_UNKNOWN };
-
 /*
  * Buffer creation
  */
@@ -795,6 +792,69 @@ void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int 
         l->real_linenumber = nlines;
     }
     l = NULL;
+}
+
+const char *NullLine = "";
+Lineprop NullProp[] ={ P_UNKNOWN };
+
+void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int nlines)
+{
+    char *s;
+    Lineprop *p;
+    if (pos > 0)
+    {
+        s = allocStr(line, pos);
+        p = NewAtom_N(Lineprop, pos);
+        bcopy((void *)prop, (void *)p, pos * sizeof(Lineprop));
+    }
+    else
+    {
+        s = (char*)NullLine;
+        p = NullProp;
+    }
+
+    Linecolor *c;
+    if (pos > 0 && color)
+    {
+        c = NewAtom_N(Linecolor, pos);
+        bcopy((void *)color, (void *)c, pos * sizeof(Linecolor));
+    }
+    else
+    {
+        c = NULL;
+    }
+
+    AddLine(s, p, c, pos, nlines);
+    if (pos <= 0 || width <= 0)
+        return;
+
+    int bpos = 0;
+    int bwidth = 0;
+    while (1)
+    {
+        auto l = CurrentLine();
+        l->bpos = bpos;
+        l->bwidth = bwidth;
+        auto i = columnLen(l, width);
+        if (i == 0)
+        {
+            i++;
+            while (i < l->len && p[i] & PC_WCHAR2)
+                i++;
+        }
+        l->len = i;
+        l->width = l->COLPOS(l->len);
+        if (pos <= i)
+            return;
+        bpos += l->len;
+        bwidth += l->width;
+        s += i;
+        p += i;
+        if (c)
+            c += i;
+        pos -= i;
+        AddLine(s, p, c, pos, nlines);
+    }
 }
 
 void Buffer::SavePosition()

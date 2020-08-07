@@ -371,70 +371,6 @@ int getMetaRefreshParam(char *q, Str *refresh_uri)
 extern char *NullLine;
 extern Lineprop NullProp[];
 
-void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
-    int width, int nlines)
-{
-    char *s;
-    Lineprop *p;
-    #ifdef USE_ANSI_COLOR
-    Linecolor *c;
-    #endif
-    LinePtr l;
-    int i, bpos, bwidth;
-
-    if (pos > 0)
-    {
-        s = allocStr(line, pos);
-        p = NewAtom_N(Lineprop, pos);
-        bcopy((void *)prop, (void *)p, pos * sizeof(Lineprop));
-    }
-    else
-    {
-        s = NullLine;
-        p = NullProp;
-    }
-    #ifdef USE_ANSI_COLOR
-    if (pos > 0 && color)
-    {
-        c = NewAtom_N(Linecolor, pos);
-        bcopy((void *)color, (void *)c, pos * sizeof(Linecolor));
-    }
-    else
-    {
-        c = NULL;
-    }
-    #endif
-    buf->AddLine(s, p, c, pos, nlines);
-    if (pos <= 0 || width <= 0)
-        return;
-    bpos = 0;
-    bwidth = 0;
-    while (1)
-    {
-        l = buf->CurrentLine();
-        l->bpos = bpos;
-        l->bwidth = bwidth;
-        i = columnLen(l, width);
-        if (i == 0)
-        {
-            i++;
-            while (i < l->len && p[i] & PC_WCHAR2)
-                i++;
-        }
-        l->len = i;
-        l->width = l->COLPOS(l->len);
-        if (pos <= i)
-            return;
-        bpos += l->len;
-        bwidth += l->width;
-        s += i;
-        p += i;
-        if (c)
-            c += i;
-        pos -= i;
-        buf->AddLine(s, p, c, pos, nlines);
-    }
-}
 
 static const char *_size_unit[] ={ "b", "kb", "Mb", "Gb", "Tb",
 "Pb", "Eb", "Zb", "Bb", "Yb", NULL };
@@ -969,7 +905,7 @@ openGeneralPagerBuffer(InputStream *stream)
     return buf;
 }
 
-LinePtr 
+LinePtr
 getNextPage(BufferPtr buf, int plen)
 {
     LinePtr top = buf->TopLine();
@@ -1054,8 +990,7 @@ getNextPage(BufferPtr buf, int plen)
             ++nlines;
             StripRight(lineBuf2);
             lineBuf2 = checkType(lineBuf2, &propBuffer, &colorBuffer);
-            addnewline(buf, lineBuf2->ptr, propBuffer, colorBuffer,
-                lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);
+            buf->addnewline(lineBuf2->ptr, propBuffer, colorBuffer, lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);
             if (!top)
             {
                 top = buf->FirstLine();

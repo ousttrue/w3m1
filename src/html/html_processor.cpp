@@ -1867,7 +1867,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         }
         /* end of processing for one line */
         if (!internal)
-            addnewline(buf, outc, outp, NULL, pos, -1, nlines);
+            buf->addnewline(outc, outp, NULL, pos, -1, nlines);
         if (internal == HTML_N_INTERNAL)
             internal = 0;
         if (str != endp)

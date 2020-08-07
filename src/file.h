@@ -39,8 +39,6 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf);
 
 int doFileMove(char *tmpf, char *defstr);
-void addnewline(BufferPtr buf, char *line, Lineprop *prop,
-                       Linecolor *color, int pos, int width, int nlines);
 
 int checkSaveFile(InputStream *stream, char *path);
 int checkOverWrite(char *path);

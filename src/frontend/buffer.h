@@ -87,7 +87,10 @@ public:
     {
         return lines.size();
     }
+private:
     void AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines);
+public:
+    void addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int nlines);
     void ClearLines()
     {
         currentLine = topLine = NULL;
