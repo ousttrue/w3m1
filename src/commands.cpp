@@ -1683,8 +1683,8 @@ void reload(w3mApp *w3m)
         GetCurrentTab()->SetCurrentBuffer(buf);
         if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
         {
-            COPY_BUFROOT(GetCurrentTab()->GetCurrentBuffer(), sbuf);
-            restorePosition(GetCurrentTab()->GetCurrentBuffer(), sbuf);
+            GetCurrentTab()->GetCurrentBuffer()->COPY_BUFROOT_FROM(sbuf);
+            GetCurrentTab()->GetCurrentBuffer()->restorePosition(sbuf);
         }
         displayCurrentbuf(B_FORCE_REDRAW);
         return;
@@ -1756,8 +1756,8 @@ void reload(w3mApp *w3m)
     GetCurrentTab()->GetCurrentBuffer()->form_submit = sbuf->form_submit;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
     {
-        COPY_BUFROOT(GetCurrentTab()->GetCurrentBuffer(), sbuf);
-        restorePosition(GetCurrentTab()->GetCurrentBuffer(), sbuf);
+        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFROOT_FROM(sbuf);
+        GetCurrentTab()->GetCurrentBuffer()->restorePosition(sbuf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -2348,8 +2348,8 @@ void ldDL(w3mApp *w3m)
     buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
     if (replace)
     {
-        COPY_BUFROOT(buf, GetCurrentTab()->GetCurrentBuffer());
-        restorePosition(buf, GetCurrentTab()->GetCurrentBuffer());
+        buf->COPY_BUFROOT_FROM(GetCurrentTab()->GetCurrentBuffer());
+        buf->restorePosition(GetCurrentTab()->GetCurrentBuffer());
     }
     if (!replace && open_tab_dl_list)
     {

@@ -217,7 +217,7 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
 
     if (ch == 0 && buf == NULL)
     {
-        SAVE_BUFPOSITION(&sbuf); /* search starting point */
+        sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer()); /* search starting point */
         currentLine = sbuf.currentLine;
         pos = sbuf.pos;
         return -1;
@@ -252,11 +252,11 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
         {
             if (searchRoutine == forwardSearch)
                 GetCurrentTab()->GetCurrentBuffer()->pos += 1;
-            SAVE_BUFPOSITION(&sbuf);
+            sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
             if (srchcore(str, searchRoutine) == SR_NOTFOUND && searchRoutine == forwardSearch)
             {
                 GetCurrentTab()->GetCurrentBuffer()->pos -= 1;
-                SAVE_BUFPOSITION(&sbuf);
+                sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
             }
             GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
             displayCurrentbuf(B_FORCE_REDRAW);
@@ -268,7 +268,7 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
     }
     else if (*str)
     {
-        RESTORE_BUFPOSITION(&sbuf);
+        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(&sbuf);
         GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
         srchcore(str, searchRoutine);
         GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
@@ -294,14 +294,14 @@ void isrch(int (*func)(BufferPtr, char *), const char *prompt)
 {
     char *str;
     Buffer sbuf;
-    SAVE_BUFPOSITION(&sbuf);
+    sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
     dispincsrch(0, NULL, NULL); /* initialize incremental search state */
 
     searchRoutine = func;
     str = inputLineHistSearch(prompt, NULL, IN_STRING, w3mApp::Instance().TextHist, dispincsrch);
     if (str == NULL)
     {
-        RESTORE_BUFPOSITION(&sbuf);
+        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(&sbuf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -1899,7 +1899,7 @@ void resetPos(BufferPos *b)
     buf.currentLine = &cur;
     buf.pos = b->pos;
     buf.currentColumn = b->currentColumn;
-    restorePosition(GetCurrentTab()->GetCurrentBuffer(), &buf);
+    GetCurrentTab()->GetCurrentBuffer()->restorePosition(&buf);
     GetCurrentTab()->GetCurrentBuffer()->undo = b;
     displayCurrentbuf(B_FORCE_REDRAW);
 }

@@ -184,6 +184,33 @@ public:
     void ArrangeLine();
     void ArrangeCursor();
     int ColumnSkip(int offset);
+    void COPY_BUFPOSITION_FROM(const BufferPtr srcbuf)
+    {
+        this->SetTopLine((srcbuf)->TopLine());
+        this->currentLine = (srcbuf)->currentLine;
+        this->pos = (srcbuf)->pos;
+        this->cursorX = (srcbuf)->cursorX;
+        this->cursorY = (srcbuf)->cursorY;
+        this->visualpos = (srcbuf)->visualpos;
+        this->currentColumn = (srcbuf)->currentColumn;
+    }
+    void restorePosition(const BufferPtr orig)
+    {
+        this->LineSkip(this->firstLine, orig->TOP_LINENUMBER() - 1, false);
+        this->GotoLine(orig->CUR_LINENUMBER());
+        this->pos = orig->pos;
+        if (this->currentLine && orig->currentLine)
+            this->pos += orig->currentLine->bpos - this->currentLine->bpos;
+        this->currentColumn = orig->currentColumn;
+        this->ArrangeCursor();
+    }
+    void COPY_BUFROOT_FROM(const BufferPtr srcbuf)
+    {
+        this->rootX = (srcbuf)->rootX;
+        this->rootY = (srcbuf)->rootY;
+        this->COLS = (srcbuf)->COLS;
+        this->LINES = (srcbuf)->LINES;
+    }
 
     InputStream *pagerSource;
     AnchorList href;
@@ -271,23 +298,3 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 TextList *make_domain_list(char *domain_list);
-
-
-inline void COPY_BUFROOT(BufferPtr dstbuf, BufferPtr srcbuf)
-{
-    (dstbuf)->rootX = (srcbuf)->rootX;
-    (dstbuf)->rootY = (srcbuf)->rootY;
-    (dstbuf)->COLS = (srcbuf)->COLS;
-    (dstbuf)->LINES = (srcbuf)->LINES;
-}
-
-inline void COPY_BUFPOSITION(BufferPtr dstbuf, BufferPtr srcbuf)
-{
-    (dstbuf)->SetTopLine((srcbuf)->TopLine());
-    (dstbuf)->currentLine = (srcbuf)->currentLine;
-    (dstbuf)->pos = (srcbuf)->pos;
-    (dstbuf)->cursorX = (srcbuf)->cursorX;
-    (dstbuf)->cursorY = (srcbuf)->cursorY;
-    (dstbuf)->visualpos = (srcbuf)->visualpos;
-    (dstbuf)->currentColumn = (srcbuf)->currentColumn;
-}

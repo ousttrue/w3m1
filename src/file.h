@@ -59,7 +59,7 @@ void addMChar(char *c, Lineprop mode, size_t len);
 
 BufferPtr message_list_panel(void);
 
-void restorePosition(BufferPtr buf, BufferPtr orig);
+
 char *lastFileName(char *path);
 char *mydirname(const char *s);
 

@@ -1169,17 +1169,6 @@ void set_delayed_message(const char *s)
     delayed_msg = allocStr(s, -1);
 }
 
-void restorePosition(BufferPtr buf, BufferPtr orig)
-{
-    buf->LineSkip(buf->firstLine, orig->TOP_LINENUMBER() - 1, FALSE);
-    buf->GotoLine(orig->CUR_LINENUMBER());
-    buf->pos = orig->pos;
-    if (buf->currentLine && orig->currentLine)
-        buf->pos += orig->currentLine->bpos - buf->currentLine->bpos;
-    buf->currentColumn = orig->currentColumn;
-    buf->ArrangeCursor();
-}
-
 void displayBuffer(BufferPtr buf, DisplayMode mode)
 {
     Str msg;
