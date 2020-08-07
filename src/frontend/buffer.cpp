@@ -174,7 +174,7 @@ int Buffer::ReadBufferCache()
     // TODO:
     return -1;
 
-    // Line *basel = NULL;
+    // LinePtr basel = NULL;
     // long clnum, tlnum;
     // int colorflag;
 
@@ -188,8 +188,8 @@ int Buffer::ReadBufferCache()
     //     return -1;
     // }
 
-    // Line *prevl = nullptr;
-    // Line *l = nullptr;
+    // LinePtr prevl = nullptr;
+    // LinePtr l = nullptr;
     // for (int lnum = 0; !feof(cache); ++lnum, prevl = l)
     // {
     //     l = New(Line);
@@ -369,7 +369,7 @@ nullBuffer(void)
     return b;
 }
 
-Line *Buffer::CurrentLineSkip(Line *line, int offset, int last)
+LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
 {
     int i, n;
     auto l = find(line);
@@ -399,7 +399,7 @@ Line *Buffer::CurrentLineSkip(Line *line, int offset, int last)
     return *l;
 }
 
-void Buffer::LineSkip(Line *line, int offset, int last)
+void Buffer::LineSkip(LinePtr line, int offset, int last)
 {
     auto l = find(CurrentLineSkip(line, offset, last));
     int i;
@@ -419,7 +419,7 @@ void Buffer::LineSkip(Line *line, int offset, int last)
 void Buffer::GotoLine(int n)
 {
     char msg[32];
-    Line *l = this->FirstLine();
+    LinePtr l = this->FirstLine();
     if (l == NULL)
         return;
     if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
@@ -534,7 +534,7 @@ void Buffer::NScroll(int n)
 void Buffer::GotoRealLine(int n)
 {
     char msg[32];
-    Line *l = this->FirstLine();
+    LinePtr l = this->FirstLine();
 
     if (l == NULL)
         return;
@@ -649,7 +649,7 @@ void Buffer::Reshape()
     this->height = (LINES - 1) + 1;
     if (this->FirstLine() && sbuf->FirstLine())
     {
-        Line *cur = sbuf->currentLine;
+        LinePtr cur = sbuf->currentLine;
         int n;
 
         this->pos = sbuf->pos + cur->bpos;
@@ -689,9 +689,9 @@ void Buffer::Reshape()
 void set_buffer_environ(BufferPtr buf)
 {
     static BufferPtr prev_buf = NULL;
-    static Line *prev_line = NULL;
+    static LinePtr prev_line = NULL;
     static int prev_pos = -1;
-    Line *l;
+    LinePtr l;
 
     if (buf == NULL)
         return;
@@ -835,7 +835,7 @@ void Buffer::CursorUp0(int n)
 
 void Buffer::CursorUp(int n)
 {
-    Line *l = this->currentLine;
+    LinePtr l = this->currentLine;
     if (this->LineCount() == 0)
         return;
     while (PrevLine(this->currentLine) && this->currentLine->bpos)
@@ -867,7 +867,7 @@ void Buffer::CursorDown0(int n)
 
 void Buffer::CursorDown(int n)
 {
-    Line *l = this->currentLine;
+    LinePtr l = this->currentLine;
     if (this->LineCount() == 0)
         return;
     while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos)
@@ -887,7 +887,7 @@ void Buffer::CursorDown(int n)
 
 void Buffer::CursorUpDown(int n)
 {
-    Line *cl = this->currentLine;
+    LinePtr cl = this->currentLine;
 
     if (this->LineCount() == 0)
         return;
@@ -899,7 +899,7 @@ void Buffer::CursorUpDown(int n)
 void Buffer::CursorRight(int n)
 {
     int i, delta = 1, cpos, vpos2;
-    Line *l = this->currentLine;
+    LinePtr l = this->currentLine;
     Lineprop *p;
 
     if (this->LineCount() == 0)
@@ -952,7 +952,7 @@ void Buffer::CursorRight(int n)
 void Buffer::CursorLeft(int n)
 {
     int i, delta = 1, cpos;
-    Line *l = this->currentLine;
+    LinePtr l = this->currentLine;
     Lineprop *p;
 
     if (this->LineCount() == 0)

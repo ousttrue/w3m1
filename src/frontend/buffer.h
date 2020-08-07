@@ -53,7 +53,7 @@ struct BufferPos
 };
 
 using BufferPtr = struct Buffer *;
-using LinePtr = struct Line *;
+using LinePtr = struct Line*;
 using LineList = std::vector<LinePtr>;
 struct Buffer : gc_cleanup
 {
@@ -66,9 +66,9 @@ struct Buffer : gc_cleanup
 
 private:
     // scroll
-    Line *topLine;
+    LinePtr topLine;
     // cursor ?
-    Line *currentLine;
+    LinePtr currentLine;
 
     // private:
     // list
@@ -114,12 +114,12 @@ public:
     Line* CurrentLine()const {
         return currentLine;
     }
-    void SetFirstLine(Line *line)
+    void SetFirstLine(LinePtr line)
     {
         assert(false);
         // firstLine = line;
     }
-    void SetLastLine(Line *line)
+    void SetLastLine(LinePtr line)
     {
         assert(false);
     }
@@ -127,7 +127,7 @@ public:
     {
         topLine = line;
     }
-    void SetCurrentLine(Line *line)
+    void SetCurrentLine(LinePtr line)
     {
         currentLine = line;
     }
@@ -142,8 +142,8 @@ public:
     void GotoLine(int n);
     void GotoRealLine(int n);
     void Reshape();
-    Line *CurrentLineSkip(Line *line, int offset, int last);
-    void LineSkip(Line *line, int offset, int last);
+    LinePtr CurrentLineSkip(LinePtr line, int offset, int last);
+    void LineSkip(LinePtr line, int offset, int last);
     void Scroll(int n);
     void NScroll(int n);
     void CurrentAsLast()
@@ -160,7 +160,7 @@ public:
         topLine = FirstLine();
         currentLine = FirstLine();
     }
-    void EachLine(const std::function<void(Line *)> &func)
+    void EachLine(const std::function<void(LinePtr)> &func)
     {
         for (auto &l: lines)
         {
@@ -350,7 +350,7 @@ const Anchor *retrieveCurrentAnchor(BufferPtr buf);
 const Anchor *retrieveCurrentImg(BufferPtr buf);
 const Anchor *retrieveCurrentForm(BufferPtr buf);
 const Anchor *searchURLLabel(BufferPtr buf, char *url);
-void reAnchorWord(BufferPtr buf, Line *l, int spos, int epos);
+void reAnchorWord(BufferPtr buf, LinePtr l, int spos, int epos);
 char *reAnchor(BufferPtr buf, char *re);
 char *reAnchorNews(BufferPtr buf, char *re);
 char *reAnchorNewsheader(BufferPtr buf);

@@ -12,7 +12,7 @@
 
 
 static void
-set_mark(Line *l, int pos, int epos)
+set_mark(LinePtr l, int pos, int epos)
 {
     for (; pos < epos && pos < l->size; pos++)
 	l->propBuf[pos] |= PE_MARK;
@@ -103,7 +103,8 @@ int
 forwardSearch(BufferPtr buf, char *str)
 {
     char *p, *first, *last;
-    Line *l, *begin;
+    LinePtr l;
+    LinePtr begin;
     int wrapped = FALSE;
     int pos;
 
@@ -198,7 +199,8 @@ int
 backwardSearch(BufferPtr buf, char *str)
 {
     char *p, *q, *found, *found_last, *first, *last;
-    Line *l, *begin;
+    LinePtr l;
+    LinePtr begin;
     int wrapped = FALSE;
     int pos;
 

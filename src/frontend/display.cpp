@@ -238,7 +238,7 @@ void fmInit(void)
 /* 
  * Display some lines.
  */
-static Line *cline = NULL;
+static LinePtr cline = NULL;
 static int ccolumn = -1;
 
 static int ulmode = 0, somode = 0, bomode = 0;
@@ -256,13 +256,13 @@ static char *delayed_msg = NULL;
 
 static void drawAnchorCursor(BufferPtr buf);
 
-static Line *redrawLine(BufferPtr buf, Line *l, int i);
+static LinePtr redrawLine(BufferPtr buf, LinePtr l, int i);
 #ifdef USE_IMAGE
 static int image_touch = 0;
 static int draw_image_flag = FALSE;
-static Line *redrawLineImage(BufferPtr buf, Line *l, int i);
+static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i);
 #endif
-static int redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos);
+static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos, int epos);
 static void do_effects(Lineprop m);
 #ifdef USE_ANSI_COLOR
 static void do_color(Linecolor c);
@@ -532,8 +532,8 @@ redrawNLine(BufferPtr buf)
     getAllImage(buf);
 }
 
-static Line *
-redrawLine(BufferPtr buf, Line *l, int i)
+static LinePtr 
+redrawLine(BufferPtr buf, LinePtr l, int i)
 {
     int j, pos, rcol, ncol, delta = 1;
     int column = buf->currentColumn;
@@ -708,8 +708,8 @@ redrawLine(BufferPtr buf, Line *l, int i)
 }
 
 #ifdef USE_IMAGE
-static Line *
-redrawLineImage(BufferPtr buf, Line *l, int i)
+static LinePtr 
+redrawLineImage(BufferPtr buf, LinePtr l, int i)
 {
     int j, pos, rcol;
     int column = buf->currentColumn;
@@ -780,7 +780,7 @@ redrawLineImage(BufferPtr buf, Line *l, int i)
 #endif
 
 static int
-redrawLineRegion(BufferPtr buf, Line *l, int i, int bpos, int epos)
+redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos, int epos)
 {
     int j, pos, rcol, ncol, delta = 1;
     int column = buf->currentColumn;

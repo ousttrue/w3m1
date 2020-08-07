@@ -43,7 +43,7 @@ int searchKeyNum(void)
 static char *SearchString = NULL;
 int (*searchRoutine)(BufferPtr, char *);
 
-void clear_mark(Line *l)
+void clear_mark(LinePtr l)
 {
     int pos;
     if (!l)
@@ -210,7 +210,7 @@ int srchcore(char *str, int (*func)(BufferPtr, char *))
 int dispincsrch(int ch, Str buf, Lineprop *prop)
 {
     static Buffer sbuf;
-    static Line *currentLine;
+    static LinePtr currentLine;
     static int pos;
     char *str;
     int do_next_search = FALSE;
@@ -342,7 +342,7 @@ void srch(int (*func)(BufferPtr, char *), const char *prompt)
 
 void shiftvisualpos(BufferPtr buf, int shift)
 {
-    Line *l = buf->CurrentLine();
+    LinePtr l = buf->CurrentLine();
     buf->visualpos -= shift;
     if (buf->visualpos - l->bwidth >= buf->COLS)
         buf->visualpos = l->bwidth + buf->COLS - 1;
@@ -489,9 +489,9 @@ void _movR(int n)
     displayCurrentbuf(B_NORMAL);
 }
 
-int prev_nonnull_line(BufferPtr buf, Line *line)
+int prev_nonnull_line(BufferPtr buf, LinePtr line)
 {
-    Line *l;
+    LinePtr l;
 
     for (l = line; l != NULL && l->len == 0; l = buf->PrevLine(l))
         ;
@@ -504,9 +504,9 @@ int prev_nonnull_line(BufferPtr buf, Line *line)
     return 0;
 }
 
-int next_nonnull_line(BufferPtr buf, Line *line)
+int next_nonnull_line(BufferPtr buf, LinePtr line)
 {
-    Line *l;
+    LinePtr l;
 
     for (l = line; l != NULL && l->len == 0; l = buf->NextLine(l))
         ;
@@ -524,7 +524,7 @@ char *
 getCurWord(BufferPtr buf, int *spos, int *epos)
 {
     char *p;
-    Line *l = buf->CurrentLine();
+    LinePtr l = buf->CurrentLine();
     int b, e;
 
     *spos = 0;
@@ -557,7 +557,7 @@ getCurWord(BufferPtr buf, int *spos, int *epos)
  * From: Takashi Nishimoto <g96p0935@mse.waseda.ac.jp> Date: Mon, 14 Jun
  * 1999 09:29:56 +0900
  */
-void prevChar(int *s, Line *l)
+void prevChar(int *s, LinePtr l)
 {
     do
     {
@@ -565,7 +565,7 @@ void prevChar(int *s, Line *l)
     } while ((*s) > 0 && (l)->propBuf[*s] & PC_WCHAR2);
 }
 
-void nextChar(int *s, Line *l)
+void nextChar(int *s, LinePtr l)
 {
     do
     {
@@ -620,7 +620,7 @@ void _goLine(std::string_view l)
 
 int cur_real_linenumber(BufferPtr buf)
 {
-    Line *cur = buf->CurrentLine();
+    LinePtr cur = buf->CurrentLine();
     if (!cur)
         return 1;
     auto n = cur->real_linenumber ? cur->real_linenumber : 1;
@@ -646,7 +646,7 @@ void SetMarkString(char *str)
 
 void _followForm(int submit)
 {
-    Line *l;
+    LinePtr l;
 
     char *p;
     FormItemList *fi, *f2;
@@ -1409,7 +1409,7 @@ void nextX(int d, int dy)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     auto &hl = buf->hmarklist;
-    Line *l;
+    LinePtr l;
     int i, x, y, n = searchKeyNum();
 
     if (buf->LineCount() == 0)

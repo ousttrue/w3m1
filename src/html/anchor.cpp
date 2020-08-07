@@ -221,7 +221,7 @@ reseq_anchor(BufferPtr buf)
 }
 
 static char *
-reAnchorPos(BufferPtr buf, Line *l, char *p1, char *p2,
+reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
             Anchor *(*anchorproc)(BufferPtr, char *, char *, int, int))
 {
     Anchor *a;
@@ -269,7 +269,7 @@ reAnchorPos(BufferPtr buf, Line *l, char *p1, char *p2,
     return p2;
 }
 
-void reAnchorWord(BufferPtr buf, Line *l, int spos, int epos)
+void reAnchorWord(BufferPtr buf, LinePtr l, int spos, int epos)
 {
     reAnchorPos(buf, l, &l->lineBuf[spos], &l->lineBuf[epos], _put_anchor_all);
 }
@@ -280,7 +280,7 @@ static char *
 reAnchorAny(BufferPtr buf, char *re,
             Anchor *(*anchorproc)(BufferPtr, char *, char *, int, int))
 {
-    Line *l;
+    LinePtr l;
     char *p = NULL, *p1, *p2;
 
     if (re == NULL || *re == '\0')
@@ -331,7 +331,7 @@ reAnchorNews(BufferPtr buf, char *re)
 char *
 reAnchorNewsheader(BufferPtr buf)
 {
-    Line *l;
+    LinePtr l;
     char *p, *p1, *p2;
     static const char *header_mid[] = {
         "Message-Id:", "References:", "In-Reply-To:", NULL};
@@ -450,7 +450,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         if (!l)
             continue;
 
-        Line *ls;
+        LinePtr ls;
         if (a_img.y == a_img.start.line)
             ls = l;
         else
@@ -548,7 +548,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
         }
         if (!l)
             continue;
-        Line *ls;
+        LinePtr ls;
         if (a_form.y == a_form.start.line)
             ls = l;
         else
@@ -598,7 +598,7 @@ char *
 getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a)
 {
     int hseq, i;
-    Line *l;
+    LinePtr l;
     Str tmp = NULL;
     char *p, *ep;
 

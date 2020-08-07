@@ -379,7 +379,7 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
     #ifdef USE_ANSI_COLOR
     Linecolor *c;
     #endif
-    Line *l;
+    LinePtr l;
     int i, bpos, bwidth;
 
     if (pos > 0)
@@ -733,7 +733,7 @@ loadImageBuffer(URLFile *uf, BufferPtr newBuf)
 #endif
 
 static Str
-conv_symbol(Line *l)
+conv_symbol(LinePtr l)
 {
     Str tmp = NULL;
     char *p = l->lineBuf, *ep = p + l->len;
@@ -783,7 +783,7 @@ conv_symbol(Line *l)
  * saveBuffer: write buffer to file
  */
 static void
-_saveBuffer(BufferPtr buf, Line *l, FILE *f, int cont)
+_saveBuffer(BufferPtr buf, LinePtr l, FILE *f, int cont)
 {
     int set_charset = !w3mApp::Instance().DisplayCharset;
     CharacterEncodingScheme charset = w3mApp::Instance().DisplayCharset ? w3mApp::Instance().DisplayCharset : WC_CES_US_ASCII;
@@ -821,7 +821,7 @@ void saveBuffer(BufferPtr buf, FILE *f, int cont)
 
 void saveBufferBody(BufferPtr buf, FILE *f, int cont)
 {
-    Line *l = buf->FirstLine();
+    LinePtr l = buf->FirstLine();
 
     while (l != NULL && l->real_linenumber == 0)
         l = buf->NextLine(l);
@@ -969,12 +969,12 @@ openGeneralPagerBuffer(InputStream *stream)
     return buf;
 }
 
-Line *
+LinePtr 
 getNextPage(BufferPtr buf, int plen)
 {
-    Line *top = buf->TopLine();
-    Line *last = buf->LastLine();
-    Line *cur = buf->CurrentLine();
+    LinePtr top = buf->TopLine();
+    LinePtr last = buf->LastLine();
+    LinePtr cur = buf->CurrentLine();
     int i;
     int nlines = 0;
     clen_t linelen = 0, trbyte = buf->trbyte;
@@ -1063,7 +1063,7 @@ getNextPage(BufferPtr buf, int plen)
             }
             if (buf->LastLine()->real_linenumber - buf->FirstLine()->real_linenumber >= w3mApp::Instance().PagerMax)
             {
-                Line *l = buf->FirstLine();
+                LinePtr l = buf->FirstLine();
                 do
                 {
                     if (top == l)

@@ -21,7 +21,7 @@ static int nextColumn(int n, char *p, Lineprop *pr)
     return n + wtf_width((uint8_t *)p);
 }
 
-int columnLen(Line *line, int column)
+int columnLen(LinePtr line, int column)
 {
     int i, j;
 
@@ -95,7 +95,7 @@ int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, CalcPosition
 }
 
 
-int columnPos(Line *line, int column)
+int columnPos(LinePtr line, int column)
 {
     int i;
 

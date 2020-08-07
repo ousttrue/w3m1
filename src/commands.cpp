@@ -198,7 +198,7 @@ void shiftr(w3mApp *w3m)
 void col1R(w3mApp *w3m)
 {
     BufferPtr buf = GetCurrentTab()->GetCurrentBuffer();
-    Line *l = buf->CurrentLine();
+    LinePtr l = buf->CurrentLine();
     int j, column, n = searchKeyNum();
     if (l == NULL)
         return;
@@ -216,7 +216,7 @@ void col1R(w3mApp *w3m)
 void col1L(w3mApp *w3m)
 {
     BufferPtr buf = GetCurrentTab()->GetCurrentBuffer();
-    Line *l = buf->CurrentLine();
+    LinePtr l = buf->CurrentLine();
     int j, n = searchKeyNum();
     if (l == NULL)
         return;
@@ -489,7 +489,8 @@ void movR1(w3mApp *w3m)
 void movLW(w3mApp *w3m)
 {
     char *lb;
-    Line *pline, *l;
+    LinePtr pline;
+    LinePtr l;
     int ppos;
     int i, n = searchKeyNum();
     auto tab = GetCurrentTab();
@@ -543,7 +544,8 @@ end:
 void movRW(w3mApp *w3m)
 {
     char *lb;
-    Line *pline, *l;
+    LinePtr pline;
+    LinePtr l;
     int ppos;
     int i, n = searchKeyNum();
     auto tab = GetCurrentTab();
@@ -766,7 +768,7 @@ void editScr(w3mApp *w3m)
 /* Set / unset mark */
 void _mark(w3mApp *w3m)
 {
-    Line *l;
+    LinePtr l;
     if (!use_mark)
         return;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
@@ -779,7 +781,7 @@ void _mark(w3mApp *w3m)
 /* Go to next mark */
 void nextMk(w3mApp *w3m)
 {
-    Line *l;
+    LinePtr l;
     int i;
     if (!use_mark)
         return;
@@ -817,7 +819,7 @@ void nextMk(w3mApp *w3m)
 
 void prevMk(w3mApp *w3m)
 {
-    Line *l;
+    LinePtr l;
     int i;
     if (!use_mark)
         return;
@@ -899,7 +901,7 @@ void reMark(w3mApp *w3m)
 
 void followI(w3mApp *w3m)
 {
-    Line *l;
+    LinePtr l;
     BufferPtr buf;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
@@ -1900,7 +1902,7 @@ void curlno(w3mApp *w3m)
     int cur = 0, all = 0, col = 0, len = 0;
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    Line *l = buf->CurrentLine();
+    LinePtr l = buf->CurrentLine();
     if (l)
     {
         cur = l->real_linenumber;

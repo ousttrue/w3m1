@@ -34,7 +34,7 @@ BufferPtr getshell(char *cmd);
 BufferPtr getpipe(char *cmd);
 BufferPtr openPagerBuffer(InputStream *stream, BufferPtr buf);
 BufferPtr openGeneralPagerBuffer(InputStream *stream);
-Line *getNextPage(BufferPtr buf, int plen);
+LinePtr getNextPage(BufferPtr buf, int plen);
 int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf);
 

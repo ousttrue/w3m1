@@ -294,7 +294,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
 #endif
                 if (src)
                 {
-                    Line *l;
+                    LinePtr l;
                     CharacterEncodingScheme old_charset = newBuf->document_charset;
                     URLFile f(SCM_LOCAL, newStrStream(src));
                     loadHTMLstream(&f, newBuf, NULL, TRUE);

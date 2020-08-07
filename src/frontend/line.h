@@ -107,6 +107,7 @@ public:
     void CalcWidth();
     int COLPOS(int c);
 };
+using LinePtr = Line *;
 
 /* Flags for calcPosition() */
 enum CalcPositionMode
@@ -115,5 +116,5 @@ enum CalcPositionMode
     CP_FORCE=	1,
 };
 int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, CalcPositionMode mode);
-int columnPos(Line *line, int column);
-int columnLen(Line *line, int column);
+int columnPos(LinePtr line, int column);
+int columnLen(LinePtr line, int column);
