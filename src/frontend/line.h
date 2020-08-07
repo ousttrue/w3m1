@@ -11,47 +11,59 @@ inline Lineprop get_mctype(int c)
     return (Lineprop)(wtf_type((uint8_t *)&c) << 8);
 }
 
-/* 
+/*
  * Line Property
  */
-#define P_CHARTYPE 0x3f00
-#define PC_ASCII (WTF_TYPE_ASCII << 8)
-#define PC_CTRL (WTF_TYPE_CTRL << 8)
-#define PC_WCHAR1 (WTF_TYPE_WCHAR1 << 8)
-#define PC_WCHAR2 (WTF_TYPE_WCHAR2 << 8)
-#define PC_KANJI (WTF_TYPE_WIDE << 8)
-#define PC_KANJI1 (PC_WCHAR1 | PC_KANJI)
-#define PC_KANJI2 (PC_WCHAR2 | PC_KANJI)
-#define PC_UNKNOWN (WTF_TYPE_UNKNOWN << 8)
-#define PC_UNDEF (WTF_TYPE_UNDEF << 8)
-#define PC_SYMBOL 0x8000
+enum LineProperties {
+    P_CHARTYPE= 0x3f00,
+    PC_ASCII= (WTF_TYPE_ASCII << 8),
+    PC_CTRL= (WTF_TYPE_CTRL << 8),
+    PC_WCHAR1= (WTF_TYPE_WCHAR1 << 8),
+    PC_WCHAR2= (WTF_TYPE_WCHAR2 << 8),
+    PC_KANJI= (WTF_TYPE_WIDE << 8),
+    PC_KANJI1= (PC_WCHAR1 | PC_KANJI),
+    PC_KANJI2= (PC_WCHAR2 | PC_KANJI),
+    PC_UNKNOWN= (WTF_TYPE_UNKNOWN << 8),
+    PC_UNDEF= (WTF_TYPE_UNDEF << 8),
+    PC_SYMBOL= 0x8000,
 
-/* Effect ( standout/underline ) */
-#define P_EFFECT 0x40ff
-#define PE_NORMAL 0x00
-#define PE_MARK 0x01
-#define PE_UNDER 0x02
-#define PE_STAND 0x04
-#define PE_BOLD 0x08
-#define PE_ANCHOR 0x10
-#define PE_EMPH 0x08
-#define PE_IMAGE 0x20
-#define PE_FORM 0x40
-#define PE_ACTIVE 0x80
-#define PE_VISITED 0x4000
+    /* Effect ( standout/underline ) */
+    P_EFFECT= 0x40ff,
+    PE_NORMAL= 0x00,
+    PE_MARK= 0x01,
+    PE_UNDER= 0x02,
+    PE_STAND= 0x04,
+    PE_BOLD= 0x08,
+    PE_ANCHOR= 0x10,
+    PE_EMPH= 0x08,
+    PE_IMAGE= 0x20,
+    PE_FORM= 0x40,
+    PE_ACTIVE= 0x80,
+    PE_VISITED= 0x4000,
 
-/* Extra effect */
-#define PE_EX_ITALIC 0x01
-#define PE_EX_INSERT 0x02
-#define PE_EX_STRIKE 0x04
+    /* Extra effect */
+    PE_EX_ITALIC= 0x01,
+    PE_EX_INSERT= 0x02,
+    PE_EX_STRIKE= 0x04,
 
-#define PE_EX_ITALIC_E PE_UNDER
-#define PE_EX_INSERT_E PE_UNDER
-#define PE_EX_STRIKE_E PE_STAND
+    PE_EX_ITALIC_E= PE_UNDER,
+    PE_EX_INSERT_E= PE_UNDER,
+    PE_EX_STRIKE_E= PE_STAND,
+};
 
-#define CharType(c) ((c)&P_CHARTYPE)
-#define CharEffect(c) ((c) & (P_EFFECT | PC_SYMBOL))
-#define SetCharType(v, c) ((v) = (((v) & ~P_CHARTYPE) | (c)))
+inline LineProperties CharType(int c)
+{
+    return  (LineProperties)((c)&P_CHARTYPE);
+}
+
+inline LineProperties CharEffect(int c)
+{
+    return (LineProperties)((c) & (P_EFFECT | PC_SYMBOL));
+}
+
+inline void SetCharType(LineProperties &v, int c) {
+    ((v) = (LineProperties)(((v) & ~P_CHARTYPE) | (c)));
+}
 
 struct Line
 {

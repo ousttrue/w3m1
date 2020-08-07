@@ -991,4 +991,3 @@ TagInfo TagMAP[MAX_HTMLTAG] ={
     { "div_int", ALST_P, MAXA_P, TFLG_INT },	/*  183 HTML_DIV_INT    */
     { "/div_int", NULL, 0, TFLG_INT | TFLG_END },	/*  184 HTML_N_DIV_INT  */
 };
-
