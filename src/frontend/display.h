@@ -11,7 +11,8 @@ enum DisplayMode
 };
 void displayBuffer(BufferPtr  buf, DisplayMode mode);
 void displayCurrentbuf(DisplayMode mode);
-
+void do_color(Linecolor c);
+void clear_effect();
 
 // message
 void message(const char *s, int return_x, int return_y);

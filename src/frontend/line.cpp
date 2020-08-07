@@ -3,6 +3,7 @@
 #include "gc_helper.h"
 #include "file.h"
 #include "wtf.h"
+#include "display.h"
 
 static int nextColumn(int n, char *p, Lineprop *pr)
 {
@@ -134,4 +135,122 @@ int Buffer::ColumnSkip(int offset)
         return 0;
     this->currentColumn = maxColumn;
     return 1;
+}
+
+#include "terms.h"
+#include <math.h>
+
+///
+/// draw a line
+///
+LinePtr redrawLine(BufferPtr buf, LinePtr l, int i)
+{
+    int j, pos, rcol, ncol, delta = 1;
+    int column = buf->currentColumn;
+    char *p;
+    Lineprop *pr;
+    Linecolor *pc;
+    URL url;
+    int k, vpos = -1;
+
+    if (l == NULL)
+    {
+        if (buf->pagerSource)
+        {
+            l = getNextPage(buf, buf->LINES + buf->rootY - i);
+            if (l == NULL)
+                return NULL;
+        }
+        else
+            return NULL;
+    }
+    move(i, 0);
+    if (w3mApp::Instance().showLineNum)
+    {
+        char tmp[16];
+        if (!buf->rootX)
+        {
+            if (buf->LastLine()->real_linenumber > 0)
+                buf->rootX = (int)(log(buf->LastLine()->real_linenumber + 0.1) / log(10)) + 2;
+            if (buf->rootX < 5)
+                buf->rootX = 5;
+            if (buf->rootX > COLS)
+                buf->rootX = COLS;
+            buf->COLS = COLS - buf->rootX;
+        }
+        if (l->real_linenumber && !l->bpos)
+            sprintf(tmp, "%*ld:", buf->rootX - 1, l->real_linenumber);
+        else
+            sprintf(tmp, "%*s ", buf->rootX - 1, "");
+        addstr(tmp);
+    }
+    move(i, buf->rootX);
+    if (l->width < 0)
+        l->CalcWidth();
+    if (l->len == 0 || l->width - 1 < column)
+    {
+        clrtoeolx();
+        return l;
+    }
+    /* need_clrtoeol(); */
+    pos = columnPos(l, column);
+    p = &(l->lineBuf[pos]);
+    pr = &(l->propBuf[pos]);
+    if (w3mApp::Instance().useColor && l->colorBuf)
+        pc = &(l->colorBuf[pos]);
+    else
+        pc = NULL;
+
+    rcol = l->COLPOS(pos);
+
+    for (j = 0; rcol - column < buf->COLS && pos + j < l->len; j += delta)
+    {
+        if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
+        {
+            auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
+            if (a)
+            {
+                url.Parse2(a->url, buf->BaseURL());
+                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
+                {
+                    for (k = a->start.pos; k < a->end.pos; k++)
+                        pr[k - pos] |= PE_VISITED;
+                }
+                vpos = a->end.pos;
+            }
+        }
+
+        delta = wtf_len((uint8_t *)&p[j]);
+
+        ncol = l->COLPOS(pos + j + delta);
+        if (ncol - column > buf->COLS)
+            break;
+
+        if (pc)
+            do_color(pc[j]);
+
+        if (rcol < column)
+        {
+            for (rcol = column; rcol < ncol; rcol++)
+                addChar(' ');
+            continue;
+        }
+        if (p[j] == '\t')
+        {
+            for (; rcol < ncol; rcol++)
+                addChar(' ');
+        }
+        else
+        {
+            addMChar(&p[j], pr[j], delta);
+        }
+        rcol = ncol;
+    }
+
+    clear_effect();
+
+    if (rcol - column < buf->COLS)
+        clrtoeolx();
+    
+    return l;
 }

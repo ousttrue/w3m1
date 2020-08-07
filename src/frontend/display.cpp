@@ -244,9 +244,7 @@ static int ccolumn = -1;
 static int ulmode = 0, somode = 0, bomode = 0;
 static int anch_mode = 0, emph_mode = 0, imag_mode = 0, form_mode = 0,
            active_mode = 0, visited_mode = 0, mark_mode = 0, graph_mode = 0;
-#ifdef USE_ANSI_COLOR
 static Linecolor color_mode = 0;
-#endif
 
 #ifdef USE_BUFINFO
 static BufferPtr save_current_buf = NULL;
@@ -254,19 +252,80 @@ static BufferPtr save_current_buf = NULL;
 
 static char *delayed_msg = NULL;
 
+void clear_effect()
+{
+    if (somode)
+    {
+        somode = FALSE;
+        standend();
+    }
+    if (ulmode)
+    {
+        ulmode = FALSE;
+        underlineend();
+    }
+    if (bomode)
+    {
+        bomode = FALSE;
+        boldend();
+    }
+    if (emph_mode)
+    {
+        emph_mode = FALSE;
+        boldend();
+    }
+
+    if (anch_mode)
+    {
+        anch_mode = FALSE;
+        effect_anchor_end();
+    }
+    if (imag_mode)
+    {
+        imag_mode = FALSE;
+        effect_image_end();
+    }
+    if (form_mode)
+    {
+        form_mode = FALSE;
+        effect_form_end();
+    }
+    if (visited_mode)
+    {
+        visited_mode = FALSE;
+        effect_visited_end();
+    }
+    if (active_mode)
+    {
+        active_mode = FALSE;
+        effect_active_end();
+    }
+    if (mark_mode)
+    {
+        mark_mode = FALSE;
+        effect_mark_end();
+    }
+    if (graph_mode)
+    {
+        graph_mode = FALSE;
+        graphend();
+    }
+
+    if (color_mode)
+        do_color(0);
+
+}
+
 static void drawAnchorCursor(BufferPtr buf);
 
-static LinePtr redrawLine(BufferPtr buf, LinePtr l, int i);
-#ifdef USE_IMAGE
+
+
 static int image_touch = 0;
 static int draw_image_flag = FALSE;
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i);
-#endif
+
 static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos, int epos);
 static void do_effects(Lineprop m);
-#ifdef USE_ANSI_COLOR
-static void do_color(Linecolor c);
-#endif
 
 static Str
 make_lastline_link(BufferPtr buf, std::string_view title, char *url)
@@ -532,180 +591,6 @@ redrawNLine(BufferPtr buf)
     getAllImage(buf);
 }
 
-static LinePtr 
-redrawLine(BufferPtr buf, LinePtr l, int i)
-{
-    int j, pos, rcol, ncol, delta = 1;
-    int column = buf->currentColumn;
-    char *p;
-    Lineprop *pr;
-    Linecolor *pc;
-    URL url;
-    int k, vpos = -1;
-
-    if (l == NULL)
-    {
-        if (buf->pagerSource)
-        {
-            l = getNextPage(buf, buf->LINES + buf->rootY - i);
-            if (l == NULL)
-                return NULL;
-        }
-        else
-            return NULL;
-    }
-    move(i, 0);
-    if (w3mApp::Instance().showLineNum)
-    {
-        char tmp[16];
-        if (!buf->rootX)
-        {
-            if (buf->LastLine()->real_linenumber > 0)
-                buf->rootX = (int)(log(buf->LastLine()->real_linenumber + 0.1) / log(10)) + 2;
-            if (buf->rootX < 5)
-                buf->rootX = 5;
-            if (buf->rootX > COLS)
-                buf->rootX = COLS;
-            buf->COLS = COLS - buf->rootX;
-        }
-        if (l->real_linenumber && !l->bpos)
-            sprintf(tmp, "%*ld:", buf->rootX - 1, l->real_linenumber);
-        else
-            sprintf(tmp, "%*s ", buf->rootX - 1, "");
-        addstr(tmp);
-    }
-    move(i, buf->rootX);
-    if (l->width < 0)
-        l->CalcWidth();
-    if (l->len == 0 || l->width - 1 < column)
-    {
-        clrtoeolx();
-        return l;
-    }
-    /* need_clrtoeol(); */
-    pos = columnPos(l, column);
-    p = &(l->lineBuf[pos]);
-    pr = &(l->propBuf[pos]);
-    if (w3mApp::Instance().useColor && l->colorBuf)
-        pc = &(l->colorBuf[pos]);
-    else
-        pc = NULL;
-
-    rcol = l->COLPOS(pos);
-
-    for (j = 0; rcol - column < buf->COLS && pos + j < l->len; j += delta)
-    {
-#ifdef USE_COLOR
-        if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
-        {
-            auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
-            if (a)
-            {
-                url.Parse2(a->url, buf->BaseURL());
-                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
-                {
-                    for (k = a->start.pos; k < a->end.pos; k++)
-                        pr[k - pos] |= PE_VISITED;
-                }
-                vpos = a->end.pos;
-            }
-        }
-#endif
-#ifdef USE_M17N
-        delta = wtf_len((uint8_t *)&p[j]);
-#endif
-        ncol = l->COLPOS(pos + j + delta);
-        if (ncol - column > buf->COLS)
-            break;
-#ifdef USE_ANSI_COLOR
-        if (pc)
-            do_color(pc[j]);
-#endif
-        if (rcol < column)
-        {
-            for (rcol = column; rcol < ncol; rcol++)
-                addChar(' ');
-            continue;
-        }
-        if (p[j] == '\t')
-        {
-            for (; rcol < ncol; rcol++)
-                addChar(' ');
-        }
-        else
-        {
-#ifdef USE_M17N
-            addMChar(&p[j], pr[j], delta);
-#else
-            addChar(p[j], pr[j]);
-#endif
-        }
-        rcol = ncol;
-    }
-    if (somode)
-    {
-        somode = FALSE;
-        standend();
-    }
-    if (ulmode)
-    {
-        ulmode = FALSE;
-        underlineend();
-    }
-    if (bomode)
-    {
-        bomode = FALSE;
-        boldend();
-    }
-    if (emph_mode)
-    {
-        emph_mode = FALSE;
-        boldend();
-    }
-
-    if (anch_mode)
-    {
-        anch_mode = FALSE;
-        effect_anchor_end();
-    }
-    if (imag_mode)
-    {
-        imag_mode = FALSE;
-        effect_image_end();
-    }
-    if (form_mode)
-    {
-        form_mode = FALSE;
-        effect_form_end();
-    }
-    if (visited_mode)
-    {
-        visited_mode = FALSE;
-        effect_visited_end();
-    }
-    if (active_mode)
-    {
-        active_mode = FALSE;
-        effect_active_end();
-    }
-    if (mark_mode)
-    {
-        mark_mode = FALSE;
-        effect_mark_end();
-    }
-    if (graph_mode)
-    {
-        graph_mode = FALSE;
-        graphend();
-    }
-#ifdef USE_ANSI_COLOR
-    if (color_mode)
-        do_color(0);
-#endif
-    if (rcol - column < buf->COLS)
-        clrtoeolx();
-    return l;
-}
 
 #ifdef USE_IMAGE
 static LinePtr 
@@ -972,9 +857,7 @@ do_effects(Lineprop m)
     do_effect1(PE_MARK, mark_mode, effect_mark_start(), effect_mark_end());
 }
 
-#ifdef USE_ANSI_COLOR
-static void
-do_color(Linecolor c)
+void do_color(Linecolor c)
 {
     if (c & 0x8)
         setfcolor(c & 0x7);
@@ -988,7 +871,7 @@ do_color(Linecolor c)
 #endif
     color_mode = c;
 }
-#endif
+
 
 #ifdef USE_M17N
 void addChar(char c, Lineprop mode)

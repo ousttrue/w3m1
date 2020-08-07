@@ -120,3 +120,5 @@ enum CalcPositionMode
 int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, CalcPositionMode mode);
 int columnPos(LinePtr line, int column);
 int columnLen(LinePtr line, int column);
+
+

@@ -62,7 +62,8 @@ struct Buffer : gc_cleanup
     std::string filename;
     std::string buffername;
 
-    char need_reshape;
+    bool need_reshape = false;
+    LineList lines;
 
 private:
     // scroll
@@ -72,7 +73,6 @@ private:
 
     // private:
     // list
-    LineList lines;
     LineList::iterator find(LinePtr l)
     {
         return std::find(lines.begin(), lines.end(), l);
@@ -362,3 +362,5 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 TextList *make_domain_list(char *domain_list);
+
+LinePtr redrawLine(BufferPtr buf, LinePtr l, int i);
