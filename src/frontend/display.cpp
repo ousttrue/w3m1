@@ -1171,9 +1171,8 @@ void set_delayed_message(const char *s)
 
 void restorePosition(BufferPtr buf, BufferPtr orig)
 {
-    buf->LineSkip(buf->firstLine, TOP_LINENUMBER(orig) - 1,
-                  FALSE);
-    buf->GotoLine(CUR_LINENUMBER(orig));
+    buf->LineSkip(buf->firstLine, orig->TOP_LINENUMBER() - 1, FALSE);
+    buf->GotoLine(orig->CUR_LINENUMBER());
     buf->pos = orig->pos;
     if (buf->currentLine && orig->currentLine)
         buf->pos += orig->currentLine->bpos - buf->currentLine->bpos;

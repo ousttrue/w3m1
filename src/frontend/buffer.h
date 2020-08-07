@@ -103,6 +103,14 @@ public:
     Line* LastLine()const {
         return lastLine;
     }
+    int TOP_LINENUMBER()const
+    {
+        return (TopLine() ? TopLine()->linenumber : 1);
+    }
+    int CUR_LINENUMBER()const
+    {
+        return (currentLine ? currentLine->linenumber : 1);
+    }
     void GotoLine(int n);
     void GotoRealLine(int n);
     void Reshape();
@@ -234,16 +242,6 @@ public:
     void SavePosition();
     void DumpSource();
 };
-
-inline int TOP_LINENUMBER(BufferPtr buf)
-{
-    return ((buf)->TopLine() ? (buf)->TopLine()->linenumber : 1);
-}
-
-inline int CUR_LINENUMBER(BufferPtr buf)
-{
-    return ((buf)->currentLine ? (buf)->currentLine->linenumber : 1);
-}
 
 BufferPtr newBuffer(int width);
 

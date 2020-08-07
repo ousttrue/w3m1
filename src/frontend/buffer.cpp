@@ -794,13 +794,13 @@ void Buffer::SavePosition()
         return;
 
     BufferPos *b = this->undo;
-    if (b && b->top_linenumber == TOP_LINENUMBER(this) &&
-        b->cur_linenumber == CUR_LINENUMBER(this) &&
+    if (b && b->top_linenumber == TOP_LINENUMBER() &&
+        b->cur_linenumber == CUR_LINENUMBER() &&
         b->currentColumn == this->currentColumn && b->pos == this->pos)
         return;
     b = New(BufferPos);
-    b->top_linenumber = TOP_LINENUMBER(this);
-    b->cur_linenumber = CUR_LINENUMBER(this);
+    b->top_linenumber = TOP_LINENUMBER();
+    b->cur_linenumber = CUR_LINENUMBER();
     b->currentColumn = this->currentColumn;
     b->pos = this->pos;
     b->bpos = this->currentLine ? this->currentLine->bpos : 0;
