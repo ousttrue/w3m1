@@ -86,8 +86,11 @@ struct Line
 };
 
 /* Flags for calcPosition() */
-#define CP_AUTO		0
-#define CP_FORCE	1
-int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode);
+enum CalcPositionMode
+{
+    CP_AUTO=		0,
+    CP_FORCE=	1,
+};
+int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, CalcPositionMode mode);
 int columnPos(Line *line, int column);
 int columnLen(Line *line, int column);

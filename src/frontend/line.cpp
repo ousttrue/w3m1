@@ -50,7 +50,7 @@ void Line::CalcWidth()
     width = COLPOS(len);
 }
 
-int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, int mode)
+int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, CalcPositionMode mode)
 {
     static int *realColumn = nullptr;
     static int size = 0;
