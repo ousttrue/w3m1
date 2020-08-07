@@ -23,7 +23,7 @@
 #include "frontend/terms.h"
 #include "transport/istream.h"
 
-static int REV_LB[MAX_LB] ={
+static int REV_LB[MAX_LB] = {
     LB_N_FRAME,
     LB_FRAME,
     LB_N_INFO,
@@ -48,8 +48,8 @@ Buffer::Buffer()
     COLS = ::COLS;
     LINES = (LINES - 1);
     currentURL.scheme = SCM_UNKNOWN;
-    baseURL ={};
-    baseTarget ={};
+    baseURL = {};
+    baseTarget = {};
     bufferprop = BP_NORMAL;
     clone = New(int);
     *clone = 1;
@@ -128,7 +128,7 @@ int Buffer::WriteBufferCache()
         fwrite1(this->topLine->linenumber, cache))
         goto _error;
 
-    for (auto &l: lines)
+    for (auto &l : lines)
     {
         if (fwrite1(l->real_linenumber, cache) ||
             fwrite1(l->usrflags, cache) ||
@@ -143,7 +143,7 @@ int Buffer::WriteBufferCache()
                 fwrite(l->propBuf, sizeof(Lineprop), l->size, cache) < l->size)
                 goto _error;
         }
-        #ifdef USE_ANSI_COLOR
+#ifdef USE_ANSI_COLOR
         colorflag = l->colorBuf ? 1 : 0;
         if (fwrite1(colorflag, cache))
             goto _error;
@@ -156,15 +156,15 @@ int Buffer::WriteBufferCache()
                     goto _error;
             }
         }
-        #endif
+#endif
     }
 
     fclose(cache);
     return 0;
-    _error:
+_error:
     fclose(cache);
     unlink(this->savecache.c_str());
-    _error1:
+_error1:
     this->savecache.clear();
     return -1;
 }
@@ -377,7 +377,7 @@ LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
         if (this->LastLine()->linenumber < n)
             getNextPage(this, n - this->LastLine()->linenumber);
         while ((last || (this->LastLine()->linenumber < n)) &&
-            (getNextPage(this, 1) != NULL))
+               (getNextPage(this, 1) != NULL))
             ;
         if (last)
             l = find(this->LastLine());
@@ -386,11 +386,11 @@ LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
     if (offset == 0)
         return *l;
     if (offset > 0)
-        for (i = 0; i < offset && (*l)!=lines.back(); i++, ++l)
+        for (i = 0; i < offset && (*l) != lines.back(); i++, ++l)
         {
         }
     else
-        for (i = 0; i < -offset && l!=lines.begin(); i++, --l)
+        for (i = 0; i < -offset && l != lines.begin(); i++, --l)
         {
         }
     return *l;
@@ -402,11 +402,10 @@ void Buffer::LineSkip(LinePtr line, int offset, int last)
     int i;
     if (!nextpage_topline)
         for (i = this->LINES - 1 - (this->LastLine()->linenumber - (*l)->linenumber);
-            i > 0 && l!=lines.begin();
-            i--, --l)
-    {
-    }
-    ;
+             i > 0 && l != lines.begin();
+             i--, --l)
+        {
+        };
     topLine = *l;
 }
 
@@ -424,13 +423,13 @@ void Buffer::GotoLine(int n)
         if (this->LastLine()->linenumber < n)
             getNextPage(this, n - this->LastLine()->linenumber);
         while ((this->LastLine()->linenumber < n) &&
-            (getNextPage(this, 1) != NULL))
+               (getNextPage(this, 1) != NULL))
             ;
     }
     if (l->linenumber > n)
     {
         /* FIXME: gettextize? */
-        sprintf(msg, "First line is #%d", l->linenumber);
+        sprintf(msg, "First line is #%ld", l->linenumber);
         set_delayed_message(msg);
         this->topLine = this->currentLine = l;
         return;
@@ -439,7 +438,7 @@ void Buffer::GotoLine(int n)
     {
         l = this->LastLine();
         /* FIXME: gettextize? */
-        sprintf(msg, "Last line is #%d", this->LastLine()->linenumber);
+        sprintf(msg, "Last line is #%ld", this->LastLine()->linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
         LineSkip(this->currentLine, -(this->LINES - 1), FALSE);
@@ -505,8 +504,8 @@ void Buffer::NScroll(int n)
         else
         {
             while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos &&
-                this->currentLine->bwidth + this->currentLine->width <
-                this->currentColumn + this->visualpos)
+                   this->currentLine->bwidth + this->currentLine->width <
+                       this->currentColumn + this->visualpos)
                 this->CursorDown0(1);
         }
     }
@@ -518,8 +517,8 @@ void Buffer::NScroll(int n)
         else
         {
             while (PrevLine(this->currentLine) && this->currentLine->bpos &&
-                this->currentLine->bwidth >=
-                this->currentColumn + this->visualpos)
+                   this->currentLine->bwidth >=
+                       this->currentColumn + this->visualpos)
                 this->CursorUp0(1);
         }
     }
@@ -540,13 +539,13 @@ void Buffer::GotoRealLine(int n)
         if (this->LastLine()->real_linenumber < n)
             getNextPage(this, n - this->LastLine()->real_linenumber);
         while ((this->LastLine()->real_linenumber < n) &&
-            (getNextPage(this, 1) != NULL))
+               (getNextPage(this, 1) != NULL))
             ;
     }
     if (l->real_linenumber > n)
     {
         /* FIXME: gettextize? */
-        sprintf(msg, "First line is #%d", l->real_linenumber);
+        sprintf(msg, "First line is #%ld", l->real_linenumber);
         set_delayed_message(msg);
         this->topLine = this->currentLine = l;
         return;
@@ -555,16 +554,16 @@ void Buffer::GotoRealLine(int n)
     {
         l = this->LastLine();
         /* FIXME: gettextize? */
-        sprintf(msg, "Last line is #%d", this->LastLine()->real_linenumber);
+        sprintf(msg, "Last line is #%ld", this->LastLine()->real_linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
         LineSkip(this->currentLine, -(this->LINES - 1),
-            FALSE);
+                 FALSE);
         return;
     }
 
     auto it = find(l);
-    for (; it!=lines.end(); ++it)
+    for (; it != lines.end(); ++it)
     {
         if ((*it)->real_linenumber >= n)
         {
@@ -729,12 +728,12 @@ void set_buffer_environ(BufferPtr buf)
         else
             set_environ("W3M_CURRENT_FORM", "");
         set_environ("W3M_CURRENT_LINE", Sprintf("%d",
-            l->real_linenumber)
-            ->ptr);
+                                                l->real_linenumber)
+                                            ->ptr);
         set_environ("W3M_CURRENT_COLUMN", Sprintf("%d",
-            buf->currentColumn +
-            buf->cursorX + 1)
-            ->ptr);
+                                                  buf->currentColumn +
+                                                      buf->cursorX + 1)
+                                              ->ptr);
     }
     else if (!l)
     {
@@ -758,7 +757,7 @@ void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int 
     if (currentLine)
     {
         auto found = find(currentLine);
-        if (found!=lines.end())
+        if (found != lines.end())
         {
             ++found;
             it = found;
@@ -795,7 +794,7 @@ void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int 
 }
 
 const char *NullLine = "";
-Lineprop NullProp[] ={ P_UNKNOWN };
+Lineprop NullProp[] = {P_UNKNOWN};
 
 void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int nlines)
 {
@@ -809,7 +808,7 @@ void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, i
     }
     else
     {
-        s = (char*)NullLine;
+        s = (char *)NullLine;
         p = NullProp;
     }
 
@@ -908,7 +907,7 @@ void Buffer::CursorUp(int n)
     }
     CursorUp0(n);
     while (PrevLine(this->currentLine) && this->currentLine->bpos &&
-        this->currentLine->bwidth >= this->currentColumn + this->visualpos)
+           this->currentLine->bwidth >= this->currentColumn + this->visualpos)
         CursorUp0(n);
 }
 
@@ -940,8 +939,8 @@ void Buffer::CursorDown(int n)
     }
     CursorDown0(n);
     while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos &&
-        this->currentLine->bwidth + this->currentLine->width <
-        this->currentColumn + this->visualpos)
+           this->currentLine->bwidth + this->currentLine->width <
+               this->currentColumn + this->visualpos)
         CursorDown0(n);
 }
 
@@ -1092,7 +1091,7 @@ void Buffer::ArrangeCursor()
         this->pos = pos;
     }
     while (this->pos >= this->currentLine->len && NextLine(this->currentLine) &&
-        NextLine(this->currentLine)->bpos)
+           NextLine(this->currentLine)->bpos)
     {
         pos = this->pos - this->currentLine->len;
         CursorDown0(1);
@@ -1109,7 +1108,7 @@ void Buffer::ArrangeCursor()
     col = this->currentLine->COLPOS(this->pos);
 
     while (this->pos + delta < this->currentLine->len &&
-        this->currentLine->propBuf[this->pos + delta] & PC_WCHAR2)
+           this->currentLine->propBuf[this->pos + delta] & PC_WCHAR2)
         delta++;
 
     col2 = this->currentLine->COLPOS(this->pos + delta);
@@ -1122,15 +1121,15 @@ void Buffer::ArrangeCursor()
     /* Arrange cursor */
     this->cursorY = this->currentLine->linenumber - this->topLine->linenumber;
     this->visualpos = this->currentLine->bwidth +
-        this->currentLine->COLPOS(this->pos) - this->currentColumn;
+                      this->currentLine->COLPOS(this->pos) - this->currentColumn;
     this->cursorX = this->visualpos - this->currentLine->bwidth;
 
-    #ifdef DISPLAY_DEBUG
+#ifdef DISPLAY_DEBUG
     fprintf(stderr,
-        "arrangeCursor: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
-        this->currentColumn, this->cursorX, this->visualpos, this->pos,
-        this->currentLine->len);
-    #endif
+            "arrangeCursor: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
+            this->currentColumn, this->cursorX, this->visualpos, this->pos,
+            this->currentLine->len);
+#endif
 }
 
 void Buffer::ArrangeLine()
@@ -1157,12 +1156,12 @@ void Buffer::ArrangeLine()
         this->pos = 0;
     }
 
-    #ifdef DISPLAY_DEBUG
+#ifdef DISPLAY_DEBUG
     fprintf(stderr,
-        "arrangeLine: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
-        this->currentColumn, this->cursorX, this->visualpos, this->pos,
-        this->currentLine->len);
-    #endif
+            "arrangeLine: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
+            this->currentColumn, this->cursorX, this->visualpos, this->pos,
+            this->currentLine->len);
+#endif
 }
 
 void Buffer::DumpSource()
@@ -1187,30 +1186,19 @@ void Buffer::DumpSource()
 ///
 /// draw a line
 ///
-LinePtr Buffer::DrawLine(LinePtr l, int i)
+void Buffer::DrawLine(LinePtr l, int line)
 {
-    int j, pos, rcol, ncol, delta = 1;
-    int column = this->currentColumn;
-    char *p;
-    Lineprop *pr;
-    Linecolor *pc;
-    URL url;
-    int k, vpos = -1;
-
     if (l == NULL)
     {
-        if (this->pagerSource)
-        {
-            l = getNextPage(this, this->LINES + this->rootY - i);
-            if (l == NULL)
-                return NULL;
-        }
-        else
-            return NULL;
+        return;
     }
-    move(i, 0);
+
+    ///
+    /// show line number
+    ///
     if (w3mApp::Instance().showLineNum)
     {
+        move(line, 0);
         char tmp[16];
         if (!this->rootX)
         {
@@ -1228,36 +1216,44 @@ LinePtr Buffer::DrawLine(LinePtr l, int i)
             sprintf(tmp, "%*s ", this->rootX - 1, "");
         addstr(tmp);
     }
-    move(i, this->rootX);
-    if (l->width < 0)
+
+    if (l->width < 0){
         l->CalcWidth();
-    if (l->len == 0 || l->width - 1 < column)
+    }
+    if (l->len == 0 || l->width - 1 < currentColumn)
     {
         clrtoeolx();
-        return l;
+        return;
     }
-    /* need_clrtoeol(); */
-    pos = columnPos(l, column);
-    p = &(l->lineBuf[pos]);
-    pr = &(l->propBuf[pos]);
+
+    ///
+    /// draw line
+    ///
+    move(line, this->rootX);
+    auto pos = columnPos(l, currentColumn);
+    auto p = &(l->lineBuf[pos]);
+    auto pr = &(l->propBuf[pos]);
+    Linecolor *pc;
     if (w3mApp::Instance().useColor && l->colorBuf)
         pc = &(l->colorBuf[pos]);
     else
         pc = NULL;
 
-    rcol = l->COLPOS(pos);
-
-    for (j = 0; rcol - column < this->COLS && pos + j < l->len; j += delta)
+    auto rcol = l->COLPOS(pos);
+    int delta = 1;
+    int vpos = -1;
+    for (int j = 0; rcol - currentColumn < this->COLS && pos + j < l->len; j += delta)
     {
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
             auto a = this->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
+                URL url;
                 url.Parse2(a->url, this->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
-                    for (k = a->start.pos; k < a->end.pos; k++)
+                    for (int k = a->start.pos; k < a->end.pos; k++)
                         pr[k - pos] |= PE_VISITED;
                 }
                 vpos = a->end.pos;
@@ -1266,16 +1262,16 @@ LinePtr Buffer::DrawLine(LinePtr l, int i)
 
         delta = wtf_len((uint8_t *)&p[j]);
 
-        ncol = l->COLPOS(pos + j + delta);
-        if (ncol - column > this->COLS)
+        int ncol = l->COLPOS(pos + j + delta);
+        if (ncol - currentColumn > this->COLS)
             break;
 
         if (pc)
             do_color(pc[j]);
 
-        if (rcol < column)
+        if (rcol < currentColumn)
         {
-            for (rcol = column; rcol < ncol; rcol++)
+            for (rcol = currentColumn; rcol < ncol; rcol++)
                 addChar(' ');
             continue;
         }
@@ -1293,8 +1289,6 @@ LinePtr Buffer::DrawLine(LinePtr l, int i)
 
     clear_effect();
 
-    if (rcol - column < this->COLS)
+    if (rcol - currentColumn < this->COLS)
         clrtoeolx();
-    
-    return l;
 }

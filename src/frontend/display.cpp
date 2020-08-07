@@ -559,9 +559,16 @@ static void redrawNLine(BufferPtr buf)
         int i = 0;
         for (auto l = buf->TopLine(); i < buf->LINES; i++, l = buf->NextLine(l))
         {
-            l = buf->DrawLine(l, i + buf->rootY);
+            if (l == NULL)
+            {
+                if (buf->pagerSource)
+                {
+                    l = getNextPage(buf, buf->LINES + buf->rootY - i);
+                }
+            }
             if (l == NULL)
                 break;
+            buf->DrawLine(l, i + buf->rootY);
         }
         move(i + buf->rootY, 0);
         clrtobotx();

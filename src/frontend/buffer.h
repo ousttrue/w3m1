@@ -337,7 +337,7 @@ public:
     void SavePosition();
     void DumpSource();
 
-    LinePtr DrawLine(LinePtr l, int i);
+    void DrawLine(LinePtr l, int i);
 };
 
 BufferPtr newBuffer(int width);
