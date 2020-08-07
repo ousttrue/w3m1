@@ -503,13 +503,13 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
                 }
             }
             if (active)
-                redrawLineRegion(buf, l, l->linenumber - tline + buf->rootY,
+                buf->DrawLineRegion(l, l->linenumber - tline + buf->rootY,
                                  an->start.pos, an->end.pos);
         }
         else if (prevhseq >= 0 && an->hseq == prevhseq)
         {
             if (active)
-                redrawLineRegion(buf, l, l->linenumber - tline + buf->rootY,
+                buf->DrawLineRegion(l, l->linenumber - tline + buf->rootY,
                                  an->start.pos, an->end.pos);
         }
     }
@@ -669,147 +669,6 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
 }
 #endif
 
-static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos,
-                            int epos)
-{
-    int j, pos, rcol, ncol, delta = 1;
-    int column = buf->currentColumn;
-    char *p;
-    Lineprop *pr;
-    Linecolor *pc;
-    int bcol, ecol;
-    URL url;
-    int k, vpos = -1;
-
-    if (l == NULL)
-        return 0;
-    pos = columnPos(l, column);
-    p = &(l->lineBuf[pos]);
-    pr = &(l->propBuf[pos]);
-#ifdef USE_ANSI_COLOR
-    if (w3mApp::Instance().useColor && l->colorBuf)
-        pc = &(l->colorBuf[pos]);
-    else
-        pc = NULL;
-#endif
-    rcol = l->COLPOS(pos);
-    bcol = bpos - pos;
-    ecol = epos - pos;
-
-    for (j = 0; rcol - column < buf->COLS && pos + j < l->len; j += delta)
-    {
-#ifdef USE_COLOR
-        if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
-        {
-            auto a = buf->href.RetrieveAnchor(l->linenumber, pos + j);
-            if (a)
-            {
-                url.Parse2(a->url, buf->BaseURL());
-                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
-                {
-                    for (k = a->start.pos; k < a->end.pos; k++)
-                        pr[k - pos] |= PE_VISITED;
-                }
-                vpos = a->end.pos;
-            }
-        }
-#endif
-#ifdef USE_M17N
-        delta = wtf_len((uint8_t *)&p[j]);
-#endif
-        ncol = l->COLPOS(pos + j + delta);
-        if (ncol - column > buf->COLS)
-            break;
-#ifdef USE_ANSI_COLOR
-        if (pc)
-            do_color(pc[j]);
-#endif
-        if (j >= bcol && j < ecol)
-        {
-            if (rcol < column)
-            {
-                move(i, buf->rootX);
-                for (rcol = column; rcol < ncol; rcol++)
-                    addChar(' ');
-                continue;
-            }
-            move(i, rcol - column + buf->rootX);
-            if (p[j] == '\t')
-            {
-                for (; rcol < ncol; rcol++)
-                    addChar(' ');
-            }
-            else
-#ifdef USE_M17N
-                addMChar(&p[j], pr[j], delta);
-#else
-                addChar(p[j], pr[j]);
-#endif
-        }
-        rcol = ncol;
-    }
-    if (somode)
-    {
-        somode = FALSE;
-        standend();
-    }
-    if (ulmode)
-    {
-        ulmode = FALSE;
-        underlineend();
-    }
-    if (bomode)
-    {
-        bomode = FALSE;
-        boldend();
-    }
-    if (emph_mode)
-    {
-        emph_mode = FALSE;
-        boldend();
-    }
-
-    if (anch_mode)
-    {
-        anch_mode = FALSE;
-        effect_anchor_end();
-    }
-    if (imag_mode)
-    {
-        imag_mode = FALSE;
-        effect_image_end();
-    }
-    if (form_mode)
-    {
-        form_mode = FALSE;
-        effect_form_end();
-    }
-    if (visited_mode)
-    {
-        visited_mode = FALSE;
-        effect_visited_end();
-    }
-    if (active_mode)
-    {
-        active_mode = FALSE;
-        effect_active_end();
-    }
-    if (mark_mode)
-    {
-        mark_mode = FALSE;
-        effect_mark_end();
-    }
-    if (graph_mode)
-    {
-        graph_mode = FALSE;
-        graphend();
-    }
-#ifdef USE_ANSI_COLOR
-    if (color_mode)
-        do_color(0);
-#endif
-    return rcol - column;
-}
 
 #define do_effect1(effect, modeflag, action_start, action_end) \
     if (m & effect)                                            \

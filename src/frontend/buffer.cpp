@@ -22,6 +22,7 @@
 #include "html/html.h"
 #include "frontend/terms.h"
 #include "transport/istream.h"
+#include <iostream>
 
 static int REV_LB[MAX_LB] = {
     LB_N_FRAME,
@@ -1217,7 +1218,8 @@ void Buffer::DrawLine(LinePtr l, int line)
         addstr(tmp);
     }
 
-    if (l->width < 0){
+    if (l->width < 0)
+    {
         l->CalcWidth();
     }
     if (l->len == 0 || l->width - 1 < currentColumn)
@@ -1291,4 +1293,74 @@ void Buffer::DrawLine(LinePtr l, int line)
 
     if (rcol - currentColumn < this->COLS)
         clrtoeolx();
+}
+
+int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
+{
+    if (l == NULL)
+        return 0;
+
+    int pos = columnPos(l, currentColumn);
+    auto p = &(l->lineBuf[pos]);
+    auto pr = &(l->propBuf[pos]);
+    Linecolor *pc;
+    if (w3mApp::Instance().useColor && l->colorBuf)
+        pc = &(l->colorBuf[pos]);
+    else
+        pc = NULL;
+
+    int rcol = l->COLPOS(pos);
+    int bcol = bpos - pos;
+    int ecol = epos - pos;
+    int delta = 1;
+    int vpos = -1;
+    for (int j = 0; rcol - currentColumn < this->COLS && pos + j < l->len; j += delta)
+    {
+        if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
+        {
+            auto a = this->href.RetrieveAnchor(l->linenumber, pos + j);
+            if (a)
+            {
+                URL url;
+                url.Parse2(a->url, this->BaseURL());
+                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
+                {
+                    for (auto k = a->start.pos; k < a->end.pos; k++)
+                        pr[k - pos] |= PE_VISITED;
+                }
+                vpos = a->end.pos;
+            }
+        }
+
+        delta = wtf_len((uint8_t *)&p[j]);
+        auto ncol = l->COLPOS(pos + j + delta);
+        if (ncol - currentColumn > this->COLS)
+            break;
+        if (pc)
+            do_color(pc[j]);
+        if (j >= bcol && j < ecol)
+        {
+            if (rcol < currentColumn)
+            {
+                move(i, this->rootX);
+                for (rcol = currentColumn; rcol < ncol; rcol++)
+                    addChar(' ');
+                continue;
+            }
+            move(i, rcol - currentColumn + this->rootX);
+            if (p[j] == '\t')
+            {
+                for (; rcol < ncol; rcol++)
+                    addChar(' ');
+            }
+            else
+
+                addMChar(&p[j], pr[j], delta);
+        }
+        rcol = ncol;
+    }
+
+    clear_effect();
+
+    return rcol - currentColumn;
 }

@@ -5,11 +5,12 @@
 #define LINELEN 256          /* Initial line length */
 
 using Linecolor = unsigned char;
+using Lineprop = unsigned short;
 
 /*
  * Line Property
  */
-enum Lineprop: uint16_t 
+enum Lineproperties 
 {
     P_UNKNOWN = 0,
     

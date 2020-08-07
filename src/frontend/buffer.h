@@ -338,6 +338,7 @@ public:
     void DumpSource();
 
     void DrawLine(LinePtr l, int i);
+    int DrawLineRegion(LinePtr l, int i, int bpos, int epos);
 };
 
 BufferPtr newBuffer(int width);
@@ -368,4 +369,3 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 TextList *make_domain_list(char *domain_list);
-
