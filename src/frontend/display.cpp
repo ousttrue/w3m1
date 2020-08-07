@@ -559,7 +559,7 @@ static void redrawNLine(BufferPtr buf)
         int i = 0;
         for (auto l = buf->TopLine(); i < buf->LINES; i++, l = buf->NextLine(l))
         {
-            l = redrawLine(buf, l, i + buf->rootY);
+            l = buf->DrawLine(l, i + buf->rootY);
             if (l == NULL)
                 break;
         }

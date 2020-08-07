@@ -171,8 +171,7 @@ is_plain_text_type(const char *type);
 int
 is_dump_text_type(const char *type);
 
-
-void HTMLlineproc2(BufferPtr buf, TextLineList *tl);
+void HTMLlineproc2(BufferPtr buf, struct TextLineList *tl);
 
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
                     int internal);

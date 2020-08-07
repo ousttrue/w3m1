@@ -40,7 +40,6 @@ enum BufferProps : int16_t
     BP_CLOSE = 0x40,
 };
 
-
 struct BufferPos
 {
     long top_linenumber;
@@ -53,7 +52,7 @@ struct BufferPos
 };
 
 using BufferPtr = struct Buffer *;
-using LinePtr = struct Line*;
+using LinePtr = struct Line *;
 using LineList = std::vector<LinePtr>;
 struct Buffer : gc_cleanup
 {
@@ -77,7 +76,7 @@ private:
     {
         return std::find(lines.begin(), lines.end(), l);
     }
-    LineList::const_iterator find(LinePtr l)const
+    LineList::const_iterator find(LinePtr l) const
     {
         return std::find(lines.begin(), lines.end(), l);
     }
@@ -87,8 +86,10 @@ public:
     {
         return lines.size();
     }
+
 private:
     void AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines);
+
 public:
     void addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int nlines);
     void ClearLines()
@@ -96,7 +97,7 @@ public:
         currentLine = topLine = NULL;
         lines.clear();
     }
-    Line* FirstLine()const
+    Line *FirstLine() const
     {
         if (lines.empty())
         {
@@ -104,17 +105,20 @@ public:
         }
         return lines.front();
     }
-    Line* LastLine()const {
+    Line *LastLine() const
+    {
         if (lines.empty())
         {
             return nullptr;
         }
         return lines.back();
     }
-    Line* TopLine()const {
+    Line *TopLine() const
+    {
         return topLine;
     }
-    Line* CurrentLine()const {
+    Line *CurrentLine() const
+    {
         return currentLine;
     }
     void SetFirstLine(LinePtr line)
@@ -126,7 +130,7 @@ public:
     {
         assert(false);
     }
-    void SetTopLine(Line* line)
+    void SetTopLine(Line *line)
     {
         topLine = line;
     }
@@ -134,11 +138,11 @@ public:
     {
         currentLine = line;
     }
-    int TOP_LINENUMBER()const
+    int TOP_LINENUMBER() const
     {
         return (TopLine() ? TopLine()->linenumber : 1);
     }
-    int CUR_LINENUMBER()const
+    int CUR_LINENUMBER() const
     {
         return (currentLine ? currentLine->linenumber : 1);
     }
@@ -165,50 +169,50 @@ public:
     }
     void EachLine(const std::function<void(LinePtr)> &func)
     {
-        for (auto &l: lines)
+        for (auto &l : lines)
         {
             func(l);
         }
     }
-    Line* NextLine(Line* line)const
+    Line *NextLine(Line *line) const
     {
         auto it = find(line);
-        if (it==lines.end())
+        if (it == lines.end())
         {
             return nullptr;
         }
         ++it;
-        if (it==lines.end())
+        if (it == lines.end())
         {
             return nullptr;
         }
         return *it;
     }
-    void SetNextLine(Line* line, Line* next)
+    void SetNextLine(Line *line, Line *next)
     {
         auto it = find(line);
-        assert(it!=lines.end());
+        assert(it != lines.end());
         ++it;
         lines.insert(it, next);
     }
-    Line* PrevLine(Line* line)const
+    Line *PrevLine(Line *line) const
     {
         auto it = find(line);
-        if (it==lines.end())
+        if (it == lines.end())
         {
             return nullptr;
         }
-        if (it==lines.begin())
+        if (it == lines.begin())
         {
             return nullptr;
         }
         --it;
         return *it;
     }
-    void SetPrevLine(Line* line, Line* prev)
+    void SetPrevLine(Line *line, Line *prev)
     {
         auto it = find(line);
-        assert(it!=lines.end());
+        assert(it != lines.end());
         lines.insert(it, prev);
     }
 
@@ -288,8 +292,8 @@ public:
     MapList *maplist;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
-    URL currentURL ={};
-    URL baseURL ={};
+    URL currentURL = {};
+    URL baseURL = {};
     std::string baseTarget;
     int real_scheme;
     std::string sourcefile;
@@ -332,6 +336,8 @@ public:
     void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);
     void SavePosition();
     void DumpSource();
+
+    LinePtr DrawLine(LinePtr l, int i);
 };
 
 BufferPtr newBuffer(int width);
@@ -363,4 +369,3 @@ char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 TextList *make_domain_list(char *domain_list);
 
-LinePtr redrawLine(BufferPtr buf, LinePtr l, int i);

@@ -1180,3 +1180,121 @@ void Buffer::DumpSource()
     }
     fclose(f);
 }
+
+#include "terms.h"
+#include <math.h>
+
+///
+/// draw a line
+///
+LinePtr Buffer::DrawLine(LinePtr l, int i)
+{
+    int j, pos, rcol, ncol, delta = 1;
+    int column = this->currentColumn;
+    char *p;
+    Lineprop *pr;
+    Linecolor *pc;
+    URL url;
+    int k, vpos = -1;
+
+    if (l == NULL)
+    {
+        if (this->pagerSource)
+        {
+            l = getNextPage(this, this->LINES + this->rootY - i);
+            if (l == NULL)
+                return NULL;
+        }
+        else
+            return NULL;
+    }
+    move(i, 0);
+    if (w3mApp::Instance().showLineNum)
+    {
+        char tmp[16];
+        if (!this->rootX)
+        {
+            if (this->LastLine()->real_linenumber > 0)
+                this->rootX = (int)(log(this->LastLine()->real_linenumber + 0.1) / log(10)) + 2;
+            if (this->rootX < 5)
+                this->rootX = 5;
+            if (this->rootX > COLS)
+                this->rootX = COLS;
+            this->COLS = COLS - this->rootX;
+        }
+        if (l->real_linenumber && !l->bpos)
+            sprintf(tmp, "%*ld:", this->rootX - 1, l->real_linenumber);
+        else
+            sprintf(tmp, "%*s ", this->rootX - 1, "");
+        addstr(tmp);
+    }
+    move(i, this->rootX);
+    if (l->width < 0)
+        l->CalcWidth();
+    if (l->len == 0 || l->width - 1 < column)
+    {
+        clrtoeolx();
+        return l;
+    }
+    /* need_clrtoeol(); */
+    pos = columnPos(l, column);
+    p = &(l->lineBuf[pos]);
+    pr = &(l->propBuf[pos]);
+    if (w3mApp::Instance().useColor && l->colorBuf)
+        pc = &(l->colorBuf[pos]);
+    else
+        pc = NULL;
+
+    rcol = l->COLPOS(pos);
+
+    for (j = 0; rcol - column < this->COLS && pos + j < l->len; j += delta)
+    {
+        if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
+        {
+            auto a = this->href.RetrieveAnchor(l->linenumber, pos + j);
+            if (a)
+            {
+                url.Parse2(a->url, this->BaseURL());
+                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
+                {
+                    for (k = a->start.pos; k < a->end.pos; k++)
+                        pr[k - pos] |= PE_VISITED;
+                }
+                vpos = a->end.pos;
+            }
+        }
+
+        delta = wtf_len((uint8_t *)&p[j]);
+
+        ncol = l->COLPOS(pos + j + delta);
+        if (ncol - column > this->COLS)
+            break;
+
+        if (pc)
+            do_color(pc[j]);
+
+        if (rcol < column)
+        {
+            for (rcol = column; rcol < ncol; rcol++)
+                addChar(' ');
+            continue;
+        }
+        if (p[j] == '\t')
+        {
+            for (; rcol < ncol; rcol++)
+                addChar(' ');
+        }
+        else
+        {
+            addMChar(&p[j], pr[j], delta);
+        }
+        rcol = ncol;
+    }
+
+    clear_effect();
+
+    if (rcol - column < this->COLS)
+        clrtoeolx();
+    
+    return l;
+}
