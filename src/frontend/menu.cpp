@@ -21,7 +21,7 @@
 #include "frontend/mouse.h"
 #include "frontend/buffer.h"
 #include "frontend/tabbar.h"
-#include "frontend/linein.h"
+#include "frontend/lineinput.h"
 
 #ifdef USE_MOUSE
 #ifdef USE_GPM

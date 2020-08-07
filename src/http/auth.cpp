@@ -7,7 +7,7 @@
 #include "html/form.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
-#include "frontend/linein.h"
+#include "frontend/lineinput.h"
 #include "public.h"
 
 enum

@@ -14,7 +14,7 @@
 #include "myctype.h"
 #include "transport/loader.h"
 #include "mime/mimetypes.h"
-#include "frontend/linein.h"
+#include "frontend/lineinput.h"
 #include <assert.h>
 
 

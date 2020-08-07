@@ -9,7 +9,7 @@
 #include "html/parsetag.h"
 #include "public.h"
 #include "file.h"
-#include "frontend/linein.h"
+#include "frontend/lineinput.h"
 #include <setjmp.h>
 #include <signal.h>
 #include "ucs.h"

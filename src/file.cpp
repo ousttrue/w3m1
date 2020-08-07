@@ -35,7 +35,7 @@
 #include "wtf.h"
 #include "transport/istream.h"
 
-#include "frontend/linein.h"
+#include "frontend/lineinput.h"
 #include <assert.h>
 #include <sys/types.h>
 #include <signal.h>

@@ -55,7 +55,7 @@ add_executable(w3m
     src/urimethod.cpp
     src/frontend/display.cpp
     src/frontend/link.cpp
-    src/frontend/linein.cpp
+    src/frontend/lineinput.cpp
     src/frontend/line.cpp
     src/frontend/buffer.cpp
     src/frontend/tab.cpp

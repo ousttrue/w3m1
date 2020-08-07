@@ -29,7 +29,7 @@
 #include "transport/istream.h"
 #include "http/cookie.h"
 #include "frontend/mouse.h"
-#include "frontend/linein.h"
+#include "frontend/lineinput.h"
 #include "frontend/terms.h"
 #include "frontend/event.h"
 #include "frontend/tabbar.h"

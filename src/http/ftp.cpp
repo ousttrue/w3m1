@@ -17,7 +17,7 @@
 #include "myctype.h"
 #include "frontend/terms.h"
 #include "frontend/display.h"
-#include "frontend/linein.h"
+#include "frontend/lineinput.h"
 #include "transport/url.h"
 #include "transport/istream.h"
 #include "http/auth.h"

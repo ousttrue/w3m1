@@ -28,7 +28,7 @@
 #include "mime/mailcap.h"
 #include "frontend/event.h"
 #include "frontend/line.h"
-#include "frontend/linein.h"
+#include "frontend/lineinput.h"
 
 #include "rc.h"
 #include "w3m.h"
