@@ -2693,7 +2693,7 @@ void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf,
     envs[0].indent = indent;
 
     obuf->line = Strnew();
-    obuf->cprop = 0;
+    obuf->cprop = P_UNKNOWN;
     obuf->pos = 0;
     obuf->prevchar = Strnew_size(8);
     set_space_to_prevchar(obuf->prevchar);

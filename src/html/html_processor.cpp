@@ -17,6 +17,7 @@
 #include "html/maparea.h"
 #include "w3m.h"
 #include "frontend/terms.h"
+#include "frontend/line.h"
 #include "transport/istream.h"
 #include <signal.h>
 #include <setjmp.h>
@@ -1123,13 +1124,12 @@ Str process_anchor(struct parsed_tag *tag, char *tagbuf)
     }
 }
 
-static int
-ex_efct(int ex)
+static Lineprop ex_efct(Lineprop ex)
 {
-    int effect = 0;
+    Lineprop effect = P_UNKNOWN;
 
     if (!ex)
-        return 0;
+        return P_UNKNOWN;
 
     if (ex & PE_EX_ITALIC)
         effect |= PE_EX_ITALIC_E;
@@ -1222,8 +1222,8 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
     //
     // each line
     //
-    Lineprop effect = 0;
-    Lineprop ex_effect = 0;
+    Lineprop effect = P_UNKNOWN;
+    Lineprop ex_effect = P_UNKNOWN;
     Str line;
     for(int nlines = 0; line = feed();)
     {

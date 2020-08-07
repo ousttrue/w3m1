@@ -53,7 +53,7 @@ char *checkHeader(BufferPtr buf, const char *field);
 void fmTerm(void);
 void fmInit(void);
 
-void addChar(char c, Lineprop mode);
+void addChar(char c, Lineprop mode = P_UNKNOWN);
 
 void addMChar(char *c, Lineprop mode, size_t len);
 

@@ -115,11 +115,11 @@ addPasswd(char *p, Lineprop *pr, int len, int offset, int limit)
     if (ncol > offset + limit)
         ncol = offset + limit;
     if (offset) {
-        addChar('{', 0);
+        addChar('{');
         rcol = offset + 1;
     }
     for (; rcol < ncol; rcol++)
-        addChar('*', 0);
+        addChar('*');
 }
 
 static void
@@ -138,11 +138,11 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
         while (pr[i] & PC_WCHAR2)
             i++;
         #endif
-        addChar('{', 0);
+        addChar('{');
         rcol = offset + 1;
         ncol = calcPosition(p, pr, len, i, 0, CP_AUTO);
         for (; rcol < ncol; rcol++)
-            addChar(' ', 0);
+            addChar(' ');
         }
     for (; i < len; i += delta) {
         #ifdef USE_M17N
@@ -153,7 +153,7 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
             break;
         if (p[i] == '\t') {
             for (; rcol < ncol; rcol++)
-                addChar(' ', 0);
+                addChar(' ');
             continue;
         }
         else {

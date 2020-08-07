@@ -624,13 +624,13 @@ redrawLine(BufferPtr buf, LinePtr l, int i)
         if (rcol < column)
         {
             for (rcol = column; rcol < ncol; rcol++)
-                addChar(' ', 0);
+                addChar(' ');
             continue;
         }
         if (p[j] == '\t')
         {
             for (; rcol < ncol; rcol++)
-                addChar(' ', 0);
+                addChar(' ');
         }
         else
         {
@@ -840,14 +840,14 @@ redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos, int epos)
             {
                 move(i, buf->rootX);
                 for (rcol = column; rcol < ncol; rcol++)
-                    addChar(' ', 0);
+                    addChar(' ');
                 continue;
             }
             move(i, rcol - column + buf->rootX);
             if (p[j] == '\t')
             {
                 for (; rcol < ncol; rcol++)
-                    addChar(' ', 0);
+                    addChar(' ');
             }
             else
 #ifdef USE_M17N

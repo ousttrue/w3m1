@@ -4,18 +4,15 @@
 
 #define LINELEN 256          /* Initial line length */
 
-using Lineprop = unsigned short;
 using Linecolor = unsigned char;
-
-inline Lineprop get_mctype(int c)
-{
-    return (Lineprop)(wtf_type((uint8_t *)&c) << 8);
-}
 
 /*
  * Line Property
  */
-enum LineProperties {
+enum Lineprop: uint16_t 
+{
+    P_UNKNOWN = 0,
+    
     P_CHARTYPE= 0x3f00,
     PC_ASCII= (WTF_TYPE_ASCII << 8),
     PC_CTRL= (WTF_TYPE_CTRL << 8),
@@ -52,18 +49,23 @@ enum LineProperties {
     PE_EX_STRIKE_E= PE_STAND,
 };
 
-inline LineProperties CharType(int c)
+inline Lineprop get_mctype(int c)
 {
-    return  (LineProperties)((c)&P_CHARTYPE);
+    return (Lineprop)(wtf_type((uint8_t *)&c) << 8);
 }
 
-inline LineProperties CharEffect(int c)
+inline Lineprop CharType(int c)
 {
-    return (LineProperties)((c) & (P_EFFECT | PC_SYMBOL));
+    return  (Lineprop)((c)&P_CHARTYPE);
 }
 
-inline void SetCharType(LineProperties &v, int c) {
-    ((v) = (LineProperties)(((v) & ~P_CHARTYPE) | (c)));
+inline Lineprop CharEffect(int c)
+{
+    return (Lineprop)((c) & (P_EFFECT | PC_SYMBOL));
+}
+
+inline void SetCharType(Lineprop &v, int c) {
+    ((v) = (Lineprop)(((v) & ~P_CHARTYPE) | (c)));
 }
 
 struct Line : gc_cleanup

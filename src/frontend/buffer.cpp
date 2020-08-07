@@ -343,7 +343,7 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
 }
 
 const char *NullLine = "";
-Lineprop NullProp[] ={ 0 };
+Lineprop NullProp[] ={ P_UNKNOWN };
 
 /*
  * Buffer creation
