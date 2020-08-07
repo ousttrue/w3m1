@@ -412,7 +412,7 @@ drawAnchorCursor0(BufferPtr buf, AnchorList &al,
                   int hseq, int prevhseq,
                   int tline, int eline, int active)
 {
-    auto l = buf->topLine;
+    auto l = buf->TopLine();
     for (int j = 0; j < al.size(); j++)
     {
         auto an = &al.anchors[j];
@@ -473,7 +473,7 @@ drawAnchorCursor(BufferPtr buf)
     else
         hseq = -1;
 
-    int tline = buf->topLine->linenumber;
+    int tline = buf->TopLine()->linenumber;
     int eline = tline + buf->LINES;
     int prevhseq = buf->prevhseq;
 
@@ -499,7 +499,7 @@ redrawNLine(BufferPtr buf)
     // lines
     {
         int i = 0;
-        for (auto l = buf->topLine; i < buf->LINES; i++, l = buf->NextLine(l))
+        for (auto l = buf->TopLine(); i < buf->LINES; i++, l = buf->NextLine(l))
         {
             l = redrawLine(buf, l, i + buf->rootY);
             if (l == NULL)
@@ -515,7 +515,7 @@ redrawNLine(BufferPtr buf)
     move(buf->cursorY + buf->rootY, buf->cursorX + buf->rootX);
     {
         int i = 0;
-        for (auto l = buf->topLine; i < buf->LINES && l; i++, l = buf->NextLine(l))
+        for (auto l = buf->TopLine(); i < buf->LINES && l; i++, l = buf->NextLine(l))
         {
             redrawLineImage(buf, l, i + buf->rootY);
         }
@@ -1188,7 +1188,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 
     if (!buf)
         return;
-    if (buf->topLine == NULL && buf->ReadBufferCache() == 0)
+    if (buf->TopLine() == NULL && buf->ReadBufferCache() == 0)
     { /* clear_buffer */
         mode = B_FORCE_REDRAW;
     }
@@ -1236,11 +1236,11 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         mode = B_REDRAW_IMAGE;
     }
     if (mode == B_FORCE_REDRAW || mode == B_SCROLL || mode == B_REDRAW_IMAGE ||
-        cline != buf->topLine || ccolumn != buf->currentColumn)
+        cline != buf->TopLine() || ccolumn != buf->currentColumn)
     {
         if (w3mApp::Instance().activeImage &&
             (mode == B_REDRAW_IMAGE ||
-             cline != buf->topLine || ccolumn != buf->currentColumn))
+             cline != buf->TopLine() || ccolumn != buf->currentColumn))
         {
             if (draw_image_flag)
                 clear();
@@ -1296,12 +1296,12 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         // draw
         redrawNLine(buf);
 
-        cline = buf->topLine;
+        cline = buf->TopLine();
         ccolumn = buf->currentColumn;
     }
-    if (buf->topLine == NULL)
+    if (buf->TopLine() == NULL)
     {
-        buf->topLine = buf->firstLine;
+        buf->SetTopLine(buf->firstLine);
     }
 
     if (buf->need_reshape)

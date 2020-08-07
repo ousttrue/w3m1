@@ -291,8 +291,8 @@ reAnchorAny(BufferPtr buf, char *re,
     {
         return re;
     }
-    for (l = MarkAllPages ? buf->firstLine : buf->topLine; l != NULL &&
-                                                           (MarkAllPages || l->linenumber < buf->topLine->linenumber + ::LINES - 1);
+    for (l = MarkAllPages ? buf->firstLine : buf->TopLine(); l != NULL &&
+                                                           (MarkAllPages || l->linenumber < buf->TopLine()->linenumber + ::LINES - 1);
          l = buf->NextLine(l))
     {
         if (p && l->bpos)

@@ -61,13 +61,13 @@ struct Buffer : gc_cleanup
 
     char need_reshape;
 
-    // private:
+private:
     // scroll
     Line *topLine;
+public:
     // cursor ?
     Line *currentLine;
 
-public:
     // private:
     // list
     Line *firstLine;
@@ -92,6 +92,16 @@ public:
     {
         firstLine = topLine = currentLine = lastLine = NULL;
         allLine = 0;
+    }
+    Line* TopLine()const {
+        return topLine;
+    }
+    void SetTopLine(Line* line)
+    {
+        topLine = line;
+    }
+    Line* LastLine()const {
+        return lastLine;
     }
     void GotoLine(int n);
     void GotoRealLine(int n);
@@ -225,8 +235,15 @@ public:
     void DumpSource();
 };
 
-#define TOP_LINENUMBER(buf) ((buf)->topLine ? (buf)->topLine->linenumber : 1)
-#define CUR_LINENUMBER(buf) ((buf)->currentLine ? (buf)->currentLine->linenumber : 1)
+inline int TOP_LINENUMBER(BufferPtr buf)
+{
+    return ((buf)->TopLine() ? (buf)->TopLine()->linenumber : 1);
+}
+
+inline int CUR_LINENUMBER(BufferPtr buf)
+{
+    return ((buf)->currentLine ? (buf)->currentLine->linenumber : 1);
+}
 
 BufferPtr newBuffer(int width);
 
@@ -256,3 +273,23 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
 
 TextList *make_domain_list(char *domain_list);
+
+
+inline void COPY_BUFROOT(BufferPtr dstbuf, BufferPtr srcbuf)
+{
+    (dstbuf)->rootX = (srcbuf)->rootX;
+    (dstbuf)->rootY = (srcbuf)->rootY;
+    (dstbuf)->COLS = (srcbuf)->COLS;
+    (dstbuf)->LINES = (srcbuf)->LINES;
+}
+
+inline void COPY_BUFPOSITION(BufferPtr dstbuf, BufferPtr srcbuf)
+{
+    (dstbuf)->SetTopLine((srcbuf)->TopLine());
+    (dstbuf)->currentLine = (srcbuf)->currentLine;
+    (dstbuf)->pos = (srcbuf)->pos;
+    (dstbuf)->cursorX = (srcbuf)->cursorX;
+    (dstbuf)->cursorY = (srcbuf)->cursorY;
+    (dstbuf)->visualpos = (srcbuf)->visualpos;
+    (dstbuf)->currentColumn = (srcbuf)->currentColumn;
+}

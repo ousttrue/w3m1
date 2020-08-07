@@ -109,7 +109,7 @@ void ctrCsrV(w3mApp *w3m)
     offsety = GetCurrentTab()->GetCurrentBuffer()->LINES / 2 - GetCurrentTab()->GetCurrentBuffer()->cursorY;
     if (offsety != 0)
     {
-        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine, -offsety, FALSE);
+        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->TopLine(), -offsety, FALSE);
         GetCurrentTab()->GetCurrentBuffer()->ArrangeLine();
         displayCurrentbuf(B_NORMAL);
     }

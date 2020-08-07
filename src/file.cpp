@@ -59,7 +59,7 @@
 
 BufferPtr
 loadcmdout(char *cmd,
-           BufferPtr (*loadproc)(URLFile *, BufferPtr), BufferPtr defaultbuf)
+    BufferPtr(*loadproc)(URLFile *, BufferPtr), BufferPtr defaultbuf)
 {
     FILE *f, *popen(const char *, const char *);
     BufferPtr buf;
@@ -83,7 +83,7 @@ static void KeyAbort(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
-static URL g_cur_baseURL = {};
+static URL g_cur_baseURL ={};
 URL *GetCurBaseUrl()
 {
     return &g_cur_baseURL;
@@ -92,7 +92,7 @@ URL *GetCurBaseUrl()
 int is_plain_text_type(const char *type)
 {
     return ((type && strcasecmp(type, "text/plain") == 0) ||
-            (is_text_type(type) && !is_dump_text_type(type)));
+        (is_text_type(type) && !is_dump_text_type(type)));
 }
 
 int setModtime(char *path, time_t modtime)
@@ -108,13 +108,13 @@ int setModtime(char *path, time_t modtime)
     return utime(path, &t);
 }
 
-/* 
+/*
  * convert line
  */
 #ifdef USE_M17N
 Str convertLine(URLFile *uf, Str line, int mode, CharacterEncodingScheme *charset,
-                CharacterEncodingScheme doc_charset)
-#else
+    CharacterEncodingScheme doc_charset)
+    #else
 Str convertLine0(URLFile *uf, Str line, int mode)
 #endif
 {
@@ -197,8 +197,8 @@ static int
 same_url_p(URL *pu1, URL *pu2)
 {
     return (pu1->scheme == pu2->scheme && pu1->port == pu2->port &&
-            (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) &&
-            (pu1->file.size() ? pu2->file.size() ? pu1->file == pu2->file : 0 : 1));
+        (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) &&
+        (pu1->file.size() ? pu2->file.size() ? pu1->file == pu2->file : 0 : 1));
 }
 
 #define TAG_IS(s, tag, len) \
@@ -246,15 +246,15 @@ is_word_char(unsigned char *ch)
 {
     Lineprop ctype = get_mctype(*ch);
 
-#ifdef USE_M17N
+    #ifdef USE_M17N
     if (ctype & (PC_CTRL | PC_KANJI | PC_UNKNOWN))
         return 0;
     if (ctype & (PC_WCHAR1 | PC_WCHAR2))
         return 1;
-#else
+    #else
     if (ctype == PC_CTRL)
         return 0;
-#endif
+    #endif
 
     if (IS_ALNUM(*ch))
         return 1;
@@ -276,15 +276,15 @@ is_word_char(unsigned char *ch)
     case '_':
         return 1;
     }
-#ifdef USE_M17N
+    #ifdef USE_M17N
     if (*ch == NBSP_CODE)
         return 1;
-#else
+    #else
     if (*ch == TIMES_CODE || *ch == DIVIDE_CODE || *ch == ANSP_CODE)
         return 0;
     if (*ch >= AGRAVE_CODE || *ch == NBSP_CODE)
         return 1;
-#endif
+    #endif
     return 0;
 }
 
@@ -314,10 +314,10 @@ int is_boundary(unsigned char *ch1, unsigned char *ch2)
     if (*ch2 != ' ' && is_beginning_char(ch1))
         return 0;
 
-#ifdef USE_M17N
+    #ifdef USE_M17N
     if (is_combining_char(ch2))
         return 0;
-#endif
+    #endif
     if (is_word_char(ch1) && is_word_char(ch2))
         return 0;
 
@@ -350,7 +350,7 @@ int getMetaRefreshParam(char *q, Str *refresh_uri)
             s_tmp = Strnew_charp_n(q, r - q);
 
             if (s_tmp->ptr[s_tmp->Size() - 1] == '\"')
-            { /* " 
+            { /* "
                                                                  */
                 s_tmp->Pop(1);
                 s_tmp->ptr[s_tmp->Size()] = '\0';
@@ -372,13 +372,13 @@ extern char *NullLine;
 extern Lineprop NullProp[];
 
 void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int pos,
-                int width, int nlines)
+    int width, int nlines)
 {
     char *s;
     Lineprop *p;
-#ifdef USE_ANSI_COLOR
+    #ifdef USE_ANSI_COLOR
     Linecolor *c;
-#endif
+    #endif
     Line *l;
     int i, bpos, bwidth;
 
@@ -393,7 +393,7 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
         s = NullLine;
         p = NullProp;
     }
-#ifdef USE_ANSI_COLOR
+    #ifdef USE_ANSI_COLOR
     if (pos > 0 && color)
     {
         c = NewAtom_N(Linecolor, pos);
@@ -403,7 +403,7 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
     {
         c = NULL;
     }
-#endif
+    #endif
     buf->AddLine(s, p, c, pos, nlines);
     if (pos <= 0 || width <= 0)
         return;
@@ -436,8 +436,8 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
     }
 }
 
-static const char *_size_unit[] = {"b", "kb", "Mb", "Gb", "Tb",
-                                   "Pb", "Eb", "Zb", "Bb", "Yb", NULL};
+static const char *_size_unit[] ={ "b", "kb", "Mb", "Gb", "Tb",
+"Pb", "Eb", "Zb", "Bb", "Yb", NULL };
 
 char *
 convert_size(clen_t size, int usefloat)
@@ -453,7 +453,7 @@ convert_size(clen_t size, int usefloat)
         sizepos++;
     }
     return Sprintf(usefloat ? (char *)"%.3g%s" : (char *)"%.0f%s",
-                   floor(csize * 100.0 + 0.5) / 100.0, sizes[sizepos])
+        floor(csize * 100.0 + 0.5) / 100.0, sizes[sizepos])
         ->ptr;
 }
 
@@ -471,9 +471,9 @@ convert_size2(clen_t size1, clen_t size2, int usefloat)
         sizepos++;
     }
     return Sprintf(usefloat ? (char *)"%.3g/%.3g%s" : (char *)"%.0f/%.0f%s",
-                   floor(size1 / factor * 100.0 + 0.5) / 100.0,
-                   floor(size2 / factor * 100.0 + 0.5) / 100.0,
-                   sizes[sizepos])
+        floor(size1 / factor * 100.0 + 0.5) / 100.0,
+        floor(size2 / factor * 100.0 + 0.5) / 100.0,
+        sizes[sizepos])
         ->ptr;
 }
 
@@ -517,16 +517,16 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
             fmrate = convert_size(rate, 1);
             eta = rate ? (current_content_length - *trbyte) / rate : -1;
             messages = Sprintf("%11s %3.0f%% "
-                               "%7s/s "
-                               "eta %02d:%02d:%02d     ",
-                               fmtrbyte, ratio,
-                               fmrate,
-                               eta / (60 * 60), (eta / 60) % 60, eta % 60);
+                "%7s/s "
+                "eta %02d:%02d:%02d     ",
+                fmtrbyte, ratio,
+                fmrate,
+                eta / (60 * 60), (eta / 60) % 60, eta % 60);
         }
         else
         {
             messages = Sprintf("%11s %3.0f%%                          ",
-                               fmtrbyte, ratio);
+                fmtrbyte, ratio);
         }
         addstr(messages->ptr);
         pos = 42;
@@ -573,7 +573,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
 
 #ifdef USE_GOPHER
 
-/* 
+/*
  * loadGopherDir: get gopher directory
  */
 Str loadGopherDir(URLFile *uf, URL *pu, CharacterEncodingScheme *charset)
@@ -582,19 +582,19 @@ Str loadGopherDir(URLFile *uf, URL *pu, CharacterEncodingScheme *charset)
     Str lbuf, name, file, host, port;
     char *p, *q;
     MySignalHandler prevtrap = NULL;
-#ifdef USE_M17N
+    #ifdef USE_M17N
     CharacterEncodingScheme doc_charset = DocumentCharset;
-#endif
+    #endif
 
     tmp = pu->ToStr();
     p = html_quote(tmp->ptr);
     tmp =
         convertLine(NULL, Strnew(file_unquote(tmp->ptr)), RAW_MODE,
-                    charset, doc_charset);
+            charset, doc_charset);
     q = html_quote(tmp->ptr);
     tmp = Strnew_m_charp("<html>\n<head>\n<base href=\"", p, "\">\n<title>", q,
-                         "</title>\n</head>\n<body>\n<h1>Index of ", q,
-                         "</h1>\n<table>\n", NULL);
+        "</title>\n</head>\n<body>\n<h1>Index of ", q,
+        "</h1>\n<table>\n", NULL);
 
     if (SETJMP(AbortLoading) != 0)
         goto gopher_end;
@@ -656,14 +656,14 @@ Str loadGopherDir(URLFile *uf, URL *pu, CharacterEncodingScheme *charset)
             break;
         }
         q = Strnew_m_charp("gopher://", host->ptr, ":", port->ptr,
-                           "/", file->ptr, NULL)
-                ->ptr;
+            "/", file->ptr, NULL)
+            ->ptr;
         Strcat_m_charp(tmp, "<a href=\"",
-                       html_quote(wc_conv_strict(q, *charset)),
-                       "\">", p, html_quote(name->ptr + 1), "</a>\n", NULL);
+            html_quote(wc_conv_strict(q, *charset)),
+            "\">", p, html_quote(name->ptr + 1), "</a>\n", NULL);
     }
 
-gopher_end:
+    gopher_end:
     TRAP_OFF;
 
     tmp->Push("</table>\n</body>\n</html>\n");
@@ -708,7 +708,7 @@ loadImageBuffer(URLFile *uf, BufferPtr newBuf)
     cache->loaded = IMG_FLAG_LOADED;
     cache->index = 0;
 
-image_buffer:
+    image_buffer:
     if (newBuf == NULL)
         newBuf = newBuffer(INIT_BUFFER_WIDTH());
     cache->loaded |= IMG_FLAG_DONT_REMOVE;
@@ -738,37 +738,37 @@ conv_symbol(Line *l)
     Str tmp = NULL;
     char *p = l->lineBuf, *ep = p + l->len;
     Lineprop *pr = l->propBuf;
-#ifdef USE_M17N
+    #ifdef USE_M17N
     int w;
     const char **symbol = NULL;
-#else
+    #else
     char **symbol = get_symbol();
-#endif
+    #endif
 
     for (; p < ep; p++, pr++)
     {
         if (*pr & PC_SYMBOL)
         {
-#ifdef USE_M17N
+            #ifdef USE_M17N
             char c = ((char)wtf_get_code((uint8_t *)p) & 0x7f) - SYMBOL_BASE;
             int len = get_mclen(p);
-#else
+            #else
             char c = *p - SYMBOL_BASE;
-#endif
+            #endif
             if (tmp == NULL)
             {
                 tmp = Strnew_size(l->len);
                 tmp->CopyFrom(l->lineBuf, p - l->lineBuf);
-#ifdef USE_M17N
+                #ifdef USE_M17N
                 w = (*pr & PC_KANJI) ? 2 : 1;
                 symbol = get_symbol(w3mApp::Instance().DisplayCharset, &w);
-#endif
+                #endif
             }
             tmp->Push(symbol[(int)c]);
-#ifdef USE_M17N
+            #ifdef USE_M17N
             p += len - 1;
             pr += len - 1;
-#endif
+            #endif
         }
         else if (tmp != NULL)
             tmp->Push(*p);
@@ -779,7 +779,7 @@ conv_symbol(Line *l)
         return Strnew_charp_n(l->lineBuf, l->len);
 }
 
-/* 
+/*
  * saveBuffer: write buffer to file
  */
 static void
@@ -791,7 +791,7 @@ _saveBuffer(BufferPtr buf, Line *l, FILE *f, int cont)
     auto is_html = is_html_type(buf->type);
 
     Str tmp;
-pager_next:
+    pager_next:
     for (; l != NULL; l = buf->NextLine(l))
     {
         if (is_html)
@@ -828,7 +828,7 @@ void saveBufferBody(BufferPtr buf, FILE *f, int cont)
     _saveBuffer(buf, l, f, cont);
 }
 
-/* 
+/*
  * getshell: execute shell command and get the result into a buffer
  */
 BufferPtr
@@ -841,12 +841,12 @@ getshell(char *cmd)
         return NULL;
     buf->filename = cmd;
     buf->buffername = Sprintf("%s %s", SHELLBUFFERNAME,
-                              conv_from_system(cmd))
-                          ->ptr;
+        conv_from_system(cmd))
+        ->ptr;
     return buf;
 }
 
-/* 
+/*
  * getpipe: execute shell command and connect pipe to the buffer
  */
 BufferPtr
@@ -864,16 +864,16 @@ getpipe(char *cmd)
     buf->pagerSource = newFileStream(f, (FileStreamCloseFunc)pclose);
     buf->filename = cmd;
     buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
-                              conv_from_system(cmd))
-                          ->ptr;
+        conv_from_system(cmd))
+        ->ptr;
     buf->bufferprop |= BP_PIPE;
-#ifdef USE_M17N
+    #ifdef USE_M17N
     buf->document_charset = WC_CES_US_ASCII;
-#endif
+    #endif
     return buf;
 }
 
-/* 
+/*
  * Open pager buffer
  */
 BufferPtr
@@ -918,7 +918,7 @@ openGeneralPagerBuffer(InputStream *stream)
             t = "text/plain";
         if (t_buf)
         {
-            t_buf->topLine = t_buf->firstLine;
+            t_buf->SetTopLine(t_buf->firstLine);
             t_buf->currentLine = t_buf->lastLine;
         }
         w3mApp::Instance().SearchHeader = FALSE;
@@ -941,7 +941,7 @@ openGeneralPagerBuffer(InputStream *stream)
         buf->type = "text/plain";
     }
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
-             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
+        !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     {
         GetCurBaseUrl()->Parse("-", NULL);
         buf = loadImageBuffer(&uf, t_buf);
@@ -972,8 +972,9 @@ openGeneralPagerBuffer(InputStream *stream)
 Line *
 getNextPage(BufferPtr buf, int plen)
 {
-    Line *top = buf->topLine, *last = buf->lastLine,
-         *cur = buf->currentLine;
+    Line *top = buf->TopLine();
+    Line *last = buf->lastLine;
+    Line         *cur = buf->currentLine;
     int i;
     int nlines = 0;
     clen_t linelen = 0, trbyte = buf->trbyte;
@@ -1026,9 +1027,9 @@ getNextPage(BufferPtr buf, int plen)
                 /* Assume that `cmd == buf->filename' */
                 if (buf->filename.size())
                     buf->buffername = Sprintf("%s %s",
-                                              CPIPEBUFFERNAME,
-                                              conv_from_system(buf->filename))
-                                          ->ptr;
+                        CPIPEBUFFERNAME,
+                        conv_from_system(buf->filename))
+                    ->ptr;
                 else if (getenv("MAN_PN") == NULL)
                     buf->buffername = CPIPEBUFFERNAME;
                 buf->bufferprop |= BP_CLOSE;
@@ -1054,7 +1055,7 @@ getNextPage(BufferPtr buf, int plen)
             StripRight(lineBuf2);
             lineBuf2 = checkType(lineBuf2, &propBuffer, &colorBuffer);
             addnewline(buf, lineBuf2->ptr, propBuffer, colorBuffer,
-                       lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);
+                lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);
             if (!top)
             {
                 top = buf->firstLine;
@@ -1079,7 +1080,7 @@ getNextPage(BufferPtr buf, int plen)
         }
 
         return true;
-    });
+        });
 
     if (!success)
     {
@@ -1091,7 +1092,7 @@ getNextPage(BufferPtr buf, int plen)
     buf->document_charset = charset;
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
 
-    buf->topLine = top;
+    buf->SetTopLine(top);
     buf->currentLine = cur;
     if (!last)
         last = buf->firstLine;
@@ -1194,15 +1195,15 @@ guess_save_name(BufferPtr buf, std::string_view path)
             matchattr(q, "filename", 8, &name))
             path = name->ptr;
         else if ((p = checkHeader(buf, "Content-Type:")) != NULL &&
-                 (q = strcasestr(p, "name")) != NULL &&
-                 (q == p || IS_SPACE(*(q - 1)) || *(q - 1) == ';') &&
-                 matchattr(q, "name", 4, &name))
+            (q = strcasestr(p, "name")) != NULL &&
+            (q == p || IS_SPACE(*(q - 1)) || *(q - 1) == ';') &&
+            matchattr(q, "name", 4, &name))
             path = name->ptr;
     }
     return guess_filename(path);
 }
 
-static const char *tmpf_base[MAX_TMPF_TYPE] = {
+static const char *tmpf_base[MAX_TMPF_TYPE] ={
     "tmp",
     "src",
     "frame",
@@ -1215,9 +1216,9 @@ Str tmpfname(int type, const char *ext)
 {
     Str tmpf;
     tmpf = Sprintf("%s/w3m%s%d-%d%s",
-                   tmp_dir,
-                   tmpf_base[type],
-                   w3mApp::Instance().CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
+        tmp_dir,
+        tmpf_base[type],
+        w3mApp::Instance().CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
     pushText(w3mApp::Instance().fileToDelete, tmpf->ptr);
     return tmpf;
 }
@@ -1297,24 +1298,24 @@ Str myExtCommand(char *cmd, char *arg, int redirect)
 
 void mySystem(char *command, int background)
 {
-#ifndef __MINGW32_VERSION
+    #ifndef __MINGW32_VERSION
     if (background)
     {
-#ifndef __EMX__
+        #ifndef __EMX__
         flush_tty();
         if (!fork())
         {
             setup_child(FALSE, 0, -1);
             myExec(command);
         }
-#else
+        #else
         Str cmd = Strnew("start /f ");
         cmd->Push(command);
         system(cmd->ptr);
-#endif
+        #endif
     }
     else
-#endif /* __MINGW32_VERSION */
+        #endif /* __MINGW32_VERSION */
         system(command);
 }
 

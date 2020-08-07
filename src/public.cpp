@@ -586,32 +586,34 @@ int is_wordchar(uint32_t c)
 /* Go to specified line */
 void _goLine(std::string_view l)
 {
-    if (l.empty() || GetCurrentTab()->GetCurrentBuffer()->currentLine == NULL)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (l.empty() || buf->currentLine == NULL)
     {
         displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
 
-    GetCurrentTab()->GetCurrentBuffer()->pos = 0;
+    buf->pos = 0;
     if (((l[0] == '^') || (l[0] == '$')) && prec_num())
     {
-        GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(prec_num());
+        buf->GotoRealLine(prec_num());
     }
     else if (l[0] == '^')
     {
-        GetCurrentTab()->GetCurrentBuffer()->topLine = GetCurrentTab()->GetCurrentBuffer()->currentLine = GetCurrentTab()->GetCurrentBuffer()->firstLine;
+        buf->SetTopLine(buf->currentLine = buf->firstLine);
     }
     else if (l[0] == '$')
     {
-        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->lastLine,
-            -(GetCurrentTab()->GetCurrentBuffer()->LINES + 1) / 2, TRUE);
-        GetCurrentTab()->GetCurrentBuffer()->currentLine = GetCurrentTab()->GetCurrentBuffer()->lastLine;
+        buf->LineSkip(buf->lastLine,
+            -(buf->LINES + 1) / 2, TRUE);
+        buf->currentLine = buf->lastLine;
     }
     else
     {
-        GetCurrentTab()->GetCurrentBuffer()->GotoRealLine(atoi(l.data()));
+        buf->GotoRealLine(atoi(l.data()));
     }
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    buf->ArrangeCursor();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
@@ -1060,21 +1062,25 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         {
             al = f_element->body->nameList.SearchByUrl(label.c_str());
         }
+
+        auto tab = GetCurrentTab();
+        auto buf = tab->GetCurrentBuffer();
+
         if (!al)
         {
             label = std::string("_") + target;
-            al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char *>(label.c_str()));
+            al = searchURLLabel(buf, const_cast<char *>(label.c_str()));
         }
         if (al)
         {
-            GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
+            buf->GotoLine(al->start.line);
             if (label_topline)
-                GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
-                    GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber -
-                    GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+                buf->LineSkip(buf->TopLine(),
+                    buf->currentLine->linenumber -
+                    buf->TopLine()->linenumber,
                     FALSE);
-            GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
-            GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+            buf->pos = al->start.pos;
+            buf->ArrangeCursor();
         }
     }
     displayCurrentbuf(B_NORMAL);
@@ -1389,8 +1395,8 @@ void gotoLabel(std::string_view label)
     GetCurrentTab()->PushBufferCurrentPrev(buf);
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
     if (label_topline)
-        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->topLine,
-            GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->topLine->linenumber,
+        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->TopLine(),
+            GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->TopLine()->linenumber,
             FALSE);
     GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
     GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
@@ -1881,13 +1887,15 @@ char *convert_size3(clen_t size)
 
 void resetPos(BufferPos *b)
 {
-    Buffer buf;
-    Line top, cur;
-
+    Line top;
     top.linenumber = b->top_linenumber;
+
+    Line cur;
     cur.linenumber = b->cur_linenumber;
     cur.bpos = b->bpos;
-    buf.topLine = &top;
+
+    Buffer buf;
+    buf.SetTopLine(&top);
     buf.currentLine = &cur;
     buf.pos = b->pos;
     buf.currentColumn = b->currentColumn;

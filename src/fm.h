@@ -123,25 +123,6 @@
  * Types.
  */
 
-#define COPY_BUFROOT(dstbuf, srcbuf)       \
-    {                                      \
-        (dstbuf)->rootX = (srcbuf)->rootX; \
-        (dstbuf)->rootY = (srcbuf)->rootY; \
-        (dstbuf)->COLS = (srcbuf)->COLS;   \
-        (dstbuf)->LINES = (srcbuf)->LINES; \
-    }
-
-#define COPY_BUFPOSITION(dstbuf, srcbuf)                   \
-    {                                                      \
-        (dstbuf)->topLine = (srcbuf)->topLine;             \
-        (dstbuf)->currentLine = (srcbuf)->currentLine;     \
-        (dstbuf)->pos = (srcbuf)->pos;                     \
-        (dstbuf)->cursorX = (srcbuf)->cursorX;             \
-        (dstbuf)->cursorY = (srcbuf)->cursorY;             \
-        (dstbuf)->visualpos = (srcbuf)->visualpos;         \
-        (dstbuf)->currentColumn = (srcbuf)->currentColumn; \
-    }
-
 /* status flags */
 #define R_ST_NORMAL 0  /* normal */
 #define R_ST_TAG0 1    /* within tag, just after < */

@@ -1313,8 +1313,8 @@ page_loaded:
                 {
                     b->GotoLine(a->start.line);
                     if (label_topline)
-                        b->LineSkip(b->topLine,
-                                    b->currentLine->linenumber - b->topLine->linenumber, FALSE);
+                        b->LineSkip(b->TopLine(),
+                                    b->currentLine->linenumber - b->TopLine()->linenumber, FALSE);
                     b->pos = a->start.pos;
                     b->ArrangeCursor();
                 }
