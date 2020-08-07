@@ -973,7 +973,7 @@ Line *
 getNextPage(BufferPtr buf, int plen)
 {
     Line *top = buf->TopLine();
-    Line *last = buf->lastLine;
+    Line *last = buf->LastLine();
     Line *cur = buf->CurrentLine();
     int i;
     int nlines = 0;
@@ -1061,7 +1061,7 @@ getNextPage(BufferPtr buf, int plen)
                 top = buf->FirstLine();
                 cur = top;
             }
-            if (buf->lastLine->real_linenumber - buf->FirstLine()->real_linenumber >= w3mApp::Instance().PagerMax)
+            if (buf->LastLine()->real_linenumber - buf->FirstLine()->real_linenumber >= w3mApp::Instance().PagerMax)
             {
                 Line *l = buf->FirstLine();
                 do

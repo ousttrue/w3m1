@@ -271,7 +271,7 @@ backwardSearch(BufferPtr buf, char *str)
     for (l = buf->PrevLine(l);; l = buf->PrevLine(l)) {
 	if (l == NULL) {
 	    if (WrapSearch) {
-		l = buf->lastLine;
+		l = buf->LastLine();
 		wrapped = TRUE;
 	    }
 	    else {

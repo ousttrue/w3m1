@@ -1912,8 +1912,8 @@ void curlno(w3mApp *w3m)
         len = l->bwidth + l->width;
     }
 
-    if (buf->lastLine)
-        all = buf->lastLine->real_linenumber;
+    if (buf->LastLine())
+        all = buf->LastLine()->real_linenumber;
 
     Str tmp;
     if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))

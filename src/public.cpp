@@ -606,9 +606,9 @@ void _goLine(std::string_view l)
     }
     else if (l[0] == '$')
     {
-        buf->LineSkip(buf->lastLine,
+        buf->LineSkip(buf->LastLine(),
             -(buf->LINES + 1) / 2, TRUE);
-        buf->SetCurrentLine(buf->lastLine);
+        buf->SetCurrentLine(buf->LastLine());
     }
     else
     {

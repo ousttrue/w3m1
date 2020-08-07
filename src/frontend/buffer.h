@@ -70,7 +70,6 @@ private:
     // private:
     // list
     Line *firstLine;
-public:
     Line *lastLine;
 
 private:

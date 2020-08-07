@@ -551,8 +551,8 @@ redrawLine(BufferPtr buf, Line *l, int i)
         char tmp[16];
         if (!buf->rootX)
         {
-            if (buf->lastLine->real_linenumber > 0)
-                buf->rootX = (int)(log(buf->lastLine->real_linenumber + 0.1) / log(10)) + 2;
+            if (buf->LastLine()->real_linenumber > 0)
+                buf->rootX = (int)(log(buf->LastLine()->real_linenumber + 0.1) / log(10)) + 2;
             if (buf->rootX < 5)
                 buf->rootX = 5;
             if (buf->rootX > COLS)
@@ -1195,8 +1195,8 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 
     if (w3mApp::Instance().showLineNum)
     {
-        if (buf->lastLine && buf->lastLine->real_linenumber > 0)
-            buf->rootX = (int)(log(buf->lastLine->real_linenumber + 0.1) / log(10)) + 2;
+        if (buf->LastLine() && buf->LastLine()->real_linenumber > 0)
+            buf->rootX = (int)(log(buf->LastLine()->real_linenumber + 0.1) / log(10)) + 2;
         if (buf->rootX < 5)
             buf->rootX = 5;
         if (buf->rootX > COLS)

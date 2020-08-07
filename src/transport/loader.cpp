@@ -298,7 +298,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
                     CharacterEncodingScheme old_charset = newBuf->document_charset;
                     URLFile f(SCM_LOCAL, newStrStream(src));
                     loadHTMLstream(&f, newBuf, NULL, TRUE);
-                    for (l = newBuf->lastLine; l && l->real_linenumber;
+                    for (l = newBuf->LastLine(); l && l->real_linenumber;
                          l = newBuf->PrevLine(l))
                         l->real_linenumber = 0;
 #ifdef USE_M17N
