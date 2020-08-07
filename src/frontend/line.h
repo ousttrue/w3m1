@@ -70,10 +70,7 @@ struct Line
     char *lineBuf;
     Lineprop *propBuf;
     Linecolor *colorBuf;
-private:
-    friend struct Buffer;
-    Line *next;
-    Line *prev;
+
 public:
     int len;
     int width;

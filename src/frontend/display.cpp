@@ -421,12 +421,19 @@ drawAnchorCursor0(BufferPtr buf, AnchorList &al,
         if (an->start.line >= eline)
             return;
 
-        for (;; l = buf->NextLine(l))
+        while(true)
         {
             if (l == NULL)
                 return;
             if (l->linenumber == an->start.line)
                 break;
+
+            auto next = buf->NextLine(l);
+            if(next->linenumber<l->linenumber)            
+            {
+auto a=0;
+            }
+            l = next;
         }
 
         if (hseq >= 0 && an->hseq == hseq)

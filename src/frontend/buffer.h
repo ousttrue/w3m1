@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <vector>
 
 struct Line;
 union InputStream;
@@ -52,6 +53,8 @@ struct BufferPos
 };
 
 using BufferPtr = struct Buffer *;
+using LinePtr = struct Line *;
+using LineList = std::vector<LinePtr>;
 struct Buffer : gc_cleanup
 {
     friend struct Tab;
@@ -69,35 +72,41 @@ private:
 
     // private:
     // list
-    Line *firstLine;
-    Line *lastLine;
-
-private:
-    int allLine = 0;
+    LineList lines;
+    LineList::iterator find(LinePtr l)
+    {
+        return std::find(lines.begin(), lines.end(), l);
+    }
+    LineList::const_iterator find(LinePtr l)const
+    {
+        return std::find(lines.begin(), lines.end(), l);
+    }
 
 public:
     int LineCount() const
     {
-        if (!firstLine)
-        {
-            return 0;
-        }
-        // linenumber is 1 origin ?
-        // assert(allLine == (lastLine ? lastLine->linenumber : 0));
-        return allLine;
+        return lines.size();
     }
     void AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines);
     void ClearLines()
     {
-        firstLine = topLine = currentLine = lastLine = NULL;
-        allLine = 0;
+        currentLine = topLine = NULL;
+        lines.clear();
     }
     Line* FirstLine()const
     {
-        return firstLine;
+        if (lines.empty())
+        {
+            return nullptr;
+        }
+        return lines.front();
     }
     Line* LastLine()const {
-        return lastLine;
+        if (lines.empty())
+        {
+            return nullptr;
+        }
+        return lines.back();
     }
     Line* TopLine()const {
         return topLine;
@@ -107,7 +116,12 @@ public:
     }
     void SetFirstLine(Line *line)
     {
-        firstLine = line;
+        assert(false);
+        // firstLine = line;
+    }
+    void SetLastLine(Line *line)
+    {
+        assert(false);
     }
     void SetTopLine(Line* line)
     {
@@ -134,32 +148,65 @@ public:
     void NScroll(int n);
     void CurrentAsLast()
     {
-        lastLine = currentLine;
-        topLine = firstLine;
-        currentLine = firstLine;
+        auto it = find(currentLine);
+        if (it == lines.end())
+        {
+            assert(false);
+            return;
+        }
+        ++it;
+        lines.erase(it, lines.end());
+        // lastLine = currentLine;
+        topLine = FirstLine();
+        currentLine = FirstLine();
     }
     void EachLine(const std::function<void(Line *)> &func)
     {
-        for (auto l = firstLine; l; l = l->next)
+        for (auto &l: lines)
         {
             func(l);
         }
     }
     Line* NextLine(Line* line)const
     {
-        return line->next;
+        auto it = find(line);
+        if (it==lines.end())
+        {
+            return nullptr;
+        }
+        ++it;
+        if (it==lines.end())
+        {
+            return nullptr;
+        }
+        return *it;
     }
     void SetNextLine(Line* line, Line* next)
     {
-        line->next = next;
+        auto it = find(line);
+        assert(it!=lines.end());
+        ++it;
+        lines.insert(it, next);
     }
     Line* PrevLine(Line* line)const
     {
-        return line->prev;
+        auto it = find(line);
+        if (it==lines.end())
+        {
+            return nullptr;
+        }
+        if (it==lines.begin())
+        {
+            return nullptr;
+        }
+        --it;
+        return *it;
     }
     void SetPrevLine(Line* line, Line* prev)
     {
-        line->prev = prev;
+        auto it = find(line);
+        assert(it!=lines.end());
+        lines.insert(it, prev);
     }
 
     BufferPtr linkBuffer[MAX_LB];
@@ -210,7 +257,7 @@ public:
     }
     void restorePosition(const BufferPtr orig)
     {
-        this->LineSkip(this->firstLine, orig->TOP_LINENUMBER() - 1, false);
+        this->LineSkip(this->FirstLine(), orig->TOP_LINENUMBER() - 1, false);
         this->GotoLine(orig->CUR_LINENUMBER());
         this->pos = orig->pos;
         if (this->currentLine && orig->currentLine)

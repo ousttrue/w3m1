@@ -114,15 +114,15 @@ int Buffer::ColumnSkip(int offset)
     int i, maxColumn;
     int column = this->currentColumn + offset;
     int nlines = this->LINES + 1;
-    Line *l;
 
     maxColumn = 0;
-    for (i = 0, l = this->topLine; i < nlines && l != NULL; i++, l = l->next)
+    auto l = find(topLine);
+    for (i = 0; i < nlines && l!=lines.end(); i++, ++l)
     {
-        if (l->width < 0)
-            l->CalcWidth();
-        if (l->width - 1 > maxColumn)
-            maxColumn = l->width - 1;
+        if ((*l)->width < 0)
+            (*l)->CalcWidth();
+        if ((*l)->width - 1 > maxColumn)
+            maxColumn = (*l)->width - 1;
     }
     maxColumn -= this->COLS - 1;
     if (column < maxColumn)
