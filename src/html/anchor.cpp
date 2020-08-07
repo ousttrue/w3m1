@@ -83,25 +83,25 @@ AnchorList::RetrieveAnchor(const BufferPoint &bp) const
 const Anchor *
 retrieveCurrentAnchor(BufferPtr buf)
 {
-    if (buf->currentLine == NULL)
+    if (buf->CurrentLine() == NULL)
         return NULL;
-    return buf->href.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
+    return buf->href.RetrieveAnchor(buf->CurrentLine()->linenumber, buf->pos);
 }
 
 const Anchor *
 retrieveCurrentImg(BufferPtr buf)
 {
-    if (buf->currentLine == NULL)
+    if (buf->CurrentLine() == NULL)
         return NULL;
-    return buf->img.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
+    return buf->img.RetrieveAnchor(buf->CurrentLine()->linenumber, buf->pos);
 }
 
 const Anchor *
 retrieveCurrentForm(BufferPtr buf)
 {
-    if (buf->currentLine == NULL)
+    if (buf->CurrentLine() == NULL)
         return NULL;
-    return buf->formitem.RetrieveAnchor(buf->currentLine->linenumber, buf->pos);
+    return buf->formitem.RetrieveAnchor(buf->CurrentLine()->linenumber, buf->pos);
 }
 
 const Anchor *

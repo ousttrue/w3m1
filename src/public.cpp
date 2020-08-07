@@ -86,7 +86,7 @@ void srch_nxtprv(int reverse)
         GetCurrentTab()->GetCurrentBuffer()->pos += 1;
     result = srchcore(SearchString, routine[reverse]);
     if (result & SR_FOUND)
-        clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
+        clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
     displayCurrentbuf(B_NORMAL);
     disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
         SearchString);
@@ -197,7 +197,7 @@ int srchcore(char *str, int (*func)(BufferPtr, char *))
             {
                 result = func(GetCurrentTab()->GetCurrentBuffer(), str);
                 if (i < prec - 1 && result & SR_FOUND)
-                    clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
+                    clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
             }
         }
         return true;
@@ -218,7 +218,7 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
     if (ch == 0 && buf == NULL)
     {
         sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer()); /* search starting point */
-        currentLine = sbuf.currentLine;
+        currentLine = sbuf.CurrentLine();
         pos = sbuf.pos;
         return -1;
     }
@@ -260,7 +260,7 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
             }
             GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
             displayCurrentbuf(B_FORCE_REDRAW);
-            clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
+            clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
             return -1;
         }
         else
@@ -272,11 +272,11 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
         GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
         srchcore(str, searchRoutine);
         GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
-        currentLine = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+        currentLine = GetCurrentTab()->GetCurrentBuffer()->CurrentLine();
         pos = GetCurrentTab()->GetCurrentBuffer()->pos;
     }
     displayCurrentbuf(B_FORCE_REDRAW);
-    clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
+    clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
     #ifdef USE_MIGEMO
     done:
     while (*str++ != '\0')
@@ -331,7 +331,7 @@ void srch(int (*func)(BufferPtr, char *), const char *prompt)
         GetCurrentTab()->GetCurrentBuffer()->pos += 1;
     result = srchcore(str, func);
     if (result & SR_FOUND)
-        clear_mark(GetCurrentTab()->GetCurrentBuffer()->currentLine);
+        clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
     else
         GetCurrentTab()->GetCurrentBuffer()->pos = pos;
     displayCurrentbuf(B_NORMAL);
@@ -342,7 +342,7 @@ void srch(int (*func)(BufferPtr, char *), const char *prompt)
 
 void shiftvisualpos(BufferPtr buf, int shift)
 {
-    Line *l = buf->currentLine;
+    Line *l = buf->CurrentLine();
     buf->visualpos -= shift;
     if (buf->visualpos - l->bwidth >= buf->COLS)
         buf->visualpos = l->bwidth + buf->COLS - 1;
@@ -498,9 +498,9 @@ int prev_nonnull_line(BufferPtr buf, Line *line)
     if (l == NULL || l->len == 0)
         return -1;
 
-    GetCurrentTab()->GetCurrentBuffer()->currentLine = l;
+    GetCurrentTab()->GetCurrentBuffer()->SetCurrentLine(l);
     if (l != line)
-        GetCurrentTab()->GetCurrentBuffer()->pos = GetCurrentTab()->GetCurrentBuffer()->currentLine->len;
+        GetCurrentTab()->GetCurrentBuffer()->pos = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->len;
     return 0;
 }
 
@@ -514,7 +514,7 @@ int next_nonnull_line(BufferPtr buf, Line *line)
     if (l == NULL || l->len == 0)
         return -1;
 
-    GetCurrentTab()->GetCurrentBuffer()->currentLine = l;
+    GetCurrentTab()->GetCurrentBuffer()->SetCurrentLine(l);
     if (l != line)
         GetCurrentTab()->GetCurrentBuffer()->pos = 0;
     return 0;
@@ -524,7 +524,7 @@ char *
 getCurWord(BufferPtr buf, int *spos, int *epos)
 {
     char *p;
-    Line *l = buf->currentLine;
+    Line *l = buf->CurrentLine();
     int b, e;
 
     *spos = 0;
@@ -588,7 +588,7 @@ void _goLine(std::string_view l)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (l.empty() || buf->currentLine == NULL)
+    if (l.empty() || buf->CurrentLine() == NULL)
     {
         displayCurrentbuf(B_FORCE_REDRAW);
         return;
@@ -601,13 +601,14 @@ void _goLine(std::string_view l)
     }
     else if (l[0] == '^')
     {
-        buf->SetTopLine(buf->currentLine = buf->firstLine);
+        buf->SetCurrentLine(buf->FirstLine());
+        buf->SetTopLine(buf->FirstLine());
     }
     else if (l[0] == '$')
     {
         buf->LineSkip(buf->lastLine,
             -(buf->LINES + 1) / 2, TRUE);
-        buf->currentLine = buf->lastLine;
+        buf->SetCurrentLine(buf->lastLine);
     }
     else
     {
@@ -619,7 +620,7 @@ void _goLine(std::string_view l)
 
 int cur_real_linenumber(BufferPtr buf)
 {
-    Line *l, *cur = buf->currentLine;
+    Line *l, *cur = buf->CurrentLine();
     int n;
 
     if (!cur)
@@ -656,7 +657,7 @@ void _followForm(int submit)
 
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
-    l = GetCurrentTab()->GetCurrentBuffer()->currentLine;
+    l = GetCurrentTab()->GetCurrentBuffer()->CurrentLine();
 
     auto a = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
     if (a == NULL)
@@ -1076,7 +1077,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
             buf->GotoLine(al->start.line);
             if (label_topline)
                 buf->LineSkip(buf->TopLine(),
-                    buf->currentLine->linenumber -
+                    buf->CurrentLine()->linenumber -
                     buf->TopLine()->linenumber,
                     FALSE);
             buf->pos = al->start.pos;
@@ -1207,7 +1208,7 @@ void _nextA(int visited)
     if (visited != TRUE && an == NULL)
         an = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
 
-    y = GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber;
+    y = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->linenumber;
     x = GetCurrentTab()->GetCurrentBuffer()->pos;
 
     if (visited == TRUE)
@@ -1300,7 +1301,7 @@ void _prevA(int visited)
     if (visited != TRUE && an == NULL)
         an = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
 
-    y = GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber;
+    y = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->linenumber;
     x = GetCurrentTab()->GetCurrentBuffer()->pos;
 
     if (visited == TRUE)
@@ -1396,7 +1397,7 @@ void gotoLabel(std::string_view label)
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
     if (label_topline)
         GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->TopLine(),
-            GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber - GetCurrentTab()->GetCurrentBuffer()->TopLine()->linenumber,
+            GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->linenumber - GetCurrentTab()->GetCurrentBuffer()->TopLine()->linenumber,
             FALSE);
     GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
     GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
@@ -1422,7 +1423,7 @@ void nextX(int d, int dy)
     if (an == NULL)
         an = retrieveCurrentForm(buf);
 
-    l = buf->currentLine;
+    l = buf->CurrentLine();
     x = buf->pos;
     y = l->linenumber;
     const Anchor *pan = NULL;
@@ -1479,7 +1480,7 @@ void nextY(int d)
         an = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
 
     int x = GetCurrentTab()->GetCurrentBuffer()->pos;
-    int y = GetCurrentTab()->GetCurrentBuffer()->currentLine->linenumber + d;
+    int y = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->linenumber + d;
     const Anchor *pan = NULL;
     int n = searchKeyNum();
     int hseq = -1;
@@ -1896,7 +1897,7 @@ void resetPos(BufferPos *b)
 
     Buffer buf;
     buf.SetTopLine(&top);
-    buf.currentLine = &cur;
+    buf.SetCurrentLine(&cur);
     buf.pos = b->pos;
     buf.currentColumn = b->currentColumn;
     GetCurrentTab()->GetCurrentBuffer()->restorePosition(&buf);

@@ -121,7 +121,7 @@ forwardSearch(BufferPtr buf, char *str)
 	message(p, 0, 0);
 	return SR_NOTFOUND;
     }
-    l = buf->currentLine;
+    l = buf->CurrentLine();
     if (l == NULL) {
 	return SR_NOTFOUND;
     }
@@ -144,7 +144,7 @@ forwardSearch(BufferPtr buf, char *str)
 	    l = buf->NextLine(l);
 	}
 	buf->pos = pos;
-	if (l != buf->currentLine)
+	if (l != buf->CurrentLine())
 	    buf->GotoLine(l->linenumber);
 	buf->ArrangeCursor();
 	set_mark(l, pos, pos + last - first);
@@ -182,7 +182,7 @@ forwardSearch(BufferPtr buf, char *str)
 		l = buf->NextLine(l);
 	    }
 	    buf->pos = pos;
-	    buf->currentLine = l;
+	    buf->SetCurrentLine(l);
 	    buf->GotoLine(l->linenumber);
 	    buf->ArrangeCursor();
 	    set_mark(l, pos, pos + last - first);
@@ -216,7 +216,7 @@ backwardSearch(BufferPtr buf, char *str)
 	message(p, 0, 0);
 	return SR_NOTFOUND;
     }
-    l = buf->currentLine;
+    l = buf->CurrentLine();
     if (l == NULL) {
 	return SR_NOTFOUND;
     }
@@ -261,7 +261,7 @@ backwardSearch(BufferPtr buf, char *str)
 		l = buf->NextLine(l);
 	    }
 	    buf->pos = pos;
-	    if (l != buf->currentLine)
+	    if (l != buf->CurrentLine())
 		buf->GotoLine(l->linenumber);
 	    buf->ArrangeCursor();
 	    set_mark(l, pos, pos + found_last - found);

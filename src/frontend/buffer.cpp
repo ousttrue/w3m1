@@ -698,7 +698,7 @@ void set_buffer_environ(BufferPtr buf)
         set_environ("W3M_TYPE", buf->real_type.size() ? buf->real_type : "unknown");
         set_environ("W3M_CHARSET", wc_ces_to_charset(buf->document_charset));
     }
-    l = buf->currentLine;
+    l = buf->CurrentLine();
     if (l && (buf != prev_buf || l != prev_line || buf->pos != prev_pos))
     {
         URL pu;

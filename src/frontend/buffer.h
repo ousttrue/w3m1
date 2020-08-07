@@ -64,9 +64,9 @@ struct Buffer : gc_cleanup
 private:
     // scroll
     Line *topLine;
-public:
     // cursor ?
     Line *currentLine;
+public:
 
     // private:
     // list
@@ -93,15 +93,26 @@ public:
         firstLine = topLine = currentLine = lastLine = NULL;
         allLine = 0;
     }
+    Line* FirstLine()const
+    {
+        return firstLine;
+    }
+    Line* LastLine()const {
+        return lastLine;
+    }
     Line* TopLine()const {
         return topLine;
+    }
+    Line* CurrentLine()const {
+        return currentLine;
     }
     void SetTopLine(Line* line)
     {
         topLine = line;
     }
-    Line* LastLine()const {
-        return lastLine;
+    void SetCurrentLine(Line *line)
+    {
+        currentLine = line;
     }
     int TOP_LINENUMBER()const
     {

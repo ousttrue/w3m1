@@ -185,8 +185,8 @@ int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y)
 {
     if (!buf || !a || !a->image || !x || !y)
         return 0;
-    *x = (int)((buf->currentColumn + buf->cursorX - buf->currentLine->COLPOS(a->start.pos) + 0.5) * w3mApp::Instance().pixel_per_char) - a->image->xoffset;
-    *y = (int)((buf->currentLine->linenumber - a->image->y + 0.5) * w3mApp::Instance().pixel_per_line) - a->image->yoffset;
+    *x = (int)((buf->currentColumn + buf->cursorX - buf->CurrentLine()->COLPOS(a->start.pos) + 0.5) * w3mApp::Instance().pixel_per_char) - a->image->xoffset;
+    *y = (int)((buf->CurrentLine()->linenumber - a->image->y + 0.5) * w3mApp::Instance().pixel_per_line) - a->image->yoffset;
     if (*x <= 0)
         *x = 1;
     if (*y <= 0)

@@ -466,9 +466,9 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
     case FORM_INPUT_CHECKBOX:
     case FORM_INPUT_RADIO:
         if (form->checked)
-            buf->currentLine->lineBuf[spos] = '*';
+            buf->CurrentLine()->lineBuf[spos] = '*';
         else
-            buf->currentLine->lineBuf[spos] = ' ';
+            buf->CurrentLine()->lineBuf[spos] = ' ';
         break;
     case FORM_INPUT_TEXT:
     case FORM_INPUT_FILE:
@@ -484,10 +484,10 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
         else
 #endif /* MENU_SELECT */
             p = form->value->ptr;
-        l = buf->currentLine;
+        l = buf->CurrentLine();
         if (form->type == FORM_TEXTAREA)
         {
-            int n = a->y - buf->currentLine->linenumber;
+            int n = a->y - buf->CurrentLine()->linenumber;
             if (n > 0)
                 for (; l && n; l = buf->PrevLine(l), n--)
                     ;

@@ -411,7 +411,7 @@ void addnewline(BufferPtr buf, char *line, Lineprop *prop, Linecolor *color, int
     bwidth = 0;
     while (1)
     {
-        l = buf->currentLine;
+        l = buf->CurrentLine();
         l->bpos = bpos;
         l->bwidth = bwidth;
         i = columnLen(l, width);
@@ -895,7 +895,7 @@ openPagerBuffer(InputStream *stream, BufferPtr buf)
     else
         buf->document_charset = WC_CES_US_ASCII;
 
-    buf->currentLine = buf->firstLine;
+    buf->SetCurrentLine(buf->FirstLine());
 
     return buf;
 }
@@ -919,7 +919,7 @@ openGeneralPagerBuffer(InputStream *stream)
         if (t_buf)
         {
             t_buf->SetTopLine(t_buf->firstLine);
-            t_buf->currentLine = t_buf->lastLine;
+            t_buf->SetCurrentLine(t_buf->LastLine());
         }
         w3mApp::Instance().SearchHeader = FALSE;
     }
@@ -974,7 +974,7 @@ getNextPage(BufferPtr buf, int plen)
 {
     Line *top = buf->TopLine();
     Line *last = buf->lastLine;
-    Line         *cur = buf->currentLine;
+    Line *cur = buf->CurrentLine();
     int i;
     int nlines = 0;
     clen_t linelen = 0, trbyte = buf->trbyte;
@@ -1001,7 +1001,7 @@ getNextPage(BufferPtr buf, int plen)
         pre_lbuf = *(last->lineBuf);
         if (pre_lbuf == '\0')
             pre_lbuf = '\n';
-        buf->currentLine = last;
+        buf->SetCurrentLine(last);
     }
 
     charset = buf->document_charset;
@@ -1093,7 +1093,7 @@ getNextPage(BufferPtr buf, int plen)
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
 
     buf->SetTopLine(top);
-    buf->currentLine = cur;
+    buf->SetCurrentLine(cur);
     if (!last)
         last = buf->firstLine;
     else if (last && (buf->NextLine(last) || !squeeze_flag))

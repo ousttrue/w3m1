@@ -1145,9 +1145,9 @@ ex_efct(int ex)
 
 static int currentLn(BufferPtr buf)
 {
-    if (buf->currentLine)
+    if (buf->CurrentLine())
         /*     return buf->currentLine->real_linenumber + 1;      */
-        return buf->currentLine->linenumber + 1;
+        return buf->CurrentLine()->linenumber + 1;
     else
         return 1;
 }

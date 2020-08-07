@@ -369,8 +369,8 @@ make_lastline_message(BufferPtr buf)
         msg = Strnew();
     if (displayLineInfo && buf->LineCount() > 0)
     {
-        int cl = buf->currentLine->real_linenumber;
-        int ll = buf->lastLine->real_linenumber;
+        int cl = buf->CurrentLine()->real_linenumber;
+        int ll = buf->LastLine()->real_linenumber;
         int r = (int)((double)cl * 100.0 / (double)(ll ? ll : 1) + 0.5);
         msg->Push(Sprintf("%d/%d (%d%%)", cl, ll, r));
     }
