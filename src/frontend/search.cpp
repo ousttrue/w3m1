@@ -156,7 +156,7 @@ forwardSearch(BufferPtr buf, char *str)
 		l = getNextPage(buf, 1);
 		if (l == NULL) {
 		    if (WrapSearch && !wrapped) {
-			l = buf->firstLine;
+			l = buf->FirstLine();
 			wrapped = TRUE;
 		    }
 		    else {
@@ -165,7 +165,7 @@ forwardSearch(BufferPtr buf, char *str)
 		}
 	    }
 	    else if (WrapSearch) {
-		l = buf->firstLine;
+		l = buf->FirstLine();
 		wrapped = TRUE;
 	    }
 	    else {

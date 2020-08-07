@@ -291,7 +291,7 @@ reAnchorAny(BufferPtr buf, char *re,
     {
         return re;
     }
-    for (l = MarkAllPages ? buf->firstLine : buf->TopLine(); l != NULL &&
+    for (l = MarkAllPages ? buf->FirstLine() : buf->TopLine(); l != NULL &&
                                                            (MarkAllPages || l->linenumber < buf->TopLine()->linenumber + ::LINES - 1);
          l = buf->NextLine(l))
     {
@@ -322,7 +322,6 @@ reAnchor(BufferPtr buf, char *re)
     return reAnchorAny(buf, re, _put_anchor_all);
 }
 
-#ifdef USE_NNTP
 char *
 reAnchorNews(BufferPtr buf, char *re)
 {
@@ -342,7 +341,7 @@ reAnchorNewsheader(BufferPtr buf)
     const char **q;
     int i, search = FALSE;
 
-    if (!buf || !buf->firstLine)
+    if (!buf || !buf->FirstLine())
         return NULL;
     for (i = 0; i <= 1; i++)
     {
@@ -356,7 +355,7 @@ reAnchorNewsheader(BufferPtr buf)
             regexCompile("[a-zA-Z0-9\\.\\-_]+", 1);
             header = header_group;
         }
-        for (l = buf->firstLine; l != NULL && l->real_linenumber == 0;
+        for (l = buf->FirstLine(); l != NULL && l->real_linenumber == 0;
              l = buf->NextLine(l))
         {
             if (l->bpos)
@@ -392,7 +391,6 @@ reAnchorNewsheader(BufferPtr buf)
     reseq_anchor(buf);
     return NULL;
 }
-#endif /* USE_NNTP */
 
 const Anchor *
 AnchorList::ClosestNext(const Anchor *an, int x, int y) const
@@ -443,7 +441,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         auto img = a_img.image;
         if (a_img.hseq < 0 || !img || img->rows <= 1)
             continue;
-        auto l = buf->firstLine;
+        auto l = buf->FirstLine();
         for (; l != NULL; l = buf->NextLine(l))
         {
             if (l->linenumber == img->y)
@@ -542,7 +540,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
         al.anchors[i].rows = 1;
         if (a_form.hseq < 0 || a_form.rows <= 1)
             continue;
-        auto l = buf->firstLine;
+        auto l = buf->FirstLine();
         for (; l != NULL; l = buf->NextLine(l))
         {
             if (l->linenumber == a_form.y)
@@ -607,7 +605,7 @@ getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a)
     if (!a || a->hseq < 0)
         return NULL;
     hseq = a->hseq;
-    l = buf->firstLine;
+    l = buf->FirstLine();
     for (i = 0; i < al.size(); i++)
     {
         a = &al.anchors[i];

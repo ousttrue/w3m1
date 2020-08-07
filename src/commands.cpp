@@ -1210,7 +1210,7 @@ void backBf(w3mApp *w3m)
             {
                 rFrame(w3m);
                 GetCurrentTab()->GetCurrentBuffer()->LineSkip(
-                    GetCurrentTab()->GetCurrentBuffer()->firstLine, top - 1,
+                    GetCurrentTab()->GetCurrentBuffer()->FirstLine(), top - 1,
                     FALSE);
                 GetCurrentTab()->GetCurrentBuffer()->GotoLine(linenumber);
                 GetCurrentTab()->GetCurrentBuffer()->pos = pos;

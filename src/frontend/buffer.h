@@ -66,11 +66,11 @@ private:
     Line *topLine;
     // cursor ?
     Line *currentLine;
-public:
 
     // private:
     // list
     Line *firstLine;
+public:
     Line *lastLine;
 
 private:
@@ -105,6 +105,10 @@ public:
     }
     Line* CurrentLine()const {
         return currentLine;
+    }
+    void SetFirstLine(Line *line)
+    {
+        firstLine = line;
     }
     void SetTopLine(Line* line)
     {

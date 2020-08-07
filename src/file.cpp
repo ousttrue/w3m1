@@ -816,12 +816,12 @@ _saveBuffer(BufferPtr buf, Line *l, FILE *f, int cont)
 
 void saveBuffer(BufferPtr buf, FILE *f, int cont)
 {
-    _saveBuffer(buf, buf->firstLine, f, cont);
+    _saveBuffer(buf, buf->FirstLine(), f, cont);
 }
 
 void saveBufferBody(BufferPtr buf, FILE *f, int cont)
 {
-    Line *l = buf->firstLine;
+    Line *l = buf->FirstLine();
 
     while (l != NULL && l->real_linenumber == 0)
         l = buf->NextLine(l);
@@ -918,7 +918,7 @@ openGeneralPagerBuffer(InputStream *stream)
             t = "text/plain";
         if (t_buf)
         {
-            t_buf->SetTopLine(t_buf->firstLine);
+            t_buf->SetTopLine(t_buf->FirstLine());
             t_buf->SetCurrentLine(t_buf->LastLine());
         }
         w3mApp::Instance().SearchHeader = FALSE;
@@ -1058,12 +1058,12 @@ getNextPage(BufferPtr buf, int plen)
                 lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);
             if (!top)
             {
-                top = buf->firstLine;
+                top = buf->FirstLine();
                 cur = top;
             }
-            if (buf->lastLine->real_linenumber - buf->firstLine->real_linenumber >= w3mApp::Instance().PagerMax)
+            if (buf->lastLine->real_linenumber - buf->FirstLine()->real_linenumber >= w3mApp::Instance().PagerMax)
             {
-                Line *l = buf->firstLine;
+                Line *l = buf->FirstLine();
                 do
                 {
                     if (top == l)
@@ -1074,8 +1074,8 @@ getNextPage(BufferPtr buf, int plen)
                         last = NULL;
                     l = buf->NextLine(l);
                 } while (l && l->bpos);
-                buf->firstLine = l;
-                buf->SetPrevLine(buf->firstLine, NULL);
+                buf->SetFirstLine(l);
+                buf->SetPrevLine(buf->FirstLine(), NULL);
             }
         }
 
@@ -1095,7 +1095,7 @@ getNextPage(BufferPtr buf, int plen)
     buf->SetTopLine(top);
     buf->SetCurrentLine(cur);
     if (!last)
-        last = buf->firstLine;
+        last = buf->FirstLine();
     else if (last && (buf->NextLine(last) || !squeeze_flag))
         last = buf->NextLine(last);
     return last;

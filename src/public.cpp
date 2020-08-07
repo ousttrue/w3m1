@@ -620,13 +620,11 @@ void _goLine(std::string_view l)
 
 int cur_real_linenumber(BufferPtr buf)
 {
-    Line *l, *cur = buf->CurrentLine();
-    int n;
-
+    Line *cur = buf->CurrentLine();
     if (!cur)
         return 1;
-    n = cur->real_linenumber ? cur->real_linenumber : 1;
-    for (l = buf->firstLine; l && l != cur && l->real_linenumber == 0; l = buf->NextLine(l))
+    auto n = cur->real_linenumber ? cur->real_linenumber : 1;
+    for (auto l = buf->FirstLine(); l && l != cur && l->real_linenumber == 0; l = buf->NextLine(l))
     { /* header */
         if (l->bpos == 0)
             n++;

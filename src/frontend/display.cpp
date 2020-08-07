@@ -1289,7 +1289,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     }
     if (buf->TopLine() == NULL)
     {
-        buf->SetTopLine(buf->firstLine);
+        buf->SetTopLine(buf->FirstLine());
     }
 
     if (buf->need_reshape)
