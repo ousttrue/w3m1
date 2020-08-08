@@ -209,7 +209,7 @@ int srchcore(char *str, int (*func)(BufferPtr, char *))
 
 int dispincsrch(int ch, Str buf, Lineprop *prop)
 {
-    static Buffer sbuf;
+    static BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
     static LinePtr currentLine;
     static int pos;
     char *str;
@@ -217,9 +217,9 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
 
     if (ch == 0 && buf == NULL)
     {
-        sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer()); /* search starting point */
-        currentLine = sbuf.CurrentLine();
-        pos = sbuf.pos;
+        sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer()); /* search starting point */
+        currentLine = sbuf->CurrentLine();
+        pos = sbuf->pos;
         return -1;
     }
 
@@ -252,11 +252,11 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
         {
             if (searchRoutine == forwardSearch)
                 GetCurrentTab()->GetCurrentBuffer()->pos += 1;
-            sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
+            sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
             if (srchcore(str, searchRoutine) == SR_NOTFOUND && searchRoutine == forwardSearch)
             {
                 GetCurrentTab()->GetCurrentBuffer()->pos -= 1;
-                sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
+                sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
             }
             GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
             displayCurrentbuf(B_FORCE_REDRAW);
@@ -268,7 +268,7 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
     }
     else if (*str)
     {
-        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(&sbuf);
+        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(sbuf);
         GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
         srchcore(str, searchRoutine);
         GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
@@ -293,15 +293,15 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
 void isrch(int (*func)(BufferPtr, char *), const char *prompt)
 {
     char *str;
-    Buffer sbuf;
-    sbuf.COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
+    BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
+    sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
     dispincsrch(0, NULL, NULL); /* initialize incremental search state */
 
     searchRoutine = func;
     str = inputLineHistSearch(prompt, NULL, IN_STRING, w3mApp::Instance().TextHist, dispincsrch);
     if (str == NULL)
     {
-        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(&sbuf);
+        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(sbuf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -1862,12 +1862,12 @@ void resetPos(BufferPos *b)
     cur.linenumber = b->cur_linenumber;
     cur.bpos = b->bpos;
 
-    Buffer buf;
-    buf.SetTopLine(&top);
-    buf.SetCurrentLine(&cur);
-    buf.pos = b->pos;
-    buf.currentColumn = b->currentColumn;
-    GetCurrentTab()->GetCurrentBuffer()->restorePosition(&buf);
+    BufferPtr buf = std::make_shared<Buffer>();
+    buf->SetTopLine(&top);
+    buf->SetCurrentLine(&cur);
+    buf->pos = b->pos;
+    buf->currentColumn = b->currentColumn;
+    GetCurrentTab()->GetCurrentBuffer()->restorePosition(buf);
     GetCurrentTab()->GetCurrentBuffer()->undo = b;
     displayCurrentbuf(B_FORCE_REDRAW);
 }

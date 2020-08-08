@@ -22,9 +22,14 @@ Tab::~Tab()
 
 bool Tab::IsConnectFirstCurrent() const
 {
+    auto c = GetCurrentBuffer();
+    if (!c)
+    {
+        return false;
+    }
     for (auto &buf : buffers)
     {
-        if (buf == currentBuffer)
+        if (buf == c)
         {
             return true;
         }
@@ -48,7 +53,7 @@ int Tab::GetCurrentBufferIndex() const
 
 bool Tab::Forward()
 {
-    auto it = find(currentBuffer);
+    auto it = findCurrent();
     if (it == buffers.end())
     {
         return false;
@@ -64,7 +69,7 @@ bool Tab::Forward()
 
 bool Tab::Back()
 {
-    auto it = find(currentBuffer);
+    auto it = findCurrent();
     if (it == buffers.end())
     {
         return false;
@@ -80,7 +85,7 @@ bool Tab::Back()
 
 void Tab::DeleteBack()
 {
-    auto it = find(currentBuffer);
+    auto it = findCurrent();
     if (it == buffers.end())
     {
         return;
@@ -131,16 +136,17 @@ BufferPtr Tab::BackBuffer(BufferPtr buf) const
 
 void Tab::SetCurrentBuffer(BufferPtr buffer)
 {
-    if (currentBuffer == buffer)
+    auto c = GetCurrentBuffer();
+    if (c == buffer)
     {
         return;
     }
-    if (currentBuffer)
+    if (c)
     {
-        deleteImage(currentBuffer);
+        deleteImage(c.get());
         if (clear_buffer)
         {
-            currentBuffer->TmpClear();
+            c->TmpClear();
         }
     }
 
@@ -158,7 +164,7 @@ void Tab::Push(BufferPtr buf)
         return;
     }
 
-    auto it = find(currentBuffer);
+    auto it = findCurrent();
     assert(it != buffers.end());
     buffers.insert(it, buf);
     SetCurrentBuffer(buf);
@@ -169,7 +175,7 @@ void Tab::Push(BufferPtr buf)
 
 // void Tab::PushBufferCurrentNext(BufferPtr buf)
 // {
-//     auto it = find(currentBuffer);
+//     auto it = findCurrent();
 //     assert(it != buffers.end());
 //     ++it;
 //     buffers.insert(it, buf);
@@ -327,7 +333,7 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar)
     }
     listBuffer(this, topbuf, currentbuf);
 
-    auto it = find(currentBuffer);
+    auto it = findCurrent();
     for (;;)
     {
         if ((c = getch()) == ESC_CODE)
@@ -454,7 +460,8 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
         // TODO:
         return;
     }
-    if (*it == currentBuffer)
+    auto c = GetCurrentBuffer();
+    if (*it == c)
     {
         // assert(false);
         // TODO:

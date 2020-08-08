@@ -270,7 +270,7 @@ static GeneralList *image_list = NULL;
 static ImageCache **image_cache = NULL;
 static BufferPtr image_buffer = NULL;
 
-void deleteImage(BufferPtr buf)
+void deleteImage(Buffer* buf)
 {
     Anchor *a;
     int i;

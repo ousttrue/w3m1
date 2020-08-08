@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <vector>
+#include <memory>
 
 struct Line;
 union InputStream;
@@ -51,12 +52,12 @@ struct BufferPos
     BufferPos *prev;
 };
 
-using BufferPtr = struct Buffer *;
+using BufferPtr = std::shared_ptr<struct Buffer>;
 using LinePtr = struct Line *;
 using LineList = std::vector<LinePtr>;
-struct Buffer : gc_cleanup
+struct Buffer : std::enable_shared_from_this<Buffer>
 {
-    friend struct Tab;
+    // friend struct Tab;
 
     std::string filename;
     std::string buffername;
@@ -216,7 +217,7 @@ public:
         lines.insert(it, prev);
     }
 
-    BufferPtr linkBuffer[MAX_LB];
+    std::array<BufferPtr, MAX_LB> linkBuffer;
     short width;
     short height;
 
@@ -325,6 +326,9 @@ public:
 
     Buffer();
     ~Buffer();
+    Buffer(const Buffer &) = delete;
+    Buffer &operator=(const Buffer &) = delete;
+
     void TmpClear();
     int WriteBufferCache();
     int ReadBufferCache();
@@ -343,7 +347,7 @@ public:
 
 BufferPtr newBuffer(int width);
 
-void deleteImage(BufferPtr buf);
+void deleteImage(Buffer *buf);
 void getAllImage(BufferPtr buf);
 
 #define IMG_FLAG_START 0

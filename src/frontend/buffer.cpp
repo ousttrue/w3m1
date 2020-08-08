@@ -258,7 +258,7 @@ int Buffer::ReadBufferCache()
 BufferPtr Buffer::Copy()
 {
     auto copy = newBuffer(width);
-    copy->CopyFrom(this);
+    copy->CopyFrom(shared_from_this());
     return copy;
 }
 
@@ -267,7 +267,74 @@ void Buffer::CopyFrom(BufferPtr src)
     src->ReadBufferCache();
     ++(*src->clone);
 
-    *this = *src;
+    // *this = *src;
+    filename = src->filename;
+    buffername = src->buffername;
+
+    need_reshape = src->need_reshape;
+    lines = src->lines;
+
+    // scroll
+    topLine = src->topLine;
+    // cursor ?
+    currentLine = src->currentLine;
+
+    linkBuffer = src->linkBuffer;
+    width = src->width;
+    height = src->height;
+
+    // mimetype: text/plain
+    type = src->type;
+    real_type = src->real_type;
+
+    bufferprop = src->bufferprop;
+    currentColumn = src->currentColumn;
+    cursorX = src->cursorX;
+    cursorY = src->cursorY;
+    pos = src->pos;
+    visualpos = src->visualpos;
+    rootX = src->rootX;
+    rootY = src->rootY;
+    COLS = src->COLS;
+    LINES = src->LINES;
+    pagerSource = src->pagerSource;
+    href = src->href;
+    name = src->name;
+    img = src->img;
+    formitem = src->formitem;
+    prevhseq = src->prevhseq;
+
+    linklist = src->linklist;
+    formlist = src->formlist;
+    maplist = src->maplist;
+    hmarklist = src->hmarklist;
+    imarklist = src->imarklist;
+    currentURL = src->currentURL;
+    baseURL = src->baseURL;
+    baseTarget = src->baseTarget;
+    real_scheme = src->real_scheme;
+    sourcefile = src->sourcefile;
+    frameset = src->frameset;
+    frameQ = src->frameQ;
+    clone = src->clone;
+    trbyte = src->trbyte;
+    check_url = src->check_url;
+    document_charset = src->document_charset;
+    auto_detect = src->auto_detect;
+    document_header = src->document_header;
+    form_submit = src->form_submit;
+    savecache = src->savecache;
+    edit = src->edit;
+    mailcap = src->mailcap;
+    mailcap_source = src->mailcap_source;
+    header_source = src->header_source;
+    search_header = src->search_header;
+    ssl_certificate = src->ssl_certificate;
+    image_flag = src->image_flag;
+    image_loaded = src->image_loaded;
+    submit = src->submit;
+    undo = src->undo;
+    event = src->event;
 }
 
 void Buffer::ClearLink()
@@ -349,7 +416,7 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
 BufferPtr
 newBuffer(int width)
 {
-    auto n = new Buffer;
+    auto n = std::make_shared<Buffer>();
     n->width = width;
     return n;
 }
@@ -376,9 +443,9 @@ LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
     {
         n = line->linenumber + offset + this->LINES;
         if (this->LastLine()->linenumber < n)
-            getNextPage(this, n - this->LastLine()->linenumber);
+            getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
         while ((last || (this->LastLine()->linenumber < n)) &&
-               (getNextPage(this, 1) != NULL))
+               (getNextPage(shared_from_this(), 1) != NULL))
             ;
         if (last)
             l = find(this->LastLine());
@@ -422,9 +489,9 @@ void Buffer::GotoLine(int n)
     if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
     {
         if (this->LastLine()->linenumber < n)
-            getNextPage(this, n - this->LastLine()->linenumber);
+            getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
         while ((this->LastLine()->linenumber < n) &&
-               (getNextPage(this, 1) != NULL))
+               (getNextPage(shared_from_this(), 1) != NULL))
             ;
     }
     if (l->linenumber > n)
@@ -538,9 +605,9 @@ void Buffer::GotoRealLine(int n)
     if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
     {
         if (this->LastLine()->real_linenumber < n)
-            getNextPage(this, n - this->LastLine()->real_linenumber);
+            getNextPage(shared_from_this(), n - this->LastLine()->real_linenumber);
         while ((this->LastLine()->real_linenumber < n) &&
-               (getNextPage(this, 1) != NULL))
+               (getNextPage(shared_from_this(), 1) != NULL))
             ;
     }
     if (l->real_linenumber > n)
@@ -623,21 +690,21 @@ void Buffer::Reshape()
             h.examineFile(this->header_source);
             if (h.stream)
             {
-                readHeader(&h, this, TRUE, NULL);
+                readHeader(&h, shared_from_this(), TRUE, NULL);
                 h.Close();
             }
         }
         else if (this->search_header) /* -m option */
-            readHeader(&f, this, TRUE, NULL);
+            readHeader(&f, shared_from_this(), TRUE, NULL);
     }
 
     WcOption.auto_detect = WC_OPT_DETECT_OFF;
     w3mApp::Instance().UseContentCharset = FALSE;
 
     if (is_html_type(this->type))
-        loadHTMLBuffer(&f, this);
+        loadHTMLBuffer(&f, shared_from_this());
     else
-        loadBuffer(&f, this);
+        loadBuffer(&f, shared_from_this());
     f.Close();
 
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
@@ -673,14 +740,14 @@ void Buffer::Reshape()
         ArrangeCursor();
     }
     if (this->check_url & CHK_URL)
-        chkURLBuffer(this);
+        chkURLBuffer(shared_from_this());
 
     if (this->check_url & CHK_NMID)
-        chkNMIDBuffer(this);
+        chkNMIDBuffer(shared_from_this());
     if (this->real_scheme == SCM_NNTP || this->real_scheme == SCM_NEWS)
-        reAnchorNewsheader(this);
+        reAnchorNewsheader(shared_from_this());
 
-    formResetBuffer(this, sbuf->formitem);
+    formResetBuffer(shared_from_this(), sbuf->formitem);
 }
 
 void set_buffer_environ(BufferPtr buf)

@@ -4,7 +4,7 @@
 #include <list>
 #include <functional>
 struct Tab;
-using BufferPtr = struct Buffer *;
+using BufferPtr = std::shared_ptr<struct Buffer>;
 using BufferList = std::list<BufferPtr>;
 
 ///
@@ -21,10 +21,19 @@ class Tab
     Tab &operator=(const Tab &) = delete;
 
     BufferList buffers;
-    BufferPtr currentBuffer = nullptr;
+    std::weak_ptr<Buffer> currentBuffer;
     BufferList::const_iterator find(BufferPtr b) const
     {
         return std::find(buffers.begin(), buffers.end(), b);
+    }
+    BufferList::const_iterator findCurrent()const
+    {
+        auto c = currentBuffer.lock();
+        if(!c)
+        {
+            return buffers.end();
+        }
+        return find(c);
     }
 
 public:
@@ -58,7 +67,7 @@ public:
     // buffer
     int GetCurrentBufferIndex() const;
     BufferPtr GetFirstBuffer() { return buffers.front(); }
-    BufferPtr GetCurrentBuffer() const { return currentBuffer; }
+    BufferPtr GetCurrentBuffer() const { return currentBuffer.lock(); }
 
 private:
     BufferPtr ForwardBuffer(BufferPtr buf) const;
