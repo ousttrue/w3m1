@@ -1072,14 +1072,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         }
         if (al)
         {
-            buf->GotoLine(al->start.line);
-            if (label_topline)
-                buf->LineSkip(buf->TopLine(),
-                    buf->CurrentLine()->linenumber -
-                    buf->TopLine()->linenumber,
-                    FALSE);
-            buf->pos = al->start.pos;
-            buf->ArrangeCursor();
+            buf->Goto(al->start, label_topline);
         }
     }
     displayCurrentbuf(B_NORMAL);
@@ -1191,7 +1184,6 @@ BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 void _nextA(int visited)
 {
     auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
-    BufferPoint *po;
     const Anchor *an;
     const Anchor *pan;
     int i, x, y, n = searchKeyNum();
@@ -1229,7 +1221,7 @@ void _nextA(int visited)
                     an = pan;
                     goto _end;
                 }
-                po = &hl[hseq];
+                auto po = &hl[hseq];
                 an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
                     an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line,
@@ -1275,10 +1267,8 @@ void _nextA(int visited)
     _end:
     if (an == NULL || an->hseq < 0)
         return;
-    po = &hl[an->hseq];
-    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
-    GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+
+    GetCurrentTab()->GetCurrentBuffer()->Goto(hl[an->hseq]);
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1286,7 +1276,6 @@ void _nextA(int visited)
 void _prevA(int visited)
 {
     auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
-    BufferPoint *po;
     int i, x, y, n = searchKeyNum();
     URL url;
 
@@ -1322,7 +1311,7 @@ void _prevA(int visited)
                     an = pan;
                     goto _end;
                 }
-                po = &hl[hseq];
+                auto po = &hl[hseq];
                 an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
                 if (visited != TRUE && an == NULL)
                     an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);
@@ -1367,10 +1356,8 @@ void _prevA(int visited)
     _end:
     if (an == NULL || an->hseq < 0)
         return;
-    po = &hl[an->hseq];
-    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
-    GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+        
+    GetCurrentTab()->GetCurrentBuffer()->Goto(hl[an->hseq]);
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1392,13 +1379,7 @@ void gotoLabel(std::string_view label)
     pushHashHist(w3mApp::Instance().URLHist, buf->currentURL.ToStr()->ptr);
     (*buf->clone)++;
     GetCurrentTab()->Push(buf);
-    GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
-    if (label_topline)
-        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->TopLine(),
-            GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->linenumber - GetCurrentTab()->GetCurrentBuffer()->TopLine()->linenumber,
-            FALSE);
-    GetCurrentTab()->GetCurrentBuffer()->pos = al->start.pos;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    GetCurrentTab()->GetCurrentBuffer()->Goto(al->start, label_topline);
     displayCurrentbuf(B_FORCE_REDRAW);
     return;
 }
@@ -1592,18 +1573,17 @@ void goURL0(const char *prompt, int relative)
 
 void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
 {
-    Anchor *a;
-    BufferPoint *po;
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
 
-    if (!GetCurrentTab()->GetCurrentBuffer()->href || GetCurrentTab()->GetCurrentBuffer()->hmarklist.empty())
+    if (!buf->href || buf->hmarklist.empty())
         return;
-    a = menu_func(GetCurrentTab()->GetCurrentBuffer());
+
+    auto a = menu_func(buf);
     if (!a || a->hseq < 0)
         return;
-    po = &GetCurrentTab()->GetCurrentBuffer()->hmarklist[a->hseq];
-    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
-    GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+
+    buf->Goto(buf->hmarklist[a->hseq]);
     displayCurrentbuf(B_NORMAL);
     if (go)
         followA(&w3mApp::Instance());

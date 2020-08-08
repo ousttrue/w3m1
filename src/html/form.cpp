@@ -451,12 +451,11 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
     case FORM_INPUT_PASSWORD:
     case FORM_INPUT_CHECKBOX:
     case FORM_INPUT_RADIO:
-#ifdef MENU_SELECT
     case FORM_SELECT:
-#endif /* MENU_SELECT */
         spos = a->start.pos;
         epos = a->end.pos;
         break;
+
     default:
         spos = a->start.pos + 1;
         epos = a->end.pos - 1;
@@ -474,7 +473,6 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
     case FORM_INPUT_FILE:
     case FORM_INPUT_PASSWORD:
     case FORM_TEXTAREA:
-#ifdef MENU_SELECT
     case FORM_SELECT:
         if (form->type == FORM_SELECT)
         {
@@ -482,7 +480,6 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
             updateSelectOption(form, form->select_option);
         }
         else
-#endif /* MENU_SELECT */
             p = form->value->ptr;
         l = buf->CurrentLine();
         if (form->type == FORM_TEXTAREA)

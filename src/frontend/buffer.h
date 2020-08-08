@@ -187,7 +187,14 @@ public:
     {
         return (currentLine ? currentLine->linenumber : 1);
     }
-    void GotoLine(int n);
+
+    void GotoLine(int n, bool topline = false);
+    void Goto(const BufferPoint &po, bool topline = false)
+    {
+        GotoLine(po.line, topline);
+        pos = po.pos;
+        ArrangeCursor();
+    }
     void GotoRealLine(int n);
     void Reshape();
     LinePtr CurrentLineSkip(LinePtr line, int offset, int last);
@@ -332,8 +339,8 @@ public:
     int *clone = nullptr;
     size_t trbyte = 0;
     char check_url = 0;
-    CharacterEncodingScheme document_charset = 0;
-    AutoDetectTypes auto_detect = 0;
+    CharacterEncodingScheme document_charset = WC_CES_NONE;
+    AutoDetectTypes auto_detect = WC_OPT_DETECT_OFF;
     TextList *document_header = nullptr;
     FormItemList *form_submit = nullptr;
     // ReadBufferCache, WriteBufferCache

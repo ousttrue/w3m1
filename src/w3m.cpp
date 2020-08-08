@@ -1184,8 +1184,7 @@ void w3mApp::mainloop()
         {
             auto a = buf->submit;
             buf->submit = NULL;
-            buf->GotoLine(a->start.line);
-            buf->pos = a->start.pos;
+            buf->Goto(a->start);
             _followForm(TRUE);
             continue;
         }

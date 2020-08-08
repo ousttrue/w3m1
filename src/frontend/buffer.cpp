@@ -473,7 +473,7 @@ void Buffer::LineSkip(LinePtr line, int offset, int last)
 /*
  * gotoLine: go to line number
  */
-void Buffer::GotoLine(int n)
+void Buffer::GotoLine(int n, bool topline)
 {
     char msg[32];
     LinePtr l = this->FirstLine();
@@ -516,6 +516,11 @@ void Buffer::GotoLine(int n)
                 LineSkip(*it, -(this->rect.lines + 1) / 2, FALSE);
             break;
         }
+    }
+
+    if (topline)
+    {
+        LineSkip(TopLine(), CurrentLine()->linenumber - TopLine()->linenumber, false);
     }
 }
 

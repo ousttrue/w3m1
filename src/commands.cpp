@@ -934,45 +934,49 @@ void submitForm(w3mApp *w3m)
 
 void topA(w3mApp *w3m)
 {
-    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
-    BufferPoint *po;
-
-    int hseq = 0;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();    
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
+
+    auto &hl = buf->hmarklist;
     if (hl.empty())
         return;
 
+    int hseq = 0;
     if (prec_num() > hl.size())
         hseq = hl.size() - 1;
     else if (prec_num() > 0)
         hseq = prec_num() - 1;
 
+    BufferPoint *po;
     const Anchor *an;
     do
     {
         if (hseq >= hl.size())
             return;
         po = &hl[hseq];
-        an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
+        an = buf->href.RetrieveAnchor(po->line, po->pos);
         if (an == NULL)
-            an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);
+            an = buf->formitem.RetrieveAnchor(po->line, po->pos);
         hseq++;
     } while (an == NULL);
-    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
-    GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+
+    buf->Goto(*po);
     displayCurrentbuf(B_NORMAL);
 }
 /* go to the last anchor */
 
 void lastA(w3mApp *w3m)
 {
-    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
+    auto tab = GetCurrentTab();    
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
+        return;
+
+    auto &hl = buf->hmarklist;
     BufferPoint *po;
     int hseq;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
-        return;
     if (hl.empty())
         return;
     if (prec_num() >= hl.size())
@@ -988,14 +992,13 @@ void lastA(w3mApp *w3m)
         if (hseq < 0)
             return;
         po = &hl[hseq];
-        an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
+        an = buf->href.RetrieveAnchor(po->line, po->pos);
         if (an == NULL)
-            an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);
+            an = buf->formitem.RetrieveAnchor(po->line, po->pos);
         hseq--;
     } while (an == NULL);
-    GetCurrentTab()->GetCurrentBuffer()->GotoLine(po->line);
-    GetCurrentTab()->GetCurrentBuffer()->pos = po->pos;
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+
+    buf->Goto(*po);
     displayCurrentbuf(B_NORMAL);
 }
 /* go to the next anchor */
@@ -1213,10 +1216,10 @@ void backBf(w3mApp *w3m)
                 GetCurrentTab()->GetCurrentBuffer()->LineSkip(
                     GetCurrentTab()->GetCurrentBuffer()->FirstLine(), top - 1,
                     FALSE);
-                GetCurrentTab()->GetCurrentBuffer()->GotoLine(linenumber);
-                GetCurrentTab()->GetCurrentBuffer()->pos = pos;
+                GetCurrentTab()->GetCurrentBuffer()->Goto({linenumber, pos});
+                // GetCurrentTab()->GetCurrentBuffer()->pos = pos;
+                // GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
                 GetCurrentTab()->GetCurrentBuffer()->currentColumn = currentColumn;
-                GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
                 formResetBuffer(GetCurrentTab()->GetCurrentBuffer(), formitem);
             }
         }
