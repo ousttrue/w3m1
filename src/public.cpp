@@ -344,8 +344,8 @@ void shiftvisualpos(BufferPtr buf, int shift)
 {
     LinePtr l = buf->CurrentLine();
     buf->visualpos -= shift;
-    if (buf->visualpos - l->bwidth >= buf->COLS)
-        buf->visualpos = l->bwidth + buf->COLS - 1;
+    if (buf->visualpos - l->bwidth >= buf->COLS())
+        buf->visualpos = l->bwidth + buf->COLS() - 1;
     else if (buf->visualpos - l->bwidth < 0)
         buf->visualpos = l->bwidth;
     buf->ArrangeLine();
@@ -607,7 +607,7 @@ void _goLine(std::string_view l)
     else if (l[0] == '$')
     {
         buf->LineSkip(buf->LastLine(),
-            -(buf->LINES + 1) / 2, TRUE);
+            -(buf->LINES() + 1) / 2, TRUE);
         buf->SetCurrentLine(buf->LastLine());
     }
     else

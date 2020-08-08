@@ -234,8 +234,12 @@ public:
     int visualpos;
     short rootX;
     short rootY;
-    short COLS;
-    short LINES;
+    
+    short Cols;
+    short COLS()const{ return Cols; }
+    short Lines;
+    short LINES()const{ return Lines; }
+
     void CursorHome()
     {
         visualpos = 0;
@@ -277,8 +281,8 @@ public:
     {
         this->rootX = (srcbuf)->rootX;
         this->rootY = (srcbuf)->rootY;
-        this->COLS = (srcbuf)->COLS;
-        this->LINES = (srcbuf)->LINES;
+        this->Cols = (srcbuf)->Cols;
+        this->Lines = (srcbuf)->Lines;
     }
 
     InputStream *pagerSource;

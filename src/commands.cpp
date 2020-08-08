@@ -61,12 +61,12 @@ void pgFore(w3mApp *w3m)
 {
     if (vi_prec_num)
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES() - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES() - 1));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -76,12 +76,12 @@ void pgBack(w3mApp *w3m)
 {
     if (vi_prec_num)
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(-searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(-searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES() - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES - 1)));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES() - 1)));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -106,7 +106,7 @@ void ctrCsrV(w3mApp *w3m)
     int offsety;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
-    offsety = GetCurrentTab()->GetCurrentBuffer()->LINES / 2 - GetCurrentTab()->GetCurrentBuffer()->cursorY;
+    offsety = GetCurrentTab()->GetCurrentBuffer()->LINES() / 2 - GetCurrentTab()->GetCurrentBuffer()->cursorY;
     if (offsety != 0)
     {
         GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->TopLine(), -offsety, FALSE);
@@ -120,7 +120,7 @@ void ctrCsrH(w3mApp *w3m)
     int offsetx;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
-    offsetx = GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->COLS / 2;
+    offsetx = GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->COLS() / 2;
     if (offsetx != 0)
     {
         GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(offsetx);
@@ -178,7 +178,7 @@ void shiftl(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
-    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (-GetCurrentTab()->GetCurrentBuffer()->COLS + 1) + 1);
+    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (-GetCurrentTab()->GetCurrentBuffer()->COLS() + 1) + 1);
     shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentColumn - column);
     displayCurrentbuf(B_NORMAL);
 }
@@ -190,7 +190,7 @@ void shiftr(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
-    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->COLS - 1) - 1);
+    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->COLS() - 1) - 1);
     shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentColumn - column);
     displayCurrentbuf(B_NORMAL);
 }
@@ -448,7 +448,7 @@ void ldhelp(w3mApp *w3m)
 
 void movL(w3mApp *w3m)
 {
-    _movL(GetCurrentTab()->GetCurrentBuffer()->COLS / 2);
+    _movL(GetCurrentTab()->GetCurrentBuffer()->COLS() / 2);
 }
 
 void movL1(w3mApp *w3m)
@@ -458,7 +458,7 @@ void movL1(w3mApp *w3m)
 
 void movD(w3mApp *w3m)
 {
-    _movD((GetCurrentTab()->GetCurrentBuffer()->LINES + 1) / 2);
+    _movD((GetCurrentTab()->GetCurrentBuffer()->LINES() + 1) / 2);
 }
 
 void movD1(w3mApp *w3m)
@@ -468,7 +468,7 @@ void movD1(w3mApp *w3m)
 
 void movU(w3mApp *w3m)
 {
-    _movU((GetCurrentTab()->GetCurrentBuffer()->LINES + 1) / 2);
+    _movU((GetCurrentTab()->GetCurrentBuffer()->LINES() + 1) / 2);
 }
 
 void movU1(w3mApp *w3m)
@@ -478,7 +478,7 @@ void movU1(w3mApp *w3m)
 
 void movR(w3mApp *w3m)
 {
-    _movR(GetCurrentTab()->GetCurrentBuffer()->COLS / 2);
+    _movR(GetCurrentTab()->GetCurrentBuffer()->COLS() / 2);
 }
 
 void movR1(w3mApp *w3m)

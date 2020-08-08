@@ -533,7 +533,7 @@ static void drawAnchorCursor(BufferPtr buf)
         hseq = -1;
 
     int tline = buf->TopLine()->linenumber;
-    int eline = tline + buf->LINES;
+    int eline = tline + buf->LINES();
     int prevhseq = buf->prevhseq;
 
     if (buf->href)
@@ -557,13 +557,13 @@ static void redrawNLine(BufferPtr buf)
     // lines
     {
         int i = 0;
-        for (auto l = buf->TopLine(); i < buf->LINES; i++, l = buf->NextLine(l))
+        for (auto l = buf->TopLine(); i < buf->LINES(); i++, l = buf->NextLine(l))
         {
             if (l == NULL)
             {
                 if (buf->pagerSource)
                 {
-                    l = getNextPage(buf, buf->LINES + buf->rootY - i);
+                    l = getNextPage(buf, buf->LINES() + buf->rootY - i);
                 }
             }
             if (l == NULL)
@@ -581,7 +581,7 @@ static void redrawNLine(BufferPtr buf)
     move(buf->cursorY + buf->rootY, buf->cursorX + buf->rootX);
     {
         int i = 0;
-        for (auto l = buf->TopLine(); i < buf->LINES && l;
+        for (auto l = buf->TopLine(); i < buf->LINES() && l;
              i++, l = buf->NextLine(l))
         {
             redrawLineImage(buf, l, i + buf->rootY);
@@ -605,7 +605,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
         return l;
     pos = columnPos(l, column);
     rcol = l->COLPOS(pos);
-    for (j = 0; rcol - column < buf->COLS && pos + j < l->len; j++)
+    for (j = 0; rcol - column < buf->COLS() && pos + j < l->len; j++)
     {
         if (rcol - column < 0)
         {
@@ -651,9 +651,9 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                 else
                     h = (int)(w3mApp::Instance().pixel_per_line - sy);
                 if (w >
-                    (int)((buf->rootX + buf->COLS) * w3mApp::Instance().pixel_per_char -
+                    (int)((buf->rootX + buf->COLS()) * w3mApp::Instance().pixel_per_char -
                           x))
-                    w = (int)((buf->rootX + buf->COLS) *
+                    w = (int)((buf->rootX + buf->COLS()) *
                                   w3mApp::Instance().pixel_per_char -
                               x);
                 if (h > (int)((LINES - 1) * w3mApp::Instance().pixel_per_line - y))
@@ -966,7 +966,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         buf->rootX = 0;
     }
 
-    buf->COLS = COLS - buf->rootX;
+    buf->Cols = COLS - buf->rootX;
     if (GetTabCount() > 1 || GetMouseActionMenuStr())
     {
         if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
@@ -975,10 +975,10 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         if (ny > (LINES - 1))
             ny = (LINES - 1);
     }
-    if (buf->rootY != ny || buf->LINES != (LINES - 1) - ny)
+    if (buf->rootY != ny || buf->LINES() != (LINES - 1) - ny)
     {
         buf->rootY = ny;
-        buf->LINES = (LINES - 1) - ny;
+        buf->Lines = (LINES - 1) - ny;
         buf->ArrangeCursor();
         mode = B_REDRAW_IMAGE;
     }
