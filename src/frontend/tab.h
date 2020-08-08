@@ -83,7 +83,6 @@ public:
     void DeleteBack();
 
     void DeleteBuffer(BufferPtr delbuf);
-    void ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf);
 
 private:
     bool IsConnectFirstCurrent() const;

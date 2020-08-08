@@ -470,15 +470,6 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
     }
 }
 
-/* 
- * replaceBuffer: replace buffer
- */
-void Tab::ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf)
-{
-    // TODO:
-    assert(false);
-}
-
 bool Tab::CheckBackBuffer()
 {
     auto it = find(GetCurrentBuffer());

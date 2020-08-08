@@ -1677,12 +1677,6 @@ Str currentURL(void)
     return GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr();
 }
 
-void repBuffer(BufferPtr oldbuf, BufferPtr buf)
-{
-    GetCurrentTab()->ReplaceBuffer(oldbuf, buf);
-    GetCurrentTab()->SetCurrentBuffer(buf);
-}
-
 void _docCSet(CharacterEncodingScheme charset)
 {
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)

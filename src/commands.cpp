@@ -1619,62 +1619,64 @@ void vwSrc(w3mApp *w3m)
     GetCurrentTab()->Push(buf);
     displayCurrentbuf(B_NORMAL);
 }
-/* reload */
 
+/* reload */
 void reload(w3mApp *w3m)
 {
-    BufferPtr buf;
-    BufferPtr fbuf = NULL;
-    CharacterEncodingScheme old_charset;
-
-    Str url;
-    FormList *request;
-    int multipart;
-    if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->bufferprop & BP_INTERNAL)
     {
-        if (GetCurrentTab()->GetCurrentBuffer()->buffername == w3mApp::DOWNLOAD_LIST_TITLE)
+        if (buf->buffername == w3mApp::DOWNLOAD_LIST_TITLE)
         {
             ldDL(w3m);
             return;
         }
+
         /* FIXME: gettextize? */
         disp_err_message("Can't reload...", TRUE);
         return;
     }
-    if (GetCurrentTab()->GetCurrentBuffer()->currentURL.scheme == SCM_LOCAL &&
-        GetCurrentTab()->GetCurrentBuffer()->currentURL.file == "-")
+
+    if (buf->currentURL.scheme == SCM_LOCAL &&
+        buf->currentURL.file == "-")
     {
         /* file is std input */
         /* FIXME: gettextize? */
         disp_err_message("Can't reload stdin", TRUE);
         return;
     }
-    auto sbuf = GetCurrentTab()->GetCurrentBuffer()->Copy();
-    if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME &&
-        (fbuf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME]))
+
+    BufferPtr fbuf = NULL;
+    auto sbuf = buf->Copy();
+    if (buf->bufferprop & BP_FRAME &&
+        (fbuf = buf->linkBuffer[LB_N_FRAME]))
     {
+        // frame
         if (fmInitialized)
         {
             message("Rendering frame", 0, 0);
             refresh();
         }
-        if (!(buf = renderFrame(fbuf, 1)))
+
+        BufferPtr renderBuf;
+        if (!(renderBuf = renderFrame(fbuf, 1)))
         {
             displayCurrentbuf(B_NORMAL);
             return;
         }
         if (fbuf->linkBuffer[LB_FRAME])
         {
-            if (buf->sourcefile.size() &&
+            if (renderBuf->sourcefile.size() &&
                 fbuf->linkBuffer[LB_FRAME]->sourcefile.size() &&
-                buf->sourcefile == fbuf->linkBuffer[LB_FRAME]->sourcefile)
+                renderBuf->sourcefile == fbuf->linkBuffer[LB_FRAME]->sourcefile)
                 fbuf->linkBuffer[LB_FRAME]->sourcefile.clear();
             auto tab = GetCurrentTab();
             tab->DeleteBuffer(fbuf->linkBuffer[LB_FRAME]);
         }
-        fbuf->linkBuffer[LB_FRAME] = buf;
-        buf->linkBuffer[LB_N_FRAME] = fbuf;
-        GetCurrentTab()->Push(buf);
+        fbuf->linkBuffer[LB_FRAME] = renderBuf;
+        renderBuf->linkBuffer[LB_N_FRAME] = fbuf;
+        GetCurrentTab()->Push(renderBuf);
         if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
         {
             GetCurrentTab()->GetCurrentBuffer()->COPY_BUFROOT_FROM(sbuf);
@@ -1683,9 +1685,18 @@ void reload(w3mApp *w3m)
         displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
-    else if (GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+
+    // int multipart;
+    if (GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+    {
         fbuf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME];
-    multipart = 0;
+    }
+
+    //
+    // form
+    //
+    FormList *request;
+    int multipart = 0;
     if (GetCurrentTab()->GetCurrentBuffer()->form_submit)
     {
         request = GetCurrentTab()->GetCurrentBuffer()->form_submit->parent;
@@ -1703,57 +1714,64 @@ void reload(w3mApp *w3m)
     {
         request = NULL;
     }
-    url = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr();
+
+    //
+    // reload
+    //
+    auto url = buf->currentURL.ToStr();
     /* FIXME: gettextize? */
     message("Reloading...", 0, 0);
     refresh();
 
-    old_charset = w3mApp::Instance().DocumentCharset;
-    if (GetCurrentTab()->GetCurrentBuffer()->document_charset != WC_CES_US_ASCII)
-        w3mApp::Instance().DocumentCharset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
+    auto old_charset = w3m->DocumentCharset;
+    if (buf->document_charset != WC_CES_US_ASCII)
+        w3m->DocumentCharset = buf->document_charset;
 
-    w3mApp::Instance().SearchHeader = GetCurrentTab()->GetCurrentBuffer()->search_header;
-    w3mApp::Instance().DefaultType = Strnew(GetCurrentTab()->GetCurrentBuffer()->real_type)->ptr;
-    buf = loadGeneralFile(url->ptr, NULL, NO_REFERER, RG_NOCACHE, request);
+    w3m->SearchHeader = buf->search_header;
+    w3m->DefaultType = Strnew(buf->real_type)->ptr;
 
-    w3mApp::Instance().DocumentCharset = old_charset;
+    {
+        auto newBuf = loadGeneralFile(url->ptr, NULL, NO_REFERER, RG_NOCACHE, request);
 
-    w3mApp::Instance().SearchHeader = FALSE;
-    w3mApp::Instance().DefaultType.clear();
-    if (multipart)
-        unlink(request->body);
-    if (buf == NULL)
-    {
-        /* FIXME: gettextize? */
-        disp_err_message("Can't reload...", TRUE);
-        return;
+        w3m->DocumentCharset = old_charset;
+
+        w3m->SearchHeader = FALSE;
+        w3m->DefaultType.clear();
+        if (multipart)
+            unlink(request->body);
+
+        if (newBuf == NULL)
+        {
+            /* FIXME: gettextize? */
+            disp_err_message("Can't reload...", TRUE);
+            return;
+        }
+
+        if (fbuf != NULL)
+            GetCurrentTab()->DeleteBuffer(fbuf);
+
+        tab->Push(newBuf);
+        tab->DeleteBack();
+
+        if ((newBuf->type.size()) && (sbuf->type.size()) &&
+            ((newBuf->type == "text/plain" &&
+              is_html_type(sbuf->type)) ||
+             (is_html_type(newBuf->type) &&
+              sbuf->type == "text/plain")))
+        {
+            vwSrc(w3m);
+            if (GetCurrentTab()->GetCurrentBuffer() != newBuf)
+                GetCurrentTab()->DeleteBuffer(newBuf);
+        }
+        GetCurrentTab()->GetCurrentBuffer()->search_header = sbuf->search_header;
+        GetCurrentTab()->GetCurrentBuffer()->form_submit = sbuf->form_submit;
+        if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
+        {
+            GetCurrentTab()->GetCurrentBuffer()->COPY_BUFROOT_FROM(sbuf);
+            GetCurrentTab()->GetCurrentBuffer()->restorePosition(sbuf);
+        }
+        displayCurrentbuf(B_FORCE_REDRAW);
     }
-    else
-    {
-        displayCurrentbuf(B_NORMAL);
-        return;
-    }
-    if (fbuf != NULL)
-        GetCurrentTab()->DeleteBuffer(fbuf);
-    repBuffer(GetCurrentTab()->GetCurrentBuffer(), buf);
-    if ((buf->type.size()) && (sbuf->type.size()) &&
-        ((buf->type == "text/plain" &&
-          is_html_type(sbuf->type)) ||
-         (is_html_type(buf->type) &&
-          sbuf->type == "text/plain")))
-    {
-        vwSrc(w3m);
-        if (GetCurrentTab()->GetCurrentBuffer() != buf)
-            GetCurrentTab()->DeleteBuffer(buf);
-    }
-    GetCurrentTab()->GetCurrentBuffer()->search_header = sbuf->search_header;
-    GetCurrentTab()->GetCurrentBuffer()->form_submit = sbuf->form_submit;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
-    {
-        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFROOT_FROM(sbuf);
-        GetCurrentTab()->GetCurrentBuffer()->restorePosition(sbuf);
-    }
-    displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* reshape */
 
