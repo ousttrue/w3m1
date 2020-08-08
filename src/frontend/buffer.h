@@ -223,6 +223,8 @@ public:
         assert(it != lines.end());
         lines.insert(it, prev);
     }
+    bool MoveLeftWord(int n);
+    bool MoveRightWord(int n);
 
     std::array<BufferPtr, MAX_LB> linkBuffer;
     short width;

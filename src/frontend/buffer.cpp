@@ -1424,3 +1424,96 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
 
     return rcol - currentColumn;
 }
+
+bool Buffer::MoveLeftWord(int n)
+{
+    if (this->LineCount() == 0)
+        return false;
+
+    for (int i = 0; i < n; i++)
+    {
+        auto pline = this->CurrentLine();
+        auto ppos = this->pos;
+        if (prev_nonnull_line(shared_from_this(), this->CurrentLine()) < 0)
+            goto end;
+
+        while (1)
+        {
+            auto l = this->CurrentLine();
+            auto lb = l->lineBuf;
+            while (this->pos > 0)
+            {
+                int tmp = this->pos;
+                prevChar(&tmp, l);
+                if (is_wordchar(getChar(&lb[tmp])))
+                    break;
+                this->pos = tmp;
+            }
+            if (this->pos > 0)
+                break;
+            if (prev_nonnull_line(shared_from_this(), this->PrevLine(this->CurrentLine())) < 0)
+            {
+                this->SetCurrentLine(pline);
+                this->pos = ppos;
+                goto end;
+            }
+            this->pos = this->CurrentLine()->len;
+        }
+        {
+            auto l = this->CurrentLine();
+            auto lb = l->lineBuf;
+            while (this->pos > 0)
+            {
+                int tmp = this->pos;
+                prevChar(&tmp, l);
+                if (!is_wordchar(getChar(&lb[tmp])))
+                    break;
+                this->pos = tmp;
+            }
+        }
+    }
+end:
+    this->ArrangeCursor();
+    return true;
+}
+
+bool Buffer::MoveRightWord(int n)
+{
+    if (this->LineCount() == 0)
+        return false;
+
+    for (int i = 0; i < n; i++)
+    {
+        auto pline = this->CurrentLine();
+        auto ppos = this->pos;
+        if (next_nonnull_line(shared_from_this(), this->CurrentLine()) < 0)
+            goto end;
+
+        auto l = this->CurrentLine();
+        auto lb = l->lineBuf;
+        while (this->pos < l->len &&
+               is_wordchar(getChar(&lb[this->pos])))
+            nextChar(&this->pos, l);
+
+        while (1)
+        {
+            while (this->pos < l->len &&
+                   !is_wordchar(getChar(&lb[this->pos])))
+                nextChar(&this->pos, l);
+            if (this->pos < l->len)
+                break;
+            if (next_nonnull_line(shared_from_this(), this->NextLine(this->CurrentLine())) < 0)
+            {
+                this->SetCurrentLine(pline);
+                this->pos = ppos;
+                goto end;
+            }
+            this->pos = 0;
+            l = this->CurrentLine();
+            lb = l->lineBuf;
+        }
+    }
+end:
+    this->ArrangeCursor();
+    return true;
+}
