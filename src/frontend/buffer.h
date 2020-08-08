@@ -53,17 +53,23 @@ struct BufferPos
     BufferPos *prev;
 };
 
+//
+// viewport for buffer
+//
 struct TermRect
 {
+    // viewport top left corner
     short rootX = 0;
     short rootY = 0;
+    // viewport size
     short cols = 0;
     short lines = 0;
-    short right() const { return rootX + cols; }
-    short bottom() const { return rootY + lines; }
-
+    // buffer local cursor position
     short cursorX = 0;
     short cursorY = 0;
+
+    short right() const { return rootX + cols; }
+    short bottom() const { return rootY + lines; }
     void resetCursor()
     {
         cursorX = 0;
@@ -97,8 +103,6 @@ using LinePtr = struct Line *;
 using LineList = std::vector<LinePtr>;
 struct Buffer : std::enable_shared_from_this<Buffer>
 {
-    // friend struct Tab;
-
     std::string filename;
     std::string buffername;
 
