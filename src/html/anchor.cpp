@@ -300,7 +300,7 @@ reAnchorAny(BufferPtr buf, char *re,
         p = l->lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->lineBuf()[l->size] - p, p == l->lineBuf()) == 1)
+            if (regexMatch(p, &l->lineBuf()[l->len()] - p, p == l->lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
                 p = reAnchorPos(buf, l, p1, p2, anchorproc);
@@ -378,7 +378,7 @@ reAnchorNewsheader(BufferPtr buf)
                 continue;
             for (;;)
             {
-                if (regexMatch(p, &l->lineBuf()[l->size] - p, p == l->lineBuf()) == 1)
+                if (regexMatch(p, &l->lineBuf()[l->len()] - p, p == l->lineBuf()) == 1)
                 {
                     matchedPosition(&p1, &p2);
                     p = reAnchorPos(buf, l, p1, p2, _put_anchor_news);

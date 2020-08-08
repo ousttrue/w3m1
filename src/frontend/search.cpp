@@ -13,7 +13,7 @@
 static void
 set_mark(LinePtr l, int pos, int epos)
 {
-    for (; pos < epos && pos < l->size; pos++)
+    for (; pos < epos && pos < l->len(); pos++)
         l->propBuf()[pos] |= PE_MARK;
 }
 
@@ -138,10 +138,10 @@ int forwardSearch(BufferPtr buf, char *str)
     }
     begin = l;
 #ifdef USE_M17N
-    while (pos < l->size && l->propBuf()[pos] & PC_WCHAR2)
+    while (pos < l->len() && l->propBuf()[pos] & PC_WCHAR2)
         pos++;
 #endif
-    if (pos < l->size && regexMatch(&l->lineBuf()[pos], l->size - pos, 0) == 1)
+    if (pos < l->len() && regexMatch(&l->lineBuf()[pos], l->len() - pos, 0) == 1)
     {
         matchedPosition(&first, &last);
         pos = first - l->lineBuf();
@@ -189,7 +189,7 @@ int forwardSearch(BufferPtr buf, char *str)
         }
         if (l->bpos)
             continue;
-        if (regexMatch(l->lineBuf(), l->size, 1) == 1)
+        if (regexMatch(l->lineBuf(), l->len(), 1) == 1)
         {
             matchedPosition(&first, &last);
             pos = first - l->lineBuf();
@@ -259,7 +259,7 @@ int backwardSearch(BufferPtr buf, char *str)
         found = NULL;
         found_last = NULL;
         q = l->lineBuf();
-        while (regexMatch(q, &l->lineBuf()[l->size] - q, q == l->lineBuf()) == 1)
+        while (regexMatch(q, &l->lineBuf()[l->len()] - q, q == l->lineBuf()) == 1)
         {
             matchedPosition(&first, &last);
             if (first <= p)
@@ -267,11 +267,11 @@ int backwardSearch(BufferPtr buf, char *str)
                 found = first;
                 found_last = last;
             }
-            if (q - l->lineBuf() >= l->size)
+            if (q - l->lineBuf() >= l->len())
                 break;
             q++;
 #ifdef USE_M17N
-            while (q - l->lineBuf() < l->size && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
+            while (q - l->lineBuf() < l->len() && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
                 q++;
 #endif
             if (q > p)
@@ -310,16 +310,16 @@ int backwardSearch(BufferPtr buf, char *str)
         found = NULL;
         found_last = NULL;
         q = l->lineBuf();
-        while (regexMatch(q, &l->lineBuf()[l->size] - q, q == l->lineBuf()) == 1)
+        while (regexMatch(q, &l->lineBuf()[l->len()] - q, q == l->lineBuf()) == 1)
         {
             matchedPosition(&first, &last);
             found = first;
             found_last = last;
-            if (q - l->lineBuf() >= l->size)
+            if (q - l->lineBuf() >= l->len())
                 break;
             q++;
 #ifdef USE_M17N
-            while (q - l->lineBuf() < l->size && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
+            while (q - l->lineBuf() < l->len() && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
                 q++;
 #endif
         }

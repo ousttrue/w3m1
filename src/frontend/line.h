@@ -106,7 +106,6 @@ struct Line : gc_cleanup
         colorBuf = color;
 
         width = -1;
-        size = str.len;
         bpos = 0;
         bwidth = 0;
     }
@@ -121,7 +120,8 @@ public:
     long linenumber = 0;      /* on buffer */
     long real_linenumber = 0; /* on file */
     unsigned short usrflags = 0;
-    int size = 0;
+
+public:
     int bpos = 0;
     int bwidth = 0;
 

@@ -429,7 +429,6 @@ form_update_line(LinePtr line, char **str, int spos, int epos, int width,
           (line->len() - epos) * sizeof(Lineprop));
 
     line->buffer = {buf, prop, len};
-    line->size = len;
 
     return pos;
 }
