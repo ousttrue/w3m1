@@ -34,8 +34,9 @@
 #include "w3m.h"
 #include <signal.h>
 
+/* do nothing */
 void nulcmd(w3mApp *w3m)
-{ /* do nothing */
+{
 }
 
 void escmap(w3mApp *w3m)
@@ -59,14 +60,16 @@ void multimap(w3mApp *w3m)
 /* Move page forward */
 void pgFore(w3mApp *w3m)
 {
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     if (vi_prec_num)
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.lines - 1));
+        buf->NScroll(searchKeyNum() * (buf->rect.lines - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.lines - 1));
+        buf->NScroll(prec_num() ? searchKeyNum() : searchKeyNum() * (buf->rect.lines - 1));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -74,14 +77,16 @@ void pgFore(w3mApp *w3m)
 /* Move page backward */
 void pgBack(w3mApp *w3m)
 {
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     if (vi_prec_num)
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(-searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.lines - 1));
+        buf->NScroll(-searchKeyNum() * (buf->rect.lines - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.lines - 1)));
+        buf->NScroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (buf->rect.lines - 1)));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -89,14 +94,18 @@ void pgBack(w3mApp *w3m)
 /* 1 line up */
 void lup1(w3mApp *w3m)
 {
-    GetCurrentTab()->GetCurrentBuffer()->NScroll(searchKeyNum());
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    buf->NScroll(searchKeyNum());
     displayCurrentbuf(B_SCROLL);
 }
 
 /* 1 line down */
 void ldown1(w3mApp *w3m)
 {
-    GetCurrentTab()->GetCurrentBuffer()->NScroll(-searchKeyNum());
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    buf->NScroll(-searchKeyNum());
     displayCurrentbuf(B_SCROLL);
 }
 
@@ -132,16 +141,18 @@ void ctrCsrH(w3mApp *w3m)
         displayCurrentbuf(B_NORMAL);
     }
 }
-/* Redraw screen */
 
+/* Redraw screen */
 void rdrwSc(w3mApp *w3m)
 {
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     clear();
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    buf->ArrangeCursor();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
-/* Search regular expression forward */
 
+/* Search regular expression forward */
 void srchfor(w3mApp *w3m)
 {
     srch(forwardSearch, "Forward: ");
@@ -151,8 +162,8 @@ void isrchfor(w3mApp *w3m)
 {
     isrch(forwardSearch, "I-search: ");
 }
-/* Search regular expression backward */
 
+/* Search regular expression backward */
 void srchbak(w3mApp *w3m)
 {
     srch(backwardSearch, "Backward: ");
@@ -162,46 +173,49 @@ void isrchbak(w3mApp *w3m)
 {
     isrch(backwardSearch, "I-search backward: ");
 }
-/* Search next matching */
 
+/* Search next matching */
 void srchnxt(w3mApp *w3m)
 {
     srch_nxtprv(0);
 }
-/* Search previous matching */
 
+/* Search previous matching */
 void srchprv(w3mApp *w3m)
 {
     srch_nxtprv(1);
 }
-/* Shift screen left */
 
+/* Shift screen left */
 void shiftl(w3mApp *w3m)
 {
-    int column;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
-    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (-GetCurrentTab()->GetCurrentBuffer()->rect.cols + 1) + 1);
-    shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentColumn - column);
+    int column = buf->currentColumn;
+    buf->ColumnSkip(searchKeyNum() * (-buf->rect.cols + 1) + 1);
+    shiftvisualpos(buf, buf->currentColumn - column);
     displayCurrentbuf(B_NORMAL);
 }
-/* Shift screen right */
 
+/* Shift screen right */
 void shiftr(w3mApp *w3m)
 {
-    int column;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
-    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.cols - 1) - 1);
-    shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentColumn - column);
+    int column = buf->currentColumn;
+    buf->ColumnSkip(searchKeyNum() * (buf->rect.cols - 1) - 1);
+    shiftvisualpos(buf, buf->currentColumn - column);
     displayCurrentbuf(B_NORMAL);
 }
 
 void col1R(w3mApp *w3m)
 {
-    BufferPtr buf = GetCurrentTab()->GetCurrentBuffer();
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     LinePtr l = buf->CurrentLine();
     int j, column, n = searchKeyNum();
     if (l == NULL)
@@ -209,17 +223,18 @@ void col1R(w3mApp *w3m)
     for (j = 0; j < n; j++)
     {
         column = buf->currentColumn;
-        GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(1);
+        buf->ColumnSkip(1);
         if (column == buf->currentColumn)
             break;
-        shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), 1);
+        shiftvisualpos(buf, 1);
     }
     displayCurrentbuf(B_NORMAL);
 }
 
 void col1L(w3mApp *w3m)
 {
-    BufferPtr buf = GetCurrentTab()->GetCurrentBuffer();
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     LinePtr l = buf->CurrentLine();
     int j, n = searchKeyNum();
     if (l == NULL)
@@ -228,8 +243,8 @@ void col1L(w3mApp *w3m)
     {
         if (buf->currentColumn == 0)
             break;
-        GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(-1);
-        shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), -1);
+        buf->ColumnSkip(-1);
+        shiftvisualpos(buf, -1);
     }
     displayCurrentbuf(B_NORMAL);
 }
@@ -262,11 +277,8 @@ void setEnv(w3mApp *w3m)
 
 void pipeBuf(w3mApp *w3m)
 {
-    BufferPtr buf;
-    char *cmd, *tmpf;
-    FILE *f;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    cmd = searchKeyData();
+    auto cmd = searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
         /* FIXME: gettextize? */
@@ -279,8 +291,9 @@ void pipeBuf(w3mApp *w3m)
         displayCurrentbuf(B_NORMAL);
         return;
     }
-    tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
-    f = fopen(tmpf, "w");
+
+    auto tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
+    auto f = fopen(tmpf, "w");
     if (f == NULL)
     {
         /* FIXME: gettextize? */
@@ -289,23 +302,24 @@ void pipeBuf(w3mApp *w3m)
     }
     saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
     fclose(f);
-    buf = getpipe(myExtCommand(cmd, shell_quote(tmpf), TRUE)->ptr);
-    if (buf == NULL)
+
+    auto newBuf = getpipe(myExtCommand(cmd, shell_quote(tmpf), TRUE)->ptr);
+    if (newBuf == NULL)
     {
         disp_message("Execution failed", TRUE);
         return;
     }
     else
     {
-        buf->filename = cmd;
-        buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
+        newBuf->filename = cmd;
+        newBuf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
                                   conv_from_system(cmd))
                               ->ptr;
-        buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-        if (buf->type.empty())
-            buf->type = "text/plain";
-        buf->currentURL.file = "-";
-        GetCurrentTab()->Push(buf);
+        newBuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
+        if (newBuf->type.empty())
+            newBuf->type = "text/plain";
+        newBuf->currentURL.file = "-";
+        GetCurrentTab()->Push(newBuf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
