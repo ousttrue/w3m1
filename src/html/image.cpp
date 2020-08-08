@@ -340,7 +340,8 @@ void showImageProgress(BufferPtr buf)
     if (n)
     {
         message(Sprintf("%d/%d images loaded", l, n)->ptr,
-                buf->cursorX + buf->rootX, buf->cursorY + buf->rootY);
+                buf->cursorX + buf->rect.rootX, 
+                buf->cursorY + buf->rect.rootY);
         refresh();
     }
 }

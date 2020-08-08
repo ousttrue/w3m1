@@ -61,12 +61,12 @@ void pgFore(w3mApp *w3m)
 {
     if (vi_prec_num)
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES() - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.lines - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES() - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.lines - 1));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -76,12 +76,12 @@ void pgBack(w3mApp *w3m)
 {
     if (vi_prec_num)
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(-searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES() - 1));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(-searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.lines - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        GetCurrentTab()->GetCurrentBuffer()->NScroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->LINES() - 1)));
+        GetCurrentTab()->GetCurrentBuffer()->NScroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.lines - 1)));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -106,7 +106,7 @@ void ctrCsrV(w3mApp *w3m)
     int offsety;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
-    offsety = GetCurrentTab()->GetCurrentBuffer()->LINES() / 2 - GetCurrentTab()->GetCurrentBuffer()->cursorY;
+    offsety = GetCurrentTab()->GetCurrentBuffer()->rect.lines / 2 - GetCurrentTab()->GetCurrentBuffer()->cursorY;
     if (offsety != 0)
     {
         GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->TopLine(), -offsety, FALSE);
@@ -120,7 +120,7 @@ void ctrCsrH(w3mApp *w3m)
     int offsetx;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
-    offsetx = GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->COLS() / 2;
+    offsetx = GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2;
     if (offsetx != 0)
     {
         GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(offsetx);
@@ -178,7 +178,7 @@ void shiftl(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
-    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (-GetCurrentTab()->GetCurrentBuffer()->COLS() + 1) + 1);
+    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (-GetCurrentTab()->GetCurrentBuffer()->rect.cols + 1) + 1);
     shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentColumn - column);
     displayCurrentbuf(B_NORMAL);
 }
@@ -190,7 +190,7 @@ void shiftr(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     column = GetCurrentTab()->GetCurrentBuffer()->currentColumn;
-    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->COLS() - 1) - 1);
+    GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(searchKeyNum() * (GetCurrentTab()->GetCurrentBuffer()->rect.cols - 1) - 1);
     shiftvisualpos(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentColumn - column);
     displayCurrentbuf(B_NORMAL);
 }
@@ -448,7 +448,7 @@ void ldhelp(w3mApp *w3m)
 
 void movL(w3mApp *w3m)
 {
-    _movL(GetCurrentTab()->GetCurrentBuffer()->COLS() / 2);
+    _movL(GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2);
 }
 
 void movL1(w3mApp *w3m)
@@ -458,7 +458,7 @@ void movL1(w3mApp *w3m)
 
 void movD(w3mApp *w3m)
 {
-    _movD((GetCurrentTab()->GetCurrentBuffer()->LINES() + 1) / 2);
+    _movD((GetCurrentTab()->GetCurrentBuffer()->rect.lines + 1) / 2);
 }
 
 void movD1(w3mApp *w3m)
@@ -468,7 +468,7 @@ void movD1(w3mApp *w3m)
 
 void movU(w3mApp *w3m)
 {
-    _movU((GetCurrentTab()->GetCurrentBuffer()->LINES() + 1) / 2);
+    _movU((GetCurrentTab()->GetCurrentBuffer()->rect.lines + 1) / 2);
 }
 
 void movU1(w3mApp *w3m)
@@ -478,7 +478,7 @@ void movU1(w3mApp *w3m)
 
 void movR(w3mApp *w3m)
 {
-    _movR(GetCurrentTab()->GetCurrentBuffer()->COLS() / 2);
+    _movR(GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2);
 }
 
 void movR1(w3mApp *w3m)
@@ -1679,7 +1679,7 @@ void reload(w3mApp *w3m)
         GetCurrentTab()->Push(renderBuf);
         if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
         {
-            GetCurrentTab()->GetCurrentBuffer()->COPY_BUFROOT_FROM(sbuf);
+            GetCurrentTab()->GetCurrentBuffer()->rect = sbuf->rect;
             GetCurrentTab()->GetCurrentBuffer()->restorePosition(sbuf);
         }
         displayCurrentbuf(B_FORCE_REDRAW);
@@ -1767,7 +1767,7 @@ void reload(w3mApp *w3m)
         GetCurrentTab()->GetCurrentBuffer()->form_submit = sbuf->form_submit;
         if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
         {
-            GetCurrentTab()->GetCurrentBuffer()->COPY_BUFROOT_FROM(sbuf);
+            GetCurrentTab()->GetCurrentBuffer()->rect = sbuf->rect;
             GetCurrentTab()->GetCurrentBuffer()->restorePosition(sbuf);
         }
         displayCurrentbuf(B_FORCE_REDRAW);
@@ -2002,24 +2002,27 @@ void movMs(w3mApp *w3m)
     {
         return;
     }
-    if ((GetTabCount() > 1 || GetMouseActionMenuStr()) &&
-        y < GetTabbarHeight())
-        return;
-    else if (x >= GetCurrentTab()->GetCurrentBuffer()->rootX &&
-             y < (LINES - 1))
+
+    if ((GetTabCount() > 1 || GetMouseActionMenuStr()) && y < GetTabbarHeight())
     {
-        GetCurrentTab()->GetCurrentBuffer()->CursorXY(
-            x - GetCurrentTab()->GetCurrentBuffer()->rootX,
-            y - GetCurrentTab()->GetCurrentBuffer()->rootY);
+        // mouse on tab
+        return;
+    }
+
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (x >= buf->rect.rootX && y < (LINES - 1))
+    {
+        GetCurrentTab()->GetCurrentBuffer()->CursorXY(x, y);
     }
     displayCurrentbuf(B_NORMAL);
 }
+
 #ifdef KANJI_SYMBOLS
 #define FRAME_WIDTH 2
 #else
 #define FRAME_WIDTH 1
 #endif
-
 void menuMs(w3mApp *w3m)
 {
     int x, y;
@@ -2027,16 +2030,16 @@ void menuMs(w3mApp *w3m)
     {
         return;
     }
+
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     if ((GetTabCount() > 1 || GetMouseActionMenuStr()) && y < GetTabbarHeight())
     {
         x -= FRAME_WIDTH + 1;
     }
-    else if (x >= GetCurrentTab()->GetCurrentBuffer()->rootX &&
-             y < (LINES - 1))
+    else if (x >= buf->rect.rootX && y < (LINES - 1))
     {
-        GetCurrentTab()->GetCurrentBuffer()->CursorXY(
-            x - GetCurrentTab()->GetCurrentBuffer()->rootX,
-            y - GetCurrentTab()->GetCurrentBuffer()->rootY);
+        GetCurrentTab()->GetCurrentBuffer()->CursorXY(x, y);
         displayCurrentbuf(B_NORMAL);
     }
     mainMenu(x, y);
@@ -2326,7 +2329,6 @@ void tabL(w3mApp *w3m)
 
 void ldDL(w3mApp *w3m)
 {
-    BufferPtr buf;
     int replace = FALSE, new_tab = FALSE;
     auto tab = GetCurrentTab();
     if (tab->GetCurrentBuffer()->bufferprop & BP_INTERNAL &&
@@ -2351,24 +2353,24 @@ void ldDL(w3mApp *w3m)
 
     auto nReload = checkDownloadList();
 
-    buf = DownloadListBuffer(w3m);
-    if (!buf)
+    auto newBuf = DownloadListBuffer(w3m);
+    if (!newBuf)
     {
         displayCurrentbuf(B_NORMAL);
         return;
     }
-    buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
+    newBuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
     if (replace)
     {
-        buf->COPY_BUFROOT_FROM(GetCurrentTab()->GetCurrentBuffer());
-        buf->restorePosition(GetCurrentTab()->GetCurrentBuffer());
+        newBuf->rect = GetCurrentTab()->GetCurrentBuffer()->rect;
+        newBuf->restorePosition(GetCurrentTab()->GetCurrentBuffer());
     }
     if (!replace && open_tab_dl_list)
     {
         CreateTabSetCurrent();
         new_tab = TRUE;
     }
-    GetCurrentTab()->Push(buf);
+    GetCurrentTab()->Push(newBuf);
     if (replace || new_tab)
         deletePrevBuf(w3m);
 

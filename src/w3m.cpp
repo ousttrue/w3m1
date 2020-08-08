@@ -1177,6 +1177,9 @@ void w3mApp::mainloop()
             set_add_download_list(FALSE);
             ldDL(&w3mApp::Instance());
         }
+
+        auto tab = GetCurrentTab();
+        auto buf = tab->GetCurrentBuffer();
         if (GetCurrentTab()->GetCurrentBuffer()->submit)
         {
             Anchor *a = GetCurrentTab()->GetCurrentBuffer()->submit;
@@ -1192,7 +1195,7 @@ void w3mApp::mainloop()
             continue;
         }
         /* get keypress event */
-#ifdef USE_ALARM
+
         if (GetCurrentTab()->GetCurrentBuffer()->event)
         {
             if (GetCurrentTab()->GetCurrentBuffer()->event->status != AL_UNSET)
@@ -1214,7 +1217,6 @@ void w3mApp::mainloop()
         }
         if (!GetCurrentTab()->GetCurrentBuffer()->event)
             SetCurrentAlarm(DefaultAlarm());
-#endif
 
         DisableMouseAction();
         if (use_mouse)

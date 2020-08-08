@@ -1249,8 +1249,10 @@ void popupMenu(int x, int y, Menu *menu)
     initSelectMenu();
     initSelTabMenu();
 
-    menu->cursorX = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX;
-    menu->cursorY = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    menu->cursorX = buf->cursorX + buf->rect.rootX;
+    menu->cursorY = buf->cursorY + buf->rect.rootY;
     menu->x = x + FRAME_WIDTH + 1;
     menu->y = y + 2;
 
@@ -1330,8 +1332,8 @@ initSelectMenu(void)
 
     new_option_menu(&SelectMenu, label, &SelectV, smChBuf);
     SelectMenu.initial = SelectV;
-    SelectMenu.cursorX = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX;
-    SelectMenu.cursorY = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
+    SelectMenu.cursorX = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX;
+    SelectMenu.cursorY = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY;
     SelectMenu.keymap['D'] = smDelBuf;
     SelectMenu.item[nitem].type = MENU_NOP;
 }
@@ -1777,8 +1779,8 @@ Link *link_menu(BufferPtr buf)
     int linkV = -1;
     new_option_menu(&menu, const_cast<char **>(labels.data()), &linkV, NULL);
     menu.initial = 0;
-    menu.cursorX = buf->cursorX + buf->rootX;
-    menu.cursorY = buf->cursorY + buf->rootY;
+    menu.cursorX = buf->cursorX + buf->rect.rootX;
+    menu.cursorY = buf->cursorY + buf->rect.rootY;
     menu.x = menu.cursorX + FRAME_WIDTH + 1;
     menu.y = menu.cursorY + 2;
     popup_menu(NULL, &menu);
@@ -1830,8 +1832,8 @@ accesskey_menu(BufferPtr buf)
     new_option_menu(&menu, label, &key, NULL);
 
     menu.initial = 0;
-    menu.cursorX = buf->cursorX + buf->rootX;
-    menu.cursorY = buf->cursorY + buf->rootY;
+    menu.cursorX = buf->cursorX + buf->rect.rootX;
+    menu.cursorY = buf->cursorY + buf->rect.rootY;
     menu.x = menu.cursorX + FRAME_WIDTH + 1;
     menu.y = menu.cursorY + 2;
     for (i = 0; i < 128; i++)
@@ -1953,8 +1955,8 @@ list_menu(BufferPtr buf)
     new_option_menu(&menu, label, &key, NULL);
 
     menu.initial = 0;
-    menu.cursorX = buf->cursorX + buf->rootX;
-    menu.cursorY = buf->cursorY + buf->rootY;
+    menu.cursorX = buf->cursorX + buf->rect.rootX;
+    menu.cursorY = buf->cursorY + buf->rect.rootY;
     menu.x = menu.cursorX + FRAME_WIDTH + 1;
     menu.y = menu.cursorY + 2;
     for (i = 0; i < 128; i++)
@@ -2009,8 +2011,8 @@ void PopupMenu()
     Menu *menu = &MainMenu;
     char *data;
     int n;
-    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX,
-        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
+    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX,
+        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY;
 
     data = searchKeyData();
     if (data != NULL)
@@ -2026,8 +2028,8 @@ void PopupMenu()
 
 void PopupBufferMenu()
 {
-    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX,
-        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
+    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX,
+        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY;
 
     TryGetMouseActionPosition(&x, &y);
     popupMenu(x, y, &SelectMenu);
@@ -2035,8 +2037,8 @@ void PopupBufferMenu()
 
 void PopupTabMenu()
 {
-    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX,
-        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
+    int x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX,
+        y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY;
     TryGetMouseActionPosition(&x, &y);
     popupMenu(x, y, &SelTabMenu);
 }

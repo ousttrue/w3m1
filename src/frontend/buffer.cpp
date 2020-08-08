@@ -46,8 +46,6 @@ bool fread1(T &d, FILE *f)
 
 Buffer::Buffer()
 {
-    Cols = ::COLS;
-    Lines = (::LINES - 1);
     currentURL.scheme = SCM_UNKNOWN;
     baseURL = {};
     baseTarget = {};
@@ -293,10 +291,7 @@ void Buffer::CopyFrom(BufferPtr src)
     cursorY = src->cursorY;
     pos = src->pos;
     visualpos = src->visualpos;
-    rootX = src->rootX;
-    rootY = src->rootY;
-    Cols = src->Cols;
-    Lines = src->Lines;
+    rect = src->rect;
     pagerSource = src->pagerSource;
     href = src->href;
     name = src->name;
@@ -441,7 +436,7 @@ LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
 
     if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
     {
-        n = line->linenumber + offset + this->LINES();
+        n = line->linenumber + offset + this->rect.lines;
         if (this->LastLine()->linenumber < n)
             getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
         while ((last || (this->LastLine()->linenumber < n)) &&
@@ -469,7 +464,7 @@ void Buffer::LineSkip(LinePtr line, int offset, int last)
     auto l = find(CurrentLineSkip(line, offset, last));
     int i;
     if (!nextpage_topline)
-        for (i = this->LINES() - 1 - (this->LastLine()->linenumber - (*l)->linenumber);
+        for (i = this->rect.lines - 1 - (this->LastLine()->linenumber - (*l)->linenumber);
              i > 0 && l != lines.begin();
              i--, --l)
         {
@@ -509,7 +504,7 @@ void Buffer::GotoLine(int n)
         sprintf(msg, "Last line is #%ld", this->LastLine()->linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
-        LineSkip(this->currentLine, -(this->LINES() - 1), FALSE);
+        LineSkip(this->currentLine, -(this->rect.lines - 1), FALSE);
         return;
     }
     auto it = find(l);
@@ -519,8 +514,8 @@ void Buffer::GotoLine(int n)
         {
             this->currentLine = *it;
             if (n < this->topLine->linenumber ||
-                this->topLine->linenumber + this->LINES() <= n)
-                LineSkip(*it, -(this->LINES() + 1) / 2, FALSE);
+                this->topLine->linenumber + this->rect.lines <= n)
+                LineSkip(*it, -(this->rect.lines + 1) / 2, FALSE);
             break;
         }
     }
@@ -542,7 +537,7 @@ void Buffer::Scroll(int n)
     else
     {
         auto tlnum = this->topLine->linenumber;
-        auto llnum = this->topLine->linenumber + this->LINES() - 1;
+        auto llnum = this->topLine->linenumber + this->rect.lines - 1;
         int diff_n;
         if (nextpage_topline)
             diff_n = 0;
@@ -625,7 +620,7 @@ void Buffer::GotoRealLine(int n)
         sprintf(msg, "Last line is #%ld", this->LastLine()->real_linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
-        LineSkip(this->currentLine, -(this->LINES() - 1),
+        LineSkip(this->currentLine, -(this->rect.lines - 1),
                  FALSE);
         return;
     }
@@ -637,8 +632,8 @@ void Buffer::GotoRealLine(int n)
         {
             this->currentLine = *it;
             if (n < this->topLine->real_linenumber ||
-                this->topLine->real_linenumber + this->LINES() <= n)
-                LineSkip(*it, -(this->LINES() + 1) / 2, FALSE);
+                this->topLine->real_linenumber + this->rect.lines <= n)
+                LineSkip(*it, -(this->rect.lines + 1) / 2, FALSE);
             break;
         }
     }
@@ -710,7 +705,7 @@ void Buffer::Reshape()
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
     w3mApp::Instance().UseContentCharset = TRUE;
 
-    this->height = (LINES() - 1) + 1;
+    this->height = (rect.lines - 1) + 1;
     if (this->FirstLine() && sbuf->FirstLine())
     {
         LinePtr cur = sbuf->currentLine;
@@ -981,7 +976,7 @@ void Buffer::CursorUp(int n)
 
 void Buffer::CursorDown0(int n)
 {
-    if (this->cursorY < this->LINES() - 1)
+    if (this->cursorY < this->rect.lines - 1)
         CursorUpDown(1);
     else
     {
@@ -1068,9 +1063,9 @@ void Buffer::CursorRight(int n)
         delta++;
 
     vpos2 = l->COLPOS(this->pos + delta) - this->currentColumn - 1;
-    if (vpos2 >= this->COLS() && n)
+    if (vpos2 >= this->rect.cols && n)
     {
-        ColumnSkip(n + (vpos2 - this->COLS()) - (vpos2 - this->COLS()) % n);
+        ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
         this->visualpos = l->bwidth + cpos - this->currentColumn;
     }
     this->cursorX = this->visualpos - l->bwidth;
@@ -1113,12 +1108,16 @@ void Buffer::CursorLeft(int n)
 
 void Buffer::CursorXY(int x, int y)
 {
+    // to buffer local
+    x -= rect.rootX;
+    y -= rect.rootY;
+
     CursorUpDown(y - cursorY);
 
     if (this->cursorX > x)
     {
         while (this->cursorX > x)
-            CursorLeft(this->COLS() / 2);
+            CursorLeft(this->rect.cols / 2);
     }
     else if (this->cursorX < x)
     {
@@ -1126,13 +1125,13 @@ void Buffer::CursorXY(int x, int y)
         {
             int oldX = this->cursorX;
 
-            CursorRight(this->COLS() / 2);
+            CursorRight(this->rect.cols / 2);
 
             if (oldX == this->cursorX)
                 break;
         }
         if (this->cursorX > x)
-            CursorLeft(this->COLS() / 2);
+            CursorLeft(this->rect.cols / 2);
     }
 }
 
@@ -1147,7 +1146,7 @@ void Buffer::ArrangeCursor()
     if (this->currentLine == NULL)
         return;
     /* Arrange line */
-    if (this->currentLine->linenumber - this->topLine->linenumber >= this->LINES() || this->currentLine->linenumber < this->topLine->linenumber)
+    if (this->currentLine->linenumber - this->topLine->linenumber >= this->rect.lines || this->currentLine->linenumber < this->topLine->linenumber)
     {
         this->LineSkip(this->currentLine, 0, FALSE);
     }
@@ -1180,10 +1179,10 @@ void Buffer::ArrangeCursor()
         delta++;
 
     col2 = this->currentLine->COLPOS(this->pos + delta);
-    if (col < this->currentColumn || col2 > this->COLS() + this->currentColumn)
+    if (col < this->currentColumn || col2 > this->rect.cols + this->currentColumn)
     {
         this->currentColumn = 0;
-        if (col2 > this->COLS())
+        if (col2 > this->rect.cols)
             ColumnSkip(col);
     }
     /* Arrange cursor */
@@ -1267,21 +1266,13 @@ void Buffer::DrawLine(LinePtr l, int line)
     move(line, 0);
     if (w3mApp::Instance().showLineNum)
     {
+        rect.updateRootX(this->LastLine()->real_linenumber);
+
         char tmp[16];
-        if (!this->rootX)
-        {
-            if (this->LastLine()->real_linenumber > 0)
-                this->rootX = (int)(log(this->LastLine()->real_linenumber + 0.1) / log(10)) + 2;
-            if (this->rootX < 5)
-                this->rootX = 5;
-            if (this->rootX > COLS())
-                this->rootX = COLS();
-            this->Cols = COLS() - this->rootX;
-        }
         if (l->real_linenumber && !l->bpos)
-            sprintf(tmp, "%*ld:", this->rootX - 1, l->real_linenumber);
+            sprintf(tmp, "%*ld:", rect.rootX - 1, l->real_linenumber);
         else
-            sprintf(tmp, "%*s ", this->rootX - 1, "");
+            sprintf(tmp, "%*s ", rect.rootX - 1, "");
         addstr(tmp);
     }
 
@@ -1298,7 +1289,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     ///
     /// draw line
     ///
-    move(line, this->rootX);
+    move(line, rect.rootX);
     auto pos = columnPos(l, currentColumn);
     auto p = &(l->lineBuf[pos]);
     auto pr = &(l->propBuf[pos]);
@@ -1311,7 +1302,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     auto rcol = l->COLPOS(pos);
     int delta = 1;
     int vpos = -1;
-    for (int j = 0; rcol - currentColumn < this->COLS() && pos + j < l->len; j += delta)
+    for (int j = 0; rcol - currentColumn < this->rect.cols && pos + j < l->len; j += delta)
     {
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
@@ -1332,7 +1323,7 @@ void Buffer::DrawLine(LinePtr l, int line)
         delta = wtf_len((uint8_t *)&p[j]);
 
         int ncol = l->COLPOS(pos + j + delta);
-        if (ncol - currentColumn > this->COLS())
+        if (ncol - currentColumn > this->rect.cols)
             break;
 
         if (pc)
@@ -1358,7 +1349,7 @@ void Buffer::DrawLine(LinePtr l, int line)
 
     clear_effect();
 
-    if (rcol - currentColumn < this->COLS())
+    if (rcol - currentColumn < this->rect.cols)
         clrtoeolx();
 }
 
@@ -1381,7 +1372,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
     int ecol = epos - pos;
     int delta = 1;
     int vpos = -1;
-    for (int j = 0; rcol - currentColumn < this->COLS() && pos + j < l->len; j += delta)
+    for (int j = 0; rcol - currentColumn < this->rect.cols && pos + j < l->len; j += delta)
     {
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
@@ -1401,7 +1392,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
 
         delta = wtf_len((uint8_t *)&p[j]);
         auto ncol = l->COLPOS(pos + j + delta);
-        if (ncol - currentColumn > this->COLS())
+        if (ncol - currentColumn > this->rect.cols)
             break;
         if (pc)
             do_color(pc[j]);
@@ -1409,12 +1400,12 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
         {
             if (rcol < currentColumn)
             {
-                move(i, this->rootX);
+                move(i, rect.rootX);
                 for (rcol = currentColumn; rcol < ncol; rcol++)
                     addChar(' ');
                 continue;
             }
-            move(i, rcol - currentColumn + this->rootX);
+            move(i, rcol - currentColumn + rect.rootX);
             if (p[j] == '\t')
             {
                 for (; rcol < ncol; rcol++)

@@ -114,7 +114,7 @@ int Buffer::ColumnSkip(int offset)
 {
     int i, maxColumn;
     int column = this->currentColumn + offset;
-    int nlines = this->LINES() + 1;
+    int nlines = this->rect.lines + 1;
 
     maxColumn = 0;
     auto l = find(topLine);
@@ -125,7 +125,7 @@ int Buffer::ColumnSkip(int offset)
         if ((*l)->width - 1 > maxColumn)
             maxColumn = (*l)->width - 1;
     }
-    maxColumn -= this->COLS() - 1;
+    maxColumn -= this->rect.cols - 1;
     if (column < maxColumn)
         maxColumn = column;
     if (maxColumn < 0)

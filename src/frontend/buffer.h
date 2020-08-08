@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <vector>
 #include <memory>
+#include <math.h>
 
 struct Line;
 union InputStream;
@@ -50,6 +51,31 @@ struct BufferPos
     int bpos;
     BufferPos *next;
     BufferPos *prev;
+};
+
+struct TermRect
+{
+    short rootX = 0;
+    short rootY = 0;
+    short cols = 0;
+    short lines = 0;
+
+    short right() const { return rootX + cols; }
+    short bottom() const { return rootY + lines; }
+
+    void updateRootX(int lastRealLineNumber)
+    {
+        if (rootX == 0)
+        {
+            if (lastRealLineNumber)
+                rootX = (int)(log(lastRealLineNumber + 0.1) / log(10)) + 2;
+            if (rootX < 5)
+                rootX = 5;
+            if (rootX > cols)
+                rootX = cols;
+            cols = cols - rootX;
+        }
+    }
 };
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
@@ -232,13 +258,8 @@ public:
     short cursorY;
     int pos;
     int visualpos;
-    short rootX;
-    short rootY;
-    
-    short Cols;
-    short COLS()const{ return Cols; }
-    short Lines;
-    short LINES()const{ return Lines; }
+
+    TermRect rect;
 
     void CursorHome()
     {
@@ -276,13 +297,6 @@ public:
             this->pos += orig->currentLine->bpos - this->currentLine->bpos;
         this->currentColumn = orig->currentColumn;
         this->ArrangeCursor();
-    }
-    void COPY_BUFROOT_FROM(const BufferPtr srcbuf)
-    {
-        this->rootX = (srcbuf)->rootX;
-        this->rootY = (srcbuf)->rootY;
-        this->Cols = (srcbuf)->Cols;
-        this->Lines = (srcbuf)->Lines;
     }
 
     InputStream *pagerSource;

@@ -344,8 +344,8 @@ void shiftvisualpos(BufferPtr buf, int shift)
 {
     LinePtr l = buf->CurrentLine();
     buf->visualpos -= shift;
-    if (buf->visualpos - l->bwidth >= buf->COLS())
-        buf->visualpos = l->bwidth + buf->COLS() - 1;
+    if (buf->visualpos - l->bwidth >= buf->rect.cols)
+        buf->visualpos = l->bwidth + buf->rect.cols - 1;
     else if (buf->visualpos - l->bwidth < 0)
         buf->visualpos = l->bwidth;
     buf->ArrangeLine();
@@ -607,7 +607,7 @@ void _goLine(std::string_view l)
     else if (l[0] == '$')
     {
         buf->LineSkip(buf->LastLine(),
-            -(buf->LINES() + 1) / 2, TRUE);
+            -(buf->rect.lines + 1) / 2, TRUE);
         buf->SetCurrentLine(buf->LastLine());
     }
     else
@@ -751,8 +751,8 @@ void _followForm(int submit)
             goto do_submit;
         if (!formChooseOptionByMenu(fi,
             GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->pos +
-            a->start.pos + GetCurrentTab()->GetCurrentBuffer()->rootX,
-            GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY))
+            a->start.pos + GetCurrentTab()->GetCurrentBuffer()->rect.rootX,
+            GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY))
             break;
         formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
         if (fi->parent->nitems == 1)
@@ -1994,8 +1994,8 @@ void follow_map(struct parsed_tagarg *arg)
     URL p_url;
 
     auto an = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
-    x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX;
-    y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
+    x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX;
+    y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY;
     a = follow_map_menu(GetCurrentTab()->GetCurrentBuffer(), name, an, x, y);
     if (a == NULL || a->url == NULL || *(a->url) == '\0')
     {
