@@ -657,11 +657,11 @@ page_info_panel(BufferPtr buf)
     }
 
     // TODO:
-    if (buf->frameset != NULL)
-        f_set = buf->frameset;
-    else if (buf->bufferprop & BP_FRAME &&
-             tab->BackBuffer(buf) != NULL && tab->BackBuffer(buf)->frameset != NULL)
-        f_set = tab->BackBuffer(buf)->frameset;
+    // if (buf->frameset != NULL)
+    //     f_set = buf->frameset;
+    // else if (buf->bufferprop & BP_FRAME &&
+    //          tab->BackBuffer(buf) != NULL && tab->BackBuffer(buf)->frameset != NULL)
+    //     f_set = tab->BackBuffer(buf)->frameset;
 
     if (f_set)
     {

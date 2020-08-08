@@ -1509,31 +1509,6 @@ void nextY(int d)
     displayCurrentbuf(B_NORMAL);
 }
 
-int checkBackBuffer(TabPtr tab, BufferPtr buf)
-{
-    BufferPtr fbuf = buf->linkBuffer[LB_N_FRAME];
-
-    if (fbuf)
-    {
-        if (fbuf->frameQ)
-            return TRUE; /* Currentbuf has stacked frames */
-        /* when no frames stacked and next is frame source, try next's
-        * nextBuffer */
-        if (w3mApp::Instance().RenderFrame && fbuf == tab->BackBuffer(buf))
-        {
-            if (tab->BackBuffer(fbuf) != NULL)
-                return TRUE;
-            else
-                return FALSE;
-        }
-    }
-
-    if (tab->BackBuffer(buf))
-        return TRUE;
-
-    return FALSE;
-}
-
 /* go to specified URL */
 void goURL0(const char *prompt, int relative)
 {

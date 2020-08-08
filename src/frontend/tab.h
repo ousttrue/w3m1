@@ -59,16 +59,29 @@ public:
     int GetCurrentBufferIndex() const;
     BufferPtr GetFirstBuffer() { return buffers.front(); }
     BufferPtr GetCurrentBuffer() const { return currentBuffer; }
+
+private:
     BufferPtr ForwardBuffer(BufferPtr buf) const;
     BufferPtr BackBuffer(BufferPtr buf) const;
+
+public:
     BufferPtr GetBuffer(int n) const;
     BufferPtr NamedBuffer(const char *name) const;
-    BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar) const;
+    BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar);
 
     // history の 先頭に追加する
     void Push(BufferPtr buf);
 
     void SetCurrentBuffer(BufferPtr buf);
+    // forward current, return forward is exists
+    bool Forward();
+    // back current, return back is exists
+    bool Back();
+    bool CheckBackBuffer();    
+
+    // remove current back, for remove history(local cgi etc)
+    void DeleteBack();
+
     void DeleteBuffer(BufferPtr delbuf);
     void ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf);
 

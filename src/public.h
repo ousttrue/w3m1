@@ -52,7 +52,7 @@ int check_target();
 
 void nextX(int d, int dy);
 void nextY(int d);
-int checkBackBuffer(TabPtr tab, BufferPtr buf);
+
 void goURL0(const char* prompt, int relative);
 void anchorMn(Anchor *(*menu_func)(BufferPtr ), int go);
 void _peekURL(int only_img);

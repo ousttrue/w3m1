@@ -46,6 +46,53 @@ int Tab::GetCurrentBufferIndex() const
     return -1;
 }
 
+bool Tab::Forward()
+{
+    auto it = find(currentBuffer);
+    if (it == buffers.end())
+    {
+        return false;
+    }
+    if (it == buffers.begin())
+    {
+        return false;
+    }
+    --it;
+    currentBuffer = *it;
+    return true;
+}
+
+bool Tab::Back()
+{
+    auto it = find(currentBuffer);
+    if (it == buffers.end())
+    {
+        return false;
+    }
+    ++it;
+    if (it == buffers.end())
+    {
+        return false;
+    }
+    currentBuffer = *it;
+    return true;
+}
+
+void Tab::DeleteBack()
+{
+    auto it = find(currentBuffer);
+    if (it == buffers.end())
+    {
+        return;
+    }
+    ++it;
+    if (it == buffers.end())
+    {
+        return;
+    }
+    buffers.erase(it);
+}
+
 BufferPtr Tab::ForwardBuffer(BufferPtr buf) const
 {
     if (buf == buffers.front())
@@ -195,7 +242,7 @@ writeBufferName(BufferPtr buf, int n)
 }
 
 static BufferPtr
-listBuffer(const Tab *tab, BufferPtr top, BufferPtr current)
+listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 {
     move(0, 0);
 
@@ -225,13 +272,13 @@ listBuffer(const Tab *tab, BufferPtr top, BufferPtr current)
         }
         else
             clrtoeolx();
-        if (!tab->BackBuffer(buf))
+        if (!tab->Back())
         {
             move(i + 1, 0);
             clrtobotx();
             break;
         }
-        buf = tab->BackBuffer(buf);
+        buf = tab->GetCurrentBuffer();
     }
     standout();
     /* FIXME: gettextize? */
@@ -242,13 +289,14 @@ listBuffer(const Tab *tab, BufferPtr top, BufferPtr current)
      * move((LINES-1), COLS - 1); */
     move(c, 0);
     refresh();
-    return tab->BackBuffer(buf);
+    // return tab->BackBuffer(buf);
+    return buf;
 }
 
 /* 
  * Select buffer visually
  */
-BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
+BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar)
 {
     int i, cpoint,                     /* Current Buffer Number */
         spoint,                        /* Current Line on Screen */
@@ -401,7 +449,7 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar) const
 void Tab::DeleteBuffer(BufferPtr delbuf)
 {
     auto it = find(delbuf);
-    if(it==buffers.end())
+    if (it == buffers.end())
     {
         // TODO:
         return;
@@ -412,11 +460,12 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
         // TODO:
     }
     auto next = buffers.erase(it);
-    if(next==buffers.end())
+    if (next == buffers.end())
     {
         currentBuffer = buffers.back();
     }
-    else{
+    else
+    {
         currentBuffer = *next;
     }
 }
@@ -428,4 +477,42 @@ void Tab::ReplaceBuffer(BufferPtr delbuf, BufferPtr newbuf)
 {
     // TODO:
     assert(false);
+}
+
+bool Tab::CheckBackBuffer()
+{
+    auto it = find(GetCurrentBuffer());
+    if (it == buffers.end())
+    {
+        return false;
+    }
+    ++it;
+
+    // TODO:
+    // BufferPtr fbuf = currentBuffer->linkBuffer[LB_N_FRAME];
+    // if (fbuf)
+    // {
+    //     if (fbuf->frameQ)
+    //     {
+    //         return TRUE; /* Currentbuf has stacked frames */
+    //     }
+
+    //     /* when no frames stacked and next is frame source, try next's
+    //     * nextBuffer */
+
+    //     if (w3mApp::Instance().RenderFrame && fbuf == tab->BackBuffer(buf))
+    //     {
+    //         if (tab->BackBuffer(fbuf) != NULL)
+    //             return TRUE;
+    //         else
+    //             return FALSE;
+    //     }
+    // }
+
+    if (it == buffers.end())
+    {
+        return false;
+    }
+
+    return TRUE;
 }

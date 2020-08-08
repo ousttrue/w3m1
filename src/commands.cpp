@@ -818,8 +818,8 @@ void prevMk(w3mApp *w3m)
     int i;
     if (!use_mark)
         return;
-    auto tab=GetCurrentTab();
-    auto buf=tab->GetCurrentBuffer();
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
     i = buf->pos - 1;
@@ -1133,50 +1133,51 @@ void nextU(w3mApp *w3m)
 {
     nextY(-1);
 }
-/* go to the next bufferr */
 
+/* go to the next bufferr */
 void nextBf(w3mApp *w3m)
 {
-    int i;
+    auto tab = GetCurrentTab();
+    int i = 0;
     auto prec = prec_num() ? prec_num() : 1;
-    for (i = 0; i < prec; i++)
+    for (; i < prec; i++)
     {
-        auto buf = GetCurrentTab()->ForwardBuffer(GetCurrentTab()->GetCurrentBuffer());
-        if (!buf)
+        if (!tab->Forward())
         {
-            if (i == 0)
-                return;
             break;
         }
-        GetCurrentTab()->SetCurrentBuffer(buf);
     }
-    displayCurrentbuf(B_FORCE_REDRAW);
+    if (i)
+    {
+        displayCurrentbuf(B_FORCE_REDRAW);
+    }
 }
-/* go to the previous bufferr */
 
+/* go to the previous bufferr */
 void prevBf(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
     auto prec = prec_num() ? prec_num() : 1;
-    for (int i = 0; i < prec; i++)
+    int i = 0;
+    for (; i < prec; i++)
     {
-        auto buf = tab->BackBuffer(tab->GetCurrentBuffer());
-        if (!buf)
+        if (!tab->Back())
         {
-            if (i == 0)
-                return;
             break;
         }
-        tab->SetCurrentBuffer(buf);
     }
-    displayCurrentbuf(B_FORCE_REDRAW);
+    if (i)
+    {
+        displayCurrentbuf(B_FORCE_REDRAW);
+    }
 }
-/* delete current buffer and back to the previous buffer */
 
+/* delete current buffer and back to the previous buffer */
 void backBf(w3mApp *w3m)
 {
-    BufferPtr buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
-    if (!checkBackBuffer(GetCurrentTab(), GetCurrentTab()->GetCurrentBuffer()))
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
+    if (!tab->CheckBackBuffer())
     {
         if (close_tab_back && GetTabCount() >= 1)
         {
@@ -1188,7 +1189,6 @@ void backBf(w3mApp *w3m)
             disp_message("Can't back...", TRUE);
         return;
     }
-    auto tab = GetCurrentTab();
     tab->DeleteBuffer(tab->GetCurrentBuffer());
     if (buf)
     {
@@ -1225,12 +1225,10 @@ void backBf(w3mApp *w3m)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
+// for local CGI replace
 void deletePrevBuf(w3mApp *w3m)
 {
-    auto tab = GetCurrentTab();
-    BufferPtr buf = tab->ForwardBuffer(tab->GetCurrentBuffer());
-    if (buf)
-        tab->DeleteBuffer(buf);
+    GetCurrentTab()->DeleteBack();
 }
 
 void goURL(w3mApp *w3m)
