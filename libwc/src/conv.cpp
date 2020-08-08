@@ -282,8 +282,12 @@ void WCWriter::end()
     write(m_buffer, m_f);
 }
 
-void WCWriter::putc(const char *c)
+void WCWriter::putc(const char *c, int len)
 {
+    if (c[len] != '\0')
+    {
+        c = Strnew_charp_n(c, len)->ptr;
+    }
     auto *p = (uint8_t *)c;
     if (m_from != WC_CES_WTF)
     {

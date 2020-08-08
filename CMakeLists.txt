@@ -9,6 +9,12 @@ INTERFACE
     _external/catch2
 )
 
+add_library(tcb_span INTERFACE)
+target_include_directories(tcb_span
+INTERFACE
+    _external/tcb_span/include
+)
+
 subdirs(
     charutil
     libwc
@@ -127,6 +133,7 @@ PRIVATE
     )
 target_link_libraries(w3m
 PRIVATE
+    tcb_span
     wc
     m
     ncurses

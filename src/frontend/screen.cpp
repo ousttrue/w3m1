@@ -8,6 +8,7 @@
 #include <string.h>
 #include <strings.h>
 #include <wc.h>
+// #include <tcb/span.hpp>
 
 /* Line status */
 enum LineStatus : uint16_t
@@ -19,39 +20,48 @@ enum LineStatus : uint16_t
     L_CLRTOEOL = 0x08,
 };
 
-struct ScreenLine
-{
-    char **lineimage;
-    l_prop *lineprop;
-    LineStatus isdirty;
-    short eol;
-};
+// struct ScreenLine
+// {
+//     tcb::span<char> lineimage;
+//     tcb::span<l_prop> lineprop;
+//     LineStatus *isdirty;
+//     short *eol;
+// };
 
 // termcap
 extern "C" char *tgoto(char *, int, int);
 
-#define SETCH(var, ch, len) ((var) = New_Reuse(char, (var), (len) + 1), \
-                             strncpy((var), (ch), (len)), (var)[len] = '\0')
+void SETCH(SingleCharacter &var, const char *ch, int len)
+{
+    // (*var) = New_Reuse(char, (*var), (len) + 1);
+    // strncpy((&var), (ch), (len));
+
+    var = SingleCharacter(ch, len);
+
+    // (*var)[len] = '\0';
+}
+
 #define SETPROP(var, prop) (var = (((var)&S_DIRTY) | prop))
 #define SETCHMODE(var, mode) ((var) = (((var) & ~C_WHICHCHAR) | mode))
 #define CHMODE(c) ((c)&C_WHICHCHAR)
 #define MOVE(line, column) writestr(tgoto(T_cm, column, line));
-#define SPACE " "
+
+const auto SPACE = " ";
 
 const int tab_step = 8;
 
-static int
-need_redraw(char *c1, l_prop pr1, const char *c2, l_prop pr2)
+static bool need_redraw(const SingleCharacter &c, l_prop pr1, const char *c2, l_prop pr2)
 {
-    if (!c1 || !c2 || strcmp(c1, c2))
-        return 1;
+    auto c1 = (char *)c.bytes.data();
+    if (!c1 || !c2 || strncmp(c1, c2, c.size()))
+        return true;
     if (*c1 == ' ')
         return (pr1 ^ pr2) & M_SPACE & ~S_DIRTY;
 
     if ((pr1 ^ pr2) & ~S_DIRTY)
-        return 1;
+        return true;
 
-    return 0;
+    return false;
 }
 
 static char *
@@ -79,59 +89,70 @@ enum RefreshStatus
 
 class ScreenImpl
 {
-    int m_lines = 0;
-    int m_cols = 0;
     int CurLine = 0;
     int CurColumn = 0;
 
-    int max_LINES = 0;
-    int max_COLS = 0;
-    ScreenLine *ScreenElem = nullptr;
-    ScreenLine **ScreenImage = nullptr;
+    std::vector<SingleCharacter> m_chars;
+    std::vector<l_prop> m_props;
+    std::vector<LineStatus> m_lineStatus;
+    std::vector<short> m_lineEnds;
 
     int graph_enabled = 0;
 
-public:
-    void Setup(int LINES, int COLS)
+    int Lines() const
     {
-        int i;
+        return m_lineStatus.size();
+    }
+    int Cols() const
+    {
+        auto lines = Lines();
+        if (lines == 0)
+        {
+            return 0;
+        }
+        return m_chars.size() / lines;
+    }
 
-        if (LINES + 1 > max_LINES)
+public:
+    void Setup(int newLines, int newCols)
+    {
+        auto lines = Lines();
+        auto cols = Cols();
+        if (newLines == lines && newCols == cols)
         {
-            m_lines = LINES;
+            return;
+        }
 
-            max_LINES = LINES + 1;
-            max_COLS = 0;
-            ScreenElem = New_N(ScreenLine, max_LINES);
-            ScreenImage = New_N(ScreenLine *, max_LINES);
-        }
-        if (COLS + 1 > max_COLS)
-        {
-            m_cols = COLS;
+        std::vector<SingleCharacter> chars(newLines * newCols);
+        std::vector<l_prop> props(newLines * newCols);
+        std::vector<LineStatus> lineStatus(newLines, L_NONE);
+        std::vector<short> lineEnds(newLines, S_EOL);
 
-            max_COLS = COLS + 1;
-            for (i = 0; i < max_LINES; i++)
-            {
-                ScreenElem[i].lineimage = New_N(char *, max_COLS);
-                bzero((void *)ScreenElem[i].lineimage, max_COLS * sizeof(char *));
-                ScreenElem[i].lineprop = New_N(l_prop, max_COLS);
-            }
-        }
-        for (i = 0; i < LINES; i++)
+        auto sc = m_chars.data();
+        auto sp = m_props.data();
+
+        auto c = chars.data();
+        auto p = props.data();
+
+        // copy
+        for (int i = 0; i < lines; ++i, sc+=cols, sp+=cols, c+=newCols, p+=newCols)
         {
-            ScreenImage[i] = &ScreenElem[i];
-            ScreenImage[i]->lineprop[0] = S_EOL;
-            ScreenImage[i]->isdirty = L_NONE;
+            memcpy(c, sc, cols);
+            memcpy(p, sp, cols * sizeof(l_prop));
+            lineStatus[i] = m_lineStatus[i];
+            lineEnds[i] = m_lineEnds[i];
         }
-        for (; i < max_LINES; i++)
-        {
-            ScreenElem[i].isdirty = L_UNUSED;
-        }
+
+        // swap
+        std::swap(chars, m_chars);
+        std::swap(props, m_props);
+        std::swap(lineStatus, m_lineStatus);
+        std::swap(lineEnds, m_lineEnds);
     }
 
     void Wrap()
     {
-        if (CurLine == (m_lines - 1))
+        if (CurLine == (Lines() - 1))
             return;
         CurLine++;
         CurColumn = 0;
@@ -139,61 +160,64 @@ public:
 
     void Move(int line, int column)
     {
-        if (line >= 0 && line < m_lines)
+        if (line >= 0 && line < Lines())
             CurLine = line;
-        if (column >= 0 && column < m_cols)
+        if (column >= 0 && column < Cols())
             CurColumn = column;
     }
 
     void Clear()
     {
-        int i, j;
-        l_prop *p;
         writestr(T_cl);
         move(0, 0);
-        for (i = 0; i < m_lines; i++)
-        {
-            ScreenImage[i]->isdirty = L_NONE;
-            p = ScreenImage[i]->lineprop;
-            for (j = 0; j < m_cols; j++)
-            {
-                p[j] = S_EOL;
-            }
-        }
+        std::fill(m_lineStatus.begin(), m_lineStatus.end(), L_NONE);
+        std::fill(m_props.begin(), m_props.end(), S_EOL);
+    }
+
+    int LineHead() const
+    {
+        auto value = CurLine * Cols();
+        return value;
     }
 
     void TouchColumn(int col)
     {
         if (col >= 0 && col < COLS)
-            ScreenImage[CurLine]->lineprop[col] |= S_DIRTY;
+        {
+            m_props[LineHead() + col] |= S_DIRTY;
+        }
     }
 
     void TouchCurrentLine()
     {
-        if (!(ScreenImage[CurLine]->isdirty & L_DIRTY))
+        if (!(m_lineStatus[CurLine] & L_DIRTY))
         {
-            int i;
-            for (i = 0; i < COLS; i++)
-                ScreenImage[CurLine]->lineprop[i] &= ~S_DIRTY;
-            ScreenImage[CurLine]->isdirty |= L_DIRTY;
+            auto index = LineHead();
+            for (int i = 0; i < COLS; i++, ++index)
+            {
+                m_props[index] &= ~S_DIRTY;
+            }
+            m_lineStatus[CurLine] |= L_DIRTY;
         }
     }
 
     void CtrlToEol()
     {
-        int i;
-        l_prop *lprop = ScreenImage[CurLine]->lineprop;
-
+        auto lprop = m_props.data() + LineHead();
         if (lprop[CurColumn] & S_EOL)
+        {
             return;
+        }
 
-        if (!(ScreenImage[CurLine]->isdirty & (L_NEED_CE | L_CLRTOEOL)) ||
-            ScreenImage[CurLine]->eol > CurColumn)
-            ScreenImage[CurLine]->eol = CurColumn;
+        if (!(m_lineStatus[CurLine] & (L_NEED_CE | L_CLRTOEOL)) ||
+            m_lineEnds[CurLine] > CurColumn)
+        {
+            m_lineEnds[CurLine] = CurColumn;
+        }
 
-        ScreenImage[CurLine]->isdirty |= L_CLRTOEOL;
+        m_lineStatus[CurLine] |= L_CLRTOEOL;
         touch_line();
-        for (i = CurColumn; i < COLS && !(lprop[i] & S_EOL); i++)
+        for (int i = CurColumn; i < COLS && !(lprop[i] & S_EOL); i++)
         {
             lprop[i] = S_EOL | S_DIRTY;
         }
@@ -210,10 +234,8 @@ public:
 
     void CtrlToBottomEol()
     {
-        int l, c;
-
-        l = CurLine;
-        c = CurColumn;
+        auto l = CurLine;
+        auto c = CurColumn;
         (*clrtoeol)();
         CurColumn = 0;
         CurLine++;
@@ -225,20 +247,18 @@ public:
 
     void TouchCursor()
     {
-
-        int i;
-
         touch_line();
 
-        for (i = CurColumn; i >= 0; i--)
+        auto lineprop = m_props.data() + LineHead();
+        for (int i = CurColumn; i >= 0; i--)
         {
             TouchColumn(i);
-            if (CHMODE(ScreenImage[CurLine]->lineprop[i]) != C_WCHAR2)
+            if (CHMODE(lineprop[i]) != C_WCHAR2)
                 break;
         }
-        for (i = CurColumn + 1; i < COLS; i++)
+        for (int i = CurColumn + 1; i < COLS; i++)
         {
-            if (CHMODE(ScreenImage[CurLine]->lineprop[i]) != C_WCHAR2)
+            if (CHMODE(lineprop[i]) != C_WCHAR2)
                 break;
             TouchColumn(i);
         }
@@ -246,38 +266,38 @@ public:
 
     void StandToggle()
     {
-        int i;
-        l_prop *pr = ScreenImage[CurLine]->lineprop;
+        l_prop *pr = m_props.data() + LineHead();
         pr[CurColumn] ^= S_STANDOUT;
         if (CHMODE(pr[CurColumn]) != C_WCHAR2)
         {
-            for (i = CurColumn + 1; CHMODE(pr[i]) == C_WCHAR2; i++)
+            for (int i = CurColumn + 1; CHMODE(pr[i]) == C_WCHAR2; i++)
                 pr[i] ^= S_STANDOUT;
         }
     }
 
     void AddChar(l_prop CurrentMode, const char *pc, int len)
     {
-        l_prop *pr;
-        int dest, i;
+        // l_prop *pr;
+        // int dest, i;
+        // char **p;
 
-        static Str tmp = NULL;
-        char **p;
         char c = *pc;
         int width = wtf_width((uint8_t *)pc);
 
+        static Str tmp = NULL;
         if (tmp == NULL)
             tmp = Strnew();
         tmp->CopyFrom(pc, len);
         pc = tmp->ptr;
 
-        if (CurColumn == m_cols)
+        if (CurColumn == Cols())
             Wrap();
-        if (CurColumn >= m_cols)
+        if (CurColumn >= Cols())
             return;
-        p = ScreenImage[CurLine]->lineimage;
-        pr = ScreenImage[CurLine]->lineprop;
-        auto dirty = &ScreenImage[CurLine]->isdirty;
+
+        auto p = m_chars.data() + LineHead();
+        auto pr = m_props.data() + LineHead();
+        auto dirty = &m_lineStatus[CurLine];
 
         if (pr[CurColumn] & S_EOL)
         {
@@ -286,8 +306,9 @@ public:
                 CurColumn++;
                 return;
             }
-            for (i = CurColumn; i >= 0 && (pr[i] & S_EOL); i--)
+            for (int i = CurColumn; i >= 0 && (pr[i] & S_EOL); i--)
             {
+                // fill space
                 SETCH(p[i], SPACE, 1);
                 SETPROP(pr[i], (pr[i] & M_CEOL) | C_ASCII);
             }
@@ -304,7 +325,7 @@ public:
 
         /* Required to erase bold or underlined character for some * terminal
      * emulators. */
-        i = CurColumn + width - 1;
+        int i = CurColumn + width - 1;
         if (i < COLS &&
             (((pr[i] & S_BOLD) && need_redraw(p[i], pr[i], pc, CurrentMode)) ||
              ((pr[i] & S_UNDERLINE) && !(CurrentMode & S_UNDERLINE))))
@@ -339,8 +360,8 @@ public:
             wrap();
             if (CurColumn + width > COLS)
                 return;
-            p = ScreenImage[CurLine]->lineimage;
-            pr = ScreenImage[CurLine]->lineprop;
+            p = m_chars.data() + LineHead();
+            pr = m_props.data() + LineHead();
         }
         if (CHMODE(pr[CurColumn]) == C_WCHAR2)
         {
@@ -382,14 +403,14 @@ public:
         }
         else if (c == '\t')
         {
-            dest = (CurColumn + tab_step) / tab_step * tab_step;
+            auto dest = (CurColumn + tab_step) / tab_step * tab_step;
             if (dest >= COLS)
             {
                 wrap();
                 touch_line();
                 dest = tab_step;
-                p = ScreenImage[CurLine]->lineimage;
-                pr = ScreenImage[CurLine]->lineprop;
+                p = m_chars.data() + LineHead();
+                pr = m_props.data() + LineHead();
             }
             for (i = CurColumn; i < dest; i++)
             {
@@ -424,24 +445,24 @@ public:
         int col, pcol;
         int pline = CurLine;
         int moved = RF_NEED_TO_MOVE;
-        char **pc;
-        l_prop *pr, mode = 0;
+        l_prop mode = 0;
         l_prop color = COL_FTERM;
         l_prop bcolor = COL_BTERM;
 
         WCWriter writer(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset, ttyf);
 
-        for (auto line = 0; line <= (LINES - 1); line++)
+        auto pc = m_chars.data();
+        auto pr = m_props.data();
+        auto cols = Cols();
+        for (auto line = 0; line <= (LINES - 1); line++, pc += cols, pr += cols)
         {
-            auto dirty = &ScreenImage[line]->isdirty;
+            auto dirty = &m_lineStatus[line];
             if (*dirty & L_DIRTY)
             {
                 *dirty &= ~L_DIRTY;
-                pc = ScreenImage[line]->lineimage;
-                pr = ScreenImage[line]->lineprop;
                 for (col = 0; col < COLS && !(pr[col] & S_EOL); col++)
                 {
-                    if (*dirty & L_NEED_CE && col >= ScreenImage[line]->eol)
+                    if (*dirty & L_NEED_CE && col >= m_lineEnds[line])
                     {
                         if (need_redraw(pc[col], pr[col], SPACE, 0))
                             break;
@@ -454,7 +475,7 @@ public:
                 }
                 if (*dirty & (L_NEED_CE | L_CLRTOEOL))
                 {
-                    pcol = ScreenImage[line]->eol;
+                    pcol = m_lineEnds[line];
                     if (pcol >= COLS)
                     {
                         *dirty &= ~(L_NEED_CE | L_CLRTOEOL);
@@ -522,9 +543,9 @@ public:
                         writestr(T_me);
                         mode &= ~M_MEND;
                     }
-                    if ((*dirty & L_NEED_CE && col >= ScreenImage[line]->eol) ? need_redraw(pc[col], pr[col], SPACE,
-                                                                                            0)
-                                                                              : (pr[col] & S_DIRTY))
+                    if ((*dirty & L_NEED_CE && col >= m_lineEnds[line])
+                            ? need_redraw(pc[col], pr[col], SPACE, 0)
+                            : (pr[col] & S_DIRTY))
                     {
                         if (pcol == col - 1)
                             writestr(T_nd);
@@ -573,7 +594,7 @@ public:
                         }
 
                         if (pr[col] & S_GRAPHICS)
-                            write1(graphchar(*pc[col]));
+                            write1(graphchar(*pc[col].bytes.data()));
                         else if (CHMODE(pr[col]) != C_WCHAR2)
                             writer.putc(pc[col]);
                         pcol = col + 1;

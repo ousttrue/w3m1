@@ -90,7 +90,15 @@ class WCWriter
 public:
     WCWriter(CharacterEncodingScheme f_ces, CharacterEncodingScheme t_ces, FILE *f);
     ~WCWriter();
-    void putc(const char *c);
+    void putc(const char *c, int len);
+    void putc(const char *c)
+    {
+        putc(c, strlen(c));
+    }
+    void putc(const SingleCharacter &c)
+    {
+        putc((const char*)c.bytes.data(), c.size());
+    }
     void end();
     void clear_status();
 };

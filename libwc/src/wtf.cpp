@@ -193,7 +193,8 @@ wtf_len(uint8_t *p)
 {
     uint8_t *q = p;
 
-    q += WTF_LEN_MAP[*q];
+    auto len = WTF_LEN_MAP[*q];
+    q += len;
     while (*q && !WTF_WIDTH_MAP[*q])
         q += WTF_LEN_MAP[*q];
     return q - p;

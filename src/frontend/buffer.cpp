@@ -1323,6 +1323,20 @@ void Buffer::DrawLine(LinePtr l, int line)
         }
 
         delta = wtf_len((uint8_t *)&p[j]);
+        switch (delta)
+        {
+        case 3:
+        {
+            auto a = 0;
+        }
+        break;
+
+        case 4:
+        {
+            auto b = 0;
+        }
+        break;
+        }
 
         int ncol = l->COLPOS(pos + j + delta);
         if (ncol - currentColumn > this->rect.cols)
