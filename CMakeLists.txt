@@ -63,6 +63,8 @@ add_executable(w3m
     src/frontend/search.cpp
     src/frontend/menu.cpp
     src/frontend/terms.cpp
+    src/frontend/termcap_str.cpp
+    src/frontend/screen.cpp
     src/frontend/mouse.cpp
     src/frontend/keybind.cpp
     src/frontend/event.cpp

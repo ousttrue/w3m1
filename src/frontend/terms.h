@@ -69,11 +69,15 @@ void close_tty(void);
 char *ttyname_tty(void);
 void reset_tty(void);
 void set_int(void);
-void getTCstr(void);
+
 void setlinescols(void);
 void setupscreen(void);
 void touch_cursor();
 int initscr(void);
 void move(int line, int column);
+
+int write1(char c);
+void writestr(char *s);
+void reset_error_exit(int);
 
 #endif /* not TERMS_H */
