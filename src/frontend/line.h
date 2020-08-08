@@ -70,16 +70,29 @@ inline void SetCharType(Lineprop &v, int c)
     ((v) = (Lineprop)(((v) & ~P_CHARTYPE) | (c)));
 }
 
-struct PropString
+struct PropertiedCharacter
+{
+    const char *head;
+    Lineprop prop;
+
+    int ColumnLen() const;
+};
+
+struct PropertiedString
 {
     char *lineBuf = nullptr;
     Lineprop *propBuf = nullptr;
     int len = 0;
+
+    PropertiedCharacter Get(int index) const
+    {
+        return {lineBuf + index, propBuf[index]};
+    }
 };
 
 struct Line : gc_cleanup
 {
-    PropString buffer;
+    PropertiedString buffer;
     char *lineBuf()
     {
         return buffer.lineBuf;
@@ -100,7 +113,7 @@ struct Line : gc_cleanup
     {
     }
 
-    Line(const PropString str, Linecolor *color)
+    Line(const PropertiedString str, Linecolor *color)
     {
         buffer = str;
         colorBuf = color;
@@ -136,6 +149,6 @@ enum CalcPositionMode
     CP_AUTO = 0,
     CP_FORCE = 1,
 };
-int calcPosition(const PropString &str, int pos, int bpos, CalcPositionMode mode);
+int calcPosition(const PropertiedString &str, int pos, int bpos, CalcPositionMode mode);
 int columnPos(LinePtr line, int column);
 int columnLen(LinePtr line, int column);

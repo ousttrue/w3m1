@@ -5,21 +5,24 @@
 #include "wtf.h"
 #include "display.h"
 
-static int nextColumn(int n, char *p, Lineprop *pr)
+int PropertiedCharacter::ColumnLen()const
 {
-    if (*pr & PC_CTRL)
+    if (this->prop & PC_CTRL)
     {
-        if (*p == '\t')
-            return (n + w3mApp::Instance().Tabstop) / w3mApp::Instance().Tabstop * w3mApp::Instance().Tabstop;
-        else if (*p == '\n')
-            return n + 1;
-        else if (*p != '\r')
-            return n + 2;
-        return n;
+        if (*this->head == '\t')
+            return (w3mApp::Instance().Tabstop) / w3mApp::Instance().Tabstop * w3mApp::Instance().Tabstop;
+        else if (*this->head == '\n')
+            return 1;
+        else if (*this->head != '\r')
+            return 2;
+        return 0;
     }
-    if (*pr & PC_UNKNOWN)
-        return n + 4;
-    return n + wtf_width((uint8_t *)p);
+
+    if (this->prop & PC_UNKNOWN){
+        return 4;
+    }
+
+    return wtf_width((uint8_t *)this->head);
 }
 
 int columnLen(LinePtr line, int column)
@@ -28,14 +31,14 @@ int columnLen(LinePtr line, int column)
 
     for (i = 0, j = 0; i < line->len();)
     {
-        j = nextColumn(j, &line->lineBuf()[i], &line->propBuf()[i]);
+        auto colLen = line->buffer.Get(i).ColumnLen();
+        j += colLen;
         if (j > column)
             return i;
         i++;
-#ifdef USE_M17N
+
         while (i < line->len() && line->propBuf()[i] & PC_WCHAR2)
             i++;
-#endif
     }
     return line->len();
 }
@@ -51,7 +54,7 @@ void Line::CalcWidth()
     width = COLPOS(len());
 }
 
-int calcPosition(const PropString &str, int pos, int bpos, CalcPositionMode mode)
+int calcPosition(const PropertiedString &str, int pos, int bpos, CalcPositionMode mode)
 {
     static int *realColumn = nullptr;
     static int size = 0;
@@ -89,7 +92,7 @@ int calcPosition(const PropString &str, int pos, int bpos, CalcPositionMode mode
         realColumn[i] = j;
         if (i == len)
             break;
-        j = nextColumn(j, &l[i], &pr[i]);
+        j += PropertiedCharacter{l+i, pr[i]}.ColumnLen();
         i++;
         for (; i < len && pr[i] & PC_WCHAR2; i++)
             realColumn[i] = realColumn[i - 1];
@@ -98,7 +101,6 @@ int calcPosition(const PropString &str, int pos, int bpos, CalcPositionMode mode
         return j;
     return realColumn[pos];
 }
-
 
 int columnPos(LinePtr line, int column)
 {
@@ -122,7 +124,7 @@ int Buffer::ColumnSkip(int offset)
 
     maxColumn = 0;
     auto l = find(topLine);
-    for (i = 0; i < nlines && l!=lines.end(); i++, ++l)
+    for (i = 0; i < nlines && l != lines.end(); i++, ++l)
     {
         if ((*l)->width < 0)
             (*l)->CalcWidth();
