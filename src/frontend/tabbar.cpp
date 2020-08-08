@@ -8,31 +8,35 @@
 #include "frontend/terms.h"
 
 using TabList = std::list<TabPtr>;
-TabList g_tabs;
-TabList::iterator find(const TabPtr &tab)
+struct TabBar
 {
-    return std::find(g_tabs.begin(), g_tabs.end(), tab);
-}
+    TabList tabs;
+    TabList::iterator find(const TabPtr &tab)
+    {
+        return std::find(tabs.begin(), tabs.end(), tab);
+    }
 
-std::weak_ptr<Tab> g_current;
+    std::weak_ptr<Tab> current;
+
+    TabBar()
+    {
+        tabs.push_back(std::make_shared<Tab>());
+        current = tabs.front();
+    }
+};
+static TabBar g_tabBar;
 
 void EachTab(const std::function<void(const TabPtr &)> callback)
 {
-    for (auto &tab : g_tabs)
+    for (auto &tab : g_tabBar.tabs)
     {
         callback(tab);
     }
 }
 
-void InitializeTab()
-{
-    g_tabs.push_back(std::make_shared<Tab>());
-    g_current = g_tabs.front();
-}
-
 int GetTabCount()
 {
-    return g_tabs.size();
+    return g_tabBar.tabs.size();
 }
 
 int GetTabbarHeight()
@@ -44,7 +48,7 @@ int GetTabbarHeight()
 TabPtr GetTabByIndex(int index)
 {
     int i = 0;
-    for (auto tab : g_tabs)
+    for (auto tab : g_tabBar.tabs)
     {
         if (i == index)
         {
@@ -57,26 +61,26 @@ TabPtr GetTabByIndex(int index)
 
 TabPtr GetFirstTab()
 {
-    return g_tabs.empty() ? nullptr : g_tabs.front();
+    return g_tabBar.tabs.empty() ? nullptr : g_tabBar.tabs.front();
 }
 
 TabPtr GetLastTab()
 {
-    return g_tabs.empty() ? nullptr : g_tabs.back();
+    return g_tabBar.tabs.empty() ? nullptr : g_tabBar.tabs.back();
 }
 
 TabPtr GetCurrentTab()
 {
-    auto current = g_current.lock();
+    auto current = g_tabBar.current.lock();
     return current ? current : nullptr;
 }
 
 int GetCurrentTabIndex()
 {
-    auto current = g_current.lock();
+    auto current = g_tabBar.current.lock();
 
     int i = 0;
-    for (auto tab : g_tabs)
+    for (auto tab : g_tabBar.tabs)
     {
         if (tab == current)
         {
@@ -89,11 +93,11 @@ int GetCurrentTabIndex()
 
 void SetCurrentTab(TabPtr current)
 {
-    for (auto tab : g_tabs)
+    for (auto tab : g_tabBar.tabs)
     {
         if (tab == current)
         {
-            g_current = tab;
+            g_tabBar.current = tab;
         }
     }
 }
@@ -102,12 +106,12 @@ void calcTabPos()
 {
     int lcol = GetMouseActionMenuStr() ? GetMouseActionMenuWidth() : 0;
 
-    if (g_tabs.size() <= 0)
+    if (g_tabBar.tabs.size() <= 0)
         return;
     int n1 = (::COLS - lcol) / TabCols;
     int n2;
     int ny;
-    if (n1 >= g_tabs.size())
+    if (n1 >= g_tabBar.tabs.size())
     {
         n2 = 1;
         ny = 1;
@@ -119,14 +123,14 @@ void calcTabPos()
         n2 = ::COLS / TabCols;
         if (n2 == 0)
             n2 = 1;
-        ny = (g_tabs.size() - n1 - 1) / n2 + 2;
+        ny = (g_tabBar.tabs.size() - n1 - 1) / n2 + 2;
     }
     int na = n1 + n2 * (ny - 1);
-    n1 -= (na - g_tabs.size()) / ny;
+    n1 -= (na - g_tabBar.tabs.size()) / ny;
     if (n1 < 0)
         n1 = 0;
     na = n1 + n2 * (ny - 1);
-    auto it = g_tabs.begin();
+    auto it = g_tabBar.tabs.begin();
     for (int iy = 0; iy < ny && *it; iy++)
     {
         int col;
@@ -138,11 +142,11 @@ void calcTabPos()
         }
         else
         {
-            nx = n2 - (na - g_tabs.size() + (iy - 1)) / (ny - 1);
+            nx = n2 - (na - g_tabBar.tabs.size() + (iy - 1)) / (ny - 1);
             col = ::COLS;
         }
         int ix = 0;
-        for (ix = 0; ix < nx && it != g_tabs.end(); ix++, ++it)
+        for (ix = 0; ix < nx && it != g_tabBar.tabs.end(); ix++, ++it)
         {
             (*it)->Calc(col / nx, ix, iy, lcol);
         }
@@ -155,7 +159,7 @@ TabPtr GetTabByPosition(int x, int y)
 
     if (GetMouseActionMenuStr() && x < GetMouseActionMenuWidth() && y == 0)
         return nullptr;
-    for (auto tab : g_tabs)
+    for (auto tab : g_tabBar.tabs)
     {
         if (tab->IsHit(x, y))
         {
@@ -173,38 +177,38 @@ TabPtr CreateTabSetCurrent()
     // buf->ClearLink();
 
     // new tab
-    auto current = g_current.lock();
-    auto found = find(current);
+    auto current = g_tabBar.current.lock();
+    auto found = g_tabBar.find(current);
     ++found;
     auto tab = std::make_shared<Tab>();
-    g_tabs.insert(found, tab);
+    g_tabBar.tabs.insert(found, tab);
 
-    g_current = tab;
+    g_tabBar.current = tab;
     // tab->SetFirstBuffer(buf, true);
     return tab;
 }
 
 void deleteTab(TabPtr tab)
 {
-    if (g_tabs.size() <= 1)
+    if (g_tabBar.tabs.size() <= 1)
         return;
 
-    auto found = find(tab);
+    auto found = g_tabBar.find(tab);
 
-    bool isCurrent = (*found == g_current.lock());
+    bool isCurrent = (*found == g_tabBar.current.lock());
 
-    auto eraseNext = g_tabs.erase(found);
+    auto eraseNext = g_tabBar.tabs.erase(found);
 
     if (isCurrent)
     {
         // update current tab
-        if (eraseNext != g_tabs.end())
+        if (eraseNext != g_tabBar.tabs.end())
         {
-            g_current = *eraseNext;
+            g_tabBar.current = *eraseNext;
         }
         else
         {
-            g_current = g_tabs.back();
+            g_tabBar.current = g_tabBar.tabs.back();
         }
     }
 
@@ -213,12 +217,12 @@ void deleteTab(TabPtr tab)
 
 void DeleteCurrentTab()
 {
-    deleteTab(g_current.lock());
+    deleteTab(g_tabBar.current.lock());
 }
 
 void DeleteAllTabs()
 {
-    g_tabs.clear();
+    g_tabBar.tabs.clear();
 }
 
 void moveTab(TabPtr src, TabPtr dst, int right)
@@ -226,8 +230,8 @@ void moveTab(TabPtr src, TabPtr dst, int right)
     if (!src || !dst || src == dst)
         return;
 
-    auto s = find(src);
-    auto d = find(dst);
+    auto s = g_tabBar.find(src);
+    auto d = g_tabBar.find(dst);
 
     if (right)
     {
@@ -236,12 +240,12 @@ void moveTab(TabPtr src, TabPtr dst, int right)
 
     auto end = s;
     ++end;
-    g_tabs.insert(d, s, end);
+    g_tabBar.tabs.insert(d, s, end);
 }
 
 void SelectRelativeTab(int prec)
 {
-    if (g_tabs.size() <= 1)
+    if (g_tabBar.tabs.size() <= 1)
     {
         return;
     }

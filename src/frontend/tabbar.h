@@ -4,7 +4,6 @@
 
 void EachTab(const std::function<void(const TabPtr &)> callback);
 TabPtr CreateTabSetCurrent();
-void InitializeTab();
 int GetTabCount();
 int GetTabbarHeight();
 TabPtr GetTabByIndex(int index);

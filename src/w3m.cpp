@@ -1075,7 +1075,6 @@ int w3mApp::Main(int argc, char **argv)
             //
             if (GetCurrentTab() == NULL)
             {
-                InitializeTab();
                 GetCurrentTab()->SetFirstBuffer(newbuf);
             }
             else if (open_new_tab)
@@ -1124,10 +1123,6 @@ int w3mApp::Main(int argc, char **argv)
     {
         set_add_download_list(FALSE);
         SetCurrentTab(GetLastTab());
-        if (!GetFirstTab())
-        {
-            InitializeTab();
-        }
         if (!GetCurrentTab()->GetFirstBuffer())
         {
             GetCurrentTab()->SetCurrentBuffer(newBuffer(INIT_BUFFER_WIDTH()));
