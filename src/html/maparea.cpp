@@ -660,8 +660,8 @@ page_info_panel(BufferPtr buf)
     if (buf->frameset != NULL)
         f_set = buf->frameset;
     else if (buf->bufferprop & BP_FRAME &&
-             tab->NextBuffer(buf) != NULL && tab->NextBuffer(buf)->frameset != NULL)
-        f_set = tab->NextBuffer(buf)->frameset;
+             tab->BackBuffer(buf) != NULL && tab->BackBuffer(buf)->frameset != NULL)
+        f_set = tab->BackBuffer(buf)->frameset;
 
     if (f_set)
     {

@@ -59,15 +59,14 @@ public:
     int GetCurrentBufferIndex() const;
     BufferPtr GetFirstBuffer() { return buffers.front(); }
     BufferPtr GetCurrentBuffer() const { return currentBuffer; }
-    BufferPtr PrevBuffer(BufferPtr buf) const;
-    BufferPtr NextBuffer(BufferPtr buf) const;
+    BufferPtr ForwardBuffer(BufferPtr buf) const;
+    BufferPtr BackBuffer(BufferPtr buf) const;
     BufferPtr GetBuffer(int n) const;
     BufferPtr NamedBuffer(const char *name) const;
     BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar) const;
 
-    void SetFirstBuffer(BufferPtr buf);
-    void PushBufferCurrentPrev(BufferPtr buf);
-    void PushBufferCurrentNext(BufferPtr buf);
+    // history の 先頭に追加する
+    void Push(BufferPtr buf);
 
     void SetCurrentBuffer(BufferPtr buf);
     void DeleteBuffer(BufferPtr delbuf);

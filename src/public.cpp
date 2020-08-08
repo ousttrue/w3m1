@@ -366,7 +366,7 @@ void cmd_loadfile(char *fn)
     }
     else
     {
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
+        GetCurrentTab()->Push(buf);
         if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
             rFrame(&w3mApp::Instance());
     }
@@ -398,7 +398,7 @@ void cmd_loadURL(std::string_view url, URL *current, char *referer, FormList *re
     }
     else
     {
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
+        GetCurrentTab()->Push(buf);
         if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
             rFrame(&w3mApp::Instance());
     }
@@ -1181,7 +1181,7 @@ Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf)
 
 BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 {
-    GetCurrentTab()->PushBufferCurrentPrev(buf);
+    GetCurrentTab()->Push(buf);
     if (renderframe && w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
         rFrame(&w3mApp::Instance());
     return buf;
@@ -1391,7 +1391,7 @@ void gotoLabel(std::string_view label)
     buf->currentURL.label = label;
     pushHashHist(w3mApp::Instance().URLHist, buf->currentURL.ToStr()->ptr);
     (*buf->clone)++;
-    GetCurrentTab()->PushBufferCurrentPrev(buf);
+    GetCurrentTab()->Push(buf);
     GetCurrentTab()->GetCurrentBuffer()->GotoLine(al->start.line);
     if (label_topline)
         GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->TopLine(),
@@ -1518,17 +1518,17 @@ int checkBackBuffer(TabPtr tab, BufferPtr buf)
         if (fbuf->frameQ)
             return TRUE; /* Currentbuf has stacked frames */
         /* when no frames stacked and next is frame source, try next's
-     * nextBuffer */
-        if (w3mApp::Instance().RenderFrame && fbuf == tab->NextBuffer(buf))
+        * nextBuffer */
+        if (w3mApp::Instance().RenderFrame && fbuf == tab->BackBuffer(buf))
         {
-            if (tab->NextBuffer(fbuf) != NULL)
+            if (tab->BackBuffer(fbuf) != NULL)
                 return TRUE;
             else
                 return FALSE;
         }
     }
 
-    if (tab->NextBuffer(buf))
+    if (tab->BackBuffer(buf))
         return TRUE;
 
     return FALSE;
@@ -1812,7 +1812,7 @@ void execdict(char *word)
         buf->buffername = Sprintf("%s %s", DICTBUFFERNAME, word)->ptr;
         if (buf->type.empty())
             buf->type = "text/plain";
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
+        GetCurrentTab()->Push(buf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -1859,7 +1859,7 @@ void tabURL0(TabPtr tab, const char *prompt, int relative)
         // p->nextBuffer = NULL;
         // GetCurrentTab()->SetFirstBuffer(buf);
         deleteTab(GetCurrentTab());
-        tab->SetFirstBuffer(buf);
+        tab->Push(buf);
         SetCurrentTab(tab);
         // for (buf = p; buf; buf = p)
         // {
@@ -2493,7 +2493,7 @@ void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid)
             buf->linkBuffer[linkid] = GetCurrentTab()->GetCurrentBuffer();
             GetCurrentTab()->GetCurrentBuffer()->linkBuffer[linkid] = buf;
         }
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
+        GetCurrentTab()->Push(buf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }

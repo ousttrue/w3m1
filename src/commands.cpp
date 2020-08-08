@@ -301,7 +301,7 @@ void pipeBuf(w3mApp *w3m)
         if (buf->type.empty())
             buf->type = "text/plain";
         buf->currentURL.file = "-";
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
+        GetCurrentTab()->Push(buf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -335,7 +335,7 @@ void pipesh(w3mApp *w3m)
         buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         if (buf->type.empty())
             buf->type = "text/plain";
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
+        GetCurrentTab()->Push(buf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -378,7 +378,7 @@ void readsh(w3mApp *w3m)
     buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
     if (buf->type.empty())
         buf->type = "text/plain";
-    GetCurrentTab()->PushBufferCurrentPrev(buf);
+    GetCurrentTab()->Push(buf);
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Execute shell command */
@@ -620,11 +620,6 @@ void selBuf(w3mApp *w3m)
 
         case 'D':
             GetCurrentTab()->DeleteBuffer(buf);
-            if (GetCurrentTab()->GetFirstBuffer() == NULL)
-            {
-                /* No more buffer */
-                GetCurrentTab()->SetFirstBuffer(nullBuffer());
-            }
             break;
 
         case 'q':
@@ -921,7 +916,7 @@ void followI(w3mApp *w3m)
     }
     else
     {
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
+        GetCurrentTab()->Push(buf);
     }
     displayCurrentbuf(B_NORMAL);
 }
@@ -1146,7 +1141,7 @@ void nextBf(w3mApp *w3m)
     auto prec = prec_num() ? prec_num() : 1;
     for (i = 0; i < prec; i++)
     {
-        auto buf = GetCurrentTab()->PrevBuffer(GetCurrentTab()->GetCurrentBuffer());
+        auto buf = GetCurrentTab()->ForwardBuffer(GetCurrentTab()->GetCurrentBuffer());
         if (!buf)
         {
             if (i == 0)
@@ -1165,7 +1160,7 @@ void prevBf(w3mApp *w3m)
     auto prec = prec_num() ? prec_num() : 1;
     for (int i = 0; i < prec; i++)
     {
-        auto buf = tab->NextBuffer(tab->GetCurrentBuffer());
+        auto buf = tab->BackBuffer(tab->GetCurrentBuffer());
         if (!buf)
         {
             if (i == 0)
@@ -1233,7 +1228,7 @@ void backBf(w3mApp *w3m)
 void deletePrevBuf(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
-    BufferPtr buf = tab->PrevBuffer(tab->GetCurrentBuffer());
+    BufferPtr buf = tab->ForwardBuffer(tab->GetCurrentBuffer());
     if (buf)
         tab->DeleteBuffer(buf);
 }
@@ -1623,7 +1618,7 @@ void vwSrc(w3mApp *w3m)
     (*buf->clone)++;
     buf->need_reshape = TRUE;
     buf->Reshape();
-    GetCurrentTab()->PushBufferCurrentPrev(buf);
+    GetCurrentTab()->Push(buf);
     displayCurrentbuf(B_NORMAL);
 }
 /* reload */
@@ -1681,8 +1676,7 @@ void reload(w3mApp *w3m)
         }
         fbuf->linkBuffer[LB_FRAME] = buf;
         buf->linkBuffer[LB_N_FRAME] = fbuf;
-        GetCurrentTab()->PushBufferCurrentPrev(buf);
-        GetCurrentTab()->SetCurrentBuffer(buf);
+        GetCurrentTab()->Push(buf);
         if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
         {
             GetCurrentTab()->GetCurrentBuffer()->COPY_BUFROOT_FROM(sbuf);
@@ -1860,7 +1854,7 @@ void rFrame(w3mApp *w3m)
     }
     buf->linkBuffer[LB_N_FRAME] = GetCurrentTab()->GetCurrentBuffer();
     GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME] = buf;
-    GetCurrentTab()->PushBufferCurrentPrev(buf);
+    GetCurrentTab()->Push(buf);
     if (fmInitialized && display_ok())
         displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -2358,7 +2352,7 @@ void ldDL(w3mApp *w3m)
         CreateTabSetCurrent();
         new_tab = TRUE;
     }
-    GetCurrentTab()->PushBufferCurrentPrev(buf);
+    GetCurrentTab()->Push(buf);
     if (replace || new_tab)
         deletePrevBuf(w3m);
 

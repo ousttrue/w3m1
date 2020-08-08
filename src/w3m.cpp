@@ -1073,21 +1073,14 @@ int w3mApp::Main(int argc, char **argv)
             //
             // set newbuf to tab
             //
-            if (GetCurrentTab() == NULL)
+            if (open_new_tab)
             {
-                GetCurrentTab()->SetFirstBuffer(newbuf);
-            }
-            else if (open_new_tab)
-            {
-                assert(false);
-                CreateTabSetCurrent();
-                // GetCurrentTab()->GetCurrentBuffer()->nextBuffer = newbuf;
-                // delBuffer(GetCurrentTab()->GetCurrentBuffer());
+                auto tab = CreateTabSetCurrent();
+                tab->Push(newbuf);
             }
             else
             {
-                auto tab = GetCurrentTab();
-                tab->PushBufferCurrentNext(newbuf);
+                GetCurrentTab()->Push(newbuf);
             }
 
             if (!w3m_dump || w3m_dump == DUMP_BUFFER)
@@ -1125,13 +1118,15 @@ int w3mApp::Main(int argc, char **argv)
         SetCurrentTab(GetLastTab());
         if (!GetCurrentTab()->GetFirstBuffer())
         {
-            GetCurrentTab()->SetCurrentBuffer(newBuffer(INIT_BUFFER_WIDTH()));
-            GetCurrentTab()->SetFirstBuffer(GetCurrentTab()->GetCurrentBuffer());
-            GetCurrentTab()->GetCurrentBuffer()->bufferprop = BP_INTERNAL | BP_NO_URL;
-            GetCurrentTab()->GetCurrentBuffer()->buffername = DOWNLOAD_LIST_TITLE;
+            auto buf = newBuffer(INIT_BUFFER_WIDTH());
+            buf->bufferprop = BP_INTERNAL | BP_NO_URL;
+            buf->buffername = DOWNLOAD_LIST_TITLE;
+            GetCurrentTab()->Push(buf);
         }
         else
+        {
             GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
+        }
         ldDL(&w3mApp::Instance());
     }
     else

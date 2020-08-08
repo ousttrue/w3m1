@@ -46,7 +46,7 @@ int Tab::GetCurrentBufferIndex() const
     return -1;
 }
 
-BufferPtr Tab::PrevBuffer(BufferPtr buf) const
+BufferPtr Tab::ForwardBuffer(BufferPtr buf) const
 {
     if (buf == buffers.front())
     {
@@ -57,7 +57,7 @@ BufferPtr Tab::PrevBuffer(BufferPtr buf) const
     return *it;
 }
 
-BufferPtr Tab::NextBuffer(BufferPtr buf) const
+BufferPtr Tab::BackBuffer(BufferPtr buf) const
 {
     auto it = find(buf);
     if (it == buffers.end())
@@ -69,18 +69,18 @@ BufferPtr Tab::NextBuffer(BufferPtr buf) const
     return *it;
 }
 
-void Tab::SetFirstBuffer(BufferPtr buffer)
-{
-    // firstBuffer = buffer;
-    // if (isCurrent)
-    // {
-    //     SetCurrentBuffer(buffer);
-    // }
+// void Tab::SetFirstBuffer(BufferPtr buffer)
+// {
+//     // firstBuffer = buffer;
+//     // if (isCurrent)
+//     // {
+//     //     SetCurrentBuffer(buffer);
+//     // }
 
-    buffers.clear();
-    buffers.push_back(buffer);
-    currentBuffer = buffer;
-}
+//     buffers.clear();
+//     buffers.push_back(buffer);
+//     currentBuffer = buffer;
+// }
 
 void Tab::SetCurrentBuffer(BufferPtr buffer)
 {
@@ -102,7 +102,7 @@ void Tab::SetCurrentBuffer(BufferPtr buffer)
 }
 
 // currentPrev -> buf -> current
-void Tab::PushBufferCurrentPrev(BufferPtr buf)
+void Tab::Push(BufferPtr buf)
 {
     if (buffers.empty())
     {
@@ -120,15 +120,15 @@ void Tab::PushBufferCurrentPrev(BufferPtr buf)
 #endif
 }
 
-void Tab::PushBufferCurrentNext(BufferPtr buf)
-{
-    auto it = find(currentBuffer);
-    assert(it != buffers.end());
-    ++it;
-    buffers.insert(it, buf);
-    SetCurrentBuffer(buf);
-    SetCurrentBuffer(buf);
-}
+// void Tab::PushBufferCurrentNext(BufferPtr buf)
+// {
+//     auto it = find(currentBuffer);
+//     assert(it != buffers.end());
+//     ++it;
+//     buffers.insert(it, buf);
+//     SetCurrentBuffer(buf);
+//     SetCurrentBuffer(buf);
+// }
 
 BufferPtr
 Tab::GetBuffer(int n) const
@@ -197,19 +197,16 @@ writeBufferName(BufferPtr buf, int n)
 static BufferPtr
 listBuffer(const Tab *tab, BufferPtr top, BufferPtr current)
 {
-    int i, c = 0;
-    BufferPtr buf = top;
-
     move(0, 0);
-#ifdef USE_COLOR
+
     if (w3mApp::Instance().useColor)
     {
         setfcolor(basic_color);
-#ifdef USE_BG_COLOR
         setbcolor(bg_color);
-#endif /* USE_BG_COLOR */
     }
-#endif /* USE_COLOR */
+
+    BufferPtr buf = top;
+    int i, c = 0;
     clrtobotx();
     for (i = 0; i < (LINES - 1); i++)
     {
@@ -228,13 +225,13 @@ listBuffer(const Tab *tab, BufferPtr top, BufferPtr current)
         }
         else
             clrtoeolx();
-        if (tab->NextBuffer(buf))
+        if (!tab->BackBuffer(buf))
         {
             move(i + 1, 0);
             clrtobotx();
             break;
         }
-        buf = tab->NextBuffer(buf);
+        buf = tab->BackBuffer(buf);
     }
     standout();
     /* FIXME: gettextize? */
@@ -245,7 +242,7 @@ listBuffer(const Tab *tab, BufferPtr top, BufferPtr current)
      * move((LINES-1), COLS - 1); */
     move(c, 0);
     refresh();
-    return tab->NextBuffer(buf);
+    return tab->BackBuffer(buf);
 }
 
 /* 
