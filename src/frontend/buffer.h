@@ -267,9 +267,9 @@ public:
 
 public:
     BufferProps bufferprop = BP_NORMAL;
-    int currentColumn;
-    int pos;
-    int visualpos;
+    int currentColumn = 0;
+    int pos = 0;
+    int visualpos = 0;
 
     TermRect rect;
 
@@ -318,39 +318,39 @@ public:
     int prevhseq = -1;
 
     std::vector<Link> linklist;
-    FormList *formlist;
-    MapList *maplist;
+    FormList *formlist = nullptr;
+    MapList *maplist = nullptr;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
     URL currentURL = {};
     URL baseURL = {};
     std::string baseTarget;
-    int real_scheme;
+    int real_scheme = 0;
     std::string sourcefile;
-    struct frameset *frameset;
-    struct frameset_queue *frameQ;
-    int *clone;
-    size_t trbyte;
-    char check_url;
-    CharacterEncodingScheme document_charset;
-    AutoDetectTypes auto_detect;
-    TextList *document_header;
-    FormItemList *form_submit;
+    struct frameset *frameset = nullptr;
+    struct frameset_queue *frameQ = nullptr;
+    int *clone = nullptr;
+    size_t trbyte = 0;
+    char check_url = 0;
+    CharacterEncodingScheme document_charset = 0;
+    AutoDetectTypes auto_detect = 0;
+    TextList *document_header = nullptr;
+    FormItemList *form_submit = nullptr;
     // ReadBufferCache, WriteBufferCache
     std::string savecache;
     // editBf
     std::string edit;
-    Mailcap *mailcap;
+    Mailcap *mailcap = nullptr;
     std::string mailcap_source;
     // backup stream read contents ?
     std::string header_source;
-    char search_header;
+    char search_header = 0;
     // https
     std::string ssl_certificate;
-    char image_flag;
-    char image_loaded;
-    Anchor *submit;
-    BufferPos *undo;
+    char image_flag = 0;
+    char image_loaded = 0;
+    Anchor *submit = nullptr;
+    BufferPos *undo = nullptr;
     AlarmEvent *event = nullptr;
 
     Buffer();
