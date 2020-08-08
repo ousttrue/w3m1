@@ -644,7 +644,7 @@ void linend(w3mApp *w3m)
         return;
     while (buf->NextLine(buf->CurrentLine()) && buf->NextLine(buf->CurrentLine())->bpos)
         buf->CursorDown0(1);
-    buf->pos = buf->CurrentLine()->len - 1;
+    buf->pos = buf->CurrentLine()->len() - 1;
     buf->ArrangeCursor();
     displayCurrentbuf(B_NORMAL);
 }
@@ -711,7 +711,7 @@ void _mark(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     l = GetCurrentTab()->GetCurrentBuffer()->CurrentLine();
-    l->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos] ^= PE_MARK;
+    l->propBuf()[GetCurrentTab()->GetCurrentBuffer()->pos] ^= PE_MARK;
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
@@ -728,16 +728,16 @@ void nextMk(w3mApp *w3m)
         return;
     i = buf->pos + 1;
     l = buf->CurrentLine();
-    if (i >= l->len)
+    if (i >= l->len())
     {
         i = 0;
         l = buf->NextLine(l);
     }
     while (l != NULL)
     {
-        for (; i < l->len; i++)
+        for (; i < l->len(); i++)
         {
-            if (l->propBuf[i] & PE_MARK)
+            if (l->propBuf()[i] & PE_MARK)
             {
                 buf->SetCurrentLine(l);
                 buf->pos = i;
@@ -770,13 +770,13 @@ void prevMk(w3mApp *w3m)
     {
         l = buf->PrevLine(l);
         if (l != NULL)
-            i = l->len - 1;
+            i = l->len() - 1;
     }
     while (l != NULL)
     {
         for (; i >= 0; i--)
         {
-            if (l->propBuf[i] & PE_MARK)
+            if (l->propBuf()[i] & PE_MARK)
             {
                 buf->SetCurrentLine(l);
                 buf->pos = i;
@@ -787,7 +787,7 @@ void prevMk(w3mApp *w3m)
         }
         l = buf->PrevLine(l);
         if (l != NULL)
-            i = l->len - 1;
+            i = l->len() - 1;
     }
     /* FIXME: gettextize? */
     disp_message("No mark exist before here", TRUE);
@@ -819,13 +819,13 @@ void reMark(w3mApp *w3m)
 
     GetCurrentTab()->GetCurrentBuffer()->EachLine([&](auto l) {
         char *p, *p1, *p2;
-        p = l->lineBuf;
+        p = l->lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->lineBuf[l->len] - p, p == l->lineBuf) == 1)
+            if (regexMatch(p, &l->lineBuf()[l->len()] - p, p == l->lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
-                l->propBuf[p1 - l->lineBuf] |= PE_MARK;
+                l->propBuf()[p1 - l->lineBuf()] |= PE_MARK;
                 p = p2;
             }
             else
@@ -1865,7 +1865,7 @@ void curlno(w3mApp *w3m)
         while (buf->NextLine(l) && buf->NextLine(l)->bpos)
             l = buf->NextLine(l);
         if (l->width < 0)
-            l->width = l->COLPOS(l->len);
+            l->width = l->COLPOS(l->len());
         len = l->bwidth + l->width;
     }
 

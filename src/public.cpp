@@ -49,7 +49,7 @@ void clear_mark(LinePtr l)
     if (!l)
         return;
     for (pos = 0; pos < l->size; pos++)
-        l->propBuf[pos] &= ~PE_MARK;
+        l->propBuf()[pos] &= ~PE_MARK;
 }
 
 void disp_srchresult(int result, const char *prompt, char *str)
@@ -493,14 +493,14 @@ int prev_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;
 
-    for (l = line; l != NULL && l->len == 0; l = buf->PrevLine(l))
+    for (l = line; l != NULL && l->len() == 0; l = buf->PrevLine(l))
         ;
-    if (l == NULL || l->len == 0)
+    if (l == NULL || l->len() == 0)
         return -1;
 
     GetCurrentTab()->GetCurrentBuffer()->SetCurrentLine(l);
     if (l != line)
-        GetCurrentTab()->GetCurrentBuffer()->pos = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->len;
+        GetCurrentTab()->GetCurrentBuffer()->pos = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->len();
     return 0;
 }
 
@@ -508,10 +508,10 @@ int next_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;
 
-    for (l = line; l != NULL && l->len == 0; l = buf->NextLine(l))
+    for (l = line; l != NULL && l->len() == 0; l = buf->NextLine(l))
         ;
 
-    if (l == NULL || l->len == 0)
+    if (l == NULL || l->len() == 0)
         return -1;
 
     GetCurrentTab()->GetCurrentBuffer()->SetCurrentLine(l);
@@ -531,7 +531,7 @@ getCurWord(BufferPtr buf, int *spos, int *epos)
     *epos = 0;
     if (l == NULL)
         return NULL;
-    p = l->lineBuf;
+    p = l->lineBuf();
     e = buf->pos;
     while (e > 0 && !is_wordchar(getChar(&p[e])))
         prevChar(&e, l);
@@ -546,7 +546,7 @@ getCurWord(BufferPtr buf, int *spos, int *epos)
             break;
         b = tmp;
     }
-    while (e < l->len && is_wordchar(getChar(&p[e])))
+    while (e < l->len() && is_wordchar(getChar(&p[e])))
         nextChar(&e, l);
     *spos = b;
     *epos = e;
@@ -562,7 +562,7 @@ void prevChar(int *s, LinePtr l)
     do
     {
         (*s)--;
-    } while ((*s) > 0 && (l)->propBuf[*s] & PC_WCHAR2);
+    } while ((*s) > 0 && (l)->propBuf()[*s] & PC_WCHAR2);
 }
 
 void nextChar(int *s, LinePtr l)
@@ -570,7 +570,7 @@ void nextChar(int *s, LinePtr l)
     do
     {
         (*s)++;
-    } while ((*s) < (l)->len && (l)->propBuf[*s] & PC_WCHAR2);
+    } while ((*s) < (l)->len() && (l)->propBuf()[*s] & PC_WCHAR2);
 }
 
 uint32_t getChar(char *p)
@@ -1413,7 +1413,7 @@ void nextX(int d, int dy)
         an = NULL;
         while (1)
         {
-            for (; x >= 0 && x < l->len; x += d)
+            for (; x >= 0 && x < l->len(); x += d)
             {
                 an = buf->href.RetrieveAnchor(y, x);
                 if (!an)
@@ -1429,7 +1429,7 @@ void nextX(int d, int dy)
             l = (dy > 0) ? buf->NextLine(l) : buf->PrevLine(l);
             if (!l)
                 break;
-            x = (d > 0) ? 0 : l->len - 1;
+            x = (d > 0) ? 0 : l->len() - 1;
             y = l->linenumber;
         }
         if (!an)

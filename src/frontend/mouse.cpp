@@ -334,7 +334,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         y=_y;
         if (y &&
             (x || (WcOption.use_wide && GetCurrentTab()->GetCurrentBuffer()->CurrentLine() != NULL &&
-                                                                                                                (CharType(GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && x == GetCurrentTab()->GetCurrentBuffer()->rect.cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX + 1)))
+                                                                                                                (CharType(GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->propBuf()[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && x == GetCurrentTab()->GetCurrentBuffer()->rect.cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX + 1)))
         {
             if (retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer()) ||
                 retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer()))
@@ -356,7 +356,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
             if (y &&
                 (x
                  || (WcOption.use_wide && GetCurrentTab()->GetCurrentBuffer()->CurrentLine() != NULL &&
-                     (CharType(GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && x == GetCurrentTab()->GetCurrentBuffer()->rect.cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX + 1)
+                     (CharType(GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->propBuf()[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && x == GetCurrentTab()->GetCurrentBuffer()->rect.cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX + 1)
                      ) &&
                 (retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer()) ||
                  retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer())))
@@ -433,7 +433,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
 
                          || (WcOption.use_wide &&
                              GetCurrentTab()->GetCurrentBuffer()->CurrentLine() != NULL &&
-                             (CharType(GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->propBuf[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && GetCurrentTab()->GetCurrentBuffer()->rect.cursorX == press_x - GetCurrentTab()->GetCurrentBuffer()->rect.rootX - 1)
+                             (CharType(GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->propBuf()[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && GetCurrentTab()->GetCurrentBuffer()->rect.cursorX == press_x - GetCurrentTab()->GetCurrentBuffer()->rect.rootX - 1)
 
                              ))
                     {

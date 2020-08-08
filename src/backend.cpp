@@ -126,8 +126,8 @@ internal_get(char *url, int flag, FormList *request)
             {
                 int len = 0;
                 buf->EachLine([&](auto l) {
-                    len += l->len;
-                    if (l->lineBuf[l->len - 1] != '\n')
+                    len += l->len();
+                    if (l->lineBuf()[l->len() - 1] != '\n')
                         len++;
                 });
                 print_headers(buf, len);

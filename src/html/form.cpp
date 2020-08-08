@@ -331,13 +331,13 @@ form_update_line(LinePtr line, char **str, int spos, int epos, int width,
     }
     pos += width - w;
 
-    len = line->len + pos + spos - epos;
+    len = line->len() + pos + spos - epos;
     buf = New_N(char, len);
     prop = New_N(Lineprop, len);
-    bcopy((void *)line->lineBuf, (void *)buf, spos * sizeof(char));
-    bcopy((void *)line->propBuf, (void *)prop, spos * sizeof(Lineprop));
+    bcopy((void *)line->lineBuf(), (void *)buf, spos * sizeof(char));
+    bcopy((void *)line->propBuf(), (void *)prop, spos * sizeof(Lineprop));
 
-    effect = CharEffect(line->propBuf[spos]);
+    effect = CharEffect(line->propBuf()[spos]);
     for (p = *str, w = 0, pos = spos; *p && w < width;)
     {
         c_type = get_mctype(*p);
@@ -423,13 +423,12 @@ form_update_line(LinePtr line, char **str, int spos, int epos, int width,
     }
     *str = p;
 
-    bcopy((void *)&line->lineBuf[epos], (void *)&buf[pos],
-          (line->len - epos) * sizeof(char));
-    bcopy((void *)&line->propBuf[epos], (void *)&prop[pos],
-          (line->len - epos) * sizeof(Lineprop));
-    line->lineBuf = buf;
-    line->propBuf = prop;
-    line->len = len;
+    bcopy((void *)&line->lineBuf()[epos], (void *)&buf[pos],
+          (line->len() - epos) * sizeof(char));
+    bcopy((void *)&line->propBuf()[epos], (void *)&prop[pos],
+          (line->len() - epos) * sizeof(Lineprop));
+
+    line->buffer = {buf, prop, len};
     line->size = len;
 
     return pos;
@@ -465,9 +464,9 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
     case FORM_INPUT_CHECKBOX:
     case FORM_INPUT_RADIO:
         if (form->checked)
-            buf->CurrentLine()->lineBuf[spos] = '*';
+            buf->CurrentLine()->lineBuf()[spos] = '*';
         else
-            buf->CurrentLine()->lineBuf[spos] = ' ';
+            buf->CurrentLine()->lineBuf()[spos] = ' ';
         break;
     case FORM_INPUT_TEXT:
     case FORM_INPUT_FILE:

@@ -672,8 +672,8 @@ static Str
 conv_symbol(LinePtr l)
 {
     Str tmp = NULL;
-    char *p = l->lineBuf, *ep = p + l->len;
-    Lineprop *pr = l->propBuf;
+    char *p = l->lineBuf(), *ep = p + l->len();
+    Lineprop *pr = l->propBuf();
     #ifdef USE_M17N
     int w;
     const char **symbol = NULL;
@@ -693,8 +693,8 @@ conv_symbol(LinePtr l)
             #endif
             if (tmp == NULL)
             {
-                tmp = Strnew_size(l->len);
-                tmp->CopyFrom(l->lineBuf, p - l->lineBuf);
+                tmp = Strnew_size(l->len());
+                tmp->CopyFrom(l->lineBuf(), p - l->lineBuf());
                 #ifdef USE_M17N
                 w = (*pr & PC_KANJI) ? 2 : 1;
                 symbol = get_symbol(w3mApp::Instance().DisplayCharset, &w);
@@ -712,7 +712,7 @@ conv_symbol(LinePtr l)
     if (tmp)
         return tmp;
     else
-        return Strnew_charp_n(l->lineBuf, l->len);
+        return Strnew_charp_n(l->lineBuf(), l->len());
 }
 
 /*
@@ -733,7 +733,7 @@ _saveBuffer(BufferPtr buf, LinePtr l, FILE *f, int cont)
         if (is_html)
             tmp = conv_symbol(l);
         else
-            tmp = Strnew_charp_n(l->lineBuf, l->len);
+            tmp = Strnew_charp_n(l->lineBuf(), l->len());
         tmp = wc_Str_conv(tmp, w3mApp::Instance().InnerCharset, charset);
         tmp->Puts(f);
         if (tmp->Back() != '\n' && !(cont && buf->NextLine(l) && buf->NextLine(l)->bpos))
@@ -934,7 +934,7 @@ getNextPage(BufferPtr buf, int plen)
     if (last != NULL)
     {
         nlines = last->real_linenumber;
-        pre_lbuf = *(last->lineBuf);
+        pre_lbuf = *(last->lineBuf());
         if (pre_lbuf == '\0')
             pre_lbuf = '\n';
         buf->SetCurrentLine(last);

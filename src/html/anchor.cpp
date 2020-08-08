@@ -228,19 +228,19 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
     int spos, epos;
     int i, hseq = -2;
 
-    spos = p1 - l->lineBuf;
-    epos = p2 - l->lineBuf;
+    spos = p1 - l->lineBuf();
+    epos = p2 - l->lineBuf();
     for (i = spos; i < epos; i++)
     {
-        if (l->propBuf[i] & (PE_ANCHOR | PE_FORM))
+        if (l->propBuf()[i] & (PE_ANCHOR | PE_FORM))
             return p2;
     }
     for (i = spos; i < epos; i++)
-        l->propBuf[i] |= PE_ANCHOR;
-    while (spos > l->len && buf->NextLine(l) && buf->NextLine(l)->bpos)
+        l->propBuf()[i] |= PE_ANCHOR;
+    while (spos > l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
     {
-        spos -= l->len;
-        epos -= l->len;
+        spos -= l->len();
+        epos -= l->len();
         l = buf->NextLine(l);
     }
     while (1)
@@ -253,11 +253,11 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
             hseq = a->hseq;
         }
         a->end.line = l->linenumber;
-        if (epos > l->len && buf->NextLine(l) && buf->NextLine(l)->bpos)
+        if (epos > l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
         {
-            a->end.pos = l->len;
+            a->end.pos = l->len();
             spos = 0;
-            epos -= l->len;
+            epos -= l->len();
             l = buf->NextLine(l);
         }
         else
@@ -271,7 +271,7 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
 
 void reAnchorWord(BufferPtr buf, LinePtr l, int spos, int epos)
 {
-    reAnchorPos(buf, l, &l->lineBuf[spos], &l->lineBuf[epos], _put_anchor_all);
+    reAnchorPos(buf, l, &l->lineBuf()[spos], &l->lineBuf()[epos], _put_anchor_all);
 }
 
 /* search regexp and register them as anchors */
@@ -297,10 +297,10 @@ reAnchorAny(BufferPtr buf, char *re,
     {
         if (p && l->bpos)
             goto next_line;
-        p = l->lineBuf;
+        p = l->lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->lineBuf[l->size] - p, p == l->lineBuf) == 1)
+            if (regexMatch(p, &l->lineBuf()[l->size] - p, p == l->lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
                 p = reAnchorPos(buf, l, p1, p2, anchorproc);
@@ -360,7 +360,7 @@ reAnchorNewsheader(BufferPtr buf)
         {
             if (l->bpos)
                 continue;
-            p = l->lineBuf;
+            p = l->lineBuf();
             if (!IS_SPACE(*p))
             {
                 search = FALSE;
@@ -378,7 +378,7 @@ reAnchorNewsheader(BufferPtr buf)
                 continue;
             for (;;)
             {
-                if (regexMatch(p, &l->lineBuf[l->size] - p, p == l->lineBuf) == 1)
+                if (regexMatch(p, &l->lineBuf()[l->size] - p, p == l->lineBuf()) == 1)
                 {
                     matchedPosition(&p1, &p2);
                     p = reAnchorPos(buf, l, p1, p2, _put_anchor_news);
@@ -496,7 +496,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
                 a.end.pos = pos + ecol - col;
                 buf->img.Put(a);
                 for (int k = pos; k < a.end.pos; k++)
-                    l->propBuf[k] |= PE_IMAGE;
+                    l->propBuf()[k] |= PE_IMAGE;
             }
             if (a_href.url.size())
             {
@@ -509,7 +509,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
                 a.end.pos = pos + ecol - col;
                 buf->href.Put(a);
                 for (int k = pos; k < a.end.pos; k++)
-                    l->propBuf[k] |= PE_ANCHOR;
+                    l->propBuf()[k] |= PE_ANCHOR;
             }
             if (a_form.item)
             {
@@ -586,10 +586,10 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
                 pos : pos + ecol - col
             };
             buf->formitem.Put(a);
-            l->lineBuf[pos - 1] = '[';
-            l->lineBuf[a.end.pos] = ']';
+            l->lineBuf()[pos - 1] = '[';
+            l->lineBuf()[a.end.pos] = ']';
             for (int k = pos; k < a.end.pos; k++)
-                l->propBuf[k] |= PE_FORM;
+                l->propBuf()[k] |= PE_FORM;
         }
     }
 }
@@ -618,8 +618,8 @@ getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a)
         }
         if (!l)
             break;
-        p = l->lineBuf + a->start.pos;
-        ep = l->lineBuf + a->end.pos;
+        p = l->lineBuf() + a->start.pos;
+        ep = l->lineBuf() + a->end.pos;
         for (; p < ep && IS_SPACE(*p); p++)
             ;
         if (p == ep)

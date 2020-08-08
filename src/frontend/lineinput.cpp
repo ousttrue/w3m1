@@ -111,7 +111,7 @@ addPasswd(char *p, Lineprop *pr, int len, int offset, int limit)
 {
     int rcol = 0, ncol;
 
-    ncol = calcPosition(p, pr, len, len, 0, CP_AUTO);
+    ncol = calcPosition({p, pr, len}, len, 0, CP_AUTO);
     if (ncol > offset + limit)
         ncol = offset + limit;
     if (offset) {
@@ -129,7 +129,7 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
 
     if (offset) {
         for (i = 0; i < len; i++) {
-            if (calcPosition(p, pr, len, i, 0, CP_AUTO) > offset)
+            if (calcPosition({p, pr, len}, i, 0, CP_AUTO) > offset)
                 break;
         }
         if (i >= len)
@@ -140,7 +140,7 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
         #endif
         addChar('{');
         rcol = offset + 1;
-        ncol = calcPosition(p, pr, len, i, 0, CP_AUTO);
+        ncol = calcPosition({p, pr, len}, i, 0, CP_AUTO);
         for (; rcol < ncol; rcol++)
             addChar(' ');
         }
@@ -148,7 +148,7 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
         #ifdef USE_M17N
         delta = wtf_len((uint8_t *)&p[i]);
         #endif
-        ncol = calcPosition(p, pr, len, i + delta, 0, CP_AUTO);
+        ncol = calcPosition({p, pr, len}, i + delta, 0, CP_AUTO);
         if (ncol - offset > limit)
             break;
         if (p[i] == '\t') {
@@ -989,9 +989,9 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
     wc_char_conv_init(wc_guess_8bit_charset(w3mApp::Instance().DisplayCharset), w3mApp::Instance().InnerCharset);
 
     do {
-        x = calcPosition(strBuf->ptr, strProp, CLen, CPos, 0, CP_FORCE);
+        x = calcPosition({strBuf->ptr, strProp, CLen}, CPos, 0, CP_FORCE);
         if (x - rpos > offset) {
-            y = calcPosition(strBuf->ptr, strProp, CLen, CLen, 0, CP_AUTO);
+            y = calcPosition({strBuf->ptr, strProp, CLen}, CLen, 0, CP_AUTO);
             if (y - epos > x - rpos)
                 offset = x - rpos;
             else if (y - epos > 0)

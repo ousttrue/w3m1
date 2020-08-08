@@ -132,14 +132,14 @@ int Buffer::WriteBufferCache()
         if (fwrite1(l->real_linenumber, cache) ||
             fwrite1(l->usrflags, cache) ||
             fwrite1(l->width, cache) ||
-            fwrite1(l->len, cache) ||
+            fwrite1(l->len(), cache) ||
             fwrite1(l->size, cache) ||
             fwrite1(l->bpos, cache) || fwrite1(l->bwidth, cache))
             goto _error;
         if (l->bpos == 0)
         {
-            if (fwrite(l->lineBuf, 1, l->size, cache) < l->size ||
-                fwrite(l->propBuf, sizeof(Lineprop), l->size, cache) < l->size)
+            if (fwrite(l->lineBuf(), 1, l->size, cache) < l->size ||
+                fwrite(l->propBuf(), sizeof(Lineprop), l->size, cache) < l->size)
                 goto _error;
         }
 #ifdef USE_ANSI_COLOR
@@ -205,23 +205,23 @@ int Buffer::ReadBufferCache()
     //     if (fread1(l->real_linenumber, cache) ||
     //         fread1(l->usrflags, cache) ||
     //         fread1(l->width, cache) ||
-    //         fread1(l->len, cache) ||
+    //         fread1(l->len(), cache) ||
     //         fread1(l->size, cache) ||
     //         fread1(l->bpos, cache) || fread1(l->bwidth, cache))
     //         break;
     //     if (l->bpos == 0)
     //     {
     //         basel = l;
-    //         l->lineBuf = NewAtom_N(char, l->size + 1);
-    //         fread(l->lineBuf, 1, l->size, cache);
-    //         l->lineBuf[l->size] = '\0';
-    //         l->propBuf = NewAtom_N(Lineprop, l->size);
-    //         fread(l->propBuf, sizeof(Lineprop), l->size, cache);
+    //         l->lineBuf() = NewAtom_N(char, l->size + 1);
+    //         fread(l->lineBuf(), 1, l->size, cache);
+    //         l->lineBuf()[l->size] = '\0';
+    //         l->propBuf() = NewAtom_N(Lineprop, l->size);
+    //         fread(l->propBuf(), sizeof(Lineprop), l->size, cache);
     //     }
     //     else if (basel)
     //     {
-    //         l->lineBuf = basel->lineBuf + l->bpos;
-    //         l->propBuf = basel->propBuf + l->bpos;
+    //         l->lineBuf() = basel->lineBuf() + l->bpos;
+    //         l->propBuf() = basel->propBuf() + l->bpos;
     //     }
     //     else
     //         break;
@@ -816,7 +816,7 @@ void set_buffer_environ(BufferPtr buf)
 
 void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines)
 {
-    auto l = new Line(line, prop, color, pos);
+    auto l = new Line({line, prop, pos}, color);
 
     auto it = lines.end();
     if (currentLine)
@@ -903,14 +903,14 @@ void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, i
         if (i == 0)
         {
             i++;
-            while (i < l->len && p[i] & PC_WCHAR2)
+            while (i < l->len() && p[i] & PC_WCHAR2)
                 i++;
         }
-        l->len = i;
-        l->width = l->COLPOS(l->len);
+        l->buffer.len = i;
+        l->width = l->COLPOS(l->len());
         if (pos <= i)
             return;
-        bpos += l->len;
+        bpos += l->len();
         bwidth += l->width;
         s += i;
         p += i;
@@ -1028,19 +1028,19 @@ void Buffer::CursorRight(int n)
 
     if (this->LineCount() == 0)
         return;
-    if (this->pos == l->len && !(NextLine(l) && NextLine(l)->bpos))
+    if (this->pos == l->len() && !(NextLine(l) && NextLine(l)->bpos))
         return;
     i = this->pos;
-    p = l->propBuf;
+    p = l->propBuf();
 
-    while (i + delta < l->len && p[i + delta] & PC_WCHAR2)
+    while (i + delta < l->len() && p[i + delta] & PC_WCHAR2)
         delta++;
 
-    if (i + delta < l->len)
+    if (i + delta < l->len())
     {
         this->pos = i + delta;
     }
-    else if (l->len == 0)
+    else if (l->len() == 0)
     {
         this->pos = 0;
     }
@@ -1053,7 +1053,7 @@ void Buffer::CursorRight(int n)
     }
     else
     {
-        this->pos = l->len - 1;
+        this->pos = l->len() - 1;
         while (this->pos && p[this->pos] & PC_WCHAR2)
             this->pos--;
     }
@@ -1061,7 +1061,7 @@ void Buffer::CursorRight(int n)
     this->visualpos = l->bwidth + cpos - this->currentColumn;
     delta = 1;
 
-    while (this->pos + delta < l->len && p[this->pos + delta] & PC_WCHAR2)
+    while (this->pos + delta < l->len() && p[this->pos + delta] & PC_WCHAR2)
         delta++;
 
     vpos2 = l->COLPOS(this->pos + delta) - this->currentColumn - 1;
@@ -1082,7 +1082,7 @@ void Buffer::CursorLeft(int n)
     if (this->LineCount() == 0)
         return;
     i = this->pos;
-    p = l->propBuf;
+    p = l->propBuf();
 
     while (i - delta > 0 && p[i - delta] & PC_WCHAR2)
         delta++;
@@ -1092,7 +1092,7 @@ void Buffer::CursorLeft(int n)
     else if (PrevLine(l) && l->bpos)
     {
         CursorUp0(-1);
-        this->pos = this->currentLine->len - 1;
+        this->pos = this->currentLine->len() - 1;
         ArrangeCursor();
         return;
     }
@@ -1155,29 +1155,29 @@ void Buffer::ArrangeCursor()
     /* Arrange column */
     while (this->pos < 0 && PrevLine(this->currentLine) && this->currentLine->bpos)
     {
-        pos = this->pos + PrevLine(this->currentLine)->len;
+        pos = this->pos + PrevLine(this->currentLine)->len();
         CursorUp0(1);
         this->pos = pos;
     }
-    while (this->pos >= this->currentLine->len && NextLine(this->currentLine) &&
+    while (this->pos >= this->currentLine->len() && NextLine(this->currentLine) &&
            NextLine(this->currentLine)->bpos)
     {
-        pos = this->pos - this->currentLine->len;
+        pos = this->pos - this->currentLine->len();
         CursorDown0(1);
         this->pos = pos;
     }
-    if (this->currentLine->len == 0 || this->pos < 0)
+    if (this->currentLine->len() == 0 || this->pos < 0)
         this->pos = 0;
-    else if (this->pos >= this->currentLine->len)
-        this->pos = this->currentLine->len - 1;
+    else if (this->pos >= this->currentLine->len())
+        this->pos = this->currentLine->len() - 1;
 
-    while (this->pos > 0 && this->currentLine->propBuf[this->pos] & PC_WCHAR2)
+    while (this->pos > 0 && this->currentLine->propBuf()[this->pos] & PC_WCHAR2)
         this->pos--;
 
     col = this->currentLine->COLPOS(this->pos);
 
-    while (this->pos + delta < this->currentLine->len &&
-           this->currentLine->propBuf[this->pos + delta] & PC_WCHAR2)
+    while (this->pos + delta < this->currentLine->len() &&
+           this->currentLine->propBuf()[this->pos + delta] & PC_WCHAR2)
         delta++;
 
     col2 = this->currentLine->COLPOS(this->pos + delta);
@@ -1197,7 +1197,7 @@ void Buffer::ArrangeCursor()
     fprintf(stderr,
             "arrangeCursor: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
             this->currentColumn, this->cursorX, this->visualpos, this->pos,
-            this->currentLine->len);
+            this->currentLine->len());
 #endif
 }
 
@@ -1214,7 +1214,7 @@ void Buffer::ArrangeLine()
         this->rect.cursorX = cpos;
         this->pos = i;
     }
-    else if (this->currentLine->len > i)
+    else if (this->currentLine->len() > i)
     {
         this->rect.cursorX = 0;
         this->pos = i + 1;
@@ -1229,7 +1229,7 @@ void Buffer::ArrangeLine()
     fprintf(stderr,
             "arrangeLine: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
             this->currentColumn, this->cursorX, this->visualpos, this->pos,
-            this->currentLine->len);
+            this->currentLine->len());
 #endif
 }
 
@@ -1282,7 +1282,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     {
         l->CalcWidth();
     }
-    if (l->len == 0 || l->width - 1 < currentColumn)
+    if (l->len() == 0 || l->width - 1 < currentColumn)
     {
         clrtoeolx();
         return;
@@ -1293,8 +1293,8 @@ void Buffer::DrawLine(LinePtr l, int line)
     ///
     move(line, rect.rootX);
     auto pos = columnPos(l, currentColumn);
-    auto p = &(l->lineBuf[pos]);
-    auto pr = &(l->propBuf[pos]);
+    auto p = &(l->lineBuf()[pos]);
+    auto pr = &(l->propBuf()[pos]);
     Linecolor *pc;
     if (w3mApp::Instance().useColor && l->colorBuf)
         pc = &(l->colorBuf[pos]);
@@ -1304,7 +1304,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     auto rcol = l->COLPOS(pos);
     int delta = 1;
     int vpos = -1;
-    for (int j = 0; rcol - currentColumn < this->rect.cols && pos + j < l->len; j += delta)
+    for (int j = 0; rcol - currentColumn < this->rect.cols && pos + j < l->len(); j += delta)
     {
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
@@ -1375,8 +1375,8 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
         return 0;
 
     int pos = columnPos(l, currentColumn);
-    auto p = &(l->lineBuf[pos]);
-    auto pr = &(l->propBuf[pos]);
+    auto p = &(l->lineBuf()[pos]);
+    auto pr = &(l->propBuf()[pos]);
     Linecolor *pc;
     if (w3mApp::Instance().useColor && l->colorBuf)
         pc = &(l->colorBuf[pos]);
@@ -1388,7 +1388,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
     int ecol = epos - pos;
     int delta = 1;
     int vpos = -1;
-    for (int j = 0; rcol - currentColumn < this->rect.cols && pos + j < l->len; j += delta)
+    for (int j = 0; rcol - currentColumn < this->rect.cols && pos + j < l->len(); j += delta)
     {
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
@@ -1454,7 +1454,7 @@ bool Buffer::MoveLeftWord(int n)
         while (1)
         {
             auto l = this->CurrentLine();
-            auto lb = l->lineBuf;
+            auto lb = l->lineBuf();
             while (this->pos > 0)
             {
                 int tmp = this->pos;
@@ -1471,11 +1471,11 @@ bool Buffer::MoveLeftWord(int n)
                 this->pos = ppos;
                 goto end;
             }
-            this->pos = this->CurrentLine()->len;
+            this->pos = this->CurrentLine()->len();
         }
         {
             auto l = this->CurrentLine();
-            auto lb = l->lineBuf;
+            auto lb = l->lineBuf();
             while (this->pos > 0)
             {
                 int tmp = this->pos;
@@ -1504,17 +1504,17 @@ bool Buffer::MoveRightWord(int n)
             goto end;
 
         auto l = this->CurrentLine();
-        auto lb = l->lineBuf;
-        while (this->pos < l->len &&
+        auto lb = l->lineBuf();
+        while (this->pos < l->len() &&
                is_wordchar(getChar(&lb[this->pos])))
             nextChar(&this->pos, l);
 
         while (1)
         {
-            while (this->pos < l->len &&
+            while (this->pos < l->len() &&
                    !is_wordchar(getChar(&lb[this->pos])))
                 nextChar(&this->pos, l);
-            if (this->pos < l->len)
+            if (this->pos < l->len())
                 break;
             if (next_nonnull_line(shared_from_this(), this->NextLine(this->CurrentLine())) < 0)
             {
@@ -1524,7 +1524,7 @@ bool Buffer::MoveRightWord(int n)
             }
             this->pos = 0;
             l = this->CurrentLine();
-            lb = l->lineBuf;
+            lb = l->lineBuf();
         }
     }
 end:

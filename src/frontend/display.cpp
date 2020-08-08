@@ -494,12 +494,12 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
             //
             for (int i = an->start.pos; i < an->end.pos; i++)
             {
-                if (l->propBuf[i] & (PE_IMAGE | PE_ANCHOR | PE_FORM))
+                if (l->propBuf()[i] & (PE_IMAGE | PE_ANCHOR | PE_FORM))
                 {
                     if (active)
-                        l->propBuf[i] |= PE_ACTIVE;
+                        l->propBuf()[i] |= PE_ACTIVE;
                     else
-                        l->propBuf[i] &= ~PE_ACTIVE;
+                        l->propBuf()[i] &= ~PE_ACTIVE;
                 }
             }
             if (active)
@@ -607,11 +607,11 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
         return NULL;
     if (l->width < 0)
         l->CalcWidth();
-    if (l->len == 0 || l->width - 1 < column)
+    if (l->len() == 0 || l->width - 1 < column)
         return l;
     pos = columnPos(l, column);
     rcol = l->COLPOS(pos);
-    for (j = 0; rcol - column < buf->rect.cols && pos + j < l->len; j++)
+    for (j = 0; rcol - column < buf->rect.cols && pos + j < l->len(); j++)
     {
         if (rcol - column < 0)
         {

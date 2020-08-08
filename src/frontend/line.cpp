@@ -26,37 +26,41 @@ int columnLen(LinePtr line, int column)
 {
     int i, j;
 
-    for (i = 0, j = 0; i < line->len;)
+    for (i = 0, j = 0; i < line->len();)
     {
-        j = nextColumn(j, &line->lineBuf[i], &line->propBuf[i]);
+        j = nextColumn(j, &line->lineBuf()[i], &line->propBuf()[i]);
         if (j > column)
             return i;
         i++;
 #ifdef USE_M17N
-        while (i < line->len && line->propBuf[i] & PC_WCHAR2)
+        while (i < line->len() && line->propBuf()[i] & PC_WCHAR2)
             i++;
 #endif
     }
-    return line->len;
+    return line->len();
 }
 
 // text position to column position ?
 int Line::COLPOS(int c)
 {
-    return calcPosition(lineBuf, propBuf, len, c, 0, CP_AUTO);
+    return calcPosition(buffer, c, 0, CP_AUTO);
 }
 
 void Line::CalcWidth()
 {
-    width = COLPOS(len);
+    width = COLPOS(len());
 }
 
-int calcPosition(char *l, Lineprop *pr, int len, int pos, int bpos, CalcPositionMode mode)
+int calcPosition(const PropString &str, int pos, int bpos, CalcPositionMode mode)
 {
     static int *realColumn = nullptr;
     static int size = 0;
     static char *prevl = nullptr;
     int i, j;
+
+    auto l = str.lineBuf;
+    auto pr = str.propBuf;
+    auto len = str.len;
 
     if (l == nullptr || len == 0)
         return bpos;
@@ -100,12 +104,12 @@ int columnPos(LinePtr line, int column)
 {
     int i;
 
-    for (i = 1; i < line->len; i++)
+    for (i = 1; i < line->len(); i++)
     {
         if (line->COLPOS(i) > column)
             break;
     }
-    for (i--; i > 0 && line->propBuf[i] & PC_WCHAR2; i--)
+    for (i--; i > 0 && line->propBuf()[i] & PC_WCHAR2; i--)
         ;
     return i;
 }
