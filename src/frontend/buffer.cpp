@@ -287,8 +287,6 @@ void Buffer::CopyFrom(BufferPtr src)
 
     bufferprop = src->bufferprop;
     currentColumn = src->currentColumn;
-    cursorX = src->cursorX;
-    cursorY = src->cursorY;
     pos = src->pos;
     visualpos = src->visualpos;
     rect = src->rect;
@@ -794,8 +792,7 @@ void set_buffer_environ(BufferPtr buf)
                                                 l->real_linenumber)
                                             ->ptr);
         set_environ("W3M_CURRENT_COLUMN", Sprintf("%d",
-                                                  buf->currentColumn +
-                                                      buf->cursorX + 1)
+                                                  buf->currentColumn + buf->rect.cursorX + 1)
                                               ->ptr);
     }
     else if (!l)
@@ -944,7 +941,7 @@ void Buffer::SavePosition()
 
 void Buffer::CursorUp0(int n)
 {
-    if (this->cursorY > 0)
+    if (this->rect.cursorY > 0)
         CursorUpDown(-1);
     else
     {
@@ -976,7 +973,7 @@ void Buffer::CursorUp(int n)
 
 void Buffer::CursorDown0(int n)
 {
-    if (this->cursorY < this->rect.lines - 1)
+    if (this->rect.cursorY < this->rect.lines - 1)
         CursorUpDown(1);
     else
     {
@@ -1068,7 +1065,7 @@ void Buffer::CursorRight(int n)
         ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
         this->visualpos = l->bwidth + cpos - this->currentColumn;
     }
-    this->cursorX = this->visualpos - l->bwidth;
+    this->rect.cursorX = this->visualpos - l->bwidth;
 }
 
 void Buffer::CursorLeft(int n)
@@ -1103,7 +1100,7 @@ void Buffer::CursorLeft(int n)
         ColumnSkip(-n + this->visualpos - l->bwidth - (this->visualpos - l->bwidth) % n);
         this->visualpos = l->bwidth + cpos - this->currentColumn;
     }
-    this->cursorX = this->visualpos - l->bwidth;
+    this->rect.cursorX = this->visualpos - l->bwidth;
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -1112,25 +1109,25 @@ void Buffer::CursorXY(int x, int y)
     x -= rect.rootX;
     y -= rect.rootY;
 
-    CursorUpDown(y - cursorY);
+    CursorUpDown(y - rect.cursorY);
 
-    if (this->cursorX > x)
+    if (this->rect.cursorX > x)
     {
-        while (this->cursorX > x)
+        while (this->rect.cursorX > x)
             CursorLeft(this->rect.cols / 2);
     }
-    else if (this->cursorX < x)
+    else if (this->rect.cursorX < x)
     {
-        while (this->cursorX < x)
+        while (this->rect.cursorX < x)
         {
-            int oldX = this->cursorX;
+            int oldX = this->rect.cursorX;
 
             CursorRight(this->rect.cols / 2);
 
-            if (oldX == this->cursorX)
+            if (oldX == this->rect.cursorX)
                 break;
         }
-        if (this->cursorX > x)
+        if (this->rect.cursorX > x)
             CursorLeft(this->rect.cols / 2);
     }
 }
@@ -1186,10 +1183,10 @@ void Buffer::ArrangeCursor()
             ColumnSkip(col);
     }
     /* Arrange cursor */
-    this->cursorY = this->currentLine->linenumber - this->topLine->linenumber;
+    this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
     this->visualpos = this->currentLine->bwidth +
                       this->currentLine->COLPOS(this->pos) - this->currentColumn;
-    this->cursorX = this->visualpos - this->currentLine->bwidth;
+    this->rect.cursorX = this->visualpos - this->currentLine->bwidth;
 
 #ifdef DISPLAY_DEBUG
     fprintf(stderr,
@@ -1204,22 +1201,22 @@ void Buffer::ArrangeLine()
     if (this->LineCount() == 0)
         return;
 
-    this->cursorY = this->currentLine->linenumber - this->topLine->linenumber;
+    this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
     auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos - this->currentLine->bwidth);
     auto cpos = this->currentLine->COLPOS(i) - this->currentColumn;
     if (cpos >= 0)
     {
-        this->cursorX = cpos;
+        this->rect.cursorX = cpos;
         this->pos = i;
     }
     else if (this->currentLine->len > i)
     {
-        this->cursorX = 0;
+        this->rect.cursorX = 0;
         this->pos = i + 1;
     }
     else
     {
-        this->cursorX = 0;
+        this->rect.cursorX = 0;
         this->pos = 0;
     }
 

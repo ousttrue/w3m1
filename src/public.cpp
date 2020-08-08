@@ -349,7 +349,7 @@ void shiftvisualpos(BufferPtr buf, int shift)
     else if (buf->visualpos - l->bwidth < 0)
         buf->visualpos = l->bwidth;
     buf->ArrangeLine();
-    if (buf->visualpos - l->bwidth == -shift && buf->cursorX == 0)
+    if (buf->visualpos - l->bwidth == -shift && buf->rect.cursorX == 0)
         buf->visualpos = l->bwidth;
 }
 
@@ -750,9 +750,9 @@ void _followForm(int submit)
         if (submit)
             goto do_submit;
         if (!formChooseOptionByMenu(fi,
-            GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->pos +
+            GetCurrentTab()->GetCurrentBuffer()->rect.cursorX - GetCurrentTab()->GetCurrentBuffer()->pos +
             a->start.pos + GetCurrentTab()->GetCurrentBuffer()->rect.rootX,
-            GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY))
+            GetCurrentTab()->GetCurrentBuffer()->rect.cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY))
             break;
         formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
         if (fi->parent->nitems == 1)
@@ -1989,14 +1989,12 @@ void follow_map(struct parsed_tagarg *arg)
 {
     char *name = tag_get_value(arg, "link");
 
-    MapArea *a;
-    int x, y;
-    URL p_url;
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
 
-    auto an = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
-    x = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX;
-    y = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY;
-    a = follow_map_menu(GetCurrentTab()->GetCurrentBuffer(), name, an, x, y);
+    auto an = retrieveCurrentImg(buf);
+    auto [x, y] = buf->rect.globalXY();
+    auto a = follow_map_menu(GetCurrentTab()->GetCurrentBuffer(), name, an, x, y);
     if (a == NULL || a->url == NULL || *(a->url) == '\0')
     {
 
@@ -2014,6 +2012,7 @@ void follow_map(struct parsed_tagarg *arg)
         gotoLabel(a->url + 1);
         return;
     }
+    URL p_url;
     p_url.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     if (check_target() && open_tab_blank && a->target &&

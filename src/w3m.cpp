@@ -1180,30 +1180,32 @@ void w3mApp::mainloop()
 
         auto tab = GetCurrentTab();
         auto buf = tab->GetCurrentBuffer();
-        if (GetCurrentTab()->GetCurrentBuffer()->submit)
+        if (buf->submit)
         {
-            Anchor *a = GetCurrentTab()->GetCurrentBuffer()->submit;
-            GetCurrentTab()->GetCurrentBuffer()->submit = NULL;
-            GetCurrentTab()->GetCurrentBuffer()->GotoLine(a->start.line);
-            GetCurrentTab()->GetCurrentBuffer()->pos = a->start.pos;
+            auto a = buf->submit;
+            buf->submit = NULL;
+            buf->GotoLine(a->start.line);
+            buf->pos = a->start.pos;
             _followForm(TRUE);
             continue;
         }
+
         /* event processing */
         if (ProcessEvent())
         {
             continue;
         }
+
         /* get keypress event */
 
-        if (GetCurrentTab()->GetCurrentBuffer()->event)
+        if (buf->event)
         {
-            if (GetCurrentTab()->GetCurrentBuffer()->event->status != AL_UNSET)
+            if (buf->event->status != AL_UNSET)
             {
-                SetCurrentAlarm(GetCurrentTab()->GetCurrentBuffer()->event);
+                SetCurrentAlarm(buf->event);
                 if (CurrentAlarm()->sec == 0)
                 { /* refresh (0sec) */
-                    GetCurrentTab()->GetCurrentBuffer()->event = NULL;
+                    buf->event = NULL;
                     ClearCurrentKey();
                     ClearCurrentKeyData();
                     CurrentCmdData = (char *)CurrentAlarm()->data;
@@ -1213,43 +1215,36 @@ void w3mApp::mainloop()
                 }
             }
             else
-                GetCurrentTab()->GetCurrentBuffer()->event = NULL;
+                buf->event = NULL;
         }
-        if (!GetCurrentTab()->GetCurrentBuffer()->event)
+        if (!buf->event)
             SetCurrentAlarm(DefaultAlarm());
 
         DisableMouseAction();
         if (use_mouse)
             mouse_active();
 
-#ifdef USE_ALARM
         if (CurrentAlarm()->sec > 0)
         {
             mySignal(SIGALRM, SigAlarm);
             alarm(CurrentAlarm()->sec);
         }
-#endif
-#ifdef SIGWINCH
+
         mySignal(SIGWINCH, resize_hook);
-#endif
-#ifdef USE_IMAGE
+
         if (activeImage && displayImage && GetCurrentTab()->GetCurrentBuffer()->img &&
             !GetCurrentTab()->GetCurrentBuffer()->image_loaded)
         {
             do
             {
-#ifdef SIGWINCH
+
                 if (need_resize_screen())
                     resize_screen();
-#endif
+
                 loadImage(GetCurrentTab()->GetCurrentBuffer(), IMG_FLAG_NEXT);
             } while (sleep_till_anykey(1, 0) <= 0);
         }
-#ifdef SIGWINCH
         else
-#endif
-#endif
-
         // ここで入力をブロックする
         {
             do
@@ -1260,12 +1255,11 @@ void w3mApp::mainloop()
         }
         auto c = getch();
 
-#ifdef USE_ALARM
         if (CurrentAlarm()->sec > 0)
         {
             alarm(0);
         }
-#endif
+
         if (use_mouse)
         {
             mouse_inactive();

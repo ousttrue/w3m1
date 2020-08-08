@@ -103,28 +103,32 @@ void ldown1(w3mApp *w3m)
 /* move cursor position to the center of screen */
 void ctrCsrV(w3mApp *w3m)
 {
-    int offsety;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    offsety = GetCurrentTab()->GetCurrentBuffer()->rect.lines / 2 - GetCurrentTab()->GetCurrentBuffer()->cursorY;
-    if (offsety != 0)
+
+    int offsety = buf->rect.lines / 2 - buf->rect.cursorY;
+    if (offsety)
     {
-        GetCurrentTab()->GetCurrentBuffer()->LineSkip(GetCurrentTab()->GetCurrentBuffer()->TopLine(), -offsety, FALSE);
-        GetCurrentTab()->GetCurrentBuffer()->ArrangeLine();
+        buf->LineSkip(buf->TopLine(), -offsety, FALSE);
+        buf->ArrangeLine();
         displayCurrentbuf(B_NORMAL);
     }
 }
 
 void ctrCsrH(w3mApp *w3m)
 {
-    int offsetx;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    offsetx = GetCurrentTab()->GetCurrentBuffer()->cursorX - GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2;
-    if (offsetx != 0)
+
+    int offsetx = buf->rect.cursorX - buf->rect.cols / 2;
+    if (offsetx)
     {
-        GetCurrentTab()->GetCurrentBuffer()->ColumnSkip(offsetx);
-        GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+        buf->ColumnSkip(offsetx);
+        buf->ArrangeCursor();
         displayCurrentbuf(B_NORMAL);
     }
 }
@@ -1916,7 +1920,7 @@ void curlno(w3mApp *w3m)
     if (l)
     {
         cur = l->real_linenumber;
-        col = l->bwidth + buf->currentColumn + buf->cursorX + 1;
+        col = l->bwidth + buf->currentColumn + buf->rect.cursorX + 1;
         while (buf->NextLine(l) && buf->NextLine(l)->bpos)
             l = buf->NextLine(l);
         if (l->width < 0)

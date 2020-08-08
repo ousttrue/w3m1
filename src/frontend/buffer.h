@@ -59,9 +59,23 @@ struct TermRect
     short rootY = 0;
     short cols = 0;
     short lines = 0;
-
     short right() const { return rootX + cols; }
     short bottom() const { return rootY + lines; }
+
+    short cursorX = 0;
+    short cursorY = 0;
+    void resetCursor()
+    {
+        cursorX = 0;
+        cursorY = 0;
+    }
+
+    std::tuple<int, int> globalXY() const
+    {
+        return std::make_pair(
+            rootX + cursorX,
+            rootY + cursorY);
+    }
 
     void updateRootX(int lastRealLineNumber)
     {
@@ -254,8 +268,6 @@ public:
 public:
     BufferProps bufferprop = BP_NORMAL;
     int currentColumn;
-    short cursorX;
-    short cursorY;
     int pos;
     int visualpos;
 
@@ -264,8 +276,7 @@ public:
     void CursorHome()
     {
         visualpos = 0;
-        cursorX = 0;
-        cursorY = 0;
+        rect.resetCursor();
     }
     void CursorXY(int x, int y);
     void CursorUp0(int n);
@@ -283,8 +294,8 @@ public:
         this->SetTopLine((srcbuf)->TopLine());
         this->currentLine = (srcbuf)->currentLine;
         this->pos = (srcbuf)->pos;
-        this->cursorX = (srcbuf)->cursorX;
-        this->cursorY = (srcbuf)->cursorY;
+        this->rect.cursorX = (srcbuf)->rect.cursorX;
+        this->rect.cursorY = (srcbuf)->rect.cursorY;
         this->visualpos = (srcbuf)->visualpos;
         this->currentColumn = (srcbuf)->currentColumn;
     }
@@ -340,7 +351,7 @@ public:
     char image_loaded;
     Anchor *submit;
     BufferPos *undo;
-    AlarmEvent *event;
+    AlarmEvent *event = nullptr;
 
     Buffer();
     ~Buffer();

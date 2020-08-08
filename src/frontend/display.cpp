@@ -549,6 +549,12 @@ static void drawAnchorCursor(BufferPtr buf)
     buf->prevhseq = hseq;
 }
 
+static void move(const TermRect &rect)
+{
+    auto [x, y] = rect.globalXY();
+    move(y, x);
+}
+
 ///
 /// term に描画する
 ///
@@ -578,9 +584,7 @@ static void redrawNLine(BufferPtr buf)
           buf->img))
         return;
 
-    move(
-        buf->cursorY + buf->rect.rootY, 
-        buf->cursorX + buf->rect.rootX);
+    move(buf->rect);
     {
         int i = 0;
         for (auto l = buf->TopLine(); i < buf->rect.lines && l;
@@ -891,13 +895,9 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
         return;
     }
     if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL)
-        message(s,
-                GetCurrentTab()->GetCurrentBuffer()->cursorX +
-                    GetCurrentTab()->GetCurrentBuffer()->rect.rootX,
-                GetCurrentTab()->GetCurrentBuffer()->cursorY +
-                    GetCurrentTab()->GetCurrentBuffer()->rect.rootY);
+        message(s, GetCurrentTab()->GetCurrentBuffer()->rect);
     else
-        message(s, (LINES - 1), 0);
+        message(s, 0, (LINES - 1));
     refresh();
 #ifdef w3mApp::Instance().use_mouse
     if (mouse && w3mApp::Instance().use_mouse)
@@ -1065,9 +1065,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         refresh();
     }
     standout();
-    message(msg->c_str(), 
-        buf->cursorX + buf->rect.rootX, 
-        buf->cursorY + buf->rect.rootY);
+    message(msg->c_str(), buf->rect);
     standend();
     term_title(conv_to_system(buf->buffername.c_str()));
     refresh();
