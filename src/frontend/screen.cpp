@@ -3,15 +3,13 @@
 #include "terms.h"
 #include "w3m.h"
 #include <myctype.h>
-#include <gc_helper.h>
 #include <stdint.h>
 #include <string.h>
 #include <strings.h>
 #include <wc.h>
-// #include <tcb/span.hpp>
 
 /* Line status */
-enum LineStatus : uint16_t
+enum LineStatus
 {
     L_NONE = 0,
     L_DIRTY = 0x01,
@@ -19,14 +17,6 @@ enum LineStatus : uint16_t
     L_NEED_CE = 0x04,
     L_CLRTOEOL = 0x08,
 };
-
-// struct ScreenLine
-// {
-//     tcb::span<char> lineimage;
-//     tcb::span<l_prop> lineprop;
-//     LineStatus *isdirty;
-//     short *eol;
-// };
 
 // termcap
 extern "C" char *tgoto(char *, int, int);
@@ -135,7 +125,7 @@ public:
         auto p = props.data();
 
         // copy
-        for (int i = 0; i < lines; ++i, sc+=cols, sp+=cols, c+=newCols, p+=newCols)
+        for (int i = 0; i < lines; ++i, sc += cols, sp += cols, c += newCols, p += newCols)
         {
             memcpy(c, sc, cols);
             memcpy(p, sp, cols * sizeof(l_prop));
@@ -182,7 +172,7 @@ public:
 
     void TouchColumn(int col)
     {
-        if (col >= 0 && col < COLS)
+        if (col >= 0 && col < Cols())
         {
             m_props[LineHead() + col] |= S_DIRTY;
         }
@@ -193,7 +183,7 @@ public:
         if (!(m_lineStatus[CurLine] & L_DIRTY))
         {
             auto index = LineHead();
-            for (int i = 0; i < COLS; i++, ++index)
+            for (int i = 0; i < Cols(); i++, ++index)
             {
                 m_props[index] &= ~S_DIRTY;
             }
@@ -217,7 +207,7 @@ public:
 
         m_lineStatus[CurLine] |= L_CLRTOEOL;
         touch_line();
-        for (int i = CurColumn; i < COLS && !(lprop[i] & S_EOL); i++)
+        for (int i = CurColumn; i < Cols() && !(lprop[i] & S_EOL); i++)
         {
             lprop[i] = S_EOL | S_DIRTY;
         }
@@ -227,7 +217,7 @@ public:
     {
         int cli = CurLine;
         int cco = CurColumn;
-        for (int i = CurColumn; i < COLS; i++)
+        for (int i = CurColumn; i < Cols(); i++)
             addch(' ');
         move(cli, cco);
     }
@@ -239,7 +229,8 @@ public:
         (*clrtoeol)();
         CurColumn = 0;
         CurLine++;
-        for (; CurLine < LINES; CurLine++)
+        auto lines = Lines();
+        for (; CurLine < lines; CurLine++)
             (*clrtoeol)();
         CurLine = l;
         CurColumn = c;
@@ -256,7 +247,7 @@ public:
             if (CHMODE(lineprop[i]) != C_WCHAR2)
                 break;
         }
-        for (int i = CurColumn + 1; i < COLS; i++)
+        for (int i = CurColumn + 1; i < Cols(); i++)
         {
             if (CHMODE(lineprop[i]) != C_WCHAR2)
                 break;
@@ -326,13 +317,14 @@ public:
         /* Required to erase bold or underlined character for some * terminal
      * emulators. */
         int i = CurColumn + width - 1;
-        if (i < COLS &&
+        auto cols = Cols();
+        if (i < cols &&
             (((pr[i] & S_BOLD) && need_redraw(p[i], pr[i], pc, CurrentMode)) ||
              ((pr[i] & S_UNDERLINE) && !(CurrentMode & S_UNDERLINE))))
         {
             touch_line();
             i++;
-            if (i < COLS)
+            if (i < cols)
             {
                 TouchColumn(i);
                 if (pr[i] & S_EOL)
@@ -342,23 +334,23 @@ public:
                 }
                 else
                 {
-                    for (i++; i < COLS && CHMODE(pr[i]) == C_WCHAR2; i++)
+                    for (i++; i < cols && CHMODE(pr[i]) == C_WCHAR2; i++)
                         TouchColumn(i);
                 }
             }
         }
 
-        if (CurColumn + width > COLS)
+        if (CurColumn + width > cols)
         {
             touch_line();
-            for (i = CurColumn; i < COLS; i++)
+            for (i = CurColumn; i < cols; i++)
             {
                 SETCH(p[i], SPACE, 1);
                 SETPROP(pr[i], (pr[i] & ~C_WHICHCHAR) | C_ASCII);
                 TouchColumn(i);
             }
             wrap();
-            if (CurColumn + width > COLS)
+            if (CurColumn + width > cols)
                 return;
             p = m_chars.data() + LineHead();
             pr = m_props.data() + LineHead();
@@ -392,7 +384,7 @@ public:
                     SETPROP(pr[i], (pr[CurColumn] & ~C_WHICHCHAR) | C_WCHAR2);
                     TouchColumn(i);
                 }
-                for (; i < COLS && CHMODE(pr[i]) == C_WCHAR2; i++)
+                for (; i < cols && CHMODE(pr[i]) == C_WCHAR2; i++)
                 {
                     SETCH(p[i], SPACE, 1);
                     SETPROP(pr[i], (pr[i] & ~C_WHICHCHAR) | C_ASCII);
@@ -404,7 +396,7 @@ public:
         else if (c == '\t')
         {
             auto dest = (CurColumn + tab_step) / tab_step * tab_step;
-            if (dest >= COLS)
+            if (dest >= cols)
             {
                 wrap();
                 touch_line();
@@ -454,13 +446,14 @@ public:
         auto pc = m_chars.data();
         auto pr = m_props.data();
         auto cols = Cols();
-        for (auto line = 0; line <= (LINES - 1); line++, pc += cols, pr += cols)
+        auto lines = Lines();
+        for (auto line = 0; line <= (lines - 1); line++, pc += cols, pr += cols)
         {
             auto dirty = &m_lineStatus[line];
             if (*dirty & L_DIRTY)
             {
                 *dirty &= ~L_DIRTY;
-                for (col = 0; col < COLS && !(pr[col] & S_EOL); col++)
+                for (col = 0; col < cols && !(pr[col] & S_EOL); col++)
                 {
                     if (*dirty & L_NEED_CE && col >= m_lineEnds[line])
                     {
@@ -476,7 +469,7 @@ public:
                 if (*dirty & (L_NEED_CE | L_CLRTOEOL))
                 {
                     pcol = m_lineEnds[line];
-                    if (pcol >= COLS)
+                    if (pcol >= cols)
                     {
                         *dirty &= ~(L_NEED_CE | L_CLRTOEOL);
                         pcol = col;
@@ -486,7 +479,7 @@ public:
                 {
                     pcol = col;
                 }
-                if (line < LINES - 2 && pline == line - 1 && pcol == 0)
+                if (line < lines - 2 && pline == line - 1 && pcol == 0)
                 {
                     switch (moved)
                     {
@@ -516,7 +509,7 @@ public:
                 }
                 pline = line;
                 pcol = col;
-                for (; col < COLS; col++)
+                for (; col < cols; col++)
                 {
                     if (pr[col] & S_EOL)
                         break;
@@ -600,9 +593,9 @@ public:
                         pcol = col + 1;
                     }
                 }
-                if (col == COLS)
+                if (col == cols)
                     moved = RF_NEED_TO_MOVE;
-                for (; col < COLS && !(pr[col] & S_EOL); col++)
+                for (; col < cols && !(pr[col] & S_EOL); col++)
                     pr[col] |= S_EOL;
             }
             *dirty &= ~(L_NEED_CE | L_CLRTOEOL);
