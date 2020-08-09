@@ -812,9 +812,9 @@ void set_buffer_environ(BufferPtr buf)
     prev_pos = buf->pos;
 }
 
-void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines)
+void Buffer::AddLine(const PropertiedString &buffer, int nlines)
 {
-    auto l = std::make_shared<Line>(PropertiedString{line, prop, pos, color});
+    auto l = std::make_shared<Line>(buffer);
 
     auto it = lines.end();
     if (currentLine)
@@ -829,20 +829,6 @@ void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int 
 
     lines.insert(it, l);
     currentLine = l;
-    // l->prev = this->currentLine;
-    // if (this->currentLine)
-    // {
-    //     l->next = this->currentLine->next;
-    //     this->currentLine->next = l;
-    // }
-    // else{
-    //     l->next = NULL;
-    // }
-    // if (this->LastLine() == NULL || this->LastLine() == this->currentLine)
-    //     this->SetLastLine(l);
-    // this->currentLine = l;
-    // if (this->LineCount() == 0)
-    //     this->SetFirstLine(l);
     l->linenumber = this->LineCount();
     if (nlines < 0)
     {
@@ -853,7 +839,6 @@ void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int 
     {
         l->real_linenumber = nlines;
     }
-    l = NULL;
 }
 
 const char *NullLine = "";
@@ -886,7 +871,7 @@ void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, i
         c = NULL;
     }
 
-    AddLine(s, p, c, pos, nlines);
+    AddLine(PropertiedString{s, p, pos, c}, nlines);
     if (pos <= 0 || width <= 0)
         return;
 

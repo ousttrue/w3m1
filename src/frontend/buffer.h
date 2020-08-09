@@ -89,7 +89,7 @@ public:
     }
 
 private:
-    void AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines);
+    void AddLine(const PropertiedString &buffer, int nlines);
 
 public:
     void addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int nlines);
