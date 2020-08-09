@@ -408,19 +408,16 @@ BufferPtr
 loadBuffer(URLFile *uf, BufferPtr newBuf)
 {
     FILE *src = NULL;
-#ifdef USE_M17N
+
     CharacterEncodingScheme charset = WC_CES_US_ASCII;
     CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
-#endif
+
     Str lineBuf2;
     char pre_lbuf = '\0';
     int nlines;
     Str tmpf;
     clen_t linelen = 0, trbyte = 0;
-    Lineprop *propBuffer = NULL;
-#ifdef USE_ANSI_COLOR
-    Linecolor *colorBuffer = NULL;
-#endif
+
     MySignalHandler prevtrap = NULL;
 
     if (newBuf == NULL)
@@ -489,9 +486,7 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
         }
         ++nlines;
         StripRight(lineBuf2);
-        lineBuf2 = checkType(lineBuf2, &propBuffer, NULL);
-        newBuf->addnewline(lineBuf2->ptr, propBuffer, colorBuffer,
-                   lineBuf2->Size(), FOLD_BUFFER_WIDTH(), nlines);
+        newBuf->addnewline(lineBuf2, nlines);
     }
 _end:
     TRAP_OFF;

@@ -1436,15 +1436,13 @@ void peekIMG(w3mApp *w3m)
 
 void curURL(w3mApp *w3m)
 {
-    static Str s = NULL;
-#ifdef USE_M17N
-    static Lineprop *p = NULL;
-    Lineprop *pp;
-#endif
-    static int offset = 0, n;
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
-    if (CurrentKey() == PrevKey() && s != NULL)
+
+    static Str s = NULL;
+    static Lineprop *p = NULL;
+    static int offset = 0;
+    if (CurrentKey() == PrevKey() && s)
     {
         if (s->Size() - offset >= COLS)
             offset++;
@@ -1457,23 +1455,22 @@ void curURL(w3mApp *w3m)
         s = currentURL();
         if (DecodeURL)
             s = Strnew(url_unquote_conv(s->ptr, WC_CES_NONE));
-#ifdef USE_M17N
+
+        Lineprop *pp;
         s = checkType(s, &pp, NULL);
         p = NewAtom_N(Lineprop, s->Size());
         bcopy((void *)pp, (void *)p, s->Size() * sizeof(Lineprop));
-#endif
     }
-    n = searchKeyNum();
+
+    int n = searchKeyNum();
     if (n > 1 && s->Size() > (n - 1) * (COLS - 1))
         offset = (n - 1) * (COLS - 1);
-#ifdef USE_M17N
     while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;
-#endif
     disp_message_nomouse(&s->ptr[offset], TRUE);
 }
-/* view HTML source */
 
+/* view HTML source */
 void vwSrc(w3mApp *w3m)
 {
     BufferPtr buf;
