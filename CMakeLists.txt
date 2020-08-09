@@ -62,6 +62,7 @@ add_executable(w3m
     src/frontend/display.cpp
     src/frontend/link.cpp
     src/frontend/lineinput.cpp
+    src/frontend/propstring.cpp
     src/frontend/line.cpp
     src/frontend/buffer.cpp
     src/frontend/tab.cpp
