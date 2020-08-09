@@ -55,7 +55,7 @@ struct BufferPos
 };
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
-using LinePtr = struct Line *;
+using LinePtr = std::shared_ptr<struct Line>;
 using LineList = std::vector<LinePtr>;
 struct Buffer : std::enable_shared_from_this<Buffer>
 {
@@ -103,7 +103,7 @@ public:
         currentLine = topLine = NULL;
         lines.clear();
     }
-    Line *FirstLine() const
+    LinePtr FirstLine() const
     {
         if (lines.empty())
         {
@@ -111,7 +111,7 @@ public:
         }
         return lines.front();
     }
-    Line *LastLine() const
+    LinePtr LastLine() const
     {
         if (lines.empty())
         {
@@ -119,11 +119,11 @@ public:
         }
         return lines.back();
     }
-    Line *TopLine() const
+    LinePtr TopLine() const
     {
         return topLine;
     }
-    Line *CurrentLine() const
+    LinePtr CurrentLine() const
     {
         return currentLine;
     }
@@ -136,7 +136,7 @@ public:
     {
         assert(false);
     }
-    void SetTopLine(Line *line)
+    void SetTopLine(LinePtr line)
     {
         topLine = line;
     }
@@ -187,7 +187,7 @@ public:
             func(l);
         }
     }
-    Line *NextLine(Line *line) const
+    LinePtr NextLine(LinePtr line) const
     {
         auto it = find(line);
         if (it == lines.end())
@@ -201,14 +201,14 @@ public:
         }
         return *it;
     }
-    void SetNextLine(Line *line, Line *next)
+    void SetNextLine(LinePtr line, LinePtr next)
     {
         auto it = find(line);
         assert(it != lines.end());
         ++it;
         lines.insert(it, next);
     }
-    Line *PrevLine(Line *line) const
+    LinePtr PrevLine(LinePtr line) const
     {
         auto it = find(line);
         if (it == lines.end())
@@ -222,7 +222,7 @@ public:
         --it;
         return *it;
     }
-    void SetPrevLine(Line *line, Line *prev)
+    void SetPrevLine(LinePtr line, LinePtr prev)
     {
         auto it = find(line);
         assert(it != lines.end());

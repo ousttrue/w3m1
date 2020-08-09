@@ -1843,16 +1843,16 @@ char *convert_size3(clen_t size)
 
 void resetPos(BufferPos *b)
 {
-    Line top;
-    top.linenumber = b->top_linenumber;
+    auto top = std::make_shared<Line>();
+    top->linenumber = b->top_linenumber;
 
-    Line cur;
-    cur.linenumber = b->cur_linenumber;
-    cur.bpos = b->bpos;
+    auto cur = std::make_shared<Line>();
+    cur->linenumber = b->cur_linenumber;
+    cur->bpos = b->bpos;
 
     BufferPtr buf = std::make_shared<Buffer>();
-    buf->SetTopLine(&top);
-    buf->SetCurrentLine(&cur);
+    buf->SetTopLine(top);
+    buf->SetCurrentLine(cur);
     buf->pos = b->pos;
     buf->currentColumn = b->currentColumn;
     GetCurrentTab()->GetCurrentBuffer()->restorePosition(buf);

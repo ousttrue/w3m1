@@ -1,6 +1,6 @@
 #pragma once
 #include <wc.h>
-#include <gc_cpp.h>
+#include <memory>
 
 #define LINELEN 256 /* Initial line length */
 
@@ -110,7 +110,7 @@ public:
     }
 };
 
-struct Line : gc_cleanup
+struct Line
 {
     PropertiedString buffer;
     char *lineBuf()
@@ -177,7 +177,7 @@ public:
     void CalcWidth(bool force = false);
     int COLPOS(int c);
 };
-using LinePtr = Line *;
+using LinePtr = std::shared_ptr<Line>;
 
 /* Flags for calcPosition() */
 enum CalcPositionMode

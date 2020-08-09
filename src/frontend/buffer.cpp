@@ -814,7 +814,7 @@ void set_buffer_environ(BufferPtr buf)
 
 void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines)
 {
-    auto l = new Line({line, prop, pos, color});
+    auto l = std::make_shared<Line>(PropertiedString{line, prop, pos, color});
 
     auto it = lines.end();
     if (currentLine)
