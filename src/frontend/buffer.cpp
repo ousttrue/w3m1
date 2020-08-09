@@ -812,10 +812,13 @@ void set_buffer_environ(BufferPtr buf)
     prev_pos = buf->pos;
 }
 
-void Buffer::AddLine(const PropertiedString &buffer, int nlines)
+void Buffer::AddLine(const PropertiedString &lineBuffer, int real_linenumber)
 {
-    auto l = std::make_shared<Line>(buffer);
+    auto l = std::make_shared<Line>(lineBuffer);
 
+#if true
+    lines.push_back(l);
+#else
     auto it = lines.end();
     if (currentLine)
     {
@@ -826,18 +829,20 @@ void Buffer::AddLine(const PropertiedString &buffer, int nlines)
             it = found;
         }
     }
-
     lines.insert(it, l);
+#endif
     currentLine = l;
+
+    // 1 origin
     l->linenumber = this->LineCount();
-    if (nlines < 0)
+    if (real_linenumber < 0)
     {
         /*     l->real_linenumber = l->linenumber;     */
-        l->real_linenumber = 0;
+        l->real_linenumber = l->linenumber;
     }
     else
     {
-        l->real_linenumber = nlines;
+        l->real_linenumber = real_linenumber;
     }
 }
 

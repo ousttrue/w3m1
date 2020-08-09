@@ -169,8 +169,12 @@ public:
         return bwidth + m_width;
     }
 
-    long linenumber = 0;      /* on buffer */
-    long real_linenumber = 0; /* on file */
+    // on buffer
+    // 1 origin ?
+    long linenumber = 0;
+    // on file
+    long real_linenumber = 0;
+
     unsigned short usrflags = 0;
 
 public:
