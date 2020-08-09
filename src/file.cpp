@@ -986,7 +986,7 @@ getNextPage(BufferPtr buf, int plen)
             ++nlines;
             StripRight(lineBuf2);
 
-            buf->addnewline(lineBuf2, nlines);
+            buf->AddNewLine(PropertiedString(lineBuf2), nlines);
             if (!top)
             {
                 top = buf->FirstLine();

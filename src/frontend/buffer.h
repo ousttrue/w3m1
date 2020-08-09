@@ -89,12 +89,8 @@ public:
     }
 
 public:
-    void addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int nlines);
-    void addnewline(const char *line, int len, int nlines)
-    {
-        addnewline(Strnew_charp_n(line, len), nlines);
-    }
-    void addnewline(Str line, int nlines);
+    void AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_linenumber, int width);
+    void AddNewLine(const PropertiedString &lineBuffer, int real_linenumber = -1);
     void ClearLines()
     {
         currentLine = topLine = NULL;

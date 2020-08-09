@@ -815,92 +815,81 @@ void set_buffer_environ(BufferPtr buf)
 const char *NullLine = "";
 Lineprop NullProp[] = {P_UNKNOWN};
 
-void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int real_linenumber)
+// char *s;
+// Lineprop *p;
+// if (pos > 0)
+// {
+//     s = allocStr(line, pos);
+//     p = NewAtom_N(Lineprop, pos);
+//     bcopy((void *)prop, (void *)p, pos * sizeof(Lineprop));
+// }
+// else
+// {
+//     s = (char *)NullLine;
+//     p = NullProp;
+// }
+
+// Linecolor *c;
+// if (pos > 0 && color)
+// {
+//     c = NewAtom_N(Linecolor, pos);
+//     bcopy((void *)color, (void *)c, pos * sizeof(Linecolor));
+// }
+// else
+// {
+//     c = NULL;
+// }
+
+void Buffer::AddNewLine(const PropertiedString &lineBuffer, int real_linenumber)
 {
-    char *s;
-    Lineprop *p;
-    if (pos > 0)
+    auto l = std::make_shared<Line>(lineBuffer);
+    lines.push_back(l);
+    currentLine = l;
+
+    // 1 origin linenumber
+    l->linenumber = this->LineCount();
+    if (real_linenumber >= 0)
     {
-        s = allocStr(line, pos);
-        p = NewAtom_N(Lineprop, pos);
-        bcopy((void *)prop, (void *)p, pos * sizeof(Lineprop));
+        l->real_linenumber = real_linenumber;
     }
     else
     {
-        s = (char *)NullLine;
-        p = NullProp;
-    }
-
-    Linecolor *c;
-    if (pos > 0 && color)
-    {
-        c = NewAtom_N(Linecolor, pos);
-        bcopy((void *)color, (void *)c, pos * sizeof(Linecolor));
-    }
-    else
-    {
-        c = NULL;
-    }
-
-    if (pos <= 0 || width <= 0)
-    {
-        auto l = std::make_shared<Line>(PropertiedString{s, p, pos, c});
-
-        lines.push_back(l);
-        currentLine = l;
-
-        // 1 origin
-        l->linenumber = this->LineCount();
-        if (real_linenumber < 0)
-        {
-            l->real_linenumber = l->linenumber;
-        }
-        else
-        {
-            l->real_linenumber = real_linenumber;
-        }
-    }
-    else
-    {
-
-        // separate line
-        // TODO:
-        // int bpos = 0;
-        // int bwidth = 0;
-        // while (1)
-        // {
-        //     auto l = CurrentLine();
-        //     l->bpos = bpos;
-        //     l->bwidth = bwidth;
-        //     auto i = columnLen(l, width);
-        //     if (i == 0)
-        //     {
-        //         i++;
-        //         while (i < l->len() && p[i] & PC_WCHAR2)
-        //             i++;
-        //     }
-        //     l->buffer.len = i;
-        //     l->width = l->COLPOS(l->len());
-        //     if (pos <= i)
-        //         return;
-        //     bpos += l->len();
-        //     bwidth += l->width;
-        //     s += i;
-        //     p += i;
-        //     if (c)
-        //         c += i;
-        //     pos -= i;
-        //     AddLine(s, p, c, pos, nlines);
-        // }
+        l->real_linenumber = l->linenumber;
     }
 }
 
-void Buffer::addnewline(Str line, int nlines)
+void Buffer::AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_linenumber, int width)
 {
-    Lineprop *propBuffer = NULL;
-    Linecolor *colorBuffer = NULL;
-    auto lineBuf2 = checkType(line, &propBuffer, &colorBuffer);
-    addnewline(lineBuf2->ptr, propBuffer, colorBuffer, pos, FOLD_BUFFER_WIDTH(), nlines);
+    // TODO:
+    assert(false);
+    // separate line
+    // int bpos = 0;
+    // int bwidth = 0;
+    // while (1)
+    // {
+    //     auto l = CurrentLine();
+    //     l->bpos = bpos;
+    //     l->bwidth = bwidth;
+    //     auto i = columnLen(l, width);
+    //     if (i == 0)
+    //     {
+    //         i++;
+    //         while (i < l->len() && p[i] & PC_WCHAR2)
+    //             i++;
+    //     }
+    //     l->buffer.len = i;
+    //     l->width = l->COLPOS(l->len());
+    //     if (pos <= i)
+    //         return;
+    //     bpos += l->len();
+    //     bwidth += l->width;
+    //     s += i;
+    //     p += i;
+    //     if (c)
+    //         c += i;
+    //     pos -= i;
+    //     AddLine(s, p, c, pos, nlines);
+    // }
 }
 
 void Buffer::SavePosition()

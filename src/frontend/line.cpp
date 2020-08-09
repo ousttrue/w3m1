@@ -5,6 +5,21 @@
 #include "wtf.h"
 #include "display.h"
 
+PropertiedString::PropertiedString(const char *str, int len)
+{
+    // Lineprop *propBuffer = NULL;
+    // Linecolor *colorBuffer = NULL;
+    // auto lineBuf2 = checkType(line, &propBuffer, &colorBuffer);
+    assert(false);
+}
+// void Buffer::addnewline(Str line, int nlines)
+// {
+//     Lineprop *propBuffer = NULL;
+//     Linecolor *colorBuffer = NULL;
+//     auto lineBuf2 = checkType(line, &propBuffer, &colorBuffer);
+//     addnewline(lineBuf2->ptr, propBuffer, colorBuffer, pos, FOLD_BUFFER_WIDTH(), nlines);
+// }
+
 int PropertiedCharacter::ColumnLen() const
 {
     if (this->prop & PC_CTRL)
@@ -65,7 +80,7 @@ int calcPosition(const PropertiedString &str, int pos, int bpos, CalcPositionMod
     static char *prevl = nullptr;
     int i, j;
 
-    auto l = const_cast<char*>(str.lineBuf());
+    auto l = const_cast<char *>(str.lineBuf());
     auto pr = str.propBuf();
     auto len = str.len();
 

@@ -262,7 +262,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
                     ;
                 tmp->Push(lineBuf2);
                 if (thru)
-                    newBuf->addnewline(lineBuf2, -1);
+                    newBuf->AddNewLine(PropertiedString(lineBuf2));
                 for (; *q && (*q == '\r' || *q == '\n'); q++)
                     ;
             }
@@ -396,7 +396,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
         lineBuf2 = NULL;
     }
     if (thru)
-        newBuf->addnewline("", 1, -1);
+        newBuf->AddNewLine(PropertiedString("", 0));
     if (src)
         fclose(src);
 }
@@ -486,7 +486,7 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
         }
         ++nlines;
         StripRight(lineBuf2);
-        newBuf->addnewline(lineBuf2, nlines);
+        newBuf->AddNewLine(PropertiedString(lineBuf2), nlines);
     }
 _end:
     TRAP_OFF;

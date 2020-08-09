@@ -99,6 +99,13 @@ public:
         }
     }
 
+    PropertiedString(const char *str, int len);
+
+    PropertiedString(Str str)
+    {
+        PropertiedString(str->ptr, str->Size());
+    }
+
     const char *lineBuf() const { return m_lineBuf.data(); }
     const Lineprop *propBuf() const { return m_propBuf.data(); }
     int len() const { return m_lineBuf.size(); }
