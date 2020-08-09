@@ -5,7 +5,7 @@
 #include "wtf.h"
 #include "display.h"
 
-int PropertiedCharacter::ColumnLen()const
+int PropertiedCharacter::ColumnLen() const
 {
     if (this->prop & PC_CTRL)
     {
@@ -18,7 +18,8 @@ int PropertiedCharacter::ColumnLen()const
         return 0;
     }
 
-    if (this->prop & PC_UNKNOWN){
+    if (this->prop & PC_UNKNOWN)
+    {
         return 4;
     }
 
@@ -49,9 +50,12 @@ int Line::COLPOS(int c)
     return calcPosition(buffer, c, 0, CP_AUTO);
 }
 
-void Line::CalcWidth()
+void Line::CalcWidth(bool force)
 {
-    width = COLPOS(len());
+    if (force || m_width < 0)
+    {
+        m_width = COLPOS(len());
+    }
 }
 
 int calcPosition(const PropertiedString &str, int pos, int bpos, CalcPositionMode mode)
@@ -92,7 +96,7 @@ int calcPosition(const PropertiedString &str, int pos, int bpos, CalcPositionMod
         realColumn[i] = j;
         if (i == len)
             break;
-        j += PropertiedCharacter{l+i, pr[i]}.ColumnLen();
+        j += PropertiedCharacter{l + i, pr[i]}.ColumnLen();
         i++;
         for (; i < len && pr[i] & PC_WCHAR2; i++)
             realColumn[i] = realColumn[i - 1];
@@ -126,10 +130,9 @@ int Buffer::ColumnSkip(int offset)
     auto l = find(topLine);
     for (i = 0; i < nlines && l != lines.end(); i++, ++l)
     {
-        if ((*l)->width < 0)
-            (*l)->CalcWidth();
-        if ((*l)->width - 1 > maxColumn)
-            maxColumn = (*l)->width - 1;
+        (*l)->CalcWidth();
+        if ((*l)->width() - 1 > maxColumn)
+            maxColumn = (*l)->width() - 1;
     }
     maxColumn -= this->rect.cols - 1;
     if (column < maxColumn)

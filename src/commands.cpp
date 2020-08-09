@@ -1861,9 +1861,8 @@ void curlno(w3mApp *w3m)
         col = l->bwidth + buf->currentColumn + buf->rect.cursorX + 1;
         while (buf->NextLine(l) && buf->NextLine(l)->bpos)
             l = buf->NextLine(l);
-        if (l->width < 0)
-            l->width = l->COLPOS(l->len());
-        len = l->bwidth + l->width;
+        l->CalcWidth();
+        len = l->bend();
     }
 
     if (buf->LastLine())

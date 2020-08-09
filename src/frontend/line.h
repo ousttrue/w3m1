@@ -120,8 +120,8 @@ struct Line : gc_cleanup
     Line(const PropertiedString str)
     {
         buffer = str;
-        
-        width = -1;
+
+        m_width = -1;
         bpos = 0;
         bwidth = 0;
     }
@@ -131,17 +131,31 @@ struct Line : gc_cleanup
         m_destroy = true;
     }
 
+    // separate start bytes
+    int bpos = 0;
+    // separate start column
+    int bwidth = 0;
+
+private:
+    // sepate column size
+    int m_width = -1;
+
 public:
-    int width = 0;
+    int width()const
+    {
+        return m_width;
+    }
+    int bend() const
+    {
+        return bwidth + m_width;
+    }
+
     long linenumber = 0;      /* on buffer */
     long real_linenumber = 0; /* on file */
     unsigned short usrflags = 0;
 
 public:
-    int bpos = 0;
-    int bwidth = 0;
-
-    void CalcWidth();
+    void CalcWidth(bool force = false);
     int COLPOS(int c);
 };
 using LinePtr = Line *;

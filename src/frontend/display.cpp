@@ -504,13 +504,13 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
             }
             if (active)
                 buf->DrawLineRegion(l, l->linenumber - tline + buf->rect.rootY,
-                                 an->start.pos, an->end.pos);
+                                    an->start.pos, an->end.pos);
         }
         else if (prevhseq >= 0 && an->hseq == prevhseq)
         {
             if (active)
                 buf->DrawLineRegion(l, l->linenumber - tline + buf->rect.rootY,
-                                 an->start.pos, an->end.pos);
+                                    an->start.pos, an->end.pos);
         }
     }
 }
@@ -605,9 +605,8 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
 
     if (l == NULL)
         return NULL;
-    if (l->width < 0)
-        l->CalcWidth();
-    if (l->len() == 0 || l->width - 1 < column)
+    l->CalcWidth();
+    if (l->len() == 0 || l->width() - 1 < column)
         return l;
     pos = columnPos(l, column);
     rcol = l->COLPOS(pos);
@@ -671,7 +670,6 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
     return l;
 }
 #endif
-
 
 #define do_effect1(effect, modeflag, action_start, action_end) \
     if (m & effect)                                            \

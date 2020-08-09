@@ -131,7 +131,7 @@ int Buffer::WriteBufferCache()
     {
         if (fwrite1(l->real_linenumber, cache) ||
             fwrite1(l->usrflags, cache) ||
-            fwrite1(l->width, cache) ||
+            fwrite1(l->width(), cache) ||
             fwrite1(l->len(), cache) ||
             fwrite1(l->bpos, cache) || fwrite1(l->bwidth, cache))
             goto _error;
@@ -568,14 +568,14 @@ void Buffer::NScroll(int n)
         else
         {
             while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos &&
-                   this->currentLine->bwidth + this->currentLine->width <
+                   this->currentLine->bend() <
                        this->currentColumn + this->visualpos)
                 this->CursorDown0(1);
         }
     }
     else
     {
-        if (this->currentLine->bwidth + this->currentLine->width <
+        if (this->currentLine->bend() <
             this->currentColumn + this->visualpos)
             this->CursorUp(1);
         else
@@ -890,33 +890,35 @@ void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, i
     if (pos <= 0 || width <= 0)
         return;
 
-    int bpos = 0;
-    int bwidth = 0;
-    while (1)
-    {
-        auto l = CurrentLine();
-        l->bpos = bpos;
-        l->bwidth = bwidth;
-        auto i = columnLen(l, width);
-        if (i == 0)
-        {
-            i++;
-            while (i < l->len() && p[i] & PC_WCHAR2)
-                i++;
-        }
-        l->buffer.len = i;
-        l->width = l->COLPOS(l->len());
-        if (pos <= i)
-            return;
-        bpos += l->len();
-        bwidth += l->width;
-        s += i;
-        p += i;
-        if (c)
-            c += i;
-        pos -= i;
-        AddLine(s, p, c, pos, nlines);
-    }
+    // separate line
+    // TODO:
+    // int bpos = 0;
+    // int bwidth = 0;
+    // while (1)
+    // {
+    //     auto l = CurrentLine();
+    //     l->bpos = bpos;
+    //     l->bwidth = bwidth;
+    //     auto i = columnLen(l, width);
+    //     if (i == 0)
+    //     {
+    //         i++;
+    //         while (i < l->len() && p[i] & PC_WCHAR2)
+    //             i++;
+    //     }
+    //     l->buffer.len = i;
+    //     l->width = l->COLPOS(l->len());
+    //     if (pos <= i)
+    //         return;
+    //     bpos += l->len();
+    //     bwidth += l->width;
+    //     s += i;
+    //     p += i;
+    //     if (c)
+    //         c += i;
+    //     pos -= i;
+    //     AddLine(s, p, c, pos, nlines);
+    // }
 }
 
 void Buffer::addnewline(Str line, int nlines)
@@ -1010,7 +1012,7 @@ void Buffer::CursorDown(int n)
     }
     CursorDown0(n);
     while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos &&
-           this->currentLine->bwidth + this->currentLine->width <
+           this->currentLine->bend() <
                this->currentColumn + this->visualpos)
         CursorDown0(n);
 }
@@ -1284,11 +1286,8 @@ void Buffer::DrawLine(LinePtr l, int line)
         addstr(tmp);
     }
 
-    if (l->width < 0)
-    {
-        l->CalcWidth();
-    }
-    if (l->len() == 0 || l->width - 1 < currentColumn)
+    l->CalcWidth();
+    if (l->len() == 0 || l->width() - 1 < currentColumn)
     {
         clrtoeolx();
         return;
