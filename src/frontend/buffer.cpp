@@ -812,44 +812,10 @@ void set_buffer_environ(BufferPtr buf)
     prev_pos = buf->pos;
 }
 
-void Buffer::AddLine(const PropertiedString &lineBuffer, int real_linenumber)
-{
-    auto l = std::make_shared<Line>(lineBuffer);
-
-#if true
-    lines.push_back(l);
-#else
-    auto it = lines.end();
-    if (currentLine)
-    {
-        auto found = find(currentLine);
-        if (found != lines.end())
-        {
-            ++found;
-            it = found;
-        }
-    }
-    lines.insert(it, l);
-#endif
-    currentLine = l;
-
-    // 1 origin
-    l->linenumber = this->LineCount();
-    if (real_linenumber < 0)
-    {
-        /*     l->real_linenumber = l->linenumber;     */
-        l->real_linenumber = l->linenumber;
-    }
-    else
-    {
-        l->real_linenumber = real_linenumber;
-    }
-}
-
 const char *NullLine = "";
 Lineprop NullProp[] = {P_UNKNOWN};
 
-void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int nlines)
+void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int real_linenumber)
 {
     char *s;
     Lineprop *p;
@@ -876,39 +842,57 @@ void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, i
         c = NULL;
     }
 
-    AddLine(PropertiedString{s, p, pos, c}, nlines);
     if (pos <= 0 || width <= 0)
-        return;
+    {
+        auto l = std::make_shared<Line>(PropertiedString{s, p, pos, c});
 
-    // separate line
-    // TODO:
-    // int bpos = 0;
-    // int bwidth = 0;
-    // while (1)
-    // {
-    //     auto l = CurrentLine();
-    //     l->bpos = bpos;
-    //     l->bwidth = bwidth;
-    //     auto i = columnLen(l, width);
-    //     if (i == 0)
-    //     {
-    //         i++;
-    //         while (i < l->len() && p[i] & PC_WCHAR2)
-    //             i++;
-    //     }
-    //     l->buffer.len = i;
-    //     l->width = l->COLPOS(l->len());
-    //     if (pos <= i)
-    //         return;
-    //     bpos += l->len();
-    //     bwidth += l->width;
-    //     s += i;
-    //     p += i;
-    //     if (c)
-    //         c += i;
-    //     pos -= i;
-    //     AddLine(s, p, c, pos, nlines);
-    // }
+        lines.push_back(l);
+        currentLine = l;
+
+        // 1 origin
+        l->linenumber = this->LineCount();
+        if (real_linenumber < 0)
+        {
+            l->real_linenumber = l->linenumber;
+        }
+        else
+        {
+            l->real_linenumber = real_linenumber;
+        }
+    }
+    else
+    {
+
+        // separate line
+        // TODO:
+        // int bpos = 0;
+        // int bwidth = 0;
+        // while (1)
+        // {
+        //     auto l = CurrentLine();
+        //     l->bpos = bpos;
+        //     l->bwidth = bwidth;
+        //     auto i = columnLen(l, width);
+        //     if (i == 0)
+        //     {
+        //         i++;
+        //         while (i < l->len() && p[i] & PC_WCHAR2)
+        //             i++;
+        //     }
+        //     l->buffer.len = i;
+        //     l->width = l->COLPOS(l->len());
+        //     if (pos <= i)
+        //         return;
+        //     bpos += l->len();
+        //     bwidth += l->width;
+        //     s += i;
+        //     p += i;
+        //     if (c)
+        //         c += i;
+        //     pos -= i;
+        //     AddLine(s, p, c, pos, nlines);
+        // }
+    }
 }
 
 void Buffer::addnewline(Str line, int nlines)

@@ -88,9 +88,6 @@ public:
         return lines.size();
     }
 
-private:
-    void AddLine(const PropertiedString &buffer, int nlines);
-
 public:
     void addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, int width, int nlines);
     void addnewline(const char *line, int len, int nlines)
