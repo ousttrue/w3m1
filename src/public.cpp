@@ -575,6 +575,14 @@ void nextChar(int *s, LinePtr l)
 
 uint32_t getChar(char *p)
 {
+    if (!p)
+    {
+        return 0;
+    }
+    if (!*p)
+    {
+        return 0;
+    }
     return wc_any_to_ucs(wtf_parse1((uint8_t **)&p));
 }
 

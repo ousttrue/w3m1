@@ -200,13 +200,15 @@ inline CharacterEncodingScheme &operator|=(CharacterEncodingScheme &a, Character
 inline CharacterEncodingScheme &operator&=(CharacterEncodingScheme &a, CharacterEncodingScheme b) { return (CharacterEncodingScheme &)((int &)a &= (int)b); }
 inline CharacterEncodingScheme &operator^=(CharacterEncodingScheme &a, CharacterEncodingScheme b) { return (CharacterEncodingScheme &)((int &)a ^= (int)b); }
 
-union SingleCharacter {
-    uint32_t value;
-    union {
+union SingleCharacter
+{
+    uint64_t value;
+    union
+    {
         uint16_t low;
         uint16_t high;
     };
-    std::array<uint8_t, 4> bytes;
+    std::array<uint8_t, 8> bytes;
 
     /// src: string include a character. allow multibyte, any encoding
     // CharacterCode(std::string_view src)
@@ -246,7 +248,7 @@ union SingleCharacter {
     SingleCharacter(const T *src, uint32_t size)
     {
         static_assert(sizeof(T) == 1); // char variant
-        if (size > 4)
+        if (size > 8)
         {
             throw std::runtime_error("out of range");
         }
@@ -269,6 +271,22 @@ union SingleCharacter {
 
     uint32_t size() const
     {
+        if (bytes[7])
+        {
+            return 8;
+        }
+        if (bytes[6])
+        {
+            return 7;
+        }
+        if (bytes[5])
+        {
+            return 6;
+        }
+        if (bytes[4])
+        {
+            return 5;
+        }
         if (bytes[3])
         {
             return 4;
@@ -300,7 +318,7 @@ union SingleCharacter {
         low = c;
     }
 
-    explicit SingleCharacter(uint32_t c)
+    explicit SingleCharacter(uint64_t c)
     {
         value = c;
     }
@@ -310,4 +328,4 @@ union SingleCharacter {
         return value == rhs.value;
     }
 };
-static_assert(sizeof(SingleCharacter) == 4);
+static_assert(sizeof(SingleCharacter) == 8);

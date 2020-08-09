@@ -65,7 +65,7 @@ int calcPosition(const PropertiedString &str, int pos, int bpos, CalcPositionMod
     static char *prevl = nullptr;
     int i, j;
 
-    auto l = str.lineBuf();
+    auto l = const_cast<char*>(str.lineBuf());
     auto pr = str.propBuf();
     auto len = str.len();
 

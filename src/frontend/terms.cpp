@@ -627,11 +627,14 @@ void clrtobotx(void)
 
 void addstr(const char *s)
 {
-    int len;
+    if(!s)
+    {
+        return;
+    }
 
     while (*s != '\0')
     {
-        len = wtf_len((uint8_t *)s);
+        int len = wtf_len((uint8_t *)s);
         addmch(s, len);
         s += len;
     }

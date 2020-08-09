@@ -80,10 +80,9 @@ struct PropertiedCharacter
 
 class PropertiedString
 {
-    char *m_lineBuf = nullptr;
-    Lineprop *m_propBuf = nullptr;
-    int m_len = 0;
-    Linecolor *m_colorBuf = nullptr;
+    std::vector<char> m_lineBuf;
+    std::vector<Lineprop> m_propBuf;
+    std::vector<Linecolor> m_colorBuf;
 
 public:
     PropertiedString()
@@ -91,18 +90,23 @@ public:
     }
 
     PropertiedString(char *l, Lineprop *p, int len, Linecolor *c = nullptr)
-        : m_lineBuf(l), m_propBuf(p), m_len(len), m_colorBuf(c)
     {
+        m_lineBuf.assign(l, l + len);
+        m_propBuf.assign(p, p + len);
+        if (c)
+        {
+            m_colorBuf.assign(c, c + len);
+        }
     }
 
-    char *lineBuf() const { return m_lineBuf; }
-    Lineprop *propBuf() const { return m_propBuf; }
-    int len() const { return m_len; }
-    Linecolor *colorBuf() const { return m_colorBuf; }
+    const char *lineBuf() const { return m_lineBuf.data(); }
+    const Lineprop *propBuf() const { return m_propBuf.data(); }
+    int len() const { return m_lineBuf.size(); }
+    const Linecolor *colorBuf() const { return m_colorBuf.empty() ? nullptr : m_colorBuf.data(); }
 
     PropertiedCharacter Get(int index) const
     {
-        return {m_lineBuf + index, m_propBuf[index]};
+        return {m_lineBuf.data() + index, m_propBuf[index]};
     }
 };
 
@@ -111,15 +115,15 @@ struct Line : gc_cleanup
     PropertiedString buffer;
     char *lineBuf()
     {
-        return buffer.lineBuf();
+        return const_cast<char *>(buffer.lineBuf());
     }
     Lineprop *propBuf()
     {
-        return buffer.propBuf();
+        return const_cast<Lineprop *>(buffer.propBuf());
     }
     Linecolor *colorBuf()
     {
-        return buffer.colorBuf();
+        return const_cast<Linecolor *>(buffer.colorBuf());
     }
     int len() const
     {
