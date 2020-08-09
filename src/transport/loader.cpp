@@ -193,7 +193,6 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
 #endif
     char *tmpf;
     FILE *src = NULL;
-    Lineprop *propBuffer;
 
     headerlist = newBuf->document_header = newTextList();
     if (uf->scheme == SCM_HTTP
@@ -261,12 +260,9 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
             {
                 for (q = p; *q && *q != '\r' && *q != '\n'; q++)
                     ;
-                lineBuf2 = checkType(Strnew_charp_n(p, q - p), &propBuffer,
-                                     NULL);
                 tmp->Push(lineBuf2);
                 if (thru)
-                    newBuf->addnewline(lineBuf2->ptr, propBuffer, NULL,
-                               lineBuf2->Size(), FOLD_BUFFER_WIDTH(), -1);
+                    newBuf->addnewline(lineBuf2, -1);
                 for (; *q && (*q == '\r' || *q == '\n'); q++)
                     ;
             }
@@ -400,7 +396,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
         lineBuf2 = NULL;
     }
     if (thru)
-        newBuf->addnewline("", propBuffer, NULL, 0, -1, -1);
+        newBuf->addnewline("", 1, -1);
     if (src)
         fclose(src);
 }

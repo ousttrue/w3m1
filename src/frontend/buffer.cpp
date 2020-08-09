@@ -920,6 +920,14 @@ void Buffer::addnewline(char *line, Lineprop *prop, Linecolor *color, int pos, i
     }
 }
 
+void Buffer::addnewline(Str line, int nlines)
+{
+    Lineprop *propBuffer = NULL;
+    Linecolor *colorBuffer = NULL;
+    auto lineBuf2 = checkType(line, &propBuffer, &colorBuffer);
+    addnewline(lineBuf2->ptr, propBuffer, colorBuffer, pos, FOLD_BUFFER_WIDTH(), nlines);
+}
+
 void Buffer::SavePosition()
 {
     if (this->LineCount() == 0)
