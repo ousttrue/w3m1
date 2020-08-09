@@ -83,6 +83,7 @@ struct PropertiedString
     char *lineBuf = nullptr;
     Lineprop *propBuf = nullptr;
     int len = 0;
+    Linecolor *colorBuf = nullptr;
 
     PropertiedCharacter Get(int index) const
     {
@@ -101,23 +102,25 @@ struct Line : gc_cleanup
     {
         return buffer.propBuf;
     }
+    Linecolor *colorBuf()
+    {
+        return buffer.colorBuf;
+    }
     int len() const
     {
         return buffer.len;
     }
 
-    Linecolor *colorBuf = nullptr;
     bool m_destroy = false;
 
     Line()
     {
     }
 
-    Line(const PropertiedString str, Linecolor *color)
+    Line(const PropertiedString str)
     {
         buffer = str;
-        colorBuf = color;
-
+        
         width = -1;
         bpos = 0;
         bwidth = 0;

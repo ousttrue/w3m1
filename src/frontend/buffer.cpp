@@ -141,20 +141,19 @@ int Buffer::WriteBufferCache()
                 fwrite(l->propBuf(), sizeof(Lineprop), l->len(), cache) < l->len())
                 goto _error;
         }
-#ifdef USE_ANSI_COLOR
-        colorflag = l->colorBuf ? 1 : 0;
+
+        colorflag = l->colorBuf() ? 1 : 0;
         if (fwrite1(colorflag, cache))
             goto _error;
         if (colorflag)
         {
             if (l->bpos == 0)
             {
-                if (fwrite(l->colorBuf, sizeof(Linecolor), l->len(), cache) <
+                if (fwrite(l->colorBuf(), sizeof(Linecolor), l->len(), cache) <
                     l->len())
                     goto _error;
             }
         }
-#endif
     }
 
     fclose(cache);
@@ -231,15 +230,15 @@ int Buffer::ReadBufferCache()
     //     {
     //         if (l->bpos == 0)
     //         {
-    //             l->colorBuf = NewAtom_N(Linecolor, l->len());
-    //             fread(l->colorBuf, sizeof(Linecolor), l->len(), cache);
+    //             l->colorBuf() = NewAtom_N(Linecolor, l->len());
+    //             fread(l->colorBuf(), sizeof(Linecolor), l->len(), cache);
     //         }
     //         else
-    //             l->colorBuf = basel->colorBuf + l->bpos;
+    //             l->colorBuf() = basel->colorBuf() + l->bpos;
     //     }
     //     else
     //     {
-    //         l->colorBuf = NULL;
+    //         l->colorBuf() = NULL;
     //     }
     //     #endif
     // }
@@ -815,7 +814,7 @@ void set_buffer_environ(BufferPtr buf)
 
 void Buffer::AddLine(char *line, Lineprop *prop, Linecolor *color, int pos, int nlines)
 {
-    auto l = new Line({line, prop, pos}, color);
+    auto l = new Line({line, prop, pos, color});
 
     auto it = lines.end();
     if (currentLine)
@@ -1303,8 +1302,8 @@ void Buffer::DrawLine(LinePtr l, int line)
     auto p = &(l->lineBuf()[pos]);
     auto pr = &(l->propBuf()[pos]);
     Linecolor *pc;
-    if (w3mApp::Instance().useColor && l->colorBuf)
-        pc = &(l->colorBuf[pos]);
+    if (w3mApp::Instance().useColor && l->colorBuf())
+        pc = &(l->colorBuf()[pos]);
     else
         pc = NULL;
 
@@ -1385,8 +1384,8 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
     auto p = &(l->lineBuf()[pos]);
     auto pr = &(l->propBuf()[pos]);
     Linecolor *pc;
-    if (w3mApp::Instance().useColor && l->colorBuf)
-        pc = &(l->colorBuf[pos]);
+    if (w3mApp::Instance().useColor && l->colorBuf())
+        pc = &(l->colorBuf()[pos]);
     else
         pc = NULL;
 
