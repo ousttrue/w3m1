@@ -280,9 +280,7 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
     }
 }
 
-static int
-form_update_line(LinePtr line, char **str, int spos, int epos, int width,
-                 int newline, int password)
+static int form_update_line(LinePtr line, char **str, int spos, int epos, int width, int newline, int password)
 {
     int c_len = 1, c_width = 1, w, i, len, pos;
     char *p, *buf;

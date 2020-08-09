@@ -1421,14 +1421,14 @@ void svSrc(w3mApp *w3m)
     PermitSaveToPipe = FALSE;
     displayCurrentbuf(B_NORMAL);
 }
-/* peek URL */
 
+/* peek URL */
 void peekURL(w3mApp *w3m)
 {
     _peekURL(0);
 }
-/* peek URL of image */
 
+/* peek URL of image */
 void peekIMG(w3mApp *w3m)
 {
     _peekURL(1);
