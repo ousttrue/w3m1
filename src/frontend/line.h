@@ -78,16 +78,31 @@ struct PropertiedCharacter
     int ColumnLen() const;
 };
 
-struct PropertiedString
+class PropertiedString
 {
-    char *lineBuf = nullptr;
-    Lineprop *propBuf = nullptr;
-    int len = 0;
-    Linecolor *colorBuf = nullptr;
+    char *m_lineBuf = nullptr;
+    Lineprop *m_propBuf = nullptr;
+    int m_len = 0;
+    Linecolor *m_colorBuf = nullptr;
+
+public:
+    PropertiedString()
+    {
+    }
+
+    PropertiedString(char *l, Lineprop *p, int len, Linecolor *c = nullptr)
+        : m_lineBuf(l), m_propBuf(p), m_len(len), m_colorBuf(c)
+    {
+    }
+
+    char *lineBuf() const { return m_lineBuf; }
+    Lineprop *propBuf() const { return m_propBuf; }
+    int len() const { return m_len; }
+    Linecolor *colorBuf() const { return m_colorBuf; }
 
     PropertiedCharacter Get(int index) const
     {
-        return {lineBuf + index, propBuf[index]};
+        return {m_lineBuf + index, m_propBuf[index]};
     }
 };
 
@@ -96,19 +111,19 @@ struct Line : gc_cleanup
     PropertiedString buffer;
     char *lineBuf()
     {
-        return buffer.lineBuf;
+        return buffer.lineBuf();
     }
     Lineprop *propBuf()
     {
-        return buffer.propBuf;
+        return buffer.propBuf();
     }
     Linecolor *colorBuf()
     {
-        return buffer.colorBuf;
+        return buffer.colorBuf();
     }
     int len() const
     {
-        return buffer.len;
+        return buffer.len();
     }
 
     bool m_destroy = false;
@@ -141,7 +156,7 @@ private:
     int m_width = -1;
 
 public:
-    int width()const
+    int width() const
     {
         return m_width;
     }

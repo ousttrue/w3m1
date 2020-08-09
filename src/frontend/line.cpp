@@ -65,9 +65,9 @@ int calcPosition(const PropertiedString &str, int pos, int bpos, CalcPositionMod
     static char *prevl = nullptr;
     int i, j;
 
-    auto l = str.lineBuf;
-    auto pr = str.propBuf;
-    auto len = str.len;
+    auto l = str.lineBuf();
+    auto pr = str.propBuf();
+    auto len = str.len();
 
     if (l == nullptr || len == 0)
         return bpos;
