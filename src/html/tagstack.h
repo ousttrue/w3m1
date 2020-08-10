@@ -96,4 +96,4 @@ inline void HTMLlineproc1(const char *x, html_feed_environ *y, class HtmlContext
 void init_henv(struct html_feed_environ *, struct readbuffer *,
                struct environment *, int, TextLineList *, int, int);
 void completeHTMLstream(struct html_feed_environ *, struct readbuffer *, class HtmlContext *seq);
-void SetCurTitle(Str title);
+

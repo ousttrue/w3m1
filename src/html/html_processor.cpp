@@ -1591,8 +1591,6 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 #endif
     MySignalHandler prevtrap = nullptr;
 
-    SetCurTitle(nullptr);
-
     get_textarea()->clear(0);
     get_formselect()->clear(0);
 

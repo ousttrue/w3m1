@@ -84,55 +84,6 @@ static inline void set_space_to_prevchar(Str x)
 static struct table *tables[MAX_TABLE];
 static struct table_mode table_mode[MAX_TABLE];
 
-static Str cur_title;
-void SetCurTitle(Str title)
-{
-    cur_title = title;
-}
-
-static Str
-process_title(struct parsed_tag *tag)
-{
-    cur_title = Strnew();
-    return NULL;
-}
-
-static Str
-process_n_title(struct parsed_tag *tag)
-{
-    if (!cur_title)
-        return NULL;
-    Strip(cur_title);
-    auto tmp = Strnew_m_charp("<title_alt title=\"",
-                              html_quote(cur_title),
-                              "\">");
-    cur_title = NULL;
-    return tmp;
-}
-
-static void
-feed_title(const char *str)
-{
-    if (!cur_title)
-        return;
-    while (*str)
-    {
-        if (*str == '&')
-        {
-            auto [pos, cmd] = getescapecmd(str, w3mApp::Instance().InnerCharset);
-            str = pos;
-            cur_title->Push(cmd);
-        }
-        else if (*str == '\n' || *str == '\r')
-        {
-            cur_title->Push(' ');
-            str++;
-        }
-        else
-            cur_title->Push(*(str++));
-    }
-}
-
 struct link_stack
 {
     HtmlTags cmd;
@@ -1578,21 +1529,24 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         /* obuf->flag |= RB_IGNORE_P; */
         return 1;
+
     case HTML_TITLE:
         close_anchor(h_env, obuf, seq);
-        process_title(tag);
+        seq->TitleOpen(tag);
         obuf->flag |= RB_TITLE;
         obuf->end_tag = HTML_N_TITLE;
         return 1;
+
     case HTML_N_TITLE:
         if (!(obuf->flag & RB_TITLE))
             return 1;
         obuf->flag &= ~RB_TITLE;
         obuf->end_tag = 0;
-        tmp = process_n_title(tag);
+        tmp = seq->TitleClose(tag);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
+
     case HTML_TITLE_ALT:
         if (tag->TryGetAttributeValue(ATTR_TITLE, &p))
             h_env->title = html_unquote(p, w3mApp::Instance().InnerCharset);
@@ -2404,7 +2358,7 @@ table_start:
             /* title */
             if (pre_mode & RB_TITLE)
             {
-                feed_title(str);
+                seq->TitleContent(str);
                 continue;
             }
             /* select */
