@@ -13,6 +13,7 @@
 #include "Symbols/cp850.sym"
 #include "wtf.h"
 #include "w3m.h"
+#include <tcb/span.hpp>
 
 #include "indep.h"
 
@@ -125,41 +126,43 @@ get_symbol(CharacterEncodingScheme charset, int *width)
     return s->conved_item;
 }
 
-char **set_symbol(int width)
+template <typename T>
+int count_until_null(const T *p)
 {
-    static char **symbol_buf = NULL;
+    int i = 0;
+    for (; *p; ++p)
+        ++i;
+    return i;
+}
+
+static tcb::span<const char *> set_symbol(int width)
+{
+    static std::vector<const char *> symbol_buf;
     static int save_width = -1;
-    if (width == save_width)
+    if (width != save_width)
     {
-        return symbol_buf;
-    }
-
-    // int i;
-    // Str tmp;
-
-    if (symbol_buf == NULL)
-    {
-        symbol_set *s = &alt_symbol_set;
-        int i = 0;
-        for (; s->item[i]; i++)
-            ;
-        symbol_buf = New_N(char *, i);
-    }
-
-    {
-        symbol_set *s = &alt_symbol_set;
-        for (int i = 0; s->item[i]; i++)
+        symbol_buf.clear();
         {
-            auto tmp = Strnew_size(4);
-            if (width == 2)
-                wtf_push(tmp, WC_CCS_SPECIAL_W, (uint32_t)(SYMBOL_BASE + i));
-            else
-                wtf_push(tmp, WC_CCS_SPECIAL, (uint32_t)(SYMBOL_BASE + i));
-            symbol_buf[i] = tmp->ptr;
+            symbol_set *s = &alt_symbol_set;
+            for (int i = 0; s->item[i]; i++)
+            {
+                auto tmp = Strnew_size(4);
+                if (width == 2)
+                    wtf_push(tmp, WC_CCS_SPECIAL_W, (uint32_t)(SYMBOL_BASE + i));
+                else
+                    wtf_push(tmp, WC_CCS_SPECIAL, (uint32_t)(SYMBOL_BASE + i));
+                symbol_buf.push_back(tmp->ptr);
+            }
         }
     }
     save_width = width;
     return symbol_buf;
+}
+
+std::string_view get_width_symbol(int width, char symbol)
+{
+    auto map = set_symbol(width);
+    return map[symbol];
 }
 
 void update_utf8_symbol(void)
@@ -184,7 +187,7 @@ void push_symbol(Str str, char symbol, int width, int n)
     else
         p = alt_symbol[(int)symbol];
 
-    char buf[] =
+    const char buf[] =
         {
             (p[0] == ' ') ? NBSP_CODE : p[0],
             (p[1] == ' ') ? NBSP_CODE : p[1],

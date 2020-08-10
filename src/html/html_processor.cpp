@@ -1414,34 +1414,38 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HSequenc
             auto mode = get_mctype(*str);
             if ((state.effect | ex_efct(state.ex_effect)) & PC_SYMBOL && *str != '<')
             {
-                char **buf = set_symbol(seq->SymbolWidth0());
-                auto p = buf[(int)state.symbol];
-                int len = get_mclen(p);
-                mode = get_mctype(*p);
+                // symbol
+                auto p = get_width_symbol(seq->SymbolWidth0(), state.symbol);
+                assert(p.size() > 0);
+                int len = get_mclen(p.data());
+                mode = get_mctype(p[0]);
 
-                out.push(mode | state.effect | ex_efct(state.ex_effect), *(p++));
+                out.push(mode | state.effect | ex_efct(state.ex_effect), p[0]);
                 if (--len)
                 {
                     mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
-                    while (len--)
+                    for (int i = 1; len--; ++i)
                     {
-                        out.push(mode | state.effect | ex_efct(state.ex_effect), *(p++));
+                        out.push(mode | state.effect | ex_efct(state.ex_effect), p[i]);
                     }
                 }
                 str += seq->SymbolWidth();
             }
             else if (mode == PC_CTRL || mode == PC_UNDEF)
             {
+                // control
                 out.push(PC_ASCII | state.effect | ex_efct(state.ex_effect), ' ');
                 str++;
             }
             else if (mode & PC_UNKNOWN)
             {
+                // unknown
                 out.push(PC_ASCII | state.effect | ex_efct(state.ex_effect), ' ');
                 str += get_mclen(str);
             }
             else if (*str != '<' && *str != '&')
             {
+                // multibyte char ?
                 int len = get_mclen(str);
                 out.push(mode | state.effect | ex_efct(state.ex_effect), *(str++));
                 if (--len)
