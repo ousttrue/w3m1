@@ -1147,6 +1147,21 @@ static int currentLn(BufferPtr buf)
 }
 
 ///
+/// HTML parse state
+///
+struct HtmlParser
+{
+    Lineprop effect = P_UNKNOWN;
+    Lineprop ex_effect = P_UNKNOWN;
+    char symbol = '\0';
+    union frameset_element *idFrame = nullptr;
+    int frameset_sp = -1;
+    struct frameset *frameset_s[FRAMESTACK_SIZE];
+    Anchor *a_href = nullptr, *a_img = nullptr, *a_form = nullptr;
+    HtmlTags internal = HTML_UNKNOWN;
+};
+
+///
 /// 1行ごとに Line の構築と html タグを解釈する
 ///
 using FeedFunc = Str (*)();
@@ -1170,18 +1185,12 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         a_select = New_N(Anchor *, max_select);
     }
 
+    HtmlParser state;
+
     //
     // each line
     //
-    Lineprop effect = P_UNKNOWN;
-    Lineprop ex_effect = P_UNKNOWN;
     Str line = nullptr;
-    char symbol = '\0';
-    union frameset_element *idFrame = nullptr;
-    int frameset_sp = -1;
-    struct frameset *frameset_s[FRAMESTACK_SIZE];
-    Anchor *a_href = nullptr, *a_img = nullptr, *a_form = nullptr;
-    int internal = 0;
     for (int nlines = 1; nlines != llimit; ++nlines)
     {
         if (!line)
@@ -1205,53 +1214,53 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         //
         // each char
         //
-        const char* str = line->ptr;
+        const char *str = line->ptr;
         auto endp = str + line->Size();
         PropertiedString out;
         while (str < endp)
         {
             auto mode = get_mctype(*str);
-            if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
+            if ((state.effect | ex_efct(state.ex_effect)) & PC_SYMBOL && *str != '<')
             {
 
                 char **buf = set_symbol(symbol_width0);
                 int len;
 
-                auto p = buf[(int)symbol];
+                auto p = buf[(int)state.symbol];
                 len = get_mclen(p);
                 mode = get_mctype(*p);
 
-                out.push(mode | effect | ex_efct(ex_effect), *(p++));
+                out.push(mode | state.effect | ex_efct(state.ex_effect), *(p++));
                 if (--len)
                 {
                     mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
                     while (len--)
                     {
-                        out.push(mode | effect | ex_efct(ex_effect), *(p++));
+                        out.push(mode | state.effect | ex_efct(state.ex_effect), *(p++));
                     }
                 }
                 str += symbol_width;
             }
             else if (mode == PC_CTRL || mode == PC_UNDEF)
             {
-                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                out.push(PC_ASCII | state.effect | ex_efct(state.ex_effect), ' ');
                 str++;
             }
             else if (mode & PC_UNKNOWN)
             {
-                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                out.push(PC_ASCII | state.effect | ex_efct(state.ex_effect), ' ');
                 str += get_mclen(str);
             }
             else if (*str != '<' && *str != '&')
             {
                 int len = get_mclen(str);
-                out.push(mode | effect | ex_efct(ex_effect), *(str++));
+                out.push(mode | state.effect | ex_efct(state.ex_effect), *(str++));
                 if (--len)
                 {
                     mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
                     while (len--)
                     {
-                        out.push(mode | effect | ex_efct(ex_effect), *(str++));
+                        out.push(mode | state.effect | ex_efct(state.ex_effect), *(str++));
                     }
                 }
             }
@@ -1272,24 +1281,24 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     mode = get_mctype(*p);
                     if (mode == PC_CTRL || mode == PC_UNDEF)
                     {
-                        out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                        out.push(PC_ASCII | state.effect | ex_efct(state.ex_effect), ' ');
                         p++;
                     }
                     else if (mode & PC_UNKNOWN)
                     {
-                        out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                        out.push(PC_ASCII | state.effect | ex_efct(state.ex_effect), ' ');
                         p += get_mclen(p);
                     }
                     else
                     {
                         int len = get_mclen(p);
-                        out.push(mode | effect | ex_efct(ex_effect), *(p++));
+                        out.push(mode | state.effect | ex_efct(state.ex_effect), *(p++));
                         if (--len)
                         {
                             mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
                             while (len--)
                             {
-                                out.push(mode | effect | ex_efct(ex_effect), *(p++));
+                                out.push(mode | state.effect | ex_efct(state.ex_effect), *(p++));
                             }
                         }
                     }
@@ -1304,34 +1313,34 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 switch (tag->tagid)
                 {
                 case HTML_B:
-                    effect |= PE_BOLD;
+                    state.effect |= PE_BOLD;
                     break;
                 case HTML_N_B:
-                    effect &= ~PE_BOLD;
+                    state.effect &= ~PE_BOLD;
                     break;
                 case HTML_I:
-                    ex_effect |= PE_EX_ITALIC;
+                    state.ex_effect |= PE_EX_ITALIC;
                     break;
                 case HTML_N_I:
-                    ex_effect &= ~PE_EX_ITALIC;
+                    state.ex_effect &= ~PE_EX_ITALIC;
                     break;
                 case HTML_INS:
-                    ex_effect |= PE_EX_INSERT;
+                    state.ex_effect |= PE_EX_INSERT;
                     break;
                 case HTML_N_INS:
-                    ex_effect &= ~PE_EX_INSERT;
+                    state.ex_effect &= ~PE_EX_INSERT;
                     break;
                 case HTML_U:
-                    effect |= PE_UNDER;
+                    state.effect |= PE_UNDER;
                     break;
                 case HTML_N_U:
-                    effect &= ~PE_UNDER;
+                    state.effect &= ~PE_UNDER;
                     break;
                 case HTML_S:
-                    ex_effect |= PE_EX_STRIKE;
+                    state.ex_effect |= PE_EX_STRIKE;
                     break;
                 case HTML_N_S:
-                    ex_effect &= ~PE_EX_STRIKE;
+                    state.ex_effect &= ~PE_EX_STRIKE;
                     break;
                 case HTML_A:
                 {
@@ -1340,11 +1349,11 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
                     {
                         p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                        if (!idFrame || strcmp(idFrame->body->name, p))
+                        if (!state.idFrame || strcmp(state.idFrame->body->name, p))
                         {
-                            idFrame = search_frame(renderFrameSet, p);
-                            if (idFrame && idFrame->body->attr != F_BODY)
-                                idFrame = nullptr;
+                            state.idFrame = search_frame(renderFrameSet, p);
+                            if (state.idFrame && state.idFrame->body->attr != F_BODY)
+                                state.idFrame = nullptr;
                         }
                     }
                     p = nullptr;
@@ -1385,38 +1394,38 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             hseq = -hseq;
                         }
                     }
-                    if (id && idFrame)
+                    if (id && state.idFrame)
                     {
                         auto a = Anchor::CreateName(id, currentLn(buf), out.len());
-                        idFrame->body->nameList.Put(a);
+                        state.idFrame->body->nameList.Put(a);
                     }
                     if (p)
                     {
-                        effect |= PE_ANCHOR;
-                        a_href = buf->href.Put(Anchor::CreateHref(p,
+                        state.effect |= PE_ANCHOR;
+                        state.a_href = buf->href.Put(Anchor::CreateHref(p,
                                                                   q ? q : "",
                                                                   r ? r : "",
                                                                   s ? s : "",
                                                                   *t, currentLn(buf), out.len()));
-                        a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
-                        a_href->slave = (hseq > 0) ? FALSE : TRUE;
+                        state.a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
+                        state.a_href->slave = (hseq > 0) ? FALSE : TRUE;
                     }
                     break;
                 }
                 case HTML_N_A:
-                    effect &= ~PE_ANCHOR;
-                    if (a_href)
+                    state.effect &= ~PE_ANCHOR;
+                    if (state.a_href)
                     {
-                        a_href->end.line = currentLn(buf);
-                        a_href->end.pos = out.len();
-                        if (a_href->start == a_href->end)
+                        state.a_href->end.line = currentLn(buf);
+                        state.a_href->end.pos = out.len();
+                        if (state.a_href->start == state.a_href->end)
                         {
                             if (buf->hmarklist.size() &&
-                                a_href->hseq < buf->hmarklist.size())
-                                buf->hmarklist[a_href->hseq].invalid = 1;
-                            a_href->hseq = -1;
+                                state.a_href->hseq < buf->hmarklist.size())
+                                buf->hmarklist[state.a_href->hseq].invalid = 1;
+                            state.a_href->hseq = -1;
                         }
-                        a_href = nullptr;
+                        state.a_href = nullptr;
                     }
                     break;
 
@@ -1452,20 +1461,20 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                            buf->document_charset)
                                 ->ptr;
-                        a_img = buf->img.Put(Anchor::CreateImage(
+                        state.a_img = buf->img.Put(Anchor::CreateImage(
                             p,
                             s ? s : "",
                             currentLn(buf), out.len()));
 
-                        a_img->hseq = iseq;
-                        a_img->image = nullptr;
+                        state.a_img->hseq = iseq;
+                        state.a_img->image = nullptr;
                         if (iseq > 0)
                         {
                             URL u;
                             Image *image;
 
-                            u.Parse2(a_img->url, GetCurBaseUrl());
-                            a_img->image = image = New(Image);
+                            u.Parse2(state.a_img->url, GetCurBaseUrl());
+                            state.a_img->image = image = New(Image);
                             image->url = u.ToStr()->ptr;
                             if (!uncompressed_file_type(u.file.c_str(), &image->ext))
                                 image->ext = filename_extension(u.file.c_str(), TRUE);
@@ -1494,22 +1503,22 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             auto a = buf->img.RetrieveAnchor(po->line, po->pos);
                             if (a)
                             {
-                                a_img->url = a->url;
-                                a_img->image = a->image;
+                                state.a_img->url = a->url;
+                                state.a_img->image = a->image;
                             }
                         }
                     }
-                    effect |= PE_IMAGE;
+                    state.effect |= PE_IMAGE;
                     break;
                 }
                 case HTML_N_IMG_ALT:
-                    effect &= ~PE_IMAGE;
-                    if (a_img)
+                    state.effect &= ~PE_IMAGE;
+                    if (state.a_img)
                     {
-                        a_img->end.line = currentLn(buf);
-                        a_img->end.pos = out.len();
+                        state.a_img->end.line = currentLn(buf);
+                        state.a_img->end.pos = out.len();
                     }
-                    a_img = nullptr;
+                    state.a_img = nullptr;
                     break;
                 case HTML_INPUT_ALT:
                 {
@@ -1577,40 +1586,40 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         };
                         a.start = bp;
                         a.end = bp;
-                        a_form = buf->formitem.Put(a);
+                        state.a_form = buf->formitem.Put(a);
                     }
                     else
                     {
-                        a_form = nullptr;
+                        state.a_form = nullptr;
                     }
 
                     if (a_textarea && textareanumber >= 0)
-                        a_textarea[textareanumber] = a_form;
+                        a_textarea[textareanumber] = state.a_form;
 
                     if (a_select && selectnumber >= 0)
-                        a_select[selectnumber] = a_form;
+                        a_select[selectnumber] = state.a_form;
 
-                    if (a_form)
+                    if (state.a_form)
                     {
-                        a_form->hseq = hseq - 1;
-                        a_form->y = currentLn(buf) - top;
-                        a_form->rows = 1 + top + bottom;
+                        state.a_form->hseq = hseq - 1;
+                        state.a_form->y = currentLn(buf) - top;
+                        state.a_form->rows = 1 + top + bottom;
                         if (!tag->HasAttribute(ATTR_NO_EFFECT))
-                            effect |= PE_FORM;
+                            state.effect |= PE_FORM;
                         break;
                     }
                 }
                 case HTML_N_INPUT_ALT:
-                    effect &= ~PE_FORM;
-                    if (a_form)
+                    state.effect &= ~PE_FORM;
+                    if (state.a_form)
                     {
-                        a_form->end.line = currentLn(buf);
-                        a_form->end.pos = out.len();
-                        if (a_form->start.line == a_form->end.line &&
-                            a_form->start.pos == a_form->end.pos)
-                            a_form->hseq = -1;
+                        state.a_form->end.line = currentLn(buf);
+                        state.a_form->end.pos = out.len();
+                        if (state.a_form->start.line == state.a_form->end.line &&
+                            state.a_form->start.pos == state.a_form->end.pos)
+                            state.a_form->hseq = -1;
                     }
-                    a_form = nullptr;
+                    state.a_form = nullptr;
                     break;
                 case HTML_MAP:
                 {
@@ -1653,37 +1662,37 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     break;
                 }
                 case HTML_FRAMESET:
-                    frameset_sp++;
-                    if (frameset_sp >= FRAMESTACK_SIZE)
+                    state.frameset_sp++;
+                    if (state.frameset_sp >= FRAMESTACK_SIZE)
                         break;
-                    frameset_s[frameset_sp] = newFrameSet(tag);
-                    if (frameset_s[frameset_sp] == nullptr)
+                    state.frameset_s[state.frameset_sp] = newFrameSet(tag);
+                    if (state.frameset_s[state.frameset_sp] == nullptr)
                         break;
-                    if (frameset_sp == 0)
+                    if (state.frameset_sp == 0)
                     {
                         if (buf->frameset == nullptr)
                         {
-                            buf->frameset = frameset_s[frameset_sp];
+                            buf->frameset = state.frameset_s[state.frameset_sp];
                         }
                         else
                             pushFrameTree(&(buf->frameQ),
-                                          frameset_s[frameset_sp], nullptr);
+                                          state.frameset_s[state.frameset_sp], nullptr);
                     }
                     else
-                        addFrameSetElement(frameset_s[frameset_sp - 1],
-                                           *(union frameset_element *)&frameset_s[frameset_sp]);
+                        addFrameSetElement(state.frameset_s[state.frameset_sp - 1],
+                                           *(union frameset_element *)&state.frameset_s[state.frameset_sp]);
                     break;
                 case HTML_N_FRAMESET:
-                    if (frameset_sp >= 0)
-                        frameset_sp--;
+                    if (state.frameset_sp >= 0)
+                        state.frameset_sp--;
                     break;
                 case HTML_FRAME:
-                    if (frameset_sp >= 0 && frameset_sp < FRAMESTACK_SIZE)
+                    if (state.frameset_sp >= 0 && state.frameset_sp < FRAMESTACK_SIZE)
                     {
                         union frameset_element element;
 
                         element.body = newFrame(tag, buf);
-                        addFrameSetElement(frameset_s[frameset_sp], element);
+                        addFrameSetElement(state.frameset_s[state.frameset_sp], element);
                     }
                     break;
                 case HTML_BASE:
@@ -1731,10 +1740,10 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     break;
                 }
                 case HTML_INTERNAL:
-                    internal = HTML_INTERNAL;
+                    state.internal = HTML_INTERNAL;
                     break;
                 case HTML_N_INTERNAL:
-                    internal = HTML_N_INTERNAL;
+                    state.internal = HTML_N_INTERNAL;
                     break;
                 case HTML_FORM_INT:
                 {
@@ -1805,14 +1814,14 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 }
                 case HTML_SYMBOL:
                 {
-                    effect |= PC_SYMBOL;
+                    state.effect |= PC_SYMBOL;
                     char *p = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
-                        symbol = (char)atoi(p);
+                        state.symbol = (char)atoi(p);
                     break;
                 }
                 case HTML_N_SYMBOL:
-                    effect &= ~PC_SYMBOL;
+                    state.effect &= ~PC_SYMBOL;
                     break;
                 }
 
@@ -1828,28 +1837,28 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
                     {
                         p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                        if (!idFrame || strcmp(idFrame->body->name, p))
+                        if (!state.idFrame || strcmp(state.idFrame->body->name, p))
                         {
-                            idFrame = search_frame(renderFrameSet, p);
-                            if (idFrame && idFrame->body->attr != F_BODY)
-                                idFrame = nullptr;
+                            state.idFrame = search_frame(renderFrameSet, p);
+                            if (state.idFrame && state.idFrame->body->attr != F_BODY)
+                                state.idFrame = nullptr;
                         }
                     }
-                    if (id && idFrame)
+                    if (id && state.idFrame)
                     {
                         auto a = Anchor::CreateName(id, currentLn(buf), out.len());
-                        idFrame->body->nameList.Put(a);
+                        state.idFrame->body->nameList.Put(a);
                     }
                 }
             }
         }
         /* end of processing for one line */
-        if (!internal)
+        if (!state.internal)
         {
             buf->AddNewLine(out, nlines);
         }
-        if (internal == HTML_N_INTERNAL)
-            internal = 0;
+        if (state.internal == HTML_N_INTERNAL)
+            state.internal = HTML_UNKNOWN;
         if (str != endp)
         {
             // advance line
