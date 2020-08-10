@@ -104,7 +104,7 @@ int formChooseOptionByMenu(FormItemList *fi, int x, int y);
 #endif /* MENU_SELECT */
 
 FormItemList *formList_addInput(FormList *fl,
-                                struct parsed_tag *tag, struct HtmlTextArea *ta);
+                                struct parsed_tag *tag, class HtmlTextArea *ta);
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
 

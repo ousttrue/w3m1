@@ -2,7 +2,7 @@
 #include <wc.h>
 #include <tuple>
 
-struct HtmlTextArea
+class HtmlTextArea
 {
     int n_textarea;
     Str *textarea_str;
@@ -17,6 +17,7 @@ struct HtmlTextArea
 
     bool ignore_nl_textarea = false;
 
+public:
     void clear(int n);
     void grow(int textareanumber);
     void set(int n, Str str);
