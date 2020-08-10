@@ -8,9 +8,6 @@
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
-#include "html.h"
-#include "html/html.h"
-
 #include "myctype.h"
 #include "symbol.h"
 #include "table.h"
@@ -18,6 +15,9 @@
 #include "entity.h"
 #include "file.h"
 #include "tagstack.h"
+#include "html.h"
+#include "html/html.h"
+#include "html/formselect.h"
 #include "html/html_processor.h"
 #include "html/textarea.h"
 

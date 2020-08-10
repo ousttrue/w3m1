@@ -84,10 +84,6 @@ struct FormList
     unsigned long length;
 };
 
-#ifdef MENU_SELECT
-#define MAX_SELECT 10 /* max number of <select>..</select> \
-                       * within one document */
-#endif                /* MENU_SELECT */
 
 #ifdef MENU_SELECT
 

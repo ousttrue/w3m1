@@ -14,9 +14,6 @@ Str convertLine(URLFile *uf, Str line, int mode, CharacterEncodingScheme *charse
 char *guess_filename(std::string_view file);
 int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
-Str process_n_select(void);
-void feed_select(char *str);
-void process_option(void);
 Str process_n_form(void);
 int getMetaRefreshParam(const char *q, Str *refresh_uri);
 BufferPtr loadHTMLBuffer(URLFile *f, BufferPtr newBuf);

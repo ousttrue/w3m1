@@ -1,5 +1,6 @@
 #include "html_processor.h"
 #include "textarea.h"
+#include "formselect.h"
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -63,22 +64,6 @@ Str process_n_form(void)
     return nullptr;
 }
 
-static Str cur_select;
-static Str select_str;
-static int select_is_multiple;
-static int n_selectitem;
-static Str cur_option;
-static Str cur_option_value;
-static Str cur_option_label;
-static int cur_option_selected;
-static int cur_status;
-#ifdef MENU_SELECT
-/* menu based <select>  */
-FormSelectOption *select_option;
-static int max_select = MAX_SELECT;
-static int n_select;
-static int cur_option_maxwidth;
-#endif /* MENU_SELECT */
 
 static CharacterEncodingScheme cur_document_charset;
 static int cur_iseq;
@@ -86,71 +71,31 @@ static int cur_iseq;
 static void
 print_internal_information(struct html_feed_environ *henv)
 {
-    int i;
-    Str s;
     TextLineList *tl = newTextLineList();
 
-    s = Strnew("<internal>");
-    pushTextLine(tl, newTextLine(s, 0));
-    if (henv->title)
     {
-        s = Strnew_m_charp("<title_alt title=\"",
-                           html_quote(henv->title), "\">");
+        auto s = Strnew("<internal>");
         pushTextLine(tl, newTextLine(s, 0));
-    }
-#if 0
-    if (form_max >= 0) {
-        FormList *fp;
-        for (i = 0; i <= form_max; i++) {
-            fp = forms[i];
-            s = Sprintf("<form_int fid=\"%d\" action=\"%s\" method=\"%s\"",
-                        i, html_quote(fp->action->ptr),
-                        (fp->method == FORM_METHOD_POST) ? "post"
-                        : ((fp->method ==
-                            FORM_METHOD_INTERNAL) ? "internal" : "get"));
-            if (fp->target)
-                s->Push( Sprintf(" target=\"%s\"", html_quote(fp->target)));
-            if (fp->enctype == FORM_ENCTYPE_MULTIPART)
-                s->Push( " enctype=\"multipart/form-data\"");
-#ifdef USE_M17N
-            if (fp->charset)
-                s->Push( Sprintf(" accept-charset=\"%s\"",
-                                  html_quote(fp->charset)));
-#endif
-            s->Push( ">");
-            pushTextLine(tl, newTextLine(s, 0));
-        }
-    }
-#endif
-#ifdef MENU_SELECT
-    if (n_select > 0)
-    {
-        FormSelectOptionItem *ip;
-        for (i = 0; i < n_select; i++)
+        if (henv->title)
         {
-            s = Sprintf("<select_int selectnumber=%d>", i);
-            pushTextLine(tl, newTextLine(s, 0));
-            for (ip = select_option[i].first; ip; ip = ip->next)
-            {
-                s = Sprintf("<option_int value=\"%s\" label=\"%s\"%s>",
-                            html_quote(ip->value ? ip->value->ptr : ip->label->ptr),
-                            html_quote(ip->label->ptr),
-                            ip->checked ? " selected" : "");
-                pushTextLine(tl, newTextLine(s, 0));
-            }
-            s = Strnew("</select_int>");
+            s = Strnew_m_charp("<title_alt title=\"",
+                               html_quote(henv->title), "\">");
             pushTextLine(tl, newTextLine(s, 0));
         }
     }
-#endif /* MENU_SELECT */
 
+    get_formselect()->print_internal(tl);
     get_textarea()->print_internal(tl);
 
-    s = Strnew("</internal>");
-    pushTextLine(tl, newTextLine(s, 0));
+    {
+        auto s = Strnew("</internal>");
+        pushTextLine(tl, newTextLine(s, 0));
+    }
 
     if (henv->buf)
+    {
         appendTextLineList(henv->buf, tl);
+    }
     else if (henv->f)
     {
         TextLineListItem *p;
@@ -162,78 +107,6 @@ print_internal_information(struct html_feed_environ *henv)
 ///
 /// feed
 ///
-void feed_select(char *str)
-{
-    Str tmp = Strnew();
-    int prev_status = cur_status;
-    static int prev_spaces = -1;
-
-    if (cur_select == nullptr)
-        return;
-    while (read_token(tmp, &str, &cur_status, 0, 0))
-    {
-        if (cur_status != R_ST_NORMAL || prev_status != R_ST_NORMAL)
-            continue;
-        const char *p = tmp->ptr;
-        if (tmp->ptr[0] == '<' && tmp->Back() == '>')
-        {
-            struct parsed_tag *tag;
-            char *q;
-            if (!(tag = parse_tag(&p, FALSE)))
-                continue;
-            switch (tag->tagid)
-            {
-            case HTML_OPTION:
-                process_option();
-                cur_option = Strnew();
-                if (tag->TryGetAttributeValue(ATTR_VALUE, &q))
-                    cur_option_value = Strnew(q);
-                else
-                    cur_option_value = nullptr;
-                if (tag->TryGetAttributeValue(ATTR_LABEL, &q))
-                    cur_option_label = Strnew(q);
-                else
-                    cur_option_label = nullptr;
-                cur_option_selected = tag->HasAttribute(ATTR_SELECTED);
-                prev_spaces = -1;
-                break;
-            case HTML_N_OPTION:
-                /* do nothing */
-                break;
-            default:
-                /* never happen */
-                break;
-            }
-        }
-        else if (cur_option)
-        {
-            while (*p)
-            {
-                if (IS_SPACE(*p) && prev_spaces != 0)
-                {
-                    p++;
-                    if (prev_spaces > 0)
-                        prev_spaces++;
-                }
-                else
-                {
-                    if (IS_SPACE(*p))
-                        prev_spaces = 1;
-                    else
-                        prev_spaces = 0;
-                    if (*p == '&')
-                    {
-                        auto [pos, cmd] = getescapecmd(p, w3mApp::Instance().InnerCharset);
-                        p = const_cast<char *>(pos);
-                        cur_option->Push(cmd);
-                    }
-                    else
-                        cur_option->Push(*(p++));
-                }
-            }
-        }
-    }
-}
 
 #define w3m_halfdump (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
 
@@ -504,120 +377,6 @@ Str process_input(struct parsed_tag *tag)
         tmp->Push("</pre_int>");
     }
     return tmp;
-}
-
-Str process_select(struct parsed_tag *tag)
-{
-    Str tmp = nullptr;
-    if (cur_form_id() < 0)
-    {
-        auto s = "<form_int method=internal action=none>";
-        tmp = process_form(parse_tag(&s, TRUE));
-    }
-
-    auto p = "";
-    tag->TryGetAttributeValue(ATTR_NAME, &p);
-    cur_select = Strnew(p);
-    select_is_multiple = tag->HasAttribute(ATTR_MULTIPLE);
-
-#ifdef MENU_SELECT
-    if (!select_is_multiple)
-    {
-        select_str = Strnew("<pre_int>");
-        if (displayLinkNumber)
-            select_str->Push(getLinkNumberStr(0));
-        select_str->Push(Sprintf("[<input_alt hseq=\"%d\" "
-                                 "fid=\"%d\" type=select name=\"%s\" selectnumber=%d",
-                                 cur_hseq++, cur_form_id(), html_quote(p), n_select));
-        select_str->Push(">");
-        if (n_select == max_select)
-        {
-            max_select *= 2;
-            select_option =
-                New_Reuse(FormSelectOption, select_option, max_select);
-        }
-        select_option[n_select].first = nullptr;
-        select_option[n_select].last = nullptr;
-        cur_option_maxwidth = 0;
-    }
-    else
-#endif /* MENU_SELECT */
-        select_str = Strnew();
-    cur_option = nullptr;
-    cur_status = R_ST_NORMAL;
-    n_selectitem = 0;
-    return tmp;
-}
-
-Str process_n_select(void)
-{
-    if (cur_select == nullptr)
-        return nullptr;
-    process_option();
-#ifdef MENU_SELECT
-    if (!select_is_multiple)
-    {
-        if (select_option[n_select].first)
-        {
-            FormItemList sitem;
-            chooseSelectOption(&sitem, select_option[n_select].first);
-            select_str->Push(textfieldrep(sitem.label, cur_option_maxwidth));
-        }
-        select_str->Push("</input_alt>]</pre_int>");
-        n_select++;
-    }
-    else
-#endif /* MENU_SELECT */
-        select_str->Push("<br>");
-    cur_select = nullptr;
-    n_selectitem = 0;
-    return select_str;
-}
-
-void process_option(void)
-{
-    char begin_char = '[', end_char = ']';
-    int len;
-
-    if (cur_select == nullptr || cur_option == nullptr)
-        return;
-    while (cur_option->Size() > 0 && IS_SPACE(cur_option->Back()))
-        cur_option->Pop(1);
-    if (cur_option_value == nullptr)
-        cur_option_value = cur_option;
-    if (cur_option_label == nullptr)
-        cur_option_label = cur_option;
-#ifdef MENU_SELECT
-    if (!select_is_multiple)
-    {
-        len = get_Str_strwidth(cur_option_label);
-        if (len > cur_option_maxwidth)
-            cur_option_maxwidth = len;
-        addSelectOption(&select_option[n_select],
-                        cur_option_value,
-                        cur_option_label, cur_option_selected);
-        return;
-    }
-#endif /* MENU_SELECT */
-    if (!select_is_multiple)
-    {
-        begin_char = '(';
-        end_char = ')';
-    }
-    select_str->Push(Sprintf("<br><pre_int>%c<input_alt hseq=\"%d\" "
-                             "fid=\"%d\" type=%s name=\"%s\" value=\"%s\"",
-                             begin_char, cur_hseq++, cur_form_id(),
-                             select_is_multiple ? "checkbox" : "radio",
-                             html_quote(cur_select->ptr),
-                             html_quote(cur_option_value->ptr)));
-    if (cur_option_selected)
-        select_str->Push(" checked>*</input_alt>");
-    else
-        select_str->Push("> </input_alt>");
-    select_str->Push(end_char);
-    select_str->Push(html_quote(cur_option_label->ptr));
-    select_str->Push("</pre_int>");
-    n_selectitem++;
 }
 
 #define IMG_SYMBOL UL_SYMBOL(12)
@@ -1031,10 +790,11 @@ private:
     Anchor *a_img = nullptr;
     Anchor *a_form = nullptr;
 
-    HtmlTextArea *g_tl;
+    HtmlTextArea *g_ta;
     std::vector<Anchor *> a_textarea;
 
-    Anchor **a_select = nullptr;
+    FormSelect *g_fs;
+    std::vector<Anchor *> a_select;
 
     HtmlTags internal = HTML_UNKNOWN;
 
@@ -1042,18 +802,11 @@ private:
     std::vector<struct frameset *> frameset_s;
 
 public:
-    HtmlProcessor(HtmlTextArea *tl)
-    : g_tl(tl)
+    HtmlProcessor(HtmlTextArea *ta, FormSelect *fs)
+        : g_ta(ta), g_fs(fs)
     {
-        g_tl->clear(-1);
-
-        n_select = -1;
-        if (!max_select)
-        { /* halfload */
-            max_select = MAX_SELECT;
-            select_option = New_N(FormSelectOption, max_select);
-            a_select = New_N(Anchor *, max_select);
-        }
+        g_ta->clear(-1);
+        g_fs->clear(-1);
     }
 
     /* end of processing for one line */
@@ -1290,8 +1043,6 @@ public:
         {
             FormList *form;
             int top = 0, bottom = 0;
-            int textareanumber = -1;
-            int selectnumber = -1;
 
             auto hseq = 0;
             tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
@@ -1311,27 +1062,20 @@ public:
             }
             if (!form->target)
                 form->target = Strnew(buf->baseTarget)->ptr;
+
+            int textareanumber = -1;
             if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &textareanumber))
             {
-                g_tl->grow(textareanumber);
+                g_ta->grow(textareanumber);
             }
 
-            if (a_select &&
-                tag->TryGetAttributeValue(ATTR_SELECTNUMBER,
-                                          &selectnumber))
+            int selectnumber = -1;
+            if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &selectnumber))
             {
-                if (selectnumber >= max_select)
-                {
-                    max_select = 2 * selectnumber;
-                    select_option = New_Reuse(FormSelectOption,
-                                              select_option,
-                                              max_select);
-                    a_select = New_Reuse(Anchor *, a_select,
-                                         max_select);
-                }
+                g_fs->grow(selectnumber);
             }
 
-            auto fi = formList_addInput(form, tag, g_tl);
+            auto fi = formList_addInput(form, tag, g_ta);
             if (fi)
             {
                 Anchor a;
@@ -1359,8 +1103,14 @@ public:
                 a_textarea[textareanumber] = this->a_form;
             }
 
-            if (a_select && selectnumber >= 0)
+            if (selectnumber >= 0)
+            {
+                if (a_select.size() < selectnumber + 1)
+                {
+                    a_select.resize(selectnumber + 1);
+                }
                 a_select[selectnumber] = this->a_form;
+            }
 
             if (this->a_form)
             {
@@ -1528,16 +1278,15 @@ public:
         case HTML_TEXTAREA_INT:
         {
             int n_textarea = -1;
-            if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
-                                          &n_textarea))
+            if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &n_textarea))
             {
-                g_tl->set(n_textarea, Strnew());
+                g_ta->set(n_textarea, Strnew());
             }
             break;
         }
         case HTML_N_TEXTAREA_INT:
         {
-            auto [n, t] = g_tl->getCurrent();
+            auto [n, t] = g_ta->getCurrent();
             auto anchor = a_textarea[n];
             if (anchor)
             {
@@ -1547,39 +1296,44 @@ public:
             break;
         }
         case HTML_SELECT_INT:
-            if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &n_select) && n_select < max_select)
+        {
+            int n_select = -1;
+            if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &n_select))
             {
-                select_option[n_select].first = nullptr;
-                select_option[n_select].last = nullptr;
+                g_fs->set(n_select);
             }
-            else
-                n_select = -1;
             break;
+        }
         case HTML_N_SELECT_INT:
-            if (n_select >= 0)
+        {
+            auto [n_select, select] = g_fs->getCurrent();
+            if (select)
             {
                 FormItemList *item = a_select[n_select]->item;
-                item->select_option = select_option[n_select].first;
+                item->select_option = select->first;
                 chooseSelectOption(item, item->select_option);
                 item->init_selected = item->selected;
                 item->init_value = item->value;
                 item->init_label = item->label;
             }
             break;
+        }
         case HTML_OPTION_INT:
-            if (n_select >= 0)
+        {
+            auto [n_select, select] = g_fs->getCurrent();
+            if (select)
             {
                 auto q = "";
                 tag->TryGetAttributeValue(ATTR_LABEL, &q);
                 auto p = q;
                 tag->TryGetAttributeValue(ATTR_VALUE, &p);
                 auto selected = tag->HasAttribute(ATTR_SELECTED);
-                addSelectOption(&select_option[n_select],
+                addSelectOption(select,
                                 Strnew(p), Strnew(q),
                                 selected);
             }
             break;
-
+        }
         case HTML_TITLE_ALT:
         {
             char *p = nullptr;
@@ -1634,7 +1388,7 @@ public:
 using FeedFunc = Str (*)();
 static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 {
-    HtmlProcessor state(get_textarea());
+    HtmlProcessor state(get_textarea(), get_formselect());
 
     //
     // each line
@@ -1862,13 +1616,8 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     SetCurTitle(nullptr);
 
     get_textarea()->clear(0);
+    get_formselect()->clear(0);
 
-#ifdef MENU_SELECT
-    n_select = 0;
-    max_select = MAX_SELECT;
-    select_option = New_N(FormSelectOption, max_select);
-#endif /* MENU_SELECT */
-    cur_select = nullptr;
     form_sp = -1;
     form_max = -1;
     forms_size = 0;
@@ -1891,13 +1640,11 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     if (w3mApp::Instance().w3m_halfload)
     {
         newBuf->buffername = "---";
-#ifdef USE_M17N
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
-#endif
-        // max_textarea = 0;
-#ifdef MENU_SELECT
-        max_select = 0;
-#endif
+
+        get_textarea()->clear(0);
+        get_formselect()->clear(0);
+
         HTMLlineproc3(newBuf, f->stream);
         w3mApp::Instance().w3m_halfload = FALSE;
         return;

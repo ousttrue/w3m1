@@ -21,6 +21,7 @@
 #include "charset.h"
 #include "html/html_processor.h"
 #include "html/textarea.h"
+#include "html/formselect.h"
 
 extern FormSelectOption *select_option;
 
@@ -130,10 +131,10 @@ formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlTextArea *ta)
     item->readonly = tag->HasAttribute(ATTR_READONLY);
     if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &i))
         item->value = item->init_value = ta->get(i);
-#ifdef MENU_SELECT
+
     if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
-        item->select_option = select_option[i].first;
-#endif /* MENU_SELECT */
+        item->select_option = get_formselect()->get(i)->first;
+
     if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
         item->rows = atoi(p);
     if (item->type == FORM_UNKNOWN)
