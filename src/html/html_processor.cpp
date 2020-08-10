@@ -21,6 +21,7 @@
 #include "transport/istream.h"
 #include <signal.h>
 #include <setjmp.h>
+#include <vector>
 static JMP_BUF AbortLoading;
 static void KeyAbort(SIGNAL_ARG)
 {
@@ -43,7 +44,6 @@ Str getLinkNumberStr(int correction)
 }
 
 #define FORMSTACK_SIZE 10
-#define FRAMESTACK_SIZE 10
 
 #define INITIAL_FORM_SIZE 10
 static FormList **forms;
@@ -1149,14 +1149,16 @@ static int currentLn(BufferPtr buf)
 ///
 /// HTML parse state
 ///
-struct HtmlParser
+struct HtmlProcessor
 {
     Lineprop effect = P_UNKNOWN;
     Lineprop ex_effect = P_UNKNOWN;
     char symbol = '\0';
     union frameset_element *idFrame = nullptr;
-    int frameset_sp = -1;
-    struct frameset *frameset_s[FRAMESTACK_SIZE];
+
+    std::vector<struct frameset *> frameset_s;
+
+public:
     Anchor *a_href = nullptr, *a_img = nullptr, *a_form = nullptr;
     HtmlTags internal = HTML_UNKNOWN;
 };
@@ -1185,7 +1187,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         a_select = New_N(Anchor *, max_select);
     }
 
-    HtmlParser state;
+    HtmlProcessor state;
 
     //
     // each line
@@ -1403,10 +1405,10 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     {
                         state.effect |= PE_ANCHOR;
                         state.a_href = buf->href.Put(Anchor::CreateHref(p,
-                                                                  q ? q : "",
-                                                                  r ? r : "",
-                                                                  s ? s : "",
-                                                                  *t, currentLn(buf), out.len()));
+                                                                        q ? q : "",
+                                                                        r ? r : "",
+                                                                        s ? s : "",
+                                                                        *t, currentLn(buf), out.len()));
                         state.a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
                         state.a_href->slave = (hseq > 0) ? FALSE : TRUE;
                     }
@@ -1661,40 +1663,50 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     }
                     break;
                 }
+
+                //
+                // frame
+                //
                 case HTML_FRAMESET:
-                    state.frameset_sp++;
-                    if (state.frameset_sp >= FRAMESTACK_SIZE)
-                        break;
-                    state.frameset_s[state.frameset_sp] = newFrameSet(tag);
-                    if (state.frameset_s[state.frameset_sp] == nullptr)
-                        break;
-                    if (state.frameset_sp == 0)
+                {
+                    auto frame = newFrameSet(tag);
+                    if (frame)
                     {
-                        if (buf->frameset == nullptr)
+                        auto sp = state.frameset_s.size();
+                        state.frameset_s.push_back(frame);
+                        if (sp == 0)
                         {
-                            buf->frameset = state.frameset_s[state.frameset_sp];
+                            if (buf->frameset == nullptr)
+                            {
+                                buf->frameset = frame;
+                            }
+                            else
+                            {
+                                pushFrameTree(&(buf->frameQ), frame, nullptr);
+                            }
                         }
                         else
-                            pushFrameTree(&(buf->frameQ),
-                                          state.frameset_s[state.frameset_sp], nullptr);
+                        {
+                            addFrameSetElement(state.frameset_s[sp - 1], *(union frameset_element *)frame);
+                        }
                     }
-                    else
-                        addFrameSetElement(state.frameset_s[state.frameset_sp - 1],
-                                           *(union frameset_element *)&state.frameset_s[state.frameset_sp]);
                     break;
+                }
                 case HTML_N_FRAMESET:
-                    if (state.frameset_sp >= 0)
-                        state.frameset_sp--;
+                    if (!state.frameset_s.empty())
+                    {
+                        state.frameset_s.pop_back();
+                    }
                     break;
                 case HTML_FRAME:
-                    if (state.frameset_sp >= 0 && state.frameset_sp < FRAMESTACK_SIZE)
+                    if (!state.frameset_s.empty())
                     {
                         union frameset_element element;
-
                         element.body = newFrame(tag, buf);
-                        addFrameSetElement(state.frameset_s[state.frameset_sp], element);
+                        addFrameSetElement(state.frameset_s.back(), element);
                     }
                     break;
+
                 case HTML_BASE:
                 {
                     char *p = nullptr;
