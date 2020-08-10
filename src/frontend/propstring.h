@@ -2,7 +2,7 @@
 #include <wc.h>
 
 // Initial line length
-#define LINELEN 256 
+#define LINELEN 256
 
 using Linecolor = unsigned char;
 using Lineprop = unsigned short;
@@ -104,6 +104,12 @@ public:
     PropertiedString(Str str)
     {
         PropertiedString(str->ptr, str->Size());
+    }
+
+    void push(Lineprop prop, char c)
+    {
+        m_lineBuf.push_back(c);
+        m_propBuf.push_back(prop);
     }
 
     const char *lineBuf() const { return m_lineBuf.data(); }

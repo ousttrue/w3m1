@@ -255,7 +255,10 @@ union SingleCharacter
         uint32_t i = 0;
         for (; i < size; ++i, ++src)
         {
-            assert(*src);
+            if(!*src)
+            {
+                break;
+            }
             bytes[i] = *src;
         }
         for (; i < bytes.size(); ++i, ++src)

@@ -1152,35 +1152,15 @@ static int currentLn(BufferPtr buf)
         return 1;
 }
 
-static char *outc = NULL;
-static Lineprop *outp = NULL;
-static int out_size = 0;
-
-#define PPUSH(p, c)      \
-    {                    \
-        outp[pos] = (p); \
-        outc[pos] = (c); \
-        pos++;           \
-    }
-    
-#define PSIZE                                       \
-    if (out_size <= pos + 1)                        \
-    {                                               \
-        out_size = pos * 3 / 2;                     \
-        outc = New_Reuse(char, outc, out_size);     \
-        outp = New_Reuse(Lineprop, outp, out_size); \
-    }
-
+///
+/// 1行ごとに Line の構築と html タグを解釈する
+///
 using FeedFunc = Str(*)();
 static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 {
     Anchor *a_href = NULL, *a_img = NULL, *a_form = NULL;
     char *p, *q, *r, *s, *t;
     Lineprop mode;
-#ifdef DEBUG
-    FILE *debug = NULL;
-#endif
-
     struct frameset *frameset_s[FRAMESTACK_SIZE];
     int frameset_sp = -1;
     union frameset_element *idFrame = NULL;
@@ -1190,13 +1170,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
     int internal = 0;
     Anchor **a_textarea = NULL;
     Anchor **a_select = NULL;
-
-    if (out_size == 0)
-    {
-        out_size = LINELEN;
-        outc = NewAtom_N(char, out_size);
-        outp = NewAtom_N(Lineprop, out_size);
-    }
 
     n_textarea = -1;
     if (!max_textarea)
@@ -1214,11 +1187,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         a_select = New_N(Anchor *, max_select);
     }
 
-#ifdef DEBUG
-    if (w3m_debug)
-        debug = fopen("zzzerr", "a");
-#endif
-
     //
     // each line
     //
@@ -1227,14 +1195,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
     Str line;
     for(int nlines = 0; line = feed();)
     {
-#ifdef DEBUG
-        if (w3m_debug)
-        {
-            line->Puts(debug);
-            fputc('\n', debug);
-        }
-#endif
-
         if (n_textarea >= 0 && *(line->ptr) != '<')
         { /* halfload */
             textarea_str[n_textarea]->Push(line);
@@ -1254,10 +1214,9 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         //
         auto str = line->ptr;
         auto endp = str + line->Size();
-        int pos = 0;
+        PropertiedString out;
         while (str < endp)
         {
-            PSIZE;
             mode = get_mctype(*str);
             if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
             {
@@ -1268,39 +1227,38 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 p = buf[(int)symbol];
                 len = get_mclen(p);
                 mode = get_mctype(*p);
-                PPUSH(mode | effect | ex_efct(ex_effect), *(p++));
+              
+                out.push(mode | effect | ex_efct(ex_effect), *(p++));
                 if (--len)
                 {
                     mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
                     while (len--)
                     {
-                        PSIZE;
-                        PPUSH(mode | effect | ex_efct(ex_effect), *(p++));
+                        out.push(mode | effect | ex_efct(ex_effect), *(p++));
                     }
                 }
                 str += symbol_width;
             }
             else if (mode == PC_CTRL || mode == PC_UNDEF)
             {
-                PPUSH(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
                 str++;
             }
             else if (mode & PC_UNKNOWN)
             {
-                PPUSH(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
                 str += get_mclen(str);
             }
             else if (*str != '<' && *str != '&')
             {
                 int len = get_mclen(str);
-                PPUSH(mode | effect | ex_efct(ex_effect), *(str++));
+                out.push(mode | effect | ex_efct(ex_effect), *(str++));
                 if (--len)
                 {
                     mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
                     while (len--)
                     {
-                        PSIZE;
-                        PPUSH(mode | effect | ex_efct(ex_effect), *(str++));
+                        out.push(mode | effect | ex_efct(ex_effect), *(str++));
                     }
                 }
             }
@@ -1317,29 +1275,27 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 
                 while (*p)
                 {
-                    PSIZE;
                     mode = get_mctype(*p);
                     if (mode == PC_CTRL || mode == PC_UNDEF)
                     {
-                        PPUSH(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                        out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
                         p++;
                     }
                     else if (mode & PC_UNKNOWN)
                     {
-                        PPUSH(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                        out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
                         p += get_mclen(p);
                     }
                     else
                     {
                         int len = get_mclen(p);
-                        PPUSH(mode | effect | ex_efct(ex_effect), *(p++));
+                        out.push(mode | effect | ex_efct(ex_effect), *(p++));
                         if (--len)
                         {
                             mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
                             while (len--)
                             {
-                                PSIZE;
-                                PPUSH(mode | effect | ex_efct(ex_effect), *(p++));
+                                out.push(mode | effect | ex_efct(ex_effect), *(p++));
                             }
                         }
                     }
@@ -1403,7 +1359,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     if (tag->TryGetAttributeValue(ATTR_NAME, &id))
                     {
                         id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                        buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
+                        buf->name.Put(Anchor::CreateName(id, currentLn(buf), out.len()));
                     }
                     if (tag->TryGetAttributeValue(ATTR_HREF, &p))
                         p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
@@ -1417,7 +1373,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     tag->TryGetAttributeValue(ATTR_ACCESSKEY, &t);
                     tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
                     if (hseq > 0)
-                        buf->putHmarker(currentLn(buf), pos, hseq - 1);
+                        buf->putHmarker(currentLn(buf), out.len(), hseq - 1);
                     else if (hseq < 0)
                     {
                         int h = -hseq - 1;
@@ -1425,7 +1381,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             h < buf->hmarklist.size() &&
                             buf->hmarklist[h].invalid)
                         {
-                            buf->hmarklist[h].pos = pos;
+                            buf->hmarklist[h].pos = out.len();
                             buf->hmarklist[h].line = currentLn(buf);
                             buf->hmarklist[h].invalid = 0;
                             hseq = -hseq;
@@ -1433,7 +1389,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     }
                     if (id && idFrame)
                     {
-                        auto a = Anchor::CreateName(id, currentLn(buf), pos);
+                        auto a = Anchor::CreateName(id, currentLn(buf), out.len());
                         idFrame->body->nameList.Put(a);
                     }
                     if (p)
@@ -1443,7 +1399,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                                                   q ? q : "",
                                                                   r ? r : "",
                                                                   s ? s : "",
-                                                                  *t, currentLn(buf), pos));
+                                                                  *t, currentLn(buf), out.len()));
                         a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
                         a_href->slave = (hseq > 0) ? FALSE : TRUE;
                     }
@@ -1453,7 +1409,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     if (a_href)
                     {
                         a_href->end.line = currentLn(buf);
-                        a_href->end.pos = pos;
+                        a_href->end.pos = out.len();
                         if (a_href->start == a_href->end)
                         {
                             if (buf->hmarklist.size() &&
@@ -1487,7 +1443,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         tag->TryGetAttributeValue(ATTR_USEMAP, &q);
                         if (iseq > 0)
                         {
-                            buf->putHmarker(currentLn(buf), pos, iseq - 1);
+                            buf->putHmarker(currentLn(buf), out.len(), iseq - 1);
                         }
 
                         s = NULL;
@@ -1498,7 +1454,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         a_img = buf->img.Put(Anchor::CreateImage(
                             p,
                             s ? s : "",
-                            currentLn(buf), pos));
+                            currentLn(buf), out.len()));
 
                         a_img->hseq = iseq;
                         a_img->image = NULL;
@@ -1520,7 +1476,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             image->xoffset = xoffset;
                             image->yoffset = yoffset;
                             image->y = currentLn(buf) - top;
-                            if (image->xoffset < 0 && pos == 0)
+                            if (image->xoffset < 0 && out.len() == 0)
                                 image->xoffset = 0;
                             if (image->yoffset < 0 && image->y == 1)
                                 image->yoffset = 0;
@@ -1549,7 +1505,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     if (a_img)
                     {
                         a_img->end.line = currentLn(buf);
-                        a_img->end.pos = pos;
+                        a_img->end.pos = out.len();
                     }
                     a_img = NULL;
                     break;
@@ -1572,7 +1528,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     form = forms[form_id];
                     if (hseq > 0)
                     {
-                        int hpos = pos;
+                        int hpos = out.len();
                         if (*str == '[')
                             hpos++;
                         buf->putHmarker(currentLn(buf), hpos, hseq - 1);
@@ -1616,7 +1572,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         a.item = fi;
                         BufferPoint bp = {
                             line : currentLn(buf),
-                            pos : pos
+                            pos : out.len()
                         };
                         a.start = bp;
                         a.end = bp;
@@ -1648,7 +1604,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     if (a_form)
                     {
                         a_form->end.line = currentLn(buf);
-                        a_form->end.pos = pos;
+                        a_form->end.pos = out.len();
                         if (a_form->start.line == a_form->end.line &&
                             a_form->start.pos == a_form->end.pos)
                             a_form->hseq = -1;
@@ -1845,7 +1801,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 if (tag->TryGetAttributeValue(ATTR_ID, &id))
                 {
                     id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                    buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
+                    buf->name.Put(Anchor::CreateName(id, currentLn(buf), out.len()));
                 }
                 if (renderFrameSet &&
                     tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
@@ -1860,14 +1816,14 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 }
                 if (id && idFrame)
                 {
-                    auto a = Anchor::CreateName(id, currentLn(buf), pos);
+                    auto a = Anchor::CreateName(id, currentLn(buf), out.len());
                     idFrame->body->nameList.Put(a);
                 }
             }
         }
         /* end of processing for one line */
         if (!internal){
-            buf->AddNewLine(PropertiedString(outc, outp, pos), nlines);
+            buf->AddNewLine(out, nlines);
         }
         if (internal == HTML_N_INTERNAL)
             internal = 0;
