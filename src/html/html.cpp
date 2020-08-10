@@ -422,7 +422,7 @@ toVAlign(char *oval, int *valign)
 
 #define MAX_TAG_LEN 64
 
-bool parsed_tag::parse_attr(char **s, int nattr, bool internal)
+bool parsed_tag::parse_attr(const char **s, int nattr, bool internal)
 {
     auto q = *s;
     Str value = NULL, value_tmp = NULL;
@@ -552,7 +552,7 @@ bool parsed_tag::parse_attr(char **s, int nattr, bool internal)
     return true;
 }
 
-struct parsed_tag *parse_tag(char **s, int internal)
+struct parsed_tag *parse_tag(const char **s, int internal)
 {
     /* Parse tag name */
     auto q = (*s) + 1;
@@ -587,7 +587,7 @@ struct parsed_tag *parse_tag(char **s, int internal)
     return tag;
 }
 
-void parsed_tag::parse(char **s, bool internal)
+void parsed_tag::parse(const char **s, bool internal)
 {
     int nattr = TagMAP[this->tagid].max_attribute;
     if (nattr)

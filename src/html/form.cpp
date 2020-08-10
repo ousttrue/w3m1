@@ -43,8 +43,8 @@ struct
 /* *INDENT-ON* */
 
 FormList *
-newFormList(char *action, const char *method, char *charset, char *enctype,
-            char *target, char *name, FormList *_next)
+newFormList(const char *action, const char *method, const char *charset, const char *enctype,
+            const char *target, const char *name, FormList *_next)
 {
     FormList *l;
     Str a = Strnew(action ? action : "");
@@ -196,7 +196,7 @@ form2str(FormItemList *fi)
     return tmp->ptr;
 }
 
-int formtype(char *typestr)
+int formtype(const char *typestr)
 {
     int i;
     for (i = 0; _formtypetbl[i]; i++)

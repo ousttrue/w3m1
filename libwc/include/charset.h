@@ -2,7 +2,7 @@
 #include "ces.h"
 #include <string_view>
 
-CharacterEncodingScheme wc_guess_charset(char *charset, CharacterEncodingScheme orig);
+CharacterEncodingScheme wc_guess_charset(const char *charset, CharacterEncodingScheme orig);
 CharacterEncodingScheme wc_guess_charset_short(const char *charset, CharacterEncodingScheme orig);
 CharacterEncodingScheme wc_guess_locale_charset(std::string_view locale, CharacterEncodingScheme orig);
 CharacterEncodingScheme wc_charset_to_ces(const char *charset);

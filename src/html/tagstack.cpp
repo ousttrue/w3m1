@@ -2324,7 +2324,7 @@ table_start:
 
     while (*line != '\0')
     {
-        char *str, *p;
+        char *str;
         int is_tag = FALSE;
         int pre_mode = (obuf->table_level >= 0) ? tbl_mode->pre_mode : obuf->flag;
         int end_tag = (obuf->table_level >= 0) ? tbl_mode->end_tag : obuf->end_tag;
@@ -2371,7 +2371,7 @@ table_start:
         {
             if (is_tag)
             {
-                p = str;
+                const char *p = str;
                 if ((tag = parse_tag(&p, internal)))
                 {
                     if (tag->tagid == end_tag ||
@@ -2395,6 +2395,7 @@ table_start:
             }
             if (is_tag)
             {
+                char *p;
                 if (strncmp(str, "<!--", 4) && (p = strchr(str + 1, '<')))
                 {
                     str = Strnew_charp_n(str, p - str)->ptr;
@@ -2478,7 +2479,7 @@ table_start:
         if (is_tag)
         {
             /*** Beginning of a new tag ***/
-            if ((tag = parse_tag(&str, internal)))
+            if ((tag = parse_tag(const_cast<const char**>(&str), internal)))
                 cmd = tag->tagid;
             else
                 continue;

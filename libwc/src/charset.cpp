@@ -81,7 +81,7 @@ wc_codepage(int n)
 }
 
 CharacterEncodingScheme
-wc_guess_charset(char *charset, CharacterEncodingScheme orig)
+wc_guess_charset(const char *charset, CharacterEncodingScheme orig)
 {
     CharacterEncodingScheme guess;
 

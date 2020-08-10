@@ -298,9 +298,9 @@ struct parsed_tag : gc_cleanup
         : tagid(tag)
     {}
 
-    void parse(char **s, bool internal);
+    void parse(const char **s, bool internal);
 private:
-    bool parse_attr(char **s, int nattr, bool internal);
+    bool parse_attr(const char **s, int nattr, bool internal);
 };
 
-struct parsed_tag *parse_tag(char **s, int internal);
+struct parsed_tag *parse_tag(const char **s, int internal);

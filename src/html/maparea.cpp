@@ -244,7 +244,7 @@ follow_map_menu(BufferPtr buf, char *name, const Anchor *a_img, int x, int y)
     {
         a = (MapArea *)al->ptr;
         if (a)
-            label[i] = *a->alt ? a->alt : a->url;
+            label[i] = *a->alt ? const_cast<char *>(a->alt) : const_cast<char *>(a->url);
         else
             label[i] = "";
     }
@@ -317,18 +317,14 @@ follow_map_panel(BufferPtr buf, char *name)
 #endif
 
 MapArea *
-newMapArea(char *url, char *target, char *alt, char *shape, char *coords)
+newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords)
 {
     MapArea *a = New(MapArea);
-#ifdef USE_IMAGE
-    char *p;
-    int i, max;
-#endif
 
     a->url = url;
     a->target = target;
     a->alt = alt ? alt : (char *)"";
-#ifdef USE_IMAGE
+
     a->shape = SHAPE_RECT;
     if (shape)
     {
@@ -364,8 +360,11 @@ newMapArea(char *url, char *target, char *alt, char *shape, char *coords)
         a->coords = New_N(short, 3);
         a->ncoords = 3;
     }
-    max = a->ncoords;
-    for (i = 0, p = coords; (a->shape == SHAPE_POLY || i < a->ncoords) && *p;)
+
+    auto max = a->ncoords;
+    auto p = coords;
+    int i = 0;
+    for (; (a->shape == SHAPE_POLY || i < a->ncoords) && *p;)
     {
         while (IS_SPACE(*p))
             p++;
@@ -421,7 +420,7 @@ newMapArea(char *url, char *target, char *alt, char *shape, char *coords)
         a->center_x /= a->ncoords / 2;
         a->center_y /= a->ncoords / 2;
     }
-#endif
+
     return a;
 }
 

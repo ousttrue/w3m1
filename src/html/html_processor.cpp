@@ -59,7 +59,7 @@ Str process_n_form(void)
 {
     if (form_sp >= 0)
         form_sp--;
-    return NULL;
+    return nullptr;
 }
 
 static Str cur_select;
@@ -103,7 +103,7 @@ print_internal_information(struct html_feed_environ *henv)
     if (henv->title)
     {
         s = Strnew_m_charp("<title_alt title=\"",
-                           html_quote(henv->title), "\">", NULL);
+                           html_quote(henv->title), "\">");
         pushTextLine(tl, newTextLine(s, 0));
     }
 #if 0
@@ -183,15 +183,14 @@ void feed_select(char *str)
     Str tmp = Strnew();
     int prev_status = cur_status;
     static int prev_spaces = -1;
-    char *p;
 
-    if (cur_select == NULL)
+    if (cur_select == nullptr)
         return;
     while (read_token(tmp, &str, &cur_status, 0, 0))
     {
         if (cur_status != R_ST_NORMAL || prev_status != R_ST_NORMAL)
             continue;
-        p = tmp->ptr;
+        const char *p = tmp->ptr;
         if (tmp->ptr[0] == '<' && tmp->Back() == '>')
         {
             struct parsed_tag *tag;
@@ -206,11 +205,11 @@ void feed_select(char *str)
                 if (tag->TryGetAttributeValue(ATTR_VALUE, &q))
                     cur_option_value = Strnew(q);
                 else
-                    cur_option_value = NULL;
+                    cur_option_value = nullptr;
                 if (tag->TryGetAttributeValue(ATTR_LABEL, &q))
                     cur_option_label = Strnew(q);
                 else
-                    cur_option_label = NULL;
+                    cur_option_label = nullptr;
                 cur_option_selected = tag->HasAttribute(ATTR_SELECTED);
                 prev_spaces = -1;
                 break;
@@ -254,7 +253,7 @@ void feed_select(char *str)
 
 void feed_textarea(char *str)
 {
-    if (cur_textarea == NULL)
+    if (cur_textarea == nullptr)
         return;
     if (ignore_nl_textarea)
     {
@@ -289,24 +288,21 @@ void feed_textarea(char *str)
 ///
 Str process_form_int(struct parsed_tag *tag, int fid)
 {
-    char *p, *q, *r, *s, *tg, *n;
-
-    p = "get";
+    auto p = "get";
     tag->TryGetAttributeValue(ATTR_METHOD, &p);
-    q = "!CURRENT_URL!";
+    auto q = "!CURRENT_URL!";
     tag->TryGetAttributeValue(ATTR_ACTION, &q);
-    r = NULL;
-#ifdef USE_M17N
+    char *r = nullptr;
     if (tag->TryGetAttributeValue(ATTR_ACCEPT_CHARSET, &r))
         r = check_accept_charset(r);
     if (!r && tag->TryGetAttributeValue(ATTR_CHARSET, &r))
         r = check_charset(r);
-#endif
-    s = NULL;
+
+    char *s = nullptr;
     tag->TryGetAttributeValue(ATTR_ENCTYPE, &s);
-    tg = NULL;
+    char *tg = nullptr;
     tag->TryGetAttributeValue(ATTR_TARGET, &tg);
-    n = NULL;
+    char *n = nullptr;
     tag->TryGetAttributeValue(ATTR_NAME, &n);
 
     if (fid < 0)
@@ -353,37 +349,36 @@ Str process_form_int(struct parsed_tag *tag, int fid)
         return tmp;
     }
 
-    forms[fid] = newFormList(q, p, r, s, tg, n, NULL);
-    return NULL;
+    forms[fid] = newFormList(q, p, r, s, tg, n, nullptr);
+    return nullptr;
 }
 
 Str process_input(struct parsed_tag *tag)
 {
     int i, w, v, x, y, z, iw, ih;
-    char *q, *p, *r, *p2, *s;
-    Str tmp = NULL;
-    char *qq = "";
+    Str tmp = nullptr;
+    const char *qq = "";
     int qlen = 0;
 
     if (cur_form_id() < 0)
     {
-        char *s = "<form_int method=internal action=none>";
+        const char *s = "<form_int method=internal action=none>";
         tmp = process_form(parse_tag(&s, TRUE));
     }
-    if (tmp == NULL)
+    if (tmp == nullptr)
         tmp = Strnew();
 
-    p = "text";
+    auto p = "text";
     tag->TryGetAttributeValue(ATTR_TYPE, &p);
-    q = NULL;
+    const char *q = nullptr;
     tag->TryGetAttributeValue(ATTR_VALUE, &q);
-    r = "";
+    auto r = "";
     tag->TryGetAttributeValue(ATTR_NAME, &r);
     w = 20;
     tag->TryGetAttributeValue(ATTR_SIZE, &w);
     i = 20;
     tag->TryGetAttributeValue(ATTR_MAXLENGTH, &i);
-    p2 = NULL;
+    char *p2 = nullptr;
     tag->TryGetAttributeValue(ATTR_ALT, &p2);
     x = tag->HasAttribute(ATTR_CHECKED);
     y = tag->HasAttribute(ATTR_ACCEPT);
@@ -391,7 +386,7 @@ Str process_input(struct parsed_tag *tag)
 
     v = formtype(p);
     if (v == FORM_UNKNOWN)
-        return NULL;
+        return nullptr;
 
     if (!q)
     {
@@ -416,7 +411,7 @@ Str process_input(struct parsed_tag *tag)
     }
     /* VALUE attribute is not allowed in <INPUT TYPE=FILE> tag. */
     if (v == FORM_INPUT_FILE)
-        q = NULL;
+        q = nullptr;
     if (q)
     {
         qq = html_quote(q);
@@ -462,7 +457,8 @@ Str process_input(struct parsed_tag *tag)
             tmp->Push("<u>");
             break;
         case FORM_INPUT_IMAGE:
-            s = NULL;
+        {
+            char *s = nullptr;
             tag->TryGetAttributeValue(ATTR_SRC, &s);
             if (s)
             {
@@ -477,6 +473,7 @@ Str process_input(struct parsed_tag *tag)
                 tmp->Push("</input_alt></pre_int>");
                 return tmp;
             }
+        }
         case FORM_INPUT_SUBMIT:
         case FORM_INPUT_BUTTON:
         case FORM_INPUT_RESET:
@@ -557,16 +554,14 @@ Str process_input(struct parsed_tag *tag)
 
 Str process_select(struct parsed_tag *tag)
 {
-    Str tmp = NULL;
-    char *p;
-
+    Str tmp = nullptr;
     if (cur_form_id() < 0)
     {
-        char *s = "<form_int method=internal action=none>";
+        auto s = "<form_int method=internal action=none>";
         tmp = process_form(parse_tag(&s, TRUE));
     }
 
-    p = "";
+    auto p = "";
     tag->TryGetAttributeValue(ATTR_NAME, &p);
     cur_select = Strnew(p);
     select_is_multiple = tag->HasAttribute(ATTR_MULTIPLE);
@@ -587,14 +582,14 @@ Str process_select(struct parsed_tag *tag)
             select_option =
                 New_Reuse(FormSelectOption, select_option, max_select);
         }
-        select_option[n_select].first = NULL;
-        select_option[n_select].last = NULL;
+        select_option[n_select].first = nullptr;
+        select_option[n_select].last = nullptr;
         cur_option_maxwidth = 0;
     }
     else
 #endif /* MENU_SELECT */
         select_str = Strnew();
-    cur_option = NULL;
+    cur_option = nullptr;
     cur_status = R_ST_NORMAL;
     n_selectitem = 0;
     return tmp;
@@ -602,8 +597,8 @@ Str process_select(struct parsed_tag *tag)
 
 Str process_n_select(void)
 {
-    if (cur_select == NULL)
-        return NULL;
+    if (cur_select == nullptr)
+        return nullptr;
     process_option();
 #ifdef MENU_SELECT
     if (!select_is_multiple)
@@ -620,7 +615,7 @@ Str process_n_select(void)
     else
 #endif /* MENU_SELECT */
         select_str->Push("<br>");
-    cur_select = NULL;
+    cur_select = nullptr;
     n_selectitem = 0;
     return select_str;
 }
@@ -630,13 +625,13 @@ void process_option(void)
     char begin_char = '[', end_char = ']';
     int len;
 
-    if (cur_select == NULL || cur_option == NULL)
+    if (cur_select == nullptr || cur_option == nullptr)
         return;
     while (cur_option->Size() > 0 && IS_SPACE(cur_option->Back()))
         cur_option->Pop(1);
-    if (cur_option_value == NULL)
+    if (cur_option_value == nullptr)
         cur_option_value = cur_option;
-    if (cur_option_label == NULL)
+    if (cur_option_label == nullptr)
         cur_option_label = cur_option;
 #ifdef MENU_SELECT
     if (!select_is_multiple)
@@ -673,18 +668,17 @@ void process_option(void)
 
 Str process_textarea(struct parsed_tag *tag, int width)
 {
-    Str tmp = NULL;
-    char *p;
 #define TEXTAREA_ATTR_COL_MAX 4096
 #define TEXTAREA_ATTR_ROWS_MAX 4096
 
+    Str tmp = nullptr;
     if (cur_form_id() < 0)
     {
-        char *s = "<form_int method=internal action=none>";
+        auto s = "<form_int method=internal action=none>";
         tmp = process_form(parse_tag(&s, TRUE));
     }
 
-    p = "";
+    auto p = "";
     tag->TryGetAttributeValue(ATTR_NAME, &p);
     cur_textarea = Strnew(p);
     cur_textarea_size = 20;
@@ -732,8 +726,8 @@ Str process_n_textarea(void)
     Str tmp;
     int i;
 
-    if (cur_textarea == NULL)
-        return NULL;
+    if (cur_textarea == nullptr)
+        return nullptr;
 
     tmp = Strnew();
     tmp->Push(Sprintf("<pre_int>[<input_alt hseq=\"%d\" fid=\"%d\" "
@@ -751,7 +745,7 @@ Str process_n_textarea(void)
     tmp->Push("</u></input_alt>]</pre_int>\n");
     cur_hseq++;
     n_textarea++;
-    cur_textarea = NULL;
+    cur_textarea = nullptr;
 
     return tmp;
 }
@@ -759,7 +753,7 @@ Str process_n_textarea(void)
 #define IMG_SYMBOL UL_SYMBOL(12)
 Str process_img(struct parsed_tag *tag, int width)
 {
-    char *p, *q, *r, *r2 = NULL, *s, *t;
+    char *p, *q, *r, *r2 = nullptr, *t;
 #ifdef USE_IMAGE
     int w, i, nw, ni = 1, n, w0 = -1, i0 = -1;
     int align, xoffset, yoffset, top, bottom, ismap = 0;
@@ -773,9 +767,9 @@ Str process_img(struct parsed_tag *tag, int width)
     if (!tag->TryGetAttributeValue(ATTR_SRC, &p))
         return tmp;
     p = remove_space(p);
-    q = NULL;
+    q = nullptr;
     tag->TryGetAttributeValue(ATTR_ALT, &q);
-    if (!pseudoInlines && (q == NULL || (*q == '\0' && ignore_null_img_alt)))
+    if (!pseudoInlines && (q == nullptr || (*q == '\0' && ignore_null_img_alt)))
         return tmp;
     t = q;
     tag->TryGetAttributeValue(ATTR_TITLE, &t);
@@ -831,7 +825,7 @@ Str process_img(struct parsed_tag *tag, int width)
     else
 #endif
         tag->TryGetAttributeValue(ATTR_HEIGHT, &i);
-    r = NULL;
+    r = nullptr;
     tag->TryGetAttributeValue(ATTR_USEMAP, &r);
     if (tag->HasAttribute(ATTR_PRE_INT))
         ext_pre_int = TRUE;
@@ -858,7 +852,7 @@ Str process_img(struct parsed_tag *tag, int width)
     {
         Str tmp2;
         r2 = strchr(r, '#');
-        s = "<form_int method=internal action=map>";
+        auto s = "<form_int method=internal action=map>";
         tmp2 = process_form(parse_tag(&s, TRUE));
         if (tmp2)
             tmp->Push(tmp2);
@@ -884,7 +878,7 @@ Str process_img(struct parsed_tag *tag, int width)
             image.url = u.ToStr()->ptr;
             if (!uncompressed_file_type(u.file.c_str(), &image.ext))
                 image.ext = filename_extension(u.file.c_str(), TRUE);
-            image.cache = NULL;
+            image.cache = nullptr;
             image.width = w;
             image.height = i;
 
@@ -987,9 +981,9 @@ Str process_img(struct parsed_tag *tag, int width)
     }
 #endif
     tmp->Push(">");
-    if (q != NULL && *q == '\0' && ignore_null_img_alt)
-        q = NULL;
-    if (q != NULL)
+    if (q != nullptr && *q == '\0' && ignore_null_img_alt)
+        q = nullptr;
+    if (q != nullptr)
     {
         n = get_strwidth(q);
 #ifdef USE_IMAGE
@@ -1158,19 +1152,7 @@ static int currentLn(BufferPtr buf)
 using FeedFunc = Str (*)();
 static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 {
-    Anchor *a_href = NULL, *a_img = NULL, *a_form = NULL;
-    char *p, *q, *r, *s, *t;
-    Lineprop mode;
-    struct frameset *frameset_s[FRAMESTACK_SIZE];
-    int frameset_sp = -1;
-    union frameset_element *idFrame = NULL;
-    char *id = NULL;
-    int hseq, form_id;
-    char symbol = '\0';
-    int internal = 0;
-    Anchor **a_textarea = NULL;
-    Anchor **a_select = NULL;
-
+    Anchor **a_textarea = nullptr;
     n_textarea = -1;
     if (!max_textarea)
     { /* halfload */
@@ -1179,6 +1161,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         a_textarea = New_N(Anchor *, max_textarea);
     }
 
+    Anchor **a_select = nullptr;
     n_select = -1;
     if (!max_select)
     { /* halfload */
@@ -1193,6 +1176,12 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
     Lineprop effect = P_UNKNOWN;
     Lineprop ex_effect = P_UNKNOWN;
     Str line = nullptr;
+    char symbol = '\0';
+    union frameset_element *idFrame = nullptr;
+    int frameset_sp = -1;
+    struct frameset *frameset_s[FRAMESTACK_SIZE];
+    Anchor *a_href = nullptr, *a_img = nullptr, *a_form = nullptr;
+    int internal = 0;
     for (int nlines = 1; nlines != llimit; ++nlines)
     {
         if (!line)
@@ -1216,19 +1205,19 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         //
         // each char
         //
-        auto str = line->ptr;
+        const char* str = line->ptr;
         auto endp = str + line->Size();
         PropertiedString out;
         while (str < endp)
         {
-            mode = get_mctype(*str);
+            auto mode = get_mctype(*str);
             if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
             {
 
                 char **buf = set_symbol(symbol_width0);
                 int len;
 
-                p = buf[(int)symbol];
+                auto p = buf[(int)symbol];
                 len = get_mclen(p);
                 mode = get_mctype(*p);
 
@@ -1271,6 +1260,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 /* 
                  * & escape processing
                  */
+                char *p;
                 {
                     auto [pos, view] = getescapecmd(str, w3mApp::Instance().InnerCharset);
                     str = const_cast<char *>(pos);
@@ -1344,6 +1334,8 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     ex_effect &= ~PE_EX_STRIKE;
                     break;
                 case HTML_A:
+                {
+                    char *p;
                     if (renderFrameSet &&
                         tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
                     {
@@ -1352,14 +1344,12 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         {
                             idFrame = search_frame(renderFrameSet, p);
                             if (idFrame && idFrame->body->attr != F_BODY)
-                                idFrame = NULL;
+                                idFrame = nullptr;
                         }
                     }
-                    p = r = s = NULL;
-                    q = Strnew(buf->baseTarget)->ptr;
-                    t = "";
-                    hseq = 0;
-                    id = NULL;
+                    p = nullptr;
+                    auto q = Strnew(buf->baseTarget)->ptr;
+                    char *id = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_NAME, &id))
                     {
                         id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
@@ -1371,10 +1361,14 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                 ->ptr;
                     if (tag->TryGetAttributeValue(ATTR_TARGET, &q))
                         q = wc_conv_strict(q, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                    char *r = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_REFERER, &r))
                         r = wc_conv_strict(r, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                    char *s = nullptr;
                     tag->TryGetAttributeValue(ATTR_TITLE, &s);
+                    auto t = "";
                     tag->TryGetAttributeValue(ATTR_ACCESSKEY, &t);
+                    auto hseq = 0;
                     tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
                     if (hseq > 0)
                         buf->putHmarker(currentLn(buf), out.len(), hseq - 1);
@@ -1408,6 +1402,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         a_href->slave = (hseq > 0) ? FALSE : TRUE;
                     }
                     break;
+                }
                 case HTML_N_A:
                     effect &= ~PE_ANCHOR;
                     if (a_href)
@@ -1421,7 +1416,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                                 buf->hmarklist[a_href->hseq].invalid = 1;
                             a_href->hseq = -1;
                         }
-                        a_href = NULL;
+                        a_href = nullptr;
                     }
                     break;
 
@@ -1430,6 +1425,8 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     break;
 
                 case HTML_IMG_ALT:
+                {
+                    char *p = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_SRC, &p))
                     {
                         int w = -1, h = -1, iseq = 0, ismap = 0;
@@ -1443,14 +1440,14 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
                         if (tag->HasAttribute(ATTR_ISMAP))
                             ismap = 1;
-                        q = NULL;
+                        char *q = nullptr;
                         tag->TryGetAttributeValue(ATTR_USEMAP, &q);
                         if (iseq > 0)
                         {
                             buf->putHmarker(currentLn(buf), out.len(), iseq - 1);
                         }
 
-                        s = NULL;
+                        char *s = nullptr;
                         tag->TryGetAttributeValue(ATTR_TITLE, &s);
                         p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                            buf->document_charset)
@@ -1461,7 +1458,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             currentLn(buf), out.len()));
 
                         a_img->hseq = iseq;
-                        a_img->image = NULL;
+                        a_img->image = nullptr;
                         if (iseq > 0)
                         {
                             URL u;
@@ -1472,7 +1469,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             image->url = u.ToStr()->ptr;
                             if (!uncompressed_file_type(u.file.c_str(), &image->ext))
                                 image->ext = filename_extension(u.file.c_str(), TRUE);
-                            image->cache = NULL;
+                            image->cache = nullptr;
                             image->width =
                                 (w > MAX_IMAGE_SIZE) ? MAX_IMAGE_SIZE : w;
                             image->height =
@@ -1504,6 +1501,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     }
                     effect |= PE_IMAGE;
                     break;
+                }
                 case HTML_N_IMG_ALT:
                     effect &= ~PE_IMAGE;
                     if (a_img)
@@ -1511,7 +1509,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         a_img->end.line = currentLn(buf);
                         a_img->end.pos = out.len();
                     }
-                    a_img = NULL;
+                    a_img = nullptr;
                     break;
                 case HTML_INPUT_ALT:
                 {
@@ -1520,14 +1518,13 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     int textareanumber = -1;
                     int selectnumber = -1;
 
-                    hseq = 0;
-                    form_id = -1;
-
+                    auto hseq = 0;
                     tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
+                    auto form_id = -1;
                     tag->TryGetAttributeValue(ATTR_FID, &form_id);
                     tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &top);
                     tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
-                    if (form_id < 0 || form_id > form_max || forms == NULL)
+                    if (form_id < 0 || form_id > form_max || forms == nullptr)
                         break; /* outside of <form>..</form> */
                     form = forms[form_id];
                     if (hseq > 0)
@@ -1613,9 +1610,11 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             a_form->start.pos == a_form->end.pos)
                             a_form->hseq = -1;
                     }
-                    a_form = NULL;
+                    a_form = nullptr;
                     break;
                 case HTML_MAP:
+                {
+                    char *p = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_NAME, &p))
                     {
                         MapList *m = New(MapList);
@@ -1625,48 +1624,50 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         buf->maplist = m;
                     }
                     break;
+                }
                 case HTML_N_MAP:
                     /* nothing to do */
                     break;
                 case HTML_AREA:
-                    if (buf->maplist == NULL) /* outside of <map>..</map> */
+                {
+                    if (buf->maplist == nullptr) /* outside of <map>..</map> */
                         break;
+
+                    char *p = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_HREF, &p))
                     {
-                        MapArea *a;
                         p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                            buf->document_charset)
                                 ->ptr;
-                        t = NULL;
+                        char *t = nullptr;
                         tag->TryGetAttributeValue(ATTR_TARGET, &t);
-                        q = "";
+                        auto q = "";
                         tag->TryGetAttributeValue(ATTR_ALT, &q);
-                        r = NULL;
-                        s = NULL;
-
+                        char *r = nullptr;
                         tag->TryGetAttributeValue(ATTR_SHAPE, &r);
+                        char *s = nullptr;
                         tag->TryGetAttributeValue(ATTR_COORDS, &s);
-
-                        a = newMapArea(p, t, q, r, s);
+                        auto a = newMapArea(p, t, q, r, s);
                         pushValue(buf->maplist->area, (void *)a);
                     }
                     break;
+                }
                 case HTML_FRAMESET:
                     frameset_sp++;
                     if (frameset_sp >= FRAMESTACK_SIZE)
                         break;
                     frameset_s[frameset_sp] = newFrameSet(tag);
-                    if (frameset_s[frameset_sp] == NULL)
+                    if (frameset_s[frameset_sp] == nullptr)
                         break;
                     if (frameset_sp == 0)
                     {
-                        if (buf->frameset == NULL)
+                        if (buf->frameset == nullptr)
                         {
                             buf->frameset = frameset_s[frameset_sp];
                         }
                         else
                             pushFrameTree(&(buf->frameQ),
-                                          frameset_s[frameset_sp], NULL);
+                                          frameset_s[frameset_sp], nullptr);
                     }
                     else
                         addFrameSetElement(frameset_s[frameset_sp - 1],
@@ -1686,24 +1687,29 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     }
                     break;
                 case HTML_BASE:
+                {
+                    char *p = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_HREF, &p))
                     {
                         p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                            buf->document_charset)
                                 ->ptr;
-                        buf->baseURL.Parse(p, NULL);
+                        buf->baseURL.Parse(p, nullptr);
                     }
                     if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
                         buf->baseTarget =
                             wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
                     break;
+                }
                 case HTML_META:
-                    p = q = NULL;
+                {
+                    char *p = nullptr;
                     tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
+                    char *q = nullptr;
                     tag->TryGetAttributeValue(ATTR_CONTENT, &q);
                     if (p && q && !strcasecmp(p, "refresh") && MetaRefresh)
                     {
-                        Str tmp = NULL;
+                        Str tmp = nullptr;
                         int refresh_interval = getMetaRefreshParam(q, &tmp);
 
                         if (tmp)
@@ -1720,9 +1726,10 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                             buf->event = setAlarmEvent(buf->event,
                                                        refresh_interval,
                                                        AL_IMPLICIT,
-                                                       &reload, NULL);
+                                                       &reload, nullptr);
                     }
                     break;
+                }
                 case HTML_INTERNAL:
                     internal = HTML_INTERNAL;
                     break;
@@ -1730,9 +1737,12 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     internal = HTML_N_INTERNAL;
                     break;
                 case HTML_FORM_INT:
+                {
+                    int form_id;
                     if (tag->TryGetAttributeValue(ATTR_FID, &form_id))
                         process_form_int(tag, form_id);
                     break;
+                }
                 case HTML_TEXTAREA_INT:
                     if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
                                                   &n_textarea) &&
@@ -1755,8 +1765,8 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 case HTML_SELECT_INT:
                     if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &n_select) && n_select < max_select)
                     {
-                        select_option[n_select].first = NULL;
-                        select_option[n_select].last = NULL;
+                        select_option[n_select].first = nullptr;
+                        select_option[n_select].last = nullptr;
                     }
                     else
                         n_select = -1;
@@ -1775,12 +1785,11 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 case HTML_OPTION_INT:
                     if (n_select >= 0)
                     {
-                        int selected;
-                        q = "";
+                        auto q = "";
                         tag->TryGetAttributeValue(ATTR_LABEL, &q);
-                        p = q;
+                        auto p = q;
                         tag->TryGetAttributeValue(ATTR_VALUE, &p);
-                        selected = tag->HasAttribute(ATTR_SELECTED);
+                        auto selected = tag->HasAttribute(ATTR_SELECTED);
                         addSelectOption(&select_option[n_select],
                                         Strnew(p), Strnew(q),
                                         selected);
@@ -1788,40 +1797,49 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     break;
 
                 case HTML_TITLE_ALT:
+                {
+                    char *p = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_TITLE, &p))
                         buf->buffername = html_unquote(p, w3mApp::Instance().InnerCharset);
                     break;
+                }
                 case HTML_SYMBOL:
+                {
                     effect |= PC_SYMBOL;
+                    char *p = nullptr;
                     if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
                         symbol = (char)atoi(p);
                     break;
+                }
                 case HTML_N_SYMBOL:
                     effect &= ~PC_SYMBOL;
                     break;
                 }
 
-                id = NULL;
-                if (tag->TryGetAttributeValue(ATTR_ID, &id))
                 {
-                    id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                    buf->name.Put(Anchor::CreateName(id, currentLn(buf), out.len()));
-                }
-                if (renderFrameSet &&
-                    tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
-                {
-                    p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                    if (!idFrame || strcmp(idFrame->body->name, p))
+                    char *id = nullptr;
+                    if (tag->TryGetAttributeValue(ATTR_ID, &id))
                     {
-                        idFrame = search_frame(renderFrameSet, p);
-                        if (idFrame && idFrame->body->attr != F_BODY)
-                            idFrame = NULL;
+                        id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                        buf->name.Put(Anchor::CreateName(id, currentLn(buf), out.len()));
                     }
-                }
-                if (id && idFrame)
-                {
-                    auto a = Anchor::CreateName(id, currentLn(buf), out.len());
-                    idFrame->body->nameList.Put(a);
+                    char *p = nullptr;
+                    if (renderFrameSet &&
+                        tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
+                    {
+                        p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                        if (!idFrame || strcmp(idFrame->body->name, p))
+                        {
+                            idFrame = search_frame(renderFrameSet, p);
+                            if (idFrame && idFrame->body->attr != F_BODY)
+                                idFrame = nullptr;
+                        }
+                    }
+                    if (id && idFrame)
+                    {
+                        auto a = Anchor::CreateName(id, currentLn(buf), out.len());
+                        idFrame->body->nameList.Put(a);
+                    }
                 }
             }
         }
@@ -1844,9 +1862,9 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
         }
     }
 
-    for (form_id = 1; form_id <= form_max; form_id++)
+    for (int form_id = 1; form_id <= form_max; form_id++)
         forms[form_id]->next = forms[form_id - 1];
-    buf->formlist = (form_max >= 0) ? forms[form_max] : NULL;
+    buf->formlist = (form_max >= 0) ? forms[form_max] : nullptr;
     if (n_textarea)
         addMultirowsForm(buf, buf->formitem);
     addMultirowsImg(buf, buf->img);
@@ -1857,13 +1875,13 @@ static Str
 textlist_feed()
 {
     TextLine *p;
-    if (_tl_lp2 != NULL)
+    if (_tl_lp2 != nullptr)
     {
         p = _tl_lp2->ptr;
         _tl_lp2 = _tl_lp2->next;
         return p->line;
     }
-    return NULL;
+    return nullptr;
 }
 void HTMLlineproc2(BufferPtr buf, TextLineList *tl)
 {
@@ -1880,7 +1898,7 @@ file_feed()
     if (s->Size() == 0)
     {
         ISclose(_file_lp2);
-        return NULL;
+        return nullptr;
     }
     return s;
 }
@@ -1905,7 +1923,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 #ifdef USE_IMAGE
     int image_flag;
 #endif
-    MySignalHandler prevtrap = NULL;
+    MySignalHandler prevtrap = nullptr;
 
 #ifdef USE_M17N
     if (fmInitialized && graph_ok())
@@ -1924,7 +1942,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 
     SetCurTitle(nullptr);
     n_textarea = 0;
-    cur_textarea = NULL;
+    cur_textarea = nullptr;
     max_textarea = MAX_TEXTAREA;
     textarea_str = New_N(Str, max_textarea);
 #ifdef MENU_SELECT
@@ -1932,11 +1950,11 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     max_select = MAX_SELECT;
     select_option = New_N(FormSelectOption, max_select);
 #endif /* MENU_SELECT */
-    cur_select = NULL;
+    cur_select = nullptr;
     form_sp = -1;
     form_max = -1;
     forms_size = 0;
-    forms = NULL;
+    forms = nullptr;
     cur_hseq = 1;
 #ifdef USE_IMAGE
     cur_iseq = 1;
@@ -1967,7 +1985,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         return;
     }
 
-    init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, NULL, newBuf->width, 0);
+    init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, nullptr, newBuf->width, 0);
 
     if (w3m_halfdump)
         htmlenv1.f = stdout;
@@ -1977,7 +1995,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     auto success = TrapJmp([&]() {
 
 #ifdef USE_M17N
-        if (newBuf != NULL)
+        if (newBuf != nullptr)
         {
             if (newBuf->bufferprop & BP_FRAME)
                 charset = w3mApp::Instance().InnerCharset;
@@ -2091,10 +2109,10 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 BufferPtr
 loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
 {
-    FILE *src = NULL;
+    FILE *src = nullptr;
     Str tmp;
 
-    if (newBuf == NULL)
+    if (newBuf == nullptr)
         newBuf = newBuffer(INIT_BUFFER_WIDTH());
     if (newBuf->sourcefile.empty() &&
         (f->scheme != SCM_LOCAL || newBuf->mailcap))
@@ -2123,7 +2141,7 @@ loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
 BufferPtr
 loadHTMLString(Str page)
 {
-    MySignalHandler prevtrap = NULL;
+    MySignalHandler prevtrap = nullptr;
     BufferPtr newBuf;
 
     newBuf = newBuffer(INIT_BUFFER_WIDTH());
@@ -2132,7 +2150,7 @@ loadHTMLString(Str page)
         URLFile f(SCM_LOCAL, newStrStream(page));
 
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
-        loadHTMLstream(&f, newBuf, NULL, TRUE);
+        loadHTMLstream(&f, newBuf, nullptr, TRUE);
         newBuf->document_charset = WC_CES_US_ASCII;
 
         return true;

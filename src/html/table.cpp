@@ -777,7 +777,7 @@ do_refill(struct table *tbl, int row, int col, int maxlimit)
     for (l = orgdata->first; l != NULL; l = l->next) {
 	if (TAG_IS(l->ptr, "<table_alt", 10)) {
 	    int id = -1;
-	    char *p = l->ptr;
+	    const char *p = l->ptr;
 	    struct parsed_tag *tag;
 	    if ((tag = parse_tag(&p, TRUE)) != NULL)
 		tag->TryGetAttributeValue(ATTR_TID, &id);
@@ -3122,13 +3122,12 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 	   int width, int internal)
 {
     int i;
-    char *p;
     Str tmp;
     struct table_linfo *linfo = &tbl->linfo;
 
     if (*line == '<' && line[1] && REALLY_THE_BEGINNING_OF_A_TAG(line)) {
 	struct parsed_tag *tag;
-	p = line;
+	const char *p = line;
 	tag = parse_tag(&p, internal);
 	if (tag) {
 	    switch (feed_table_tag(tbl, line, mode, width, tag)) {
@@ -3176,7 +3175,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 	!(*line == '<' && line[strlen(line) - 1] == '>') &&
 	strchr(line, '&') != NULL) {
 	tmp = Strnew();
-	for (p = line; *p;) {
+	for (auto p = line; *p;) {
 	    char *q, *r;
 	    if (*p == '&') {
 		if (!strncasecmp(p, "&amp;", 5) ||
@@ -3251,6 +3250,7 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 	check_rowcol(tbl, mode);
 	while (*line) {
 	    int nl = FALSE;
+        char *p;
 	    if ((p = strchr(line, '\r')) || (p = strchr(line, '\n'))) {
 		if (*p == '\r' && p[1] == '\n')
 		    p++;

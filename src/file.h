@@ -20,7 +20,7 @@ void process_option(void);
 Str process_n_textarea(void);
 void feed_textarea(char *str);
 Str process_n_form(void);
-int getMetaRefreshParam(char *q, Str *refresh_uri);
+int getMetaRefreshParam(const char *q, Str *refresh_uri);
 BufferPtr loadHTMLBuffer(URLFile *f, BufferPtr newBuf);
 char *convert_size(clen_t size, int usefloat);
 char *convert_size2(clen_t size1, clen_t size2, int usefloat);

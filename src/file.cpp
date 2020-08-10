@@ -324,19 +324,16 @@ int is_boundary(unsigned char *ch1, unsigned char *ch2)
     return 1;
 }
 
-int getMetaRefreshParam(char *q, Str *refresh_uri)
+int getMetaRefreshParam(const char *q, Str *refresh_uri)
 {
-    int refresh_interval;
-    char *r;
-    Str s_tmp = NULL;
-
     if (q == NULL || refresh_uri == NULL)
         return 0;
 
-    refresh_interval = atoi(q);
+    int refresh_interval = atoi(q);
     if (refresh_interval < 0)
         return 0;
 
+    Str s_tmp = NULL;
     while (*q)
     {
         if (!strncasecmp(q, "url=", 4))
@@ -344,7 +341,7 @@ int getMetaRefreshParam(char *q, Str *refresh_uri)
             q += 4;
             if (*q == '\"') /* " */
                 q++;
-            r = q;
+            auto r = q;
             while (*r && !IS_SPACE(*r) && *r != ';')
                 r++;
             s_tmp = Strnew_charp_n(q, r - q);
