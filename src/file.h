@@ -20,7 +20,7 @@ BufferPtr loadHTMLBuffer(URLFile *f, BufferPtr newBuf);
 char *convert_size(clen_t size, int usefloat);
 char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte);
-BufferPtr loadHTMLString(Str page);
+
 
 BufferPtr loadImageBuffer(URLFile *uf, BufferPtr newBuf);
 void saveBuffer(BufferPtr buf, FILE *f, int cont);
@@ -77,7 +77,7 @@ void ldHist(void);
 #endif /* not USE_HISTORY */
 double log_like(int x);
 struct table *newTable(void);
-void pushdata(struct table *t, int row, int col, char *data);
+
 int visible_length(char *str);
 void print_item(struct table *t, int row, int col, int width, Str buf);
 
@@ -158,11 +158,6 @@ int
 is_plain_text_type(const char *type);
 int
 is_dump_text_type(const char *type);
-
-void HTMLlineproc2(BufferPtr buf, struct TextLineList *tl, class HSequence *seq);
-
-void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
-                    int internal);
 
 void SetMetaCharset(CharacterEncodingScheme ces);
 URL *GetCurBaseUrl();

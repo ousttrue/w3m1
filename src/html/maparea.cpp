@@ -10,6 +10,7 @@
 #include "frontend/tabbar.h"
 #include "html/anchor.h"
 #include "html/image.h"
+#include "html/html_processor.h"
 #include <math.h>
 
 MapList *

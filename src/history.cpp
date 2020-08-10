@@ -4,7 +4,7 @@
 #include "gc_helper.h"
 #include "file.h"
 #include "rc.h"
-
+#include "html/html_processor.h"
 #include "frontend/display.h"
 
 #ifdef USE_HISTORY

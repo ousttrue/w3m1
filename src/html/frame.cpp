@@ -11,7 +11,7 @@
 #include "entity.h"
 #include "transport/loader.h"
 #include "html/html_processor.h"
-#include "charset.h"
+#include "html/tokenizer.h"
 #include "transport/istream.h"
 #include <signal.h>
 #include <setjmp.h>
@@ -398,6 +398,48 @@ frame_download_source(struct frame_body *b, URL *currentURL,
         buf->frameset = popFrameTree(&(buf->frameQ));
     }
     return ret_frameset;
+}
+
+static Str correct_irrtag(int status)
+{
+    char c;
+    Str tmp = Strnew();
+
+    while (status != R_ST_NORMAL)
+    {
+        switch (status)
+        {
+        case R_ST_CMNT:   /* required "-->" */
+        case R_ST_NCMNT1: /* required "->" */
+            c = '-';
+            break;
+        case R_ST_NCMNT2:
+        case R_ST_NCMNT3:
+        case R_ST_IRRTAG:
+        case R_ST_CMNT1:
+        case R_ST_CMNT2:
+        case R_ST_TAG:
+        case R_ST_TAG0:
+        case R_ST_EQL: /* required ">" */
+        case R_ST_VALUE:
+            c = '>';
+            break;
+        case R_ST_QUOTE:
+            c = '\'';
+            break;
+        case R_ST_DQUOTE:
+            c = '"';
+            break;
+        case R_ST_AMP:
+            c = ';';
+            break;
+        default:
+            return tmp;
+        }
+        next_status(c, &status);
+        tmp->Push(c);
+    }
+    return tmp;
 }
 
 #define CASE_TABLE_TAG    \

@@ -128,3 +128,9 @@ inline bool IS_ENDT(char c)
 
 // #define EOL(l) (&(l)->ptr[(l)->length])
 // #define IS_EOL(p, l) ((p) == &(l)->ptr[(l)->length])
+
+/* is this '<' really means the beginning of a tag? */
+inline bool REALLY_THE_BEGINNING_OF_A_TAG(const char *p)
+{
+    return (IS_ALPHA(p[1]) || p[1] == '/' || p[1] == '!' || p[1] == '?' || p[1] == '\0' || p[1] == '_');
+}

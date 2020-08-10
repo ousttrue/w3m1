@@ -9,6 +9,7 @@
 #include "frontend/buffer.h"
 #include "html/maparea.h"
 #include "html/image.h"
+#include "html/html_processor.h"
 #include "transport/loader.h"
 #include "frontend/terms.h"
 

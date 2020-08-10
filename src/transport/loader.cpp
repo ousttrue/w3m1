@@ -20,6 +20,7 @@
 #include "mime/mailcap.h"
 #include "frontend/lineinput.h"
 #include "transport/istream.h"
+#include "html/html_processor.h"
 #include <assert.h>
 #include <memory>
 
