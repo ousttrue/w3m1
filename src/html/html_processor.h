@@ -19,4 +19,5 @@ int cur_form_id();
 struct Buffer;
 using BufferPtr = std::shared_ptr<Buffer>;
 void loadHTMLstream(struct URLFile *f, BufferPtr newBuf, FILE *src, int internal);
+BufferPtr loadHTMLBuffer(URLFile *f, BufferPtr newBuf);
 BufferPtr loadHTMLString(Str page);

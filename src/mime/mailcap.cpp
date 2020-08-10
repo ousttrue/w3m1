@@ -9,6 +9,7 @@
 #include "mime/mimetypes.h"
 #include "html/parsetag.h"
 #include "html/html.h"
+#include "html/html_processor.h"
 #include "transport/local.h"
 #include "transport/loader.h"
 #include "transport/url.h"

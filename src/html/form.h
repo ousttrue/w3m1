@@ -108,5 +108,6 @@ FormList *newFormList(const char *action, const char *method, const char *charse
                       const char *enctype, const char *target, const char *name,
                       FormList *_next);
 int formtype(const char *typestr);
+void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 
 #endif /* not FORM_H */

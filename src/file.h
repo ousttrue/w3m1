@@ -16,7 +16,7 @@ int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
 Str process_n_form(void);
 int getMetaRefreshParam(const char *q, Str *refresh_uri);
-BufferPtr loadHTMLBuffer(URLFile *f, BufferPtr newBuf);
+
 char *convert_size(clen_t size, int usefloat);
 char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte);
@@ -88,7 +88,7 @@ void pushTable(struct table *, struct table *);
 char *form2str(FormItemList *fi);
 
 
-void formResetBuffer(BufferPtr buf, AnchorList &formitem);
+
 
 void preFormUpdateBuffer(BufferPtr buf);
 Str textfieldrep(Str s, int width);

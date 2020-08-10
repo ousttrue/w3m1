@@ -1779,13 +1779,9 @@ loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
 /* 
  * loadHTMLString: read string and make new buffer
  */
-BufferPtr
-loadHTMLString(Str page)
+BufferPtr loadHTMLString(Str page)
 {
-    MySignalHandler prevtrap = nullptr;
-    BufferPtr newBuf;
-
-    newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
 
     auto success = TrapJmp([&]() {
         URLFile f(SCM_LOCAL, newStrStream(page));
@@ -1803,7 +1799,6 @@ loadHTMLString(Str page)
     }
 
     newBuf->CurrentAsLast();
-
     newBuf->type = "text/html";
     newBuf->real_type = newBuf->type;
 

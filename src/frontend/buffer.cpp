@@ -20,6 +20,8 @@
 #include "mime/mimetypes.h"
 #include "charset.h"
 #include "html/html.h"
+#include "html/form.h"
+#include "html/html_processor.h"
 #include "frontend/terms.h"
 #include "transport/istream.h"
 #include <iostream>
