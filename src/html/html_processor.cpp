@@ -1160,7 +1160,9 @@ private:
     Anchor *a_href = nullptr;
     Anchor *a_img = nullptr;
     Anchor *a_form = nullptr;
-    Anchor **a_textarea = nullptr;
+
+    std::vector<Anchor *> a_textarea;
+
     Anchor **a_select = nullptr;
 
     HtmlTags internal = HTML_UNKNOWN;
@@ -1176,7 +1178,6 @@ public:
         { /* halfload */
             max_textarea = MAX_TEXTAREA;
             textarea_str = New_N(Str, max_textarea);
-            a_textarea = New_N(Anchor *, max_textarea);
         }
 
         n_select = -1;
@@ -1443,17 +1444,13 @@ public:
             }
             if (!form->target)
                 form->target = Strnew(buf->baseTarget)->ptr;
-            if (a_textarea &&
-                tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
-                                          &textareanumber))
+            if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &textareanumber))
             {
                 if (textareanumber >= max_textarea)
                 {
                     max_textarea = 2 * textareanumber;
                     textarea_str = New_Reuse(Str, textarea_str,
                                              max_textarea);
-                    a_textarea = New_Reuse(Anchor *, a_textarea,
-                                           max_textarea);
                 }
             }
 
@@ -1491,8 +1488,14 @@ public:
                 this->a_form = nullptr;
             }
 
-            if (a_textarea && textareanumber >= 0)
+            if (textareanumber >= 0)
+            {
+                if (a_textarea.size() < textareanumber + 1)
+                {
+                    a_textarea.resize(textareanumber + 1);
+                }
                 a_textarea[textareanumber] = this->a_form;
+            }
 
             if (a_select && selectnumber >= 0)
                 a_select[selectnumber] = this->a_form;
