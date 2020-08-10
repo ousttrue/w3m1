@@ -8,6 +8,7 @@
 #include "myctype.h"
 #include "w3m.h"
 #include "file.h"
+#include "html_sequence.h"
 
 void FormSelect::clear(int n)
 {
@@ -75,8 +76,7 @@ std::pair<int, FormSelectOption *> FormSelect::getCurrent()
     return {n_select, &select_option[n_select]};
 }
 
-extern int cur_hseq;
-Str FormSelect::process_select(struct parsed_tag *tag)
+Str FormSelect::process_select(struct parsed_tag *tag, HSequence *seq)
 {
     Str tmp = nullptr;
     if (cur_form_id() < 0)
@@ -94,10 +94,10 @@ Str FormSelect::process_select(struct parsed_tag *tag)
     {
         select_str = Strnew("<pre_int>");
         if (displayLinkNumber)
-            select_str->Push(getLinkNumberStr(0));
+            select_str->Push(seq->GetLinkNumberStr(0));
         select_str->Push(Sprintf("[<input_alt hseq=\"%d\" "
                                  "fid=\"%d\" type=select name=\"%s\" selectnumber=%d",
-                                 cur_hseq++, cur_form_id(), html_quote(p), n_select));
+                                 seq->Increment(), cur_form_id(), html_quote(p), n_select));
         select_str->Push(">");
         if (n_select == max_select)
         {
@@ -120,7 +120,7 @@ Str FormSelect::process_select(struct parsed_tag *tag)
     return tmp;
 }
 
-void FormSelect::feed_select(char *str)
+void FormSelect::feed_select(char *str, HSequence *seq)
 {
     Str tmp = Strnew();
     int prev_status = cur_status;
@@ -142,7 +142,7 @@ void FormSelect::feed_select(char *str)
             switch (tag->tagid)
             {
             case HTML_OPTION:
-                process_option();
+                process_option(seq);
                 cur_option = Strnew();
                 if (tag->TryGetAttributeValue(ATTR_VALUE, &q))
                     cur_option_value = Strnew(q);
@@ -193,11 +193,11 @@ void FormSelect::feed_select(char *str)
     }
 }
 
-Str FormSelect::process_n_select(void)
+Str FormSelect::process_n_select(HSequence *seq)
 {
     if (cur_select == nullptr)
         return nullptr;
-    process_option();
+    process_option(seq);
 
     if (!select_is_multiple)
     {
@@ -220,7 +220,7 @@ Str FormSelect::process_n_select(void)
     return select_str;
 }
 
-void FormSelect::process_option(void)
+void FormSelect::process_option(HSequence *seq)
 {
     char begin_char = '[', end_char = ']';
     int len;
@@ -252,7 +252,7 @@ void FormSelect::process_option(void)
     }
     select_str->Push(Sprintf("<br><pre_int>%c<input_alt hseq=\"%d\" "
                              "fid=\"%d\" type=%s name=\"%s\" value=\"%s\"",
-                             begin_char, cur_hseq++, cur_form_id(),
+                             begin_char, seq->Increment(), cur_form_id(),
                              select_is_multiple ? "checkbox" : "radio",
                              html_quote(cur_select->ptr),
                              html_quote(cur_option_value->ptr)));

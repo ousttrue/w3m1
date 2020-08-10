@@ -81,16 +81,12 @@ void pushdata(struct table *t, int row, int col, char *data);
 int visible_length(char *str);
 void print_item(struct table *t, int row, int col, int width, Str buf);
 void print_sep(struct table *t, int row, int type, int maxcol, Str buf);
-void do_refill(struct table *tbl, int row, int col, int maxlimit);
+
 struct table *begin_table(int border, int spacing, int padding,
                           int vspace);
 void end_table(struct table *tbl);
 void check_rowcol(struct table *tbl, struct table_mode *mode);
 int minimum_length(char *line);
-int feed_table(struct table *tbl, char *line, struct table_mode *mode,
-               int width, int internal);
-void feed_table1(struct table *tbl, Str tok, struct table_mode *mode,
-                 int width);
 void pushTable(struct table *, struct table *);
 char *form2str(FormItemList *fi);
 

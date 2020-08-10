@@ -1,5 +1,6 @@
 #include "textarea.h"
 #include "html_processor.h"
+#include "html_sequence.h"
 #include "gc_helper.h"
 #include "textlist.h"
 #include "Str.h"
@@ -155,9 +156,7 @@ Str HtmlTextArea::process_textarea(struct parsed_tag *tag, int width)
     return tmp;
 }
 
-extern int cur_hseq;
-
-Str HtmlTextArea::process_n_textarea(void)
+Str HtmlTextArea::process_n_textarea(HSequence *seq)
 {
     if (cur_textarea == nullptr)
         return nullptr;
@@ -166,7 +165,7 @@ Str HtmlTextArea::process_n_textarea(void)
     tmp->Push(Sprintf("<pre_int>[<input_alt hseq=\"%d\" fid=\"%d\" "
                       "type=textarea name=\"%s\" size=%d rows=%d "
                       "top_margin=%d textareanumber=%d",
-                      cur_hseq, cur_form_id(),
+                      seq->Get(), cur_form_id(),
                       html_quote(cur_textarea->ptr),
                       cur_textarea_size, cur_textarea_rows,
                       cur_textarea_rows - 1, n_textarea));
@@ -176,7 +175,7 @@ Str HtmlTextArea::process_n_textarea(void)
     for (int i = 0; i < cur_textarea_size; i++)
         tmp->Push(' ');
     tmp->Push("</u></input_alt>]</pre_int>\n");
-    cur_hseq++;
+    seq->Increment();
     n_textarea++;
     cur_textarea = nullptr;
 

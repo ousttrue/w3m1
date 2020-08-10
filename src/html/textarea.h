@@ -24,19 +24,20 @@ public:
     Str get(int n) const;
     std::pair<int, Str> getCurrent() const;
     void print_internal(struct TextLineList *tl);
+
     // push text to current_textarea
     void feed_textarea(const char *str);
     Str process_textarea(struct parsed_tag *tag, int width);
-    Str process_n_textarea(void);
+    Str process_n_textarea(class HSequence *seq);
 };
 HtmlTextArea *get_textarea();
 inline Str process_textarea(struct parsed_tag *tag, int width)
 {
     return get_textarea()->process_textarea(tag, width);
 }
-inline Str process_n_textarea(void)
+inline Str process_n_textarea(HSequence *seq)
 {
-    return get_textarea()->process_n_textarea();
+    return get_textarea()->process_n_textarea(seq);
 }
 inline void feed_textarea(char *str)
 {

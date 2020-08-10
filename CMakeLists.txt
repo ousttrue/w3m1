@@ -95,6 +95,7 @@ add_executable(w3m
     src/html/html_processor.cpp
     src/html/textarea.cpp
     src/html/formselect.cpp
+    src/html/html_sequence.cpp
     src/html/table.cpp
     src/html/form.cpp
     src/html/parsetag.cpp

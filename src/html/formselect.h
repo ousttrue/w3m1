@@ -3,6 +3,7 @@
 #include <tuple>
 
 /* menu based <select>  */
+class HSequence;
 struct FormSelectOption;
 class FormSelect
 {
@@ -29,26 +30,28 @@ public:
     void set(int n);
     FormSelectOption *get(int n) const;
     std::pair<int, FormSelectOption *> getCurrent();
-    Str process_select(struct parsed_tag *tag);
-    void feed_select(char *str);
-    Str process_n_select(void);
-    void process_option(void);
+
+    Str process_n_select(HSequence *seq);
+    void process_option(HSequence *seq);
+    Str process_select(struct parsed_tag *tag, HSequence *seq);
+
+    void feed_select(char *str, HSequence *seq);
 };
 FormSelect *get_formselect();
 
-inline Str process_select(struct parsed_tag *tag)
+inline Str process_select(struct parsed_tag *tag, HSequence *seq)
 {
-    return get_formselect()->process_select(tag);
+    return get_formselect()->process_select(tag, seq);
 }
-inline Str process_n_select(void)
+inline Str process_n_select(HSequence *seq)
 {
-    return get_formselect()->process_n_select();
+    return get_formselect()->process_n_select(seq);
 }
-inline void feed_select(char *str)
+inline void feed_select(char *str, HSequence *seq)
 {
-    get_formselect()->feed_select(str);
+    get_formselect()->feed_select(str, seq);
 }
-inline void process_option(void)
+inline void process_option(HSequence *seq)
 {
-    get_formselect()->process_option();
+    get_formselect()->process_option(seq);
 }

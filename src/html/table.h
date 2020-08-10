@@ -155,3 +155,7 @@ struct table_mode
 /* End:                */
 
 void align(TextLine *lbuf, int width, int mode);
+
+int feed_table(struct table *tbl, char *line, struct table_mode *mode, int width, int internal, class HSequence *seq);
+void do_refill(struct table *tbl, int row, int col, int maxlimit, class HSequence *seq);
+void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, class HSequence *seq);

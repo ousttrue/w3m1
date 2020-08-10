@@ -1,4 +1,5 @@
 #include "html_processor.h"
+#include "html_sequence.h"
 #include "textarea.h"
 #include "formselect.h"
 #include "fm.h"
@@ -31,20 +32,6 @@ static void KeyAbort(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
-int cur_hseq;
-int GetCurHSeq()
-{
-    return cur_hseq;
-}
-void SetCurHSeq(int seq)
-{
-    cur_hseq = seq;
-}
-Str getLinkNumberStr(int correction)
-{
-    return Sprintf("[%d]", cur_hseq + correction);
-}
-
 #define FORMSTACK_SIZE 10
 
 #define INITIAL_FORM_SIZE 10
@@ -63,7 +50,6 @@ Str process_n_form(void)
         form_sp--;
     return nullptr;
 }
-
 
 static CharacterEncodingScheme cur_document_charset;
 static int cur_iseq;
@@ -180,7 +166,7 @@ Str process_form_int(struct parsed_tag *tag, int fid)
     return nullptr;
 }
 
-Str process_input(struct parsed_tag *tag)
+Str process_input(struct parsed_tag *tag, HSequence *seq)
 {
     int i, w, v, x, y, z, iw, ih;
     Str tmp = nullptr;
@@ -253,17 +239,19 @@ Str process_input(struct parsed_tag *tag)
     case FORM_INPUT_FILE:
     case FORM_INPUT_CHECKBOX:
         if (displayLinkNumber)
-            tmp->Push(getLinkNumberStr(0));
+            tmp->Push(seq->GetLinkNumberStr(0));
         tmp->Push('[');
         break;
     case FORM_INPUT_RADIO:
         if (displayLinkNumber)
-            tmp->Push(getLinkNumberStr(0));
+            tmp->Push(seq->GetLinkNumberStr(0));
         tmp->Push('(');
     }
+
     tmp->Push(Sprintf("<input_alt hseq=\"%d\" fid=\"%d\" type=%s "
                       "name=\"%s\" width=%d maxlength=%d value=\"%s\"",
-                      cur_hseq++, cur_form_id(), p, html_quote(r), w, i, qq));
+                      seq->Increment(), cur_form_id(), p, html_quote(r), w, i, qq));
+
     if (x)
         tmp->Push(" checked");
     if (y)
@@ -305,7 +293,7 @@ Str process_input(struct parsed_tag *tag)
         case FORM_INPUT_BUTTON:
         case FORM_INPUT_RESET:
             if (displayLinkNumber)
-                tmp->Push(getLinkNumberStr(-1));
+                tmp->Push(seq->GetLinkNumberStr(-1));
             tmp->Push("[");
             break;
         }
@@ -380,7 +368,7 @@ Str process_input(struct parsed_tag *tag)
 }
 
 #define IMG_SYMBOL UL_SYMBOL(12)
-Str process_img(struct parsed_tag *tag, int width)
+Str process_img(struct parsed_tag *tag, int width, HSequence *seq)
 {
     char *p, *q, *r, *r2 = nullptr, *t;
 #ifdef USE_IMAGE
@@ -491,7 +479,7 @@ Str process_img(struct parsed_tag *tag, int width)
         tmp->Push(html_quote((r2) ? r2 + 1 : r));
         tmp->Push(Sprintf("\"><input_alt hseq=\"%d\" fid=\"%d\" "
                           "type=submit no_effect=true>",
-                          cur_hseq++, cur_form_id));
+                          seq->Increment(), cur_form_id));
     }
 #ifdef USE_IMAGE
     if (use_image)
@@ -732,16 +720,16 @@ img_end:
     return tmp;
 }
 
-Str process_anchor(struct parsed_tag *tag, char *tagbuf)
+Str process_anchor(struct parsed_tag *tag, char *tagbuf, HSequence *seq)
 {
     if (tag->need_reconstruct)
     {
-        tag->SetAttributeValue(ATTR_HSEQ, Sprintf("%d", cur_hseq++)->ptr);
+        tag->SetAttributeValue(ATTR_HSEQ, Sprintf("%d", seq->Increment())->ptr);
         return tag->ToStr();
     }
     else
     {
-        Str tmp = Sprintf("<a hseq=\"%d\"", cur_hseq++);
+        Str tmp = Sprintf("<a hseq=\"%d\"", seq->Increment());
         tmp->Push(tagbuf + 2);
         return tmp;
     }
@@ -1622,8 +1610,9 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     form_max = -1;
     forms_size = 0;
     forms = nullptr;
-    cur_hseq = 1;
-#ifdef USE_IMAGE
+
+    HSequence seq;
+
     cur_iseq = 1;
     if (newBuf->image_flag)
         image_flag = newBuf->image_flag;
@@ -1635,7 +1624,6 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     {
         *GetCurBaseUrl() = *newBuf->BaseURL();
     }
-#endif
 
     if (w3mApp::Instance().w3m_halfload)
     {
@@ -1721,15 +1709,15 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 #if defined(USE_M17N) && defined(USE_IMAGE)
             cur_document_charset = charset;
 #endif
-            HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
+            HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal, &seq);
         }
         if (obuf.status != R_ST_NORMAL)
         {
             obuf.status = R_ST_EOL;
-            HTMLlineproc0("\n", &htmlenv1, internal);
+            HTMLlineproc0("\n", &htmlenv1, internal, &seq);
         }
         obuf.status = R_ST_NORMAL;
-        completeHTMLstream(&htmlenv1, &obuf);
+        completeHTMLstream(&htmlenv1, &obuf, &seq);
         flushline(&htmlenv1, &obuf, 0, 2, htmlenv1.limit);
         if (htmlenv1.title)
             newBuf->buffername = htmlenv1.title;
@@ -1739,7 +1727,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 
     if (!success)
     {
-        HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1);
+        HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1, &seq);
     }
     else
     {
