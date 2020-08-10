@@ -4,7 +4,7 @@
 #include "w3m.h"
 #include "frontend/terms.h"
 
-HSequence::HSequence()
+HtmlContext::HtmlContext()
 {
     if (fmInitialized && graph_ok())
     {
@@ -18,11 +18,11 @@ HSequence::HSequence()
     }
 }
 
-HSequence::~HSequence()
+HtmlContext::~HtmlContext()
 {
 }
 
-Str HSequence::GetLinkNumberStr(int correction)
+Str HtmlContext::GetLinkNumberStr(int correction)
 {
     return Sprintf("[%d]", cur_hseq + correction);
 }

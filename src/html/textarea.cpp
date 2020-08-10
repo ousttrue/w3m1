@@ -159,7 +159,7 @@ Str HtmlTextArea::process_textarea(struct parsed_tag *tag, int width)
     return tmp;
 }
 
-Str HtmlTextArea::process_n_textarea(HSequence *seq)
+Str HtmlTextArea::process_n_textarea(HtmlContext *seq)
 {
     if (cur_textarea == nullptr)
         return nullptr;

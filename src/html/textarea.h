@@ -26,14 +26,14 @@ public:
     // push text to current_textarea
     void feed_textarea(const char *str);
     Str process_textarea(struct parsed_tag *tag, int width);
-    Str process_n_textarea(class HSequence *seq);
+    Str process_n_textarea(class HtmlContext *seq);
 };
 HtmlTextArea *get_textarea();
 inline Str process_textarea(struct parsed_tag *tag, int width)
 {
     return get_textarea()->process_textarea(tag, width);
 }
-inline Str process_n_textarea(HSequence *seq)
+inline Str process_n_textarea(HtmlContext *seq)
 {
     return get_textarea()->process_n_textarea(seq);
 }

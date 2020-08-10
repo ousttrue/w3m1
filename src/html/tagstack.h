@@ -70,7 +70,7 @@ public:
 };
 
 void renderTable(struct table *t, int max_width,
-                 struct html_feed_environ *h_env, class HSequence *seq);
+                 struct html_feed_environ *h_env, class HtmlContext *seq);
 
 void push_render_image(Str str, int width, int limit,
                        struct html_feed_environ *h_env);
@@ -87,13 +87,13 @@ void save_fonteffect(struct html_feed_environ *h_env,
 void restore_fonteffect(struct html_feed_environ *h_env,
                         struct readbuffer *obuf);
 
-int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, class HSequence *seq);
-void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal, class HSequence *seq);
-inline void HTMLlineproc1(const char *x, html_feed_environ *y, class HSequence *seq)
+int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, class HtmlContext *seq);
+void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal, class HtmlContext *seq);
+inline void HTMLlineproc1(const char *x, html_feed_environ *y, class HtmlContext *seq)
 {
     HTMLlineproc0(x, y, true, seq);
 }
 void init_henv(struct html_feed_environ *, struct readbuffer *,
                struct environment *, int, TextLineList *, int, int);
-void completeHTMLstream(struct html_feed_environ *, struct readbuffer *, class HSequence *seq);
+void completeHTMLstream(struct html_feed_environ *, struct readbuffer *, class HtmlContext *seq);
 void SetCurTitle(Str title);

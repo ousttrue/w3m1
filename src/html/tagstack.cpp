@@ -1007,7 +1007,7 @@ void purgeline(struct html_feed_environ *h_env)
 }
 
 static void
-close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf, HSequence *seq)
+close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf, HtmlContext *seq)
 {
     if (obuf->anchor.url.size())
     {
@@ -1118,7 +1118,7 @@ ul_type(struct parsed_tag *tag, int default_type)
 
 #define REAL_WIDTH(w, limit) (((w) >= 0) ? (int)((w) / w3mApp::Instance().pixel_per_char) : -(w) * (limit) / 100)
 
-static Str process_hr(struct parsed_tag *tag, int width, int indent_width, HSequence *seq)
+static Str process_hr(struct parsed_tag *tag, int width, int indent_width, HtmlContext *seq)
 {
     Str tmp = Strnew("<nobr>");
     int w = 0;
@@ -1250,7 +1250,7 @@ static Str romanAlphabet(int n)
     return r;
 }
 
-int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSequence *seq)
+int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlContext *seq)
 {
     char *p, *q, *r;
     int i, w, x, y, z, count, width;
@@ -2306,7 +2306,7 @@ table_width(struct html_feed_environ *h_env, int table_level)
 //
 // * from loadHtmlStream
 //
-void HTMLlineproc0(const char *line, struct html_feed_environ *h_env, bool internal, HSequence *seq)
+void HTMLlineproc0(const char *line, struct html_feed_environ *h_env, bool internal, HtmlContext *seq)
 {
     Lineprop mode;
     HtmlTags cmd;
@@ -2743,7 +2743,7 @@ void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf,
     h_env->Initialize(buf, obuf, limit, envs, nenv);
 }
 
-void completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf, HSequence *seq)
+void completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf, HtmlContext *seq)
 {
     close_anchor(h_env, obuf, seq);
     if (obuf->img_alt)

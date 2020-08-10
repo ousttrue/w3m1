@@ -262,7 +262,7 @@ table_rowspan(struct table *t, int row, int col)
 }
 
 static int
-minimum_cellspacing(int border_mode, HSequence *seq)
+minimum_cellspacing(int border_mode, HtmlContext *seq)
 {
     switch (border_mode)
     {
@@ -279,7 +279,7 @@ minimum_cellspacing(int border_mode, HSequence *seq)
 }
 
 static int
-table_border_width(struct table *t, HSequence *seq)
+table_border_width(struct table *t, HtmlContext *seq)
 {
     switch (t->border_mode)
     {
@@ -675,7 +675,7 @@ void print_item(struct table *t, int row, int col, int width, Str buf)
 #define T_MIDDLE 1
 #define T_BOTTOM 2
 
-static void print_sep(struct table *t, int row, int type, int maxcol, Str buf, HSequence *seq)
+static void print_sep(struct table *t, int row, int type, int maxcol, Str buf, HtmlContext *seq)
 {
     int forbid;
     int rule_mode;
@@ -795,7 +795,7 @@ get_spec_cell_width(struct table *tbl, int row, int col)
     return w;
 }
 
-void do_refill(struct table *tbl, int row, int col, int maxlimit, HSequence *seq)
+void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *seq)
 {
     TextList *orgdata;
     TextListItem *l;
@@ -915,7 +915,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HSequence *seq
 }
 
 static int
-table_rule_width(struct table *t, HSequence *seq)
+table_rule_width(struct table *t, HtmlContext *seq)
 {
     if (t->border_mode == BORDER_NONE)
         return 1;
@@ -1004,7 +1004,7 @@ void check_maximum_width(struct table *t)
 
 #ifdef MATRIX
 static void
-set_integered_width(struct table *t, double *dwidth, short *iwidth, HSequence *seq)
+set_integered_width(struct table *t, double *dwidth, short *iwidth, HtmlContext *seq)
 {
     int i, j, k, n, bcol, ecol, step;
     short *indexarray;
@@ -1222,7 +1222,7 @@ static int
 check_compressible_cell(struct table *t, MAT *minv,
                         double *newwidth, double *swidth, short *cwidth,
                         double totalwidth, double *Sxx,
-                        int icol, int icell, double sxx, int corr, HSequence *seq)
+                        int icol, int icell, double sxx, int corr, HtmlContext *seq)
 {
     struct table_cell *cell = &t->cell;
     int i, j, k, m, bcol, ecol, span;
@@ -1321,7 +1321,7 @@ _end:
 }
 
 #define MAX_ITERATION 10
-int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, HSequence *seq)
+int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, HtmlContext *seq)
 {
     int i, j, k, m, bcol, ecol;
     int corr = 0;
@@ -1721,7 +1721,7 @@ void check_table_height(struct table *t)
 #define CHECK_FIXED 2
 
 static int
-get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, HSequence *seq)
+get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, HtmlContext *seq)
 {
 #ifdef __GNUC__
     short newwidth[t->maxcol + 1];
@@ -1781,7 +1781,7 @@ get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, HS
 #define fixed_table_width(t) \
     (get_table_width(t, t->fixed_width, t->cell.fixed_width, CHECK_MINIMUM, seq))
 
-static void renderCoTable(struct table *tbl, int maxlimit, HSequence *seq)
+static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
 {
     struct readbuffer obuf;
     struct html_feed_environ h_env;
@@ -1813,7 +1813,7 @@ static void renderCoTable(struct table *tbl, int maxlimit, HSequence *seq)
 }
 
 static void
-make_caption(struct table *t, struct html_feed_environ *h_env, HSequence *seq)
+make_caption(struct table *t, struct html_feed_environ *h_env, HtmlContext *seq)
 {
     if (t->caption->Size() <= 0)
         return;
@@ -1843,7 +1843,7 @@ make_caption(struct table *t, struct html_feed_environ *h_env, HSequence *seq)
     h_env->limit = limit;
 }
 
-void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env, HSequence *seq)
+void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env, HtmlContext *seq)
 {
     int i, j, w, r, h;
     Str renderbuf;
@@ -2152,7 +2152,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 #endif
 
 struct table *
-begin_table(int border, int spacing, int padding, int vspace, HSequence *seq)
+begin_table(int border, int spacing, int padding, int vspace, HtmlContext *seq)
 {
     struct table *t;
     int mincell = minimum_cellspacing(border, seq);
@@ -2231,7 +2231,7 @@ begin_table(int border, int spacing, int padding, int vspace, HSequence *seq)
     return t;
 }
 
-void end_table(struct table *tbl, HSequence *seq)
+void end_table(struct table *tbl, HtmlContext *seq)
 {
     struct table_cell *cell = &tbl->cell;
     int i, rulewidth = table_rule_width(tbl, seq);
@@ -2562,7 +2562,7 @@ feed_table_block_tag(struct table *tbl, const char *line, struct table_mode *mod
 }
 
 static void
-table_close_select(struct table *tbl, struct table_mode *mode, int width, HSequence *seq)
+table_close_select(struct table *tbl, struct table_mode *mode, int width, HtmlContext *seq)
 {
     Str tmp = process_n_select(seq);
     mode->pre_mode &= ~TBLM_INSELECT;
@@ -2571,7 +2571,7 @@ table_close_select(struct table *tbl, struct table_mode *mode, int width, HSeque
 }
 
 static void
-table_close_textarea(struct table *tbl, struct table_mode *mode, int width, HSequence *seq)
+table_close_textarea(struct table *tbl, struct table_mode *mode, int width, HtmlContext *seq)
 {
     Str tmp = process_n_textarea(seq);
     mode->pre_mode &= ~TBLM_INTXTA;
@@ -2628,7 +2628,7 @@ table_close_anchor0(struct table *tbl, struct table_mode *mode)
 
 static int
 feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
-               int width, struct parsed_tag *tag, HSequence *seq)
+               int width, struct parsed_tag *tag, HtmlContext *seq)
 {
     int cmd;
 #ifdef ID_EXT
@@ -3382,7 +3382,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 }
 
 int feed_table(struct table *tbl, char *line, struct table_mode *mode,
-               int width, int internal, HSequence *seq)
+               int width, int internal, HtmlContext *seq)
 {
     int i;
     Str tmp;
@@ -3571,7 +3571,7 @@ int feed_table(struct table *tbl, char *line, struct table_mode *mode,
     return -1;
 }
 
-void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, HSequence *seq)
+void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, HtmlContext *seq)
 {
     Str tokbuf;
     int status;

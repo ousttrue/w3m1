@@ -1,7 +1,7 @@
 #pragma once
 #include <wc.h>
 
-class HSequence
+class HtmlContext
 {
     CharacterEncodingScheme cur_document_charset;
 
@@ -11,8 +11,8 @@ class HSequence
     int symbol_width0 = 0;
 
 public:
-    HSequence();
-    ~HSequence();
+    HtmlContext();
+    ~HtmlContext();
 
     CharacterEncodingScheme CES() const { return cur_document_charset; }
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }

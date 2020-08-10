@@ -166,7 +166,7 @@ Str process_form_int(struct parsed_tag *tag, int fid)
     return nullptr;
 }
 
-Str process_input(struct parsed_tag *tag, HSequence *seq)
+Str process_input(struct parsed_tag *tag, HtmlContext *seq)
 {
     int i, w, v, x, y, z, iw, ih;
     Str tmp = nullptr;
@@ -368,7 +368,7 @@ Str process_input(struct parsed_tag *tag, HSequence *seq)
 }
 
 #define IMG_SYMBOL UL_SYMBOL(12)
-Str process_img(struct parsed_tag *tag, int width, HSequence *seq)
+Str process_img(struct parsed_tag *tag, int width, HtmlContext *seq)
 {
     char *p, *q, *r, *r2 = nullptr, *t;
 #ifdef USE_IMAGE
@@ -720,7 +720,7 @@ img_end:
     return tmp;
 }
 
-Str process_anchor(struct parsed_tag *tag, char *tagbuf, HSequence *seq)
+Str process_anchor(struct parsed_tag *tag, char *tagbuf, HtmlContext *seq)
 {
     if (tag->need_reconstruct)
     {
@@ -1374,7 +1374,7 @@ public:
 /// 1行ごとに Line の構築と html タグを解釈する
 ///
 using FeedFunc = Str (*)();
-static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HSequence *seq)
+static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HtmlContext *seq)
 {
     HtmlProcessor state(get_textarea(), get_formselect());
 
@@ -1545,7 +1545,7 @@ textlist_feed()
     }
     return nullptr;
 }
-static void HTMLlineproc2(BufferPtr buf, TextLineList *tl, HSequence *seq)
+static void HTMLlineproc2(BufferPtr buf, TextLineList *tl, HtmlContext *seq)
 {
     _tl_lp2 = tl->first;
     HTMLlineproc2body(buf, textlist_feed, -1, seq);
@@ -1565,7 +1565,7 @@ file_feed()
     return s;
 }
 
-static void HTMLlineproc3(BufferPtr buf, InputStream *stream, HSequence *seq)
+static void HTMLlineproc3(BufferPtr buf, InputStream *stream, HtmlContext *seq)
 {
     _file_lp2 = stream;
     HTMLlineproc2body(buf, file_feed, -1, seq);
@@ -1601,7 +1601,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     forms_size = 0;
     forms = nullptr;
 
-    HSequence seq;
+    HtmlContext seq;
 
     cur_iseq = 1;
     if (newBuf->image_flag)

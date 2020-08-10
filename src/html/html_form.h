@@ -3,7 +3,7 @@
 #include <tuple>
 
 /* menu based <select>  */
-class HSequence;
+class HtmlContext;
 struct FormSelectOption;
 class FormSelect
 {
@@ -29,27 +29,27 @@ public:
     FormSelectOption *get(int n) const;
     std::pair<int, FormSelectOption *> getCurrent();
 
-    Str process_n_select(HSequence *seq);
-    void process_option(HSequence *seq);
-    Str process_select(struct parsed_tag *tag, HSequence *seq);
+    Str process_n_select(HtmlContext *seq);
+    void process_option(HtmlContext *seq);
+    Str process_select(struct parsed_tag *tag, HtmlContext *seq);
 
-    void feed_select(char *str, HSequence *seq);
+    void feed_select(char *str, HtmlContext *seq);
 };
 FormSelect *get_formselect();
 
-inline Str process_select(struct parsed_tag *tag, HSequence *seq)
+inline Str process_select(struct parsed_tag *tag, HtmlContext *seq)
 {
     return get_formselect()->process_select(tag, seq);
 }
-inline Str process_n_select(HSequence *seq)
+inline Str process_n_select(HtmlContext *seq)
 {
     return get_formselect()->process_n_select(seq);
 }
-inline void feed_select(char *str, HSequence *seq)
+inline void feed_select(char *str, HtmlContext *seq)
 {
     get_formselect()->feed_select(str, seq);
 }
-inline void process_option(HSequence *seq)
+inline void process_option(HtmlContext *seq)
 {
     get_formselect()->process_option(seq);
 }

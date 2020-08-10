@@ -80,7 +80,7 @@ std::pair<int, FormSelectOption *> FormSelect::getCurrent()
     return {n_select, &select_option[n_select]};
 }
 
-Str FormSelect::process_select(struct parsed_tag *tag, HSequence *seq)
+Str FormSelect::process_select(struct parsed_tag *tag, HtmlContext *seq)
 {
     Str tmp = nullptr;
     if (cur_form_id() < 0)
@@ -124,7 +124,7 @@ Str FormSelect::process_select(struct parsed_tag *tag, HSequence *seq)
     return tmp;
 }
 
-void FormSelect::feed_select(char *str, HSequence *seq)
+void FormSelect::feed_select(char *str, HtmlContext *seq)
 {
     Str tmp = Strnew();
     int prev_status = cur_status;
@@ -197,7 +197,7 @@ void FormSelect::feed_select(char *str, HSequence *seq)
     }
 }
 
-Str FormSelect::process_n_select(HSequence *seq)
+Str FormSelect::process_n_select(HtmlContext *seq)
 {
     if (cur_select == nullptr)
         return nullptr;
@@ -224,7 +224,7 @@ Str FormSelect::process_n_select(HSequence *seq)
     return select_str;
 }
 
-void FormSelect::process_option(HSequence *seq)
+void FormSelect::process_option(HtmlContext *seq)
 {
     char begin_char = '[', end_char = ']';
     int len;
