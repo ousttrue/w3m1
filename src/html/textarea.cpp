@@ -190,15 +190,3 @@ HtmlTextArea* get_textarea()
 {
     return &g_textarea;
 }
-Str process_textarea(struct parsed_tag *tag, int width)
-{
-    g_textarea.process_textarea(tag, width);
-}
-Str process_n_textarea(void)
-{
-    g_textarea.process_n_textarea();
-}
-void feed_textarea(char *str)
-{
-    g_textarea.feed_textarea(str);
-}

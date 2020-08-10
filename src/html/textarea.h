@@ -29,7 +29,16 @@ public:
     Str process_textarea(struct parsed_tag *tag, int width);
     Str process_n_textarea(void);
 };
-HtmlTextArea* get_textarea();
-void feed_textarea(char *str);
-Str process_n_textarea(void);
-Str process_textarea(struct parsed_tag *tag, int width);
+HtmlTextArea *get_textarea();
+inline Str process_textarea(struct parsed_tag *tag, int width)
+{
+    return get_textarea()->process_textarea(tag, width);
+}
+inline Str process_n_textarea(void)
+{
+    return get_textarea()->process_n_textarea();
+}
+inline void feed_textarea(char *str)
+{
+    return get_textarea()->feed_textarea(str);
+}
