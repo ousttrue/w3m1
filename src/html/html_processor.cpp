@@ -1,7 +1,7 @@
 #include "html_processor.h"
 #include "html_sequence.h"
 #include "textarea.h"
-#include "formselect.h"
+#include "html/html_form.h"
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"

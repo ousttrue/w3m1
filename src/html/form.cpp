@@ -21,7 +21,7 @@
 #include "charset.h"
 #include "html/html_processor.h"
 #include "html/textarea.h"
-#include "html/formselect.h"
+#include "html/html_form.h"
 
 extern FormSelectOption *select_option;
 

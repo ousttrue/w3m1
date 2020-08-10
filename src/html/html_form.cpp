@@ -1,7 +1,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
-#include "formselect.h"
+#include "html/html_form.h"
 #include "html_processor.h"
 #include "form.h"
 #include "textlist.h"
