@@ -533,22 +533,26 @@ process_idattr(struct readbuffer *obuf, int cmd, struct parsed_tag *tag)
         HTMLlineproc1("</b>", h_env, seq); \
     }
 
-#define PUSH_ENV(cmd)                                                              \
-    if (++h_env->envc_real < h_env->nenv)                                          \
-    {                                                                              \
-        ++h_env->envc;                                                             \
-        envs[h_env->envc].env = cmd;                                               \
-        envs[h_env->envc].count = 0;                                               \
-        if (h_env->envc <= MAX_INDENT_LEVEL)                                       \
-            envs[h_env->envc].indent = envs[h_env->envc - 1].indent + INDENT_INCR; \
-        else                                                                       \
-            envs[h_env->envc].indent = envs[h_env->envc - 1].indent;               \
-    }
-
-static void POP_ENV(html_feed_environ *h_env)
+void html_feed_environ::PUSH_ENV(unsigned char cmd)
 {
-    if (h_env->envc_real-- < h_env->nenv)
-        h_env->envc--;
+    if (++envc_real < nenv)
+    {
+        ++envc;
+        envs[envc].env = cmd;
+        envs[envc].count = 0;
+        if (envc <= MAX_INDENT_LEVEL)
+            envs[envc].indent = envs[envc - 1].indent + INDENT_INCR;
+        else
+            envs[envc].indent = envs[envc - 1].indent;
+    }
+}
+
+void html_feed_environ::POP_ENV()
+{
+    if (envc_real-- < nenv)
+    {
+        envc--;
+    }
 }
 
 static void
@@ -1375,7 +1379,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
                 do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
                              h_env->limit);
         }
-        PUSH_ENV(cmd);
+        h_env->PUSH_ENV(cmd);
         if (cmd == HTML_UL || cmd == HTML_OL)
         {
             if (tag->TryGetAttributeValue(ATTR_START, &count))
@@ -1405,7 +1409,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
         {
             flushline(h_env, obuf, envs[h_env->envc - 1].indent, 0,
                       h_env->limit);
-            POP_ENV(h_env);
+            h_env->POP_ENV();
             if (!(obuf->flag & RB_PREMODE) &&
                 (h_env->envc == 0 || cmd == HTML_N_DL || cmd == HTML_N_BLQ))
             {
@@ -1426,7 +1430,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
                 do_blankline(h_env, obuf, envs[h_env->envc].indent, 0,
                              h_env->limit);
         }
-        PUSH_ENV(cmd);
+        h_env->PUSH_ENV(cmd);
         if (tag->HasAttribute(ATTR_COMPACT))
             envs[h_env->envc].env = HTML_DL_COMPACT;
         obuf->flag |= RB_IGNORE_P;
@@ -1531,7 +1535,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
              envs[h_env->envc].env != HTML_DL &&
              envs[h_env->envc].env != HTML_DL_COMPACT))
         {
-            PUSH_ENV(HTML_DL);
+            h_env->PUSH_ENV(HTML_DL);
         }
         if (h_env->envc > 0)
         {
@@ -1580,14 +1584,14 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
             h_env->title = html_unquote(p, w3mApp::Instance().InnerCharset);
         return 0;
     case HTML_FRAMESET:
-        PUSH_ENV(cmd);
+        h_env->PUSH_ENV(cmd);
         push_charp(obuf, 9, "--FRAME--", PC_ASCII);
         flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
         return 0;
     case HTML_N_FRAMESET:
         if (h_env->envc > 0)
         {
-            POP_ENV(h_env);
+            h_env->POP_ENV();
             flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
         }
         return 0;

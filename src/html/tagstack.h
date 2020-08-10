@@ -29,7 +29,7 @@ struct html_feed_environ
     int limit;
     int maxlimit;
 
-// private:
+    // private:
     struct environment *envs;
     int nenv;
     int envc;
@@ -40,6 +40,9 @@ public:
     {
         return envs[envc];
     }
+
+    void PUSH_ENV(unsigned char cmd);
+    void POP_ENV();
 
     char *title;
     int blank_lines;
