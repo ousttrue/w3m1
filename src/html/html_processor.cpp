@@ -1149,18 +1149,616 @@ static int currentLn(BufferPtr buf)
 ///
 /// HTML parse state
 ///
-struct HtmlProcessor
+class HtmlProcessor
 {
+public:
     Lineprop effect = P_UNKNOWN;
     Lineprop ex_effect = P_UNKNOWN;
     char symbol = '\0';
-    union frameset_element *idFrame = nullptr;
 
+private:
+    Anchor *a_href = nullptr;
+    Anchor *a_img = nullptr;
+    Anchor *a_form = nullptr;
+    Anchor **a_textarea = nullptr;
+    Anchor **a_select = nullptr;
+
+    HtmlTags internal = HTML_UNKNOWN;
+
+    frameset_element *idFrame = nullptr;
     std::vector<struct frameset *> frameset_s;
 
 public:
-    Anchor *a_href = nullptr, *a_img = nullptr, *a_form = nullptr;
-    HtmlTags internal = HTML_UNKNOWN;
+    HtmlProcessor()
+    {
+        n_textarea = -1;
+        if (!max_textarea)
+        { /* halfload */
+            max_textarea = MAX_TEXTAREA;
+            textarea_str = New_N(Str, max_textarea);
+            a_textarea = New_N(Anchor *, max_textarea);
+        }
+
+        n_select = -1;
+        if (!max_select)
+        { /* halfload */
+            max_select = MAX_SELECT;
+            select_option = New_N(FormSelectOption, max_select);
+            a_select = New_N(Anchor *, max_select);
+        }
+    }
+
+    /* end of processing for one line */
+    bool EndLineAddBuffer()
+    {
+        if (internal == HTML_UNKNOWN)
+        {
+            // add non html line
+            return true;
+        }
+
+        // not add html line
+        if (internal == HTML_N_INTERNAL)
+        {
+            // exit internal
+            internal = HTML_UNKNOWN;
+        }
+        return false;
+    }
+
+    void Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str)
+    {
+        switch (tag->tagid)
+        {
+        case HTML_B:
+            this->effect |= PE_BOLD;
+            break;
+        case HTML_N_B:
+            this->effect &= ~PE_BOLD;
+            break;
+        case HTML_I:
+            this->ex_effect |= PE_EX_ITALIC;
+            break;
+        case HTML_N_I:
+            this->ex_effect &= ~PE_EX_ITALIC;
+            break;
+        case HTML_INS:
+            this->ex_effect |= PE_EX_INSERT;
+            break;
+        case HTML_N_INS:
+            this->ex_effect &= ~PE_EX_INSERT;
+            break;
+        case HTML_U:
+            this->effect |= PE_UNDER;
+            break;
+        case HTML_N_U:
+            this->effect &= ~PE_UNDER;
+            break;
+        case HTML_S:
+            this->ex_effect |= PE_EX_STRIKE;
+            break;
+        case HTML_N_S:
+            this->ex_effect &= ~PE_EX_STRIKE;
+            break;
+        case HTML_A:
+        {
+            char *p;
+            if (renderFrameSet &&
+                tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
+            {
+                p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                if (!this->idFrame || strcmp(this->idFrame->body->name, p))
+                {
+                    this->idFrame = search_frame(renderFrameSet, p);
+                    if (this->idFrame && this->idFrame->body->attr != F_BODY)
+                        this->idFrame = nullptr;
+                }
+            }
+            p = nullptr;
+            auto q = Strnew(buf->baseTarget)->ptr;
+            char *id = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_NAME, &id))
+            {
+                id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
+            }
+            if (tag->TryGetAttributeValue(ATTR_HREF, &p))
+                p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
+                                   buf->document_charset)
+                        ->ptr;
+            if (tag->TryGetAttributeValue(ATTR_TARGET, &q))
+                q = wc_conv_strict(q, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+            char *r = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_REFERER, &r))
+                r = wc_conv_strict(r, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+            char *s = nullptr;
+            tag->TryGetAttributeValue(ATTR_TITLE, &s);
+            auto t = "";
+            tag->TryGetAttributeValue(ATTR_ACCESSKEY, &t);
+            auto hseq = 0;
+            tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
+            if (hseq > 0)
+                buf->putHmarker(currentLn(buf), pos, hseq - 1);
+            else if (hseq < 0)
+            {
+                int h = -hseq - 1;
+                if (buf->hmarklist.size() &&
+                    h < buf->hmarklist.size() &&
+                    buf->hmarklist[h].invalid)
+                {
+                    buf->hmarklist[h].pos = pos;
+                    buf->hmarklist[h].line = currentLn(buf);
+                    buf->hmarklist[h].invalid = 0;
+                    hseq = -hseq;
+                }
+            }
+            if (id && this->idFrame)
+            {
+                auto a = Anchor::CreateName(id, currentLn(buf), pos);
+                this->idFrame->body->nameList.Put(a);
+            }
+            if (p)
+            {
+                this->effect |= PE_ANCHOR;
+                this->a_href = buf->href.Put(Anchor::CreateHref(p,
+                                                                q ? q : "",
+                                                                r ? r : "",
+                                                                s ? s : "",
+                                                                *t, currentLn(buf), pos));
+                this->a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
+                this->a_href->slave = (hseq > 0) ? FALSE : TRUE;
+            }
+            break;
+        }
+        case HTML_N_A:
+            this->effect &= ~PE_ANCHOR;
+            if (this->a_href)
+            {
+                this->a_href->end.line = currentLn(buf);
+                this->a_href->end.pos = pos;
+                if (this->a_href->start == this->a_href->end)
+                {
+                    if (buf->hmarklist.size() &&
+                        this->a_href->hseq < buf->hmarklist.size())
+                        buf->hmarklist[this->a_href->hseq].invalid = 1;
+                    this->a_href->hseq = -1;
+                }
+                this->a_href = nullptr;
+            }
+            break;
+
+        case HTML_LINK:
+            buf->linklist.push_back(Link::create(*tag, buf->document_charset));
+            break;
+
+        case HTML_IMG_ALT:
+        {
+            char *p = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_SRC, &p))
+            {
+                int w = -1, h = -1, iseq = 0, ismap = 0;
+                int xoffset = 0, yoffset = 0, top = 0, bottom = 0;
+                tag->TryGetAttributeValue(ATTR_HSEQ, &iseq);
+                tag->TryGetAttributeValue(ATTR_WIDTH, &w);
+                tag->TryGetAttributeValue(ATTR_HEIGHT, &h);
+                tag->TryGetAttributeValue(ATTR_XOFFSET, &xoffset);
+                tag->TryGetAttributeValue(ATTR_YOFFSET, &yoffset);
+                tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &top);
+                tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
+                if (tag->HasAttribute(ATTR_ISMAP))
+                    ismap = 1;
+                char *q = nullptr;
+                tag->TryGetAttributeValue(ATTR_USEMAP, &q);
+                if (iseq > 0)
+                {
+                    buf->putHmarker(currentLn(buf), pos, iseq - 1);
+                }
+
+                char *s = nullptr;
+                tag->TryGetAttributeValue(ATTR_TITLE, &s);
+                p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
+                                   buf->document_charset)
+                        ->ptr;
+                this->a_img = buf->img.Put(Anchor::CreateImage(
+                    p,
+                    s ? s : "",
+                    currentLn(buf), pos));
+
+                this->a_img->hseq = iseq;
+                this->a_img->image = nullptr;
+                if (iseq > 0)
+                {
+                    URL u;
+                    Image *image;
+
+                    u.Parse2(this->a_img->url, GetCurBaseUrl());
+                    this->a_img->image = image = New(Image);
+                    image->url = u.ToStr()->ptr;
+                    if (!uncompressed_file_type(u.file.c_str(), &image->ext))
+                        image->ext = filename_extension(u.file.c_str(), TRUE);
+                    image->cache = nullptr;
+                    image->width =
+                        (w > MAX_IMAGE_SIZE) ? MAX_IMAGE_SIZE : w;
+                    image->height =
+                        (h > MAX_IMAGE_SIZE) ? MAX_IMAGE_SIZE : h;
+                    image->xoffset = xoffset;
+                    image->yoffset = yoffset;
+                    image->y = currentLn(buf) - top;
+                    if (image->xoffset < 0 && pos == 0)
+                        image->xoffset = 0;
+                    if (image->yoffset < 0 && image->y == 1)
+                        image->yoffset = 0;
+                    image->rows = 1 + top + bottom;
+                    image->map = q;
+                    image->ismap = ismap;
+                    image->touch = 0;
+                    image->cache = getImage(image, GetCurBaseUrl(),
+                                            IMG_FLAG_SKIP);
+                }
+                else if (iseq < 0)
+                {
+                    BufferPoint *po = &buf->imarklist[-iseq - 1];
+                    auto a = buf->img.RetrieveAnchor(po->line, po->pos);
+                    if (a)
+                    {
+                        this->a_img->url = a->url;
+                        this->a_img->image = a->image;
+                    }
+                }
+            }
+            this->effect |= PE_IMAGE;
+            break;
+        }
+        case HTML_N_IMG_ALT:
+            this->effect &= ~PE_IMAGE;
+            if (this->a_img)
+            {
+                this->a_img->end.line = currentLn(buf);
+                this->a_img->end.pos = pos;
+            }
+            this->a_img = nullptr;
+            break;
+        case HTML_INPUT_ALT:
+        {
+            FormList *form;
+            int top = 0, bottom = 0;
+            int textareanumber = -1;
+            int selectnumber = -1;
+
+            auto hseq = 0;
+            tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
+            auto form_id = -1;
+            tag->TryGetAttributeValue(ATTR_FID, &form_id);
+            tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &top);
+            tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
+            if (form_id < 0 || form_id > form_max || forms == nullptr)
+                break; /* outside of <form>..</form> */
+            form = forms[form_id];
+            if (hseq > 0)
+            {
+                int hpos = pos;
+                if (*str == '[')
+                    hpos++;
+                buf->putHmarker(currentLn(buf), hpos, hseq - 1);
+            }
+            if (!form->target)
+                form->target = Strnew(buf->baseTarget)->ptr;
+            if (a_textarea &&
+                tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
+                                          &textareanumber))
+            {
+                if (textareanumber >= max_textarea)
+                {
+                    max_textarea = 2 * textareanumber;
+                    textarea_str = New_Reuse(Str, textarea_str,
+                                             max_textarea);
+                    a_textarea = New_Reuse(Anchor *, a_textarea,
+                                           max_textarea);
+                }
+            }
+
+            if (a_select &&
+                tag->TryGetAttributeValue(ATTR_SELECTNUMBER,
+                                          &selectnumber))
+            {
+                if (selectnumber >= max_select)
+                {
+                    max_select = 2 * selectnumber;
+                    select_option = New_Reuse(FormSelectOption,
+                                              select_option,
+                                              max_select);
+                    a_select = New_Reuse(Anchor *, a_select,
+                                         max_select);
+                }
+            }
+
+            auto fi = formList_addInput(form, tag);
+            if (fi)
+            {
+                Anchor a;
+                a.target = form->target ? form->target : "";
+                a.item = fi;
+                BufferPoint bp = {
+                    line : currentLn(buf),
+                    pos : pos
+                };
+                a.start = bp;
+                a.end = bp;
+                this->a_form = buf->formitem.Put(a);
+            }
+            else
+            {
+                this->a_form = nullptr;
+            }
+
+            if (a_textarea && textareanumber >= 0)
+                a_textarea[textareanumber] = this->a_form;
+
+            if (a_select && selectnumber >= 0)
+                a_select[selectnumber] = this->a_form;
+
+            if (this->a_form)
+            {
+                this->a_form->hseq = hseq - 1;
+                this->a_form->y = currentLn(buf) - top;
+                this->a_form->rows = 1 + top + bottom;
+                if (!tag->HasAttribute(ATTR_NO_EFFECT))
+                    this->effect |= PE_FORM;
+                break;
+            }
+        }
+        case HTML_N_INPUT_ALT:
+            this->effect &= ~PE_FORM;
+            if (this->a_form)
+            {
+                this->a_form->end.line = currentLn(buf);
+                this->a_form->end.pos = pos;
+                if (this->a_form->start.line == this->a_form->end.line &&
+                    this->a_form->start.pos == this->a_form->end.pos)
+                    this->a_form->hseq = -1;
+            }
+            this->a_form = nullptr;
+            break;
+        case HTML_MAP:
+        {
+            char *p = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_NAME, &p))
+            {
+                MapList *m = New(MapList);
+                m->name = Strnew(p);
+                m->area = newGeneralList();
+                m->next = buf->maplist;
+                buf->maplist = m;
+            }
+            break;
+        }
+        case HTML_N_MAP:
+            /* nothing to do */
+            break;
+        case HTML_AREA:
+        {
+            if (buf->maplist == nullptr) /* outside of <map>..</map> */
+                break;
+
+            char *p = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_HREF, &p))
+            {
+                p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
+                                   buf->document_charset)
+                        ->ptr;
+                char *t = nullptr;
+                tag->TryGetAttributeValue(ATTR_TARGET, &t);
+                auto q = "";
+                tag->TryGetAttributeValue(ATTR_ALT, &q);
+                char *r = nullptr;
+                tag->TryGetAttributeValue(ATTR_SHAPE, &r);
+                char *s = nullptr;
+                tag->TryGetAttributeValue(ATTR_COORDS, &s);
+                auto a = newMapArea(p, t, q, r, s);
+                pushValue(buf->maplist->area, (void *)a);
+            }
+            break;
+        }
+
+        //
+        // frame
+        //
+        case HTML_FRAMESET:
+        {
+            auto frame = newFrameSet(tag);
+            if (frame)
+            {
+                auto sp = this->frameset_s.size();
+                this->frameset_s.push_back(frame);
+                if (sp == 0)
+                {
+                    if (buf->frameset == nullptr)
+                    {
+                        buf->frameset = frame;
+                    }
+                    else
+                    {
+                        pushFrameTree(&(buf->frameQ), frame, nullptr);
+                    }
+                }
+                else
+                {
+                    addFrameSetElement(this->frameset_s[sp - 1], *(union frameset_element *)frame);
+                }
+            }
+            break;
+        }
+        case HTML_N_FRAMESET:
+            if (!this->frameset_s.empty())
+            {
+                this->frameset_s.pop_back();
+            }
+            break;
+        case HTML_FRAME:
+            if (!this->frameset_s.empty())
+            {
+                union frameset_element element;
+                element.body = newFrame(tag, buf);
+                addFrameSetElement(this->frameset_s.back(), element);
+            }
+            break;
+
+        case HTML_BASE:
+        {
+            char *p = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_HREF, &p))
+            {
+                p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
+                                   buf->document_charset)
+                        ->ptr;
+                buf->baseURL.Parse(p, nullptr);
+            }
+            if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
+                buf->baseTarget =
+                    wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+            break;
+        }
+        case HTML_META:
+        {
+            char *p = nullptr;
+            tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
+            char *q = nullptr;
+            tag->TryGetAttributeValue(ATTR_CONTENT, &q);
+            if (p && q && !strcasecmp(p, "refresh") && MetaRefresh)
+            {
+                Str tmp = nullptr;
+                int refresh_interval = getMetaRefreshParam(q, &tmp);
+
+                if (tmp)
+                {
+                    p = wc_conv_strict(remove_space(tmp->ptr), w3mApp::Instance().InnerCharset,
+                                       buf->document_charset)
+                            ->ptr;
+                    buf->event = setAlarmEvent(buf->event,
+                                               refresh_interval,
+                                               AL_IMPLICIT_ONCE,
+                                               &gorURL, p);
+                }
+                else if (refresh_interval > 0)
+                    buf->event = setAlarmEvent(buf->event,
+                                               refresh_interval,
+                                               AL_IMPLICIT,
+                                               &reload, nullptr);
+            }
+            break;
+        }
+        case HTML_INTERNAL:
+            this->internal = HTML_INTERNAL;
+            break;
+        case HTML_N_INTERNAL:
+            this->internal = HTML_N_INTERNAL;
+            break;
+        case HTML_FORM_INT:
+        {
+            int form_id;
+            if (tag->TryGetAttributeValue(ATTR_FID, &form_id))
+                process_form_int(tag, form_id);
+            break;
+        }
+        case HTML_TEXTAREA_INT:
+            if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
+                                          &n_textarea) &&
+                n_textarea < max_textarea)
+            {
+                textarea_str[n_textarea] = Strnew();
+            }
+            else
+                n_textarea = -1;
+            break;
+        case HTML_N_TEXTAREA_INT:
+            if (n_textarea >= 0)
+            {
+                FormItemList *item = a_textarea[n_textarea]->item;
+                item->init_value = item->value =
+                    textarea_str[n_textarea];
+            }
+            break;
+
+        case HTML_SELECT_INT:
+            if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &n_select) && n_select < max_select)
+            {
+                select_option[n_select].first = nullptr;
+                select_option[n_select].last = nullptr;
+            }
+            else
+                n_select = -1;
+            break;
+        case HTML_N_SELECT_INT:
+            if (n_select >= 0)
+            {
+                FormItemList *item = a_select[n_select]->item;
+                item->select_option = select_option[n_select].first;
+                chooseSelectOption(item, item->select_option);
+                item->init_selected = item->selected;
+                item->init_value = item->value;
+                item->init_label = item->label;
+            }
+            break;
+        case HTML_OPTION_INT:
+            if (n_select >= 0)
+            {
+                auto q = "";
+                tag->TryGetAttributeValue(ATTR_LABEL, &q);
+                auto p = q;
+                tag->TryGetAttributeValue(ATTR_VALUE, &p);
+                auto selected = tag->HasAttribute(ATTR_SELECTED);
+                addSelectOption(&select_option[n_select],
+                                Strnew(p), Strnew(q),
+                                selected);
+            }
+            break;
+
+        case HTML_TITLE_ALT:
+        {
+            char *p = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_TITLE, &p))
+                buf->buffername = html_unquote(p, w3mApp::Instance().InnerCharset);
+            break;
+        }
+        case HTML_SYMBOL:
+        {
+            this->effect |= PC_SYMBOL;
+            char *p = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
+                this->symbol = (char)atoi(p);
+            break;
+        }
+        case HTML_N_SYMBOL:
+            this->effect &= ~PC_SYMBOL;
+            break;
+        }
+
+        {
+            char *id = nullptr;
+            if (tag->TryGetAttributeValue(ATTR_ID, &id))
+            {
+                id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
+            }
+            char *p = nullptr;
+            if (renderFrameSet &&
+                tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
+            {
+                p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                if (!this->idFrame || strcmp(this->idFrame->body->name, p))
+                {
+                    this->idFrame = search_frame(renderFrameSet, p);
+                    if (this->idFrame && this->idFrame->body->attr != F_BODY)
+                        this->idFrame = nullptr;
+                }
+            }
+            if (id && this->idFrame)
+            {
+                auto a = Anchor::CreateName(id, currentLn(buf), pos);
+                this->idFrame->body->nameList.Put(a);
+            }
+        }
+    }
 };
 
 ///
@@ -1169,24 +1767,6 @@ public:
 using FeedFunc = Str (*)();
 static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 {
-    Anchor **a_textarea = nullptr;
-    n_textarea = -1;
-    if (!max_textarea)
-    { /* halfload */
-        max_textarea = MAX_TEXTAREA;
-        textarea_str = New_N(Str, max_textarea);
-        a_textarea = New_N(Anchor *, max_textarea);
-    }
-
-    Anchor **a_select = nullptr;
-    n_select = -1;
-    if (!max_select)
-    { /* halfload */
-        max_select = MAX_SELECT;
-        select_option = New_N(FormSelectOption, max_select);
-        a_select = New_N(Anchor *, max_select);
-    }
-
     HtmlProcessor state;
 
     //
@@ -1309,568 +1889,19 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
             else
             {
                 /* tag processing */
-                struct parsed_tag *tag;
-                if (!(tag = parse_tag(&str, TRUE)))
+                auto tag = parse_tag(&str, TRUE);
+                if (!tag)
                     continue;
-                switch (tag->tagid)
-                {
-                case HTML_B:
-                    state.effect |= PE_BOLD;
-                    break;
-                case HTML_N_B:
-                    state.effect &= ~PE_BOLD;
-                    break;
-                case HTML_I:
-                    state.ex_effect |= PE_EX_ITALIC;
-                    break;
-                case HTML_N_I:
-                    state.ex_effect &= ~PE_EX_ITALIC;
-                    break;
-                case HTML_INS:
-                    state.ex_effect |= PE_EX_INSERT;
-                    break;
-                case HTML_N_INS:
-                    state.ex_effect &= ~PE_EX_INSERT;
-                    break;
-                case HTML_U:
-                    state.effect |= PE_UNDER;
-                    break;
-                case HTML_N_U:
-                    state.effect &= ~PE_UNDER;
-                    break;
-                case HTML_S:
-                    state.ex_effect |= PE_EX_STRIKE;
-                    break;
-                case HTML_N_S:
-                    state.ex_effect &= ~PE_EX_STRIKE;
-                    break;
-                case HTML_A:
-                {
-                    char *p;
-                    if (renderFrameSet &&
-                        tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
-                    {
-                        p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                        if (!state.idFrame || strcmp(state.idFrame->body->name, p))
-                        {
-                            state.idFrame = search_frame(renderFrameSet, p);
-                            if (state.idFrame && state.idFrame->body->attr != F_BODY)
-                                state.idFrame = nullptr;
-                        }
-                    }
-                    p = nullptr;
-                    auto q = Strnew(buf->baseTarget)->ptr;
-                    char *id = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_NAME, &id))
-                    {
-                        id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                        buf->name.Put(Anchor::CreateName(id, currentLn(buf), out.len()));
-                    }
-                    if (tag->TryGetAttributeValue(ATTR_HREF, &p))
-                        p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
-                                           buf->document_charset)
-                                ->ptr;
-                    if (tag->TryGetAttributeValue(ATTR_TARGET, &q))
-                        q = wc_conv_strict(q, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                    char *r = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_REFERER, &r))
-                        r = wc_conv_strict(r, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                    char *s = nullptr;
-                    tag->TryGetAttributeValue(ATTR_TITLE, &s);
-                    auto t = "";
-                    tag->TryGetAttributeValue(ATTR_ACCESSKEY, &t);
-                    auto hseq = 0;
-                    tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
-                    if (hseq > 0)
-                        buf->putHmarker(currentLn(buf), out.len(), hseq - 1);
-                    else if (hseq < 0)
-                    {
-                        int h = -hseq - 1;
-                        if (buf->hmarklist.size() &&
-                            h < buf->hmarklist.size() &&
-                            buf->hmarklist[h].invalid)
-                        {
-                            buf->hmarklist[h].pos = out.len();
-                            buf->hmarklist[h].line = currentLn(buf);
-                            buf->hmarklist[h].invalid = 0;
-                            hseq = -hseq;
-                        }
-                    }
-                    if (id && state.idFrame)
-                    {
-                        auto a = Anchor::CreateName(id, currentLn(buf), out.len());
-                        state.idFrame->body->nameList.Put(a);
-                    }
-                    if (p)
-                    {
-                        state.effect |= PE_ANCHOR;
-                        state.a_href = buf->href.Put(Anchor::CreateHref(p,
-                                                                        q ? q : "",
-                                                                        r ? r : "",
-                                                                        s ? s : "",
-                                                                        *t, currentLn(buf), out.len()));
-                        state.a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
-                        state.a_href->slave = (hseq > 0) ? FALSE : TRUE;
-                    }
-                    break;
-                }
-                case HTML_N_A:
-                    state.effect &= ~PE_ANCHOR;
-                    if (state.a_href)
-                    {
-                        state.a_href->end.line = currentLn(buf);
-                        state.a_href->end.pos = out.len();
-                        if (state.a_href->start == state.a_href->end)
-                        {
-                            if (buf->hmarklist.size() &&
-                                state.a_href->hseq < buf->hmarklist.size())
-                                buf->hmarklist[state.a_href->hseq].invalid = 1;
-                            state.a_href->hseq = -1;
-                        }
-                        state.a_href = nullptr;
-                    }
-                    break;
 
-                case HTML_LINK:
-                    buf->linklist.push_back(Link::create(*tag, buf->document_charset));
-                    break;
-
-                case HTML_IMG_ALT:
-                {
-                    char *p = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_SRC, &p))
-                    {
-                        int w = -1, h = -1, iseq = 0, ismap = 0;
-                        int xoffset = 0, yoffset = 0, top = 0, bottom = 0;
-                        tag->TryGetAttributeValue(ATTR_HSEQ, &iseq);
-                        tag->TryGetAttributeValue(ATTR_WIDTH, &w);
-                        tag->TryGetAttributeValue(ATTR_HEIGHT, &h);
-                        tag->TryGetAttributeValue(ATTR_XOFFSET, &xoffset);
-                        tag->TryGetAttributeValue(ATTR_YOFFSET, &yoffset);
-                        tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &top);
-                        tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
-                        if (tag->HasAttribute(ATTR_ISMAP))
-                            ismap = 1;
-                        char *q = nullptr;
-                        tag->TryGetAttributeValue(ATTR_USEMAP, &q);
-                        if (iseq > 0)
-                        {
-                            buf->putHmarker(currentLn(buf), out.len(), iseq - 1);
-                        }
-
-                        char *s = nullptr;
-                        tag->TryGetAttributeValue(ATTR_TITLE, &s);
-                        p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
-                                           buf->document_charset)
-                                ->ptr;
-                        state.a_img = buf->img.Put(Anchor::CreateImage(
-                            p,
-                            s ? s : "",
-                            currentLn(buf), out.len()));
-
-                        state.a_img->hseq = iseq;
-                        state.a_img->image = nullptr;
-                        if (iseq > 0)
-                        {
-                            URL u;
-                            Image *image;
-
-                            u.Parse2(state.a_img->url, GetCurBaseUrl());
-                            state.a_img->image = image = New(Image);
-                            image->url = u.ToStr()->ptr;
-                            if (!uncompressed_file_type(u.file.c_str(), &image->ext))
-                                image->ext = filename_extension(u.file.c_str(), TRUE);
-                            image->cache = nullptr;
-                            image->width =
-                                (w > MAX_IMAGE_SIZE) ? MAX_IMAGE_SIZE : w;
-                            image->height =
-                                (h > MAX_IMAGE_SIZE) ? MAX_IMAGE_SIZE : h;
-                            image->xoffset = xoffset;
-                            image->yoffset = yoffset;
-                            image->y = currentLn(buf) - top;
-                            if (image->xoffset < 0 && out.len() == 0)
-                                image->xoffset = 0;
-                            if (image->yoffset < 0 && image->y == 1)
-                                image->yoffset = 0;
-                            image->rows = 1 + top + bottom;
-                            image->map = q;
-                            image->ismap = ismap;
-                            image->touch = 0;
-                            image->cache = getImage(image, GetCurBaseUrl(),
-                                                    IMG_FLAG_SKIP);
-                        }
-                        else if (iseq < 0)
-                        {
-                            BufferPoint *po = &buf->imarklist[-iseq - 1];
-                            auto a = buf->img.RetrieveAnchor(po->line, po->pos);
-                            if (a)
-                            {
-                                state.a_img->url = a->url;
-                                state.a_img->image = a->image;
-                            }
-                        }
-                    }
-                    state.effect |= PE_IMAGE;
-                    break;
-                }
-                case HTML_N_IMG_ALT:
-                    state.effect &= ~PE_IMAGE;
-                    if (state.a_img)
-                    {
-                        state.a_img->end.line = currentLn(buf);
-                        state.a_img->end.pos = out.len();
-                    }
-                    state.a_img = nullptr;
-                    break;
-                case HTML_INPUT_ALT:
-                {
-                    FormList *form;
-                    int top = 0, bottom = 0;
-                    int textareanumber = -1;
-                    int selectnumber = -1;
-
-                    auto hseq = 0;
-                    tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
-                    auto form_id = -1;
-                    tag->TryGetAttributeValue(ATTR_FID, &form_id);
-                    tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &top);
-                    tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
-                    if (form_id < 0 || form_id > form_max || forms == nullptr)
-                        break; /* outside of <form>..</form> */
-                    form = forms[form_id];
-                    if (hseq > 0)
-                    {
-                        int hpos = out.len();
-                        if (*str == '[')
-                            hpos++;
-                        buf->putHmarker(currentLn(buf), hpos, hseq - 1);
-                    }
-                    if (!form->target)
-                        form->target = Strnew(buf->baseTarget)->ptr;
-                    if (a_textarea &&
-                        tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
-                                                  &textareanumber))
-                    {
-                        if (textareanumber >= max_textarea)
-                        {
-                            max_textarea = 2 * textareanumber;
-                            textarea_str = New_Reuse(Str, textarea_str,
-                                                     max_textarea);
-                            a_textarea = New_Reuse(Anchor *, a_textarea,
-                                                   max_textarea);
-                        }
-                    }
-
-                    if (a_select &&
-                        tag->TryGetAttributeValue(ATTR_SELECTNUMBER,
-                                                  &selectnumber))
-                    {
-                        if (selectnumber >= max_select)
-                        {
-                            max_select = 2 * selectnumber;
-                            select_option = New_Reuse(FormSelectOption,
-                                                      select_option,
-                                                      max_select);
-                            a_select = New_Reuse(Anchor *, a_select,
-                                                 max_select);
-                        }
-                    }
-
-                    auto fi = formList_addInput(form, tag);
-                    if (fi)
-                    {
-                        Anchor a;
-                        a.target = form->target ? form->target : "";
-                        a.item = fi;
-                        BufferPoint bp = {
-                            line : currentLn(buf),
-                            pos : out.len()
-                        };
-                        a.start = bp;
-                        a.end = bp;
-                        state.a_form = buf->formitem.Put(a);
-                    }
-                    else
-                    {
-                        state.a_form = nullptr;
-                    }
-
-                    if (a_textarea && textareanumber >= 0)
-                        a_textarea[textareanumber] = state.a_form;
-
-                    if (a_select && selectnumber >= 0)
-                        a_select[selectnumber] = state.a_form;
-
-                    if (state.a_form)
-                    {
-                        state.a_form->hseq = hseq - 1;
-                        state.a_form->y = currentLn(buf) - top;
-                        state.a_form->rows = 1 + top + bottom;
-                        if (!tag->HasAttribute(ATTR_NO_EFFECT))
-                            state.effect |= PE_FORM;
-                        break;
-                    }
-                }
-                case HTML_N_INPUT_ALT:
-                    state.effect &= ~PE_FORM;
-                    if (state.a_form)
-                    {
-                        state.a_form->end.line = currentLn(buf);
-                        state.a_form->end.pos = out.len();
-                        if (state.a_form->start.line == state.a_form->end.line &&
-                            state.a_form->start.pos == state.a_form->end.pos)
-                            state.a_form->hseq = -1;
-                    }
-                    state.a_form = nullptr;
-                    break;
-                case HTML_MAP:
-                {
-                    char *p = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_NAME, &p))
-                    {
-                        MapList *m = New(MapList);
-                        m->name = Strnew(p);
-                        m->area = newGeneralList();
-                        m->next = buf->maplist;
-                        buf->maplist = m;
-                    }
-                    break;
-                }
-                case HTML_N_MAP:
-                    /* nothing to do */
-                    break;
-                case HTML_AREA:
-                {
-                    if (buf->maplist == nullptr) /* outside of <map>..</map> */
-                        break;
-
-                    char *p = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_HREF, &p))
-                    {
-                        p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
-                                           buf->document_charset)
-                                ->ptr;
-                        char *t = nullptr;
-                        tag->TryGetAttributeValue(ATTR_TARGET, &t);
-                        auto q = "";
-                        tag->TryGetAttributeValue(ATTR_ALT, &q);
-                        char *r = nullptr;
-                        tag->TryGetAttributeValue(ATTR_SHAPE, &r);
-                        char *s = nullptr;
-                        tag->TryGetAttributeValue(ATTR_COORDS, &s);
-                        auto a = newMapArea(p, t, q, r, s);
-                        pushValue(buf->maplist->area, (void *)a);
-                    }
-                    break;
-                }
-
-                //
-                // frame
-                //
-                case HTML_FRAMESET:
-                {
-                    auto frame = newFrameSet(tag);
-                    if (frame)
-                    {
-                        auto sp = state.frameset_s.size();
-                        state.frameset_s.push_back(frame);
-                        if (sp == 0)
-                        {
-                            if (buf->frameset == nullptr)
-                            {
-                                buf->frameset = frame;
-                            }
-                            else
-                            {
-                                pushFrameTree(&(buf->frameQ), frame, nullptr);
-                            }
-                        }
-                        else
-                        {
-                            addFrameSetElement(state.frameset_s[sp - 1], *(union frameset_element *)frame);
-                        }
-                    }
-                    break;
-                }
-                case HTML_N_FRAMESET:
-                    if (!state.frameset_s.empty())
-                    {
-                        state.frameset_s.pop_back();
-                    }
-                    break;
-                case HTML_FRAME:
-                    if (!state.frameset_s.empty())
-                    {
-                        union frameset_element element;
-                        element.body = newFrame(tag, buf);
-                        addFrameSetElement(state.frameset_s.back(), element);
-                    }
-                    break;
-
-                case HTML_BASE:
-                {
-                    char *p = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_HREF, &p))
-                    {
-                        p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
-                                           buf->document_charset)
-                                ->ptr;
-                        buf->baseURL.Parse(p, nullptr);
-                    }
-                    if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
-                        buf->baseTarget =
-                            wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                    break;
-                }
-                case HTML_META:
-                {
-                    char *p = nullptr;
-                    tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
-                    char *q = nullptr;
-                    tag->TryGetAttributeValue(ATTR_CONTENT, &q);
-                    if (p && q && !strcasecmp(p, "refresh") && MetaRefresh)
-                    {
-                        Str tmp = nullptr;
-                        int refresh_interval = getMetaRefreshParam(q, &tmp);
-
-                        if (tmp)
-                        {
-                            p = wc_conv_strict(remove_space(tmp->ptr), w3mApp::Instance().InnerCharset,
-                                               buf->document_charset)
-                                    ->ptr;
-                            buf->event = setAlarmEvent(buf->event,
-                                                       refresh_interval,
-                                                       AL_IMPLICIT_ONCE,
-                                                       &gorURL, p);
-                        }
-                        else if (refresh_interval > 0)
-                            buf->event = setAlarmEvent(buf->event,
-                                                       refresh_interval,
-                                                       AL_IMPLICIT,
-                                                       &reload, nullptr);
-                    }
-                    break;
-                }
-                case HTML_INTERNAL:
-                    state.internal = HTML_INTERNAL;
-                    break;
-                case HTML_N_INTERNAL:
-                    state.internal = HTML_N_INTERNAL;
-                    break;
-                case HTML_FORM_INT:
-                {
-                    int form_id;
-                    if (tag->TryGetAttributeValue(ATTR_FID, &form_id))
-                        process_form_int(tag, form_id);
-                    break;
-                }
-                case HTML_TEXTAREA_INT:
-                    if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
-                                                  &n_textarea) &&
-                        n_textarea < max_textarea)
-                    {
-                        textarea_str[n_textarea] = Strnew();
-                    }
-                    else
-                        n_textarea = -1;
-                    break;
-                case HTML_N_TEXTAREA_INT:
-                    if (n_textarea >= 0)
-                    {
-                        FormItemList *item = a_textarea[n_textarea]->item;
-                        item->init_value = item->value =
-                            textarea_str[n_textarea];
-                    }
-                    break;
-
-                case HTML_SELECT_INT:
-                    if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &n_select) && n_select < max_select)
-                    {
-                        select_option[n_select].first = nullptr;
-                        select_option[n_select].last = nullptr;
-                    }
-                    else
-                        n_select = -1;
-                    break;
-                case HTML_N_SELECT_INT:
-                    if (n_select >= 0)
-                    {
-                        FormItemList *item = a_select[n_select]->item;
-                        item->select_option = select_option[n_select].first;
-                        chooseSelectOption(item, item->select_option);
-                        item->init_selected = item->selected;
-                        item->init_value = item->value;
-                        item->init_label = item->label;
-                    }
-                    break;
-                case HTML_OPTION_INT:
-                    if (n_select >= 0)
-                    {
-                        auto q = "";
-                        tag->TryGetAttributeValue(ATTR_LABEL, &q);
-                        auto p = q;
-                        tag->TryGetAttributeValue(ATTR_VALUE, &p);
-                        auto selected = tag->HasAttribute(ATTR_SELECTED);
-                        addSelectOption(&select_option[n_select],
-                                        Strnew(p), Strnew(q),
-                                        selected);
-                    }
-                    break;
-
-                case HTML_TITLE_ALT:
-                {
-                    char *p = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_TITLE, &p))
-                        buf->buffername = html_unquote(p, w3mApp::Instance().InnerCharset);
-                    break;
-                }
-                case HTML_SYMBOL:
-                {
-                    state.effect |= PC_SYMBOL;
-                    char *p = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
-                        state.symbol = (char)atoi(p);
-                    break;
-                }
-                case HTML_N_SYMBOL:
-                    state.effect &= ~PC_SYMBOL;
-                    break;
-                }
-
-                {
-                    char *id = nullptr;
-                    if (tag->TryGetAttributeValue(ATTR_ID, &id))
-                    {
-                        id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                        buf->name.Put(Anchor::CreateName(id, currentLn(buf), out.len()));
-                    }
-                    char *p = nullptr;
-                    if (renderFrameSet &&
-                        tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
-                    {
-                        p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-                        if (!state.idFrame || strcmp(state.idFrame->body->name, p))
-                        {
-                            state.idFrame = search_frame(renderFrameSet, p);
-                            if (state.idFrame && state.idFrame->body->attr != F_BODY)
-                                state.idFrame = nullptr;
-                        }
-                    }
-                    if (id && state.idFrame)
-                    {
-                        auto a = Anchor::CreateName(id, currentLn(buf), out.len());
-                        state.idFrame->body->nameList.Put(a);
-                    }
-                }
+                state.Process(tag, buf, out.len(), str);
             }
         }
-        /* end of processing for one line */
-        if (!state.internal)
+
+        if (state.EndLineAddBuffer())
         {
             buf->AddNewLine(out, nlines);
         }
-        if (state.internal == HTML_N_INTERNAL)
-            state.internal = HTML_UNKNOWN;
+
         if (str != endp)
         {
             // advance line
