@@ -17,8 +17,6 @@ int is_blank_line(char *line, int indent);
 Str process_n_select(void);
 void feed_select(char *str);
 void process_option(void);
-Str process_n_textarea(void);
-void feed_textarea(char *str);
 Str process_n_form(void);
 int getMetaRefreshParam(const char *q, Str *refresh_uri);
 BufferPtr loadHTMLBuffer(URLFile *f, BufferPtr newBuf);

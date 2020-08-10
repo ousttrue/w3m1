@@ -84,8 +84,6 @@ struct FormList
     unsigned long length;
 };
 
-#define MAX_TEXTAREA 10 /* max number of <textarea>..</textarea> \
-                         * within one document */
 #ifdef MENU_SELECT
 #define MAX_SELECT 10 /* max number of <select>..</select> \
                        * within one document */
@@ -106,7 +104,7 @@ int formChooseOptionByMenu(FormItemList *fi, int x, int y);
 #endif /* MENU_SELECT */
 
 FormItemList *formList_addInput(FormList *fl,
-                                struct parsed_tag *tag);
+                                struct parsed_tag *tag, struct HtmlTextArea *ta);
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
 

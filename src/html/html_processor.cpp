@@ -29,7 +29,7 @@ static void KeyAbort(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
-static int cur_hseq;
+int cur_hseq;
 int GetCurHSeq()
 {
     return cur_hseq;
@@ -51,7 +51,7 @@ static int *form_stack;
 static int form_max = -1;
 static int form_sp = 0;
 static int forms_size = 0;
-static int cur_form_id()
+int cur_form_id()
 {
     return form_sp >= 0 ? form_stack[form_sp] : -1;
 }
@@ -79,14 +79,19 @@ static int n_select;
 static int cur_option_maxwidth;
 #endif /* MENU_SELECT */
 
-static Str cur_textarea;
-Str *textarea_str;
-static int cur_textarea_size;
-static int cur_textarea_rows;
-static int cur_textarea_readonly;
-static int n_textarea;
-static int ignore_nl_textarea;
-static int max_textarea = MAX_TEXTAREA;
+HtmlTextArea g_textarea;
+Str process_textarea(struct parsed_tag *tag, int width)
+{
+    g_textarea.process_textarea(tag, width);
+}
+Str process_n_textarea(void)
+{
+    g_textarea.process_n_textarea();
+}
+void feed_textarea(char *str)
+{
+    g_textarea.feed_textarea(str);
+}
 
 static CharacterEncodingScheme cur_document_charset;
 static int cur_iseq;
@@ -151,17 +156,9 @@ print_internal_information(struct html_feed_environ *henv)
         }
     }
 #endif /* MENU_SELECT */
-    if (n_textarea > 0)
-    {
-        for (i = 0; i < n_textarea; i++)
-        {
-            s = Sprintf("<textarea_int textareanumber=%d>", i);
-            pushTextLine(tl, newTextLine(s, 0));
-            s = Strnew(html_quote(textarea_str[i]->ptr));
-            s->Push("</textarea_int>");
-            pushTextLine(tl, newTextLine(s, 0));
-        }
-    }
+
+    g_textarea.print_internal(tl);
+
     s = Strnew("</internal>");
     pushTextLine(tl, newTextLine(s, 0));
 
@@ -248,36 +245,6 @@ void feed_select(char *str)
                 }
             }
         }
-    }
-}
-
-void feed_textarea(char *str)
-{
-    if (cur_textarea == nullptr)
-        return;
-    if (ignore_nl_textarea)
-    {
-        if (*str == '\r')
-            str++;
-        if (*str == '\n')
-            str++;
-    }
-    ignore_nl_textarea = FALSE;
-    while (*str)
-    {
-        if (*str == '&')
-        {
-            auto [pos, cmd] = getescapecmd(str, w3mApp::Instance().InnerCharset);
-            str = const_cast<char *>(pos);
-            textarea_str[n_textarea]->Push(cmd);
-        }
-        else if (*str == '\n')
-        {
-            textarea_str[n_textarea]->Push("\r\n");
-            str++;
-        }
-        else if (*str != '\r')
-            textarea_str[n_textarea]->Push(*(str++));
     }
 }
 
@@ -664,90 +631,6 @@ void process_option(void)
     select_str->Push(html_quote(cur_option_label->ptr));
     select_str->Push("</pre_int>");
     n_selectitem++;
-}
-
-Str process_textarea(struct parsed_tag *tag, int width)
-{
-#define TEXTAREA_ATTR_COL_MAX 4096
-#define TEXTAREA_ATTR_ROWS_MAX 4096
-
-    Str tmp = nullptr;
-    if (cur_form_id() < 0)
-    {
-        auto s = "<form_int method=internal action=none>";
-        tmp = process_form(parse_tag(&s, TRUE));
-    }
-
-    auto p = "";
-    tag->TryGetAttributeValue(ATTR_NAME, &p);
-    cur_textarea = Strnew(p);
-    cur_textarea_size = 20;
-    if (tag->TryGetAttributeValue(ATTR_COLS, &p))
-    {
-        cur_textarea_size = atoi(p);
-        if (p[strlen(p) - 1] == '%')
-            cur_textarea_size = width * cur_textarea_size / 100 - 2;
-        if (cur_textarea_size <= 0)
-        {
-            cur_textarea_size = 20;
-        }
-        else if (cur_textarea_size > TEXTAREA_ATTR_COL_MAX)
-        {
-            cur_textarea_size = TEXTAREA_ATTR_COL_MAX;
-        }
-    }
-    cur_textarea_rows = 1;
-    if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
-    {
-        cur_textarea_rows = atoi(p);
-        if (cur_textarea_rows <= 0)
-        {
-            cur_textarea_rows = 1;
-        }
-        else if (cur_textarea_rows > TEXTAREA_ATTR_ROWS_MAX)
-        {
-            cur_textarea_rows = TEXTAREA_ATTR_ROWS_MAX;
-        }
-    }
-    cur_textarea_readonly = tag->HasAttribute(ATTR_READONLY);
-    if (n_textarea >= max_textarea)
-    {
-        max_textarea *= 2;
-        textarea_str = New_Reuse(Str, textarea_str, max_textarea);
-    }
-    textarea_str[n_textarea] = Strnew();
-    ignore_nl_textarea = TRUE;
-
-    return tmp;
-}
-
-Str process_n_textarea(void)
-{
-    Str tmp;
-    int i;
-
-    if (cur_textarea == nullptr)
-        return nullptr;
-
-    tmp = Strnew();
-    tmp->Push(Sprintf("<pre_int>[<input_alt hseq=\"%d\" fid=\"%d\" "
-                      "type=textarea name=\"%s\" size=%d rows=%d "
-                      "top_margin=%d textareanumber=%d",
-                      cur_hseq, cur_form_id(),
-                      html_quote(cur_textarea->ptr),
-                      cur_textarea_size, cur_textarea_rows,
-                      cur_textarea_rows - 1, n_textarea));
-    if (cur_textarea_readonly)
-        tmp->Push(" readonly");
-    tmp->Push("><u>");
-    for (i = 0; i < cur_textarea_size; i++)
-        tmp->Push(' ');
-    tmp->Push("</u></input_alt>]</pre_int>\n");
-    cur_hseq++;
-    n_textarea++;
-    cur_textarea = nullptr;
-
-    return tmp;
 }
 
 #define IMG_SYMBOL UL_SYMBOL(12)
@@ -1173,12 +1056,7 @@ private:
 public:
     HtmlProcessor()
     {
-        n_textarea = -1;
-        if (!max_textarea)
-        { /* halfload */
-            max_textarea = MAX_TEXTAREA;
-            textarea_str = New_N(Str, max_textarea);
-        }
+        g_textarea.clear(-1);
 
         n_select = -1;
         if (!max_select)
@@ -1446,12 +1324,7 @@ public:
                 form->target = Strnew(buf->baseTarget)->ptr;
             if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &textareanumber))
             {
-                if (textareanumber >= max_textarea)
-                {
-                    max_textarea = 2 * textareanumber;
-                    textarea_str = New_Reuse(Str, textarea_str,
-                                             max_textarea);
-                }
+                g_textarea.grow(textareanumber);
             }
 
             if (a_select &&
@@ -1469,7 +1342,7 @@ public:
                 }
             }
 
-            auto fi = formList_addInput(form, tag);
+            auto fi = formList_addInput(form, tag, &g_textarea);
             if (fi)
             {
                 Anchor a;
@@ -1664,24 +1537,26 @@ public:
             break;
         }
         case HTML_TEXTAREA_INT:
+        {
+            int n_textarea = -1;
             if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
-                                          &n_textarea) &&
-                n_textarea < max_textarea)
+                                          &n_textarea))
             {
-                textarea_str[n_textarea] = Strnew();
+                g_textarea.set(n_textarea, Strnew());
             }
-            else
-                n_textarea = -1;
             break;
+        }
         case HTML_N_TEXTAREA_INT:
-            if (n_textarea >= 0)
+        {
+            auto [n, t] = g_textarea.getCurrent();
+            auto anchor = a_textarea[n];
+            if (anchor)
             {
-                FormItemList *item = a_textarea[n_textarea]->item;
-                item->init_value = item->value =
-                    textarea_str[n_textarea];
+                FormItemList *item = anchor->item;
+                item->init_value = item->value = t;
             }
             break;
-
+        }
         case HTML_SELECT_INT:
             if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &n_select) && n_select < max_select)
             {
@@ -1787,9 +1662,10 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 break;
             }
 
-            if (n_textarea >= 0 && *(line->ptr) != '<')
+            auto [n, t] = g_textarea.getCurrent();
+            if (n >= 0 && *(line->ptr) != '<')
             { /* halfload */
-                textarea_str[n_textarea]->Push(line);
+                t->Push(line);
                 continue;
             }
 
@@ -1920,8 +1796,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
     for (int form_id = 1; form_id <= form_max; form_id++)
         forms[form_id]->next = forms[form_id - 1];
     buf->formlist = (form_max >= 0) ? forms[form_max] : nullptr;
-    if (n_textarea)
-        addMultirowsForm(buf, buf->formitem);
+    addMultirowsForm(buf, buf->formitem);
     addMultirowsImg(buf, buf->img);
 }
 
@@ -1996,10 +1871,9 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 #endif
 
     SetCurTitle(nullptr);
-    n_textarea = 0;
-    cur_textarea = nullptr;
-    max_textarea = MAX_TEXTAREA;
-    textarea_str = New_N(Str, max_textarea);
+
+    g_textarea.clear(0);
+
 #ifdef MENU_SELECT
     n_select = 0;
     max_select = MAX_SELECT;
@@ -2031,7 +1905,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 #ifdef USE_M17N
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
 #endif
-        max_textarea = 0;
+        // max_textarea = 0;
 #ifdef MENU_SELECT
         max_select = 0;
 #endif
@@ -2182,8 +2056,7 @@ loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
 
     newBuf->CurrentAsLast();
 
-    if (n_textarea)
-        formResetBuffer(newBuf, newBuf->formitem);
+    formResetBuffer(newBuf, newBuf->formitem);
     if (src)
         fclose(src);
 
@@ -2220,8 +2093,8 @@ loadHTMLString(Str page)
 
     newBuf->type = "text/html";
     newBuf->real_type = newBuf->type;
-    if (n_textarea)
-        formResetBuffer(newBuf, newBuf->formitem);
+
+    formResetBuffer(newBuf, newBuf->formitem);
     return newBuf;
 }
 

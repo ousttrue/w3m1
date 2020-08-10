@@ -19,7 +19,8 @@
 #include "frontend/display.h"
 #include "html/anchor.h"
 #include "charset.h"
-extern Str *textarea_str;
+#include "html/html_processor.h"
+
 extern FormSelectOption *select_option;
 
 /* *INDENT-OFF* */
@@ -89,7 +90,7 @@ newFormList(const char *action, const char *method, const char *charset, const c
  * add <input> element to form_list
  */
 FormItemList *
-formList_addInput(FormList *fl, struct parsed_tag *tag)
+formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlTextArea *ta)
 {
     FormItemList *item;
     char *p;
@@ -127,7 +128,7 @@ formList_addInput(FormList *fl, struct parsed_tag *tag)
     tag->TryGetAttributeValue(ATTR_MAXLENGTH, &item->maxlength);
     item->readonly = tag->HasAttribute(ATTR_READONLY);
     if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &i))
-        item->value = item->init_value = textarea_str[i];
+        item->value = item->init_value = ta->get(i);
 #ifdef MENU_SELECT
     if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
         item->select_option = select_option[i].first;
