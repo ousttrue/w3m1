@@ -526,10 +526,10 @@ process_idattr(struct readbuffer *obuf, int cmd, struct parsed_tag *tag)
     CLOSE_P;    \
     close_anchor(h_env, obuf, seq);
 
-#define CLOSE_DT                      \
-    if (obuf->flag & RB_IN_DT)        \
-    {                                 \
-        obuf->flag &= ~RB_IN_DT;      \
+#define CLOSE_DT                           \
+    if (obuf->flag & RB_IN_DT)             \
+    {                                      \
+        obuf->flag &= ~RB_IN_DT;           \
         HTMLlineproc1("</b>", h_env, seq); \
     }
 
@@ -545,9 +545,11 @@ process_idattr(struct readbuffer *obuf, int cmd, struct parsed_tag *tag)
             envs[h_env->envc].indent = envs[h_env->envc - 1].indent;               \
     }
 
-#define POP_ENV                           \
-    if (h_env->envc_real-- < h_env->nenv) \
+static void POP_ENV(html_feed_environ *h_env)
+{
+    if (h_env->envc_real-- < h_env->nenv)
         h_env->envc--;
+}
 
 static void
 proc_escape(struct readbuffer *obuf, char **str_return)
@@ -1403,7 +1405,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
         {
             flushline(h_env, obuf, envs[h_env->envc - 1].indent, 0,
                       h_env->limit);
-            POP_ENV;
+            POP_ENV(h_env);
             if (!(obuf->flag & RB_PREMODE) &&
                 (h_env->envc == 0 || cmd == HTML_N_DL || cmd == HTML_N_BLQ))
             {
@@ -1585,7 +1587,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
     case HTML_N_FRAMESET:
         if (h_env->envc > 0)
         {
-            POP_ENV;
+            POP_ENV(h_env);
             flushline(h_env, obuf, envs[h_env->envc].indent, 0, h_env->limit);
         }
         return 0;
@@ -2481,7 +2483,7 @@ table_start:
         if (is_tag)
         {
             /*** Beginning of a new tag ***/
-            if ((tag = parse_tag(const_cast<const char**>(&str), internal)))
+            if ((tag = parse_tag(const_cast<const char **>(&str), internal)))
                 cmd = tag->tagid;
             else
                 continue;
