@@ -1815,20 +1815,20 @@ static void renderCoTable(struct table *tbl, int maxlimit, HSequence *seq)
 static void
 make_caption(struct table *t, struct html_feed_environ *h_env, HSequence *seq)
 {
-    struct html_feed_environ henv;
-    struct readbuffer obuf;
-    struct environment envs[MAX_ENV_LEVEL];
-    int limit;
-
     if (t->caption->Size() <= 0)
         return;
 
+    int limit;
     if (t->total_width > 0)
         limit = t->total_width;
     else
         limit = h_env->limit;
+
+    struct html_feed_environ henv;
+    struct readbuffer obuf;
+    struct environment envs[MAX_ENV_LEVEL];
     init_henv(&henv, &obuf, envs, MAX_ENV_LEVEL, newTextLineList(),
-              limit, h_env->envs[h_env->envc].indent);
+              limit, h_env->currentEnv().indent);
     HTMLlineproc1("<center>", &henv, seq);
     HTMLlineproc0(t->caption->ptr, &henv, FALSE, seq);
     HTMLlineproc1("</center>", &henv, seq);

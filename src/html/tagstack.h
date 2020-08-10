@@ -28,10 +28,19 @@ struct html_feed_environ
     Str tagbuf;
     int limit;
     int maxlimit;
+
+// private:
     struct environment *envs;
     int nenv;
     int envc;
     int envc_real;
+
+public:
+    environment &currentEnv() const
+    {
+        return envs[envc];
+    }
+
     char *title;
     int blank_lines;
 };
