@@ -52,7 +52,6 @@ newFormList(char *action, const char *method, char *charset, char *enctype,
     int e = FORM_ENCTYPE_URLENCODED;
     CharacterEncodingScheme c = WC_CES_NONE;
 
-
     if (method == NULL || !strcasecmp(method, "get"))
         m = FORM_METHOD_GET;
     else if (!strcasecmp(method, "post"))
@@ -171,11 +170,11 @@ formList_addInput(FormList *fl, struct parsed_tag *tag)
     return item;
 }
 
-static char *_formtypetbl[] = {
+static const char *_formtypetbl[] = {
     "text", "password", "checkbox", "radio", "submit", "reset", "hidden",
     "image", "select", "textarea", "button", "file", NULL};
 
-static char *_formmethodtbl[] = {
+static const char *_formmethodtbl[] = {
     "GET", "POST", "INTERNAL", "HEAD"};
 
 char *

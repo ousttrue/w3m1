@@ -1113,7 +1113,7 @@ Str process_anchor(struct parsed_tag *tag, char *tagbuf)
 {
     if (tag->need_reconstruct)
     {
-        tag->SetAttributeValue( ATTR_HSEQ, Sprintf("%d", cur_hseq++)->ptr);
+        tag->SetAttributeValue(ATTR_HSEQ, Sprintf("%d", cur_hseq++)->ptr);
         return tag->ToStr();
     }
     else
@@ -1155,7 +1155,7 @@ static int currentLn(BufferPtr buf)
 ///
 /// 1行ごとに Line の構築と html タグを解釈する
 ///
-using FeedFunc = Str(*)();
+using FeedFunc = Str (*)();
 static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 {
     Anchor *a_href = NULL, *a_img = NULL, *a_form = NULL;
@@ -1192,22 +1192,26 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
     //
     Lineprop effect = P_UNKNOWN;
     Lineprop ex_effect = P_UNKNOWN;
-    Str line;
-    for(int nlines = 0; line = feed();)
+    Str line = nullptr;
+    for (int nlines = 1; nlines != llimit; ++nlines)
     {
-        if (n_textarea >= 0 && *(line->ptr) != '<')
-        { /* halfload */
-            textarea_str[n_textarea]->Push(line);
-            continue;
+        if (!line)
+        {
+            // new line
+            line = feed();
+            if (!line)
+            {
+                break;
+            }
+
+            if (n_textarea >= 0 && *(line->ptr) != '<')
+            { /* halfload */
+                textarea_str[n_textarea]->Push(line);
+                continue;
+            }
+
+            StripRight(line);
         }
-
-    proc_again:
-        if (++nlines == llimit)
-            break;
-
-#ifdef ENABLE_REMOVE_TRAILINGSPACES
-        StripRight(line);
-#endif
 
         //
         // each char
@@ -1227,7 +1231,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 p = buf[(int)symbol];
                 len = get_mclen(p);
                 mode = get_mctype(*p);
-              
+
                 out.push(mode | effect | ex_efct(ex_effect), *(p++));
                 if (--len)
                 {
@@ -1537,7 +1541,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         form->target = Strnew(buf->baseTarget)->ptr;
                     if (a_textarea &&
                         tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
-                                            &textareanumber))
+                                                  &textareanumber))
                     {
                         if (textareanumber >= max_textarea)
                         {
@@ -1551,7 +1555,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 
                     if (a_select &&
                         tag->TryGetAttributeValue(ATTR_SELECTNUMBER,
-                                            &selectnumber))
+                                                  &selectnumber))
                     {
                         if (selectnumber >= max_select)
                         {
@@ -1731,7 +1735,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                     break;
                 case HTML_TEXTAREA_INT:
                     if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
-                                            &n_textarea) &&
+                                                  &n_textarea) &&
                         n_textarea < max_textarea)
                     {
                         textarea_str[n_textarea] = Strnew();
@@ -1822,29 +1826,30 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
             }
         }
         /* end of processing for one line */
-        if (!internal){
+        if (!internal)
+        {
             buf->AddNewLine(out, nlines);
         }
         if (internal == HTML_N_INTERNAL)
             internal = 0;
         if (str != endp)
         {
+            // advance line
             line = line->Substr(str - line->ptr, endp - str);
-            goto proc_again;
+        }
+        else
+        {
+            // clear for next line
+            line = nullptr;
         }
     }
-#ifdef DEBUG
-    if (w3m_debug)
-        fclose(debug);
-#endif
+
     for (form_id = 1; form_id <= form_max; form_id++)
         forms[form_id]->next = forms[form_id - 1];
     buf->formlist = (form_max >= 0) ? forms[form_max] : NULL;
     if (n_textarea)
         addMultirowsForm(buf, buf->formitem);
-#ifdef USE_IMAGE
     addMultirowsImg(buf, buf->img);
-#endif
 }
 
 static TextLineListItem *_tl_lp2;
