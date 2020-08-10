@@ -14,7 +14,6 @@ Str convertLine(URLFile *uf, Str line, int mode, CharacterEncodingScheme *charse
 char *guess_filename(std::string_view file);
 int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
-Str process_n_form(void);
 int getMetaRefreshParam(const char *q, Str *refresh_uri);
 
 char *convert_size(clen_t size, int usefloat);
@@ -91,7 +90,7 @@ char *form2str(FormItemList *fi);
 
 
 void preFormUpdateBuffer(BufferPtr buf);
-Str textfieldrep(Str s, int width);
+
 void input_textarea(FormItemList *fi);
 void do_internal(char *action, char *data);
 void form_write_data(FILE *f, char *boundary, char *name, char *value);

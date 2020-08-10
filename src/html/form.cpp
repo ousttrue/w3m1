@@ -20,8 +20,9 @@
 #include "html/anchor.h"
 #include "charset.h"
 #include "html/html_processor.h"
-#include "html/textarea.h"
-#include "html/html_form.h"
+#include "html/html_context.h"
+
+
 
 extern FormSelectOption *select_option;
 
@@ -92,7 +93,7 @@ newFormList(const char *action, const char *method, const char *charset, const c
  * add <input> element to form_list
  */
 FormItemList *
-formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlTextArea *ta)
+formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
 {
     FormItemList *item;
     char *p;
@@ -130,10 +131,10 @@ formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlTextArea *ta)
     tag->TryGetAttributeValue(ATTR_MAXLENGTH, &item->maxlength);
     item->readonly = tag->HasAttribute(ATTR_READONLY);
     if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &i))
-        item->value = item->init_value = ta->get(i);
+        item->value = item->init_value = context->Textarea(i);
 
     if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
-        item->select_option = get_formselect()->get(i)->first;
+        item->select_option= context->FormSelect(i)->first;
 
     if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
         item->rows = atoi(p);

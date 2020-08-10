@@ -94,8 +94,6 @@ add_executable(w3m
     src/html/tagstack.cpp
     src/html/html_processor.cpp
     src/html/html_context.cpp
-    src/html/textarea.cpp
-    src/html/html_form.cpp
     src/html/table.cpp
     src/html/form.cpp
     src/html/parsetag.cpp

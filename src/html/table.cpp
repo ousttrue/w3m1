@@ -18,9 +18,9 @@
 #include "html.h"
 #include "html/html.h"
 #include "html/html_context.h"
-#include "html/html_form.h"
+
 #include "html/html_processor.h"
-#include "html/textarea.h"
+
 #include "html/tokenizer.h"
 
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
@@ -2564,7 +2564,7 @@ feed_table_block_tag(struct table *tbl, const char *line, struct table_mode *mod
 static void
 table_close_select(struct table *tbl, struct table_mode *mode, int width, HtmlContext *seq)
 {
-    Str tmp = process_n_select(seq);
+    Str tmp = seq->process_n_select();
     mode->pre_mode &= ~TBLM_INSELECT;
     mode->end_tag = 0;
     feed_table1(tbl, tmp, mode, width, seq);
@@ -2573,7 +2573,7 @@ table_close_select(struct table *tbl, struct table_mode *mode, int width, HtmlCo
 static void
 table_close_textarea(struct table *tbl, struct table_mode *mode, int width, HtmlContext *seq)
 {
-    Str tmp = process_n_textarea(seq);
+    Str tmp = seq->process_n_textarea();
     mode->pre_mode &= ~TBLM_INTXTA;
     mode->end_tag = 0;
     feed_table1(tbl, tmp, mode, width, seq);
@@ -3132,25 +3132,25 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
             else if (width > 0)
                 w = width;
         }
-        tok = process_img(tag, w, seq);
+        tok = seq->process_img(tag, w);
         feed_table1(tbl, tok, mode, width, seq);
         break;
     case HTML_FORM:
         feed_table_block_tag(tbl, "", mode, 0, cmd);
-        tmp = process_form(tag);
+        tmp = seq->FormOpen(tag);
         if (tmp)
             feed_table1(tbl, tmp, mode, width, seq);
         break;
     case HTML_N_FORM:
         feed_table_block_tag(tbl, "", mode, 0, cmd);
-        process_n_form();
+        seq->FormClose();
         break;
     case HTML_INPUT:
-        tmp = process_input(tag, seq);
+        tmp = seq->process_input(tag);
         feed_table1(tbl, tmp, mode, width, seq);
         break;
     case HTML_SELECT:
-        tmp = process_select(tag, seq);
+        tmp = seq->process_select(tag);
         if (tmp)
             feed_table1(tbl, tmp, mode, width, seq);
         mode->pre_mode |= TBLM_INSELECT;
@@ -3174,7 +3174,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
             if (tbl->fixed_width[tbl->col] > 0)
                 w = tbl->fixed_width[tbl->col];
         }
-        tmp = process_textarea(tag, w);
+        tmp = seq->process_textarea(tag, w);
         if (tmp)
             feed_table1(tbl, tmp, mode, width, seq);
         mode->pre_mode |= TBLM_INTXTA;
@@ -3191,7 +3191,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
             check_rowcol(tbl, mode);
             if (i == 0)
             {
-                Str tmp = process_anchor(tag, line, seq);
+                Str tmp = seq->process_anchor(tag, line);
                 if (displayLinkNumber)
                 {
                     Str t = seq->GetLinkNumberStr(-1);
@@ -3434,12 +3434,12 @@ int feed_table(struct table *tbl, char *line, struct table_mode *mode,
         return -1;
     if (mode->pre_mode & TBLM_INTXTA)
     {
-        feed_textarea(line);
+        seq->feed_textarea(line);
         return -1;
     }
     if (mode->pre_mode & TBLM_INSELECT)
     {
-        feed_select(line, seq);
+        seq->feed_select(line);
         return -1;
     }
     if (!(mode->pre_mode & TBLM_PLAIN) &&

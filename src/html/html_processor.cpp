@@ -1,7 +1,5 @@
 #include "html_processor.h"
 #include "html/html_context.h"
-#include "textarea.h"
-#include "html/html_form.h"
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -33,61 +31,41 @@ static void KeyAbort(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
-#define FORMSTACK_SIZE 10
-#define INITIAL_FORM_SIZE 10
-static FormList **forms;
-static int *form_stack;
-static int form_max = -1;
-static int form_sp = 0;
-static int forms_size = 0;
-int cur_form_id()
-{
-    return form_sp >= 0 ? form_stack[form_sp] : -1;
-}
-Str process_n_form(void)
-{
-    if (form_sp >= 0)
-        form_sp--;
-    return nullptr;
-}
-
-
-static int cur_iseq;
-
 static void
 print_internal_information(struct html_feed_environ *henv)
 {
-    TextLineList *tl = newTextLineList();
+// TDOO:
+//     TextLineList *tl = newTextLineList();
 
-    {
-        auto s = Strnew("<internal>");
-        pushTextLine(tl, newTextLine(s, 0));
-        if (henv->title)
-        {
-            s = Strnew_m_charp("<title_alt title=\"",
-                               html_quote(henv->title), "\">");
-            pushTextLine(tl, newTextLine(s, 0));
-        }
-    }
+//     {
+//         auto s = Strnew("<internal>");
+//         pushTextLine(tl, newTextLine(s, 0));
+//         if (henv->title)
+//         {
+//             s = Strnew_m_charp("<title_alt title=\"",
+//                                html_quote(henv->title), "\">");
+//             pushTextLine(tl, newTextLine(s, 0));
+//         }
+//     }
 
-    get_formselect()->print_internal(tl);
-    get_textarea()->print_internal(tl);
+//     get_formselect()->print_internal(tl);
+//     get_textarea()->print_internal(tl);
 
-    {
-        auto s = Strnew("</internal>");
-        pushTextLine(tl, newTextLine(s, 0));
-    }
+//     {
+//         auto s = Strnew("</internal>");
+//         pushTextLine(tl, newTextLine(s, 0));
+//     }
 
-    if (henv->buf)
-    {
-        appendTextLineList(henv->buf, tl);
-    }
-    else if (henv->f)
-    {
-        TextLineListItem *p;
-        for (p = tl->first; p; p = p->next)
-            fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
-    }
+//     if (henv->buf)
+//     {
+//         appendTextLineList(henv->buf, tl);
+//     }
+//     else if (henv->f)
+//     {
+//         TextLineListItem *p;
+//         for (p = tl->first; p; p = p->next)
+//             fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
+//     }
 }
 
 ///
@@ -95,645 +73,6 @@ print_internal_information(struct html_feed_environ *henv)
 ///
 
 #define w3m_halfdump (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
-
-///
-/// process
-///
-Str process_form_int(struct parsed_tag *tag, int fid)
-{
-    auto p = "get";
-    tag->TryGetAttributeValue(ATTR_METHOD, &p);
-    auto q = "!CURRENT_URL!";
-    tag->TryGetAttributeValue(ATTR_ACTION, &q);
-    char *r = nullptr;
-    if (tag->TryGetAttributeValue(ATTR_ACCEPT_CHARSET, &r))
-        r = check_accept_charset(r);
-    if (!r && tag->TryGetAttributeValue(ATTR_CHARSET, &r))
-        r = check_charset(r);
-
-    char *s = nullptr;
-    tag->TryGetAttributeValue(ATTR_ENCTYPE, &s);
-    char *tg = nullptr;
-    tag->TryGetAttributeValue(ATTR_TARGET, &tg);
-    char *n = nullptr;
-    tag->TryGetAttributeValue(ATTR_NAME, &n);
-
-    if (fid < 0)
-    {
-        form_max++;
-        form_sp++;
-        fid = form_max;
-    }
-    else
-    { /* <form_int> */
-        if (form_max < fid)
-            form_max = fid;
-        form_sp = fid;
-    }
-    if (forms_size == 0)
-    {
-        forms_size = INITIAL_FORM_SIZE;
-        forms = New_N(FormList *, forms_size);
-        form_stack = NewAtom_N(int, forms_size);
-    }
-    else if (forms_size <= form_max)
-    {
-        forms_size += form_max;
-        forms = New_Reuse(FormList *, forms, forms_size);
-        form_stack = New_Reuse(int, form_stack, forms_size);
-    }
-    form_stack[form_sp] = fid;
-
-    if (w3m_halfdump)
-    {
-        Str tmp = Sprintf("<form_int fid=\"%d\" action=\"%s\" method=\"%s\"",
-                          fid, html_quote(q), html_quote(p));
-        if (s)
-            tmp->Push(Sprintf(" enctype=\"%s\"", html_quote(s)));
-        if (tg)
-            tmp->Push(Sprintf(" target=\"%s\"", html_quote(tg)));
-        if (n)
-            tmp->Push(Sprintf(" name=\"%s\"", html_quote(n)));
-#ifdef USE_M17N
-        if (r)
-            tmp->Push(Sprintf(" accept-charset=\"%s\"", html_quote(r)));
-#endif
-        tmp->Push(">");
-        return tmp;
-    }
-
-    forms[fid] = newFormList(q, p, r, s, tg, n, nullptr);
-    return nullptr;
-}
-
-Str process_input(struct parsed_tag *tag, HtmlContext *seq)
-{
-    int i, w, v, x, y, z, iw, ih;
-    Str tmp = nullptr;
-    const char *qq = "";
-    int qlen = 0;
-
-    if (cur_form_id() < 0)
-    {
-        const char *s = "<form_int method=internal action=none>";
-        tmp = process_form(parse_tag(&s, TRUE));
-    }
-    if (tmp == nullptr)
-        tmp = Strnew();
-
-    auto p = "text";
-    tag->TryGetAttributeValue(ATTR_TYPE, &p);
-    const char *q = nullptr;
-    tag->TryGetAttributeValue(ATTR_VALUE, &q);
-    auto r = "";
-    tag->TryGetAttributeValue(ATTR_NAME, &r);
-    w = 20;
-    tag->TryGetAttributeValue(ATTR_SIZE, &w);
-    i = 20;
-    tag->TryGetAttributeValue(ATTR_MAXLENGTH, &i);
-    char *p2 = nullptr;
-    tag->TryGetAttributeValue(ATTR_ALT, &p2);
-    x = tag->HasAttribute(ATTR_CHECKED);
-    y = tag->HasAttribute(ATTR_ACCEPT);
-    z = tag->HasAttribute(ATTR_READONLY);
-
-    v = formtype(p);
-    if (v == FORM_UNKNOWN)
-        return nullptr;
-
-    if (!q)
-    {
-        switch (v)
-        {
-        case FORM_INPUT_IMAGE:
-        case FORM_INPUT_SUBMIT:
-        case FORM_INPUT_BUTTON:
-            q = "SUBMIT";
-            break;
-        case FORM_INPUT_RESET:
-            q = "RESET";
-            break;
-            /* if no VALUE attribute is specified in 
-             * <INPUT TYPE=CHECKBOX> tag, then the value "on" is used 
-             * as a default value. It is not a part of HTML4.0 
-             * specification, but an imitation of Netscape behaviour. 
-             */
-        case FORM_INPUT_CHECKBOX:
-            q = "on";
-        }
-    }
-    /* VALUE attribute is not allowed in <INPUT TYPE=FILE> tag. */
-    if (v == FORM_INPUT_FILE)
-        q = nullptr;
-    if (q)
-    {
-        qq = html_quote(q);
-        qlen = get_strwidth(q);
-    }
-
-    tmp->Push("<pre_int>");
-    switch (v)
-    {
-    case FORM_INPUT_PASSWORD:
-    case FORM_INPUT_TEXT:
-    case FORM_INPUT_FILE:
-    case FORM_INPUT_CHECKBOX:
-        if (displayLinkNumber)
-            tmp->Push(seq->GetLinkNumberStr(0));
-        tmp->Push('[');
-        break;
-    case FORM_INPUT_RADIO:
-        if (displayLinkNumber)
-            tmp->Push(seq->GetLinkNumberStr(0));
-        tmp->Push('(');
-    }
-
-    tmp->Push(Sprintf("<input_alt hseq=\"%d\" fid=\"%d\" type=%s "
-                      "name=\"%s\" width=%d maxlength=%d value=\"%s\"",
-                      seq->Increment(), cur_form_id(), p, html_quote(r), w, i, qq));
-
-    if (x)
-        tmp->Push(" checked");
-    if (y)
-        tmp->Push(" accept");
-    if (z)
-        tmp->Push(" readonly");
-    tmp->Push('>');
-
-    if (v == FORM_INPUT_HIDDEN)
-        tmp->Push("</input_alt></pre_int>");
-    else
-    {
-        switch (v)
-        {
-        case FORM_INPUT_PASSWORD:
-        case FORM_INPUT_TEXT:
-        case FORM_INPUT_FILE:
-            tmp->Push("<u>");
-            break;
-        case FORM_INPUT_IMAGE:
-        {
-            char *s = nullptr;
-            tag->TryGetAttributeValue(ATTR_SRC, &s);
-            if (s)
-            {
-                tmp->Push(Sprintf("<img src=\"%s\"", html_quote(s)));
-                if (p2)
-                    tmp->Push(Sprintf(" alt=\"%s\"", html_quote(p2)));
-                if (tag->TryGetAttributeValue(ATTR_WIDTH, &iw))
-                    tmp->Push(Sprintf(" width=\"%d\"", iw));
-                if (tag->TryGetAttributeValue(ATTR_HEIGHT, &ih))
-                    tmp->Push(Sprintf(" height=\"%d\"", ih));
-                tmp->Push(" pre_int>");
-                tmp->Push("</input_alt></pre_int>");
-                return tmp;
-            }
-        }
-        case FORM_INPUT_SUBMIT:
-        case FORM_INPUT_BUTTON:
-        case FORM_INPUT_RESET:
-            if (displayLinkNumber)
-                tmp->Push(seq->GetLinkNumberStr(-1));
-            tmp->Push("[");
-            break;
-        }
-        switch (v)
-        {
-        case FORM_INPUT_PASSWORD:
-            i = 0;
-            if (q)
-            {
-                for (; i < qlen && i < w; i++)
-                    tmp->Push('*');
-            }
-            for (; i < w; i++)
-                tmp->Push(' ');
-            break;
-        case FORM_INPUT_TEXT:
-        case FORM_INPUT_FILE:
-            if (q)
-                tmp->Push(textfieldrep(Strnew(q), w));
-            else
-            {
-                for (i = 0; i < w; i++)
-                    tmp->Push(' ');
-            }
-            break;
-        case FORM_INPUT_SUBMIT:
-        case FORM_INPUT_BUTTON:
-            if (p2)
-                tmp->Push(html_quote(p2));
-            else
-                tmp->Push(qq);
-            break;
-        case FORM_INPUT_RESET:
-            tmp->Push(qq);
-            break;
-        case FORM_INPUT_RADIO:
-        case FORM_INPUT_CHECKBOX:
-            if (x)
-                tmp->Push('*');
-            else
-                tmp->Push(' ');
-            break;
-        }
-        switch (v)
-        {
-        case FORM_INPUT_PASSWORD:
-        case FORM_INPUT_TEXT:
-        case FORM_INPUT_FILE:
-            tmp->Push("</u>");
-            break;
-        case FORM_INPUT_IMAGE:
-        case FORM_INPUT_SUBMIT:
-        case FORM_INPUT_BUTTON:
-        case FORM_INPUT_RESET:
-            tmp->Push("]");
-        }
-        tmp->Push("</input_alt>");
-        switch (v)
-        {
-        case FORM_INPUT_PASSWORD:
-        case FORM_INPUT_TEXT:
-        case FORM_INPUT_FILE:
-        case FORM_INPUT_CHECKBOX:
-            tmp->Push(']');
-            break;
-        case FORM_INPUT_RADIO:
-            tmp->Push(')');
-        }
-        tmp->Push("</pre_int>");
-    }
-    return tmp;
-}
-
-#define IMG_SYMBOL UL_SYMBOL(12)
-Str process_img(struct parsed_tag *tag, int width, HtmlContext *seq)
-{
-    char *p, *q, *r, *r2 = nullptr, *t;
-#ifdef USE_IMAGE
-    int w, i, nw, ni = 1, n, w0 = -1, i0 = -1;
-    int align, xoffset, yoffset, top, bottom, ismap = 0;
-    int use_image = w3mApp::Instance().activeImage && w3mApp::Instance().displayImage;
-#else
-    int w, i, nw, n;
-#endif
-    int pre_int = FALSE, ext_pre_int = FALSE;
-    Str tmp = Strnew();
-
-    if (!tag->TryGetAttributeValue(ATTR_SRC, &p))
-        return tmp;
-    p = remove_space(p);
-    q = nullptr;
-    tag->TryGetAttributeValue(ATTR_ALT, &q);
-    if (!pseudoInlines && (q == nullptr || (*q == '\0' && ignore_null_img_alt)))
-        return tmp;
-    t = q;
-    tag->TryGetAttributeValue(ATTR_TITLE, &t);
-    w = -1;
-    if (tag->TryGetAttributeValue(ATTR_WIDTH, &w))
-    {
-        if (w < 0)
-        {
-            if (width > 0)
-                w = (int)(-width * w3mApp::Instance().pixel_per_char * w / 100 + 0.5);
-            else
-                w = -1;
-        }
-#ifdef USE_IMAGE
-        if (use_image)
-        {
-            if (w > 0)
-            {
-                w = (int)(w * w3mApp::Instance().image_scale / 100 + 0.5);
-                if (w == 0)
-                    w = 1;
-                else if (w > MAX_IMAGE_SIZE)
-                    w = MAX_IMAGE_SIZE;
-            }
-        }
-#endif
-    }
-#ifdef USE_IMAGE
-    if (use_image)
-    {
-        i = -1;
-        if (tag->TryGetAttributeValue(ATTR_HEIGHT, &i))
-        {
-            if (i > 0)
-            {
-                i = (int)(i * w3mApp::Instance().image_scale / 100 + 0.5);
-                if (i == 0)
-                    i = 1;
-                else if (i > MAX_IMAGE_SIZE)
-                    i = MAX_IMAGE_SIZE;
-            }
-            else
-            {
-                i = -1;
-            }
-        }
-        align = -1;
-        tag->TryGetAttributeValue(ATTR_ALIGN, &align);
-        ismap = 0;
-        if (tag->HasAttribute(ATTR_ISMAP))
-            ismap = 1;
-    }
-    else
-#endif
-        tag->TryGetAttributeValue(ATTR_HEIGHT, &i);
-    r = nullptr;
-    tag->TryGetAttributeValue(ATTR_USEMAP, &r);
-    if (tag->HasAttribute(ATTR_PRE_INT))
-        ext_pre_int = TRUE;
-
-    tmp = Strnew_size(128);
-#ifdef USE_IMAGE
-    if (use_image)
-    {
-        switch (align)
-        {
-        case ALIGN_LEFT:
-            tmp->Push("<div_int align=left>");
-            break;
-        case ALIGN_CENTER:
-            tmp->Push("<div_int align=center>");
-            break;
-        case ALIGN_RIGHT:
-            tmp->Push("<div_int align=right>");
-            break;
-        }
-    }
-#endif
-    if (r)
-    {
-        Str tmp2;
-        r2 = strchr(r, '#');
-        auto s = "<form_int method=internal action=map>";
-        tmp2 = process_form(parse_tag(&s, TRUE));
-        if (tmp2)
-            tmp->Push(tmp2);
-        tmp->Push(Sprintf("<input_alt fid=\"%d\" "
-                          "type=hidden name=link value=\"",
-                          cur_form_id));
-        tmp->Push(html_quote((r2) ? r2 + 1 : r));
-        tmp->Push(Sprintf("\"><input_alt hseq=\"%d\" fid=\"%d\" "
-                          "type=submit no_effect=true>",
-                          seq->Increment(), cur_form_id));
-    }
-#ifdef USE_IMAGE
-    if (use_image)
-    {
-        w0 = w;
-        i0 = i;
-        if (w < 0 || i < 0)
-        {
-            Image image;
-            URL u;
-
-            u.Parse2(wc_conv(p, w3mApp::Instance().InnerCharset, seq->CES())->ptr, GetCurBaseUrl());
-            image.url = u.ToStr()->ptr;
-            if (!uncompressed_file_type(u.file.c_str(), &image.ext))
-                image.ext = filename_extension(u.file.c_str(), TRUE);
-            image.cache = nullptr;
-            image.width = w;
-            image.height = i;
-
-            image.cache = getImage(&image, GetCurBaseUrl(), IMG_FLAG_SKIP);
-            if (image.cache && image.cache->width > 0 &&
-                image.cache->height > 0)
-            {
-                w = w0 = image.cache->width;
-                i = i0 = image.cache->height;
-            }
-            if (w < 0)
-                w = 8 * w3mApp::Instance().pixel_per_char;
-            if (i < 0)
-                i = w3mApp::Instance().pixel_per_line;
-        }
-        nw = (w > 3) ? (int)((w - 3) / w3mApp::Instance().pixel_per_char + 1) : 1;
-        ni = (i > 3) ? (int)((i - 3) / w3mApp::Instance().pixel_per_line + 1) : 1;
-        tmp->Push(
-            Sprintf("<pre_int><img_alt hseq=\"%d\" src=\"", cur_iseq++));
-        pre_int = TRUE;
-    }
-    else
-#endif
-    {
-        if (w < 0)
-            w = 12 * w3mApp::Instance().pixel_per_char;
-        nw = w ? (int)((w - 1) / w3mApp::Instance().pixel_per_char + 1) : 1;
-        if (r)
-        {
-            tmp->Push("<pre_int>");
-            pre_int = TRUE;
-        }
-        tmp->Push("<img_alt src=\"");
-    }
-    tmp->Push(html_quote(p));
-    tmp->Push("\"");
-    if (t)
-    {
-        tmp->Push(" title=\"");
-        tmp->Push(html_quote(t));
-        tmp->Push("\"");
-    }
-#ifdef USE_IMAGE
-    if (use_image)
-    {
-        if (w0 >= 0)
-            tmp->Push(Sprintf(" width=%d", w0));
-        if (i0 >= 0)
-            tmp->Push(Sprintf(" height=%d", i0));
-        switch (align)
-        {
-        case ALIGN_TOP:
-            top = 0;
-            bottom = ni - 1;
-            yoffset = 0;
-            break;
-        case ALIGN_MIDDLE:
-            top = ni / 2;
-            bottom = top;
-            if (top * 2 == ni)
-                yoffset = (int)(((ni + 1) * w3mApp::Instance().pixel_per_line - i) / 2);
-            else
-                yoffset = (int)((ni * w3mApp::Instance().pixel_per_line - i) / 2);
-            break;
-        case ALIGN_BOTTOM:
-            top = ni - 1;
-            bottom = 0;
-            yoffset = (int)(ni * w3mApp::Instance().pixel_per_line - i);
-            break;
-        default:
-            top = ni - 1;
-            bottom = 0;
-            if (ni == 1 && ni * w3mApp::Instance().pixel_per_line > i)
-                yoffset = 0;
-            else
-            {
-                yoffset = (int)(ni * w3mApp::Instance().pixel_per_line - i);
-                if (yoffset <= -2)
-                    yoffset++;
-            }
-            break;
-        }
-        xoffset = (int)((nw * w3mApp::Instance().pixel_per_char - w) / 2);
-        if (xoffset)
-            tmp->Push(Sprintf(" xoffset=%d", xoffset));
-        if (yoffset)
-            tmp->Push(Sprintf(" yoffset=%d", yoffset));
-        if (top)
-            tmp->Push(Sprintf(" top_margin=%d", top));
-        if (bottom)
-            tmp->Push(Sprintf(" bottom_margin=%d", bottom));
-        if (r)
-        {
-            tmp->Push(" usemap=\"");
-            tmp->Push(html_quote((r2) ? r2 + 1 : r));
-            tmp->Push("\"");
-        }
-        if (ismap)
-            tmp->Push(" ismap");
-    }
-#endif
-    tmp->Push(">");
-    if (q != nullptr && *q == '\0' && ignore_null_img_alt)
-        q = nullptr;
-    if (q != nullptr)
-    {
-        n = get_strwidth(q);
-#ifdef USE_IMAGE
-        if (use_image)
-        {
-            if (n > nw)
-            {
-                char *r;
-                for (r = q, n = 0; r; r += get_mclen(r), n += get_mcwidth(r))
-                {
-                    if (n + get_mcwidth(r) > nw)
-                        break;
-                }
-                tmp->Push(html_quote(Strnew_charp_n(q, r - q)->ptr));
-            }
-            else
-                tmp->Push(html_quote(q));
-        }
-        else
-#endif
-            tmp->Push(html_quote(q));
-        goto img_end;
-    }
-    if (w > 0 && i > 0)
-    {
-        /* guess what the image is! */
-        if (w < 32 && i < 48)
-        {
-            /* must be an icon or space */
-            n = 1;
-            if (strcasestr(p, "space") || strcasestr(p, "blank"))
-                tmp->Push("_");
-            else
-            {
-                if (w * i < 8 * 16)
-                    tmp->Push("*");
-                else
-                {
-                    if (!pre_int)
-                    {
-                        tmp->Push("<pre_int>");
-                        pre_int = TRUE;
-                    }
-                    push_symbol(tmp, IMG_SYMBOL, seq->SymbolWidth(), 1);
-                    n = seq->SymbolWidth();
-                }
-            }
-            goto img_end;
-        }
-        if (w > 200 && i < 13)
-        {
-            /* must be a horizontal line */
-            if (!pre_int)
-            {
-                tmp->Push("<pre_int>");
-                pre_int = TRUE;
-            }
-            w = w / w3mApp::Instance().pixel_per_char / seq->SymbolWidth();
-            if (w <= 0)
-                w = 1;
-            push_symbol(tmp, HR_SYMBOL, seq->SymbolWidth(), w);
-            n = w * seq->SymbolWidth();
-            goto img_end;
-        }
-    }
-    for (q = p; *q; q++)
-        ;
-    while (q > p && *q != '/')
-        q--;
-    if (*q == '/')
-        q++;
-    tmp->Push('[');
-    n = 1;
-    p = q;
-    for (; *q; q++)
-    {
-        if (!IS_ALNUM(*q) && *q != '_' && *q != '-')
-        {
-            break;
-        }
-        tmp->Push(*q);
-        n++;
-        if (n + 1 >= nw)
-            break;
-    }
-    tmp->Push(']');
-    n++;
-img_end:
-#ifdef USE_IMAGE
-    if (use_image)
-    {
-        for (; n < nw; n++)
-            tmp->Push(' ');
-    }
-#endif
-    tmp->Push("</img_alt>");
-    if (pre_int && !ext_pre_int)
-        tmp->Push("</pre_int>");
-    if (r)
-    {
-        tmp->Push("</input_alt>");
-        process_n_form();
-    }
-#ifdef USE_IMAGE
-    if (use_image)
-    {
-        switch (align)
-        {
-        case ALIGN_RIGHT:
-        case ALIGN_CENTER:
-        case ALIGN_LEFT:
-            tmp->Push("</div_int>");
-            break;
-        }
-    }
-#endif
-    return tmp;
-}
-
-Str process_anchor(struct parsed_tag *tag, char *tagbuf, HtmlContext *seq)
-{
-    if (tag->need_reconstruct)
-    {
-        tag->SetAttributeValue(ATTR_HSEQ, Sprintf("%d", seq->Increment())->ptr);
-        return tag->ToStr();
-    }
-    else
-    {
-        Str tmp = Sprintf("<a hseq=\"%d\"", seq->Increment());
-        tmp->Push(tagbuf + 2);
-        return tmp;
-    }
-}
 
 static Lineprop ex_efct(Lineprop ex)
 {
@@ -778,10 +117,8 @@ private:
     Anchor *a_img = nullptr;
     Anchor *a_form = nullptr;
 
-    HtmlTextArea *g_ta;
     std::vector<Anchor *> a_textarea;
 
-    FormSelect *g_fs;
     std::vector<Anchor *> a_select;
 
     HtmlTags internal = HTML_UNKNOWN;
@@ -790,13 +127,6 @@ private:
     std::vector<struct frameset *> frameset_s;
 
 public:
-    HtmlProcessor(HtmlTextArea *ta, FormSelect *fs)
-        : g_ta(ta), g_fs(fs)
-    {
-        g_ta->clear(-1);
-        g_fs->clear(-1);
-    }
-
     /* end of processing for one line */
     bool EndLineAddBuffer()
     {
@@ -815,7 +145,7 @@ public:
         return false;
     }
 
-    void Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str)
+    void Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str, HtmlContext *context)
     {
         switch (tag->tagid)
         {
@@ -1029,18 +359,20 @@ public:
             break;
         case HTML_INPUT_ALT:
         {
-            FormList *form;
-            int top = 0, bottom = 0;
-
             auto hseq = 0;
             tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
             auto form_id = -1;
             tag->TryGetAttributeValue(ATTR_FID, &form_id);
+            int top = 0, bottom = 0;
             tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &top);
             tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
-            if (form_id < 0 || form_id > form_max || forms == nullptr)
-                break; /* outside of <form>..</form> */
-            form = forms[form_id];
+
+            auto form = context->FormCurrent(form_id);
+            if(!form)
+            {
+                break;
+            }
+
             if (hseq > 0)
             {
                 int hpos = pos;
@@ -1054,16 +386,16 @@ public:
             int textareanumber = -1;
             if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &textareanumber))
             {
-                g_ta->grow(textareanumber);
+                context->TextareaGrow(textareanumber);
             }
 
             int selectnumber = -1;
             if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &selectnumber))
             {
-                g_fs->grow(selectnumber);
+                context->FormSelectGrow(selectnumber);
             }
 
-            auto fi = formList_addInput(form, tag, g_ta);
+            auto fi = formList_addInput(form, tag, context);
             if (fi)
             {
                 Anchor a;
@@ -1260,7 +592,7 @@ public:
         {
             int form_id;
             if (tag->TryGetAttributeValue(ATTR_FID, &form_id))
-                process_form_int(tag, form_id);
+                context->FormOpen(tag, form_id);
             break;
         }
         case HTML_TEXTAREA_INT:
@@ -1268,13 +600,13 @@ public:
             int n_textarea = -1;
             if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &n_textarea))
             {
-                g_ta->set(n_textarea, Strnew());
+                context->Textarea(n_textarea, Strnew());
             }
             break;
         }
         case HTML_N_TEXTAREA_INT:
         {
-            auto [n, t] = g_ta->getCurrent();
+            auto [n, t] = context->TextareaCurrent();
             auto anchor = a_textarea[n];
             if (anchor)
             {
@@ -1288,13 +620,13 @@ public:
             int n_select = -1;
             if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &n_select))
             {
-                g_fs->set(n_select);
+                context->FormSetSelect(n_select);
             }
             break;
         }
         case HTML_N_SELECT_INT:
         {
-            auto [n_select, select] = g_fs->getCurrent();
+            auto [n_select, select] = context->FormSelectCurrent();
             if (select)
             {
                 FormItemList *item = a_select[n_select]->item;
@@ -1308,7 +640,7 @@ public:
         }
         case HTML_OPTION_INT:
         {
-            auto [n_select, select] = g_fs->getCurrent();
+            auto [n_select, select] = context->FormSelectCurrent();
             if (select)
             {
                 auto q = "";
@@ -1376,7 +708,7 @@ public:
 using FeedFunc = Str (*)();
 static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HtmlContext *seq)
 {
-    HtmlProcessor state(get_textarea(), get_formselect());
+    HtmlProcessor state;
 
     //
     // each line
@@ -1393,7 +725,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HtmlCont
                 break;
             }
 
-            auto [n, t] = get_textarea()->getCurrent();
+            auto [n, t] = seq->TextareaCurrent();
             if (n >= 0 && *(line->ptr) != '<')
             { /* halfload */
                 t->Push(line);
@@ -1504,7 +836,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HtmlCont
                 if (!tag)
                     continue;
 
-                state.Process(tag, buf, out.len(), str);
+                state.Process(tag, buf, out.len(), str, seq);
             }
         }
 
@@ -1525,9 +857,8 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HtmlCont
         }
     }
 
-    for (int form_id = 1; form_id <= form_max; form_id++)
-        forms[form_id]->next = forms[form_id - 1];
-    buf->formlist = (form_max >= 0) ? forms[form_max] : nullptr;
+    buf->formlist = seq->FormEnd();
+
     addMultirowsForm(buf, buf->formitem);
     addMultirowsImg(buf, buf->img);
 }
@@ -1580,28 +911,18 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     clen_t linelen = 0;
     clen_t trbyte = 0;
     Str lineBuf2 = Strnew();
-#ifdef USE_M17N
+
     CharacterEncodingScheme charset = WC_CES_US_ASCII;
     CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
-#endif
+
     struct html_feed_environ htmlenv1;
     struct readbuffer obuf;
-#ifdef USE_IMAGE
-    int image_flag;
-#endif
+
     MySignalHandler prevtrap = nullptr;
 
-    get_textarea()->clear(0);
-    get_formselect()->clear(0);
+    HtmlContext context;
 
-    form_sp = -1;
-    form_max = -1;
-    forms_size = 0;
-    forms = nullptr;
-
-    HtmlContext seq;
-
-    cur_iseq = 1;
+    int image_flag;
     if (newBuf->image_flag)
         image_flag = newBuf->image_flag;
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && autoImage)
@@ -1618,10 +939,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         newBuf->buffername = "---";
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
 
-        get_textarea()->clear(0);
-        get_formselect()->clear(0);
-
-        HTMLlineproc3(newBuf, f->stream, &seq);
+        HTMLlineproc3(newBuf, f->stream, &context);
         w3mApp::Instance().w3m_halfload = FALSE;
         return;
     }
@@ -1695,17 +1013,17 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 
             lineBuf2 = convertLine(f, lineBuf2, HTML_MODE, &charset, doc_charset);
 
-            seq.SetCES(charset);
+            context.SetCES(charset);
 
-            HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal, &seq);
+            HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal, &context);
         }
         if (obuf.status != R_ST_NORMAL)
         {
             obuf.status = R_ST_EOL;
-            HTMLlineproc0("\n", &htmlenv1, internal, &seq);
+            HTMLlineproc0("\n", &htmlenv1, internal, &context);
         }
         obuf.status = R_ST_NORMAL;
-        completeHTMLstream(&htmlenv1, &obuf, &seq);
+        completeHTMLstream(&htmlenv1, &obuf, &context);
         flushline(&htmlenv1, &obuf, 0, 2, htmlenv1.limit);
         if (htmlenv1.title)
             newBuf->buffername = htmlenv1.title;
@@ -1715,7 +1033,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 
     if (!success)
     {
-        HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1, &seq);
+        HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1, &context);
     }
     else
     {
@@ -1740,7 +1058,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 
     newBuf->image_flag = image_flag;
 
-    HTMLlineproc2(newBuf, htmlenv1.buf, &seq);
+    HTMLlineproc2(newBuf, htmlenv1.buf, &context);
 }
 
 /* 

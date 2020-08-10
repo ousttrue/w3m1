@@ -5,7 +5,6 @@
 #ifndef FORM_H
 #define FORM_H
 
-
 #include "html/html.h"
 #include "frontend/buffer.h"
 
@@ -84,7 +83,6 @@ struct FormList
     unsigned long length;
 };
 
-
 #ifdef MENU_SELECT
 
 struct FormSelectOption
@@ -99,8 +97,7 @@ void updateSelectOption(FormItemList *fi, FormSelectOptionItem *item);
 int formChooseOptionByMenu(FormItemList *fi, int x, int y);
 #endif /* MENU_SELECT */
 
-FormItemList *formList_addInput(FormList *fl,
-                                struct parsed_tag *tag, class HtmlTextArea *ta);
+FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, class HtmlContext *context);
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
 
@@ -109,5 +106,5 @@ FormList *newFormList(const char *action, const char *method, const char *charse
                       FormList *_next);
 int formtype(const char *typestr);
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
-
+Str textfieldrep(Str s, int width);
 #endif /* not FORM_H */

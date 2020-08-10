@@ -12,8 +12,8 @@
 #include "symbol.h"
 #include "ctrlcode.h"
 #include "html/html_processor.h"
-#include "html/textarea.h"
-#include "html/html_form.h"
+
+
 #include "html/html_context.h"
 #include "html/tokenizer.h"
 #include "frontend/buffer.h"
@@ -1746,7 +1746,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         if (hseq == 0 && obuf->anchor.url.size())
         {
             obuf->anchor.hseq = seq->Get();
-            tmp = process_anchor(tag, h_env->tagbuf->ptr, seq);
+            tmp = seq->process_anchor(tag, h_env->tagbuf->ptr);
             push_tag(obuf, tmp->ptr, HTML_A);
             if (displayLinkNumber)
                 HTMLlineproc1(seq->GetLinkNumberStr(-1)->ptr, h_env, seq);
@@ -1757,7 +1757,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         close_anchor(h_env, obuf, seq);
         return 1;
     case HTML_IMG:
-        tmp = process_img(tag, h_env->limit, seq);
+        tmp = seq->process_img(tag, h_env->limit);
         HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
     case HTML_IMG_ALT:
@@ -1899,7 +1899,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
-        tmp = process_form(tag);
+        tmp = seq->FormOpen(tag);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
@@ -1907,17 +1907,17 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         CLOSE_A;
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         obuf->flag |= RB_IGNORE_P;
-        process_n_form();
+        seq->FormClose();
         return 1;
     case HTML_INPUT:
         close_anchor(h_env, obuf, seq);
-        tmp = process_input(tag, seq);
+        tmp = seq->process_input(tag);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
     case HTML_SELECT:
         close_anchor(h_env, obuf, seq);
-        tmp = process_select(tag, seq);
+        tmp = seq->process_select(tag);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         obuf->flag |= RB_INSELECT;
@@ -1926,7 +1926,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_N_SELECT:
         obuf->flag &= ~RB_INSELECT;
         obuf->end_tag = 0;
-        tmp = process_n_select(seq);
+        tmp = seq->process_n_select();
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
@@ -1935,7 +1935,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         return 1;
     case HTML_TEXTAREA:
         close_anchor(h_env, obuf, seq);
-        tmp = process_textarea(tag, h_env->limit);
+        tmp = seq->process_textarea(tag, h_env->limit);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         obuf->flag |= RB_INTXTA;
@@ -1944,7 +1944,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_N_TEXTAREA:
         obuf->flag &= ~RB_INTXTA;
         obuf->end_tag = 0;
-        tmp = process_n_textarea(seq);
+        tmp = seq->process_n_textarea();
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
@@ -2366,7 +2366,7 @@ table_start:
             {
                 if (obuf->table_level >= 0)
                     goto proc_normal;
-                feed_select(str, seq);
+                seq->feed_select(str);
                 continue;
             }
             if (is_tag)
@@ -2384,7 +2384,7 @@ table_start:
             /* textarea */
             if (pre_mode & RB_INTXTA)
             {
-                feed_textarea(str);
+                seq->feed_textarea(str);
                 continue;
             }
             /* script */

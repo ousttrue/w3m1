@@ -8,8 +8,6 @@ long long GetCurrentContentLength();
 extern CharacterEncodingScheme content_charset;
 extern CharacterEncodingScheme meta_charset;
 extern int frame_source;
-char *check_accept_charset(char *ac);
-char *check_charset(char *p);
 
 struct URL;
 struct FormList;
