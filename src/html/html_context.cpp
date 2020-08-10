@@ -1,4 +1,4 @@
-#include "html_sequence.h"
+#include "html/html_context.h"
 #include "fm.h"
 #include "indep.h"
 #include "w3m.h"

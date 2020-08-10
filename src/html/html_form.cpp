@@ -8,7 +8,7 @@
 #include "myctype.h"
 #include "w3m.h"
 #include "file.h"
-#include "html_sequence.h"
+#include "html/html_context.h"
 #include "tokenizer.h"
 
 #define MAX_SELECT 10 /* max number of <select>..</select> \

@@ -17,7 +17,7 @@
 #include "tagstack.h"
 #include "html.h"
 #include "html/html.h"
-#include "html/html_sequence.h"
+#include "html/html_context.h"
 #include "html/html_form.h"
 #include "html/html_processor.h"
 #include "html/textarea.h"

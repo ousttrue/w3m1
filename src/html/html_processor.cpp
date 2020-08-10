@@ -1,5 +1,5 @@
 #include "html_processor.h"
-#include "html_sequence.h"
+#include "html/html_context.h"
 #include "textarea.h"
 #include "html/html_form.h"
 #include "fm.h"
@@ -34,7 +34,6 @@ static void KeyAbort(SIGNAL_ARG)
 }
 
 #define FORMSTACK_SIZE 10
-
 #define INITIAL_FORM_SIZE 10
 static FormList **forms;
 static int *form_stack;
@@ -52,7 +51,7 @@ Str process_n_form(void)
     return nullptr;
 }
 
-static CharacterEncodingScheme cur_document_charset;
+
 static int cur_iseq;
 
 static void
@@ -492,7 +491,7 @@ Str process_img(struct parsed_tag *tag, int width, HSequence *seq)
             Image image;
             URL u;
 
-            u.Parse2(wc_conv(p, w3mApp::Instance().InnerCharset, cur_document_charset)->ptr, GetCurBaseUrl());
+            u.Parse2(wc_conv(p, w3mApp::Instance().InnerCharset, seq->CES())->ptr, GetCurBaseUrl());
             image.url = u.ToStr()->ptr;
             if (!uncompressed_file_type(u.file.c_str(), &image.ext))
                 image.ext = filename_extension(u.file.c_str(), TRUE);
@@ -1697,9 +1696,9 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
             }
 
             lineBuf2 = convertLine(f, lineBuf2, HTML_MODE, &charset, doc_charset);
-#if defined(USE_M17N) && defined(USE_IMAGE)
-            cur_document_charset = charset;
-#endif
+
+            seq.SetCES(charset);
+
             HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal, &seq);
         }
         if (obuf.status != R_ST_NORMAL)

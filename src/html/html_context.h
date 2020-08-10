@@ -3,6 +3,8 @@
 
 class HSequence
 {
+    CharacterEncodingScheme cur_document_charset;
+
     int cur_hseq = 1;
 
     int symbol_width = 0;
@@ -11,6 +13,10 @@ class HSequence
 public:
     HSequence();
     ~HSequence();
+
+    CharacterEncodingScheme CES() const { return cur_document_charset; }
+    void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
+
     int Increment()
     {
         return cur_hseq++;

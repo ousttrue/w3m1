@@ -1,6 +1,6 @@
 #include "textarea.h"
 #include "html_processor.h"
-#include "html_sequence.h"
+#include "html/html_context.h"
 #include "gc_helper.h"
 #include "textlist.h"
 #include "Str.h"
