@@ -1,4 +1,5 @@
 #include "html_processor.h"
+#include "textarea.h"
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -79,20 +80,6 @@ static int n_select;
 static int cur_option_maxwidth;
 #endif /* MENU_SELECT */
 
-HtmlTextArea g_textarea;
-Str process_textarea(struct parsed_tag *tag, int width)
-{
-    g_textarea.process_textarea(tag, width);
-}
-Str process_n_textarea(void)
-{
-    g_textarea.process_n_textarea();
-}
-void feed_textarea(char *str)
-{
-    g_textarea.feed_textarea(str);
-}
-
 static CharacterEncodingScheme cur_document_charset;
 static int cur_iseq;
 
@@ -157,7 +144,7 @@ print_internal_information(struct html_feed_environ *henv)
     }
 #endif /* MENU_SELECT */
 
-    g_textarea.print_internal(tl);
+    get_textarea()->print_internal(tl);
 
     s = Strnew("</internal>");
     pushTextLine(tl, newTextLine(s, 0));
@@ -1044,6 +1031,7 @@ private:
     Anchor *a_img = nullptr;
     Anchor *a_form = nullptr;
 
+    HtmlTextArea *g_tl;
     std::vector<Anchor *> a_textarea;
 
     Anchor **a_select = nullptr;
@@ -1054,9 +1042,10 @@ private:
     std::vector<struct frameset *> frameset_s;
 
 public:
-    HtmlProcessor()
+    HtmlProcessor(HtmlTextArea *tl)
+    : g_tl(tl)
     {
-        g_textarea.clear(-1);
+        g_tl->clear(-1);
 
         n_select = -1;
         if (!max_select)
@@ -1324,7 +1313,7 @@ public:
                 form->target = Strnew(buf->baseTarget)->ptr;
             if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &textareanumber))
             {
-                g_textarea.grow(textareanumber);
+                g_tl->grow(textareanumber);
             }
 
             if (a_select &&
@@ -1342,7 +1331,7 @@ public:
                 }
             }
 
-            auto fi = formList_addInput(form, tag, &g_textarea);
+            auto fi = formList_addInput(form, tag, g_tl);
             if (fi)
             {
                 Anchor a;
@@ -1542,13 +1531,13 @@ public:
             if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER,
                                           &n_textarea))
             {
-                g_textarea.set(n_textarea, Strnew());
+                g_tl->set(n_textarea, Strnew());
             }
             break;
         }
         case HTML_N_TEXTAREA_INT:
         {
-            auto [n, t] = g_textarea.getCurrent();
+            auto [n, t] = g_tl->getCurrent();
             auto anchor = a_textarea[n];
             if (anchor)
             {
@@ -1645,7 +1634,7 @@ public:
 using FeedFunc = Str (*)();
 static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
 {
-    HtmlProcessor state;
+    HtmlProcessor state(get_textarea());
 
     //
     // each line
@@ -1662,7 +1651,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                 break;
             }
 
-            auto [n, t] = g_textarea.getCurrent();
+            auto [n, t] = get_textarea()->getCurrent();
             if (n >= 0 && *(line->ptr) != '<')
             { /* halfload */
                 t->Push(line);
@@ -1872,7 +1861,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 
     SetCurTitle(nullptr);
 
-    g_textarea.clear(0);
+    get_textarea()->clear(0);
 
 #ifdef MENU_SELECT
     n_select = 0;

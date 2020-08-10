@@ -12,6 +12,7 @@
 #include "symbol.h"
 #include "ctrlcode.h"
 #include "html/html_processor.h"
+#include "html/textarea.h"
 #include "frontend/buffer.h"
 #include "frontend/line.h"
 #include "charset.h"

@@ -20,6 +20,7 @@
 #include "html/anchor.h"
 #include "charset.h"
 #include "html/html_processor.h"
+#include "html/textarea.h"
 
 extern FormSelectOption *select_option;
 

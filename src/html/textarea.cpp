@@ -1,4 +1,5 @@
-#include "html/html_processor.h"
+#include "textarea.h"
+#include "html_processor.h"
 #include "gc_helper.h"
 #include "textlist.h"
 #include "Str.h"
@@ -180,4 +181,24 @@ Str HtmlTextArea::process_n_textarea(void)
     cur_textarea = nullptr;
 
     return tmp;
+}
+
+// TODO:
+
+HtmlTextArea g_textarea;
+HtmlTextArea* get_textarea()
+{
+    return &g_textarea;
+}
+Str process_textarea(struct parsed_tag *tag, int width)
+{
+    g_textarea.process_textarea(tag, width);
+}
+Str process_n_textarea(void)
+{
+    g_textarea.process_n_textarea();
+}
+void feed_textarea(char *str)
+{
+    g_textarea.feed_textarea(str);
 }
