@@ -664,53 +664,6 @@ image_buffer:
 }
 #endif
 
-static Str
-conv_symbol(LinePtr l)
-{
-    Str tmp = NULL;
-    char *p = l->lineBuf(), *ep = p + l->len();
-    Lineprop *pr = l->propBuf();
-#ifdef USE_M17N
-    int w;
-    const char **symbol = NULL;
-#else
-    char **symbol = get_symbol();
-#endif
-
-    for (; p < ep; p++, pr++)
-    {
-        if (*pr & PC_SYMBOL)
-        {
-#ifdef USE_M17N
-            char c = ((char)wtf_get_code((uint8_t *)p) & 0x7f) - SYMBOL_BASE;
-            int len = get_mclen(p);
-#else
-            char c = *p - SYMBOL_BASE;
-#endif
-            if (tmp == NULL)
-            {
-                tmp = Strnew_size(l->len());
-                tmp->CopyFrom(l->lineBuf(), p - l->lineBuf());
-#ifdef USE_M17N
-                w = (*pr & PC_KANJI) ? 2 : 1;
-                symbol = get_symbol(w3mApp::Instance().DisplayCharset, &w);
-#endif
-            }
-            tmp->Push(symbol[(int)c]);
-#ifdef USE_M17N
-            p += len - 1;
-            pr += len - 1;
-#endif
-        }
-        else if (tmp != NULL)
-            tmp->Push(*p);
-    }
-    if (tmp)
-        return tmp;
-    else
-        return Strnew_charp_n(l->lineBuf(), l->len());
-}
-
 /*
  * saveBuffer: write buffer to file
  */
@@ -727,7 +680,7 @@ pager_next:
     for (; l != NULL; l = buf->NextLine(l))
     {
         if (is_html)
-            tmp = conv_symbol(l);
+            tmp = l->buffer.conv_symbol();
         else
             tmp = Strnew_charp_n(l->lineBuf(), l->len());
         tmp = wc_Str_conv(tmp, w3mApp::Instance().InnerCharset, charset);

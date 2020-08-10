@@ -339,7 +339,7 @@ global char SimplePreserveSpace init(FALSE);
 extern const char *graph_symbol[];
 extern const char *graph2_symbol[];
 #define N_GRAPH_SYMBOL 32
-#define SYMBOL_BASE 0x20
+
 global int no_rc_dir init(FALSE);
 global char *rc_dir init(NULL);
 global char *tmp_dir;

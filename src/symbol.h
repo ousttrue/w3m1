@@ -1,5 +1,7 @@
 #pragma once
 
+#define SYMBOL_BASE 0x20
+
 enum GraphicCharTypes
 {
     GRAPHIC_CHAR_ASCII = 2,

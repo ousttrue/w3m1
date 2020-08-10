@@ -121,4 +121,6 @@ public:
     {
         return {m_lineBuf.data() + index, m_propBuf[index]};
     }
+
+    Str conv_symbol() const;
 };
