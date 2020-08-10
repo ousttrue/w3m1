@@ -644,8 +644,8 @@ Str process_img(struct parsed_tag *tag, int width, HSequence *seq)
                         tmp->Push("<pre_int>");
                         pre_int = TRUE;
                     }
-                    push_symbol(tmp, IMG_SYMBOL, symbol_width, 1);
-                    n = symbol_width;
+                    push_symbol(tmp, IMG_SYMBOL, seq->SymbolWidth(), 1);
+                    n = seq->SymbolWidth();
                 }
             }
             goto img_end;
@@ -658,11 +658,11 @@ Str process_img(struct parsed_tag *tag, int width, HSequence *seq)
                 tmp->Push("<pre_int>");
                 pre_int = TRUE;
             }
-            w = w / w3mApp::Instance().pixel_per_char / symbol_width;
+            w = w / w3mApp::Instance().pixel_per_char / seq->SymbolWidth();
             if (w <= 0)
                 w = 1;
-            push_symbol(tmp, HR_SYMBOL, symbol_width, w);
-            n = w * symbol_width;
+            push_symbol(tmp, HR_SYMBOL, seq->SymbolWidth(), w);
+            n = w * seq->SymbolWidth();
             goto img_end;
         }
     }
@@ -1374,7 +1374,7 @@ public:
 /// 1行ごとに Line の構築と html タグを解釈する
 ///
 using FeedFunc = Str (*)();
-static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
+static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HSequence *seq)
 {
     HtmlProcessor state(get_textarea(), get_formselect());
 
@@ -1414,12 +1414,9 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
             auto mode = get_mctype(*str);
             if ((state.effect | ex_efct(state.ex_effect)) & PC_SYMBOL && *str != '<')
             {
-
-                char **buf = set_symbol(symbol_width0);
-                int len;
-
+                char **buf = set_symbol(seq->SymbolWidth0());
                 auto p = buf[(int)state.symbol];
-                len = get_mclen(p);
+                int len = get_mclen(p);
                 mode = get_mctype(*p);
 
                 out.push(mode | state.effect | ex_efct(state.ex_effect), *(p++));
@@ -1431,7 +1428,7 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit)
                         out.push(mode | state.effect | ex_efct(state.ex_effect), *(p++));
                     }
                 }
-                str += symbol_width;
+                str += seq->SymbolWidth();
             }
             else if (mode == PC_CTRL || mode == PC_UNDEF)
             {
@@ -1544,10 +1541,10 @@ textlist_feed()
     }
     return nullptr;
 }
-void HTMLlineproc2(BufferPtr buf, TextLineList *tl)
+void HTMLlineproc2(BufferPtr buf, TextLineList *tl, HSequence *seq)
 {
     _tl_lp2 = tl->first;
-    HTMLlineproc2body(buf, textlist_feed, -1);
+    HTMLlineproc2body(buf, textlist_feed, -1, seq);
 }
 
 static InputStream *_file_lp2;
@@ -1563,12 +1560,16 @@ file_feed()
     }
     return s;
 }
-void HTMLlineproc3(BufferPtr buf, InputStream *stream)
+
+static void HTMLlineproc3(BufferPtr buf, InputStream *stream, HSequence *seq)
 {
     _file_lp2 = stream;
-    HTMLlineproc2body(buf, file_feed, -1);
+    HTMLlineproc2body(buf, file_feed, -1, seq);
 }
 
+///
+/// entry
+///
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 {
     struct environment envs[MAX_ENV_LEVEL];
@@ -1585,21 +1586,6 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     int image_flag;
 #endif
     MySignalHandler prevtrap = nullptr;
-
-#ifdef USE_M17N
-    if (fmInitialized && graph_ok())
-    {
-        symbol_width = symbol_width0 = 1;
-    }
-    else
-    {
-        symbol_width0 = 0;
-        get_symbol(w3mApp::Instance().DisplayCharset, &symbol_width0);
-        symbol_width = WcOption.use_wide ? symbol_width0 : 1;
-    }
-#else
-    symbol_width = symbol_width0 = 1;
-#endif
 
     SetCurTitle(nullptr);
 
@@ -1633,7 +1619,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         get_textarea()->clear(0);
         get_formselect()->clear(0);
 
-        HTMLlineproc3(newBuf, f->stream);
+        HTMLlineproc3(newBuf, f->stream, &seq);
         w3mApp::Instance().w3m_halfload = FALSE;
         return;
     }
@@ -1746,14 +1732,13 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     }
 
     newBuf->trbyte = trbyte + linelen;
-#ifdef USE_M17N
+
     if (!(newBuf->bufferprop & BP_FRAME))
         newBuf->document_charset = charset;
-#endif
-#ifdef USE_IMAGE
+
     newBuf->image_flag = image_flag;
-#endif
-    HTMLlineproc2(newBuf, htmlenv1.buf);
+
+    HTMLlineproc2(newBuf, htmlenv1.buf, &seq);
 }
 
 /* 

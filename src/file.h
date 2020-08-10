@@ -80,11 +80,8 @@ struct table *newTable(void);
 void pushdata(struct table *t, int row, int col, char *data);
 int visible_length(char *str);
 void print_item(struct table *t, int row, int col, int width, Str buf);
-void print_sep(struct table *t, int row, int type, int maxcol, Str buf);
 
-struct table *begin_table(int border, int spacing, int padding,
-                          int vspace);
-void end_table(struct table *tbl);
+
 void check_rowcol(struct table *tbl, struct table_mode *mode);
 int minimum_length(char *line);
 void pushTable(struct table *, struct table *);
@@ -162,7 +159,7 @@ is_plain_text_type(const char *type);
 int
 is_dump_text_type(const char *type);
 
-void HTMLlineproc2(BufferPtr buf, struct TextLineList *tl);
+void HTMLlineproc2(BufferPtr buf, struct TextLineList *tl, class HSequence *seq);
 
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src,
                     int internal);

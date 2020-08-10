@@ -1095,7 +1095,7 @@ ul_type(struct parsed_tag *tag, int default_type)
 
 #define REAL_WIDTH(w, limit) (((w) >= 0) ? (int)((w) / w3mApp::Instance().pixel_per_char) : -(w) * (limit) / 100)
 
-static Str process_hr(struct parsed_tag *tag, int width, int indent_width)
+static Str process_hr(struct parsed_tag *tag, int width, int indent_width, HSequence *seq)
 {
     Str tmp = Strnew("<nobr>");
     int w = 0;
@@ -1130,10 +1130,10 @@ static Str process_hr(struct parsed_tag *tag, int width, int indent_width)
         tmp->Push("<div_int align=left>");
         break;
     }
-    w /= symbol_width;
+    w /= seq->SymbolWidth();
     if (w <= 0)
         w = 1;
-    push_symbol(tmp, HR_SYMBOL, symbol_width, w);
+    push_symbol(tmp, HR_SYMBOL, seq->SymbolWidth(), w);
     tmp->Push("</div_int></nobr>");
     return tmp;
 }
@@ -1455,26 +1455,26 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
                 switch (envs[h_env->envc].type)
                 {
                 case 'd':
-                    push_symbol(tmp, UL_SYMBOL_DISC, symbol_width, 1);
+                    push_symbol(tmp, UL_SYMBOL_DISC, seq->SymbolWidth(), 1);
                     break;
                 case 'c':
-                    push_symbol(tmp, UL_SYMBOL_CIRCLE, symbol_width, 1);
+                    push_symbol(tmp, UL_SYMBOL_CIRCLE, seq->SymbolWidth(), 1);
                     break;
                 case 's':
-                    push_symbol(tmp, UL_SYMBOL_SQUARE, symbol_width, 1);
+                    push_symbol(tmp, UL_SYMBOL_SQUARE, seq->SymbolWidth(), 1);
                     break;
                 default:
                     push_symbol(tmp,
                                 UL_SYMBOL((h_env->envc_real -
                                            1) %
                                           MAX_UL_LEVEL),
-                                symbol_width,
+                                seq->SymbolWidth(),
                                 1);
                     break;
                 }
-                if (symbol_width == 1)
+                if (seq->SymbolWidth() == 1)
                     push_charp(obuf, 1, NBSP, PC_ASCII);
-                push_str(obuf, symbol_width, tmp, PC_ASCII);
+                push_str(obuf, seq->SymbolWidth(), tmp, PC_ASCII);
                 push_charp(obuf, 1, NBSP, PC_ASCII);
                 set_space_to_prevchar(obuf->prevchar);
                 break;
@@ -1616,7 +1616,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
         return 0;
     case HTML_HR:
         close_anchor(h_env, obuf, seq);
-        tmp = process_hr(tag, h_env->limit, envs[h_env->envc].indent);
+        tmp = process_hr(tag, h_env->limit, envs[h_env->envc].indent, seq);
         HTMLlineproc1(tmp->ptr, h_env, seq);
         set_space_to_prevchar(obuf->prevchar);
         return 1;
@@ -1865,7 +1865,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HSeque
 #ifdef ID_EXT
         tag->TryGetAttributeValue(ATTR_ID, &id);
 #endif /* ID_EXT */
-        tables[obuf->table_level] = begin_table(w, x, y, z);
+        tables[obuf->table_level] = begin_table(w, x, y, z, seq);
 #ifdef ID_EXT
         if (id != NULL)
             tables[obuf->table_level]->id = Strnew(id);
@@ -2435,7 +2435,7 @@ table_start:
                 obuf->table_level--;
                 if (obuf->table_level >= MAX_TABLE - 1)
                     continue;
-                end_table(tbl);
+                end_table(tbl, seq);
                 if (obuf->table_level >= 0)
                 {
                     struct table *tbl0 = tables[obuf->table_level];

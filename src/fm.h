@@ -336,15 +336,8 @@ global char SearchConv init(TRUE);
 global char SimplePreserveSpace init(FALSE);
 
 
-
-
-
-
-
 extern const char *graph_symbol[];
 extern const char *graph2_symbol[];
-extern int symbol_width;
-extern int symbol_width0;
 #define N_GRAPH_SYMBOL 32
 #define SYMBOL_BASE 0x20
 global int no_rc_dir init(FALSE);
