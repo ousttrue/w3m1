@@ -10,6 +10,9 @@
 #include "file.h"
 #include "html_sequence.h"
 
+#define MAX_SELECT 10 /* max number of <select>..</select> \
+                       * within one document */
+
 void FormSelect::clear(int n)
 {
     n_select = n;

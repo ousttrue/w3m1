@@ -28,7 +28,7 @@ void GCStr::Allocate(int size)
 void GCStr::Assign(const char *src, int size)
 {
     assert(src);
-    Allocate(size+1);
+    Allocate(size + 1);
     m_size = size;
     bcopy((void *)src, (void *)ptr, size);
     ptr[size] = '\0';
@@ -155,6 +155,16 @@ void GCStr::Push(const char *y, int n)
         return;
     }
 
+    auto p = y;
+    for (int i = 0; i < n; ++i, ++p)
+    {
+        if (*p == '\0')
+        {
+            n = i;
+            break;
+        }
+    }
+
     auto old = RequireSize(m_size + n + 1);
     if (old)
     {
@@ -235,7 +245,7 @@ void GCStr::Insert(int pos, const char *p, int size)
 {
     // while (*p)
     //     Insert(pos++, *(p++));
-    for(int i=0; i<size; ++i)
+    for (int i = 0; i < size; ++i)
     {
         Insert(pos++, *(p++));
     }

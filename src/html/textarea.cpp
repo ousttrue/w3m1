@@ -8,6 +8,9 @@
 #include "w3m.h"
 #include <wc.h>
 
+#define MAX_TEXTAREA 10 /* max number of <textarea>..</textarea> \
+                         * within one document */
+
 void HtmlTextArea::clear(int n)
 {
     n_textarea = n;
@@ -185,7 +188,7 @@ Str HtmlTextArea::process_n_textarea(HSequence *seq)
 // TODO:
 
 HtmlTextArea g_textarea;
-HtmlTextArea* get_textarea()
+HtmlTextArea *get_textarea()
 {
     return &g_textarea;
 }

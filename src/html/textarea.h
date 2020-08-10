@@ -6,9 +6,7 @@ class HtmlTextArea
 {
     int n_textarea;
     Str *textarea_str;
-#define MAX_TEXTAREA 10 /* max number of <textarea>..</textarea> \
-                         * within one document */
-    int max_textarea = MAX_TEXTAREA;
+    int max_textarea = 0;
 
     Str cur_textarea;
     int cur_textarea_size;

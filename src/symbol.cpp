@@ -184,13 +184,16 @@ void push_symbol(Str str, char symbol, int width, int n)
     else
         p = alt_symbol[(int)symbol];
 
-    char buf[2];
-    int i = 0;
-    for (; i < 2 && *p; i++, p++)
-        buf[i] = (*p == ' ') ? NBSP_CODE : *p;
+    char buf[] =
+        {
+            (p[0] == ' ') ? NBSP_CODE : p[0],
+            (p[1] == ' ') ? NBSP_CODE : p[1],
+        };
 
     str->Push(Sprintf("<_SYMBOL TYPE=%d>", symbol));
-    for (; n > 0; n--)
-        str->Push(buf, i);
+    for (int i = 0; i < n; ++i)
+    {
+        str->Push(buf, 2);
+    }
     str->Push("</_SYMBOL>");
 }

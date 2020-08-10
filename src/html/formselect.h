@@ -8,20 +8,18 @@ struct FormSelectOption;
 class FormSelect
 {
     FormSelectOption *select_option;
-#define MAX_SELECT 10 /* max number of <select>..</select> \
-                       * within one document */
-    int max_select = MAX_SELECT;
-    int n_select;
-    int cur_option_maxwidth;
-    Str cur_select;
-    Str select_str;
-    int select_is_multiple;
-    int n_selectitem;
-    Str cur_option;
-    Str cur_option_value;
-    Str cur_option_label;
-    int cur_option_selected;
-    int cur_status;
+    int max_select = 0;
+    int n_select = 0;
+    int cur_option_maxwidth = 0;
+    Str cur_select = nullptr;
+    Str select_str = nullptr;
+    int select_is_multiple = 0;
+    int n_selectitem = 0;
+    Str cur_option = nullptr;
+    Str cur_option_value = nullptr;
+    Str cur_option_label = nullptr;
+    int cur_option_selected = 0;
+    int cur_status = 0;
 
 public:
     void clear(int n);
