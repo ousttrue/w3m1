@@ -70,6 +70,25 @@ inline void SetCharType(Lineprop &v, int c)
     ((v) = (Lineprop)(((v) & ~P_CHARTYPE) | (c)));
 }
 
+inline Lineprop ex_efct(Lineprop ex)
+{
+    Lineprop effect = P_UNKNOWN;
+
+    if (!ex)
+        return P_UNKNOWN;
+
+    if (ex & PE_EX_ITALIC)
+        effect |= PE_EX_ITALIC_E;
+
+    if (ex & PE_EX_INSERT)
+        effect |= PE_EX_INSERT_E;
+
+    if (ex & PE_EX_STRIKE)
+        effect |= PE_EX_STRIKE_E;
+
+    return effect;
+}
+
 struct PropertiedCharacter
 {
     const char *head;

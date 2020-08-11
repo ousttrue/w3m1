@@ -24,73 +24,42 @@
 #include <signal.h>
 #include <setjmp.h>
 #include <vector>
-static JMP_BUF AbortLoading;
-static void KeyAbort(SIGNAL_ARG)
-{
-    LONGJMP(AbortLoading, 1);
-    SIGNAL_RETURN;
-}
 
 static void
 print_internal_information(struct html_feed_environ *henv)
 {
-// TDOO:
-//     TextLineList *tl = newTextLineList();
+    // TDOO:
+    //     TextLineList *tl = newTextLineList();
 
-//     {
-//         auto s = Strnew("<internal>");
-//         pushTextLine(tl, newTextLine(s, 0));
-//         if (henv->title)
-//         {
-//             s = Strnew_m_charp("<title_alt title=\"",
-//                                html_quote(henv->title), "\">");
-//             pushTextLine(tl, newTextLine(s, 0));
-//         }
-//     }
+    //     {
+    //         auto s = Strnew("<internal>");
+    //         pushTextLine(tl, newTextLine(s, 0));
+    //         if (henv->title)
+    //         {
+    //             s = Strnew_m_charp("<title_alt title=\"",
+    //                                html_quote(henv->title), "\">");
+    //             pushTextLine(tl, newTextLine(s, 0));
+    //         }
+    //     }
 
-//     get_formselect()->print_internal(tl);
-//     get_textarea()->print_internal(tl);
+    //     get_formselect()->print_internal(tl);
+    //     get_textarea()->print_internal(tl);
 
-//     {
-//         auto s = Strnew("</internal>");
-//         pushTextLine(tl, newTextLine(s, 0));
-//     }
+    //     {
+    //         auto s = Strnew("</internal>");
+    //         pushTextLine(tl, newTextLine(s, 0));
+    //     }
 
-//     if (henv->buf)
-//     {
-//         appendTextLineList(henv->buf, tl);
-//     }
-//     else if (henv->f)
-//     {
-//         TextLineListItem *p;
-//         for (p = tl->first; p; p = p->next)
-//             fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
-//     }
-}
-
-///
-/// feed
-///
-
-#define w3m_halfdump (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
-
-static Lineprop ex_efct(Lineprop ex)
-{
-    Lineprop effect = P_UNKNOWN;
-
-    if (!ex)
-        return P_UNKNOWN;
-
-    if (ex & PE_EX_ITALIC)
-        effect |= PE_EX_ITALIC_E;
-
-    if (ex & PE_EX_INSERT)
-        effect |= PE_EX_INSERT_E;
-
-    if (ex & PE_EX_STRIKE)
-        effect |= PE_EX_STRIKE_E;
-
-    return effect;
+    //     if (henv->buf)
+    //     {
+    //         appendTextLineList(henv->buf, tl);
+    //     }
+    //     else if (henv->f)
+    //     {
+    //         TextLineListItem *p;
+    //         for (p = tl->first; p; p = p->next)
+    //             fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
+    //     }
 }
 
 static int currentLn(BufferPtr buf)
@@ -368,7 +337,7 @@ public:
             tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
 
             auto form = context->FormCurrent(form_id);
-            if(!form)
+            if (!form)
             {
                 break;
             }
@@ -876,11 +845,6 @@ textlist_feed()
     }
     return nullptr;
 }
-static void HTMLlineproc2(BufferPtr buf, TextLineList *tl, HtmlContext *seq)
-{
-    _tl_lp2 = tl->first;
-    HTMLlineproc2body(buf, textlist_feed, -1, seq);
-}
 
 static InputStream *_file_lp2;
 static Str
@@ -894,12 +858,6 @@ file_feed()
         return nullptr;
     }
     return s;
-}
-
-static void HTMLlineproc3(BufferPtr buf, InputStream *stream, HtmlContext *seq)
-{
-    _file_lp2 = stream;
-    HTMLlineproc2body(buf, file_feed, -1, seq);
 }
 
 ///
@@ -939,14 +897,15 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         newBuf->buffername = "---";
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
 
-        HTMLlineproc3(newBuf, f->stream, &context);
+        _file_lp2 = f->stream;
+        HTMLlineproc2body(newBuf, file_feed, -1, &context);
         w3mApp::Instance().w3m_halfload = FALSE;
         return;
     }
 
     init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, nullptr, newBuf->width, 0);
 
-    if (w3m_halfdump)
+    if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
         htmlenv1.f = stdout;
     else
         htmlenv1.buf = newTextLineList();
@@ -1038,7 +997,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     else
     {
 
-        if (w3m_halfdump)
+        if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
         {
             print_internal_information(&htmlenv1);
             return;
@@ -1058,7 +1017,8 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 
     newBuf->image_flag = image_flag;
 
-    HTMLlineproc2(newBuf, htmlenv1.buf, &context);
+    _tl_lp2 = htmlenv1.buf->first;
+    HTMLlineproc2body(newBuf, textlist_feed, -1, &context);
 }
 
 /* 
