@@ -26,12 +26,12 @@
 
 #include <setjmp.h>
 #include <signal.h>
-static JMP_BUF AbortLoading;
-static void KeyAbort(SIGNAL_ARG)
-{
-    LONGJMP(AbortLoading, 1);
-    SIGNAL_RETURN;
-}
+// static JMP_BUF AbortLoading;
+// static void KeyAbort(SIGNAL_ARG)
+// {
+//     LONGJMP(AbortLoading, 1);
+//     SIGNAL_RETURN;
+// }
 
 ///
 /// HTTP
@@ -401,11 +401,11 @@ bool loadBuffer(URLFile *uf, BufferPtr newBuf)
     //     newBuf = newBuffer(INIT_BUFFER_WIDTH());
     lineBuf2 = Strnew();
 
-    if (SETJMP(AbortLoading) != 0)
-    {
-        goto _end;
-    }
-    TRAP_ON;
+    // if (SETJMP(AbortLoading) != 0)
+    // {
+    //     goto _end;
+    // }
+    // TRAP_ON;
 
     if (newBuf->sourcefile.empty() &&
         (uf->scheme != SCM_LOCAL || newBuf->mailcap))
@@ -663,6 +663,43 @@ int doFileCopy(const char *tmpf, const char *defstr)
     return _doFileCopy(tmpf, defstr, FALSE);
 }
 
+BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, const char *t)
+{
+    FILE *src;
+    if (image_source)
+        return NULL;
+
+    auto tmp = tmpfname(TMPF_SRC, ".html");
+    src = fopen(tmp->ptr, "w");
+    if (src)
+    {
+        Str s;
+        s = wc_Str_conv_strict(page, w3mApp::Instance().InnerCharset, charset);
+        s->Puts(src);
+        fclose(src);
+    }
+    if (do_download)
+    {
+        char *file;
+        if (!src)
+            return NULL;
+        file = guess_filename(pu.file);
+        doFileMove(tmp->ptr, file);
+        return nullptr;
+    }
+    auto b = loadHTMLString(page);
+    if (b)
+    {
+        b->currentURL = pu;
+        b->real_scheme = pu.scheme;
+        b->real_type = t;
+        if (src)
+            b->sourcefile = tmp->ptr;
+        b->document_charset = charset;
+    }
+    return b;
+}
+
 /* 
  * loadGeneralFile: load file to buffer
  */
@@ -670,46 +707,40 @@ BufferPtr
 loadGeneralFile(std::string_view path, const URL *_current, char *referer,
                 LoadFlags flag, FormList *request)
 {
-    URL pu;
-    BufferPtr b = NULL;
-    LoaderFunc proc = loadBuffer;
-    char *p;
-    BufferPtr t_buf = NULL;
-    int searchHeader = w3mApp::Instance().SearchHeader;
-    int searchHeader_through = TRUE;
-    TextList *extra_header = newTextList();
-    Str uname = NULL;
-    Str pwd = NULL;
-    Str realm = NULL;
-    int add_auth_cookie_flag;
-    unsigned char status = HTST_NORMAL;
-    Str tmp;
-    Str page = NULL;
-    CharacterEncodingScheme charset = WC_CES_US_ASCII;
+    // LoaderFunc proc = loadBuffer;
+    // char *p;
+    // BufferPtr t_buf = NULL;
+    // int searchHeader = w3mApp::Instance().SearchHeader;
+    // int searchHeader_through = TRUE;
+    // int add_auth_cookie_flag;
+    // Str tmp;
 
-    HRequest hr(referer, request);
-    URL *auth_pu;
+    // URL *auth_pu;
 
-    auto tpath = path;
-    MySignalHandler prevtrap = NULL;
-    add_auth_cookie_flag = 0;
+    // auto tpath = path;
+    // MySignalHandler prevtrap = NULL;
 
     clearRedirection();
 
-    std::shared_ptr<URL> current;
-    if (_current)
-    {
-        current = std::make_shared<URL>();
-        *current = *_current;
-    }
+    // std::shared_ptr<URL> current;
+    // if (_current)
+    // {
+    //     current = std::make_shared<URL>();
+    //     *current = *_current;
+    // }
 
+    HRequest hr(referer, request);
+    URL pu;
+    TextList *extra_header = newTextList();
+    unsigned char status = HTST_NORMAL;
     URLFile f(SCM_MISSING, NULL);
-    f.openURL(tpath.data(), &pu, current ? current.get() : nullptr, referer, flag, request, extra_header,
-              &hr, &status);
-    content_charset = WC_CES_NONE;
+    f.openURL(path, &pu, _current, referer, flag, request, extra_header, &hr, &status);
+    auto content_charset = WC_CES_NONE;
 
     auto t = "text/plain";
     const char *real_type = nullptr;
+    Str page = NULL;
+    CharacterEncodingScheme charset = WC_CES_US_ASCII;
     if (f.stream == NULL)
     {
         switch (f.scheme)
@@ -725,7 +756,7 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
                 {
                     Str cmd = Sprintf("%s?dir=%s#current",
                                       DirBufferCommand, pu.file);
-                    b = loadGeneralFile(cmd->ptr, NULL, NO_REFERER, RG_NONE, NULL);
+                    auto b = loadGeneralFile(cmd->ptr, NULL, NO_REFERER, RG_NONE, NULL);
                     if (b != NULL)
                     {
                         b->currentURL = pu;
@@ -745,10 +776,10 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
 
         case SCM_UNKNOWN:
         {
-            tmp = searchURIMethods(&pu);
+            auto tmp = searchURIMethods(&pu);
             if (tmp != NULL)
             {
-                b = loadGeneralFile(tmp->ptr, current.get(), referer, flag, request);
+                auto b = loadGeneralFile(tmp->ptr, _current, referer, flag, request);
                 if (b != NULL)
                     b->currentURL = pu;
                 return b;
@@ -762,7 +793,9 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
         }
         }
         if (page && page->Size() > 0)
-            goto page_loaded;
+        {
+            return LoadPage(page, charset, pu, t);
+        }
         return NULL;
     }
 
@@ -782,13 +815,15 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
     //     return NULL;
     // }
 
-    b = NULL;
+    // auto b = NULL;
     if (f.is_cgi)
     {
         /* local CGI */
-        searchHeader = TRUE;
-        searchHeader_through = FALSE;
+        // searchHeader = TRUE;
+        // searchHeader_through = FALSE;
     }
+
+    BufferPtr t_buf = nullptr;
     if (w3mApp::Instance().header_string.size())
         w3mApp::Instance().header_string.clear();
     if (pu.scheme == SCM_HTTP || pu.scheme == SCM_HTTPS)
@@ -803,9 +838,10 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
             message(Sprintf("%s contacted. Waiting for reply...", pu.host.c_str())->ptr, 0, 0);
             refresh();
         }
-        if (t_buf == NULL)
-            t_buf = newBuffer(INIT_BUFFER_WIDTH());
+        // if (t_buf == NULL)
+        t_buf = newBuffer(INIT_BUFFER_WIDTH());
         readHeader(&f, t_buf, FALSE, &pu);
+        char *p;
         if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) && (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(&pu))
         {
             /* document moved */
@@ -813,10 +849,10 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
             /* 302: Found */
             /* 303: See Other */
             /* 307: Temporary Redirect (HTTP/1.1) */
-            tpath = wc_conv_strict(p, w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
+            auto tpath = wc_conv_strict(p, w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
             request = NULL;
             f.Close();
-            *current = pu;
+            // *current = pu;
             t_buf = newBuffer(INIT_BUFFER_WIDTH());
             t_buf->bufferprop |= BP_REDIRECTED;
             status = HTST_NORMAL;
@@ -835,13 +871,17 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
         }
         if (t == NULL)
             t = "text/plain";
-        if (add_auth_cookie_flag && realm && uname && pwd)
-        {
-            /* If authorization is required and passed */
-            add_auth_user_passwd(&pu, qstr_unquote(realm)->ptr, uname, pwd,
-                                 0);
-            add_auth_cookie_flag = 0;
-        }
+        // int add_auth_cookie_flag = 0;
+        // Str realm = NULL;
+        // Str uname = NULL;
+        // Str pwd = NULL;
+        // if (add_auth_cookie_flag && realm && uname && pwd)
+        // {
+        //     /* If authorization is required and passed */
+        //     add_auth_user_passwd(&pu, qstr_unquote(realm)->ptr, uname, pwd,
+        //                          0);
+        //     add_auth_cookie_flag = 0;
+        // }
         // if ((p = checkHeader(t_buf, "WWW-Authenticate:")) != NULL &&
         //     http_response_code == 401)
         // {
@@ -942,58 +982,21 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
      *      to support default utf8 encoding for XHTML here? */
     f.guess_type = t;
 
-page_loaded:
-    if (page)
-    {
-        FILE *src;
-        if (image_source)
-            return NULL;
-
-        tmp = tmpfname(TMPF_SRC, ".html");
-        src = fopen(tmp->ptr, "w");
-        if (src)
-        {
-            Str s;
-            s = wc_Str_conv_strict(page, w3mApp::Instance().InnerCharset, charset);
-            s->Puts(src);
-            fclose(src);
-        }
-        if (do_download)
-        {
-            char *file;
-            if (!src)
-                return NULL;
-            file = guess_filename(pu.file);
-            doFileMove(tmp->ptr, file);
-            return nullptr;
-        }
-        b = loadHTMLString(page);
-        if (b)
-        {
-            b->currentURL = pu;
-            b->real_scheme = pu.scheme;
-            b->real_type = t;
-            if (src)
-                b->sourcefile = tmp->ptr;
-            b->document_charset = charset;
-        }
-        return b;
-    }
-
     if (real_type == NULL)
         real_type = t;
-    proc = loadBuffer;
+    auto proc = loadBuffer;
 
     *GetCurBaseUrl() = pu;
 
     current_content_length = 0;
+    char *p;
     if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
         current_content_length = strtoclen(p);
     if (do_download)
     {
         /* download only */
         char *file;
-        TRAP_OFF;
+        // TRAP_OFF;
         if (DecodeCTE && IStype(f.stream) != IST_ENCODED)
             f.stream = newEncodedStream(f.stream, f.encoding);
         if (pu.scheme == SCM_LOCAL)
@@ -1045,7 +1048,7 @@ page_loaded:
             b->real_type = t;
         }
         f.Close();
-        TRAP_OFF;
+        // TRAP_OFF;
         return b;
     }
 
@@ -1060,6 +1063,7 @@ page_loaded:
         ;
     else if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
     {
+        BufferPtr b = NULL;
         if (!do_download && doExternal(f,
                                        pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()),
                                        t, &b, t_buf))
@@ -1072,12 +1076,12 @@ page_loaded:
                     b->currentURL = pu;
             }
             f.Close();
-            TRAP_OFF;
+            // TRAP_OFF;
             return b;
         }
         else
         {
-            TRAP_OFF;
+            // TRAP_OFF;
             if (pu.scheme == SCM_LOCAL)
             {
                 f.Close();
@@ -1117,7 +1121,7 @@ page_loaded:
                                  proc,
                                  t_buf);
     assert(success);
-    b = t_buf;
+    auto b = t_buf;
     f.Close();
     frame_source = 0;
     if (success)
