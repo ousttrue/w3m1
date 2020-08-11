@@ -30,25 +30,6 @@
 ///
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 {
-    if (w3mApp::Instance().w3m_halfload)
-    {
-        newBuf->buffername = "---";
-        newBuf->document_charset = w3mApp::Instance().InnerCharset;
-        auto feed = [f]() -> Str {
-            auto s = StrISgets(f->stream);
-            if (s->Size() == 0)
-            {
-                ISclose(f->stream);
-                return nullptr;
-            }
-            return s;
-        };
-        HtmlContext context;
-        context.BufferFromLines(newBuf, feed);
-        w3mApp::Instance().w3m_halfload = FALSE;
-        return;
-    }
-
     int image_flag;
     if (newBuf->image_flag)
         image_flag = newBuf->image_flag;

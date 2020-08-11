@@ -121,9 +121,8 @@ public:
 
     // debug & logging
     bool w3m_debug = false;
-    DumpFlags w3m_dump = DUMP_NONE;
-    bool w3m_halfload = false;
     std::string w3m_reqlog;
+    DumpFlags w3m_dump = DUMP_NONE;
 
 public:
     // 使いわないのが目標

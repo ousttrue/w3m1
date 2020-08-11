@@ -706,12 +706,6 @@ int w3mApp::Main(int argc, char **argv)
             {
                 w3m_dump = DUMP_HALFDUMP;
             }
-            else if (!strcmp("-halfload", argv[i]))
-            {
-                w3m_dump = DUMP_NONE;
-                w3m_halfload = TRUE;
-                DefaultType = default_type = "text/html";
-            }
             else if (!strcmp("-backend", argv[i]))
             {
                 w3m_backend = TRUE;
