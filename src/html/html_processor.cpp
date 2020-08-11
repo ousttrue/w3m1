@@ -674,8 +674,8 @@ public:
 ///
 /// 1行ごとに Line の構築と html タグを解釈する
 ///
-using FeedFunc = Str (*)();
-static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HtmlContext *seq)
+using FeedFunc = std::function<Str()>;
+static void HTMLlineproc2body(BufferPtr buf, const FeedFunc &feed, int llimit, HtmlContext *seq)
 {
     HtmlProcessor state;
 
@@ -832,34 +832,6 @@ static void HTMLlineproc2body(BufferPtr buf, FeedFunc feed, int llimit, HtmlCont
     addMultirowsImg(buf, buf->img);
 }
 
-static TextLineListItem *_tl_lp2;
-static Str
-textlist_feed()
-{
-    TextLine *p;
-    if (_tl_lp2 != nullptr)
-    {
-        p = _tl_lp2->ptr;
-        _tl_lp2 = _tl_lp2->next;
-        return p->line;
-    }
-    return nullptr;
-}
-
-static InputStream *_file_lp2;
-static Str
-file_feed()
-{
-    Str s;
-    s = StrISgets(_file_lp2);
-    if (s->Size() == 0)
-    {
-        ISclose(_file_lp2);
-        return nullptr;
-    }
-    return s;
-}
-
 ///
 /// entry
 ///
@@ -896,9 +868,16 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     {
         newBuf->buffername = "---";
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
-
-        _file_lp2 = f->stream;
-        HTMLlineproc2body(newBuf, file_feed, -1, &context);
+        FeedFunc feed = [f]() -> Str {
+            auto s = StrISgets(f->stream);
+            if (s->Size() == 0)
+            {
+                ISclose(f->stream);
+                return nullptr;
+            }
+            return s;
+        };
+        HTMLlineproc2body(newBuf, feed, -1, &context);
         w3mApp::Instance().w3m_halfload = FALSE;
         return;
     }
@@ -1017,8 +996,13 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 
     newBuf->image_flag = image_flag;
 
-    _tl_lp2 = htmlenv1.buf->first;
-    HTMLlineproc2body(newBuf, textlist_feed, -1, &context);
+    {
+        FeedFunc feed = [feeder = TextFeeder{htmlenv1.buf->first}]() -> Str {
+            return feeder();
+        };
+
+        HTMLlineproc2body(newBuf, feed, -1, &context);
+    }
 }
 
 /* 

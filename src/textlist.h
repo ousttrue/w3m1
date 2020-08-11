@@ -72,6 +72,22 @@ struct TextLineList
     short nitem;
 };
 
+struct TextFeeder
+{
+    mutable TextLineListItem *item;
+
+    Str operator()()const
+    {
+        if (!item)
+        {
+            return nullptr;
+        }
+        auto p = item->ptr;
+        item = item->next;
+        return p->line;
+    }
+};
+
 extern TextLine *newTextLine(Str line, int pos);
 extern void appendTextLine(TextLineList *tl, Str line, int pos);
 TextLineList *newTextLineList();

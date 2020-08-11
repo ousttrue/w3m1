@@ -24,6 +24,7 @@ struct html_feed_environ
 {
     struct readbuffer *obuf;
     TextLineList *buf;
+
     FILE *f;
     Str tagbuf;
     int limit;
@@ -41,7 +42,7 @@ private:
 public:
     void Initialize(TextLineList *buf, readbuffer *obuf, int limit, environment *envs, int nenv);
 
-    int capacity()const
+    int capacity() const
     {
         return nenv;
     }
@@ -96,4 +97,3 @@ inline void HTMLlineproc1(const char *x, html_feed_environ *y, class HtmlContext
 void init_henv(struct html_feed_environ *, struct readbuffer *,
                struct environment *, int, TextLineList *, int, int);
 void completeHTMLstream(struct html_feed_environ *, struct readbuffer *, class HtmlContext *seq);
-
