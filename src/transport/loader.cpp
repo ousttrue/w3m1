@@ -85,7 +85,7 @@ loadSomething(URLFile *f,
               char *path,
               LoaderFunc loadproc, BufferPtr buf)
 {
-    if(!loadproc(f, buf))
+    if (!loadproc(f, buf))
         return false;
 
     buf->filename = path;
@@ -120,7 +120,7 @@ BufferPtr loadFile(char *path)
     content_charset = WC_CES_NONE;
     auto success = loadSomething(&uf, path, loadBuffer, buf);
     uf.Close();
-    if(!success)
+    if (!success)
     {
         return nullptr;
     }
@@ -695,8 +695,6 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
     add_auth_cookie_flag = 0;
 
     clearRedirection();
-load_doc:
-    TRAP_OFF;
 
     std::shared_ptr<URL> current;
     if (_current)
@@ -739,25 +737,14 @@ load_doc:
                 {
                     page = loadLocalDir(const_cast<char *>(pu.real_file.c_str()));
                     t = "local:directory";
-#ifdef USE_M17N
                     charset = w3mApp::Instance().SystemCharset;
-#endif
                 }
             }
         }
         break;
-        case SCM_FTPDIR:
-            page = loadFTPDir(&pu, &charset);
-            t = "ftp:directory";
-            break;
-#ifdef USE_NNTP
-        case SCM_NEWS_GROUP:
-            page = loadNewsgroup(&pu, &charset);
-            t = "news:group";
-            break;
-#endif
+
         case SCM_UNKNOWN:
-#ifdef USE_EXTERNAL_URI_LOADER
+        {
             tmp = searchURIMethods(&pu);
             if (tmp != NULL)
             {
@@ -766,13 +753,13 @@ load_doc:
                     b->currentURL = pu;
                 return b;
             }
-#endif
             /* FIXME: gettextize? */
             disp_err_message(Sprintf("Unknown URI: %s",
                                      pu.ToStr()->ptr)
                                  ->ptr,
                              FALSE);
             break;
+        }
         }
         if (page && page->Size() > 0)
             goto page_loaded;
@@ -781,19 +768,19 @@ load_doc:
 
     if (status == HTST_MISSING)
     {
-        TRAP_OFF;
+        // TRAP_OFF;
         f.Close();
         return NULL;
     }
 
-    /* openURL() succeeded */
-    if (SETJMP(AbortLoading) != 0)
-    {
-        /* transfer interrupted */
-        TRAP_OFF;
-        f.Close();
-        return NULL;
-    }
+    // /* openURL() succeeded */
+    // if (SETJMP(AbortLoading) != 0)
+    // {
+    //     /* transfer interrupted */
+    //     TRAP_OFF;
+    //     f.Close();
+    //     return NULL;
+    // }
 
     b = NULL;
     if (f.is_cgi)
@@ -804,19 +791,11 @@ load_doc:
     }
     if (w3mApp::Instance().header_string.size())
         w3mApp::Instance().header_string.clear();
-    TRAP_ON;
-    if (pu.scheme == SCM_HTTP ||
-#ifdef USE_SSL
-        pu.scheme == SCM_HTTPS ||
-#endif /* USE_SSL */
-        ((
-#ifdef USE_GOPHER
-             (pu.scheme == SCM_GOPHER && non_null(GOPHER_proxy)) ||
-#endif /* USE_GOPHER */
-             (pu.scheme == SCM_FTP && w3mApp::Instance().FTP_proxy.size())) &&
-         w3mApp::Instance().use_proxy && !check_no_proxy(const_cast<char *>(pu.host.c_str()))))
+    if (pu.scheme == SCM_HTTP || pu.scheme == SCM_HTTPS)
     {
-
+        //
+        // use proxy
+        //
         if (fmInitialized)
         {
             term_cbreak();
@@ -826,15 +805,6 @@ load_doc:
         }
         if (t_buf == NULL)
             t_buf = newBuffer(INIT_BUFFER_WIDTH());
-#if 0 /* USE_SSL */
-        if (IStype(f.stream) == IST_SSL) {
-            Str s = ssl_get_certificate(f.stream, pu.host);
-            if (s == NULL)
-                return NULL;
-            else
-                t_buf->ssl_certificate = s->ptr;
-        }
-#endif
         readHeader(&f, t_buf, FALSE, &pu);
         if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) && (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(&pu))
         {
@@ -850,7 +820,11 @@ load_doc:
             t_buf = newBuffer(INIT_BUFFER_WIDTH());
             t_buf->bufferprop |= BP_REDIRECTED;
             status = HTST_NORMAL;
-            goto load_doc;
+            // goto load_doc;
+
+            // TODO: REDIRECT
+
+            assert(false);
         }
         t = checkContentType(t_buf);
         if (t == NULL && pu.file.size())
@@ -868,196 +842,100 @@ load_doc:
                                  0);
             add_auth_cookie_flag = 0;
         }
-        if ((p = checkHeader(t_buf, "WWW-Authenticate:")) != NULL &&
-            http_response_code == 401)
-        {
-            /* Authentication needed */
-            struct http_auth hauth;
-            if (findAuthentication(&hauth, t_buf, "WWW-Authenticate:") != NULL && (realm = get_auth_param(hauth.param, "realm")) != NULL)
-            {
-                auth_pu = &pu;
-                getAuthCookie(&hauth, "Authorization:", extra_header,
-                              auth_pu, &hr, request, &uname, &pwd);
-                if (uname == NULL)
-                {
-                    /* abort */
-                    TRAP_OFF;
-                    goto page_loaded;
-                }
-                f.Close();
-                add_auth_cookie_flag = 1;
-                status = HTST_NORMAL;
-                goto load_doc;
-            }
-        }
-        if ((p = checkHeader(t_buf, "Proxy-Authenticate:")) != NULL &&
-            http_response_code == 407)
-        {
-            /* Authentication needed */
-            struct http_auth hauth;
-            if (findAuthentication(&hauth, t_buf, "Proxy-Authenticate:") != NULL && (realm = get_auth_param(hauth.param, "realm")) != NULL)
-            {
-                auth_pu = schemeToProxy(pu.scheme);
-                getAuthCookie(&hauth, "Proxy-Authorization:",
-                              extra_header, auth_pu, &hr, request,
-                              &uname, &pwd);
-                if (uname == NULL)
-                {
-                    /* abort */
-                    TRAP_OFF;
-                    goto page_loaded;
-                }
-                f.Close();
-                add_auth_cookie_flag = 1;
-                status = HTST_NORMAL;
-                add_auth_user_passwd(auth_pu, qstr_unquote(realm)->ptr, uname, pwd, 1);
-                goto load_doc;
-            }
-        }
+        // if ((p = checkHeader(t_buf, "WWW-Authenticate:")) != NULL &&
+        //     http_response_code == 401)
+        // {
+        //     /* Authentication needed */
+        //     struct http_auth hauth;
+        //     if (findAuthentication(&hauth, t_buf, "WWW-Authenticate:") != NULL && (realm = get_auth_param(hauth.param, "realm")) != NULL)
+        //     {
+        //         auth_pu = &pu;
+        //         getAuthCookie(&hauth, "Authorization:", extra_header,
+        //                       auth_pu, &hr, request, &uname, &pwd);
+        //         if (uname == NULL)
+        //         {
+        //             /* abort */
+        //             TRAP_OFF;
+        //             goto page_loaded;
+        //         }
+        //         f.Close();
+        //         add_auth_cookie_flag = 1;
+        //         status = HTST_NORMAL;
+        //         goto load_doc;
+        //     }
+        // }
+        // if ((p = checkHeader(t_buf, "Proxy-Authenticate:")) != NULL &&
+        //     http_response_code == 407)
+        // {
+        //     /* Authentication needed */
+        //     struct http_auth hauth;
+        //     if (findAuthentication(&hauth, t_buf, "Proxy-Authenticate:") != NULL && (realm = get_auth_param(hauth.param, "realm")) != NULL)
+        //     {
+        //         auth_pu = schemeToProxy(pu.scheme);
+        //         getAuthCookie(&hauth, "Proxy-Authorization:",
+        //                       extra_header, auth_pu, &hr, request,
+        //                       &uname, &pwd);
+        //         if (uname == NULL)
+        //         {
+        //             /* abort */
+        //             TRAP_OFF;
+        //             goto page_loaded;
+        //         }
+        //         f.Close();
+        //         add_auth_cookie_flag = 1;
+        //         status = HTST_NORMAL;
+        //         add_auth_user_passwd(auth_pu, qstr_unquote(realm)->ptr, uname, pwd, 1);
+        //         goto load_doc;
+        //     }
+        // }
         /* XXX: RFC2617 3.2.3 Authentication-Info: ? */
 
         if (status == HTST_CONNECT)
         {
-            goto load_doc;
+            assert(false);
+            // goto load_doc;
         }
 
         f.modtime = mymktime(checkHeader(t_buf, "Last-Modified:"));
     }
-#ifdef USE_NNTP
-    else if (pu.scheme == SCM_NEWS || pu.scheme == SCM_NNTP)
-    {
-        if (t_buf == NULL)
-            t_buf = newBuffer(INIT_BUFFER_WIDTH());
-        readHeader(&f, t_buf, TRUE, &pu);
-        t = checkContentType(t_buf);
-        if (t == NULL)
-            t = "text/plain";
-    }
-#endif /* USE_NNTP */
-#ifdef USE_GOPHER
-    else if (pu.scheme == SCM_GOPHER)
-    {
-        switch (*pu.file)
-        {
-        case '0':
-            t = "text/plain";
-            break;
-        case '1':
-        case 'm':
-            page = loadGopherDir(&f, &pu, &charset);
-            t = "gopher:directory";
-            TRAP_OFF;
-            goto page_loaded;
-        case 's':
-            t = "audio/basic";
-            break;
-        case 'g':
-            t = "image/gif";
-            break;
-        case 'h':
-            t = "text/html";
-            break;
-        }
-    }
-#endif /* USE_GOPHER */
-    else if (pu.scheme == SCM_FTP)
-    {
-        check_compression(path, &f);
-        if (f.compression != CMP_NOCOMPRESS)
-        {
-            auto t1 = uncompressed_file_type(pu.file.c_str(), NULL);
-            real_type = f.guess_type;
-            if (t1)
-                t = t1;
-            else
-                t = real_type;
-        }
-        else
-        {
-            real_type = guessContentType(pu.file);
-            if (real_type == NULL)
-                real_type = "text/plain";
-            t = real_type;
-        }
-#if 0
-        if (!strncasecmp(t, "application/", 12)) {
-            char *tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
-            current_content_length = 0;
-            if (save2tmp(f, tmpf) < 0)
-                f.Close();
-            else {
-                f.Close();
-                TRAP_OFF;
-                doFileMove(tmpf, guess_save_name(t_buf, pu.file));
-            }
-            return nullptr;
-        }
-#endif
-    }
-    else if (pu.scheme == SCM_DATA)
-    {
-        t = f.guess_type;
-    }
-    else if (searchHeader)
-    {
-        searchHeader = w3mApp::Instance().SearchHeader = FALSE;
-        if (t_buf == NULL)
-            t_buf = newBuffer(INIT_BUFFER_WIDTH());
-        readHeader(&f, t_buf, searchHeader_through, &pu);
-        if (f.is_cgi && (p = checkHeader(t_buf, "Location:")) != NULL &&
-            checkRedirection(&pu))
-        {
-            /* document moved */
-            tpath = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
-            request = NULL;
-            f.Close();
-            add_auth_cookie_flag = 0;
-            *current = pu;
-            t_buf = newBuffer(INIT_BUFFER_WIDTH());
-            t_buf->bufferprop |= BP_REDIRECTED;
-            status = HTST_NORMAL;
-            goto load_doc;
-        }
-#ifdef AUTH_DEBUG
-        if ((p = checkHeader(t_buf, "WWW-Authenticate:")) != NULL)
-        {
-            /* Authentication needed */
-            struct http_auth hauth;
-            if (findAuthentication(&hauth, t_buf, "WWW-Authenticate:") != NULL && (realm = get_auth_param(hauth.param, "realm")) != NULL)
-            {
-                auth_pu = &pu;
-                getAuthCookie(&hauth, "Authorization:", extra_header,
-                              auth_pu, &hr, request, &uname, &pwd);
-                if (uname == NULL)
-                {
-                    /* abort */
-                    TRAP_OFF;
-                    goto page_loaded;
-                }
-                f.Close();
-                add_auth_cookie_flag = 1;
-                status = HTST_NORMAL;
-                goto load_doc;
-            }
-        }
-#endif /* defined(AUTH_DEBUG) */
-        t = checkContentType(t_buf);
-        if (t == NULL)
-            t = "text/plain";
-    }
-    else if (w3mApp::Instance().DefaultType.size())
-    {
-        t = Strnew(w3mApp::Instance().DefaultType)->ptr;
-        w3mApp::Instance().DefaultType.clear();
-    }
+    // else if (searchHeader)
+    // {
+    //     searchHeader = w3mApp::Instance().SearchHeader = FALSE;
+    //     if (t_buf == NULL)
+    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //     readHeader(&f, t_buf, searchHeader_through, &pu);
+    //     if (f.is_cgi && (p = checkHeader(t_buf, "Location:")) != NULL &&
+    //         checkRedirection(&pu))
+    //     {
+    //         /* document moved */
+    //         tpath = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
+    //         request = NULL;
+    //         f.Close();
+    //         add_auth_cookie_flag = 0;
+    //         *current = pu;
+    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //         t_buf->bufferprop |= BP_REDIRECTED;
+    //         status = HTST_NORMAL;
+    //         goto load_doc;
+    //     }
+    //     t = checkContentType(t_buf);
+    //     if (t == NULL)
+    //         t = "text/plain";
+    // }
+    // else if (w3mApp::Instance().DefaultType.size())
+    // {
+    //     t = Strnew(w3mApp::Instance().DefaultType)->ptr;
+    //     w3mApp::Instance().DefaultType.clear();
+    // }
     else
     {
-        t = guessContentType(pu.file);
-        if (t == NULL)
-            t = "text/plain";
-        real_type = t;
-        if (f.guess_type)
-            t = f.guess_type;
+        assert(false);
+        // t = guessContentType(pu.file);
+        // if (t == NULL)
+        //     t = "text/plain";
+        // real_type = t;
+        // if (f.guess_type)
+        //     t = f.guess_type;
     }
 
     /* XXX: can we use guess_type to give the type to loadHTMLstream
@@ -1068,10 +946,9 @@ page_loaded:
     if (page)
     {
         FILE *src;
-#ifdef USE_IMAGE
         if (image_source)
             return NULL;
-#endif
+
         tmp = tmpfname(TMPF_SRC, ".html");
         src = fopen(tmp->ptr, "w");
         if (src)
@@ -1087,14 +964,6 @@ page_loaded:
             if (!src)
                 return NULL;
             file = guess_filename(pu.file);
-#ifdef USE_GOPHER
-            if (f.scheme == SCM_GOPHER)
-                file = Sprintf("%s.html", file)->ptr;
-#endif
-#ifdef USE_NNTP
-            if (f.scheme == SCM_NEWS_GROUP)
-                file = Sprintf("%s.html", file)->ptr;
-#endif
             doFileMove(tmp->ptr, file);
             return nullptr;
         }
@@ -1106,9 +975,7 @@ page_loaded:
             b->real_type = t;
             if (src)
                 b->sourcefile = tmp->ptr;
-#ifdef USE_M17N
             b->document_charset = charset;
-#endif
         }
         return b;
     }
@@ -1165,7 +1032,7 @@ page_loaded:
             f.compression = CMP_NOCOMPRESS;
         }
     }
-#ifdef USE_IMAGE
+
     if (image_source)
     {
         BufferPtr b = NULL;
@@ -1181,17 +1048,14 @@ page_loaded:
         TRAP_OFF;
         return b;
     }
-#endif
 
     if (is_html_type(t))
         proc = loadHTMLBuffer;
     else if (is_plain_text_type(t))
         proc = loadBuffer;
-#ifdef USE_IMAGE
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
              !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && !strncasecmp(t, "image/", 6))
         proc = loadImageBuffer;
-#endif
     else if (w3mApp::Instance().w3m_backend)
         ;
     else if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
@@ -1248,10 +1112,10 @@ page_loaded:
     }
 
     frame_source = flag & RG_FRAME_SRC;
-    auto success = loadSomething(&f, 
-        pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()), 
-        proc, 
-        t_buf);
+    auto success = loadSomething(&f,
+                                 pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()),
+                                 proc,
+                                 t_buf);
     assert(success);
     b = t_buf;
     f.Close();
@@ -1269,10 +1133,8 @@ page_loaded:
             Str s = Strnew(t);
             b->type = s->ptr;
         }
-#ifdef USE_IMAGE
         else if (proc == loadImageBuffer)
             b->type = "text/html";
-#endif
         else
             b->type = "text/plain";
         if (pu.label.size())
@@ -1296,11 +1158,6 @@ page_loaded:
     }
     if (w3mApp::Instance().header_string.size())
         w3mApp::Instance().header_string.clear();
-#ifdef USE_NNTP
-    if (f.scheme == SCM_NNTP || f.scheme == SCM_NEWS)
-        reAnchorNewsheader(b);
-#endif
     preFormUpdateBuffer(b);
-    TRAP_OFF;
     return b;
 }
