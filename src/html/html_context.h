@@ -1,7 +1,11 @@
 #pragma once
 #include <wc.h>
+#include "frontend/propstring.h"
+#include "frontend/buffer.h"
+#include "html/html.h"
 
 struct FormSelectOption;
+struct Anchor;
 class HtmlContext
 {
     CharacterEncodingScheme cur_document_charset;
@@ -17,6 +21,15 @@ class HtmlContext
 
     Str cur_title = nullptr;
 
+    Anchor *a_href = nullptr;
+    Anchor *a_img = nullptr;
+    Anchor *a_form = nullptr;
+
+    HtmlTags internal = HTML_UNKNOWN;
+
+    union frameset_element *idFrame = nullptr;
+    std::vector<struct frameset *> frameset_s;
+
 #define FORMSTACK_SIZE 10
 #define INITIAL_FORM_SIZE 10
     struct FormList **forms;
@@ -24,6 +37,7 @@ class HtmlContext
     int form_max = -1;
     int form_sp = 0;
     int forms_size = 0;
+    std::vector<Anchor *> a_select;
     FormSelectOption *select_option;
     int max_select = 0;
     int n_select = 0;
@@ -37,9 +51,10 @@ class HtmlContext
     Str cur_option_label = nullptr;
     int cur_option_selected = 0;
     int cur_status = 0;
+    std::vector<Anchor *> a_textarea;
+    int max_textarea = 0;
     int n_textarea;
     Str *textarea_str;
-    int max_textarea = 0;
     Str cur_textarea;
     int cur_textarea_size;
     int cur_textarea_rows;
@@ -47,6 +62,10 @@ class HtmlContext
     bool ignore_nl_textarea = false;
 
 public:
+    Lineprop effect = P_UNKNOWN;
+    Lineprop ex_effect = P_UNKNOWN;
+    char symbol = '\0';
+
     HtmlContext();
     ~HtmlContext();
 
@@ -115,4 +134,7 @@ public:
     void feed_textarea(const char *str);
     Str process_textarea(struct parsed_tag *tag, int width);
     Str process_n_textarea();
+
+    bool EndLineAddBuffer();
+    void Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str);
 };
