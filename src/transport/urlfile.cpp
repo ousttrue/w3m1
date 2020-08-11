@@ -258,6 +258,7 @@ URLFile::URLFile(URLSchemeTypes scm, InputStream *strm)
 
 URLFile::~URLFile()
 {
+    Close();
 }
 
 void URLFile::Close()
