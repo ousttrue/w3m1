@@ -63,6 +63,42 @@ HtmlContext::~HtmlContext()
 {
 }
 
+void HtmlContext::print_internal_information(struct html_feed_environ *henv)
+{
+    // TDOO:
+    //     TextLineList *tl = newTextLineList();
+
+    //     {
+    //         auto s = Strnew("<internal>");
+    //         pushTextLine(tl, newTextLine(s, 0));
+    //         if (henv->title)
+    //         {
+    //             s = Strnew_m_charp("<title_alt title=\"",
+    //                                html_quote(henv->title), "\">");
+    //             pushTextLine(tl, newTextLine(s, 0));
+    //         }
+    //     }
+
+    //     get_formselect()->print_internal(tl);
+    //     get_textarea()->print_internal(tl);
+
+    //     {
+    //         auto s = Strnew("</internal>");
+    //         pushTextLine(tl, newTextLine(s, 0));
+    //     }
+
+    //     if (henv->buf)
+    //     {
+    //         appendTextLineList(henv->buf, tl);
+    //     }
+    //     else if (henv->f)
+    //     {
+    //         TextLineListItem *p;
+    //         for (p = tl->first; p; p = p->next)
+    //             fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
+    //     }
+}
+
 void HtmlContext::print_internal(TextLineList *tl)
 {
     if (n_select > 0)

@@ -25,75 +25,11 @@
 #include <setjmp.h>
 #include <vector>
 
-static void
-print_internal_information(struct html_feed_environ *henv)
-{
-    // TDOO:
-    //     TextLineList *tl = newTextLineList();
-
-    //     {
-    //         auto s = Strnew("<internal>");
-    //         pushTextLine(tl, newTextLine(s, 0));
-    //         if (henv->title)
-    //         {
-    //             s = Strnew_m_charp("<title_alt title=\"",
-    //                                html_quote(henv->title), "\">");
-    //             pushTextLine(tl, newTextLine(s, 0));
-    //         }
-    //     }
-
-    //     get_formselect()->print_internal(tl);
-    //     get_textarea()->print_internal(tl);
-
-    //     {
-    //         auto s = Strnew("</internal>");
-    //         pushTextLine(tl, newTextLine(s, 0));
-    //     }
-
-    //     if (henv->buf)
-    //     {
-    //         appendTextLineList(henv->buf, tl);
-    //     }
-    //     else if (henv->f)
-    //     {
-    //         TextLineListItem *p;
-    //         for (p = tl->first; p; p = p->next)
-    //             fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
-    //     }
-}
-
 ///
 /// entry
 ///
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 {
-    struct environment envs[MAX_ENV_LEVEL];
-    clen_t linelen = 0;
-    clen_t trbyte = 0;
-    Str lineBuf2 = Strnew();
-
-    CharacterEncodingScheme charset = WC_CES_US_ASCII;
-    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
-
-    struct html_feed_environ htmlenv1;
-    struct readbuffer obuf;
-
-    MySignalHandler prevtrap = nullptr;
-
-    HtmlContext context;
-
-    int image_flag;
-    if (newBuf->image_flag)
-        image_flag = newBuf->image_flag;
-    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && autoImage)
-        image_flag = IMG_FLAG_AUTO;
-    else
-        image_flag = IMG_FLAG_SKIP;
-    if (newBuf->currentURL.file.size())
-    {
-        *GetCurBaseUrl() = *newBuf->BaseURL();
-    }
-
     if (w3mApp::Instance().w3m_halfload)
     {
         newBuf->buffername = "---";
@@ -107,21 +43,42 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
             }
             return s;
         };
+        HtmlContext context;
         context.BufferFromLines(newBuf, feed);
         w3mApp::Instance().w3m_halfload = FALSE;
         return;
     }
 
-    init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, nullptr, newBuf->width, 0);
+    int image_flag;
+    if (newBuf->image_flag)
+        image_flag = newBuf->image_flag;
+    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && autoImage)
+        image_flag = IMG_FLAG_AUTO;
+    else
+        image_flag = IMG_FLAG_SKIP;
+    if (newBuf->currentURL.file.size())
+    {
+        *GetCurBaseUrl() = *newBuf->BaseURL();
+    }
 
+    struct environment envs[MAX_ENV_LEVEL];
+    struct html_feed_environ htmlenv1;
+    struct readbuffer obuf;
+    init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, nullptr, newBuf->width, 0);
     if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
         htmlenv1.f = stdout;
     else
         htmlenv1.buf = newTextLineList();
 
+    //
+    //
+    //
+    clen_t linelen = 0;
+    clen_t trbyte = 0;
+    CharacterEncodingScheme charset = WC_CES_US_ASCII;
+    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
+    HtmlContext context;
     auto success = TrapJmp([&]() {
-
-#ifdef USE_M17N
         if (newBuf != nullptr)
         {
             if (newBuf->bufferprop & BP_FRAME)
@@ -134,16 +91,13 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
         else if (f->guess_type && !strcasecmp(f->guess_type, "application/xhtml+xml"))
             doc_charset = WC_CES_UTF_8;
         meta_charset = WC_CES_NONE;
-#endif
-#if 0
-    do_blankline(&htmlenv1, &obuf, 0, 0, htmlenv1.limit);
-    obuf.flag = RB_IGNORE_P;
-#endif
+
         if (IStype(f->stream) != IST_ENCODED)
             f->stream = newEncodedStream(f->stream, f->encoding);
+
+        Str lineBuf2 = nullptr;
         while ((lineBuf2 = f->StrmyISgets())->Size())
         {
-#ifdef USE_NNTP
             if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
             {
                 lineBuf2->Delete(0, 1);
@@ -156,7 +110,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
                     break;
                 }
             }
-#endif /* USE_NNTP */
+
             if (src)
                 lineBuf2->Puts(src);
             linelen += lineBuf2->Size();
@@ -166,9 +120,9 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
                 continue;
             showProgress(&linelen, &trbyte);
             /*
-         * if (frame_source)
-         * continue;
-         */
+            * if (frame_source)
+            * continue;
+            */
             if (meta_charset)
             { /* <META> */
                 if (content_charset == 0 && w3mApp::Instance().UseContentCharset)
@@ -205,15 +159,14 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     }
     else
     {
-
         if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
         {
-            print_internal_information(&htmlenv1);
+            context.print_internal_information(&htmlenv1);
             return;
         }
         if (w3mApp::Instance().w3m_backend)
         {
-            print_internal_information(&htmlenv1);
+            context.print_internal_information(&htmlenv1);
             backend_halfdump_buf = htmlenv1.buf;
             return;
         }

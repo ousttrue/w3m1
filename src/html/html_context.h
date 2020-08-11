@@ -69,8 +69,11 @@ public:
     HtmlContext();
     ~HtmlContext();
 
+    void print_internal_information(struct html_feed_environ *henv);
+private:
     void print_internal(struct TextLineList *tl);
 
+public:
     CharacterEncodingScheme CES() const { return cur_document_charset; }
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
 
