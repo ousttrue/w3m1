@@ -172,14 +172,15 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 /* 
  * loadHTMLBuffer: read file and make new buffer
  */
-BufferPtr
-loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
+bool loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
 {
+    assert(newBuf);
+
     FILE *src = nullptr;
     Str tmp;
 
-    if (newBuf == nullptr)
-        newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    // if (newBuf == nullptr)
+    //     newBuf = newBuffer(INIT_BUFFER_WIDTH());
     if (newBuf->sourcefile.empty() &&
         (f->scheme != SCM_LOCAL || newBuf->mailcap))
     {
@@ -197,7 +198,7 @@ loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
     if (src)
         fclose(src);
 
-    return newBuf;
+    return true;
 }
 
 /* 

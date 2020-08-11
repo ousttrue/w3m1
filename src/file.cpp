@@ -58,11 +58,9 @@
 #endif /* not min */
 
 BufferPtr
-loadcmdout(char *cmd,
-           BufferPtr (*loadproc)(URLFile *, BufferPtr), BufferPtr defaultbuf)
+loadcmdout(char *cmd, LoaderFunc loadproc, BufferPtr buf)
 {
     FILE *f, *popen(const char *, const char *);
-    BufferPtr buf;
 
     if (cmd == NULL || *cmd == '\0')
         return NULL;
@@ -71,8 +69,12 @@ loadcmdout(char *cmd,
         return NULL;
 
     URLFile uf(SCM_UNKNOWN, newFileStream(f, (FileStreamCloseFunc)pclose));
-    buf = loadproc(&uf, defaultbuf);
+    auto success = loadproc(&uf, buf);
     uf.Close();
+    if(!success)
+    {
+        return nullptr;
+    }
     return buf;
 }
 
@@ -604,8 +606,7 @@ gopher_end:
 #endif /* USE_GOPHER */
 
 #ifdef USE_IMAGE
-BufferPtr
-loadImageBuffer(URLFile *uf, BufferPtr newBuf)
+bool loadImageBuffer(URLFile *uf, BufferPtr newBuf)
 {
     Image image;
     ImageCache *cache;
@@ -660,7 +661,7 @@ image_buffer:
     newBuf->CurrentAsLast();
 
     newBuf->image_flag = IMG_FLAG_AUTO;
-    return newBuf;
+    return true;
 }
 #endif
 
@@ -815,7 +816,9 @@ openGeneralPagerBuffer(InputStream *stream)
     }
     if (is_html_type(t))
     {
-        buf = loadHTMLBuffer(&uf, t_buf);
+        buf = t_buf;
+        auto success = loadHTMLBuffer(&uf, t_buf);
+        assert(success);
         buf->type = "text/html";
     }
     else if (is_plain_text_type(t.c_str()))
@@ -829,7 +832,9 @@ openGeneralPagerBuffer(InputStream *stream)
              !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     {
         GetCurBaseUrl()->Parse("-", NULL);
-        buf = loadImageBuffer(&uf, t_buf);
+        auto buf = t_buf;
+        auto success = loadImageBuffer(&uf, t_buf);
+        assert(success);
         buf->type = "text/html";
     }
     else

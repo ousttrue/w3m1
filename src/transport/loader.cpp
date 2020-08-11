@@ -80,17 +80,13 @@ void SetMetaCharset(CharacterEncodingScheme ces)
     meta_charset = ces;
 }
 
-
-
-static BufferPtr
+static bool
 loadSomething(URLFile *f,
               char *path,
-              BufferPtr (*loadproc)(URLFile *, BufferPtr), BufferPtr defaultbuf)
+              LoaderFunc loadproc, BufferPtr buf)
 {
-    BufferPtr buf;
-
-    if ((buf = loadproc(f, defaultbuf)) == NULL)
-        return NULL;
+    if(!loadproc(f, buf))
+        return false;
 
     buf->filename = path;
     if (buf->buffername.empty() || buf->buffername[0] == '\0')
@@ -105,25 +101,29 @@ loadSomething(URLFile *f,
     buf->real_scheme = f->scheme;
     if (f->scheme == SCM_LOCAL && buf->sourcefile.empty())
         buf->sourcefile = path;
-    return buf;
+
+    return true;
 }
 
 /* 
  * loadFile: load file to buffer
  */
-BufferPtr
-loadFile(char *path)
+BufferPtr loadFile(char *path)
 {
-    BufferPtr buf;
     URLFile uf(SCM_LOCAL, NULL);
     uf.examineFile(path);
     if (uf.stream == NULL)
         return NULL;
-    buf = newBuffer(INIT_BUFFER_WIDTH());
+
+    auto buf = newBuffer(INIT_BUFFER_WIDTH());
     current_content_length = 0;
     content_charset = WC_CES_NONE;
-    buf = loadSomething(&uf, path, loadBuffer, buf);
+    auto success = loadSomething(&uf, path, loadBuffer, buf);
     uf.Close();
+    if(!success)
+    {
+        return nullptr;
+    }
     return buf;
 }
 
@@ -381,9 +381,9 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
 /* 
  * loadBuffer: read file and make new buffer
  */
-BufferPtr
-loadBuffer(URLFile *uf, BufferPtr newBuf)
+bool loadBuffer(URLFile *uf, BufferPtr newBuf)
 {
+    assert(newBuf);
     FILE *src = NULL;
 
     CharacterEncodingScheme charset = WC_CES_US_ASCII;
@@ -397,8 +397,8 @@ loadBuffer(URLFile *uf, BufferPtr newBuf)
 
     MySignalHandler prevtrap = NULL;
 
-    if (newBuf == NULL)
-        newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    // if (newBuf == NULL)
+    //     newBuf = newBuffer(INIT_BUFFER_WIDTH());
     lineBuf2 = Strnew();
 
     if (SETJMP(AbortLoading) != 0)
@@ -474,8 +474,6 @@ _end:
     newBuf->document_charset = charset;
     if (src)
         fclose(src);
-
-    return newBuf;
 }
 
 static int
@@ -674,7 +672,7 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
 {
     URL pu;
     BufferPtr b = NULL;
-    auto proc = loadBuffer;
+    LoaderFunc proc = loadBuffer;
     char *p;
     BufferPtr t_buf = NULL;
     int searchHeader = w3mApp::Instance().SearchHeader;
@@ -1250,10 +1248,15 @@ page_loaded:
     }
 
     frame_source = flag & RG_FRAME_SRC;
-    b = loadSomething(&f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()), proc, t_buf);
+    auto success = loadSomething(&f, 
+        pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()), 
+        proc, 
+        t_buf);
+    assert(success);
+    b = t_buf;
     f.Close();
     frame_source = 0;
-    if (b)
+    if (success)
     {
         b->real_scheme = f.scheme;
         b->real_type = real_type;

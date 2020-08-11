@@ -16,7 +16,7 @@ BufferPtr loadFile(char *path);
 char *checkContentType(BufferPtr buf);
 void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu);
 
-BufferPtr loadBuffer(URLFile *uf, BufferPtr newBuf);
+bool loadBuffer(URLFile *uf, BufferPtr newBuf);
 
 BufferPtr loadGeneralFile(std::string_view path, const URL *current, char *referer, LoadFlags flag, FormList *request);
 

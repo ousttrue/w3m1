@@ -21,7 +21,7 @@ char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte);
 
 
-BufferPtr loadImageBuffer(URLFile *uf, BufferPtr newBuf);
+bool loadImageBuffer(URLFile *uf, BufferPtr newBuf);
 void saveBuffer(BufferPtr buf, FILE *f, int cont);
 void saveBufferBody(BufferPtr buf, FILE *f, int cont);
 BufferPtr getshell(char *cmd);
@@ -162,6 +162,6 @@ void SetMetaCharset(CharacterEncodingScheme ces);
 URL *GetCurBaseUrl();
 int setModtime(char *path, time_t modtime);
 
-BufferPtr
-loadcmdout(char *cmd,
-           BufferPtr (*loadproc)(URLFile *, BufferPtr), BufferPtr defaultbuf);
+using LoaderFunc = bool (*)(URLFile *uf, BufferPtr newBuf);
+
+BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc, BufferPtr defaultbuf);
