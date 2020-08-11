@@ -63,165 +63,6 @@ print_internal_information(struct html_feed_environ *henv)
 }
 
 ///
-/// 1行ごとに Line の構築と html タグを解釈する
-///
-using FeedFunc = std::function<Str()>;
-static void HTMLlineproc2body(BufferPtr buf, const FeedFunc &feed, int llimit, HtmlContext *seq)
-{
-    //
-    // each line
-    //
-    Str line = nullptr;
-    for (int nlines = 1; nlines != llimit; ++nlines)
-    {
-        if (!line)
-        {
-            // new line
-            line = feed();
-            if (!line)
-            {
-                break;
-            }
-
-            auto [n, t] = seq->TextareaCurrent();
-            if (n >= 0 && *(line->ptr) != '<')
-            { /* halfload */
-                t->Push(line);
-                continue;
-            }
-
-            StripRight(line);
-        }
-
-        //
-        // each char
-        //
-        const char *str = line->ptr;
-        auto endp = str + line->Size();
-        PropertiedString out;
-        while (str < endp)
-        {
-            auto mode = get_mctype(*str);
-            if ((seq->effect | ex_efct(seq->ex_effect)) & PC_SYMBOL && *str != '<')
-            {
-                // symbol
-                auto p = get_width_symbol(seq->SymbolWidth0(), seq->symbol);
-                assert(p.size() > 0);
-                int len = get_mclen(p.data());
-                mode = get_mctype(p[0]);
-
-                out.push(mode | seq->effect | ex_efct(seq->ex_effect), p[0]);
-                if (--len)
-                {
-                    mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
-                    for (int i = 1; len--; ++i)
-                    {
-                        out.push(mode | seq->effect | ex_efct(seq->ex_effect), p[i]);
-                    }
-                }
-                str += seq->SymbolWidth();
-            }
-            else if (mode == PC_CTRL || mode == PC_UNDEF)
-            {
-                // control
-                out.push(PC_ASCII | seq->effect | ex_efct(seq->ex_effect), ' ');
-                str++;
-            }
-            else if (mode & PC_UNKNOWN)
-            {
-                // unknown
-                out.push(PC_ASCII | seq->effect | ex_efct(seq->ex_effect), ' ');
-                str += get_mclen(str);
-            }
-            else if (*str != '<' && *str != '&')
-            {
-                // multibyte char ?
-                int len = get_mclen(str);
-                out.push(mode | seq->effect | ex_efct(seq->ex_effect), *(str++));
-                if (--len)
-                {
-                    mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
-                    while (len--)
-                    {
-                        out.push(mode | seq->effect | ex_efct(seq->ex_effect), *(str++));
-                    }
-                }
-            }
-            else if (*str == '&')
-            {
-                /* 
-                 * & escape processing
-                 */
-                char *p;
-                {
-                    auto [pos, view] = getescapecmd(str, w3mApp::Instance().InnerCharset);
-                    str = const_cast<char *>(pos);
-                    p = const_cast<char *>(view.data());
-                }
-
-                while (*p)
-                {
-                    mode = get_mctype(*p);
-                    if (mode == PC_CTRL || mode == PC_UNDEF)
-                    {
-                        out.push(PC_ASCII | seq->effect | ex_efct(seq->ex_effect), ' ');
-                        p++;
-                    }
-                    else if (mode & PC_UNKNOWN)
-                    {
-                        out.push(PC_ASCII | seq->effect | ex_efct(seq->ex_effect), ' ');
-                        p += get_mclen(p);
-                    }
-                    else
-                    {
-                        int len = get_mclen(p);
-                        out.push(mode | seq->effect | ex_efct(seq->ex_effect), *(p++));
-                        if (--len)
-                        {
-                            mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
-                            while (len--)
-                            {
-                                out.push(mode | seq->effect | ex_efct(seq->ex_effect), *(p++));
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                /* tag processing */
-                auto tag = parse_tag(&str, TRUE);
-                if (!tag)
-                    continue;
-
-                seq->Process(tag, buf, out.len(), str);
-            }
-        }
-
-        if (seq->EndLineAddBuffer())
-        {
-            buf->AddNewLine(out, nlines);
-        }
-
-        if (str != endp)
-        {
-            // advance line
-            line = line->Substr(str - line->ptr, endp - str);
-        }
-        else
-        {
-            // clear for next line
-            line = nullptr;
-        }
-    }
-
-    buf->formlist = seq->FormEnd();
-
-    addMultirowsForm(buf, buf->formitem);
-    addMultirowsImg(buf, buf->img);
-}
-
-///
 /// entry
 ///
 void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
@@ -257,7 +98,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     {
         newBuf->buffername = "---";
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
-        FeedFunc feed = [f]() -> Str {
+        auto feed = [f]() -> Str {
             auto s = StrISgets(f->stream);
             if (s->Size() == 0)
             {
@@ -266,7 +107,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
             }
             return s;
         };
-        HTMLlineproc2body(newBuf, feed, -1, &context);
+        context.BufferFromLines(newBuf, feed);
         w3mApp::Instance().w3m_halfload = FALSE;
         return;
     }
@@ -386,11 +227,11 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
     newBuf->image_flag = image_flag;
 
     {
-        FeedFunc feed = [feeder = TextFeeder{htmlenv1.buf->first}]() -> Str {
+        auto feed = [feeder = TextFeeder{htmlenv1.buf->first}]() -> Str {
             return feeder();
         };
 
-        HTMLlineproc2body(newBuf, feed, -1, &context);
+        context.BufferFromLines(newBuf, feed);
     }
 }
 

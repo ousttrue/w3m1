@@ -1753,3 +1753,161 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         }
     }
 }
+
+///
+/// 1行ごとに Line の構築と html タグを解釈する
+///
+void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
+{
+    //
+    // each line
+    //
+    Str line = nullptr;
+    for (int nlines = 1; ; ++nlines)
+    {
+        if (!line)
+        {
+            // new line
+            line = feed();
+            if (!line)
+            {
+                break;
+            }
+
+            auto [n, t] = TextareaCurrent();
+            if (n >= 0 && *(line->ptr) != '<')
+            { /* halfload */
+                t->Push(line);
+                continue;
+            }
+
+            StripRight(line);
+        }
+
+        //
+        // each char
+        //
+        const char *str = line->ptr;
+        auto endp = str + line->Size();
+        PropertiedString out;
+        while (str < endp)
+        {
+            auto mode = get_mctype(*str);
+            if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
+            {
+                // symbol
+                auto p = get_width_symbol(SymbolWidth0(), symbol);
+                assert(p.size() > 0);
+                int len = get_mclen(p.data());
+                mode = get_mctype(p[0]);
+
+                out.push(mode | effect | ex_efct(ex_effect), p[0]);
+                if (--len)
+                {
+                    mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
+                    for (int i = 1; len--; ++i)
+                    {
+                        out.push(mode | effect | ex_efct(ex_effect), p[i]);
+                    }
+                }
+                str += SymbolWidth();
+            }
+            else if (mode == PC_CTRL || mode == PC_UNDEF)
+            {
+                // control
+                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                str++;
+            }
+            else if (mode & PC_UNKNOWN)
+            {
+                // unknown
+                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                str += get_mclen(str);
+            }
+            else if (*str != '<' && *str != '&')
+            {
+                // multibyte char ?
+                int len = get_mclen(str);
+                out.push(mode | effect | ex_efct(ex_effect), *(str++));
+                if (--len)
+                {
+                    mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
+                    while (len--)
+                    {
+                        out.push(mode | effect | ex_efct(ex_effect), *(str++));
+                    }
+                }
+            }
+            else if (*str == '&')
+            {
+                /* 
+                 * & escape processing
+                 */
+                char *p;
+                {
+                    auto [pos, view] = getescapecmd(str, w3mApp::Instance().InnerCharset);
+                    str = const_cast<char *>(pos);
+                    p = const_cast<char *>(view.data());
+                }
+
+                while (*p)
+                {
+                    mode = get_mctype(*p);
+                    if (mode == PC_CTRL || mode == PC_UNDEF)
+                    {
+                        out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                        p++;
+                    }
+                    else if (mode & PC_UNKNOWN)
+                    {
+                        out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                        p += get_mclen(p);
+                    }
+                    else
+                    {
+                        int len = get_mclen(p);
+                        out.push(mode | effect | ex_efct(ex_effect), *(p++));
+                        if (--len)
+                        {
+                            mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
+                            while (len--)
+                            {
+                                out.push(mode | effect | ex_efct(ex_effect), *(p++));
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                /* tag processing */
+                auto tag = parse_tag(&str, TRUE);
+                if (!tag)
+                    continue;
+
+                Process(tag, buf, out.len(), str);
+            }
+        }
+
+        if (EndLineAddBuffer())
+        {
+            buf->AddNewLine(out, nlines);
+        }
+
+        if (str != endp)
+        {
+            // advance line
+            line = line->Substr(str - line->ptr, endp - str);
+        }
+        else
+        {
+            // clear for next line
+            line = nullptr;
+        }
+    }
+
+    buf->formlist = FormEnd();
+
+    addMultirowsForm(buf, buf->formitem);
+    addMultirowsImg(buf, buf->img);
+}

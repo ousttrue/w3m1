@@ -135,6 +135,11 @@ public:
     Str process_textarea(struct parsed_tag *tag, int width);
     Str process_n_textarea();
 
+private:
     bool EndLineAddBuffer();
     void Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str);
+
+public:
+    using FeedFunc = std::function<Str()>;
+    void BufferFromLines(BufferPtr buf, const FeedFunc &feed);
 };
