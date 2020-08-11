@@ -18,7 +18,6 @@ w3m を改造して遊ぶ。
 * [ ] tab壊れた
 * [ ] HtmlProcess reentrant
 * [ ] STL化(Tab, Buffer, Line, Anchor)
-* [ ] loadGeneralFileが改造困難。機能を大幅に落とす
 
 ## Group
 

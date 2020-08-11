@@ -520,7 +520,6 @@ void SetMetaCharset(CharacterEncodingScheme ces)
     meta_charset = ces;
 }
 
-
 /* 
  * loadFile: load file to buffer
  */
@@ -574,142 +573,133 @@ checkContentType(BufferPtr buf)
 
 void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
 {
-    char *p, *q;
-    char *emsg;
-
-    char c;
-    Str lineBuf2 = NULL;
-    Str tmp;
-    TextList *headerlist;
-#ifdef USE_M17N
-    CharacterEncodingScheme charset = WC_CES_US_ASCII, mime_charset;
-#endif
-    char *tmpf;
-    FILE *src = NULL;
-
-    headerlist = newBuf->document_header = newTextList();
-    if (uf->scheme == SCM_HTTP
-#ifdef USE_SSL
-        || uf->scheme == SCM_HTTPS
-#endif /* USE_SSL */
-    )
+    http_response_code = 0;
+    if (uf->scheme == SCM_HTTP || uf->scheme == SCM_HTTPS)
+    {
         http_response_code = -1;
-    else
-        http_response_code = 0;
+    }
 
+    // thru
+    FILE *src = nullptr;
     if (thru && !newBuf->header_source.size() && !image_source)
     {
-        tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
+        auto tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
         src = fopen(tmpf, "w");
         if (src)
             newBuf->header_source = tmpf;
     }
-    while ((tmp = uf->StrmyISgets())->Size())
+
+    // char *p, *q;
+    // char *emsg;
+    // char c;
+    // CharacterEncodingScheme charset = WC_CES_US_ASCII, mime_charset;
+    // char *tmpf;
+    // FILE *src = NULL;
+
+    newBuf->document_header = newTextList();
+    while (true)
     {
-#ifdef USE_NNTP
-        if (uf->scheme == SCM_NEWS && tmp->ptr[0] == '.')
-            tmp->Delete(0, 1);
-#endif
+        auto lineBuf2 = uf->StrmyISgets();
+        if (lineBuf2->Size() == 0)
+        {
+            break;
+        }
         if (w3mApp::Instance().w3m_reqlog.size())
         {
-            FILE *ff;
-            ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
-            tmp->Puts(ff);
+            // loging
+            auto ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
+            lineBuf2->Puts(ff);
             fclose(ff);
         }
         if (src)
-            tmp->Puts(src);
-        cleanup_line(tmp, HEADER_MODE);
-        if (tmp->ptr[0] == '\n' || tmp->ptr[0] == '\r' || tmp->ptr[0] == '\0')
         {
-            if (!lineBuf2)
-                /* there is no header */
-                break;
+            lineBuf2->Puts(src);
+        }
+
+        cleanup_line(lineBuf2, HEADER_MODE);
+        if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' || lineBuf2->ptr[0] == '\0')
+        {
+            /* there is no header */
+            break;
             /* last header */
         }
-        else if (!(w3mApp::Instance().w3m_dump & DUMP_HEAD))
-        {
-            if (lineBuf2)
-            {
-                lineBuf2->Push(tmp);
-            }
-            else
-            {
-                lineBuf2 = tmp;
-            }
-            c = uf->Getc();
-            uf->UndoGetc();
-            if (c == ' ' || c == '\t')
-                /* header line is continued */
-                continue;
-            lineBuf2 = decodeMIME(lineBuf2, &mime_charset);
-            lineBuf2 = convertLine(NULL, lineBuf2, RAW_MODE,
-                                   mime_charset ? &mime_charset : &charset,
-                                   mime_charset ? mime_charset
-                                                : w3mApp::Instance().DocumentCharset);
-            /* separated with line and stored */
-            tmp = Strnew_size(lineBuf2->Size());
-            for (p = lineBuf2->ptr; *p; p = q)
-            {
-                for (q = p; *q && *q != '\r' && *q != '\n'; q++)
-                    ;
-                tmp->Push(lineBuf2);
-                if (thru)
-                    newBuf->AddNewLine(PropertiedString(lineBuf2));
-                for (; *q && (*q == '\r' || *q == '\n'); q++)
-                    ;
-            }
-#ifdef USE_IMAGE
-            if (thru && w3mApp::Instance().activeImage && w3mApp::Instance().displayImage)
-            {
-                Str src = NULL;
-                if (!strncasecmp(tmp->ptr, "X-Image-URL:", 12))
-                {
-                    tmpf = &tmp->ptr[12];
-                    SKIP_BLANKS(&tmpf);
-                    src = Strnew_m_charp("<img src=\"", html_quote(tmpf),
-                                         "\" alt=\"X-Image-URL\">", NULL);
-                }
-#ifdef USE_XFACE
-                else if (!strncasecmp(tmp->ptr, "X-Face:", 7))
-                {
-                    tmpf = xface2xpm(&tmp->ptr[7]);
-                    if (tmpf)
-                        src = Strnew_m_charp("<img src=\"file:",
-                                             html_quote(tmpf),
-                                             "\" alt=\"X-Face\"",
-                                             " width=48 height=48>", NULL);
-                }
-#endif
-                if (src)
-                {
-                    LinePtr l;
-                    CharacterEncodingScheme old_charset = newBuf->document_charset;
-                    URLFile f(SCM_LOCAL, newStrStream(src));
-                    loadHTMLstream(&f, newBuf, NULL, TRUE);
-                    for (l = newBuf->LastLine(); l && l->real_linenumber;
-                         l = newBuf->PrevLine(l))
-                        l->real_linenumber = 0;
-#ifdef USE_M17N
-                    newBuf->document_charset = old_charset;
-#endif
-                }
-            }
-#endif
-            lineBuf2 = tmp;
-        }
-        else
-        {
-            lineBuf2 = tmp;
-        }
-        if ((uf->scheme == SCM_HTTP
-#ifdef USE_SSL
-             || uf->scheme == SCM_HTTPS
-#endif /* USE_SSL */
-             ) &&
+        //         else if (!(w3mApp::Instance().w3m_dump & DUMP_HEAD))
+        //         {
+        //             if (lineBuf2)
+        //             {
+        //                 lineBuf2->Push(tmp);
+        //             }
+        //             else
+        //             {
+        //                 lineBuf2 = tmp;
+        //             }
+        //             c = uf->Getc();
+        //             uf->UndoGetc();
+        //             if (c == ' ' || c == '\t')
+        //                 /* header line is continued */
+        //                 continue;
+        //             lineBuf2 = decodeMIME(lineBuf2, &mime_charset);
+        //             lineBuf2 = convertLine(NULL, lineBuf2, RAW_MODE,
+        //                                    mime_charset ? &mime_charset : &charset,
+        //                                    mime_charset ? mime_charset
+        //                                                 : w3mApp::Instance().DocumentCharset);
+        //             /* separated with line and stored */
+        //             tmp = Strnew_size(lineBuf2->Size());
+        //             for (p = lineBuf2->ptr; *p; p = q)
+        //             {
+        //                 for (q = p; *q && *q != '\r' && *q != '\n'; q++)
+        //                     ;
+        //                 tmp->Push(lineBuf2);
+        //                 if (thru)
+        //                     newBuf->AddNewLine(PropertiedString(lineBuf2));
+        //                 for (; *q && (*q == '\r' || *q == '\n'); q++)
+        //                     ;
+        //             }
+        // #ifdef USE_IMAGE
+        //             if (thru && w3mApp::Instance().activeImage && w3mApp::Instance().displayImage)
+        //             {
+        //                 Str src = NULL;
+        //                 if (!strncasecmp(tmp->ptr, "X-Image-URL:", 12))
+        //                 {
+        //                     tmpf = &tmp->ptr[12];
+        //                     SKIP_BLANKS(&tmpf);
+        //                     src = Strnew_m_charp("<img src=\"", html_quote(tmpf),
+        //                                          "\" alt=\"X-Image-URL\">", NULL);
+        //                 }
+        // #ifdef USE_XFACE
+        //                 else if (!strncasecmp(tmp->ptr, "X-Face:", 7))
+        //                 {
+        //                     tmpf = xface2xpm(&tmp->ptr[7]);
+        //                     if (tmpf)
+        //                         src = Strnew_m_charp("<img src=\"file:",
+        //                                              html_quote(tmpf),
+        //                                              "\" alt=\"X-Face\"",
+        //                                              " width=48 height=48>", NULL);
+        //                 }
+        // #endif
+        //                 if (src)
+        //                 {
+        //                     LinePtr l;
+        //                     CharacterEncodingScheme old_charset = newBuf->document_charset;
+        //                     URLFile f(SCM_LOCAL, newStrStream(src));
+        //                     loadHTMLstream(&f, newBuf, NULL, TRUE);
+        //                     for (l = newBuf->LastLine(); l && l->real_linenumber;
+        //                          l = newBuf->PrevLine(l))
+        //                         l->real_linenumber = 0;
+        // #ifdef USE_M17N
+        //                     newBuf->document_charset = old_charset;
+        // #endif
+        //                 }
+        //             }
+        // #endif
+        //             lineBuf2 = tmp;
+        //         }
+        // else
+
+        if ((uf->scheme == SCM_HTTP || uf->scheme == SCM_HTTPS) &&
             http_response_code == -1)
         {
-            p = lineBuf2->ptr;
+            auto p = lineBuf2->ptr;
             while (*p && !IS_SPACE(*p))
                 p++;
             while (*p && IS_SPACE(*p))
@@ -721,9 +711,10 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
                 refresh();
             }
         }
-        if (!strncasecmp(lineBuf2->ptr, "content-transfer-encoding:", 26))
+
+        if (strncasecmp(lineBuf2->ptr, "content-transfer-encoding:", 26) == 0)
         {
-            p = lineBuf2->ptr + 26;
+            auto p = lineBuf2->ptr + 26;
             while (IS_SPACE(*p))
                 p++;
             if (!strncasecmp(p, "base64", 6))
@@ -736,10 +727,10 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
             else
                 uf->encoding = ENC_7BIT;
         }
-        else if (!strncasecmp(lineBuf2->ptr, "content-encoding:", 17))
+        else if (strncasecmp(lineBuf2->ptr, "content-encoding:", 17) == 0)
         {
             struct compression_decoder *d;
-            p = lineBuf2->ptr + 17;
+            auto p = lineBuf2->ptr + 17;
             while (IS_SPACE(*p))
                 p++;
             uf->compression = CMP_NOCOMPRESS;
@@ -766,32 +757,36 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
         {
             readHeaderCookie(pu, lineBuf2);
         }
-        else if (!strncasecmp(lineBuf2->ptr, "w3m-control:", 12) &&
+        else if (strncasecmp(lineBuf2->ptr, "w3m-control:", 12) == 0 &&
                  uf->scheme == SCM_LOCAL_CGI)
         {
-            Str funcname = Strnew();
-
-            p = lineBuf2->ptr + 12;
+            auto p = lineBuf2->ptr + 12;
             SKIP_BLANKS(&p);
+            Str funcname = Strnew();
             while (*p && !IS_SPACE(*p))
                 funcname->Push(*(p++));
             SKIP_BLANKS(&p);
             Command f = getFuncList(funcname->ptr);
             if (f)
             {
-                tmp = Strnew(p);
+                auto tmp = Strnew(p);
                 StripRight(tmp);
                 pushEvent(f, tmp->ptr);
             }
         }
-        if (headerlist)
-            pushText(headerlist, lineBuf2->ptr);
-        lineBuf2 = NULL;
+
+        pushText(newBuf->document_header, lineBuf2->ptr);
     }
+
     if (thru)
+    {
         newBuf->AddNewLine(PropertiedString("", 0));
+    }
+
     if (src)
+    {
         fclose(src);
+    }
 }
 
 /* 
