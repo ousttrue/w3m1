@@ -20,5 +20,4 @@ bool loadBuffer(URLFile *uf, BufferPtr newBuf);
 
 BufferPtr loadGeneralFile(std::string_view path, const URL *current, char *referer, LoadFlags flag, FormList *request);
 
-int save2tmp(URLFile uf, char *tmpf);
 int doFileCopy(const char *tmpf, const char *defstr);

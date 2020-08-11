@@ -65,3 +65,4 @@ struct URLFile
 };
 
 char *file_to_url(std::string_view file);
+int save2tmp(URLFile uf, char *tmpf);

@@ -17,7 +17,6 @@
 #include "frontend/lineinput.h"
 #include <assert.h>
 
-
 /* add index_file if exists */
 static void
 add_index_file(URL *pu, URLFile *uf)
@@ -899,4 +898,38 @@ char *file_to_url(std::string_view file)
 #endif
     tmp->Push(file_quote(cleanupName(file.data())));
     return tmp->ptr;
+}
+
+int save2tmp(URLFile uf, char *tmpf)
+{
+    auto ff = fopen(tmpf, "wb");
+    if (ff == NULL)
+    {
+        /* fclose(f); */
+        return -1;
+    }
+
+    auto success = TrapJmp([&]() -> bool {
+        Str buf = Strnew_size(SAVE_BUF_SIZE);
+        clen_t linelen = 0;
+        while (uf.Read(buf, SAVE_BUF_SIZE))
+        {
+            if (buf->Puts(ff) != buf->Size())
+            {
+                // bcopy(env_bak, AbortLoading, sizeof(JMP_BUF));
+                // TRAP_OFF;
+                // fclose(ff);
+                return false;
+            }
+            linelen += buf->Size();
+            clen_t trbyte = 0;
+            showProgress(&linelen, &trbyte);
+        }
+
+        return true;
+    });
+
+    fclose(ff);
+    // current_content_length = 0;
+    return 0;
 }
