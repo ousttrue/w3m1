@@ -57,12 +57,6 @@ struct URL
     std::string query;
     std::string fragment;
 
-private:
-    const char *ParseUserinfoHostPort(const char *p);
-    const char *ParsePath(const char *p);
-    const char *ParseQuery(const char *p);
-    void ParseFragment(const char *p);
-
 public:
     std::string real_file;
     int is_nocache = 0;
