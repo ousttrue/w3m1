@@ -451,6 +451,49 @@ rest:
 //
 // scheme://userinfo@host:port/path?query#fragment
 //
+static std::tuple<std::string_view, URLSchemeTypes> ParseScheme(std::string_view p, const URL *current)
+{
+    // const char *q = nullptr;
+    auto [remain, scheme] = URLScheme::Parse(p);
+    if (scheme == SCM_MISSING)
+    {
+        /* scheme part is not found in the url. This means either
+        * (a) the url is relative to the current or (b) the url
+        * denotes a filename (therefore the scheme is SCM_LOCAL).
+        */
+        if (current)
+        {
+            switch (current->scheme)
+            {
+            case SCM_LOCAL:
+            case SCM_LOCAL_CGI:
+                scheme = SCM_LOCAL;
+                break;
+            case SCM_FTP:
+            case SCM_FTPDIR:
+                scheme = SCM_FTP;
+                break;
+            case SCM_NNTP:
+            case SCM_NNTP_GROUP:
+                scheme = SCM_NNTP;
+                break;
+            case SCM_NEWS:
+            case SCM_NEWS_GROUP:
+                scheme = SCM_NEWS;
+                break;
+            default:
+                scheme = current->scheme;
+                break;
+            }
+        }
+        else
+        {
+            scheme = SCM_LOCAL;
+        }
+    }
+    return {remain, scheme};
+}
+
 void URL::Parse(std::string_view _url, const URL *current)
 {
     *this = {};
@@ -470,8 +513,9 @@ void URL::Parse(std::string_view _url, const URL *current)
         return;
     }
 
-    auto p = ParseScheme(url, current);
-    p = ParseUserinfoHostPort(p);
+    auto [remain, scheme] = ParseScheme(url, current);
+    this->scheme = scheme;
+    auto p = ParseUserinfoHostPort(remain.data());
 
     // /* scheme part has been found */
     // if (this->scheme == SCM_UNKNOWN)
@@ -601,50 +645,6 @@ void URL::Parse(std::string_view _url, const URL *current)
             this->real_file = cleanupName(file_unquote(this->path));
         }
     }
-}
-
-const char *URL::ParseScheme(const char *p, const URL *current)
-{
-    // const char *q = nullptr;
-    auto [pos, scheme] = getURLScheme(p);
-    this->scheme = scheme;
-    if (this->scheme == SCM_MISSING)
-    {
-        /* scheme part is not found in the url. This means either
-        * (a) the url is relative to the current or (b) the url
-        * denotes a filename (therefore the scheme is SCM_LOCAL).
-        */
-        if (current)
-        {
-            switch (current->scheme)
-            {
-            case SCM_LOCAL:
-            case SCM_LOCAL_CGI:
-                this->scheme = SCM_LOCAL;
-                break;
-            case SCM_FTP:
-            case SCM_FTPDIR:
-                this->scheme = SCM_FTP;
-                break;
-            case SCM_NNTP:
-            case SCM_NNTP_GROUP:
-                this->scheme = SCM_NNTP;
-                break;
-            case SCM_NEWS:
-            case SCM_NEWS_GROUP:
-                this->scheme = SCM_NEWS;
-                break;
-            default:
-                this->scheme = current->scheme;
-                break;
-            }
-        }
-        else
-        {
-            this->scheme = SCM_LOCAL;
-        }
-    }
-    return pos;
 }
 
 const char *URL::ParseUserinfoHostPort(const char *p)

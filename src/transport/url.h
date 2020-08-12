@@ -58,7 +58,6 @@ struct URL
     std::string fragment;
 
 private:
-    const char *ParseScheme(const char *p, const URL *current);
     const char *ParseUserinfoHostPort(const char *p);
     const char *ParsePath(const char *p);
     const char *ParseQuery(const char *p);
