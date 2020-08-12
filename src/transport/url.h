@@ -29,6 +29,8 @@ struct URLScheme
     const std::string_view name;
     const URLSchemeTypes type;
     const int port;
+
+    static std::tuple<std::string_view, URLSchemeTypes> Parse(std::string_view url);
 };
 const URLScheme *GetScheme(URLSchemeTypes index);
 
@@ -93,4 +95,5 @@ URL *schemeToProxy(int scheme);
 std::tuple<const char *, URLSchemeTypes> getURLScheme(const char *url);
 char *mybasename(std::string_view s);
 char *url_unquote_conv(std::string_view url, CharacterEncodingScheme charset);
-char *url_quote(std::string_view str);
+// char *url_quote(std::string_view str);
+std::string url_quote(std::string_view p);

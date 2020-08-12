@@ -21,7 +21,6 @@
 #include <errno.h>
 #include <string_view>
 #include <sys/stat.h>
-
 #include "myctype.h"
 #include "regex.h"
 
@@ -38,7 +37,7 @@ int ai_family_order_table[7][3] = {
 };
 #endif /* INET6 */
 
-URLScheme schemetable[] = {
+URLScheme g_schemeTable[] = {
     {"http", SCM_HTTP, 80},
     {"gopher", SCM_GOPHER, 70},
     {"ftp", SCM_FTP, 21},
@@ -56,7 +55,7 @@ URLScheme schemetable[] = {
 };
 const URLScheme *GetScheme(URLSchemeTypes index)
 {
-    for (auto &s : schemetable)
+    for (auto &s : g_schemeTable)
     {
         if (s.type == index)
         {
@@ -126,7 +125,7 @@ int openSocket4(const char *hostname,
             return false;
         }
         regexCompile("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", 0);
-        if (regexMatch(const_cast<char*>(hostname), -1, 1))
+        if (regexMatch(const_cast<char *>(hostname), -1, 1))
         {
             sscanf(hostname, "%d.%d.%d.%d", &a1, &a2, &a3, &a4);
             adr = htonl((a1 << 24) | (a2 << 16) | (a3 << 8) | a4);
@@ -327,13 +326,22 @@ static char *copyPath(const char *orgpath, int length, SpaceMode option)
     return tmp->ptr;
 }
 
-std::tuple<const char *, URLSchemeTypes> getURLScheme(const char *url)
+std::tuple<std::string_view, URLSchemeTypes> URLScheme::Parse(std::string_view url)
 {
+    for (auto &scheme : g_schemeTable)
+    {
+        if (url.size() > scheme.name.size() && url.starts_with(scheme.name) && url[scheme.name.size()] == ':')
+        {
+            // found
+            return {url.substr(scheme.name.size() + 1), scheme.type};
+        }
+    }
+
     // skip for ':'
     auto p = url;
-    for (; *p; ++p)
+    for (; p.size(); p = p.substr(1))
     {
-        if ((IS_ALNUM(*p) || *p == '.' || *p == '+' || *p == '-'))
+        if ((IS_ALNUM(p[0]) || p[0] == '.' || p[0] == '+' || p[0] == '-'))
         {
             continue;
         }
@@ -342,25 +350,23 @@ std::tuple<const char *, URLSchemeTypes> getURLScheme(const char *url)
             break;
         }
     }
-    if (*p != ':')
+
+    if (p[0] != ':')
     {
         return {url, SCM_MISSING};
     }
-    ++p;
-
-    std::string_view view(url);
-    for (auto &scheme : schemetable)
-    {
-        if (view.starts_with(scheme.name) && view[scheme.name.size()] == ':')
-        {
-            return {p, scheme.type};
-        }
-    }
+    p = p.substr(1);
 
     return {p, SCM_MISSING};
+        }
+
+std::tuple<const char *, URLSchemeTypes> getURLScheme(const char *url)
+{
+    auto [remain, type] = URLScheme::Parse(url);
+    return {remain.data(), type};
 }
 
-const char *string_strchr(const std::string &src, int c)
+static const char *string_strchr(const std::string &src, int c)
 {
     auto pos = src.find(c);
     if (pos == std::string::npos)
@@ -371,25 +377,29 @@ const char *string_strchr(const std::string &src, int c)
 }
 
 #define URL_QUOTE_MASK 0x10 /* [\0- \177-\377] */
-#define is_url_quote(c) (GET_QUOTE_TYPE(c) & URL_QUOTE_MASK)
-static const char xdigit[0x11] = "0123456789ABCDEF";
-char *url_quote(std::string_view str)
+static bool is_url_quote(char c)
 {
-    Str tmp = Strnew();
-    for (auto p = str.data(); *p; p++)
+    return (GET_QUOTE_TYPE(c) & URL_QUOTE_MASK);
+}
+
+static const char xdigit[0x11] = "0123456789ABCDEF";
+std::string url_quote(std::string_view p)
+{
+    std::string str;
+    for (; p.size(); p = p.substr(1))
     {
-        if (is_url_quote(*p))
+        if (is_url_quote(p[0]))
         {
-            tmp->Push('%');
-            tmp->Push(xdigit[((unsigned char)*p >> 4) & 0xF]);
-            tmp->Push(xdigit[(unsigned char)*p & 0xF]);
+            str.push_back('%');
+            str.push_back(xdigit[((unsigned char)p[0] >> 4) & 0xF]);
+            str.push_back(xdigit[(unsigned char)p[0] & 0xF]);
         }
         else
         {
-            tmp->Push(*p);
+            str.push_back(p[0]);
         }
     }
-    return tmp->ptr;
+    return str;
 }
 
 static char *expandName(char *name)
@@ -446,12 +456,13 @@ void URL::Parse(std::string_view _url, const URL *current)
     *this = {};
 
     /* quote 0x01-0x20, 0x7F-0xFF */
-    auto url = url_quote(_url);
+    auto quoted = url_quote(_url);
+    auto url = quoted.c_str();
 
     /* RFC1808: Relative Uniform Resource Locators
      * 4.  Resolving Relative URLs
      */
-    if (*url == '\0' || *url == '#')
+    if (url[0] == '\0' || url[0] == '#')
     {
         if (current)
             *this = *current;
@@ -698,7 +709,7 @@ analyze_url:
     case '?':
     case '#':
         this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-        this->port = schemetable[this->scheme].port;
+        this->port = g_schemeTable[this->scheme].port;
         break;
     }
 
@@ -844,7 +855,7 @@ Str URL::ToStr(bool usePass, bool useLabel) const
         if (this->host.size())
         {
             tmp->Push(this->host);
-            if (this->port != schemetable[this->scheme].port)
+            if (this->port != g_schemeTable[this->scheme].port)
             {
                 tmp->Push(':');
                 tmp->Push(Sprintf("%d", this->port));

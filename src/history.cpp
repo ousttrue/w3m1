@@ -53,7 +53,7 @@ loadHistory(Hist *hist)
     Strip(line);
 	if (line->Size() == 0)
 	    continue;
-	pushHist(hist, url_quote(line->ptr));
+	pushHist(hist, Strnew(url_quote(line->ptr))->ptr);
     }
     fclose(f);
 }
