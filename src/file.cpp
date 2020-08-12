@@ -831,7 +831,7 @@ openGeneralPagerBuffer(InputStream *stream)
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
              !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     {
-        *GetCurBaseUrl()->Parse("-", NULL);
+        GetCurBaseUrl()->Parse("-", NULL);
         auto buf = t_buf;
         auto success = loadImageBuffer(&uf, t_buf);
         assert(success);

@@ -32,11 +32,23 @@ struct URLScheme
 };
 const URLScheme *GetScheme(URLSchemeTypes index);
 
+//
+// scheme://userinfo@host:port/path?query#fragment
+//
 struct URL
 {
     URLSchemeTypes scheme = SCM_MISSING;
-    std::string user;
-    std::string pass;
+    struct UserInfo
+    {
+        std::string name;
+        std::string pass;
+
+        bool empty()const
+        {
+            return name.empty() && pass.empty();
+        }
+    };
+    UserInfo userinfo;
     std::string host;
     int port = 0;
     std::string file;

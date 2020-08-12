@@ -528,22 +528,13 @@ void URL::Parse(std::string_view _url, const URL *current)
         /* after here, p begins with // */
         if (this->scheme == SCM_LOCAL)
         { /* file://foo           */
-#ifdef __EMX__
-            p += 2;
-            goto analyze_file;
-#else
             if (p[2] == '/' || p[2] == '~'
-            /* <A HREF="file:///foo">file:///foo</A>  or <A HREF="file://~user">file://~user</A> */
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-                || (IS_ALPHA(p[2]) && (p[3] == ':' || p[3] == '|'))
-            /* <A HREF="file://DRIVE/foo">file://DRIVE/foo</A> */
-#endif /* SUPPORT_DOS_DRIVE_PREFIX */
+                /* <A HREF="file:///foo">file:///foo</A>  or <A HREF="file://~user">file://~user</A> */
             )
             {
                 p += 2;
                 goto analyze_file;
             }
-#endif /* __EMX__ */
         }
         p += 2; /* scheme://foo         */
                 /*          ^p is here  */
@@ -576,9 +567,9 @@ void URL::Parse(std::string_view _url, const URL *current)
             if (*p == '@')
             {
                 /* scheme://user:pass@...       */
-                this->pass = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+                this->userinfo.pass = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
                 q = ++p;
-                this->user = this->host;
+                this->userinfo.name = this->host;
                 this->host.clear();
                 goto analyze_url;
             }
@@ -590,7 +581,7 @@ void URL::Parse(std::string_view _url, const URL *current)
         }
         case '@':
             /* scheme://user@...            */
-            this->user = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+            this->userinfo.name = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
             q = ++p;
             goto analyze_url;
         case '\0':
@@ -603,50 +594,13 @@ void URL::Parse(std::string_view _url, const URL *current)
             break;
         }
     analyze_file:
-#ifndef SUPPORT_NETBIOS_SHARE
-        if (this->scheme == SCM_LOCAL && this->user.empty() &&
-            this->host.size() && this->host[0] != '\0' &&
-            this->host != "localhost")
-        {
-            this->scheme = SCM_FTP; /* ftp://host/... */
-            if (this->port == 0)
-                this->port = DefaultPort[SCM_FTP];
-        }
-#endif
         if ((*p == '\0' || *p == '#' || *p == '?') && this->host.empty())
         {
             this->file = "";
             goto do_query;
         }
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-        if (this->scheme == SCM_LOCAL)
-        {
-            q = p;
-            if (*q == '/')
-                q++;
-            if (IS_ALPHA(q[0]) && (q[1] == ':' || q[1] == '|'))
-            {
-                if (q[1] == '|')
-                {
-                    p = allocStr(q, -1);
-                    p[1] = ':';
-                }
-                else
-                    p = q;
-            }
-        }
-#endif
 
         q = p;
-#ifdef USE_GOPHER
-        if (this->scheme == SCM_GOPHER)
-        {
-            if (*q == '/')
-                q++;
-            if (*q && q[0] != '/' && q[1] != '/' && q[2] == '/')
-                q++;
-        }
-#endif /* USE_GOPHER */
         if (*p == '/')
             p++;
         if (*p == '\0' || *p == '#' || *p == '?')
@@ -824,8 +778,7 @@ void URL::Parse2(std::string_view url, const URL *current)
     if (current && (this->scheme == current->scheme || (this->scheme == SCM_FTP && current->scheme == SCM_FTPDIR) || (this->scheme == SCM_LOCAL && current->scheme == SCM_LOCAL_CGI)) && this->host.empty())
     {
         /* Copy omitted element from the current URL */
-        this->user = current->user;
-        this->pass = current->pass;
+        this->userinfo = current->userinfo;
         this->host = current->host;
         this->port = current->port;
         if (this->file.size() && this->file[0])
@@ -992,13 +945,13 @@ Str URL::ToStr(bool usePass, bool useLabel) const
         {
             tmp->Push("//");
         }
-        if (this->user.size())
+        if (this->userinfo.name.size())
         {
-            tmp->Push(this->user);
-            if (usePass && this->pass.size())
+            tmp->Push(this->userinfo.name);
+            if (usePass && this->userinfo.pass.size())
             {
                 tmp->Push(':');
-                tmp->Push(this->pass);
+                tmp->Push(this->userinfo.pass);
             }
             tmp->Push('@');
         }

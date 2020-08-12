@@ -1150,13 +1150,13 @@ find_auth_pass_entry(char *host, int port, char *realm, char *uname,
 int find_auth_user_passwd(URL *pu, char *realm,
                           Str *uname, Str *pwd, int is_proxy)
 {
-    if (pu->user.size() && pu->pass.size())
+    if (pu->userinfo.name.size() && pu->userinfo.pass.size())
     {
-        *uname = Strnew(pu->user);
-        *pwd = Strnew(pu->pass);
+        *uname = Strnew(pu->userinfo.name);
+        *pwd = Strnew(pu->userinfo.pass);
         return 1;
     }
-    auto ent = find_auth_pass_entry(const_cast<char *>(pu->host.c_str()), pu->port, realm, const_cast<char *>(pu->user.c_str()), is_proxy);
+    auto ent = find_auth_pass_entry(const_cast<char *>(pu->host.c_str()), pu->port, realm, const_cast<char *>(pu->userinfo.name.c_str()), is_proxy);
     if (ent)
     {
         *uname = ent->uname;

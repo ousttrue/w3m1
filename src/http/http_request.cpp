@@ -88,7 +88,7 @@ otherinfo(const URL *target, const URL *current, const char *referer)
         }
         else if (referer == NULL && current && current->scheme != SCM_LOCAL &&
                  (current->scheme != SCM_FTP ||
-                  (current->user.empty() && current->pass.empty())))
+                  (current->userinfo.empty())))
         {
             // char *p = current->label;
             s->Push("Referer: ");
