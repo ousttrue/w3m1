@@ -1294,7 +1294,7 @@ initSelectMenu(void)
             switch (buf->currentURL.scheme)
             {
             case SCM_LOCAL:
-                if (buf->currentURL.file != "-")
+                if (!buf->currentURL.StdIn())
                 {
                     str->Push(' ');
                     str->Push(conv_from_system(buf->currentURL.real_file));

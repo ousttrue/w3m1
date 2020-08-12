@@ -894,11 +894,7 @@ void URL::Parse2(std::string_view url, const URL *current)
             }
         }
 #else
-        if (this->scheme == SCM_LOCAL && this->file[0] != '/' &&
-#ifdef SUPPORT_DOS_DRIVE_PREFIX /* for 'drive:' */
-            !(IS_ALPHA(this->file[0]) && this->file[1] == ':') &&
-#endif
-            this->file != "-")
+        if (this->scheme == SCM_LOCAL && this->file[0] != '/' && this->file != "-")
         {
             /* local file, relative path */
             tmp = Strnew(w3mApp::Instance().CurrentDir);

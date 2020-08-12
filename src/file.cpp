@@ -71,7 +71,7 @@ loadcmdout(char *cmd, LoaderFunc loadproc, BufferPtr buf)
     URLFile uf(SCM_UNKNOWN, newFileStream(f, (FileStreamCloseFunc)pclose));
     auto success = loadproc(&uf, buf);
     uf.Close();
-    if(!success)
+    if (!success)
     {
         return nullptr;
     }
@@ -831,7 +831,7 @@ openGeneralPagerBuffer(InputStream *stream)
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
              !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     {
-        GetCurBaseUrl()->Parse("-", NULL);
+        *GetCurBaseUrl()->Parse("-", NULL);
         auto buf = t_buf;
         auto success = loadImageBuffer(&uf, t_buf);
         assert(success);
@@ -854,8 +854,7 @@ openGeneralPagerBuffer(InputStream *stream)
         }
     }
     buf->real_type = t;
-    buf->currentURL.scheme = SCM_LOCAL;
-    buf->currentURL.file = "-";
+    buf->currentURL = URL::StdIn();
     return buf;
 }
 

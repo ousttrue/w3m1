@@ -1580,8 +1580,7 @@ void reload(w3mApp *w3m)
         return;
     }
 
-    if (buf->currentURL.scheme == SCM_LOCAL &&
-        buf->currentURL.file == "-")
+    if (buf->currentURL.IsStdin())
     {
         /* file is std input */
         /* FIXME: gettextize? */
@@ -1825,8 +1824,7 @@ void extbrz(w3mApp *w3m)
         disp_err_message("Can't browse...", TRUE);
         return;
     }
-    if (GetCurrentTab()->GetCurrentBuffer()->currentURL.scheme == SCM_LOCAL &&
-        GetCurrentTab()->GetCurrentBuffer()->currentURL.file == "-")
+    if (GetCurrentTab()->GetCurrentBuffer()->currentURL.IsStdin())
     {
         /* file is std input */
         /* FIXME: gettextize? */

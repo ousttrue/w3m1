@@ -45,6 +45,18 @@ struct URL
     std::string label;
     int is_nocache = 0;
 
+    static inline URL StdIn()
+    {
+        return {
+            scheme : SCM_LOCAL,
+            file : "-",
+        };
+    }
+    bool IsStdin() const
+    {
+        return scheme == SCM_LOCAL && file == "-";
+    }
+
     void Parse(std::string_view url, const URL *current);
     void Parse2(std::string_view url, const URL *current);
     operator bool() const
