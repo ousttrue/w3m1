@@ -819,7 +819,6 @@ static struct pre_form *PreForm = NULL;
 static struct pre_form *
 add_pre_form(struct pre_form *prev, char *url, char *name, char *action)
 {
-    URL pu;
     struct pre_form *newForm;
 
     if (prev)
@@ -839,7 +838,7 @@ add_pre_form(struct pre_form *prev, char *url, char *name, char *action)
     }
     else if (url)
     {
-        pu.Parse(url, NULL);
+        auto pu = URL::Parse(url, NULL);
         newForm->url = pu.ToStr()->ptr;
         newForm->re_url = NULL;
     }

@@ -662,7 +662,7 @@ void load_cookies(void)
         cookie->expires = (time_t)-1;
         cookie->comment = NULL;
         cookie->commentURL = NULL;
-        cookie->url.Parse(readcol(&str)->ptr, NULL);
+        cookie->url = URL::Parse(readcol(&str)->ptr, NULL);
         if (!*str)
             return;
         cookie->name = readcol(&str);

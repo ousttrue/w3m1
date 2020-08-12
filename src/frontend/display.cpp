@@ -327,7 +327,6 @@ static void do_effects(Lineprop m);
 static Str make_lastline_link(BufferPtr buf, std::string_view title, const char *url)
 {
     Str s = NULL, u;
-    URL pu;
     char *p;
     int l = COLS - 1, i;
 
@@ -349,7 +348,8 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
     }
     if (!url)
         return s;
-    pu.Parse(url, buf->BaseURL());
+    
+    auto pu = URL::Parse(url, buf->BaseURL());
     u = pu.ToStr();
     if (DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));

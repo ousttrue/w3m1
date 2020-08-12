@@ -335,7 +335,7 @@ void URLFile::openURL(std::string_view url, URL *pu, const URL *current,
     else
         u = const_cast<char *>(url.data());
 retry:
-    pu->Parse(u, current);
+    *pu = URL::Parse(u, current);
     if (pu->scheme == SCM_LOCAL && pu->path.empty())
     {
         if (pu->fragment.size())

@@ -2011,7 +2011,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         p = NULL;
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
         {
-            GetCurBaseUrl()->Parse(p, NULL);
+            *GetCurBaseUrl() = URL::Parse(p, NULL);
         }
     case HTML_MAP:
     case HTML_N_MAP:

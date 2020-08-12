@@ -819,17 +819,15 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
                           "type=submit no_effect=true>",
                           Increment(), cur_form_id()));
     }
-#ifdef USE_IMAGE
+
     if (use_image)
     {
         w0 = w;
         i0 = i;
         if (w < 0 || i < 0)
         {
+            auto u = URL::Parse(wc_conv(p, w3mApp::Instance().InnerCharset, CES())->ptr, GetCurBaseUrl());
             Image image;
-            URL u;
-
-            u.Parse(wc_conv(p, w3mApp::Instance().InnerCharset, CES())->ptr, GetCurBaseUrl());
             image.url = u.ToStr()->ptr;
             if (!uncompressed_file_type(u.path.c_str(), &image.ext))
                 image.ext = filename_extension(u.path.c_str(), TRUE);
@@ -856,7 +854,6 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
         pre_int = TRUE;
     }
     else
-#endif
     {
         if (w < 0)
             w = 12 * w3mApp::Instance().pixel_per_char;
@@ -1396,10 +1393,8 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             this->a_img->image = nullptr;
             if (iseq > 0)
             {
-                URL u;
+                auto u = URL::Parse(this->a_img->url, GetCurBaseUrl());
                 Image *image;
-
-                u.Parse(this->a_img->url, GetCurBaseUrl());
                 this->a_img->image = image = New(Image);
                 image->url = u.ToStr()->ptr;
                 if (!uncompressed_file_type(u.path.c_str(), &image->ext))
@@ -1635,7 +1630,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                buf->document_charset)
                     ->ptr;
-            buf->baseURL.Parse(p, nullptr);
+            buf->baseURL = URL::Parse(p, nullptr);
         }
         if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
             buf->baseTarget =

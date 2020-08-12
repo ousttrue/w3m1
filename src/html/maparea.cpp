@@ -432,7 +432,6 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
     MapList *ml;
     ListItem *al;
     MapArea *a;
-    URL pu;
     char *p, *q;
 
     ml = searchMapList(buf, fi->value ? fi->value->ptr : NULL);
@@ -447,7 +446,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
         a = (MapArea *)al->ptr;
         if (!a)
             continue;
-        pu.Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url, buf->BaseURL());
         q = html_quote(pu.ToStr()->ptr);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(a->url, buf->document_charset));
@@ -538,7 +537,6 @@ page_info_panel(BufferPtr buf)
 {
     Str tmp = Strnew_size(1024);
     const Anchor *a;
-    URL pu;
     TextListItem *ti;
     struct frameset *f_set = NULL;
     char *p, *q;
@@ -600,7 +598,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentAnchor(buf);
     if (a != NULL)
     {
-        pu.Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url, buf->BaseURL());
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
@@ -614,7 +612,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentImg(buf);
     if (a != NULL)
     {
-        pu.Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url, buf->BaseURL());
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)

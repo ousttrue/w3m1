@@ -57,6 +57,14 @@ struct URL
     std::string query;
     std::string fragment;
 
+    URL() = default;
+
+    URL(URLSchemeTypes scheme, const Userinfo &userinfo, std::string_view host, int port,
+        std::string_view path, std::string_view query, std::string_view framgment)
+        : scheme(scheme), userinfo(userinfo), host(host), port(port), path(path), query(query), fragment(framgment)
+    {
+    }
+
 public:
     std::string real_file;
     int is_nocache = 0;
@@ -64,16 +72,20 @@ public:
     static inline URL StdIn()
     {
         return {
-            scheme : SCM_LOCAL,
-            path : "-",
-        };
+            SCM_LOCAL,
+            {},
+            {},
+            0,
+            "-",
+            {},
+            {}};
     }
     bool IsStdin() const
     {
         return scheme == SCM_LOCAL && path == "-";
     }
 
-    void Parse(std::string_view url, const URL *current);
+    static URL Parse(std::string_view url, const URL *current);
 
     operator bool() const
     {

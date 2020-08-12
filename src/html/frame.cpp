@@ -344,13 +344,13 @@ frame_download_source(struct frame_body *b, URL *currentURL,
 {
     BufferPtr buf;
     struct frameset *ret_frameset = NULL;
-    URL url;
 
     if (b == NULL || b->url == NULL || b->url[0] == '\0')
         return NULL;
     if (b->baseURL)
         *baseURL = b->baseURL;
-    url.Parse(b->url, currentURL);
+    
+    auto url = URL::Parse(b->url, currentURL);
     switch (url.scheme)
     {
     case SCM_LOCAL:
@@ -581,7 +581,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                                      : "(no name)");
                         break;
                     }
-                    base.Parse(frame.body->url, currentURL);
+                    base = URL::Parse(frame.body->url, currentURL);
                     p_target = f->name;
                     s_target = frame.body->name;
                     t_target = "_blank";
@@ -727,7 +727,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 if (tag->TryGetAttributeValue(ATTR_HREF, &q))
                                 {
                                     q = wc_conv_strict(remove_space(q), w3mApp::Instance().InnerCharset, charset)->ptr;
-                                    base.Parse(q, NULL);
+                                    base = URL::Parse(q, NULL);
                                 }
                                 if (tag->TryGetAttributeValue(ATTR_TARGET, &q))
                                 {
@@ -861,7 +861,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     tag->value[j] =
                                         wc_conv_strict(remove_space(tag->value[j]), w3mApp::Instance().InnerCharset, charset)->ptr;
                                     tag->need_reconstruct = TRUE;
-                                    url.Parse(tag->value[j], &base);
+                                    url = URL::Parse(tag->value[j], &base);
                                     if (url.scheme == SCM_UNKNOWN ||
                                         url.scheme == SCM_MAILTO ||
                                         url.scheme == SCM_MISSING)

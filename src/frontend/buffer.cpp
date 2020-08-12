@@ -769,13 +769,12 @@ void set_buffer_environ(BufferPtr buf)
     l = buf->CurrentLine();
     if (l && (buf != prev_buf || l != prev_line || buf->pos != prev_pos))
     {
-        URL pu;
         char *s = GetWord(buf);
         set_environ("W3M_CURRENT_WORD", (char *)(s ? s : ""));
         auto a = retrieveCurrentAnchor(buf);
         if (a)
         {
-            pu.Parse(a->url, buf->BaseURL());
+            auto pu = URL::Parse(a->url, buf->BaseURL());
             set_environ("W3M_CURRENT_LINK", pu.ToStr()->ptr);
         }
         else
@@ -783,7 +782,7 @@ void set_buffer_environ(BufferPtr buf)
         a = retrieveCurrentImg(buf);
         if (a)
         {
-            pu.Parse(a->url, buf->BaseURL());
+            auto pu = URL::Parse(a->url, buf->BaseURL());
             set_environ("W3M_CURRENT_IMG", pu.ToStr()->ptr);
         }
         else
@@ -1281,8 +1280,7 @@ void Buffer::DrawLine(LinePtr l, int line)
             auto a = this->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
-                URL url;
-                url.Parse(a->url, this->BaseURL());
+                auto url = URL::Parse(a->url, this->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
                     for (int k = a->start.pos; k < a->end.pos; k++)
@@ -1365,8 +1363,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
             auto a = this->href.RetrieveAnchor(l->linenumber, pos + j);
             if (a)
             {
-                URL url;
-                url.Parse(a->url, this->BaseURL());
+                auto url = URL::Parse(a->url, this->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
                     for (auto k = a->start.pos; k < a->end.pos; k++)

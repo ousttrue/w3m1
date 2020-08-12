@@ -546,7 +546,7 @@ static std::tuple<std::string_view, std::string_view> ParsePath(std::string_view
     }
 
     auto cgi = strchr(p.data(), '?');
-    if(!cgi)
+    if (!cgi)
     {
         cgi = "";
     }
@@ -604,9 +604,9 @@ static std::tuple<std::string_view, std::string_view> ParseQuery(std::string_vie
     return {p, q.substr(0, p.data() - q.data())};
 }
 
-void URL::Parse(std::string_view _url, const URL *current)
+URL URL::Parse(std::string_view _url, const URL *current)
 {
-    *this = {};
+    // *this = {};
 
     /* quote 0x01-0x20, 0x7F-0xFF */
     auto quoted = url_quote(_url);
@@ -623,9 +623,8 @@ void URL::Parse(std::string_view _url, const URL *current)
     //     return;
     // }
 
-    auto [remain, scheme] = ParseScheme(url, current);
-    this->scheme = scheme;
-    std::tie(remain, this->userinfo, this->host, this->port) = ParseUserinfoHostPort(remain, this->scheme);
+    auto [p1, scheme] = ParseScheme(url, current);
+    auto [p2, userinfo, host, port] = ParseUserinfoHostPort(p1, scheme);
 
     // /* scheme part has been found */
     // if (this->scheme == SCM_UNKNOWN)
@@ -659,18 +658,19 @@ void URL::Parse(std::string_view _url, const URL *current)
     // p += 2; /* scheme://foo         */
     //         /*          ^p is here  */
 
-    std::tie(remain, this->path) = ParsePath(remain, this->scheme, this->host);
-    std::tie(remain, this->query) = ParseQuery(remain);
+    auto [p3, path] = ParsePath(p2, scheme, host);
+    auto [remain, query] = ParseQuery(p3);
 
     // ParseFragment(p);
-    if (this->scheme == SCM_MISSING)
+    std::string_view fragment;
+    if (scheme == SCM_MISSING)
     {
-        this->scheme = SCM_LOCAL;
-        this->path = remain;
+        scheme = SCM_LOCAL;
+        path = remain;
     }
     else if (remain.size() && remain[0] == '#')
     {
-        this->fragment = remain.substr(1);
+        fragment = remain.substr(1);
     }
 
     //
@@ -678,29 +678,29 @@ void URL::Parse(std::string_view _url, const URL *current)
     //
     auto p = remain.data();
 
-    if (this->scheme == SCM_LOCAL)
+    if (scheme == SCM_LOCAL)
     {
-        char *q = expandName(file_unquote(this->path));
-        this->path = file_quote(q);
+        char *q = expandName(file_unquote(path));
+        path = file_quote(q);
     }
 
     bool relative_uri = false;
-    if (current && this->scheme == current->scheme && this->host.empty())
+    if (current && scheme == current->scheme && host.empty())
     {
         /* Copy omitted element from the current URL */
-        this->userinfo = current->userinfo;
-        this->host = current->host;
-        this->port = current->port;
-        if (this->path.size() && this->path[0])
+        userinfo = current->userinfo;
+        host = current->host;
+        port = current->port;
+        if (path.size() && path[0])
         {
-            if (this->scheme == SCM_UNKNOWN && strchr(const_cast<char *>(this->path.c_str()), ':') == NULL && current && (p = string_strchr(current->path, ':')) != NULL)
+            if (scheme == SCM_UNKNOWN && strchr(const_cast<char *>(path.data()), ':') == NULL && current && (p = string_strchr(current->path, ':')) != NULL)
             {
-                this->path = Strnew_m_charp(current->path.substr(0, p - current->path.c_str()), ":", this->path)->ptr;
+                path = Strnew_m_charp(current->path.substr(0, p - current->path.data()), ":", path)->ptr;
             }
-            else if (this->path[0] != '/')
+            else if (path[0] != '/')
             {
                 /* file is relative [process 1] */
-                p = this->path.c_str();
+                p = path.data();
                 if (current->path.size())
                 {
                     auto tmp = Strnew(current->path);
@@ -711,47 +711,47 @@ void URL::Parse(std::string_view _url, const URL *current)
                         tmp->Pop(1);
                     }
                     tmp->Push(p);
-                    this->path = tmp->ptr;
+                    path = tmp->ptr;
                     relative_uri = TRUE;
                 }
             }
         }
         else
         { /* scheme:[?query][#label] */
-            this->path = current->path;
-            if (this->query.empty())
-                this->query = current->query;
+            path = current->path;
+            if (query.empty())
+                query = current->query;
         }
         /* comment: query part need not to be completed
 	    * from the current URL. */
     }
 
-    if (this->path.size())
+    if (path.size())
     {
-        if (this->scheme == SCM_LOCAL && this->path[0] != '/' && this->path != "-")
+        if (scheme == SCM_LOCAL && path[0] != '/' && path != "-")
         {
             /* local file, relative path */
             auto tmp = Strnew(w3mApp::Instance().CurrentDir);
             if (tmp->Back() != '/')
                 tmp->Push('/');
-            tmp->Push(file_unquote(this->path));
-            this->path = file_quote(cleanupName(tmp->ptr));
+            tmp->Push(file_unquote(path));
+            path = file_quote(cleanupName(tmp->ptr));
         }
-        else if (this->scheme == SCM_HTTP || this->scheme == SCM_HTTPS)
+        else if (scheme == SCM_HTTP || scheme == SCM_HTTPS)
         {
             if (relative_uri)
             {
-                /* In this case, this->file is created by [process 1] above.
-                * this->file may contain relative path (for example, 
+                /* In this case, file is created by [process 1] above.
+                * file may contain relative path (for example, 
                 * "/foo/../bar/./baz.html"), cleanupName() must be applied.
                 * When the entire abs_path is given, it still may contain
-                * elements like `//', `..' or `.' in the this->file. It is 
+                * elements like `//', `..' or `.' in the file. It is 
                 * server's responsibility to canonicalize such path.
                 */
-                this->path = cleanupName(this->path.c_str());
+                path = cleanupName(path.data());
             }
         }
-        else if (this->path[0] == '/')
+        else if (path[0] == '/')
         {
             /*
             * this happens on the following conditions:
@@ -759,12 +759,16 @@ void URL::Parse(std::string_view _url, const URL *current)
             * In both case, there must be no side effect with
             * cleanupName(). (I hope so...)
             */
-            this->path = cleanupName(this->path.c_str());
+            path = cleanupName(path.data());
         }
-        if (this->scheme == SCM_LOCAL)
-        {
-            this->real_file = cleanupName(file_unquote(this->path));
-        }
+
+        // TODO:
+        // if (scheme == SCM_LOCAL)
+        // {
+        //     real_file = cleanupName(file_unquote(path.data()));
+        // }
+
+        return URL(scheme, userinfo, std::string(host), port, std::string(path), std::string(query), std::string(fragment));
     }
 }
 

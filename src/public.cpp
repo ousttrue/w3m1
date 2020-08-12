@@ -160,12 +160,11 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
                 printf("\nReferences:\n\n");
                 for (i = 0; i < buf->href.size(); i++)
                 {
-                    URL pu;
-                    static Str s = NULL;
                     if (buf->href.anchors[i].slave)
                         continue;
-                    pu.Parse(buf->href.anchors[i].url, buf->BaseURL());
-                    s = pu.ToStr();
+
+                    auto pu = URL::Parse(buf->href.anchors[i].url, buf->BaseURL());
+                    auto s = pu.ToStr();
                     if (DecodeURL)
                         s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
                     printf("[%d] %s\n", buf->href.anchors[i].hseq + 1, s->ptr);
@@ -1001,12 +1000,11 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
 {
     BufferPtr nfbuf;
     union frameset_element *f_element = NULL;
-    URL *base, pu;
 
     message(Sprintf("loading %s", url)->ptr, 0, 0);
     refresh();
 
-    base = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
+    auto base = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
     if (base == NULL ||
         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
         referer = NO_REFERER;
@@ -1020,7 +1018,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         return NULL;
     }
 
-    pu.Parse(url, base);
+    auto pu = URL::Parse(url, base);
     pushHashHist(w3mApp::Instance().URLHist, pu.ToStr()->ptr);
 
     if (!on_target) /* open link as an indivisual page */
@@ -1195,7 +1193,6 @@ void _nextA(int visited)
     const Anchor *an;
     const Anchor *pan;
     int i, x, y, n = searchKeyNum();
-    URL url;
 
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
@@ -1237,7 +1234,7 @@ void _nextA(int visited)
                 hseq++;
                 if (visited == TRUE && an)
                 {
-                    url.Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                    auto url = URL::Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
@@ -1261,7 +1258,7 @@ void _nextA(int visited)
             y = an->start.line;
             if (visited == TRUE)
             {
-                url.Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                auto url = URL::Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
@@ -1285,7 +1282,6 @@ void _prevA(int visited)
 {
     auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
     int i, x, y, n = searchKeyNum();
-    URL url;
 
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
@@ -1326,7 +1322,7 @@ void _prevA(int visited)
                 hseq--;
                 if (visited == TRUE && an)
                 {
-                    url.Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                    auto url = URL::Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
@@ -1350,7 +1346,7 @@ void _prevA(int visited)
             y = an->start.line;
             if (visited == TRUE && an)
             {
-                url.Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                auto url = URL::Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
@@ -1501,11 +1497,12 @@ void nextY(int d)
 /* go to specified URL */
 void goURL0(const char *prompt, int relative)
 {
-    char *url, *referer;
-    URL p_url, *current;
+    char *referer;
+
     BufferPtr cur_buf = GetCurrentTab()->GetCurrentBuffer();
 
-    url = searchKeyData();
+    auto url = searchKeyData();
+    URL *current = nullptr;
     if (url == NULL)
     {
         Hist *hist = copyHist(w3mApp::Instance().URLHist);
@@ -1525,9 +1522,8 @@ void goURL0(const char *prompt, int relative)
         auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
         if (a)
         {
-            char *a_url;
-            p_url.Parse(a->url, current);
-            a_url = p_url.ToStr()->ptr;
+            auto p_url = URL::Parse(a->url, current);
+            auto a_url = p_url.ToStr()->ptr;
             if (DefaultURLString == DEFAULT_URL_LINK)
             {
                 url = a_url;
@@ -1562,6 +1558,7 @@ void goURL0(const char *prompt, int relative)
         gotoLabel(url + 1);
         return;
     }
+
     if (relative)
     {
         current = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
@@ -1572,7 +1569,7 @@ void goURL0(const char *prompt, int relative)
         current = NULL;
         referer = NULL;
     }
-    p_url.Parse(url, current);
+    auto p_url = URL::Parse(url, current);
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(url, current, referer, NULL);
     if (GetCurrentTab()->GetCurrentBuffer() != cur_buf) /* success */
@@ -1600,7 +1597,6 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
 void _peekURL(int only_img)
 {
     const Anchor *a;
-    URL pu;
     static Str s = NULL;
     static Lineprop *p = NULL;
     Lineprop *pp;
@@ -1636,24 +1632,24 @@ void _peekURL(int only_img)
     }
     if (s == NULL)
     {
-        pu.Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+        auto pu = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
         s = pu.ToStr();
     }
     if (DecodeURL)
         s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
-#ifdef USE_M17N
+
     s = checkType(s, &pp, NULL);
     p = NewAtom_N(Lineprop, s->Size());
     bcopy((void *)pp, (void *)p, s->Size() * sizeof(Lineprop));
-#endif
+
 disp:
     n = searchKeyNum();
     if (n > 1 && s->Size() > (n - 1) * (COLS - 1))
         offset = (n - 1) * (COLS - 1);
-#ifdef USE_M17N
+
     while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;
-#endif
+
     disp_message_nomouse(&s->ptr[offset], TRUE);
 }
 
@@ -2000,8 +1996,8 @@ void follow_map(struct parsed_tagarg *arg)
         gotoLabel(a->url + 1);
         return;
     }
-    URL p_url;
-    p_url.Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+
+    auto p_url = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     if (check_target() && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))

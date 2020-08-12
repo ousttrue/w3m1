@@ -1001,8 +1001,7 @@ void followA(w3mApp *w3m)
         return;
     }
 
-    URL u;
-    u.Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    auto u = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     if (u.ToStr()->Cmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()) == 0)
     {
         /* index within this buffer */
@@ -1254,8 +1253,7 @@ void linkMn(w3mApp *w3m)
         return;
     }
 
-    URL p_url;
-    p_url.Parse(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    auto p_url = URL::Parse(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
 }
@@ -1836,13 +1834,14 @@ void extbrz(w3mApp *w3m)
 
 void linkbrz(w3mApp *w3m)
 {
-    URL pu;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
+
     auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
     if (a == NULL)
         return;
-    pu.Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+
+    auto pu = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     invoke_browser(pu.ToStr()->ptr);
 }
 /* show current line number and number of lines in the entire document */

@@ -1017,13 +1017,13 @@ interpret_rc(FILE *f)
 void parse_proxy()
 {
     if (w3mApp::Instance().HTTP_proxy.size())
-        w3mApp::Instance().HTTP_proxy_parsed.Parse(w3mApp::Instance().HTTP_proxy, NULL);
+        w3mApp::Instance().HTTP_proxy_parsed = URL::Parse(w3mApp::Instance().HTTP_proxy, NULL);
 
     if (w3mApp::Instance().HTTPS_proxy.size())
-        w3mApp::Instance().HTTPS_proxy_parsed.Parse(w3mApp::Instance().HTTPS_proxy, NULL);
+        w3mApp::Instance().HTTPS_proxy_parsed = URL::Parse(w3mApp::Instance().HTTPS_proxy, NULL);
 
     if (w3mApp::Instance().FTP_proxy.size())
-        w3mApp::Instance().FTP_proxy_parsed.Parse(w3mApp::Instance().FTP_proxy, NULL);
+        w3mApp::Instance().FTP_proxy_parsed = URL::Parse(w3mApp::Instance().FTP_proxy, NULL);
     if (non_null(NO_proxy))
         set_no_proxy(NO_proxy);
 }
