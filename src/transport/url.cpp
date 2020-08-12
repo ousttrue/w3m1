@@ -19,20 +19,10 @@
 #include <setjmp.h>
 #include <errno.h>
 #include <string_view>
-
 #include <sys/stat.h>
 
 #include "myctype.h"
 #include "regex.h"
-
-#ifdef __WATT32__
-#define write(a, b, c) write_s(a, b, c)
-#endif /* __WATT32__ */
-
-#ifdef __MINGW32_VERSION
-#define write(a, b, c) send(a, b, c, 0)
-#define close(fd) closesocket(fd)
-#endif
 
 #ifdef INET6
 /* see rc.c, "dns_order" and dnsorders[] */
@@ -46,27 +36,6 @@ int ai_family_order_table[7][3] = {
     {PF_INET6, PF_UNSPEC, PF_UNSPEC},  /* 6:inet6 */
 };
 #endif /* INET6 */
-
-static JMP_BUF AbortLoading;
-
-/* XXX: note html.h SCM_ */
-static int
-    DefaultPort[] = {
-        80,  /* http */
-        70,  /* gopher */
-        21,  /* ftp */
-        21,  /* ftpdir */
-        0,   /* local - not defined */
-        0,   /* local-CGI - not defined? */
-        0,   /* exec - not defined? */
-        119, /* nntp */
-        119, /* nntp group */
-        119, /* news */
-        119, /* news group */
-        0,   /* data - not defined */
-        0,   /* mailto - not defined */
-        443, /* https */
-};
 
 URLScheme schemetable[] = {
     {"http", SCM_HTTP, 80},
@@ -84,12 +53,11 @@ URLScheme schemetable[] = {
     {"mailto", SCM_MAILTO, 0},
     {"https", SCM_HTTPS, 443},
 };
-
 const URLScheme *GetScheme(URLSchemeTypes index)
 {
     for (auto &s : schemetable)
     {
-        if (s.schema == index)
+        if (s.type == index)
         {
             return &s;
         }
@@ -103,34 +71,18 @@ const URLScheme *GetScheme(URLSchemeTypes index)
 #define HTTP_DEFAULT_FILE "/"
 #endif /* not HTTP_DEFAULT_FILE */
 
-#ifdef SOCK_DEBUG
-#include <stdarg.h>
-static void
-sock_log(char *message, ...)
-{
-    FILE *f = fopen("zzzsocklog", "a");
-    va_list va;
-
-    if (f == NULL)
-        return;
-    va_start(va, message);
-    vfprintf(f, message, va);
-    fclose(f);
-}
-#endif
-
 static std::string_view DefaultFile(int scheme)
 {
     switch (scheme)
     {
     case SCM_HTTP:
     case SCM_HTTPS:
-        return allocStr(HTTP_DEFAULT_FILE, -1);
+        return HTTP_DEFAULT_FILE;
     case SCM_LOCAL:
     case SCM_LOCAL_CGI:
     case SCM_FTP:
     case SCM_FTPDIR:
-        return allocStr("/", -1);
+        return "/";
     }
     return "";
 }
@@ -403,7 +355,7 @@ std::tuple<const char *, URLSchemeTypes> getURLScheme(const char *url)
     {
         if (view.starts_with(scheme.name) && view[scheme.name.size()] == ':')
         {
-            return {p, scheme.schema};
+            return {p, scheme.type};
         }
     }
 
@@ -748,7 +700,7 @@ analyze_url:
     case '?':
     case '#':
         this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-        this->port = DefaultPort[this->scheme];
+        this->port = schemetable[this->scheme].port;
         break;
     }
 
@@ -894,7 +846,7 @@ Str URL::ToStr(bool usePass, bool useLabel) const
         if (this->host.size())
         {
             tmp->Push(this->host);
-            if (this->port != DefaultPort[this->scheme])
+            if (this->port != schemetable[this->scheme].port)
             {
                 tmp->Push(':');
                 tmp->Push(Sprintf("%d", this->port));

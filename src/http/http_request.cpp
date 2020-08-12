@@ -71,7 +71,7 @@ otherinfo(const URL *target, const URL *current, const char *referer)
     {
         s->Push("Host: ");
         s->Push(target->host);
-        if (target->port != GetScheme(target->scheme)->defaultPort)
+        if (target->port != GetScheme(target->scheme)->port)
             s->Push(Sprintf(":%d", target->port));
         s->Push("\r\n");
     }

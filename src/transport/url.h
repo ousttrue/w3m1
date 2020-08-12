@@ -26,9 +26,9 @@ enum URLSchemeTypes
 
 struct URLScheme
 {
-    std::string_view name;
-    URLSchemeTypes schema;
-    int defaultPort;
+    const std::string_view name;
+    const URLSchemeTypes type;
+    const int port;
 };
 const URLScheme *GetScheme(URLSchemeTypes index);
 
