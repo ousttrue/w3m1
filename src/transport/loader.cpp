@@ -936,7 +936,7 @@ BufferPtr
 loadGeneralFile(std::string_view path, const URL *_current, char *referer,
                 LoadFlags flag, FormList *request)
 {
-    HRequest hr(referer, request);
+    HttpRequest hr(referer, request);
     URL pu;
     TextList *extra_header = newTextList();
     unsigned char status = HTST_NORMAL;

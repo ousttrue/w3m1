@@ -3,10 +3,10 @@
 
 enum HttpMethod
 {
-    HR_COMMAND_GET = 0,
-    HR_COMMAND_POST = 1,
-    HR_COMMAND_CONNECT = 2,
-    HR_COMMAND_HEAD = 3,
+    HTTP_METHOD_GET = 0,
+    HTTP_METHOD_POST = 1,
+    HTTP_METHOD_CONNECT = 2,
+    HTTP_METHOD_HEAD = 3,
 };
 
 enum HttpRequestFlags
@@ -16,18 +16,17 @@ enum HttpRequestFlags
     HR_FLAG_PROXY = 2,
 };
 
-
 struct URL;
 struct FormList;
 struct TextList;
-struct HRequest
+struct HttpRequest
 {
-    HttpMethod command = HR_COMMAND_GET;
+    HttpMethod method = HTTP_METHOD_GET;
     HttpRequestFlags flag = HR_FLAG_NONE;
     char *referer = nullptr;
     FormList *request = nullptr;
 
-    HRequest(char *_referer, FormList *_request)
+    HttpRequest(char *_referer, FormList *_request)
         : referer(_referer), request(_request)
     {
     }

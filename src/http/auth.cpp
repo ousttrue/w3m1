@@ -225,7 +225,7 @@ Str get_auth_param(struct auth_param *auth, char *name)
 
 static Str
 AuthBasicCred(struct http_auth *ha, Str uname, Str pw, URL *pu,
-              HRequest *hr, FormList *request)
+              HttpRequest *hr, FormList *request)
 {
     Str s = uname->Clone();
     s->Push(':');
@@ -286,7 +286,7 @@ enum
 
 static Str
 AuthDigestCred(struct http_auth *ha, Str uname, Str pw, URL *pu,
-               HRequest *hr, FormList *request)
+               HttpRequest *hr, FormList *request)
 {
     Str tmp, a1buf, a2buf, rd, s;
     unsigned char md5[MD5_DIGEST_LENGTH + 1];
@@ -589,7 +589,7 @@ http_auth *findAuthentication(struct http_auth *hauth, BufferPtr buf, char *auth
 
 void
 getAuthCookie(struct http_auth *hauth, char *auth_header,
-              TextList *extra_header, URL *pu, HRequest *hr,
+              TextList *extra_header, URL *pu, HttpRequest *hr,
               FormList *request,
               Str *uname, Str *pwd)
 {

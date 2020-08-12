@@ -30,7 +30,7 @@ enum LoadFlags
 union InputStream;
 struct FormList;
 struct TextList;
-struct HRequest;
+struct HttpRequest;
 struct URLOption;
 struct URLFile
 {
@@ -56,7 +56,7 @@ struct URLFile
     int UndoGetc();
     void openURL(std::string_view url, URL *pu, const URL *current,
                  const char* referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                 HRequest *hr, unsigned char *status);
+                 HttpRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
     Str StrmyISgets();
 

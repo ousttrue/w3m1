@@ -8,29 +8,29 @@
 #include "w3m.h"
 #include "indep.h"
 
-Str HRequest::Method() const
+Str HttpRequest::Method() const
 {
-    switch (command)
+    switch (method)
     {
-    case HR_COMMAND_CONNECT:
+    case HTTP_METHOD_CONNECT:
         return Strnew("CONNECT");
-    case HR_COMMAND_POST:
+    case HTTP_METHOD_POST:
         return Strnew("POST");
         break;
-    case HR_COMMAND_HEAD:
+    case HTTP_METHOD_HEAD:
         return Strnew("HEAD");
         break;
-    case HR_COMMAND_GET:
+    case HTTP_METHOD_GET:
     default:
         return Strnew("GET");
     }
     return NULL;
 }
 
-Str HRequest::URI(const URL &url) const
+Str HttpRequest::URI(const URL &url) const
 {
     Str tmp = Strnew();
-    if (command == HR_COMMAND_CONNECT)
+    if (method == HTTP_METHOD_CONNECT)
     {
         tmp->Push(url.host);
         tmp->Push(Sprintf(":%d", url.port));
@@ -112,7 +112,7 @@ otherinfo(const URL *target, const URL *current, const char *referer)
     return s->ptr;
 }
 
-Str HRequest::ToStr(const URL &url, const URL *current, const TextList *extra) const
+Str HttpRequest::ToStr(const URL &url, const URL *current, const TextList *extra) const
 {
     TextListItem *i;
     int seen_www_auth = 0;
@@ -133,19 +133,19 @@ Str HRequest::ToStr(const URL &url, const URL *current, const TextList *extra) c
                             sizeof("Authorization:") - 1) == 0)
             {
                 seen_www_auth = 1;
-                if (this->command == HR_COMMAND_CONNECT)
+                if (this->method == HTTP_METHOD_CONNECT)
                     continue;
             }
             if (strncasecmp(i->ptr, "Proxy-Authorization:",
                             sizeof("Proxy-Authorization:") - 1) == 0)
             {
-                if (url.scheme == SCM_HTTPS && this->command != HR_COMMAND_CONNECT)
+                if (url.scheme == SCM_HTTPS && this->method != HTTP_METHOD_CONNECT)
                     continue;
             }
             tmp->Push(i->ptr);
         }
 
-    if (this->command != HR_COMMAND_CONNECT &&
+    if (this->method != HTTP_METHOD_CONNECT &&
         w3mApp::Instance().use_cookie && (cookie = find_cookie(&url)))
     {
         tmp->Push("Cookie: ");
@@ -156,7 +156,7 @@ Str HRequest::ToStr(const URL &url, const URL *current, const TextList *extra) c
             tmp->Push("Cookie2: $Version=\"1\"\r\n");
     }
 
-    if (this->command == HR_COMMAND_POST)
+    if (this->method == HTTP_METHOD_POST)
     {
         if (this->request->enctype == FORM_ENCTYPE_MULTIPART)
         {

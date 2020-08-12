@@ -320,7 +320,7 @@ static int dir_exist(char *path)
 
 void URLFile::openURL(std::string_view url, URL *pu, const URL *current,
                       const char *referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                      HRequest *hr, unsigned char *status)
+                      HttpRequest *hr, unsigned char *status)
 {
     Str tmp;
     int sock;
@@ -462,9 +462,9 @@ retry:
         if (pu->path.empty())
             pu->path = "/";
         if (request && request->method == FORM_METHOD_POST && request->body)
-            hr->command = HR_COMMAND_POST;
+            hr->method = HTTP_METHOD_POST;
         if (request && request->method == FORM_METHOD_HEAD)
-            hr->command = HR_COMMAND_HEAD;
+            hr->method = HTTP_METHOD_HEAD;
         if (((pu->scheme == SCM_HTTPS) ? w3mApp::Instance().HTTPS_proxy.size() : w3mApp::Instance().HTTP_proxy.size()) &&
             w3mApp::Instance().use_proxy &&
             pu->host.size() && !check_no_proxy(const_cast<char *>(pu->host.c_str())))
@@ -507,7 +507,7 @@ retry:
             {
                 if (*status == HTST_NORMAL)
                 {
-                    hr->command = HR_COMMAND_CONNECT;
+                    hr->method = HTTP_METHOD_CONNECT;
                     tmp = hr->ToStr(*pu, current, extra_header);
                     *status = HTST_CONNECT;
                 }
@@ -563,7 +563,7 @@ retry:
                 fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
                 fclose(ff);
             }
-            if (hr->command == HR_COMMAND_POST &&
+            if (hr->method == HTTP_METHOD_POST &&
                 request->enctype == FORM_ENCTYPE_MULTIPART)
             {
                 if (sslh)
@@ -582,7 +582,7 @@ retry:
                 fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
                 fclose(ff);
             }
-            if (hr->command == HR_COMMAND_POST &&
+            if (hr->method == HTTP_METHOD_POST &&
                 request->enctype == FORM_ENCTYPE_MULTIPART)
                 write_from_file(sock, request->body);
         }

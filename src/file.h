@@ -4,7 +4,7 @@
 #include "frontend/event.h"
 #include "transport/urlfile.h"
 
-struct HRequest;
+struct HttpRequest;
 struct Hist;
 
 char *guess_save_name(BufferPtr buf, std::string_view file);
