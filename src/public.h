@@ -2,6 +2,7 @@
 #include "dispatcher.h"
 #include "frontend/tab.h"
 #include "frontend/buffer.h"
+#include "http/http_request.h"
 class w3mApp;
 
 /* 
@@ -18,7 +19,7 @@ void disp_srchresult(int result, const char* prompt, char *str);
 void shiftvisualpos(BufferPtr buf, int shift);
 
 void cmd_loadfile(char *fn);
-void cmd_loadURL(std::string_view url, URL *current, char *referer, FormList *request);
+void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, FormList *request);
 int handleMailto(const char *url);
 void _movL(int n);
 void _movD(int n);
@@ -40,7 +41,7 @@ void SetMarkString(char *str);
 void do_dump(w3mApp *w3m, BufferPtr buf);
 void _followForm(int submit);
 void query_from_followform(Str *query, FormItemList *fi, int multipart);
-BufferPtr loadLink(const char *url, const char *target, const char *referer, FormList *request);
+BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy referer, FormList *request);
 FormItemList *save_submit_formlist(FormItemList *src);
 Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf);
 void bufferA();

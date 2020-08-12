@@ -8,6 +8,12 @@ enum HttpMethod
     HTTP_METHOD_HEAD = 3,
 };
 
+enum class HttpReferrerPolicy
+{
+    NoReferer, // not send
+    StrictOriginWhenCrossOrigin, // send if same origin, send origin if not same origin
+};
+
 struct URL;
 struct FormList;
 struct TextList;
@@ -16,10 +22,10 @@ struct HttpRequest
     HttpMethod method = HTTP_METHOD_GET;
 
 public:
-    char *referer = nullptr;
+    HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
     FormList *request = nullptr;
 
-    HttpRequest(char *_referer, FormList *_request)
+    HttpRequest(HttpReferrerPolicy _referer, FormList *_request)
         : referer(_referer), request(_request)
     {
     }

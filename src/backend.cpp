@@ -97,7 +97,7 @@ internal_get(char *url, int flag, FormList *request)
 
     backend_halfdump_buf = NULL;
     do_download = flag;
-    buf = loadGeneralFile(url, NULL, NO_REFERER, RG_NONE, request);
+    buf = loadGeneralFile(url, NULL, HttpReferrerPolicy::NoReferer, RG_NONE, request);
     do_download = FALSE;
     if (buf != NULL)
     {

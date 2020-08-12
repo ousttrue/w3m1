@@ -1,8 +1,7 @@
 #pragma once
 #include "frontend/buffer.h"
 #include "urlfile.h"
-
-#define NO_REFERER ((char *)-1)
+#include "http/http_request.h"
 
 long long GetCurrentContentLength();
 extern CharacterEncodingScheme content_charset;
@@ -18,6 +17,6 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu);
 
 bool loadBuffer(URLFile *uf, BufferPtr newBuf);
 
-BufferPtr loadGeneralFile(std::string_view path, const URL *current, char *referer, LoadFlags flag, FormList *request);
+BufferPtr loadGeneralFile(std::string_view path, const URL *current, HttpReferrerPolicy referer, LoadFlags flag, FormList *request);
 
 int doFileCopy(const char *tmpf, const char *defstr);

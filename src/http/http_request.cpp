@@ -52,8 +52,15 @@ Str HttpRequest::URI(const URL &url, bool isLocal) const
 }
 
 char *
-otherinfo(const URL *target, const URL *current, const char *referer)
+otherinfo(const URL &target, const URL *current, HttpReferrerPolicy referer)
 {
+    if (target.scheme != SCM_HTTP && target.scheme != SCM_HTTPS)
+    {
+        // IS NOT HTTP
+        assert(false);
+        return nullptr;
+    }
+
     Str s = Strnew();
 
     s->Push("User-Agent: ");
@@ -67,48 +74,45 @@ otherinfo(const URL *target, const URL *current, const char *referer)
     Strcat_m_charp(s, "Accept-Encoding: ", AcceptEncoding, "\r\n", NULL);
     Strcat_m_charp(s, "Accept-Language: ", AcceptLang, "\r\n", NULL);
 
-    if (target->host.size())
+    if (target.host.size())
     {
         s->Push("Host: ");
-        s->Push(target->host);
-        if (target->port != GetScheme(target->scheme)->port)
-            s->Push(Sprintf(":%d", target->port));
+        s->Push(target.host);
+        if (target.port != GetScheme(target.scheme)->port)
+            s->Push(Sprintf(":%d", target.port));
         s->Push("\r\n");
     }
-    if (target->is_nocache || NoCache)
+    if (target.is_nocache || NoCache)
     {
         s->Push("Pragma: no-cache\r\n");
         s->Push("Cache-control: no-cache\r\n");
     }
+
     if (!NoSendReferer)
     {
-        if (current && current->scheme == SCM_HTTPS && target->scheme != SCM_HTTPS)
+        if (referer == HttpReferrerPolicy::StrictOriginWhenCrossOrigin)
+        {
+            if (current && current->scheme == target.scheme)
+            {
+                // strict(same scheme)
+                s->Push("Referer: ");
+                if (target.HasSameOrigin(*current))
+                {
+                    s->Push(current->ToReferer());
+                }
+                else
+                {
+                    s->Push(current->ToRefererOrigin());
+                }
+                s->Push("\r\n");
+            }
+        }
+        else
         {
             /* Don't send Referer: if https:// -> http:// */
         }
-        else if (referer == NULL && current && current->scheme != SCM_LOCAL &&
-                 (current->scheme != SCM_FTP ||
-                  (current->userinfo.empty())))
-        {
-            // char *p = current->label;
-            s->Push("Referer: ");
-            //current->label = NULL;
-            auto withoutLabel = *current;
-            withoutLabel.fragment.clear();
-            s->Push(withoutLabel.ToStr());
-            s->Push("\r\n");
-        }
-        else if (referer != NULL && referer != NO_REFERER)
-        {
-            char *p = strchr(const_cast<char*>(referer), '#');
-            s->Push("Referer: ");
-            if (p)
-                s->Push(referer, p - referer);
-            else
-                s->Push(referer);
-            s->Push("\r\n");
-        }
     }
+
     return s->ptr;
 }
 
@@ -122,10 +126,7 @@ Str HttpRequest::ToStr(const URL &url, const URL *current, const TextList *extra
     tmp->Push(" ");
     tmp->Push(this->URI(url));
     tmp->Push(" HTTP/1.0\r\n");
-    if (this->referer == NO_REFERER)
-        tmp->Push(otherinfo(&url, NULL, ""));
-    else
-        tmp->Push(otherinfo(&url, current, this->referer));
+    tmp->Push(otherinfo(url, current, this->referer));
     if (extra != NULL)
         for (i = extra->first; i != NULL; i = i->next)
         {

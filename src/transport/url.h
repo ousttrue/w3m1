@@ -62,6 +62,13 @@ struct URL
     URL(URLSchemeTypes scheme, const Userinfo &userinfo, std::string_view host, int port,
         std::string_view path, std::string_view query, std::string_view framgment);
 
+    bool HasSameOrigin(const URL &rhs) const;
+    Str ToReferer() const
+    {
+        return ToStr(false, false);
+    }
+    std::string ToRefererOrigin() const;
+
 public:
     std::string real_file;
     int is_nocache = 0;

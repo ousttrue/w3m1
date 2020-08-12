@@ -1,5 +1,6 @@
 #pragma once
 #include "transport/url.h"
+#include "http/http_request.h"
 #include <time.h>
 
 enum EncodingTypes : char
@@ -55,7 +56,7 @@ struct URLFile
     int Getc();
     int UndoGetc();
     void openURL(std::string_view url, URL *pu, const URL *current,
-                 const char* referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                 HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                  HttpRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
     Str StrmyISgets();

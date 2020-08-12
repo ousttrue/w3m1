@@ -1324,10 +1324,14 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         }
         if (p)
         {
+            // TODO:
+            // r ? r : ""            
+            HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
+
             this->effect |= PE_ANCHOR;
             this->a_href = buf->href.Put(Anchor::CreateHref(p,
                                                             q ? q : "",
-                                                            r ? r : "",
+                                                            referer,
                                                             s ? s : "",
                                                             *t, currentLn(buf), pos));
             this->a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;

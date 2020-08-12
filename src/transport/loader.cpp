@@ -933,7 +933,7 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
  * loadGeneralFile: load file to buffer
  */
 BufferPtr
-loadGeneralFile(std::string_view path, const URL *_current, char *referer,
+loadGeneralFile(std::string_view path, const URL *_current, HttpReferrerPolicy referer,
                 LoadFlags flag, FormList *request)
 {
     HttpRequest hr(referer, request);
@@ -993,7 +993,7 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
     //             {
     //                 Str cmd = Sprintf("%s?dir=%s#current",
     //                                   DirBufferCommand, pu.file);
-    //                 auto b = loadGeneralFile(cmd->ptr, NULL, NO_REFERER, RG_NONE, NULL);
+    //                 auto b = loadGeneralFile(cmd->ptr, NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
     //                 if (b != NULL)
     //                 {
     //                     b->currentURL = pu;

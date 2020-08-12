@@ -319,7 +319,7 @@ static int dir_exist(char *path)
 }
 
 void URLFile::openURL(std::string_view url, URL *pu, const URL *current,
-                      const char *referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                      HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                       HttpRequest *hr, unsigned char *status)
 {
     Str tmp;

@@ -1,10 +1,4 @@
-/* $Id: local.h,v 1.3 2001/11/20 17:49:23 ukai Exp $ */
-/*
- * w3m local.h
- */
-
-#ifndef LOCAL_H
-#define LOCAL_H
+#include "http/http_request.h"
 #include <string_view>
 #include <sys/types.h>
 #ifdef HAVE_DIRENT_H
@@ -23,9 +17,6 @@ typedef struct direct Directory;
 #define S_IFREG 0100000
 #endif /* not S_IFREG */
 
-
-
-
 #ifndef S_ISDIR
 #ifndef S_IFDIR
 #define S_IFDIR 0040000
@@ -42,17 +33,18 @@ typedef struct direct Directory;
 #endif /* not S_ISLNK */
 #endif /* not HAVE_READLINK */
 
-#endif /* not LOCAL_H */
-
 void set_environ(std::string_view var, std::string_view value);
 // inline void set_environ(const char *var, const char *value)
 // {
 //     set_environ(
-//         var ? std::string_view(var) : "", 
+//         var ? std::string_view(var) : "",
 //         value ? std::string_view(value) : "");
 // }
 
 pid_t open_pipe_rw(FILE **fr, FILE **fw);
 Str loadLocalDir(std::string_view dname);
-FILE *localcgi_post(char *, char *, struct FormList *, const char*);
-#define localcgi_get(u, q, r) localcgi_post((u), (q), NULL, (r))
+FILE *localcgi_post(char *uri, char *qstr, struct FormList *request, HttpReferrerPolicy referer);
+inline FILE *localcgi_get(char *u, char *q, HttpReferrerPolicy r)
+{
+    return localcgi_post((u), (q), NULL, (r));
+}

@@ -1,3 +1,4 @@
+#include <sstream>
 #include "fm.h"
 #include "gc_helper.h"
 #include "file.h"
@@ -421,6 +422,40 @@ URL::URL(URLSchemeTypes scheme, const Userinfo &userinfo, std::string_view host,
     }
 }
 
+// https://developer.mozilla.org/en-US/docs/Glossary/origin
+bool URL::HasSameOrigin(const URL &rhs) const
+{
+    if (scheme != rhs.scheme)
+    {
+        return false;
+    }
+    if (host != rhs.host)
+    {
+        return false;
+    }
+    if (port != rhs.port)
+    {
+        return false;
+    }
+    return true;
+}
+
+std::string URL::ToRefererOrigin() const
+{
+    std::stringstream ss;
+    auto schemeInfo = GetScheme(this->scheme);
+    ss
+        << schemeInfo->name
+        << ':'
+        << host;
+    if (this->port != schemeInfo->port)
+    {
+        ss << ':' << this->port;
+    }
+    ss << '/';
+    return ss.str();
+}
+
 //
 // scheme://userinfo@host:port/path?query#fragment
 //
@@ -806,15 +841,6 @@ Str URL::ToStr(bool usePass, bool useLabel) const
         auto scheme = GetScheme(this->scheme);
         auto tmp = Strnew(scheme->name);
         tmp->Push(':');
-        if (this->scheme == SCM_DATA)
-        {
-            tmp->Push(this->path);
-            return tmp;
-        }
-        if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP)
-        {
-            tmp->Push("//");
-        }
         if (this->userinfo.name.size())
         {
             tmp->Push(this->userinfo.name);
@@ -834,9 +860,6 @@ Str URL::ToStr(bool usePass, bool useLabel) const
                 tmp->Push(Sprintf("%d", this->port));
             }
         }
-        if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP &&
-            (this->path.empty() || this->path[0] != '/'))
-            tmp->Push('/');
         tmp->Push(this->path);
         if (this->scheme == SCM_FTPDIR && tmp->Back() != '/')
             tmp->Push('/');

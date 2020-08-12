@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include "bufferpoint.h"
+#include "http/http_request.h"
 
 struct Image;
 struct FormItemList;
@@ -10,7 +11,7 @@ struct Anchor
 {
     std::string url;
     std::string target;
-    std::string referer;
+    HttpReferrerPolicy referer;
     std::string title;
     unsigned char accesskey = 0;
     BufferPoint start;
@@ -22,13 +23,13 @@ struct Anchor
     Image *image = nullptr;
     FormItemList *item = nullptr;
 
-    static Anchor CreateHref(std::string_view url, std::string_view target, std::string_view referer,
+    static Anchor CreateHref(std::string_view url, std::string_view target, HttpReferrerPolicy referer,
                              std::string title, unsigned char key, int line, int pos)
-    {
+    {       
         return Anchor{
             url : std::move(std::string(url)),
             target : std::move(std::string(target)),
-            referer : std::move(std::string(referer)),
+            referer : referer,
             title : std::move(std::string(title)),
             accesskey : key,
             start : {

@@ -302,7 +302,7 @@ popFrameTree(struct frameset_queue **fqpp)
 }
 
 void resetFrameElement(union frameset_element *f_element,
-                       BufferPtr buf, char *referer, FormList *request)
+                       BufferPtr buf, HttpReferrerPolicy referer, FormList *request)
 {
     char *f_name;
     struct frame_body *f_body;
@@ -1005,7 +1005,7 @@ renderFrame(BufferPtr Cbuf, int force_reload)
         renderFrameSet = Cbuf->frameset;
         flushFrameSet(renderFrameSet);
         w3mApp::Instance().DocumentCharset = w3mApp::Instance().InnerCharset;
-        buf = loadGeneralFile(tmp->ptr, NULL, NULL, flag, NULL);
+        buf = loadGeneralFile(tmp->ptr, NULL, HttpReferrerPolicy::StrictOriginWhenCrossOrigin, flag, NULL);
     }
     w3mApp::Instance().DocumentCharset = doc_charset;
     renderFrameSet = NULL;

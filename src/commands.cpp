@@ -458,9 +458,9 @@ void ldhelp(w3mApp *w3m)
     tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
                   UrlEncode(Strnew(w3mApp::Instance().w3m_version))->ptr,
                   UrlEncode(Strnew_charp_n(lang, n))->ptr);
-    cmd_loadURL(tmp->ptr, NULL, NO_REFERER, NULL);
+    cmd_loadURL(tmp->ptr, NULL, HttpReferrerPolicy::NoReferer, NULL);
 #else
-    cmd_loadURL(helpFile(HELP_FILE), NULL, NO_REFERER, NULL);
+    cmd_loadURL(helpFile(HELP_FILE), NULL, HttpReferrerPolicy::NoReferer, NULL);
 #endif
 }
 
@@ -849,7 +849,7 @@ void followI(w3mApp *w3m)
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    buf = loadGeneralFile(const_cast<char *>(a->url.c_str()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), NULL, RG_NONE, NULL);
+    buf = loadGeneralFile(const_cast<char *>(a->url.c_str()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), {}, RG_NONE, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -1026,7 +1026,7 @@ void followA(w3mApp *w3m)
     {
         auto tab = CreateTabSetCurrent();
         auto buf = tab->GetCurrentBuffer();
-        loadLink(url.c_str(), a->target.c_str(), a->referer.c_str(), NULL);
+        loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
             GetCurrentTab()->DeleteBuffer(buf);
         else
@@ -1036,7 +1036,7 @@ void followA(w3mApp *w3m)
     }
     else
     {
-        loadLink(url.c_str(), a->target.c_str(), a->referer.c_str(), NULL);
+        loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
         displayCurrentbuf(B_NORMAL);
     }
 }
@@ -1188,7 +1188,7 @@ void gorURL(w3mApp *w3m)
 
 void ldBmark(w3mApp *w3m)
 {
-    cmd_loadURL(w3mApp::Instance().BookmarkFile, NULL, NO_REFERER, NULL);
+    cmd_loadURL(w3mApp::Instance().BookmarkFile, NULL, HttpReferrerPolicy::NoReferer, NULL);
 }
 /* Add current to bookmark */
 
@@ -1207,7 +1207,7 @@ void adBmark(w3mApp *w3m)
     auto request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
     request->body = tmp->ptr;
     request->length = tmp->Size();
-    cmd_loadURL("file:///$LIB/" W3MBOOKMARK_CMDNAME, NULL, NO_REFERER,
+    cmd_loadURL("file:///$LIB/" W3MBOOKMARK_CMDNAME, NULL, HttpReferrerPolicy::NoReferer,
                 request);
 }
 /* option setting */
@@ -1255,7 +1255,7 @@ void linkMn(w3mApp *w3m)
 
     auto p_url = URL::Parse(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
-    cmd_loadURL(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
+    cmd_loadURL(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 }
 /* accesskey */
 
@@ -1670,7 +1670,7 @@ void reload(w3mApp *w3m)
     w3m->DefaultType = Strnew(buf->real_type)->ptr;
 
     {
-        auto newBuf = loadGeneralFile(url->ptr, NULL, NO_REFERER, RG_NOCACHE, request);
+        auto newBuf = loadGeneralFile(url->ptr, NULL, HttpReferrerPolicy::NoReferer, RG_NOCACHE, request);
 
         w3m->DocumentCharset = old_charset;
 

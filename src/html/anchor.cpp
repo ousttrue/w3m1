@@ -137,7 +137,7 @@ _put_anchor_news(BufferPtr buf, char *p1, char *p2, int line, int pos)
                                   buf->document_charset);
     tmp = Sprintf("news:%s", file_quote(tmp->ptr));
 
-    auto a = Anchor::CreateHref(tmp->ptr, NULL, NO_REFERER, NULL, '\0', line, pos);
+    auto a = Anchor::CreateHref(tmp->ptr, NULL, HttpReferrerPolicy::NoReferer, NULL, '\0', line, pos);
     return buf->href.Put(a);
 }
 
@@ -146,7 +146,7 @@ _put_anchor_all(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
     auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), w3mApp::Instance().InnerCharset,
                                   buf->document_charset);
-    auto a = Anchor::CreateHref(url_quote(tmp->ptr), NULL, NO_REFERER, NULL,
+    auto a = Anchor::CreateHref(url_quote(tmp->ptr), NULL, HttpReferrerPolicy::NoReferer, NULL,
                                 '\0', line, pos);
     return buf->href.Put(a);
 }

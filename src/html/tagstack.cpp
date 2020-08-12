@@ -13,7 +13,6 @@
 #include "ctrlcode.h"
 #include "html/html_processor.h"
 
-
 #include "html/html_context.h"
 #include "html/tokenizer.h"
 #include "frontend/buffer.h"
@@ -887,10 +886,9 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
             tmp->Push("\" TARGET=\"");
             tmp->Push(html_quote(obuf->anchor.target));
         }
-        if (obuf->anchor.referer.size())
+        if (obuf->anchor.referer == HttpReferrerPolicy::NoReferer)
         {
-            tmp->Push("\" REFERER=\"");
-            tmp->Push(html_quote(obuf->anchor.referer));
+            tmp->Push("\" REFERER=NOREFERER\"");
         }
         if (obuf->anchor.title.size())
         {
@@ -1733,7 +1731,10 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
             obuf->anchor.target = Strnew(p)->ptr;
         if (tag->TryGetAttributeValue(ATTR_REFERER, &p))
-            obuf->anchor.referer = Strnew(p)->ptr;
+        {
+            // TODO: noreferer
+            // obuf->anchor.referer = Strnew(p)->ptr;
+        }
         if (tag->TryGetAttributeValue(ATTR_TITLE, &p))
             obuf->anchor.title = Strnew(p)->ptr;
         if (tag->TryGetAttributeValue(ATTR_ACCESSKEY, &p))

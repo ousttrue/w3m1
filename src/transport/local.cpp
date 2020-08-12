@@ -60,7 +60,6 @@ Str localCookie()
     return Local_cookie;
 }
 
-
 static int
 check_local_cgi(char *file, int status)
 {
@@ -234,8 +233,7 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
     return CGIFN_LIBDIR;
 }
 
-FILE *
-localcgi_post(char *uri, char *qstr, FormList *request, const char *referer)
+FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy referer)
 {
     FILE *fr = NULL, *fw = NULL;
     int status;
@@ -272,8 +270,9 @@ localcgi_post(char *uri, char *qstr, FormList *request, const char *referer)
     set_cgi_environ(name, file, uri);
     if (path_info)
         set_environ("PATH_INFO", path_info);
-    if (referer && referer != NO_REFERER)
-        set_environ("HTTP_REFERER", referer);
+    // TODO:
+    // if (referer != HttpReferrerPolicy::NoReferer)
+    //     set_environ("HTTP_REFERER", referer);
     if (request)
     {
         set_environ("REQUEST_METHOD", "POST");
@@ -380,7 +379,6 @@ err0:
     return (pid_t)-1;
 }
 #endif /* __MINGW32_VERSION */
-
 
 Str loadLocalDir(std::string_view dname)
 {

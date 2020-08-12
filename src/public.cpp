@@ -356,7 +356,7 @@ void cmd_loadfile(char *fn)
 {
     BufferPtr buf;
 
-    buf = loadGeneralFile(file_to_url(fn), NULL, NO_REFERER, RG_NONE, NULL);
+    buf = loadGeneralFile(file_to_url(fn), NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -372,7 +372,7 @@ void cmd_loadfile(char *fn)
     displayCurrentbuf(B_NORMAL);
 }
 
-void cmd_loadURL(std::string_view url, URL *current, char *referer, FormList *request)
+void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, FormList *request)
 {
     BufferPtr buf;
 
@@ -791,7 +791,7 @@ void _followForm(int submit)
                 tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
             tmp2->Push("?");
             tmp2->Push(tmp);
-            loadLink(tmp2->ptr, a->target.c_str(), NULL, NULL);
+            loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
         }
         else if (fi->parent->method == FORM_METHOD_POST)
         {
@@ -807,7 +807,7 @@ void _followForm(int submit)
                 fi->parent->body = tmp->ptr;
                 fi->parent->length = tmp->Size();
             }
-            buf = loadLink(tmp2->ptr, a->target.c_str(), NULL, fi->parent);
+            buf = loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, fi->parent);
             if (multipart)
             {
                 unlink(fi->parent->body);
@@ -996,7 +996,7 @@ void bufferA(void)
     on_target = TRUE;
 }
 
-BufferPtr loadLink(const char *url, const char *target, const char *referer, FormList *request)
+BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy referer, FormList *request)
 {
     BufferPtr nfbuf;
     union frameset_element *f_element = NULL;
@@ -1007,10 +1007,8 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     auto base = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
     if (base == NULL ||
         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
-        referer = NO_REFERER;
-    if (referer == NULL)
-        referer = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr;
-    auto buf = loadGeneralFile(const_cast<char *>(url), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), const_cast<char *>(referer), RG_NONE, request);
+        referer = HttpReferrerPolicy::NoReferer;
+    auto buf = loadGeneralFile(const_cast<char *>(url), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), referer, RG_NONE, request);
     if (buf == NULL)
     {
         char *emsg = Sprintf("Can't load %s", url)->ptr;
@@ -1057,7 +1055,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     tab->DeleteBuffer(tab->GetCurrentBuffer());
     GetCurrentTab()->SetCurrentBuffer(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
-    resetFrameElement(f_element, buf, const_cast<char *>(referer), request);
+    resetFrameElement(f_element, buf, referer, request);
     rFrame(&w3mApp::Instance());
     {
         const Anchor *al = NULL;
@@ -1497,8 +1495,6 @@ void nextY(int d)
 /* go to specified URL */
 void goURL0(const char *prompt, int relative)
 {
-    char *referer;
-
     BufferPtr cur_buf = GetCurrentTab()->GetCurrentBuffer();
 
     auto url = searchKeyData();
@@ -1559,15 +1555,16 @@ void goURL0(const char *prompt, int relative)
         return;
     }
 
+    HttpReferrerPolicy referer;
     if (relative)
     {
         current = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
-        referer = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr;
+        referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
     }
     else
     {
         current = NULL;
-        referer = NULL;
+        referer = HttpReferrerPolicy::NoReferer;
     }
     auto p_url = URL::Parse(url, current);
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
@@ -1753,7 +1750,7 @@ void execdict(char *word)
         return;
     }
     dictcmd = Sprintf("%s?%s", DictCommand, UrlEncode(Strnew(w))->ptr)->ptr;
-    buf = loadGeneralFile(dictcmd, NULL, NO_REFERER, RG_NONE, NULL);
+    buf = loadGeneralFile(dictcmd, NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
     if (buf == NULL)
     {
         disp_message("Execution failed", TRUE);
@@ -2005,7 +2002,7 @@ void follow_map(struct parsed_tagarg *arg)
         auto tab = CreateTabSetCurrent();
         BufferPtr buf = tab->GetCurrentBuffer();
         cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
-                    GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
+                    HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
         if (buf != GetCurrentTab()->GetCurrentBuffer())
             GetCurrentTab()->DeleteBuffer(buf);
         else
@@ -2014,7 +2011,7 @@ void follow_map(struct parsed_tagarg *arg)
         return;
     }
     cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
-                GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, NULL);
+                HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 #endif
 }
 

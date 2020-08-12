@@ -27,7 +27,7 @@ struct frame_body
     URL baseURL = {};
     char *source;
     char *type;
-    char *referer;
+    HttpReferrerPolicy referer;
     AnchorList nameList;
     FormList *request;
     char *ssl_certificate;
@@ -71,4 +71,4 @@ void addFrameSetElement(struct frameset *f,
                         union frameset_element element);
 void deleteFrameSetElement(union frameset_element e);
 void resetFrameElement(union frameset_element *f_element, BufferPtr buf,
-                       char *referer, FormList *request);
+                       HttpReferrerPolicy referer, FormList *request);
