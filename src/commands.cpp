@@ -318,7 +318,7 @@ void pipeBuf(w3mApp *w3m)
         newBuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         if (newBuf->type.empty())
             newBuf->type = "text/plain";
-        newBuf->currentURL.file = "-";
+        newBuf->currentURL.path = "-";
         GetCurrentTab()->Push(newBuf);
     }
     displayCurrentbuf(B_FORCE_REDRAW);
@@ -656,7 +656,7 @@ void editBf(w3mApp *w3m)
     Str cmd;
     if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                                       /* Behaving as a pager */
         (GetCurrentTab()->GetCurrentBuffer()->type.empty() && GetCurrentTab()->GetCurrentBuffer()->edit.empty()) ||                     /* Reading shell */
-        GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentTab()->GetCurrentBuffer()->currentURL.file == "-" || /* file is std input  */
+        GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentTab()->GetCurrentBuffer()->currentURL.path == "-" || /* file is std input  */
         GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
     { /* Frame */
         disp_err_message("Can't edit other than local file", TRUE);
@@ -1006,9 +1006,9 @@ void followA(w3mApp *w3m)
     if (u.ToStr()->Cmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()) == 0)
     {
         /* index within this buffer */
-        if (u.label.size())
+        if (u.fragment.size())
         {
-            gotoLabel(u.label.c_str());
+            gotoLabel(u.fragment.c_str());
             return;
         }
     }
@@ -1416,7 +1416,7 @@ void svSrc(w3mApp *w3m)
         file = conv_from_system(guess_save_name(NULL,
                                                 GetCurrentTab()->GetCurrentBuffer()->currentURL.real_file));
     else
-        file = guess_save_name(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentURL.file);
+        file = guess_save_name(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentURL.path);
     doFileCopy(GetCurrentTab()->GetCurrentBuffer()->sourcefile.c_str(), file);
     PermitSaveToPipe = FALSE;
     displayCurrentbuf(B_NORMAL);

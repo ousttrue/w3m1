@@ -200,7 +200,7 @@ same_url_p(URL *pu1, URL *pu2)
 {
     return (pu1->scheme == pu2->scheme && pu1->port == pu2->port &&
             (pu1->host.size() ? pu2->host.size() ? pu1->host == pu2->host : 0 : 1) &&
-            (pu1->file.size() ? pu2->file.size() ? pu1->file == pu2->file : 0 : 1));
+            (pu1->path.size() ? pu2->path.size() ? pu1->path == pu2->path : 0 : 1));
 }
 
 #define TAG_IS(s, tag, len) \
@@ -1250,7 +1250,7 @@ last_modified(BufferPtr buf)
     }
     else if (buf->currentURL.scheme == SCM_LOCAL)
     {
-        if (stat(buf->currentURL.file.c_str(), &st) < 0)
+        if (stat(buf->currentURL.path.c_str(), &st) < 0)
             return "unknown";
         return ctime(&st.st_mtime);
     }

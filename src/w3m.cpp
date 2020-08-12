@@ -1060,7 +1060,7 @@ int w3mApp::Main(int argc, char **argv)
 
             if (newbuf->pagerSource ||
                 (newbuf->real_scheme == SCM_LOCAL && newbuf->header_source.size() &&
-                 newbuf->currentURL.file != "-"))
+                 newbuf->currentURL.path != "-"))
             {
                 newbuf->search_header = search_header;
             }

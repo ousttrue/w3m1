@@ -682,7 +682,7 @@ void Buffer::Reshape()
     if (this->header_source.size())
     {
         if (this->currentURL.scheme != SCM_LOCAL ||
-            this->mailcap_source.size() || this->currentURL.file == "-")
+            this->mailcap_source.size() || this->currentURL.path == "-")
         {
             URLFile h(SCM_LOCAL, NULL);
             h.examineFile(this->header_source);

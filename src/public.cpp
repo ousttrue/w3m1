@@ -1063,7 +1063,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
     rFrame(&w3mApp::Instance());
     {
         const Anchor *al = NULL;
-        auto label = pu.label;
+        auto label = pu.fragment;
 
         if (label.size() && f_element->element->attr == F_BODY)
         {
@@ -1383,7 +1383,7 @@ void gotoLabel(std::string_view label)
 
     for (int i = 0; i < MAX_LB; i++)
         buf->linkBuffer[i] = NULL;
-    buf->currentURL.label = label;
+    buf->currentURL.fragment = label;
     pushHashHist(w3mApp::Instance().URLHist, buf->currentURL.ToStr()->ptr);
     (*buf->clone)++;
     GetCurrentTab()->Push(buf);

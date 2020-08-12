@@ -512,7 +512,7 @@ void URL::Parse(std::string_view _url, const URL *current)
         /* scheme part has been found */
         if (this->scheme == SCM_UNKNOWN)
         {
-            this->file = allocStr(url, -1);
+            this->path = allocStr(url, -1);
             return;
         }
         /* get host and port */
@@ -596,7 +596,7 @@ void URL::Parse(std::string_view _url, const URL *current)
     analyze_file:
         if ((*p == '\0' || *p == '#' || *p == '?') && this->host.empty())
         {
-            this->file = "";
+            this->path = "";
             goto do_query;
         }
 
@@ -605,7 +605,7 @@ void URL::Parse(std::string_view _url, const URL *current)
             p++;
         if (*p == '\0' || *p == '#' || *p == '?')
         { /* scheme://host[:port]/ */
-            this->file = DefaultFile(this->scheme);
+            this->path = DefaultFile(this->scheme);
             goto do_query;
         }
         {
@@ -642,9 +642,9 @@ void URL::Parse(std::string_view _url, const URL *current)
                 }
             }
             if (this->scheme == SCM_LOCAL || this->scheme == SCM_MISSING)
-                this->file = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+                this->path = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
             else
-                this->file = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+                this->path = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
         }
 
     do_query:
@@ -660,13 +660,13 @@ void URL::Parse(std::string_view _url, const URL *current)
     if (this->scheme == SCM_MISSING)
     {
         this->scheme = SCM_LOCAL;
-        this->file = p;
-        this->label.clear();
+        this->path = p;
+        this->fragment.clear();
     }
     else if (*p == '#')
-        this->label = p + 1;
+        this->fragment = p + 1;
     else
-        this->label.clear();
+        this->fragment.clear();
 }
 
 char *
@@ -730,8 +730,8 @@ void URL::Parse2(std::string_view url, const URL *current)
         return;
     if (this->scheme == SCM_NEWS || this->scheme == SCM_NEWS_GROUP)
     {
-        if (this->file.size() && !string_strchr(this->file, '@') &&
-            (!(p = string_strchr(this->file, '/')) || strchr(p + 1, '-') ||
+        if (this->path.size() && !string_strchr(this->path, '@') &&
+            (!(p = string_strchr(this->path, '/')) || strchr(p + 1, '-') ||
              *(p + 1) == '\0'))
             this->scheme = SCM_NEWS_GROUP;
         else
@@ -740,10 +740,10 @@ void URL::Parse2(std::string_view url, const URL *current)
     }
     if (this->scheme == SCM_NNTP || this->scheme == SCM_NNTP_GROUP)
     {
-        if (this->file.size() && this->file[0] == '/')
-            this->file = this->file.substr(1);
-        if (this->file.size() && !string_strchr(this->file, '@') &&
-            (!(p = string_strchr(this->file.c_str(), '/')) || strchr(p + 1, '-') ||
+        if (this->path.size() && this->path[0] == '/')
+            this->path = this->path.substr(1);
+        if (this->path.size() && !string_strchr(this->path, '@') &&
+            (!(p = string_strchr(this->path.c_str(), '/')) || strchr(p + 1, '-') ||
              *(p + 1) == '\0'))
             this->scheme = SCM_NNTP_GROUP;
         else
@@ -761,7 +761,7 @@ void URL::Parse2(std::string_view url, const URL *current)
     }
     if (this->scheme == SCM_LOCAL)
     {
-        char *q = expandName(file_unquote(this->file));
+        char *q = expandName(file_unquote(this->path));
 #ifdef SUPPORT_DOS_DRIVE_PREFIX
         Str drive;
         if (IS_ALPHA(q[0]) && q[1] == ':')
@@ -772,7 +772,7 @@ void URL::Parse2(std::string_view url, const URL *current)
         }
         else
 #endif
-            this->file = file_quote(q);
+            this->path = file_quote(q);
     }
 
     if (current && (this->scheme == current->scheme || (this->scheme == SCM_FTP && current->scheme == SCM_FTPDIR) || (this->scheme == SCM_LOCAL && current->scheme == SCM_LOCAL_CGI)) && this->host.empty())
@@ -781,12 +781,12 @@ void URL::Parse2(std::string_view url, const URL *current)
         this->userinfo = current->userinfo;
         this->host = current->host;
         this->port = current->port;
-        if (this->file.size() && this->file[0])
+        if (this->path.size() && this->path[0])
         {
 #ifdef USE_EXTERNAL_URI_LOADER
-            if (this->scheme == SCM_UNKNOWN && strchr(const_cast<char *>(this->file.c_str()), ':') == NULL && current && (p = string_strchr(current->file, ':')) != NULL)
+            if (this->scheme == SCM_UNKNOWN && strchr(const_cast<char *>(this->path.c_str()), ':') == NULL && current && (p = string_strchr(current->path, ':')) != NULL)
             {
-                this->file = Strnew_m_charp(current->file.substr(0, p - current->file.c_str()), ":", this->file)->ptr;
+                this->path = Strnew_m_charp(current->path.substr(0, p - current->path.c_str()), ":", this->path)->ptr;
             }
             else
 #endif
@@ -794,17 +794,17 @@ void URL::Parse2(std::string_view url, const URL *current)
 #ifdef USE_GOPHER
                     this->scheme != SCM_GOPHER &&
 #endif /* USE_GOPHER */
-                    this->file[0] != '/'
+                    this->path[0] != '/'
 #ifdef SUPPORT_DOS_DRIVE_PREFIX
                     && !(this->scheme == SCM_LOCAL && IS_ALPHA(this->file[0]) && this->file[1] == ':')
 #endif
                 )
             {
                 /* file is relative [process 1] */
-                p = this->file.c_str();
-                if (current->file.size())
+                p = this->path.c_str();
+                if (current->path.size())
                 {
-                    tmp = Strnew(current->file);
+                    tmp = Strnew(current->path);
                     while (tmp->Size() > 0)
                     {
                         if (tmp->Back() == '/')
@@ -812,7 +812,7 @@ void URL::Parse2(std::string_view url, const URL *current)
                         tmp->Pop(1);
                     }
                     tmp->Push(p);
-                    this->file = tmp->ptr;
+                    this->path = tmp->ptr;
                     relative_uri = TRUE;
                 }
             }
@@ -826,14 +826,14 @@ void URL::Parse2(std::string_view url, const URL *current)
         }
         else
         { /* scheme:[?query][#label] */
-            this->file = current->file;
+            this->path = current->path;
             if (this->query.empty())
                 this->query = current->query;
         }
         /* comment: query part need not to be completed
 	 * from the current URL. */
     }
-    if (this->file.size())
+    if (this->path.size())
     {
 #ifdef __EMX__
         if (this->scheme == SCM_LOCAL)
@@ -847,14 +847,14 @@ void URL::Parse2(std::string_view url, const URL *current)
             }
         }
 #else
-        if (this->scheme == SCM_LOCAL && this->file[0] != '/' && this->file != "-")
+        if (this->scheme == SCM_LOCAL && this->path[0] != '/' && this->path != "-")
         {
             /* local file, relative path */
             tmp = Strnew(w3mApp::Instance().CurrentDir);
             if (tmp->Back() != '/')
                 tmp->Push('/');
-            tmp->Push(file_unquote(this->file));
-            this->file = file_quote(cleanupName(tmp->ptr));
+            tmp->Push(file_unquote(this->path));
+            this->path = file_quote(cleanupName(tmp->ptr));
         }
 #endif
         else if (this->scheme == SCM_HTTP
@@ -872,14 +872,14 @@ void URL::Parse2(std::string_view url, const URL *current)
 		 * elements like `//', `..' or `.' in the this->file. It is 
 		 * server's responsibility to canonicalize such path.
 		 */
-                this->file = cleanupName(this->file.c_str());
+                this->path = cleanupName(this->path.c_str());
             }
         }
         else if (
 #ifdef USE_GOPHER
             this->scheme != SCM_GOPHER &&
 #endif /* USE_GOPHER */
-            this->file[0] == '/')
+            this->path[0] == '/')
         {
             /*
 	     * this happens on the following conditions:
@@ -887,7 +887,7 @@ void URL::Parse2(std::string_view url, const URL *current)
 	     * In both case, there must be no side effect with
 	     * cleanupName(). (I hope so...)
 	     */
-            this->file = cleanupName(this->file.c_str());
+            this->path = cleanupName(this->path.c_str());
         }
         if (this->scheme == SCM_LOCAL)
         {
@@ -901,7 +901,7 @@ void URL::Parse2(std::string_view url, const URL *current)
             }
             else
 #endif
-                this->real_file = cleanupName(file_unquote(this->file));
+                this->real_file = cleanupName(file_unquote(this->path));
         }
     }
 }
@@ -914,20 +914,20 @@ Str URL::ToStr(bool usePass, bool useLabel) const
     }
     else if (this->scheme == SCM_UNKNOWN)
     {
-        return Strnew(this->file);
+        return Strnew(this->path);
     }
-    if (this->host.empty() && this->file.empty() && this->label.size())
+    if (this->host.empty() && this->path.empty() && this->fragment.size())
     {
         /* local label */
-        return Sprintf("#%s", this->label);
+        return Sprintf("#%s", this->fragment);
     }
-    if (this->scheme == SCM_LOCAL && this->file == "-")
+    if (this->scheme == SCM_LOCAL && this->path == "-")
     {
         auto tmp = Strnew("-");
-        if (this->label.size())
+        if (this->fragment.size())
         {
             tmp->Push('#');
-            tmp->Push(this->label);
+            tmp->Push(this->fragment);
         }
         return tmp;
     }
@@ -938,7 +938,7 @@ Str URL::ToStr(bool usePass, bool useLabel) const
         tmp->Push(':');
         if (this->scheme == SCM_DATA)
         {
-            tmp->Push(this->file);
+            tmp->Push(this->path);
             return tmp;
         }
         if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP)
@@ -965,9 +965,9 @@ Str URL::ToStr(bool usePass, bool useLabel) const
             }
         }
         if (this->scheme != SCM_NEWS && this->scheme != SCM_NEWS_GROUP &&
-            (this->file.empty() || this->file[0] != '/'))
+            (this->path.empty() || this->path[0] != '/'))
             tmp->Push('/');
-        tmp->Push(this->file);
+        tmp->Push(this->path);
         if (this->scheme == SCM_FTPDIR && tmp->Back() != '/')
             tmp->Push('/');
         if (this->query.size())
@@ -975,10 +975,10 @@ Str URL::ToStr(bool usePass, bool useLabel) const
             tmp->Push('?');
             tmp->Push(this->query);
         }
-        if (useLabel && this->label.size())
+        if (useLabel && this->fragment.size())
         {
             tmp->Push('#');
-            tmp->Push(this->label);
+            tmp->Push(this->fragment);
         }
         return tmp;
     }

@@ -313,11 +313,11 @@ public:
             assert(false);
         }
         const char *t = checkContentType(t_buf);
-        if (t == NULL && pu.file.size())
+        if (t == NULL && pu.path.size())
         {
             if (!((http_response_code >= 400 && http_response_code <= 407) ||
                   (http_response_code >= 500 && http_response_code <= 505)))
-                t = guessContentType(pu.file);
+                t = guessContentType(pu.path);
         }
         if (t == NULL)
             t = "text/plain";
@@ -350,7 +350,7 @@ public:
                 file = conv_from_system(guess_save_name(NULL, pu.real_file.c_str()));
             }
             else
-                file = guess_save_name(t_buf, pu.file);
+                file = guess_save_name(t_buf, pu.path);
             if (f.DoFileSave(file, current_content_length) == 0)
                 f.HalfClose();
             else
@@ -370,7 +370,7 @@ public:
                 if (t_buf == NULL)
                     t_buf = newBuffer(INIT_BUFFER_WIDTH());
                 t_buf->sourcefile = uncompress_stream(&f, true);
-                uncompressed_file_type(pu.file.c_str(), &f.ext);
+                uncompressed_file_type(pu.path.c_str(), &f.ext);
             }
             else
             {
@@ -408,14 +408,14 @@ public:
         {
             BufferPtr b = NULL;
             if (!do_download && doExternal(f,
-                                           pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()),
+                                           pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()),
                                            t, &b, t_buf))
             {
                 if (b)
                 {
                     b->real_scheme = f.scheme;
                     b->real_type = t;
-                    if (b->currentURL.host.empty() && b->currentURL.file.empty())
+                    if (b->currentURL.host.empty() && b->currentURL.path.empty())
                         b->currentURL = pu;
                 }
                 f.Close();
@@ -435,7 +435,7 @@ public:
                 {
                     if (DecodeCTE && IStype(f.stream) != IST_ENCODED)
                         f.stream = newEncodedStream(f.stream, f.encoding);
-                    if (f.DoFileSave(guess_save_name(t_buf, pu.file), current_content_length) == 0)
+                    if (f.DoFileSave(guess_save_name(t_buf, pu.path), current_content_length) == 0)
                         f.HalfClose();
                     else
                         f.Close();
@@ -460,7 +460,7 @@ public:
 
         frame_source = flag & RG_FRAME_SRC;
         auto success = loadSomething(&f,
-                                     pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.file.c_str()),
+                                     pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()),
                                      proc,
                                      t_buf);
         assert(success);
@@ -471,7 +471,7 @@ public:
         {
             b->real_scheme = f.scheme;
             b->real_type = t;
-            if (b->currentURL.host.empty() && b->currentURL.file.empty())
+            if (b->currentURL.host.empty() && b->currentURL.path.empty())
                 b->currentURL = pu;
             if (is_html_type(t))
                 b->type = "text/html";
@@ -484,11 +484,11 @@ public:
                 b->type = "text/html";
             else
                 b->type = "text/plain";
-            if (pu.label.size())
+            if (pu.fragment.size())
             {
                 if (proc == loadHTMLBuffer)
                 {
-                    auto a = searchURLLabel(b, const_cast<char *>(pu.label.c_str()));
+                    auto a = searchURLLabel(b, const_cast<char *>(pu.fragment.c_str()));
                     if (a != NULL)
                     {
                         b->Goto(a->start, label_topline);
@@ -496,7 +496,7 @@ public:
                 }
                 else
                 { /* plain text */
-                    int l = atoi(pu.label.c_str());
+                    int l = atoi(pu.fragment.c_str());
                     b->GotoRealLine(l);
                     b->pos = 0;
                     b->ArrangeCursor();
@@ -912,7 +912,7 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
         char *file;
         if (!src)
             return NULL;
-        file = guess_filename(pu.file);
+        file = guess_filename(pu.path);
         doFileMove(tmp->ptr, file);
         return nullptr;
     }

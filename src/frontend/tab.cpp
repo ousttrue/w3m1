@@ -229,7 +229,7 @@ writeBufferName(BufferPtr buf, int n)
         {
         case SCM_LOCAL:
         case SCM_LOCAL_CGI:
-            if (buf->currentURL.file != "-")
+            if (buf->currentURL.path != "-")
             {
                 msg->Push(' ');
                 msg->Push(conv_from_system(buf->currentURL.real_file));

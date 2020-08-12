@@ -51,22 +51,23 @@ struct URL
     UserInfo userinfo;
     std::string host;
     int port = 0;
-    std::string file;
-    std::string real_file;
+    std::string path;
     std::string query;
-    std::string label;
+    std::string fragment;
+
+    std::string real_file;
     int is_nocache = 0;
 
     static inline URL StdIn()
     {
         return {
             scheme : SCM_LOCAL,
-            file : "-",
+            path : "-",
         };
     }
     bool IsStdin() const
     {
-        return scheme == SCM_LOCAL && file == "-";
+        return scheme == SCM_LOCAL && path == "-";
     }
 
     void Parse(std::string_view url, const URL *current);

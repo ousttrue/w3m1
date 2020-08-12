@@ -34,13 +34,13 @@ add_index_file(URL *pu, URLFile *uf)
     }
     for (ti = index_file_list->first; ti; ti = ti->next)
     {
-        p = Strnew_m_charp(pu->file, "/", file_quote(ti->ptr), NULL)->ptr;
+        p = Strnew_m_charp(pu->path, "/", file_quote(ti->ptr), NULL)->ptr;
         p = cleanupName(p);
         q = cleanupName(file_unquote(p));
         uf->examineFile(q);
         if (uf->stream != NULL)
         {
-            pu->file = p;
+            pu->path = p;
             pu->real_file = q;
             return;
         }
@@ -336,16 +336,16 @@ void URLFile::openURL(std::string_view url, URL *pu, const URL *current,
         u = const_cast<char *>(url.data());
 retry:
     pu->Parse2(u, current);
-    if (pu->scheme == SCM_LOCAL && pu->file.empty())
+    if (pu->scheme == SCM_LOCAL && pu->path.empty())
     {
-        if (pu->label.size())
+        if (pu->fragment.size())
         {
             /* #hogege is not a label but a filename */
             Str tmp2 = Strnew("#");
-            tmp2->Push(pu->label);
-            pu->file = tmp2->ptr;
-            pu->real_file = cleanupName(file_unquote(pu->file));
-            pu->label.clear();
+            tmp2->Push(pu->fragment);
+            pu->path = tmp2->ptr;
+            pu->real_file = cleanupName(file_unquote(pu->path));
+            pu->fragment.clear();
         }
         else
         {
@@ -360,7 +360,7 @@ retry:
     this->scheme = pu->scheme;
     this->url = pu->ToStr()->ptr;
     pu->is_nocache = (flag & RG_NOCACHE);
-    this->ext = filename_extension(pu->file.c_str(), 1);
+    this->ext = filename_extension(pu->path.c_str(), 1);
 
     switch (pu->scheme)
     {
@@ -394,14 +394,14 @@ retry:
             else if (document_root != NULL)
             {
                 tmp = Strnew(document_root);
-                if (tmp->Back() != '/' && pu->file[0] != '/')
+                if (tmp->Back() != '/' && pu->path[0] != '/')
                     tmp->Push('/');
-                tmp->Push(pu->file);
+                tmp->Push(pu->path);
                 p = cleanupName(tmp->ptr);
                 q = cleanupName(file_unquote(p));
                 if (dir_exist(q))
                 {
-                    pu->file = p;
+                    pu->path = p;
                     pu->real_file = q;
                     add_index_file(pu, this);
                     if (this->stream == NULL)
@@ -414,7 +414,7 @@ retry:
                     examineFile(q);
                     if (this->stream)
                     {
-                        pu->file = p;
+                        pu->path = p;
                         pu->real_file = q;
                     }
                 }
@@ -432,8 +432,8 @@ retry:
         return;
     case SCM_FTP:
     case SCM_FTPDIR:
-        if (pu->file.empty())
-            pu->file = "/";
+        if (pu->path.empty())
+            pu->path = "/";
         if (w3mApp::Instance().FTP_proxy.size() &&
             w3mApp::Instance().use_proxy &&
             pu->host.size() && !check_no_proxy(const_cast<char *>(pu->host.c_str())))
@@ -459,8 +459,8 @@ retry:
 
     case SCM_HTTPS:
 
-        if (pu->file.empty())
-            pu->file = "/";
+        if (pu->path.empty())
+            pu->path = "/";
         if (request && request->method == FORM_METHOD_POST && request->body)
             hr->command = HR_COMMAND_POST;
         if (request && request->method == FORM_METHOD_HEAD)
@@ -598,9 +598,9 @@ retry:
         this->stream = openNewsStream(pu);
         return;
     case SCM_DATA:
-        if (pu->file.empty())
+        if (pu->path.empty())
             return;
-        p = Strnew(pu->file)->ptr;
+        p = Strnew(pu->path)->ptr;
         q = strchr(p, ',');
         if (q == NULL)
             return;

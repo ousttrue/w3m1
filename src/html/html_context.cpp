@@ -831,8 +831,8 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
 
             u.Parse2(wc_conv(p, w3mApp::Instance().InnerCharset, CES())->ptr, GetCurBaseUrl());
             image.url = u.ToStr()->ptr;
-            if (!uncompressed_file_type(u.file.c_str(), &image.ext))
-                image.ext = filename_extension(u.file.c_str(), TRUE);
+            if (!uncompressed_file_type(u.path.c_str(), &image.ext))
+                image.ext = filename_extension(u.path.c_str(), TRUE);
             image.cache = nullptr;
             image.width = w;
             image.height = i;
@@ -1402,8 +1402,8 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
                 u.Parse2(this->a_img->url, GetCurBaseUrl());
                 this->a_img->image = image = New(Image);
                 image->url = u.ToStr()->ptr;
-                if (!uncompressed_file_type(u.file.c_str(), &image->ext))
-                    image->ext = filename_extension(u.file.c_str(), TRUE);
+                if (!uncompressed_file_type(u.path.c_str(), &image->ext))
+                    image->ext = filename_extension(u.path.c_str(), TRUE);
                 image->cache = nullptr;
                 image->width =
                     (w > MAX_IMAGE_SIZE) ? MAX_IMAGE_SIZE : w;

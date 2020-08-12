@@ -37,7 +37,7 @@ Str HRequest::URI(const URL &url) const
     }
     else if (flag & HR_FLAG_LOCAL)
     {
-        tmp->Push(url.file);
+        tmp->Push(url.path);
         if (url.query.size())
         {
             tmp->Push('?');
@@ -94,7 +94,7 @@ otherinfo(const URL *target, const URL *current, const char *referer)
             s->Push("Referer: ");
             //current->label = NULL;
             auto withoutLabel = *current;
-            withoutLabel.label.clear();
+            withoutLabel.fragment.clear();
             s->Push(withoutLabel.ToStr());
             s->Push("\r\n");
         }

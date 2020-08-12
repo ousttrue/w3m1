@@ -152,7 +152,7 @@ struct Cookie : public gc_cleanup
 
         if (!domain_match(domainname, this->domain->ptr))
             return false;
-        if (strncmp(this->path->ptr, pu->file.c_str(), this->path->Size()) != 0)
+        if (strncmp(this->path->ptr, pu->path.c_str(), this->path->Size()) != 0)
             return false;
         if (this->flag & COO_SECURE && pu->scheme != SCM_HTTPS)
             return false;
@@ -502,7 +502,7 @@ int add_cookie(URL *pu, Str name, Str value,
     if (path)
     {
         /* [RFC 2109] s. 4.3.2 case 1 */
-        if (version > 0 && strncmp(path->ptr, pu->file.c_str(), path->Size()) != 0)
+        if (version > 0 && strncmp(path->ptr, pu->path.c_str(), path->Size()) != 0)
             COOKIE_ERROR(COO_EPATH);
     }
     if (port)
@@ -517,7 +517,7 @@ int add_cookie(URL *pu, Str name, Str value,
         domain = Strnew(domainname);
     if (!path)
     {
-        path = Strnew(pu->file);
+        path = Strnew(pu->path);
         while (path->Size() > 0 && path->Back() != '/')
             path->Pop(1);
         if (path->Back() == '/')
