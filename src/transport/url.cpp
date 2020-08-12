@@ -340,18 +340,22 @@ int openSocket(const char *hostname,
     return success ? sock : -1;
 }
 
-#define COPYPATH_SPC_ALLOW 0
-#define COPYPATH_SPC_IGNORE 1
-#define COPYPATH_SPC_REPLACE 2
-
-static char *
-copyPath(const char *orgpath, int length, int option)
+enum SpaceMode
+{
+    COPYPATH_SPC_ALLOW = 0,
+    COPYPATH_SPC_IGNORE = 1,
+    // COPYPATH_SPC_REPLACE = 2,
+};
+static char *copyPath(const char *orgpath, int length, SpaceMode option)
 {
     Str tmp = Strnew();
     while (*orgpath && length != 0)
     {
         if (IS_SPACE(*orgpath))
         {
+            // already quoted
+            assert(false);
+
             switch (option)
             {
             case COPYPATH_SPC_ALLOW:
@@ -360,9 +364,9 @@ copyPath(const char *orgpath, int length, int option)
             case COPYPATH_SPC_IGNORE:
                 /* do nothing */
                 break;
-            case COPYPATH_SPC_REPLACE:
-                tmp->Push("%20");
-                break;
+                // case COPYPATH_SPC_REPLACE:
+                //     tmp->Push("%20");
+                //     break;
             }
         }
         else
@@ -438,14 +442,15 @@ char *url_quote(std::string_view str)
     return tmp->ptr;
 }
 
+//
+// scheme://userinfo@host:port/path?query#fragment
+//
 void URL::Parse(std::string_view _url, const URL *current)
 {
     *this = {};
 
     /* quote 0x01-0x20, 0x7F-0xFF */
     auto url = url_quote(_url);
-    const char *p = url;
-    const char *q = nullptr;
 
     /* RFC1808: Relative Uniform Resource Locators
      * 4.  Resolving Relative URLs
@@ -454,209 +459,239 @@ void URL::Parse(std::string_view _url, const URL *current)
     {
         if (current)
             *this = *current;
-        // goto do_label;
+        ParseFragment(url);
+        return;
     }
-    else
-    {
 
-        /* search for scheme */
-        auto [pos, scheme] = getURLScheme(p);
-        p = pos;
-        this->scheme = scheme;
-        if (this->scheme == SCM_MISSING)
-        {
-            /* scheme part is not found in the url. This means either
+    auto p = ParseScheme(url, current);
+    p = ParseUserinfoHostPort(p);
+
+    // /* scheme part has been found */
+    // if (this->scheme == SCM_UNKNOWN)
+    // {
+    //     this->path = allocStr(url, -1);
+    //     return;
+    // }
+    
+    // /* get host and port */
+    // if (p[0] != '/' || p[1] != '/')
+    // { /* scheme:foo or scheme:/foo */
+    //     this->host.clear();
+    //     if (this->scheme != SCM_UNKNOWN)
+    //         this->port = DefaultPort[this->scheme];
+    //     else
+    //         this->port = 0;
+    //     goto analyze_file;
+    // }
+
+    // /* after here, p begins with // */
+    // if (this->scheme == SCM_LOCAL)
+    // { /* file://foo           */
+    //     if (p[2] == '/' || p[2] == '~'
+    //         /* <A HREF="file:///foo">file:///foo</A>  or <A HREF="file://~user">file://~user</A> */
+    //     )
+    //     {
+    //         p += 2;
+    //         goto analyze_file;
+    //     }
+    // }
+    // p += 2; /* scheme://foo         */
+    //         /*          ^p is here  */
+
+    p = ParsePath(p);
+
+    p = ParseQuery(p);
+    ParseFragment(p);
+}
+
+const char *URL::ParseScheme(const char *p, const URL *current)
+{
+    // const char *q = nullptr;
+    auto [pos, scheme] = getURLScheme(p);
+    this->scheme = scheme;
+    if (this->scheme == SCM_MISSING)
+    {
+        /* scheme part is not found in the url. This means either
         * (a) the url is relative to the current or (b) the url
         * denotes a filename (therefore the scheme is SCM_LOCAL).
         */
-            if (current)
+        if (current)
+        {
+            switch (current->scheme)
             {
-                switch (current->scheme)
-                {
-                case SCM_LOCAL:
-                case SCM_LOCAL_CGI:
-                    this->scheme = SCM_LOCAL;
-                    break;
-                case SCM_FTP:
-                case SCM_FTPDIR:
-                    this->scheme = SCM_FTP;
-                    break;
-                case SCM_NNTP:
-                case SCM_NNTP_GROUP:
-                    this->scheme = SCM_NNTP;
-                    break;
-                case SCM_NEWS:
-                case SCM_NEWS_GROUP:
-                    this->scheme = SCM_NEWS;
-                    break;
-                default:
-                    this->scheme = current->scheme;
-                    break;
-                }
-            }
-            else
-            {
+            case SCM_LOCAL:
+            case SCM_LOCAL_CGI:
                 this->scheme = SCM_LOCAL;
-            }
-            // p = url;
-            if (!strncmp(p, "//", 2))
-            {
-                /* URL begins with // */
-                /* it means that 'scheme:' is abbreviated */
-                p += 2;
-                goto analyze_url;
-            }
-            /* the url doesn't begin with '//' */
-            goto analyze_file;
-        }
-        /* scheme part has been found */
-        if (this->scheme == SCM_UNKNOWN)
-        {
-            this->path = allocStr(url, -1);
-            return;
-        }
-        /* get host and port */
-        if (p[0] != '/' || p[1] != '/')
-        { /* scheme:foo or scheme:/foo */
-            this->host.clear();
-            if (this->scheme != SCM_UNKNOWN)
-                this->port = DefaultPort[this->scheme];
-            else
-                this->port = 0;
-            goto analyze_file;
-        }
-        /* after here, p begins with // */
-        if (this->scheme == SCM_LOCAL)
-        { /* file://foo           */
-            if (p[2] == '/' || p[2] == '~'
-                /* <A HREF="file:///foo">file:///foo</A>  or <A HREF="file://~user">file://~user</A> */
-            )
-            {
-                p += 2;
-                goto analyze_file;
+                break;
+            case SCM_FTP:
+            case SCM_FTPDIR:
+                this->scheme = SCM_FTP;
+                break;
+            case SCM_NNTP:
+            case SCM_NNTP_GROUP:
+                this->scheme = SCM_NNTP;
+                break;
+            case SCM_NEWS:
+            case SCM_NEWS_GROUP:
+                this->scheme = SCM_NEWS;
+                break;
+            default:
+                this->scheme = current->scheme;
+                break;
             }
         }
-        p += 2; /* scheme://foo         */
-                /*          ^p is here  */
-    analyze_url:
-
-        q = p;
-#ifdef INET6
-        if (*q == '[')
-        { /* rfc2732,rfc2373 compliance */
-            p++;
-            while (IS_XDIGIT(*p) || *p == ':' || *p == '.')
-                p++;
-            if (*p != ']' || (*(p + 1) && strchr(":/?#", *(p + 1)) == NULL))
-                p = q;
-        }
-#endif
-        while (*p && strchr(":/@?#", *p) == NULL)
-            p++;
-        switch (*p)
+        else
         {
-        case ':':
-        {
-            /* scheme://user:pass@host or
-	 * scheme://host:port
-	 */
-            this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-            q = ++p;
-            while (*p && strchr("@/?#", *p) == NULL)
-                p++;
-            if (*p == '@')
-            {
-                /* scheme://user:pass@...       */
-                this->userinfo.pass = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
-                q = ++p;
-                this->userinfo.name = this->host;
-                this->host.clear();
-                goto analyze_url;
-            }
-            /* scheme://host:port/ */
-            auto tmp = Strnew_charp_n(q, p - q);
-            this->port = atoi(tmp->ptr);
-            /* *p is one of ['\0', '/', '?', '#'] */
-            break;
-        }
-        case '@':
-            /* scheme://user@...            */
-            this->userinfo.name = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-            q = ++p;
-            goto analyze_url;
-        case '\0':
-        /* scheme://host                */
-        case '/':
-        case '?':
-        case '#':
-            this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-            this->port = DefaultPort[this->scheme];
-            break;
-        }
-    analyze_file:
-        if ((*p == '\0' || *p == '#' || *p == '?') && this->host.empty())
-        {
-            this->path = "";
-            goto do_query;
-        }
-
-        q = p;
-        if (*p == '/')
-            p++;
-        if (*p == '\0' || *p == '#' || *p == '?')
-        { /* scheme://host[:port]/ */
-            this->path = DefaultFile(this->scheme);
-            goto do_query;
-        }
-        {
-            auto cgi = strchr(p, '?');
-        again:
-            while (*p && *p != '#' && p != cgi)
-                p++;
-            if (*p == '#' && this->scheme == SCM_LOCAL)
-            {
-                /* 
-	     * According to RFC2396, # means the beginning of
-	     * URI-reference, and # should be escaped.  But,
-	     * if the scheme is SCM_LOCAL, the special
-	     * treatment will apply to # for convinience.
-	     */
-                if (p > q && *(p - 1) == '/' && (cgi == NULL || p < cgi))
-                {
-                    /* 
-		 * # comes as the first character of the file name
-		 * that means, # is not a label but a part of the file
-		 * name.
-		 */
-                    p++;
-                    goto again;
-                }
-                else if (*(p + 1) == '\0')
-                {
-                    /* 
-		 * # comes as the last character of the file name that
-		 * means, # is not a label but a part of the file
-		 * name.
-		 */
-                    p++;
-                }
-            }
-            if (this->scheme == SCM_LOCAL || this->scheme == SCM_MISSING)
-                this->path = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
-            else
-                this->path = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
-        }
-
-    do_query:
-        if (*p == '?')
-        {
-            q = ++p;
-            while (*p && *p != '#')
-                p++;
-            this->query = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+            this->scheme = SCM_LOCAL;
         }
     }
-    // do_label:
+    return pos;
+}
+
+const char *URL::ParseUserinfoHostPort(const char *p)
+{
+    if (strncmp(p, "//", 2) != 0)
+    {
+        /* the url doesn't begin with '//' */
+        return p;
+    }
+    /* URL begins with // */
+    /* it means that 'scheme:' is abbreviated */
+    p += 2;
+
+analyze_url:
+    auto q = p;
+#ifdef INET6
+    if (*q == '[')
+    { /* rfc2732,rfc2373 compliance */
+        p++;
+        while (IS_XDIGIT(*p) || *p == ':' || *p == '.')
+            p++;
+        if (*p != ']' || (*(p + 1) && strchr(":/?#", *(p + 1)) == NULL))
+            p = q;
+    }
+#endif
+    while (*p && strchr(":/@?#", *p) == NULL)
+        p++;
+    switch (*p)
+    {
+    case ':':
+    {
+        /* scheme://user:pass@host or
+            * scheme://host:port
+            */
+        this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+        q = ++p;
+        while (*p && strchr("@/?#", *p) == NULL)
+            p++;
+        if (*p == '@')
+        {
+            /* scheme://user:pass@...       */
+            this->userinfo.pass = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+            q = ++p;
+            this->userinfo.name = this->host;
+            this->host.clear();
+            goto analyze_url;
+        }
+        /* scheme://host:port/ */
+        auto tmp = Strnew_charp_n(q, p - q);
+        this->port = atoi(tmp->ptr);
+        /* *p is one of ['\0', '/', '?', '#'] */
+        break;
+    }
+    case '@':
+        /* scheme://user@...            */
+        this->userinfo.name = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+        q = ++p;
+        goto analyze_url;
+    case '\0':
+    /* scheme://host                */
+    case '/':
+    case '?':
+    case '#':
+        this->host = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+        this->port = DefaultPort[this->scheme];
+        break;
+    }
+
+    return p;
+}
+
+const char *URL::ParsePath(const char *p)
+{
+    if ((*p == '\0' || *p == '#' || *p == '?') && this->host.empty())
+    {
+        this->path = "";
+        return p;
+    }
+
+    auto q = p;
+    if (*p == '/')
+        p++;
+    if (*p == '\0' || *p == '#' || *p == '?')
+    { /* scheme://host[:port]/ */
+        this->path = DefaultFile(this->scheme);
+        return p;
+    }
+
+    auto cgi = strchr(p, '?');
+
+again:
+    while (*p && *p != '#' && p != cgi)
+        p++;
+    if (*p == '#' && this->scheme == SCM_LOCAL)
+    {
+        /* 
+        * According to RFC2396, # means the beginning of
+        * URI-reference, and # should be escaped.  But,
+        * if the scheme is SCM_LOCAL, the special
+        * treatment will apply to # for convinience.
+        */
+        if (p > q && *(p - 1) == '/' && (cgi == NULL || p < cgi))
+        {
+            /* 
+            * # comes as the first character of the file name
+            * that means, # is not a label but a part of the file
+            * name.
+            */
+            p++;
+            goto again;
+        }
+        else if (*(p + 1) == '\0')
+        {
+            /* 
+            * # comes as the last character of the file name that
+            * means, # is not a label but a part of the file
+            * name.
+            */
+            p++;
+        }
+    }
+    if (this->scheme == SCM_LOCAL || this->scheme == SCM_MISSING)
+    {
+        this->path = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+    }
+    else
+    {
+        this->path = copyPath(q, p - q, COPYPATH_SPC_IGNORE);
+    }
+    return p;
+}
+
+const char *URL::ParseQuery(const char *p)
+{
+    if (*p == '?')
+    {
+        auto q = ++p;
+        while (*p && *p != '#')
+            p++;
+        this->query = copyPath(q, p - q, COPYPATH_SPC_ALLOW);
+    }
+    return p;
+}
+
+void URL::ParseFragment(const char *p)
+{
     if (this->scheme == SCM_MISSING)
     {
         this->scheme = SCM_LOCAL;
@@ -664,9 +699,9 @@ void URL::Parse(std::string_view _url, const URL *current)
         this->fragment.clear();
     }
     else if (*p == '#')
+    {
         this->fragment = p + 1;
-    else
-        this->fragment.clear();
+    }
 }
 
 char *

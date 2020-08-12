@@ -38,23 +38,31 @@ const URLScheme *GetScheme(URLSchemeTypes index);
 struct URL
 {
     URLSchemeTypes scheme = SCM_MISSING;
-    struct UserInfo
+    struct Userinfo
     {
         std::string name;
         std::string pass;
 
-        bool empty()const
+        bool empty() const
         {
             return name.empty() && pass.empty();
         }
     };
-    UserInfo userinfo;
+    Userinfo userinfo;
     std::string host;
     int port = 0;
     std::string path;
     std::string query;
     std::string fragment;
 
+private:
+    const char *ParseScheme(const char *p, const URL *current);
+    const char *ParseUserinfoHostPort(const char *p);
+    const char *ParsePath(const char *p);
+    const char *ParseQuery(const char *p);
+    void ParseFragment(const char *p);
+
+public:
     std::string real_file;
     int is_nocache = 0;
 
@@ -72,6 +80,7 @@ struct URL
 
     void Parse(std::string_view url, const URL *current);
     void Parse2(std::string_view url, const URL *current);
+
     operator bool() const
     {
         return scheme != SCM_MISSING;
