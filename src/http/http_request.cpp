@@ -8,25 +8,6 @@
 #include "w3m.h"
 #include "indep.h"
 
-Str HttpRequest::Method() const
-{
-    switch (method)
-    {
-    case HTTP_METHOD_CONNECT:
-        return Strnew("CONNECT");
-    case HTTP_METHOD_POST:
-        return Strnew("POST");
-        break;
-    case HTTP_METHOD_HEAD:
-        return Strnew("HEAD");
-        break;
-    case HTTP_METHOD_GET:
-    default:
-        return Strnew("GET");
-    }
-    return NULL;
-}
-
 Str HttpRequest::URI(const URL &url, bool isLocal) const
 {
     Str tmp = Strnew();
@@ -122,7 +103,7 @@ Str HttpRequest::ToStr(const URL &url, const URL *current, const TextList *extra
     int seen_www_auth = 0;
     Str cookie;
 
-    auto tmp = this->Method();
+    auto tmp = Strnew(this->Method());
     tmp->Push(" ");
     tmp->Push(this->URI(url));
     tmp->Push(" HTTP/1.0\r\n");
