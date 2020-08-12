@@ -79,7 +79,6 @@ public:
     }
 
     void Parse(std::string_view url, const URL *current);
-    void Parse2(std::string_view url, const URL *current);
 
     operator bool() const
     {

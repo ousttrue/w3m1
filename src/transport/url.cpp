@@ -442,6 +442,52 @@ char *url_quote(std::string_view str)
     return tmp->ptr;
 }
 
+static char *expandName(char *name)
+{
+    char *p;
+    struct passwd *passent, *getpwnam(const char *);
+    Str extpath = NULL;
+
+    if (name == NULL)
+        return NULL;
+    p = name;
+    if (*p == '/')
+    {
+        if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2))) && personal_document_root)
+        {
+            char *q;
+            p += 2;
+            q = strchr(p, '/');
+            if (q)
+            { /* /~user/dir... */
+                passent = getpwnam(allocStr(p, q - p));
+                p = q;
+            }
+            else
+            { /* /~user */
+                passent = getpwnam(p);
+                p = "";
+            }
+            if (!passent)
+                goto rest;
+            extpath = Strnew_m_charp(passent->pw_dir, "/",
+                                     personal_document_root, NULL);
+            if (*personal_document_root == '\0' && *p == '/')
+                p++;
+        }
+        else
+            goto rest;
+        if (extpath->Cmp("/") == 0 && *p == '/')
+            p++;
+        extpath->Push(p);
+        return extpath->ptr;
+    }
+    else
+        return expandPath(p);
+rest:
+    return name;
+}
+
 //
 // scheme://userinfo@host:port/path?query#fragment
 //
@@ -472,7 +518,7 @@ void URL::Parse(std::string_view _url, const URL *current)
     //     this->path = allocStr(url, -1);
     //     return;
     // }
-    
+
     // /* get host and port */
     // if (p[0] != '/' || p[1] != '/')
     // { /* scheme:foo or scheme:/foo */
@@ -499,9 +545,101 @@ void URL::Parse(std::string_view _url, const URL *current)
     //         /*          ^p is here  */
 
     p = ParsePath(p);
-
     p = ParseQuery(p);
     ParseFragment(p);
+
+    //
+    // post process
+    //
+
+    if (this->scheme == SCM_LOCAL)
+    {
+        char *q = expandName(file_unquote(this->path));
+        this->path = file_quote(q);
+    }
+
+    bool relative_uri = false;
+    if (current && this->scheme == current->scheme && this->host.empty())
+    {
+        /* Copy omitted element from the current URL */
+        this->userinfo = current->userinfo;
+        this->host = current->host;
+        this->port = current->port;
+        if (this->path.size() && this->path[0])
+        {
+            if (this->scheme == SCM_UNKNOWN && strchr(const_cast<char *>(this->path.c_str()), ':') == NULL && current && (p = string_strchr(current->path, ':')) != NULL)
+            {
+                this->path = Strnew_m_charp(current->path.substr(0, p - current->path.c_str()), ":", this->path)->ptr;
+            }
+            else if (this->path[0] != '/')
+            {
+                /* file is relative [process 1] */
+                p = this->path.c_str();
+                if (current->path.size())
+                {
+                    auto tmp = Strnew(current->path);
+                    while (tmp->Size() > 0)
+                    {
+                        if (tmp->Back() == '/')
+                            break;
+                        tmp->Pop(1);
+                    }
+                    tmp->Push(p);
+                    this->path = tmp->ptr;
+                    relative_uri = TRUE;
+                }
+            }
+        }
+        else
+        { /* scheme:[?query][#label] */
+            this->path = current->path;
+            if (this->query.empty())
+                this->query = current->query;
+        }
+        /* comment: query part need not to be completed
+	    * from the current URL. */
+    }
+
+    if (this->path.size())
+    {
+        if (this->scheme == SCM_LOCAL && this->path[0] != '/' && this->path != "-")
+        {
+            /* local file, relative path */
+            auto tmp = Strnew(w3mApp::Instance().CurrentDir);
+            if (tmp->Back() != '/')
+                tmp->Push('/');
+            tmp->Push(file_unquote(this->path));
+            this->path = file_quote(cleanupName(tmp->ptr));
+        }
+        else if (this->scheme == SCM_HTTP || this->scheme == SCM_HTTPS)
+        {
+            if (relative_uri)
+            {
+                /* In this case, this->file is created by [process 1] above.
+                * this->file may contain relative path (for example, 
+                * "/foo/../bar/./baz.html"), cleanupName() must be applied.
+                * When the entire abs_path is given, it still may contain
+                * elements like `//', `..' or `.' in the this->file. It is 
+                * server's responsibility to canonicalize such path.
+                */
+                this->path = cleanupName(this->path.c_str());
+            }
+        }
+        else if (this->path[0] == '/')
+        {
+            /*
+            * this happens on the following conditions:
+            * (1) ftp scheme (2) local, looks like absolute path.
+            * In both case, there must be no side effect with
+            * cleanupName(). (I hope so...)
+            */
+            this->path = cleanupName(this->path.c_str());
+        }
+        if (this->scheme == SCM_LOCAL)
+        {
+            this->real_file = cleanupName(file_unquote(this->path));
+        }
+    }
 }
 
 const char *URL::ParseScheme(const char *p, const URL *current)
@@ -701,243 +839,6 @@ void URL::ParseFragment(const char *p)
     else if (*p == '#')
     {
         this->fragment = p + 1;
-    }
-}
-
-char *
-expandName(char *name)
-{
-    char *p;
-    struct passwd *passent, *getpwnam(const char *);
-    Str extpath = NULL;
-
-    if (name == NULL)
-        return NULL;
-    p = name;
-    if (*p == '/')
-    {
-        if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2))) && personal_document_root)
-        {
-            char *q;
-            p += 2;
-            q = strchr(p, '/');
-            if (q)
-            { /* /~user/dir... */
-                passent = getpwnam(allocStr(p, q - p));
-                p = q;
-            }
-            else
-            { /* /~user */
-                passent = getpwnam(p);
-                p = "";
-            }
-            if (!passent)
-                goto rest;
-            extpath = Strnew_m_charp(passent->pw_dir, "/",
-                                     personal_document_root, NULL);
-            if (*personal_document_root == '\0' && *p == '/')
-                p++;
-        }
-        else
-            goto rest;
-        if (extpath->Cmp("/") == 0 && *p == '/')
-            p++;
-        extpath->Push(p);
-        return extpath->ptr;
-    }
-    else
-        return expandPath(p);
-rest:
-    return name;
-}
-
-void URL::Parse2(std::string_view url, const URL *current)
-{
-    const char *p;
-    Str tmp;
-    int relative_uri = FALSE;
-
-    this->Parse(url, current);
-    if (this->scheme == SCM_MAILTO)
-        return;
-
-    if (this->scheme == SCM_DATA)
-        return;
-    if (this->scheme == SCM_NEWS || this->scheme == SCM_NEWS_GROUP)
-    {
-        if (this->path.size() && !string_strchr(this->path, '@') &&
-            (!(p = string_strchr(this->path, '/')) || strchr(p + 1, '-') ||
-             *(p + 1) == '\0'))
-            this->scheme = SCM_NEWS_GROUP;
-        else
-            this->scheme = SCM_NEWS;
-        return;
-    }
-    if (this->scheme == SCM_NNTP || this->scheme == SCM_NNTP_GROUP)
-    {
-        if (this->path.size() && this->path[0] == '/')
-            this->path = this->path.substr(1);
-        if (this->path.size() && !string_strchr(this->path, '@') &&
-            (!(p = string_strchr(this->path.c_str(), '/')) || strchr(p + 1, '-') ||
-             *(p + 1) == '\0'))
-            this->scheme = SCM_NNTP_GROUP;
-        else
-            this->scheme = SCM_NNTP;
-        if (current && (current->scheme == SCM_NNTP ||
-                        current->scheme == SCM_NNTP_GROUP))
-        {
-            if (this->host.empty())
-            {
-                this->host = current->host;
-                this->port = current->port;
-            }
-        }
-        return;
-    }
-    if (this->scheme == SCM_LOCAL)
-    {
-        char *q = expandName(file_unquote(this->path));
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-        Str drive;
-        if (IS_ALPHA(q[0]) && q[1] == ':')
-        {
-            drive = Strnew_charp_n(q, 2);
-            drive->Push(file_quote(q + 2));
-            this->file = drive->ptr;
-        }
-        else
-#endif
-            this->path = file_quote(q);
-    }
-
-    if (current && (this->scheme == current->scheme || (this->scheme == SCM_FTP && current->scheme == SCM_FTPDIR) || (this->scheme == SCM_LOCAL && current->scheme == SCM_LOCAL_CGI)) && this->host.empty())
-    {
-        /* Copy omitted element from the current URL */
-        this->userinfo = current->userinfo;
-        this->host = current->host;
-        this->port = current->port;
-        if (this->path.size() && this->path[0])
-        {
-#ifdef USE_EXTERNAL_URI_LOADER
-            if (this->scheme == SCM_UNKNOWN && strchr(const_cast<char *>(this->path.c_str()), ':') == NULL && current && (p = string_strchr(current->path, ':')) != NULL)
-            {
-                this->path = Strnew_m_charp(current->path.substr(0, p - current->path.c_str()), ":", this->path)->ptr;
-            }
-            else
-#endif
-                if (
-#ifdef USE_GOPHER
-                    this->scheme != SCM_GOPHER &&
-#endif /* USE_GOPHER */
-                    this->path[0] != '/'
-#ifdef SUPPORT_DOS_DRIVE_PREFIX
-                    && !(this->scheme == SCM_LOCAL && IS_ALPHA(this->file[0]) && this->file[1] == ':')
-#endif
-                )
-            {
-                /* file is relative [process 1] */
-                p = this->path.c_str();
-                if (current->path.size())
-                {
-                    tmp = Strnew(current->path);
-                    while (tmp->Size() > 0)
-                    {
-                        if (tmp->Back() == '/')
-                            break;
-                        tmp->Pop(1);
-                    }
-                    tmp->Push(p);
-                    this->path = tmp->ptr;
-                    relative_uri = TRUE;
-                }
-            }
-#ifdef USE_GOPHER
-            else if (this->scheme == SCM_GOPHER && this->file[0] == '/')
-            {
-                p = this->file;
-                this->file = allocStr(p + 1, -1);
-            }
-#endif /* USE_GOPHER */
-        }
-        else
-        { /* scheme:[?query][#label] */
-            this->path = current->path;
-            if (this->query.empty())
-                this->query = current->query;
-        }
-        /* comment: query part need not to be completed
-	 * from the current URL. */
-    }
-    if (this->path.size())
-    {
-#ifdef __EMX__
-        if (this->scheme == SCM_LOCAL)
-        {
-            if (strncmp(this->file, "/$LIB/", 6))
-            {
-                char abs[_MAX_PATH];
-
-                _abspath(abs, file_unquote(this->file), _MAX_PATH);
-                this->file = file_quote(cleanupName(abs));
-            }
-        }
-#else
-        if (this->scheme == SCM_LOCAL && this->path[0] != '/' && this->path != "-")
-        {
-            /* local file, relative path */
-            tmp = Strnew(w3mApp::Instance().CurrentDir);
-            if (tmp->Back() != '/')
-                tmp->Push('/');
-            tmp->Push(file_unquote(this->path));
-            this->path = file_quote(cleanupName(tmp->ptr));
-        }
-#endif
-        else if (this->scheme == SCM_HTTP
-#ifdef USE_SSL
-                 || this->scheme == SCM_HTTPS
-#endif
-        )
-        {
-            if (relative_uri)
-            {
-                /* In this case, this->file is created by [process 1] above.
-		 * this->file may contain relative path (for example, 
-		 * "/foo/../bar/./baz.html"), cleanupName() must be applied.
-		 * When the entire abs_path is given, it still may contain
-		 * elements like `//', `..' or `.' in the this->file. It is 
-		 * server's responsibility to canonicalize such path.
-		 */
-                this->path = cleanupName(this->path.c_str());
-            }
-        }
-        else if (
-#ifdef USE_GOPHER
-            this->scheme != SCM_GOPHER &&
-#endif /* USE_GOPHER */
-            this->path[0] == '/')
-        {
-            /*
-	     * this happens on the following conditions:
-	     * (1) ftp scheme (2) local, looks like absolute path.
-	     * In both case, there must be no side effect with
-	     * cleanupName(). (I hope so...)
-	     */
-            this->path = cleanupName(this->path.c_str());
-        }
-        if (this->scheme == SCM_LOCAL)
-        {
-#ifdef SUPPORT_NETBIOS_SHARE
-            if (this->host && strcmp(this->host, "localhost") != 0)
-            {
-                Str tmp = Strnew("//");
-                Strcat_m_charp(tmp, this->host,
-                               cleanupName(file_unquote(this->file)), NULL);
-                this->real_file = tmp->ptr;
-            }
-            else
-#endif
-                this->real_file = cleanupName(file_unquote(this->path));
-        }
     }
 }
 

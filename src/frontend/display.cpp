@@ -349,7 +349,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
     }
     if (!url)
         return s;
-    pu.Parse2(url, buf->BaseURL());
+    pu.Parse(url, buf->BaseURL());
     u = pu.ToStr();
     if (DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));

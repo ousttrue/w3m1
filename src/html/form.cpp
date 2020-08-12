@@ -839,7 +839,7 @@ add_pre_form(struct pre_form *prev, char *url, char *name, char *action)
     }
     else if (url)
     {
-        pu.Parse2(url, NULL);
+        pu.Parse(url, NULL);
         newForm->url = pu.ToStr()->ptr;
         newForm->re_url = NULL;
     }

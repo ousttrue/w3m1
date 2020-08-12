@@ -447,7 +447,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
         a = (MapArea *)al->ptr;
         if (!a)
             continue;
-        pu.Parse2(a->url, buf->BaseURL());
+        pu.Parse(a->url, buf->BaseURL());
         q = html_quote(pu.ToStr()->ptr);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(a->url, buf->document_charset));
@@ -600,7 +600,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentAnchor(buf);
     if (a != NULL)
     {
-        pu.Parse2(a->url, buf->BaseURL());
+        pu.Parse(a->url, buf->BaseURL());
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
@@ -614,7 +614,7 @@ page_info_panel(BufferPtr buf)
     a = retrieveCurrentImg(buf);
     if (a != NULL)
     {
-        pu.Parse2(a->url, buf->BaseURL());
+        pu.Parse(a->url, buf->BaseURL());
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)

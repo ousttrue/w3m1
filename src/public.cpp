@@ -164,7 +164,7 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
                     static Str s = NULL;
                     if (buf->href.anchors[i].slave)
                         continue;
-                    pu.Parse2(buf->href.anchors[i].url, buf->BaseURL());
+                    pu.Parse(buf->href.anchors[i].url, buf->BaseURL());
                     s = pu.ToStr();
                     if (DecodeURL)
                         s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
@@ -1020,7 +1020,7 @@ BufferPtr loadLink(const char *url, const char *target, const char *referer, For
         return NULL;
     }
 
-    pu.Parse2(url, base);
+    pu.Parse(url, base);
     pushHashHist(w3mApp::Instance().URLHist, pu.ToStr()->ptr);
 
     if (!on_target) /* open link as an indivisual page */
@@ -1237,7 +1237,7 @@ void _nextA(int visited)
                 hseq++;
                 if (visited == TRUE && an)
                 {
-                    url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                    url.Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
@@ -1261,7 +1261,7 @@ void _nextA(int visited)
             y = an->start.line;
             if (visited == TRUE)
             {
-                url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                url.Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
@@ -1326,7 +1326,7 @@ void _prevA(int visited)
                 hseq--;
                 if (visited == TRUE && an)
                 {
-                    url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                    url.Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
@@ -1350,7 +1350,7 @@ void _prevA(int visited)
             y = an->start.line;
             if (visited == TRUE && an)
             {
-                url.Parse2(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                url.Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
@@ -1526,7 +1526,7 @@ void goURL0(const char *prompt, int relative)
         if (a)
         {
             char *a_url;
-            p_url.Parse2(a->url, current);
+            p_url.Parse(a->url, current);
             a_url = p_url.ToStr()->ptr;
             if (DefaultURLString == DEFAULT_URL_LINK)
             {
@@ -1572,7 +1572,7 @@ void goURL0(const char *prompt, int relative)
         current = NULL;
         referer = NULL;
     }
-    p_url.Parse2(url, current);
+    p_url.Parse(url, current);
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(url, current, referer, NULL);
     if (GetCurrentTab()->GetCurrentBuffer() != cur_buf) /* success */
@@ -1636,7 +1636,7 @@ void _peekURL(int only_img)
     }
     if (s == NULL)
     {
-        pu.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+        pu.Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
         s = pu.ToStr();
     }
     if (DecodeURL)
@@ -2001,7 +2001,7 @@ void follow_map(struct parsed_tagarg *arg)
         return;
     }
     URL p_url;
-    p_url.Parse2(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    p_url.Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     if (check_target() && open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))

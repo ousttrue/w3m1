@@ -350,7 +350,7 @@ frame_download_source(struct frame_body *b, URL *currentURL,
         return NULL;
     if (b->baseURL)
         *baseURL = b->baseURL;
-    url.Parse2(b->url, currentURL);
+    url.Parse(b->url, currentURL);
     switch (url.scheme)
     {
     case SCM_LOCAL:
@@ -581,7 +581,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                                      : "(no name)");
                         break;
                     }
-                    base.Parse2(frame.body->url, currentURL);
+                    base.Parse(frame.body->url, currentURL);
                     p_target = f->name;
                     s_target = frame.body->name;
                     t_target = "_blank";
@@ -861,7 +861,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     tag->value[j] =
                                         wc_conv_strict(remove_space(tag->value[j]), w3mApp::Instance().InnerCharset, charset)->ptr;
                                     tag->need_reconstruct = TRUE;
-                                    url.Parse2(tag->value[j], &base);
+                                    url.Parse(tag->value[j], &base);
                                     if (url.scheme == SCM_UNKNOWN ||
                                         url.scheme == SCM_MAILTO ||
                                         url.scheme == SCM_MISSING)
