@@ -60,10 +60,7 @@ struct URL
     URL() = default;
 
     URL(URLSchemeTypes scheme, const Userinfo &userinfo, std::string_view host, int port,
-        std::string_view path, std::string_view query, std::string_view framgment)
-        : scheme(scheme), userinfo(userinfo), host(host), port(port), path(path), query(query), fragment(framgment)
-    {
-    }
+        std::string_view path, std::string_view query, std::string_view framgment);
 
 public:
     std::string real_file;

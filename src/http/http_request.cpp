@@ -27,7 +27,7 @@ Str HttpRequest::Method() const
     return NULL;
 }
 
-Str HttpRequest::URI(const URL &url) const
+Str HttpRequest::URI(const URL &url, bool isLocal) const
 {
     Str tmp = Strnew();
     if (method == HTTP_METHOD_CONNECT)
@@ -35,7 +35,7 @@ Str HttpRequest::URI(const URL &url) const
         tmp->Push(url.host);
         tmp->Push(Sprintf(":%d", url.port));
     }
-    else if (flag & HR_FLAG_LOCAL)
+    else if (isLocal)
     {
         tmp->Push(url.path);
         if (url.query.size())

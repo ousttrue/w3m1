@@ -430,33 +430,8 @@ retry:
             }
         }
         return;
-    case SCM_FTP:
-    case SCM_FTPDIR:
-        if (pu->path.empty())
-            pu->path = "/";
-        if (w3mApp::Instance().FTP_proxy.size() &&
-            w3mApp::Instance().use_proxy &&
-            pu->host.size() && !check_no_proxy(const_cast<char *>(pu->host.c_str())))
-        {
-            hr->flag |= HR_FLAG_PROXY;
-            sock = openSocket(w3mApp::Instance().FTP_proxy_parsed.host.c_str(),
-                              GetScheme(w3mApp::Instance().FTP_proxy_parsed.scheme)->name.data(),
-                              w3mApp::Instance().FTP_proxy_parsed.port);
-            if (sock < 0)
-                return;
-            this->scheme = SCM_HTTP;
-            tmp = hr->ToStr(*pu, current, extra_header);
-            write(sock, tmp->ptr, tmp->Size());
-        }
-        else
-        {
-            this->stream = openFTPStream(pu, this);
-            this->scheme = pu->scheme;
-            return;
-        }
-        break;
-    case SCM_HTTP:
 
+    case SCM_HTTP:
     case SCM_HTTPS:
 
         if (pu->path.empty())
@@ -469,7 +444,7 @@ retry:
             w3mApp::Instance().use_proxy &&
             pu->host.size() && !check_no_proxy(const_cast<char *>(pu->host.c_str())))
         {
-            hr->flag |= HR_FLAG_PROXY;
+            // hr->flag |= HR_FLAG_PROXY;
             if (pu->scheme == SCM_HTTPS && *status == HTST_CONNECT)
             {
                 // https proxy の時に通る？
@@ -513,7 +488,7 @@ retry:
                 }
                 else
                 {
-                    hr->flag |= HR_FLAG_LOCAL;
+                    // hr->flag |= HR_FLAG_LOCAL;
                     tmp = hr->ToStr(*pu, current, extra_header);
                     *status = HTST_NORMAL;
                 }
@@ -542,7 +517,7 @@ retry:
                     return;
                 }
             }
-            hr->flag |= HR_FLAG_LOCAL;
+            // hr->flag |= HR_FLAG_LOCAL;
             tmp = hr->ToStr(*pu, current, extra_header);
             *status = HTST_NORMAL;
         }

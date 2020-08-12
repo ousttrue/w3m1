@@ -411,6 +411,16 @@ rest:
     return name;
 }
 
+URL::URL(URLSchemeTypes scheme, const Userinfo &userinfo, std::string_view host, int port,
+         std::string_view path, std::string_view query, std::string_view framgment)
+    : scheme(scheme), userinfo(userinfo), host(host), port(port), path(path), query(query), fragment(framgment)
+{
+    if (scheme == SCM_LOCAL)
+    {
+        real_file = cleanupName(file_unquote(path.data()));
+    }
+}
+
 //
 // scheme://userinfo@host:port/path?query#fragment
 //
@@ -761,12 +771,6 @@ URL URL::Parse(std::string_view _url, const URL *current)
             */
             path = cleanupName(path.data());
         }
-
-        // TODO:
-        // if (scheme == SCM_LOCAL)
-        // {
-        //     real_file = cleanupName(file_unquote(path.data()));
-        // }
 
         return URL(scheme, userinfo, std::string(host), port, std::string(path), std::string(query), std::string(fragment));
     }

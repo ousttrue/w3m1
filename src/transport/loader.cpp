@@ -1166,6 +1166,7 @@ loadGeneralFile(std::string_view path, const URL *_current, char *referer,
     // }
     else
     {
+        // local CGI
         assert(false);
         // t = guessContentType(pu.file);
         // if (t == NULL)

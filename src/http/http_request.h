@@ -1,6 +1,5 @@
 #pragma once
 
-
 enum HttpMethod
 {
     HTTP_METHOD_GET = 0,
@@ -9,20 +8,14 @@ enum HttpMethod
     HTTP_METHOD_HEAD = 3,
 };
 
-enum HttpRequestFlags
-{
-    HR_FLAG_NONE = 0,
-    HR_FLAG_LOCAL = 1,
-    HR_FLAG_PROXY = 2,
-};
-
 struct URL;
 struct FormList;
 struct TextList;
 struct HttpRequest
 {
     HttpMethod method = HTTP_METHOD_GET;
-    HttpRequestFlags flag = HR_FLAG_NONE;
+
+public:
     char *referer = nullptr;
     FormList *request = nullptr;
 
@@ -32,6 +25,6 @@ struct HttpRequest
     }
 
     Str Method() const;
-    Str URI(const URL &url) const;
+    Str URI(const URL &url, bool isLocal = false) const;
     Str ToStr(const URL &url, const URL *current, const TextList *extra) const;
 };
