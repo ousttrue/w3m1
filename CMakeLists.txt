@@ -49,7 +49,15 @@ target_link_libraries(w3mbookmark
 PRIVATE
     wc
     )
-        
+
+add_executable(w3mhelperpanel
+    src/w3mhelperpanel.cpp
+)
+target_link_libraries(w3mhelperpanel
+PRIVATE
+    wc
+    )
+
 add_executable(w3m
     src/main.cpp
     src/w3m.cpp
