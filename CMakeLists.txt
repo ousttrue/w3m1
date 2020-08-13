@@ -20,6 +20,9 @@ subdirs(
     libwc
 )
 
+#
+# w3mbookmark
+#
 add_executable(w3mbookmark
     src/w3mbookmark.cpp
     src/indep.cpp
@@ -27,11 +30,11 @@ add_executable(w3mbookmark
     src/textlist.cpp
     src/html/parsetag.cpp
     src/hash.cpp
-    )
+)
 target_include_directories(w3mbookmark
 PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src
-    )  
+)  
 target_compile_definitions(w3mbookmark
 PUBLIC
     DUMMY
@@ -44,20 +47,46 @@ PUBLIC
     RC_DIR=\"~/.w3m\"
     LOCALEDIR=\"${W3M_PREFIX}/share/locale\"
     USE_UNICODE
-    )
+)
 target_link_libraries(w3mbookmark
 PRIVATE
     wc
-    )
+)
 
+#
+# w3mhelperpanel
+#
 add_executable(w3mhelperpanel
     src/w3mhelperpanel.cpp
+    src/indep.cpp
+    src/textlist.cpp
+    src/html/parsetag.cpp
+)
+target_include_directories(w3mhelperpanel
+PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/src
+)  
+target_compile_definitions(w3mhelperpanel
+PUBLIC
+    DUMMY
+    HAVE_CONFIG_H
+    AUXBIN_DIR=\"${W3M_PREFIX}/libexec/w3m\"
+    CGIBIN_DIR=\"${W3M_PREFIX}/libexec/w3m/cgi-bin\"
+    HELP_DIR=\"${W3M_PREFIX}/share/w3m\"
+    ETC_DIR=\"${W3M_PREFIX}/etc\"
+    CONF_DIR=\"${W3M_PREFIX}/etc/w3m\"
+    RC_DIR=\"~/.w3m\"
+    LOCALEDIR=\"${W3M_PREFIX}/share/locale\"
+    USE_UNICODE
 )
 target_link_libraries(w3mhelperpanel
 PRIVATE
     wc
-    )
+)
 
+#
+# w3m
+#
 add_executable(w3m
     src/main.cpp
     src/w3m.cpp
@@ -121,7 +150,7 @@ add_executable(w3m
 target_include_directories(w3m
 PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src
-    )
+)
 target_compile_definitions(w3m
 PUBLIC
     HAVE_CONFIG_H
@@ -133,13 +162,13 @@ PUBLIC
     RC_DIR=\"~/.w3m\"
     LOCALEDIR=\"${W3M_PREFIX}/share/locale\"
     USE_UNICODE
-    )
+)
 target_compile_options(w3m
 PRIVATE
     # -Werror=implicit-function-declaration
     # -Werror=int-conversion
     -Werror=conversion-null
-    )
+)
 target_link_libraries(w3m
 PRIVATE
     tcb_span
@@ -148,4 +177,4 @@ PRIVATE
     ncurses
     ssl
     crypto
-    )
+)

@@ -103,11 +103,11 @@ void printMailcapPanel(char *mailcap)
     printf("<p><hr width=50%%><p>\n<table border='0' cellpadding='0'>\n\
 <tr><th align=left><b>%s</b><th><b>%s</b>\n",
            MSG_TYPE, MSG_COMMAND);
-    while (tmp = Strfgets(f), tmp->length > 0)
+    while (tmp = Strfgets(f), tmp->Size() > 0)
     {
         if (tmp->ptr[0] == '#')
             continue;
-        Strchop(tmp);
+        StripRight(tmp);
         extractMailcapEntry(tmp->ptr, &type, &viewer);
         printf("<tr valign=top><td>%s<td>%s<td nowrap>", html_quote(type),
                html_quote(viewer));
@@ -133,11 +133,11 @@ void editMailcap(char *mailcap, struct parsed_tagarg *args)
     if ((f = fopen(mailcap, "rt")) == NULL)
         bye("Can't open", mailcap);
 
-    while (tmp = Strfgets(f), tmp->length > 0)
+    while (tmp = Strfgets(f), tmp->Size() > 0)
     {
         if (tmp->ptr[0] == '#')
             continue;
-        Strchop(tmp);
+        StripRight(tmp);
         extractMailcapEntry(tmp->ptr, &type, &viewer);
         delete_it = 0;
         for (a = args; a != NULL; a = a->next)
@@ -170,7 +170,6 @@ void editMailcap(char *mailcap, struct parsed_tagarg *args)
 int main(int argc, char *argv[], char **envp)
 {
     Str mailcapfile;
-    extern char *getenv();
     char *p;
     int length;
     Str qs = NULL;
@@ -187,8 +186,8 @@ int main(int argc, char *argv[], char **envp)
         goto request_err;
 
     qs = Strfgets(stdin);
-    Strchop(qs);
-    if (qs->length != length)
+    StripRight(qs);
+    if (qs->Size() != length)
         goto request_err;
     cgiarg = cgistr2tagarg(qs->ptr);
 
@@ -211,7 +210,7 @@ int main(int argc, char *argv[], char **envp)
     }
 
     mode = tag_get_value(cgiarg, "mode");
-    mailcapfile = Strnew_charp(expandPath(USER_MAILCAP));
+    mailcapfile = Strnew_m_charp(expandPath(USER_MAILCAP));
     if (mode && !strcmp(mode, "edit"))
     {
         char *referer;
