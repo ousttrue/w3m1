@@ -57,9 +57,16 @@ int BaseStream::FD() const
 //
 FileStream::~FileStream()
 {
-    auto prevtrap = mySignal(SIGINT, SIG_IGN);
+    if(iseos)
+    {
+        // TODO: ?
+        return;
+    }
+    MySignalHandler prevtrap = NULL;
+    prevtrap = mySignal(SIGINT, SIG_IGN);
     handle->close(handle->f);
-    mySignal(SIGINT, prevtrap);    
+    mySignal(SIGINT, prevtrap);
+
 }
 
 int FileStream::ReadFunc(unsigned char *buffer, int size)
