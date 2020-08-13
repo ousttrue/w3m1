@@ -18,13 +18,6 @@
 #include <winsock.h>
 #endif
 
-enum LocalCGITypes
-{
-    CGIFN_NORMAL = 0, // not cgi
-    CGIFN_LIBDIR = 1,
-    CGIFN_CGIBIN = 2,
-};
-
 static Str Local_cookie = NULL;
 static char *Local_cookie_file = NULL;
 
@@ -63,23 +56,6 @@ Str localCookie()
     return Local_cookie;
 }
 
-static int
-check_local_cgi(char *file, LocalCGITypes status)
-{
-    struct stat st;
-
-    if (status != CGIFN_LIBDIR && status != CGIFN_CGIBIN)
-        return -1;
-    if (stat(file, &st) < 0)
-        return -1;
-    if (S_ISDIR(st.st_mode))
-        return -1;
-#ifndef __MINGW32_VERSION
-    if ((st.st_uid == geteuid() && (st.st_mode & S_IXUSR)) || (st.st_gid == getegid() && (st.st_mode & S_IXGRP)) || (st.st_mode & S_IXOTH)) /* executable */
-        return 0;
-#endif
-    return -1;
-}
 
 void set_environ(std::string_view var, std::string_view value)
 {
@@ -178,39 +154,33 @@ checkPath(char *fn, char *path)
     return NULL;
 }
 
-static LocalCGITypes
-cgi_filename(char *uri, char **fn, char **name, char **path_info)
+LocalCGI::LocalCGI(char *uri)
 {
-    Str tmp;
-    int offset;
-
-    *fn = uri;
-    *name = uri;
-    *path_info = NULL;
+    file = uri;
+    name = uri;
+    path_info = NULL;
 
     if (cgi_bin != NULL && strncmp(uri, "/cgi-bin/", 9) == 0)
     {
-        offset = 9;
-        if ((*path_info = strchr(uri + offset, '/')))
-            *name = allocStr(uri, *path_info - uri);
-        tmp = checkPath(*name + offset, cgi_bin);
+        int offset = 9;
+        if ((path_info = strchr(uri + offset, '/')))
+            name = allocStr(uri, path_info - uri);
+        auto tmp = checkPath(name + offset, cgi_bin);
         if (tmp == NULL)
-            return CGIFN_NORMAL;
-        *fn = tmp->ptr;
-        return CGIFN_CGIBIN;
+        {
+            status = CGIFN_NORMAL;
+            return;
+        }
+        file = tmp->ptr;
+        status = CGIFN_CGIBIN;
+        return;
     }
 
-#ifdef __EMX__
-    {
-        char lib[_MAX_PATH];
-        _abspath(lib, w3m_lib_dir(), _MAX_PATH); /* Translate '\\' to '/' */
-        tmp = Strnew(lib);
-    }
-#else
-    tmp = Strnew(w3m_lib_dir());
-#endif
+    auto tmp = Strnew(w3m_lib_dir());
     if (tmp->Back() != '/')
         tmp->Push('/');
+
+    int offset = 0;
     if (strncmp(uri, "/$LIB/", 6) == 0)
         offset = 6;
     else if (strncmp(uri, tmp->ptr, tmp->Size()) == 0)
@@ -222,34 +192,56 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
             tmp2->Push('/');
         tmp2->Push(uri + 1);
         if (strncmp(tmp2->ptr, tmp->ptr, tmp->Size()) != 0)
-            return CGIFN_NORMAL;
+        {
+            status = CGIFN_NORMAL;
+            return;
+        }
         uri = tmp2->ptr;
-        *name = uri;
+        name = uri;
         offset = tmp->Size();
     }
     else
-        return CGIFN_NORMAL;
-    if ((*path_info = strchr(uri + offset, '/')))
-        *name = allocStr(uri, *path_info - uri);
-    tmp->Push(*name + offset);
-    *fn = tmp->ptr;
-    return CGIFN_LIBDIR;
+    {
+        status = CGIFN_NORMAL;
+        return;
+    }
+    if ((path_info = strchr(uri + offset, '/')))
+        name = allocStr(uri, path_info - uri);
+    tmp->Push(name + offset);
+    file = tmp->ptr;
+    status = CGIFN_LIBDIR;
+}
+
+bool LocalCGI::check_local_cgi()const
+{
+    if (status != CGIFN_LIBDIR && status != CGIFN_CGIBIN)
+        return false;
+
+    struct stat st;
+    if (stat(file, &st) < 0)
+        return false;
+
+    if (S_ISDIR(st.st_mode))
+        return false;
+
+    if ((st.st_uid == geteuid() && (st.st_mode & S_IXUSR)) || (st.st_gid == getegid() && (st.st_mode & S_IXGRP)) || (st.st_mode & S_IXOTH)){
+         /* executable */
+        return true;
+    }
+
+    return false;
 }
 
 FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy referer)
 {
-    char *file = uri;
-    char *name = uri;
-    char *path_info = NULL;
-    char *tmpf = NULL;
-
-    auto status = cgi_filename(uri, &file, &name, &path_info);
-    if (check_local_cgi(file, status) < 0)
+    auto cgi = LocalCGI(uri);
+    if (!cgi.check_local_cgi())
         return NULL;
 
     writeLocalCookie();
 
     FILE *fw = NULL;
+    char *tmpf = NULL;
     if (request && request->enctype != FORM_ENCTYPE_MULTIPART)
     {
         tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
@@ -272,9 +264,9 @@ FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy
 
     if (qstr)
         uri = Strnew_m_charp(uri, "?", qstr, NULL)->ptr;
-    set_cgi_environ(name, file, uri);
-    if (path_info)
-        set_environ("PATH_INFO", path_info);
+    set_cgi_environ(cgi.name, cgi.file, uri);
+    if (cgi.path_info)
+        set_environ("PATH_INFO", cgi.path_info);
     // TODO:
     // if (referer != HttpReferrerPolicy::NoReferer)
     //     set_environ("HTTP_REFERER", referer);
@@ -308,11 +300,11 @@ FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy
     }
 
 #ifdef HAVE_CHDIR /* ifndef __EMX__ ? */
-    chdir(mydirname(file));
+    chdir(mydirname(cgi.file));
 #endif
-    execl(file, mybasename(file), NULL);
+    execl(cgi.file, mybasename(cgi.file), NULL);
     fprintf(stderr, "execl(\"%s\", \"%s\", NULL): %s\n",
-            file, mybasename(file), strerror(errno));
+            cgi.file, mybasename(cgi.file), strerror(errno));
     exit(1);
     return NULL;
 }

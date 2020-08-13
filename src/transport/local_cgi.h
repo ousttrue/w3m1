@@ -48,3 +48,21 @@ inline FILE *localcgi_get(char *u, char *q, HttpReferrerPolicy r)
 {
     return localcgi_post((u), (q), NULL, (r));
 }
+
+enum LocalCGITypes
+{
+    CGIFN_NORMAL = 0, // not cgi
+    CGIFN_LIBDIR = 1,
+    CGIFN_CGIBIN = 2,
+};
+
+struct LocalCGI
+{
+    LocalCGITypes status;
+    char *file;
+    char *name;
+    char *path_info;
+
+    LocalCGI(char *uri);
+    bool check_local_cgi() const;
+};
