@@ -270,26 +270,6 @@ void URLFile::Close()
     }
 }
 
-int URLFile::FileNo() const
-{
-    return ISfileno(stream);
-}
-
-int URLFile::Read(Str buf, int len)
-{
-    return ISread(stream, buf, len);
-}
-
-int URLFile::Getc()
-{
-    return ISgetc(stream);
-}
-
-int URLFile::UndoGetc()
-{
-    return ISundogetc(stream);
-}
-
 #define IS_DIRECTORY(m) (((m)&S_IFMT) == S_IFDIR)
 static int dir_exist(char *path)
 {
@@ -577,11 +557,6 @@ retry:
     return;
 }
 
-Str URLFile::StrmyISgets()
-{
-    return ::StrmyISgets(this->stream);
-}
-
 int URLFile::DoFileSave(const char *defstr, long long content_length)
 {
 #ifndef __MINGW32_VERSION
@@ -638,7 +613,7 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
                 if (tmpf)
                     unlink(tmpf);
             }
-            setup_child(FALSE, 0, this->FileNo());
+            setup_child(FALSE, 0, ISfileno(stream));
             err = save2tmp(*this, p);
             if (err == 0 && PreserveTimestamp && this->modtime != -1)
                 setModtime(p, this->modtime);
@@ -809,7 +784,7 @@ int save2tmp(URLFile uf, char *tmpf)
     auto success = TrapJmp([&]() -> bool {
         Str buf = Strnew_size(SAVE_BUF_SIZE);
         clen_t linelen = 0;
-        while (uf.Read(buf, SAVE_BUF_SIZE))
+        while (ISread(uf.stream, buf, SAVE_BUF_SIZE))
         {
             if (buf->Puts(ff) != buf->Size())
             {

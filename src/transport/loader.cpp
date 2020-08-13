@@ -600,7 +600,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, const URL *pu)
     newBuf->document_header = newTextList();
     while (true)
     {
-        auto lineBuf2 = uf->StrmyISgets();
+        auto lineBuf2 = StrmyISgets(uf->stream);
         if (lineBuf2->Size() == 0)
         {
             break;

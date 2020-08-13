@@ -198,10 +198,10 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
             Str buf = Strnew_size(SAVE_BUF_SIZE);
             FILE *f = NULL;
 
-            setup_child(TRUE, 2, uf->FileNo());
+            setup_child(TRUE, 2, ISfileno(uf->stream));
             if (tmpf)
                 f = fopen(tmpf, "wb");
-            while (uf->Read(buf, SAVE_BUF_SIZE))
+            while (ISread(uf->stream, buf, SAVE_BUF_SIZE))
             {
                 if (buf->Puts(stdout) < 0)
                     break;

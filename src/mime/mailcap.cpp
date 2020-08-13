@@ -583,7 +583,7 @@ int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
         flush_tty();
         if (!fork())
         {
-            setup_child(FALSE, 0, uf.FileNo());
+            setup_child(FALSE, 0, ISfileno(uf.stream));
             if (save2tmp(uf, tmpf->ptr) < 0)
                 exit(1);
             uf.Close();

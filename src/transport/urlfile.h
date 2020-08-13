@@ -50,15 +50,10 @@ struct URLFile
     URLFile(URLSchemeTypes scheme, InputStream *stream);
     ~URLFile();
     void Close();
-    int FileNo() const;
-    int Read(Str buf, int len);
-    int Getc();
-    int UndoGetc();
     void openURL(const URL &url, const URL *current,
                  HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                  HttpRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
-    Str StrmyISgets();
 
     // open stream to local path
     void examineFile(std::string_view path);
