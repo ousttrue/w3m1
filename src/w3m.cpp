@@ -409,7 +409,6 @@ w3mApp::~w3mApp()
 
     disconnectFTP();
 
-    disconnectNews();
     // exit(i);
 }
 

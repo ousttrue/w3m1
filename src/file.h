@@ -123,10 +123,6 @@ InputStream *openFTPStream(URL *pu, URLFile *uf);
 Str loadFTPDir(URL *pu, CharacterEncodingScheme *charset);
 void closeFTP(void);
 void disconnectFTP(void);
-InputStream *openNewsStream(URL *pu);
-Str loadNewsgroup(URL *pu, CharacterEncodingScheme *charset);
-void closeNews(void);
-void disconnectNews(void);
 
 BufferPtr link_list_panel(BufferPtr buf);
 

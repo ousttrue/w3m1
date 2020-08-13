@@ -277,10 +277,6 @@ void URLFile::HalfClose()
     case SCM_FTP:
         closeFTP();
         break;
-    case SCM_NEWS:
-    case SCM_NNTP:
-        closeNews();
-        break;
     default:
         Close();
         break;
