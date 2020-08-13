@@ -74,7 +74,7 @@ Buffer::~Buffer()
     if (--(*clone))
         return;
     if (pagerSource)
-        ISclose(pagerSource);
+        pagerSource = nullptr;
     if (sourcefile.size() &&
         (real_type.empty() || real_type.starts_with("image/")))
     {

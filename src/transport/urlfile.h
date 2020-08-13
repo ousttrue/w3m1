@@ -29,7 +29,8 @@ enum LoadFlags
     RG_FRAME_SRC = 4,
 };
 
-union InputStream;
+class InputStream;
+using InputStreamPtr = std::shared_ptr<InputStream>;
 struct FormList;
 struct TextList;
 struct HttpRequest;
@@ -39,7 +40,7 @@ struct URLFile : std::enable_shared_from_this<URLFile>
     URLSchemeTypes scheme = SCM_MISSING;
     char is_cgi = 0;
     EncodingTypes encoding = ENC_7BIT;
-    InputStream *stream = nullptr;
+    InputStreamPtr stream = nullptr;
     const char *ext = nullptr;
     CompressionTypes compression = CMP_NOCOMPRESS;
     CompressionTypes content_encoding = CMP_NOCOMPRESS;
@@ -49,7 +50,7 @@ struct URLFile : std::enable_shared_from_this<URLFile>
     time_t modtime = -1;
 
 private:
-    URLFile(URLSchemeTypes scheme, InputStream *stream);
+    URLFile(URLSchemeTypes scheme, InputStreamPtr stream);
     URLFile(const URLFile &) = delete;
     URLFile &operator=(const URLFile &) = delete;
 
@@ -60,7 +61,7 @@ public:
                                              HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                                              HttpRequest *hr, unsigned char *status);
 
-    static std::shared_ptr<URLFile> OpenStream(URLSchemeTypes scheme, union InputStream *stream);
+    static std::shared_ptr<URLFile> OpenStream(URLSchemeTypes scheme, InputStreamPtr stream);
 
     static std::shared_ptr<URLFile> OpenFile(std::string_view path);
 

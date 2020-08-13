@@ -756,7 +756,7 @@ getpipe(char *cmd)
  * Open pager buffer
  */
 BufferPtr
-openPagerBuffer(InputStream *stream, BufferPtr buf)
+openPagerBuffer(InputStreamPtr stream, BufferPtr buf)
 {
 
     if (buf == NULL)
@@ -780,7 +780,7 @@ openPagerBuffer(InputStream *stream, BufferPtr buf)
 }
 
 BufferPtr
-openGeneralPagerBuffer(InputStream *stream)
+openGeneralPagerBuffer(InputStreamPtr stream)
 {
     BufferPtr buf;
     std::string t = "text/plain";
@@ -984,7 +984,7 @@ int doFileMove(char *tmpf, char *defstr)
     return ret;
 }
 
-int checkSaveFile(InputStream *stream, char *path2)
+int checkSaveFile(InputStreamPtr stream, char *path2)
 {
     struct stat st1, st2;
     int des = ISfileno(stream);

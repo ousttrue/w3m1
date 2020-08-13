@@ -252,17 +252,13 @@ SSL_write_from_file(SSL *ssl, char *file)
     }
 }
 
-URLFile::URLFile(URLSchemeTypes scm, InputStream *strm)
+URLFile::URLFile(URLSchemeTypes scm, InputStreamPtr strm)
     : scheme(scm), stream(strm)
 {
 }
 
 URLFile::~URLFile()
 {
-    if (!ISclose(stream))
-    {
-        stream = NULL;
-    }
 }
 
 #define IS_DIRECTORY(m) (((m)&S_IFMT) == S_IFDIR)
@@ -463,7 +459,7 @@ std::shared_ptr<URLFile> URLFile::OpenFile(std::string_view path)
     return uf;
 }
 
-std::shared_ptr<URLFile> URLFile::OpenStream(URLSchemeTypes scheme, union InputStream *stream)
+std::shared_ptr<URLFile> URLFile::OpenStream(URLSchemeTypes scheme, InputStreamPtr stream)
 {
     auto uf = std::shared_ptr<URLFile>(new URLFile(scheme, stream));
     return uf;

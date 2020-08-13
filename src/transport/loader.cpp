@@ -48,7 +48,7 @@ static int checkCopyFile(const char *path1, const char *path2)
 static int
 _MoveFile(const char *path1, const char *path2)
 {
-    InputStream *f1;
+    InputStreamPtr f1;
     FILE *f2;
     int is_pipe;
     clen_t linelen = 0, trbyte = 0;
@@ -69,7 +69,7 @@ _MoveFile(const char *path1, const char *path2)
     }
     if (f2 == NULL)
     {
-        ISclose(f1);
+        // ISclose(f1);
         return -1;
     }
     // current_content_length = 0;
@@ -80,7 +80,7 @@ _MoveFile(const char *path1, const char *path2)
         linelen += buf->Size();
         showProgress(&linelen, &trbyte);
     }
-    ISclose(f1);
+    // ISclose(f1);
     if (is_pipe)
         pclose(f2);
     else

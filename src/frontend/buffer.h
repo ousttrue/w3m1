@@ -12,7 +12,7 @@
 #include <math.h>
 
 struct Line;
-union InputStream;
+class InputStream;
 struct FormList;
 struct FormItemList;
 struct MapList;
@@ -277,7 +277,7 @@ public:
         this->ArrangeCursor();
     }
 
-    InputStream *pagerSource;
+    std::shared_ptr<class InputStream> pagerSource;
     AnchorList href;
     AnchorList name;
     AnchorList img;

@@ -1,5 +1,5 @@
 #pragma once
-
+#include "transport/istream.h"
 #include "frontend/buffer.h"
 #include "frontend/event.h"
 #include "transport/urlfile.h"
@@ -26,15 +26,15 @@ void saveBuffer(BufferPtr buf, FILE *f, int cont);
 void saveBufferBody(BufferPtr buf, FILE *f, int cont);
 BufferPtr getshell(char *cmd);
 BufferPtr getpipe(char *cmd);
-BufferPtr openPagerBuffer(InputStream *stream, BufferPtr buf);
-BufferPtr openGeneralPagerBuffer(InputStream *stream);
+BufferPtr openPagerBuffer(InputStreamPtr stream, BufferPtr buf);
+BufferPtr openGeneralPagerBuffer(InputStreamPtr stream);
 LinePtr getNextPage(BufferPtr buf, int plen);
 int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf);
 
 int doFileMove(char *tmpf, char *defstr);
 
-int checkSaveFile(InputStream *stream, char *path);
+int checkSaveFile(InputStreamPtr stream, char *path);
 int checkOverWrite(char *path);
 char *inputAnswer(const char* prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);

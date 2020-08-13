@@ -26,28 +26,125 @@
 
 #define POP_CHAR(bs) ((bs)->iseos ? '\0' : (bs)->stream.buf[(bs)->stream.cur++])
 
-static void basic_close(void *handle);
-static int basic_read(void *handle, unsigned char *buf, int len);
-
-static void file_close(struct filestream_handle *handle);
-static int file_read(struct filestream_handle *handle, char *buf, int len);
-
-static int str_read(Str handle, char *buf, int len);
-
-#ifdef USE_SSL
-static void ssl_close(struct ssl_handle *handle);
-static int ssl_read(struct ssl_handle *handle, char *buf, int len);
+BaseStream::~BaseStream()
+{
+#ifdef __MINGW32_VERSION
+    closesocket(*(int *)handle);
+#else
+    close(*(int *)handle);
 #endif
+}
 
-static int ens_read(struct ens_handle *handle, char *buf, int len);
-static void ens_close(struct ens_handle *handle);
+int BaseStream::ReadFunc(unsigned char *buf, int len)
+{
+#ifdef __MINGW32_VERSION
+    return recv(*(int *)handle, buf, len, 0);
+#else
+    return read(*(int *)handle, buf, len);
+#endif
+}
+
+FileStream::~FileStream()
+{
+    handle->close(handle->f);
+}
+
+int FileStream::ReadFunc(unsigned char *buffer, int size)
+{
+    return fread(buffer, 1, size, handle->f);
+}
+
+StrStream::~StrStream()
+{
+}
+
+int StrStream::ReadFunc(unsigned char *buf, int len)
+{
+    return 0;
+}
+
+SSLStream::~SSLStream()
+{
+    close(handle->sock);
+    if (handle->ssl)
+        SSL_free(handle->ssl);
+}
+
+int SSLStream::ReadFunc(unsigned char *buf, int len)
+{
+    int status;
+    if (handle->ssl)
+    {
+#ifdef USE_SSL_VERIFY
+        for (;;)
+        {
+            status = SSL_read(handle->ssl, buf, len);
+            if (status > 0)
+                break;
+            switch (SSL_get_error(handle->ssl, status))
+            {
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE: /* reads can trigger write errors; see SSL_get_error(3) */
+                continue;
+            default:
+                break;
+            }
+            break;
+        }
+#else  /* if !defined(USE_SSL_VERIFY) */
+        status = SSL_read(handle->ssl, buf, len);
+#endif /* !defined(USE_SSL_VERIFY) */
+    }
+    else
+        status = read(handle->sock, buf, len);
+    return status;
+}
+
+EncodedStrStream::~EncodedStrStream()
+{
+}
+
+int EncodedStrStream::ReadFunc(unsigned char *buf, int len)
+{
+    if (handle->s == NULL || handle->pos == handle->s->Size())
+    {
+        char *p;
+        handle->s = StrmyISgets(handle->is);
+        if (handle->s->Size() == 0)
+            return 0;
+        cleanup_line(handle->s, PAGER_MODE);
+        if (handle->encoding == ENC_BASE64)
+            StripRight(handle->s);
+        else if (handle->encoding == ENC_UUENCODE)
+        {
+            if (!strncmp(handle->s->ptr, "begin", 5))
+                handle->s = StrmyISgets(handle->is);
+            StripRight(handle->s);
+        }
+        p = handle->s->ptr;
+        if (handle->encoding == ENC_QUOTE)
+            handle->s = decodeQP(&p);
+        else if (handle->encoding == ENC_BASE64)
+            handle->s = decodeB(&p);
+        else if (handle->encoding == ENC_UUENCODE)
+            handle->s = decodeU(&p);
+        handle->pos = 0;
+    }
+
+    if (len > handle->s->Size() - handle->pos)
+        len = handle->s->Size() - handle->pos;
+
+    bcopy(&handle->s->ptr[handle->pos], buf, len);
+    handle->pos += len;
+    return len;
+}
 
 static void
-do_update(BaseStream *base)
+do_update(InputStreamPtr base)
 {
     int len;
     base->stream.cur = base->stream.next = 0;
-    len = base->read(base->handle, base->stream.buf, base->stream.size);
+    len = base->ReadFunc(base->stream.buf, base->stream.size);
     if (len <= 0)
         base->iseos = TRUE;
     else
@@ -69,7 +166,7 @@ buffer_read(StreamBuffer *sb, char *obuf, int count)
 }
 
 static void
-init_buffer(BaseStream *base, char *buf, int bufsize)
+init_buffer(InputStreamPtr base, char *buf, int bufsize)
 {
     auto sb = &base->stream;
     sb->size = bufsize;
@@ -88,133 +185,117 @@ init_buffer(BaseStream *base, char *buf, int bufsize)
 }
 
 static void
-init_base_stream(BaseStream *base, int bufsize)
+init_base_stream(InputStreamPtr base, int bufsize)
 {
     init_buffer(base, NULL, bufsize);
 }
 
 static void
-init_str_stream(BaseStream *base, Str s)
+init_str_stream(InputStreamPtr base, Str s)
 {
     init_buffer(base, s->ptr, s->Size());
 }
 
-InputStream *
+InputStreamPtr
 newInputStream(int des)
 {
-    InputStream *stream;
     if (des < 0)
         return NULL;
-    stream = New(InputStream);
-    init_base_stream(&stream->base, STREAM_BUF_SIZE);
-    stream->base.type = IST_BASIC;
-    stream->base.handle = New(int);
-    *(int *)stream->base.handle = des;
-    stream->base.read = basic_read;
-    stream->base.close = basic_close;
+
+    auto stream = std::shared_ptr<BaseStream>(new BaseStream());
+
+    init_base_stream(stream, STREAM_BUF_SIZE);
+    stream->handle = New(int);
+    *(int *)stream->handle = des;
     return stream;
 }
 
-InputStream*
+InputStreamPtr
 newFileStream(FILE *f, FileStreamCloseFunc closep)
 {
-    InputStream *stream;
     if (f == NULL)
         return NULL;
-    stream = New(InputStream);
-    init_base_stream(&stream->base, STREAM_BUF_SIZE);
-    stream->file.type = IST_FILE;
-    stream->file.handle = New(struct filestream_handle);
-    stream->file.handle->f = f;
+
+    auto stream = std::shared_ptr<FileStream>(new FileStream());
+    init_base_stream(stream, STREAM_BUF_SIZE);
+    stream->handle = New(struct filestream_handle);
+    stream->handle->f = f;
     if (closep)
-        stream->file.handle->close = closep;
+        stream->handle->close = closep;
     else
-        stream->file.handle->close = (FileStreamCloseFunc)fclose;
-    stream->file.read = (ReadFunc)file_read;
-    stream->file.close = (CloseFunc)file_close;
+        stream->handle->close = (FileStreamCloseFunc)fclose;
     return stream;
 }
 
-InputStream*
+InputStreamPtr
 newStrStream(Str s)
 {
-    InputStream *stream;
     if (s == NULL)
         return NULL;
-    stream = New(InputStream);
-    init_str_stream(&stream->base, s);
-    stream->str.type = IST_STR;
-    stream->str.handle = s;
-    stream->str.read = (ReadFunc)str_read;
-    stream->str.close = NULL;
+
+    auto stream = std::make_shared<StrStream>();
+    init_str_stream(stream, s);
+    stream->handle = s;
     return stream;
 }
 
-InputStream*
+InputStreamPtr
 newSSLStream(SSL *ssl, int sock)
 {
-    InputStream *stream;
     if (sock < 0)
         return NULL;
-    stream = New(InputStream);
-    init_base_stream(&stream->base, SSL_BUF_SIZE);
-    stream->ssl.type = IST_SSL;
-    stream->ssl.handle = New(struct ssl_handle);
-    stream->ssl.handle->ssl = ssl;
-    stream->ssl.handle->sock = sock;
-    stream->ssl.read = (ReadFunc)ssl_read;
-    stream->ssl.close = (CloseFunc)ssl_close;
+
+    auto stream = std::make_shared<SSLStream>();
+    init_base_stream(stream, SSL_BUF_SIZE);
+    stream->handle = New(struct ssl_handle);
+    stream->handle->ssl = ssl;
+    stream->handle->sock = sock;
     return stream;
 }
 
-InputStream*
-newEncodedStream(InputStream *is, char encoding)
+InputStreamPtr
+newEncodedStream(InputStreamPtr is, char encoding)
 {
-    InputStream *stream;
     if (is == NULL || (encoding != ENC_QUOTE && encoding != ENC_BASE64 &&
                        encoding != ENC_UUENCODE))
         return is;
-    stream = New(InputStream);
-    init_base_stream(&stream->base, STREAM_BUF_SIZE);
-    stream->ens.type = IST_ENCODED;
-    stream->ens.handle = New(struct ens_handle);
-    stream->ens.handle->is = is;
-    stream->ens.handle->pos = 0;
-    stream->ens.handle->encoding = encoding;
-    stream->ens.handle->s = NULL;
-    stream->ens.read = (ReadFunc)ens_read;
-    stream->ens.close = (CloseFunc)ens_close;
+
+    auto stream = std::make_shared<EncodedStrStream>();
+    init_base_stream(stream, STREAM_BUF_SIZE);
+    stream->handle = New(struct ens_handle);
+    stream->handle->is = is;
+    stream->handle->pos = 0;
+    stream->handle->encoding = encoding;
+    stream->handle->s = NULL;
     return stream;
 }
 
-int ISclose(InputStream *stream)
-{
-    MySignalHandler prevtrap = NULL;
-    if (stream == NULL || stream->base.close == NULL ||
-        stream->base.type & IST_UNCLOSE)
-        return -1;
-    prevtrap = mySignal(SIGINT, SIG_IGN);
-    stream->base.close(stream->base.handle);
-    mySignal(SIGINT, prevtrap);
-    return 0;
-}
+// int ISclose(InputStreamPtr stream)
+// {
+//     MySignalHandler prevtrap = NULL;
+//     if (stream == NULL || stream->base.close == NULL ||
+//         stream->base.type & IST_UNCLOSE)
+//         return -1;
+//     prevtrap = mySignal(SIGINT, SIG_IGN);
+//     stream->base.close(stream->base.handle);
+//     mySignal(SIGINT, prevtrap);
+//     return 0;
+// }
 
-int ISgetc(InputStream *stream)
+int ISgetc(InputStreamPtr stream)
 {
     if (stream == NULL)
         return '\0';
-    auto base = &stream->base;
-    if (!base->iseos && MUST_BE_UPDATED(base))
-        do_update(base);
-    return POP_CHAR(base);
+    if (!stream->iseos && MUST_BE_UPDATED(stream))
+        do_update(stream);
+    return POP_CHAR(stream);
 }
 
-int ISundogetc(InputStream *stream)
+int ISundogetc(InputStreamPtr stream)
 {
-    StreamBuffer *sb;
     if (stream == NULL)
         return -1;
-    sb = &stream->base.stream;
+    auto sb = &stream->stream;
     if (sb->cur > 0)
     {
         sb->cur--;
@@ -224,24 +305,22 @@ int ISundogetc(InputStream *stream)
 }
 
 #define MARGIN_STR_SIZE 10
-Str StrISgets(InputStream *stream)
+Str StrISgets(InputStreamPtr stream)
 {
-    BaseStream *base;
-    StreamBuffer *sb;
     Str s = NULL;
     uchar *p;
     int len;
 
     if (stream == NULL)
         return NULL;
-    base = &stream->base;
-    sb = &base->stream;
 
-    while (!base->iseos)
+    auto sb = &stream->stream;
+
+    while (!stream->iseos)
     {
-        if (MUST_BE_UPDATED(base))
+        if (MUST_BE_UPDATED(stream))
         {
-            do_update(base);
+            do_update(stream);
         }
         else
         {
@@ -259,7 +338,7 @@ Str StrISgets(InputStream *stream)
                 if (s == NULL)
                     s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
                 s->Push((char *)&sb->buf[sb->cur],
-                               sb->next - sb->cur);
+                        sb->next - sb->cur);
                 sb->cur = sb->next;
             }
         }
@@ -270,23 +349,20 @@ Str StrISgets(InputStream *stream)
     return s;
 }
 
-Str StrmyISgets(InputStream *stream)
+Str StrmyISgets(InputStreamPtr stream)
 {
-    BaseStream *base;
-    StreamBuffer *sb;
     Str s = NULL;
     int i, len;
 
     if (stream == NULL)
         return NULL;
-    base = &stream->base;
-    sb = &base->stream;
+    auto sb = &stream->stream;
 
-    while (!base->iseos)
+    while (!stream->iseos)
     {
-        if (MUST_BE_UPDATED(base))
+        if (MUST_BE_UPDATED(stream))
         {
-            do_update(base);
+            do_update(stream);
         }
         else
         {
@@ -315,7 +391,7 @@ Str StrmyISgets(InputStream *stream)
                 if (s == NULL)
                     s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
                 s->Push((char *)&sb->buf[sb->cur],
-                               sb->next - sb->cur);
+                        sb->next - sb->cur);
                 sb->cur = sb->next;
             }
         }
@@ -326,22 +402,19 @@ Str StrmyISgets(InputStream *stream)
     return s;
 }
 
-int ISread(InputStream *stream, Str buf, int count)
+int ISread(InputStreamPtr stream, Str buf, int count)
 {
-    int rest, len;
-    BaseStream *base;
-
-    if (stream == NULL || (base = &stream->base)->iseos)
+    if (stream == NULL || stream->iseos)
         return 0;
 
-    len = buffer_read(&base->stream, buf->ptr, count);
-    rest = count - len;
-    if (MUST_BE_UPDATED(base))
+    auto len = buffer_read(&stream->stream, buf->ptr, count);
+    auto rest = count - len;
+    if (MUST_BE_UPDATED(stream))
     {
-        len = base->read(base->handle, (unsigned char *)&buf->ptr[len], rest);
+        len = stream->ReadFunc((unsigned char *)&buf->ptr[len], rest);
         if (len <= 0)
         {
-            base->iseos = TRUE;
+            stream->iseos = TRUE;
             len = 0;
         }
         rest -= len;
@@ -352,33 +425,32 @@ int ISread(InputStream *stream, Str buf, int count)
     return 0;
 }
 
-int ISfileno(InputStream *stream)
+int ISfileno(InputStreamPtr stream)
 {
-    if (stream == NULL)
-        return -1;
-    switch (IStype(stream) & ~IST_UNCLOSE)
-    {
-    case IST_BASIC:
-        return *(int *)stream->base.handle;
-    case IST_FILE:
-        return fileno(stream->file.handle->f);
-#ifdef USE_SSL
-    case IST_SSL:
-        return stream->ssl.handle->sock;
-#endif
-    case IST_ENCODED:
-        return ISfileno(stream->ens.handle->is);
-    default:
-        return -1;
-    }
+    assert(false);
+    return -1;
+    // if (stream == NULL)
+    //     return -1;
+    // switch (stream->type())
+    // {
+    // case IST_BASIC:
+    //     return *(int *)stream->base.handle;
+    // case IST_FILE:
+    //     return fileno(stream->file.handle->f);
+    // case IST_SSL:
+    //     return stream->ssl.handle->sock;
+    // case IST_ENCODED:
+    //     return ISfileno(stream->ens.handle->is);
+    // default:
+    //     return -1;
+    // }
 }
 
-int ISeos(InputStream *stream)
+int ISeos(InputStreamPtr stream)
 {
-    BaseStream *base = &stream->base;
-    if (!base->iseos && MUST_BE_UPDATED(base))
-        do_update(base);
-    return base->iseos;
+    if (!stream->iseos && MUST_BE_UPDATED(stream))
+        do_update(stream);
+    return stream->iseos;
 }
 
 #ifdef USE_SSL
@@ -620,20 +692,20 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
             Str ep = emsg->Clone();
             if (ep->Size() > ::COLS - 16)
                 ep->Pop(ep->Size() - (::COLS - 16));
-            ep->Push( ": accept? (y/n)");
+            ep->Push(": accept? (y/n)");
             ans = inputAnswer(ep->ptr);
         }
         if (ans && TOLOWER(*ans) == 'y')
         {
             /* FIXME: gettextize? */
             amsg = Strnew("Accept unsecure SSL session:");
-            amsg->Push( emsg);
+            amsg->Push(emsg);
         }
         else
         {
             /* FIXME: gettextize? */
             const char *e = "This SSL session was rejected "
-                      "to prevent security violation";
+                            "to prevent security violation";
             disp_err_message(e, FALSE);
             free_ssl_ctx();
             return NULL;
@@ -644,18 +716,18 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
     ssl_accept_this_site(hostname);
     /* FIXME: gettextize? */
     s = amsg ? amsg : Strnew("valid certificate");
-    s->Push( "\n");
+    s->Push("\n");
     xn = X509_get_subject_name(x);
     if (X509_NAME_get_text_by_NID(xn, NID_commonName, buf, sizeof(buf)) == -1)
-        s->Push( " subject=<unknown>");
+        s->Push(" subject=<unknown>");
     else
         Strcat_m_charp(s, " subject=", buf, NULL);
     xn = X509_get_issuer_name(x);
     if (X509_NAME_get_text_by_NID(xn, NID_commonName, buf, sizeof(buf)) == -1)
-        s->Push( ": issuer=<unknown>");
+        s->Push(": issuer=<unknown>");
     else
         Strcat_m_charp(s, ": issuer=", buf, NULL);
-    s->Push( "\n\n");
+    s->Push("\n\n");
 
     bp = BIO_new(BIO_s_mem());
     X509_print(bp, x);
@@ -666,126 +738,3 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
     return s;
 }
 #endif
-
-/* Raw level input stream functions */
-
-static void
-basic_close(void *handle)
-{
-#ifdef __MINGW32_VERSION
-    closesocket(*(int *)handle);
-#else
-    close(*(int *)handle);
-#endif
-}
-
-static int
-basic_read(void *handle, unsigned char *buf, int len)
-{
-#ifdef __MINGW32_VERSION
-    return recv(*(int *)handle, buf, len, 0);
-#else
-    return read(*(int *)handle, buf, len);
-#endif
-}
-
-static void
-file_close(struct filestream_handle *handle)
-{
-    handle->close(handle->f);
-}
-
-static int
-file_read(struct filestream_handle *handle, char *buf, int len)
-{
-    return fread(buf, 1, len, handle->f);
-}
-
-static int
-str_read(Str handle, char *buf, int len)
-{
-    return 0;
-}
-
-#ifdef USE_SSL
-static void
-ssl_close(struct ssl_handle *handle)
-{
-    close(handle->sock);
-    if (handle->ssl)
-        SSL_free(handle->ssl);
-}
-
-static int
-ssl_read(struct ssl_handle *handle, char *buf, int len)
-{
-    int status;
-    if (handle->ssl)
-    {
-#ifdef USE_SSL_VERIFY
-        for (;;)
-        {
-            status = SSL_read(handle->ssl, buf, len);
-            if (status > 0)
-                break;
-            switch (SSL_get_error(handle->ssl, status))
-            {
-            case SSL_ERROR_WANT_READ:
-            case SSL_ERROR_WANT_WRITE: /* reads can trigger write errors; see SSL_get_error(3) */
-                continue;
-            default:
-                break;
-            }
-            break;
-        }
-#else  /* if !defined(USE_SSL_VERIFY) */
-        status = SSL_read(handle->ssl, buf, len);
-#endif /* !defined(USE_SSL_VERIFY) */
-    }
-    else
-        status = read(handle->sock, buf, len);
-    return status;
-}
-#endif /* USE_SSL */
-
-static void
-ens_close(struct ens_handle *handle)
-{
-    ISclose(handle->is);
-}
-
-static int
-ens_read(struct ens_handle *handle, char *buf, int len)
-{
-    if (handle->s == NULL || handle->pos == handle->s->Size())
-    {
-        char *p;
-        handle->s = StrmyISgets(handle->is);
-        if (handle->s->Size() == 0)
-            return 0;
-        cleanup_line(handle->s, PAGER_MODE);
-        if (handle->encoding == ENC_BASE64)
-            StripRight(handle->s);
-        else if (handle->encoding == ENC_UUENCODE)
-        {
-            if (!strncmp(handle->s->ptr, "begin", 5))
-                handle->s = StrmyISgets(handle->is);
-            StripRight(handle->s);
-        }
-        p = handle->s->ptr;
-        if (handle->encoding == ENC_QUOTE)
-            handle->s = decodeQP(&p);
-        else if (handle->encoding == ENC_BASE64)
-            handle->s = decodeB(&p);
-        else if (handle->encoding == ENC_UUENCODE)
-            handle->s = decodeU(&p);
-        handle->pos = 0;
-    }
-
-    if (len > handle->s->Size() - handle->pos)
-        len = handle->s->Size() - handle->pos;
-
-    bcopy(&handle->s->ptr[handle->pos], buf, len);
-    handle->pos += len;
-    return len;
-}
