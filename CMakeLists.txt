@@ -115,7 +115,7 @@ add_executable(w3m
     src/file.cpp
     src/transport/istream.cpp
     src/transport/loader.cpp
-    src/transport/local.cpp
+    src/transport/local_cgi.cpp
     src/transport/urlfile.cpp
     src/transport/url.cpp
     src/mime/mimeencoding.cpp

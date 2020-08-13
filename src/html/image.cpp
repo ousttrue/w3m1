@@ -7,7 +7,7 @@
 #include "frontend/terms.h"
 
 #include "frontend/buffer.h"
-#include "transport/local.h"
+#include "transport/local_cgi.h"
 #include "html/anchor.h"
 #include "transport/loader.h"
 #include "rc.h"

@@ -8,7 +8,7 @@
 
 #include "fm.h"
 #include "html/html.h"
-#include "transport/local.h"
+#include "transport/local_cgi.h"
 #include <sys/stat.h>
 
 void check_compression(std::string_view path, const URLFilePtr &uf)

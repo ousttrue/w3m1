@@ -9,7 +9,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>
-#include "transport/local.h"
+#include "transport/local_cgi.h"
 #include "transport/loader.h"
 #include "html/form.h"
 #include "frontend/terms.h"

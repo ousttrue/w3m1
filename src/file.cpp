@@ -13,7 +13,7 @@
 #include "myctype.h"
 #include "html/html.h"
 #include "html/html.h"
-#include "transport/local.h"
+#include "transport/local_cgi.h"
 #include "regex.h"
 #include "dispatcher.h"
 #include "transport/url.h"

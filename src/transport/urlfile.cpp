@@ -1,6 +1,6 @@
 #include "transport/urlfile.h"
 #include "transport/url.h"
-#include "transport/local.h"
+#include "transport/local_cgi.h"
 #include "transport/istream.h"
 #include "http/http_request.h"
 #include "fm.h"

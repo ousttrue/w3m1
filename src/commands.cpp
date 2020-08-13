@@ -22,7 +22,7 @@
 #include "frontend/mouse.h"
 #include "frontend/tabbar.h"
 #include "mime/mimetypes.h"
-#include "transport/local.h"
+#include "transport/local_cgi.h"
 #include "html/anchor.h"
 #include "transport/loader.h"
 #include "mime/mailcap.h"

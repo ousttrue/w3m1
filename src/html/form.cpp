@@ -12,7 +12,7 @@
 #include "http/cookie.h"
 #include "html/html.h"
 #include "myctype.h"
-#include "transport/local.h"
+#include "transport/local_cgi.h"
 #include "regex.h"
 #include "frontend/menu.h"
 #include "mime/mimetypes.h"

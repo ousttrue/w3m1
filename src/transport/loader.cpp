@@ -4,7 +4,7 @@
 #include "file.h"
 #include "mytime.h"
 #include "urimethod.h"
-#include "local.h"
+#include "transport/local_cgi.h"
 #include "http/http_request.h"
 #include "charset.h"
 #include "http/auth.h"

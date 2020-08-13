@@ -13,7 +13,7 @@
 #include "html/image.h"
 #include "html/html.h"
 #include "ctrlcode.h"
-#include "transport/local.h"
+#include "transport/local_cgi.h"
 #include "html/anchor.h"
 #include "transport/url.h"
 #include "transport/loader.h"
