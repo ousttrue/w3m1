@@ -18,9 +18,12 @@
 #include <winsock.h>
 #endif
 
-#define CGIFN_NORMAL 0
-#define CGIFN_LIBDIR 1
-#define CGIFN_CGIBIN 2
+enum LocalCGITypes
+{
+    CGIFN_NORMAL = 0, // not cgi
+    CGIFN_LIBDIR = 1,
+    CGIFN_CGIBIN = 2,
+};
 
 static Str Local_cookie = NULL;
 static char *Local_cookie_file = NULL;
@@ -61,7 +64,7 @@ Str localCookie()
 }
 
 static int
-check_local_cgi(char *file, int status)
+check_local_cgi(char *file, LocalCGITypes status)
 {
     struct stat st;
 
@@ -175,7 +178,7 @@ checkPath(char *fn, char *path)
     return NULL;
 }
 
-static int
+static LocalCGITypes
 cgi_filename(char *uri, char **fn, char **name, char **path_info)
 {
     Str tmp;
@@ -235,18 +238,18 @@ cgi_filename(char *uri, char **fn, char **name, char **path_info)
 
 FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy referer)
 {
-    FILE *fr = NULL, *fw = NULL;
-    int status;
-    pid_t pid;
-    char *file = uri, *name = uri, *path_info = NULL, *tmpf = NULL;
+    char *file = uri;
+    char *name = uri;
+    char *path_info = NULL;
+    char *tmpf = NULL;
 
-#ifdef __MINGW32_VERSION
-    return NULL;
-#else
-    status = cgi_filename(uri, &file, &name, &path_info);
+    auto status = cgi_filename(uri, &file, &name, &path_info);
     if (check_local_cgi(file, status) < 0)
         return NULL;
+
     writeLocalCookie();
+
+    FILE *fw = NULL;
     if (request && request->enctype != FORM_ENCTYPE_MULTIPART)
     {
         tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
@@ -254,7 +257,9 @@ FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy
         if (!fw)
             return NULL;
     }
-    pid = open_pipe_rw(&fr, NULL);
+
+    FILE *fr = NULL;
+    auto pid = open_pipe_rw(&fr, NULL);
     if (pid < 0)
         return NULL;
     else if (pid)
@@ -310,7 +315,6 @@ FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy
             file, mybasename(file), strerror(errno));
     exit(1);
     return NULL;
-#endif
 }
 
 #ifndef __MINGW32_VERSION
