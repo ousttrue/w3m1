@@ -270,19 +270,6 @@ void URLFile::Close()
     }
 }
 
-void URLFile::HalfClose()
-{
-    switch (scheme)
-    {
-    case SCM_FTP:
-        closeFTP();
-        break;
-    default:
-        Close();
-        break;
-    }
-}
-
 int URLFile::FileNo() const
 {
     return ISfileno(stream);

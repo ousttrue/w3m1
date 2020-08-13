@@ -50,7 +50,6 @@ struct URLFile
     URLFile(URLSchemeTypes scheme, InputStream *stream);
     ~URLFile();
     void Close();
-    void HalfClose();
     int FileNo() const;
     int Read(Str buf, int len);
     int Getc();

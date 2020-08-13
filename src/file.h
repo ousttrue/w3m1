@@ -119,10 +119,6 @@ int openSocket(const char *hostname, const char *remoteport_name,
 
 char *acceptableMimeTypes();
 int check_no_proxy(char *domain);
-InputStream *openFTPStream(URL *pu, URLFile *uf);
-Str loadFTPDir(URL *pu, CharacterEncodingScheme *charset);
-void closeFTP(void);
-void disconnectFTP(void);
 
 BufferPtr link_list_panel(BufferPtr buf);
 

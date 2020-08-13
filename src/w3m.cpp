@@ -406,9 +406,7 @@ w3mApp::~w3mApp()
             unlink(f);
     }
     free_ssl_ctx();
-
-    disconnectFTP();
-
+    
     // exit(i);
 }
 

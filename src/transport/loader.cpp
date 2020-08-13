@@ -352,7 +352,7 @@ public:
             else
                 file = guess_save_name(t_buf, pu.path);
             if (f.DoFileSave(file, current_content_length) == 0)
-                f.HalfClose();
+                f.Close();
             else
                 f.Close();
             return nullptr;
@@ -437,7 +437,7 @@ public:
                     if (DecodeCTE && IStype(f.stream) != IST_ENCODED)
                         f.stream = newEncodedStream(f.stream, f.encoding);
                     if (f.DoFileSave(guess_save_name(t_buf, pu.path), current_content_length) == 0)
-                        f.HalfClose();
+                        f.Close();
                     else
                         f.Close();
                 }
