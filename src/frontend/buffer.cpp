@@ -812,31 +812,6 @@ void set_buffer_environ(BufferPtr buf)
 const char *NullLine = "";
 Lineprop NullProp[] = {P_UNKNOWN};
 
-// char *s;
-// Lineprop *p;
-// if (pos > 0)
-// {
-//     s = allocStr(line, pos);
-//     p = NewAtom_N(Lineprop, pos);
-//     bcopy((void *)prop, (void *)p, pos * sizeof(Lineprop));
-// }
-// else
-// {
-//     s = (char *)NullLine;
-//     p = NullProp;
-// }
-
-// Linecolor *c;
-// if (pos > 0 && color)
-// {
-//     c = NewAtom_N(Linecolor, pos);
-//     bcopy((void *)color, (void *)c, pos * sizeof(Linecolor));
-// }
-// else
-// {
-//     c = NULL;
-// }
-
 void Buffer::AddNewLine(const PropertiedString &lineBuffer, int real_linenumber)
 {
     auto l = std::make_shared<Line>(lineBuffer);

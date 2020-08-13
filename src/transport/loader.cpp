@@ -930,22 +930,24 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
  */
 BufferPtr
 loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
-                LoadFlags flag, FormList *request)
+                LoadFlags flag, FormList *form)
 {
-    HttpRequest hr(referer, request);
+    HttpRequest hr(referer, form);
     // URL pu;
     TextList *extra_header = newTextList();
     unsigned char status = HTST_NORMAL;
 
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
-        auto f = URLFile::OpenHttp(url, _current, referer, flag, request, extra_header, &hr, &status);
+        // local CGI
+        // "file:///$LIB/w3mbookmark"
+        auto f = URLFile::OpenHttp(url, _current, referer, flag, form, extra_header, &hr, &status);
         HttpContext http;
         return http.Get(f, url, flag);
     }
     else if (url.scheme == SCM_LOCAL)
     {
-        auto f = URLFile::openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
+        auto f = URLFile::openURL(url, _current, referer, flag, form, extra_header, &hr, &status);
     }
     else
     {

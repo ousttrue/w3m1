@@ -471,7 +471,7 @@ std::shared_ptr<URLFile> URLFile::OpenStream(URLSchemeTypes scheme, InputStreamP
 // this->ext = filename_extension(url.path.c_str(), 1);
 
 URLFilePtr URLFile::openURL(const URL &url, const URL *current,
-                            HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                            HttpReferrerPolicy referer, LoadFlags flag, FormList *form, TextList *extra_header,
                             HttpRequest *hr, unsigned char *status)
 {
     if (url.scheme != SCM_LOCAL && url.scheme != SCM_LOCAL_CGI)
@@ -483,10 +483,10 @@ URLFilePtr URLFile::openURL(const URL &url, const URL *current,
     URLFilePtr uf;
     {
         FILE *f = nullptr;
-        if (request && request->body)
+        if (form && form->body)
         {
             /* local CGI: POST */
-            f = localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), request, referer);
+            f = localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), form, referer);
         }
         else
         {
