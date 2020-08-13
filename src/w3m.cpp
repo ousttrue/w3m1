@@ -938,7 +938,7 @@ int w3mApp::Main(int argc, char **argv)
         }
         else if (load_bookmark)
         {
-            newbuf = loadGeneralFile(BookmarkFile, NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
+            newbuf = loadGeneralFile(URL::ParsePath(BookmarkFile), NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
             if (!newbuf)
             {
                 err_msg->Push("w3m: Can't load bookmark.\n");
@@ -964,7 +964,7 @@ int w3mApp::Main(int argc, char **argv)
         }
         else if ((p = getenv("HTTP_HOME")) || (p = getenv("WWW_HOME")))
         {
-            newbuf = loadGeneralFile(p, NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
+            newbuf = loadGeneralFile(URL::Parse(p), NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
             if (newbuf == NULL)
                 err_msg->Push(Sprintf("w3m: Can't load %s.\n", p));
             else
@@ -998,7 +998,7 @@ int w3mApp::Main(int argc, char **argv)
             {
                 auto request = New(FormList);
                 request->method = FORM_METHOD_HEAD;
-                newbuf = loadGeneralFile(arg, NULL, HttpReferrerPolicy::NoReferer, RG_NONE, request);
+                newbuf = loadGeneralFile(URL::Parse(arg), NULL, HttpReferrerPolicy::NoReferer, RG_NONE, request);
             }
             else
             {
@@ -1031,12 +1031,12 @@ int w3mApp::Main(int argc, char **argv)
                     request->body = const_cast<char *>(body->c_str());
                     request->boundary = NULL;
                     request->length = body->Size();
-                    newbuf = loadGeneralFile(arg, NULL, HttpReferrerPolicy::NoReferer, RG_NONE, request);
+                    newbuf = loadGeneralFile(URL::Parse(arg), NULL, HttpReferrerPolicy::NoReferer, RG_NONE, request);
                 }
                 else
                 {
                     // GET
-                    newbuf = loadGeneralFile(arg, NULL, HttpReferrerPolicy::NoReferer, RG_NONE, nullptr);
+                    newbuf = loadGeneralFile(URL::Parse(arg), NULL, HttpReferrerPolicy::NoReferer, RG_NONE, nullptr);
                 }
             }
             if (!newbuf)

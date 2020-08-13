@@ -410,12 +410,12 @@ int check_avoid_wrong_number_of_dots_domain(Str domain)
     }
 }
 
-int add_cookie(URL *pu, Str name, Str value,
+int add_cookie(const URL &pu, Str name, Str value,
                time_t expires, Str domain, Str path,
                int flag, Str comment, int version, Str port, Str commentURL)
 {
     struct Cookie *p;
-    const char *domainname = (version == 0) ? FQDN(const_cast<char *>(pu->host.c_str())) : pu->host.c_str();
+    const char *domainname = (version == 0) ? FQDN(const_cast<char *>(pu.host.c_str())) : pu.host.c_str();
     Str odomain = domain, opath = path;
     std::vector<uint16_t> portlist;
     int use_security = !(flag & COO_OVERRIDE);
@@ -502,14 +502,14 @@ int add_cookie(URL *pu, Str name, Str value,
     if (path)
     {
         /* [RFC 2109] s. 4.3.2 case 1 */
-        if (version > 0 && strncmp(path->ptr, pu->path.c_str(), path->Size()) != 0)
+        if (version > 0 && strncmp(path->ptr, pu.path.c_str(), path->Size()) != 0)
             COOKIE_ERROR(COO_EPATH);
     }
     if (port)
     {
         /* [DRAFT 12] s. 4.3.2 case 5 */
         portlist = make_portlist(port);
-        if (portlist.size() && !port_match(portlist, pu->port))
+        if (portlist.size() && !port_match(portlist, pu.port))
             COOKIE_ERROR(COO_EPORT);
     }
 
@@ -517,7 +517,7 @@ int add_cookie(URL *pu, Str name, Str value,
         domain = Strnew(domainname);
     if (!path)
     {
-        path = Strnew(pu->path);
+        path = Strnew(pu.path);
         while (path->Size() > 0 && path->Back() != '/')
             path->Pop(1);
         if (path->Back() == '/')
@@ -535,7 +535,7 @@ int add_cookie(URL *pu, Str name, Str value,
         First_cookie = p;
     }
 
-    p->url = *pu;
+    p->url = pu;
     p->name = name;
     p->value = value;
     p->expires = expires;
@@ -899,7 +899,7 @@ const char *violations[COO_EMAX] = {
     "RFC 2109 4.3.2 rule 4",
     "RFC XXXX 4.3.2 rule 5"};
 
-void readHeaderCookie(URL *pu, Str lineBuf2)
+void readHeaderCookie(const URL &pu, Str lineBuf2)
 {
     char *p = nullptr;
     int version;
@@ -1036,7 +1036,7 @@ void readHeaderCookie(URL *pu, Str lineBuf2)
                 accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
             {
                 Str msg = Sprintf("Accept bad cookie from %s for %s?",
-                                  pu->host,
+                                  pu.host,
                                   ((domain && domain->ptr)
                                        ? domain->ptr
                                        : "<localdomain>"));

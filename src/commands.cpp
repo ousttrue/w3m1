@@ -849,7 +849,7 @@ void followI(w3mApp *w3m)
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    buf = loadGeneralFile(const_cast<char *>(a->url.c_str()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), {}, RG_NONE, NULL);
+    buf = loadGeneralFile(URL::Parse(a->url), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), {}, RG_NONE, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -1670,7 +1670,7 @@ void reload(w3mApp *w3m)
     w3m->DefaultType = Strnew(buf->real_type)->ptr;
 
     {
-        auto newBuf = loadGeneralFile(url->ptr, NULL, HttpReferrerPolicy::NoReferer, RG_NOCACHE, request);
+        auto newBuf = loadGeneralFile(URL::ParsePath(url->ptr), NULL, HttpReferrerPolicy::NoReferer, RG_NOCACHE, request);
 
         w3m->DocumentCharset = old_charset;
 

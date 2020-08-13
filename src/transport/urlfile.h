@@ -55,7 +55,7 @@ struct URLFile
     int Read(Str buf, int len);
     int Getc();
     int UndoGetc();
-    void openURL(std::string_view url, URL *pu, const URL *current,
+    void openURL(const URL &url, const URL *current,
                  HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                  HttpRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);
@@ -65,5 +65,4 @@ struct URLFile
     void examineFile(std::string_view path);
 };
 
-char *file_to_url(std::string_view file);
 int save2tmp(URLFile uf, char *tmpf);

@@ -703,7 +703,7 @@ URL URL::Parse(std::string_view _url, const URL *current)
     // p += 2; /* scheme://foo         */
     //         /*          ^p is here  */
 
-    auto [p3, path] = ParsePath(p2, scheme, host);
+    auto [p3, path] = ::ParsePath(p2, scheme, host);
     auto [remain, query] = ParseQuery(p3);
 
     // ParseFragment(p);
@@ -809,6 +809,11 @@ URL URL::Parse(std::string_view _url, const URL *current)
 
         return URL(scheme, userinfo, std::string(host), port, std::string(path), std::string(query), std::string(fragment));
     }
+}
+
+URL URL::ParsePath(std::string_view file)
+{
+    return URL(SCM_LOCAL, {}, {}, {}, expandPath(file.data()), {}, {});
 }
 
 Str URL::ToStr(bool usePass, bool useLabel) const

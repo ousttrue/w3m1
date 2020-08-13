@@ -259,7 +259,7 @@ class HttpContext
     std::vector<URL> g_puv;
 
 public:
-    bool checkRedirection(URL *pu)
+    bool checkRedirection(const URL &pu)
     {
         assert(pu);
         Str tmp;
@@ -268,16 +268,16 @@ public:
         {
             /* FIXME: gettextize? */
             auto tmp = Sprintf("Number of redirections exceeded %d at %s",
-                               FollowRedirection, pu->ToStr()->ptr);
+                               FollowRedirection, pu.ToStr()->ptr);
             disp_err_message(tmp->ptr, FALSE);
             return false;
         }
 
-        g_puv.push_back(*pu);
+        g_puv.push_back(pu);
         return true;
     }
 
-    BufferPtr Get(URLFile &f, URL &pu, LoadFlags flag)
+    BufferPtr Get(URLFile &f, const URL &pu, LoadFlags flag)
     {
         if (fmInitialized)
         {
@@ -292,7 +292,7 @@ public:
         readHeader(&f, t_buf, FALSE, &pu);
         char *p;
         if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) &&
-            (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(&pu))
+            (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(pu))
         {
             /* document moved */
             /* 301: Moved Permanently */
@@ -360,7 +360,8 @@ public:
 
         if ((f.content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
         {
-            pu.real_file = uncompress_stream(&f, true);
+            // TODO:
+            // pu.real_file = uncompress_stream(&f, true);
         }
         else if (f.compression != CMP_NOCOMPRESS)
         {
@@ -571,7 +572,7 @@ checkContentType(BufferPtr buf)
     return r->ptr;
 }
 
-void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
+void readHeader(URLFile *uf, BufferPtr newBuf, int thru, const URL *pu)
 {
     http_response_code = 0;
     if (uf->scheme == SCM_HTTP || uf->scheme == SCM_HTTPS)
@@ -755,7 +756,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu)
                  (!strncasecmp(lineBuf2->ptr, "Set-Cookie:", 11) ||
                   !strncasecmp(lineBuf2->ptr, "Set-Cookie2:", 12)))
         {
-            readHeaderCookie(pu, lineBuf2);
+            readHeaderCookie(*pu, lineBuf2);
         }
         else if (strncasecmp(lineBuf2->ptr, "w3m-control:", 12) == 0 &&
                  uf->scheme == SCM_LOCAL_CGI)
@@ -933,15 +934,15 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
  * loadGeneralFile: load file to buffer
  */
 BufferPtr
-loadGeneralFile(std::string_view path, const URL *_current, HttpReferrerPolicy referer,
+loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
                 LoadFlags flag, FormList *request)
 {
     HttpRequest hr(referer, request);
-    URL pu;
+    // URL pu;
     TextList *extra_header = newTextList();
     unsigned char status = HTST_NORMAL;
     URLFile f(SCM_MISSING, NULL);
-    f.openURL(path, &pu, _current, referer, flag, request, extra_header, &hr, &status);
+    f.openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
 
     if (!f.stream)
     {
@@ -1063,10 +1064,10 @@ loadGeneralFile(std::string_view path, const URL *_current, HttpReferrerPolicy r
     // BufferPtr t_buf = nullptr;
     // if (w3mApp::Instance().header_string.size())
     //     w3mApp::Instance().header_string.clear();
-    if (pu.scheme == SCM_HTTP || pu.scheme == SCM_HTTPS)
+    if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
         HttpContext http;
-        return http.Get(f, pu, flag);
+        return http.Get(f, url, flag);
 
         // int add_auth_cookie_flag = 0;
         // Str realm = NULL;

@@ -361,7 +361,7 @@ frame_download_source(struct frame_body *b, URL *currentURL,
     default:
         is_redisplay = TRUE;
         w3mApp::Instance().w3m_dump |= DUMP_FRAME;
-        buf = loadGeneralFile(b->url,
+        buf = loadGeneralFile(URL::Parse(b->url),
                               baseURL ? baseURL : currentURL,
                               b->referer, flag | RG_FRAME_SRC, b->request);
 
@@ -1005,7 +1005,7 @@ renderFrame(BufferPtr Cbuf, int force_reload)
         renderFrameSet = Cbuf->frameset;
         flushFrameSet(renderFrameSet);
         w3mApp::Instance().DocumentCharset = w3mApp::Instance().InnerCharset;
-        buf = loadGeneralFile(tmp->ptr, NULL, HttpReferrerPolicy::StrictOriginWhenCrossOrigin, flag, NULL);
+        buf = loadGeneralFile(URL::Parse(tmp->ptr), nullptr, HttpReferrerPolicy::StrictOriginWhenCrossOrigin, flag, NULL);
     }
     w3mApp::Instance().DocumentCharset = doc_charset;
     renderFrameSet = NULL;

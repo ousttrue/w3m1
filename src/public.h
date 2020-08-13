@@ -18,7 +18,7 @@ void clear_mark(LinePtr l);
 void disp_srchresult(int result, const char* prompt, char *str);
 void shiftvisualpos(BufferPtr buf, int shift);
 
-void cmd_loadfile(char *fn);
+void cmd_loadfile(const char *fn);
 void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, FormList *request);
 int handleMailto(const char *url);
 void _movL(int n);

@@ -13,10 +13,10 @@ struct FormList;
 struct URLFile;
 BufferPtr loadFile(char *path);
 char *checkContentType(BufferPtr buf);
-void readHeader(URLFile *uf, BufferPtr newBuf, int thru, URL *pu);
+void readHeader(URLFile *uf, BufferPtr newBuf, int thru, const URL *pu);
 
 bool loadBuffer(URLFile *uf, BufferPtr newBuf);
 
-BufferPtr loadGeneralFile(std::string_view path, const URL *current, HttpReferrerPolicy referer, LoadFlags flag, FormList *request);
+BufferPtr loadGeneralFile(const URL &url, const URL *current, HttpReferrerPolicy referer, LoadFlags flag, FormList *request);
 
 int doFileCopy(const char *tmpf, const char *defstr);
