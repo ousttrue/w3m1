@@ -4,21 +4,21 @@
 #include <stdio.h>
 #include <string.h>
 #include "config.h"
-
+#include "Str.h"
 #include "indep.h"
 #include "textlist.h"
-#include "html/parsetag.h"
+#include "parsetag.h"
 #include "myctype.h"
 
 #if LANG == JA
 /* FIXME: gettextize here */
-#define MSG_TITLE		"�����ӥ塼�����Խ�"
-#define MSG_NEW_ENTRY		"������Ͽ"
-#define MSG_TYPE		"�ǡ���������"
-#define MSG_COMMAND		"�������ޥ��"
-#define MSG_REGISTER		"��Ͽ"
-#define MSG_DELETE		"���"
-#define MSG_DOIT		"�¹�"
+#define MSG_TITLE		"外部ビューアの編集"
+#define MSG_NEW_ENTRY		"新規登録"
+#define MSG_TYPE		"データタイプ"
+#define MSG_COMMAND		"外部コマンド"
+#define MSG_REGISTER		"登録"
+#define MSG_DELETE		"削除"
+#define MSG_DOIT		"実行"
 #else				/* LANG != JA */
 #define MSG_TITLE		"External Viewers Setup"
 #define MSG_NEW_ENTRY		"New Entry"
@@ -115,6 +115,7 @@ printMailcapPanel(char *mailcap)
     printf("</table>\n<input type=submit name=submit value=\"%s\">\n</form>\n\
 </body>\n</html>\n",
 	   MSG_DOIT);
+    fclose(f);
 }
 
 void
@@ -204,7 +205,7 @@ main(int argc, char *argv[], char **envp)
     }
 
     mode = tag_get_value(cgiarg, "mode");
-    mailcapfile = Strnew(expandPath(USER_MAILCAP));
+    mailcapfile = Strnew_charp(expandPath(USER_MAILCAP));
     if (mode && !strcmp(mode, "edit")) {
 	char *referer;
 	/* check if I can edit my mailcap */
