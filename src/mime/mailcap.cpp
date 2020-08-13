@@ -541,7 +541,7 @@ int is_dump_text_type(const char *type)
             (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)));
 }
 
-int doExternal(URLFile uf, char *path, const char *type, BufferPtr *bufp,
+int doExternal(URLFile &uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf)
 {
     Str tmpf, command;

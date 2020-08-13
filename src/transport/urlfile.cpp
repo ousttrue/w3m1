@@ -282,6 +282,149 @@ static int dir_exist(char *path)
     return IS_DIRECTORY(stbuf.st_mode);
 }
 
+URLFile URLFile::OpenHttp(const URL &url, const URL *current,
+                          HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                          HttpRequest *hr, unsigned char *status)
+{
+    if (url.scheme != SCM_HTTP && url.scheme != SCM_HTTPS)
+    {
+        assert(false);
+        return {};
+    }
+
+    if (request && request->method == FORM_METHOD_POST && request->body)
+        hr->method = HTTP_METHOD_POST;
+    if (request && request->method == FORM_METHOD_HEAD)
+        hr->method = HTTP_METHOD_HEAD;
+
+    URLFile uf;
+    int sock = 0;
+    SSL *sslh = nullptr;
+    Str tmp = nullptr;
+    if (((url.scheme == SCM_HTTPS) ? w3mApp::Instance().HTTPS_proxy.size() : w3mApp::Instance().HTTP_proxy.size()) &&
+        w3mApp::Instance().use_proxy &&
+        url.host.size() && !check_no_proxy(const_cast<char *>(url.host.c_str())))
+    {
+        // hr->flag |= HR_FLAG_PROXY;
+        if (url.scheme == SCM_HTTPS && *status == HTST_CONNECT)
+        {
+            // https proxy の時に通る？
+            assert(false);
+            return {};
+            // sock = ssl_socket_of(ouf->stream);
+            // if (!(sslh = openSSLHandle(sock, url.host,
+            //                            &this->ssl_certificate)))
+            // {
+            //     *status = HTST_MISSING;
+            //     return;
+            // }
+        }
+        else if (url.scheme == SCM_HTTPS)
+        {
+            sock = openSocket(w3mApp::Instance().HTTPS_proxy_parsed.host.c_str(),
+                              GetScheme(w3mApp::Instance().HTTPS_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTPS_proxy_parsed.port);
+            sslh = NULL;
+        }
+        else
+        {
+            sock = openSocket(w3mApp::Instance().HTTP_proxy_parsed.host.c_str(),
+                              GetScheme(w3mApp::Instance().HTTP_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTP_proxy_parsed.port);
+            sslh = NULL;
+        }
+
+        if (sock < 0)
+        {
+            return {};
+        }
+
+        if (url.scheme == SCM_HTTPS)
+        {
+            if (*status == HTST_NORMAL)
+            {
+                hr->method = HTTP_METHOD_CONNECT;
+                tmp = hr->ToStr(url, current, extra_header);
+                *status = HTST_CONNECT;
+            }
+            else
+            {
+                // hr->flag |= HR_FLAG_LOCAL;
+                tmp = hr->ToStr(url, current, extra_header);
+                *status = HTST_NORMAL;
+            }
+        }
+        else
+        {
+            tmp = hr->ToStr(url, current, extra_header);
+            *status = HTST_NORMAL;
+        }
+    }
+    else
+    {
+        sock = openSocket(url.host.c_str(),
+                          GetScheme(url.scheme)->name.data(), url.port);
+        if (sock < 0)
+        {
+            *status = HTST_MISSING;
+            return {};
+        }
+        if (url.scheme == SCM_HTTPS)
+        {
+            if (!(sslh = openSSLHandle(sock, const_cast<char *>(url.host.c_str()), &uf.ssl_certificate)))
+            {
+                *status = HTST_MISSING;
+                return {};
+            }
+        }
+        // hr->flag |= HR_FLAG_LOCAL;
+        tmp = hr->ToStr(url, current, extra_header);
+        *status = HTST_NORMAL;
+    }
+
+    if (url.scheme == SCM_HTTPS)
+    {
+        uf.scheme = SCM_HTTPS;
+        uf.stream = newSSLStream(sslh, sock);
+        if (sslh)
+            SSL_write(sslh, tmp->ptr, tmp->Size());
+        else
+            write(sock, tmp->ptr, tmp->Size());
+        if (w3mApp::Instance().w3m_reqlog.size())
+        {
+            FILE *ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
+            if (sslh)
+                fputs("HTTPS: request via SSL\n", ff);
+            else
+                fputs("HTTPS: request without SSL\n", ff);
+            fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
+            fclose(ff);
+        }
+        if (hr->method == HTTP_METHOD_POST &&
+            request->enctype == FORM_ENCTYPE_MULTIPART)
+        {
+            if (sslh)
+                SSL_write_from_file(sslh, request->body);
+            else
+                write_from_file(sock, request->body);
+        }
+    }
+    else
+    {
+        uf.scheme = SCM_HTTP;
+        write(sock, tmp->ptr, tmp->Size());
+        if (w3mApp::Instance().w3m_reqlog.size())
+        {
+            FILE *ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
+            fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
+            fclose(ff);
+        }
+        if (hr->method == HTTP_METHOD_POST &&
+            request->enctype == FORM_ENCTYPE_MULTIPART)
+            write_from_file(sock, request->body);
+        uf.stream = newInputStream(sock);
+    }
+    return std::move(uf);
+}
+
 void URLFile::openURL(const URL &url, const URL *current,
                       HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                       HttpRequest *hr, unsigned char *status)
@@ -772,7 +915,7 @@ void URLFile::examineFile(std::string_view path)
     }
 }
 
-int save2tmp(URLFile uf, char *tmpf)
+int save2tmp(const URLFile &uf, char *tmpf)
 {
     auto ff = fopen(tmpf, "wb");
     if (ff == NULL)

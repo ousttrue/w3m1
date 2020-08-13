@@ -942,7 +942,15 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
     TextList *extra_header = newTextList();
     unsigned char status = HTST_NORMAL;
     URLFile f(SCM_MISSING, NULL);
-    f.openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
+
+    if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
+    {
+        f = f.OpenHttp(url, _current, referer, flag, request, extra_header, &hr, &status);
+    }
+    else
+    {
+        f.openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
+    }
 
     if (!f.stream)
     {

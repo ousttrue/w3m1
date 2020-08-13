@@ -47,9 +47,39 @@ struct URLFile
     char *url = nullptr;
     time_t modtime = -1;
 
+    URLFile()
+        : scheme(SCM_MISSING), stream(nullptr)
+    {
+    }
+    URLFile(URLFile &&rhs) noexcept
+    {
+        scheme = rhs.scheme;
+        ssl_certificate = rhs.ssl_certificate;
+        // not close
+        stream = rhs.stream;
+        rhs.stream = nullptr;
+    }
+    URLFile &operator=(URLFile &&rhs) noexcept
+    {
+        if (this != &rhs)
+        {
+            scheme = rhs.scheme;
+            ssl_certificate = rhs.ssl_certificate;
+            // not close
+            stream = rhs.stream;
+            rhs.stream = nullptr;
+        }
+        return *this;
+    }
+
     URLFile(URLSchemeTypes scheme, InputStream *stream);
     ~URLFile();
     void Close();
+
+    static URLFile OpenHttp(const URL &url, const URL *current,
+                            HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                            HttpRequest *hr, unsigned char *status);
+
     void openURL(const URL &url, const URL *current,
                  HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                  HttpRequest *hr, unsigned char *status);
@@ -59,4 +89,4 @@ struct URLFile
     void examineFile(std::string_view path);
 };
 
-int save2tmp(URLFile uf, char *tmpf);
+int save2tmp(const URLFile &uf, char *tmpf);
