@@ -947,17 +947,22 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
     {
         f = f.OpenHttp(url, _current, referer, flag, request, extra_header, &hr, &status);
     }
+    else if (url.scheme == SCM_LOCAL)
+    {
+        f = f.openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
+    }
     else
     {
-        f.openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
+        // not implemened;
+        assert(false);
     }
 
-    if (!f.stream)
-    {
-        // fail to open ?
-        assert(false);
-        return nullptr;
-    }
+    // if (!f.stream)
+    // {
+    //     // fail to open ?
+    //     assert(false);
+    //     return nullptr;
+    // }
 
     // LoaderFunc proc = loadBuffer;
     // char *p;

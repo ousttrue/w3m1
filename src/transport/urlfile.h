@@ -80,7 +80,7 @@ struct URLFile
                             HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                             HttpRequest *hr, unsigned char *status);
 
-    void openURL(const URL &url, const URL *current,
+    static URLFile openURL(const URL &url, const URL *current,
                  HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
                  HttpRequest *hr, unsigned char *status);
     int DoFileSave(const char *defstr, long long content_length);

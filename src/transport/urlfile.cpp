@@ -425,279 +425,127 @@ URLFile URLFile::OpenHttp(const URL &url, const URL *current,
     return std::move(uf);
 }
 
-void URLFile::openURL(const URL &url, const URL *current,
-                      HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                      HttpRequest *hr, unsigned char *status)
+// Str tmp;
+// int sock;
+// char *p, *q;
+// SSL *sslh = NULL;
+
+// auto u = url.data();
+// auto [pos, scheme] = getURLScheme(u);
+// // u = pos;
+// if (current == NULL && scheme == SCM_MISSING && !ArgvIsURL)
+//     u = file_to_url(url.data()); /* force to local file */
+// else
+//     u = const_cast<char *>(url.data());
+// retry:
+// *pu = URL::Parse(u, current);
+
+// if (url.scheme == SCM_LOCAL && url.path.empty())
+// {
+//     // TODO:
+//     assert(false);
+//     // if (url.fragment.size())
+//     // {
+//     //     /* #hogege is not a label but a filename */
+//     //     Str tmp2 = Strnew("#");
+//     //     tmp2->Push(url.fragment);
+//     //     url.path = tmp2->ptr;
+//     //     url.real_file = cleanupName(file_unquote(url.path));
+//     //     url.fragment.clear();
+//     // }
+//     // else
+//     // {
+//     //     /* given URL must be null string */
+//     //     return;
+//     // }
+// }
+
+// this->scheme = url.scheme;
+// this->url = url.ToStr()->ptr;
+// // url.is_nocache = (flag & RG_NOCACHE);
+// this->ext = filename_extension(url.path.c_str(), 1);
+
+URLFile URLFile::openURL(const URL &url, const URL *current,
+                         HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                         HttpRequest *hr, unsigned char *status)
 {
-    Str tmp;
-    int sock;
-    char *p, *q;
-    SSL *sslh = NULL;
-
-    // auto u = url.data();
-    // auto [pos, scheme] = getURLScheme(u);
-    // // u = pos;
-    // if (current == NULL && scheme == SCM_MISSING && !ArgvIsURL)
-    //     u = file_to_url(url.data()); /* force to local file */
-    // else
-    //     u = const_cast<char *>(url.data());
-retry:
-    // *pu = URL::Parse(u, current);
-    if (url.scheme == SCM_LOCAL && url.path.empty())
+    if (url.scheme != SCM_LOCAL && url.scheme != SCM_LOCAL_CGI)
     {
-        // TODO:
         assert(false);
-        // if (url.fragment.size())
-        // {
-        //     /* #hogege is not a label but a filename */
-        //     Str tmp2 = Strnew("#");
-        //     tmp2->Push(url.fragment);
-        //     url.path = tmp2->ptr;
-        //     url.real_file = cleanupName(file_unquote(url.path));
-        //     url.fragment.clear();
-        // }
-        // else
-        // {
-        //     /* given URL must be null string */
-        //     return;
-        // }
+        return {};
     }
 
-    this->scheme = url.scheme;
-    this->url = url.ToStr()->ptr;
-    // url.is_nocache = (flag & RG_NOCACHE);
-    this->ext = filename_extension(url.path.c_str(), 1);
-
-    switch (url.scheme)
+    URLFile uf;
+    if (request && request->body)
+        /* local CGI: POST */
+        uf.stream = newFileStream(localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()),
+                                                request, referer),
+                                  (FileStreamCloseFunc)fclose);
+    else
+        /* lodal CGI: GET */
+        uf.stream = newFileStream(localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()),
+                                               referer),
+                                  (FileStreamCloseFunc)fclose);
+    if (uf.stream)
     {
-    case SCM_LOCAL:
-    case SCM_LOCAL_CGI:
-        if (request && request->body)
-            /* local CGI: POST */
-            this->stream = newFileStream(localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()),
-                                                       request, referer),
-                                         (FileStreamCloseFunc)fclose);
-        else
-            /* lodal CGI: GET */
-            this->stream = newFileStream(localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()),
-                                                      referer),
-                                         (FileStreamCloseFunc)fclose);
-        if (this->stream)
-        {
-            this->is_cgi = TRUE;
-            // TODO:
-            // this->scheme = url.scheme = SCM_LOCAL_CGI;
-            return;
-        }
-        examineFile(const_cast<char *>(url.real_file.c_str()));
-        if (this->stream == NULL)
-        {
-            if (dir_exist(const_cast<char *>(url.real_file.c_str())))
-            {
-                add_index_file(&url, this);
-                if (this->stream == NULL)
-                    return;
-            }
-            else if (document_root != NULL)
-            {
-                // TODO:
-                assert(false);
-                // tmp = Strnew(document_root);
-                // if (tmp->Back() != '/' && url.path[0] != '/')
-                //     tmp->Push('/');
-                // tmp->Push(url.path);
-                // p = cleanupName(tmp->ptr);
-                // q = cleanupName(file_unquote(p));
-                // if (dir_exist(q))
-                // {
-                //     url.path = p;
-                //     url.real_file = q;
-                //     add_index_file(pu, this);
-                //     if (this->stream == NULL)
-                //     {
-                //         return;
-                //     }
-                // }
-                // else
-                // {
-                //     examineFile(q);
-                //     if (this->stream)
-                //     {
-                //         url.path = p;
-                //         url.real_file = q;
-                //     }
-                // }
-            }
-        }
+        uf.is_cgi = TRUE;
         // TODO:
-        // if (this->stream == NULL && retryAsHttp && url[0] != '/')
-        // {
-        //     if (scheme == SCM_MISSING || scheme == SCM_UNKNOWN)
-        //     {
-        //         /* retry it as "http://" */
-        //         u = Strnew_m_charp("http://", url, NULL)->ptr;
-        //         goto retry;
-        //     }
-        // }
-        return;
-
-    case SCM_HTTP:
-    case SCM_HTTPS:
-
-        // if (url.path.empty())
-        //     url.path = "/";
-        if (request && request->method == FORM_METHOD_POST && request->body)
-            hr->method = HTTP_METHOD_POST;
-        if (request && request->method == FORM_METHOD_HEAD)
-            hr->method = HTTP_METHOD_HEAD;
-        if (((url.scheme == SCM_HTTPS) ? w3mApp::Instance().HTTPS_proxy.size() : w3mApp::Instance().HTTP_proxy.size()) &&
-            w3mApp::Instance().use_proxy &&
-            url.host.size() && !check_no_proxy(const_cast<char *>(url.host.c_str())))
-        {
-            // hr->flag |= HR_FLAG_PROXY;
-            if (url.scheme == SCM_HTTPS && *status == HTST_CONNECT)
-            {
-                // https proxy の時に通る？
-                assert(false);
-                return;
-                // sock = ssl_socket_of(ouf->stream);
-                // if (!(sslh = openSSLHandle(sock, url.host,
-                //                            &this->ssl_certificate)))
-                // {
-                //     *status = HTST_MISSING;
-                //     return;
-                // }
-            }
-            else if (url.scheme == SCM_HTTPS)
-            {
-                sock = openSocket(w3mApp::Instance().HTTPS_proxy_parsed.host.c_str(),
-                                  GetScheme(w3mApp::Instance().HTTPS_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTPS_proxy_parsed.port);
-                sslh = NULL;
-            }
-            else
-            {
-                sock = openSocket(w3mApp::Instance().HTTP_proxy_parsed.host.c_str(),
-                                  GetScheme(w3mApp::Instance().HTTP_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTP_proxy_parsed.port);
-                sslh = NULL;
-            }
-
-            if (sock < 0)
-            {
-#ifdef SOCK_DEBUG
-                sock_log("Can't open socket\n");
-#endif
-                return;
-            }
-            if (url.scheme == SCM_HTTPS)
-            {
-                if (*status == HTST_NORMAL)
-                {
-                    hr->method = HTTP_METHOD_CONNECT;
-                    tmp = hr->ToStr(url, current, extra_header);
-                    *status = HTST_CONNECT;
-                }
-                else
-                {
-                    // hr->flag |= HR_FLAG_LOCAL;
-                    tmp = hr->ToStr(url, current, extra_header);
-                    *status = HTST_NORMAL;
-                }
-            }
-            else
-            {
-                tmp = hr->ToStr(url, current, extra_header);
-                *status = HTST_NORMAL;
-            }
-        }
-        else
-        {
-            sock = openSocket(url.host.c_str(),
-                              GetScheme(url.scheme)->name.data(), url.port);
-            if (sock < 0)
-            {
-                *status = HTST_MISSING;
-                return;
-            }
-            if (url.scheme == SCM_HTTPS)
-            {
-                if (!(sslh = openSSLHandle(sock, const_cast<char *>(url.host.c_str()),
-                                           &this->ssl_certificate)))
-                {
-                    *status = HTST_MISSING;
-                    return;
-                }
-            }
-            // hr->flag |= HR_FLAG_LOCAL;
-            tmp = hr->ToStr(url, current, extra_header);
-            *status = HTST_NORMAL;
-        }
-        if (url.scheme == SCM_HTTPS)
-        {
-            this->stream = newSSLStream(sslh, sock);
-            if (sslh)
-                SSL_write(sslh, tmp->ptr, tmp->Size());
-            else
-                write(sock, tmp->ptr, tmp->Size());
-            if (w3mApp::Instance().w3m_reqlog.size())
-            {
-                FILE *ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
-                if (sslh)
-                    fputs("HTTPS: request via SSL\n", ff);
-                else
-                    fputs("HTTPS: request without SSL\n", ff);
-                fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
-                fclose(ff);
-            }
-            if (hr->method == HTTP_METHOD_POST &&
-                request->enctype == FORM_ENCTYPE_MULTIPART)
-            {
-                if (sslh)
-                    SSL_write_from_file(sslh, request->body);
-                else
-                    write_from_file(sock, request->body);
-            }
-            return;
-        }
-        else
-        {
-            write(sock, tmp->ptr, tmp->Size());
-            if (w3mApp::Instance().w3m_reqlog.size())
-            {
-                FILE *ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
-                fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
-                fclose(ff);
-            }
-            if (hr->method == HTTP_METHOD_POST &&
-                request->enctype == FORM_ENCTYPE_MULTIPART)
-                write_from_file(sock, request->body);
-        }
-        break;
-    case SCM_DATA:
-        if (url.path.empty())
-            return;
-        p = Strnew(url.path)->ptr;
-        q = strchr(p, ',');
-        if (q == NULL)
-            return;
-        *q++ = '\0';
-        tmp = Strnew(q);
-        q = strrchr(p, ';');
-        if (q != NULL && !strcmp(q, ";base64"))
-        {
-            *q = '\0';
-            this->encoding = ENC_BASE64;
-        }
-        else
-            tmp = UrlDecode(tmp, FALSE, FALSE);
-        this->stream = newStrStream(tmp);
-        this->guess_type = (*p != '\0') ? p : (char *)"text/plain";
-        return;
-    case SCM_UNKNOWN:
-    default:
-        return;
+        // url.scheme =
+        uf.scheme = SCM_LOCAL_CGI;
+        return uf;
     }
-    this->stream = newInputStream(sock);
-    return;
+
+    uf.examineFile(const_cast<char *>(url.real_file.c_str()));
+    if (uf.stream == NULL)
+    {
+        if (dir_exist(const_cast<char *>(url.real_file.c_str())))
+        {
+            add_index_file(&url, &uf);
+            if (uf.stream == NULL)
+                return uf;
+        }
+        else if (document_root != NULL)
+        {
+            // TODO:
+            assert(false);
+            // tmp = Strnew(document_root);
+            // if (tmp->Back() != '/' && url.path[0] != '/')
+            //     tmp->Push('/');
+            // tmp->Push(url.path);
+            // p = cleanupName(tmp->ptr);
+            // q = cleanupName(file_unquote(p));
+            // if (dir_exist(q))
+            // {
+            //     url.path = p;
+            //     url.real_file = q;
+            //     add_index_file(pu, this);
+            //     if (uf.stream == NULL)
+            //     {
+            //         return;
+            //     }
+            // }
+            // else
+            // {
+            //     examineFile(q);
+            //     if (uf.stream)
+            //     {
+            //         url.path = p;
+            //         url.real_file = q;
+            //     }
+            // }
+        }
+    }
+    // TODO:
+    // if (this->stream == NULL && retryAsHttp && url[0] != '/')
+    // {
+    //     if (scheme == SCM_MISSING || scheme == SCM_UNKNOWN)
+    //     {
+    //         /* retry it as "http://" */
+    //         u = Strnew_m_charp("http://", url, NULL)->ptr;
+    //         goto retry;
+    //     }
+    // }
+    return std::move(uf);
 }
 
 int URLFile::DoFileSave(const char *defstr, long long content_length)
