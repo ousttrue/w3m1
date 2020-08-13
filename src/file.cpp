@@ -987,7 +987,7 @@ int doFileMove(char *tmpf, char *defstr)
 int checkSaveFile(InputStreamPtr stream, char *path2)
 {
     struct stat st1, st2;
-    int des = ISfileno(stream);
+    int des = stream->FD();
 
     if (des < 0)
         return 0;

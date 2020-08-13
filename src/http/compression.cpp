@@ -138,21 +138,18 @@ char *acceptableEncoding()
 #define SAVE_BUF_SIZE 1536
 char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
 {
-#ifndef __MINGW32_VERSION
-    pid_t pid1;
-    FILE *f1;
-    const char *expand_cmd = GUNZIP_CMDNAME;
-    const char *expand_name = GUNZIP_NAME;
-    char *tmpf = NULL;
-    const char *ext = NULL;
-    struct compression_decoder *d;
-
+    // struct compression_decoder *d;
     if (IStype(uf->stream) != IST_ENCODED)
     {
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
         uf->encoding = ENC_7BIT;
     }
-    for (d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
+
+    // search decoder
+    const char *expand_cmd = GUNZIP_CMDNAME;
+    const char *expand_name = GUNZIP_NAME;
+    const char *ext = NULL;
+    for (auto d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
     {
         if (uf->compression == d->type)
         {
@@ -167,13 +164,15 @@ char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
     }
     uf->compression = CMP_NOCOMPRESS;
 
+    char *tmpf = NULL;
     if (uf->scheme != SCM_LOCAL && !image_source)
     {
         tmpf = tmpfname(TMPF_DFL, ext)->ptr;
     }
 
     /* child1 -- stdout|f1=uf -> parent */
-    pid1 = open_pipe_rw(&f1, NULL);
+    FILE *f1;
+    auto pid1 = open_pipe_rw(&f1, NULL);
     if (pid1 < 0)
     {
         // uf->Close();
@@ -198,7 +197,7 @@ char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
             Str buf = Strnew_size(SAVE_BUF_SIZE);
             FILE *f = NULL;
 
-            setup_child(TRUE, 2, ISfileno(uf->stream));
+            setup_child(TRUE, 2, uf->stream->FD());
             if (tmpf)
                 f = fopen(tmpf, "wb");
             while (ISread(uf->stream, buf, SAVE_BUF_SIZE))
@@ -219,6 +218,7 @@ char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
         execlp(expand_cmd, expand_name, NULL);
         exit(1);
     }
+
     if (tmpf)
     {
         if (useRealFile)
@@ -232,6 +232,5 @@ char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
     }
     // uf->Close();
     uf->stream = newFileStream(f1, (FileStreamCloseFunc)fclose);
-#endif /* __MINGW32_VERSION */
     return tmpf;
 }

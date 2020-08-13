@@ -583,7 +583,7 @@ int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bu
         flush_tty();
         if (!fork())
         {
-            setup_child(FALSE, 0, ISfileno(uf->stream));
+            setup_child(FALSE, 0, uf->stream->FD());
             if (save2tmp(uf, tmpf->ptr) < 0)
                 exit(1);
             myExec(command->ptr);

@@ -60,6 +60,7 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
     CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
     HtmlContext context;
     auto success = TrapJmp([&]() {
+
         if (newBuf != nullptr)
         {
             if (newBuf->bufferprop & BP_FRAME)

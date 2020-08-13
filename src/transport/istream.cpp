@@ -26,6 +26,9 @@
 
 #define POP_CHAR(bs) ((bs)->iseos ? '\0' : (bs)->stream.buf[(bs)->stream.cur++])
 
+//
+// BaseStream
+//
 BaseStream::~BaseStream()
 {
 #ifdef __MINGW32_VERSION
@@ -44,9 +47,19 @@ int BaseStream::ReadFunc(unsigned char *buf, int len)
 #endif
 }
 
+int BaseStream::FD() const
+{
+    return *(int *)handle;
+}
+
+//
+// FileStream
+//
 FileStream::~FileStream()
 {
+    auto prevtrap = mySignal(SIGINT, SIG_IGN);
     handle->close(handle->f);
+    mySignal(SIGINT, prevtrap);    
 }
 
 int FileStream::ReadFunc(unsigned char *buffer, int size)
@@ -54,6 +67,14 @@ int FileStream::ReadFunc(unsigned char *buffer, int size)
     return fread(buffer, 1, size, handle->f);
 }
 
+int FileStream::FD() const
+{
+    return fileno(handle->f);
+}
+
+//
+// StrStream
+//
 StrStream::~StrStream()
 {
 }
@@ -63,6 +84,9 @@ int StrStream::ReadFunc(unsigned char *buf, int len)
     return 0;
 }
 
+//
+// SSLStream
+//
 SSLStream::~SSLStream()
 {
     close(handle->sock);
@@ -100,6 +124,14 @@ int SSLStream::ReadFunc(unsigned char *buf, int len)
     return status;
 }
 
+int SSLStream::FD() const
+{
+    return handle->sock;
+}
+
+//
+// EncodedStrStream
+//
 EncodedStrStream::~EncodedStrStream()
 {
 }
@@ -137,6 +169,11 @@ int EncodedStrStream::ReadFunc(unsigned char *buf, int len)
     bcopy(&handle->s->ptr[handle->pos], buf, len);
     handle->pos += len;
     return len;
+}
+
+int EncodedStrStream::FD() const
+{
+    return handle->is->FD();
 }
 
 static void
@@ -423,27 +460,6 @@ int ISread(InputStreamPtr stream, Str buf, int count)
     if (buf->Size() > 0)
         return 1;
     return 0;
-}
-
-int ISfileno(InputStreamPtr stream)
-{
-    assert(false);
-    return -1;
-    // if (stream == NULL)
-    //     return -1;
-    // switch (stream->type())
-    // {
-    // case IST_BASIC:
-    //     return *(int *)stream->base.handle;
-    // case IST_FILE:
-    //     return fileno(stream->file.handle->f);
-    // case IST_SSL:
-    //     return stream->ssl.handle->sock;
-    // case IST_ENCODED:
-    //     return ISfileno(stream->ens.handle->is);
-    // default:
-    //     return -1;
-    // }
 }
 
 int ISeos(InputStreamPtr stream)

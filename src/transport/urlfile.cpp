@@ -615,7 +615,7 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
                 if (tmpf)
                     unlink(tmpf);
             }
-            setup_child(FALSE, 0, ISfileno(stream));
+            setup_child(FALSE, 0, stream->FD());
             err = save2tmp(shared_from_this(), p);
             if (err == 0 && PreserveTimestamp && this->modtime != -1)
                 setModtime(p, this->modtime);

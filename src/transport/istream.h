@@ -50,9 +50,13 @@ class InputStream
 public:
     StreamBuffer stream;
     char iseos;
-    virtual ~InputStream(){}
+    virtual ~InputStream() {}
     virtual InputStreamTypes type() const = 0;
     virtual int ReadFunc(unsigned char *buffer, int size) = 0;
+    virtual int FD() const
+    {
+        return -1;
+    }
 };
 using InputStreamPtr = std::shared_ptr<InputStream>;
 
@@ -65,6 +69,7 @@ public:
     ~BaseStream();
     InputStreamTypes type() const override { return IST_BASIC; }
     int ReadFunc(unsigned char *buffer, int size) override;
+    int FD() const override;
 };
 
 // FILE*
@@ -76,6 +81,7 @@ public:
     ~FileStream();
     InputStreamTypes type() const override { return IST_FILE; }
     int ReadFunc(unsigned char *buffer, int size) override;
+    int FD() const override;
 };
 
 class StrStream : public InputStream
@@ -96,6 +102,7 @@ public:
     ~SSLStream();
     InputStreamTypes type() const override { return IST_SSL; }
     int ReadFunc(unsigned char *buffer, int size) override;
+    int FD() const override;
 };
 
 struct EncodedStrStream : public InputStream
@@ -106,6 +113,7 @@ public:
     ~EncodedStrStream();
     InputStreamTypes type() const override { return IST_ENCODED; }
     int ReadFunc(unsigned char *buffer, int size) override;
+    int FD() const override;
 };
 
 InputStreamPtr newInputStream(int des);
@@ -119,7 +127,6 @@ int ISundogetc(InputStreamPtr stream);
 Str StrISgets(InputStreamPtr stream);
 Str StrmyISgets(InputStreamPtr stream);
 int ISread(InputStreamPtr stream, Str buf, int count);
-int ISfileno(InputStreamPtr stream);
 int ISeos(InputStreamPtr stream);
 void ssl_accept_this_site(char *hostname);
 Str ssl_get_certificate(SSL *ssl, char *hostname);

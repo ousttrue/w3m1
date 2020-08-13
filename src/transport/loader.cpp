@@ -462,6 +462,7 @@ public:
                                      t_buf);
         assert(success);
         auto b = t_buf;
+        f->stream = nullptr;
         // f.Close();
         frame_source = 0;
         if (success)
@@ -936,15 +937,15 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
     TextList *extra_header = newTextList();
     unsigned char status = HTST_NORMAL;
 
-
-    URLFilePtr f;
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
-        f = URLFile::OpenHttp(url, _current, referer, flag, request, extra_header, &hr, &status);
+        auto f = URLFile::OpenHttp(url, _current, referer, flag, request, extra_header, &hr, &status);
+        HttpContext http;
+        return http.Get(f, url, flag);
     }
     else if (url.scheme == SCM_LOCAL)
     {
-        f = URLFile::openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
+        auto f = URLFile::openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
     }
     else
     {
@@ -1061,21 +1062,19 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
     //     return NULL;
     // }
 
-    // auto b = NULL;
-    if (f->is_cgi)
-    {
-        /* local CGI */
-        // searchHeader = TRUE;
-        // searchHeader_through = FALSE;
-    }
+    // // auto b = NULL;
+    // if (f->is_cgi)
+    // {
+    //     /* local CGI */
+    //     // searchHeader = TRUE;
+    //     // searchHeader_through = FALSE;
+    // }
 
     // BufferPtr t_buf = nullptr;
     // if (w3mApp::Instance().header_string.size())
     //     w3mApp::Instance().header_string.clear();
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
-        HttpContext http;
-        return http.Get(f, url, flag);
 
         // int add_auth_cookie_flag = 0;
         // Str realm = NULL;
