@@ -637,7 +637,7 @@ void input_textarea(FormItemList *fi)
             tmp->Pop(1);
             tmp->Push("\r\n");
         }
-        tmp = convertLine(NULL, tmp, RAW_MODE, &charset, w3mApp::Instance().DisplayCharset);
+        tmp = convertLine(SCM_UNKNOWN, tmp, RAW_MODE, &charset, w3mApp::Instance().DisplayCharset);
         fi->value->Push(tmp);
     }
 

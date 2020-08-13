@@ -19,7 +19,7 @@
 
 /* add index_file if exists */
 static void
-add_index_file(const URL *pu, URLFile *uf)
+add_index_file(const URL *pu, const URLFilePtr &uf)
 {
     assert(false);
     // char *p, *q;
@@ -259,11 +259,6 @@ URLFile::URLFile(URLSchemeTypes scm, InputStream *strm)
 
 URLFile::~URLFile()
 {
-    Close();
-}
-
-void URLFile::Close()
-{
     if (!ISclose(stream))
     {
         stream = NULL;
@@ -282,9 +277,9 @@ static int dir_exist(char *path)
     return IS_DIRECTORY(stbuf.st_mode);
 }
 
-URLFile URLFile::OpenHttp(const URL &url, const URL *current,
-                          HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                          HttpRequest *hr, unsigned char *status)
+URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
+                             HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                             HttpRequest *hr, unsigned char *status)
 {
     if (url.scheme != SCM_HTTP && url.scheme != SCM_HTTPS)
     {
@@ -297,10 +292,10 @@ URLFile URLFile::OpenHttp(const URL &url, const URL *current,
     if (request && request->method == FORM_METHOD_HEAD)
         hr->method = HTTP_METHOD_HEAD;
 
-    URLFile uf;
     int sock = 0;
     SSL *sslh = nullptr;
     Str tmp = nullptr;
+    char *ssl_certificate = nullptr;
     if (((url.scheme == SCM_HTTPS) ? w3mApp::Instance().HTTPS_proxy.size() : w3mApp::Instance().HTTP_proxy.size()) &&
         w3mApp::Instance().use_proxy &&
         url.host.size() && !check_no_proxy(const_cast<char *>(url.host.c_str())))
@@ -369,7 +364,7 @@ URLFile URLFile::OpenHttp(const URL &url, const URL *current,
         }
         if (url.scheme == SCM_HTTPS)
         {
-            if (!(sslh = openSSLHandle(sock, const_cast<char *>(url.host.c_str()), &uf.ssl_certificate)))
+            if (!(sslh = openSSLHandle(sock, const_cast<char *>(url.host.c_str()), &ssl_certificate)))
             {
                 *status = HTST_MISSING;
                 return {};
@@ -382,8 +377,8 @@ URLFile URLFile::OpenHttp(const URL &url, const URL *current,
 
     if (url.scheme == SCM_HTTPS)
     {
-        uf.scheme = SCM_HTTPS;
-        uf.stream = newSSLStream(sslh, sock);
+        auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_HTTPS, newSSLStream(sslh, sock)));
+        uf->ssl_certificate = ssl_certificate;
         if (sslh)
             SSL_write(sslh, tmp->ptr, tmp->Size());
         else
@@ -406,10 +401,10 @@ URLFile URLFile::OpenHttp(const URL &url, const URL *current,
             else
                 write_from_file(sock, request->body);
         }
+        return uf;
     }
     else
     {
-        uf.scheme = SCM_HTTP;
         write(sock, tmp->ptr, tmp->Size());
         if (w3mApp::Instance().w3m_reqlog.size())
         {
@@ -420,9 +415,10 @@ URLFile URLFile::OpenHttp(const URL &url, const URL *current,
         if (hr->method == HTTP_METHOD_POST &&
             request->enctype == FORM_ENCTYPE_MULTIPART)
             write_from_file(sock, request->body);
-        uf.stream = newInputStream(sock);
+
+        auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_HTTP, newInputStream(sock)));
+        return uf;
     }
-    return std::move(uf);
 }
 
 // Str tmp;
@@ -460,14 +456,27 @@ URLFile URLFile::OpenHttp(const URL &url, const URL *current,
 //     // }
 // }
 
+std::shared_ptr<URLFile> URLFile::OpenFile(std::string_view path)
+{
+    auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_LOCAL, NULL));
+    uf->examineFile(path);
+    return uf;
+}
+
+std::shared_ptr<URLFile> URLFile::OpenStream(URLSchemeTypes scheme, union InputStream *stream)
+{
+    auto uf = std::shared_ptr<URLFile>(new URLFile(scheme, stream));
+    return uf;
+}
+
 // this->scheme = url.scheme;
 // this->url = url.ToStr()->ptr;
 // // url.is_nocache = (flag & RG_NOCACHE);
 // this->ext = filename_extension(url.path.c_str(), 1);
 
-URLFile URLFile::openURL(const URL &url, const URL *current,
-                         HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                         HttpRequest *hr, unsigned char *status)
+URLFilePtr URLFile::openURL(const URL &url, const URL *current,
+                            HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                            HttpRequest *hr, unsigned char *status)
 {
     if (url.scheme != SCM_LOCAL && url.scheme != SCM_LOCAL_CGI)
     {
@@ -475,33 +484,39 @@ URLFile URLFile::openURL(const URL &url, const URL *current,
         return {};
     }
 
-    URLFile uf;
-    if (request && request->body)
-        /* local CGI: POST */
-        uf.stream = newFileStream(localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()),
-                                                request, referer),
-                                  (FileStreamCloseFunc)fclose);
-    else
-        /* lodal CGI: GET */
-        uf.stream = newFileStream(localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()),
-                                               referer),
-                                  (FileStreamCloseFunc)fclose);
-    if (uf.stream)
+    URLFilePtr uf;
     {
-        uf.is_cgi = TRUE;
+        FILE *f = nullptr;
+        if (request && request->body)
+        {
+            /* local CGI: POST */
+            f = localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), request, referer);
+        }
+        else
+        {
+            /* lodal CGI: GET */
+            f = localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), referer);
+        }
+        auto stream = newFileStream(f, (FileStreamCloseFunc)fclose);
+        uf = std::shared_ptr<URLFile>(new URLFile(SCM_LOCAL, stream));
+    }
+
+    if (uf->stream)
+    {
+        uf->is_cgi = TRUE;
         // TODO:
         // url.scheme =
-        uf.scheme = SCM_LOCAL_CGI;
+        uf->scheme = SCM_LOCAL_CGI;
         return uf;
     }
 
-    uf.examineFile(const_cast<char *>(url.real_file.c_str()));
-    if (uf.stream == NULL)
+    uf->examineFile(const_cast<char *>(url.real_file.c_str()));
+    if (uf->stream == NULL)
     {
         if (dir_exist(const_cast<char *>(url.real_file.c_str())))
         {
-            add_index_file(&url, &uf);
-            if (uf.stream == NULL)
+            add_index_file(&url, uf);
+            if (uf->stream == NULL)
                 return uf;
         }
         else if (document_root != NULL)
@@ -545,7 +560,7 @@ URLFile URLFile::openURL(const URL &url, const URL *current,
     //         goto retry;
     //     }
     // }
-    return std::move(uf);
+    return uf;
 }
 
 int URLFile::DoFileSave(const char *defstr, long long content_length)
@@ -600,15 +615,15 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
             int err;
             if ((this->content_encoding != CMP_NOCOMPRESS) && AutoUncompress)
             {
-                tmpf = uncompress_stream(this, true);
+                tmpf = uncompress_stream(shared_from_this(), true);
                 if (tmpf)
                     unlink(tmpf);
             }
             setup_child(FALSE, 0, ISfileno(stream));
-            err = save2tmp(*this, p);
+            err = save2tmp(shared_from_this(), p);
             if (err == 0 && PreserveTimestamp && this->modtime != -1)
                 setModtime(p, this->modtime);
-            this->Close();
+
             unlink(lock);
             if (err != 0)
                 exit(-err);
@@ -645,11 +660,11 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
         }
         if (this->content_encoding != CMP_NOCOMPRESS && AutoUncompress)
         {
-            tmpf = uncompress_stream(this, true);
+            tmpf = uncompress_stream(shared_from_this(), true);
             if (tmpf)
                 unlink(tmpf);
         }
-        if (save2tmp(*this, p) < 0)
+        if (save2tmp(shared_from_this(), p) < 0)
         {
             /* FIXME: gettextize? */
             printf("Can't save to %s\n", p);
@@ -744,26 +759,27 @@ void URLFile::examineFile(std::string_view path)
         FILE *fp;
         if ((fp = lessopen_stream(const_cast<char *>(path.data()))))
         {
-            this->Close();
+            // TODO:
+            // this->Close();
             this->stream = newFileStream(fp, (FileStreamCloseFunc)pclose);
             this->guess_type = "text/plain";
             return;
         }
     }
 
-    check_compression(const_cast<char *>(path.data()), this);
+    check_compression(const_cast<char *>(path.data()), shared_from_this());
     if (this->compression != CMP_NOCOMPRESS)
     {
         const char *ext = this->ext;
         auto t0 = uncompressed_file_type(path.data(), &ext);
         this->guess_type = t0;
         this->ext = ext;
-        uncompress_stream(this, NULL);
+        uncompress_stream(shared_from_this(), NULL);
         return;
     }
 }
 
-int save2tmp(const URLFile &uf, char *tmpf)
+int save2tmp(const URLFilePtr &uf, char *tmpf)
 {
     auto ff = fopen(tmpf, "wb");
     if (ff == NULL)
@@ -775,7 +791,7 @@ int save2tmp(const URLFile &uf, char *tmpf)
     auto success = TrapJmp([&]() -> bool {
         Str buf = Strnew_size(SAVE_BUF_SIZE);
         clen_t linelen = 0;
-        while (ISread(uf.stream, buf, SAVE_BUF_SIZE))
+        while (ISread(uf->stream, buf, SAVE_BUF_SIZE))
         {
             if (buf->Puts(ff) != buf->Size())
             {

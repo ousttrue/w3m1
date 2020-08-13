@@ -656,9 +656,8 @@ void Buffer::Reshape()
     this->width = INIT_BUFFER_WIDTH();
     if (this->sourcefile.empty())
         return;
-    URLFile f(SCM_LOCAL, NULL);
-    f.examineFile(this->mailcap_source.size() ? this->mailcap_source.c_str() : this->sourcefile.c_str());
-    if (f.stream == NULL)
+    auto f = URLFile::OpenFile(this->mailcap_source.size() ? this->mailcap_source.c_str() : this->sourcefile.c_str());
+    if (f->stream == NULL)
         return;
 
     auto sbuf = this->Copy();
@@ -684,26 +683,23 @@ void Buffer::Reshape()
         if (this->currentURL.scheme != SCM_LOCAL ||
             this->mailcap_source.size() || this->currentURL.path == "-")
         {
-            URLFile h(SCM_LOCAL, NULL);
-            h.examineFile(this->header_source);
-            if (h.stream)
+            auto h = URLFile::OpenFile(this->header_source);
+            if (h->stream)
             {
-                readHeader(&h, shared_from_this(), TRUE, NULL);
-                h.Close();
+                readHeader(h, shared_from_this(), TRUE, NULL);
             }
         }
         else if (this->search_header) /* -m option */
-            readHeader(&f, shared_from_this(), TRUE, NULL);
+            readHeader(f, shared_from_this(), TRUE, NULL);
     }
 
     WcOption.auto_detect = WC_OPT_DETECT_OFF;
     w3mApp::Instance().UseContentCharset = FALSE;
 
     if (is_html_type(this->type))
-        loadHTMLBuffer(&f, shared_from_this());
+        loadHTMLBuffer(f, shared_from_this());
     else
-        loadBuffer(&f, shared_from_this());
-    f.Close();
+        loadBuffer(f, shared_from_this());
 
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
     w3mApp::Instance().UseContentCharset = TRUE;

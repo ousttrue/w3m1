@@ -1136,7 +1136,7 @@ url_unquote_conv(std::string_view url, CharacterEncodingScheme charset)
     if (!charset || charset == WC_CES_US_ASCII)
         charset = w3mApp::Instance().SystemCharset;
     WcOption.auto_detect = WC_OPT_DETECT_ON;
-    tmp = convertLine(NULL, tmp, RAW_MODE, &charset, charset);
+    tmp = convertLine(SCM_UNKNOWN, tmp, RAW_MODE, &charset, charset);
     WcOption.auto_detect = old_auto_detect;
     return tmp->ptr;
 }

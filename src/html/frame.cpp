@@ -349,7 +349,7 @@ frame_download_source(struct frame_body *b, URL *currentURL,
         return NULL;
     if (b->baseURL)
         *baseURL = b->baseURL;
-    
+
     auto url = URL::Parse(b->url, currentURL);
     switch (url.scheme)
     {
@@ -556,13 +556,9 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                 /* fall through */
                 case F_BODY:
                 {
-                    URLFile f2(SCM_LOCAL, NULL);
-                    if (frame.body->source)
-                    {
-                        fflush(f1);
-                        f2.examineFile(frame.body->source);
-                    }
-                    if (f2.stream == NULL)
+                    auto f2 = URLFile::OpenFile(frame.body->source);
+                    fflush(f1);
+                    if (f2->stream == NULL)
                     {
                         frame.body->attr = F_UNLOADED;
                         if (frame.body->flags & FB_NO_BUFFER)
@@ -599,14 +595,14 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     {
                         Str tmp;
                         fprintf(f1, "<pre>\n");
-                        while ((tmp = StrmyISgets(f2.stream))->Size())
+                        while ((tmp = StrmyISgets(f2->stream))->Size())
                         {
-                            tmp = convertLine(NULL, tmp, HTML_MODE, &charset,
+                            tmp = convertLine(SCM_UNKNOWN, tmp, HTML_MODE, &charset,
                                               doc_charset);
                             fprintf(f1, "%s", html_quote(tmp->ptr));
                         }
                         fprintf(f1, "</pre>\n");
-                        f2.Close();
+                        // f2.Close();
                         break;
                     }
                     do
@@ -619,10 +615,10 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                         {
                             if (*p == '\0')
                             {
-                                Str tmp = StrmyISgets(f2.stream);
+                                Str tmp = StrmyISgets(f2->stream);
                                 if (tmp->Size() == 0)
                                     break;
-                                tmp = convertLine(NULL, tmp, HTML_MODE, &charset,
+                                tmp = convertLine(SCM_UNKNOWN, tmp, HTML_MODE, &charset,
                                                   doc_charset);
                                 p = tmp->ptr;
                             }
@@ -869,14 +865,14 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     a_target |= 1;
                                     tag->value[j] = url.ToStr()->ptr;
                                     tag->SetAttributeValue(
-                                                        ATTR_REFERER,
-                                                        base.ToStr()->ptr);
+                                        ATTR_REFERER,
+                                        base.ToStr()->ptr);
 
                                     if (tag->attrid[j] == ATTR_ACTION &&
                                         charset != WC_CES_US_ASCII)
                                         tag->SetAttributeValue(
-                                                            ATTR_CHARSET,
-                                                            wc_ces_to_charset(charset));
+                                            ATTR_CHARSET,
+                                            wc_ces_to_charset(charset));
 
                                     break;
                                 case ATTR_TARGET:
@@ -886,12 +882,12 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     if (!strcasecmp(tag->value[j], "_self"))
                                     {
                                         tag->SetAttributeValue(
-                                                            ATTR_TARGET, s_target);
+                                            ATTR_TARGET, s_target);
                                     }
                                     else if (!strcasecmp(tag->value[j], "_parent"))
                                     {
                                         tag->SetAttributeValue(
-                                                            ATTR_TARGET, p_target);
+                                            ATTR_TARGET, p_target);
                                     }
                                     break;
                                 case ATTR_NAME:
@@ -899,7 +895,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     if (!tag->value[j])
                                         break;
                                     tag->SetAttributeValue(
-                                                        ATTR_FRAMENAME, s_target);
+                                        ATTR_FRAMENAME, s_target);
                                     break;
                                 }
                             }
@@ -907,7 +903,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                             {
                                 /* there is HREF attribute and no TARGET
 			     * attribute */
-                                tag->SetAttributeValue( ATTR_TARGET, d_target);
+                                tag->SetAttributeValue(ATTR_TARGET, d_target);
                             }
                             if (tag->need_reconstruct)
                                 tok = tag->ToStr();
@@ -925,7 +921,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                         }
                     token_end:
                         tok->Clear();
-                    } while (*p != '\0' || !iseos(f2.stream));
+                    } while (*p != '\0' || !iseos(f2->stream));
                     if (pre_mode & RB_PLAIN)
                         fputs("</PRE_PLAIN>\n", f1);
                     else if (pre_mode & RB_INTXTA)
@@ -943,7 +939,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     }
                     while (t_stack--)
                         fputs("</TABLE>\n", f1);
-                    f2.Close();
+                    // f2.Close();
                     break;
                 }
                 case F_FRAMESET:

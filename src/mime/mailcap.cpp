@@ -541,7 +541,7 @@ int is_dump_text_type(const char *type)
             (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)));
 }
 
-int doExternal(URLFile &uf, char *path, const char *type, BufferPtr *bufp,
+int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf)
 {
     Str tmpf, command;
@@ -549,7 +549,7 @@ int doExternal(URLFile &uf, char *path, const char *type, BufferPtr *bufp,
     int mc_stat;
     BufferPtr buf = NULL;
     char *header, *src = NULL;
-    auto ext = uf.ext;
+    auto ext = uf->ext;
 
     if (!(mcap = searchExtViewer(type)))
         return 0;
@@ -562,8 +562,8 @@ int doExternal(URLFile &uf, char *path, const char *type, BufferPtr *bufp,
     }
     tmpf = tmpfname(TMPF_DFL, (ext && *ext) ? ext : NULL);
 
-    if (IStype(uf.stream) != IST_ENCODED)
-        uf.stream = newEncodedStream(uf.stream, uf.encoding);
+    if (IStype(uf->stream) != IST_ENCODED)
+        uf->stream = newEncodedStream(uf->stream, uf->encoding);
     header = checkHeader(defaultbuf, "Content-Type:");
     if (header)
         header = conv_to_system(header);
@@ -583,10 +583,9 @@ int doExternal(URLFile &uf, char *path, const char *type, BufferPtr *bufp,
         flush_tty();
         if (!fork())
         {
-            setup_child(FALSE, 0, ISfileno(uf.stream));
+            setup_child(FALSE, 0, ISfileno(uf->stream));
             if (save2tmp(uf, tmpf->ptr) < 0)
                 exit(1);
-            uf.Close();
             myExec(command->ptr);
         }
         *bufp = nullptr;

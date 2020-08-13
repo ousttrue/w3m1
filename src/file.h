@@ -10,7 +10,7 @@ struct Hist;
 char *guess_save_name(BufferPtr buf, std::string_view file);
 
 
-Str convertLine(URLFile *uf, Str line, int mode, CharacterEncodingScheme *charset, CharacterEncodingScheme doc_charset);
+Str convertLine(URLSchemeTypes scheme, Str line, int mode, CharacterEncodingScheme *charset, CharacterEncodingScheme doc_charset);
 char *guess_filename(std::string_view file);
 int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
@@ -21,7 +21,7 @@ char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte);
 
 
-bool loadImageBuffer(URLFile *uf, BufferPtr newBuf);
+bool loadImageBuffer(const URLFilePtr &uf, BufferPtr newBuf);
 void saveBuffer(BufferPtr buf, FILE *f, int cont);
 void saveBufferBody(BufferPtr buf, FILE *f, int cont);
 BufferPtr getshell(char *cmd);
@@ -29,7 +29,7 @@ BufferPtr getpipe(char *cmd);
 BufferPtr openPagerBuffer(InputStream *stream, BufferPtr buf);
 BufferPtr openGeneralPagerBuffer(InputStream *stream);
 LinePtr getNextPage(BufferPtr buf, int plen);
-int doExternal(URLFile &uf, char *path, const char *type, BufferPtr *bufp,
+int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bufp,
                BufferPtr defaultbuf);
 
 int doFileMove(char *tmpf, char *defstr);
@@ -154,6 +154,6 @@ void SetMetaCharset(CharacterEncodingScheme ces);
 URL *GetCurBaseUrl();
 int setModtime(char *path, time_t modtime);
 
-using LoaderFunc = bool (*)(URLFile *uf, BufferPtr newBuf);
+using LoaderFunc = bool (*)(const URLFilePtr &uf, BufferPtr newBuf);
 
 BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc, BufferPtr defaultbuf);

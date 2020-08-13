@@ -2,6 +2,7 @@
 #include "transport/url.h"
 #include "http/http_request.h"
 #include <time.h>
+#include <memory>
 
 enum EncodingTypes : char
 {
@@ -33,7 +34,7 @@ struct FormList;
 struct TextList;
 struct HttpRequest;
 struct URLOption;
-struct URLFile
+struct URLFile : std::enable_shared_from_this<URLFile>
 {
     URLSchemeTypes scheme = SCM_MISSING;
     char is_cgi = 0;
@@ -47,46 +48,31 @@ struct URLFile
     char *url = nullptr;
     time_t modtime = -1;
 
-    URLFile()
-        : scheme(SCM_MISSING), stream(nullptr)
-    {
-    }
-    URLFile(URLFile &&rhs) noexcept
-    {
-        scheme = rhs.scheme;
-        ssl_certificate = rhs.ssl_certificate;
-        // not close
-        stream = rhs.stream;
-        rhs.stream = nullptr;
-    }
-    URLFile &operator=(URLFile &&rhs) noexcept
-    {
-        if (this != &rhs)
-        {
-            scheme = rhs.scheme;
-            ssl_certificate = rhs.ssl_certificate;
-            // not close
-            stream = rhs.stream;
-            rhs.stream = nullptr;
-        }
-        return *this;
-    }
-
+private:
     URLFile(URLSchemeTypes scheme, InputStream *stream);
+    URLFile(const URLFile &) = delete;
+    URLFile &operator=(const URLFile &) = delete;
+
+public:
     ~URLFile();
-    void Close();
 
-    static URLFile OpenHttp(const URL &url, const URL *current,
-                            HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                            HttpRequest *hr, unsigned char *status);
+    static std::shared_ptr<URLFile> OpenHttp(const URL &url, const URL *current,
+                                             HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                                             HttpRequest *hr, unsigned char *status);
 
-    static URLFile openURL(const URL &url, const URL *current,
-                 HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                 HttpRequest *hr, unsigned char *status);
+    static std::shared_ptr<URLFile> OpenStream(URLSchemeTypes scheme, union InputStream *stream);
+
+    static std::shared_ptr<URLFile> OpenFile(std::string_view path);
+
+    static std::shared_ptr<URLFile> openURL(const URL &url, const URL *current,
+                                            HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                                            HttpRequest *hr, unsigned char *status);
+
     int DoFileSave(const char *defstr, long long content_length);
 
     // open stream to local path
     void examineFile(std::string_view path);
 };
+using URLFilePtr = std::shared_ptr<URLFile>;
 
-int save2tmp(const URLFile &uf, char *tmpf);
+int save2tmp(const URLFilePtr &uf, char *tmpf);

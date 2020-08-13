@@ -216,7 +216,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
 }
 
 static bool
-loadSomething(URLFile *f,
+loadSomething(const URLFilePtr &f,
               char *path,
               LoaderFunc loadproc, BufferPtr buf)
 {
@@ -277,7 +277,7 @@ public:
         return true;
     }
 
-    BufferPtr Get(URLFile &f, const URL &pu, LoadFlags flag)
+    BufferPtr Get(const URLFilePtr &f, const URL &pu, LoadFlags flag)
     {
         if (fmInitialized)
         {
@@ -289,7 +289,7 @@ public:
         // if (t_buf == NULL)
         auto t_buf = newBuffer(INIT_BUFFER_WIDTH());
 
-        readHeader(&f, t_buf, FALSE, &pu);
+        readHeader(f, t_buf, FALSE, &pu);
         char *p;
         if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) &&
             (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(pu))
@@ -301,7 +301,7 @@ public:
             /* 307: Temporary Redirect (HTTP/1.1) */
             auto tpath = wc_conv_strict(p, w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
             // request = NULL;
-            f.Close();
+            // f.Close();
             // *current = pu;
             t_buf = newBuffer(INIT_BUFFER_WIDTH());
             t_buf->bufferprop |= BP_REDIRECTED;
@@ -324,7 +324,7 @@ public:
 
         /* XXX: can we use guess_type to give the type to loadHTMLstream
          *      to support default utf8 encoding for XHTML here? */
-        f.guess_type = t;
+        f->guess_type = t;
 
         // if (real_type == NULL)
         //     real_type = t;
@@ -340,58 +340,57 @@ public:
             /* download only */
             char *file;
             // TRAP_OFF;
-            if (DecodeCTE && IStype(f.stream) != IST_ENCODED)
-                f.stream = newEncodedStream(f.stream, f.encoding);
+            if (DecodeCTE && IStype(f->stream) != IST_ENCODED)
+                f->stream = newEncodedStream(f->stream, f->encoding);
             if (pu.scheme == SCM_LOCAL)
             {
                 struct stat st;
                 if (PreserveTimestamp && !stat(pu.real_file.c_str(), &st))
-                    f.modtime = st.st_mtime;
+                    f->modtime = st.st_mtime;
                 file = conv_from_system(guess_save_name(NULL, pu.real_file.c_str()));
             }
             else
                 file = guess_save_name(t_buf, pu.path);
-            if (f.DoFileSave(file, current_content_length) == 0)
-                f.Close();
-            else
-                f.Close();
+
+            f->DoFileSave(file, current_content_length);
+
             return nullptr;
         }
 
-        if ((f.content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
+        if ((f->content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
         {
             // TODO:
             // pu.real_file = uncompress_stream(&f, true);
         }
-        else if (f.compression != CMP_NOCOMPRESS)
+        else if (f->compression != CMP_NOCOMPRESS)
         {
             if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
                 (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
             {
                 if (t_buf == NULL)
                     t_buf = newBuffer(INIT_BUFFER_WIDTH());
-                t_buf->sourcefile = uncompress_stream(&f, true);
-                uncompressed_file_type(pu.path.c_str(), &f.ext);
+                t_buf->sourcefile = uncompress_stream(f, true);
+                uncompressed_file_type(pu.path.c_str(), &f->ext);
             }
             else
             {
-                t = compress_application_type(f.compression);
-                f.compression = CMP_NOCOMPRESS;
+                t = compress_application_type(f->compression);
+                f->compression = CMP_NOCOMPRESS;
             }
         }
 
         if (image_source)
         {
             BufferPtr b = NULL;
-            if (IStype(f.stream) != IST_ENCODED)
-                f.stream = newEncodedStream(f.stream, f.encoding);
+            if (IStype(f->stream) != IST_ENCODED)
+                f->stream = newEncodedStream(f->stream, f->encoding);
             if (save2tmp(f, image_source) == 0)
             {
                 b = newBuffer(INIT_BUFFER_WIDTH());
                 b->sourcefile = image_source;
                 b->real_type = t;
             }
-            f.Close();
+            // f->Close();
             // TRAP_OFF;
             return b;
         }
@@ -414,12 +413,12 @@ public:
             {
                 if (b)
                 {
-                    b->real_scheme = f.scheme;
+                    b->real_scheme = f->scheme;
                     b->real_type = t;
                     if (b->currentURL.host.empty() && b->currentURL.path.empty())
                         b->currentURL = pu;
                 }
-                f.Close();
+                // f.Close();
                 // TRAP_OFF;
                 return b;
             }
@@ -428,18 +427,15 @@ public:
                 // TRAP_OFF;
                 if (pu.scheme == SCM_LOCAL)
                 {
-                    f.Close();
+                    // f.Close();
                     _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
                                 conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
                 }
                 else
                 {
-                    if (DecodeCTE && IStype(f.stream) != IST_ENCODED)
-                        f.stream = newEncodedStream(f.stream, f.encoding);
-                    if (f.DoFileSave(guess_save_name(t_buf, pu.path), current_content_length) == 0)
-                        f.Close();
-                    else
-                        f.Close();
+                    if (DecodeCTE && IStype(f->stream) != IST_ENCODED)
+                        f->stream = newEncodedStream(f->stream, f->encoding);
+                    f->DoFileSave(guess_save_name(t_buf, pu.path), current_content_length);
                 }
                 return nullptr;
             }
@@ -454,23 +450,23 @@ public:
             t_buf->bufferprop |= BP_FRAME;
         }
 
-        if (t_buf && f.ssl_certificate)
+        if (t_buf && f->ssl_certificate)
         {
-            t_buf->ssl_certificate = f.ssl_certificate;
+            t_buf->ssl_certificate = f->ssl_certificate;
         }
 
         frame_source = flag & RG_FRAME_SRC;
-        auto success = loadSomething(&f,
+        auto success = loadSomething(f,
                                      pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()),
                                      proc,
                                      t_buf);
         assert(success);
         auto b = t_buf;
-        f.Close();
+        // f.Close();
         frame_source = 0;
         if (success)
         {
-            b->real_scheme = f.scheme;
+            b->real_scheme = f->scheme;
             b->real_type = t;
             if (b->currentURL.host.empty() && b->currentURL.path.empty())
                 b->currentURL = pu;
@@ -526,16 +522,14 @@ void SetMetaCharset(CharacterEncodingScheme ces)
  */
 BufferPtr loadFile(char *path)
 {
-    URLFile uf(SCM_LOCAL, NULL);
-    uf.examineFile(path);
-    if (uf.stream == NULL)
+    auto uf = URLFile::OpenFile(path);
+    if (uf->stream == NULL)
         return NULL;
 
     auto buf = newBuffer(INIT_BUFFER_WIDTH());
     current_content_length = 0;
     content_charset = WC_CES_NONE;
-    auto success = loadSomething(&uf, path, loadBuffer, buf);
-    uf.Close();
+    auto success = loadSomething(uf, path, loadBuffer, buf);
     if (!success)
     {
         return nullptr;
@@ -572,7 +566,7 @@ checkContentType(BufferPtr buf)
     return r->ptr;
 }
 
-void readHeader(URLFile *uf, BufferPtr newBuf, int thru, const URL *pu)
+void readHeader(const URLFilePtr &uf, BufferPtr newBuf, int thru, const URL *pu)
 {
     http_response_code = 0;
     if (uf->scheme == SCM_HTTP || uf->scheme == SCM_HTTPS)
@@ -793,7 +787,7 @@ void readHeader(URLFile *uf, BufferPtr newBuf, int thru, const URL *pu)
 /* 
  * loadBuffer: read file and make new buffer
  */
-bool loadBuffer(URLFile *uf, BufferPtr newBuf)
+bool loadBuffer(const URLFilePtr &uf, BufferPtr newBuf)
 {
     assert(newBuf);
     FILE *src = NULL;
@@ -863,7 +857,7 @@ bool loadBuffer(URLFile *uf, BufferPtr newBuf)
         if (frame_source)
             continue;
         lineBuf2 =
-            convertLine(uf, lineBuf2, PAGER_MODE, &charset, doc_charset);
+            convertLine(uf->scheme, lineBuf2, PAGER_MODE, &charset, doc_charset);
         if (w3mApp::Instance().squeezeBlankLine)
         {
             if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
@@ -941,15 +935,16 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
     // URL pu;
     TextList *extra_header = newTextList();
     unsigned char status = HTST_NORMAL;
-    URLFile f(SCM_MISSING, NULL);
 
+
+    URLFilePtr f;
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
-        f = f.OpenHttp(url, _current, referer, flag, request, extra_header, &hr, &status);
+        f = URLFile::OpenHttp(url, _current, referer, flag, request, extra_header, &hr, &status);
     }
     else if (url.scheme == SCM_LOCAL)
     {
-        f = f.openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
+        f = URLFile::openURL(url, _current, referer, flag, request, extra_header, &hr, &status);
     }
     else
     {
@@ -1067,7 +1062,7 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
     // }
 
     // auto b = NULL;
-    if (f.is_cgi)
+    if (f->is_cgi)
     {
         /* local CGI */
         // searchHeader = TRUE;

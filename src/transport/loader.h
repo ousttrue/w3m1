@@ -13,9 +13,9 @@ struct FormList;
 struct URLFile;
 BufferPtr loadFile(char *path);
 char *checkContentType(BufferPtr buf);
-void readHeader(URLFile *uf, BufferPtr newBuf, int thru, const URL *pu);
+void readHeader(const URLFilePtr &uf, BufferPtr newBuf, int thru, const URL *pu);
 
-bool loadBuffer(URLFile *uf, BufferPtr newBuf);
+bool loadBuffer(const URLFilePtr &uf, BufferPtr newBuf);
 
 BufferPtr loadGeneralFile(const URL &url, const URL *current, HttpReferrerPolicy referer, LoadFlags flag, FormList *request);
 

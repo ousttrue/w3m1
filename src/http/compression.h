@@ -23,7 +23,7 @@ static struct compression_decoder
 /* *INDENT-ON* */
 
 const char *compress_application_type(CompressionTypes compression);
-char *uncompress_stream(URLFile *uf, bool useRealFile);
+char *uncompress_stream(const URLFilePtr &uf, bool useRealFile);
 const char *uncompressed_file_type(const char *path, const char **ext);
-void check_compression(std::string_view path, URLFile *uf);
+void check_compression(std::string_view path, const URLFilePtr &uf);
 char *acceptableEncoding();

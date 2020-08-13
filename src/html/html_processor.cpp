@@ -28,7 +28,7 @@
 ///
 /// entry
 ///
-void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
+void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int internal)
 {
     int image_flag;
     if (newBuf->image_flag)
@@ -114,7 +114,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
                 meta_charset = WC_CES_NONE;
             }
 
-            lineBuf2 = convertLine(f, lineBuf2, HTML_MODE, &charset, doc_charset);
+            lineBuf2 = convertLine(f->scheme, lineBuf2, HTML_MODE, &charset, doc_charset);
 
             context.SetCES(charset);
 
@@ -172,7 +172,7 @@ void loadHTMLstream(URLFile *f, BufferPtr newBuf, FILE *src, int internal)
 /* 
  * loadHTMLBuffer: read file and make new buffer
  */
-bool loadHTMLBuffer(URLFile *f, BufferPtr newBuf)
+bool loadHTMLBuffer(const URLFilePtr &f, BufferPtr newBuf)
 {
     assert(newBuf);
 
@@ -209,10 +209,10 @@ BufferPtr loadHTMLString(Str page)
     auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
 
     auto success = TrapJmp([&]() {
-        URLFile f(SCM_LOCAL, newStrStream(page));
+        auto f = URLFile::OpenStream(SCM_LOCAL, newStrStream(page));
 
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
-        loadHTMLstream(&f, newBuf, nullptr, TRUE);
+        loadHTMLstream(f, newBuf, nullptr, TRUE);
         newBuf->document_charset = WC_CES_US_ASCII;
 
         return true;

@@ -68,9 +68,8 @@ loadcmdout(char *cmd, LoaderFunc loadproc, BufferPtr buf)
     if (f == NULL)
         return NULL;
 
-    URLFile uf(SCM_UNKNOWN, newFileStream(f, (FileStreamCloseFunc)pclose));
-    auto success = loadproc(&uf, buf);
-    uf.Close();
+    auto uf = URLFile::OpenStream(SCM_UNKNOWN, newFileStream(f, (FileStreamCloseFunc)pclose));
+    auto success = loadproc(uf, buf);
     if (!success)
     {
         return nullptr;
@@ -113,12 +112,8 @@ int setModtime(char *path, time_t modtime)
 /*
  * convert line
  */
-#ifdef USE_M17N
-Str convertLine(URLFile *uf, Str line, int mode, CharacterEncodingScheme *charset,
+Str convertLine(URLSchemeTypes scheme, Str line, int mode, CharacterEncodingScheme *charset,
                 CharacterEncodingScheme doc_charset)
-#else
-Str convertLine0(URLFile *uf, Str line, int mode)
-#endif
 {
 
     line = wc_Str_conv_with_detect(line, charset, doc_charset, w3mApp::Instance().InnerCharset);
@@ -126,7 +121,7 @@ Str convertLine0(URLFile *uf, Str line, int mode)
     if (mode != RAW_MODE)
         cleanup_line(line, mode);
 
-    if (uf && uf->scheme == SCM_NEWS)
+    if (scheme == SCM_NEWS)
         StripRight(line);
 
     return line;
@@ -510,7 +505,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
 /*
  * loadGopherDir: get gopher directory
  */
-Str loadGopherDir(URLFile *uf, URL *pu, CharacterEncodingScheme *charset)
+Str loadGopherDir(const URLFilePtr &uf, URL *pu, CharacterEncodingScheme *charset)
 {
     Str tmp;
     Str lbuf, name, file, host, port;
@@ -606,7 +601,7 @@ gopher_end:
 #endif /* USE_GOPHER */
 
 #ifdef USE_IMAGE
-bool loadImageBuffer(URLFile *uf, BufferPtr newBuf)
+bool loadImageBuffer(const URLFilePtr &uf, BufferPtr newBuf)
 {
     Image image;
     ImageCache *cache;
@@ -629,13 +624,11 @@ bool loadImageBuffer(URLFile *uf, BufferPtr newBuf)
     TRAP_ON;
     if (IStype(uf->stream) != IST_ENCODED)
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
-    if (save2tmp(*uf, cache->file) < 0)
+    if (save2tmp(uf, cache->file) < 0)
     {
-        uf->Close();
         TRAP_OFF;
         return NULL;
     }
-    uf->Close();
     TRAP_OFF;
 
     cache->loaded = IMG_FLAG_LOADED;
@@ -653,8 +646,8 @@ image_buffer:
     src = fopen(tmpf->ptr, "w");
     newBuf->mailcap_source = tmpf->ptr;
 
-    URLFile f(SCM_LOCAL, newStrStream(tmp));
-    loadHTMLstream(&f, newBuf, src, TRUE);
+    auto f = URLFile::OpenStream(SCM_LOCAL, newStrStream(tmp));
+    loadHTMLstream(f, newBuf, src, TRUE);
     if (src)
         fclose(src);
 
@@ -792,13 +785,13 @@ openGeneralPagerBuffer(InputStream *stream)
     BufferPtr buf;
     std::string t = "text/plain";
     BufferPtr t_buf = NULL;
-    URLFile uf(SCM_UNKNOWN, stream);
+    auto uf = URLFile::OpenStream(SCM_UNKNOWN, stream);
 
     content_charset = WC_CES_NONE;
     if (w3mApp::Instance().SearchHeader)
     {
         t_buf = newBuffer(INIT_BUFFER_WIDTH());
-        readHeader(&uf, t_buf, TRUE, NULL);
+        readHeader(uf, t_buf, TRUE, NULL);
         t = checkContentType(t_buf);
         if (t.empty())
             t = "text/plain";
@@ -817,14 +810,14 @@ openGeneralPagerBuffer(InputStream *stream)
     if (is_html_type(t))
     {
         buf = t_buf;
-        auto success = loadHTMLBuffer(&uf, t_buf);
+        auto success = loadHTMLBuffer(uf, t_buf);
         assert(success);
         buf->type = "text/html";
     }
     else if (is_plain_text_type(t.c_str()))
     {
         if (IStype(stream) != IST_ENCODED)
-            stream = newEncodedStream(stream, uf.encoding);
+            stream = newEncodedStream(stream, uf->encoding);
         buf = openPagerBuffer(stream, t_buf);
         buf->type = "text/plain";
     }
@@ -833,7 +826,7 @@ openGeneralPagerBuffer(InputStream *stream)
     {
         *GetCurBaseUrl() = URL::Parse("-", NULL);
         auto buf = t_buf;
-        auto success = loadImageBuffer(&uf, t_buf);
+        auto success = loadImageBuffer(uf, t_buf);
         assert(success);
         buf->type = "text/html";
     }
@@ -841,14 +834,14 @@ openGeneralPagerBuffer(InputStream *stream)
     {
         if (doExternal(uf, "-", t.c_str(), &buf, t_buf))
         {
-            uf.Close();
+            // uf.Close();
             if (buf == NULL)
                 return buf;
         }
         else
         { /* unknown type is regarded as text/plain */
             if (IStype(stream) != IST_ENCODED)
-                stream = newEncodedStream(stream, uf.encoding);
+                stream = newEncodedStream(stream, uf->encoding);
             buf = openPagerBuffer(stream, t_buf);
             buf->type = "text/plain";
         }
@@ -902,8 +895,6 @@ getNextPage(BufferPtr buf, int plen)
     }
     WcOption.auto_detect = buf->auto_detect;
 
-    URLFile uf(SCM_UNKNOWN, NULL);
-
     auto success = TrapJmp([&]() {
         for (i = 0; i < plen; i++)
         {
@@ -924,7 +915,7 @@ getNextPage(BufferPtr buf, int plen)
             linelen += lineBuf2->Size();
             showProgress(&linelen, &trbyte);
             lineBuf2 =
-                convertLine(&uf, lineBuf2, PAGER_MODE, &charset, doc_charset);
+                convertLine(SCM_UNKNOWN, lineBuf2, PAGER_MODE, &charset, doc_charset);
             if (w3mApp::Instance().squeezeBlankLine)
             {
                 squeeze_flag = FALSE;

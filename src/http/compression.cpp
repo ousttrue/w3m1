@@ -11,7 +11,7 @@
 #include "transport/local.h"
 #include <sys/stat.h>
 
-void check_compression(std::string_view path, URLFile *uf)
+void check_compression(std::string_view path, const URLFilePtr &uf)
 {
     if (path.empty())
         return;
@@ -136,7 +136,7 @@ char *acceptableEncoding()
 }
 
 #define SAVE_BUF_SIZE 1536
-char *uncompress_stream(URLFile *uf, bool useRealFile)
+char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
 {
 #ifndef __MINGW32_VERSION
     pid_t pid1;
@@ -176,7 +176,7 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
     pid1 = open_pipe_rw(&f1, NULL);
     if (pid1 < 0)
     {
-        uf->Close();
+        // uf->Close();
         return nullptr;
     }
     if (pid1 == 0)
@@ -189,7 +189,7 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
         pid2 = open_pipe_rw(&f2, NULL);
         if (pid2 < 0)
         {
-            uf->Close();
+            // uf->Close();
             exit(1);
         }
         if (pid2 == 0)
@@ -208,7 +208,7 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
                 if (f)
                     buf->Puts(f);
             }
-            uf->Close();
+            // uf->Close();
             if (f)
                 fclose(f);
             exit(0);
@@ -230,7 +230,7 @@ char *uncompress_stream(URLFile *uf, bool useRealFile)
             uf->scheme = SCM_LOCAL;
         }
     }
-    uf->Close();
+    // uf->Close();
     uf->stream = newFileStream(f1, (FileStreamCloseFunc)fclose);
 #endif /* __MINGW32_VERSION */
     return tmpf;
