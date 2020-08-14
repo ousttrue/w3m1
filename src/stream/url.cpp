@@ -798,3 +798,18 @@ url_unquote_conv(std::string_view url, CharacterEncodingScheme charset)
     WcOption.auto_detect = old_auto_detect;
     return tmp->ptr;
 }
+
+std::string URL::NonDefaultPort() const
+{
+    if (port == GetScheme(scheme)->port)
+    {
+        // use default port.
+        return "";
+    }
+
+    std::stringstream ss;
+    ss
+        << ":"
+        << port;
+    return ss.str();
+}

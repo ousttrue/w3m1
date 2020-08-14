@@ -216,7 +216,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
     return 0;
 }
 
-static bool
+bool
 loadSomething(const URLFilePtr &f,
               char *path,
               LoaderFunc loadproc, BufferPtr buf)
@@ -934,11 +934,18 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
     // this->ext = filename_extension(url.path.c_str(), 1);
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
-        //
-        // HTTP
-        //
+//
+// HTTP
+//
+#if 1
         HttpClient client;
         return client.Request(url, _current, referer, form);
+#else
+        HttpRequest hr(referer, form);
+        auto uf = URLFile::OpenHttp(url, _current, referer, form, &hr);
+        HttpContext context;
+        return context.Get(uf, url, flag);
+#endif
     }
     else if (url.scheme == SCM_LOCAL)
     {

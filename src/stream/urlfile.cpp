@@ -706,9 +706,16 @@ std::shared_ptr<URLFile> URLFile::OpenHttpAndSendRest(const std::shared_ptr<Http
         }
         SSL_write(ssl, "\r\n", 2);
         // send post body
-        if (request->method == HTTP_METHOD_POST && request->form->enctype == FORM_ENCTYPE_MULTIPART)
+        if (request->method == HTTP_METHOD_POST)
         {
-            SSL_write_from_file(ssl, request->form->body);
+            if (request->form->enctype == FORM_ENCTYPE_MULTIPART)
+            {
+                SSL_write_from_file(ssl, request->form->body);
+            }
+            else
+            {
+                SSL_write(ssl, request->form->body, request->form->length);
+            }
         }
 
         // return stream
@@ -725,9 +732,16 @@ std::shared_ptr<URLFile> URLFile::OpenHttpAndSendRest(const std::shared_ptr<Http
         }
         write(sock, "\r\n", 2);
         // send post body
-        if (request->method == HTTP_METHOD_POST & request->form->enctype == FORM_ENCTYPE_MULTIPART)
+        if (request->method == HTTP_METHOD_POST)
         {
-            write_from_file(sock, request->form->body);
+            if (request->form->enctype == FORM_ENCTYPE_MULTIPART)
+            {
+                write_from_file(sock, request->form->body);
+            }
+            else
+            {
+                write(sock, request->form->body, request->form->length);
+            }
         }
 
         // return stream

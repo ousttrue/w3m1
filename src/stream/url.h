@@ -97,6 +97,7 @@ public:
         return scheme != SCM_MISSING;
     }
     Str ToStr(bool usePass = false, bool useLabel = true) const;
+    std::string NonDefaultPort()const;
 };
 
 const char *filename_extension(const char *patch, int is_url);
