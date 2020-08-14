@@ -114,9 +114,6 @@ MySignalHandler error_dump(SIGNAL_ARG);
 
 void free_ssl_ctx();
 
-int openSocket(const char *hostname, const char *remoteport_name,
-               unsigned short remoteport_num);
-
 char *acceptableMimeTypes();
 
 

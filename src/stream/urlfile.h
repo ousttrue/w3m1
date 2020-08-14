@@ -57,6 +57,8 @@ private:
 public:
     ~URLFile();
 
+    static std::shared_ptr<URLFile> OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request);
+
     static std::shared_ptr<URLFile> OpenHttp(const URL &url, const URL *current,
                                              HttpReferrerPolicy referer, FormList *form,
                                              HttpRequest *hr);

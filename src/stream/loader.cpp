@@ -937,25 +937,8 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
         //
         // HTTP
         //
-        HttpRequest hr(referer, form);
-        TextList *extra_header = newTextList();
-        auto f = URLFile::OpenHttp(url, _current, referer, form, &hr);
-
-        show_message(Strnew_m_charp(url.host, " contacted. Waiting for reply...")->ptr);
-
-        auto response = HttpResponse::Read(f->stream);
-
-        if(response->HasRedirectionStatus())
-        {
-            auto location = response->FindHeader("Location");
-            if(location.size())
-            {
-
-            }
-        }
-
-        HttpContext http;
-        return http.Get(f, url, flag);
+        HttpClient client;
+        return client.Request(url, _current, referer, form);
     }
     else if (url.scheme == SCM_LOCAL)
     {

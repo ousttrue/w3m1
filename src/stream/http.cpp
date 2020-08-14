@@ -6,8 +6,25 @@
 #include "stream/istream.h"
 #include "html/form.h"
 #include "textlist.h"
+#include "frontend/display.h"
 #include "w3m.h"
 #include "indep.h"
+
+///
+/// HttpRequest
+///
+std::shared_ptr<HttpRequest> HttpRequest::Create(const URL &url, struct FormList *form)
+{
+    auto request = std::make_shared<HttpRequest>();
+    request->url = url;
+    request->form = form;
+    if (form && form->method == FORM_METHOD_POST && form->body)
+        request->method = HTTP_METHOD_POST;
+    if (form && form->method == FORM_METHOD_HEAD)
+        request->method = HTTP_METHOD_HEAD;
+
+    return request;
+}
 
 Str HttpRequest::URI(const URL &url, bool isLocal) const
 {
@@ -141,13 +158,13 @@ Str HttpRequest::ToStr(const URL &url, const URL *current, const TextList *extra
 
     if (this->method == HTTP_METHOD_POST)
     {
-        if (this->request->enctype == FORM_ENCTYPE_MULTIPART)
+        if (this->form->enctype == FORM_ENCTYPE_MULTIPART)
         {
             tmp->Push("Content-type: multipart/form-data; boundary=");
-            tmp->Push(this->request->boundary);
+            tmp->Push(this->form->boundary);
             tmp->Push("\r\n");
             tmp->Push(
-                Sprintf("Content-length: %ld\r\n", this->request->length));
+                Sprintf("Content-length: %ld\r\n", this->form->length));
             tmp->Push("\r\n");
         }
         else
@@ -158,11 +175,11 @@ Str HttpRequest::ToStr(const URL &url, const URL *current, const TextList *extra
                     "Content-type: application/x-www-form-urlencoded\r\n");
             }
             tmp->Push(
-                Sprintf("Content-length: %ld\r\n", this->request->length));
+                Sprintf("Content-length: %ld\r\n", this->form->length));
             if (w3mApp::Instance().header_string.size())
                 tmp->Push(w3mApp::Instance().header_string);
             tmp->Push("\r\n");
-            tmp->Push(this->request->body, this->request->length);
+            tmp->Push(this->form->body, this->form->length);
             tmp->Push("\r\n");
         }
     }
@@ -272,11 +289,41 @@ std::string_view HttpResponse::FindHeader(std::string_view key) const
     for (auto &l : lines)
     {
         auto [k, v] = split_colon(l);
-        if(k == key)
+        if (k == key)
         {
             return v;
         }
     }
 
     return {};
+}
+
+///
+/// HttpClient
+///
+BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form)
+{
+    auto request = HttpRequest::Create(url, form);
+    auto f = URLFile::OpenHttpAndSendRest(request);
+
+    show_message(Strnew_m_charp(url.host, " contacted. Waiting for reply...")->ptr);
+
+    auto response = HttpResponse::Read(f->stream);
+
+    // HttpRequest hr(referer, form);
+    // TextList *extra_header = newTextList();
+    // auto f = URLFile::OpenHttp(url, _current, referer, form, &hr);
+
+    if (response->HasRedirectionStatus())
+    {
+        auto location = response->FindHeader("Location");
+        if (location.size())
+        {
+        }
+    }
+    else
+    {
+    }
+
+    return nullptr;
 }

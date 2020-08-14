@@ -2,6 +2,7 @@
 #include <string_view>
 #include <memory>
 #include <assert.h>
+#include "url.h"
 
 enum HttpMethod
 {
@@ -24,13 +25,19 @@ struct TextList;
 struct HttpRequest
 {
     HttpMethod method = HTTP_METHOD_GET;
+    URL url;
+    std::vector<std::string> lines;
 
 public:
+    static std::shared_ptr<HttpRequest> Create(const URL &url, struct FormList *form);
+
     HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
-    FormList *request = nullptr;
+    FormList *form = nullptr;
+
+    HttpRequest() = default;
 
     HttpRequest(HttpReferrerPolicy _referer, FormList *_request)
-        : referer(_referer), request(_request)
+        : referer(_referer), form(_request)
     {
     }
 
@@ -57,6 +64,7 @@ public:
     Str URI(const URL &url, bool isLocal = false) const;
     Str ToStr(const URL &url, const URL *current, const TextList *extra) const;
 };
+using HttpRequestPtr = std::shared_ptr<HttpRequest>;
 
 enum class HttpResponseStatusCode
 {
@@ -86,4 +94,20 @@ struct HttpResponse
     }
 
     std::string_view FindHeader(std::string_view key) const;
+};
+using HttpResponsePtr = std::shared_ptr<HttpResponse>;
+
+struct HttpExchange
+{
+    HttpRequestPtr request;
+    HttpResponsePtr response;
+};
+
+class HttpClient
+{
+    // Usually there is a single exchange, but when redirected, multiple exchanges occur
+    std::vector<HttpExchange> exchanges;
+
+public:
+    std::shared_ptr<struct Buffer> Request(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form);
 };

@@ -6,6 +6,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
+#include "gc_helper.h"
 #include "html/form.h"
 #include "frontend/display.h"
 #include "public.h"
@@ -15,6 +16,7 @@
 #include "stream/loader.h"
 #include "mime/mimetypes.h"
 #include "frontend/lineinput.h"
+#include "regex.h"
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -121,7 +123,7 @@ seeded:
 #endif /* SSLEAY_VERSION_NUMBER >= 0x00905100 */
 
 static SSL *
-openSSLHandle(int sock, char *hostname, char **p_cert)
+openSSLHandle(int sock, std::string_view hostname, char **p_cert)
 {
     SSL *handle = NULL;
     static char *old_ssl_forbid_method = NULL;
@@ -213,11 +215,11 @@ openSSLHandle(int sock, char *hostname, char **p_cert)
     init_PRNG();
 #endif /* SSLEAY_VERSION_NUMBER >= 0x00905100 */
 #if (SSLEAY_VERSION_NUMBER >= 0x00908070) && !defined(OPENSSL_NO_TLSEXT)
-    SSL_set_tlsext_host_name(handle, hostname);
+    SSL_set_tlsext_host_name(handle, hostname.data());
 #endif /* (SSLEAY_VERSION_NUMBER >= 0x00908070) && !defined(OPENSSL_NO_TLSEXT) */
     if (SSL_connect(handle) > 0)
     {
-        Str serv_cert = ssl_get_certificate(handle, hostname);
+        Str serv_cert = ssl_get_certificate(handle, const_cast<char *>(hostname.data()));
         if (serv_cert)
         {
             *p_cert = serv_cert->ptr;
@@ -434,6 +436,213 @@ static bool UseProxy(const URL &url)
     return true;
 }
 
+int openSocket4(const char *hostname,
+                const char *remoteport_name, unsigned short remoteport_num)
+{
+    int sock = -1;
+    struct sockaddr_in hostaddr;
+    struct hostent *entry;
+    struct protoent *proto;
+    unsigned short s_port;
+    int a1, a2, a3, a4;
+    unsigned long adr;
+    MySignalHandler prevtrap = NULL;
+
+    if (fmInitialized)
+    {
+        /* FIXME: gettextize? */
+        message(Sprintf("Opening socket...")->ptr, 0, 0);
+        refresh();
+    }
+
+    if (hostname == NULL)
+    {
+        return -1;
+    }
+
+    auto success = TrapJmp([&] {
+        s_port = htons(remoteport_num);
+        bzero((char *)&hostaddr, sizeof(struct sockaddr_in));
+        if ((proto = getprotobyname("tcp")) == NULL)
+        {
+            /* protocol number of TCP is 6 */
+            proto = New(struct protoent);
+            proto->p_proto = 6;
+        }
+        if ((sock = socket(AF_INET, SOCK_STREAM, proto->p_proto)) < 0)
+        {
+            return false;
+        }
+        regexCompile("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", 0);
+        if (regexMatch(const_cast<char *>(hostname), -1, 1))
+        {
+            sscanf(hostname, "%d.%d.%d.%d", &a1, &a2, &a3, &a4);
+            adr = htonl((a1 << 24) | (a2 << 16) | (a3 << 8) | a4);
+            bcopy((void *)&adr, (void *)&hostaddr.sin_addr, sizeof(long));
+            hostaddr.sin_family = AF_INET;
+            hostaddr.sin_port = s_port;
+            if (fmInitialized)
+            {
+                message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
+                refresh();
+            }
+            if (connect(sock, (struct sockaddr *)&hostaddr,
+                        sizeof(struct sockaddr_in)) < 0)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            char **h_addr_list;
+            int result = -1;
+            if (fmInitialized)
+            {
+                message(Sprintf("Performing hostname lookup on %s", hostname)->ptr,
+                        0, 0);
+                refresh();
+            }
+            if ((entry = gethostbyname(hostname)) == NULL)
+            {
+                return false;
+            }
+            hostaddr.sin_family = AF_INET;
+            hostaddr.sin_port = s_port;
+            for (h_addr_list = entry->h_addr_list; *h_addr_list; h_addr_list++)
+            {
+                bcopy((void *)h_addr_list[0], (void *)&hostaddr.sin_addr,
+                      entry->h_length);
+                if (fmInitialized)
+                {
+                    message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
+                    refresh();
+                }
+                if ((result = connect(sock, (struct sockaddr *)&hostaddr,
+                                      sizeof(struct sockaddr_in))) == 0)
+                {
+                    break;
+                }
+            }
+            if (result < 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    });
+
+    return success ? sock : -1;
+}
+
+int openSocket6(const char *hostname,
+                const char *remoteport_name, unsigned short remoteport_num)
+{
+    int sock = -1;
+    int *af;
+    struct addrinfo hints, *res0, *res;
+    int error;
+    char *hname;
+    MySignalHandler prevtrap = NULL;
+
+    if (fmInitialized)
+    {
+        /* FIXME: gettextize? */
+        message(Sprintf("Opening socket...")->ptr, 0, 0);
+        refresh();
+    }
+
+    if (hostname == NULL)
+    {
+        return -1;
+    }
+
+    auto success = TrapJmp([&] {
+        /* rfc2732 compliance */
+        hname = const_cast<char *>(hostname);
+        if (hname != NULL && hname[0] == '[' && hname[strlen(hname) - 1] == ']')
+        {
+            hname = allocStr(hostname + 1, -1);
+            hname[strlen(hname) - 1] = '\0';
+            if (strspn(hname, "0123456789abcdefABCDEF:.") != strlen(hname))
+                return false;
+        }
+        for (af = ai_family_order_table[DNS_order];; af++)
+        {
+            memset(&hints, 0, sizeof(hints));
+            hints.ai_family = *af;
+            hints.ai_socktype = SOCK_STREAM;
+            if (remoteport_num != 0)
+            {
+                Str portbuf = Sprintf("%d", remoteport_num);
+                error = getaddrinfo(hname, portbuf->ptr, &hints, &res0);
+            }
+            else
+            {
+                error = -1;
+            }
+            if (error && remoteport_name && remoteport_name[0] != '\0')
+            {
+                /* try default port */
+                error = getaddrinfo(hname, remoteport_name, &hints, &res0);
+            }
+            if (error)
+            {
+                if (*af == PF_UNSPEC)
+                {
+                    return false;
+                }
+                /* try next ai family */
+                continue;
+            }
+
+            sock = -1;
+            for (res = res0; res; res = res->ai_next)
+            {
+                sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+                if (sock < 0)
+                {
+                    continue;
+                }
+                if (connect(sock, res->ai_addr, res->ai_addrlen) < 0)
+                {
+                    close(sock);
+                    sock = -1;
+                    continue;
+                }
+                break;
+            }
+            if (sock < 0)
+            {
+                freeaddrinfo(res0);
+                if (*af == PF_UNSPEC)
+                {
+                    return false;
+                }
+                /* try next ai family */
+                continue;
+            }
+            freeaddrinfo(res0);
+            break;
+        }
+
+        return true;
+    });
+
+    return success ? sock : -1;
+}
+
+int openSocket(const char *hostname,
+               const char *remoteport_name, unsigned short remoteport_num)
+{
+    return openSocket6(hostname, remoteport_name, remoteport_num);
+}
+
+int openSocket(const URL &url)
+{
+    return openSocket(url.host.c_str(), GetScheme(url.scheme)->name.data(), url.port);
+}
+
 ///
 /// URLFile
 ///
@@ -457,6 +666,74 @@ int dir_exist(const char *path)
         return 0;
 
     return IS_DIRECTORY(stbuf.st_mode);
+}
+
+std::shared_ptr<URLFile> URLFile::OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request)
+{
+    if (request->url.scheme != SCM_HTTP && request->url.scheme != SCM_HTTPS)
+    {
+        assert(false);
+        return {};
+    }
+
+    if (UseProxy(request->url))
+    {
+        assert(false);
+        return {};
+    }
+
+    auto sock = openSocket(request->url);
+    if (sock < 0)
+    {
+        // fail to open socket
+        return {};
+    }
+
+    if (request->url.scheme == SCM_HTTPS)
+    {
+        char *ssl_certificate = nullptr;
+        SSL *ssl = openSSLHandle(sock, request->url.host, &ssl_certificate);
+        if (!ssl)
+        {
+            // *status = HTST_MISSING;
+            return {};
+        }
+
+        // send http request
+        for (auto &l : request->lines)
+        {
+            SSL_write(ssl, l.data(), l.size());
+        }
+        SSL_write(ssl, "\r\n", 2);
+        // send post body
+        if (request->method == HTTP_METHOD_POST && request->form->enctype == FORM_ENCTYPE_MULTIPART)
+        {
+            SSL_write_from_file(ssl, request->form->body);
+        }
+
+        // return stream
+        auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_HTTPS, newSSLStream(ssl, sock)));
+        uf->ssl_certificate = ssl_certificate;
+        return uf;
+    }
+    else
+    {
+        // send http request
+        for (auto &l : request->lines)
+        {
+            write(sock, l.data(), l.size());
+        }
+        write(sock, "\r\n", 2);
+        // send post body
+        if (request->method == HTTP_METHOD_POST & request->form->enctype == FORM_ENCTYPE_MULTIPART)
+        {
+            write_from_file(sock, request->form->body);
+        }
+
+        // return stream
+        auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_HTTP, newInputStream(sock)));
+        return uf;
+    }
 }
 
 URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
@@ -538,8 +815,7 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
     }
     else
     {
-        sock = openSocket(url.host.c_str(),
-                          GetScheme(url.scheme)->name.data(), url.port);
+        sock = openSocket(url);
         if (sock < 0)
         {
             // *status = HTST_MISSING;
