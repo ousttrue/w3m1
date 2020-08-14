@@ -2,7 +2,7 @@
 #include "fm.h"
 #include "indep.h"
 #include "myctype.h"
-#include "transport/istream.h"
+#include "stream/istream.h"
 #include "file.h"
 
 #include "html/html.h"

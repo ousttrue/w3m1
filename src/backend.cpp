@@ -9,8 +9,8 @@
 #include "public.h"
 #include "file.h"
 #include "mime/mimetypes.h"
-#include "transport/cookie.h"
-#include "transport/loader.h"
+#include "stream/cookie.h"
+#include "stream/loader.h"
 #include "html/form.h"
 #include "frontend/terms.h"
 

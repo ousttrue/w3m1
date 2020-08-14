@@ -1,6 +1,6 @@
 #pragma once
 
-#include "transport/url.h"
+#include "stream/url.h"
 #include "frontend/buffer.h"
 
 struct HttpRequest;

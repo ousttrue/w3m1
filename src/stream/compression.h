@@ -1,6 +1,6 @@
 #pragma once
 #include "config.h"
-#include "transport/urlfile.h"
+#include "stream/urlfile.h"
 
 /* *INDENT-OFF* */
 static struct compression_decoder

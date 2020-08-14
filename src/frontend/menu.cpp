@@ -14,7 +14,7 @@
 #include "html/html.h"
 #include "charset.h"
 #include "html/anchor.h"
-#include "transport/url.h"
+#include "stream/url.h"
 #include "frontend/display.h"
 #include "frontend/menu.h"
 #include "frontend/terms.h"

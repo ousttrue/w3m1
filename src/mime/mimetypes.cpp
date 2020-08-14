@@ -3,7 +3,7 @@
 #include "indep.h"
 #include "textlist.h"
 #include "frontend/buffer.h"
-// #include "transport/url.h"
+// #include "stream/url.h"
 #include <vector>
 #include <string_view>
 

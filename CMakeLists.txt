@@ -113,15 +113,15 @@ add_executable(w3m
     src/frontend/keybind.cpp
     src/frontend/event.cpp
     src/file.cpp
-    src/transport/istream.cpp
-    src/transport/loader.cpp
-    src/transport/local_cgi.cpp
-    src/transport/urlfile.cpp
-    src/transport/url.cpp
-    src/transport/compression.cpp
-    src/transport/auth.cpp
-    src/transport/http_request.cpp
-    src/transport/cookie.cpp
+    src/stream/istream.cpp
+    src/stream/loader.cpp
+    src/stream/local_cgi.cpp
+    src/stream/urlfile.cpp
+    src/stream/url.cpp
+    src/stream/compression.cpp
+    src/stream/auth.cpp
+    src/stream/http_request.cpp
+    src/stream/cookie.cpp
     src/mime/mimeencoding.cpp
     src/mime/mimetypes.cpp
     src/mime/mailcap.cpp

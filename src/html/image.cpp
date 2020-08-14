@@ -7,9 +7,9 @@
 #include "frontend/terms.h"
 
 #include "frontend/buffer.h"
-#include "transport/local_cgi.h"
+#include "stream/local_cgi.h"
 #include "html/anchor.h"
-#include "transport/loader.h"
+#include "stream/loader.h"
 #include "rc.h"
 #include "myctype.h"
 #include <sys/types.h>

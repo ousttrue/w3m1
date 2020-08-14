@@ -6,7 +6,7 @@
 #include "html/frame.h"
 #include "html/form.h"
 #include "html/maparea.h"
-#include "transport/compression.h"
+#include "stream/compression.h"
 #include "frontend/terms.h"
 #include "indep.h"
 #include "gc_helper.h"

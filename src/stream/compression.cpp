@@ -1,14 +1,14 @@
-#include "transport/compression.h"
+#include "stream/compression.h"
 #include "mime/mimetypes.h"
 #include "textlist.h"
 #include "indep.h"
-#include "transport/istream.h"
+#include "stream/istream.h"
 #include "rc.h"
 #include "file.h"
 
 #include "fm.h"
 #include "html/html.h"
-#include "transport/local_cgi.h"
+#include "stream/local_cgi.h"
 #include <sys/stat.h>
 
 void check_compression(std::string_view path, const URLFilePtr &uf)

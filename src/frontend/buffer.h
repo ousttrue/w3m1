@@ -1,5 +1,5 @@
 #pragma once
-#include "transport/url.h"
+#include "stream/url.h"
 #include "html/anchor.h"
 #include "termrect.h"
 #include "line.h"

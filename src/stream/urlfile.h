@@ -1,6 +1,6 @@
 #pragma once
-#include "transport/url.h"
-#include "transport/http_request.h"
+#include "stream/url.h"
+#include "stream/http_request.h"
 #include <time.h>
 #include <memory>
 

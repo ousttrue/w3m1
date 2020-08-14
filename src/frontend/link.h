@@ -2,7 +2,7 @@
 #include <string_view>
 #include <string>
 #include <wc.h>
-#include "transport/url.h"
+#include "stream/url.h"
 #include "html/html.h"
 
 enum LinkTypes : char

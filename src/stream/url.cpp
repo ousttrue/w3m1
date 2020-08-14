@@ -2,14 +2,14 @@
 #include "fm.h"
 #include "gc_helper.h"
 #include "file.h"
-#include "transport/url.h"
+#include "stream/url.h"
 #include "indep.h"
-#include "transport/cookie.h"
+#include "stream/cookie.h"
 #include "frontend/terms.h"
 #include "html/form.h"
 #include "frontend/display.h"
 #include "html/anchor.h"
-#include "transport/http_request.h"
+#include "stream/http_request.h"
 #include <pwd.h>
 #include <sys/types.h>
 #include <sys/socket.h>

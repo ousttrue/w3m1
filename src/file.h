@@ -1,8 +1,8 @@
 #pragma once
-#include "transport/istream.h"
+#include "stream/istream.h"
 #include "frontend/buffer.h"
 #include "frontend/event.h"
-#include "transport/urlfile.h"
+#include "stream/urlfile.h"
 
 struct HttpRequest;
 struct Hist;

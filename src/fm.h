@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include "config.h"
 #include "history.h"
-#include "transport/url.h"
+#include "stream/url.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>

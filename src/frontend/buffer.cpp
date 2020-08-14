@@ -13,17 +13,17 @@
 #include "html/image.h"
 #include "html/html.h"
 #include "ctrlcode.h"
-#include "transport/local_cgi.h"
+#include "stream/local_cgi.h"
 #include "html/anchor.h"
-#include "transport/url.h"
-#include "transport/loader.h"
+#include "stream/url.h"
+#include "stream/loader.h"
 #include "mime/mimetypes.h"
 #include "charset.h"
 #include "html/html.h"
 #include "html/form.h"
 #include "html/html_processor.h"
 #include "frontend/terms.h"
-#include "transport/istream.h"
+#include "stream/istream.h"
 #include <iostream>
 
 static int REV_LB[MAX_LB] = {

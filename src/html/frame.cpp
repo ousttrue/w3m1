@@ -7,12 +7,12 @@
 #include "file.h"
 #include "frontend/terms.h"
 #include "html/table.h"
-#include "transport/url.h"
+#include "stream/url.h"
 #include "entity.h"
-#include "transport/loader.h"
+#include "stream/loader.h"
 #include "html/html_processor.h"
 #include "html/tokenizer.h"
-#include "transport/istream.h"
+#include "stream/istream.h"
 #include <signal.h>
 #include <setjmp.h>
 

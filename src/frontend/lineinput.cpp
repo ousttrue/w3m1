@@ -2,7 +2,7 @@
 #include "lineinput.h"
 #include "gc_helper.h"
 #include "indep.h"
-#include "transport/local_cgi.h"
+#include "stream/local_cgi.h"
 #include "myctype.h"
 #include "file.h"
 #include "public.h"

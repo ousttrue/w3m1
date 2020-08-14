@@ -4,11 +4,11 @@
 #include "indep.h"
 #include "gc_helper.h"
 #include "html/form.h"
-#include "transport/loader.h"
+#include "stream/loader.h"
 #include "file.h"
 #include "myctype.h"
 #include "entity.h"
-#include "transport/compression.h"
+#include "stream/compression.h"
 #include "html/image.h"
 #include "symbol.h"
 #include "tagstack.h"
@@ -20,7 +20,7 @@
 #include "w3m.h"
 #include "frontend/terms.h"
 #include "frontend/line.h"
-#include "transport/istream.h"
+#include "stream/istream.h"
 #include <signal.h>
 #include <setjmp.h>
 #include <vector>

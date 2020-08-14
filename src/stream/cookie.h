@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 #include "html/html.h"
-#include "transport/url.h"
+#include "stream/url.h"
 
 void set_cookie_flag(struct parsed_tagarg *arg);
 Str find_cookie(const URL *pu);
