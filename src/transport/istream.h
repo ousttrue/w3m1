@@ -12,10 +12,91 @@
 
 struct StreamBuffer
 {
+private:
     unsigned char *buf;
-    int size, cur, next;
+    int size;
+    int cur;
+    int next;
 
+public:
     void initialize(char *buf, int bufsize);
+
+    int update(const std::function<int(unsigned char *, int)> &readfunc)
+    {
+        cur = next = 0;
+        int len = readfunc(buf, size);
+        next += len;
+        return len;
+    }
+
+    int undogetc()
+    {
+        if (cur > 0)
+        {
+            cur--;
+            return 0;
+        }
+        return -1;
+    }
+
+    // LF
+    bool try_gets(Str s)
+    {
+        assert(s);
+        if (auto p = (unsigned char *)memchr(&buf[cur], '\n', next - cur))
+        {
+            // found new line
+            int len = p - &buf[cur] + 1;
+            s->Push((char *)&buf[cur], len);
+            cur += len;
+            return true;
+        }
+        else
+        {
+            s->Push((char *)&buf[cur], next - cur);
+            cur = next;
+            return false;
+        }
+    }
+
+    // CRLF
+    bool try_mygets(Str s)
+    {
+        assert(s);
+
+        if (s && s->Back() == '\r')
+        {
+            if (buf[cur] == '\n')
+                s->Push((char)buf[cur++]);
+            return true;
+        }
+        int i = cur;
+        for (;
+             i < next && buf[i] != '\n' && buf[i] != '\r';
+             i++)
+            ;
+        if (i < next)
+        {
+            int len = i - cur + 1;
+            s->Push((char *)&buf[cur], len);
+            cur = i + 1;
+            if (buf[i] == '\n')
+                return true;
+        }
+        else
+        {
+            s->Push((char *)&buf[cur],
+                    next - cur);
+            cur = next;
+        }
+
+        return false;
+    }
+
+    unsigned char POP_CHAR()
+    {
+        return buf[cur++];
+    }
 
     int buffer_read(char *obuf, int count)
     {

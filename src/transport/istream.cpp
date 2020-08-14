@@ -22,8 +22,6 @@
 #define STREAM_BUF_SIZE 8192
 #define SSL_BUF_SIZE 1536
 
-#define POP_CHAR(bs) ((bs)->iseos ? '\0' : (bs)->stream.buf[(bs)->stream.cur++])
-
 ///
 /// InputStream
 ///
@@ -55,19 +53,23 @@ static void init_str_stream(InputStreamPtr base, Str s)
 
 void InputStream::do_update()
 {
-    stream.cur = stream.next = 0;
-    int len = ReadFunc(stream.buf, stream.size);
+    auto len = stream.update(std::bind(&InputStream::ReadFunc, this,
+                                       std::placeholders::_1, std::placeholders::_2));
     if (len <= 0)
+    {
         iseos = TRUE;
-    else
-        stream.next += len;
+    }
 }
 
 int InputStream::getc()
 {
     if (!iseos && stream.MUST_BE_UPDATED())
         do_update();
-    return POP_CHAR(this);
+    if (iseos)
+    {
+        return '\0';
+    }
+    return stream.POP_CHAR();
 }
 
 bool InputStream::eos()
@@ -80,12 +82,7 @@ bool InputStream::eos()
 #define MARGIN_STR_SIZE 10
 Str InputStream::gets()
 {
-    Str s = NULL;
-    uchar *p;
-    int len;
-
-    auto sb = &stream;
-
+    Str s = Strnew();
     while (!iseos)
     {
         if (stream.MUST_BE_UPDATED())
@@ -94,38 +91,18 @@ Str InputStream::gets()
         }
         else
         {
-            if ((p = (unsigned char *)memchr(&sb->buf[sb->cur], '\n', sb->next - sb->cur)))
+            if(stream.try_gets(s))
             {
-                len = p - &sb->buf[sb->cur] + 1;
-                if (s == NULL)
-                    s = Strnew_size(len);
-                s->Push((char *)&sb->buf[sb->cur], len);
-                sb->cur += len;
                 return s;
-            }
-            else
-            {
-                if (s == NULL)
-                    s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
-                s->Push((char *)&sb->buf[sb->cur],
-                        sb->next - sb->cur);
-                sb->cur = sb->next;
             }
         }
     }
-
-    if (s == NULL)
-        return Strnew();
     return s;
 }
 
 Str InputStream::mygets()
 {
-    Str s = NULL;
-    int i, len;
-
-    auto sb = &stream;
-
+    Str s = Strnew();
     while (!iseos)
     {
         if (stream.MUST_BE_UPDATED())
@@ -134,39 +111,12 @@ Str InputStream::mygets()
         }
         else
         {
-            if (s && s->Back() == '\r')
+            if(stream.try_mygets(s))
             {
-                if (sb->buf[sb->cur] == '\n')
-                    s->Push((char)sb->buf[sb->cur++]);
                 return s;
-            }
-            for (i = sb->cur;
-                 i < sb->next && sb->buf[i] != '\n' && sb->buf[i] != '\r';
-                 i++)
-                ;
-            if (i < sb->next)
-            {
-                len = i - sb->cur + 1;
-                if (s == NULL)
-                    s = Strnew_size(len + MARGIN_STR_SIZE);
-                s->Push((char *)&sb->buf[sb->cur], len);
-                sb->cur = i + 1;
-                if (sb->buf[i] == '\n')
-                    return s;
-            }
-            else
-            {
-                if (s == NULL)
-                    s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
-                s->Push((char *)&sb->buf[sb->cur],
-                        sb->next - sb->cur);
-                sb->cur = sb->next;
             }
         }
     }
-
-    if (s == NULL)
-        return Strnew();
     return s;
 }
 
@@ -246,11 +196,6 @@ InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep)
 
 FileStream::~FileStream()
 {
-    // if (iseos)
-    // {
-    //     // TODO: ?
-    //     return;
-    // }
     MySignalHandler prevtrap = NULL;
     prevtrap = mySignal(SIGINT, SIG_IGN);
     if (m_close)
@@ -438,19 +383,6 @@ newEncodedStream(InputStreamPtr is, char encoding)
 //     mySignal(SIGINT, prevtrap);
 //     return 0;
 // }
-
-int ISundogetc(InputStreamPtr stream)
-{
-    if (stream == NULL)
-        return -1;
-    auto sb = &stream->stream;
-    if (sb->cur > 0)
-    {
-        sb->cur--;
-        return 0;
-    }
-    return -1;
-}
 
 #ifdef USE_SSL
 static Str accept_this_site;
