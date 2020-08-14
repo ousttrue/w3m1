@@ -460,7 +460,7 @@ int dir_exist(const char *path)
 }
 
 URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
-                             HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
+                             HttpReferrerPolicy referer, LoadFlags flag, FormList *form,
                              HttpRequest *hr)
 {
     if (url.scheme != SCM_HTTP && url.scheme != SCM_HTTPS)
@@ -469,9 +469,9 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
         return {};
     }
 
-    if (request && request->method == FORM_METHOD_POST && request->body)
+    if (form && form->method == FORM_METHOD_POST && form->body)
         hr->method = HTTP_METHOD_POST;
-    if (request && request->method == FORM_METHOD_HEAD)
+    if (form && form->method == FORM_METHOD_HEAD)
         hr->method = HTTP_METHOD_HEAD;
 
     int sock = 0;
@@ -554,7 +554,7 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
             }
         }
         // hr->flag |= HR_FLAG_LOCAL;
-        tmp = hr->ToStr(url, current, extra_header);
+        tmp = hr->ToStr(url, current, nullptr);
         // *status = HTST_NORMAL;
     }
 
@@ -577,12 +577,12 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
             fclose(ff);
         }
         if (hr->method == HTTP_METHOD_POST &&
-            request->enctype == FORM_ENCTYPE_MULTIPART)
+            form->enctype == FORM_ENCTYPE_MULTIPART)
         {
             if (sslh)
-                SSL_write_from_file(sslh, request->body);
+                SSL_write_from_file(sslh, form->body);
             else
-                write_from_file(sock, request->body);
+                write_from_file(sock, form->body);
         }
         return uf;
     }
@@ -596,8 +596,8 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
             fclose(ff);
         }
         if (hr->method == HTTP_METHOD_POST &&
-            request->enctype == FORM_ENCTYPE_MULTIPART)
-            write_from_file(sock, request->body);
+            form->enctype == FORM_ENCTYPE_MULTIPART)
+            write_from_file(sock, form->body);
 
         auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_HTTP, newInputStream(sock)));
         return uf;
