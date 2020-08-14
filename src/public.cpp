@@ -18,7 +18,7 @@
 #include "html/image.h"
 #include "commands.h"
 #include "transport/url.h"
-#include "http/cookie.h"
+#include "transport/cookie.h"
 #include "ctrlcode.h"
 #include "html/anchor.h"
 #include "html/maparea.h"

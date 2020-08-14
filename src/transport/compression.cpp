@@ -1,4 +1,4 @@
-#include "http/compression.h"
+#include "transport/compression.h"
 #include "mime/mimetypes.h"
 #include "textlist.h"
 #include "indep.h"

@@ -17,7 +17,7 @@
 #include "transport/url.h"
 #include "frontend/display.h"
 #include "frontend/tab.h"
-#include "http/cookie.h"
+#include "transport/cookie.h"
 #include "frontend/terms.h"
 #include "frontend/mouse.h"
 #include "frontend/tabbar.h"

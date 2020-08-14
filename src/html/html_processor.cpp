@@ -8,7 +8,7 @@
 #include "file.h"
 #include "myctype.h"
 #include "entity.h"
-#include "http/compression.h"
+#include "transport/compression.h"
 #include "html/image.h"
 #include "symbol.h"
 #include "tagstack.h"

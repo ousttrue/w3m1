@@ -28,7 +28,7 @@
 #include "html/html_processor.h"
 #include "transport/loader.h"
 #include "transport/istream.h"
-#include "http/cookie.h"
+#include "transport/cookie.h"
 #include "frontend/mouse.h"
 #include "frontend/lineinput.h"
 #include "frontend/terms.h"

@@ -1,7 +1,7 @@
 #pragma once
 #include "frontend/buffer.h"
 #include "urlfile.h"
-#include "http/http_request.h"
+#include "transport/http_request.h"
 
 long long GetCurrentContentLength();
 extern CharacterEncodingScheme content_charset;

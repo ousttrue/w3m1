@@ -9,7 +9,7 @@
 #include "public.h"
 #include "html/parsetag.h"
 #include "rc.h"
-#include "http/cookie.h"
+#include "transport/cookie.h"
 #include "html/html.h"
 #include "myctype.h"
 #include "transport/local_cgi.h"

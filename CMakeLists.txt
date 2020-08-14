@@ -118,13 +118,13 @@ add_executable(w3m
     src/transport/local_cgi.cpp
     src/transport/urlfile.cpp
     src/transport/url.cpp
+    src/transport/compression.cpp
+    src/transport/auth.cpp
+    src/transport/http_request.cpp
+    src/transport/cookie.cpp
     src/mime/mimeencoding.cpp
     src/mime/mimetypes.cpp
     src/mime/mailcap.cpp
-    src/http/compression.cpp
-    src/http/auth.cpp
-    src/http/http_request.cpp
-    src/http/cookie.cpp
     src/html/anchor.cpp
     src/html/tagstack.cpp
     src/html/html_processor.cpp

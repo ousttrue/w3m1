@@ -9,7 +9,7 @@
 #include "public.h"
 #include "file.h"
 #include "mime/mimetypes.h"
-#include "http/cookie.h"
+#include "transport/cookie.h"
 #include "transport/loader.h"
 #include "html/form.h"
 #include "frontend/terms.h"
