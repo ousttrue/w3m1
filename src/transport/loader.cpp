@@ -946,7 +946,7 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
         //
         HttpRequest hr(referer, form);
         TextList *extra_header = newTextList();
-        auto f = URLFile::OpenHttp(url, _current, referer, flag, form, &hr);
+        auto f = URLFile::OpenHttp(url, _current, referer, form, &hr);
         HttpContext http;
         return http.Get(f, url, flag);
     }

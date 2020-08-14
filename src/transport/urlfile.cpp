@@ -460,7 +460,7 @@ int dir_exist(const char *path)
 }
 
 URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
-                             HttpReferrerPolicy referer, LoadFlags flag, FormList *form,
+                             HttpReferrerPolicy referer, FormList *form,
                              HttpRequest *hr)
 {
     if (url.scheme != SCM_HTTP && url.scheme != SCM_HTTPS)
