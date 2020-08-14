@@ -56,7 +56,6 @@ Str localCookie()
     return Local_cookie;
 }
 
-
 void set_environ(std::string_view var, std::string_view value)
 {
 #ifdef HAVE_SETENV
@@ -154,11 +153,12 @@ checkPath(char *fn, char *path)
     return NULL;
 }
 
-LocalCGI::LocalCGI(char *uri)
+LocalCGI::LocalCGI(std::string_view _uri)
 {
+    auto uri = const_cast<char*>(_uri.data());
     file = uri;
     name = uri;
-    path_info = NULL;
+    path_info;
 
     if (cgi_bin != NULL && strncmp(uri, "/cgi-bin/", 9) == 0)
     {
@@ -212,7 +212,7 @@ LocalCGI::LocalCGI(char *uri)
     status = CGIFN_LIBDIR;
 }
 
-bool LocalCGI::check_local_cgi()const
+bool LocalCGI::check_local_cgi() const
 {
     if (status != CGIFN_LIBDIR && status != CGIFN_CGIBIN)
         return false;
@@ -224,8 +224,9 @@ bool LocalCGI::check_local_cgi()const
     if (S_ISDIR(st.st_mode))
         return false;
 
-    if ((st.st_uid == geteuid() && (st.st_mode & S_IXUSR)) || (st.st_gid == getegid() && (st.st_mode & S_IXGRP)) || (st.st_mode & S_IXOTH)){
-         /* executable */
+    if ((st.st_uid == geteuid() && (st.st_mode & S_IXUSR)) || (st.st_gid == getegid() && (st.st_mode & S_IXGRP)) || (st.st_mode & S_IXOTH))
+    {
+        /* executable */
         return true;
     }
 

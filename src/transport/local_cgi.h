@@ -63,6 +63,6 @@ struct LocalCGI
     char *name;
     char *path_info;
 
-    LocalCGI(char *uri);
+    LocalCGI(std::string_view uri);
     bool check_local_cgi() const;
 };

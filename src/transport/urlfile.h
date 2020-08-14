@@ -65,10 +65,6 @@ public:
 
     static std::shared_ptr<URLFile> OpenFile(std::string_view path);
 
-    static std::shared_ptr<URLFile> openURL(const URL &url, const URL *current,
-                                            HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                                            HttpRequest *hr, unsigned char *status);
-
     int DoFileSave(const char *defstr, long long content_length);
 
     // open stream to local path
@@ -77,3 +73,4 @@ public:
 using URLFilePtr = std::shared_ptr<URLFile>;
 
 int save2tmp(const URLFilePtr &uf, char *tmpf);
+int dir_exist(const char *path);

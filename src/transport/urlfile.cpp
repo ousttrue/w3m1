@@ -262,14 +262,15 @@ URLFile::~URLFile()
 }
 
 #define IS_DIRECTORY(m) (((m)&S_IFMT) == S_IFDIR)
-static int dir_exist(char *path)
+int dir_exist(const char *path)
 {
-    struct stat stbuf;
-
     if (path == NULL || *path == '\0')
         return 0;
+
+    struct stat stbuf;
     if (stat(path, &stbuf) == -1)
         return 0;
+        
     return IS_DIRECTORY(stbuf.st_mode);
 }
 
@@ -462,100 +463,6 @@ std::shared_ptr<URLFile> URLFile::OpenFile(std::string_view path)
 std::shared_ptr<URLFile> URLFile::OpenStream(URLSchemeTypes scheme, InputStreamPtr stream)
 {
     auto uf = std::shared_ptr<URLFile>(new URLFile(scheme, stream));
-    return uf;
-}
-
-// this->scheme = url.scheme;
-// this->url = url.ToStr()->ptr;
-// // url.is_nocache = (flag & RG_NOCACHE);
-// this->ext = filename_extension(url.path.c_str(), 1);
-
-URLFilePtr URLFile::openURL(const URL &url, const URL *current,
-                            HttpReferrerPolicy referer, LoadFlags flag, FormList *form, TextList *extra_header,
-                            HttpRequest *hr, unsigned char *status)
-{
-    if (url.scheme != SCM_LOCAL && url.scheme != SCM_LOCAL_CGI)
-    {
-        assert(false);
-        return {};
-    }
-
-    URLFilePtr uf;
-    {
-        FILE *f = nullptr;
-        if (form && form->body)
-        {
-            /* local CGI: POST */
-            f = localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), form, referer);
-        }
-        else
-        {
-            /* lodal CGI: GET */
-            f = localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), referer);
-        }
-        auto stream = newFileStream(f, (FileStreamCloseFunc)fclose);
-        uf = std::shared_ptr<URLFile>(new URLFile(SCM_LOCAL, stream));
-    }
-
-    if (uf->stream)
-    {
-        uf->is_cgi = TRUE;
-        // TODO:
-        // url.scheme =
-        uf->scheme = SCM_LOCAL_CGI;
-        return uf;
-    }
-
-    uf->examineFile(const_cast<char *>(url.real_file.c_str()));
-    if (uf->stream == NULL)
-    {
-        if (dir_exist(const_cast<char *>(url.real_file.c_str())))
-        {
-            add_index_file(&url, uf);
-            if (uf->stream == NULL)
-                return uf;
-        }
-        else if (document_root != NULL)
-        {
-            // TODO:
-            assert(false);
-            // tmp = Strnew(document_root);
-            // if (tmp->Back() != '/' && url.path[0] != '/')
-            //     tmp->Push('/');
-            // tmp->Push(url.path);
-            // p = cleanupName(tmp->ptr);
-            // q = cleanupName(file_unquote(p));
-            // if (dir_exist(q))
-            // {
-            //     url.path = p;
-            //     url.real_file = q;
-            //     add_index_file(pu, this);
-            //     if (uf.stream == NULL)
-            //     {
-            //         return;
-            //     }
-            // }
-            // else
-            // {
-            //     examineFile(q);
-            //     if (uf.stream)
-            //     {
-            //         url.path = p;
-            //         url.real_file = q;
-            //     }
-            // }
-        }
-    }
-    // TODO:
-    // if (this->stream == NULL && retryAsHttp && url[0] != '/')
-    // {
-    //     if (scheme == SCM_MISSING || scheme == SCM_UNKNOWN)
-    //     {
-    //         /* retry it as "http://" */
-    //         u = Strnew_m_charp("http://", url, NULL)->ptr;
-    //         goto retry;
-    //     }
-    // }
     return uf;
 }
 

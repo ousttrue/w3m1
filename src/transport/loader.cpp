@@ -21,6 +21,7 @@
 #include "frontend/lineinput.h"
 #include "transport/istream.h"
 #include "html/html_processor.h"
+#include "html/form.h"
 #include <assert.h>
 #include <memory>
 
@@ -926,41 +927,190 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
 }
 
 /* 
- * loadGeneralFile: load file to buffer
+ * 
+ * Dispatch URL, return Buffer
+ * 
  */
 BufferPtr
 loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
                 LoadFlags flag, FormList *form)
 {
-    HttpRequest hr(referer, form);
-    // URL pu;
-    TextList *extra_header = newTextList();
-    unsigned char status = HTST_NORMAL;
-
+    // this->scheme = url.scheme;
+    // this->url = url.ToStr()->ptr;
+    // // url.is_nocache = (flag & RG_NOCACHE);
+    // this->ext = filename_extension(url.path.c_str(), 1);
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
-        // local CGI
-        // "file:///$LIB/w3mbookmark"
+        //
+        // HTTP
+        //
+        HttpRequest hr(referer, form);
+        TextList *extra_header = newTextList();
+        unsigned char status = HTST_NORMAL;
         auto f = URLFile::OpenHttp(url, _current, referer, flag, form, extra_header, &hr, &status);
         HttpContext http;
         return http.Get(f, url, flag);
     }
     else if (url.scheme == SCM_LOCAL)
     {
-        auto f = URLFile::openURL(url, _current, referer, flag, form, extra_header, &hr, &status);
+        auto cgi = LocalCGI(url.real_file);
+        if (cgi.check_local_cgi())
+        {
+            //
+            // local CGI
+            //
+            // * "file:///$LIB/w3mbookmark"
+            // or
+            // * /cgi-bin/w3mbookmark
+            //
+            // HttpRequest hr(referer, form);
+            // auto f = URLFile::openURL(url, _current, referer, flag, form, extra_header, &hr, &status);
+            URLFilePtr uf;
+            {
+                FILE *f = nullptr;
+                if (form && form->body)
+                {
+                    /* local CGI: POST */
+                    f = localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), form, referer);
+                }
+                else
+                {
+                    /* lodal CGI: GET */
+                    f = localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), referer);
+                }
+                auto stream = newFileStream(f, (FileStreamCloseFunc)fclose);
+                uf = URLFile::OpenStream(SCM_LOCAL, stream);
+            }
+
+            assert(uf->stream);
+            {
+                uf->is_cgi = TRUE;
+                // TODO:
+                // url.scheme =
+                uf->scheme = SCM_LOCAL_CGI;
+            }
+            // // auto b = NULL;
+            if (uf->is_cgi)
+            {
+                /* local CGI */
+                // searchHeader = TRUE;
+                // searchHeader_through = FALSE;
+            }
+
+            // if (searchHeader)
+            // {
+            //     searchHeader = w3mApp::Instance().SearchHeader = FALSE;
+            //     if (t_buf == NULL)
+            //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
+            //     readHeader(&f, t_buf, searchHeader_through, &pu);
+            //     if (f.is_cgi && (p = checkHeader(t_buf, "Location:")) != NULL &&
+            //         checkRedirection(&pu))
+            //     {
+            //         /* document moved */
+            //         tpath = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
+            //         request = NULL;
+            //         f.Close();
+            //         add_auth_cookie_flag = 0;
+            //         *current = pu;
+            //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
+            //         t_buf->bufferprop |= BP_REDIRECTED;
+            //         status = HTST_NORMAL;
+            //         goto load_doc;
+            //     }
+            //     t = checkContentType(t_buf);
+            //     if (t == NULL)
+            //         t = "text/plain";
+            // }
+            // else if (w3mApp::Instance().DefaultType.size())
+            // {
+            //     t = Strnew(w3mApp::Instance().DefaultType)->ptr;
+            //     w3mApp::Instance().DefaultType.clear();
+            // }
+            // else
+            {
+                // local CGI
+                auto t = guessContentType(url.path);
+                if (t == NULL)
+                    t = "text/plain";
+                auto real_type = t;
+                if (uf->guess_type)
+                    t = uf->guess_type;
+            }
+
+            HttpContext http;
+            return http.Get(uf, url, flag);
+        }
+        else
+        {
+            //
+            // local file
+            //
+            // auto f = URLFile::openURL(url, _current, referer, flag, form, extra_header, &hr, &status);
+            auto uf = URLFile::OpenFile(url.real_file);
+            if (uf->stream == NULL)
+            {
+                // TODO:
+                assert(false);
+                return nullptr;
+                // if (dir_exist(const_cast<char *>(url.real_file.c_str())))
+                // {
+                //     add_index_file(&url, uf);
+                //     if (uf->stream == NULL)
+                //         return uf;
+                // }
+
+                // else if (document_root != NULL)
+                // {
+                //     // TODO:
+                //     assert(false);
+                //     // tmp = Strnew(document_root);
+                //     // if (tmp->Back() != '/' && url.path[0] != '/')
+                //     //     tmp->Push('/');
+                //     // tmp->Push(url.path);
+                //     // p = cleanupName(tmp->ptr);
+                //     // q = cleanupName(file_unquote(p));
+                //     // if (dir_exist(q))
+                //     // {
+                //     //     url.path = p;
+                //     //     url.real_file = q;
+                //     //     add_index_file(pu, this);
+                //     //     if (uf.stream == NULL)
+                //     //     {
+                //     //         return;
+                //     //     }
+                //     // }
+                //     // else
+                //     // {
+                //     //     examineFile(q);
+                //     //     if (uf.stream)
+                //     //     {
+                //     //         url.path = p;
+                //     //         url.real_file = q;
+                //     //     }
+                //     // }
+                // }
+            }
+            // TODO:
+            // if (this->stream == NULL && retryAsHttp && url[0] != '/')
+            // {
+            //     if (scheme == SCM_MISSING || scheme == SCM_UNKNOWN)
+            //     {
+            //         /* retry it as "http://" */
+            //         u = Strnew_m_charp("http://", url, NULL)->ptr;
+            //         goto retry;
+            //     }
+            // }
+
+            HttpContext http;
+            return http.Get(uf, url, flag);
+        }
     }
     else
     {
         // not implemened;
         assert(false);
+        return nullptr;
     }
-
-    // if (!f.stream)
-    // {
-    //     // fail to open ?
-    //     assert(false);
-    //     return nullptr;
-    // }
 
     // LoaderFunc proc = loadBuffer;
     // char *p;
@@ -1064,14 +1214,6 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
     //     return NULL;
     // }
 
-    // // auto b = NULL;
-    // if (f->is_cgi)
-    // {
-    //     /* local CGI */
-    //     // searchHeader = TRUE;
-    //     // searchHeader_through = FALSE;
-    // }
-
     // BufferPtr t_buf = nullptr;
     // if (w3mApp::Instance().header_string.size())
     //     w3mApp::Instance().header_string.clear();
@@ -1144,46 +1286,6 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
         // }
 
         // f.modtime = mymktime(checkHeader(t_buf, "Last-Modified:"));
-    }
-    // else if (searchHeader)
-    // {
-    //     searchHeader = w3mApp::Instance().SearchHeader = FALSE;
-    //     if (t_buf == NULL)
-    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
-    //     readHeader(&f, t_buf, searchHeader_through, &pu);
-    //     if (f.is_cgi && (p = checkHeader(t_buf, "Location:")) != NULL &&
-    //         checkRedirection(&pu))
-    //     {
-    //         /* document moved */
-    //         tpath = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
-    //         request = NULL;
-    //         f.Close();
-    //         add_auth_cookie_flag = 0;
-    //         *current = pu;
-    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
-    //         t_buf->bufferprop |= BP_REDIRECTED;
-    //         status = HTST_NORMAL;
-    //         goto load_doc;
-    //     }
-    //     t = checkContentType(t_buf);
-    //     if (t == NULL)
-    //         t = "text/plain";
-    // }
-    // else if (w3mApp::Instance().DefaultType.size())
-    // {
-    //     t = Strnew(w3mApp::Instance().DefaultType)->ptr;
-    //     w3mApp::Instance().DefaultType.clear();
-    // }
-    else
-    {
-        // local CGI
-        assert(false);
-        // t = guessContentType(pu.file);
-        // if (t == NULL)
-        //     t = "text/plain";
-        // real_type = t;
-        // if (f.guess_type)
-        //     t = f.guess_type;
     }
 
     return nullptr;
