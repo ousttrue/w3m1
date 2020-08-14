@@ -280,13 +280,6 @@ public:
 
     BufferPtr Get(const URLFilePtr &f, const URL &pu, LoadFlags flag)
     {
-        if (fmInitialized)
-        {
-            term_cbreak();
-            /* FIXME: gettextize? */
-            message(Sprintf("%s contacted. Waiting for reply...", pu.host.c_str())->ptr, 0, 0);
-            refresh();
-        }
         // if (t_buf == NULL)
         auto t_buf = newBuffer(INIT_BUFFER_WIDTH());
 
@@ -948,7 +941,18 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
         TextList *extra_header = newTextList();
         auto f = URLFile::OpenHttp(url, _current, referer, form, &hr);
 
+        show_message(Strnew_m_charp(url.host, " contacted. Waiting for reply...")->ptr);
+
         auto response = HttpResponse::Read(f->stream);
+
+        if(response->HasRedirectionStatus())
+        {
+            auto location = response->FindHeader("Location");
+            if(location.size())
+            {
+
+            }
+        }
 
         HttpContext http;
         return http.Get(f, url, flag);

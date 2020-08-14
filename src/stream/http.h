@@ -62,6 +62,11 @@ enum class HttpResponseStatusCode
 {
     NONE = 0,
     OK = 200,
+
+    MOVED_PERMANENTLY = 301,
+    FOUND = 302,
+    SEE_OTHER = 303,
+    TEMPORARY_REDIRECT = 307,
 };
 
 struct HttpResponse
@@ -74,4 +79,11 @@ struct HttpResponse
     static std::shared_ptr<HttpResponse> Read(const std::shared_ptr<class InputStream> &stream);
 
     bool PushIsEndHeader(std::string_view line);
+
+    const bool HasRedirectionStatus() const
+    {
+        return (int)status_code >= 300 && (int)status_code < 400;
+    }
+
+    std::string_view FindHeader(std::string_view key) const;
 };

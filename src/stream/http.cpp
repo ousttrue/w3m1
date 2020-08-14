@@ -252,3 +252,31 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
     // header is continuous
     return false;
 }
+
+std::tuple<std::string_view, std::string_view> split_colon(std::string_view src)
+{
+    auto pos = src.find(':');
+    if (pos == std::string::npos)
+    {
+        return {};
+    }
+
+    auto key = src.substr(0, pos);
+    auto value = src.substr(pos + 1);
+
+    return {key, value};
+}
+
+std::string_view HttpResponse::FindHeader(std::string_view key) const
+{
+    for (auto &l : lines)
+    {
+        auto [k, v] = split_colon(l);
+        if(k == key)
+        {
+            return v;
+        }
+    }
+
+    return {};
+}

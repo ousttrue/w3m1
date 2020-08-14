@@ -348,7 +348,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
     }
     if (!url)
         return s;
-    
+
     auto pu = URL::Parse(url, buf->BaseURL());
     u = pu.ToStr();
     if (DecodeURL)
@@ -864,6 +864,17 @@ BufferPtr message_list_panel(void)
         tmp->Push("<tr><td>(no message recorded)</td></tr>\n");
     tmp->Push("</table></body></html>");
     return loadHTMLString(tmp);
+}
+
+void show_message(const char *msg)
+{
+    if (fmInitialized)
+    {
+        term_cbreak();
+        /* FIXME: gettextize? */
+        message(msg, 0, 0);
+        refresh();
+    }
 }
 
 void message(const char *s, int return_x, int return_y)
