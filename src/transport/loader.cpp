@@ -341,7 +341,7 @@ public:
             /* download only */
             char *file;
             // TRAP_OFF;
-            if (DecodeCTE && IStype(f->stream) != IST_ENCODED)
+            if (DecodeCTE && f->stream->type() != IST_ENCODED)
                 f->stream = newEncodedStream(f->stream, f->encoding);
             if (pu.scheme == SCM_LOCAL)
             {
@@ -383,7 +383,7 @@ public:
         if (image_source)
         {
             BufferPtr b = NULL;
-            if (IStype(f->stream) != IST_ENCODED)
+            if (f->stream->type() != IST_ENCODED)
                 f->stream = newEncodedStream(f->stream, f->encoding);
             if (save2tmp(f, image_source) == 0)
             {
@@ -434,7 +434,7 @@ public:
                 }
                 else
                 {
-                    if (DecodeCTE && IStype(f->stream) != IST_ENCODED)
+                    if (DecodeCTE && f->stream->type() != IST_ENCODED)
                         f->stream = newEncodedStream(f->stream, f->encoding);
                     f->DoFileSave(guess_save_name(t_buf, pu.path), current_content_length);
                 }
@@ -830,7 +830,7 @@ bool loadBuffer(const URLFilePtr &uf, BufferPtr newBuf)
         doc_charset = content_charset;
 
     nlines = 0;
-    if (IStype(uf->stream) != IST_ENCODED)
+    if (uf->stream->type() != IST_ENCODED)
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
     while ((lineBuf2 = uf->stream->mygets())->Size())
     {

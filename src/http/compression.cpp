@@ -139,7 +139,7 @@ char *acceptableEncoding()
 char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
 {
     // struct compression_decoder *d;
-    if (IStype(uf->stream) != IST_ENCODED)
+    if (uf->stream->type() != IST_ENCODED)
     {
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
         uf->encoding = ENC_7BIT;

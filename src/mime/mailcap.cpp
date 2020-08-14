@@ -562,7 +562,7 @@ int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bu
     }
     tmpf = tmpfname(TMPF_DFL, (ext && *ext) ? ext : NULL);
 
-    if (IStype(uf->stream) != IST_ENCODED)
+    if (uf->stream->type() != IST_ENCODED)
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
     header = checkHeader(defaultbuf, "Content-Type:");
     if (header)

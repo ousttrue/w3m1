@@ -1,7 +1,6 @@
 
 #include "fm.h"
 #include "indep.h"
-#include "gc_helper.h"
 #include "myctype.h"
 #include "transport/istream.h"
 #include "file.h"
@@ -13,44 +12,12 @@
 #include <signal.h>
 #include <openssl/x509v3.h>
 
-#ifdef __MINGW32_VERSION
-#include <winsock.h>
-#endif
-
-#define uchar unsigned char
-
 #define STREAM_BUF_SIZE 8192
 #define SSL_BUF_SIZE 1536
 
 ///
 /// InputStream
 ///
-void StreamBuffer::initialize(char *b, int bufsize)
-{
-    size = bufsize;
-    cur = 0;
-    if (buf)
-    {
-        buf = (uchar *)b;
-        next = bufsize;
-    }
-    else
-    {
-        buf = NewAtom_N(uchar, bufsize);
-        next = 0;
-    }
-}
-
-static void init_base_stream(InputStreamPtr base, int bufsize)
-{
-    base->stream.initialize(NULL, bufsize);
-}
-
-static void init_str_stream(InputStreamPtr base, Str s)
-{
-    base->stream.initialize(s->ptr, s->Size());
-}
-
 void InputStream::do_update()
 {
     auto len = stream.update(std::bind(&InputStream::ReadFunc, this,
@@ -147,36 +114,30 @@ InputStreamPtr newInputStream(int des)
 {
     if (des < 0)
         return NULL;
-
-    auto stream = std::shared_ptr<BaseStream>(new BaseStream());
-
-    init_base_stream(stream, STREAM_BUF_SIZE);
-    stream->handle = New(int);
-    *(int *)stream->handle = des;
-    return stream;
+    return std::make_shared<BaseStream>(STREAM_BUF_SIZE, des);
 }
 
 BaseStream::~BaseStream()
 {
 #ifdef __MINGW32_VERSION
-    closesocket(*(int *)handle);
+    closesocket(m_fd);
 #else
-    close(*(int *)handle);
+    close(m_fd);
 #endif
 }
 
 int BaseStream::ReadFunc(unsigned char *buf, int len)
 {
 #ifdef __MINGW32_VERSION
-    return recv(*(int *)handle, buf, len, 0);
+    return recv(m_fd, buf, len, 0);
 #else
-    return ::read(*(int *)handle, buf, len);
+    return ::read(m_fd, buf, len);
 #endif
 }
 
 int BaseStream::FD() const
 {
-    return *(int *)handle;
+    return m_fd;
 }
 
 //
@@ -186,12 +147,7 @@ InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep)
 {
     if (f == NULL)
         return NULL;
-
-    auto stream = std::shared_ptr<FileStream>(new FileStream());
-    init_base_stream(stream, STREAM_BUF_SIZE);
-    stream->m_f = f;
-    stream->m_close = closep;
-    return stream;
+    return std::make_shared<FileStream>(STREAM_BUF_SIZE, f, closep);
 }
 
 FileStream::~FileStream()
@@ -224,6 +180,13 @@ int FileStream::FD() const
 //
 // StrStream
 //
+InputStreamPtr newStrStream(Str s)
+{
+    if (s == NULL)
+        return NULL;
+    return std::make_shared<StrStream>(s);
+}
+
 StrStream::~StrStream()
 {
 }
@@ -236,25 +199,33 @@ int StrStream::ReadFunc(unsigned char *buf, int len)
 //
 // SSLStream
 //
+InputStreamPtr
+newSSLStream(SSL *ssl, int sock)
+{
+    if (sock < 0)
+        return NULL;
+    return std::make_shared<SSLStream>(SSL_BUF_SIZE, ssl, sock);
+}
+
 SSLStream::~SSLStream()
 {
-    close(handle->sock);
-    if (handle->ssl)
-        SSL_free(handle->ssl);
+    close(m_sock);
+    if (m_ssl)
+        SSL_free(m_ssl);
 }
 
 int SSLStream::ReadFunc(unsigned char *buf, int len)
 {
     int status;
-    if (handle->ssl)
+    if (m_ssl)
     {
 #ifdef USE_SSL_VERIFY
         for (;;)
         {
-            status = SSL_read(handle->ssl, buf, len);
+            status = SSL_read(m_ssl, buf, len);
             if (status > 0)
                 break;
-            switch (SSL_get_error(handle->ssl, status))
+            switch (SSL_get_error(m_ssl, status))
             {
             case SSL_ERROR_WANT_READ:
             case SSL_ERROR_WANT_WRITE: /* reads can trigger write errors; see SSL_get_error(3) */
@@ -265,112 +236,78 @@ int SSLStream::ReadFunc(unsigned char *buf, int len)
             break;
         }
 #else  /* if !defined(USE_SSL_VERIFY) */
-        status = SSL_read(handle->ssl, buf, len);
+        status = SSL_read(m_ssl, buf, len);
 #endif /* !defined(USE_SSL_VERIFY) */
     }
     else
-        status = ::read(handle->sock, buf, len);
+        status = ::read(m_sock, buf, len);
     return status;
 }
 
 int SSLStream::FD() const
 {
-    return handle->sock;
+    return m_sock;
 }
 
 //
 // EncodedStrStream
 //
+InputStreamPtr newEncodedStream(InputStreamPtr is, char encoding)
+{
+    if (is == NULL || (encoding != ENC_QUOTE && encoding != ENC_BASE64 &&
+                       encoding != ENC_UUENCODE))
+        return is;
+
+    return std::make_shared<EncodedStrStream>(STREAM_BUF_SIZE, is, encoding);
+}
+
 EncodedStrStream::~EncodedStrStream()
 {
 }
 
 int EncodedStrStream::ReadFunc(unsigned char *buf, int len)
 {
-    if (handle->s == NULL || handle->pos == handle->s->Size())
+    if (m_s == NULL || m_pos == m_s->Size())
     {
         char *p;
-        handle->s = handle->is->mygets();
-        if (handle->s->Size() == 0)
+        m_s = m_is->mygets();
+        if (m_s->Size() == 0)
             return 0;
-        cleanup_line(handle->s, PAGER_MODE);
-        if (handle->encoding == ENC_BASE64)
-            StripRight(handle->s);
-        else if (handle->encoding == ENC_UUENCODE)
+        cleanup_line(m_s, PAGER_MODE);
+        if (m_encoding == ENC_BASE64)
+            StripRight(m_s);
+        else if (m_encoding == ENC_UUENCODE)
         {
-            if (!strncmp(handle->s->ptr, "begin", 5))
-                handle->s = handle->is->mygets();
-            StripRight(handle->s);
+            if (!strncmp(m_s->ptr, "begin", 5))
+                m_s = m_is->mygets();
+            StripRight(m_s);
         }
-        p = handle->s->ptr;
-        if (handle->encoding == ENC_QUOTE)
-            handle->s = decodeQP(&p);
-        else if (handle->encoding == ENC_BASE64)
-            handle->s = decodeB(&p);
-        else if (handle->encoding == ENC_UUENCODE)
-            handle->s = decodeU(&p);
-        handle->pos = 0;
+        p = m_s->ptr;
+        if (m_encoding == ENC_QUOTE)
+            m_s = decodeQP(&p);
+        else if (m_encoding == ENC_BASE64)
+            m_s = decodeB(&p);
+        else if (m_encoding == ENC_UUENCODE)
+            m_s = decodeU(&p);
+        m_pos = 0;
     }
 
-    if (len > handle->s->Size() - handle->pos)
-        len = handle->s->Size() - handle->pos;
+    if (len > m_s->Size() - m_pos)
+        len = m_s->Size() - m_pos;
 
-    bcopy(&handle->s->ptr[handle->pos], buf, len);
-    handle->pos += len;
+    bcopy(&m_s->ptr[m_pos], buf, len);
+    m_pos += len;
     return len;
 }
 
 int EncodedStrStream::FD() const
 {
-    return handle->is->FD();
+    return m_is->FD();
 }
 
 ///
 ///
 ///
-
-InputStreamPtr
-newStrStream(Str s)
-{
-    if (s == NULL)
-        return NULL;
-
-    auto stream = std::make_shared<StrStream>();
-    init_str_stream(stream, s);
-    stream->handle = s;
-    return stream;
-}
-
-InputStreamPtr
-newSSLStream(SSL *ssl, int sock)
-{
-    if (sock < 0)
-        return NULL;
-
-    auto stream = std::make_shared<SSLStream>();
-    init_base_stream(stream, SSL_BUF_SIZE);
-    stream->handle = New(struct ssl_handle);
-    stream->handle->ssl = ssl;
-    stream->handle->sock = sock;
-    return stream;
-}
-
-InputStreamPtr
-newEncodedStream(InputStreamPtr is, char encoding)
-{
-    if (is == NULL || (encoding != ENC_QUOTE && encoding != ENC_BASE64 &&
-                       encoding != ENC_UUENCODE))
-        return is;
-
-    auto stream = std::make_shared<EncodedStrStream>();
-    init_base_stream(stream, STREAM_BUF_SIZE);
-    stream->handle = New(struct ens_handle);
-    stream->handle->is = is;
-    stream->handle->pos = 0;
-    stream->handle->encoding = encoding;
-    stream->handle->s = NULL;
-    return stream;
-}
 
 // int ISclose(InputStreamPtr stream)
 // {

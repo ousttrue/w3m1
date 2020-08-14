@@ -13,18 +13,18 @@
 struct StreamBuffer
 {
 private:
-    unsigned char *buf;
-    int size;
-    int cur;
-    int next;
+    std::vector<unsigned char> buf;
+    int cur = 0;
+    int next = 0;
 
 public:
-    void initialize(char *buf, int bufsize);
+    StreamBuffer() {}
+    StreamBuffer(int bufsize) : buf(bufsize) {}
 
     int update(const std::function<int(unsigned char *, int)> &readfunc)
     {
         cur = next = 0;
-        int len = readfunc(buf, size);
+        int len = readfunc(buf.data(), buf.size());
         next += len;
         return len;
     }
@@ -117,20 +117,6 @@ public:
     }
 };
 
-struct ssl_handle
-{
-    SSL *ssl;
-    int sock;
-};
-
-struct ens_handle
-{
-    std::shared_ptr<class InputStream> is;
-    Str s;
-    int pos;
-    char encoding;
-};
-
 enum InputStreamTypes
 {
     IST_BASIC = 0,
@@ -155,6 +141,9 @@ public:
     Str mygets();
     StreamBuffer stream = {};
     bool eos();
+
+    InputStream() {}
+    InputStream(int size) : stream(size) {}
     virtual ~InputStream() {}
     virtual InputStreamTypes type() const = 0;
     virtual int ReadFunc(unsigned char *buffer, int size) = 0;
@@ -168,9 +157,10 @@ using InputStreamPtr = std::shared_ptr<InputStream>;
 // FileDescriptor
 class BaseStream : public InputStream
 {
-public:
-    void *handle;
+    int m_fd = -1;
 
+public:
+    BaseStream(int size, int fd) : InputStream(size), m_fd(fd) {}
     ~BaseStream();
     InputStreamTypes type() const override { return IST_BASIC; }
     int ReadFunc(unsigned char *buffer, int size) override;
@@ -180,10 +170,14 @@ public:
 // FILE*
 class FileStream : public InputStream
 {
-public:
     FILE *m_f = nullptr;
     std::function<void(FILE *)> m_close;
 
+public:
+    FileStream(int size, FILE *f, const std::function<void(FILE *)> &close)
+        : InputStream(size), m_f(f), m_close(close)
+    {
+    }
     ~FileStream();
     InputStreamTypes type() const override { return IST_FILE; }
     int ReadFunc(unsigned char *buffer, int size) override;
@@ -192,9 +186,10 @@ public:
 
 class StrStream : public InputStream
 {
-public:
-    Str handle;
+    Str m_str = nullptr;
 
+public:
+    StrStream(Str str) : m_str(str) {}
     ~StrStream();
     InputStreamTypes type() const override { return IST_STR; }
     int ReadFunc(unsigned char *buffer, int size) override;
@@ -202,9 +197,11 @@ public:
 
 class SSLStream : public InputStream
 {
-public:
-    struct ssl_handle *handle;
+    SSL *m_ssl = nullptr;
+    int m_sock = -1;
 
+public:
+    SSLStream(int size, SSL *ssl, int sock) : InputStream(size), m_ssl(ssl), m_sock(sock) {}
     ~SSLStream();
     InputStreamTypes type() const override { return IST_SSL; }
     int ReadFunc(unsigned char *buffer, int size) override;
@@ -213,9 +210,16 @@ public:
 
 struct EncodedStrStream : public InputStream
 {
-public:
-    struct ens_handle *handle;
+    InputStreamPtr m_is;
+    Str m_s = nullptr;
+    int m_pos = 0;
+    char m_encoding = 0;
 
+public:
+    EncodedStrStream(int size, const InputStreamPtr &is, char encoding)
+        : InputStream(size), m_is(is), m_encoding(encoding)
+    {
+    }
     ~EncodedStrStream();
     InputStreamTypes type() const override { return IST_ENCODED; }
     int ReadFunc(unsigned char *buffer, int size) override;
@@ -227,26 +231,9 @@ InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep)
 InputStreamPtr newStrStream(Str s);
 InputStreamPtr newSSLStream(SSL *ssl, int sock);
 InputStreamPtr newEncodedStream(InputStreamPtr is, char encoding);
-// int ISclose(InputStreamPtr stream);
-// int ISgetc(InputStreamPtr stream);
-// int ISundogetc(InputStreamPtr stream);
-// Str StrISgets(InputStreamPtr stream);
-// Str StrmyISgets(InputStreamPtr stream);
-// int ISread(InputStreamPtr stream, Str buf, int count);
-// int ISeos(InputStreamPtr stream);
+
 void ssl_accept_this_site(char *hostname);
 Str ssl_get_certificate(SSL *ssl, char *hostname);
-
-// #define IST_UNCLOSE 0x10
-
-#define IStype(stream) ((stream)->type())
-#define is_eos(stream) ISeos(stream)
-// #define iseos(stream) ((stream)->iseos)
-// #define file_of(stream) ((stream)->file.handle->f)
-// #define set_close(stream, closep) ((IStype(stream) == IST_FILE) ? ((stream)->file.handle->close = (closep)) : 0)
-// #define str_of(stream) ((stream)->str.handle)
-// #define ssl_socket_of(stream) ((stream)->ssl.handle->sock)
-// #define ssl_of(stream) ((stream)->ssl.handle->ssl)
 
 inline InputStreamPtr openIS(const char *path)
 {

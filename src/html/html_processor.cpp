@@ -74,7 +74,7 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
             doc_charset = WC_CES_UTF_8;
         meta_charset = WC_CES_NONE;
 
-        if (IStype(f->stream) != IST_ENCODED)
+        if (f->stream->type() != IST_ENCODED)
             f->stream = newEncodedStream(f->stream, f->encoding);
 
         Str lineBuf2 = nullptr;

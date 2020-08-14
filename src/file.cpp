@@ -622,7 +622,7 @@ bool loadImageBuffer(const URLFilePtr &uf, BufferPtr newBuf)
         goto image_buffer;
 
     TRAP_ON;
-    if (IStype(uf->stream) != IST_ENCODED)
+    if (uf->stream->type() != IST_ENCODED)
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
     if (save2tmp(uf, cache->file) < 0)
     {
@@ -816,7 +816,7 @@ openGeneralPagerBuffer(InputStreamPtr stream)
     }
     else if (is_plain_text_type(t.c_str()))
     {
-        if (IStype(stream) != IST_ENCODED)
+        if (stream->type() != IST_ENCODED)
             stream = newEncodedStream(stream, uf->encoding);
         buf = openPagerBuffer(stream, t_buf);
         buf->type = "text/plain";
@@ -840,7 +840,7 @@ openGeneralPagerBuffer(InputStreamPtr stream)
         }
         else
         { /* unknown type is regarded as text/plain */
-            if (IStype(stream) != IST_ENCODED)
+            if (stream->type() != IST_ENCODED)
                 stream = newEncodedStream(stream, uf->encoding);
             buf = openPagerBuffer(stream, t_buf);
             buf->type = "text/plain";
