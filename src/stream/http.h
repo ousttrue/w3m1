@@ -1,5 +1,6 @@
 #pragma once
 #include <string_view>
+#include <memory>
 #include <assert.h>
 
 enum HttpMethod
@@ -55,4 +56,22 @@ public:
 
     Str URI(const URL &url, bool isLocal = false) const;
     Str ToStr(const URL &url, const URL *current, const TextList *extra) const;
+};
+
+enum class HttpResponseStatusCode
+{
+    NONE = 0,
+    OK = 200,
+};
+
+struct HttpResponse
+{
+    int version_major = -1;
+    int version_minor = -1;
+    HttpResponseStatusCode status_code = HttpResponseStatusCode::NONE;
+    std::vector<std::string> lines;
+
+    static std::shared_ptr<HttpResponse> Read(const std::shared_ptr<class InputStream> &stream);
+
+    bool PushIsEndHeader(std::string_view line);
 };

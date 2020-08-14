@@ -1,10 +1,11 @@
 #include "fm.h"
 #include "stream/http.h"
-#include "textlist.h"
 #include "stream/url.h"
 #include "stream/loader.h"
 #include "stream/cookie.h"
+#include "stream/istream.h"
 #include "html/form.h"
+#include "textlist.h"
 #include "w3m.h"
 #include "indep.h"
 
@@ -175,4 +176,79 @@ Str HttpRequest::ToStr(const URL &url, const URL *current, const TextList *extra
     fprintf(stderr, "HTTPrequest: [ %s ]\n\n", tmp->ptr);
 #endif /* DEBUG */
     return tmp;
+}
+
+///
+/// HttpResponse
+///
+std::shared_ptr<HttpResponse> HttpResponse::Read(const std::shared_ptr<InputStream> &stream)
+{
+    auto res = std::make_shared<HttpResponse>();
+
+    while (!stream->eos())
+    {
+        auto line = stream->mygets();
+        if (res->PushIsEndHeader(line->ptr))
+        {
+            break;
+        }
+    }
+
+    return res;
+}
+
+bool HttpResponse::PushIsEndHeader(std::string_view line)
+{
+    if (line.ends_with("\r\n"))
+    {
+        line.remove_suffix(2);
+    }
+
+    if (line.empty())
+    {
+        // empty line finish HTTP response header
+        return true;
+    }
+
+    if (lines.empty())
+    {
+        lines.push_back(std::string(line));
+        // first line
+        // HTTP/1.1 200 OK
+        if (!line.starts_with("HTTP/"))
+        {
+            // invalid http response. abort
+            return true;
+        }
+
+        if (line[6] != '.')
+        {
+            return true;
+        }
+
+        version_major = line[5] - '0';
+        if (version_major != 1)
+        {
+            // unknown http version
+            return true;
+        }
+        version_minor = line[7] - '0';
+        if (version_minor != 0 && version_minor != 1)
+        {
+            // unknown http version
+            return true;
+        }
+
+        status_code = (HttpResponseStatusCode)atoi(line.data() + 9);
+    }
+    else
+    {
+        lines.push_back(std::string(line));
+        // headers. ex.
+        // Content-Type: text/html
+        // KEY: VALUE
+    }
+
+    // header is continuous
+    return false;
 }
