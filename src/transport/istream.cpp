@@ -239,12 +239,8 @@ InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep)
 
     auto stream = std::shared_ptr<FileStream>(new FileStream());
     init_base_stream(stream, STREAM_BUF_SIZE);
-    stream->handle = New(struct filestream_handle);
-    stream->handle->f = f;
-    if (closep)
-        stream->handle->close = closep;
-    else
-        stream->handle->close = fclose;
+    stream->m_f = f;
+    stream->m_close = closep;
     return stream;
 }
 
@@ -257,20 +253,27 @@ FileStream::~FileStream()
     // }
     MySignalHandler prevtrap = NULL;
     prevtrap = mySignal(SIGINT, SIG_IGN);
-    handle->close(handle->f);
+    if (m_close)
+    {
+        m_close(m_f);
+    }
+    else
+    {
+        fclose(m_f);
+    }
     mySignal(SIGINT, prevtrap);
 }
 
 int FileStream::ReadFunc(unsigned char *buffer, int size)
 {
-    auto readsize = fread(buffer, 1, size, handle->f);
+    auto readsize = fread(buffer, 1, size, m_f);
     m_readsize += readsize;
     return readsize;
 }
 
 int FileStream::FD() const
 {
-    return fileno(handle->f);
+    return fileno(m_f);
 }
 
 //

@@ -36,12 +36,6 @@ struct StreamBuffer
     }
 };
 
-struct filestream_handle
-{
-    FILE *f;
-    std::function<void(FILE *)> close;
-};
-
 struct ssl_handle
 {
     SSL *ssl;
@@ -106,7 +100,8 @@ public:
 class FileStream : public InputStream
 {
 public:
-    struct filestream_handle *handle;
+    FILE *m_f = nullptr;
+    std::function<void(FILE *)> m_close;
 
     ~FileStream();
     InputStreamTypes type() const override { return IST_FILE; }
