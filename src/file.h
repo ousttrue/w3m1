@@ -118,7 +118,7 @@ int openSocket(const char *hostname, const char *remoteport_name,
                unsigned short remoteport_num);
 
 char *acceptableMimeTypes();
-int check_no_proxy(char *domain);
+
 
 BufferPtr link_list_panel(BufferPtr buf);
 

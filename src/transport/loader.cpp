@@ -946,8 +946,7 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
         //
         HttpRequest hr(referer, form);
         TextList *extra_header = newTextList();
-        unsigned char status = HTST_NORMAL;
-        auto f = URLFile::OpenHttp(url, _current, referer, flag, form, extra_header, &hr, &status);
+        auto f = URLFile::OpenHttp(url, _current, referer, flag, form, extra_header, &hr);
         HttpContext http;
         return http.Get(f, url, flag);
     }
@@ -963,8 +962,6 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
             // or
             // * /cgi-bin/w3mbookmark
             //
-            // HttpRequest hr(referer, form);
-            // auto f = URLFile::openURL(url, _current, referer, flag, form, extra_header, &hr, &status);
             URLFilePtr uf;
             {
                 FILE *f = nullptr;

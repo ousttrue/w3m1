@@ -59,7 +59,7 @@ public:
 
     static std::shared_ptr<URLFile> OpenHttp(const URL &url, const URL *current,
                                              HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                                             HttpRequest *hr, unsigned char *status);
+                                             HttpRequest *hr);
 
     static std::shared_ptr<URLFile> OpenStream(URLSchemeTypes scheme, InputStreamPtr stream);
 

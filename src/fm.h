@@ -119,12 +119,6 @@
 
 #define free(x) GC_free(x) /* let GC do it. */
 
-/* 
- * Types.
- */
-
-
-
 /* modes for align() */
 
 #define ALIGN_CENTER 0
@@ -138,18 +132,12 @@
 #define VALIGN_TOP 1
 #define VALIGN_BOTTOM 2
 
-#define HTST_UNKNOWN 255
-#define HTST_MISSING 254
-#define HTST_NORMAL 0
-#define HTST_CONNECT 1
-
 #define TMPF_DFL 0
 #define TMPF_SRC 1
 #define TMPF_FRAME 2
 #define TMPF_CACHE 3
 #define TMPF_COOKIE 4
 #define MAX_TMPF_TYPE 5
-
 
 /* 
  * Globals.

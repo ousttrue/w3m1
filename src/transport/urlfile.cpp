@@ -16,6 +16,11 @@
 #include "mime/mimetypes.h"
 #include "frontend/lineinput.h"
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 /* add index_file if exists */
 static void
@@ -252,6 +257,186 @@ SSL_write_from_file(SSL *ssl, char *file)
     }
 }
 
+static bool domain_match(const char *pat, const char *domain)
+{
+    if (domain == NULL)
+        return 0;
+    if (*pat == '.')
+        pat++;
+    for (;;)
+    {
+        if (!strcasecmp(pat, domain))
+            return 1;
+        domain = strchr(domain, '.');
+        if (domain == NULL)
+            return 0;
+        domain++;
+    }
+}
+
+bool check_no_proxy(std::string_view domain)
+{
+    TextListItem *tl;
+    int ret = 0;
+    MySignalHandler prevtrap = NULL;
+
+    if (w3mApp::Instance().NO_proxy_domains == NULL || w3mApp::Instance().NO_proxy_domains->nitem == 0 ||
+        domain == NULL)
+        return 0;
+    for (tl = w3mApp::Instance().NO_proxy_domains->first; tl != NULL; tl = tl->next)
+    {
+        if (domain_match(tl->ptr, domain.data()))
+            return 1;
+    }
+    if (!NOproxy_netaddr)
+    {
+        return 0;
+    }
+    /* 
+     * to check noproxy by network addr
+     */
+
+    auto success = TrapJmp([&]() {
+        {
+#ifndef INET6
+            struct hostent *he;
+            int n;
+            unsigned char **h_addr_list;
+            char addr[4 * 16], buf[5];
+
+            he = gethostbyname(domain);
+            if (!he)
+            {
+                ret = 0;
+                goto end;
+            }
+            for (h_addr_list = (unsigned char **)he->h_addr_list; *h_addr_list;
+                 h_addr_list++)
+            {
+                sprintf(addr, "%d", h_addr_list[0][0]);
+                for (n = 1; n < he->h_length; n++)
+                {
+                    sprintf(buf, ".%d", h_addr_list[0][n]);
+                    addr->Push(buf);
+                }
+                for (tl = NO_proxy_domains->first; tl != NULL; tl = tl->next)
+                {
+                    if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0)
+                    {
+                        ret = 1;
+                        goto end;
+                    }
+                }
+            }
+#else  /* INET6 */
+            int error;
+            struct addrinfo hints;
+            struct addrinfo *res, *res0;
+            char addr[4 * 16];
+            int *af;
+
+            for (af = ai_family_order_table[DNS_order];; af++)
+            {
+                memset(&hints, 0, sizeof(hints));
+                hints.ai_family = *af;
+                error = getaddrinfo(domain.data(), NULL, &hints, &res0);
+                if (error)
+                {
+                    if (*af == PF_UNSPEC)
+                    {
+                        break;
+                    }
+                    /* try next */
+                    continue;
+                }
+                for (res = res0; res != NULL; res = res->ai_next)
+                {
+                    switch (res->ai_family)
+                    {
+                    case AF_INET:
+                        inet_ntop(AF_INET,
+                                  &((struct sockaddr_in *)res->ai_addr)->sin_addr,
+                                  addr, sizeof(addr));
+                        break;
+                    case AF_INET6:
+                        inet_ntop(AF_INET6,
+                                  &((struct sockaddr_in6 *)res->ai_addr)->sin6_addr, addr, sizeof(addr));
+                        break;
+                    default:
+                        /* unknown */
+                        continue;
+                    }
+                    for (tl = w3mApp::Instance().NO_proxy_domains->first; tl != NULL; tl = tl->next)
+                    {
+                        if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0)
+                        {
+                            freeaddrinfo(res0);
+                            ret = 1;
+                            return true;
+                        }
+                    }
+                }
+                freeaddrinfo(res0);
+                if (*af == PF_UNSPEC)
+                {
+                    break;
+                }
+            }
+#endif /* INET6 */
+        }
+
+        return true;
+    });
+
+    if (!success)
+    {
+        ret = 0;
+    }
+
+    return ret;
+}
+
+static bool UseProxy(const URL &url)
+{
+    if (!w3mApp::Instance().use_proxy)
+    {
+        return false;
+    }
+    if (url.scheme == SCM_HTTPS)
+    {
+        if (w3mApp::Instance().HTTPS_proxy.empty())
+        {
+            return false;
+        }
+    }
+    else if (url.scheme == SCM_HTTP)
+    {
+        if (w3mApp::Instance().HTTP_proxy.empty())
+        {
+            return false;
+        }
+    }
+    else
+    {
+        assert(false);
+        return false;
+    }
+
+    if (url.host.empty())
+    {
+        return false;
+    }
+    if (check_no_proxy(url.host))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+///
+/// URLFile
+///
 URLFile::URLFile(URLSchemeTypes scm, InputStreamPtr strm)
     : scheme(scm), stream(strm)
 {
@@ -270,13 +455,13 @@ int dir_exist(const char *path)
     struct stat stbuf;
     if (stat(path, &stbuf) == -1)
         return 0;
-        
+
     return IS_DIRECTORY(stbuf.st_mode);
 }
 
 URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
                              HttpReferrerPolicy referer, LoadFlags flag, FormList *request, TextList *extra_header,
-                             HttpRequest *hr, unsigned char *status)
+                             HttpRequest *hr)
 {
     if (url.scheme != SCM_HTTP && url.scheme != SCM_HTTPS)
     {
@@ -293,62 +478,63 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
     SSL *sslh = nullptr;
     Str tmp = nullptr;
     char *ssl_certificate = nullptr;
-    if (((url.scheme == SCM_HTTPS) ? w3mApp::Instance().HTTPS_proxy.size() : w3mApp::Instance().HTTP_proxy.size()) &&
-        w3mApp::Instance().use_proxy &&
-        url.host.size() && !check_no_proxy(const_cast<char *>(url.host.c_str())))
+
+    if (UseProxy(url))
     {
-        // hr->flag |= HR_FLAG_PROXY;
-        if (url.scheme == SCM_HTTPS && *status == HTST_CONNECT)
-        {
-            // https proxy の時に通る？
-            assert(false);
-            return {};
-            // sock = ssl_socket_of(ouf->stream);
-            // if (!(sslh = openSSLHandle(sock, url.host,
-            //                            &this->ssl_certificate)))
-            // {
-            //     *status = HTST_MISSING;
-            //     return;
-            // }
-        }
-        else if (url.scheme == SCM_HTTPS)
-        {
-            sock = openSocket(w3mApp::Instance().HTTPS_proxy_parsed.host.c_str(),
-                              GetScheme(w3mApp::Instance().HTTPS_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTPS_proxy_parsed.port);
-            sslh = NULL;
-        }
-        else
-        {
-            sock = openSocket(w3mApp::Instance().HTTP_proxy_parsed.host.c_str(),
-                              GetScheme(w3mApp::Instance().HTTP_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTP_proxy_parsed.port);
-            sslh = NULL;
-        }
+        // // hr->flag |= HR_FLAG_PROXY;
+        // if (url.scheme == SCM_HTTPS /*&& *status == HTST_CONNECT*/)
+        // {
+        //     // https proxy の時に通る？
+        //     assert(false);
+        //     return {};
+        //     // sock = ssl_socket_of(ouf->stream);
+        //     // if (!(sslh = openSSLHandle(sock, url.host,
+        //     //                            &this->ssl_certificate)))
+        //     // {
+        //     //     *status = HTST_MISSING;
+        //     //     return;
+        //     // }
+        // }
+        // else if (url.scheme == SCM_HTTPS)
+        // {
+        //     sock = openSocket(w3mApp::Instance().HTTPS_proxy_parsed.host.c_str(),
+        //                       GetScheme(w3mApp::Instance().HTTPS_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTPS_proxy_parsed.port);
+        //     sslh = NULL;
+        // }
+        // else
+        // {
+        //     sock = openSocket(w3mApp::Instance().HTTP_proxy_parsed.host.c_str(),
+        //                       GetScheme(w3mApp::Instance().HTTP_proxy_parsed.scheme)->name.data(), w3mApp::Instance().HTTP_proxy_parsed.port);
+        //     sslh = NULL;
+        // }
 
-        if (sock < 0)
-        {
-            return {};
-        }
+        // if (sock < 0)
+        // {
+        //     return {};
+        // }
 
-        if (url.scheme == SCM_HTTPS)
-        {
-            if (*status == HTST_NORMAL)
-            {
-                hr->method = HTTP_METHOD_CONNECT;
-                tmp = hr->ToStr(url, current, extra_header);
-                *status = HTST_CONNECT;
-            }
-            else
-            {
-                // hr->flag |= HR_FLAG_LOCAL;
-                tmp = hr->ToStr(url, current, extra_header);
-                *status = HTST_NORMAL;
-            }
-        }
-        else
-        {
-            tmp = hr->ToStr(url, current, extra_header);
-            *status = HTST_NORMAL;
-        }
+        // if (url.scheme == SCM_HTTPS)
+        // {
+        //     if (*status == HTST_NORMAL)
+        //     {
+        //         hr->method = HTTP_METHOD_CONNECT;
+        //         tmp = hr->ToStr(url, current, extra_header);
+        //         *status = HTST_CONNECT;
+        //     }
+        //     else
+        //     {
+        //         // hr->flag |= HR_FLAG_LOCAL;
+        //         tmp = hr->ToStr(url, current, extra_header);
+        //         *status = HTST_NORMAL;
+        //     }
+        // }
+        // else
+        // {
+        //     tmp = hr->ToStr(url, current, extra_header);
+        //     *status = HTST_NORMAL;
+        // }
+
+        assert(false);
     }
     else
     {
@@ -356,20 +542,20 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
                           GetScheme(url.scheme)->name.data(), url.port);
         if (sock < 0)
         {
-            *status = HTST_MISSING;
+            // *status = HTST_MISSING;
             return {};
         }
         if (url.scheme == SCM_HTTPS)
         {
             if (!(sslh = openSSLHandle(sock, const_cast<char *>(url.host.c_str()), &ssl_certificate)))
             {
-                *status = HTST_MISSING;
+                // *status = HTST_MISSING;
                 return {};
             }
         }
         // hr->flag |= HR_FLAG_LOCAL;
         tmp = hr->ToStr(url, current, extra_header);
-        *status = HTST_NORMAL;
+        // *status = HTST_NORMAL;
     }
 
     if (url.scheme == SCM_HTTPS)
