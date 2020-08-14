@@ -75,7 +75,7 @@ _MoveFile(const char *path1, const char *path2)
     }
     // current_content_length = 0;
     buf = Strnew_size(SAVE_BUF_SIZE);
-    while (f1->read(buf, SAVE_BUF_SIZE))
+    while (f1->readto(buf, SAVE_BUF_SIZE))
     {
         buf->Puts(f2);
         linelen += buf->Size();

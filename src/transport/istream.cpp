@@ -87,7 +87,7 @@ Str InputStream::mygets()
     return s;
 }
 
-int InputStream::read(Str buf, int count)
+int InputStream::readto(Str buf, int count)
 {
     auto len = stream.buffer_read(buf->ptr, count);
     auto rest = count - len;

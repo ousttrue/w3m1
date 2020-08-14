@@ -880,7 +880,7 @@ int save2tmp(const URLFilePtr &uf, char *tmpf)
     auto success = TrapJmp([&]() -> bool {
         Str buf = Strnew_size(SAVE_BUF_SIZE);
         clen_t linelen = 0;
-        while (uf->stream->read(buf, SAVE_BUF_SIZE))
+        while (uf->stream->readto(buf, SAVE_BUF_SIZE))
         {
             if (buf->Puts(ff) != buf->Size())
             {

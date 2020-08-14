@@ -129,24 +129,24 @@ enum InputStreamTypes
 class InputStream
 {
     bool iseos = false;
+    StreamBuffer stream = {};
 
 protected:
     int m_readsize = 0;
     void do_update();
-
-public:
-    int getc();
-    Str gets();
-    int read(Str buf, int count);
-    Str mygets();
-    StreamBuffer stream = {};
-    bool eos();
-
     InputStream() {}
     InputStream(int size) : stream(size) {}
     virtual ~InputStream() {}
-    virtual InputStreamTypes type() const = 0;
     virtual int ReadFunc(unsigned char *buffer, int size) = 0;
+
+public:
+    virtual InputStreamTypes type() const = 0;
+    int getc();
+    Str gets();
+    int readto(Str buf, int count);
+    Str mygets();
+    bool eos();
+
     virtual int FD() const
     {
         return -1;
