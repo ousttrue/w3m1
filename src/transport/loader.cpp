@@ -75,7 +75,7 @@ _MoveFile(const char *path1, const char *path2)
     }
     // current_content_length = 0;
     buf = Strnew_size(SAVE_BUF_SIZE);
-    while (ISread(f1, buf, SAVE_BUF_SIZE))
+    while (f1->read(buf, SAVE_BUF_SIZE))
     {
         buf->Puts(f2);
         linelen += buf->Size();
@@ -306,7 +306,7 @@ public:
             // *current = pu;
             t_buf = newBuffer(INIT_BUFFER_WIDTH());
             t_buf->bufferprop |= BP_REDIRECTED;
-            auto status = HTST_NORMAL;
+            // auto status = HTST_NORMAL;
             // goto load_doc;
 
             // TODO: REDIRECT
@@ -596,7 +596,7 @@ void readHeader(const URLFilePtr &uf, BufferPtr newBuf, int thru, const URL *pu)
     newBuf->document_header = newTextList();
     while (true)
     {
-        auto lineBuf2 = StrmyISgets(uf->stream);
+        auto lineBuf2 = uf->stream->mygets();
         if (lineBuf2->Size() == 0)
         {
             break;
@@ -832,7 +832,7 @@ bool loadBuffer(const URLFilePtr &uf, BufferPtr newBuf)
     nlines = 0;
     if (IStype(uf->stream) != IST_ENCODED)
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
-    while ((lineBuf2 = StrmyISgets(uf->stream))->Size())
+    while ((lineBuf2 = uf->stream->mygets())->Size())
     {
 #ifdef USE_NNTP
         if (uf->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
@@ -975,7 +975,7 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
                     /* lodal CGI: GET */
                     f = localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), referer);
                 }
-                auto stream = newFileStream(f, (FileStreamCloseFunc)fclose);
+                auto stream = newFileStream(f, fclose);
                 uf = URLFile::OpenStream(SCM_LOCAL, stream);
             }
 

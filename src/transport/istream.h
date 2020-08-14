@@ -8,18 +8,38 @@
 #include <fcntl.h>
 #include <wc.h>
 #include <memory>
+#include <functional>
 
 struct StreamBuffer
 {
     unsigned char *buf;
     int size, cur, next;
+
+    void initialize(char *buf, int bufsize);
+
+    int buffer_read(char *obuf, int count)
+    {
+        int len = next - cur;
+        if (len > 0)
+        {
+            if (len > count)
+                len = count;
+            bcopy((const void *)&buf[cur], obuf, len);
+            cur += len;
+        }
+        return len;
+    }
+
+    bool MUST_BE_UPDATED() const
+    {
+        return cur == next;
+    }
 };
 
-typedef void (*FileStreamCloseFunc)(FILE *);
 struct filestream_handle
 {
     FILE *f;
-    FileStreamCloseFunc close;
+    std::function<void(FILE *)> close;
 };
 
 struct ssl_handle
@@ -47,9 +67,19 @@ enum InputStreamTypes
 
 class InputStream
 {
+    bool iseos = false;
+
+protected:
+    int m_readsize = 0;
+    void do_update();
+
 public:
-    StreamBuffer stream;
-    char iseos;
+    int getc();
+    Str gets();
+    int read(Str buf, int count);
+    Str mygets();
+    StreamBuffer stream = {};
+    bool eos();
     virtual ~InputStream() {}
     virtual InputStreamTypes type() const = 0;
     virtual int ReadFunc(unsigned char *buffer, int size) = 0;
@@ -117,17 +147,17 @@ public:
 };
 
 InputStreamPtr newInputStream(int des);
-InputStreamPtr newFileStream(FILE *f, FileStreamCloseFunc closep);
+InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep);
 InputStreamPtr newStrStream(Str s);
 InputStreamPtr newSSLStream(SSL *ssl, int sock);
 InputStreamPtr newEncodedStream(InputStreamPtr is, char encoding);
 // int ISclose(InputStreamPtr stream);
-int ISgetc(InputStreamPtr stream);
-int ISundogetc(InputStreamPtr stream);
-Str StrISgets(InputStreamPtr stream);
-Str StrmyISgets(InputStreamPtr stream);
-int ISread(InputStreamPtr stream, Str buf, int count);
-int ISeos(InputStreamPtr stream);
+// int ISgetc(InputStreamPtr stream);
+// int ISundogetc(InputStreamPtr stream);
+// Str StrISgets(InputStreamPtr stream);
+// Str StrmyISgets(InputStreamPtr stream);
+// int ISread(InputStreamPtr stream, Str buf, int count);
+// int ISeos(InputStreamPtr stream);
 void ssl_accept_this_site(char *hostname);
 Str ssl_get_certificate(SSL *ssl, char *hostname);
 
@@ -135,7 +165,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname);
 
 #define IStype(stream) ((stream)->type())
 #define is_eos(stream) ISeos(stream)
-#define iseos(stream) ((stream)->iseos)
+// #define iseos(stream) ((stream)->iseos)
 // #define file_of(stream) ((stream)->file.handle->f)
 // #define set_close(stream, closep) ((IStype(stream) == IST_FILE) ? ((stream)->file.handle->close = (closep)) : 0)
 // #define str_of(stream) ((stream)->str.handle)

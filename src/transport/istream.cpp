@@ -22,13 +22,190 @@
 #define STREAM_BUF_SIZE 8192
 #define SSL_BUF_SIZE 1536
 
-#define MUST_BE_UPDATED(bs) ((bs)->stream.cur == (bs)->stream.next)
-
 #define POP_CHAR(bs) ((bs)->iseos ? '\0' : (bs)->stream.buf[(bs)->stream.cur++])
+
+///
+/// InputStream
+///
+void StreamBuffer::initialize(char *b, int bufsize)
+{
+    size = bufsize;
+    cur = 0;
+    if (buf)
+    {
+        buf = (uchar *)b;
+        next = bufsize;
+    }
+    else
+    {
+        buf = NewAtom_N(uchar, bufsize);
+        next = 0;
+    }
+}
+
+static void init_base_stream(InputStreamPtr base, int bufsize)
+{
+    base->stream.initialize(NULL, bufsize);
+}
+
+static void init_str_stream(InputStreamPtr base, Str s)
+{
+    base->stream.initialize(s->ptr, s->Size());
+}
+
+void InputStream::do_update()
+{
+    stream.cur = stream.next = 0;
+    int len = ReadFunc(stream.buf, stream.size);
+    if (len <= 0)
+        iseos = TRUE;
+    else
+        stream.next += len;
+}
+
+int InputStream::getc()
+{
+    if (!iseos && stream.MUST_BE_UPDATED())
+        do_update();
+    return POP_CHAR(this);
+}
+
+bool InputStream::eos()
+{
+    if (!iseos && stream.MUST_BE_UPDATED())
+        do_update();
+    return iseos;
+}
+
+#define MARGIN_STR_SIZE 10
+Str InputStream::gets()
+{
+    Str s = NULL;
+    uchar *p;
+    int len;
+
+    auto sb = &stream;
+
+    while (!iseos)
+    {
+        if (stream.MUST_BE_UPDATED())
+        {
+            do_update();
+        }
+        else
+        {
+            if ((p = (unsigned char *)memchr(&sb->buf[sb->cur], '\n', sb->next - sb->cur)))
+            {
+                len = p - &sb->buf[sb->cur] + 1;
+                if (s == NULL)
+                    s = Strnew_size(len);
+                s->Push((char *)&sb->buf[sb->cur], len);
+                sb->cur += len;
+                return s;
+            }
+            else
+            {
+                if (s == NULL)
+                    s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
+                s->Push((char *)&sb->buf[sb->cur],
+                        sb->next - sb->cur);
+                sb->cur = sb->next;
+            }
+        }
+    }
+
+    if (s == NULL)
+        return Strnew();
+    return s;
+}
+
+Str InputStream::mygets()
+{
+    Str s = NULL;
+    int i, len;
+
+    auto sb = &stream;
+
+    while (!iseos)
+    {
+        if (stream.MUST_BE_UPDATED())
+        {
+            do_update();
+        }
+        else
+        {
+            if (s && s->Back() == '\r')
+            {
+                if (sb->buf[sb->cur] == '\n')
+                    s->Push((char)sb->buf[sb->cur++]);
+                return s;
+            }
+            for (i = sb->cur;
+                 i < sb->next && sb->buf[i] != '\n' && sb->buf[i] != '\r';
+                 i++)
+                ;
+            if (i < sb->next)
+            {
+                len = i - sb->cur + 1;
+                if (s == NULL)
+                    s = Strnew_size(len + MARGIN_STR_SIZE);
+                s->Push((char *)&sb->buf[sb->cur], len);
+                sb->cur = i + 1;
+                if (sb->buf[i] == '\n')
+                    return s;
+            }
+            else
+            {
+                if (s == NULL)
+                    s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
+                s->Push((char *)&sb->buf[sb->cur],
+                        sb->next - sb->cur);
+                sb->cur = sb->next;
+            }
+        }
+    }
+
+    if (s == NULL)
+        return Strnew();
+    return s;
+}
+
+int InputStream::read(Str buf, int count)
+{
+    auto len = stream.buffer_read(buf->ptr, count);
+    auto rest = count - len;
+    if (stream.MUST_BE_UPDATED())
+    {
+        len = ReadFunc((unsigned char *)&buf->ptr[len], rest);
+        if (len <= 0)
+        {
+            iseos = TRUE;
+            len = 0;
+        }
+        rest -= len;
+    }
+    buf->Truncate(count - rest);
+    if (buf->Size() > 0)
+        return 1;
+    return 0;
+}
 
 //
 // BaseStream
 //
+InputStreamPtr newInputStream(int des)
+{
+    if (des < 0)
+        return NULL;
+
+    auto stream = std::shared_ptr<BaseStream>(new BaseStream());
+
+    init_base_stream(stream, STREAM_BUF_SIZE);
+    stream->handle = New(int);
+    *(int *)stream->handle = des;
+    return stream;
+}
+
 BaseStream::~BaseStream()
 {
 #ifdef __MINGW32_VERSION
@@ -43,7 +220,7 @@ int BaseStream::ReadFunc(unsigned char *buf, int len)
 #ifdef __MINGW32_VERSION
     return recv(*(int *)handle, buf, len, 0);
 #else
-    return read(*(int *)handle, buf, len);
+    return ::read(*(int *)handle, buf, len);
 #endif
 }
 
@@ -55,23 +232,40 @@ int BaseStream::FD() const
 //
 // FileStream
 //
+InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep)
+{
+    if (f == NULL)
+        return NULL;
+
+    auto stream = std::shared_ptr<FileStream>(new FileStream());
+    init_base_stream(stream, STREAM_BUF_SIZE);
+    stream->handle = New(struct filestream_handle);
+    stream->handle->f = f;
+    if (closep)
+        stream->handle->close = closep;
+    else
+        stream->handle->close = fclose;
+    return stream;
+}
+
 FileStream::~FileStream()
 {
-    if(iseos)
-    {
-        // TODO: ?
-        return;
-    }
+    // if (iseos)
+    // {
+    //     // TODO: ?
+    //     return;
+    // }
     MySignalHandler prevtrap = NULL;
     prevtrap = mySignal(SIGINT, SIG_IGN);
     handle->close(handle->f);
     mySignal(SIGINT, prevtrap);
-
 }
 
 int FileStream::ReadFunc(unsigned char *buffer, int size)
 {
-    return fread(buffer, 1, size, handle->f);
+    auto readsize = fread(buffer, 1, size, handle->f);
+    m_readsize += readsize;
+    return readsize;
 }
 
 int FileStream::FD() const
@@ -127,7 +321,7 @@ int SSLStream::ReadFunc(unsigned char *buf, int len)
 #endif /* !defined(USE_SSL_VERIFY) */
     }
     else
-        status = read(handle->sock, buf, len);
+        status = ::read(handle->sock, buf, len);
     return status;
 }
 
@@ -148,7 +342,7 @@ int EncodedStrStream::ReadFunc(unsigned char *buf, int len)
     if (handle->s == NULL || handle->pos == handle->s->Size())
     {
         char *p;
-        handle->s = StrmyISgets(handle->is);
+        handle->s = handle->is->mygets();
         if (handle->s->Size() == 0)
             return 0;
         cleanup_line(handle->s, PAGER_MODE);
@@ -157,7 +351,7 @@ int EncodedStrStream::ReadFunc(unsigned char *buf, int len)
         else if (handle->encoding == ENC_UUENCODE)
         {
             if (!strncmp(handle->s->ptr, "begin", 5))
-                handle->s = StrmyISgets(handle->is);
+                handle->s = handle->is->mygets();
             StripRight(handle->s);
         }
         p = handle->s->ptr;
@@ -183,93 +377,9 @@ int EncodedStrStream::FD() const
     return handle->is->FD();
 }
 
-static void
-do_update(InputStreamPtr base)
-{
-    int len;
-    base->stream.cur = base->stream.next = 0;
-    len = base->ReadFunc(base->stream.buf, base->stream.size);
-    if (len <= 0)
-        base->iseos = TRUE;
-    else
-        base->stream.next += len;
-}
-
-static int
-buffer_read(StreamBuffer *sb, char *obuf, int count)
-{
-    int len = sb->next - sb->cur;
-    if (len > 0)
-    {
-        if (len > count)
-            len = count;
-        bcopy((const void *)&sb->buf[sb->cur], obuf, len);
-        sb->cur += len;
-    }
-    return len;
-}
-
-static void
-init_buffer(InputStreamPtr base, char *buf, int bufsize)
-{
-    auto sb = &base->stream;
-    sb->size = bufsize;
-    sb->cur = 0;
-    if (buf)
-    {
-        sb->buf = (uchar *)buf;
-        sb->next = bufsize;
-    }
-    else
-    {
-        sb->buf = NewAtom_N(uchar, bufsize);
-        sb->next = 0;
-    }
-    base->iseos = FALSE;
-}
-
-static void
-init_base_stream(InputStreamPtr base, int bufsize)
-{
-    init_buffer(base, NULL, bufsize);
-}
-
-static void
-init_str_stream(InputStreamPtr base, Str s)
-{
-    init_buffer(base, s->ptr, s->Size());
-}
-
-InputStreamPtr
-newInputStream(int des)
-{
-    if (des < 0)
-        return NULL;
-
-    auto stream = std::shared_ptr<BaseStream>(new BaseStream());
-
-    init_base_stream(stream, STREAM_BUF_SIZE);
-    stream->handle = New(int);
-    *(int *)stream->handle = des;
-    return stream;
-}
-
-InputStreamPtr
-newFileStream(FILE *f, FileStreamCloseFunc closep)
-{
-    if (f == NULL)
-        return NULL;
-
-    auto stream = std::shared_ptr<FileStream>(new FileStream());
-    init_base_stream(stream, STREAM_BUF_SIZE);
-    stream->handle = New(struct filestream_handle);
-    stream->handle->f = f;
-    if (closep)
-        stream->handle->close = closep;
-    else
-        stream->handle->close = (FileStreamCloseFunc)fclose;
-    return stream;
-}
+///
+///
+///
 
 InputStreamPtr
 newStrStream(Str s)
@@ -326,15 +436,6 @@ newEncodedStream(InputStreamPtr is, char encoding)
 //     return 0;
 // }
 
-int ISgetc(InputStreamPtr stream)
-{
-    if (stream == NULL)
-        return '\0';
-    if (!stream->iseos && MUST_BE_UPDATED(stream))
-        do_update(stream);
-    return POP_CHAR(stream);
-}
-
 int ISundogetc(InputStreamPtr stream)
 {
     if (stream == NULL)
@@ -346,134 +447,6 @@ int ISundogetc(InputStreamPtr stream)
         return 0;
     }
     return -1;
-}
-
-#define MARGIN_STR_SIZE 10
-Str StrISgets(InputStreamPtr stream)
-{
-    Str s = NULL;
-    uchar *p;
-    int len;
-
-    if (stream == NULL)
-        return NULL;
-
-    auto sb = &stream->stream;
-
-    while (!stream->iseos)
-    {
-        if (MUST_BE_UPDATED(stream))
-        {
-            do_update(stream);
-        }
-        else
-        {
-            if ((p = (unsigned char *)memchr(&sb->buf[sb->cur], '\n', sb->next - sb->cur)))
-            {
-                len = p - &sb->buf[sb->cur] + 1;
-                if (s == NULL)
-                    s = Strnew_size(len);
-                s->Push((char *)&sb->buf[sb->cur], len);
-                sb->cur += len;
-                return s;
-            }
-            else
-            {
-                if (s == NULL)
-                    s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
-                s->Push((char *)&sb->buf[sb->cur],
-                        sb->next - sb->cur);
-                sb->cur = sb->next;
-            }
-        }
-    }
-
-    if (s == NULL)
-        return Strnew();
-    return s;
-}
-
-Str StrmyISgets(InputStreamPtr stream)
-{
-    Str s = NULL;
-    int i, len;
-
-    if (stream == NULL)
-        return NULL;
-    auto sb = &stream->stream;
-
-    while (!stream->iseos)
-    {
-        if (MUST_BE_UPDATED(stream))
-        {
-            do_update(stream);
-        }
-        else
-        {
-            if (s && s->Back() == '\r')
-            {
-                if (sb->buf[sb->cur] == '\n')
-                    s->Push((char)sb->buf[sb->cur++]);
-                return s;
-            }
-            for (i = sb->cur;
-                 i < sb->next && sb->buf[i] != '\n' && sb->buf[i] != '\r';
-                 i++)
-                ;
-            if (i < sb->next)
-            {
-                len = i - sb->cur + 1;
-                if (s == NULL)
-                    s = Strnew_size(len + MARGIN_STR_SIZE);
-                s->Push((char *)&sb->buf[sb->cur], len);
-                sb->cur = i + 1;
-                if (sb->buf[i] == '\n')
-                    return s;
-            }
-            else
-            {
-                if (s == NULL)
-                    s = Strnew_size(sb->next - sb->cur + MARGIN_STR_SIZE);
-                s->Push((char *)&sb->buf[sb->cur],
-                        sb->next - sb->cur);
-                sb->cur = sb->next;
-            }
-        }
-    }
-
-    if (s == NULL)
-        return Strnew();
-    return s;
-}
-
-int ISread(InputStreamPtr stream, Str buf, int count)
-{
-    if (stream == NULL || stream->iseos)
-        return 0;
-
-    auto len = buffer_read(&stream->stream, buf->ptr, count);
-    auto rest = count - len;
-    if (MUST_BE_UPDATED(stream))
-    {
-        len = stream->ReadFunc((unsigned char *)&buf->ptr[len], rest);
-        if (len <= 0)
-        {
-            stream->iseos = TRUE;
-            len = 0;
-        }
-        rest -= len;
-    }
-    buf->Truncate(count - rest);
-    if (buf->Size() > 0)
-        return 1;
-    return 0;
-}
-
-int ISeos(InputStreamPtr stream)
-{
-    if (!stream->iseos && MUST_BE_UPDATED(stream))
-        do_update(stream);
-    return stream->iseos;
 }
 
 #ifdef USE_SSL

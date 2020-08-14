@@ -68,7 +68,7 @@ loadcmdout(char *cmd, LoaderFunc loadproc, BufferPtr buf)
     if (f == NULL)
         return NULL;
 
-    auto uf = URLFile::OpenStream(SCM_UNKNOWN, newFileStream(f, (FileStreamCloseFunc)pclose));
+    auto uf = URLFile::OpenStream(SCM_UNKNOWN, newFileStream(f, pclose));
     auto success = loadproc(uf, buf);
     if (!success)
     {
@@ -740,7 +740,7 @@ getpipe(char *cmd)
     if (f == NULL)
         return NULL;
     buf = newBuffer(INIT_BUFFER_WIDTH());
-    buf->pagerSource = newFileStream(f, (FileStreamCloseFunc)pclose);
+    buf->pagerSource = newFileStream(f, pclose);
     buf->filename = cmd;
     buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
                               conv_from_system(cmd))
@@ -898,7 +898,7 @@ getNextPage(BufferPtr buf, int plen)
     auto success = TrapJmp([&]() {
         for (i = 0; i < plen; i++)
         {
-            lineBuf2 = StrmyISgets(buf->pagerSource);
+            lineBuf2 = buf->pagerSource->mygets();
             if (lineBuf2->Size() == 0)
             {
                 /* Assume that `cmd == buf->filename' */

@@ -200,7 +200,7 @@ char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
             setup_child(TRUE, 2, uf->stream->FD());
             if (tmpf)
                 f = fopen(tmpf, "wb");
-            while (ISread(uf->stream, buf, SAVE_BUF_SIZE))
+            while (uf->stream->read(buf, SAVE_BUF_SIZE))
             {
                 if (buf->Puts(stdout) < 0)
                     break;
@@ -231,6 +231,6 @@ char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
         }
     }
     // uf->Close();
-    uf->stream = newFileStream(f1, (FileStreamCloseFunc)fclose);
+    uf->stream = newFileStream(f1, fclose);
     return tmpf;
 }

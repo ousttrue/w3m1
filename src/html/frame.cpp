@@ -595,7 +595,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     {
                         Str tmp;
                         fprintf(f1, "<pre>\n");
-                        while ((tmp = StrmyISgets(f2->stream))->Size())
+                        while ((tmp = f2->stream->mygets())->Size())
                         {
                             tmp = convertLine(SCM_UNKNOWN, tmp, HTML_MODE, &charset,
                                               doc_charset);
@@ -615,7 +615,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                         {
                             if (*p == '\0')
                             {
-                                Str tmp = StrmyISgets(f2->stream);
+                                Str tmp = f2->stream->mygets();
                                 if (tmp->Size() == 0)
                                     break;
                                 tmp = convertLine(SCM_UNKNOWN, tmp, HTML_MODE, &charset,
@@ -921,7 +921,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                         }
                     token_end:
                         tok->Clear();
-                    } while (*p != '\0' || !iseos(f2->stream));
+                    } while (*p != '\0' || !f2->stream->eos() /* iseos(f2->stream) */);
                     if (pre_mode & RB_PLAIN)
                         fputs("</PRE_PLAIN>\n", f1);
                     else if (pre_mode & RB_INTXTA)

@@ -850,7 +850,7 @@ void URLFile::examineFile(std::string_view path)
         {
             // TODO:
             // this->Close();
-            this->stream = newFileStream(fp, (FileStreamCloseFunc)pclose);
+            this->stream = newFileStream(fp, pclose);
             this->guess_type = "text/plain";
             return;
         }
@@ -880,7 +880,7 @@ int save2tmp(const URLFilePtr &uf, char *tmpf)
     auto success = TrapJmp([&]() -> bool {
         Str buf = Strnew_size(SAVE_BUF_SIZE);
         clen_t linelen = 0;
-        while (ISread(uf->stream, buf, SAVE_BUF_SIZE))
+        while (uf->stream->read(buf, SAVE_BUF_SIZE))
         {
             if (buf->Puts(ff) != buf->Size())
             {

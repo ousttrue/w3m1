@@ -78,7 +78,7 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
             f->stream = newEncodedStream(f->stream, f->encoding);
 
         Str lineBuf2 = nullptr;
-        while ((lineBuf2 = StrmyISgets(f->stream))->Size())
+        while ((lineBuf2 = f->stream->mygets())->Size())
         {
             if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
             {

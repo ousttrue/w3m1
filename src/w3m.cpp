@@ -929,7 +929,7 @@ int w3mApp::Main(int argc, char **argv)
         if (!isatty(0))
         {
             // not terminal as pipe
-            auto redin = newFileStream(fdopen(dup(0), "rb"), (FileStreamCloseFunc)pclose);
+            auto redin = newFileStream(fdopen(dup(0), "rb"), pclose);
             newbuf = openGeneralPagerBuffer(redin);
             dup2(1, 0);
         }
