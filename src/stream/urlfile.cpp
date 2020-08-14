@@ -2,7 +2,7 @@
 #include "stream/url.h"
 #include "stream/local_cgi.h"
 #include "stream/istream.h"
-#include "stream/http_request.h"
+#include "stream/http.h"
 #include "fm.h"
 #include "indep.h"
 #include "file.h"

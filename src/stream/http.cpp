@@ -1,5 +1,5 @@
 #include "fm.h"
-#include "stream/http_request.h"
+#include "stream/http.h"
 #include "textlist.h"
 #include "stream/url.h"
 #include "stream/loader.h"

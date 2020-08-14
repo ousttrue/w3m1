@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 #include "bufferpoint.h"
-#include "stream/http_request.h"
+#include "stream/http.h"
 
 struct Image;
 struct FormItemList;

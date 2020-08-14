@@ -2,7 +2,7 @@
 #include "dispatcher.h"
 #include "frontend/tab.h"
 #include "frontend/buffer.h"
-#include "stream/http_request.h"
+#include "stream/http.h"
 class w3mApp;
 
 /* 

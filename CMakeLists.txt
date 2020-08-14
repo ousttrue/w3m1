@@ -120,7 +120,7 @@ add_executable(w3m
     src/stream/url.cpp
     src/stream/compression.cpp
     src/stream/auth.cpp
-    src/stream/http_request.cpp
+    src/stream/http.cpp
     src/stream/cookie.cpp
     src/mime/mimeencoding.cpp
     src/mime/mimetypes.cpp

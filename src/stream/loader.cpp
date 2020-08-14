@@ -5,7 +5,7 @@
 #include "mytime.h"
 #include "urimethod.h"
 #include "stream/local_cgi.h"
-#include "stream/http_request.h"
+#include "stream/http.h"
 #include "charset.h"
 #include "stream/auth.h"
 #include "mime/mimetypes.h"

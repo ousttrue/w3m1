@@ -3,7 +3,7 @@
 #include "myctype.h"
 #include "indep.h"
 #include "mime/mimeencoding.h"
-#include "stream/http_request.h"
+#include "stream/http.h"
 #include "html/form.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
