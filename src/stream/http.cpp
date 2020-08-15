@@ -602,7 +602,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //     return nullptr;
     // }
 
-    auto t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    // auto t_buf = newBuffer(INIT_BUFFER_WIDTH());
     if ((f->content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
     {
         // TODO:
@@ -614,7 +614,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
             (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
         {
             // if (t_buf == NULL)
-            t_buf->sourcefile = uncompress_stream(f, true);
+            // t_buf->sourcefile = uncompress_stream(f, true);
             uncompressed_file_type(url.path.c_str(), &f->ext);
         }
         else
@@ -696,22 +696,16 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //     t_buf->bufferprop |= BP_FRAME;
     // }
 
-    if (t_buf && f->ssl_certificate)
-    {
-        t_buf->ssl_certificate = f->ssl_certificate;
-    }
+    // if (t_buf && f->ssl_certificate)
+    // {
+    //     t_buf->ssl_certificate = f->ssl_certificate;
+    // }
 
     // frame_source = flag & RG_FRAME_SRC;
-    auto success = loadSomething(f,
-                                 url.real_file.size() ? const_cast<char *>(url.real_file.c_str()) : const_cast<char *>(url.path.c_str()),
-                                 proc,
-                                 t_buf);
-    assert(success);
-    auto b = t_buf;
+    auto b = loadSomething(f, url.real_file.size() ? const_cast<char *>(url.real_file.c_str()) : const_cast<char *>(url.path.c_str()), proc);
     f->stream = nullptr;
-    // f.Close();
     frame_source = 0;
-    if (success)
+    if (b)
     {
         b->real_scheme = f->scheme;
         b->real_type = t;

@@ -217,29 +217,42 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
     return 0;
 }
 
-bool
-loadSomething(const URLFilePtr &f,
-              char *path,
-              LoaderFunc loadproc, BufferPtr buf)
+BufferPtr loadSomething(const URLFilePtr &f, const char *path, LoaderFunc loadproc)
 {
-    if (!loadproc(f, buf))
-        return false;
-
-    buf->filename = path;
-    if (buf->buffername.empty() || buf->buffername[0] == '\0')
+    auto buf = loadproc(f);
+    if (buf)
     {
-        auto buffername = checkHeader(buf, "Subject:");
-        buf->buffername = buffername ? buffername : "";
-        if (buf->buffername.empty())
-            buf->buffername = conv_from_system(lastFileName(path));
-    }
-    if (buf->currentURL.scheme == SCM_UNKNOWN)
-        buf->currentURL.scheme = f->scheme;
-    buf->real_scheme = f->scheme;
-    if (f->scheme == SCM_LOCAL && buf->sourcefile.empty())
-        buf->sourcefile = path;
 
-    return true;
+        buf->filename = path;
+        if (buf->buffername.empty() || buf->buffername[0] == '\0')
+        {
+            auto buffername = checkHeader(buf, "Subject:");
+            buf->buffername = buffername ? buffername : "";
+            if (buf->buffername.empty())
+                buf->buffername = conv_from_system(lastFileName(path));
+        }
+        if (buf->currentURL.scheme == SCM_UNKNOWN)
+            buf->currentURL.scheme = f->scheme;
+        buf->real_scheme = f->scheme;
+        if (f->scheme == SCM_LOCAL && buf->sourcefile.empty())
+            buf->sourcefile = path;
+    }
+
+    return buf;
+}
+
+BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc)
+{
+    if (cmd == NULL || *cmd == '\0')
+        return NULL;
+
+    FILE *popen(const char *, const char *);
+    auto f = popen(cmd, "r");
+    if (f == NULL)
+        return NULL;
+
+    auto uf = URLFile::OpenStream(SCM_UNKNOWN, newFileStream(f, pclose));
+    return loadproc(uf);
 }
 
 ///
@@ -402,10 +415,9 @@ public:
         else if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
         {
             BufferPtr b = NULL;
-            if (!do_download && doExternal(f,
-                                           pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()),
-                                           t, &b, t_buf))
+            if (!do_download)
             {
+                auto b = doExternal(f, pu.real_file.size() ? pu.real_file.c_str() : pu.path.c_str(), t);
                 if (b)
                 {
                     b->real_scheme = f->scheme;
@@ -451,16 +463,10 @@ public:
         }
 
         frame_source = flag & RG_FRAME_SRC;
-        auto success = loadSomething(f,
-                                     pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()),
-                                     proc,
-                                     t_buf);
-        assert(success);
-        auto b = t_buf;
+        auto b = loadSomething(f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()), proc);
         f->stream = nullptr;
-        // f.Close();
         frame_source = 0;
-        if (success)
+        if (b)
         {
             b->real_scheme = f->scheme;
             b->real_type = t;
@@ -522,15 +528,9 @@ BufferPtr loadFile(char *path)
     if (uf->stream == NULL)
         return NULL;
 
-    auto buf = newBuffer(INIT_BUFFER_WIDTH());
     current_content_length = 0;
     content_charset = WC_CES_NONE;
-    auto success = loadSomething(uf, path, loadBuffer, buf);
-    if (!success)
-    {
-        return nullptr;
-    }
-    return buf;
+    return loadSomething(uf, path, loadBuffer);
 }
 
 char *
@@ -783,9 +783,8 @@ void readHeader(const URLFilePtr &uf, BufferPtr newBuf, int thru, const URL *pu)
 /* 
  * loadBuffer: read file and make new buffer
  */
-bool loadBuffer(const URLFilePtr &uf, BufferPtr newBuf)
+BufferPtr loadBuffer(const URLFilePtr &uf)
 {
-    assert(newBuf);
     FILE *src = NULL;
 
     CharacterEncodingScheme charset = WC_CES_US_ASCII;
@@ -799,8 +798,6 @@ bool loadBuffer(const URLFilePtr &uf, BufferPtr newBuf)
 
     MySignalHandler prevtrap = NULL;
 
-    // if (newBuf == NULL)
-    //     newBuf = newBuffer(INIT_BUFFER_WIDTH());
     lineBuf2 = Strnew();
 
     // if (SETJMP(AbortLoading) != 0)
@@ -809,6 +806,7 @@ bool loadBuffer(const URLFilePtr &uf, BufferPtr newBuf)
     // }
     // TRAP_ON;
 
+    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
     if (newBuf->sourcefile.empty() &&
         (uf->scheme != SCM_LOCAL || newBuf->mailcap))
     {

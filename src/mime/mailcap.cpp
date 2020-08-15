@@ -533,8 +533,7 @@ Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, 
     return unquote_mailcap_loop(qstr, type, name, attr, mc_stat, 0);
 }
 
-int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bufp,
-               BufferPtr defaultbuf)
+BufferPtr doExternal(const URLFilePtr &uf, const char *path, const char *type)
 {
     Str tmpf, command;
     Mailcap *mcap;
@@ -556,9 +555,9 @@ int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bu
 
     if (uf->stream->type() != IST_ENCODED)
         uf->stream = newEncodedStream(uf->stream, uf->encoding);
-    header = checkHeader(defaultbuf, "Content-Type:");
-    if (header)
-        header = conv_to_system(header);
+    // header = checkHeader(defaultbuf, "Content-Type:");
+    // if (header)
+    //     header = conv_to_system(header);
     command = unquote_mailcap(mcap->viewer, type, tmpf->ptr, header, &mc_stat);
 #ifndef __EMX__
     if (!(mc_stat & MCSTAT_REPNAME))
@@ -580,32 +579,29 @@ int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bu
                 exit(1);
             myExec(command->ptr);
         }
-        *bufp = nullptr;
-        return 1;
+        return nullptr;
     }
     else
 #endif
     {
         if (save2tmp(uf, tmpf->ptr) < 0)
         {
-            *bufp = NULL;
-            return 1;
+            return NULL;
         }
     }
     if (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT))
     {
-        if (defaultbuf == NULL)
-            defaultbuf = newBuffer(INIT_BUFFER_WIDTH());
-        if (defaultbuf->sourcefile.size())
-            src = Strnew(defaultbuf->sourcefile)->ptr;
+        buf = newBuffer(INIT_BUFFER_WIDTH());
+        if (buf->sourcefile.size())
+            src = Strnew(buf->sourcefile)->ptr;
         else
             src = tmpf->ptr;
-        defaultbuf->sourcefile.clear();
-        defaultbuf->mailcap = mcap;
+        buf->sourcefile.clear();
+        buf->mailcap = mcap;
     }
     if (mcap->flags & MAILCAP_HTMLOUTPUT)
     {
-        buf = loadcmdout(command->ptr, loadHTMLBuffer, defaultbuf);
+        buf = loadcmdout(command->ptr, loadHTMLBuffer);
         if (buf)
         {
             buf->type = "text/html";
@@ -615,7 +611,7 @@ int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bu
     }
     else if (mcap->flags & MAILCAP_COPIOUSOUTPUT)
     {
-        buf = loadcmdout(command->ptr, loadBuffer, defaultbuf);
+        buf = loadcmdout(command->ptr, loadBuffer);
         if (buf)
         {
             buf->type = "text/plain";
@@ -647,6 +643,6 @@ int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bu
         buf->edit = mcap->edit;
         buf->mailcap = mcap;
     }
-    *bufp = buf;
-    return 1;
+
+    return buf;
 }

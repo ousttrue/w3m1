@@ -21,16 +21,15 @@ char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte);
 
 
-bool loadImageBuffer(const URLFilePtr &uf, BufferPtr newBuf);
+BufferPtr loadImageBuffer(const URLFilePtr &uf);
 void saveBuffer(BufferPtr buf, FILE *f, int cont);
 void saveBufferBody(BufferPtr buf, FILE *f, int cont);
 BufferPtr getshell(char *cmd);
 BufferPtr getpipe(char *cmd);
-BufferPtr openPagerBuffer(InputStreamPtr stream, BufferPtr buf);
+BufferPtr openPagerBuffer(InputStreamPtr stream);
 BufferPtr openGeneralPagerBuffer(InputStreamPtr stream);
 LinePtr getNextPage(BufferPtr buf, int plen);
-int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bufp,
-               BufferPtr defaultbuf);
+BufferPtr doExternal(const URLFilePtr &uf, const char *path, const char *type);
 
 int doFileMove(char *tmpf, char *defstr);
 
@@ -52,7 +51,7 @@ void addMChar(char *c, Lineprop mode, size_t len);
 BufferPtr message_list_panel(void);
 
 
-char *lastFileName(char *path);
+char *lastFileName(const char *path);
 char *mydirname(const char *s);
 
 #ifdef USE_MIGEMO
@@ -144,7 +143,3 @@ Str tmpfname(int type, const char *ext);
 void SetMetaCharset(CharacterEncodingScheme ces);
 URL *GetCurBaseUrl();
 int setModtime(char *path, time_t modtime);
-
-using LoaderFunc = bool (*)(const URLFilePtr &uf, BufferPtr newBuf);
-
-BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc, BufferPtr defaultbuf);

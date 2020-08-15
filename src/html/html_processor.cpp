@@ -60,7 +60,6 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
     CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
     HtmlContext context;
     auto success = TrapJmp([&]() {
-
         if (newBuf != nullptr)
         {
             if (newBuf->bufferprop & BP_FRAME)
@@ -173,19 +172,15 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
 /* 
  * loadHTMLBuffer: read file and make new buffer
  */
-bool loadHTMLBuffer(const URLFilePtr &f, BufferPtr newBuf)
+BufferPtr loadHTMLBuffer(const URLFilePtr &f)
 {
-    assert(newBuf);
-
     FILE *src = nullptr;
-    Str tmp;
 
-    // if (newBuf == nullptr)
-    //     newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
     if (newBuf->sourcefile.empty() &&
         (f->scheme != SCM_LOCAL || newBuf->mailcap))
     {
-        tmp = tmpfname(TMPF_SRC, ".html");
+        auto tmp = tmpfname(TMPF_SRC, ".html");
         src = fopen(tmp->ptr, "w");
         if (src)
             newBuf->sourcefile = tmp->ptr;
@@ -199,7 +194,7 @@ bool loadHTMLBuffer(const URLFilePtr &f, BufferPtr newBuf)
     if (src)
         fclose(src);
 
-    return true;
+    return newBuf;
 }
 
 /* 

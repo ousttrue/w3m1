@@ -57,26 +57,6 @@
 #define min(a, b) ((a) > (b) ? (b) : (a))
 #endif /* not min */
 
-BufferPtr
-loadcmdout(char *cmd, LoaderFunc loadproc, BufferPtr buf)
-{
-    FILE *f, *popen(const char *, const char *);
-
-    if (cmd == NULL || *cmd == '\0')
-        return NULL;
-    f = popen(cmd, "r");
-    if (f == NULL)
-        return NULL;
-
-    auto uf = URLFile::OpenStream(SCM_UNKNOWN, newFileStream(f, pclose));
-    auto success = loadproc(uf, buf);
-    if (!success)
-    {
-        return nullptr;
-    }
-    return buf;
-}
-
 static JMP_BUF AbortLoading;
 static void KeyAbort(SIGNAL_ARG)
 {
@@ -595,7 +575,7 @@ gopher_end:
 #endif /* USE_GOPHER */
 
 #ifdef USE_IMAGE
-bool loadImageBuffer(const URLFilePtr &uf, BufferPtr newBuf)
+BufferPtr loadImageBuffer(const URLFilePtr &uf)
 {
     Image image;
     ImageCache *cache;
@@ -604,6 +584,7 @@ bool loadImageBuffer(const URLFilePtr &uf, BufferPtr newBuf)
     MySignalHandler prevtrap = NULL;
     struct stat st;
 
+    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
     loadImage(newBuf, IMG_FLAG_STOP);
     image.url = uf->url;
     image.ext = uf->ext;
@@ -648,7 +629,7 @@ image_buffer:
     newBuf->CurrentAsLast();
 
     newBuf->image_flag = IMG_FLAG_AUTO;
-    return true;
+    return newBuf;
 }
 #endif
 
@@ -707,9 +688,7 @@ void saveBufferBody(BufferPtr buf, FILE *f, int cont)
 BufferPtr
 getshell(char *cmd)
 {
-    BufferPtr buf;
-
-    buf = loadcmdout(cmd, loadBuffer, NULL);
+    auto buf = loadcmdout(cmd, loadBuffer);
     if (buf == NULL)
         return NULL;
     buf->filename = cmd;
@@ -750,11 +729,9 @@ getpipe(char *cmd)
  * Open pager buffer
  */
 BufferPtr
-openPagerBuffer(InputStreamPtr stream, BufferPtr buf)
+openPagerBuffer(InputStreamPtr stream)
 {
-
-    if (buf == NULL)
-        buf = newBuffer(INIT_BUFFER_WIDTH());
+    auto buf = newBuffer(INIT_BUFFER_WIDTH());
     buf->pagerSource = stream;
     buf->buffername = getenv("MAN_PN");
     if (buf->buffername.empty())
@@ -778,68 +755,63 @@ openGeneralPagerBuffer(InputStreamPtr stream)
 {
     BufferPtr buf;
     std::string t = "text/plain";
-    BufferPtr t_buf = NULL;
+    // BufferPtr t_buf = NULL;
     auto uf = URLFile::OpenStream(SCM_UNKNOWN, stream);
 
     content_charset = WC_CES_NONE;
-    if (w3mApp::Instance().SearchHeader)
-    {
-        t_buf = newBuffer(INIT_BUFFER_WIDTH());
-        readHeader(uf, t_buf, TRUE, NULL);
-        t = checkContentType(t_buf);
-        if (t.empty())
-            t = "text/plain";
-        if (t_buf)
-        {
-            t_buf->SetTopLine(t_buf->FirstLine());
-            t_buf->SetCurrentLine(t_buf->LastLine());
-        }
-        w3mApp::Instance().SearchHeader = FALSE;
-    }
-    else if (w3mApp::Instance().DefaultType.size())
-    {
-        t = w3mApp::Instance().DefaultType;
-        w3mApp::Instance().DefaultType.clear();
-    }
+    // if (w3mApp::Instance().SearchHeader)
+    // {
+    //     t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //     readHeader(uf, t_buf, TRUE, NULL);
+    //     t = checkContentType(t_buf);
+    //     if (t.empty())
+    //         t = "text/plain";
+    //     if (t_buf)
+    //     {
+    //         t_buf->SetTopLine(t_buf->FirstLine());
+    //         t_buf->SetCurrentLine(t_buf->LastLine());
+    //     }
+    //     w3mApp::Instance().SearchHeader = FALSE;
+    // }
+    // else if (w3mApp::Instance().DefaultType.size())
+    // {
+    //     t = w3mApp::Instance().DefaultType;
+    //     w3mApp::Instance().DefaultType.clear();
+    // }
+
     if (is_html_type(t))
     {
-        buf = t_buf;
-        auto success = loadHTMLBuffer(uf, t_buf);
-        assert(success);
+        buf = loadHTMLBuffer(uf);
         buf->type = "text/html";
     }
     else if (is_plain_text_type(t.c_str()))
     {
         if (stream->type() != IST_ENCODED)
             stream = newEncodedStream(stream, uf->encoding);
-        buf = openPagerBuffer(stream, t_buf);
+        buf = openPagerBuffer(stream);
         buf->type = "text/plain";
     }
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
              !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     {
         *GetCurBaseUrl() = URL::Parse("-", NULL);
-        auto buf = t_buf;
-        auto success = loadImageBuffer(uf, t_buf);
-        assert(success);
+        buf = loadImageBuffer(uf);
         buf->type = "text/html";
     }
     else
     {
-        if (doExternal(uf, "-", t.c_str(), &buf, t_buf))
+        buf = doExternal(uf, "-", t.c_str());
+        if (buf)
         {
-            // uf.Close();
-            if (buf == NULL)
-                return buf;
-        }
-        else
-        { /* unknown type is regarded as text/plain */
-            if (stream->type() != IST_ENCODED)
-                stream = newEncodedStream(stream, uf->encoding);
-            buf = openPagerBuffer(stream, t_buf);
-            buf->type = "text/plain";
+            return buf;
         }
     }
+
+    /* unknown type is regarded as text/plain */
+    if (stream->type() != IST_ENCODED)
+        stream = newEncodedStream(stream, uf->encoding);
+    buf = openPagerBuffer(stream);
+    buf->type = "text/plain";
     buf->real_type = t;
     buf->currentURL = URL::StdIn();
     return buf;
@@ -1309,11 +1281,10 @@ long lrand48(void)
 #endif
 
 char *
-lastFileName(char *path)
+lastFileName(const char *path)
 {
-    char *p, *q;
-
-    p = q = path;
+    auto p = path;
+    auto q = path;
     while (*p != '\0')
     {
         if (*p == '/')
