@@ -41,10 +41,6 @@ public:
 
     static std::shared_ptr<URLFile> OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request);
 
-    static std::shared_ptr<URLFile> OpenHttp(const URL &url, const URL *current,
-                                             HttpReferrerPolicy referer, FormList *form,
-                                             HttpRequest *hr);
-
     static std::shared_ptr<URLFile> OpenStream(URLSchemeTypes scheme, InputStreamPtr stream);
 
     static std::shared_ptr<URLFile> OpenFile(std::string_view path);

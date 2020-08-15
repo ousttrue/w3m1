@@ -61,8 +61,6 @@ public:
         return "";
     }
 
-    // std::string URI(const URL &url, bool isLocal = false) const;
-    Str ToStr(const URL &url, const URL *current, const TextList *extra) const;
 };
 using HttpRequestPtr = std::shared_ptr<HttpRequest>;
 
