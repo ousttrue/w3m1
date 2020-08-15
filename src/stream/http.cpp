@@ -537,14 +537,24 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     // load buffer
     //
     auto [t, charset] = split(response->FindHeader("content-type"), ';');
+    if (t.empty())
+    {
+        t = "text/plain";
+    }
+    if (charset.size())
+    {
+        auto [_, cs] = split(charset, '=');
+        if (cs.size())
+        {
+            content_charset = wc_guess_charset(cs.data(), WC_CES_NONE);
+        }
+    }
     // if (t == NULL && url.path.size())
     // {
     //     if (!((http_response_code >= 400 && http_response_code <= 407) ||
     //           (http_response_code >= 500 && http_response_code <= 505)))
     //         t = guessContentType(url.path);
     // }
-    // if (t == NULL)
-    // auto t = "text/plain";
 
     // /* XXX: can we use guess_type to give the type to loadHTMLstream
     //      *      to support default utf8 encoding for XHTML here? */
