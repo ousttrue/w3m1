@@ -645,104 +645,104 @@ void Buffer::GotoRealLine(int n)
 /*
  * Reshape HTML buffer
  */
-void Buffer::Reshape()
-{
-    uint8_t old_auto_detect = WcOption.auto_detect;
+// void Buffer::Reshape()
+// {
+//     uint8_t old_auto_detect = WcOption.auto_detect;
 
-    if (!need_reshape)
-        return;
-    need_reshape = FALSE;
+//     if (!need_reshape)
+//         return;
+//     need_reshape = FALSE;
 
-    this->width = INIT_BUFFER_WIDTH();
-    if (this->sourcefile.empty())
-        return;
-    auto f = URLFile::OpenFile(this->mailcap_source.size() ? this->mailcap_source.c_str() : this->sourcefile.c_str());
-    if (f->stream == NULL)
-        return;
+//     this->width = INIT_BUFFER_WIDTH();
+//     if (this->sourcefile.empty())
+//         return;
+//     auto f = URLFile::OpenFile(this->mailcap_source.size() ? this->mailcap_source.c_str() : this->sourcefile.c_str());
+//     if (f->stream == NULL)
+//         return;
 
-    auto sbuf = this->Copy();
-    this->ClearLines();
-    while (this->frameset)
-    {
-        deleteFrameSet(this->frameset);
-        this->frameset = popFrameTree(&(this->frameQ));
-    }
+//     auto sbuf = this->Copy();
+//     this->ClearLines();
+//     while (this->frameset)
+//     {
+//         deleteFrameSet(this->frameset);
+//         this->frameset = popFrameTree(&(this->frameQ));
+//     }
 
-    this->href.clear();
-    this->name.clear();
-    this->img.clear();
-    this->formitem.clear();
-    this->formlist = NULL;
-    this->linklist.clear();
-    this->maplist = NULL;
-    this->hmarklist.clear();
-    this->imarklist.clear();
+//     this->href.clear();
+//     this->name.clear();
+//     this->img.clear();
+//     this->formitem.clear();
+//     this->formlist = NULL;
+//     this->linklist.clear();
+//     this->maplist = NULL;
+//     this->hmarklist.clear();
+//     this->imarklist.clear();
 
-    if (this->header_source.size())
-    {
-        if (this->currentURL.scheme != SCM_LOCAL ||
-            this->mailcap_source.size() || this->currentURL.path == "-")
-        {
-            auto h = URLFile::OpenFile(this->header_source);
-            if (h->stream)
-            {
-                readHeader(h, shared_from_this(), TRUE, NULL);
-            }
-        }
-        else if (this->search_header) /* -m option */
-            readHeader(f, shared_from_this(), TRUE, NULL);
-    }
+//     if (this->header_source.size())
+//     {
+//         if (this->currentURL.scheme != SCM_LOCAL ||
+//             this->mailcap_source.size() || this->currentURL.path == "-")
+//         {
+//             auto h = URLFile::OpenFile(this->header_source);
+//             if (h->stream)
+//             {
+//                 readHeader(h, shared_from_this(), TRUE, NULL);
+//             }
+//         }
+//         else if (this->search_header) /* -m option */
+//             readHeader(f, shared_from_this(), TRUE, NULL);
+//     }
 
-    WcOption.auto_detect = WC_OPT_DETECT_OFF;
-    w3mApp::Instance().UseContentCharset = FALSE;
+//     WcOption.auto_detect = WC_OPT_DETECT_OFF;
+//     w3mApp::Instance().UseContentCharset = FALSE;
 
-    if (is_html_type(this->type))
-        loadHTMLBuffer(f, shared_from_this());
-    else
-        loadBuffer(f, shared_from_this());
+//     if (is_html_type(this->type))
+//         loadHTMLBuffer(f, shared_from_this());
+//     else
+//         loadBuffer(f, shared_from_this());
 
-    WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
-    w3mApp::Instance().UseContentCharset = TRUE;
+//     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
+//     w3mApp::Instance().UseContentCharset = TRUE;
 
-    this->height = (rect.lines - 1) + 1;
-    if (this->FirstLine() && sbuf->FirstLine())
-    {
-        LinePtr cur = sbuf->currentLine;
-        int n;
+//     this->height = (rect.lines - 1) + 1;
+//     if (this->FirstLine() && sbuf->FirstLine())
+//     {
+//         LinePtr cur = sbuf->currentLine;
+//         int n;
 
-        this->pos = sbuf->pos + cur->bpos;
-        while (cur->bpos && PrevLine(cur))
-            cur = PrevLine(cur);
-        if (cur->real_linenumber > 0)
-            this->GotoRealLine(cur->real_linenumber);
-        else
-            this->GotoLine(cur->linenumber);
-        n = (this->currentLine->linenumber - this->topLine->linenumber) - (cur->linenumber - sbuf->topLine->linenumber);
-        if (n)
-        {
-            LineSkip(this->topLine, n, FALSE);
-            if (cur->real_linenumber > 0)
-                this->GotoRealLine(cur->real_linenumber);
-            else
-                this->GotoLine(cur->linenumber);
-        }
-        this->pos -= this->currentLine->bpos;
-        if (w3mApp::Instance().FoldLine && !is_html_type(this->type))
-            this->currentColumn = 0;
-        else
-            this->currentColumn = sbuf->currentColumn;
-        ArrangeCursor();
-    }
-    if (this->check_url & CHK_URL)
-        chkURLBuffer(shared_from_this());
+//         this->pos = sbuf->pos + cur->bpos;
+//         while (cur->bpos && PrevLine(cur))
+//             cur = PrevLine(cur);
+//         if (cur->real_linenumber > 0)
+//             this->GotoRealLine(cur->real_linenumber);
+//         else
+//             this->GotoLine(cur->linenumber);
+//         n = (this->currentLine->linenumber - this->topLine->linenumber) - (cur->linenumber - sbuf->topLine->linenumber);
+//         if (n)
+//         {
+//             LineSkip(this->topLine, n, FALSE);
+//             if (cur->real_linenumber > 0)
+//                 this->GotoRealLine(cur->real_linenumber);
+//             else
+//                 this->GotoLine(cur->linenumber);
+//         }
+//         this->pos -= this->currentLine->bpos;
+//         if (w3mApp::Instance().FoldLine && !is_html_type(this->type))
+//             this->currentColumn = 0;
+//         else
+//             this->currentColumn = sbuf->currentColumn;
+//         ArrangeCursor();
+//     }
+//     if (this->check_url & CHK_URL)
+//         chkURLBuffer(shared_from_this());
 
-    if (this->check_url & CHK_NMID)
-        chkNMIDBuffer(shared_from_this());
-    if (this->real_scheme == SCM_NNTP || this->real_scheme == SCM_NEWS)
-        reAnchorNewsheader(shared_from_this());
+//     if (this->check_url & CHK_NMID)
+//         chkNMIDBuffer(shared_from_this());
+//     if (this->real_scheme == SCM_NNTP || this->real_scheme == SCM_NEWS)
+//         reAnchorNewsheader(shared_from_this());
 
-    formResetBuffer(shared_from_this(), sbuf->formitem);
-}
+//     formResetBuffer(shared_from_this(), sbuf->formitem);
+// }
 
 void set_buffer_environ(BufferPtr buf)
 {

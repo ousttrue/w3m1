@@ -154,7 +154,7 @@ public:
         ArrangeCursor();
     }
     void GotoRealLine(int n);
-    void Reshape();
+    // void Reshape();
     LinePtr CurrentLineSkip(LinePtr line, int offset, int last);
     void LineSkip(LinePtr line, int offset, int last);
     void Scroll(int n);

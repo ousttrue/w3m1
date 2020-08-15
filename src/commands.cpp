@@ -1555,7 +1555,7 @@ void vwSrc(w3mApp *w3m)
     buf->clone = GetCurrentTab()->GetCurrentBuffer()->clone;
     (*buf->clone)++;
     buf->need_reshape = TRUE;
-    buf->Reshape();
+    // buf->Reshape();
     GetCurrentTab()->Push(buf);
     displayCurrentbuf(B_NORMAL);
 }
@@ -1717,7 +1717,7 @@ void reload(w3mApp *w3m)
 void reshape(w3mApp *w3m)
 {
     GetCurrentTab()->GetCurrentBuffer()->need_reshape = TRUE;
-    GetCurrentTab()->GetCurrentBuffer()->Reshape();
+    // GetCurrentTab()->GetCurrentBuffer()->Reshape();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 

@@ -540,18 +540,26 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //
     // load buffer
     //
-    auto [t, charset] = split(response->FindHeader("content-type"), ';');
+    auto t = response->FindHeader("content-type");
+    if (t.size())
+    {
+        auto [tt, charset] = split(t, ';');
+        if (tt.size())
+        {
+            t = tt;
+        }
+        if (charset.size())
+        {
+            auto [_, cs] = split(charset, '=');
+            if (cs.size())
+            {
+                content_charset = wc_guess_charset(cs.data(), WC_CES_NONE);
+            }
+        }
+    }
     if (t.empty())
     {
         t = "text/plain";
-    }
-    if (charset.size())
-    {
-        auto [_, cs] = split(charset, '=');
-        if (cs.size())
-        {
-            content_charset = wc_guess_charset(cs.data(), WC_CES_NONE);
-        }
     }
     // if (t == NULL && url.path.size())
     // {

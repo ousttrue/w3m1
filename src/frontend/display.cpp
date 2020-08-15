@@ -956,7 +956,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         buf->need_reshape)
     {
         buf->need_reshape = TRUE;
-        buf->Reshape();
+        // buf->Reshape();
     }
 
     if (w3mApp::Instance().showLineNum)
