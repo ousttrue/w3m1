@@ -646,6 +646,7 @@ int non_null(char *s)
     return FALSE;
 }
 
+// newline to '\n'
 void cleanup_line(Str s, int mode)
 {
     if (s->Size() >= 2 &&
@@ -660,8 +661,7 @@ void cleanup_line(Str s, int mode)
         s->Push('\n');
     if (mode != PAGER_MODE)
     {
-        int i;
-        for (i = 0; i < s->Size(); i++)
+        for (int i = 0; i < s->Size(); i++)
         {
             if (s->ptr[i] == '\0')
                 s->ptr[i] = ' ';

@@ -866,7 +866,7 @@ BufferPtr message_list_panel(void)
     return loadHTMLString(tmp);
 }
 
-void show_message(const char *msg)
+void show_message(std::string_view msg)
 {
     if (fmInitialized)
     {
@@ -877,12 +877,12 @@ void show_message(const char *msg)
     }
 }
 
-void message(const char *s, int return_x, int return_y)
+void message(std::string_view s, int return_x, int return_y)
 {
     if (!fmInitialized)
         return;
     move((LINES - 1), 0);
-    addnstr(s, COLS - 1);
+    addnstr(s.data(), COLS - 1);
     clrtoeolx();
     move(return_y, return_x);
 }

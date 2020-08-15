@@ -841,10 +841,6 @@ int w3mApp::Main(int argc, char **argv)
             {
                 w3m_debug = TRUE;
             }
-            else if (!strcmp("-reqlog", argv[i]))
-            {
-                w3m_reqlog = rcFile("request.log");
-            }
             else
             {
                 usage(show_params_p);

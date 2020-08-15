@@ -856,16 +856,6 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
             SSL_write(sslh, tmp->ptr, tmp->Size());
         else
             write(sock, tmp->ptr, tmp->Size());
-        if (w3mApp::Instance().w3m_reqlog.size())
-        {
-            FILE *ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
-            if (sslh)
-                fputs("HTTPS: request via SSL\n", ff);
-            else
-                fputs("HTTPS: request without SSL\n", ff);
-            fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
-            fclose(ff);
-        }
         if (hr->method == HTTP_METHOD_POST &&
             form->enctype == FORM_ENCTYPE_MULTIPART)
         {
@@ -879,12 +869,6 @@ URLFilePtr URLFile::OpenHttp(const URL &url, const URL *current,
     else
     {
         write(sock, tmp->ptr, tmp->Size());
-        if (w3mApp::Instance().w3m_reqlog.size())
-        {
-            FILE *ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
-            fwrite(tmp->ptr, sizeof(char), tmp->Size(), ff);
-            fclose(ff);
-        }
         if (hr->method == HTTP_METHOD_POST &&
             form->enctype == FORM_ENCTYPE_MULTIPART)
             write_from_file(sock, form->body);

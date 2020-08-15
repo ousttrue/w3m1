@@ -15,8 +15,8 @@ void do_color(Linecolor c);
 void clear_effect();
 
 // message
-void show_message(const char *s);
-void message(const char *s, int return_x, int return_y);
+void show_message(std::string_view s);
+void message(std::string_view s, int return_x, int return_y);
 inline void message(const char *s, const TermRect &rect)
 {
     auto [x, y] = rect.globalXY();

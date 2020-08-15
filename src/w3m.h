@@ -121,11 +121,10 @@ public:
 
     // debug & logging
     bool w3m_debug = false;
-    std::string w3m_reqlog;
     DumpFlags w3m_dump = DUMP_NONE;
 
 public:
-    // 使いわないのが目標
+    // 最終的にはこれを使わず引数経由で得るようにする
     static w3mApp &Instance()
     {
         static w3mApp w3m;

@@ -21,6 +21,7 @@
 
 void _Push(const HttpRequestPtr &request, std::stringstream &ss)
 {
+    // stop recursion
 }
 
 template <typename... ARGS>
@@ -74,62 +75,6 @@ std::shared_ptr<HttpRequest> HttpRequest::Create(const URL &url, struct FormList
         << host->ptr
         << " HTTP/1.0\r\n";
     request->lines.push_back(ss.str());
-
-    // headers
-    Push(request, "User-Agent: ", ((UserAgent == NULL || *UserAgent == '\0') ? w3mApp::w3m_version : UserAgent), "\r\n");
-    Push(request, "Accept: ", AcceptMedia, "\r\n");
-    Push(request, "Accept-Encoding: ", AcceptEncoding, "\r\n");
-    Push(request, "Accept-Language: ", AcceptLang, "\r\n");
-
-    if (url.host.size())
-    {
-        Push(request, "Host: ", url.host, url.NonDefaultPort(), "\r\n");
-    }
-    if (url.is_nocache || NoCache)
-    {
-        Push(request, "Pragma: no-cache\r\n");
-        Push(request, "Cache-control: no-cache\r\n");
-    }
-
-    Str cookie;
-    if (request->method != HTTP_METHOD_CONNECT &&
-        w3mApp::Instance().use_cookie && (cookie = find_cookie(&url)))
-    {
-        Push(request, "Cookie: ", cookie->c_str(), "\r\n");
-        /* [DRAFT 12] s. 10.1 */
-        if (cookie->ptr[0] != '$')
-        {
-            Push(request, "Cookie2: $Version=\"1\"\r\n");
-        }
-    }
-
-    if (request->method == HTTP_METHOD_POST)
-    {
-        if (request->form->enctype == FORM_ENCTYPE_MULTIPART)
-        {
-            Push(request, "Content-type: multipart/form-data; boundary=", request->form->boundary, "\r\n");
-            Push(request, "Content-length: ", request->form->length, "\r\n");
-        }
-        else
-        {
-            if (w3mApp::Instance().override_content_type)
-            {
-                Push(request, "Content-type: application/x-www-form-urlencoded\r\n");
-            }
-            Push(request, "Content-length: ", request->form->length, "\r\n");
-            if (w3mApp::Instance().header_string.size())
-            {
-                Push(request, w3mApp::Instance().header_string);
-            }
-        }
-    }
-    else
-    {
-        if (w3mApp::Instance().header_string.size())
-        {
-            Push(request, w3mApp::Instance().header_string);
-        }
-    }
 
     return request;
 }
@@ -338,6 +283,7 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
     if (lines.empty())
     {
         lines.push_back(std::string(line));
+
         // first line
         // HTTP/1.1 200 OK
         if (!line.starts_with("HTTP/"))
@@ -369,15 +315,10 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
     else
     {
         lines.push_back(std::string(line));
-        // headers. ex.
-        // Content-Type: text/html
         // KEY: VALUE
+        // ex. Content-Type: text/html
         auto [key, value] = svu::split(line, ':');
-        if (svu::iceq(key, "content-transfer-encoding"))
-        {
-            auto a = 0;
-        }
-        else if (svu::iceq(key, "content-encoding"))
+        if (svu::iceq(key, "content-encoding"))
         {
             for (auto d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
             {
@@ -401,44 +342,30 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
     return false;
 }
 
-// if (strncasecmp(lineBuf2->ptr, "content-transfer-encoding:", 26) == 0)
-// {
-//     auto p = lineBuf2->ptr + 26;
-//     while (IS_SPACE(*p))
-//         p++;
-//     if (!strncasecmp(p, "base64", 6))
-//         uf->encoding = ENC_BASE64;
-//     else if (!strncasecmp(p, "quoted-printable", 16))
-//         uf->encoding = ENC_QUOTE;
-//     else if (!strncasecmp(p, "uuencode", 8) ||
-//              !strncasecmp(p, "x-uuencode", 10))
-//         uf->encoding = ENC_UUENCODE;
-//     else
-//         uf->encoding = ENC_7BIT;
-// }
-// else if (strncasecmp(lineBuf2->ptr, "content-encoding:", 17) == 0)
-// {
-//     struct compression_decoder *d;
-//     auto p = lineBuf2->ptr + 17;
-//     while (IS_SPACE(*p))
-//         p++;
-//     uf->compression = CMP_NOCOMPRESS;
-//     for (d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
-//     {
-//         const char **e;
-//         for (e = d->encodings; *e != NULL; e++)
+//         else if (w3mApp::Instance().use_cookie && w3mApp::Instance().accept_cookie &&
+//                  pu && check_cookie_accept_domain(pu->host) &&
+//                  (!strncasecmp(lineBuf2->ptr, "Set-Cookie:", 11) ||
+//                   !strncasecmp(lineBuf2->ptr, "Set-Cookie2:", 12)))
 //         {
-//             if (strncasecmp(p, *e, strlen(*e)) == 0)
+//             readHeaderCookie(*pu, lineBuf2);
+//         }
+//         else if (strncasecmp(lineBuf2->ptr, "w3m-control:", 12) == 0 &&
+//                  uf->scheme == SCM_LOCAL_CGI)
+//         {
+//             auto p = lineBuf2->ptr + 12;
+//             SKIP_BLANKS(&p);
+//             Str funcname = Strnew();
+//             while (*p && !IS_SPACE(*p))
+//                 funcname->Push(*(p++));
+//             SKIP_BLANKS(&p);
+//             Command f = getFuncList(funcname->ptr);
+//             if (f)
 //             {
-//                 uf->compression = d->type;
-//                 break;
+//                 auto tmp = Strnew(p);
+//                 StripRight(tmp);
+//                 pushEvent(f, tmp->ptr);
 //             }
 //         }
-//         if (uf->compression != CMP_NOCOMPRESS)
-//             break;
-//     }
-//     uf->content_encoding = uf->compression;
-// }
 
 std::string_view HttpResponse::FindHeader(std::string_view key) const
 {
@@ -459,7 +386,67 @@ std::string_view HttpResponse::FindHeader(std::string_view key) const
 ///
 BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form)
 {
+    //
+    // build HTTP request
+    //
     auto request = HttpRequest::Create(url, form);
+    Push(request, "User-Agent: ", ((UserAgent == NULL || *UserAgent == '\0') ? w3mApp::w3m_version : UserAgent), "\r\n");
+    Push(request, "Accept: ", AcceptMedia, "\r\n");
+    Push(request, "Accept-Encoding: ", AcceptEncoding, "\r\n");
+    Push(request, "Accept-Language: ", AcceptLang, "\r\n");
+
+    if (url.host.size())
+    {
+        Push(request, "Host: ", url.host, url.NonDefaultPort(), "\r\n");
+    }
+    if (url.is_nocache || NoCache)
+    {
+        Push(request, "Pragma: no-cache\r\n");
+        Push(request, "Cache-control: no-cache\r\n");
+    }
+
+    Str cookie;
+    if (request->method != HTTP_METHOD_CONNECT &&
+        w3mApp::Instance().use_cookie && (cookie = find_cookie(&url)))
+    {
+        Push(request, "Cookie: ", cookie->c_str(), "\r\n");
+        /* [DRAFT 12] s. 10.1 */
+        if (cookie->ptr[0] != '$')
+        {
+            Push(request, "Cookie2: $Version=\"1\"\r\n");
+        }
+    }
+
+    if (request->method == HTTP_METHOD_POST)
+    {
+        if (request->form->enctype == FORM_ENCTYPE_MULTIPART)
+        {
+            Push(request, "Content-type: multipart/form-data; boundary=", request->form->boundary, "\r\n");
+            Push(request, "Content-length: ", request->form->length, "\r\n");
+        }
+        else
+        {
+            if (w3mApp::Instance().override_content_type)
+            {
+                Push(request, "Content-type: application/x-www-form-urlencoded\r\n");
+            }
+            Push(request, "Content-length: ", request->form->length, "\r\n");
+
+            // ?
+            if (w3mApp::Instance().header_string.size())
+            {
+                Push(request, w3mApp::Instance().header_string);
+            }
+        }
+    }
+    else
+    {
+        // ?
+        if (w3mApp::Instance().header_string.size())
+        {
+            Push(request, w3mApp::Instance().header_string);
+        }
+    }
 
     if (!NoSendReferer)
     {
@@ -484,13 +471,27 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
         }
     }
 
+    //
+    // open stream and send request
+    //
     auto f = URLFile::OpenHttpAndSendRest(request);
-
+    if(!f)
+    {
+        // fail to open stream
+        return nullptr;
+    }
     show_message(Strnew_m_charp(url.host, " contacted. Waiting for reply...")->ptr);
 
+    //
+    // read HTTP response headers
+    //
     auto response = HttpResponse::Read(f->stream);
+    show_message(response->lines.front());
     exchanges.push_back({request, response});
 
+    //
+    // redirection
+    //
     if (response->HasRedirectionStatus())
     {
         auto location = response->FindHeader("Location");
@@ -504,7 +505,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     }
 
     //
-    // load buffer
+    // read HTTP response body
     //
     auto t = response->FindHeader("content-type");
     if (t.size())
@@ -580,7 +581,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
             (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
         {
             // if (t_buf == NULL)
-            /*t_buf->sourcefile =*/ uncompress_stream(f, true);
+            /*t_buf->sourcefile =*/uncompress_stream(f, true);
             uncompressed_file_type(url.path.c_str(), &f->ext);
         }
         else
