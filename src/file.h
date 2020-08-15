@@ -7,7 +7,7 @@
 struct HttpRequest;
 struct Hist;
 
-char *guess_save_name(BufferPtr buf, std::string_view file);
+// char *guess_save_name(BufferPtr buf, std::string_view file);
 
 
 Str convertLine(URLSchemeTypes scheme, Str line, int mode, CharacterEncodingScheme *charset, CharacterEncodingScheme doc_charset);
@@ -38,8 +38,7 @@ int checkOverWrite(char *path);
 char *inputAnswer(const char* prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);
 
-char *checkHeader(BufferPtr buf, const char *field);
-
+// char *checkHeader(BufferPtr buf, const char *field);
 
 void fmTerm(void);
 void fmInit(void);

@@ -645,14 +645,14 @@ page_info_panel(BufferPtr buf)
 
     append_link_info(buf, tmp);
 
-    if (buf->document_header != NULL)
-    {
-        tmp->Push("<hr width=50%><h1>Header information</h1><pre>\n");
-        for (ti = buf->document_header->first; ti != NULL; ti = ti->next)
-            Strcat_m_charp(tmp, "<pre_int>", html_quote(ti->ptr),
-                           "</pre_int>\n", NULL);
-        tmp->Push("</pre>\n");
-    }
+    // if (buf->document_header != NULL)
+    // {
+    //     tmp->Push("<hr width=50%><h1>Header information</h1><pre>\n");
+    //     for (ti = buf->document_header->first; ti != NULL; ti = ti->next)
+    //         Strcat_m_charp(tmp, "<pre_int>", html_quote(ti->ptr),
+    //                        "</pre_int>\n", NULL);
+    //     tmp->Push("</pre>\n");
+    // }
 
     // TODO:
     // if (buf->frameset != NULL)

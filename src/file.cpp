@@ -144,25 +144,25 @@ int matchattr(char *p, const char *attr, int len, Str *value)
     return 0;
 }
 
-char *checkHeader(BufferPtr buf, const char *field)
-{
-    int len;
-    TextListItem *i;
-    char *p;
+// char *checkHeader(BufferPtr buf, const char *field)
+// {
+//     int len;
+//     TextListItem *i;
+//     char *p;
 
-    if (buf == NULL || field == NULL || buf->document_header == NULL)
-        return NULL;
-    len = strlen(field);
-    for (i = buf->document_header->first; i != NULL; i = i->next)
-    {
-        if (!strncasecmp(i->ptr, field, len))
-        {
-            p = i->ptr + len;
-            return remove_space(p);
-        }
-    }
-    return NULL;
-}
+//     if (buf == NULL || field == NULL || buf->document_header == NULL)
+//         return NULL;
+//     len = strlen(field);
+//     for (i = buf->document_header->first; i != NULL; i = i->next)
+//     {
+//         if (!strncasecmp(i->ptr, field, len))
+//         {
+//             p = i->ptr + len;
+//             return remove_space(p);
+//         }
+//     }
+//     return NULL;
+// }
 
 static int
 same_url_p(URL *pu1, URL *pu2)
@@ -855,7 +855,7 @@ getNextPage(BufferPtr buf, int plen)
     else if (w3mApp::Instance().UseContentCharset)
     {
         content_charset = WC_CES_NONE;
-        checkContentType(buf);
+        // checkContentType(buf);
         if (content_charset)
             doc_charset = content_charset;
     }
@@ -1024,26 +1024,26 @@ char *guess_filename(std::string_view file)
     return s;
 }
 
-char *
-guess_save_name(BufferPtr buf, std::string_view path)
-{
-    if (buf && buf->document_header)
-    {
-        Str name = NULL;
-        char *p, *q;
-        if ((p = checkHeader(buf, "Content-Disposition:")) != NULL &&
-            (q = strcasestr(p, "filename")) != NULL &&
-            (q == p || IS_SPACE(*(q - 1)) || *(q - 1) == ';') &&
-            matchattr(q, "filename", 8, &name))
-            path = name->ptr;
-        else if ((p = checkHeader(buf, "Content-Type:")) != NULL &&
-                 (q = strcasestr(p, "name")) != NULL &&
-                 (q == p || IS_SPACE(*(q - 1)) || *(q - 1) == ';') &&
-                 matchattr(q, "name", 4, &name))
-            path = name->ptr;
-    }
-    return guess_filename(path);
-}
+// char *
+// guess_save_name(BufferPtr buf, std::string_view path)
+// {
+//     if (buf && buf->document_header)
+//     {
+//         Str name = NULL;
+//         char *p, *q;
+//         if ((p = checkHeader(buf, "Content-Disposition:")) != NULL &&
+//             (q = strcasestr(p, "filename")) != NULL &&
+//             (q == p || IS_SPACE(*(q - 1)) || *(q - 1) == ';') &&
+//             matchattr(q, "filename", 8, &name))
+//             path = name->ptr;
+//         else if ((p = checkHeader(buf, "Content-Type:")) != NULL &&
+//                  (q = strcasestr(p, "name")) != NULL &&
+//                  (q == p || IS_SPACE(*(q - 1)) || *(q - 1) == ';') &&
+//                  matchattr(q, "name", 4, &name))
+//             path = name->ptr;
+//     }
+//     return guess_filename(path);
+// }
 
 static const char *tmpf_base[MAX_TMPF_TYPE] = {
     "tmp",
@@ -1194,18 +1194,19 @@ last_modified(BufferPtr buf)
     TextListItem *ti;
     struct stat st;
 
-    if (buf->document_header)
-    {
-        for (ti = buf->document_header->first; ti; ti = ti->next)
-        {
-            if (strncasecmp(ti->ptr, "Last-modified: ", 15) == 0)
-            {
-                return ti->ptr + 15;
-            }
-        }
-        return "unknown";
-    }
-    else if (buf->currentURL.scheme == SCM_LOCAL)
+    // if (buf->document_header)
+    // {
+    //     for (ti = buf->document_header->first; ti; ti = ti->next)
+    //     {
+    //         if (strncasecmp(ti->ptr, "Last-modified: ", 15) == 0)
+    //         {
+    //             return ti->ptr + 15;
+    //         }
+    //     }
+    //     return "unknown";
+    // }
+    // else 
+    if (buf->currentURL.scheme == SCM_LOCAL)
     {
         if (stat(buf->currentURL.path.c_str(), &st) < 0)
             return "unknown";

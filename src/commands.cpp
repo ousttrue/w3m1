@@ -313,8 +313,8 @@ void pipeBuf(w3mApp *w3m)
     {
         newBuf->filename = cmd;
         newBuf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
-                                  conv_from_system(cmd))
-                              ->ptr;
+                                     conv_from_system(cmd))
+                                 ->ptr;
         newBuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
         if (newBuf->type.empty())
             newBuf->type = "text/plain";
@@ -663,14 +663,19 @@ void editBf(w3mApp *w3m)
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->edit.size())
-        cmd = unquote_mailcap(
-            GetCurrentTab()->GetCurrentBuffer()->edit.c_str(),
-            GetCurrentTab()->GetCurrentBuffer()->real_type.c_str(),
-            const_cast<char *>(fn),
-            checkHeader(GetCurrentTab()->GetCurrentBuffer(), "Content-Type:"), NULL);
+    {
+        // TODO:
+        // cmd = unquote_mailcap(
+        //     GetCurrentTab()->GetCurrentBuffer()->edit.c_str(),
+        //     GetCurrentTab()->GetCurrentBuffer()->real_type.c_str(),
+        //     const_cast<char *>(fn),
+        //     checkHeader(GetCurrentTab()->GetCurrentBuffer(), "Content-Type:"), NULL);
+    }
     else
+    {
         cmd = myEditor(Editor, shell_quote(fn),
                        cur_real_linenumber(GetCurrentTab()->GetCurrentBuffer()));
+    }
     fmTerm();
     system(cmd->ptr);
     fmInit();
@@ -1405,16 +1410,16 @@ void svBuf(w3mApp *w3m)
 
 void svSrc(w3mApp *w3m)
 {
-    char *file;
+    char *file = nullptr;
     if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
         return;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     PermitSaveToPipe = TRUE;
-    if (GetCurrentTab()->GetCurrentBuffer()->real_scheme == SCM_LOCAL)
-        file = conv_from_system(guess_save_name(NULL,
-                                                GetCurrentTab()->GetCurrentBuffer()->currentURL.real_file));
-    else
-        file = guess_save_name(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentURL.path);
+    // if (GetCurrentTab()->GetCurrentBuffer()->real_scheme == SCM_LOCAL)
+    //     file = conv_from_system(guess_save_name(NULL,
+    //                                             GetCurrentTab()->GetCurrentBuffer()->currentURL.real_file));
+    // else
+    //     file = guess_save_name(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentURL.path);
     doFileCopy(GetCurrentTab()->GetCurrentBuffer()->sourcefile.c_str(), file);
     PermitSaveToPipe = FALSE;
     displayCurrentbuf(B_NORMAL);

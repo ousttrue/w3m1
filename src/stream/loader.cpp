@@ -224,13 +224,13 @@ BufferPtr loadSomething(const URLFilePtr &f, const char *path, LoaderFunc loadpr
     {
 
         buf->filename = path;
-        if (buf->buffername.empty() || buf->buffername[0] == '\0')
-        {
-            auto buffername = checkHeader(buf, "Subject:");
-            buf->buffername = buffername ? buffername : "";
-            if (buf->buffername.empty())
-                buf->buffername = conv_from_system(lastFileName(path));
-        }
+        // if (buf->buffername.empty() || buf->buffername[0] == '\0')
+        // {
+        //     auto buffername = checkHeader(buf, "Subject:");
+        //     buf->buffername = buffername ? buffername : "";
+        //     if (buf->buffername.empty())
+        //         buf->buffername = conv_from_system(lastFileName(path));
+        // }
         if (buf->currentURL.scheme == SCM_UNKNOWN)
             buf->currentURL.scheme = f->scheme;
         buf->real_scheme = f->scheme;
@@ -297,30 +297,31 @@ public:
         // if (t_buf == NULL)
         auto t_buf = newBuffer(INIT_BUFFER_WIDTH());
 
-        readHeader(f, t_buf, FALSE, &pu);
+        // readHeader(f, t_buf, FALSE, &pu);
         char *p;
-        if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) &&
-            (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(pu))
-        {
-            /* document moved */
-            /* 301: Moved Permanently */
-            /* 302: Found */
-            /* 303: See Other */
-            /* 307: Temporary Redirect (HTTP/1.1) */
-            auto tpath = wc_conv_strict(p, w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
-            // request = NULL;
-            // f.Close();
-            // *current = pu;
-            t_buf = newBuffer(INIT_BUFFER_WIDTH());
-            t_buf->bufferprop |= BP_REDIRECTED;
-            // auto status = HTST_NORMAL;
-            // goto load_doc;
+        // if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) &&
+        //     (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(pu))
+        // {
+        //     /* document moved */
+        //     /* 301: Moved Permanently */
+        //     /* 302: Found */
+        //     /* 303: See Other */
+        //     /* 307: Temporary Redirect (HTTP/1.1) */
+        //     auto tpath = wc_conv_strict(p, w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
+        //     // request = NULL;
+        //     // f.Close();
+        //     // *current = pu;
+        //     t_buf = newBuffer(INIT_BUFFER_WIDTH());
+        //     t_buf->bufferprop |= BP_REDIRECTED;
+        //     // auto status = HTST_NORMAL;
+        //     // goto load_doc;
 
-            // TODO: REDIRECT
+        //     // TODO: REDIRECT
 
-            assert(false);
-        }
-        const char *t = checkContentType(t_buf);
+        //     assert(false);
+        // }
+        auto t = "text/plain";
+        // const char *t = checkContentType(t_buf);
         if (t == NULL && pu.path.size())
         {
             if (!((http_response_code >= 400 && http_response_code <= 407) ||
@@ -341,8 +342,8 @@ public:
         *GetCurBaseUrl() = pu;
 
         current_content_length = 0;
-        if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
-            current_content_length = strtoclen(p);
+        // if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
+        //     current_content_length = strtoclen(p);
         if (do_download)
         {
             /* download only */
@@ -350,15 +351,15 @@ public:
             // TRAP_OFF;
             if (DecodeCTE && f->stream->type() != IST_ENCODED)
                 f->stream = newEncodedStream(f->stream, f->encoding);
-            if (pu.scheme == SCM_LOCAL)
-            {
-                struct stat st;
-                if (PreserveTimestamp && !stat(pu.real_file.c_str(), &st))
-                    f->modtime = st.st_mtime;
-                file = conv_from_system(guess_save_name(NULL, pu.real_file.c_str()));
-            }
-            else
-                file = guess_save_name(t_buf, pu.path);
+            // if (pu.scheme == SCM_LOCAL)
+            // {
+            //     struct stat st;
+            //     if (PreserveTimestamp && !stat(pu.real_file.c_str(), &st))
+            //         f->modtime = st.st_mtime;
+            //     file = conv_from_system(guess_save_name(NULL, pu.real_file.c_str()));
+            // }
+            // else
+            //     file = guess_save_name(t_buf, pu.path);
 
             f->DoFileSave(file, current_content_length);
 
@@ -432,18 +433,18 @@ public:
             else
             {
                 // TRAP_OFF;
-                if (pu.scheme == SCM_LOCAL)
-                {
-                    // f.Close();
-                    _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
-                                conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
-                }
-                else
-                {
-                    if (DecodeCTE && f->stream->type() != IST_ENCODED)
-                        f->stream = newEncodedStream(f->stream, f->encoding);
-                    f->DoFileSave(guess_save_name(t_buf, pu.path), current_content_length);
-                }
+                // if (pu.scheme == SCM_LOCAL)
+                // {
+                //     // f.Close();
+                //     _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
+                //                 conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
+                // }
+                // else
+                // {
+                //     if (DecodeCTE && f->stream->type() != IST_ENCODED)
+                //         f->stream = newEncodedStream(f->stream, f->encoding);
+                //     f->DoFileSave(guess_save_name(t_buf, pu.path), current_content_length);
+                // }
                 return nullptr;
             }
         }
@@ -533,252 +534,252 @@ BufferPtr loadFile(char *path)
     return loadSomething(uf, path, loadBuffer);
 }
 
-char *
-checkContentType(BufferPtr buf)
-{
-    char *p;
-    Str r;
-    p = checkHeader(buf, "Content-Type:");
-    if (p == NULL)
-        return NULL;
-    r = Strnew();
-    while (*p && *p != ';' && !IS_SPACE(*p))
-        r->Push(*p++);
+// char *
+// checkContentType(BufferPtr buf)
+// {
+//     char *p;
+//     Str r;
+//     p = checkHeader(buf, "Content-Type:");
+//     if (p == NULL)
+//         return NULL;
+//     r = Strnew();
+//     while (*p && *p != ';' && !IS_SPACE(*p))
+//         r->Push(*p++);
 
-    if ((p = strcasestr(p, "charset")) != NULL)
-    {
-        p += 7;
-        SKIP_BLANKS(&p);
-        if (*p == '=')
-        {
-            p++;
-            SKIP_BLANKS(&p);
-            if (*p == '"')
-                p++;
-            content_charset = wc_guess_charset(p, WC_CES_NONE);
-        }
-    }
+//     if ((p = strcasestr(p, "charset")) != NULL)
+//     {
+//         p += 7;
+//         SKIP_BLANKS(&p);
+//         if (*p == '=')
+//         {
+//             p++;
+//             SKIP_BLANKS(&p);
+//             if (*p == '"')
+//                 p++;
+//             content_charset = wc_guess_charset(p, WC_CES_NONE);
+//         }
+//     }
 
-    return r->ptr;
-}
+//     return r->ptr;
+// }
 
-void readHeader(const URLFilePtr &uf, BufferPtr newBuf, int thru, const URL *pu)
-{
-    http_response_code = 0;
-    if (uf->scheme == SCM_HTTP || uf->scheme == SCM_HTTPS)
-    {
-        http_response_code = -1;
-    }
+// void readHeader(const URLFilePtr &uf, BufferPtr newBuf, int thru, const URL *pu)
+// {
+//     http_response_code = 0;
+//     if (uf->scheme == SCM_HTTP || uf->scheme == SCM_HTTPS)
+//     {
+//         http_response_code = -1;
+//     }
 
-    // thru
-    FILE *src = nullptr;
-    if (thru && !newBuf->header_source.size() && !image_source)
-    {
-        auto tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
-        src = fopen(tmpf, "w");
-        if (src)
-            newBuf->header_source = tmpf;
-    }
+//     // thru
+//     FILE *src = nullptr;
+//     if (thru && !newBuf->header_source.size() && !image_source)
+//     {
+//         auto tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
+//         src = fopen(tmpf, "w");
+//         if (src)
+//             newBuf->header_source = tmpf;
+//     }
 
-    // char *p, *q;
-    // char *emsg;
-    // char c;
-    // CharacterEncodingScheme charset = WC_CES_US_ASCII, mime_charset;
-    // char *tmpf;
-    // FILE *src = NULL;
+//     // char *p, *q;
+//     // char *emsg;
+//     // char c;
+//     // CharacterEncodingScheme charset = WC_CES_US_ASCII, mime_charset;
+//     // char *tmpf;
+//     // FILE *src = NULL;
 
-    newBuf->document_header = newTextList();
-    while (true)
-    {
-        auto lineBuf2 = uf->stream->mygets();
-        if (lineBuf2->Size() == 0)
-        {
-            break;
-        }
-        if (w3mApp::Instance().w3m_reqlog.size())
-        {
-            // loging
-            auto ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
-            lineBuf2->Puts(ff);
-            fclose(ff);
-        }
-        if (src)
-        {
-            lineBuf2->Puts(src);
-        }
+//     newBuf->document_header = newTextList();
+//     while (true)
+//     {
+//         auto lineBuf2 = uf->stream->mygets();
+//         if (lineBuf2->Size() == 0)
+//         {
+//             break;
+//         }
+//         if (w3mApp::Instance().w3m_reqlog.size())
+//         {
+//             // loging
+//             auto ff = fopen(w3mApp::Instance().w3m_reqlog.c_str(), "a");
+//             lineBuf2->Puts(ff);
+//             fclose(ff);
+//         }
+//         if (src)
+//         {
+//             lineBuf2->Puts(src);
+//         }
 
-        cleanup_line(lineBuf2, HEADER_MODE);
-        if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' || lineBuf2->ptr[0] == '\0')
-        {
-            /* there is no header */
-            break;
-            /* last header */
-        }
-        //         else if (!(w3mApp::Instance().w3m_dump & DUMP_HEAD))
-        //         {
-        //             if (lineBuf2)
-        //             {
-        //                 lineBuf2->Push(tmp);
-        //             }
-        //             else
-        //             {
-        //                 lineBuf2 = tmp;
-        //             }
-        //             c = uf->Getc();
-        //             uf->UndoGetc();
-        //             if (c == ' ' || c == '\t')
-        //                 /* header line is continued */
-        //                 continue;
-        //             lineBuf2 = decodeMIME(lineBuf2, &mime_charset);
-        //             lineBuf2 = convertLine(NULL, lineBuf2, RAW_MODE,
-        //                                    mime_charset ? &mime_charset : &charset,
-        //                                    mime_charset ? mime_charset
-        //                                                 : w3mApp::Instance().DocumentCharset);
-        //             /* separated with line and stored */
-        //             tmp = Strnew_size(lineBuf2->Size());
-        //             for (p = lineBuf2->ptr; *p; p = q)
-        //             {
-        //                 for (q = p; *q && *q != '\r' && *q != '\n'; q++)
-        //                     ;
-        //                 tmp->Push(lineBuf2);
-        //                 if (thru)
-        //                     newBuf->AddNewLine(PropertiedString(lineBuf2));
-        //                 for (; *q && (*q == '\r' || *q == '\n'); q++)
-        //                     ;
-        //             }
-        // #ifdef USE_IMAGE
-        //             if (thru && w3mApp::Instance().activeImage && w3mApp::Instance().displayImage)
-        //             {
-        //                 Str src = NULL;
-        //                 if (!strncasecmp(tmp->ptr, "X-Image-URL:", 12))
-        //                 {
-        //                     tmpf = &tmp->ptr[12];
-        //                     SKIP_BLANKS(&tmpf);
-        //                     src = Strnew_m_charp("<img src=\"", html_quote(tmpf),
-        //                                          "\" alt=\"X-Image-URL\">", NULL);
-        //                 }
-        // #ifdef USE_XFACE
-        //                 else if (!strncasecmp(tmp->ptr, "X-Face:", 7))
-        //                 {
-        //                     tmpf = xface2xpm(&tmp->ptr[7]);
-        //                     if (tmpf)
-        //                         src = Strnew_m_charp("<img src=\"file:",
-        //                                              html_quote(tmpf),
-        //                                              "\" alt=\"X-Face\"",
-        //                                              " width=48 height=48>", NULL);
-        //                 }
-        // #endif
-        //                 if (src)
-        //                 {
-        //                     LinePtr l;
-        //                     CharacterEncodingScheme old_charset = newBuf->document_charset;
-        //                     URLFile f(SCM_LOCAL, newStrStream(src));
-        //                     loadHTMLstream(&f, newBuf, NULL, TRUE);
-        //                     for (l = newBuf->LastLine(); l && l->real_linenumber;
-        //                          l = newBuf->PrevLine(l))
-        //                         l->real_linenumber = 0;
-        // #ifdef USE_M17N
-        //                     newBuf->document_charset = old_charset;
-        // #endif
-        //                 }
-        //             }
-        // #endif
-        //             lineBuf2 = tmp;
-        //         }
-        // else
+//         cleanup_line(lineBuf2, HEADER_MODE);
+//         if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' || lineBuf2->ptr[0] == '\0')
+//         {
+//             /* there is no header */
+//             break;
+//             /* last header */
+//         }
+//         //         else if (!(w3mApp::Instance().w3m_dump & DUMP_HEAD))
+//         //         {
+//         //             if (lineBuf2)
+//         //             {
+//         //                 lineBuf2->Push(tmp);
+//         //             }
+//         //             else
+//         //             {
+//         //                 lineBuf2 = tmp;
+//         //             }
+//         //             c = uf->Getc();
+//         //             uf->UndoGetc();
+//         //             if (c == ' ' || c == '\t')
+//         //                 /* header line is continued */
+//         //                 continue;
+//         //             lineBuf2 = decodeMIME(lineBuf2, &mime_charset);
+//         //             lineBuf2 = convertLine(NULL, lineBuf2, RAW_MODE,
+//         //                                    mime_charset ? &mime_charset : &charset,
+//         //                                    mime_charset ? mime_charset
+//         //                                                 : w3mApp::Instance().DocumentCharset);
+//         //             /* separated with line and stored */
+//         //             tmp = Strnew_size(lineBuf2->Size());
+//         //             for (p = lineBuf2->ptr; *p; p = q)
+//         //             {
+//         //                 for (q = p; *q && *q != '\r' && *q != '\n'; q++)
+//         //                     ;
+//         //                 tmp->Push(lineBuf2);
+//         //                 if (thru)
+//         //                     newBuf->AddNewLine(PropertiedString(lineBuf2));
+//         //                 for (; *q && (*q == '\r' || *q == '\n'); q++)
+//         //                     ;
+//         //             }
+//         // #ifdef USE_IMAGE
+//         //             if (thru && w3mApp::Instance().activeImage && w3mApp::Instance().displayImage)
+//         //             {
+//         //                 Str src = NULL;
+//         //                 if (!strncasecmp(tmp->ptr, "X-Image-URL:", 12))
+//         //                 {
+//         //                     tmpf = &tmp->ptr[12];
+//         //                     SKIP_BLANKS(&tmpf);
+//         //                     src = Strnew_m_charp("<img src=\"", html_quote(tmpf),
+//         //                                          "\" alt=\"X-Image-URL\">", NULL);
+//         //                 }
+//         // #ifdef USE_XFACE
+//         //                 else if (!strncasecmp(tmp->ptr, "X-Face:", 7))
+//         //                 {
+//         //                     tmpf = xface2xpm(&tmp->ptr[7]);
+//         //                     if (tmpf)
+//         //                         src = Strnew_m_charp("<img src=\"file:",
+//         //                                              html_quote(tmpf),
+//         //                                              "\" alt=\"X-Face\"",
+//         //                                              " width=48 height=48>", NULL);
+//         //                 }
+//         // #endif
+//         //                 if (src)
+//         //                 {
+//         //                     LinePtr l;
+//         //                     CharacterEncodingScheme old_charset = newBuf->document_charset;
+//         //                     URLFile f(SCM_LOCAL, newStrStream(src));
+//         //                     loadHTMLstream(&f, newBuf, NULL, TRUE);
+//         //                     for (l = newBuf->LastLine(); l && l->real_linenumber;
+//         //                          l = newBuf->PrevLine(l))
+//         //                         l->real_linenumber = 0;
+//         // #ifdef USE_M17N
+//         //                     newBuf->document_charset = old_charset;
+//         // #endif
+//         //                 }
+//         //             }
+//         // #endif
+//         //             lineBuf2 = tmp;
+//         //         }
+//         // else
 
-        if ((uf->scheme == SCM_HTTP || uf->scheme == SCM_HTTPS) &&
-            http_response_code == -1)
-        {
-            auto p = lineBuf2->ptr;
-            while (*p && !IS_SPACE(*p))
-                p++;
-            while (*p && IS_SPACE(*p))
-                p++;
-            http_response_code = atoi(p);
-            if (fmInitialized)
-            {
-                message(lineBuf2->ptr, 0, 0);
-                refresh();
-            }
-        }
+//         if ((uf->scheme == SCM_HTTP || uf->scheme == SCM_HTTPS) &&
+//             http_response_code == -1)
+//         {
+//             auto p = lineBuf2->ptr;
+//             while (*p && !IS_SPACE(*p))
+//                 p++;
+//             while (*p && IS_SPACE(*p))
+//                 p++;
+//             http_response_code = atoi(p);
+//             if (fmInitialized)
+//             {
+//                 message(lineBuf2->ptr, 0, 0);
+//                 refresh();
+//             }
+//         }
 
-        if (strncasecmp(lineBuf2->ptr, "content-transfer-encoding:", 26) == 0)
-        {
-            auto p = lineBuf2->ptr + 26;
-            while (IS_SPACE(*p))
-                p++;
-            if (!strncasecmp(p, "base64", 6))
-                uf->encoding = ENC_BASE64;
-            else if (!strncasecmp(p, "quoted-printable", 16))
-                uf->encoding = ENC_QUOTE;
-            else if (!strncasecmp(p, "uuencode", 8) ||
-                     !strncasecmp(p, "x-uuencode", 10))
-                uf->encoding = ENC_UUENCODE;
-            else
-                uf->encoding = ENC_7BIT;
-        }
-        else if (strncasecmp(lineBuf2->ptr, "content-encoding:", 17) == 0)
-        {
-            struct compression_decoder *d;
-            auto p = lineBuf2->ptr + 17;
-            while (IS_SPACE(*p))
-                p++;
-            uf->compression = CMP_NOCOMPRESS;
-            for (d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
-            {
-                const char **e;
-                for (e = d->encodings; *e != NULL; e++)
-                {
-                    if (strncasecmp(p, *e, strlen(*e)) == 0)
-                    {
-                        uf->compression = d->type;
-                        break;
-                    }
-                }
-                if (uf->compression != CMP_NOCOMPRESS)
-                    break;
-            }
-            uf->content_encoding = uf->compression;
-        }
-        else if (w3mApp::Instance().use_cookie && w3mApp::Instance().accept_cookie &&
-                 pu && check_cookie_accept_domain(pu->host) &&
-                 (!strncasecmp(lineBuf2->ptr, "Set-Cookie:", 11) ||
-                  !strncasecmp(lineBuf2->ptr, "Set-Cookie2:", 12)))
-        {
-            readHeaderCookie(*pu, lineBuf2);
-        }
-        else if (strncasecmp(lineBuf2->ptr, "w3m-control:", 12) == 0 &&
-                 uf->scheme == SCM_LOCAL_CGI)
-        {
-            auto p = lineBuf2->ptr + 12;
-            SKIP_BLANKS(&p);
-            Str funcname = Strnew();
-            while (*p && !IS_SPACE(*p))
-                funcname->Push(*(p++));
-            SKIP_BLANKS(&p);
-            Command f = getFuncList(funcname->ptr);
-            if (f)
-            {
-                auto tmp = Strnew(p);
-                StripRight(tmp);
-                pushEvent(f, tmp->ptr);
-            }
-        }
+//         if (strncasecmp(lineBuf2->ptr, "content-transfer-encoding:", 26) == 0)
+//         {
+//             auto p = lineBuf2->ptr + 26;
+//             while (IS_SPACE(*p))
+//                 p++;
+//             if (!strncasecmp(p, "base64", 6))
+//                 uf->encoding = ENC_BASE64;
+//             else if (!strncasecmp(p, "quoted-printable", 16))
+//                 uf->encoding = ENC_QUOTE;
+//             else if (!strncasecmp(p, "uuencode", 8) ||
+//                      !strncasecmp(p, "x-uuencode", 10))
+//                 uf->encoding = ENC_UUENCODE;
+//             else
+//                 uf->encoding = ENC_7BIT;
+//         }
+//         else if (strncasecmp(lineBuf2->ptr, "content-encoding:", 17) == 0)
+//         {
+//             struct compression_decoder *d;
+//             auto p = lineBuf2->ptr + 17;
+//             while (IS_SPACE(*p))
+//                 p++;
+//             uf->compression = CMP_NOCOMPRESS;
+//             for (d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
+//             {
+//                 const char **e;
+//                 for (e = d->encodings; *e != NULL; e++)
+//                 {
+//                     if (strncasecmp(p, *e, strlen(*e)) == 0)
+//                     {
+//                         uf->compression = d->type;
+//                         break;
+//                     }
+//                 }
+//                 if (uf->compression != CMP_NOCOMPRESS)
+//                     break;
+//             }
+//             uf->content_encoding = uf->compression;
+//         }
+//         else if (w3mApp::Instance().use_cookie && w3mApp::Instance().accept_cookie &&
+//                  pu && check_cookie_accept_domain(pu->host) &&
+//                  (!strncasecmp(lineBuf2->ptr, "Set-Cookie:", 11) ||
+//                   !strncasecmp(lineBuf2->ptr, "Set-Cookie2:", 12)))
+//         {
+//             readHeaderCookie(*pu, lineBuf2);
+//         }
+//         else if (strncasecmp(lineBuf2->ptr, "w3m-control:", 12) == 0 &&
+//                  uf->scheme == SCM_LOCAL_CGI)
+//         {
+//             auto p = lineBuf2->ptr + 12;
+//             SKIP_BLANKS(&p);
+//             Str funcname = Strnew();
+//             while (*p && !IS_SPACE(*p))
+//                 funcname->Push(*(p++));
+//             SKIP_BLANKS(&p);
+//             Command f = getFuncList(funcname->ptr);
+//             if (f)
+//             {
+//                 auto tmp = Strnew(p);
+//                 StripRight(tmp);
+//                 pushEvent(f, tmp->ptr);
+//             }
+//         }
 
-        pushText(newBuf->document_header, lineBuf2->ptr);
-    }
+//         pushText(newBuf->document_header, lineBuf2->ptr);
+//     }
 
-    if (thru)
-    {
-        newBuf->AddNewLine(PropertiedString("", 0));
-    }
+//     if (thru)
+//     {
+//         newBuf->AddNewLine(PropertiedString("", 0));
+//     }
 
-    if (src)
-    {
-        fclose(src);
-    }
-}
+//     if (src)
+//     {
+//         fclose(src);
+//     }
+// }
 
 /* 
  * loadBuffer: read file and make new buffer

@@ -126,19 +126,19 @@ dump_head(w3mApp *w3m, BufferPtr buf)
 {
     TextListItem *ti;
 
-    if (buf->document_header == NULL)
-    {
-        if (w3m->w3m_dump & DUMP_EXTRA)
-            printf("\n");
-        return;
-    }
-    for (ti = buf->document_header->first; ti; ti = ti->next)
-    {
-        printf("%s",
-               wc_conv_strict(ti->ptr, w3m->InnerCharset,
-                              buf->document_charset)
-                   ->ptr);
-    }
+    // if (buf->document_header == NULL)
+    // {
+    //     if (w3m->w3m_dump & DUMP_EXTRA)
+    //         printf("\n");
+    //     return;
+    // }
+    // for (ti = buf->document_header->first; ti; ti = ti->next)
+    // {
+    //     printf("%s",
+    //            wc_conv_strict(ti->ptr, w3m->InnerCharset,
+    //                           buf->document_charset)
+    //                ->ptr);
+    // }
     puts("");
 }
 

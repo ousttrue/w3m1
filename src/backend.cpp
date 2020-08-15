@@ -73,11 +73,11 @@ print_headers(BufferPtr buf, int len)
 {
     TextListItem *tp;
 
-    if (buf->document_header)
-    {
-        for (tp = buf->document_header->first; tp; tp = tp->next)
-            printf("%s\n", tp->ptr);
-    }
+    // if (buf->document_header)
+    // {
+    //     for (tp = buf->document_header->first; tp; tp = tp->next)
+    //         printf("%s\n", tp->ptr);
+    // }
     printf("w3m-current-url: %s\n", buf->currentURL.ToStr()->ptr);
     if (buf->baseURL)
         printf("w3m-base-url: %s\n", buf->baseURL.ToStr()->ptr);

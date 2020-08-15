@@ -301,7 +301,7 @@ public:
     char check_url = 0;
     CharacterEncodingScheme document_charset = WC_CES_NONE;
     AutoDetectTypes auto_detect = WC_OPT_DETECT_OFF;
-    TextList *document_header = nullptr;
+    // TextList *document_header = nullptr;
     FormItemList *form_submit = nullptr;
     // ReadBufferCache, WriteBufferCache
     std::string savecache;
