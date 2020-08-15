@@ -1832,7 +1832,7 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
             {
                 // symbol
                 auto p = get_width_symbol(SymbolWidth0(), symbol);
-                assert(p.size() > 0);
+                // assert(p.size() > 0);
                 int len = get_mclen(p.data());
                 mode = get_mctype(p[0]);
 

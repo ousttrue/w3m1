@@ -614,7 +614,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
             (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
         {
             // if (t_buf == NULL)
-            // t_buf->sourcefile = uncompress_stream(f, true);
+            /*t_buf->sourcefile =*/ uncompress_stream(f, true);
             uncompressed_file_type(url.path.c_str(), &f->ext);
         }
         else
