@@ -2,14 +2,22 @@
 #include "frontend/buffer.h"
 #include "urlfile.h"
 #include "stream/http.h"
+#include <memory>
 
-long long GetCurrentContentLength();
 extern CharacterEncodingScheme content_charset;
 extern CharacterEncodingScheme meta_charset;
 
 struct URL;
 struct FormList;
 struct URLFile;
+
+struct BufferLoader
+{
+    int length = 0;
+    BufferPtr Load(const URLFilePtr &uf, CharacterEncodingScheme charset);
+};
+using BufferLoaderPtr = std::shared_ptr<BufferLoader>;
+
 using LoaderFunc = BufferPtr (*)(const URLFilePtr &uf);
 
 BufferPtr loadFile(char *path);

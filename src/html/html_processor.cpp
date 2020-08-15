@@ -95,8 +95,8 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
             if (src)
                 lineBuf2->Puts(src);
             linelen += lineBuf2->Size();
-            if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
-                printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
+            // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
+            //     printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
             if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
                 continue;
             showProgress(&linelen, &trbyte, 0);

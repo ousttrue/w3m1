@@ -245,15 +245,6 @@ BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc)
     return loadproc(uf);
 }
 
-///
-/// HTTP
-///
-long long current_content_length;
-long long GetCurrentContentLength()
-{
-    return current_content_length;
-}
-
 //
 // HTTP redirection
 //
@@ -306,7 +297,6 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
 
     *GetCurBaseUrl() = pu;
 
-    current_content_length = 0;
     // if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
     //     current_content_length = strtoclen(p);
     if (do_download)
@@ -326,7 +316,7 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
         // else
         //     file = guess_save_name(t_buf, pu.path);
 
-        f->DoFileSave(file, current_content_length);
+        f->DoFileSave(file, 0);
 
         return nullptr;
     }
@@ -493,7 +483,7 @@ BufferPtr loadFile(char *path)
     if (uf->stream == NULL)
         return NULL;
 
-    current_content_length = 0;
+    // current_content_length = 0;
     content_charset = WC_CES_NONE;
     return loadSomething(uf, path, loadBuffer);
 }
@@ -561,8 +551,8 @@ BufferPtr loadBuffer(const URLFilePtr &uf)
         if (src)
             lineBuf2->Puts(src);
         linelen += lineBuf2->Size();
-        if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
-            printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
+        // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
+        //     printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
         if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
             continue;
         showProgress(&linelen, &trbyte, 0);
