@@ -16,7 +16,8 @@
 #include "file.h"
 #include "mime/mimetypes.h"
 #include "mime/mailcap.h"
-#include "myctype.h"
+#include <myctype.h>
+#include <string_view_util.h>
 
 void _Push(const HttpRequestPtr &request, std::stringstream &ss)
 {
@@ -305,41 +306,6 @@ Str HttpRequest::ToStr(const URL &url, const URL *current, const TextList *extra
 ///
 /// HttpResponse
 ///
-static std::tuple<std::string_view, std::string_view> split(std::string_view src, char delemeter)
-{
-    auto pos = src.find(delemeter);
-    if (pos == std::string::npos)
-    {
-        return {};
-    }
-
-    auto key = src.substr(0, pos);
-    auto value = src.substr(pos + 1);
-    while (value.size() && IS_SPACE(value[0]))
-    {
-        value.remove_prefix(1);
-    }
-
-    return {key, value};
-}
-
-static bool ieq(std::string_view l, std::string_view r)
-{
-    if (l.size() != r.size())
-    {
-        return false;
-    }
-    auto rr = r.begin();
-    for (auto ll = l.begin(); ll != l.end(); ++ll, ++rr)
-    {
-        if (tolower(*ll) != tolower(*rr))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 std::shared_ptr<HttpResponse> HttpResponse::Read(const std::shared_ptr<InputStream> &stream)
 {
     auto res = std::make_shared<HttpResponse>();
@@ -406,18 +372,18 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
         // headers. ex.
         // Content-Type: text/html
         // KEY: VALUE
-        auto [key, value] = split(line, ':');
-        if (ieq(key, "content-transfer-encoding"))
+        auto [key, value] = svu::split(line, ':');
+        if (svu::iceq(key, "content-transfer-encoding"))
         {
             auto a = 0;
         }
-        else if (ieq(key, "content-encoding"))
+        else if (svu::iceq(key, "content-encoding"))
         {
             for (auto d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
             {
                 for (auto e = d->encodings; *e != NULL; e++)
                 {
-                    if (ieq(value, *e))
+                    if (svu::iceq(value, *e))
                     {
                         content_encoding = d->type;
                         break;
@@ -478,8 +444,8 @@ std::string_view HttpResponse::FindHeader(std::string_view key) const
 {
     for (auto &l : lines)
     {
-        auto [k, v] = split(l, ':');
-        if (ieq(k, key))
+        auto [k, v] = svu::split(l, ':');
+        if (svu::iceq(k, key))
         {
             return v;
         }
@@ -543,14 +509,14 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     auto t = response->FindHeader("content-type");
     if (t.size())
     {
-        auto [tt, charset] = split(t, ';');
+        auto [tt, charset] = svu::split(t, ';');
         if (tt.size())
         {
             t = tt;
         }
         if (charset.size())
         {
-            auto [_, cs] = split(charset, '=');
+            auto [_, cs] = svu::split(charset, '=');
             if (cs.size())
             {
                 content_charset = wc_guess_charset(cs.data(), WC_CES_NONE);
