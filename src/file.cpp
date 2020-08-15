@@ -380,7 +380,7 @@ convert_size2(clen_t size1, clen_t size2, int usefloat)
         ->ptr;
 }
 
-void showProgress(clen_t *linelen, clen_t *trbyte)
+void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
 {
     int i, j, rate, duration, eta, pos;
     static time_t last_time, start_time;
@@ -394,8 +394,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
     if (*linelen < 1024)
         return;
 
-    auto current_content_length = GetCurrentContentLength();
-    if (current_content_length > 0)
+    if (content_length > 0)
     {
         double ratio;
         cur_time = time(0);
@@ -411,14 +410,14 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
             return;
         last_time = cur_time;
         move((LINES - 1), 0);
-        ratio = 100.0 * (*trbyte) / current_content_length;
-        fmtrbyte = convert_size2(*trbyte, current_content_length, 1);
+        ratio = 100.0 * (*trbyte) / content_length;
+        fmtrbyte = convert_size2(*trbyte, content_length, 1);
         duration = cur_time - start_time;
         if (duration)
         {
             rate = *trbyte / duration;
             fmrate = convert_size(rate, 1);
-            eta = rate ? (current_content_length - *trbyte) / rate : -1;
+            eta = rate ? (content_length - *trbyte) / rate : -1;
             messages = Sprintf("%11s %3.0f%% "
                                "%7s/s "
                                "eta %02d:%02d:%02d     ",
@@ -433,7 +432,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte)
         }
         addstr(messages->ptr);
         pos = 42;
-        i = pos + (COLS - pos - 1) * (*trbyte) / current_content_length;
+        i = pos + (COLS - pos - 1) * (*trbyte) / content_length;
         move((LINES - 1), pos);
         standout();
         addch(' ');
@@ -817,8 +816,7 @@ openGeneralPagerBuffer(InputStreamPtr stream)
     return buf;
 }
 
-LinePtr
-getNextPage(BufferPtr buf, int plen)
+LinePtr getNextPage(BufferPtr buf, int plen)
 {
     LinePtr top = buf->TopLine();
     LinePtr last = buf->LastLine();
@@ -879,9 +877,8 @@ getNextPage(BufferPtr buf, int plen)
                 break;
             }
             linelen += lineBuf2->Size();
-            showProgress(&linelen, &trbyte);
-            lineBuf2 =
-                convertLine(SCM_UNKNOWN, lineBuf2, PAGER_MODE, &charset, doc_charset);
+            showProgress(&linelen, &trbyte, 0);
+            lineBuf2 = convertLine(SCM_UNKNOWN, lineBuf2, PAGER_MODE, &charset, doc_charset);
             if (w3mApp::Instance().squeezeBlankLine)
             {
                 squeeze_flag = FALSE;

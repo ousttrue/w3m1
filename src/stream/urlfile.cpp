@@ -1134,13 +1134,12 @@ int save2tmp(const URLFilePtr &uf, char *tmpf)
             }
             linelen += buf->Size();
             clen_t trbyte = 0;
-            showProgress(&linelen, &trbyte);
+            showProgress(&linelen, &trbyte, 0);
         }
 
         return true;
     });
 
     fclose(ff);
-    // current_content_length = 0;
     return 0;
 }

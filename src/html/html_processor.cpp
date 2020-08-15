@@ -99,7 +99,7 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
                 printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
             if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
                 continue;
-            showProgress(&linelen, &trbyte);
+            showProgress(&linelen, &trbyte, 0);
             /*
             * if (frame_source)
             * continue;

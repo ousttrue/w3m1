@@ -43,15 +43,12 @@ static int checkCopyFile(const char *path1, const char *path2)
 
 static int _MoveFile(const char *path1, const char *path2)
 {
-    InputStreamPtr f1;
-    FILE *f2;
-    int is_pipe;
-    clen_t linelen = 0, trbyte = 0;
-    Str buf;
-
-    f1 = openIS(path1);
+    auto f1 = openIS(path1);
     if (f1 == NULL)
         return -1;
+
+    FILE *f2;
+    bool is_pipe;
     if (*path2 == '|' && PermitSaveToPipe)
     {
         is_pipe = TRUE;
@@ -64,18 +61,18 @@ static int _MoveFile(const char *path1, const char *path2)
     }
     if (f2 == NULL)
     {
-        // ISclose(f1);
         return -1;
     }
-    // current_content_length = 0;
-    buf = Strnew_size(SAVE_BUF_SIZE);
+
+    clen_t linelen = 0;
+    clen_t trbyte = 0;
+    auto buf = Strnew_size(SAVE_BUF_SIZE);
     while (f1->readto(buf, SAVE_BUF_SIZE))
     {
         buf->Puts(f2);
         linelen += buf->Size();
-        showProgress(&linelen, &trbyte);
+        showProgress(&linelen, &trbyte, 0);
     }
-    // ISclose(f1);
     if (is_pipe)
         pclose(f2);
     else
@@ -568,9 +565,9 @@ BufferPtr loadBuffer(const URLFilePtr &uf)
             printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
         if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
             continue;
-        showProgress(&linelen, &trbyte);
-        if (frame_source)
-            continue;
+        showProgress(&linelen, &trbyte, 0);
+        // if (frame_source)
+        //     continue;
         lineBuf2 =
             convertLine(uf->scheme, lineBuf2, PAGER_MODE, &charset, doc_charset);
         if (w3mApp::Instance().squeezeBlankLine)

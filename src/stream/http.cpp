@@ -544,9 +544,6 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
 
     // *GetCurBaseUrl() = pu;
 
-    // current_content_length = 0;
-    // if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
-    //     current_content_length = strtoclen(p);
     // if (do_download)
     // {
     //     /* download only */
