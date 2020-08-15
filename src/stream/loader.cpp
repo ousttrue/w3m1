@@ -256,7 +256,6 @@ long long GetCurrentContentLength()
 {
     return current_content_length;
 }
-int frame_source = 0;
 
 //
 // HTTP redirection
@@ -432,10 +431,10 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
         t_buf->ssl_certificate = f->ssl_certificate;
     }
 
-    frame_source = flag & RG_FRAME_SRC;
+    // frame_source = flag & RG_FRAME_SRC;
     auto b = loadSomething(f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()), proc);
     f->stream = nullptr;
-    frame_source = 0;
+    // frame_source = 0;
     if (b)
     {
         b->real_scheme = f->scheme;

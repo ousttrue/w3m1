@@ -671,7 +671,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     // frame_source = flag & RG_FRAME_SRC;
     auto b = loadSomething(f, url.real_file.size() ? const_cast<char *>(url.real_file.c_str()) : const_cast<char *>(url.path.c_str()), proc);
     f->stream = nullptr;
-    frame_source = 0;
+    // frame_source = 0;
     if (b)
     {
         b->real_scheme = f->scheme;

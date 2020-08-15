@@ -6,7 +6,6 @@
 long long GetCurrentContentLength();
 extern CharacterEncodingScheme content_charset;
 extern CharacterEncodingScheme meta_charset;
-extern int frame_source;
 
 struct URL;
 struct FormList;
