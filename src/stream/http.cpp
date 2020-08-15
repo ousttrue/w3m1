@@ -79,29 +79,6 @@ std::shared_ptr<HttpRequest> HttpRequest::Create(const URL &url, struct FormList
     return request;
 }
 
-// Str HttpRequest::URI(const URL &url, bool isLocal) const
-// {
-//     Str tmp = Strnew();
-//     if (method == HTTP_METHOD_CONNECT)
-//     {
-//         tmp->Push(url.host);
-//         tmp->Push(Sprintf(":%d", url.port));
-//     }
-//     else if (isLocal)
-//     {
-//         tmp->Push(url.path);
-//         if (url.query.size())
-//         {
-//             tmp->Push('?');
-//             tmp->Push(url.query);
-//         }
-//     }
-//     else
-//     {
-//         tmp->Push(url.ToStr(true, false));
-//     }
-//     return tmp;
-// }
 
 char *
 otherinfo(const URL &target, const URL *current, HttpReferrerPolicy referer)
@@ -535,44 +512,6 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //         t = guessContentType(url.path);
     // }
 
-    // /* XXX: can we use guess_type to give the type to loadHTMLstream
-    //      *      to support default utf8 encoding for XHTML here? */
-    // f->guess_type = t;
-
-    // // if (real_type == NULL)
-    // //     real_type = t;
-
-    // *GetCurBaseUrl() = pu;
-
-    // if (do_download)
-    // {
-    //     /* download only */
-    //     char *file;
-    //     // TRAP_OFF;
-    //     if (DecodeCTE && f->stream->type() != IST_ENCODED)
-    //         f->stream = newEncodedStream(f->stream, f->encoding);
-    //     if (url.scheme == SCM_LOCAL)
-    //     {
-    //         struct stat st;
-    //         if (PreserveTimestamp && !stat(url.real_file.c_str(), &st))
-    //             f->modtime = st.st_mtime;
-    //         file = conv_from_system(guess_save_name(NULL, url.real_file.c_str()));
-    //     }
-    //     else
-    //         file = guess_save_name(t_buf, url.path);
-
-    //     f->DoFileSave(file, current_content_length);
-
-    //     return nullptr;
-    // }
-
-    // auto t_buf = newBuffer(INIT_BUFFER_WIDTH());
-    // if ((f->content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
-    // {
-    //     // TODO:
-    //     // url.real_file = uncompress_stream(&f, true);
-    // }
-    // else
     if (response->content_encoding != CMP_NOCOMPRESS)
     {
         if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
@@ -589,22 +528,6 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
         }
     }
 
-    if (image_source)
-    {
-        BufferPtr b = NULL;
-        if (f->stream->type() != IST_ENCODED)
-            f->stream = newEncodedStream(f->stream, f->encoding);
-        if (save2tmp(f, image_source) == 0)
-        {
-            b = newBuffer(INIT_BUFFER_WIDTH());
-            b->sourcefile = image_source;
-            b->real_type = t;
-        }
-        // f->Close();
-        // TRAP_OFF;
-        return b;
-    }
-
     auto proc = loadBuffer;
     if (is_html_type(t))
         proc = loadHTMLBuffer;
@@ -615,56 +538,6 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
         proc = loadImageBuffer;
     else if (w3mApp::Instance().w3m_backend)
         ;
-    // else if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
-    // {
-    //     BufferPtr b = NULL;
-    //     if (!do_download && doExternal(f,
-    //                                    url.real_file.size() ? const_cast<char *>(url.real_file.c_str()) : const_cast<char *>(url.path.c_str()),
-    //                                    t, &b, t_buf))
-    //     {
-    //         if (b)
-    //         {
-    //             b->real_scheme = f->scheme;
-    //             b->real_type = t;
-    //             if (b->currentURL.host.empty() && b->currentURL.path.empty())
-    //                 b->currentURL = url;
-    //         }
-    //         // f.Close();
-    //         // TRAP_OFF;
-    //         return b;
-    //     }
-    //     else
-    //     {
-    //         // TRAP_OFF;
-    //         if (url.scheme == SCM_LOCAL)
-    //         {
-    //             // f.Close();
-    //             // _doFileCopy(const_cast<char *>(url.real_file.c_str()),
-    //             //             conv_from_system(guess_save_name(NULL, url.real_file)), TRUE);
-    //         }
-    //         else
-    //         {
-    //             if (DecodeCTE && f->stream->type() != IST_ENCODED)
-    //                 f->stream = newEncodedStream(f->stream, f->encoding);
-    //             f->DoFileSave(guess_save_name(t_buf, url.path), response->content_length);
-    //         }
-    //         return nullptr;
-    //     }
-    // }
-    // else if (w3mApp::Instance().w3m_dump & DUMP_FRAME)
-    //     return NULL;
-
-    // if (flag & RG_FRAME)
-    // {
-    //     if (t_buf == NULL)
-    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
-    //     t_buf->bufferprop |= BP_FRAME;
-    // }
-
-    // if (t_buf && f->ssl_certificate)
-    // {
-    //     t_buf->ssl_certificate = f->ssl_certificate;
-    // }
 
     // frame_source = flag & RG_FRAME_SRC;
     auto b = loadSomething(f, url.real_file.size() ? const_cast<char *>(url.real_file.c_str()) : const_cast<char *>(url.path.c_str()), proc);
