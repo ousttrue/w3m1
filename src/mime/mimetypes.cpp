@@ -1,4 +1,5 @@
 #include "mime/mimetypes.h"
+#include "mime/mailcap.h"
 #include "fm.h"
 #include "indep.h"
 #include "textlist.h"
@@ -168,4 +169,24 @@ bool is_text_type(std::string_view type)
            type.starts_with("text/") ||
            (type.starts_with("application/") && type.find("xhtml") != std::string::npos) ||
            type.starts_with("message/");
+}
+
+bool is_dump_text_type(std::string_view type)
+{
+    auto mcap = searchExtViewer(type);
+    if (!mcap)
+    {
+        return false;
+    }
+    return mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT);
+}
+
+bool is_plain_text_type(std::string_view type)
+{
+    if (type == "text/plain")
+    {
+        return true;
+    }
+
+    return is_text_type(type) && !is_dump_text_type(type);
 }

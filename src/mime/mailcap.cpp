@@ -68,7 +68,7 @@ int mailcapMatch(Mailcap *mcap, const char *type)
 }
 
 Mailcap *
-searchMailcap(Mailcap *table, const char *type)
+searchMailcap(Mailcap *table, std::string_view type)
 {
     int level = 0;
     Mailcap *mcap = NULL;
@@ -78,13 +78,13 @@ searchMailcap(Mailcap *table, const char *type)
         return NULL;
     for (; table->type; table++)
     {
-        i = mailcapMatch(table, type);
+        i = mailcapMatch(table, type.data());
         if (i > level)
         {
             if (table->test)
             {
                 Str command =
-                    unquote_mailcap(table->test, type, NULL, NULL, NULL);
+                    unquote_mailcap(table->test, type.data(), NULL, NULL, NULL);
                 if (system(command->ptr) != 0)
                     continue;
             }
@@ -327,8 +327,7 @@ acceptableMimeTypes()
     return types->ptr;
 }
 
-Mailcap *
-searchExtViewer(const char *type)
+Mailcap *searchExtViewer(std::string_view type)
 {
     Mailcap *p;
     int i;
@@ -532,13 +531,6 @@ unquote_mailcap_loop(const char *qstr, const char *type, char *name, char *attr,
 Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, int *mc_stat)
 {
     return unquote_mailcap_loop(qstr, type, name, attr, mc_stat, 0);
-}
-
-int is_dump_text_type(const char *type)
-{
-    Mailcap *mcap;
-    return (type && (mcap = searchExtViewer(type)) &&
-            (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)));
 }
 
 int doExternal(const URLFilePtr &uf, char *path, const char *type, BufferPtr *bufp,

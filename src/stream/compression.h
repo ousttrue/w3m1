@@ -1,5 +1,6 @@
 #pragma once
 #include "config.h"
+#include "stream/http.h"
 #include "stream/urlfile.h"
 
 /* *INDENT-OFF* */

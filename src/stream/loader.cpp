@@ -18,6 +18,7 @@
 #include "frontend/display.h"
 #include "frontend/terms.h"
 #include "mime/mailcap.h"
+#include "mime/mimetypes.h"
 #include "frontend/lineinput.h"
 #include "stream/istream.h"
 #include "html/html_processor.h"

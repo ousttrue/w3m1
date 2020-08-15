@@ -129,7 +129,6 @@ char *libFile(char *base);
 char *helpFile(char *base);
 Str localCookie(void);
 
-
 FILE *openSecretFile(char *fname);
 
 void loadPreForm(void);
@@ -141,11 +140,6 @@ Str myExtCommand(char *cmd, char *arg, int redirect);
 Str myEditor(char *cmd, char *file, int line);
 
 Str tmpfname(int type, const char *ext);
-
-int
-is_plain_text_type(const char *type);
-int
-is_dump_text_type(const char *type);
 
 void SetMetaCharset(CharacterEncodingScheme ces);
 URL *GetCurBaseUrl();

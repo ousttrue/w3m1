@@ -90,12 +90,6 @@ URL *GetCurBaseUrl()
     return &g_cur_baseURL;
 }
 
-int is_plain_text_type(const char *type)
-{
-    return ((type && strcasecmp(type, "text/plain") == 0) ||
-            (is_text_type(type) && !is_dump_text_type(type)));
-}
-
 int setModtime(char *path, time_t modtime)
 {
     struct utimbuf t;

@@ -1,5 +1,6 @@
 #pragma once
 #include <wc.h>
+#include <string_view>
 
 #define MAILCAP_NEEDSTERMINAL 0x01
 #define MAILCAP_COPIOUSOUTPUT 0x02
@@ -16,7 +17,7 @@ struct Mailcap
 };
 
 int mailcapMatch(Mailcap *mcap, const char *type);
-Mailcap *searchMailcap(Mailcap *table, char *type);
+Mailcap *searchMailcap(Mailcap *table, std::string_view type);
 void initMailcap();
-Mailcap *searchExtViewer(const char *type);
+Mailcap *searchExtViewer(std::string_view type);
 Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, int *mc_stat);

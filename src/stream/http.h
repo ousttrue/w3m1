@@ -77,12 +77,30 @@ enum class HttpResponseStatusCode
     TEMPORARY_REDIRECT = 307,
 };
 
+enum EncodingTypes : char
+{
+    ENC_7BIT = 0,
+    ENC_BASE64 = 1,
+    ENC_QUOTE = 2,
+    ENC_UUENCODE = 3,
+};
+
+enum CompressionTypes
+{
+    CMP_NOCOMPRESS = 0,
+    CMP_COMPRESS = 1,
+    CMP_GZIP = 2,
+    CMP_BZIP2 = 3,
+    CMP_DEFLATE = 4,
+};
+
 struct HttpResponse
 {
     int version_major = -1;
     int version_minor = -1;
     HttpResponseStatusCode status_code = HttpResponseStatusCode::NONE;
     std::vector<std::string> lines;
+    CompressionTypes content_encoding = CMP_NOCOMPRESS;
 
     static std::shared_ptr<HttpResponse> Read(const std::shared_ptr<class InputStream> &stream);
 

@@ -16,6 +16,7 @@
 #include "file.h"
 #include "mime/mimetypes.h"
 #include "mime/mailcap.h"
+#include "myctype.h"
 
 void _Push(const HttpRequestPtr &request, std::stringstream &ss)
 {
@@ -304,6 +305,41 @@ Str HttpRequest::ToStr(const URL &url, const URL *current, const TextList *extra
 ///
 /// HttpResponse
 ///
+static std::tuple<std::string_view, std::string_view> split(std::string_view src, char delemeter)
+{
+    auto pos = src.find(delemeter);
+    if (pos == std::string::npos)
+    {
+        return {};
+    }
+
+    auto key = src.substr(0, pos);
+    auto value = src.substr(pos + 1);
+    while (value.size() && IS_SPACE(value[0]))
+    {
+        value.remove_prefix(1);
+    }
+
+    return {key, value};
+}
+
+static bool ieq(std::string_view l, std::string_view r)
+{
+    if (l.size() != r.size())
+    {
+        return false;
+    }
+    auto rr = r.begin();
+    for (auto ll = l.begin(); ll != l.end(); ++ll, ++rr)
+    {
+        if (tolower(*ll) != tolower(*rr))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 std::shared_ptr<HttpResponse> HttpResponse::Read(const std::shared_ptr<InputStream> &stream)
 {
     auto res = std::make_shared<HttpResponse>();
@@ -370,32 +406,80 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
         // headers. ex.
         // Content-Type: text/html
         // KEY: VALUE
+        auto [key, value] = split(line, ':');
+        if (ieq(key, "content-transfer-encoding"))
+        {
+            auto a = 0;
+        }
+        else if (ieq(key, "content-encoding"))
+        {
+            for (auto d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
+            {
+                for (auto e = d->encodings; *e != NULL; e++)
+                {
+                    if (ieq(value, *e))
+                    {
+                        content_encoding = d->type;
+                        break;
+                    }
+                }
+                if (content_encoding != CMP_NOCOMPRESS)
+                {
+                    break;
+                }
+            }
+        }
     }
 
     // header is continuous
     return false;
 }
 
-std::tuple<std::string_view, std::string_view> split_colon(std::string_view src)
-{
-    auto pos = src.find(':');
-    if (pos == std::string::npos)
-    {
-        return {};
-    }
-
-    auto key = src.substr(0, pos);
-    auto value = src.substr(pos + 1);
-
-    return {key, value};
-}
+// if (strncasecmp(lineBuf2->ptr, "content-transfer-encoding:", 26) == 0)
+// {
+//     auto p = lineBuf2->ptr + 26;
+//     while (IS_SPACE(*p))
+//         p++;
+//     if (!strncasecmp(p, "base64", 6))
+//         uf->encoding = ENC_BASE64;
+//     else if (!strncasecmp(p, "quoted-printable", 16))
+//         uf->encoding = ENC_QUOTE;
+//     else if (!strncasecmp(p, "uuencode", 8) ||
+//              !strncasecmp(p, "x-uuencode", 10))
+//         uf->encoding = ENC_UUENCODE;
+//     else
+//         uf->encoding = ENC_7BIT;
+// }
+// else if (strncasecmp(lineBuf2->ptr, "content-encoding:", 17) == 0)
+// {
+//     struct compression_decoder *d;
+//     auto p = lineBuf2->ptr + 17;
+//     while (IS_SPACE(*p))
+//         p++;
+//     uf->compression = CMP_NOCOMPRESS;
+//     for (d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
+//     {
+//         const char **e;
+//         for (e = d->encodings; *e != NULL; e++)
+//         {
+//             if (strncasecmp(p, *e, strlen(*e)) == 0)
+//             {
+//                 uf->compression = d->type;
+//                 break;
+//             }
+//         }
+//         if (uf->compression != CMP_NOCOMPRESS)
+//             break;
+//     }
+//     uf->content_encoding = uf->compression;
+// }
 
 std::string_view HttpResponse::FindHeader(std::string_view key) const
 {
     for (auto &l : lines)
     {
-        auto [k, v] = split_colon(l);
-        if (k == key)
+        auto [k, v] = split(l, ':');
+        if (ieq(k, key))
         {
             return v;
         }
@@ -452,7 +536,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //
     // load buffer
     //
-    // const char *t = checkContentType(t_buf);
+    auto [t, charset] = split(response->FindHeader("content-type"), ';');
     // if (t == NULL && url.path.size())
     // {
     //     if (!((http_response_code >= 400 && http_response_code <= 407) ||
@@ -460,7 +544,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //         t = guessContentType(url.path);
     // }
     // if (t == NULL)
-    auto t = "text/plain";
+    // auto t = "text/plain";
 
     // /* XXX: can we use guess_type to give the type to loadHTMLstream
     //      *      to support default utf8 encoding for XHTML here? */
@@ -502,7 +586,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
         // TODO:
         // url.real_file = uncompress_stream(&f, true);
     }
-    else if (f->compression != CMP_NOCOMPRESS)
+    else if (response->content_encoding != CMP_NOCOMPRESS)
     {
         if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
             (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
@@ -540,7 +624,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     else if (is_plain_text_type(t))
         proc = loadBuffer;
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
-             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && !strncasecmp(t, "image/", 6))
+             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
         proc = loadImageBuffer;
     else if (w3mApp::Instance().w3m_backend)
         ;
