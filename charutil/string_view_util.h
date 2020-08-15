@@ -43,7 +43,7 @@ inline std::tuple<std::string_view, std::string_view> split(std::string_view src
 }
 
 // ignore case equal
-inline bool iceq(std::string_view l, std::string_view r)
+inline bool ic_eq(std::string_view l, std::string_view r)
 {
     if (l.size() != r.size())
     {
@@ -58,6 +58,24 @@ inline bool iceq(std::string_view l, std::string_view r)
         }
     }
     return true;
+}
+
+inline bool ic_begin_with(std::string_view src, std::string_view find)
+{
+    if (src.size() < find.size())
+    {
+        return false;
+    }
+    return ic_eq(src.substr(0, find.size()), find);
+}
+
+inline bool ic_ends_with(std::string_view src, std::string_view find)
+{
+    if (src.size() < find.size())
+    {
+        return false;
+    }
+    return ic_eq(src.substr(src.size()-find.size()), find);
 }
 
 } // namespace  svu

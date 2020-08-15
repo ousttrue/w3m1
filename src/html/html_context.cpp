@@ -829,8 +829,15 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
             auto u = URL::Parse(wc_conv(p, w3mApp::Instance().InnerCharset, CES())->ptr, GetCurBaseUrl());
             Image image;
             image.url = u.ToStr()->ptr;
-            if (!uncompressed_file_type(u.path.c_str(), &image.ext))
+            auto [t, ext] = uncompressed_file_type(u.path);
+            if (t.size())
+            {
+                image.ext = ext.data();
+            }
+            else
+            {
                 image.ext = filename_extension(u.path.c_str(), TRUE);
+            }
             image.cache = nullptr;
             image.width = w;
             image.height = i;
@@ -1325,7 +1332,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         if (p)
         {
             // TODO:
-            // r ? r : ""            
+            // r ? r : ""
             HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
 
             this->effect |= PE_ANCHOR;
@@ -1401,8 +1408,15 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
                 Image *image;
                 this->a_img->image = image = New(Image);
                 image->url = u.ToStr()->ptr;
-                if (!uncompressed_file_type(u.path.c_str(), &image->ext))
+                auto [t, ext] = uncompressed_file_type(u.path);
+                if (t.size())
+                {
+                    image->ext = ext.data();
+                }
+                else
+                {
                     image->ext = filename_extension(u.path.c_str(), TRUE);
+                }
                 image->cache = nullptr;
                 image->width =
                     (w > MAX_IMAGE_SIZE) ? MAX_IMAGE_SIZE : w;
@@ -1798,7 +1812,7 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
     // each line
     //
     Str line = nullptr;
-    for (int nlines = 1; ; ++nlines)
+    for (int nlines = 1;; ++nlines)
     {
         if (!line)
         {

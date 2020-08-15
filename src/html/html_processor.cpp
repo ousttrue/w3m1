@@ -69,7 +69,7 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
         }
         if (content_charset && w3mApp::Instance().UseContentCharset)
             doc_charset = content_charset;
-        else if (f->guess_type && !strcasecmp(f->guess_type, "application/xhtml+xml"))
+        else if (f->guess_type == "application/xhtml+xml")
             doc_charset = WC_CES_UTF_8;
         meta_charset = WC_CES_NONE;
 

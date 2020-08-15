@@ -608,8 +608,8 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
         if (t == NULL)
             t = "text/plain";
         auto real_type = t;
-        if (uf->guess_type)
-            t = uf->guess_type;
+        if (uf->guess_type.size())
+            t = uf->guess_type.c_str();
     }
 
     return LoadStream(uf, url, {});

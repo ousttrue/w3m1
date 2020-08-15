@@ -149,7 +149,7 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
         auto [key, value] = svu::split(line, ':');
 
         // headers
-        if (svu::iceq(key, "content-encoding"))
+        if (svu::ic_eq(key, "content-encoding"))
         {
             content_encoding = get_compression_type(value);
         }
@@ -189,7 +189,7 @@ std::string_view HttpResponse::FindHeader(std::string_view key) const
     for (auto &l : lines)
     {
         auto [k, v] = svu::split(l, ':');
-        if (svu::iceq(k, key))
+        if (svu::ic_eq(k, key))
         {
             return v;
         }
@@ -359,11 +359,15 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
         {
             // if (t_buf == NULL)
             /*t_buf->sourcefile =*/uncompress_stream(f, true);
-            uncompressed_file_type(url.path.c_str(), &f->ext);
+            auto [type, ext] = uncompressed_file_type(url.path);
+            if(ext.size())
+            {
+                f->ext = ext.data();
+            }
         }
         else
         {
-            t = compress_application_type(f->compression);
+            t = compress_application_type(f->compression).data();
             f->compression = CMP_NOCOMPRESS;
         }
     }

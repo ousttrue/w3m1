@@ -26,7 +26,7 @@ struct URLFile : std::enable_shared_from_this<URLFile>
     const char *ext = nullptr;
     CompressionTypes compression = CMP_NOCOMPRESS;
     // CompressionTypes content_encoding = CMP_NOCOMPRESS;
-    const char *guess_type = nullptr;
+    std::string guess_type;
     char *ssl_certificate = nullptr;
     char *url = nullptr;
     time_t modtime = -1;

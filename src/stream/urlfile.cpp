@@ -929,7 +929,7 @@ lessopen_stream(char *path)
 
 void URLFile::examineFile(std::string_view path)
 {
-    this->guess_type = NULL;
+    this->guess_type.clear();
     if (path.empty())
     {
         return;
@@ -956,7 +956,7 @@ void URLFile::examineFile(std::string_view path)
     if (use_lessopen && getenv("LESSOPEN"))
     {
         this->guess_type = guessContentType(path);
-        if (this->guess_type == NULL)
+        if (this->guess_type.empty())
             this->guess_type = "text/plain";
         if (is_html_type(this->guess_type))
             return;
@@ -974,10 +974,15 @@ void URLFile::examineFile(std::string_view path)
     check_compression(const_cast<char *>(path.data()), shared_from_this());
     if (this->compression != CMP_NOCOMPRESS)
     {
-        const char *ext = this->ext;
-        auto t0 = uncompressed_file_type(path.data(), &ext);
-        this->guess_type = t0;
-        this->ext = ext;
+        auto [t, ex] = uncompressed_file_type(path);
+        if (ex.size())
+        {
+            ext = ex.data();
+        }
+        if (t.size())
+        {
+            this->guess_type = t.data();
+        }
         uncompress_stream(shared_from_this(), NULL);
         return;
     }

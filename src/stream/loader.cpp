@@ -327,19 +327,26 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
     //     // pu.real_file = uncompress_stream(&f, true);
     // }
     // else
+    
     if (f->compression != CMP_NOCOMPRESS)
     {
+        // compressed
         if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
             (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
         {
+            // extract compression
             if (t_buf == NULL)
                 t_buf = newBuffer(INIT_BUFFER_WIDTH());
             t_buf->sourcefile = uncompress_stream(f, true);
-            uncompressed_file_type(pu.path.c_str(), &f->ext);
+            auto [type, ext] = uncompressed_file_type(pu.path);
+            if (ext.size())
+            {
+                f->ext = ext.data();
+            }
         }
         else
         {
-            t = compress_application_type(f->compression);
+            t = compress_application_type(f->compression).data();
             f->compression = CMP_NOCOMPRESS;
         }
     }
