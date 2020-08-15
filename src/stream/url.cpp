@@ -641,21 +641,25 @@ Str URL::ToStr(bool usePass, bool useLabel) const
     }
 
     {
+        // scheme
         auto scheme = GetScheme(this->scheme);
         auto tmp = Strnew(scheme->name);
         tmp->Push(':');
-        if (this->userinfo.name.size())
-        {
-            tmp->Push(this->userinfo.name);
-            if (usePass && this->userinfo.pass.size())
-            {
-                tmp->Push(':');
-                tmp->Push(this->userinfo.pass);
-            }
-            tmp->Push('@');
-        }
+
+        // host
         if (this->host.size())
         {
+            tmp->Push("//");
+            if (this->userinfo.name.size())
+            {
+                tmp->Push(this->userinfo.name);
+                if (usePass && this->userinfo.pass.size())
+                {
+                    tmp->Push(':');
+                    tmp->Push(this->userinfo.pass);
+                }
+                tmp->Push('@');
+            }
             tmp->Push(this->host);
             if (this->port != g_schemeTable[this->scheme].port)
             {
@@ -663,6 +667,8 @@ Str URL::ToStr(bool usePass, bool useLabel) const
                 tmp->Push(Sprintf("%d", this->port));
             }
         }
+
+        // path
         tmp->Push(this->path);
         if (this->scheme == SCM_FTPDIR && tmp->Back() != '/')
             tmp->Push('/');

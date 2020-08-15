@@ -25,5 +25,5 @@ w3m を改造して遊ぶ。
 * Line / terms
 * Tab, Buffer
 * Html
-* Stream / URL / file
+* Stream / URL / HTTP / file
 * globals / rc / funcs

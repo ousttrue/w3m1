@@ -523,14 +523,18 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     show_message(Strnew_m_charp(url.host, " contacted. Waiting for reply...")->ptr);
 
     auto response = HttpResponse::Read(f->stream);
+    exchanges.push_back({request, response});
 
     if (response->HasRedirectionStatus())
     {
         auto location = response->FindHeader("Location");
-        if (location.size())
+        if (location.empty())
         {
+            return nullptr;
         }
-        return nullptr;
+
+        // redirect
+        return Request(URL::Parse(location), &url, referer, nullptr);
     }
 
     //
