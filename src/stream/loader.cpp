@@ -251,7 +251,6 @@ BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc)
 ///
 /// HTTP
 ///
-int http_response_code;
 long long current_content_length;
 long long GetCurrentContentLength()
 {
@@ -292,12 +291,12 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
     // }
     auto t = "text/plain";
     // const char *t = checkContentType(t_buf);
-    if (t == NULL && pu.path.size())
-    {
-        if (!((http_response_code >= 400 && http_response_code <= 407) ||
-              (http_response_code >= 500 && http_response_code <= 505)))
-            t = guessContentType(pu.path);
-    }
+    // if (t == NULL && pu.path.size())
+    // {
+    //     if (!((http_response_code >= 400 && http_response_code <= 407) ||
+    //           (http_response_code >= 500 && http_response_code <= 505)))
+    //         t = guessContentType(pu.path);
+    // }
     if (t == NULL)
         t = "text/plain";
 
