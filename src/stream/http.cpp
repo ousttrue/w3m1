@@ -11,7 +11,6 @@
 #include "frontend/display.h"
 #include "frontend/terms.h"
 #include "w3m.h"
-#include "indep.h"
 #include "file.h"
 #include "mime/mimetypes.h"
 #include "mime/mailcap.h"
@@ -148,23 +147,11 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
         // KEY: VALUE
         // ex. Content-Type: text/html
         auto [key, value] = svu::split(line, ':');
+
+        // headers
         if (svu::iceq(key, "content-encoding"))
         {
-            for (auto d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
-            {
-                for (auto e = d->encodings; *e != NULL; e++)
-                {
-                    if (svu::iceq(value, *e))
-                    {
-                        content_encoding = d->type;
-                        break;
-                    }
-                }
-                if (content_encoding != CMP_NOCOMPRESS)
-                {
-                    break;
-                }
-            }
+            content_encoding = get_compression_type(value);
         }
     }
 

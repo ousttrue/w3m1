@@ -5,11 +5,54 @@
 #include "stream/istream.h"
 #include "rc.h"
 #include "file.h"
-
+#include <string_view_util.h>
 #include "fm.h"
 #include "html/html.h"
 #include "stream/local_cgi.h"
 #include <sys/stat.h>
+
+struct compression_decoder
+{
+    CompressionTypes type;
+    const char *ext;
+    const char *mime_type;
+    int auxbin_p;
+    const char *cmd;
+    const char *name;
+    const char *encoding;
+    const char *encodings[4];
+};
+
+/* *INDENT-OFF* */
+static compression_decoder compression_decoders[] = {
+    {CMP_COMPRESS, ".gz", "application/x-gzip", 0, GUNZIP_CMDNAME, GUNZIP_NAME, "gzip", {"gzip", "x-gzip", NULL}},
+    {CMP_COMPRESS, ".Z", "application/x-compress", 0, GUNZIP_CMDNAME, GUNZIP_NAME, "compress", {"compress", "x-compress", NULL}},
+    {CMP_BZIP2, ".bz2", "application/x-bzip", 0, BUNZIP2_CMDNAME, BUNZIP2_NAME, "bzip, bzip2", {"x-bzip", "bzip", "bzip2", NULL}},
+    {CMP_DEFLATE, ".deflate", "application/x-deflate", 1, INFLATE_CMDNAME, INFLATE_NAME, "deflate", {"deflate", "x-deflate", NULL}},
+    {CMP_NOCOMPRESS, NULL, NULL, 0, NULL, NULL, NULL, {NULL}},
+};
+/* *INDENT-ON* */
+
+CompressionTypes get_compression_type(std::string_view value)
+{
+    auto content_encoding = CMP_NOCOMPRESS;
+    for (auto d = compression_decoders; d->type != CMP_NOCOMPRESS; d++)
+    {
+        for (auto e = d->encodings; *e != NULL; e++)
+        {
+            if (svu::iceq(value, *e))
+            {
+                content_encoding = d->type;
+                break;
+            }
+        }
+        if (content_encoding != CMP_NOCOMPRESS)
+        {
+            break;
+        }
+    }
+    return content_encoding;
+}
 
 void check_compression(std::string_view path, const URLFilePtr &uf)
 {

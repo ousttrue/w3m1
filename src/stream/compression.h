@@ -1,30 +1,19 @@
 #pragma once
-#include "config.h"
-#include "stream/http.h"
-#include "stream/urlfile.h"
+#include <memory>
+#include <string_view>
 
-/* *INDENT-OFF* */
-static struct compression_decoder
+enum CompressionTypes
 {
-    CompressionTypes type;
-    const char *ext;
-    const char *mime_type;
-    int auxbin_p;
-    const char *cmd;
-    const char *name;
-    const char *encoding;
-    const char *encodings[4];
-} compression_decoders[] = {
-    {CMP_COMPRESS, ".gz", "application/x-gzip", 0, GUNZIP_CMDNAME, GUNZIP_NAME, "gzip", {"gzip", "x-gzip", NULL}},
-    {CMP_COMPRESS, ".Z", "application/x-compress", 0, GUNZIP_CMDNAME, GUNZIP_NAME, "compress", {"compress", "x-compress", NULL}},
-    {CMP_BZIP2, ".bz2", "application/x-bzip", 0, BUNZIP2_CMDNAME, BUNZIP2_NAME, "bzip, bzip2", {"x-bzip", "bzip", "bzip2", NULL}},
-    {CMP_DEFLATE, ".deflate", "application/x-deflate", 1, INFLATE_CMDNAME, INFLATE_NAME, "deflate", {"deflate", "x-deflate", NULL}},
-    {CMP_NOCOMPRESS, NULL, NULL, 0, NULL, NULL, NULL, {NULL}},
+    CMP_NOCOMPRESS = 0,
+    CMP_COMPRESS = 1,
+    CMP_GZIP = 2,
+    CMP_BZIP2 = 3,
+    CMP_DEFLATE = 4,
 };
-/* *INDENT-ON* */
 
 const char *compress_application_type(CompressionTypes compression);
-char *uncompress_stream(const URLFilePtr &uf, bool useRealFile);
+char *uncompress_stream(const std::shared_ptr<struct URLFile> &uf, bool useRealFile);
 const char *uncompressed_file_type(const char *path, const char **ext);
-void check_compression(std::string_view path, const URLFilePtr &uf);
+void check_compression(std::string_view path, const std::shared_ptr<struct URLFile> &uf);
 char *acceptableEncoding();
+CompressionTypes get_compression_type(std::string_view value);
