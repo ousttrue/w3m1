@@ -945,12 +945,12 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
         if (!pid)
         {
             int err;
-            if ((this->content_encoding != CMP_NOCOMPRESS) && AutoUncompress)
-            {
-                tmpf = uncompress_stream(shared_from_this(), true);
-                if (tmpf)
-                    unlink(tmpf);
-            }
+            // if ((this->content_encoding != CMP_NOCOMPRESS) && AutoUncompress)
+            // {
+            //     tmpf = uncompress_stream(shared_from_this(), true);
+            //     if (tmpf)
+            //         unlink(tmpf);
+            // }
             setup_child(FALSE, 0, stream->FD());
             err = save2tmp(shared_from_this(), p);
             if (err == 0 && PreserveTimestamp && this->modtime != -1)
@@ -990,12 +990,12 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
             printf("Can't save. Load file and %s are identical.", p);
             return -1;
         }
-        if (this->content_encoding != CMP_NOCOMPRESS && AutoUncompress)
-        {
-            tmpf = uncompress_stream(shared_from_this(), true);
-            if (tmpf)
-                unlink(tmpf);
-        }
+        // if (this->content_encoding != CMP_NOCOMPRESS && AutoUncompress)
+        // {
+        //     tmpf = uncompress_stream(shared_from_this(), true);
+        //     if (tmpf)
+        //         unlink(tmpf);
+        // }
         if (save2tmp(shared_from_this(), p) < 0)
         {
             /* FIXME: gettextize? */

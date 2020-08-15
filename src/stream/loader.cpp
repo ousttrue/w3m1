@@ -321,12 +321,13 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
         return nullptr;
     }
 
-    if ((f->content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
-    {
-        // TODO:
-        // pu.real_file = uncompress_stream(&f, true);
-    }
-    else if (f->compression != CMP_NOCOMPRESS)
+    // if ((f->content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
+    // {
+    //     // TODO:
+    //     // pu.real_file = uncompress_stream(&f, true);
+    // }
+    // else
+    if (f->compression != CMP_NOCOMPRESS)
     {
         if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
             (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))

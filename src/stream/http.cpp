@@ -475,7 +475,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     // open stream and send request
     //
     auto f = URLFile::OpenHttpAndSendRest(request);
-    if(!f)
+    if (!f)
     {
         // fail to open stream
         return nullptr;
@@ -567,12 +567,13 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     // }
 
     // auto t_buf = newBuffer(INIT_BUFFER_WIDTH());
-    if ((f->content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
-    {
-        // TODO:
-        // url.real_file = uncompress_stream(&f, true);
-    }
-    else if (response->content_encoding != CMP_NOCOMPRESS)
+    // if ((f->content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
+    // {
+    //     // TODO:
+    //     // url.real_file = uncompress_stream(&f, true);
+    // }
+    // else
+    if (response->content_encoding != CMP_NOCOMPRESS)
     {
         if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
             (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
