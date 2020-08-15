@@ -19,3 +19,4 @@ BufferPtr loadGeneralFile(const URL &url, const URL *current, HttpReferrerPolicy
 int doFileCopy(const char *tmpf, const char *defstr);
 BufferPtr loadSomething(const URLFilePtr &f, const char *path, LoaderFunc loadproc);
 BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc);
+BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag);

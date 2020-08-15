@@ -43,26 +43,9 @@ void set_environ(std::string_view var, std::string_view value);
 
 pid_t open_pipe_rw(FILE **fr, FILE **fw);
 Str loadLocalDir(std::string_view dname);
-FILE *localcgi_post(char *uri, char *qstr, struct FormList *request, HttpReferrerPolicy referer);
-inline FILE *localcgi_get(char *u, char *q, HttpReferrerPolicy r)
-{
-    return localcgi_post((u), (q), NULL, (r));
-}
 
-enum LocalCGITypes
+class LocalCGI
 {
-    CGIFN_NORMAL = 0, // not cgi
-    CGIFN_LIBDIR = 1,
-    CGIFN_CGIBIN = 2,
-};
-
-struct LocalCGI
-{
-    LocalCGITypes status;
-    char *file;
-    char *name;
-    char *path_info;
-
-    LocalCGI(std::string_view uri);
-    bool check_local_cgi() const;
+public:
+    std::shared_ptr<struct Buffer> Request(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form);
 };

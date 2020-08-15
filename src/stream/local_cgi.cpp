@@ -13,16 +13,130 @@
 #include "stream/loader.h"
 #include "html/form.h"
 #include "frontend/terms.h"
-
-#ifdef __MINGW32_VERSION
-#include <winsock.h>
-#endif
+#include "mime/mimetypes.h"
 
 static Str Local_cookie = NULL;
 static char *Local_cookie_file = NULL;
 
-static void
-writeLocalCookie()
+enum LocalCGITypes
+{
+    CGIFN_NORMAL = 0, // not cgi
+    CGIFN_LIBDIR = 1,
+    CGIFN_CGIBIN = 2,
+};
+
+static Str checkPath(char *fn, char *path)
+{
+    char *p;
+    Str tmp;
+    struct stat st;
+    while (*path)
+    {
+        p = strchr(path, ':');
+        tmp = Strnew(expandPath(p ? allocStr(path, p - path) : path));
+        if (tmp->Back() != '/')
+            tmp->Push('/');
+        tmp->Push(fn);
+        if (stat(tmp->ptr, &st) == 0)
+            return tmp;
+        if (!p)
+            break;
+        path = p + 1;
+        while (*path == ':')
+            path++;
+    }
+    return NULL;
+}
+
+struct LocalCGIStatus
+{
+    LocalCGITypes status = LocalCGITypes::CGIFN_NORMAL;
+    char *file = nullptr;
+    char *name = nullptr;
+    char *path_info = nullptr;
+
+    LocalCGIStatus(std::string_view _uri)
+    {
+        auto uri = const_cast<char *>(_uri.data());
+        file = uri;
+        name = uri;
+        path_info;
+
+        if (cgi_bin != NULL && strncmp(uri, "/cgi-bin/", 9) == 0)
+        {
+            int offset = 9;
+            if ((path_info = strchr(uri + offset, '/')))
+                name = allocStr(uri, path_info - uri);
+            auto tmp = checkPath(name + offset, cgi_bin);
+            if (tmp == NULL)
+            {
+                status = CGIFN_NORMAL;
+                return;
+            }
+            file = tmp->ptr;
+            status = CGIFN_CGIBIN;
+            return;
+        }
+
+        auto tmp = Strnew(w3m_lib_dir());
+        if (tmp->Back() != '/')
+            tmp->Push('/');
+
+        int offset = 0;
+        if (strncmp(uri, "/$LIB/", 6) == 0)
+            offset = 6;
+        else if (strncmp(uri, tmp->ptr, tmp->Size()) == 0)
+            offset = tmp->Size();
+        else if (*uri == '/' && document_root != NULL)
+        {
+            Str tmp2 = Strnew(document_root);
+            if (tmp2->Back() != '/')
+                tmp2->Push('/');
+            tmp2->Push(uri + 1);
+            if (strncmp(tmp2->ptr, tmp->ptr, tmp->Size()) != 0)
+            {
+                status = CGIFN_NORMAL;
+                return;
+            }
+            uri = tmp2->ptr;
+            name = uri;
+            offset = tmp->Size();
+        }
+        else
+        {
+            status = CGIFN_NORMAL;
+            return;
+        }
+        if ((path_info = strchr(uri + offset, '/')))
+            name = allocStr(uri, path_info - uri);
+        tmp->Push(name + offset);
+        file = tmp->ptr;
+        status = CGIFN_LIBDIR;
+    }
+
+    bool check_local_cgi() const
+    {
+        if (status != CGIFN_LIBDIR && status != CGIFN_CGIBIN)
+            return false;
+
+        struct stat st;
+        if (stat(file, &st) < 0)
+            return false;
+
+        if (S_ISDIR(st.st_mode))
+            return false;
+
+        if ((st.st_uid == geteuid() && (st.st_mode & S_IXUSR)) || (st.st_gid == getegid() && (st.st_mode & S_IXGRP)) || (st.st_mode & S_IXOTH))
+        {
+            /* executable */
+            return true;
+        }
+
+        return false;
+    }
+};
+
+static void writeLocalCookie()
 {
     FILE *f;
 
@@ -129,113 +243,9 @@ set_cgi_environ(char *name, char *fn, char *req_uri)
     set_environ("REQUEST_URI", req_uri);
 }
 
-static Str
-checkPath(char *fn, char *path)
-{
-    char *p;
-    Str tmp;
-    struct stat st;
-    while (*path)
-    {
-        p = strchr(path, ':');
-        tmp = Strnew(expandPath(p ? allocStr(path, p - path) : path));
-        if (tmp->Back() != '/')
-            tmp->Push('/');
-        tmp->Push(fn);
-        if (stat(tmp->ptr, &st) == 0)
-            return tmp;
-        if (!p)
-            break;
-        path = p + 1;
-        while (*path == ':')
-            path++;
-    }
-    return NULL;
-}
-
-LocalCGI::LocalCGI(std::string_view _uri)
-{
-    auto uri = const_cast<char*>(_uri.data());
-    file = uri;
-    name = uri;
-    path_info;
-
-    if (cgi_bin != NULL && strncmp(uri, "/cgi-bin/", 9) == 0)
-    {
-        int offset = 9;
-        if ((path_info = strchr(uri + offset, '/')))
-            name = allocStr(uri, path_info - uri);
-        auto tmp = checkPath(name + offset, cgi_bin);
-        if (tmp == NULL)
-        {
-            status = CGIFN_NORMAL;
-            return;
-        }
-        file = tmp->ptr;
-        status = CGIFN_CGIBIN;
-        return;
-    }
-
-    auto tmp = Strnew(w3m_lib_dir());
-    if (tmp->Back() != '/')
-        tmp->Push('/');
-
-    int offset = 0;
-    if (strncmp(uri, "/$LIB/", 6) == 0)
-        offset = 6;
-    else if (strncmp(uri, tmp->ptr, tmp->Size()) == 0)
-        offset = tmp->Size();
-    else if (*uri == '/' && document_root != NULL)
-    {
-        Str tmp2 = Strnew(document_root);
-        if (tmp2->Back() != '/')
-            tmp2->Push('/');
-        tmp2->Push(uri + 1);
-        if (strncmp(tmp2->ptr, tmp->ptr, tmp->Size()) != 0)
-        {
-            status = CGIFN_NORMAL;
-            return;
-        }
-        uri = tmp2->ptr;
-        name = uri;
-        offset = tmp->Size();
-    }
-    else
-    {
-        status = CGIFN_NORMAL;
-        return;
-    }
-    if ((path_info = strchr(uri + offset, '/')))
-        name = allocStr(uri, path_info - uri);
-    tmp->Push(name + offset);
-    file = tmp->ptr;
-    status = CGIFN_LIBDIR;
-}
-
-bool LocalCGI::check_local_cgi() const
-{
-    if (status != CGIFN_LIBDIR && status != CGIFN_CGIBIN)
-        return false;
-
-    struct stat st;
-    if (stat(file, &st) < 0)
-        return false;
-
-    if (S_ISDIR(st.st_mode))
-        return false;
-
-    if ((st.st_uid == geteuid() && (st.st_mode & S_IXUSR)) || (st.st_gid == getegid() && (st.st_mode & S_IXGRP)) || (st.st_mode & S_IXOTH))
-    {
-        /* executable */
-        return true;
-    }
-
-    return false;
-}
-
 FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy referer)
 {
-    auto cgi = LocalCGI(uri);
+    auto cgi = LocalCGIStatus(uri);
     if (!cgi.check_local_cgi())
         return NULL;
 
@@ -308,6 +318,10 @@ FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy
             cgi.file, mybasename(cgi.file), strerror(errno));
     exit(1);
     return NULL;
+}
+inline FILE *localcgi_get(char *u, char *q, HttpReferrerPolicy r)
+{
+    return localcgi_post((u), (q), NULL, (r));
 }
 
 #ifndef __MINGW32_VERSION
@@ -509,4 +523,94 @@ Str loadLocalDir(std::string_view dname)
     tmp->Push("</BODY>\n</HTML>\n");
 
     return tmp;
+}
+
+std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form)
+{
+    auto cgi = LocalCGIStatus(url.real_file);
+    if (!cgi.check_local_cgi())
+    {
+        return nullptr;
+    }
+
+    //
+    // local CGI
+    //
+    // * "file:///$LIB/w3mbookmark"
+    // or
+    // * /cgi-bin/w3mbookmark
+    //
+    URLFilePtr uf;
+    {
+        FILE *f = nullptr;
+        if (form && form->body)
+        {
+            /* local CGI: POST */
+            f = localcgi_post(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), form, referer);
+        }
+        else
+        {
+            /* lodal CGI: GET */
+            f = localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), referer);
+        }
+        auto stream = newFileStream(f, fclose);
+        uf = URLFile::OpenStream(SCM_LOCAL, stream);
+    }
+
+    assert(uf->stream);
+    {
+        uf->is_cgi = TRUE;
+        // TODO:
+        // url.scheme =
+        uf->scheme = SCM_LOCAL_CGI;
+    }
+    // // auto b = NULL;
+    if (uf->is_cgi)
+    {
+        /* local CGI */
+        // searchHeader = TRUE;
+        // searchHeader_through = FALSE;
+    }
+
+    // if (searchHeader)
+    // {
+    //     searchHeader = w3mApp::Instance().SearchHeader = FALSE;
+    //     if (t_buf == NULL)
+    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //     readHeader(&f, t_buf, searchHeader_through, &pu);
+    //     if (f.is_cgi && (p = checkHeader(t_buf, "Location:")) != NULL &&
+    //         checkRedirection(&pu))
+    //     {
+    //         /* document moved */
+    //         tpath = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
+    //         request = NULL;
+    //         f.Close();
+    //         add_auth_cookie_flag = 0;
+    //         *current = pu;
+    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //         t_buf->bufferprop |= BP_REDIRECTED;
+    //         status = HTST_NORMAL;
+    //         goto load_doc;
+    //     }
+    //     t = checkContentType(t_buf);
+    //     if (t == NULL)
+    //         t = "text/plain";
+    // }
+    // else if (w3mApp::Instance().DefaultType.size())
+    // {
+    //     t = Strnew(w3mApp::Instance().DefaultType)->ptr;
+    //     w3mApp::Instance().DefaultType.clear();
+    // }
+    // else
+    {
+        // local CGI
+        auto t = guessContentType(url.path);
+        if (t == NULL)
+            t = "text/plain";
+        auto real_type = t;
+        if (uf->guess_type)
+            t = uf->guess_type;
+    }
+
+    return LoadStream(uf, url, {});
 }

@@ -24,37 +24,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-/* add index_file if exists */
-static void
-add_index_file(const URL *pu, const URLFilePtr &uf)
-{
-    assert(false);
-    // char *p, *q;
-    // TextList *index_file_list = NULL;
-    // TextListItem *ti;
-
-    // if (non_null(index_file))
-    //     index_file_list = make_domain_list(index_file);
-    // if (index_file_list == NULL)
-    // {
-    //     uf->stream = NULL;
-    //     return;
-    // }
-    // for (ti = index_file_list->first; ti; ti = ti->next)
-    // {
-    //     p = Strnew_m_charp(pu->path, "/", file_quote(ti->ptr), NULL)->ptr;
-    //     p = cleanupName(p);
-    //     q = cleanupName(file_unquote(p));
-    //     uf->examineFile(q);
-    //     if (uf->stream != NULL)
-    //     {
-    //         pu->path = p;
-    //         pu->real_file = q;
-    //         return;
-    //     }
-    // }
-}
-
 static void
 write_from_file(int sock, char *file)
 {
