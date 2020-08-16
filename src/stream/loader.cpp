@@ -476,11 +476,6 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
 /// charset
 ///
 CharacterEncodingScheme content_charset = WC_CES_NONE;
-CharacterEncodingScheme meta_charset = WC_CES_NONE;
-void SetMetaCharset(CharacterEncodingScheme ces)
-{
-    meta_charset = ces;
-}
 
 /* 
  * loadFile: load file to buffer

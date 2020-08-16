@@ -7,6 +7,6 @@
 // entry point
 struct Buffer;
 using BufferPtr = std::shared_ptr<Buffer>;
-void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int internal);
+BufferPtr loadHTMLstream(const URLFilePtr &f, bool internal);
 BufferPtr loadHTMLBuffer(const URLFilePtr &f);
 BufferPtr loadHTMLString(Str page);

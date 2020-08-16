@@ -161,14 +161,18 @@ public:
     void NScroll(int n);
     void CurrentAsLast()
     {
-        auto it = find(currentLine);
-        if (it == lines.end())
+        if (currentLine)
         {
-            assert(false);
-            return;
+            auto it = find(currentLine);
+            if (it == lines.end())
+            {
+                assert(false);
+                return;
+            }
+            ++it;
+            lines.erase(it, lines.end());
         }
-        ++it;
-        lines.erase(it, lines.end());
+
         // lastLine = currentLine;
         topLine = FirstLine();
         currentLine = FirstLine();

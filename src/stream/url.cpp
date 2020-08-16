@@ -257,49 +257,6 @@ std::string URL::ToRefererOrigin() const
 //
 // scheme://userinfo@host:port/path?query#fragment
 //
-static std::tuple<std::string_view, URLSchemeTypes> ParseScheme(std::string_view p, const URL *current)
-{
-    // const char *q = nullptr;
-    auto [remain, scheme] = URLScheme::Parse(p);
-    if (scheme == SCM_MISSING)
-    {
-        /* scheme part is not found in the url. This means either
-        * (a) the url is relative to the current or (b) the url
-        * denotes a filename (therefore the scheme is SCM_LOCAL).
-        */
-        if (current)
-        {
-            switch (current->scheme)
-            {
-            case SCM_LOCAL:
-            case SCM_LOCAL_CGI:
-                scheme = SCM_LOCAL;
-                break;
-            case SCM_FTP:
-            case SCM_FTPDIR:
-                scheme = SCM_FTP;
-                break;
-            case SCM_NNTP:
-            case SCM_NNTP_GROUP:
-                scheme = SCM_NNTP;
-                break;
-            case SCM_NEWS:
-            case SCM_NEWS_GROUP:
-                scheme = SCM_NEWS;
-                break;
-            default:
-                scheme = current->scheme;
-                break;
-            }
-        }
-        else
-        {
-            scheme = SCM_LOCAL;
-        }
-    }
-    return {remain, scheme};
-}
-
 static std::tuple<std::string_view, URL::Userinfo, std::string_view, int> ParseUserinfoHostPort(std::string_view p, URLSchemeTypes scheme)
 {
     if (!p.starts_with("//"))
@@ -449,8 +406,6 @@ static std::tuple<std::string_view, std::string_view> ParseQuery(std::string_vie
 
 URL URL::Parse(std::string_view _url, const URL *current)
 {
-    // *this = {};
-
     /* quote 0x01-0x20, 0x7F-0xFF */
     auto quoted = url_quote(_url);
     auto url = quoted.c_str();
@@ -466,7 +421,41 @@ URL URL::Parse(std::string_view _url, const URL *current)
     //     return;
     // }
 
-    auto [p1, scheme] = ParseScheme(url, current);
+    auto [p1, scheme] = URLScheme::Parse(url);
+    if (scheme == SCM_MISSING)
+    {
+        // url without scheme://host
+        if (current)
+        {
+            switch (current->scheme)
+            {
+            case SCM_LOCAL:
+            case SCM_LOCAL_CGI:
+                scheme = SCM_LOCAL;
+                break;
+            case SCM_FTP:
+            case SCM_FTPDIR:
+                scheme = SCM_FTP;
+                break;
+            case SCM_NNTP:
+            case SCM_NNTP_GROUP:
+                scheme = SCM_NNTP;
+                break;
+            case SCM_NEWS:
+            case SCM_NEWS_GROUP:
+                scheme = SCM_NEWS;
+                break;
+            default:
+                scheme = current->scheme;
+                break;
+            }
+        }
+        else
+        {
+            scheme = SCM_LOCAL;
+        }
+    }
+
     auto [p2, userinfo, host, port] = ParseUserinfoHostPort(p1, scheme);
 
     // /* scheme part has been found */

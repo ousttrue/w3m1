@@ -28,19 +28,14 @@
 ///
 /// entry
 ///
-void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int internal)
+BufferPtr loadHTMLstream(const URLFilePtr &f, bool internal)
 {
-    int image_flag;
-    if (newBuf->image_flag)
-        image_flag = newBuf->image_flag;
-    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && autoImage)
-        image_flag = IMG_FLAG_AUTO;
-    else
-        image_flag = IMG_FLAG_SKIP;
-    if (newBuf->currentURL.path.size())
-    {
-        *GetCurBaseUrl() = *newBuf->BaseURL();
-    }
+    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
+
+    // if (newBuf->currentURL.path.size())
+    // {
+    //     *GetCurBaseUrl() = *newBuf->BaseURL();
+    // }
 
     struct environment envs[MAX_ENV_LEVEL];
     struct html_feed_environ htmlenv1;
@@ -56,23 +51,11 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
     //
     clen_t linelen = 0;
     clen_t trbyte = 0;
-    CharacterEncodingScheme charset = WC_CES_US_ASCII;
-    CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
     HtmlContext context;
-    auto success = TrapJmp([&]() {
-        if (newBuf != nullptr)
-        {
-            if (newBuf->bufferprop & BP_FRAME)
-                charset = w3mApp::Instance().InnerCharset;
-            else if (newBuf->document_charset)
-                charset = doc_charset = newBuf->document_charset;
-        }
-        if (content_charset && w3mApp::Instance().UseContentCharset)
-            doc_charset = content_charset;
-        else if (f->guess_type == "application/xhtml+xml")
-            doc_charset = WC_CES_UTF_8;
-        meta_charset = WC_CES_NONE;
 
+    context.Initialize(newBuf, content_charset);
+
+    auto success = TrapJmp([&]() {
         if (f->stream->type() != IST_ENCODED)
             f->stream = newEncodedStream(f->stream, f->encoding);
 
@@ -92,8 +75,6 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
                 }
             }
 
-            if (src)
-                lineBuf2->Puts(src);
             linelen += lineBuf2->Size();
             // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
             //     printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
@@ -104,19 +85,10 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
             * if (frame_source)
             * continue;
             */
-            if (meta_charset)
-            { /* <META> */
-                if (content_charset == 0 && w3mApp::Instance().UseContentCharset)
-                {
-                    doc_charset = meta_charset;
-                    charset = WC_CES_US_ASCII;
-                }
-                meta_charset = WC_CES_NONE;
-            }
 
-            lineBuf2 = convertLine(f->scheme, lineBuf2, HTML_MODE, &charset, doc_charset);
-
-            context.SetCES(charset);
+            CharacterEncodingScheme detected;
+            lineBuf2 = convertLine(f->scheme, lineBuf2, HTML_MODE, &detected, context.DocCharset());
+            context.SetCES(detected);
 
             HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal, &context);
         }
@@ -138,26 +110,31 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
     {
         HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1, &context);
     }
-    else
-    {
-        if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
-        {
-            context.print_internal_information(&htmlenv1);
-            return;
-        }
-        if (w3mApp::Instance().w3m_backend)
-        {
-            context.print_internal_information(&htmlenv1);
-            backend_halfdump_buf = htmlenv1.buf;
-            return;
-        }
-    }
+
+    // if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
+    // {
+    //     context.print_internal_information(&htmlenv1);
+    //     return;
+    // }
+    // if (w3mApp::Instance().w3m_backend)
+    // {
+    //     context.print_internal_information(&htmlenv1);
+    //     backend_halfdump_buf = htmlenv1.buf;
+    //     return;
+    // }
 
     newBuf->trbyte = trbyte + linelen;
 
     if (!(newBuf->bufferprop & BP_FRAME))
-        newBuf->document_charset = charset;
+        newBuf->document_charset = context.DocCharset();
 
+    int image_flag;
+    if (newBuf->image_flag)
+        image_flag = newBuf->image_flag;
+    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && autoImage)
+        image_flag = IMG_FLAG_AUTO;
+    else
+        image_flag = IMG_FLAG_SKIP;
     newBuf->image_flag = image_flag;
 
     {
@@ -167,6 +144,8 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
 
         context.BufferFromLines(newBuf, feed);
     }
+
+    return newBuf;
 }
 
 /* 
@@ -174,25 +153,23 @@ void loadHTMLstream(const URLFilePtr &f, BufferPtr newBuf, FILE *src, int intern
  */
 BufferPtr loadHTMLBuffer(const URLFilePtr &f)
 {
-    FILE *src = nullptr;
+    // FILE *src = nullptr;
+    //
+    // auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    // if (newBuf->sourcefile.empty() &&
+    //     (f->scheme != SCM_LOCAL || newBuf->mailcap))
+    // {
+    //     auto tmp = tmpfname(TMPF_SRC, ".html");
+    //     src = fopen(tmp->ptr, "w");
+    //     if (src)
+    //         newBuf->sourcefile = tmp->ptr;
+    // }
 
-    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
-    if (newBuf->sourcefile.empty() &&
-        (f->scheme != SCM_LOCAL || newBuf->mailcap))
-    {
-        auto tmp = tmpfname(TMPF_SRC, ".html");
-        src = fopen(tmp->ptr, "w");
-        if (src)
-            newBuf->sourcefile = tmp->ptr;
-    }
-
-    loadHTMLstream(f, newBuf, src, newBuf->bufferprop & BP_FRAME);
+    auto newBuf = loadHTMLstream(f, false /*newBuf->bufferprop & BP_FRAME*/);
 
     newBuf->CurrentAsLast();
 
     formResetBuffer(newBuf, newBuf->formitem);
-    if (src)
-        fclose(src);
 
     return newBuf;
 }
@@ -202,13 +179,13 @@ BufferPtr loadHTMLBuffer(const URLFilePtr &f)
  */
 BufferPtr loadHTMLString(Str page)
 {
-    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    BufferPtr newBuf = nullptr;
 
     auto success = TrapJmp([&]() {
         auto f = URLFile::FromStream(SCM_LOCAL, newStrStream(page));
 
+        newBuf = loadHTMLstream(f, TRUE);
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
-        loadHTMLstream(f, newBuf, nullptr, TRUE);
         newBuf->document_charset = WC_CES_US_ASCII;
 
         return true;

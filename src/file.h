@@ -139,6 +139,6 @@ Str myEditor(char *cmd, char *file, int line);
 
 Str tmpfname(int type, const char *ext);
 
-void SetMetaCharset(CharacterEncodingScheme ces);
+// void SetMetaCharset(CharacterEncodingScheme ces);
 URL *GetCurBaseUrl();
 int setModtime(char *path, time_t modtime);

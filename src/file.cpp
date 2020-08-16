@@ -609,11 +609,11 @@ BufferPtr loadImageBuffer(const URLFilePtr &uf)
     cache->index = 0;
 
 image_buffer:
-    if (newBuf == NULL)
-        newBuf = newBuffer(INIT_BUFFER_WIDTH());
-    cache->loaded |= IMG_FLAG_DONT_REMOVE;
-    if (newBuf->sourcefile.empty() && uf->scheme != SCM_LOCAL)
-        newBuf->sourcefile = cache->file;
+    // if (newBuf == NULL)
+    //     newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    // cache->loaded |= IMG_FLAG_DONT_REMOVE;
+    // if (newBuf->sourcefile.empty() && uf->scheme != SCM_LOCAL)
+    //     newBuf->sourcefile = cache->file;
 
     tmp = Sprintf("<img src=\"%s\"><br><br>", html_quote(image.url));
     tmpf = tmpfname(TMPF_SRC, ".html");
@@ -621,7 +621,7 @@ image_buffer:
     newBuf->mailcap_source = tmpf->ptr;
 
     auto f = URLFile::FromStream(SCM_LOCAL, newStrStream(tmp));
-    loadHTMLstream(f, newBuf, src, TRUE);
+    newBuf = loadHTMLstream(f, TRUE);
     if (src)
         fclose(src);
 

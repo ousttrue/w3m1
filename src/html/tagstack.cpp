@@ -1966,7 +1966,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         p = q = NULL;
         tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
         tag->TryGetAttributeValue(ATTR_CONTENT, &q);
-#ifdef USE_M17N
+
         if (p && q && !strcasecmp(p, "Content-Type") &&
             (q = strcasestr(q, "charset")) != NULL)
         {
@@ -1976,12 +1976,10 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             {
                 q++;
                 SKIP_BLANKS(&q);
-                SetMetaCharset(wc_guess_charset(q, WC_CES_NONE));
+                // SetMetaCharset(wc_guess_charset(q, WC_CES_NONE));
             }
         }
-        else
-#endif
-            if (p && q && !strcasecmp(p, "refresh"))
+        else if (p && q && !strcasecmp(p, "refresh"))
         {
             int refresh_interval;
             tmp = NULL;

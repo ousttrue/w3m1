@@ -32,6 +32,8 @@ static int currentLn(BufferPtr buf)
 
 HtmlContext::HtmlContext()
 {
+    doc_charset = w3mApp::Instance().DocumentCharset;
+
     if (fmInitialized && graph_ok())
     {
         symbol_width = symbol_width0 = 1;
@@ -61,6 +63,37 @@ HtmlContext::HtmlContext()
 
 HtmlContext::~HtmlContext()
 {
+}
+
+// from HTTP header
+//
+// Content-Type: text/html; charset=utf-8
+//
+void HtmlContext::Initialize(const BufferPtr &newBuf, CharacterEncodingScheme content_charset)
+{
+    // if (newBuf)
+    // {
+    //     if (newBuf->bufferprop & BP_FRAME)
+    //         charset = w3mApp::Instance().InnerCharset;
+    //     else if (newBuf->document_charset)
+    //         charset = doc_charset = newBuf->document_charset;
+    // }
+
+    // if (content_charset && w3mApp::Instance().UseContentCharset)
+        doc_charset = content_charset;
+    // else if (f->guess_type == "application/xhtml+xml")
+    //     doc_charset = WC_CES_UTF_8;
+
+    // TODO:
+    if (meta_charset)
+    { /* <META> */
+        if (content_charset == 0 /*&& w3mApp::Instance().UseContentCharset*/)
+        {
+            doc_charset = meta_charset;
+            // charset = WC_CES_US_ASCII;
+        }
+        // meta_charset = WC_CES_NONE;
+    }
 }
 
 void HtmlContext::print_internal_information(struct html_feed_environ *henv)

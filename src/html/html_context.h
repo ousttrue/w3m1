@@ -8,7 +8,14 @@ struct FormSelectOption;
 struct Anchor;
 class HtmlContext
 {
-    CharacterEncodingScheme cur_document_charset;
+    // HTML <meta>
+    CharacterEncodingScheme meta_charset = WC_CES_NONE;
+    // src charset
+    CharacterEncodingScheme doc_charset = WC_CES_NONE;
+    // detected
+    CharacterEncodingScheme cur_document_charset = WC_CES_NONE;
+    // inner charset
+    // CharacterEncodingScheme charset = WC_CES_US_ASCII;
 
     // html seq ?
     int cur_hseq = 1;
@@ -69,11 +76,14 @@ public:
     HtmlContext();
     ~HtmlContext();
 
+    void Initialize(const BufferPtr &newBuf, CharacterEncodingScheme content_charset);
     void print_internal_information(struct html_feed_environ *henv);
+
 private:
     void print_internal(struct TextLineList *tl);
 
 public:
+    const CharacterEncodingScheme &DocCharset() const { return doc_charset; }
     CharacterEncodingScheme CES() const { return cur_document_charset; }
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
 
