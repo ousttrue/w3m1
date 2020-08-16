@@ -637,7 +637,7 @@ int dir_exist(const char *path)
     return IS_DIRECTORY(stbuf.st_mode);
 }
 
-std::shared_ptr<URLFile> URLFile::OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request)
+InputStreamPtr URLFile::OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request)
 {
     if (request->url.scheme != SCM_HTTP && request->url.scheme != SCM_HTTPS)
     {
@@ -688,9 +688,8 @@ std::shared_ptr<URLFile> URLFile::OpenHttpAndSendRest(const std::shared_ptr<Http
         }
 
         // return stream
-        auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_HTTPS, newSSLStream(ssl, sock)));
-        uf->ssl_certificate = ssl_certificate;
-        return uf;
+        // uf->ssl_certificate = ssl_certificate;
+        return newSSLStream(ssl, sock);
     }
     else
     {
@@ -714,8 +713,7 @@ std::shared_ptr<URLFile> URLFile::OpenHttpAndSendRest(const std::shared_ptr<Http
         }
 
         // return stream
-        auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_HTTP, newInputStream(sock)));
-        return uf;
+        return newInputStream(sock);
     }
 }
 
@@ -761,7 +759,7 @@ std::shared_ptr<URLFile> URLFile::OpenFile(std::string_view path)
     return uf;
 }
 
-std::shared_ptr<URLFile> URLFile::OpenStream(URLSchemeTypes scheme, InputStreamPtr stream)
+std::shared_ptr<URLFile> URLFile::FromStream(URLSchemeTypes scheme, InputStreamPtr stream)
 {
     auto uf = std::shared_ptr<URLFile>(new URLFile(scheme, stream));
     return uf;

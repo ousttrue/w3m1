@@ -18,7 +18,6 @@ private:
     int next = 0;
 
 public:
-    StreamBuffer() {}
     StreamBuffer(int bufsize) : buf(bufsize) {}
 
     int update(const std::function<int(unsigned char *, int)> &readfunc)
@@ -129,12 +128,11 @@ enum InputStreamTypes
 class InputStream
 {
     bool iseos = false;
-    StreamBuffer stream = {};
+    StreamBuffer stream;
 
 protected:
     int m_readsize = 0;
     void do_update();
-    InputStream() {}
     InputStream(int size) : stream(size) {}
     virtual ~InputStream() {}
     virtual int ReadFunc(unsigned char *buffer, int size) = 0;
@@ -143,7 +141,8 @@ public:
     virtual InputStreamTypes type() const = 0;
     int getc();
     Str gets();
-    int readto(Str buf, int count);
+    int read(unsigned char *buffer, int size);
+    bool readto(Str buf, int count);
     Str mygets();
     bool eos();
 
@@ -187,9 +186,10 @@ public:
 class StrStream : public InputStream
 {
     Str m_str = nullptr;
+    int m_pos = 0;
 
 public:
-    StrStream(Str str) : m_str(str) {}
+    StrStream(int size, Str str) : InputStream(size), m_str(str) {}
     ~StrStream();
     InputStreamTypes type() const override { return IST_STR; }
     int ReadFunc(unsigned char *buffer, int size) override;

@@ -241,7 +241,7 @@ BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc)
     if (f == NULL)
         return NULL;
 
-    auto uf = URLFile::OpenStream(SCM_UNKNOWN, newFileStream(f, pclose));
+    auto uf = URLFile::FromStream(SCM_UNKNOWN, newFileStream(f, pclose));
     return loadproc(uf);
 }
 

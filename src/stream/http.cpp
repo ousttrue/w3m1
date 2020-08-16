@@ -291,8 +291,8 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //
     // open stream and send request
     //
-    auto f = URLFile::OpenHttpAndSendRest(request);
-    if (!f)
+    auto stream = URLFile::OpenHttpAndSendRest(request);
+    if (!stream)
     {
         // fail to open stream
         return nullptr;
@@ -302,7 +302,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //
     // read HTTP response headers
     //
-    auto response = HttpResponse::Read(f->stream);
+    auto response = HttpResponse::Read(stream);
     show_message(response->lines.front());
     exchanges.push_back({request, response});
 
@@ -354,77 +354,89 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
 
     if (response->content_encoding != CMP_NOCOMPRESS)
     {
-        if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
-            (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
-        {
-            // if (t_buf == NULL)
-            /*t_buf->sourcefile =*/uncompress_stream(f, true);
-            auto [type, ext] = uncompressed_file_type(url.path);
-            if(ext.size())
-            {
-                f->ext = ext.data();
-            }
-        }
-        else
-        {
-            t = compress_application_type(f->compression).data();
-            f->compression = CMP_NOCOMPRESS;
-        }
+        // if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
+        //     (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
+        // {
+        //     // if (t_buf == NULL)
+        //     /*t_buf->sourcefile =*/uncompress_stream(f, true);
+        //     auto [type, ext] = uncompressed_file_type(url.path);
+        //     if(ext.size())
+        //     {
+        //         f->ext = ext.data();
+        //     }
+        // }
+        // else
+        // {
+        //     t = compress_application_type(f->compression).data();
+        //     f->compression = CMP_NOCOMPRESS;
+        // }
+        stream = decompress(stream, response->content_encoding);
+        assert(stream);
     }
 
-    auto proc = loadBuffer;
+    // auto proc = loadBuffer;
     if (is_html_type(t))
-        proc = loadHTMLBuffer;
-    else if (is_plain_text_type(t))
-        proc = loadBuffer;
-    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
-             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
-        proc = loadImageBuffer;
-    else if (w3mApp::Instance().w3m_backend)
-        ;
+    {
+        return loadHTMLBuffer(URLFile::FromStream(url.scheme, stream));
+    }
+    else if(is_plain_text_type(t))
+    {
+        return loadBuffer(URLFile::FromStream(url.scheme, stream));
+    }
+    else
+    {
+        // not implemented
+        assert(false);
+        return nullptr;
+    }
+    // else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
+    //          !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
+    //     proc = loadImageBuffer;
+    // else if (w3mApp::Instance().w3m_backend)
+    // ;
 
     // frame_source = flag & RG_FRAME_SRC;
-    auto b = loadSomething(f, url.real_file.size() ? const_cast<char *>(url.real_file.c_str()) : const_cast<char *>(url.path.c_str()), proc);
-    f->stream = nullptr;
+    // auto b = loadSomething(f, url.real_file.size() ? const_cast<char *>(url.real_file.c_str()) : const_cast<char *>(url.path.c_str()), proc);
+    // f->stream = nullptr;
     // frame_source = 0;
-    if (b)
-    {
-        b->real_scheme = f->scheme;
-        b->real_type = t;
-        if (b->currentURL.host.empty() && b->currentURL.path.empty())
-            b->currentURL = url;
-        if (is_html_type(t))
-            b->type = "text/html";
-        else if (w3mApp::Instance().w3m_backend)
-        {
-            Str s = Strnew(t);
-            b->type = s->ptr;
-        }
-        else if (proc == loadImageBuffer)
-            b->type = "text/html";
-        else
-            b->type = "text/plain";
-        if (url.fragment.size())
-        {
-            if (proc == loadHTMLBuffer)
-            {
-                auto a = searchURLLabel(b, const_cast<char *>(url.fragment.c_str()));
-                if (a != NULL)
-                {
-                    b->Goto(a->start, label_topline);
-                }
-            }
-            else
-            { /* plain text */
-                int l = atoi(url.fragment.c_str());
-                b->GotoRealLine(l);
-                b->pos = 0;
-                b->ArrangeCursor();
-            }
-        }
-    }
-    if (w3mApp::Instance().header_string.size())
-        w3mApp::Instance().header_string.clear();
-    preFormUpdateBuffer(b);
-    return b;
+    // if (b)
+    // {
+    //     b->real_scheme = f->scheme;
+    //     b->real_type = t;
+    //     if (b->currentURL.host.empty() && b->currentURL.path.empty())
+    //         b->currentURL = url;
+    //     if (is_html_type(t))
+    //         b->type = "text/html";
+    //     else if (w3mApp::Instance().w3m_backend)
+    //     {
+    //         Str s = Strnew(t);
+    //         b->type = s->ptr;
+    //     }
+    //     else if (proc == loadImageBuffer)
+    //         b->type = "text/html";
+    //     else
+    //         b->type = "text/plain";
+    //     if (url.fragment.size())
+    //     {
+    //         if (proc == loadHTMLBuffer)
+    //         {
+    //             auto a = searchURLLabel(b, const_cast<char *>(url.fragment.c_str()));
+    //             if (a != NULL)
+    //             {
+    //                 b->Goto(a->start, label_topline);
+    //             }
+    //         }
+    //         else
+    //         { /* plain text */
+    //             int l = atoi(url.fragment.c_str());
+    //             b->GotoRealLine(l);
+    //             b->pos = 0;
+    //             b->ArrangeCursor();
+    //         }
+    //     }
+    // }
+    // if (w3mApp::Instance().header_string.size())
+    //     w3mApp::Instance().header_string.clear();
+    // preFormUpdateBuffer(b);
+    // return b;
 }

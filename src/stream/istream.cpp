@@ -58,7 +58,7 @@ Str InputStream::gets()
         }
         else
         {
-            if(stream.try_gets(s))
+            if (stream.try_gets(s))
             {
                 return s;
             }
@@ -78,7 +78,7 @@ Str InputStream::mygets()
         }
         else
         {
-            if(stream.try_mygets(s))
+            if (stream.try_mygets(s))
             {
                 return s;
             }
@@ -87,7 +87,23 @@ Str InputStream::mygets()
     return s;
 }
 
-int InputStream::readto(Str buf, int count)
+int InputStream::read(unsigned char *buffer, int size)
+{
+    auto readsize = stream.buffer_read((char *)buffer, size);
+    if (stream.MUST_BE_UPDATED())
+    {
+        auto len = ReadFunc((unsigned char *)&buffer[readsize], size - readsize);
+        if (len <= 0)
+        {
+            iseos = TRUE;
+            len = 0;
+        }
+        readsize += len;
+    }
+    return readsize;
+}
+
+bool InputStream::readto(Str buf, int count)
 {
     auto len = stream.buffer_read(buf->ptr, count);
     auto rest = count - len;
@@ -184,7 +200,12 @@ InputStreamPtr newStrStream(Str s)
 {
     if (s == NULL)
         return NULL;
-    return std::make_shared<StrStream>(s);
+    if (s->Size() == 0)
+    {
+        // ""
+        return nullptr;
+    }
+    return std::make_shared<StrStream>(STREAM_BUF_SIZE, s);
 }
 
 StrStream::~StrStream()
@@ -193,7 +214,19 @@ StrStream::~StrStream()
 
 int StrStream::ReadFunc(unsigned char *buf, int len)
 {
-    return 0;
+    auto strsize = m_str->Size() + 1; // \0 terminate
+    if (m_pos + len > strsize)
+    {
+        len = strsize - m_pos;
+    }
+    if (len <= 0)
+    {
+        return 0;
+    }
+
+    memcpy(buf, m_str->ptr + m_pos, len);
+    m_pos += len;
+    return len;
 }
 
 //

@@ -620,7 +620,7 @@ image_buffer:
     src = fopen(tmpf->ptr, "w");
     newBuf->mailcap_source = tmpf->ptr;
 
-    auto f = URLFile::OpenStream(SCM_LOCAL, newStrStream(tmp));
+    auto f = URLFile::FromStream(SCM_LOCAL, newStrStream(tmp));
     loadHTMLstream(f, newBuf, src, TRUE);
     if (src)
         fclose(src);
@@ -755,7 +755,7 @@ openGeneralPagerBuffer(InputStreamPtr stream)
     BufferPtr buf;
     std::string t = "text/plain";
     // BufferPtr t_buf = NULL;
-    auto uf = URLFile::OpenStream(SCM_UNKNOWN, stream);
+    auto uf = URLFile::FromStream(SCM_UNKNOWN, stream);
 
     content_charset = WC_CES_NONE;
     // if (w3mApp::Instance().SearchHeader)

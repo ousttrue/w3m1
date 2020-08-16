@@ -10,6 +10,7 @@
 #include "html/html.h"
 #include "stream/local_cgi.h"
 #include <sys/stat.h>
+#include <zlib.h>
 
 struct compression_decoder
 {
@@ -170,7 +171,7 @@ char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
     }
 
     // // search decoder
-    const char* ext = nullptr;
+    const char *ext = nullptr;
     compression_decoder *d = compression_decoders;
     for (auto &_d : compression_decoders)
     {
@@ -251,4 +252,138 @@ char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
     }
     uf->stream = newFileStream(f1, fclose);
     return tmpf;
+}
+
+class ZlibDecompressor
+{
+    /* decompression stream */
+    z_stream d_stream = {0};
+
+public:
+    std::vector<uint8_t> decompressed;
+
+    // static voidpf alloc_func(voidpf opaque, uInt items, uInt size)
+    // {
+    //     auto p = (ZlibDecompressor *)opaque;
+    //     auto pos = p->decompressed.size();
+    //     p->decompressed.resize(pos + items * size, 0);
+    //     auto data = p->decompressed.data();
+    //     return data + pos;
+    // }
+
+    // static void free_func(voidpf opaque, voidpf address)
+    // {
+    //     // do nothing
+    // }
+
+    int err = Z_OK;
+
+    ZlibDecompressor()
+    {
+        // d_stream.zalloc = alloc_func;
+        // d_stream.zfree = free_func;
+        // d_stream.opaque = this;
+
+        err = inflateInit2(&d_stream, 16 + MAX_WBITS);
+        auto data = decompressed.data();
+        if (HasError())
+        {
+            return;
+        }
+
+        decompressed.resize(7160);
+    }
+
+    ~ZlibDecompressor()
+    {
+        inflateEnd(&d_stream);
+    }
+
+    bool HasError() const
+    {
+        if (err == Z_OK)
+        {
+            return false;
+        }
+        if (err == Z_STREAM_END)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    bool IsEnd() const
+    {
+        return err == Z_STREAM_END;
+    }
+
+    void Decompress(unsigned char *compr, int comprLen)
+    {
+        if (HasError())
+        {
+            return;
+        }
+
+        d_stream.next_in = compr;
+        d_stream.avail_in = comprLen;
+        d_stream.next_out = decompressed.data() + d_stream.total_out;
+        d_stream.avail_out = decompressed.size() - d_stream.total_out;
+
+        err = inflate(&d_stream, Z_NO_FLUSH);
+        if (HasError())
+        {
+            return;
+        }
+    }
+
+    Str ToStr() const
+    {
+        return Strnew_charp_n((const char *)decompressed.data(), d_stream.total_out);
+    }
+};
+
+std::shared_ptr<class InputStream> decompress(const std::shared_ptr<class InputStream> &stream, CompressionTypes type)
+{
+    // search decoder
+    const char *ext = nullptr;
+    compression_decoder *d = compression_decoders;
+    for (auto &_d : compression_decoders)
+    {
+        if (_d.type == type)
+        {
+            d = &_d;
+            ext = _d.ext.data();
+            break;
+        }
+    }
+
+    if (d->type != CMP_COMPRESS)
+    {
+        assert(false);
+        return nullptr;
+    }
+
+    ZlibDecompressor decompressor;
+    unsigned char buf[1024];
+    while (!stream->eos())
+    {
+        if (decompressor.HasError())
+        {
+            return nullptr;
+        }
+
+        auto size = stream->read(buf, sizeof(buf));
+        if (size)
+        {
+            decompressor.Decompress(buf, size);
+        }
+        if (decompressor.IsEnd())
+        {
+            break;
+        }
+    }
+
+    auto str = decompressor.ToStr();
+
+    return newStrStream(str);
 }

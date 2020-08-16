@@ -205,7 +205,7 @@ BufferPtr loadHTMLString(Str page)
     auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
 
     auto success = TrapJmp([&]() {
-        auto f = URLFile::OpenStream(SCM_LOCAL, newStrStream(page));
+        auto f = URLFile::FromStream(SCM_LOCAL, newStrStream(page));
 
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
         loadHTMLstream(f, newBuf, nullptr, TRUE);

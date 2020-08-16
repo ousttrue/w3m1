@@ -171,6 +171,7 @@ PRIVATE
 )
 target_link_libraries(w3m
 PRIVATE
+    z
     tcb_span
     wc
     m

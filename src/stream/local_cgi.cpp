@@ -554,7 +554,7 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
             f = localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), referer);
         }
         auto stream = newFileStream(f, fclose);
-        uf = URLFile::OpenStream(SCM_LOCAL, stream);
+        uf = URLFile::FromStream(SCM_LOCAL, stream);
     }
 
     assert(uf->stream);
