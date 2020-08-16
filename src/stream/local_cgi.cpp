@@ -540,7 +540,7 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
     // or
     // * /cgi-bin/w3mbookmark
     //
-    URLFilePtr uf;
+    InputStreamPtr stream;
     {
         FILE *f = nullptr;
         if (form && form->body)
@@ -553,24 +553,24 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
             /* lodal CGI: GET */
             f = localcgi_get(const_cast<char *>(url.real_file.c_str()), const_cast<char *>(url.query.c_str()), referer);
         }
-        auto stream = newFileStream(f, fclose);
-        uf = URLFile::FromStream(SCM_LOCAL, stream);
+        stream = newFileStream(f, fclose);
+        // uf = URLFile::FromStream(SCM_LOCAL, stream);
     }
 
-    assert(uf->stream);
-    {
-        uf->is_cgi = TRUE;
-        // TODO:
-        // url.scheme =
-        uf->scheme = SCM_LOCAL_CGI;
-    }
-    // // auto b = NULL;
-    if (uf->is_cgi)
-    {
-        /* local CGI */
-        // searchHeader = TRUE;
-        // searchHeader_through = FALSE;
-    }
+    assert(stream);
+    // {
+    //     uf->is_cgi = TRUE;
+    //     // TODO:
+    //     // url.scheme =
+    //     uf->scheme = SCM_LOCAL_CGI;
+    // }
+    // // // auto b = NULL;
+    // if (uf->is_cgi)
+    // {
+    //     /* local CGI */
+    //     // searchHeader = TRUE;
+    //     // searchHeader_through = FALSE;
+    // }
 
     // if (searchHeader)
     // {
@@ -608,9 +608,9 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
         if (t == NULL)
             t = "text/plain";
         auto real_type = t;
-        if (uf->guess_type.size())
-            t = uf->guess_type.c_str();
+        // if (uf->guess_type.size())
+        //     t = uf->guess_type.c_str();
     }
 
-    return LoadStream(uf, url, {});
+    return LoadStream(url, stream, {});
 }

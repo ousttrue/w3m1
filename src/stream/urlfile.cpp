@@ -615,7 +615,7 @@ int openSocket(const URL &url)
 ///
 /// URLFile
 ///
-URLFile::URLFile(URLSchemeTypes scm, InputStreamPtr strm)
+URLFile::URLFile(URLSchemeTypes scm, const InputStreamPtr &strm)
     : scheme(scm), stream(strm)
 {
 }
@@ -759,7 +759,7 @@ std::shared_ptr<URLFile> URLFile::OpenFile(std::string_view path)
     return uf;
 }
 
-std::shared_ptr<URLFile> URLFile::FromStream(URLSchemeTypes scheme, InputStreamPtr stream)
+std::shared_ptr<URLFile> URLFile::FromStream(URLSchemeTypes scheme, const InputStreamPtr &stream)
 {
     auto uf = std::shared_ptr<URLFile>(new URLFile(scheme, stream));
     return uf;

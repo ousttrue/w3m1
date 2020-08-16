@@ -377,11 +377,11 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     // auto proc = loadBuffer;
     if (is_html_type(t))
     {
-        return loadHTMLBuffer(URLFile::FromStream(url.scheme, stream));
+        return loadHTMLStream(url, stream, false);
     }
     else if(is_plain_text_type(t))
     {
-        return loadBuffer(URLFile::FromStream(url.scheme, stream));
+        return loadBuffer(url, stream);
     }
     else
     {

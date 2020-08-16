@@ -207,31 +207,30 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
     return 0;
 }
 
-BufferPtr loadSomething(const URLFilePtr &f, const char *path, LoaderFunc loadproc)
-{
-    auto buf = loadproc(f);
-    if (buf)
-    {
+// BufferPtr loadSomething(const URL &url, const InputStreamPtr &stream, LoaderFunc loadproc)
+// {
+//     auto buf = loadproc(url, stream);
+//     if (buf)
+//     {
+//         // buf->filename = path;
+//         // if (buf->buffername.empty() || buf->buffername[0] == '\0')
+//         // {
+//         //     auto buffername = checkHeader(buf, "Subject:");
+//         //     buf->buffername = buffername ? buffername : "";
+//         //     if (buf->buffername.empty())
+//         //         buf->buffername = conv_from_system(lastFileName(path));
+//         // }
+//         // if (buf->currentURL.scheme == SCM_UNKNOWN)
+//         //     buf->currentURL.scheme = f->scheme;
+//         // buf->real_scheme = f->scheme;
+//         // if (f->scheme == SCM_LOCAL && buf->sourcefile.empty())
+//         //     buf->sourcefile = path;
+//     }
 
-        buf->filename = path;
-        // if (buf->buffername.empty() || buf->buffername[0] == '\0')
-        // {
-        //     auto buffername = checkHeader(buf, "Subject:");
-        //     buf->buffername = buffername ? buffername : "";
-        //     if (buf->buffername.empty())
-        //         buf->buffername = conv_from_system(lastFileName(path));
-        // }
-        if (buf->currentURL.scheme == SCM_UNKNOWN)
-            buf->currentURL.scheme = f->scheme;
-        buf->real_scheme = f->scheme;
-        if (f->scheme == SCM_LOCAL && buf->sourcefile.empty())
-            buf->sourcefile = path;
-    }
+//     return buf;
+// }
 
-    return buf;
-}
-
-BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc)
+BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc)
 {
     if (cmd == NULL || *cmd == '\0')
         return NULL;
@@ -241,17 +240,16 @@ BufferPtr loadcmdout(char *cmd, LoaderFunc loadproc)
     if (f == NULL)
         return NULL;
 
-    auto uf = URLFile::FromStream(SCM_UNKNOWN, newFileStream(f, pclose));
-    return loadproc(uf);
+    auto stream = newFileStream(f, pclose);
+    auto url = URL::Parse(cmd);
+
+    return loadproc(url, stream);
 }
 
-//
-// HTTP redirection
-//
-BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
+BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, LoadFlags flag)
 {
     // if (t_buf == NULL)
-    auto t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    auto t_buf = newBuffer(url);
 
     // readHeader(f, t_buf, FALSE, &pu);
     char *p;
@@ -287,15 +285,15 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
     if (t == NULL)
         t = "text/plain";
 
-    /* XXX: can we use guess_type to give the type to loadHTMLstream
+    /* XXX: can we use guess_type to give the type to loadHTMLStream
          *      to support default utf8 encoding for XHTML here? */
-    f->guess_type = t;
+    // f->guess_type = t;
 
     // if (real_type == NULL)
     //     real_type = t;
     auto proc = loadBuffer;
 
-    *GetCurBaseUrl() = pu;
+    *GetCurBaseUrl() = url;
 
     // if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
     //     current_content_length = strtoclen(p);
@@ -304,8 +302,8 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
         /* download only */
         char *file;
         // TRAP_OFF;
-        if (DecodeCTE && f->stream->type() != IST_ENCODED)
-            f->stream = newEncodedStream(f->stream, f->encoding);
+        // if (DecodeCTE && f->stream->type() != IST_ENCODED)
+        //     f->stream = newEncodedStream(f->stream, f->encoding);
         // if (pu.scheme == SCM_LOCAL)
         // {
         //     struct stat st;
@@ -316,7 +314,7 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
         // else
         //     file = guess_save_name(t_buf, pu.path);
 
-        f->DoFileSave(file, 0);
+        // f->DoFileSave(file, 0);
 
         return nullptr;
     }
@@ -327,45 +325,45 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
     //     // pu.real_file = uncompress_stream(&f, true);
     // }
     // else
-    
-    if (f->compression != CMP_NOCOMPRESS)
-    {
-        // compressed
-        if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
-            (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
-        {
-            // extract compression
-            if (t_buf == NULL)
-                t_buf = newBuffer(INIT_BUFFER_WIDTH());
-            t_buf->sourcefile = uncompress_stream(f, true);
-            auto [type, ext] = uncompressed_file_type(pu.path);
-            if (ext.size())
-            {
-                f->ext = ext.data();
-            }
-        }
-        else
-        {
-            t = compress_application_type(f->compression).data();
-            f->compression = CMP_NOCOMPRESS;
-        }
-    }
 
-    if (image_source)
-    {
-        BufferPtr b = NULL;
-        if (f->stream->type() != IST_ENCODED)
-            f->stream = newEncodedStream(f->stream, f->encoding);
-        if (save2tmp(f, image_source) == 0)
-        {
-            b = newBuffer(INIT_BUFFER_WIDTH());
-            b->sourcefile = image_source;
-            b->real_type = t;
-        }
-        // f->Close();
-        // TRAP_OFF;
-        return b;
-    }
+    // if (f->compression != CMP_NOCOMPRESS)
+    // {
+    //     // compressed
+    //     if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
+    //         (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
+    //     {
+    //         // extract compression
+    //         if (t_buf == NULL)
+    //             t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //         t_buf->sourcefile = uncompress_stream(f, true);
+    //         auto [type, ext] = uncompressed_file_type(pu.path);
+    //         if (ext.size())
+    //         {
+    //             f->ext = ext.data();
+    //         }
+    //     }
+    //     else
+    //     {
+    //         t = compress_application_type(f->compression).data();
+    //         f->compression = CMP_NOCOMPRESS;
+    //     }
+    // }
+
+    // if (image_source)
+    // {
+    //     BufferPtr b = NULL;
+    //     if (f->stream->type() != IST_ENCODED)
+    //         f->stream = newEncodedStream(f->stream, f->encoding);
+    //     if (save2tmp(f, image_source) == 0)
+    //     {
+    //         b = newBuffer(INIT_BUFFER_WIDTH());
+    //         b->sourcefile = image_source;
+    //         b->real_type = t;
+    //     }
+    //     // f->Close();
+    //     // TRAP_OFF;
+    //     return b;
+    // }
 
     if (is_html_type(t))
         proc = loadHTMLBuffer;
@@ -381,13 +379,14 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
         BufferPtr b = NULL;
         if (!do_download)
         {
-            auto b = doExternal(f, pu.real_file.size() ? pu.real_file.c_str() : pu.path.c_str(), t);
+            // auto url = URL::Parse(pu.real_file.size() ? pu.real_file.c_str() : pu.path.c_str());
+            auto b = doExternal(url, stream, t);
             if (b)
             {
-                b->real_scheme = f->scheme;
+                b->real_scheme = url.scheme;
                 b->real_type = t;
                 if (b->currentURL.host.empty() && b->currentURL.path.empty())
-                    b->currentURL = pu;
+                    b->currentURL = url;
             }
             // f.Close();
             // TRAP_OFF;
@@ -417,25 +416,26 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
     if (flag & RG_FRAME)
     {
         if (t_buf == NULL)
-            t_buf = newBuffer(INIT_BUFFER_WIDTH());
+            t_buf = newBuffer(url);
         t_buf->bufferprop |= BP_FRAME;
     }
 
-    if (t_buf && f->ssl_certificate)
-    {
-        t_buf->ssl_certificate = f->ssl_certificate;
-    }
+    // if (t_buf && f->ssl_certificate)
+    // {
+    //     t_buf->ssl_certificate = f->ssl_certificate;
+    // }
 
     // frame_source = flag & RG_FRAME_SRC;
-    auto b = loadSomething(f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()), proc);
-    f->stream = nullptr;
+    // auto b = loadSomething(f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()), proc);
+    auto b = proc(url, stream);
+    // f->stream = nullptr;
     // frame_source = 0;
     if (b)
     {
-        b->real_scheme = f->scheme;
+        b->real_scheme = url.scheme;
         b->real_type = t;
         if (b->currentURL.host.empty() && b->currentURL.path.empty())
-            b->currentURL = pu;
+            b->currentURL = url;
         if (is_html_type(t))
             b->type = "text/html";
         else if (w3mApp::Instance().w3m_backend)
@@ -447,11 +447,11 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
             b->type = "text/html";
         else
             b->type = "text/plain";
-        if (pu.fragment.size())
+        if (url.fragment.size())
         {
             if (proc == loadHTMLBuffer)
             {
-                auto a = searchURLLabel(b, const_cast<char *>(pu.fragment.c_str()));
+                auto a = searchURLLabel(b, const_cast<char *>(url.fragment.c_str()));
                 if (a != NULL)
                 {
                     b->Goto(a->start, label_topline);
@@ -459,7 +459,7 @@ BufferPtr LoadStream(const URLFilePtr &f, const URL &pu, LoadFlags flag)
             }
             else
             { /* plain text */
-                int l = atoi(pu.fragment.c_str());
+                int l = atoi(url.fragment.c_str());
                 b->GotoRealLine(l);
                 b->pos = 0;
                 b->ArrangeCursor();
@@ -480,7 +480,7 @@ CharacterEncodingScheme content_charset = WC_CES_NONE;
 /* 
  * loadFile: load file to buffer
  */
-BufferPtr loadFile(char *path)
+BufferPtr loadFile(const char *path)
 {
     auto uf = URLFile::OpenFile(path);
     if (uf->stream == NULL)
@@ -488,13 +488,13 @@ BufferPtr loadFile(char *path)
 
     // current_content_length = 0;
     content_charset = WC_CES_NONE;
-    return loadSomething(uf, path, loadBuffer);
+    return loadBuffer(URL::Parse(path), uf->stream);
 }
 
 /* 
  * loadBuffer: read file and make new buffer
  */
-BufferPtr loadBuffer(const URLFilePtr &uf)
+BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream)
 {
     FILE *src = NULL;
 
@@ -517,15 +517,15 @@ BufferPtr loadBuffer(const URLFilePtr &uf)
     // }
     // TRAP_ON;
 
-    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
-    if (newBuf->sourcefile.empty() &&
-        (uf->scheme != SCM_LOCAL || newBuf->mailcap))
-    {
-        tmpf = tmpfname(TMPF_SRC, NULL);
-        src = fopen(tmpf->ptr, "w");
-        if (src)
-            newBuf->sourcefile = tmpf->ptr;
-    }
+    auto newBuf = newBuffer(url);
+    // if (newBuf->sourcefile.empty() &&
+    //     (uf->scheme != SCM_LOCAL || newBuf->mailcap))
+    // {
+    //     tmpf = tmpfname(TMPF_SRC, NULL);
+    //     src = fopen(tmpf->ptr, "w");
+    //     if (src)
+    //         newBuf->sourcefile = tmpf->ptr;
+    // }
 
     if (newBuf->document_charset)
         charset = doc_charset = newBuf->document_charset;
@@ -533,24 +533,10 @@ BufferPtr loadBuffer(const URLFilePtr &uf)
         doc_charset = content_charset;
 
     nlines = 0;
-    if (uf->stream->type() != IST_ENCODED)
-        uf->stream = newEncodedStream(uf->stream, uf->encoding);
-    while ((lineBuf2 = uf->stream->mygets())->Size())
+    // if (uf->stream->type() != IST_ENCODED)
+    //     uf->stream = newEncodedStream(uf->stream, uf->encoding);
+    while ((lineBuf2 = stream->mygets())->Size())
     {
-#ifdef USE_NNTP
-        if (uf->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
-        {
-            lineBuf2->Delete(0, 1);
-            if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
-                lineBuf2->ptr[0] == '\0')
-            {
-                /*
-                 * iseos(uf->stream) = TRUE;
-                 */
-                break;
-            }
-        }
-#endif /* USE_NNTP */
         if (src)
             lineBuf2->Puts(src);
         linelen += lineBuf2->Size();
@@ -562,7 +548,7 @@ BufferPtr loadBuffer(const URLFilePtr &uf)
         // if (frame_source)
         //     continue;
         lineBuf2 =
-            convertLine(uf->scheme, lineBuf2, PAGER_MODE, &charset, doc_charset);
+            convertLine(url.scheme, lineBuf2, PAGER_MODE, &charset, doc_charset);
         if (w3mApp::Instance().squeezeBlankLine)
         {
             if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
@@ -616,7 +602,7 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
         doFileMove(tmp->ptr, file);
         return nullptr;
     }
-    auto b = loadHTMLString(page);
+    auto b = loadHTMLString({}, page);
     if (b)
     {
         b->currentURL = pu;
@@ -665,7 +651,7 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
             return nullptr;
         }
 
-        return LoadStream(uf, url, flag);
+        return LoadStream(url, uf->stream, flag);
     }
 
     // not implemened

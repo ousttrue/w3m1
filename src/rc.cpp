@@ -1608,7 +1608,7 @@ load_option_panel(void)
         src->Push("</table><hr width=50%>");
     }
     src->Push("</table></form></body></html>");
-    buf = loadHTMLString(src);
+    buf = loadHTMLString({}, src);
 #ifdef USE_M17N
     if (buf)
         buf->document_charset = OptionCharset;

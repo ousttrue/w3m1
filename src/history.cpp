@@ -34,7 +34,7 @@ historyBuffer(Hist *hist)
 	}
     }
     src->Push("</ol>\n</body>\n</html>");
-    return loadHTMLString(src);
+    return loadHTMLString({}, src);
 }
 
 void

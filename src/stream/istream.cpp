@@ -342,7 +342,7 @@ int EncodedStrStream::FD() const
 ///
 ///
 
-// int ISclose(InputStreamPtr stream)
+// int ISclose(const InputStreamPtr &stream)
 // {
 //     MySignalHandler prevtrap = NULL;
 //     if (stream == NULL || stream->base.close == NULL ||

@@ -863,7 +863,7 @@ BufferPtr message_list_panel(void)
     else
         tmp->Push("<tr><td>(no message recorded)</td></tr>\n");
     tmp->Push("</table></body></html>");
-    return loadHTMLString(tmp);
+    return loadHTMLString({}, tmp);
 }
 
 void show_message(std::string_view msg)

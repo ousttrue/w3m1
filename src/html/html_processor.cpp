@@ -28,9 +28,9 @@
 ///
 /// entry
 ///
-BufferPtr loadHTMLstream(const URLFilePtr &f, bool internal)
+BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, bool internal)
 {
-    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    auto newBuf = newBuffer(url);
 
     // if (newBuf->currentURL.path.size())
     // {
@@ -56,24 +56,24 @@ BufferPtr loadHTMLstream(const URLFilePtr &f, bool internal)
     context.Initialize(newBuf, content_charset);
 
     auto success = TrapJmp([&]() {
-        if (f->stream->type() != IST_ENCODED)
-            f->stream = newEncodedStream(f->stream, f->encoding);
+        // if (stream->type() != IST_ENCODED)
+        //     stream = newEncodedStream(stream, f->encoding);
 
         Str lineBuf2 = nullptr;
-        while ((lineBuf2 = f->stream->mygets())->Size())
+        while ((lineBuf2 = stream->mygets())->Size())
         {
-            if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
-            {
-                lineBuf2->Delete(0, 1);
-                if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
-                    lineBuf2->ptr[0] == '\0')
-                {
-                    /*
-                 * iseos(f->stream) = TRUE;
-                 */
-                    break;
-                }
-            }
+            // if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
+            // {
+            //     lineBuf2->Delete(0, 1);
+            //     if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
+            //         lineBuf2->ptr[0] == '\0')
+            //     {
+            //         /*
+            //      * iseos(stream) = TRUE;
+            //      */
+            //         break;
+            //     }
+            // }
 
             linelen += lineBuf2->Size();
             // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
@@ -87,7 +87,7 @@ BufferPtr loadHTMLstream(const URLFilePtr &f, bool internal)
             */
 
             CharacterEncodingScheme detected;
-            lineBuf2 = convertLine(f->scheme, lineBuf2, HTML_MODE, &detected, context.DocCharset());
+            lineBuf2 = convertLine(url.scheme, lineBuf2, HTML_MODE, &detected, context.DocCharset());
             context.SetCES(detected);
 
             HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal, &context);
@@ -148,43 +148,43 @@ BufferPtr loadHTMLstream(const URLFilePtr &f, bool internal)
     return newBuf;
 }
 
-/* 
- * loadHTMLBuffer: read file and make new buffer
- */
-BufferPtr loadHTMLBuffer(const URLFilePtr &f)
-{
-    // FILE *src = nullptr;
-    //
-    // auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
-    // if (newBuf->sourcefile.empty() &&
-    //     (f->scheme != SCM_LOCAL || newBuf->mailcap))
-    // {
-    //     auto tmp = tmpfname(TMPF_SRC, ".html");
-    //     src = fopen(tmp->ptr, "w");
-    //     if (src)
-    //         newBuf->sourcefile = tmp->ptr;
-    // }
+// /* 
+//  * loadHTMLBuffer: read file and make new buffer
+//  */
+// BufferPtr loadHTMLBuffer(const URLFilePtr &f)
+// {
+//     // FILE *src = nullptr;
+//     //
+//     // auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
+//     // if (newBuf->sourcefile.empty() &&
+//     //     (f->scheme != SCM_LOCAL || newBuf->mailcap))
+//     // {
+//     //     auto tmp = tmpfname(TMPF_SRC, ".html");
+//     //     src = fopen(tmp->ptr, "w");
+//     //     if (src)
+//     //         newBuf->sourcefile = tmp->ptr;
+//     // }
 
-    auto newBuf = loadHTMLstream(f, false /*newBuf->bufferprop & BP_FRAME*/);
+//     auto newBuf = loadHTMLStream(f, false /*newBuf->bufferprop & BP_FRAME*/);
 
-    newBuf->CurrentAsLast();
+//     newBuf->CurrentAsLast();
 
-    formResetBuffer(newBuf, newBuf->formitem);
+//     formResetBuffer(newBuf, newBuf->formitem);
 
-    return newBuf;
-}
+//     return newBuf;
+// }
 
 /* 
  * loadHTMLString: read string and make new buffer
  */
-BufferPtr loadHTMLString(Str page)
+BufferPtr loadHTMLString(const URL &url, Str page)
 {
     BufferPtr newBuf = nullptr;
 
     auto success = TrapJmp([&]() {
-        auto f = URLFile::FromStream(SCM_LOCAL, newStrStream(page));
+        auto f = newStrStream(page);
 
-        newBuf = loadHTMLstream(f, TRUE);
+        newBuf = loadHTMLStream(url, f, TRUE);
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
         newBuf->document_charset = WC_CES_US_ASCII;
 

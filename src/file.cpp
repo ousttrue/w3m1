@@ -34,7 +34,7 @@
 #include "html/html_processor.h"
 #include "wtf.h"
 #include "stream/istream.h"
-
+#include "mime/mailcap.h"
 #include "frontend/lineinput.h"
 #include <assert.h>
 #include <sys/types.h>
@@ -574,7 +574,7 @@ gopher_end:
 #endif /* USE_GOPHER */
 
 #ifdef USE_IMAGE
-BufferPtr loadImageBuffer(const URLFilePtr &uf)
+BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
 {
     Image image;
     ImageCache *cache;
@@ -583,10 +583,10 @@ BufferPtr loadImageBuffer(const URLFilePtr &uf)
     MySignalHandler prevtrap = NULL;
     struct stat st;
 
-    auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    auto newBuf = newBuffer(url);
     loadImage(newBuf, IMG_FLAG_STOP);
-    image.url = uf->url;
-    image.ext = uf->ext;
+    image.url = url.ToStr()->ptr;
+    // image.ext = uf->ext;
     image.width = -1;
     image.height = -1;
     image.cache = NULL;
@@ -596,13 +596,13 @@ BufferPtr loadImageBuffer(const URLFilePtr &uf)
         goto image_buffer;
 
     TRAP_ON;
-    if (uf->stream->type() != IST_ENCODED)
-        uf->stream = newEncodedStream(uf->stream, uf->encoding);
-    if (save2tmp(uf, cache->file) < 0)
-    {
-        TRAP_OFF;
-        return NULL;
-    }
+    // if (stream->type() != IST_ENCODED)
+    //     stream = newEncodedStream(stream, uf->encoding);
+    // if (save2tmp(uf, cache->file) < 0)
+    // {
+    //     TRAP_OFF;
+    //     return NULL;
+    // }
     TRAP_OFF;
 
     cache->loaded = IMG_FLAG_LOADED;
@@ -620,8 +620,8 @@ image_buffer:
     src = fopen(tmpf->ptr, "w");
     newBuf->mailcap_source = tmpf->ptr;
 
-    auto f = URLFile::FromStream(SCM_LOCAL, newStrStream(tmp));
-    newBuf = loadHTMLstream(f, TRUE);
+    // auto f = URLFile::FromStream(SCM_LOCAL, );
+    newBuf = loadHTMLStream(url, newStrStream(tmp), true);
     if (src)
         fclose(src);
 
@@ -703,15 +703,15 @@ getshell(char *cmd)
 BufferPtr
 getpipe(char *cmd)
 {
-    FILE *f, *popen(const char *, const char *);
-    BufferPtr buf;
-
     if (cmd == NULL || *cmd == '\0')
         return NULL;
-    f = popen(cmd, "r");
+
+    FILE *popen(const char *, const char *);
+    auto f = popen(cmd, "r");
     if (f == NULL)
         return NULL;
-    buf = newBuffer(INIT_BUFFER_WIDTH());
+    
+    auto buf = newBuffer({});
     buf->pagerSource = newFileStream(f, pclose);
     buf->filename = cmd;
     buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
@@ -728,9 +728,9 @@ getpipe(char *cmd)
  * Open pager buffer
  */
 BufferPtr
-openPagerBuffer(InputStreamPtr stream)
+openPagerBuffer(const InputStreamPtr &stream)
 {
-    auto buf = newBuffer(INIT_BUFFER_WIDTH());
+    auto buf = newBuffer({});
     buf->pagerSource = stream;
     buf->buffername = getenv("MAN_PN");
     if (buf->buffername.empty())
@@ -750,12 +750,12 @@ openPagerBuffer(InputStreamPtr stream)
 }
 
 BufferPtr
-openGeneralPagerBuffer(InputStreamPtr stream)
+openGeneralPagerBuffer(const InputStreamPtr &stream)
 {
     BufferPtr buf;
     std::string t = "text/plain";
     // BufferPtr t_buf = NULL;
-    auto uf = URLFile::FromStream(SCM_UNKNOWN, stream);
+    // auto uf = URLFile::FromStream(SCM_UNKNOWN, stream);
 
     content_charset = WC_CES_NONE;
     // if (w3mApp::Instance().SearchHeader)
@@ -780,13 +780,13 @@ openGeneralPagerBuffer(InputStreamPtr stream)
 
     if (is_html_type(t))
     {
-        buf = loadHTMLBuffer(uf);
+        buf = loadHTMLStream({}, stream, true);
         buf->type = "text/html";
     }
     else if (is_plain_text_type(t.c_str()))
     {
-        if (stream->type() != IST_ENCODED)
-            stream = newEncodedStream(stream, uf->encoding);
+        // if (stream->type() != IST_ENCODED)
+        //     stream = newEncodedStream(stream, uf->encoding);
         buf = openPagerBuffer(stream);
         buf->type = "text/plain";
     }
@@ -794,12 +794,12 @@ openGeneralPagerBuffer(InputStreamPtr stream)
              !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     {
         *GetCurBaseUrl() = URL::Parse("-", NULL);
-        buf = loadImageBuffer(uf);
+        buf = loadImageBuffer({}, stream);
         buf->type = "text/html";
     }
     else
     {
-        buf = doExternal(uf, "-", t.c_str());
+        buf = doExternal(URL::Parse("-"), stream, t.c_str());
         if (buf)
         {
             return buf;
@@ -807,8 +807,8 @@ openGeneralPagerBuffer(InputStreamPtr stream)
     }
 
     /* unknown type is regarded as text/plain */
-    if (stream->type() != IST_ENCODED)
-        stream = newEncodedStream(stream, uf->encoding);
+    // if (stream->type() != IST_ENCODED)
+    //     stream = newEncodedStream(stream, uf->encoding);
     buf = openPagerBuffer(stream);
     buf->type = "text/plain";
     buf->real_type = t;
@@ -947,7 +947,7 @@ int doFileMove(char *tmpf, char *defstr)
     return ret;
 }
 
-int checkSaveFile(InputStreamPtr stream, char *path2)
+int checkSaveFile(const InputStreamPtr &stream, char *path2)
 {
     struct stat st1, st2;
     int des = stream->FD();

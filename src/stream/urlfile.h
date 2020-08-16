@@ -32,7 +32,7 @@ struct URLFile : std::enable_shared_from_this<URLFile>
     time_t modtime = -1;
 
 private:
-    URLFile(URLSchemeTypes scheme, InputStreamPtr stream);
+    URLFile(URLSchemeTypes scheme, const InputStreamPtr &stream);
     URLFile(const URLFile &) = delete;
     URLFile &operator=(const URLFile &) = delete;
 
@@ -41,7 +41,7 @@ public:
 
     static InputStreamPtr OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request);
 
-    static std::shared_ptr<URLFile> FromStream(URLSchemeTypes scheme, InputStreamPtr stream);
+    static std::shared_ptr<URLFile> FromStream(URLSchemeTypes scheme, const InputStreamPtr &stream);
 
     static std::shared_ptr<URLFile> OpenFile(std::string_view path);
 

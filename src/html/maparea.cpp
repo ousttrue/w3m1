@@ -673,7 +673,7 @@ page_info_panel(BufferPtr buf)
 
 end:
     tmp->Push("</body></html>");
-    newbuf = loadHTMLString(tmp);
+    newbuf = loadHTMLString({}, tmp);
 #ifdef USE_M17N
     if (newbuf)
         newbuf->document_charset = buf->document_charset;

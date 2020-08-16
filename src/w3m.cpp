@@ -315,7 +315,7 @@ BufferPtr DownloadListBuffer(w3mApp *w3m)
         src->Push("\n</pre><hr>\n");
     }
     src->Push("</form></body></html>");
-    return loadHTMLString(src);
+    return loadHTMLString({}, src);
 }
 
 //
@@ -949,7 +949,7 @@ int w3mApp::Main(int argc, char **argv)
                            w3m_version,
                            "<br>Written by <a href='mailto:aito@fw.ipsj.or.jp'>Akinori Ito</a>",
                            NULL);
-            newbuf = loadHTMLString(s_page);
+            newbuf = loadHTMLString({}, s_page);
             if (newbuf == NULL)
                 err_msg->Push("w3m: Can't load string.\n");
             else
@@ -1106,7 +1106,7 @@ int w3mApp::Main(int argc, char **argv)
         SetCurrentTab(GetLastTab());
         if (!GetCurrentTab()->GetFirstBuffer())
         {
-            auto buf = newBuffer(INIT_BUFFER_WIDTH());
+            auto buf = newBuffer({});
             buf->bufferprop = BP_INTERNAL | BP_NO_URL;
             buf->buffername = DOWNLOAD_LIST_TITLE;
             GetCurrentTab()->Push(buf);

@@ -21,19 +21,18 @@ char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length);
 
 
-BufferPtr loadImageBuffer(const URLFilePtr &uf);
+BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream);
 void saveBuffer(BufferPtr buf, FILE *f, int cont);
 void saveBufferBody(BufferPtr buf, FILE *f, int cont);
 BufferPtr getshell(char *cmd);
 BufferPtr getpipe(char *cmd);
-BufferPtr openPagerBuffer(InputStreamPtr stream);
-BufferPtr openGeneralPagerBuffer(InputStreamPtr stream);
+BufferPtr openPagerBuffer(const InputStreamPtr &stream);
+BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream);
 LinePtr getNextPage(BufferPtr buf, int plen);
-BufferPtr doExternal(const URLFilePtr &uf, const char *path, const char *type);
 
 int doFileMove(char *tmpf, char *defstr);
 
-int checkSaveFile(InputStreamPtr stream, char *path);
+int checkSaveFile(const InputStreamPtr &stream, char *path);
 int checkOverWrite(char *path);
 char *inputAnswer(const char* prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);

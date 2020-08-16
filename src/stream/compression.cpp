@@ -9,6 +9,8 @@
 #include "fm.h"
 #include "html/html.h"
 #include "stream/local_cgi.h"
+#include "stream/urlfile.h"
+#include "stream/istream.h"
 #include <sys/stat.h>
 #include <zlib.h>
 
@@ -279,6 +281,7 @@ public:
     int err = Z_OK;
 
     ZlibDecompressor()
+        : decompressed(1024 * 1024)
     {
         // d_stream.zalloc = alloc_func;
         // d_stream.zfree = free_func;
@@ -290,8 +293,6 @@ public:
         {
             return;
         }
-
-        decompressed.resize(7160);
     }
 
     ~ZlibDecompressor()
@@ -319,20 +320,26 @@ public:
 
     void Decompress(unsigned char *compr, int comprLen)
     {
-        if (HasError())
-        {
-            return;
-        }
-
         d_stream.next_in = compr;
         d_stream.avail_in = comprLen;
         d_stream.next_out = decompressed.data() + d_stream.total_out;
         d_stream.avail_out = decompressed.size() - d_stream.total_out;
 
-        err = inflate(&d_stream, Z_NO_FLUSH);
-        if (HasError())
+        for (int i = 0; i < 4; ++i)
         {
-            return;
+            err = inflate(&d_stream, Z_NO_FLUSH);
+            if (!HasError())
+            {
+                break;
+            }
+            if (err == Z_BUF_ERROR)
+            {
+                decompressed.resize(decompressed.size() * 2, 0);
+            }
+            else if (HasError())
+            {
+                return;
+            }
         }
     }
 

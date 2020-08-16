@@ -1476,21 +1476,29 @@ void curURL(w3mApp *w3m)
 /* view HTML source */
 void vwSrc(w3mApp *w3m)
 {
-    BufferPtr buf;
-    if (GetCurrentTab()->GetCurrentBuffer()->type.empty() || GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
-        return;
-    if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_SOURCE]) != NULL ||
-        (buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_SOURCE]) != NULL)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->type.empty() || buf->bufferprop & BP_FRAME)
     {
-        GetCurrentTab()->SetCurrentBuffer(buf);
-        displayCurrentbuf(B_NORMAL);
         return;
     }
-    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
+
     {
-        if (GetCurrentTab()->GetCurrentBuffer()->pagerSource &&
-            GetCurrentTab()->GetCurrentBuffer()->type == "text/plain")
+        BufferPtr link;
+        if ((link = buf->linkBuffer[LB_SOURCE]) ||
+            (link = buf->linkBuffer[LB_N_SOURCE]))
         {
+            GetCurrentTab()->SetCurrentBuffer(link);
+            displayCurrentbuf(B_NORMAL);
+            return;
+        }
+    }
+
+    if (buf->sourcefile.empty())
+    {
+        if (buf->pagerSource && buf->type == "text/plain")
+        {
+            // pager
             CharacterEncodingScheme old_charset;
             bool old_fix_width_conv;
 
@@ -1501,68 +1509,69 @@ void vwSrc(w3mApp *w3m)
 
             old_charset = w3mApp::Instance().DisplayCharset;
             old_fix_width_conv = WcOption.fix_width_conv;
-            w3mApp::Instance().DisplayCharset = (GetCurrentTab()->GetCurrentBuffer()->document_charset != WC_CES_US_ASCII)
-                                                    ? GetCurrentTab()->GetCurrentBuffer()->document_charset
+            w3mApp::Instance().DisplayCharset = (buf->document_charset != WC_CES_US_ASCII)
+                                                    ? buf->document_charset
                                                     : WC_CES_NONE;
             WcOption.fix_width_conv = false;
 
-            saveBufferBody(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
+            saveBufferBody(buf, f, TRUE);
 
             w3mApp::Instance().DisplayCharset = old_charset;
             WcOption.fix_width_conv = old_fix_width_conv;
 
             fclose(f);
-            GetCurrentTab()->GetCurrentBuffer()->sourcefile = tmpf->ptr;
+            buf->sourcefile = tmpf->ptr;
         }
         else
         {
             return;
         }
     }
-    buf = newBuffer(INIT_BUFFER_WIDTH());
-    if (is_html_type(GetCurrentTab()->GetCurrentBuffer()->type.c_str()))
+
     {
-        buf->type = "text/plain";
-        if (is_html_type(GetCurrentTab()->GetCurrentBuffer()->real_type))
-            buf->real_type = "text/plain";
+        auto newBuf = newBuffer(buf->currentURL);
+        if (is_html_type(buf->type.c_str()))
+        {
+            newBuf->type = "text/plain";
+            if (is_html_type(buf->real_type))
+                newBuf->real_type = "text/plain";
+            else
+                newBuf->real_type = buf->real_type;
+            newBuf->buffername = Sprintf("source of %s", buf->buffername)->ptr;
+            newBuf->linkBuffer[LB_N_SOURCE] = buf;
+            buf->linkBuffer[LB_SOURCE] = newBuf;
+        }
+        else if (buf->type == "text/plain")
+        {
+            newBuf->type = "text/html";
+            if (buf->real_type == "text/plain")
+                newBuf->real_type = "text/html";
+            else
+                newBuf->real_type = buf->real_type;
+            newBuf->buffername = Sprintf("HTML view of %s",
+                                         buf->buffername)
+                                     ->ptr;
+            newBuf->linkBuffer[LB_SOURCE] = buf;
+            buf->linkBuffer[LB_N_SOURCE] = newBuf;
+        }
         else
-            buf->real_type = GetCurrentTab()->GetCurrentBuffer()->real_type;
-        buf->buffername = Sprintf("source of %s", GetCurrentTab()->GetCurrentBuffer()->buffername)->ptr;
-        buf->linkBuffer[LB_N_SOURCE] = GetCurrentTab()->GetCurrentBuffer();
-        GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_SOURCE] = buf;
+        {
+            return;
+        }
+        newBuf->currentURL = buf->currentURL;
+        newBuf->real_scheme = buf->real_scheme;
+        newBuf->filename = buf->filename;
+        newBuf->sourcefile = buf->sourcefile;
+        newBuf->header_source = buf->header_source;
+        newBuf->search_header = buf->search_header;
+        newBuf->document_charset = buf->document_charset;
+        newBuf->clone = buf->clone;
+        (*newBuf->clone)++;
+        newBuf->need_reshape = TRUE;
+        // buf->Reshape();
+        GetCurrentTab()->Push(newBuf);
+        displayCurrentbuf(B_NORMAL);
     }
-    else if (GetCurrentTab()->GetCurrentBuffer()->type == "text/plain")
-    {
-        buf->type = "text/html";
-        if (GetCurrentTab()->GetCurrentBuffer()->real_type == "text/plain")
-            buf->real_type = "text/html";
-        else
-            buf->real_type = GetCurrentTab()->GetCurrentBuffer()->real_type;
-        buf->buffername = Sprintf("HTML view of %s",
-                                  GetCurrentTab()->GetCurrentBuffer()->buffername)
-                              ->ptr;
-        buf->linkBuffer[LB_SOURCE] = GetCurrentTab()->GetCurrentBuffer();
-        GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_SOURCE] = buf;
-    }
-    else
-    {
-        return;
-    }
-    buf->currentURL = GetCurrentTab()->GetCurrentBuffer()->currentURL;
-    buf->real_scheme = GetCurrentTab()->GetCurrentBuffer()->real_scheme;
-    buf->filename = GetCurrentTab()->GetCurrentBuffer()->filename;
-    buf->sourcefile = GetCurrentTab()->GetCurrentBuffer()->sourcefile;
-    buf->header_source = GetCurrentTab()->GetCurrentBuffer()->header_source;
-    buf->search_header = GetCurrentTab()->GetCurrentBuffer()->search_header;
-#ifdef USE_M17N
-    buf->document_charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
-#endif
-    buf->clone = GetCurrentTab()->GetCurrentBuffer()->clone;
-    (*buf->clone)++;
-    buf->need_reshape = TRUE;
-    // buf->Reshape();
-    GetCurrentTab()->Push(buf);
-    displayCurrentbuf(B_NORMAL);
 }
 
 /* reload */

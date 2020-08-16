@@ -255,7 +255,7 @@ int Buffer::ReadBufferCache()
 
 BufferPtr Buffer::Copy()
 {
-    auto copy = newBuffer(width);
+    auto copy = newBuffer(currentURL);
     copy->CopyFrom(shared_from_this());
     return copy;
 }
@@ -345,15 +345,14 @@ URL *Buffer::BaseURL()
         /* no URL is defined for the buffer */
         return NULL;
     }
+
     if (baseURL)
     {
         /* <BASE> tag is defined in the document */
         return &baseURL;
     }
-    else
-    {
-        return &currentURL;
-    }
+
+    return &currentURL;
 }
 
 void Buffer::putHmarker(int line, int pos, int seq)
@@ -407,10 +406,11 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
  * Buffer creation
  */
 BufferPtr
-newBuffer(int width)
+newBuffer(const URL &url)
 {
     auto n = std::make_shared<Buffer>();
-    n->width = width;
+    n->width = INIT_BUFFER_WIDTH();
+    n->currentURL = url;
     return n;
 }
 
@@ -420,9 +420,7 @@ newBuffer(int width)
 BufferPtr
 nullBuffer(void)
 {
-    BufferPtr b;
-
-    b = newBuffer(::COLS);
+    auto b = newBuffer({});
     b->buffername = "*Null*";
     return b;
 }
@@ -815,8 +813,12 @@ Lineprop NullProp[] = {P_UNKNOWN};
 void Buffer::AddNewLine(const PropertiedString &lineBuffer, int real_linenumber)
 {
     auto l = std::make_shared<Line>(lineBuffer);
-    lines.push_back(l);
+    if (lines.empty())
+    {
+        topLine = l;
+    }
     currentLine = l;
+    lines.push_back(l);
 
     // 1 origin linenumber
     l->linenumber = this->LineCount();

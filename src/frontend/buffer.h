@@ -26,8 +26,11 @@ enum LinkBufferTypes
     LB_FRAME = 0, /* rFrame() */
     LB_N_FRAME = 1,
     LB_INFO = 2, /* pginfo() */
+
+    // HTML source
     LB_N_INFO = 3,
     LB_SOURCE = 4, /* vwSrc() */
+
     LB_N_SOURCE = LB_SOURCE
 };
 const int MAX_LB = 5;
@@ -345,7 +348,7 @@ public:
     int DrawLineRegion(LinePtr l, int i, int bpos, int epos);
 };
 
-BufferPtr newBuffer(int width);
+BufferPtr newBuffer(const URL &url);
 
 void deleteImage(Buffer *buf);
 void getAllImage(BufferPtr buf);
