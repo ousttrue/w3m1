@@ -122,6 +122,7 @@ add_executable(w3m
     src/stream/auth.cpp
     src/stream/http.cpp
     src/stream/cookie.cpp
+    src/stream/ssl_socket.cpp
     src/mime/mimeencoding.cpp
     src/mime/mimetypes.cpp
     src/mime/mailcap.cpp
