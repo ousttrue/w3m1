@@ -471,7 +471,7 @@ void loadImage(BufferPtr buf, int flag)
 	     */
             setup_child(FALSE, 0, -1);
             image_source = cache->file;
-            b = loadGeneralFile(URL::Parse(cache->url), cache->current, HttpReferrerPolicy::StrictOriginWhenCrossOrigin, RG_NONE, NULL);
+            b = loadGeneralFile(URL::Parse(cache->url), cache->current, HttpReferrerPolicy::StrictOriginWhenCrossOrigin);
             if (!b || b->real_type.empty() || !b->real_type.starts_with("image/"))
                 unlink(cache->file);
 #if defined(HAVE_SYMLINK) && defined(HAVE_LSTAT)

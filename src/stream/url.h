@@ -70,6 +70,12 @@ struct URL
         return ToStr(false, false);
     }
     std::string ToRefererOrigin() const;
+    URL NoCache() const
+    {
+        auto copy = *this;
+        copy.is_nocache = true;
+        return copy;
+    }
 
 public:
     std::string real_file;
@@ -99,7 +105,7 @@ public:
         return scheme != SCM_MISSING;
     }
     Str ToStr(bool usePass = false, bool useLabel = true) const;
-    std::string NonDefaultPort()const;
+    std::string NonDefaultPort() const;
 };
 
 const char *filename_extension(const char *patch, int is_url);

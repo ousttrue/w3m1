@@ -354,7 +354,7 @@ void shiftvisualpos(BufferPtr buf, int shift)
 
 void cmd_loadfile(const char *fn)
 {
-    auto buf = loadGeneralFile(URL::ParsePath(fn), NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
+    auto buf = loadGeneralFile(URL::ParsePath(fn), NULL, HttpReferrerPolicy::NoReferer, NULL);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -386,7 +386,7 @@ void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer,
 #endif /* USE_NNTP */
 
     refresh();
-    buf = loadGeneralFile(URL::Parse(url), current, referer, RG_NONE, request);
+    buf = loadGeneralFile(URL::Parse(url), current, referer, request);
     if (buf == NULL)
     {
         /* FIXME: gettextize? */
@@ -1006,7 +1006,7 @@ BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy refer
     if (base == NULL ||
         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
         referer = HttpReferrerPolicy::NoReferer;
-    auto buf = loadGeneralFile(URL::Parse(url, GetCurrentTab()->GetCurrentBuffer()->BaseURL()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), referer, RG_NONE, request);
+    auto buf = loadGeneralFile(URL::Parse(url, GetCurrentTab()->GetCurrentBuffer()->BaseURL()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), referer, request);
     if (buf == NULL)
     {
         char *emsg = Sprintf("Can't load %s", url)->ptr;
@@ -1748,7 +1748,7 @@ void execdict(char *word)
         return;
     }
     dictcmd = Sprintf("%s?%s", DictCommand, UrlEncode(Strnew(w))->ptr)->ptr;
-    buf = loadGeneralFile(URL::ParsePath(dictcmd), NULL, HttpReferrerPolicy::NoReferer, RG_NONE, NULL);
+    buf = loadGeneralFile(URL::ParsePath(dictcmd), NULL, HttpReferrerPolicy::NoReferer, NULL);
     if (buf == NULL)
     {
         disp_message("Execution failed", TRUE);

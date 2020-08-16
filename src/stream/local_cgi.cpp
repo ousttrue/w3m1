@@ -612,5 +612,5 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
         //     t = uf->guess_type.c_str();
     }
 
-    return LoadStream(url, stream, {});
+    return LoadStream(url, stream);
 }

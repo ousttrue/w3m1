@@ -246,7 +246,7 @@ BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc)
     return loadproc(url, stream);
 }
 
-BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, LoadFlags flag)
+BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream)
 {
     // if (t_buf == NULL)
     auto t_buf = newBuffer(url);
@@ -413,12 +413,12 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, LoadFlags fla
     else if (w3mApp::Instance().w3m_dump & DUMP_FRAME)
         return NULL;
 
-    if (flag & RG_FRAME)
-    {
-        if (t_buf == NULL)
-            t_buf = newBuffer(url);
-        t_buf->bufferprop |= BP_FRAME;
-    }
+    // if (flag & RG_FRAME)
+    // {
+    //     if (t_buf == NULL)
+    //         t_buf = newBuffer(url);
+    //     t_buf->bufferprop |= BP_FRAME;
+    // }
 
     // if (t_buf && f->ssl_certificate)
     // {
@@ -616,9 +616,7 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
 /* 
  * Dispatch URL, return Buffer
  */
-BufferPtr
-loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
-                LoadFlags flag, FormList *form)
+BufferPtr loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer, FormList *form)
 {
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
@@ -629,15 +627,17 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
         return client.Request(url, _current, referer, form);
     }
 
+    if (url.scheme == SCM_LOCAL_CGI)
+    {
+        //
+        // local CGI
+        //
+        LocalCGI cgi;
+        return cgi.Request(url, _current, referer, form);
+    }
+
     if (url.scheme == SCM_LOCAL)
     {
-        LocalCGI cgi;
-        auto buf = cgi.Request(url, _current, referer, form);
-        if (buf)
-        {
-            return buf;
-        }
-
         //
         // local file
         //
@@ -648,8 +648,7 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
             assert(false);
             return nullptr;
         }
-
-        return LoadStream(url, stream, flag);
+        return LoadStream(url, stream);
     }
 
     // not implemened

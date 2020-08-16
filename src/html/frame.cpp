@@ -338,9 +338,7 @@ void resetFrameElement(union frameset_element *f_element,
     }
 }
 
-static struct frameset *
-frame_download_source(struct frame_body *b, URL *currentURL,
-                      URL *baseURL, LoadFlags flag)
+static struct frameset *frame_download_source(struct frame_body *b, URL *currentURL, URL *baseURL)
 {
     BufferPtr buf;
     struct frameset *ret_frameset = NULL;
@@ -363,7 +361,7 @@ frame_download_source(struct frame_body *b, URL *currentURL,
         w3mApp::Instance().w3m_dump |= DUMP_FRAME;
         buf = loadGeneralFile(URL::Parse(b->url),
                               baseURL ? baseURL : currentURL,
-                              b->referer, flag | RG_FRAME_SRC, b->request);
+                              b->referer, /*flag | RG_FRAME_SRC,*/ b->request);
 
         /* XXX certificate? */
         if (buf)
@@ -524,10 +522,10 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     fprintf(f1, " width=\"%s\"", f->width[c]);
                 fputs(">\n", f1);
 
-                auto flag = RG_NONE;
+                // auto flag = RG_NONE;
                 if (force_reload)
                 {
-                    flag |= RG_NOCACHE;
+                    // flag |= RG_NOCACHE;
                     if (frame.element->attr == F_BODY)
                         unloadFrame(frame.body);
                 }
@@ -546,7 +544,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     fflush(f1);
                     f_frameset = frame_download_source(frame.body,
                                                        currentURL,
-                                                       current->baseURL ? &current->baseURL : nullptr, flag);
+                                                       current->baseURL ? &current->baseURL : nullptr);
                     if (f_frameset)
                     {
                         deleteFrame(frame.body);
@@ -995,13 +993,13 @@ renderFrame(BufferPtr Cbuf, int force_reload)
         return NULL;
     fclose(f);
     {
-        auto flag = RG_FRAME;
-        if ((Cbuf->currentURL).is_nocache)
-            flag |= RG_NOCACHE;
+        // auto flag = RG_FRAME;
+        // if ((Cbuf->currentURL).is_nocache)
+        //     flag |= RG_NOCACHE;
         renderFrameSet = Cbuf->frameset;
         flushFrameSet(renderFrameSet);
         w3mApp::Instance().DocumentCharset = w3mApp::Instance().InnerCharset;
-        buf = loadGeneralFile(URL::Parse(tmp->ptr), nullptr, HttpReferrerPolicy::StrictOriginWhenCrossOrigin, flag, NULL);
+        buf = loadGeneralFile(URL::Parse(tmp->ptr));
     }
     w3mApp::Instance().DocumentCharset = doc_charset;
     renderFrameSet = NULL;
