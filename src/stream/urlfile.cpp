@@ -615,27 +615,18 @@ int openSocket(const URL &url)
 ///
 /// URLFile
 ///
-URLFile::URLFile(URLSchemeTypes scm, const InputStreamPtr &strm)
-    : scheme(scm), stream(strm)
-{
-}
+// #define IS_DIRECTORY(m) (((m)&S_IFMT) == S_IFDIR)
+// int dir_exist(const char *path)
+// {
+//     if (path == NULL || *path == '\0')
+//         return 0;
 
-URLFile::~URLFile()
-{
-}
+//     struct stat stbuf;
+//     if (stat(path, &stbuf) == -1)
+//         return 0;
 
-#define IS_DIRECTORY(m) (((m)&S_IFMT) == S_IFDIR)
-int dir_exist(const char *path)
-{
-    if (path == NULL || *path == '\0')
-        return 0;
-
-    struct stat stbuf;
-    if (stat(path, &stbuf) == -1)
-        return 0;
-
-    return IS_DIRECTORY(stbuf.st_mode);
-}
+//     return IS_DIRECTORY(stbuf.st_mode);
+// }
 
 InputStreamPtr URLFile::OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request)
 {
@@ -754,14 +745,15 @@ InputStreamPtr URLFile::OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &
 
 std::shared_ptr<URLFile> URLFile::OpenFile(std::string_view path)
 {
-    auto uf = std::shared_ptr<URLFile>(new URLFile(SCM_LOCAL, NULL));
+    auto uf = std::make_shared<URLFile>();
     uf->examineFile(path);
     return uf;
 }
 
 std::shared_ptr<URLFile> URLFile::FromStream(URLSchemeTypes scheme, const InputStreamPtr &stream)
 {
-    auto uf = std::shared_ptr<URLFile>(new URLFile(scheme, stream));
+    auto uf = std::make_shared<URLFile>();
+    uf->stream = stream;
     return uf;
 }
 
@@ -823,15 +815,15 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
             // }
             setup_child(FALSE, 0, stream->FD());
             err = save2tmp(shared_from_this(), p);
-            if (err == 0 && PreserveTimestamp && this->modtime != -1)
-                setModtime(p, this->modtime);
+            // if (err == 0 && PreserveTimestamp && this->modtime != -1)
+            //     setModtime(p, this->modtime);
 
             unlink(lock);
             if (err != 0)
                 exit(-err);
             exit(0);
         }
-        addDownloadList(pid, this->url, p, lock, content_length);
+        addDownloadList(pid, {}, p, lock, content_length);
     }
     else
     {
@@ -872,8 +864,8 @@ int URLFile::DoFileSave(const char *defstr, long long content_length)
             printf("Can't save to %s\n", p);
             return -1;
         }
-        if (PreserveTimestamp && this->modtime != -1)
-            setModtime(p, this->modtime);
+        // if (PreserveTimestamp && this->modtime != -1)
+        //     setModtime(p, this->modtime);
     }
 #endif /* __MINGW32_VERSION */
     return 0;
@@ -927,7 +919,7 @@ lessopen_stream(char *path)
 
 void URLFile::examineFile(std::string_view path)
 {
-    this->guess_type.clear();
+    // this->guess_type.clear();
     if (path.empty())
     {
         return;
@@ -953,23 +945,24 @@ void URLFile::examineFile(std::string_view path)
 
     if (use_lessopen && getenv("LESSOPEN"))
     {
-        this->guess_type = guessContentType(path);
-        if (this->guess_type.empty())
-            this->guess_type = "text/plain";
-        if (is_html_type(this->guess_type))
-            return;
+        // this->guess_type = guessContentType(path);
+        // if (this->guess_type.empty())
+        //     this->guess_type = "text/plain";
+        // if (is_html_type(this->guess_type))
+        //     return;
         FILE *fp;
         if ((fp = lessopen_stream(const_cast<char *>(path.data()))))
         {
             // TODO:
             // this->Close();
             this->stream = newFileStream(fp, pclose);
-            this->guess_type = "text/plain";
+            // this->guess_type = "text/plain";
             return;
         }
     }
 
-    check_compression(const_cast<char *>(path.data()), shared_from_this());
+    // check_compression(const_cast<char *>(path.data()), shared_from_this());
+    /*
     if (this->compression != CMP_NOCOMPRESS)
     {
         auto [t, ex] = uncompressed_file_type(path);
@@ -984,6 +977,7 @@ void URLFile::examineFile(std::string_view path)
         uncompress_stream(shared_from_this(), NULL);
         return;
     }
+    */
 }
 
 int save2tmp(const URLFilePtr &uf, char *tmpf)

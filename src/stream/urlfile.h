@@ -19,26 +19,23 @@ struct HttpRequest;
 struct URLOption;
 struct URLFile : std::enable_shared_from_this<URLFile>
 {
-    URLSchemeTypes scheme = SCM_MISSING;
-    char is_cgi = 0;
-    EncodingTypes encoding = ENC_7BIT;
+    // URLSchemeTypes scheme = SCM_MISSING;
+    // char is_cgi = 0;
+    // EncodingTypes encoding = ENC_7BIT;
     InputStreamPtr stream = nullptr;
-    const char *ext = nullptr;
-    CompressionTypes compression = CMP_NOCOMPRESS;
+    // const char *ext = nullptr;
+    // CompressionTypes compression = CMP_NOCOMPRESS;
     // CompressionTypes content_encoding = CMP_NOCOMPRESS;
-    std::string guess_type;
-    char *ssl_certificate = nullptr;
-    char *url = nullptr;
-    time_t modtime = -1;
+    // std::string guess_type;
+    // char *ssl_certificate = nullptr;
+    // char *url = nullptr;
+    // time_t modtime = -1;
 
 private:
-    URLFile(URLSchemeTypes scheme, const InputStreamPtr &stream);
-    URLFile(const URLFile &) = delete;
-    URLFile &operator=(const URLFile &) = delete;
+    // URLFile(const URLFile &) = delete;
+    // URLFile &operator=(const URLFile &) = delete;
 
 public:
-    ~URLFile();
-
     static InputStreamPtr OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request);
 
     static std::shared_ptr<URLFile> FromStream(URLSchemeTypes scheme, const InputStreamPtr &stream);

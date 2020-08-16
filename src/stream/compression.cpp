@@ -89,23 +89,23 @@ CompressionTypes get_compression_type(std::string_view value)
     return CMP_NOCOMPRESS;
 }
 
-void check_compression(std::string_view path, const URLFilePtr &uf)
-{
-    if (path.empty())
-        return;
+// void check_compression(std::string_view path, const URLFilePtr &uf)
+// {
+//     if (path.empty())
+//         return;
 
-    auto len = path.size();
-    uf->compression = CMP_NOCOMPRESS;
-    for (auto &d : compression_decoders)
-    {
-        if (svu::ic_ends_with(path, d.ext))
-        {
-            uf->compression = d.type;
-            uf->guess_type = d.mime_type;
-            break;
-        }
-    }
-}
+//     auto len = path.size();
+//     uf->compression = CMP_NOCOMPRESS;
+//     for (auto &d : compression_decoders)
+//     {
+//         if (svu::ic_ends_with(path, d.ext))
+//         {
+//             uf->compression = d.type;
+//             uf->guess_type = d.mime_type;
+//             break;
+//         }
+//     }
+// }
 
 std::string_view compress_application_type(CompressionTypes compression)
 {
@@ -162,99 +162,99 @@ char *acceptableEncoding()
     return encodings->ptr;
 }
 
-#define SAVE_BUF_SIZE 1536
-char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
-{
-    // struct compression_decoder *d;
-    if (uf->stream->type() != IST_ENCODED)
-    {
-        uf->stream = newEncodedStream(uf->stream, uf->encoding);
-        uf->encoding = ENC_7BIT;
-    }
+// #define SAVE_BUF_SIZE 1536
+// char *uncompress_stream(const URLFilePtr &uf, bool useRealFile)
+// {
+//     // struct compression_decoder *d;
+//     if (uf->stream->type() != IST_ENCODED)
+//     {
+//         uf->stream = newEncodedStream(uf->stream, uf->encoding);
+//         uf->encoding = ENC_7BIT;
+//     }
 
-    // // search decoder
-    const char *ext = nullptr;
-    compression_decoder *d = compression_decoders;
-    for (auto &_d : compression_decoders)
-    {
-        if (uf->compression == _d.type)
-        {
-            d = &_d;
-            ext = _d.ext.data();
-            break;
-        }
-    }
-    uf->compression = CMP_NOCOMPRESS;
+//     // // search decoder
+//     const char *ext = nullptr;
+//     compression_decoder *d = compression_decoders;
+//     for (auto &_d : compression_decoders)
+//     {
+//         if (uf->compression == _d.type)
+//         {
+//             d = &_d;
+//             ext = _d.ext.data();
+//             break;
+//         }
+//     }
+//     uf->compression = CMP_NOCOMPRESS;
 
-    char *tmpf = NULL;
-    if (uf->scheme != SCM_LOCAL && !image_source)
-    {
-        tmpf = tmpfname(TMPF_DFL, ext)->ptr;
-    }
+//     char *tmpf = NULL;
+//     if (!image_source)
+//     {
+//         tmpf = tmpfname(TMPF_DFL, ext)->ptr;
+//     }
 
-    /* child1 -- stdout|f1=uf -> parent */
-    FILE *f1;
-    auto pid1 = open_pipe_rw(&f1, NULL);
-    if (pid1 < 0)
-    {
-        // uf->Close();
-        return nullptr;
-    }
-    if (pid1 == 0)
-    {
-        /* child */
-        pid_t pid2;
-        FILE *f2 = stdin;
+//     /* child1 -- stdout|f1=uf -> parent */
+//     FILE *f1;
+//     auto pid1 = open_pipe_rw(&f1, NULL);
+//     if (pid1 < 0)
+//     {
+//         // uf->Close();
+//         return nullptr;
+//     }
+//     if (pid1 == 0)
+//     {
+//         /* child */
+//         pid_t pid2;
+//         FILE *f2 = stdin;
 
-        /* uf -> child2 -- stdout|stdin -> child1 */
-        pid2 = open_pipe_rw(&f2, NULL);
-        if (pid2 < 0)
-        {
-            // uf->Close();
-            exit(1);
-        }
-        if (pid2 == 0)
-        {
-            /* child2 */
-            Str buf = Strnew_size(SAVE_BUF_SIZE);
-            FILE *f = NULL;
+//         /* uf -> child2 -- stdout|stdin -> child1 */
+//         pid2 = open_pipe_rw(&f2, NULL);
+//         if (pid2 < 0)
+//         {
+//             // uf->Close();
+//             exit(1);
+//         }
+//         if (pid2 == 0)
+//         {
+//             /* child2 */
+//             Str buf = Strnew_size(SAVE_BUF_SIZE);
+//             FILE *f = NULL;
 
-            setup_child(TRUE, 2, uf->stream->FD());
-            if (tmpf)
-                f = fopen(tmpf, "wb");
-            while (uf->stream->readto(buf, SAVE_BUF_SIZE))
-            {
-                if (buf->Puts(stdout) < 0)
-                    break;
-                if (f)
-                    buf->Puts(f);
-            }
-            // uf->Close();
-            if (f)
-                fclose(f);
-            exit(0);
-        }
-        /* child1 */
-        dup2(1, 2); /* stderr>&stdout */
-        setup_child(TRUE, -1, -1);
-        execlp(d->expand_cmd(), d->name, NULL);
-        exit(1);
-    }
+//             setup_child(TRUE, 2, uf->stream->FD());
+//             if (tmpf)
+//                 f = fopen(tmpf, "wb");
+//             while (uf->stream->readto(buf, SAVE_BUF_SIZE))
+//             {
+//                 if (buf->Puts(stdout) < 0)
+//                     break;
+//                 if (f)
+//                     buf->Puts(f);
+//             }
+//             // uf->Close();
+//             if (f)
+//                 fclose(f);
+//             exit(0);
+//         }
+//         /* child1 */
+//         dup2(1, 2); /* stderr>&stdout */
+//         setup_child(TRUE, -1, -1);
+//         execlp(d->expand_cmd(), d->name, NULL);
+//         exit(1);
+//     }
 
-    if (tmpf)
-    {
-        if (useRealFile)
-        {
-        }
-        else
-        {
-            tmpf = nullptr;
-            uf->scheme = SCM_LOCAL;
-        }
-    }
-    uf->stream = newFileStream(f1, fclose);
-    return tmpf;
-}
+//     if (tmpf)
+//     {
+//         if (useRealFile)
+//         {
+//         }
+//         else
+//         {
+//             tmpf = nullptr;
+//             // uf->scheme = SCM_LOCAL;
+//         }
+//     }
+//     uf->stream = newFileStream(f1, fclose);
+//     return tmpf;
+// }
 
 class ZlibDecompressor
 {
