@@ -91,7 +91,7 @@ struct HttpResponse
     HttpResponseStatusCode status_code = HttpResponseStatusCode::NONE;
     std::vector<std::string> lines;
     CompressionTypes content_encoding = CMP_NOCOMPRESS;
-    std::string conten_type;
+    std::string content_type = "text/plain";
     CharacterEncodingScheme content_charset = WC_CES_US_ASCII;
 
     static std::shared_ptr<HttpResponse> Read(const std::shared_ptr<class InputStream> &stream);

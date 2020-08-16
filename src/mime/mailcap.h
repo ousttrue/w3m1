@@ -24,4 +24,4 @@ Mailcap *searchMailcap(Mailcap *table, std::string_view type);
 void initMailcap();
 Mailcap *searchExtViewer(std::string_view type);
 Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, int *mc_stat);
-std::shared_ptr<struct Buffer> doExternal(const URL &url, const InputStreamPtr &stream, const char *type);
+std::shared_ptr<struct Buffer> doExternal(const URL &url, const InputStreamPtr &stream, std::string_view type);

@@ -28,9 +28,10 @@
 ///
 /// entry
 ///
-BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, bool internal)
+BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal)
 {
     auto newBuf = newBuffer(url);
+    newBuf->type = "text/html";
 
     // if (newBuf->currentURL.path.size())
     // {
@@ -177,14 +178,14 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, bool inte
 /* 
  * loadHTMLString: read string and make new buffer
  */
-BufferPtr loadHTMLString(const URL &url, Str page)
+BufferPtr loadHTMLString(const URL &url, Str page, CharacterEncodingScheme content_charset)
 {
     BufferPtr newBuf = nullptr;
 
     auto success = TrapJmp([&]() {
         auto f = newStrStream(page);
 
-        newBuf = loadHTMLStream(url, f, TRUE);
+        newBuf = loadHTMLStream(url, f, content_charset, TRUE);
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
         newBuf->document_charset = WC_CES_US_ASCII;
 

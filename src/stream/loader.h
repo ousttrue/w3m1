@@ -4,15 +4,11 @@
 #include "stream/http.h"
 #include <memory>
 
-extern CharacterEncodingScheme content_charset;
-extern CharacterEncodingScheme meta_charset;
-
-using LoaderFunc = BufferPtr (*)(const URL &url, const InputStreamPtr &stream);
-BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream);
-BufferPtr loadFile(char *path);
+using LoaderFunc = BufferPtr (*)(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset);
+BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset);
 BufferPtr loadGeneralFile(const URL &url,
                           const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
                           struct FormList *form = nullptr);
 int doFileCopy(const char *tmpf, const char *defstr);
-BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc);
-BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream);
+BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingScheme content_charset = WC_CES_UTF_8);
+BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_view content_type = "text/plain", CharacterEncodingScheme content_charset = WC_CES_UTF_8);

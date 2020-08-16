@@ -26,8 +26,8 @@ void saveBuffer(BufferPtr buf, FILE *f, int cont);
 void saveBufferBody(BufferPtr buf, FILE *f, int cont);
 BufferPtr getshell(char *cmd);
 BufferPtr getpipe(char *cmd);
-BufferPtr openPagerBuffer(const InputStreamPtr &stream);
-BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream);
+BufferPtr openPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme content_charset);
+BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme content_charset = WC_CES_UTF_8);
 LinePtr getNextPage(BufferPtr buf, int plen);
 
 int doFileMove(char *tmpf, char *defstr);

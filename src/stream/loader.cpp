@@ -230,7 +230,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
 //     return buf;
 // }
 
-BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc)
+BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingScheme content_charset)
 {
     if (cmd == NULL || *cmd == '\0')
         return NULL;
@@ -243,16 +243,16 @@ BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc)
     auto stream = newFileStream(f, pclose);
     auto url = URL::Parse(cmd);
 
-    return loadproc(url, stream);
+    return loadproc(url, stream, content_charset);
 }
 
-BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream)
+BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_view content_type, CharacterEncodingScheme content_charset)
 {
     // if (t_buf == NULL)
     auto t_buf = newBuffer(url);
 
     // readHeader(f, t_buf, FALSE, &pu);
-    char *p;
+    // char *p;
     // if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) &&
     //     (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(pu))
     // {
@@ -274,16 +274,16 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream)
 
     //     assert(false);
     // }
-    auto t = "text/plain";
-    // const char *t = checkContentType(t_buf);
-    // if (t == NULL && pu.path.size())
-    // {
-    //     if (!((http_response_code >= 400 && http_response_code <= 407) ||
-    //           (http_response_code >= 500 && http_response_code <= 505)))
-    //         t = guessContentType(pu.path);
-    // }
-    if (t == NULL)
-        t = "text/plain";
+    // auto t = "text/plain";
+    // // const char *t = checkContentType(t_buf);
+    // // if (t == NULL && pu.path.size())
+    // // {
+    // //     if (!((http_response_code >= 400 && http_response_code <= 407) ||
+    // //           (http_response_code >= 500 && http_response_code <= 505)))
+    // //         t = guessContentType(pu.path);
+    // // }
+    // if (t == NULL)
+    //     t = "text/plain";
 
     /* XXX: can we use guess_type to give the type to loadHTMLStream
          *      to support default utf8 encoding for XHTML here? */
@@ -365,26 +365,17 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream)
     //     return b;
     // }
 
-    if (is_html_type(t))
-        proc = loadHTMLBuffer;
-    else if (is_plain_text_type(t))
-        proc = loadBuffer;
-    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
-             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && !strncasecmp(t, "image/", 6))
-        proc = loadImageBuffer;
-    else if (w3mApp::Instance().w3m_backend)
-        ;
-    else if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(t))
+    if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(content_type))
     {
         BufferPtr b = NULL;
         if (!do_download)
         {
             // auto url = URL::Parse(pu.real_file.size() ? pu.real_file.c_str() : pu.path.c_str());
-            auto b = doExternal(url, stream, t);
+            auto b = doExternal(url, stream, content_type);
             if (b)
             {
                 b->real_scheme = url.scheme;
-                b->real_type = t;
+                b->real_type = content_type;
                 if (b->currentURL.host.empty() && b->currentURL.path.empty())
                     b->currentURL = url;
             }
@@ -427,43 +418,58 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream)
 
     // frame_source = flag & RG_FRAME_SRC;
     // auto b = loadSomething(f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()), proc);
-    auto b = proc(url, stream);
-    // f->stream = nullptr;
-    // frame_source = 0;
+    BufferPtr b;
+    if (is_html_type(content_type))
+    {
+        b = loadHTMLStream(url, stream, content_charset);
+    }
+    else if (is_plain_text_type(content_type))
+    {
+        b = loadBuffer(url, stream, content_charset);
+    }
+    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
+             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && content_type.starts_with("image/"))
+    {
+        b = loadImageBuffer(url, stream);
+    }
+    else
+    {
+        assert(false);
+    }
     if (b)
     {
         b->real_scheme = url.scheme;
-        b->real_type = t;
+        b->real_type = content_type;
         if (b->currentURL.host.empty() && b->currentURL.path.empty())
             b->currentURL = url;
-        if (is_html_type(t))
+        if (is_html_type(content_type))
             b->type = "text/html";
         else if (w3mApp::Instance().w3m_backend)
         {
-            Str s = Strnew(t);
+            Str s = Strnew(content_type);
             b->type = s->ptr;
         }
-        else if (proc == loadImageBuffer)
-            b->type = "text/html";
-        else
-            b->type = "text/plain";
+        // else if (proc == loadImageBuffer)
+        //     b->type = "text/html";
+        // else
+        //     b->type = "text/plain";
         if (url.fragment.size())
         {
-            if (proc == loadHTMLBuffer)
-            {
-                auto a = searchURLLabel(b, const_cast<char *>(url.fragment.c_str()));
-                if (a != NULL)
-                {
-                    b->Goto(a->start, label_topline);
-                }
-            }
-            else
-            { /* plain text */
-                int l = atoi(url.fragment.c_str());
-                b->GotoRealLine(l);
-                b->pos = 0;
-                b->ArrangeCursor();
-            }
+            // if (proc == loadHTMLBuffer)
+            // {
+            //     auto a = searchURLLabel(b, const_cast<char *>(url.fragment.c_str()));
+            //     if (a != NULL)
+            //     {
+            //         b->Goto(a->start, label_topline);
+            //     }
+            // }
+            // else
+            // { /* plain text */
+            //     int l = atoi(url.fragment.c_str());
+            //     b->GotoRealLine(l);
+            //     b->pos = 0;
+            //     b->ArrangeCursor();
+            // }
         }
     }
     if (w3mApp::Instance().header_string.size())
@@ -472,27 +478,10 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream)
     return b;
 }
 
-///
-/// charset
-///
-CharacterEncodingScheme content_charset = WC_CES_NONE;
-
-/* 
- * loadFile: load file to buffer
- */
-BufferPtr loadFile(const char *path)
-{
-    auto stream = StreamFromFile(path);
-
-    // current_content_length = 0;
-    content_charset = WC_CES_NONE;
-    return loadBuffer(URL::Parse(path), stream);
-}
-
 /* 
  * loadBuffer: read file and make new buffer
  */
-BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream)
+BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset)
 {
     FILE *src = NULL;
 

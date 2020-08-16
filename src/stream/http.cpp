@@ -153,6 +153,21 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
         {
             content_encoding = get_compression_type(value);
         }
+        else if (svu::ic_eq(key, "content-type"))
+        {
+            content_type = value;
+            auto [tt, charset] = svu::split(value, ';');
+            if (charset.size())
+            {
+                // has charset
+                content_type = tt;
+                auto [_, cs] = svu::split(charset, '=');
+                if (cs.size())
+                {
+                    content_charset = wc_guess_charset(cs.data(), WC_CES_NONE);
+                }
+            }
+        }
     }
 
     // header is continuous
@@ -324,27 +339,6 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //
     // read HTTP response body
     //
-    auto t = response->FindHeader("content-type");
-    if (t.size())
-    {
-        auto [tt, charset] = svu::split(t, ';');
-        if (tt.size())
-        {
-            t = tt;
-        }
-        if (charset.size())
-        {
-            auto [_, cs] = svu::split(charset, '=');
-            if (cs.size())
-            {
-                content_charset = wc_guess_charset(cs.data(), WC_CES_NONE);
-            }
-        }
-    }
-    if (t.empty())
-    {
-        t = "text/plain";
-    }
     // if (t == NULL && url.path.size())
     // {
     //     if (!((http_response_code >= 400 && http_response_code <= 407) ||
@@ -375,13 +369,13 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     }
 
     // auto proc = loadBuffer;
-    if (is_html_type(t))
+    if (is_html_type(response->content_type))
     {
-        return loadHTMLStream(url, stream, false);
+        return loadHTMLStream(url, stream, response->content_charset);
     }
-    else if(is_plain_text_type(t))
+    else if (is_plain_text_type(response->content_type))
     {
-        return loadBuffer(url, stream);
+        return loadBuffer(url, stream, response->content_charset);
     }
     else
     {

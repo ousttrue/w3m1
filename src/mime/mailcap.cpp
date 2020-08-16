@@ -533,7 +533,7 @@ Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, 
     return unquote_mailcap_loop(qstr, type, name, attr, mc_stat, 0);
 }
 
-BufferPtr doExternal(const URL &url, const InputStreamPtr &stream, const char *type)
+BufferPtr doExternal(const URL &url, const InputStreamPtr &stream, std::string_view type)
 {
     Str tmpf, command;
     Mailcap *mcap;

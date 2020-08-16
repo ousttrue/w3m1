@@ -621,7 +621,7 @@ image_buffer:
     newBuf->mailcap_source = tmpf->ptr;
 
     // auto f = URLFile::FromStream(SCM_LOCAL, );
-    newBuf = loadHTMLStream(url, newStrStream(tmp), true);
+    newBuf = loadHTMLStream(url, newStrStream(tmp), WC_CES_UTF_8, true);
     if (src)
         fclose(src);
 
@@ -727,8 +727,7 @@ getpipe(char *cmd)
 /*
  * Open pager buffer
  */
-BufferPtr
-openPagerBuffer(const InputStreamPtr &stream)
+BufferPtr openPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme content_charset)
 {
     auto buf = newBuffer({});
     buf->pagerSource = stream;
@@ -749,15 +748,13 @@ openPagerBuffer(const InputStreamPtr &stream)
     return buf;
 }
 
-BufferPtr
-openGeneralPagerBuffer(const InputStreamPtr &stream)
+BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme content_charset)
 {
     BufferPtr buf;
     std::string t = "text/plain";
     // BufferPtr t_buf = NULL;
     // auto uf = URLFile::FromStream(SCM_UNKNOWN, stream);
 
-    content_charset = WC_CES_NONE;
     // if (w3mApp::Instance().SearchHeader)
     // {
     //     t_buf = newBuffer(INIT_BUFFER_WIDTH());
@@ -780,14 +777,13 @@ openGeneralPagerBuffer(const InputStreamPtr &stream)
 
     if (is_html_type(t))
     {
-        buf = loadHTMLStream({}, stream, true);
-        buf->type = "text/html";
+        buf = loadHTMLStream({}, stream, content_charset, true);
     }
     else if (is_plain_text_type(t.c_str()))
     {
         // if (stream->type() != IST_ENCODED)
         //     stream = newEncodedStream(stream, uf->encoding);
-        buf = openPagerBuffer(stream);
+        buf = openPagerBuffer(stream, content_charset);
         buf->type = "text/plain";
     }
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
@@ -809,7 +805,7 @@ openGeneralPagerBuffer(const InputStreamPtr &stream)
     /* unknown type is regarded as text/plain */
     // if (stream->type() != IST_ENCODED)
     //     stream = newEncodedStream(stream, uf->encoding);
-    buf = openPagerBuffer(stream);
+    buf = openPagerBuffer(stream, content_charset);
     buf->type = "text/plain";
     buf->real_type = t;
     buf->currentURL = URL::StdIn();
@@ -852,10 +848,10 @@ LinePtr getNextPage(BufferPtr buf, int plen)
         doc_charset = buf->document_charset;
     else if (w3mApp::Instance().UseContentCharset)
     {
-        content_charset = WC_CES_NONE;
+        // content_charset = WC_CES_NONE;
         // checkContentType(buf);
-        if (content_charset)
-            doc_charset = content_charset;
+        // if (content_charset)
+        //     doc_charset = content_charset;
     }
     WcOption.auto_detect = buf->auto_detect;
 
