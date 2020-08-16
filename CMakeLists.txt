@@ -118,6 +118,7 @@ add_executable(w3m
     src/stream/local_cgi.cpp
     src/stream/urlfile.cpp
     src/stream/url.cpp
+    src/stream/open_socket.cpp
     src/stream/compression.cpp
     src/stream/auth.cpp
     src/stream/http.cpp
