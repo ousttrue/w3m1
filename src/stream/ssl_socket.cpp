@@ -308,7 +308,6 @@ struct SSLContextImpl
                 char *e = "This SSL session was rejected "
                           "to prevent security violation: no peer certificate";
                 disp_err_message(e, FALSE);
-                free_ssl_ctx();
                 return NULL;
             }
             if (amsg)
@@ -350,7 +349,6 @@ struct SSLContextImpl
                     char *e =
                         Sprintf("This SSL session was rejected: %s", em)->ptr;
                     disp_err_message(e, FALSE);
-                    free_ssl_ctx();
                     return NULL;
                 }
             }
@@ -381,7 +379,6 @@ struct SSLContextImpl
                 const char *e = "This SSL session was rejected "
                                 "to prevent security violation";
                 disp_err_message(e, FALSE);
-                free_ssl_ctx();
                 return NULL;
             }
         }

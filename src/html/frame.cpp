@@ -556,9 +556,9 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                 /* fall through */
                 case F_BODY:
                 {
-                    auto f2 = URLFile::OpenFile(frame.body->source);
+                    auto stream = StreamFromFile(frame.body->source);
                     fflush(f1);
-                    if (f2->stream == NULL)
+                    if (stream == NULL)
                     {
                         frame.body->attr = F_UNLOADED;
                         if (frame.body->flags & FB_NO_BUFFER)
@@ -595,7 +595,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     {
                         Str tmp;
                         fprintf(f1, "<pre>\n");
-                        while ((tmp = f2->stream->mygets())->Size())
+                        while ((tmp = stream->mygets())->Size())
                         {
                             tmp = convertLine(SCM_UNKNOWN, tmp, HTML_MODE, &charset,
                                               doc_charset);
@@ -615,7 +615,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                         {
                             if (*p == '\0')
                             {
-                                Str tmp = f2->stream->mygets();
+                                Str tmp = stream->mygets();
                                 if (tmp->Size() == 0)
                                     break;
                                 tmp = convertLine(SCM_UNKNOWN, tmp, HTML_MODE, &charset,
@@ -921,7 +921,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                         }
                     token_end:
                         tok->Clear();
-                    } while (*p != '\0' || !f2->stream->eos() /* iseos(f2->stream) */);
+                    } while (*p != '\0' || !stream->eos() /* iseos(f2->stream) */);
                     if (pre_mode & RB_PLAIN)
                         fputs("</PRE_PLAIN>\n", f1);
                     else if (pre_mode & RB_INTXTA)

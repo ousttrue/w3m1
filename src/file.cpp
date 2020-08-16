@@ -26,7 +26,7 @@
 #include "mime/mimetypes.h"
 #include "html/tagstack.h"
 #include "stream/http.h"
-#include "stream/urlfile.h"
+
 #include "stream/auth.h"
 #include "stream/compression.h"
 #include "rc.h"

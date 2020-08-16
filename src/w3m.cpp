@@ -411,7 +411,6 @@ w3mApp::~w3mApp()
         while ((f = popText(fileToDelete)) != NULL)
             unlink(f);
     }
-    free_ssl_ctx();
 
     // exit(i);
 }

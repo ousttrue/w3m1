@@ -482,13 +482,11 @@ CharacterEncodingScheme content_charset = WC_CES_NONE;
  */
 BufferPtr loadFile(const char *path)
 {
-    auto uf = URLFile::OpenFile(path);
-    if (uf->stream == NULL)
-        return NULL;
+    auto stream = StreamFromFile(path);
 
     // current_content_length = 0;
     content_charset = WC_CES_NONE;
-    return loadBuffer(URL::Parse(path), uf->stream);
+    return loadBuffer(URL::Parse(path), stream);
 }
 
 /* 
@@ -643,15 +641,15 @@ loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer,
         //
         // local file
         //
-        auto uf = URLFile::OpenFile(url.real_file);
-        if (!uf->stream)
+        auto stream = StreamFromFile(url.real_file);
+        if (!stream)
         {
             // fail to open file
             assert(false);
             return nullptr;
         }
 
-        return LoadStream(url, uf->stream, flag);
+        return LoadStream(url, stream, flag);
     }
 
     // not implemened

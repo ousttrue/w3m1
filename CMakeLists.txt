@@ -116,7 +116,6 @@ add_executable(w3m
     src/stream/istream.cpp
     src/stream/loader.cpp
     src/stream/local_cgi.cpp
-    src/stream/urlfile.cpp
     src/stream/url.cpp
     src/stream/open_socket.cpp
     src/stream/compression.cpp

@@ -240,4 +240,5 @@ inline InputStreamPtr openIS(const char *path)
     return newInputStream(open(path, O_RDONLY));
 }
 
-InputStreamPtr OpenHttpAndSendRest(const std::shared_ptr<struct HttpRequest> &request);
+InputStreamPtr OpenHttpAndSendRequest(const std::shared_ptr<struct HttpRequest> &request);
+InputStreamPtr StreamFromFile(std::string_view path);

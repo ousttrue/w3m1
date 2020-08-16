@@ -2,7 +2,7 @@
 #include "stream/istream.h"
 #include "frontend/buffer.h"
 #include "frontend/event.h"
-#include "stream/urlfile.h"
+
 
 struct HttpRequest;
 struct Hist;
@@ -108,8 +108,6 @@ union frameset_element *search_frame(struct frameset *fset, char *name);
 
 MySignalHandler reset_exit(SIGNAL_ARG);
 MySignalHandler error_dump(SIGNAL_ARG);
-
-void free_ssl_ctx();
 
 char *acceptableMimeTypes();
 

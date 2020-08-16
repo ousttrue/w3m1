@@ -255,7 +255,7 @@ int SSLStream::ReadFunc(unsigned char *buf, int len)
         status = m_ssl->Read(buf, len);
         if (status > 0)
             break;
-        switch (SSL_get_error((SSL*)m_ssl->Handle(), status))
+        switch (SSL_get_error((SSL *)m_ssl->Handle(), status))
         {
         case SSL_ERROR_WANT_READ:
         case SSL_ERROR_WANT_WRITE: /* reads can trigger write errors; see SSL_get_error(3) */
@@ -530,7 +530,6 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
             char *e = "This SSL session was rejected "
                       "to prevent security violation: no peer certificate";
             disp_err_message(e, FALSE);
-            free_ssl_ctx();
             return NULL;
         }
         if (amsg)
@@ -572,7 +571,6 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
                 char *e =
                     Sprintf("This SSL session was rejected: %s", em)->ptr;
                 disp_err_message(e, FALSE);
-                free_ssl_ctx();
                 return NULL;
             }
         }
@@ -603,7 +601,6 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
             const char *e = "This SSL session was rejected "
                             "to prevent security violation";
             disp_err_message(e, FALSE);
-            free_ssl_ctx();
             return NULL;
         }
     }
@@ -654,7 +651,7 @@ static void write_from_file(int sock, char *file)
 
 std::shared_ptr<SSLContext> m_ssl_ctx;
 
-InputStreamPtr OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request)
+InputStreamPtr OpenHttpAndSendRequest(const std::shared_ptr<HttpRequest> &request)
 {
     if (request->url.scheme != SCM_HTTP && request->url.scheme != SCM_HTTPS)
     {
@@ -735,4 +732,66 @@ InputStreamPtr OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request)
         // return stream
         return newInputStream(sock);
     }
+}
+
+InputStreamPtr StreamFromFile(std::string_view path)
+{
+    if (path.empty())
+    {
+        return nullptr;
+    }
+
+    struct stat stbuf;
+    if (stat(path.data(), &stbuf) == -1)
+    {
+        return nullptr;
+    }
+    if (stbuf.st_mode & S_IFMT != S_IFREG)
+    {
+        return nullptr;
+    }
+
+    auto stream = openIS(path.data());
+    return stream;
+
+    // if (do_download)
+    // {
+    //     assert(false);
+    //     return stream;
+    // }
+
+    // if (use_lessopen && getenv("LESSOPEN"))
+    // {
+    //     // this->guess_type = guessContentType(path);
+    //     // if (this->guess_type.empty())
+    //     //     this->guess_type = "text/plain";
+    //     // if (is_html_type(this->guess_type))
+    //     //     return;
+    //     if (auto fp = lessopen_stream(const_cast<char *>(path.data())))
+    //     {
+    //         // TODO:
+    //         // this->Close();
+    //         auto stream = newFileStream(fp, pclose);
+    //         // this->guess_type = "text/plain";
+    //         return stream;
+    //     }
+    // }
+
+    // check_compression(const_cast<char *>(path.data()), shared_from_this());
+    /*
+    if (this->compression != CMP_NOCOMPRESS)
+    {
+        auto [t, ex] = uncompressed_file_type(path);
+        if (ex.size())
+        {
+            ext = ex.data();
+        }
+        if (t.size())
+        {
+            this->guess_type = t.data();
+        }
+        uncompress_stream(shared_from_this(), NULL);
+        return;
+    }
+    */
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "frontend/buffer.h"
-#include "urlfile.h"
+#include "stream/istream.h"
 #include "stream/http.h"
 #include <memory>
 
@@ -9,6 +9,14 @@ extern CharacterEncodingScheme meta_charset;
 
 struct URL;
 struct FormList;
+
+enum LoadFlags
+{
+    RG_NONE = 0,
+    RG_NOCACHE = 1,
+    RG_FRAME = 2,
+    RG_FRAME_SRC = 4,
+};
 
 // struct BufferLoader
 // {

@@ -9,7 +9,7 @@
 #include "fm.h"
 #include "html/html.h"
 #include "stream/local_cgi.h"
-#include "stream/urlfile.h"
+
 #include "stream/istream.h"
 #include <sys/stat.h>
 #include <zlib.h>
