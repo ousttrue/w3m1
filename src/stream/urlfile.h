@@ -36,7 +36,6 @@ private:
     // URLFile &operator=(const URLFile &) = delete;
 
 public:
-    static InputStreamPtr OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request);
 
     static std::shared_ptr<URLFile> FromStream(URLSchemeTypes scheme, const InputStreamPtr &stream);
 

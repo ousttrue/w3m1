@@ -213,6 +213,43 @@ SSLSocket::~SSLSocket()
     delete m_impl;
 }
 
+int SSLSocket::Write(const void *buf, int num)
+{
+    return SSL_write(m_impl->m_ssl, buf, num);
+}
+
+void SSLSocket::WriteFromFile(const char *file)
+{
+    FILE *fd;
+    int c;
+    char buf[1];
+    fd = fopen(file, "r");
+    if (fd != NULL)
+    {
+        while ((c = fgetc(fd)) != EOF)
+        {
+            buf[0] = c;
+            SSL_write(m_impl->m_ssl, buf, 1);
+        }
+        fclose(fd);
+    }
+}
+
+int SSLSocket::Socket() const
+{
+    return m_impl->m_sock;
+}
+
+int SSLSocket::Read(unsigned char *p, int size)
+{
+    return SSL_read(m_impl->m_ssl, p, size);
+}
+
+const void *SSLSocket::Handle() const
+{
+    return m_impl->m_ssl;
+}
+
 ///
 /// Context
 ///

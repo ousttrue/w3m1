@@ -8,8 +8,13 @@ class SSLSocket
     std::string m_ssl_certificate;
 
 public:
-    SSLSocket(SSLSocketImpl *impl, const char *ssl_certificate);
+    SSLSocket(struct SSLSocketImpl *impl, const char *ssl_certificate);
     ~SSLSocket();
+    int Write(const void *buf, int num);
+    void WriteFromFile(const char *file);
+    int Socket() const;
+    int Read(unsigned char *p, int size);
+    const void *Handle() const;
 };
 
 class SSLContext
@@ -17,7 +22,7 @@ class SSLContext
     struct SSLContextImpl *m_impl = nullptr;
 
 public:
-    SSLContext(SSLContextImpl *impl);
+    SSLContext(struct SSLContextImpl *impl);
     ~SSLContext();
     static std::shared_ptr<SSLContext> Create();
 

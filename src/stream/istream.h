@@ -195,13 +195,13 @@ public:
     int ReadFunc(unsigned char *buffer, int size) override;
 };
 
+class SSLSocket;
 class SSLStream : public InputStream
 {
-    SSL *m_ssl = nullptr;
-    int m_sock = -1;
+    std::shared_ptr<SSLSocket> m_ssl;
 
 public:
-    SSLStream(int size, SSL *ssl, int sock) : InputStream(size), m_ssl(ssl), m_sock(sock) {}
+    SSLStream(int size, const std::shared_ptr<SSLSocket> &ssl) : InputStream(size), m_ssl(ssl) {}
     ~SSLStream();
     InputStreamTypes type() const override { return IST_SSL; }
     int ReadFunc(unsigned char *buffer, int size) override;
@@ -229,7 +229,7 @@ public:
 InputStreamPtr newInputStream(int des);
 InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep);
 InputStreamPtr newStrStream(Str s);
-InputStreamPtr newSSLStream(SSL *ssl, int sock);
+InputStreamPtr newSSLStream(const std::shared_ptr<SSLSocket> &ssl);
 InputStreamPtr newEncodedStream(InputStreamPtr is, char encoding);
 
 void ssl_accept_this_site(char *hostname);
@@ -239,3 +239,5 @@ inline InputStreamPtr openIS(const char *path)
 {
     return newInputStream(open(path, O_RDONLY));
 }
+
+InputStreamPtr OpenHttpAndSendRest(const std::shared_ptr<struct HttpRequest> &request);

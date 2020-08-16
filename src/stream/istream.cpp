@@ -2,10 +2,12 @@
 #include "fm.h"
 #include "indep.h"
 #include "myctype.h"
-#include "stream/istream.h"
 #include "file.h"
-
+#include "stream/istream.h"
+#include "stream/open_socket.h"
+#include "stream/ssl_socket.h"
 #include "html/html.h"
+#include "html/form.h"
 #include "mime/mimeencoding.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
@@ -232,54 +234,47 @@ int StrStream::ReadFunc(unsigned char *buf, int len)
 //
 // SSLStream
 //
-InputStreamPtr
-newSSLStream(SSL *ssl, int sock)
+InputStreamPtr newSSLStream(const std::shared_ptr<SSLSocket> &ssl)
 {
-    if (sock < 0)
+    if (!ssl)
         return NULL;
-    return std::make_shared<SSLStream>(SSL_BUF_SIZE, ssl, sock);
+    return std::make_shared<SSLStream>(SSL_BUF_SIZE, ssl);
 }
 
 SSLStream::~SSLStream()
 {
-    close(m_sock);
-    if (m_ssl)
-        SSL_free(m_ssl);
 }
 
 int SSLStream::ReadFunc(unsigned char *buf, int len)
 {
     int status;
-    if (m_ssl)
-    {
+
 #ifdef USE_SSL_VERIFY
-        for (;;)
+    for (;;)
+    {
+        status = m_ssl->Read(buf, len);
+        if (status > 0)
+            break;
+        switch (SSL_get_error((SSL*)m_ssl->Handle(), status))
         {
-            status = SSL_read(m_ssl, buf, len);
-            if (status > 0)
-                break;
-            switch (SSL_get_error(m_ssl, status))
-            {
-            case SSL_ERROR_WANT_READ:
-            case SSL_ERROR_WANT_WRITE: /* reads can trigger write errors; see SSL_get_error(3) */
-                continue;
-            default:
-                break;
-            }
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_WRITE: /* reads can trigger write errors; see SSL_get_error(3) */
+            continue;
+        default:
             break;
         }
-#else  /* if !defined(USE_SSL_VERIFY) */
-        status = SSL_read(m_ssl, buf, len);
-#endif /* !defined(USE_SSL_VERIFY) */
+        break;
     }
-    else
-        status = ::read(m_sock, buf, len);
+#else  /* if !defined(USE_SSL_VERIFY) */
+    status = SSL_read(m_ssl, buf, len);
+#endif /* !defined(USE_SSL_VERIFY) */
+
     return status;
 }
 
 int SSLStream::FD() const
 {
-    return m_sock;
+    return m_ssl->Socket();
 }
 
 //
@@ -639,3 +634,105 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
     return s;
 }
 #endif
+
+static void write_from_file(int sock, char *file)
+{
+    FILE *fd;
+    int c;
+    char buf[1];
+    fd = fopen(file, "r");
+    if (fd != NULL)
+    {
+        while ((c = fgetc(fd)) != EOF)
+        {
+            buf[0] = c;
+            write(sock, buf, 1);
+        }
+        fclose(fd);
+    }
+}
+
+std::shared_ptr<SSLContext> m_ssl_ctx;
+
+InputStreamPtr OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &request)
+{
+    if (request->url.scheme != SCM_HTTP && request->url.scheme != SCM_HTTPS)
+    {
+        assert(false);
+        return nullptr;
+    }
+
+    if (w3mApp::Instance().UseProxy(request->url))
+    {
+        assert(false);
+        return nullptr;
+    }
+
+    auto sock = openSocket(request->url);
+    if (sock < 0)
+    {
+        // fail to open socket
+        return nullptr;
+    }
+
+    if (request->url.scheme == SCM_HTTPS)
+    {
+        if (!m_ssl_ctx)
+        {
+            m_ssl_ctx = SSLContext::Create();
+        }
+
+        auto ssl = m_ssl_ctx->Open(sock, request->url.host);
+        if (!ssl)
+        {
+            return nullptr;
+        }
+
+        // send http request
+        for (auto &l : request->lines)
+        {
+            ssl->Write(l.data(), l.size());
+        }
+        ssl->Write("\r\n", 2);
+        // send post body
+        if (request->method == HTTP_METHOD_POST)
+        {
+            if (request->form->enctype == FORM_ENCTYPE_MULTIPART)
+            {
+                ssl->WriteFromFile(request->form->body);
+            }
+            else
+            {
+                ssl->Write(request->form->body, request->form->length);
+            }
+        }
+
+        // return stream
+        // uf->ssl_certificate = ssl_certificate;
+        return newSSLStream(ssl);
+    }
+    else
+    {
+        // send http request
+        for (auto &l : request->lines)
+        {
+            write(sock, l.data(), l.size());
+        }
+        write(sock, "\r\n", 2);
+        // send post body
+        if (request->method == HTTP_METHOD_POST)
+        {
+            if (request->form->enctype == FORM_ENCTYPE_MULTIPART)
+            {
+                write_from_file(sock, request->form->body);
+            }
+            else
+            {
+                write(sock, request->form->body, request->form->length);
+            }
+        }
+
+        // return stream
+        return newInputStream(sock);
+    }
+}

@@ -291,7 +291,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     //
     // open stream and send request
     //
-    auto stream = URLFile::OpenHttpAndSendRest(request);
+    auto stream = OpenHttpAndSendRest(request);
     if (!stream)
     {
         // fail to open stream
