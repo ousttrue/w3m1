@@ -157,17 +157,6 @@ global char fmInitialized init(FALSE);
 global char QuietMessage init(FALSE);
 global char TrapSignal init(TRUE);
 
-global char *NO_proxy init(NULL);
-global int NOproxy_netaddr init(TRUE);
-#ifdef INET6
-#define DNS_ORDER_UNSPEC 0
-#define DNS_ORDER_INET_INET6 1
-#define DNS_ORDER_INET6_INET 2
-#define DNS_ORDER_INET_ONLY 4
-#define DNS_ORDER_INET6_ONLY 6
-global int DNS_order init(DNS_ORDER_UNSPEC);
-extern int ai_family_order_table[7][3]; /* XXX */
-#endif                                  /* INET6 */
 
 global char NoCache init(FALSE);
 

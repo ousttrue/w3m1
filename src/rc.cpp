@@ -756,7 +756,7 @@ auto sections = make_array(
                      {"default_url", P_INT, PI_SEL_C, DefaultURLString, CMT_DEFAULT_URL, (void *)defaulturls},
                      {"follow_redirection", P_INT, PI_TEXT, FollowRedirection, CMT_FOLLOW_REDIRECTION},
                      {"meta_refresh", P_CHARINT, PI_ONOFF, MetaRefresh, CMT_META_REFRESH},
-                     {"dns_order", P_INT, PI_SEL_C, DNS_order, CMT_DNS_ORDER, (void *)dnsorders},
+                     {"dns_order", P_INT, PI_SEL_C, w3mApp::Instance().DNS_order, CMT_DNS_ORDER, (void *)dnsorders},
                      {"nntpserver", P_STRING, PI_TEXT, NNTP_server, CMT_NNTP_SERVER},
                      {"nntpmode", P_STRING, PI_TEXT, NNTP_mode, CMT_NNTP_MODE},
                      {"max_news", P_INT, PI_TEXT, MaxNewsMessage, CMT_MAX_NEWS},
@@ -767,8 +767,8 @@ auto sections = make_array(
                      {"http_proxy", P_STRING, PI_TEXT, w3mApp::Instance().HTTP_proxy, CMT_HTTP_PROXY},
                      {"https_proxy", P_STRING, PI_TEXT, w3mApp::Instance().HTTPS_proxy, CMT_HTTPS_PROXY},
                      {"ftp_proxy", P_STRING, PI_TEXT, w3mApp::Instance().FTP_proxy, CMT_FTP_PROXY},
-                     {"no_proxy", P_STRING, PI_TEXT, NO_proxy, CMT_NO_PROXY},
-                     {"noproxy_netaddr", P_INT, PI_ONOFF, NOproxy_netaddr, CMT_NOPROXY_NETADDR},
+                     {"no_proxy", P_STRING, PI_TEXT, w3mApp::Instance().NO_proxy, CMT_NO_PROXY},
+                     {"noproxy_netaddr", P_INT, PI_ONOFF, w3mApp::Instance().NOproxy_netaddr, CMT_NOPROXY_NETADDR},
                      {"no_cache", P_CHARINT, PI_ONOFF, NoCache, CMT_NO_CACHE},
                  }},
     ParamSection{N_("SSL Settings"),
@@ -1024,8 +1024,8 @@ void parse_proxy()
 
     if (w3mApp::Instance().FTP_proxy.size())
         w3mApp::Instance().FTP_proxy_parsed = URL::Parse(w3mApp::Instance().FTP_proxy, NULL);
-    if (non_null(NO_proxy))
-        set_no_proxy(NO_proxy);
+    if (non_null(w3mApp::Instance().NO_proxy))
+        set_no_proxy(w3mApp::Instance().NO_proxy);
 }
 
 void parse_cookie()

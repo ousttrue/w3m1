@@ -4,6 +4,8 @@
 #include <string_view>
 #include <wc.h>
 
+extern int ai_family_order_table[7][3]; /* XXX */
+
 enum URLSchemeTypes
 {
     SCM_UNKNOWN = 255,

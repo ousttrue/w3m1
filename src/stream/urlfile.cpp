@@ -228,182 +228,7 @@ SSL_write_from_file(SSL *ssl, char *file)
     }
 }
 
-static bool domain_match(const char *pat, const char *domain)
-{
-    if (domain == NULL)
-        return 0;
-    if (*pat == '.')
-        pat++;
-    for (;;)
-    {
-        if (!strcasecmp(pat, domain))
-            return 1;
-        domain = strchr(domain, '.');
-        if (domain == NULL)
-            return 0;
-        domain++;
-    }
-}
 
-bool check_no_proxy(std::string_view domain)
-{
-    TextListItem *tl;
-    int ret = 0;
-    MySignalHandler prevtrap = NULL;
-
-    if (w3mApp::Instance().NO_proxy_domains == NULL || w3mApp::Instance().NO_proxy_domains->nitem == 0 ||
-        domain == NULL)
-        return 0;
-    for (tl = w3mApp::Instance().NO_proxy_domains->first; tl != NULL; tl = tl->next)
-    {
-        if (domain_match(tl->ptr, domain.data()))
-            return 1;
-    }
-    if (!NOproxy_netaddr)
-    {
-        return 0;
-    }
-    /* 
-     * to check noproxy by network addr
-     */
-
-    auto success = TrapJmp([&]() {
-        {
-#ifndef INET6
-            struct hostent *he;
-            int n;
-            unsigned char **h_addr_list;
-            char addr[4 * 16], buf[5];
-
-            he = gethostbyname(domain);
-            if (!he)
-            {
-                ret = 0;
-                goto end;
-            }
-            for (h_addr_list = (unsigned char **)he->h_addr_list; *h_addr_list;
-                 h_addr_list++)
-            {
-                sprintf(addr, "%d", h_addr_list[0][0]);
-                for (n = 1; n < he->h_length; n++)
-                {
-                    sprintf(buf, ".%d", h_addr_list[0][n]);
-                    addr->Push(buf);
-                }
-                for (tl = NO_proxy_domains->first; tl != NULL; tl = tl->next)
-                {
-                    if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0)
-                    {
-                        ret = 1;
-                        goto end;
-                    }
-                }
-            }
-#else  /* INET6 */
-            int error;
-            struct addrinfo hints;
-            struct addrinfo *res, *res0;
-            char addr[4 * 16];
-            int *af;
-
-            for (af = ai_family_order_table[DNS_order];; af++)
-            {
-                memset(&hints, 0, sizeof(hints));
-                hints.ai_family = *af;
-                error = getaddrinfo(domain.data(), NULL, &hints, &res0);
-                if (error)
-                {
-                    if (*af == PF_UNSPEC)
-                    {
-                        break;
-                    }
-                    /* try next */
-                    continue;
-                }
-                for (res = res0; res != NULL; res = res->ai_next)
-                {
-                    switch (res->ai_family)
-                    {
-                    case AF_INET:
-                        inet_ntop(AF_INET,
-                                  &((struct sockaddr_in *)res->ai_addr)->sin_addr,
-                                  addr, sizeof(addr));
-                        break;
-                    case AF_INET6:
-                        inet_ntop(AF_INET6,
-                                  &((struct sockaddr_in6 *)res->ai_addr)->sin6_addr, addr, sizeof(addr));
-                        break;
-                    default:
-                        /* unknown */
-                        continue;
-                    }
-                    for (tl = w3mApp::Instance().NO_proxy_domains->first; tl != NULL; tl = tl->next)
-                    {
-                        if (strncmp(tl->ptr, addr, strlen(tl->ptr)) == 0)
-                        {
-                            freeaddrinfo(res0);
-                            ret = 1;
-                            return true;
-                        }
-                    }
-                }
-                freeaddrinfo(res0);
-                if (*af == PF_UNSPEC)
-                {
-                    break;
-                }
-            }
-#endif /* INET6 */
-        }
-
-        return true;
-    });
-
-    if (!success)
-    {
-        ret = 0;
-    }
-
-    return ret;
-}
-
-static bool UseProxy(const URL &url)
-{
-    if (!w3mApp::Instance().use_proxy)
-    {
-        return false;
-    }
-    if (url.scheme == SCM_HTTPS)
-    {
-        if (w3mApp::Instance().HTTPS_proxy.empty())
-        {
-            return false;
-        }
-    }
-    else if (url.scheme == SCM_HTTP)
-    {
-        if (w3mApp::Instance().HTTP_proxy.empty())
-        {
-            return false;
-        }
-    }
-    else
-    {
-        assert(false);
-        return false;
-    }
-
-    if (url.host.empty())
-    {
-        return false;
-    }
-    if (check_no_proxy(url.host))
-    {
-        return false;
-    }
-
-    return true;
-}
 
 int openSocket4(const char *hostname,
                 const char *remoteport_name, unsigned short remoteport_num)
@@ -536,7 +361,7 @@ int openSocket6(const char *hostname,
             if (strspn(hname, "0123456789abcdefABCDEF:.") != strlen(hname))
                 return false;
         }
-        for (af = ai_family_order_table[DNS_order];; af++)
+        for (af = ai_family_order_table[w3mApp::Instance().DNS_order];; af++)
         {
             memset(&hints, 0, sizeof(hints));
             hints.ai_family = *af;
@@ -636,7 +461,7 @@ InputStreamPtr URLFile::OpenHttpAndSendRest(const std::shared_ptr<HttpRequest> &
         return {};
     }
 
-    if (UseProxy(request->url))
+    if (w3mApp::Instance().UseProxy(request->url))
     {
         assert(false);
         return {};

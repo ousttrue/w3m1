@@ -23,6 +23,15 @@ enum DumpFlags
     DUMP_FRAME = 0x20,
 };
 
+enum DnsOrderTypes
+{
+    DNS_ORDER_UNSPEC = 0,
+    DNS_ORDER_INET_INET6 = 1,
+    DNS_ORDER_INET6_INET = 2,
+    DNS_ORDER_INET_ONLY = 4,
+    DNS_ORDER_INET6_ONLY = 6,
+};
+
 class w3mApp
 {
     w3mApp();
@@ -76,6 +85,9 @@ public:
     URL HTTPS_proxy_parsed;
     std::string FTP_proxy;
     URL FTP_proxy_parsed;
+    char *NO_proxy = nullptr;
+    bool NOproxy_netaddr = true;
+    int DNS_order = DNS_ORDER_UNSPEC;
 
     // frontend
     bool FoldLine = false;
@@ -140,7 +152,10 @@ public:
         return m_term;
     }
 
+    bool UseProxy(const URL &url);
+
 private:
+    bool check_no_proxy(std::string_view domain);
     void mainloop();
     std::string make_optional_header_string(const char *s);
 };
