@@ -249,7 +249,7 @@ BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingSche
 BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_view content_type, CharacterEncodingScheme content_charset)
 {
     // if (t_buf == NULL)
-    auto t_buf = newBuffer(url);
+    // auto t_buf = newBuffer(url);
 
     // readHeader(f, t_buf, FALSE, &pu);
     // char *p;
@@ -291,9 +291,9 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_v
 
     // if (real_type == NULL)
     //     real_type = t;
-    auto proc = loadBuffer;
+    // auto proc = loadBuffer;
 
-    *GetCurBaseUrl() = url;
+    // *GetCurBaseUrl() = url;
 
     // if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
     //     current_content_length = strtoclen(p);
@@ -365,44 +365,44 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_v
     //     return b;
     // }
 
-    if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(content_type))
-    {
-        BufferPtr b = NULL;
-        if (!do_download)
-        {
-            // auto url = URL::Parse(pu.real_file.size() ? pu.real_file.c_str() : pu.path.c_str());
-            auto b = doExternal(url, stream, content_type);
-            if (b)
-            {
-                b->real_scheme = url.scheme;
-                b->real_type = content_type;
-                if (b->currentURL.host.empty() && b->currentURL.path.empty())
-                    b->currentURL = url;
-            }
-            // f.Close();
-            // TRAP_OFF;
-            return b;
-        }
-        else
-        {
-            // TRAP_OFF;
-            // if (pu.scheme == SCM_LOCAL)
-            // {
-            //     // f.Close();
-            //     _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
-            //                 conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
-            // }
-            // else
-            // {
-            //     if (DecodeCTE && f->stream->type() != IST_ENCODED)
-            //         f->stream = newEncodedStream(f->stream, f->encoding);
-            //     f->DoFileSave(guess_save_name(t_buf, pu.path), current_content_length);
-            // }
-            return nullptr;
-        }
-    }
-    else if (w3mApp::Instance().w3m_dump & DUMP_FRAME)
-        return NULL;
+    // if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(content_type))
+    // {
+    //     BufferPtr b = NULL;
+    //     if (!do_download)
+    //     {
+    //         // auto url = URL::Parse(pu.real_file.size() ? pu.real_file.c_str() : pu.path.c_str());
+    //         auto b = doExternal(url, stream, content_type);
+    //         if (b)
+    //         {
+    //             b->real_scheme = url.scheme;
+    //             b->real_type = content_type;
+    //             if (b->currentURL.host.empty() && b->currentURL.path.empty())
+    //                 b->currentURL = url;
+    //         }
+    //         // f.Close();
+    //         // TRAP_OFF;
+    //         return b;
+    //     }
+    //     else
+    //     {
+    //         // TRAP_OFF;
+    //         // if (pu.scheme == SCM_LOCAL)
+    //         // {
+    //         //     // f.Close();
+    //         //     _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
+    //         //                 conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
+    //         // }
+    //         // else
+    //         // {
+    //         //     if (DecodeCTE && f->stream->type() != IST_ENCODED)
+    //         //         f->stream = newEncodedStream(f->stream, f->encoding);
+    //         //     f->DoFileSave(guess_save_name(t_buf, pu.path), current_content_length);
+    //         // }
+    //         return nullptr;
+    //     }
+    // }
+    // else if (w3mApp::Instance().w3m_dump & DUMP_FRAME)
+    //     return NULL;
 
     // if (flag & RG_FRAME)
     // {
@@ -558,6 +558,8 @@ _end:
     newBuf->document_charset = charset;
     if (src)
         fclose(src);
+
+    return newBuf;
 }
 
 int doFileCopy(const char *tmpf, const char *defstr)
@@ -637,7 +639,7 @@ BufferPtr loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolic
             assert(false);
             return nullptr;
         }
-        return LoadStream(url, stream);
+        return LoadStream(url, stream, "text/html");
     }
 
     // not implemened
