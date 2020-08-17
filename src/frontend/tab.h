@@ -99,9 +99,6 @@ private:
     }
 
 public:
-    BufferPtr NamedBuffer(const char *name) const;
-    BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar);
-
     // history の 先頭に追加する
     void Push(const BufferPtr &buf);
     // remove current back, for remove history(local cgi etc)

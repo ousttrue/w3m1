@@ -548,7 +548,8 @@ void selBuf(w3mApp *w3m)
     do
     {
         char cmd;
-        auto buf = tab->SelectBuffer(tab->GetCurrentBuffer(), &cmd);
+        // auto buf = tab->SelectBuffer(tab->GetCurrentBuffer(), &cmd);
+        BufferPtr buf;
         switch (cmd)
         {
         case 'B':

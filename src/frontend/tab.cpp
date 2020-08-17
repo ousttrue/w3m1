@@ -50,49 +50,6 @@ void Tab::DeleteBack()
     // m_buffers.erase(it);
 }
 
-// BufferPtr Tab::ForwardBuffer(const BufferPtr &buf) const
-// {
-//     if (buf == m_buffers.front())
-//     {
-//         return nullptr;
-//     }
-//     auto it = find(buf);
-//     --it;
-//     return *it;
-// }
-
-// BufferPtr Tab::BackBuffer(const BufferPtr &buf) const
-// {
-//     auto it = find(buf);
-//     if (it == m_buffers.end())
-//     {
-//         assert(false);
-//         return nullptr;
-//     }
-//     ++it;
-//     return *it;
-// }
-
-// void Tab::SetCurrentBuffer(const BufferPtr &buf)
-// {
-//     auto c = GetCurrentBuffer();
-//     if (c == buf)
-//     {
-//         return;
-//     }
-//     if (c)
-//     {
-//         deleteImage(c.get());
-//         if (clear_buffer)
-//         {
-//             c->TmpClear();
-//         }
-//     }
-
-//     m_current = GetBufferIndex(buf);
-//     assert(IsConnectFirstCurrent());
-// }
-
 void Tab::Push(const BufferPtr &buf)
 {
     if (m_buffers.size() > m_current + 1)
@@ -102,32 +59,6 @@ void Tab::Push(const BufferPtr &buf)
     }
     m_buffers.push_back(buf);
     m_current = m_buffers.size() - 1;
-}
-
-// void Tab::PushBufferCurrentNext(const BufferPtr &buf)
-// {
-//     auto it = findCurrent();
-//     assert(it != buffers.end());
-//     ++it;
-//     buffers.insert(it, buf);
-//     SetCurrentBuffer(buf);
-//     SetCurrentBuffer(buf);
-// }
-
-/* 
- * namedBuffer: Select buffer which have specified name
- */
-BufferPtr
-Tab::NamedBuffer(const char *name) const
-{
-    for (auto &buf : m_buffers)
-    {
-        if (buf->buffername == name)
-        {
-            return buf;
-        }
-    }
-    return nullptr;
 }
 
 static void
@@ -216,149 +147,149 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 /* 
  * Select buffer visually
  */
-BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar)
-{
-    int i, cpoint,                     /* Current Buffer Number */
-        spoint,                        /* Current Line on Screen */
-        maxbuf, sclimit = (LINES - 1); /* Upper limit of line * number in 
-					 * the * screen */
+// BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar)
+// {
+//     int i, cpoint,                     /* Current Buffer Number */
+//         spoint,                        /* Current Line on Screen */
+//         maxbuf, sclimit = (LINES - 1); /* Upper limit of line * number in 
+// 					 * the * screen */
 
-    BufferPtr topbuf;
-    char c;
+//     BufferPtr topbuf;
+//     char c;
 
-    i = cpoint = 0;
-    for (auto &buf : m_buffers)
-    {
-        if (buf == currentbuf)
-            cpoint = i;
-        i++;
-    }
-    maxbuf = i;
+//     i = cpoint = 0;
+//     for (auto &buf : m_buffers)
+//     {
+//         if (buf == currentbuf)
+//             cpoint = i;
+//         i++;
+//     }
+//     maxbuf = i;
 
-    if (cpoint >= sclimit)
-    {
-        spoint = sclimit / 2;
-        topbuf = GetBuffer(cpoint - spoint);
-    }
-    else
-    {
-        topbuf = m_buffers.front();
-        spoint = cpoint;
-    }
-    listBuffer(this, topbuf, currentbuf);
+//     if (cpoint >= sclimit)
+//     {
+//         spoint = sclimit / 2;
+//         topbuf = GetBuffer(cpoint - spoint);
+//     }
+//     else
+//     {
+//         topbuf = m_buffers.front();
+//         spoint = cpoint;
+//     }
+//     listBuffer(this, topbuf, currentbuf);
 
-    auto it = findCurrent();
-    for (;;)
-    {
-        if ((c = getch()) == ESC_CODE)
-        {
-            if ((c = getch()) == '[' || c == 'O')
-            {
-                switch (c = getch())
-                {
-                case 'A':
-                    c = 'k';
-                    break;
-                case 'B':
-                    c = 'j';
-                    break;
-                case 'C':
-                    c = ' ';
-                    break;
-                case 'D':
-                    c = 'B';
-                    break;
-                }
-            }
-        }
-#ifdef __EMX__
-        else if (!c)
-            switch (getch())
-            {
-            case K_UP:
-                c = 'k';
-                break;
-            case K_DOWN:
-                c = 'j';
-                break;
-            case K_RIGHT:
-                c = ' ';
-                break;
-            case K_LEFT:
-                c = 'B';
-            }
-#endif
-        switch (c)
-        {
-        case CTRL_N:
-        case 'j':
-        {
-            auto next = it;
-            ++next;
-            if (spoint < sclimit - 1)
-            {
-                if (next == m_buffers.end())
-                    continue;
-                writeBufferName(currentbuf, spoint);
-                currentbuf = *next;
-                cpoint++;
-                spoint++;
-                standout();
-                writeBufferName(currentbuf, spoint);
-                standend();
-                move(spoint, 0);
-                toggle_stand();
-            }
-            else if (cpoint < maxbuf - 1)
-            {
-                topbuf = currentbuf;
-                currentbuf = *next;
-                cpoint++;
-                spoint = 1;
-                listBuffer(this, topbuf, currentbuf);
-            }
-            break;
-        }
-        case CTRL_P:
-        case 'k':
-        {
-            if (spoint > 0)
-            {
-                writeBufferName(currentbuf, spoint);
-                currentbuf = topbuf;
-                // for (int i = 0; i < --spoint && currentbuf; ++i)
-                // {
-                //     currentbuf = currentbuf->nextBuffer;
-                // }
-                --it;
-                cpoint--;
-                standout();
-                writeBufferName(currentbuf, spoint);
-                standend();
-                move(spoint, 0);
-                toggle_stand();
-            }
-            else if (cpoint > 0)
-            {
-                i = cpoint - sclimit;
-                if (i < 0)
-                    i = 0;
-                cpoint--;
-                spoint = cpoint - i;
-                currentbuf = GetBuffer(cpoint);
-                topbuf = GetBuffer(i);
-                listBuffer(this, topbuf, currentbuf);
-            }
-            break;
-        }
-        default:
-            *selectchar = c;
-            return currentbuf;
-        }
-        /* 
-	 * move((LINES-1), COLS - 1);
-	 */
-        move(spoint, 0);
-        refresh();
-    }
-}
+//     auto it = findCurrent();
+//     for (;;)
+//     {
+//         if ((c = getch()) == ESC_CODE)
+//         {
+//             if ((c = getch()) == '[' || c == 'O')
+//             {
+//                 switch (c = getch())
+//                 {
+//                 case 'A':
+//                     c = 'k';
+//                     break;
+//                 case 'B':
+//                     c = 'j';
+//                     break;
+//                 case 'C':
+//                     c = ' ';
+//                     break;
+//                 case 'D':
+//                     c = 'B';
+//                     break;
+//                 }
+//             }
+//         }
+// #ifdef __EMX__
+//         else if (!c)
+//             switch (getch())
+//             {
+//             case K_UP:
+//                 c = 'k';
+//                 break;
+//             case K_DOWN:
+//                 c = 'j';
+//                 break;
+//             case K_RIGHT:
+//                 c = ' ';
+//                 break;
+//             case K_LEFT:
+//                 c = 'B';
+//             }
+// #endif
+//         switch (c)
+//         {
+//         case CTRL_N:
+//         case 'j':
+//         {
+//             auto next = it;
+//             ++next;
+//             if (spoint < sclimit - 1)
+//             {
+//                 if (next == m_buffers.end())
+//                     continue;
+//                 writeBufferName(currentbuf, spoint);
+//                 currentbuf = *next;
+//                 cpoint++;
+//                 spoint++;
+//                 standout();
+//                 writeBufferName(currentbuf, spoint);
+//                 standend();
+//                 move(spoint, 0);
+//                 toggle_stand();
+//             }
+//             else if (cpoint < maxbuf - 1)
+//             {
+//                 topbuf = currentbuf;
+//                 currentbuf = *next;
+//                 cpoint++;
+//                 spoint = 1;
+//                 listBuffer(this, topbuf, currentbuf);
+//             }
+//             break;
+//         }
+//         case CTRL_P:
+//         case 'k':
+//         {
+//             if (spoint > 0)
+//             {
+//                 writeBufferName(currentbuf, spoint);
+//                 currentbuf = topbuf;
+//                 // for (int i = 0; i < --spoint && currentbuf; ++i)
+//                 // {
+//                 //     currentbuf = currentbuf->nextBuffer;
+//                 // }
+//                 --it;
+//                 cpoint--;
+//                 standout();
+//                 writeBufferName(currentbuf, spoint);
+//                 standend();
+//                 move(spoint, 0);
+//                 toggle_stand();
+//             }
+//             else if (cpoint > 0)
+//             {
+//                 i = cpoint - sclimit;
+//                 if (i < 0)
+//                     i = 0;
+//                 cpoint--;
+//                 spoint = cpoint - i;
+//                 currentbuf = GetBuffer(cpoint);
+//                 topbuf = GetBuffer(i);
+//                 listBuffer(this, topbuf, currentbuf);
+//             }
+//             break;
+//         }
+//         default:
+//             *selectchar = c;
+//             return currentbuf;
+//         }
+//         /* 
+// 	 * move((LINES-1), COLS - 1);
+// 	 */
+//         move(spoint, 0);
+//         refresh();
+//     }
+// }
