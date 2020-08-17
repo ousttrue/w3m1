@@ -64,12 +64,6 @@ static void KeyAbort(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
-static URL g_cur_baseURL = {};
-URL *GetCurBaseUrl()
-{
-    return &g_cur_baseURL;
-}
-
 int setModtime(char *path, time_t modtime)
 {
     struct utimbuf t;
@@ -590,10 +584,11 @@ BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
     image.width = -1;
     image.height = -1;
     image.cache = NULL;
-    cache = getImage(&image, GetCurBaseUrl(), IMG_FLAG_AUTO);
-    if (!GetCurBaseUrl()->is_nocache && cache->loaded & IMG_FLAG_LOADED &&
-        !stat(cache->file, &st))
-        goto image_buffer;
+    // TODO:
+    cache = getImage(&image, nullptr, IMG_FLAG_AUTO);
+    // if (!GetCurBaseUrl()->is_nocache && cache->loaded & IMG_FLAG_LOADED &&
+    //     !stat(cache->file, &st))
+    //     goto image_buffer;
 
     TRAP_ON;
     // if (stream->type() != IST_ENCODED)
@@ -789,7 +784,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
              !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     {
-        *GetCurBaseUrl() = URL::Parse("-", NULL);
+        // *GetCurBaseUrl() = URL::Parse("-", NULL);
         buf = loadImageBuffer({}, stream);
         buf->type = "text/html";
     }

@@ -859,7 +859,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
         i0 = i;
         if (w < 0 || i < 0)
         {
-            auto u = URL::Parse(wc_conv(p, w3mApp::Instance().InnerCharset, CES())->ptr, GetCurBaseUrl());
+            auto u = URL::Parse(wc_conv(p, w3mApp::Instance().InnerCharset, CES())->ptr, nullptr);
             Image image;
             image.url = u.ToStr()->ptr;
             auto [t, ext] = uncompressed_file_type(u.path);
@@ -875,7 +875,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
             image.width = w;
             image.height = i;
 
-            image.cache = getImage(&image, GetCurBaseUrl(), IMG_FLAG_SKIP);
+            image.cache = getImage(&image, nullptr, IMG_FLAG_SKIP);
             if (image.cache && image.cache->width > 0 &&
                 image.cache->height > 0)
             {
@@ -1437,7 +1437,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             this->a_img->image = nullptr;
             if (iseq > 0)
             {
-                auto u = URL::Parse(this->a_img->url, GetCurBaseUrl());
+                auto u = URL::Parse(this->a_img->url);
                 Image *image;
                 this->a_img->image = image = New(Image);
                 image->url = u.ToStr()->ptr;
@@ -1466,8 +1466,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
                 image->map = q;
                 image->ismap = ismap;
                 image->touch = 0;
-                image->cache = getImage(image, GetCurBaseUrl(),
-                                        IMG_FLAG_SKIP);
+                image->cache = getImage(image, nullptr, IMG_FLAG_SKIP);
             }
             else if (iseq < 0)
             {
