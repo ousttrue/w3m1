@@ -13,63 +13,63 @@ using BufferList = std::vector<BufferPtr>;
 ///
 class Tab
 {
-    short x1 = -1;
-    short x2 = -1;
+    short m_left = -1;
+    short m_right = -1;
     short y = -1;
 
     // avoid copy
     Tab(const Tab &) = delete;
     Tab &operator=(const Tab &) = delete;
 
-    BufferList buffers;
+    BufferList m_buffers;
 
-    int currentBuffer = 0;
+    int m_current = 0;
     BufferList::const_iterator find(BufferPtr b) const
     {
-        return std::find(buffers.begin(), buffers.end(), b);
+        return std::find(m_buffers.begin(), m_buffers.end(), b);
     }
     BufferList::const_iterator findCurrent() const
     {
-        if (currentBuffer < 0 || currentBuffer > buffers.size())
+        if (m_current < 0 || m_current > m_buffers.size())
         {
-            return buffers.end();
+            return m_buffers.end();
         }
-        return buffers.begin() + currentBuffer;
+        return m_buffers.begin() + m_current;
     }
 
 public:
     Tab() = default;
     ~Tab();
 
-    int Left() const { return x1; }
-    int Right() const { return x2; }
+    int Left() const { return m_left; }
+    int Right() const { return m_right; }
     int Width() const
     {
         // -1 ?
-        return x2 - x1 - 1;
+        return m_right - m_left - 1;
     }
     int Y() const { return y; }
     void Calc(int w, int ix, int iy, int left)
     {
-        this->x1 = w * ix;
-        this->x2 = w * (ix + 1) - 1;
+        this->m_left = w * ix;
+        this->m_right = w * (ix + 1) - 1;
         this->y = iy;
         if (iy == 0)
         {
-            this->x1 += left;
-            this->x2 += left;
+            this->m_left += left;
+            this->m_right += left;
         }
     }
     bool IsHit(int x, int y) const
     {
-        return x1 <= x && x <= x2 && y == y;
+        return m_left <= x && x <= m_right && y == y;
     }
 
     // buffer
     int GetBufferIndex(const BufferPtr &buf) const;
-    int GetCurrentBufferIndex() const { return currentBuffer; }
-    BufferPtr GetFirstBuffer() { return buffers.front(); }
-    BufferPtr GetCurrentBuffer() const { return GetBuffer(currentBuffer); }
+    int GetCurrentBufferIndex() const { return m_current; }
+    BufferPtr GetFirstBuffer() { return m_buffers.front(); }
+    BufferPtr GetCurrentBuffer() const { return GetBuffer(m_current); }
 
 private:
     BufferPtr ForwardBuffer(const BufferPtr &buf) const;
@@ -78,11 +78,11 @@ private:
 public:
     BufferPtr GetBuffer(int n) const
     {
-        if (n < 0 || n >= buffers.size())
+        if (n < 0 || n >= m_buffers.size())
         {
             return nullptr;
         }
-        return buffers[n];
+        return m_buffers[n];
     }
     BufferPtr NamedBuffer(const char *name) const;
     BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar);
