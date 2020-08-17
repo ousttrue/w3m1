@@ -37,7 +37,6 @@ enum ShapeTypes
     SHAPE_POLY = 4,
 };
 
-#ifdef USE_IMAGE
 static int
 inMapArea(MapArea *a, int x, int y)
 {
@@ -157,10 +156,10 @@ retrieveCurrentMapArea(BufferPtr buf)
     MapArea *a;
     int i, n;
 
-    auto a_img = retrieveCurrentImg(buf);
+    auto a_img = buf->img.RetrieveAnchor(buf->CurrentPoint());
     if (!(a_img && a_img->image && a_img->image->map))
         return NULL;
-    auto a_form = retrieveCurrentForm(buf);
+    auto a_form = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (!(a_form && a_form->url.size()))
         return NULL;
     fi = a_form->item;
@@ -194,14 +193,13 @@ int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y)
         *y = 1;
     return 1;
 }
-#endif
 
 const Anchor *
 retrieveCurrentMap(BufferPtr buf)
 {
     FormItemList *fi;
 
-    auto a = retrieveCurrentForm(buf);
+    auto a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (!a || !a->url.size())
         return NULL;
     fi = a->item;
@@ -211,7 +209,6 @@ retrieveCurrentMap(BufferPtr buf)
     return NULL;
 }
 
-#if defined(USE_IMAGE) || defined(MENU_MAP)
 MapArea *
 follow_map_menu(BufferPtr buf, char *name, const Anchor *a_img, int x, int y)
 {
@@ -219,16 +216,13 @@ follow_map_menu(BufferPtr buf, char *name, const Anchor *a_img, int x, int y)
     ListItem *al;
     int i, selected = -1;
     int initial = 0;
-#ifdef MENU_MAP
     MapArea *a;
     char **label;
-#endif
 
     ml = searchMapList(buf, name);
     if (ml == NULL || ml->area == NULL || ml->area->nitem == 0)
         return NULL;
 
-#ifdef USE_IMAGE
     initial = searchMapArea(buf, ml, a_img);
     if (initial < 0)
         initial = 0;
@@ -237,9 +231,7 @@ follow_map_menu(BufferPtr buf, char *name, const Anchor *a_img, int x, int y)
         selected = initial;
         goto map_end;
     }
-#endif
 
-#ifdef MENU_MAP
     label = New_N(char *, ml->area->nitem + 1);
     for (i = 0, al = ml->area->first; al != NULL; i++, al = al->next)
     {
@@ -252,11 +244,8 @@ follow_map_menu(BufferPtr buf, char *name, const Anchor *a_img, int x, int y)
     label[ml->area->nitem] = NULL;
 
     optionMenu(x, y, label, &selected, initial, NULL);
-#endif
 
-#ifdef USE_IMAGE
 map_end:
-#endif
     if (selected >= 0)
     {
         for (i = 0, al = ml->area->first; al != NULL; i++, al = al->next)
@@ -267,7 +256,6 @@ map_end:
     }
     return NULL;
 }
-#endif
 
 #ifndef MENU_MAP
 char *map1 = "<HTML><HEAD><TITLE>Image map links</TITLE></HEAD>\
@@ -595,7 +583,7 @@ page_info_panel(BufferPtr buf)
                    "<tr valign=top><td nowrap>Transferred bytes<td>",
                    Sprintf("%d", buf->trbyte)->ptr, NULL);
 
-    a = buf->RetrieveAnchor(buf->CurrentPoint());
+    a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
         auto pu = URL::Parse(a->url, buf->BaseURL());
@@ -609,7 +597,7 @@ page_info_panel(BufferPtr buf)
                        "<tr valign=top><td nowrap>URL of current anchor<td><a href=\"",
                        q, "\">", p, "</a>", NULL);
     }
-    a = retrieveCurrentImg(buf);
+    a = buf->img.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
         auto pu = URL::Parse(a->url, buf->BaseURL());
@@ -623,7 +611,7 @@ page_info_panel(BufferPtr buf)
                        "<tr valign=top><td nowrap>URL of current image<td><a href=\"",
                        q, "\">", p, "</a>", NULL);
     }
-    a = retrieveCurrentForm(buf);
+    a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
         FormItemList *fi = a->item;

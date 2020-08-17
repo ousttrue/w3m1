@@ -87,18 +87,6 @@ AnchorList::RetrieveAnchor(const BufferPoint &bp) const
 }
 
 const Anchor *
-retrieveCurrentImg(BufferPtr buf)
-{
-    return buf->img.RetrieveAnchor(buf->CurrentPoint());
-}
-
-const Anchor *
-retrieveCurrentForm(BufferPtr buf)
-{
-    return buf->formitem.RetrieveAnchor(buf->CurrentPoint());
-}
-
-const Anchor *
 AnchorList::SearchByUrl(const char *str) const
 {
     for (auto &a : anchors)
@@ -109,12 +97,6 @@ AnchorList::SearchByUrl(const char *str) const
             return &a;
     }
     return nullptr;
-}
-
-const Anchor *
-searchURLLabel(BufferPtr buf, char *url)
-{
-    return buf->name.SearchByUrl(url);
 }
 
 static Anchor *

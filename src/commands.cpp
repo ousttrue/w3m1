@@ -843,19 +843,20 @@ void reMark(w3mApp *w3m)
 
 void followI(w3mApp *w3m)
 {
-    LinePtr l;
-    BufferPtr buf;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    l = GetCurrentTab()->GetCurrentBuffer()->CurrentLine();
-    auto a = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
+    auto a = buf->img.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
         return;
+
+    auto l = buf->CurrentLine();
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    buf = loadGeneralFile(URL::Parse(a->url), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    if (buf == NULL)
+    auto newBuf = loadGeneralFile(URL::Parse(a->url), buf->BaseURL());
+    if (newBuf == NULL)
     {
         /* FIXME: gettextize? */
         char *emsg = Sprintf("Can't load %s", a->url)->ptr;
@@ -863,7 +864,7 @@ void followI(w3mApp *w3m)
     }
     else
     {
-        GetCurrentTab()->Push(buf);
+        GetCurrentTab()->Push(newBuf);
     }
     displayCurrentbuf(B_NORMAL);
 }
@@ -996,7 +997,7 @@ void followA(w3mApp *w3m)
     int y = -1;
 
     {
-        auto a = retrieveCurrentImg(buf);
+        auto a = buf->img.RetrieveAnchor(buf->CurrentPoint());
         if (a && a->image && a->image->map)
         {
             _followForm(FALSE);
@@ -1006,7 +1007,7 @@ void followA(w3mApp *w3m)
         std::tie(map, x, y) = isMap(buf, a);
     }
 
-    auto a = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
     {
         _followForm(FALSE);
@@ -1045,7 +1046,7 @@ void followA(w3mApp *w3m)
         auto tab = CreateTabSetCurrent();
         auto buf = tab->GetCurrentBuffer();
         loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
-        if (buf != GetCurrentTab()->GetCurrentBuffer())
+        if (buf != buf)
             GetCurrentTab()->DeleteBuffer(buf);
         else
             deleteTab(GetCurrentTab());
@@ -1865,7 +1866,7 @@ void linkbrz(w3mApp *w3m)
     if (buf->LineCount() == 0)
         return;
 
-    auto a = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
         return;
 

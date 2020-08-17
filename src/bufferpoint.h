@@ -1,8 +1,9 @@
 #pragma once
+#include <stdint.h>
 
 struct BufferPoint
 {
-    int line = 0;
+    int64_t line = 0;
     int pos = 0;
     int invalid = 0;
 

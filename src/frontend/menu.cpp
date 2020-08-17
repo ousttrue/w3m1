@@ -1861,7 +1861,7 @@ accesskey_menu(BufferPtr buf)
         menu.keyselect[(int)c] = i;
     }
 
-    auto a = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a && a->accesskey && IS_ASCII(a->accesskey))
     {
         for (i = 0; i < nitem; i++)
@@ -1991,7 +1991,7 @@ list_menu(BufferPtr buf)
         }
     }
 
-    auto a = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a)
     {
         for (i = 0; i < nitem; i++)

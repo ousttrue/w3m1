@@ -356,8 +356,6 @@ public:
 
     void DrawLine(LinePtr l, int i);
     int DrawLineRegion(LinePtr l, int i, int bpos, int epos);
-
-    const Anchor *RetrieveAnchor(const BufferPoint &bp);
 };
 
 BufferPtr newBuffer(const URL &url);
@@ -375,9 +373,6 @@ BufferPtr nullBuffer(void);
 void set_buffer_environ(BufferPtr buf);
 
 // anchor
-const Anchor *retrieveCurrentImg(BufferPtr buf);
-const Anchor *retrieveCurrentForm(BufferPtr buf);
-const Anchor *searchURLLabel(BufferPtr buf, char *url);
 void reAnchorWord(BufferPtr buf, LinePtr l, int spos, int epos);
 char *reAnchor(BufferPtr buf, char *re);
 char *reAnchorNews(BufferPtr buf, char *re);

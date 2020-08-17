@@ -651,20 +651,20 @@ void SetMarkString(char *str)
 
 void _followForm(int submit)
 {
-    LinePtr l;
-
     char *p;
     FormItemList *fi, *f2;
     Str tmp, tmp2;
     int multipart = 0, i;
 
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    l = GetCurrentTab()->GetCurrentBuffer()->CurrentLine();
-
-    auto a = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
+    auto a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
         return;
+
+    auto l = buf->CurrentLine();
     fi = a->item;
     switch (fi->type)
     {
@@ -679,7 +679,7 @@ void _followForm(int submit)
         if (p == NULL || fi->readonly)
             break;
         fi->value = Strnew(p);
-        formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
+        formUpdateBuffer(a, buf, fi);
         if (fi->accept || fi->parent->nitems == 1)
             goto do_submit;
         break;
@@ -695,7 +695,7 @@ void _followForm(int submit)
         if (p == NULL || fi->readonly)
             break;
         fi->value = Strnew(p);
-        formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
+        formUpdateBuffer(a, buf, fi);
         if (fi->accept || fi->parent->nitems == 1)
             goto do_submit;
         break;
@@ -714,7 +714,7 @@ void _followForm(int submit)
         if (p == NULL)
             break;
         fi->value = Strnew(p);
-        formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
+        formUpdateBuffer(a, buf, fi);
         if (fi->accept)
             goto do_submit;
         break;
@@ -725,7 +725,7 @@ void _followForm(int submit)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
         input_textarea(fi);
-        formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
+        formUpdateBuffer(a, buf, fi);
         break;
     case FORM_INPUT_RADIO:
         if (submit)
@@ -736,7 +736,7 @@ void _followForm(int submit)
             disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
             break;
         }
-        formRecheckRadio(a, GetCurrentTab()->GetCurrentBuffer(), fi);
+        formRecheckRadio(a, buf, fi);
         break;
     case FORM_INPUT_CHECKBOX:
         if (submit)
@@ -748,18 +748,18 @@ void _followForm(int submit)
             break;
         }
         fi->checked = !fi->checked;
-        formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
+        formUpdateBuffer(a, buf, fi);
         break;
 #ifdef MENU_SELECT
     case FORM_SELECT:
         if (submit)
             goto do_submit;
         if (!formChooseOptionByMenu(fi,
-                                    GetCurrentTab()->GetCurrentBuffer()->rect.cursorX - GetCurrentTab()->GetCurrentBuffer()->pos +
-                                        a->start.pos + GetCurrentTab()->GetCurrentBuffer()->rect.rootX,
-                                    GetCurrentTab()->GetCurrentBuffer()->rect.cursorY + GetCurrentTab()->GetCurrentBuffer()->rect.rootY))
+                                    buf->rect.cursorX - buf->pos +
+                                        a->start.pos + buf->rect.rootX,
+                                    buf->rect.cursorY + buf->rect.rootY))
             break;
-        formUpdateBuffer(a, GetCurrentTab()->GetCurrentBuffer(), fi);
+        formUpdateBuffer(a, buf, fi);
         if (fi->parent->nitems == 1)
             goto do_submit;
         break;
@@ -778,7 +778,7 @@ void _followForm(int submit)
         if (tmp2->Cmp("!CURRENT_URL!") == 0)
         {
             /* It means "current URL" */
-            tmp2 = GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr();
+            tmp2 = buf->currentURL.ToStr();
             if ((p = strchr(tmp2->ptr, '?')) != NULL)
                 tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
         }
@@ -819,7 +819,7 @@ void _followForm(int submit)
                 buf->form_submit = save_submit_formlist(fi);
             }
         }
-        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action->Cmp("map") == 0 || fi->parent->action->Cmp("none") == 0)) || GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
+        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action->Cmp("map") == 0 || fi->parent->action->Cmp("none") == 0)) || buf->bufferprop & BP_INTERNAL)
         { /* internal */
             do_internal(tmp2->ptr, tmp->ptr);
         }
@@ -830,9 +830,9 @@ void _followForm(int submit)
         }
         break;
     case FORM_INPUT_RESET:
-        for (i = 0; i < GetCurrentTab()->GetCurrentBuffer()->formitem.size(); i++)
+        for (i = 0; i < buf->formitem.size(); i++)
         {
-            auto a2 = &GetCurrentTab()->GetCurrentBuffer()->formitem.anchors[i];
+            auto a2 = &buf->formitem.anchors[i];
             f2 = a2->item;
             if (f2->parent == fi->parent &&
                 f2->name && f2->value &&
@@ -846,7 +846,7 @@ void _followForm(int submit)
                 f2->label = f2->init_label;
                 f2->selected = f2->init_selected;
 #endif /* MENU_SELECT */
-                formUpdateBuffer(a2, GetCurrentTab()->GetCurrentBuffer(), f2);
+                formUpdateBuffer(a2, buf, f2);
             }
         }
         break;
@@ -859,9 +859,7 @@ void _followForm(int submit)
 
 void query_from_followform(Str *query, FormItemList *fi, int multipart)
 {
-    FormItemList *f2;
     FILE *body = NULL;
-
     if (multipart)
     {
         *query = tmpfname(TMPF_DFL, NULL);
@@ -876,8 +874,11 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                     fi->parent, fi->parent->body, fi->parent->boundary)
                 ->ptr;
     }
+
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     *query = Strnew();
-    for (f2 = fi->parent->item; f2; f2 = f2->next)
+    for (auto f2 = fi->parent->item; f2; f2 = f2->next)
     {
         if (f2->name == NULL)
             continue;
@@ -905,14 +906,14 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
             if (f2->type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
-#ifdef USE_IMAGE
-                getMapXY(GetCurrentTab()->GetCurrentBuffer(), retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer()), &x, &y);
-#endif
-                *query = conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())->Clone();
+
+                getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
+
+                *query = conv_form_encoding(f2->name, fi, buf)->Clone();
                 (*query)->Push(".x");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", x)->ptr);
-                *query = conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())->Clone();
+                *query = conv_form_encoding(f2->name, fi, buf)->Clone();
                 (*query)->Push(".y");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
@@ -920,18 +921,18 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
             else if (f2->name && f2->name->Size() > 0 && f2->value != NULL)
             {
                 /* not IMAGE */
-                *query = conv_form_encoding(f2->value, fi, GetCurrentTab()->GetCurrentBuffer());
+                *query = conv_form_encoding(f2->value, fi, buf);
                 if (f2->type == FORM_INPUT_FILE)
                     form_write_from_file(body, fi->parent->boundary,
                                          conv_form_encoding(f2->name, fi,
-                                                            GetCurrentTab()->GetCurrentBuffer())
+                                                            buf)
                                              ->ptr,
                                          (*query)->ptr,
                                          Str_conv_to_system(f2->value)->ptr);
                 else
                     form_write_data(body, fi->parent->boundary,
                                     conv_form_encoding(f2->name, fi,
-                                                       GetCurrentTab()->GetCurrentBuffer())
+                                                       buf)
                                         ->ptr,
                                     (*query)->ptr);
             }
@@ -942,11 +943,11 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
             if (f2->type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
-                getMapXY(GetCurrentTab()->GetCurrentBuffer(), retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer()), &x, &y);
+                getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
                 (*query)->Push(
-                    UrlEncode(conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())));
+                    UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                 (*query)->Push(Sprintf(".x=%d&", x));
-                (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())));
+                (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                 (*query)->Push(Sprintf(".y=%d", y));
             }
             else
@@ -954,7 +955,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 /* not IMAGE */
                 if (f2->name && f2->name->Size() > 0)
                 {
-                    (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, GetCurrentTab()->GetCurrentBuffer())));
+                    (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                     (*query)->Push('=');
                 }
                 if (f2->value != NULL)
@@ -963,7 +964,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                         (*query)->Push(UrlEncode(f2->value));
                     else
                     {
-                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value, fi, GetCurrentTab()->GetCurrentBuffer())));
+                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value, fi, buf)));
                     }
                 }
             }
@@ -1006,8 +1007,9 @@ BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy refer
     if (base == NULL ||
         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
         referer = HttpReferrerPolicy::NoReferer;
-    auto buf = loadGeneralFile(URL::Parse(url, GetCurrentTab()->GetCurrentBuffer()->BaseURL()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), referer, request);
-    if (buf == NULL)
+
+    auto newBuf = loadGeneralFile(URL::Parse(url, GetCurrentTab()->GetCurrentBuffer()->BaseURL()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), referer, request);
+    if (newBuf == NULL)
     {
         char *emsg = Sprintf("Can't load %s", url)->ptr;
         disp_err_message(emsg, FALSE);
@@ -1018,30 +1020,30 @@ BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy refer
     pushHashHist(w3mApp::Instance().URLHist, pu.ToStr()->ptr);
 
     if (!on_target) /* open link as an indivisual page */
-        return loadNormalBuf(buf, TRUE);
+        return loadNormalBuf(newBuf, TRUE);
 
     if (do_download) /* download (thus no need to render frame) */
-        return loadNormalBuf(buf, FALSE);
+        return loadNormalBuf(newBuf, FALSE);
 
     if (target == NULL ||                                             /* no target specified (that means this page is not a frame page) */
         !strcmp(target, "_top") ||                                    /* this link is specified to be opened as an indivisual * page */
         !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME) /* This page is not a frame page */
     )
     {
-        return loadNormalBuf(buf, TRUE);
+        return loadNormalBuf(newBuf, TRUE);
     }
     nfbuf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
     if (nfbuf == NULL)
     {
         /* original page (that contains <frameset> tag) doesn't exist */
-        return loadNormalBuf(buf, TRUE);
+        return loadNormalBuf(newBuf, TRUE);
     }
 
     f_element = search_frame(nfbuf->frameset, const_cast<char *>(target));
     if (f_element == NULL)
     {
         /* specified target doesn't exist in this frameset */
-        return loadNormalBuf(buf, TRUE);
+        return loadNormalBuf(newBuf, TRUE);
     }
 
     /* frame page */
@@ -1053,7 +1055,7 @@ BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy refer
     tab->DeleteBuffer(tab->GetCurrentBuffer());
     GetCurrentTab()->SetCurrentBuffer(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
-    resetFrameElement(f_element, buf, referer, request);
+    resetFrameElement(f_element, newBuf, referer, request);
     rFrame(&w3mApp::Instance());
     {
         const Anchor *al = NULL;
@@ -1070,7 +1072,7 @@ BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy refer
         if (!al)
         {
             label = std::string("_") + target;
-            al = searchURLLabel(buf, const_cast<char *>(label.c_str()));
+            al = buf->name.SearchByUrl(label.c_str());
         }
         if (al)
         {
@@ -1078,7 +1080,7 @@ BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy refer
         }
     }
     displayCurrentbuf(B_NORMAL);
-    return buf;
+    return newBuf;
 }
 
 FormItemList *save_submit_formlist(FormItemList *src)
@@ -1192,9 +1194,9 @@ void _nextA(int visited)
     if (buf->hmarklist.empty())
         return;
 
-    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (!visited && !an)
-        an = retrieveCurrentForm(buf);
+        an = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto y = buf->CurrentLine()->linenumber;
     auto x = buf->pos;
@@ -1280,9 +1282,9 @@ void _prevA(int visited)
     if (buf->hmarklist.empty())
         return;
 
-    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (!visited && !an)
-        an = retrieveCurrentForm(buf);
+        an = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto y = buf->CurrentLine()->linenumber;
     auto x = buf->pos;
@@ -1362,7 +1364,7 @@ void gotoLabel(std::string_view label)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    auto al = searchURLLabel(buf, const_cast<char *>(label.data()));
+    auto al = buf->name.SearchByUrl(label.data());
     if (al == NULL)
     {
         /* FIXME: gettextize? */
@@ -1393,9 +1395,9 @@ void nextX(int d, int dy)
     if (buf->hmarklist.empty())
         return;
 
-    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (an == NULL)
-        an = retrieveCurrentForm(buf);
+        an = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto l = buf->CurrentLine();
     auto x = buf->pos;
@@ -1450,9 +1452,9 @@ void nextY(int d)
     if (buf->hmarklist.empty())
         return;
 
-    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (!an)
-        an = retrieveCurrentForm(buf);
+        an = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     int x = buf->pos;
     int y = buf->CurrentLine()->linenumber + d;
@@ -1510,7 +1512,7 @@ void goURL0(const char *prompt, int relative)
             else
                 pushHist(hist, c_url);
         }
-        auto a = buf->RetrieveAnchor(buf->CurrentPoint());
+        auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
             auto p_url = URL::Parse(a->url, current);
@@ -1610,13 +1612,13 @@ void _peekURL(int only_img)
         offset = 0;
     }
     s = NULL;
-    a = (only_img ? NULL : buf->RetrieveAnchor(buf->CurrentPoint()));
+    a = (only_img ? NULL : buf->href.RetrieveAnchor(buf->CurrentPoint()));
     if (a == NULL)
     {
-        a = (only_img ? NULL : retrieveCurrentForm(buf));
+        a = (only_img ? NULL : buf->formitem.RetrieveAnchor(buf->CurrentPoint()));
         if (a == NULL)
         {
-            a = retrieveCurrentImg(buf);
+            a = buf->img.RetrieveAnchor(buf->CurrentPoint());
             if (a == NULL)
                 return;
         }
@@ -1973,7 +1975,7 @@ void follow_map(struct parsed_tagarg *arg)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
 
-    auto an = retrieveCurrentImg(buf);
+    auto an = buf->img.RetrieveAnchor(buf->CurrentPoint());
     auto [x, y] = buf->rect.globalXY();
     auto a = follow_map_menu(GetCurrentTab()->GetCurrentBuffer(), name, an, x, y);
     if (a == NULL || a->url == NULL || *(a->url) == '\0')

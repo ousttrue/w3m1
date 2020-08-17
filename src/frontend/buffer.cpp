@@ -765,7 +765,7 @@ void set_buffer_environ(BufferPtr buf)
     {
         char *s = GetWord(buf);
         set_environ("W3M_CURRENT_WORD", (char *)(s ? s : ""));
-        auto a = buf->RetrieveAnchor(buf->CurrentPoint());
+        auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
             auto pu = URL::Parse(a->url, buf->BaseURL());
@@ -773,7 +773,7 @@ void set_buffer_environ(BufferPtr buf)
         }
         else
             set_environ("W3M_CURRENT_LINK", "");
-        a = retrieveCurrentImg(buf);
+        a = buf->img.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
             auto pu = URL::Parse(a->url, buf->BaseURL());
@@ -781,7 +781,7 @@ void set_buffer_environ(BufferPtr buf)
         }
         else
             set_environ("W3M_CURRENT_IMG", "");
-        a = retrieveCurrentForm(buf);
+        a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
         if (a)
             set_environ("W3M_CURRENT_FORM", form2str(a->item));
         else
@@ -1470,9 +1470,4 @@ bool Buffer::MoveRightWord(int n)
 end:
     this->ArrangeCursor();
     return true;
-}
-
-const Anchor *Buffer::RetrieveAnchor(const BufferPoint &bp)
-{
-    return href.RetrieveAnchor(bp);
 }

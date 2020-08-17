@@ -394,13 +394,13 @@ static Str make_lastline_message(BufferPtr buf)
             s = make_lastline_link(buf, a->alt, a->url);
         else
         {
-            auto a = buf->RetrieveAnchor(buf->CurrentPoint());
+            auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
             std::string p = NULL;
             if (a && a->title.size() && a->title[0])
                 p = a->title;
             else
             {
-                auto a_img = retrieveCurrentImg(buf);
+                auto a_img = buf->img.RetrieveAnchor(buf->CurrentPoint());
                 if (a_img && a_img->title.size() && a_img->title[0])
                     p = a_img->title;
             }
@@ -522,7 +522,7 @@ static void drawAnchorCursor(BufferPtr buf)
     if (!buf->href && !buf->formitem)
         return;
 
-    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (!an)
         an = retrieveCurrentMap(buf);
 
