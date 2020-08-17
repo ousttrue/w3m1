@@ -137,7 +137,7 @@ Str searchURIMethods(URL *pu)
  */
 
 #define URI_PATTERN "([-;/?:@&=+$,a-zA-Z0-9_.!~*'()]|%[0-9A-Fa-f][0-9A-Fa-f])*"
-void chkExternalURIBuffer(BufferPtr buf)
+void chkExternalURIBuffer(const BufferPtr &buf)
 {
     for (auto &ump : urimethods)
     {
@@ -150,7 +150,7 @@ void chkExternalURIBuffer(BufferPtr buf)
 }
 
 /* mark URL-like patterns as anchors */
-void chkURLBuffer(BufferPtr buf)
+void chkURLBuffer(const BufferPtr &buf)
 {
     static const char *url_like_pat[] = {
         "https?://[a-zA-Z0-9][a-zA-Z0-9:%\\-\\./?=~_\\&+@#,\\$;]*[a-zA-Z0-9_/=\\-]",

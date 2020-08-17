@@ -148,7 +148,7 @@ searchMapArea(BufferPtr buf, MapList *ml, const Anchor *a_img)
 }
 
 MapArea *
-retrieveCurrentMapArea(BufferPtr buf)
+retrieveCurrentMapArea(const BufferPtr &buf)
 {
     FormItemList *fi;
     MapList *ml;
@@ -195,7 +195,7 @@ int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y)
 }
 
 const Anchor *
-retrieveCurrentMap(BufferPtr buf)
+retrieveCurrentMap(const BufferPtr &buf)
 {
     FormItemList *fi;
 
@@ -521,7 +521,7 @@ append_frame_info(BufferPtr buf, Str html, struct frameset *set, int level)
  * information of current page and link 
  */
 BufferPtr
-page_info_panel(BufferPtr buf)
+page_info_panel(const BufferPtr &buf)
 {
     Str tmp = Strnew_size(1024);
     const Anchor *a;

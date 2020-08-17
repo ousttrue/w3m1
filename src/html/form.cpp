@@ -997,7 +997,7 @@ void loadPreForm(void)
     fclose(fp);
 }
 
-void preFormUpdateBuffer(BufferPtr buf)
+void preFormUpdateBuffer(const BufferPtr &buf)
 {
     struct pre_form *pf;
     struct pre_form_item *pi;

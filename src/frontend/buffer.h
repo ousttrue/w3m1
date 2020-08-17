@@ -361,7 +361,7 @@ public:
 BufferPtr newBuffer(const URL &url);
 
 void deleteImage(Buffer *buf);
-void getAllImage(BufferPtr buf);
+void getAllImage(const BufferPtr &buf);
 
 #define IMG_FLAG_START 0
 #define IMG_FLAG_STOP 1
@@ -370,13 +370,13 @@ void loadImage(BufferPtr buf, int flag);
 
 BufferPtr nullBuffer(void);
 
-void set_buffer_environ(BufferPtr buf);
+void set_buffer_environ(const BufferPtr &buf);
 
 // anchor
 void reAnchorWord(BufferPtr buf, LinePtr l, int spos, int epos);
 char *reAnchor(BufferPtr buf, char *re);
 char *reAnchorNews(BufferPtr buf, char *re);
-char *reAnchorNewsheader(BufferPtr buf);
+char *reAnchorNewsheader(const BufferPtr &buf);
 void addMultirowsForm(BufferPtr buf, AnchorList &al);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);

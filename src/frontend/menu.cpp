@@ -1747,7 +1747,7 @@ int getMenuN(MenuList *list, char *id)
 ///
 /// Bufferのリンクリストをポップアップし、選択されたリンクを返す
 ///
-Link *link_menu(BufferPtr buf)
+Link *link_menu(const BufferPtr &buf)
 {
     if (buf->linklist.empty())
         return NULL;
@@ -1796,7 +1796,7 @@ Link *link_menu(BufferPtr buf)
 /* --- LinkMenu (END) --- */
 
 Anchor *
-accesskey_menu(BufferPtr buf)
+accesskey_menu(const BufferPtr &buf)
 {
     Menu menu;
     AnchorList &al = buf->href;
@@ -1907,7 +1907,7 @@ lmSelect(char c)
 }
 
 Anchor *
-list_menu(BufferPtr buf)
+list_menu(const BufferPtr &buf)
 {
     Menu menu;
     AnchorList &al = buf->href;

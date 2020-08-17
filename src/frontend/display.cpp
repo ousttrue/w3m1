@@ -314,7 +314,7 @@ void clear_effect()
         do_color(0);
 }
 
-static void drawAnchorCursor(BufferPtr buf);
+static void drawAnchorCursor(const BufferPtr &buf);
 
 static int image_touch = 0;
 static int draw_image_flag = FALSE;
@@ -382,7 +382,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
     return s;
 }
 
-static Str make_lastline_message(BufferPtr buf)
+static Str make_lastline_message(const BufferPtr &buf)
 {
     Str msg, s = NULL;
     int sl = 0;
@@ -515,7 +515,7 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
     }
 }
 
-static void drawAnchorCursor(BufferPtr buf)
+static void drawAnchorCursor(const BufferPtr &buf)
 {
     if (buf->LineCount() == 0)
         return;
@@ -558,7 +558,7 @@ static void move(const TermRect &rect)
 ///
 /// term に描画する
 ///
-static void redrawNLine(BufferPtr buf)
+static void redrawNLine(const BufferPtr &buf)
 {
     // lines
     {

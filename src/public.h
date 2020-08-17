@@ -35,7 +35,7 @@ int is_wordchar(uint32_t c);
 int srchcore(char * str, int (*func)(BufferPtr , char *));
 
 void _goLine(std::string_view l);
-int cur_real_linenumber(BufferPtr buf);
+int cur_real_linenumber(const BufferPtr &buf);
 char *MarkString();
 void SetMarkString(char *str);
 void do_dump(w3mApp *w3m, BufferPtr buf);
@@ -55,7 +55,7 @@ void nextX(int d, int dy);
 void nextY(int d);
 
 void goURL0(const char* prompt, int relative);
-void anchorMn(Anchor *(*menu_func)(BufferPtr ), int go);
+void anchorMn(Anchor *(*menu_func)(const BufferPtr &), int go);
 void _peekURL(int only_img);
 Str currentURL(void);
 
@@ -63,7 +63,7 @@ void _docCSet(CharacterEncodingScheme charset);
 int display_ok();
 void invoke_browser(char *url);
 void execdict(char *word);
-char *GetWord(BufferPtr buf);
+char *GetWord(const BufferPtr &buf);
 void tabURL0(TabPtr tab, const char* prompt, int relative);
 
 char *convert_size3(clen_t size);
@@ -80,7 +80,7 @@ char *searchKeyData();
 
 int sysm_process_mouse();
 // int gpm_process_mouse(Gpm_Event *, void *);
-void chkNMIDBuffer(BufferPtr buf);
+void chkNMIDBuffer(const BufferPtr &buf);
 
 void change_charset(struct parsed_tagarg *arg);
 void follow_map(struct parsed_tagarg *arg);

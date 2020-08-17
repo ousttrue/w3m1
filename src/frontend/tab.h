@@ -2,10 +2,11 @@
 
 #include <memory>
 #include <list>
+#include <vector>
 #include <functional>
 struct Tab;
 using BufferPtr = std::shared_ptr<struct Buffer>;
-using BufferList = std::list<BufferPtr>;
+using BufferList = std::vector<BufferPtr>;
 
 ///
 /// [ tab ]
@@ -21,19 +22,19 @@ class Tab
     Tab &operator=(const Tab &) = delete;
 
     BufferList buffers;
-    std::weak_ptr<Buffer> currentBuffer;
+
+    int currentBuffer = 0;
     BufferList::const_iterator find(BufferPtr b) const
     {
         return std::find(buffers.begin(), buffers.end(), b);
     }
-    BufferList::const_iterator findCurrent()const
+    BufferList::const_iterator findCurrent() const
     {
-        auto c = currentBuffer.lock();
-        if(!c)
+        if (currentBuffer < 0 || currentBuffer > buffers.size())
         {
             return buffers.end();
         }
-        return find(c);
+        return buffers.begin() + currentBuffer;
     }
 
 public:
@@ -65,33 +66,41 @@ public:
     }
 
     // buffer
-    int GetCurrentBufferIndex() const;
+    int GetBufferIndex(const BufferPtr &buf) const;
+    int GetCurrentBufferIndex() const { return currentBuffer; }
     BufferPtr GetFirstBuffer() { return buffers.front(); }
-    BufferPtr GetCurrentBuffer() const { return currentBuffer.lock(); }
+    BufferPtr GetCurrentBuffer() const { return GetBuffer(currentBuffer); }
 
 private:
-    BufferPtr ForwardBuffer(BufferPtr buf) const;
-    BufferPtr BackBuffer(BufferPtr buf) const;
+    BufferPtr ForwardBuffer(const BufferPtr &buf) const;
+    BufferPtr BackBuffer(const BufferPtr &buf) const;
 
 public:
-    BufferPtr GetBuffer(int n) const;
+    BufferPtr GetBuffer(int n) const
+    {
+        if (n < 0 || n >= buffers.size())
+        {
+            return nullptr;
+        }
+        return buffers[n];
+    }
     BufferPtr NamedBuffer(const char *name) const;
     BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar);
 
     // history の 先頭に追加する
-    void Push(BufferPtr buf);
+    void Push(const BufferPtr &buf);
 
-    void SetCurrentBuffer(BufferPtr buf);
+    void SetCurrentBuffer(const BufferPtr &buf);
     // forward current, return forward is exists
     bool Forward();
     // back current, return back is exists
     bool Back();
-    bool CheckBackBuffer();    
+    bool CheckBackBuffer();
 
     // remove current back, for remove history(local cgi etc)
     void DeleteBack();
 
-    void DeleteBuffer(BufferPtr delbuf);
+    void DeleteBuffer(const BufferPtr &buf);
 
 private:
     bool IsConnectFirstCurrent() const;

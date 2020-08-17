@@ -742,7 +742,7 @@ void Buffer::GotoRealLine(int n)
 //     formResetBuffer(shared_from_this(), sbuf->formitem);
 // }
 
-void set_buffer_environ(BufferPtr buf)
+void set_buffer_environ(const BufferPtr &buf)
 {
     static BufferPtr prev_buf = NULL;
     static LinePtr prev_line = NULL;

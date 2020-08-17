@@ -93,7 +93,7 @@ void srch_nxtprv(int reverse)
 }
 
 static void
-dump_extra(BufferPtr buf)
+dump_extra(const BufferPtr &buf)
 {
     printf("W3m-current-url: %s\n", buf->currentURL.ToStr()->ptr);
     if (buf->baseURL)
@@ -623,7 +623,7 @@ void _goLine(std::string_view l)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-int cur_real_linenumber(BufferPtr buf)
+int cur_real_linenumber(const BufferPtr &buf)
 {
     LinePtr cur = buf->CurrentLine();
     if (!cur)
@@ -1570,7 +1570,7 @@ void goURL0(const char *prompt, int relative)
         pushHashHist(w3mApp::Instance().URLHist, buf->currentURL.ToStr()->ptr);
 }
 
-void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
+void anchorMn(Anchor *(*menu_func)(const BufferPtr &), int go)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1769,7 +1769,7 @@ void execdict(char *word)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-char *GetWord(BufferPtr buf)
+char *GetWord(const BufferPtr &buf)
 {
     int b, e;
     char *p;
@@ -1933,7 +1933,7 @@ int sysm_process_mouse(int x, int y, int nbs, int obs)
 // }
 
 /* mark Message-ID-like patterns as NEWS anchors */
-void chkNMIDBuffer(BufferPtr buf)
+void chkNMIDBuffer(const BufferPtr &buf)
 {
     static char *url_like_pat[] = {
         "<[!-;=?-~]+@[a-zA-Z0-9\\.\\-_]+>",

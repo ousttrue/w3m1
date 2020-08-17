@@ -141,7 +141,7 @@ reseq_anchor0(AnchorList &al, short *seqmap)
 
 /* renumber anchor */
 static void
-reseq_anchor(BufferPtr buf)
+reseq_anchor(const BufferPtr &buf)
 {
     int i, j, n, nmark = buf->hmarklist.size();
     short *seqmap;
@@ -305,7 +305,7 @@ reAnchorNews(BufferPtr buf, char *re)
 }
 
 char *
-reAnchorNewsheader(BufferPtr buf)
+reAnchorNewsheader(const BufferPtr &buf)
 {
     LinePtr l;
     char *p, *p1, *p2;
@@ -610,7 +610,7 @@ getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a)
 }
 
 BufferPtr
-link_list_panel(BufferPtr buf)
+link_list_panel(const BufferPtr &buf)
 {
     if (buf->bufferprop & BP_INTERNAL ||
         (buf->linklist.empty() && !buf->href && !buf->img))

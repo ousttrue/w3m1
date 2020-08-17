@@ -98,8 +98,8 @@ void initMenu(void);
 void PopupMenu();
 void PopupBufferMenu();
 void PopupTabMenu();
-Link *link_menu(BufferPtr buf);
-Anchor *accesskey_menu(BufferPtr buf);
-Anchor *list_menu(BufferPtr buf);
+Link *link_menu(const BufferPtr &buf);
+Anchor *accesskey_menu(const BufferPtr &buf);
+Anchor *list_menu(const BufferPtr &buf);
 
 #endif /* not MENU_H */

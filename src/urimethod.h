@@ -4,5 +4,5 @@
 
 void initURIMethods();
 Str searchURIMethods(URL *pu);
-void chkExternalURIBuffer(BufferPtr buf);
-void chkURLBuffer(BufferPtr buf);
+void chkExternalURIBuffer(const BufferPtr &buf);
+void chkURLBuffer(const BufferPtr &buf);

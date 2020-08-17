@@ -86,7 +86,7 @@ char *form2str(FormItemList *fi);
 
 
 
-void preFormUpdateBuffer(BufferPtr buf);
+void preFormUpdateBuffer(const BufferPtr &buf);
 
 void input_textarea(FormItemList *fi);
 void do_internal(char *action, char *data);
@@ -94,7 +94,7 @@ void form_write_data(FILE *f, char *boundary, char *name, char *value);
 void form_write_from_file(FILE *f, char *boundary, char *name,
                           char *filename, char *file);
 int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y);
-BufferPtr page_info_panel(BufferPtr buf);
+BufferPtr page_info_panel(const BufferPtr &buf);
 struct frame_body *newFrame(struct parsed_tag *tag, BufferPtr buf);
 struct frameset *newFrameSet(struct parsed_tag *tag);
 void deleteFrame(struct frame_body *b);
@@ -112,7 +112,7 @@ MySignalHandler error_dump(SIGNAL_ARG);
 char *acceptableMimeTypes();
 
 
-BufferPtr link_list_panel(BufferPtr buf);
+BufferPtr link_list_panel(const BufferPtr &buf);
 
 
 char *get_param_option(char *name);
@@ -127,7 +127,7 @@ Str localCookie(void);
 FILE *openSecretFile(char *fname);
 
 void loadPreForm(void);
-char *last_modified(BufferPtr buf);
+char *last_modified(const BufferPtr &buf);
 
 void myExec(char *command);
 void mySystem(char *command, int background);

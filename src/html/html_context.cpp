@@ -21,7 +21,7 @@
 #define MAX_TEXTAREA 10 /* max number of <textarea>..</textarea> \
                          * within one document */
 
-static int currentLn(BufferPtr buf)
+static int currentLn(const BufferPtr &buf)
 {
     if (buf->CurrentLine())
         /*     return buf->currentLine->real_linenumber + 1;      */

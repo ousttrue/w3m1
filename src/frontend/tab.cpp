@@ -37,12 +37,12 @@ bool Tab::IsConnectFirstCurrent() const
     return false;
 }
 
-int Tab::GetCurrentBufferIndex() const
+int Tab::GetBufferIndex(const BufferPtr &b) const
 {
     int i = 0;
     for (auto &buf : buffers)
     {
-        if (buf == GetCurrentBuffer())
+        if (buf == b)
         {
             return i;
         }
@@ -53,33 +53,25 @@ int Tab::GetCurrentBufferIndex() const
 
 bool Tab::Forward()
 {
-    auto it = findCurrent();
-    if (it == buffers.end())
+    if (buffers.empty())
     {
         return false;
     }
-    if (it == buffers.begin())
+    if (currentBuffer <= 0)
     {
         return false;
     }
-    --it;
-    currentBuffer = *it;
+    --currentBuffer;
     return true;
 }
 
 bool Tab::Back()
 {
-    auto it = findCurrent();
-    if (it == buffers.end())
+    if (currentBuffer >= buffers.size() - 1)
     {
         return false;
     }
-    ++it;
-    if (it == buffers.end())
-    {
-        return false;
-    }
-    currentBuffer = *it;
+    ++currentBuffer;
     return true;
 }
 
@@ -98,7 +90,7 @@ void Tab::DeleteBack()
     buffers.erase(it);
 }
 
-BufferPtr Tab::ForwardBuffer(BufferPtr buf) const
+BufferPtr Tab::ForwardBuffer(const BufferPtr &buf) const
 {
     if (buf == buffers.front())
     {
@@ -109,7 +101,7 @@ BufferPtr Tab::ForwardBuffer(BufferPtr buf) const
     return *it;
 }
 
-BufferPtr Tab::BackBuffer(BufferPtr buf) const
+BufferPtr Tab::BackBuffer(const BufferPtr &buf) const
 {
     auto it = find(buf);
     if (it == buffers.end())
@@ -121,23 +113,10 @@ BufferPtr Tab::BackBuffer(BufferPtr buf) const
     return *it;
 }
 
-// void Tab::SetFirstBuffer(BufferPtr buffer)
-// {
-//     // firstBuffer = buffer;
-//     // if (isCurrent)
-//     // {
-//     //     SetCurrentBuffer(buffer);
-//     // }
-
-//     buffers.clear();
-//     buffers.push_back(buffer);
-//     currentBuffer = buffer;
-// }
-
-void Tab::SetCurrentBuffer(BufferPtr buffer)
+void Tab::SetCurrentBuffer(const BufferPtr &buf)
 {
     auto c = GetCurrentBuffer();
-    if (c == buffer)
+    if (c == buf)
     {
         return;
     }
@@ -150,12 +129,12 @@ void Tab::SetCurrentBuffer(BufferPtr buffer)
         }
     }
 
-    currentBuffer = buffer;
+    currentBuffer = GetBufferIndex(buf);
     assert(IsConnectFirstCurrent());
 }
 
 // currentPrev -> buf -> current
-void Tab::Push(BufferPtr buf)
+void Tab::Push(const BufferPtr &buf)
 {
     if (buffers.empty())
     {
@@ -173,7 +152,7 @@ void Tab::Push(BufferPtr buf)
 #endif
 }
 
-// void Tab::PushBufferCurrentNext(BufferPtr buf)
+// void Tab::PushBufferCurrentNext(const BufferPtr &buf)
 // {
 //     auto it = findCurrent();
 //     assert(it != buffers.end());
@@ -182,23 +161,6 @@ void Tab::Push(BufferPtr buf)
 //     SetCurrentBuffer(buf);
 //     SetCurrentBuffer(buf);
 // }
-
-BufferPtr
-Tab::GetBuffer(int n) const
-{
-    if (n <= 0)
-        return buffers.front();
-
-    auto it = buffers.begin();
-    for (int i = 0; i < n; i++, ++it)
-    {
-        if (it == buffers.end())
-        {
-            return nullptr;
-        }
-    }
-    return *it;
-}
 
 /* 
  * namedBuffer: Select buffer which have specified name
@@ -452,7 +414,7 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar)
 /* 
  * deleteBuffer: delete buffer & return fistbuffer
  */
-void Tab::DeleteBuffer(BufferPtr delbuf)
+void Tab::DeleteBuffer(const BufferPtr &delbuf)
 {
     auto it = find(delbuf);
     if (it == buffers.end())
@@ -469,11 +431,11 @@ void Tab::DeleteBuffer(BufferPtr delbuf)
     auto next = buffers.erase(it);
     if (next == buffers.end())
     {
-        currentBuffer = buffers.back();
+        currentBuffer = buffers.size() - 1;
     }
     else
     {
-        currentBuffer = *next;
+        currentBuffer = GetBufferIndex(*next);
     }
 }
 

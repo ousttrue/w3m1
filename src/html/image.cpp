@@ -292,7 +292,7 @@ void deleteImage(Buffer* buf)
     loadImage(NULL, IMG_FLAG_STOP);
 }
 
-void getAllImage(BufferPtr buf)
+void getAllImage(const BufferPtr &buf)
 {
     Anchor *a;
     URL *current;
@@ -318,7 +318,7 @@ void getAllImage(BufferPtr buf)
     }
 }
 
-void showImageProgress(BufferPtr buf)
+void showImageProgress(const BufferPtr &buf)
 {
     Anchor *a;
     int i, l, n;
