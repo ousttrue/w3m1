@@ -19,13 +19,6 @@
 #include "frontend/line.h"
 #include "charset.h"
 
-#define in_bold fontstat[0]
-#define in_under fontstat[1]
-#define in_italic fontstat[2]
-#define in_strike fontstat[3]
-#define in_ins fontstat[4]
-#define in_stand fontstat[5]
-
 void Breakpoint::set(const struct readbuffer *obuf, int tag_length)
 {
     _len = obuf->line->Size();
@@ -45,11 +38,7 @@ void Breakpoint::set(const struct readbuffer *obuf, int tag_length)
 
         anchor = obuf->anchor;
         img_alt = obuf->img_alt;
-        in_bold = obuf->in_bold;
-        in_italic = obuf->in_italic;
-        in_under = obuf->in_under;
-        in_strike = obuf->in_strike;
-        in_ins = obuf->in_ins;
+        fontstat = obuf->fontstat;
         nobr_level = obuf->nobr_level;
         prev_ctype = obuf->prev_ctype;
     }
@@ -64,11 +53,7 @@ void Breakpoint::back_to(struct readbuffer *obuf)
 
     obuf->anchor = anchor;
     obuf->img_alt = img_alt;
-    obuf->in_bold = in_bold;
-    obuf->in_italic = in_italic;
-    obuf->in_under = in_under;
-    obuf->in_strike = in_strike;
-    obuf->in_ins = in_ins;
+    obuf->fontstat = fontstat;
     obuf->prev_ctype = prev_ctype;
     if (obuf->flag & RB_NOBR)
         obuf->nobr_level = nobr_level;
@@ -163,7 +148,7 @@ append_tags(struct readbuffer *obuf)
 }
 
 static void
-push_tag(struct readbuffer *obuf, char *cmdname, HtmlTags cmd)
+push_tag(struct readbuffer *obuf, const char *cmdname, HtmlTags cmd)
 {
     obuf->tag_stack[obuf->tag_sp] = New(struct cmdtable);
     obuf->tag_stack[obuf->tag_sp]->cmdname = allocStr(cmdname, -1);
@@ -173,9 +158,8 @@ push_tag(struct readbuffer *obuf, char *cmdname, HtmlTags cmd)
         append_tags(obuf);
 }
 
-static void
-push_nchars(struct readbuffer *obuf, int width,
-            char *str, int len, Lineprop mode)
+static void push_nchars(struct readbuffer *obuf, int width,
+                        const char *str, int len, Lineprop mode)
 {
     append_tags(obuf);
     obuf->line->Push(str, len);
@@ -188,14 +172,16 @@ push_nchars(struct readbuffer *obuf, int width,
     obuf->flag |= RB_NFLUSHED;
 }
 
-#define push_charp(obuf, width, str, mode) \
-    push_nchars(obuf, width, str, strlen(str), mode)
+static void push_charp(readbuffer *obuf, int width,
+                       const char *str, Lineprop mode)
+{
+    push_nchars(obuf, width, str, strlen(str), mode);
+}
 
 #define push_str(obuf, width, str, mode) \
     push_nchars(obuf, width, str->ptr, str->Size(), mode)
 
-static void
-check_breakpoint(struct readbuffer *obuf, int pre_mode, char *ch)
+static void check_breakpoint(struct readbuffer *obuf, int pre_mode, const char *ch)
 {
     int tlen, len = obuf->line->Size();
 
@@ -612,7 +598,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
                 hidden = hidden_img;
         }
     }
-    if (obuf->in_bold)
+    if (obuf->fontstat.in_bold)
     {
         if ((hidden_bold = has_hidden_link(obuf, HTML_B)) != NULL)
         {
@@ -620,7 +606,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
                 hidden = hidden_bold;
         }
     }
-    if (obuf->in_italic)
+    if (obuf->fontstat.in_italic)
     {
         if ((hidden_italic = has_hidden_link(obuf, HTML_I)) != NULL)
         {
@@ -628,7 +614,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
                 hidden = hidden_italic;
         }
     }
-    if (obuf->in_under)
+    if (obuf->fontstat.in_under)
     {
         if ((hidden_under = has_hidden_link(obuf, HTML_U)) != NULL)
         {
@@ -636,7 +622,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
                 hidden = hidden_under;
         }
     }
-    if (obuf->in_strike)
+    if (obuf->fontstat.in_strike)
     {
         if ((hidden_strike = has_hidden_link(obuf, HTML_S)) != NULL)
         {
@@ -644,7 +630,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
                 hidden = hidden_strike;
         }
     }
-    if (obuf->in_ins)
+    if (obuf->fontstat.in_ins)
     {
         if ((hidden_ins = has_hidden_link(obuf, HTML_INS)) != NULL)
         {
@@ -676,15 +662,15 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
         line->Push("</a>");
     if (obuf->img_alt && !hidden_img)
         line->Push("</img_alt>");
-    if (obuf->in_bold && !hidden_bold)
+    if (obuf->fontstat.in_bold && !hidden_bold)
         line->Push("</b>");
-    if (obuf->in_italic && !hidden_italic)
+    if (obuf->fontstat.in_italic && !hidden_italic)
         line->Push("</i>");
-    if (obuf->in_under && !hidden_under)
+    if (obuf->fontstat.in_under && !hidden_under)
         line->Push("</u>");
-    if (obuf->in_strike && !hidden_strike)
+    if (obuf->fontstat.in_strike && !hidden_strike)
         line->Push("</s>");
-    if (obuf->in_ins && !hidden_ins)
+    if (obuf->fontstat.in_ins && !hidden_ins)
         line->Push("</ins>");
 
     if (obuf->top_margin > 0)
@@ -914,15 +900,15 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
         tmp->Push("\">");
         push_tag(obuf, tmp->ptr, HTML_IMG_ALT);
     }
-    if (!hidden_bold && obuf->in_bold)
+    if (!hidden_bold && obuf->fontstat.in_bold)
         push_tag(obuf, "<B>", HTML_B);
-    if (!hidden_italic && obuf->in_italic)
+    if (!hidden_italic && obuf->fontstat.in_italic)
         push_tag(obuf, "<I>", HTML_I);
-    if (!hidden_under && obuf->in_under)
+    if (!hidden_under && obuf->fontstat.in_under)
         push_tag(obuf, "<U>", HTML_U);
-    if (!hidden_strike && obuf->in_strike)
+    if (!hidden_strike && obuf->fontstat.in_strike)
         push_tag(obuf, "<S>", HTML_S);
-    if (!hidden_ins && obuf->in_ins)
+    if (!hidden_ins && obuf->fontstat.in_ins)
         push_tag(obuf, "<INS>", HTML_INS);
 }
 
@@ -1014,20 +1000,20 @@ close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf, HtmlConte
 void save_fonteffect(struct html_feed_environ *h_env, struct readbuffer *obuf)
 {
     if (obuf->fontstat_sp < FONT_STACK_SIZE)
-        bcopy(obuf->fontstat, obuf->fontstat_stack[obuf->fontstat_sp],
-              FONTSTAT_SIZE);
+        obuf->fontstat_stack[obuf->fontstat_sp] = obuf->fontstat;
+
     obuf->fontstat_sp++;
-    if (obuf->in_bold)
+    if (obuf->fontstat.in_bold)
         push_tag(obuf, "</b>", HTML_N_B);
-    if (obuf->in_italic)
+    if (obuf->fontstat.in_italic)
         push_tag(obuf, "</i>", HTML_N_I);
-    if (obuf->in_under)
+    if (obuf->fontstat.in_under)
         push_tag(obuf, "</u>", HTML_N_U);
-    if (obuf->in_strike)
+    if (obuf->fontstat.in_strike)
         push_tag(obuf, "</s>", HTML_N_S);
-    if (obuf->in_ins)
+    if (obuf->fontstat.in_ins)
         push_tag(obuf, "</ins>", HTML_N_INS);
-    bzero(obuf->fontstat, FONTSTAT_SIZE);
+    obuf->fontstat = {};
 }
 
 void restore_fonteffect(struct html_feed_environ *h_env, struct readbuffer *obuf)
@@ -1035,17 +1021,18 @@ void restore_fonteffect(struct html_feed_environ *h_env, struct readbuffer *obuf
     if (obuf->fontstat_sp > 0)
         obuf->fontstat_sp--;
     if (obuf->fontstat_sp < FONT_STACK_SIZE)
-        bcopy(obuf->fontstat_stack[obuf->fontstat_sp], obuf->fontstat,
-              FONTSTAT_SIZE);
-    if (obuf->in_bold)
+    {
+        obuf->fontstat = obuf->fontstat_stack[obuf->fontstat_sp];
+    }
+    if (obuf->fontstat.in_bold)
         push_tag(obuf, "<b>", HTML_B);
-    if (obuf->in_italic)
+    if (obuf->fontstat.in_italic)
         push_tag(obuf, "<i>", HTML_I);
-    if (obuf->in_under)
+    if (obuf->fontstat.in_under)
         push_tag(obuf, "<u>", HTML_U);
-    if (obuf->in_strike)
+    if (obuf->fontstat.in_strike)
         push_tag(obuf, "<s>", HTML_S);
-    if (obuf->in_ins)
+    if (obuf->fontstat.in_ins)
         push_tag(obuf, "<ins>", HTML_INS);
 }
 
@@ -1229,47 +1216,47 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     switch (cmd)
     {
     case HTML_B:
-        obuf->in_bold++;
-        if (obuf->in_bold > 1)
+        obuf->fontstat.in_bold++;
+        if (obuf->fontstat.in_bold > 1)
             return 1;
         return 0;
     case HTML_N_B:
-        if (obuf->in_bold == 1 && close_effect0(obuf, HTML_B))
-            obuf->in_bold = 0;
-        if (obuf->in_bold > 0)
+        if (obuf->fontstat.in_bold == 1 && close_effect0(obuf, HTML_B))
+            obuf->fontstat.in_bold = 0;
+        if (obuf->fontstat.in_bold > 0)
         {
-            obuf->in_bold--;
-            if (obuf->in_bold == 0)
+            obuf->fontstat.in_bold--;
+            if (obuf->fontstat.in_bold == 0)
                 return 0;
         }
         return 1;
     case HTML_I:
-        obuf->in_italic++;
-        if (obuf->in_italic > 1)
+        obuf->fontstat.in_italic++;
+        if (obuf->fontstat.in_italic > 1)
             return 1;
         return 0;
     case HTML_N_I:
-        if (obuf->in_italic == 1 && close_effect0(obuf, HTML_I))
-            obuf->in_italic = 0;
-        if (obuf->in_italic > 0)
+        if (obuf->fontstat.in_italic == 1 && close_effect0(obuf, HTML_I))
+            obuf->fontstat.in_italic = 0;
+        if (obuf->fontstat.in_italic > 0)
         {
-            obuf->in_italic--;
-            if (obuf->in_italic == 0)
+            obuf->fontstat.in_italic--;
+            if (obuf->fontstat.in_italic == 0)
                 return 0;
         }
         return 1;
     case HTML_U:
-        obuf->in_under++;
-        if (obuf->in_under > 1)
+        obuf->fontstat.in_under++;
+        if (obuf->fontstat.in_under > 1)
             return 1;
         return 0;
     case HTML_N_U:
-        if (obuf->in_under == 1 && close_effect0(obuf, HTML_U))
-            obuf->in_under = 0;
-        if (obuf->in_under > 0)
+        if (obuf->fontstat.in_under == 1 && close_effect0(obuf, HTML_U))
+            obuf->fontstat.in_under = 0;
+        if (obuf->fontstat.in_under > 0)
         {
-            obuf->in_under--;
-            if (obuf->in_under == 0)
+            obuf->fontstat.in_under--;
+            if (obuf->fontstat.in_under == 0)
                 return 0;
         }
         return 1;
@@ -1950,9 +1937,10 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
     case HTML_ISINDEX:
+    {
         p = "";
-        q = "!CURRENT_URL!";
         tag->TryGetAttributeValue(ATTR_PROMPT, &p);
+        q = "!CURRENT_URL!";
         tag->TryGetAttributeValue(ATTR_ACTION, &q);
         tmp = Strnew_m_charp("<form method=get action=\"",
                              html_quote(q),
@@ -1962,6 +1950,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                              NULL);
         HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
+    }
     case HTML_META:
         p = q = NULL;
         tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
@@ -2026,8 +2015,8 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             HTMLlineproc1("<U>[DEL:</U>", h_env, seq);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            obuf->in_strike++;
-            if (obuf->in_strike == 1)
+            obuf->fontstat.in_strike++;
+            if (obuf->fontstat.in_strike == 1)
             {
                 push_tag(obuf, "<s>", HTML_S);
             }
@@ -2043,14 +2032,14 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         case DISPLAY_INS_DEL_NORMAL:
             HTMLlineproc1("<U>:DEL]</U>", h_env, seq);
         case DISPLAY_INS_DEL_FONTIFY:
-            if (obuf->in_strike == 0)
+            if (obuf->fontstat.in_strike == 0)
                 return 1;
-            if (obuf->in_strike == 1 && close_effect0(obuf, HTML_S))
-                obuf->in_strike = 0;
-            if (obuf->in_strike > 0)
+            if (obuf->fontstat.in_strike == 1 && close_effect0(obuf, HTML_S))
+                obuf->fontstat.in_strike = 0;
+            if (obuf->fontstat.in_strike > 0)
             {
-                obuf->in_strike--;
-                if (obuf->in_strike == 0)
+                obuf->fontstat.in_strike--;
+                if (obuf->fontstat.in_strike == 0)
                 {
                     push_tag(obuf, "</s>", HTML_N_S);
                 }
@@ -2068,8 +2057,8 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             HTMLlineproc1("<U>[S:</U>", h_env, seq);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            obuf->in_strike++;
-            if (obuf->in_strike == 1)
+            obuf->fontstat.in_strike++;
+            if (obuf->fontstat.in_strike == 1)
             {
                 push_tag(obuf, "<s>", HTML_S);
             }
@@ -2086,14 +2075,14 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             HTMLlineproc1("<U>:S]</U>", h_env, seq);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            if (obuf->in_strike == 0)
+            if (obuf->fontstat.in_strike == 0)
                 return 1;
-            if (obuf->in_strike == 1 && close_effect0(obuf, HTML_S))
-                obuf->in_strike = 0;
-            if (obuf->in_strike > 0)
+            if (obuf->fontstat.in_strike == 1 && close_effect0(obuf, HTML_S))
+                obuf->fontstat.in_strike = 0;
+            if (obuf->fontstat.in_strike > 0)
             {
-                obuf->in_strike--;
-                if (obuf->in_strike == 0)
+                obuf->fontstat.in_strike--;
+                if (obuf->fontstat.in_strike == 0)
                 {
                     push_tag(obuf, "</s>", HTML_N_S);
                 }
@@ -2109,8 +2098,8 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             HTMLlineproc1("<U>[INS:</U>", h_env, seq);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            obuf->in_ins++;
-            if (obuf->in_ins == 1)
+            obuf->fontstat.in_ins++;
+            if (obuf->fontstat.in_ins == 1)
             {
                 push_tag(obuf, "<ins>", HTML_INS);
             }
@@ -2126,14 +2115,14 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             HTMLlineproc1("<U>:INS]</U>", h_env, seq);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            if (obuf->in_ins == 0)
+            if (obuf->fontstat.in_ins == 0)
                 return 1;
-            if (obuf->in_ins == 1 && close_effect0(obuf, HTML_INS))
-                obuf->in_ins = 0;
-            if (obuf->in_ins > 0)
+            if (obuf->fontstat.in_ins == 1 && close_effect0(obuf, HTML_INS))
+                obuf->fontstat.in_ins = 0;
+            if (obuf->fontstat.in_ins > 0)
             {
-                obuf->in_ins--;
-                if (obuf->in_ins == 0)
+                obuf->fontstat.in_ins--;
+                if (obuf->fontstat.in_ins == 0)
                 {
                     push_tag(obuf, "</ins>", HTML_N_INS);
                 }
@@ -2680,11 +2669,7 @@ void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf,
     obuf->nobr_level = 0;
     obuf->anchor = {};
     obuf->img_alt = 0;
-    obuf->in_bold = 0;
-    obuf->in_italic = 0;
-    obuf->in_under = 0;
-    obuf->in_strike = 0;
-    obuf->in_ins = 0;
+    obuf->fontstat = {};
     obuf->prev_ctype = PC_ASCII;
     obuf->tag_sp = 0;
     obuf->fontstat_sp = 0;
@@ -2704,30 +2689,30 @@ void completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf
         push_tag(obuf, "</img_alt>", HTML_N_IMG_ALT);
         obuf->img_alt = NULL;
     }
-    if (obuf->in_bold)
+    if (obuf->fontstat.in_bold)
     {
         push_tag(obuf, "</b>", HTML_N_B);
-        obuf->in_bold = 0;
+        obuf->fontstat.in_bold = 0;
     }
-    if (obuf->in_italic)
+    if (obuf->fontstat.in_italic)
     {
         push_tag(obuf, "</i>", HTML_N_I);
-        obuf->in_italic = 0;
+        obuf->fontstat.in_italic = 0;
     }
-    if (obuf->in_under)
+    if (obuf->fontstat.in_under)
     {
         push_tag(obuf, "</u>", HTML_N_U);
-        obuf->in_under = 0;
+        obuf->fontstat.in_under = 0;
     }
-    if (obuf->in_strike)
+    if (obuf->fontstat.in_strike)
     {
         push_tag(obuf, "</s>", HTML_N_S);
-        obuf->in_strike = 0;
+        obuf->fontstat.in_strike = 0;
     }
-    if (obuf->in_ins)
+    if (obuf->fontstat.in_ins)
     {
         push_tag(obuf, "</ins>", HTML_N_INS);
-        obuf->in_ins = 0;
+        obuf->fontstat.in_ins = 0;
     }
     if (obuf->flag & RB_INTXTA)
         HTMLlineproc1("</textarea>", h_env, seq);

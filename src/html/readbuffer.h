@@ -5,7 +5,17 @@
 #include "html.h"
 #include <wc.h>
 
-#define FONTSTAT_SIZE 7
+struct FontStat
+{
+    char in_bold = 0;
+    char in_under = 0;
+    char in_italic = 0;
+    char in_strike = 0;
+    char in_ins = 0;
+    char in_stand = 0;
+    char _ = 0;
+};
+static_assert(sizeof(FontStat) == 7);
 
 enum ReadBufferFlags
 {
@@ -39,7 +49,6 @@ enum ReadBufferFlags
     RB_S = 0x200000,
 };
 
-
 ///
 /// 行の折り返し処理？
 ///
@@ -60,7 +69,7 @@ class Breakpoint
     // initialize
     Anchor anchor;
     Str img_alt;
-    char fontstat[FONTSTAT_SIZE];
+    FontStat fontstat;
     short nobr_level;
     Lineprop prev_ctype;
 
@@ -113,8 +122,8 @@ struct readbuffer
     short nobr_level;
     Anchor anchor;
     Str img_alt;
-    char fontstat[FONTSTAT_SIZE];
-    char fontstat_stack[FONT_STACK_SIZE][FONTSTAT_SIZE];
+    FontStat fontstat;
+    FontStat fontstat_stack[FONT_STACK_SIZE];
     int fontstat_sp;
     Lineprop prev_ctype;
     Breakpoint bp;
