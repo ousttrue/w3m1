@@ -354,19 +354,20 @@ void shiftvisualpos(BufferPtr buf, int shift)
 
 void cmd_loadfile(const char *fn)
 {
-    auto buf = loadGeneralFile(URL::ParsePath(fn), NULL, HttpReferrerPolicy::NoReferer, NULL);
-    if (buf == NULL)
-    {
-        /* FIXME: gettextize? */
-        char *emsg = Sprintf("%s not found", conv_from_system(fn))->ptr;
-        disp_err_message(emsg, FALSE);
-    }
-    else
-    {
-        GetCurrentTab()->Push(buf);
-        if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
-            rFrame(&w3mApp::Instance());
-    }
+    GetCurrentTab()->Push(URL::ParsePath(fn));
+    // auto buf = loadGeneralFile(URL::ParsePath(fn), NULL, HttpReferrerPolicy::NoReferer, NULL);
+    // if (buf == NULL)
+    // {
+    //     /* FIXME: gettextize? */
+    //     char *emsg = Sprintf("%s not found", conv_from_system(fn))->ptr;
+    //     disp_err_message(emsg, FALSE);
+    // }
+    // else
+    // {
+    //     GetCurrentTab()->Push(buf);
+    //     if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+    //         rFrame(&w3mApp::Instance());
+    // }
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -386,19 +387,20 @@ void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer,
 #endif /* USE_NNTP */
 
     refresh();
-    buf = loadGeneralFile(URL::Parse(url), current, referer, request);
-    if (buf == NULL)
-    {
-        /* FIXME: gettextize? */
-        char *emsg = Sprintf("Can't load %s", conv_from_system(url))->ptr;
-        disp_err_message(emsg, FALSE);
-    }
-    else
-    {
-        GetCurrentTab()->Push(buf);
-        if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
-            rFrame(&w3mApp::Instance());
-    }
+    // buf = loadGeneralFile(URL::Parse(url), current, referer, request);
+    // if (buf == NULL)
+    // {
+    //     /* FIXME: gettextize? */
+    //     char *emsg = Sprintf("Can't load %s", conv_from_system(url))->ptr;
+    //     disp_err_message(emsg, FALSE);
+    // }
+    // else
+    // {
+    //     GetCurrentTab()->Push(buf);
+    //     if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+    //         rFrame(&w3mApp::Instance());
+    // }
+    GetCurrentTab()->Push(URL::Parse(url));
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -789,7 +791,8 @@ void _followForm(int submit)
                 tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
             tmp2->Push("?");
             tmp2->Push(tmp);
-            loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
+            // loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
+            tab->Push(URL::Parse(tmp2->ptr));
         }
         else if (fi->parent->method == FORM_METHOD_POST)
         {
@@ -805,7 +808,8 @@ void _followForm(int submit)
                 fi->parent->body = tmp->ptr;
                 fi->parent->length = tmp->Size();
             }
-            buf = loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, fi->parent);
+            // buf = loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, fi->parent);
+            tab->Push(URL::Parse(tmp2->ptr));
             if (multipart)
             {
                 unlink(fi->parent->body);
@@ -995,94 +999,94 @@ void bufferA(void)
     on_target = TRUE;
 }
 
-BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy referer, FormList *request)
-{
-    BufferPtr nfbuf;
-    union frameset_element *f_element = NULL;
+// BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy referer, FormList *request)
+// {
+//     BufferPtr nfbuf;
+//     union frameset_element *f_element = NULL;
 
-    message(Sprintf("loading %s", url)->ptr, 0, 0);
-    refresh();
+//     message(Sprintf("loading %s", url)->ptr, 0, 0);
+//     refresh();
 
-    auto base = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
-    if (base == NULL ||
-        base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
-        referer = HttpReferrerPolicy::NoReferer;
+//     auto base = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
+//     if (base == NULL ||
+//         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
+//         referer = HttpReferrerPolicy::NoReferer;
 
-    auto newBuf = loadGeneralFile(URL::Parse(url, GetCurrentTab()->GetCurrentBuffer()->BaseURL()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), referer, request);
-    if (newBuf == NULL)
-    {
-        char *emsg = Sprintf("Can't load %s", url)->ptr;
-        disp_err_message(emsg, FALSE);
-        return NULL;
-    }
+//     auto newBuf = loadGeneralFile(URL::Parse(url, GetCurrentTab()->GetCurrentBuffer()->BaseURL()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), referer, request);
+//     if (newBuf == NULL)
+//     {
+//         char *emsg = Sprintf("Can't load %s", url)->ptr;
+//         disp_err_message(emsg, FALSE);
+//         return NULL;
+//     }
 
-    auto pu = URL::Parse(url, base);
-    pushHashHist(w3mApp::Instance().URLHist, pu.ToStr()->ptr);
+//     auto pu = URL::Parse(url, base);
+//     pushHashHist(w3mApp::Instance().URLHist, pu.ToStr()->ptr);
 
-    if (!on_target) /* open link as an indivisual page */
-        return loadNormalBuf(newBuf, TRUE);
+//     if (!on_target) /* open link as an indivisual page */
+//         return loadNormalBuf(newBuf, TRUE);
 
-    if (do_download) /* download (thus no need to render frame) */
-        return loadNormalBuf(newBuf, FALSE);
+//     if (do_download) /* download (thus no need to render frame) */
+//         return loadNormalBuf(newBuf, FALSE);
 
-    if (target == NULL ||                                             /* no target specified (that means this page is not a frame page) */
-        !strcmp(target, "_top") ||                                    /* this link is specified to be opened as an indivisual * page */
-        !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME) /* This page is not a frame page */
-    )
-    {
-        return loadNormalBuf(newBuf, TRUE);
-    }
-    nfbuf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
-    if (nfbuf == NULL)
-    {
-        /* original page (that contains <frameset> tag) doesn't exist */
-        return loadNormalBuf(newBuf, TRUE);
-    }
+//     if (target == NULL ||                                             /* no target specified (that means this page is not a frame page) */
+//         !strcmp(target, "_top") ||                                    /* this link is specified to be opened as an indivisual * page */
+//         !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME) /* This page is not a frame page */
+//     )
+//     {
+//         return loadNormalBuf(newBuf, TRUE);
+//     }
+//     nfbuf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
+//     if (nfbuf == NULL)
+//     {
+//         /* original page (that contains <frameset> tag) doesn't exist */
+//         return loadNormalBuf(newBuf, TRUE);
+//     }
 
-    f_element = search_frame(nfbuf->frameset, const_cast<char *>(target));
-    if (f_element == NULL)
-    {
-        /* specified target doesn't exist in this frameset */
-        return loadNormalBuf(newBuf, TRUE);
-    }
+//     f_element = search_frame(nfbuf->frameset, const_cast<char *>(target));
+//     if (f_element == NULL)
+//     {
+//         /* specified target doesn't exist in this frameset */
+//         return loadNormalBuf(newBuf, TRUE);
+//     }
 
-    /* frame page */
+//     /* frame page */
 
-    /* stack current frameset */
-    pushFrameTree(&(nfbuf->frameQ), copyFrameSet(nfbuf->frameset), GetCurrentTab()->GetCurrentBuffer());
-    /* delete frame view buffer */
-    auto tab = GetCurrentTab();
-    // tab->DeleteBuffer(tab->GetCurrentBuffer());
-    // GetCurrentTab()->SetCurrentBuffer(nfbuf);
-    tab->Push(nfbuf);
-    /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
-    resetFrameElement(f_element, newBuf, referer, request);
-    rFrame(&w3mApp::Instance());
-    {
-        const Anchor *al = NULL;
-        auto label = pu.fragment;
+//     /* stack current frameset */
+//     pushFrameTree(&(nfbuf->frameQ), copyFrameSet(nfbuf->frameset), GetCurrentTab()->GetCurrentBuffer());
+//     /* delete frame view buffer */
+//     auto tab = GetCurrentTab();
+//     // tab->DeleteBuffer(tab->GetCurrentBuffer());
+//     // GetCurrentTab()->SetCurrentBuffer(nfbuf);
+//     tab->Push(nfbuf);
+//     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
+//     resetFrameElement(f_element, newBuf, referer, request);
+//     rFrame(&w3mApp::Instance());
+//     {
+//         const Anchor *al = NULL;
+//         auto label = pu.fragment;
 
-        if (label.size() && f_element->element->attr == F_BODY)
-        {
-            al = f_element->body->nameList.SearchByUrl(label.c_str());
-        }
+//         if (label.size() && f_element->element->attr == F_BODY)
+//         {
+//             al = f_element->body->nameList.SearchByUrl(label.c_str());
+//         }
 
-        auto tab = GetCurrentTab();
-        auto buf = tab->GetCurrentBuffer();
+//         auto tab = GetCurrentTab();
+//         auto buf = tab->GetCurrentBuffer();
 
-        if (!al)
-        {
-            label = std::string("_") + target;
-            al = buf->name.SearchByUrl(label.c_str());
-        }
-        if (al)
-        {
-            buf->Goto(al->start, label_topline);
-        }
-    }
-    displayCurrentbuf(B_NORMAL);
-    return newBuf;
-}
+//         if (!al)
+//         {
+//             label = std::string("_") + target;
+//             al = buf->name.SearchByUrl(label.c_str());
+//         }
+//         if (al)
+//         {
+//             buf->Goto(al->start, label_topline);
+//         }
+//     }
+//     displayCurrentbuf(B_NORMAL);
+//     return newBuf;
+// }
 
 FormItemList *save_submit_formlist(FormItemList *src)
 {
@@ -1177,13 +1181,13 @@ Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf)
     return wc_Str_conv_strict(val, w3mApp::Instance().InnerCharset, charset);
 }
 
-BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
-{
-    GetCurrentTab()->Push(buf);
-    if (renderframe && w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
-        rFrame(&w3mApp::Instance());
-    return buf;
-}
+// BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
+// {
+//     GetCurrentTab()->Push(buf);
+//     if (renderframe && w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+//         rFrame(&w3mApp::Instance());
+//     return buf;
+// }
 
 /* go to the next [visited] anchor */
 void _nextA(int visited)
@@ -1373,14 +1377,14 @@ void gotoLabel(std::string_view label)
         return;
     }
 
-    auto copy = buf->Copy();
+    // auto copy = buf->Copy();
 
-    for (int i = 0; i < MAX_LB; i++)
-        copy->linkBuffer[i] = NULL;
-    copy->currentURL.fragment = label;
-    pushHashHist(w3mApp::Instance().URLHist, copy->currentURL.ToStr()->ptr);
-    (*copy->clone)++;
-    GetCurrentTab()->Push(copy);
+    // for (int i = 0; i < MAX_LB; i++)
+    //     copy->linkBuffer[i] = NULL;
+    // copy->currentURL.fragment = label;
+    // pushHashHist(w3mApp::Instance().URLHist, copy->currentURL.ToStr()->ptr);
+    // (*copy->clone)++;
+    GetCurrentTab()->Push(buf->currentURL);
     GetCurrentTab()->GetCurrentBuffer()->Goto(al->start, label_topline);
     displayCurrentbuf(B_FORCE_REDRAW);
     return;
@@ -1753,20 +1757,21 @@ void execdict(char *word)
         return;
     }
     dictcmd = Sprintf("%s?%s", DictCommand, UrlEncode(Strnew(w))->ptr)->ptr;
-    buf = loadGeneralFile(URL::ParsePath(dictcmd), NULL, HttpReferrerPolicy::NoReferer, NULL);
-    if (buf == NULL)
-    {
-        disp_message("Execution failed", TRUE);
-        return;
-    }
-    else
-    {
-        buf->filename = w;
-        buf->buffername = Sprintf("%s %s", DICTBUFFERNAME, word)->ptr;
-        if (buf->type.empty())
-            buf->type = "text/plain";
-        GetCurrentTab()->Push(buf);
-    }
+    GetCurrentTab()->Push(URL::ParsePath(dictcmd));
+    // buf = loadGeneralFile(URL::ParsePath(dictcmd), NULL, HttpReferrerPolicy::NoReferer, NULL);
+    // if (buf == NULL)
+    // {
+    //     disp_message("Execution failed", TRUE);
+    //     return;
+    // }
+    // else
+    // {
+    //     buf->filename = w;
+    //     buf->buffername = Sprintf("%s %s", DICTBUFFERNAME, word)->ptr;
+    //     if (buf->type.empty())
+    //         buf->type = "text/plain";
+    //     GetCurrentTab()->Push(buf);
+    // }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
@@ -1812,7 +1817,7 @@ void tabURL0(TabPtr tab, const char *prompt, int relative)
         // p->nextBuffer = NULL;
         // GetCurrentTab()->SetFirstBuffer(buf);
         deleteTab(GetCurrentTab());
-        tab->Push(buf);
+        // tab->Push(buf);
         SetCurrentTab(tab);
         // for (buf = p; buf; buf = p)
         // {
@@ -1957,7 +1962,7 @@ void change_charset(struct parsed_tagarg *arg)
         return;
     auto tab = GetCurrentTab();
     tab->Back(true);
-    tab->Push(buf);
+    // tab->Push(buf);
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
     charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
@@ -2410,23 +2415,23 @@ void pcmap(void)
 {
 }
 
-void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid)
-{
-    if (buf == NULL)
-    {
-        disp_err_message("Can't load string", FALSE);
-    }
-    else
-    {
-        buf->bufferprop |= (BP_INTERNAL | prop);
-        if (!(buf->bufferprop & BP_NO_URL))
-            buf->currentURL = GetCurrentTab()->GetCurrentBuffer()->currentURL;
-        if (linkid != LB_NOLINK)
-        {
-            buf->linkBuffer[linkid] = GetCurrentTab()->GetCurrentBuffer();
-            GetCurrentTab()->GetCurrentBuffer()->linkBuffer[linkid] = buf;
-        }
-        GetCurrentTab()->Push(buf);
-    }
-    displayCurrentbuf(B_FORCE_REDRAW);
-}
+// void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid)
+// {
+//     if (buf == NULL)
+//     {
+//         disp_err_message("Can't load string", FALSE);
+//     }
+//     else
+//     {
+//         buf->bufferprop |= (BP_INTERNAL | prop);
+//         if (!(buf->bufferprop & BP_NO_URL))
+//             buf->currentURL = GetCurrentTab()->GetCurrentBuffer()->currentURL;
+//         if (linkid != LB_NOLINK)
+//         {
+//             buf->linkBuffer[linkid] = GetCurrentTab()->GetCurrentBuffer();
+//             GetCurrentTab()->GetCurrentBuffer()->linkBuffer[linkid] = buf;
+//         }
+//         GetCurrentTab()->Push(buf);
+//     }
+//     displayCurrentbuf(B_FORCE_REDRAW);
+// }

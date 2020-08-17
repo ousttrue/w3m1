@@ -1350,7 +1350,7 @@ smChBuf(w3mApp *w3m)
 
     auto tab = GetCurrentTab();
     // auto buf = tab->GetBuffer(SelectV);
-    tab->SetCurrentBufferIndex(SelectV);
+    tab->SetCurrent(SelectV);
 }
 
 static int

@@ -988,109 +988,110 @@ int w3mApp::Main(int argc, char **argv)
         bool isFirst = true;
         for (auto &arg : load_argv)
         {
-            SearchHeader = search_header;
-            DefaultType = default_type;
+            GetCurrentTab()->Push(URL::Parse(arg));
+            // SearchHeader = search_header;
+            // DefaultType = default_type;
 
-            FormList *request = nullptr;
-            if (w3m_dump == DUMP_HEAD)
-            {
-                auto request = New(FormList);
-                request->method = FORM_METHOD_HEAD;
-                newbuf = loadGeneralFile(URL::Parse(arg), NULL, HttpReferrerPolicy::NoReferer, request);
-            }
-            else
-            {
-                if (post_file.size() && isFirst)
-                {
-                    // POST
-                    isFirst = false;
-                    FILE *fp;
-                    if (post_file == "-")
-                    {
-                        // post stdin
-                        fp = stdin;
-                    }
-                    else
-                    {
-                        fp = fopen(post_file.c_str(), "r");
-                    }
-                    if (fp == NULL)
-                    {
-                        /* FIXME: gettextize? */
-                        err_msg->Push(
-                            Sprintf("w3m: Can't open %s.\n", post_file));
-                        continue;
-                    }
+            // FormList *request = nullptr;
+            // if (w3m_dump == DUMP_HEAD)
+            // {
+            //     auto request = New(FormList);
+            //     request->method = FORM_METHOD_HEAD;
+            //     newbuf = loadGeneralFile(URL::Parse(arg), NULL, HttpReferrerPolicy::NoReferer, request);
+            // }
+            // else
+            // {
+            //     if (post_file.size() && isFirst)
+            //     {
+            //         // POST
+            //         isFirst = false;
+            //         FILE *fp;
+            //         if (post_file == "-")
+            //         {
+            //             // post stdin
+            //             fp = stdin;
+            //         }
+            //         else
+            //         {
+            //             fp = fopen(post_file.c_str(), "r");
+            //         }
+            //         if (fp == NULL)
+            //         {
+            //             /* FIXME: gettextize? */
+            //             err_msg->Push(
+            //                 Sprintf("w3m: Can't open %s.\n", post_file));
+            //             continue;
+            //         }
 
-                    auto body = Strfgetall(fp);
-                    if (fp != stdin)
-                        fclose(fp);
-                    auto request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
-                    request->body = const_cast<char *>(body->c_str());
-                    request->boundary = NULL;
-                    request->length = body->Size();
-                    newbuf = loadGeneralFile(URL::Parse(arg), NULL, HttpReferrerPolicy::NoReferer, request);
-                }
-                else
-                {
-                    // GET
-                    newbuf = loadGeneralFile(URL::Parse(arg));
-                }
-            }
-            if (!newbuf)
-            {
-                /* FIXME: gettextize? */
-                err_msg->Push(Sprintf("w3m: Can't load %s.\n", arg.c_str()));
-                continue;
-            }
+            //         auto body = Strfgetall(fp);
+            //         if (fp != stdin)
+            //             fclose(fp);
+            //         auto request = newFormList(NULL, "post", NULL, NULL, NULL, NULL, NULL);
+            //         request->body = const_cast<char *>(body->c_str());
+            //         request->boundary = NULL;
+            //         request->length = body->Size();
+            //         newbuf = loadGeneralFile(URL::Parse(arg), NULL, HttpReferrerPolicy::NoReferer, request);
+            //     }
+            //     else
+            //     {
+            //         // GET
+            //         newbuf = loadGeneralFile(URL::Parse(arg));
+            //     }
+            // }
+            // if (!newbuf)
+            // {
+            //     /* FIXME: gettextize? */
+            //     err_msg->Push(Sprintf("w3m: Can't load %s.\n", arg.c_str()));
+            //     continue;
+            // }
 
-            switch (newbuf->real_scheme)
-            {
-            case SCM_MAILTO:
-                break;
-            case SCM_LOCAL:
-            case SCM_LOCAL_CGI:
-                unshiftHist(LoadHist, conv_from_system(arg));
-            default:
-                pushHashHist(URLHist, newbuf->currentURL.ToStr()->c_str());
-                break;
-            }
+            // switch (newbuf->real_scheme)
+            // {
+            // case SCM_MAILTO:
+            //     break;
+            // case SCM_LOCAL:
+            // case SCM_LOCAL_CGI:
+            //     unshiftHist(LoadHist, conv_from_system(arg));
+            // default:
+            //     pushHashHist(URLHist, newbuf->currentURL.ToStr()->c_str());
+            //     break;
+            // }
 
-            if (newbuf->pagerSource ||
-                (newbuf->real_scheme == SCM_LOCAL && newbuf->header_source.size() &&
-                 newbuf->currentURL.path != "-"))
-            {
-                newbuf->search_header = search_header;
-            }
+            // if (newbuf->pagerSource ||
+            //     (newbuf->real_scheme == SCM_LOCAL && newbuf->header_source.size() &&
+            //      newbuf->currentURL.path != "-"))
+            // {
+            //     newbuf->search_header = search_header;
+            // }
 
-            //
-            // set newbuf to tab
-            //
-            if (open_new_tab)
-            {
-                auto tab = CreateTabSetCurrent();
-                tab->Push(newbuf);
-            }
-            else
-            {
-                GetCurrentTab()->Push(newbuf);
-            }
+            // //
+            // // set newbuf to tab
+            // //
+            // if (open_new_tab)
+            // {
+            //     auto tab = CreateTabSetCurrent();
+            //     tab->Push(newbuf);
+            // }
+            // else
+            // {
+            //     GetCurrentTab()->Push(newbuf);
+            // }
 
-            if (!w3m_dump || w3m_dump == DUMP_BUFFER)
-            {
-                // frame ?
-                if (GetCurrentTab()->GetCurrentBuffer()->frameset != NULL && RenderFrame)
-                    rFrame(&w3mApp::Instance());
-            }
+            // if (!w3m_dump || w3m_dump == DUMP_BUFFER)
+            // {
+            //     // frame ?
+            //     if (GetCurrentTab()->GetCurrentBuffer()->frameset != NULL && RenderFrame)
+            //         rFrame(&w3mApp::Instance());
+            // }
 
-            if (w3m_dump)
-            {
-                do_dump(this, GetCurrentTab()->GetCurrentBuffer());
-            }
-            else
-            {
-                GetCurrentTab()->Push(newbuf);
-            }
+            // if (w3m_dump)
+            // {
+            //     do_dump(this, GetCurrentTab()->GetCurrentBuffer());
+            // }
+            // else
+            // {
+            //     GetCurrentTab()->Push(newbuf);
+            // }
         }
     }
 
@@ -1111,14 +1112,11 @@ int w3mApp::Main(int argc, char **argv)
         SetCurrentTab(GetLastTab());
         if (GetCurrentTab()->GetBufferCount() == 0)
         {
-            auto buf = newBuffer({});
-            buf->bufferprop = BP_INTERNAL | BP_NO_URL;
-            buf->buffername = DOWNLOAD_LIST_TITLE;
-            GetCurrentTab()->Push(buf);
+            GetCurrentTab()->Push(URL::Parse("w3m://downloadlist"));
         }
         else
         {
-            GetCurrentTab()->SetCurrentBufferIndex(0);
+            GetCurrentTab()->SetCurrent(0);
         }
         ldDL(&w3mApp::Instance());
     }
@@ -1146,7 +1144,7 @@ int w3mApp::Main(int argc, char **argv)
     UseContentCharset = TRUE;
     WcOption.auto_detect = auto_detect;
 
-    GetCurrentTab()->SetCurrentBufferIndex(0);
+    GetCurrentTab()->SetCurrent(0);
     displayCurrentbuf(B_FORCE_REDRAW);
     if (line_str.size())
     {

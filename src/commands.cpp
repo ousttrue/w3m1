@@ -303,24 +303,26 @@ void pipeBuf(w3mApp *w3m)
     saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
     fclose(f);
 
-    auto newBuf = getpipe(myExtCommand(cmd, shell_quote(tmpf), TRUE)->ptr);
-    if (newBuf == NULL)
-    {
-        disp_message("Execution failed", TRUE);
-        return;
-    }
-    else
-    {
-        newBuf->filename = cmd;
-        newBuf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
-                                     conv_from_system(cmd))
-                                 ->ptr;
-        newBuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-        if (newBuf->type.empty())
-            newBuf->type = "text/plain";
-        newBuf->currentURL.path = "-";
-        GetCurrentTab()->Push(newBuf);
-    }
+    GetCurrentTab()->Push(URL::Parse(shell_quote(tmpf)));
+
+    // auto newBuf = getpipe(myExtCommand(cmd, shell_quote(tmpf), TRUE)->ptr);
+    // if (newBuf == NULL)
+    // {
+    //     disp_message("Execution failed", TRUE);
+    //     return;
+    // }
+    // else
+    // {
+    //     newBuf->filename = cmd;
+    //     newBuf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
+    //                                  conv_from_system(cmd))
+    //                              ->ptr;
+    //     newBuf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
+    //     if (newBuf->type.empty())
+    //         newBuf->type = "text/plain";
+    //     newBuf->currentURL.path = "-";
+    //     GetCurrentTab()->Push(newBuf);
+    // }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Execute shell command and read output ac pipe. */
@@ -343,18 +345,18 @@ void pipesh(w3mApp *w3m)
         return;
     }
     buf = getpipe(cmd);
-    if (buf == NULL)
-    {
-        disp_message("Execution failed", TRUE);
-        return;
-    }
-    else
-    {
-        buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-        if (buf->type.empty())
-            buf->type = "text/plain";
-        GetCurrentTab()->Push(buf);
-    }
+    // if (buf == NULL)
+    // {
+    //     disp_message("Execution failed", TRUE);
+    //     return;
+    // }
+    // else
+    // {
+    //     buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
+    //     if (buf->type.empty())
+    //         buf->type = "text/plain";
+    //     GetCurrentTab()->Push(buf);
+    // }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Execute shell command and load entire output to buffer */
@@ -393,10 +395,10 @@ void readsh(w3mApp *w3m)
         return;
     }
 
-    buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
-    if (buf->type.empty())
-        buf->type = "text/plain";
-    GetCurrentTab()->Push(buf);
+    // buf->bufferprop |= (BP_INTERNAL | BP_NO_URL);
+    // if (buf->type.empty())
+    //     buf->type = "text/plain";
+    // GetCurrentTab()->Push(buf);
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* Execute shell command */
@@ -558,7 +560,7 @@ void selBuf(w3mApp *w3m)
 
         case '\n':
         case ' ':
-            tab->SetCurrentBufferIndex(tab->GetBufferIndex(buf));
+            // tab->SetCurrent(tab->GetBufferIndex(buf));
             ok = TRUE;
             break;
 
@@ -857,17 +859,18 @@ void followI(w3mApp *w3m)
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    auto newBuf = loadGeneralFile(URL::Parse(a->url), buf->BaseURL());
-    if (newBuf == NULL)
-    {
-        /* FIXME: gettextize? */
-        char *emsg = Sprintf("Can't load %s", a->url)->ptr;
-        disp_err_message(emsg, FALSE);
-    }
-    else
-    {
-        GetCurrentTab()->Push(newBuf);
-    }
+    GetCurrentTab()->Push(URL::Parse(a->url));
+    // auto newBuf = loadGeneralFile(URL::Parse(a->url), buf->BaseURL());
+    // if (newBuf == NULL)
+    // {
+    //     /* FIXME: gettextize? */
+    //     char *emsg = Sprintf("Can't load %s", a->url)->ptr;
+    //     disp_err_message(emsg, FALSE);
+    // }
+    // else
+    // {
+    //     GetCurrentTab()->Push(newBuf);
+    // }
     displayCurrentbuf(B_NORMAL);
 }
 /* submit form */
@@ -1042,24 +1045,27 @@ void followA(w3mApp *w3m)
     if (map)
         url = Sprintf("%s?%d,%d", a->url, x, y)->ptr;
 
-    if (check_target() && open_tab_blank &&
-        (a->target == "_new" || a->target == "_blank"))
-    {
-        auto tab = CreateTabSetCurrent();
-        auto buf = tab->GetCurrentBuffer();
-        loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
-        // if (buf != buf)
-        //     GetCurrentTab()->DeleteBuffer(buf);
-        // else
-        //     deleteTab(GetCurrentTab());
-        displayCurrentbuf(B_FORCE_REDRAW);
-        return;
-    }
-    else
-    {
-        loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
-        displayCurrentbuf(B_NORMAL);
-    }
+    // if (check_target() && open_tab_blank &&
+    //     (a->target == "_new" || a->target == "_blank"))
+    // {
+    //     auto tab = CreateTabSetCurrent();
+    //     auto buf = tab->GetCurrentBuffer();
+    //     loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
+    //     // if (buf != buf)
+    //     //     GetCurrentTab()->DeleteBuffer(buf);
+    //     // else
+    //     //     deleteTab(GetCurrentTab());
+    //     displayCurrentbuf(B_FORCE_REDRAW);
+    //     return;
+    // }
+    // else
+    // {
+    //     loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
+    //     displayCurrentbuf(B_NORMAL);
+    // }
+
+    tab->Push(URL::Parse(url));
+    displayCurrentbuf(B_NORMAL);
 }
 
 /* go to the next left anchor */
@@ -1236,13 +1242,13 @@ void adBmark(w3mApp *w3m)
 
 void ldOpt(w3mApp *w3m)
 {
-    cmd_loadBuffer(load_option_panel(), BP_NO_URL, LB_NOLINK);
+    // cmd_loadBuffer(load_option_panel(), BP_NO_URL, LB_NOLINK);
 }
 /* error message list */
 
 void msgs(w3mApp *w3m)
 {
-    cmd_loadBuffer(message_list_panel(), BP_NO_URL, LB_NOLINK);
+    // cmd_loadBuffer(message_list_panel(), BP_NO_URL, LB_NOLINK);
 }
 /* page info */
 
@@ -1260,8 +1266,8 @@ void pginfo(w3mApp *w3m)
     // if ((buf = tab->GetCurrentBuffer()->linkBuffer[LB_INFO]) != NULL)
     //     tab->DeleteBuffer(buf);
     auto newBuf = page_info_panel(GetCurrentTab()->GetCurrentBuffer());
-    cmd_loadBuffer(newBuf, BP_NORMAL, LB_INFO);
-    tab->Push(newBuf);
+    // cmd_loadBuffer(newBuf, BP_NORMAL, LB_INFO);
+    // tab->Push(newBuf);
 }
 /* link menu */
 
@@ -1334,7 +1340,7 @@ void linkLst(w3mApp *w3m)
 #ifdef USE_M17N
         buf->document_charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
 #endif
-        cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
+        // cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
     }
 }
 /* cookie list */
@@ -1344,13 +1350,15 @@ void cooLst(w3mApp *w3m)
     BufferPtr buf;
     buf = cookie_list_panel();
     if (buf != NULL)
-        cmd_loadBuffer(buf, BP_NO_URL, LB_NOLINK);
+    {
+        // cmd_loadBuffer(buf, BP_NO_URL, LB_NOLINK);
+    }
 }
 /* History page */
 
 void ldHist(w3mApp *w3m)
 {
-    cmd_loadBuffer(historyBuffer(w3mApp::Instance().URLHist), BP_NO_URL, LB_NOLINK);
+    // cmd_loadBuffer(historyBuffer(w3mApp::Instance().URLHist), BP_NO_URL, LB_NOLINK);
 }
 /* download HREF link */
 
@@ -1588,7 +1596,7 @@ void vwSrc(w3mApp *w3m)
         (*newBuf->clone)++;
         newBuf->need_reshape = TRUE;
         // buf->Reshape();
-        GetCurrentTab()->Push(newBuf);
+        GetCurrentTab()->Push(URL::Parse("w3m://htmlsource"));
         displayCurrentbuf(B_NORMAL);
     }
 }
@@ -1648,7 +1656,7 @@ void reload(w3mApp *w3m)
         }
         fbuf->linkBuffer[LB_FRAME] = renderBuf;
         renderBuf->linkBuffer[LB_N_FRAME] = fbuf;
-        GetCurrentTab()->Push(renderBuf);
+        // GetCurrentTab()->Push(renderBuf);
         if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
         {
             GetCurrentTab()->GetCurrentBuffer()->rect = sbuf->rect;
@@ -1721,7 +1729,7 @@ void reload(w3mApp *w3m)
         // if (fbuf != NULL)
         //     GetCurrentTab()->DeleteBuffer(fbuf);
 
-        tab->Push(newBuf);
+        // tab->Push(newBuf);
         tab->DeleteBack();
 
         if ((newBuf->type.size()) && (sbuf->type.size()) &&
@@ -1841,7 +1849,7 @@ void rFrame(w3mApp *w3m)
     }
     buf->linkBuffer[LB_N_FRAME] = GetCurrentTab()->GetCurrentBuffer();
     GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME] = buf;
-    GetCurrentTab()->Push(buf);
+    // GetCurrentTab()->Push(buf);
     if (fmInitialized && display_ok())
         displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -2342,7 +2350,7 @@ void ldDL(w3mApp *w3m)
         CreateTabSetCurrent();
         new_tab = TRUE;
     }
-    GetCurrentTab()->Push(newBuf);
+    // GetCurrentTab()->Push(newBuf);
     if (replace || new_tab)
         deletePrevBuf(w3m);
 

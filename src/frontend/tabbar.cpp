@@ -329,7 +329,7 @@ void followTab(TabPtr tab)
         // auto c = GetCurrentTab()->GetCurrentBuffer();
         // auto p = prevBuffer(c, buf);
         // p->nextBuffer = NULL;
-        tab->Push(buf);
+        // tab->Push(buf);
         SetCurrentTab(tab);
         // for (buf = p; buf; buf = p)
         // {

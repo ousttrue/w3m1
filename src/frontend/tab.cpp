@@ -1,4 +1,5 @@
 #include "frontend/tab.h"
+#include "frontend/buffer.h"
 #include "fm.h"
 #include "indep.h"
 #include "file.h"
@@ -12,6 +13,7 @@
 #include "html/image.h"
 #include "frontend/terms.h"
 #include "ctrlcode.h"
+#include "stream/loader.h"
 #include <stdexcept>
 #include <algorithm>
 #include <assert.h>
@@ -20,19 +22,32 @@ Tab::~Tab()
 {
 }
 
-int Tab::GetBufferIndex(const BufferPtr &b) const
+bool Tab::SetCurrent(int index)
 {
-    int i = 0;
-    for (auto &buf : m_buffers)
+    if(index<0 || index>=m_history.size())
     {
-        if (buf == b)
-        {
-            return i;
-        }
-        ++i;
+        return false;
     }
-    return -1;
+
+    auto url = m_history[index];
+    auto buf = loadGeneralFile(url, m_buffer ? m_buffer->BaseURL() : nullptr);
+    m_buffer = buf;
+    return true;
 }
+
+// int Tab::GetBufferIndex(const BufferPtr &b) const
+// {
+//     int i = 0;
+//     for (auto &buf : m_buffers)
+//     {
+//         if (buf == b)
+//         {
+//             return i;
+//         }
+//         ++i;
+//     }
+//     return -1;
+// }
 
 void Tab::DeleteBack()
 {
@@ -50,15 +65,16 @@ void Tab::DeleteBack()
     // m_buffers.erase(it);
 }
 
-void Tab::Push(const BufferPtr &buf)
+void Tab::Push(const URL &url)
 {
-    if (m_buffers.size() > m_current + 1)
+    if (m_history.size() > m_current + 1)
     {
         // drop
-        m_buffers.resize(m_current + 1);
+        m_history.resize(m_current + 1);
     }
-    m_buffers.push_back(buf);
-    m_current = m_buffers.size() - 1;
+
+    m_history.push_back(url);
+    SetCurrent(m_history.size() - 1);
 }
 
 static void

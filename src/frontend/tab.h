@@ -4,9 +4,9 @@
 #include <list>
 #include <vector>
 #include <functional>
+#include "stream/url.h"
 struct Tab;
 using BufferPtr = std::shared_ptr<struct Buffer>;
-using BufferList = std::vector<BufferPtr>;
 
 ///
 /// [ tab ]
@@ -21,34 +21,36 @@ class Tab
     Tab(const Tab &) = delete;
     Tab &operator=(const Tab &) = delete;
 
-    BufferList m_buffers;
-
+    std::vector<URL> m_history;
     int m_current = 0;
-    BufferList::const_iterator find(BufferPtr b) const
-    {
-        return std::find(m_buffers.begin(), m_buffers.end(), b);
-    }
-    BufferList::const_iterator findCurrent() const
-    {
-        if (m_current < 0 || m_current > m_buffers.size())
-        {
-            return m_buffers.end();
-        }
-        return m_buffers.begin() + m_current;
-    }
-    BufferPtr GetBuffer(int n) const
-    {
-        if (n < 0 || n >= m_buffers.size())
-        {
-            return nullptr;
-        }
-        return m_buffers[n];
-    }
+    BufferPtr m_buffer;
+    // BufferList::const_iterator find(BufferPtr b) const
+    // {
+    //     return std::find(m_history.begin(), m_history.end(), b);
+    // }
+    // BufferList::const_iterator findCurrent() const
+    // {
+    //     if (m_current < 0 || m_current > m_history.size())
+    //     {
+    //         return m_history.end();
+    //     }
+    //     return m_history.begin() + m_current;
+    // }
+    // BufferPtr GetBuffer(int n) const
+    // {
+    //     if (n < 0 || n >= m_history.size())
+    //     {
+    //         return nullptr;
+    //     }
+    //     return m_history[n];
+    // }
+
 
 public:
     Tab() = default;
     ~Tab();
 
+    bool SetCurrent(int index);
     int Left() const { return m_left; }
     int Right() const { return m_right; }
     int Width() const
@@ -74,51 +76,30 @@ public:
     }
 
     // buffer
-    int GetBufferCount() const { return m_buffers.size(); }
-    int GetBufferIndex(const BufferPtr &buf) const;
+    int GetBufferCount() const { return m_history.size(); }
+    // int GetBufferIndex(const BufferPtr &buf) const;
     int GetCurrentBufferIndex() const { return m_current; }
-    void SetCurrentBufferIndex(int index) { m_current = index; }
-    BufferPtr GetCurrentBuffer() const { return GetBuffer(m_current); }
-
-private:
-    bool ValidateIndex()
-    {
-        if (m_current < 0)
-        {
-            m_current = 0;
-            return false;
-        }
-
-        if (m_current >= m_buffers.size())
-        {
-            m_current = m_buffers.size() - 1;
-            return false;
-        }
-
-        return true;
-    }
+    BufferPtr GetCurrentBuffer() const { return m_buffer; }
 
 public:
     // history の 先頭に追加する
-    void Push(const BufferPtr &buf);
+    void Push(const URL &url);
     // remove current back, for remove history(local cgi etc)
     void DeleteBack();
     // void DeleteBuffer(const BufferPtr &buf);
 
     bool Forward()
     {
-        ++m_current;
-        return ValidateIndex();
+        return SetCurrent(m_current + 1);
     }
     bool Back(bool remove = false)
     {
-        --m_current;
-        bool valid = ValidateIndex();
-        if (valid && remove)
+        auto success = SetCurrent(m_current - 1);
+        if (remove)
         {
-            m_buffers.resize(m_current + 1);
+            m_history.resize(m_current + 1);
         }
-        return valid;
+        return success;
     }
 };
 using TabPtr = std::shared_ptr<Tab>;
