@@ -1089,7 +1089,7 @@ int w3mApp::Main(int argc, char **argv)
             }
             else
             {
-                GetCurrentTab()->SetCurrentBuffer(newbuf);
+                GetCurrentTab()->Push(newbuf);
             }
         }
     }
@@ -1118,7 +1118,7 @@ int w3mApp::Main(int argc, char **argv)
         }
         else
         {
-            GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
+            GetCurrentTab()->SetCurrentBufferIndex(0);
         }
         ldDL(&w3mApp::Instance());
     }
@@ -1146,7 +1146,7 @@ int w3mApp::Main(int argc, char **argv)
     UseContentCharset = TRUE;
     WcOption.auto_detect = auto_detect;
 
-    GetCurrentTab()->SetCurrentBuffer(GetCurrentTab()->GetFirstBuffer());
+    GetCurrentTab()->SetCurrentBufferIndex(0);
     displayCurrentbuf(B_FORCE_REDRAW);
     if (line_str.size())
     {

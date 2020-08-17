@@ -68,12 +68,29 @@ public:
     // buffer
     int GetBufferIndex(const BufferPtr &buf) const;
     int GetCurrentBufferIndex() const { return m_current; }
+    void SetCurrentBufferIndex(int index) { m_current = index; }
     BufferPtr GetFirstBuffer() { return m_buffers.front(); }
     BufferPtr GetCurrentBuffer() const { return GetBuffer(m_current); }
 
 private:
-    BufferPtr ForwardBuffer(const BufferPtr &buf) const;
-    BufferPtr BackBuffer(const BufferPtr &buf) const;
+    // BufferPtr ForwardBuffer(const BufferPtr &buf) const;
+    // BufferPtr BackBuffer(const BufferPtr &buf) const;
+    bool ValidateIndex()
+    {
+        if (m_current < 0)
+        {
+            m_current = 0;
+            return false;
+        }
+
+        if (m_current >= m_buffers.size())
+        {
+            m_current = m_buffers.size() - 1;
+            return false;
+        }
+
+        return true;
+    }
 
 public:
     BufferPtr GetBuffer(int n) const
@@ -89,21 +106,25 @@ public:
 
     // history の 先頭に追加する
     void Push(const BufferPtr &buf);
-
-    void SetCurrentBuffer(const BufferPtr &buf);
-    // forward current, return forward is exists
-    bool Forward();
-    // back current, return back is exists
-    bool Back();
-    bool CheckBackBuffer();
-
     // remove current back, for remove history(local cgi etc)
     void DeleteBack();
-
     void DeleteBuffer(const BufferPtr &buf);
 
-private:
-    bool IsConnectFirstCurrent() const;
+    bool Forward()
+    {
+        ++m_current;
+        return ValidateIndex();
+    }
+    bool Back(bool remove = false)
+    {
+        --m_current;
+        bool valid = ValidateIndex();
+        if (valid && remove)
+        {
+            m_buffers.resize(m_current + 1);
+        }
+        return valid;
+    }
 };
 using TabPtr = std::shared_ptr<Tab>;
 

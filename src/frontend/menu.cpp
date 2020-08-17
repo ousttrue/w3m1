@@ -1347,8 +1347,8 @@ smChBuf(w3mApp *w3m)
         return;
 
     auto tab = GetCurrentTab();
-    auto buf = tab->GetBuffer(SelectV);
-    tab->SetCurrentBuffer(buf);
+    // auto buf = tab->GetBuffer(SelectV);
+    tab->SetCurrentBufferIndex(SelectV);
 }
 
 static int

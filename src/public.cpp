@@ -1052,8 +1052,9 @@ BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy refer
     pushFrameTree(&(nfbuf->frameQ), copyFrameSet(nfbuf->frameset), GetCurrentTab()->GetCurrentBuffer());
     /* delete frame view buffer */
     auto tab = GetCurrentTab();
-    tab->DeleteBuffer(tab->GetCurrentBuffer());
-    GetCurrentTab()->SetCurrentBuffer(nfbuf);
+    // tab->DeleteBuffer(tab->GetCurrentBuffer());
+    // GetCurrentTab()->SetCurrentBuffer(nfbuf);
+    tab->Push(nfbuf);
     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
     resetFrameElement(f_element, newBuf, referer, request);
     rFrame(&w3mApp::Instance());
@@ -1955,8 +1956,8 @@ void change_charset(struct parsed_tagarg *arg)
     if (buf == NULL)
         return;
     auto tab = GetCurrentTab();
-    tab->DeleteBuffer(tab->GetCurrentBuffer());
-    GetCurrentTab()->SetCurrentBuffer(buf);
+    tab->Back(true);
+    tab->Push(buf);
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
     charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;

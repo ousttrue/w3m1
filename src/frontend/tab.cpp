@@ -20,23 +20,6 @@ Tab::~Tab()
 {
 }
 
-bool Tab::IsConnectFirstCurrent() const
-{
-    auto c = GetCurrentBuffer();
-    if (!c)
-    {
-        return false;
-    }
-    for (auto &buf : m_buffers)
-    {
-        if (buf == c)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 int Tab::GetBufferIndex(const BufferPtr &b) const
 {
     int i = 0;
@@ -51,105 +34,74 @@ int Tab::GetBufferIndex(const BufferPtr &b) const
     return -1;
 }
 
-bool Tab::Forward()
-{
-    if (m_buffers.empty())
-    {
-        return false;
-    }
-    if (m_current <= 0)
-    {
-        return false;
-    }
-    --m_current;
-    return true;
-}
-
-bool Tab::Back()
-{
-    if (m_current >= m_buffers.size() - 1)
-    {
-        return false;
-    }
-    ++m_current;
-    return true;
-}
-
 void Tab::DeleteBack()
 {
-    auto it = findCurrent();
-    if (it == m_buffers.end())
-    {
-        return;
-    }
-    ++it;
-    if (it == m_buffers.end())
-    {
-        return;
-    }
-    m_buffers.erase(it);
+    assert(false);
+    // auto it = findCurrent();
+    // if (it == m_buffers.end())
+    // {
+    //     return;
+    // }
+    // ++it;
+    // if (it == m_buffers.end())
+    // {
+    //     return;
+    // }
+    // m_buffers.erase(it);
 }
 
-BufferPtr Tab::ForwardBuffer(const BufferPtr &buf) const
-{
-    if (buf == m_buffers.front())
-    {
-        return nullptr;
-    }
-    auto it = find(buf);
-    --it;
-    return *it;
-}
+// BufferPtr Tab::ForwardBuffer(const BufferPtr &buf) const
+// {
+//     if (buf == m_buffers.front())
+//     {
+//         return nullptr;
+//     }
+//     auto it = find(buf);
+//     --it;
+//     return *it;
+// }
 
-BufferPtr Tab::BackBuffer(const BufferPtr &buf) const
-{
-    auto it = find(buf);
-    if (it == m_buffers.end())
-    {
-        assert(false);
-        return nullptr;
-    }
-    ++it;
-    return *it;
-}
+// BufferPtr Tab::BackBuffer(const BufferPtr &buf) const
+// {
+//     auto it = find(buf);
+//     if (it == m_buffers.end())
+//     {
+//         assert(false);
+//         return nullptr;
+//     }
+//     ++it;
+//     return *it;
+// }
 
-void Tab::SetCurrentBuffer(const BufferPtr &buf)
-{
-    auto c = GetCurrentBuffer();
-    if (c == buf)
-    {
-        return;
-    }
-    if (c)
-    {
-        deleteImage(c.get());
-        if (clear_buffer)
-        {
-            c->TmpClear();
-        }
-    }
+// void Tab::SetCurrentBuffer(const BufferPtr &buf)
+// {
+//     auto c = GetCurrentBuffer();
+//     if (c == buf)
+//     {
+//         return;
+//     }
+//     if (c)
+//     {
+//         deleteImage(c.get());
+//         if (clear_buffer)
+//         {
+//             c->TmpClear();
+//         }
+//     }
 
-    m_current = GetBufferIndex(buf);
-    assert(IsConnectFirstCurrent());
-}
+//     m_current = GetBufferIndex(buf);
+//     assert(IsConnectFirstCurrent());
+// }
 
-// currentPrev -> buf -> current
 void Tab::Push(const BufferPtr &buf)
 {
-    if (m_buffers.empty())
+    if (m_buffers.size() > m_current + 1)
     {
-        m_buffers.push_back(buf);
-        SetCurrentBuffer(buf);
-        return;
+        // drop
+        m_buffers.resize(m_current + 1);
     }
-
-    auto it = findCurrent();
-    assert(it != m_buffers.end());
-    m_buffers.insert(it, buf);
-    SetCurrentBuffer(buf);
-#ifdef USE_BUFINFO
-    saveBufferInfo();
-#endif
+    m_buffers.push_back(buf);
+    m_current = m_buffers.size() - 1;
 }
 
 // void Tab::PushBufferCurrentNext(const BufferPtr &buf)
@@ -437,42 +389,4 @@ void Tab::DeleteBuffer(const BufferPtr &delbuf)
     {
         m_current = GetBufferIndex(*next);
     }
-}
-
-bool Tab::CheckBackBuffer()
-{
-    auto it = find(GetCurrentBuffer());
-    if (it == m_buffers.end())
-    {
-        return false;
-    }
-    ++it;
-
-    // TODO:
-    // BufferPtr fbuf = currentBuffer->linkBuffer[LB_N_FRAME];
-    // if (fbuf)
-    // {
-    //     if (fbuf->frameQ)
-    //     {
-    //         return TRUE; /* Currentbuf has stacked frames */
-    //     }
-
-    //     /* when no frames stacked and next is frame source, try next's
-    //     * nextBuffer */
-
-    //     if (w3mApp::Instance().RenderFrame && fbuf == tab->BackBuffer(buf))
-    //     {
-    //         if (tab->BackBuffer(fbuf) != NULL)
-    //             return TRUE;
-    //         else
-    //             return FALSE;
-    //     }
-    // }
-
-    if (it == m_buffers.end())
-    {
-        return false;
-    }
-
-    return TRUE;
 }

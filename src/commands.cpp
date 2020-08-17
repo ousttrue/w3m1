@@ -543,11 +543,12 @@ void qquitfm(w3mApp *w3m)
 /* Select buffer */
 void selBuf(w3mApp *w3m)
 {
+    auto tab = GetCurrentTab();
     int ok = FALSE;
     do
     {
         char cmd;
-        auto buf = GetCurrentTab()->SelectBuffer(GetCurrentTab()->GetCurrentBuffer(), &cmd);
+        auto buf = tab->SelectBuffer(tab->GetCurrentBuffer(), &cmd);
         switch (cmd)
         {
         case 'B':
@@ -556,12 +557,12 @@ void selBuf(w3mApp *w3m)
 
         case '\n':
         case ' ':
-            GetCurrentTab()->SetCurrentBuffer(buf);
+            tab->SetCurrentBufferIndex(tab->GetBufferIndex(buf));
             ok = TRUE;
             break;
 
         case 'D':
-            GetCurrentTab()->DeleteBuffer(buf);
+            tab->DeleteBuffer(buf);
             break;
 
         case 'q':
@@ -1139,52 +1140,53 @@ void prevBf(w3mApp *w3m)
 void backBf(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
-    if (!tab->CheckBackBuffer())
-    {
-        if (close_tab_back && GetTabCount() >= 1)
-        {
-            deleteTab(GetCurrentTab());
-            displayCurrentbuf(B_FORCE_REDRAW);
-        }
-        else
-            /* FIXME: gettextize? */
-            disp_message("Can't back...", TRUE);
-        return;
-    }
-    tab->DeleteBuffer(tab->GetCurrentBuffer());
-    if (buf)
-    {
-        if (buf->frameQ)
-        {
-            struct frameset *fs;
-            long linenumber = buf->frameQ->linenumber;
-            long top = buf->frameQ->top_linenumber;
-            int pos = buf->frameQ->pos;
-            int currentColumn = buf->frameQ->currentColumn;
-            AnchorList &formitem = buf->frameQ->formitem;
-            fs = popFrameTree(&(buf->frameQ));
-            deleteFrameSet(buf->frameset);
-            buf->frameset = fs;
-            if (buf == GetCurrentTab()->GetCurrentBuffer())
-            {
-                rFrame(w3m);
-                GetCurrentTab()->GetCurrentBuffer()->LineSkip(
-                    GetCurrentTab()->GetCurrentBuffer()->FirstLine(), top - 1,
-                    FALSE);
-                GetCurrentTab()->GetCurrentBuffer()->Goto({linenumber, pos});
-                // GetCurrentTab()->GetCurrentBuffer()->pos = pos;
-                // GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
-                GetCurrentTab()->GetCurrentBuffer()->currentColumn = currentColumn;
-                formResetBuffer(GetCurrentTab()->GetCurrentBuffer(), formitem);
-            }
-        }
-        else if (w3mApp::Instance().RenderFrame && buf == GetCurrentTab()->GetCurrentBuffer())
-        {
-            auto tab = GetCurrentTab();
-            tab->DeleteBuffer(tab->GetCurrentBuffer());
-        }
-    }
+    tab->Back(true);
+    // auto buf = tab->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
+    // if (!tab->CheckBackBuffer())
+    // {
+    //     if (close_tab_back && GetTabCount() >= 1)
+    //     {
+    //         deleteTab(GetCurrentTab());
+    //         displayCurrentbuf(B_FORCE_REDRAW);
+    //     }
+    //     else
+    //         /* FIXME: gettextize? */
+    //         disp_message("Can't back...", TRUE);
+    //     return;
+    // }
+    // tab->DeleteBuffer(tab->GetCurrentBuffer());
+    // if (buf)
+    // {
+    //     if (buf->frameQ)
+    //     {
+    //         struct frameset *fs;
+    //         long linenumber = buf->frameQ->linenumber;
+    //         long top = buf->frameQ->top_linenumber;
+    //         int pos = buf->frameQ->pos;
+    //         int currentColumn = buf->frameQ->currentColumn;
+    //         AnchorList &formitem = buf->frameQ->formitem;
+    //         fs = popFrameTree(&(buf->frameQ));
+    //         deleteFrameSet(buf->frameset);
+    //         buf->frameset = fs;
+    //         if (buf == GetCurrentTab()->GetCurrentBuffer())
+    //         {
+    //             rFrame(w3m);
+    //             GetCurrentTab()->GetCurrentBuffer()->LineSkip(
+    //                 GetCurrentTab()->GetCurrentBuffer()->FirstLine(), top - 1,
+    //                 FALSE);
+    //             GetCurrentTab()->GetCurrentBuffer()->Goto({linenumber, pos});
+    //             // GetCurrentTab()->GetCurrentBuffer()->pos = pos;
+    //             // GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+    //             GetCurrentTab()->GetCurrentBuffer()->currentColumn = currentColumn;
+    //             formResetBuffer(GetCurrentTab()->GetCurrentBuffer(), formitem);
+    //         }
+    //     }
+    //     else if (w3mApp::Instance().RenderFrame && buf == GetCurrentTab()->GetCurrentBuffer())
+    //     {
+    //         auto tab = GetCurrentTab();
+    //         tab->DeleteBuffer(tab->GetCurrentBuffer());
+    //     }
+    // }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
@@ -1245,18 +1247,20 @@ void msgs(w3mApp *w3m)
 
 void pginfo(w3mApp *w3m)
 {
-    BufferPtr buf;
-    if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_INFO]) != NULL)
-    {
-        GetCurrentTab()->SetCurrentBuffer(buf);
-        displayCurrentbuf(B_NORMAL);
-        return;
-    }
     auto tab = GetCurrentTab();
-    if ((buf = tab->GetCurrentBuffer()->linkBuffer[LB_INFO]) != NULL)
-        tab->DeleteBuffer(buf);
-    buf = page_info_panel(GetCurrentTab()->GetCurrentBuffer());
-    cmd_loadBuffer(buf, BP_NORMAL, LB_INFO);
+    // BufferPtr buf;
+    // if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_INFO]) != NULL)
+    // {
+    //     GetCurrentTab()->SetCurrentBuffer(buf);
+    //     displayCurrentbuf(B_NORMAL);
+    //     return;
+    // }
+
+    // if ((buf = tab->GetCurrentBuffer()->linkBuffer[LB_INFO]) != NULL)
+    //     tab->DeleteBuffer(buf);
+    auto newBuf = page_info_panel(GetCurrentTab()->GetCurrentBuffer());
+    cmd_loadBuffer(newBuf, BP_NORMAL, LB_INFO);
+    tab->Push(newBuf);
 }
 /* link menu */
 
@@ -1497,16 +1501,16 @@ void vwSrc(w3mApp *w3m)
         return;
     }
 
-    {
-        BufferPtr link;
-        if ((link = buf->linkBuffer[LB_SOURCE]) ||
-            (link = buf->linkBuffer[LB_N_SOURCE]))
-        {
-            GetCurrentTab()->SetCurrentBuffer(link);
-            displayCurrentbuf(B_NORMAL);
-            return;
-        }
-    }
+    // {
+    //     BufferPtr link;
+    //     if ((link = buf->linkBuffer[LB_SOURCE]) ||
+    //         (link = buf->linkBuffer[LB_N_SOURCE]))
+    //     {
+    //         GetCurrentTab()->SetCurrentBuffer(link);
+    //         displayCurrentbuf(B_NORMAL);
+    //         return;
+    //     }
+    // }
 
     if (buf->sourcefile.empty())
     {
@@ -1808,21 +1812,21 @@ void chkNMID(w3mApp *w3m)
 void rFrame(w3mApp *w3m)
 {
     BufferPtr buf;
-    if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME]) != NULL)
-    {
-        GetCurrentTab()->SetCurrentBuffer(buf);
-        displayCurrentbuf(B_NORMAL);
-        return;
-    }
-    if (GetCurrentTab()->GetCurrentBuffer()->frameset == NULL)
-    {
-        if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME]) != NULL)
-        {
-            GetCurrentTab()->SetCurrentBuffer(buf);
-            displayCurrentbuf(B_NORMAL);
-        }
-        return;
-    }
+    // if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME]) != NULL)
+    // {
+    //     GetCurrentTab()->SetCurrentBuffer(buf);
+    //     displayCurrentbuf(B_NORMAL);
+    //     return;
+    // }
+    // if (GetCurrentTab()->GetCurrentBuffer()->frameset == NULL)
+    // {
+    //     if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME]) != NULL)
+    //     {
+    //         GetCurrentTab()->SetCurrentBuffer(buf);
+    //         displayCurrentbuf(B_NORMAL);
+    //     }
+    //     return;
+    // }
     if (fmInitialized)
     {
         message("Rendering frame", 0, 0);
