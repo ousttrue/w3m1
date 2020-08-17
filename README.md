@@ -7,6 +7,8 @@ w3m を改造して遊ぶ。
 だいぶ壊れてきた。ぼちぼち
 
 * [ ] Document Charset [Change] FollowForm でページが遷移しない
+    * buffer->anchors.empty ?
+
 * [ ] logger
 * [x] unittest. catch2 導入
 * [x] load中のメッセージ表示が壊れた。Sprintf に std::string 投げてた

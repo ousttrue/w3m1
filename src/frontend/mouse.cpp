@@ -307,6 +307,8 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         return;
     }
 
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
     MouseActionMap *map = NULL;
     if (y < ny)
     {
@@ -329,15 +331,14 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
     }
     else if (y > ny)
     {
-        auto [_x, _y] = GetCurrentTab()->GetCurrentBuffer()->rect.globalXY();
-        x=_x;
-        y=_y;
+        auto [_x, _y] = buf->rect.globalXY();
+        x = _x;
+        y = _y;
         if (y &&
-            (x || (WcOption.use_wide && GetCurrentTab()->GetCurrentBuffer()->CurrentLine() != NULL &&
-                                                                                                                (CharType(GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->propBuf()[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && x == GetCurrentTab()->GetCurrentBuffer()->rect.cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX + 1)))
+            (x || (WcOption.use_wide && buf->CurrentLine() != NULL &&
+                   (CharType(buf->CurrentLine()->propBuf()[buf->pos]) == PC_KANJI1) && x == buf->rect.cursorX + buf->rect.rootX + 1)))
         {
-            if (retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer()) ||
-                retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer()))
+            if (buf->RetrieveAnchor(buf->CurrentPoint()) || retrieveCurrentForm(buf))
             {
                 map = &mouse_action.active_map[(int)btn];
                 if (!(map && map->func))
@@ -346,22 +347,19 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         }
         else
         {
-            int cx = GetCurrentTab()->GetCurrentBuffer()->rect.cursorX;
-            int cy = GetCurrentTab()->GetCurrentBuffer()->rect.cursorY;
-            GetCurrentTab()->GetCurrentBuffer()->CursorXY(x - GetCurrentTab()->GetCurrentBuffer()->rect.rootX, y - GetCurrentTab()->GetCurrentBuffer()->rect.rootY);
+            int cx = buf->rect.cursorX;
+            int cy = buf->rect.cursorY;
+            buf->CursorXY(x - buf->rect.rootX, y - buf->rect.rootY);
 
-            auto [_x, _y] = GetCurrentTab()->GetCurrentBuffer()->rect.globalXY();
-            x=_x;
-            y=_y;
+            auto [_x, _y] = buf->rect.globalXY();
+            x = _x;
+            y = _y;
             if (y &&
-                (x
-                 || (WcOption.use_wide && GetCurrentTab()->GetCurrentBuffer()->CurrentLine() != NULL &&
-                     (CharType(GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->propBuf()[GetCurrentTab()->GetCurrentBuffer()->pos]) == PC_KANJI1) && x == GetCurrentTab()->GetCurrentBuffer()->rect.cursorX + GetCurrentTab()->GetCurrentBuffer()->rect.rootX + 1)
-                     ) &&
-                (retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer()) ||
-                 retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer())))
+                (x || (WcOption.use_wide && buf->CurrentLine() != NULL &&
+                       (CharType(buf->CurrentLine()->propBuf()[buf->pos]) == PC_KANJI1) && x == buf->rect.cursorX + buf->rect.rootX + 1)) &&
+                (buf->RetrieveAnchor(buf->CurrentPoint()) || retrieveCurrentForm(buf)))
                 map = &mouse_action.anchor_map[(int)btn];
-            GetCurrentTab()->GetCurrentBuffer()->CursorXY(cx, cy);
+            buf->CursorXY(cx, cy);
         }
     }
     else

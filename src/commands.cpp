@@ -898,10 +898,10 @@ void topA(w3mApp *w3m)
     {
         if (hseq >= hl.size())
             return;
-        po = &hl[hseq];
-        an = buf->href.RetrieveAnchor(po->line, po->pos);
+        auto &po = hl[hseq];
+        an = buf->href.RetrieveAnchor(po);
         if (an == NULL)
-            an = buf->formitem.RetrieveAnchor(po->line, po->pos);
+            an = buf->formitem.RetrieveAnchor(po);
         hseq++;
     } while (an == NULL);
 
@@ -934,10 +934,10 @@ void lastA(w3mApp *w3m)
     {
         if (hseq < 0)
             return;
-        po = &hl[hseq];
-        an = buf->href.RetrieveAnchor(po->line, po->pos);
+        auto &po = hl[hseq];
+        an = buf->href.RetrieveAnchor(po);
         if (an == NULL)
-            an = buf->formitem.RetrieveAnchor(po->line, po->pos);
+            an = buf->formitem.RetrieveAnchor(po);
         hseq--;
     } while (an == NULL);
 
@@ -969,6 +969,19 @@ void prevVA(w3mApp *w3m)
     _prevA(TRUE);
 }
 
+static std::tuple<bool, int, int> isMap(const BufferPtr &buf, const Anchor *a)
+{
+    int x = 0;
+    int y = 0;
+    if (a && a->image && a->image->ismap)
+    {
+        getMapXY(buf, a, &x, &y);
+        return {true, x, y};
+    }
+
+    return {};
+}
+
 /* follow HREF link */
 void followA(w3mApp *w3m)
 {
@@ -978,22 +991,22 @@ void followA(w3mApp *w3m)
         return;
     auto l = buf->CurrentLine();
 
-    auto a = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
-    if (a && a->image && a->image->map)
+    bool map = false;
+    int x = -1;
+    int y = -1;
+
     {
-        _followForm(FALSE);
-        return;
+        auto a = retrieveCurrentImg(buf);
+        if (a && a->image && a->image->map)
+        {
+            _followForm(FALSE);
+            return;
+        }
+
+        std::tie(map, x, y) = isMap(buf, a);
     }
 
-    int map = 0;
-    int x = 0;
-    int y = 0;
-    if (a && a->image && a->image->ismap)
-    {
-        getMapXY(GetCurrentTab()->GetCurrentBuffer(), a, &x, &y);
-        map = 1;
-    }
-    a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
+    auto a = buf->RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
     {
         _followForm(FALSE);
@@ -1006,8 +1019,8 @@ void followA(w3mApp *w3m)
         return;
     }
 
-    auto u = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    if (u.ToStr()->Cmp(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()) == 0)
+    auto u = URL::Parse(a->url, buf->BaseURL());
+    if (u.ToStr()->Cmp(buf->currentURL.ToStr()) == 0)
     {
         /* index within this buffer */
         if (u.fragment.size())
@@ -1847,18 +1860,20 @@ void extbrz(w3mApp *w3m)
 
 void linkbrz(w3mApp *w3m)
 {
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
 
-    auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
+    auto a = buf->RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
         return;
 
     auto pu = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     invoke_browser(pu.ToStr()->ptr);
 }
-/* show current line number and number of lines in the entire document */
 
+/* show current line number and number of lines in the entire document */
 void curlno(w3mApp *w3m)
 {
     int cur = 0, all = 0, col = 0, len = 0;

@@ -595,7 +595,7 @@ page_info_panel(BufferPtr buf)
                    "<tr valign=top><td nowrap>Transferred bytes<td>",
                    Sprintf("%d", buf->trbyte)->ptr, NULL);
 
-    a = retrieveCurrentAnchor(buf);
+    a = buf->RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
         auto pu = URL::Parse(a->url, buf->BaseURL());

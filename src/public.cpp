@@ -1185,52 +1185,49 @@ BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 /* go to the next [visited] anchor */
 void _nextA(int visited)
 {
-    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
-    const Anchor *an;
-    const Anchor *pan;
-    int i, x, y, n = searchKeyNum();
-
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    if (hl.empty())
+    if (buf->hmarklist.empty())
         return;
 
-    an = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
-    if (visited != TRUE && an == NULL)
-        an = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
+    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
+    if (!visited && !an)
+        an = retrieveCurrentForm(buf);
 
-    y = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->linenumber;
-    x = GetCurrentTab()->GetCurrentBuffer()->pos;
+    auto y = buf->CurrentLine()->linenumber;
+    auto x = buf->pos;
 
+    int n = searchKeyNum();
     if (visited == TRUE)
     {
-        n = hl.size();
+        n = buf->hmarklist.size();
     }
 
-    for (i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
     {
-        pan = an;
+        auto pan = an;
         if (an && an->hseq >= 0)
         {
             int hseq = an->hseq + 1;
             do
             {
-                if (hseq >= hl.size())
+                if (hseq >= buf->hmarklist.size())
                 {
                     if (visited == TRUE)
                         return;
                     an = pan;
                     goto _end;
                 }
-                auto po = &hl[hseq];
-                an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
+                auto &po = buf->hmarklist[hseq];
+                an = buf->href.RetrieveAnchor(po);
                 if (visited != TRUE && an == NULL)
-                    an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line,
-                                                                                      po->pos);
+                    an = buf->formitem.RetrieveAnchor(po);
                 hseq++;
                 if (visited == TRUE && an)
                 {
-                    auto url = URL::Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                    auto url = URL::Parse(an->url, buf->BaseURL());
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
@@ -1240,9 +1237,9 @@ void _nextA(int visited)
         }
         else
         {
-            an = GetCurrentTab()->GetCurrentBuffer()->href.ClosestNext(NULL, x, y);
+            an = buf->href.ClosestNext(NULL, x, y);
             if (!visited)
-                an = GetCurrentTab()->GetCurrentBuffer()->formitem.ClosestNext(an, x, y);
+                an = buf->formitem.ClosestNext(an, x, y);
             if (an == NULL)
             {
                 if (visited)
@@ -1254,7 +1251,7 @@ void _nextA(int visited)
             y = an->start.line;
             if (visited == TRUE)
             {
-                auto url = URL::Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                auto url = URL::Parse(an->url, buf->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
@@ -1269,34 +1266,34 @@ _end:
     if (an == NULL || an->hseq < 0)
         return;
 
-    GetCurrentTab()->GetCurrentBuffer()->Goto(hl[an->hseq]);
+    buf->Goto(buf->hmarklist[an->hseq]);
     displayCurrentbuf(B_NORMAL);
 }
 
 /* go to the previous anchor */
 void _prevA(int visited)
 {
-    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
-    int i, x, y, n = searchKeyNum();
-
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
         return;
-    if (hl.empty())
+    if (buf->hmarklist.empty())
         return;
 
-    auto an = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
-    if (visited != TRUE && an == NULL)
-        an = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
+    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
+    if (!visited && !an)
+        an = retrieveCurrentForm(buf);
 
-    y = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->linenumber;
-    x = GetCurrentTab()->GetCurrentBuffer()->pos;
+    auto y = buf->CurrentLine()->linenumber;
+    auto x = buf->pos;
 
+    int n = searchKeyNum();
     if (visited == TRUE)
     {
-        n = hl.size();
+        n = buf->hmarklist.size();
     }
 
-    for (i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
     {
         auto pan = an;
         if (an && an->hseq >= 0)
@@ -1311,14 +1308,14 @@ void _prevA(int visited)
                     an = pan;
                     goto _end;
                 }
-                auto po = &hl[hseq];
-                an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(po->line, po->pos);
+                auto &po = buf->hmarklist[hseq];
+                an = buf->href.RetrieveAnchor(po);
                 if (visited != TRUE && an == NULL)
-                    an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(po->line, po->pos);
+                    an = buf->formitem.RetrieveAnchor(po);
                 hseq--;
                 if (visited == TRUE && an)
                 {
-                    auto url = URL::Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                    auto url = URL::Parse(an->url, buf->BaseURL());
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
@@ -1328,9 +1325,9 @@ void _prevA(int visited)
         }
         else
         {
-            an = GetCurrentTab()->GetCurrentBuffer()->href.ClosestPrev(NULL, x, y);
+            an = buf->href.ClosestPrev(NULL, x, y);
             if (visited != TRUE)
-                an = GetCurrentTab()->GetCurrentBuffer()->formitem.ClosestPrev(an, x, y);
+                an = buf->formitem.ClosestPrev(an, x, y);
             if (an == NULL)
             {
                 if (visited == TRUE)
@@ -1342,7 +1339,7 @@ void _prevA(int visited)
             y = an->start.line;
             if (visited == TRUE && an)
             {
-                auto url = URL::Parse(an->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+                auto url = URL::Parse(an->url, buf->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
@@ -1357,13 +1354,15 @@ _end:
     if (an == NULL || an->hseq < 0)
         return;
 
-    GetCurrentTab()->GetCurrentBuffer()->Goto(hl[an->hseq]);
+    buf->Goto(buf->hmarklist[an->hseq]);
     displayCurrentbuf(B_NORMAL);
 }
 
 void gotoLabel(std::string_view label)
 {
-    auto al = searchURLLabel(GetCurrentTab()->GetCurrentBuffer(), const_cast<char *>(label.data()));
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    auto al = searchURLLabel(buf, const_cast<char *>(label.data()));
     if (al == NULL)
     {
         /* FIXME: gettextize? */
@@ -1371,14 +1370,14 @@ void gotoLabel(std::string_view label)
         return;
     }
 
-    auto buf = GetCurrentTab()->GetCurrentBuffer()->Copy();
+    auto copy = buf->Copy();
 
     for (int i = 0; i < MAX_LB; i++)
-        buf->linkBuffer[i] = NULL;
-    buf->currentURL.fragment = label;
-    pushHashHist(w3mApp::Instance().URLHist, buf->currentURL.ToStr()->ptr);
-    (*buf->clone)++;
-    GetCurrentTab()->Push(buf);
+        copy->linkBuffer[i] = NULL;
+    copy->currentURL.fragment = label;
+    pushHashHist(w3mApp::Instance().URLHist, copy->currentURL.ToStr()->ptr);
+    (*copy->clone)++;
+    GetCurrentTab()->Push(copy);
     GetCurrentTab()->GetCurrentBuffer()->Goto(al->start, label_topline);
     displayCurrentbuf(B_FORCE_REDRAW);
     return;
@@ -1389,24 +1388,21 @@ void nextX(int d, int dy)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    auto &hl = buf->hmarklist;
-    LinePtr l;
-    int i, x, y, n = searchKeyNum();
-
     if (buf->LineCount() == 0)
         return;
-    if (hl.empty())
+    if (buf->hmarklist.empty())
         return;
 
-    auto an = retrieveCurrentAnchor(buf);
+    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
     if (an == NULL)
         an = retrieveCurrentForm(buf);
 
-    l = buf->CurrentLine();
-    x = buf->pos;
-    y = l->linenumber;
+    auto l = buf->CurrentLine();
+    auto x = buf->pos;
+    auto y = l->linenumber;
     const Anchor *pan = NULL;
-    for (i = 0; i < n; i++)
+    int n = searchKeyNum();
+    for (int i = 0; i < n; i++)
     {
         if (an)
             x = (d > 0) ? an->end.pos : an->start.pos - 1;
@@ -1415,9 +1411,9 @@ void nextX(int d, int dy)
         {
             for (; x >= 0 && x < l->len(); x += d)
             {
-                an = buf->href.RetrieveAnchor(y, x);
+                an = buf->href.RetrieveAnchor({y, x});
                 if (!an)
-                    an = buf->formitem.RetrieveAnchor(y, x);
+                    an = buf->formitem.RetrieveAnchor({y, x});
                 if (an)
                 {
                     pan = an;
@@ -1447,19 +1443,19 @@ void nextX(int d, int dy)
 /* go to the next downward/upward anchor */
 void nextY(int d)
 {
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->LineCount() == 0)
+        return;
+    if (buf->hmarklist.empty())
         return;
 
-    auto &hl = GetCurrentTab()->GetCurrentBuffer()->hmarklist;
-    if (hl.empty())
-        return;
+    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
+    if (!an)
+        an = retrieveCurrentForm(buf);
 
-    auto an = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
-    if (an == NULL)
-        an = retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer());
-
-    int x = GetCurrentTab()->GetCurrentBuffer()->pos;
-    int y = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->linenumber + d;
+    int x = buf->pos;
+    int y = buf->CurrentLine()->linenumber + d;
     const Anchor *pan = NULL;
     int n = searchKeyNum();
     int hseq = -1;
@@ -1468,11 +1464,11 @@ void nextY(int d)
         if (an)
             hseq = abs(an->hseq);
         an = NULL;
-        for (; y >= 0 && y <= GetCurrentTab()->GetCurrentBuffer()->LineCount(); y += d)
+        for (; y >= 0 && y <= buf->LineCount(); y += d)
         {
-            an = GetCurrentTab()->GetCurrentBuffer()->href.RetrieveAnchor(y, x);
+            an = buf->href.RetrieveAnchor({y, x});
             if (!an)
-                an = GetCurrentTab()->GetCurrentBuffer()->formitem.RetrieveAnchor(y, x);
+                an = buf->formitem.RetrieveAnchor({y, x});
             if (an && hseq != abs(an->hseq))
             {
                 pan = an;
@@ -1485,22 +1481,23 @@ void nextY(int d)
 
     if (pan == NULL)
         return;
-    GetCurrentTab()->GetCurrentBuffer()->GotoLine(pan->start.line);
-    GetCurrentTab()->GetCurrentBuffer()->ArrangeLine();
+    buf->GotoLine(pan->start.line);
+    buf->ArrangeLine();
     displayCurrentbuf(B_NORMAL);
 }
 
 /* go to specified URL */
 void goURL0(const char *prompt, int relative)
 {
-    BufferPtr cur_buf = GetCurrentTab()->GetCurrentBuffer();
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
 
     auto url = searchKeyData();
     URL *current = nullptr;
     if (url == NULL)
     {
         Hist *hist = copyHist(w3mApp::Instance().URLHist);
-        current = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
+        current = buf->BaseURL();
         if (current)
         {
             char *c_url = current->ToStr()->ptr;
@@ -1513,7 +1510,7 @@ void goURL0(const char *prompt, int relative)
             else
                 pushHist(hist, c_url);
         }
-        auto a = retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer());
+        auto a = buf->RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
             auto p_url = URL::Parse(a->url, current);
@@ -1522,7 +1519,7 @@ void goURL0(const char *prompt, int relative)
             {
                 url = a_url;
                 if (DecodeURL)
-                    url = url_unquote_conv(url, GetCurrentTab()->GetCurrentBuffer()->document_charset);
+                    url = url_unquote_conv(url, buf->document_charset);
             }
             else
                 pushHist(hist, a_url);
@@ -1534,9 +1531,9 @@ void goURL0(const char *prompt, int relative)
 
     if (url != NULL)
     {
-        if ((relative || *url == '#') && GetCurrentTab()->GetCurrentBuffer()->document_charset)
+        if ((relative || *url == '#') && buf->document_charset)
             url = wc_conv_strict(url, w3mApp::Instance().InnerCharset,
-                                 GetCurrentTab()->GetCurrentBuffer()->document_charset)
+                                 buf->document_charset)
                       ->ptr;
         else
             url = conv_to_system(url);
@@ -1556,7 +1553,7 @@ void goURL0(const char *prompt, int relative)
     HttpReferrerPolicy referer;
     if (relative)
     {
-        current = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
+        current = buf->BaseURL();
         referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
     }
     else
@@ -1567,18 +1564,16 @@ void goURL0(const char *prompt, int relative)
     auto p_url = URL::Parse(url, current);
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(url, current, referer, NULL);
-    if (GetCurrentTab()->GetCurrentBuffer() != cur_buf) /* success */
-        pushHashHist(w3mApp::Instance().URLHist, GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr);
+    if (buf != buf) /* success */
+        pushHashHist(w3mApp::Instance().URLHist, buf->currentURL.ToStr()->ptr);
 }
 
 void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-
     if (!buf->href || buf->hmarklist.empty())
         return;
-
     auto a = menu_func(buf);
     if (!a || a->hseq < 0)
         return;
@@ -1591,13 +1586,16 @@ void anchorMn(Anchor *(*menu_func)(BufferPtr), int go)
 
 void _peekURL(int only_img)
 {
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+
     const Anchor *a;
     static Str s = NULL;
     static Lineprop *p = NULL;
     Lineprop *pp;
     static int offset = 0, n;
 
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
+    if (buf->LineCount() == 0)
         return;
     if (CurrentKey == PrevKey && s != NULL)
     {
@@ -1612,13 +1610,13 @@ void _peekURL(int only_img)
         offset = 0;
     }
     s = NULL;
-    a = (only_img ? NULL : retrieveCurrentAnchor(GetCurrentTab()->GetCurrentBuffer()));
+    a = (only_img ? NULL : buf->RetrieveAnchor(buf->CurrentPoint()));
     if (a == NULL)
     {
-        a = (only_img ? NULL : retrieveCurrentForm(GetCurrentTab()->GetCurrentBuffer()));
+        a = (only_img ? NULL : retrieveCurrentForm(buf));
         if (a == NULL)
         {
-            a = retrieveCurrentImg(GetCurrentTab()->GetCurrentBuffer());
+            a = retrieveCurrentImg(buf);
             if (a == NULL)
                 return;
         }
@@ -1627,11 +1625,11 @@ void _peekURL(int only_img)
     }
     if (s == NULL)
     {
-        auto pu = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+        auto pu = URL::Parse(a->url, buf->BaseURL());
         s = pu.ToStr();
     }
     if (DecodeURL)
-        s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
+        s = Strnew(url_unquote_conv(s->ptr, buf->document_charset));
 
     s = checkType(s, &pp, NULL);
     p = NewAtom_N(Lineprop, s->Size());
@@ -1651,22 +1649,26 @@ disp:
 /* show current URL */
 Str currentURL(void)
 {
-    if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->bufferprop & BP_INTERNAL)
         return Strnew_size(0);
-    return GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr();
+    return buf->currentURL.ToStr();
 }
 
 void _docCSet(CharacterEncodingScheme charset)
 {
-    if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->bufferprop & BP_INTERNAL)
         return;
-    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
+    if (buf->sourcefile.empty())
     {
         disp_message("Can't reload...", FALSE);
         return;
     }
-    GetCurrentTab()->GetCurrentBuffer()->document_charset = charset;
-    GetCurrentTab()->GetCurrentBuffer()->need_reshape = TRUE;
+    buf->document_charset = charset;
+    buf->need_reshape = TRUE;
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 

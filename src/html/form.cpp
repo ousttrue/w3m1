@@ -500,7 +500,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
             if (rows > 1)
             {
                 pos = columnPos(l, col);
-                auto a = buf->formitem.RetrieveAnchor(l->linenumber, pos);
+                auto a = buf->formitem.RetrieveAnchor({l->linenumber, pos});
                 if (a == NULL)
                     break;
                 spos = a->start.pos;

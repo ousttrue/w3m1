@@ -57,6 +57,11 @@ int Anchor::CmpOnAnchor(const BufferPoint &bp) const
 const Anchor *
 AnchorList::RetrieveAnchor(const BufferPoint &bp) const
 {
+    if(bp.invalid)
+    {
+        return nullptr;
+    }
+
     if (anchors.empty())
         return nullptr;
 
@@ -82,27 +87,15 @@ AnchorList::RetrieveAnchor(const BufferPoint &bp) const
 }
 
 const Anchor *
-retrieveCurrentAnchor(BufferPtr buf)
-{
-    if (buf->CurrentLine() == NULL)
-        return NULL;
-    return buf->href.RetrieveAnchor(buf->CurrentLine()->linenumber, buf->pos);
-}
-
-const Anchor *
 retrieveCurrentImg(BufferPtr buf)
 {
-    if (buf->CurrentLine() == NULL)
-        return NULL;
-    return buf->img.RetrieveAnchor(buf->CurrentLine()->linenumber, buf->pos);
+    return buf->img.RetrieveAnchor(buf->CurrentPoint());
 }
 
 const Anchor *
 retrieveCurrentForm(BufferPtr buf)
 {
-    if (buf->CurrentLine() == NULL)
-        return NULL;
-    return buf->formitem.RetrieveAnchor(buf->CurrentLine()->linenumber, buf->pos);
+    return buf->formitem.RetrieveAnchor(buf->CurrentPoint());
 }
 
 const Anchor *
@@ -467,7 +460,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         }
         Anchor a_href;
         {
-            auto a = buf->href.RetrieveAnchor(a_img.start.line, a_img.start.pos);
+            auto a = buf->href.RetrieveAnchor(a_img.start);
             if (a)
                 a_href = *a;
             else
@@ -475,7 +468,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         }
         Anchor a_form;
         {
-            auto a = buf->formitem.RetrieveAnchor(a_img.start.line, a_img.start.pos);
+            auto a = buf->formitem.RetrieveAnchor(a_img.start);
             if (a)
                 a_form = *a;
             else
@@ -724,7 +717,7 @@ link_list_panel(BufferPtr buf)
                 t = html_quote(a->url.c_str());
             Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
                            "\n", NULL);
-            a = const_cast<Anchor *>(buf->formitem.RetrieveAnchor(a->start.line, a->start.pos));
+            a = const_cast<Anchor *>(buf->formitem.RetrieveAnchor(a->start));
             if (!a)
                 continue;
             auto fi = a->item;

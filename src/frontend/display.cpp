@@ -394,7 +394,7 @@ static Str make_lastline_message(BufferPtr buf)
             s = make_lastline_link(buf, a->alt, a->url);
         else
         {
-            auto a = retrieveCurrentAnchor(buf);
+            auto a = buf->RetrieveAnchor(buf->CurrentPoint());
             std::string p = NULL;
             if (a && a->title.size() && a->title[0])
                 p = a->title;
@@ -522,7 +522,7 @@ static void drawAnchorCursor(BufferPtr buf)
     if (!buf->href && !buf->formitem)
         return;
 
-    auto an = retrieveCurrentAnchor(buf);
+    auto an = buf->RetrieveAnchor(buf->CurrentPoint());
     if (!an)
         an = retrieveCurrentMap(buf);
 
@@ -596,7 +596,6 @@ static void redrawNLine(BufferPtr buf)
     getAllImage(buf);
 }
 
-#ifdef USE_IMAGE
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
 {
     int j, pos, rcol;
@@ -617,7 +616,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
             rcol = l->COLPOS(pos + j + 1);
             continue;
         }
-        auto a = buf->img.RetrieveAnchor(l->linenumber, pos + j);
+        auto a = buf->img.RetrieveAnchor({l->linenumber, pos + j});
         if (a && a->image && a->image->touch < image_touch)
         {
             Image *image = a->image;
@@ -669,7 +668,6 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
     }
     return l;
 }
-#endif
 
 #define do_effect1(effect, modeflag, action_start, action_end) \
     if (m & effect)                                            \

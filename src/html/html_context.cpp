@@ -1467,8 +1467,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             }
             else if (iseq < 0)
             {
-                BufferPoint *po = &buf->imarklist[-iseq - 1];
-                auto a = buf->img.RetrieveAnchor(po->line, po->pos);
+                auto a = buf->img.RetrieveAnchor(buf->imarklist[-iseq - 1]);
                 if (a)
                 {
                     this->a_img->url = a->url;

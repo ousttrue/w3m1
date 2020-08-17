@@ -25,7 +25,7 @@ struct Anchor
 
     static Anchor CreateHref(std::string_view url, std::string_view target, HttpReferrerPolicy referer,
                              std::string title, unsigned char key, int line, int pos)
-    {       
+    {
         return Anchor{
             url : std::move(std::string(url)),
             target : std::move(std::string(target)),
@@ -103,18 +103,7 @@ public:
 
     Anchor *Put(const Anchor &a);
 
-    const Anchor *
-    RetrieveAnchor(const BufferPoint &bp) const;
-
-    const Anchor *
-    RetrieveAnchor(int line, int pos) const
-    {
-        BufferPoint bp;
-        bp.line = line;
-        bp.pos = pos;
-        return RetrieveAnchor(bp);
-    }
-
+    const Anchor *RetrieveAnchor(const BufferPoint &bp) const;
     const Anchor *SearchByUrl(const char *str) const;
     const Anchor *ClosestNext(const Anchor *an, int x, int y) const;
     const Anchor *ClosestPrev(const Anchor *an, int x, int y) const;

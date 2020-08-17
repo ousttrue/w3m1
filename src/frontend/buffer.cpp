@@ -765,7 +765,7 @@ void set_buffer_environ(BufferPtr buf)
     {
         char *s = GetWord(buf);
         set_environ("W3M_CURRENT_WORD", (char *)(s ? s : ""));
-        auto a = retrieveCurrentAnchor(buf);
+        auto a = buf->RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
             auto pu = URL::Parse(a->url, buf->BaseURL());
@@ -1250,7 +1250,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     {
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
-            auto a = this->href.RetrieveAnchor(l->linenumber, pos + j);
+            auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
             {
                 auto url = URL::Parse(a->url, this->BaseURL());
@@ -1333,7 +1333,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
     {
         if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
-            auto a = this->href.RetrieveAnchor(l->linenumber, pos + j);
+            auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
             {
                 auto url = URL::Parse(a->url, this->BaseURL());
@@ -1470,4 +1470,9 @@ bool Buffer::MoveRightWord(int n)
 end:
     this->ArrangeCursor();
     return true;
+}
+
+const Anchor *Buffer::RetrieveAnchor(const BufferPoint &bp)
+{
+    return href.RetrieveAnchor(bp);
 }
