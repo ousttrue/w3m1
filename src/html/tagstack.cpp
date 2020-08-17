@@ -1965,7 +1965,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             {
                 q++;
                 SKIP_BLANKS(&q);
-                // SetMetaCharset(wc_guess_charset(q, WC_CES_NONE));
+                seq->SetMetaCharset(wc_guess_charset(q, WC_CES_NONE));
             }
         }
         else if (p && q && !strcasecmp(p, "refresh"))

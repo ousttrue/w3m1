@@ -8,8 +8,8 @@ struct FormSelectOption;
 struct Anchor;
 class HtmlContext
 {
-    // HTML <meta>
-    CharacterEncodingScheme meta_charset = WC_CES_NONE;
+    // // HTML <meta>
+    // CharacterEncodingScheme meta_charset = WC_CES_NONE;
     // src charset
     CharacterEncodingScheme doc_charset = WC_CES_NONE;
     // detected
@@ -86,6 +86,7 @@ public:
     const CharacterEncodingScheme &DocCharset() const { return doc_charset; }
     CharacterEncodingScheme CES() const { return cur_document_charset; }
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
+    void SetMetaCharset(CharacterEncodingScheme ces);
 
     void SetCurTitle(Str title)
     {

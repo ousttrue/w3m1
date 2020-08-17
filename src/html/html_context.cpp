@@ -65,6 +65,14 @@ HtmlContext::~HtmlContext()
 {
 }
 
+void HtmlContext::SetMetaCharset(CharacterEncodingScheme ces)
+{
+    if (cur_document_charset == 0 && w3mApp::Instance().UseContentCharset)
+    {
+        cur_document_charset = ces;
+    }
+}
+
 // from HTTP header
 //
 // Content-Type: text/html; charset=utf-8
@@ -83,17 +91,6 @@ void HtmlContext::Initialize(const BufferPtr &newBuf, CharacterEncodingScheme co
         doc_charset = content_charset;
     // else if (f->guess_type == "application/xhtml+xml")
     //     doc_charset = WC_CES_UTF_8;
-
-    // TODO:
-    if (meta_charset)
-    { /* <META> */
-        if (content_charset == 0 /*&& w3mApp::Instance().UseContentCharset*/)
-        {
-            doc_charset = meta_charset;
-            // charset = WC_CES_US_ASCII;
-        }
-        // meta_charset = WC_CES_NONE;
-    }
 }
 
 void HtmlContext::print_internal_information(struct html_feed_environ *henv)
