@@ -36,6 +36,14 @@ class Tab
         }
         return m_buffers.begin() + m_current;
     }
+    BufferPtr GetBuffer(int n) const
+    {
+        if (n < 0 || n >= m_buffers.size())
+        {
+            return nullptr;
+        }
+        return m_buffers[n];
+    }
 
 public:
     Tab() = default;
@@ -66,15 +74,13 @@ public:
     }
 
     // buffer
+    int GetBufferCount() const { return m_buffers.size(); }
     int GetBufferIndex(const BufferPtr &buf) const;
     int GetCurrentBufferIndex() const { return m_current; }
     void SetCurrentBufferIndex(int index) { m_current = index; }
-    BufferPtr GetFirstBuffer() { return m_buffers.front(); }
     BufferPtr GetCurrentBuffer() const { return GetBuffer(m_current); }
 
 private:
-    // BufferPtr ForwardBuffer(const BufferPtr &buf) const;
-    // BufferPtr BackBuffer(const BufferPtr &buf) const;
     bool ValidateIndex()
     {
         if (m_current < 0)
@@ -93,14 +99,6 @@ private:
     }
 
 public:
-    BufferPtr GetBuffer(int n) const
-    {
-        if (n < 0 || n >= m_buffers.size())
-        {
-            return nullptr;
-        }
-        return m_buffers[n];
-    }
     BufferPtr NamedBuffer(const char *name) const;
     BufferPtr SelectBuffer(BufferPtr currentbuf, char *selectchar);
 
@@ -108,7 +106,7 @@ public:
     void Push(const BufferPtr &buf);
     // remove current back, for remove history(local cgi etc)
     void DeleteBack();
-    void DeleteBuffer(const BufferPtr &buf);
+    // void DeleteBuffer(const BufferPtr &buf);
 
     bool Forward()
     {

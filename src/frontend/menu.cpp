@@ -1279,65 +1279,67 @@ initSelectMenu(void)
     char *p;
     static char *comment = " SPC for select / D for delete buffer ";
 
-    SelectV = GetCurrentTab()->GetCurrentBufferIndex();
-    nitem = i;
+assert(false);
 
-    label = New_N(char *, nitem + 2);
-    auto tab = GetCurrentTab();
-    for (i = 0; i < nitem; i++)
-    {
-        auto buf = tab->GetBuffer(i);
+    // SelectV = GetCurrentTab()->GetCurrentBufferIndex();
+    // nitem = i;
 
-        str = Sprintf("<%s>", buf->buffername);
-        if (buf->filename.size())
-        {
-            switch (buf->currentURL.scheme)
-            {
-            case SCM_LOCAL:
-                if (!buf->currentURL.StdIn())
-                {
-                    str->Push(' ');
-                    str->Push(conv_from_system(buf->currentURL.real_file));
-                }
-                break;
-                /* case SCM_UNKNOWN: */
-            case SCM_MISSING:
-                break;
-            default:
-                str->Push(' ');
-                p = buf->currentURL.ToStr()->ptr;
-                if (DecodeURL)
-                    p = url_unquote_conv(p, WC_CES_NONE);
-                str->Push(p);
-                break;
-            }
-        }
-        label[i] = str->ptr;
-        if (len < str->Size())
-            len = str->Size();
-    }
-    l = get_strwidth(comment);
-    if (len < l + 4)
-        len = l + 4;
-    if (len > COLS - 2 * FRAME_WIDTH)
-        len = COLS - 2 * FRAME_WIDTH;
-    len = (len > 1) ? ((len - l + 1) / 2) : 0;
-    str = Strnew();
-    for (i = 0; i < len; i++)
-        str->Push('-');
-    str->Push(comment);
-    for (i = 0; i < len; i++)
-        str->Push('-');
-    label[nitem] = str->ptr;
-    label[nitem + 1] = NULL;
+    // label = New_N(char *, nitem + 2);
+    // auto tab = GetCurrentTab();
+    // for (i = 0; i < nitem; i++)
+    // {
+    //     auto buf = tab->GetBuffer(i);
 
-    new_option_menu(&SelectMenu, label, &SelectV, smChBuf);
-    SelectMenu.initial = SelectV;
-    auto [_x, _y] = GetCurrentTab()->GetCurrentBuffer()->rect.globalXY();
-    SelectMenu.cursorX = _x;
-    SelectMenu.cursorY = _y;
-    SelectMenu.keymap['D'] = smDelBuf;
-    SelectMenu.item[nitem].type = MENU_NOP;
+    //     str = Sprintf("<%s>", buf->buffername);
+    //     if (buf->filename.size())
+    //     {
+    //         switch (buf->currentURL.scheme)
+    //         {
+    //         case SCM_LOCAL:
+    //             if (!buf->currentURL.StdIn())
+    //             {
+    //                 str->Push(' ');
+    //                 str->Push(conv_from_system(buf->currentURL.real_file));
+    //             }
+    //             break;
+    //             /* case SCM_UNKNOWN: */
+    //         case SCM_MISSING:
+    //             break;
+    //         default:
+    //             str->Push(' ');
+    //             p = buf->currentURL.ToStr()->ptr;
+    //             if (DecodeURL)
+    //                 p = url_unquote_conv(p, WC_CES_NONE);
+    //             str->Push(p);
+    //             break;
+    //         }
+    //     }
+    //     label[i] = str->ptr;
+    //     if (len < str->Size())
+    //         len = str->Size();
+    // }
+    // l = get_strwidth(comment);
+    // if (len < l + 4)
+    //     len = l + 4;
+    // if (len > COLS - 2 * FRAME_WIDTH)
+    //     len = COLS - 2 * FRAME_WIDTH;
+    // len = (len > 1) ? ((len - l + 1) / 2) : 0;
+    // str = Strnew();
+    // for (i = 0; i < len; i++)
+    //     str->Push('-');
+    // str->Push(comment);
+    // for (i = 0; i < len; i++)
+    //     str->Push('-');
+    // label[nitem] = str->ptr;
+    // label[nitem + 1] = NULL;
+
+    // new_option_menu(&SelectMenu, label, &SelectV, smChBuf);
+    // SelectMenu.initial = SelectV;
+    // auto [_x, _y] = GetCurrentTab()->GetCurrentBuffer()->rect.globalXY();
+    // SelectMenu.cursorX = _x;
+    // SelectMenu.cursorY = _y;
+    // SelectMenu.keymap['D'] = smDelBuf;
+    // SelectMenu.item[nitem].type = MENU_NOP;
 }
 
 static void
@@ -1360,9 +1362,9 @@ smDelBuf(char c)
         return (MENU_NOTHING);
 
     auto tab = GetCurrentTab();
-    auto buf = tab->GetBuffer(CurrentMenu->select);
-
-    GetCurrentTab()->DeleteBuffer(buf);
+    assert(false);
+    // auto buf = tab->GetBuffer(CurrentMenu->select);
+    // GetCurrentTab()->DeleteBuffer(buf);
 
     x = CurrentMenu->x;
     y = CurrentMenu->y;

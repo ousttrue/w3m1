@@ -562,7 +562,7 @@ void selBuf(w3mApp *w3m)
             break;
 
         case 'D':
-            tab->DeleteBuffer(buf);
+            // tab->DeleteBuffer(buf);
             break;
 
         case 'q':
@@ -1047,10 +1047,10 @@ void followA(w3mApp *w3m)
         auto tab = CreateTabSetCurrent();
         auto buf = tab->GetCurrentBuffer();
         loadLink(url.c_str(), a->target.c_str(), a->referer, NULL);
-        if (buf != buf)
-            GetCurrentTab()->DeleteBuffer(buf);
-        else
-            deleteTab(GetCurrentTab());
+        // if (buf != buf)
+        //     GetCurrentTab()->DeleteBuffer(buf);
+        // else
+        //     deleteTab(GetCurrentTab());
         displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
@@ -1643,7 +1643,7 @@ void reload(w3mApp *w3m)
                 renderBuf->sourcefile == fbuf->linkBuffer[LB_FRAME]->sourcefile)
                 fbuf->linkBuffer[LB_FRAME]->sourcefile.clear();
             auto tab = GetCurrentTab();
-            tab->DeleteBuffer(fbuf->linkBuffer[LB_FRAME]);
+            // tab->DeleteBuffer(fbuf->linkBuffer[LB_FRAME]);
         }
         fbuf->linkBuffer[LB_FRAME] = renderBuf;
         renderBuf->linkBuffer[LB_N_FRAME] = fbuf;
@@ -1717,8 +1717,8 @@ void reload(w3mApp *w3m)
             return;
         }
 
-        if (fbuf != NULL)
-            GetCurrentTab()->DeleteBuffer(fbuf);
+        // if (fbuf != NULL)
+        //     GetCurrentTab()->DeleteBuffer(fbuf);
 
         tab->Push(newBuf);
         tab->DeleteBack();
@@ -1730,8 +1730,8 @@ void reload(w3mApp *w3m)
               sbuf->type == "text/plain")))
         {
             vwSrc(w3m);
-            if (GetCurrentTab()->GetCurrentBuffer() != newBuf)
-                GetCurrentTab()->DeleteBuffer(newBuf);
+            // if (GetCurrentTab()->GetCurrentBuffer() != newBuf)
+            //     GetCurrentTab()->DeleteBuffer(newBuf);
         }
         GetCurrentTab()->GetCurrentBuffer()->search_header = sbuf->search_header;
         GetCurrentTab()->GetCurrentBuffer()->form_submit = sbuf->form_submit;

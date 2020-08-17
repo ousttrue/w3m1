@@ -1109,7 +1109,7 @@ int w3mApp::Main(int argc, char **argv)
     {
         set_add_download_list(FALSE);
         SetCurrentTab(GetLastTab());
-        if (!GetCurrentTab()->GetFirstBuffer())
+        if (GetCurrentTab()->GetBufferCount() == 0)
         {
             auto buf = newBuffer({});
             buf->bufferprop = BP_INTERNAL | BP_NO_URL;
@@ -1127,7 +1127,7 @@ int w3mApp::Main(int argc, char **argv)
         SetCurrentTab(GetFirstTab());
     }
 
-    if (!GetFirstTab() || !GetCurrentTab()->GetFirstBuffer())
+    if (!GetFirstTab() || GetCurrentTab()->GetBufferCount() == 0)
     {
         if (fmInitialized)
             fmTerm();

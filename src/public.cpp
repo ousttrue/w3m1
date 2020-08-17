@@ -1795,10 +1795,10 @@ void tabURL0(TabPtr tab, const char *prompt, int relative)
     goURL0(prompt, relative);
     if (tab == NULL)
     {
-        if (buf != GetCurrentTab()->GetCurrentBuffer())
-            GetCurrentTab()->DeleteBuffer(buf);
-        else
-            deleteTab(GetCurrentTab());
+        // if (buf != GetCurrentTab()->GetCurrentBuffer())
+        //     GetCurrentTab()->DeleteBuffer(buf);
+        // else
+        //     deleteTab(GetCurrentTab());
     }
     else if (buf != GetCurrentTab()->GetCurrentBuffer())
     {
@@ -2006,10 +2006,10 @@ void follow_map(struct parsed_tagarg *arg)
         BufferPtr buf = tab->GetCurrentBuffer();
         cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
                     HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
-        if (buf != GetCurrentTab()->GetCurrentBuffer())
-            GetCurrentTab()->DeleteBuffer(buf);
-        else
-            deleteTab(GetCurrentTab());
+        // if (buf != GetCurrentTab()->GetCurrentBuffer())
+        //     GetCurrentTab()->DeleteBuffer(buf);
+        // else
+        //     deleteTab(GetCurrentTab());
         displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }

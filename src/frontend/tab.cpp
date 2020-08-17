@@ -362,31 +362,3 @@ BufferPtr Tab::SelectBuffer(BufferPtr currentbuf, char *selectchar)
         refresh();
     }
 }
-
-/* 
- * deleteBuffer: delete buffer & return fistbuffer
- */
-void Tab::DeleteBuffer(const BufferPtr &delbuf)
-{
-    auto it = find(delbuf);
-    if (it == m_buffers.end())
-    {
-        // TODO:
-        return;
-    }
-    auto c = GetCurrentBuffer();
-    if (*it == c)
-    {
-        // assert(false);
-        // TODO:
-    }
-    auto next = m_buffers.erase(it);
-    if (next == m_buffers.end())
-    {
-        m_current = m_buffers.size() - 1;
-    }
-    else
-    {
-        m_current = GetBufferIndex(*next);
-    }
-}

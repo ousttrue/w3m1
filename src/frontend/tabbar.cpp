@@ -315,10 +315,10 @@ void followTab(TabPtr tab)
     set_check_target(TRUE);
     if (tab == NULL)
     {
-        if (buf != GetCurrentTab()->GetCurrentBuffer())
-            GetCurrentTab()->DeleteBuffer(buf);
-        else
-            deleteTab(GetCurrentTab());
+        // if (buf != GetCurrentTab()->GetCurrentBuffer())
+        //     GetCurrentTab()->DeleteBuffer(buf);
+        // else
+        //     deleteTab(GetCurrentTab());
     }
     else if (buf != GetCurrentTab()->GetCurrentBuffer())
     {
