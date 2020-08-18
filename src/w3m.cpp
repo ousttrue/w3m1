@@ -1200,9 +1200,9 @@ void w3mApp::mainloop()
                     buf->event = NULL;
                     ClearCurrentKey();
                     ClearCurrentKeyData();
-                    CurrentCmdData = (char *)CurrentAlarm()->data;
+                    CurrentCmdData = (const char *)CurrentAlarm()->data;
                     CurrentAlarm()->cmd(&w3mApp::Instance());
-                    CurrentCmdData = NULL;
+                    CurrentCmdData.clear();
                     continue;
                 }
             }

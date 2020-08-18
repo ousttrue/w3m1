@@ -375,9 +375,9 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         mouse_action.cursorY = y;
         ClearCurrentKey();
         ClearCurrentKeyData();
-        CurrentCmdData = map->data;
+        w3mApp::Instance().CurrentCmdData = map->data;
         (*map->func)(&w3mApp::Instance());
-        CurrentCmdData = NULL;
+        w3mApp::Instance().CurrentCmdData.clear();
     }
 }
 

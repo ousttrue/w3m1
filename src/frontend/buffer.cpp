@@ -1248,7 +1248,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     int vpos = -1;
     for (int j = 0; rcol - currentColumn < this->rect.cols && pos + j < l->len(); j += delta)
     {
-        if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
+        if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
             auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
@@ -1331,7 +1331,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
     int vpos = -1;
     for (int j = 0; rcol - currentColumn < this->rect.cols && pos + j < l->len(); j += delta)
     {
-        if (useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
+        if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
             auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)

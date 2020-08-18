@@ -221,7 +221,7 @@ void ExecuteCommand(char *data)
         p = getQWord(&data);
         ClearCurrentKey();
         ClearCurrentKeyData();
-        CurrentCmdData = *p ? p : NULL;
+        w3mApp::Instance().CurrentCmdData = *p ? p : "";
 
         if (w3mApp::Instance().use_mouse)
         {
@@ -233,7 +233,7 @@ void ExecuteCommand(char *data)
             mouse_active();
         }
 
-        CurrentCmdData = NULL;
+        w3mApp::Instance().CurrentCmdData.clear();
     }
 }
 

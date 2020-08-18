@@ -690,7 +690,7 @@ void _followForm(bool submit)
             disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
         /* FIXME: gettextize? */
         auto p = inputFilenameHist("Filename:", fi->value ? fi->value->ptr : NULL,
-                              NULL);
+                                   NULL);
         if (p == NULL || fi->readonly)
             break;
         fi->value = Strnew(p);
@@ -711,7 +711,7 @@ void _followForm(bool submit)
         }
         /* FIXME: gettextize? */
         auto p = inputLine("Password:", fi->value ? fi->value->ptr : NULL,
-                      IN_PASSWORD);
+                           IN_PASSWORD);
         if (p == NULL)
             break;
         fi->value = Strnew(p);
@@ -780,7 +780,7 @@ void _followForm(bool submit)
         auto tmp = Strnew();
         auto tmp2 = Strnew();
         auto multipart = (fi->parent->method == FORM_METHOD_POST &&
-                     fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
+                          fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
         query_from_followform(&tmp, fi, multipart);
 
         tmp2 = fi->parent->action->Clone();
@@ -1882,16 +1882,15 @@ AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd,
 
 char *searchKeyData()
 {
-    char *data = NULL;
-
+    const char *data = NULL;
     if (CurrentKeyData() != NULL && *CurrentKeyData() != '\0')
         data = CurrentKeyData();
-    else if (CurrentCmdData != NULL && *CurrentCmdData != '\0')
-        data = CurrentCmdData;
+    else if (w3mApp::Instance().CurrentCmdData.size())
+        data = w3mApp::Instance().CurrentCmdData.c_str();
     else if (CurrentKey >= 0)
         data = GetKeyData(CurrentKey());
     ClearCurrentKeyData();
-    CurrentCmdData = NULL;
+    w3mApp::Instance().CurrentCmdData.clear();
     if (data == NULL || *data == '\0')
         return NULL;
     return allocStr(data, -1);
@@ -2090,9 +2089,9 @@ int ProcessEvent()
     {
         ClearCurrentKey();
         ClearCurrentKeyData();
-        CurrentCmdData = (char *)CurrentEvent->data;
+        w3mApp::Instance().CurrentCmdData = CurrentEvent->data ? (const char *)CurrentEvent->data : "";
         CurrentEvent->cmd(&w3mApp::Instance());
-        CurrentCmdData = NULL;
+        w3mApp::Instance().CurrentCmdData.clear();
         CurrentEvent = CurrentEvent->next;
         return 1;
     }

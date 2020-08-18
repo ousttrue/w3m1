@@ -570,9 +570,9 @@ int action_menu(Menu *menu)
         {
             ClearCurrentKey();
             ClearCurrentKeyData();
-            CurrentCmdData = const_cast<char*>(item.data);
+            w3mApp::Instance().CurrentCmdData = item.data;
             (*item.func)(&w3mApp::Instance());
-            CurrentCmdData = NULL;
+            w3mApp::Instance().CurrentCmdData.clear();
         }
     }
     else if (mselect == MENU_CLOSE)

@@ -115,10 +115,21 @@ public:
     int open_tab_dl_list = false;
     int close_tab_back = false;
 
+    bool useColor = true;
+    int basic_color = 8;  /* don't change */
+    int anchor_color = 4; /* blue  */
+    int image_color = 2;  /* green */
+    int form_color = 1;   /* red   */
+    int bg_color = 8;     /* don't change */
+    int mark_color = 6;   /* cyan */
+    bool useActiveColor = false;
+    int active_color = 6; /* cyan */
+    bool useVisitedColor = false;
+    int visited_color = 5; /* magenta  */
+
     // Maximum line kept as pager
     int PagerMax = 10000;
     bool SearchHeader = false;
-    bool useColor = true;
     bool RenderFrame = false;
     bool WrapDefault = false;
     bool use_mouse = true;

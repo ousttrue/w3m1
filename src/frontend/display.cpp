@@ -40,7 +40,7 @@ static void effect_anchor_start()
 {
     if (w3mApp::Instance().useColor)
     {
-        setfcolor(anchor_color);
+        setfcolor(w3mApp::Instance().anchor_color);
     }
     else
     {
@@ -51,7 +51,7 @@ static void effect_anchor_end()
 {
     if (w3mApp::Instance().useColor)
     {
-        setfcolor(basic_color);
+        setfcolor(w3mApp::Instance().basic_color);
     }
     else
     {
@@ -63,7 +63,7 @@ static void effect_image_start()
 {
     if (w3mApp::Instance().useColor)
     {
-        setfcolor(image_color);
+        setfcolor(w3mApp::Instance().image_color);
     }
     else
     {
@@ -74,7 +74,7 @@ static void effect_image_end()
 {
     if (w3mApp::Instance().useColor)
     {
-        setfcolor(basic_color);
+        setfcolor(w3mApp::Instance().basic_color);
     }
     else
     {
@@ -86,7 +86,7 @@ static void effect_from_start()
 {
     if (w3mApp::Instance().useColor)
     {
-        setfcolor(form_color);
+        setfcolor(w3mApp::Instance().form_color);
     }
     else
     {
@@ -97,7 +97,7 @@ static void effect_form_end()
 {
     if (w3mApp::Instance().useColor)
     {
-        setfcolor(basic_color);
+        setfcolor(w3mApp::Instance().basic_color);
     }
     else
     {
@@ -109,7 +109,7 @@ static void effect_mark_start()
 {
     if (w3mApp::Instance().useColor)
     {
-        setbcolor(mark_color);
+        setbcolor(w3mApp::Instance().mark_color);
     }
     else
     {
@@ -120,7 +120,7 @@ static void effect_mark_end()
 {
     if (w3mApp::Instance().useColor)
     {
-        setbcolor(bg_color);
+        setbcolor(w3mApp::Instance().bg_color);
     }
     else
     {
@@ -133,9 +133,9 @@ static void effect_active_start()
 {
     if (w3mApp::Instance().useColor)
     {
-        if (useActiveColor)
+        if (w3mApp::Instance().useActiveColor)
         {
-            setfcolor(active_color), underline();
+            setfcolor(w3mApp::Instance().active_color), underline();
         }
         else
         {
@@ -152,9 +152,9 @@ static void effect_active_end()
 {
     if (w3mApp::Instance().useColor)
     {
-        if (useActiveColor)
+        if (w3mApp::Instance().useActiveColor)
         {
-            (setfcolor(basic_color), underlineend());
+            (setfcolor(w3mApp::Instance().basic_color), underlineend());
         }
         else
         {
@@ -169,11 +169,11 @@ static void effect_active_end()
 
 static void effect_visited_start()
 {
-    if (useVisitedColor)
+    if (w3mApp::Instance().useVisitedColor)
     {
         if (w3mApp::Instance().useColor)
         {
-            setfcolor(visited_color);
+            setfcolor(w3mApp::Instance().visited_color);
         }
         else
         {
@@ -184,11 +184,11 @@ static void effect_visited_start()
 
 static void effect_visited_end()
 {
-    if (useVisitedColor)
+    if (w3mApp::Instance().useVisitedColor)
     {
         if (w3mApp::Instance().useColor)
         {
-            setfcolor(basic_color);
+            setfcolor(w3mApp::Instance().basic_color);
         }
         else
         {
@@ -727,12 +727,12 @@ void do_color(Linecolor c)
     if (c & 0x8)
         setfcolor(c & 0x7);
     else if (color_mode & 0x8)
-        setfcolor(basic_color);
+        setfcolor(w3mApp::Instance().basic_color);
 #ifdef USE_BG_COLOR
     if (c & 0x80)
         setbcolor((c >> 4) & 0x7);
     else if (color_mode & 0x80)
-        setbcolor(bg_color);
+        setbcolor(w3mApp::Instance().bg_color);
 #endif
     color_mode = c;
 }
@@ -999,8 +999,8 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 
         if (w3mApp::Instance().useColor)
         {
-            setfcolor(basic_color);
-            setbcolor(bg_color);
+            setfcolor(w3mApp::Instance().basic_color);
+            setbcolor(w3mApp::Instance().bg_color);
         }
 
         // TAB

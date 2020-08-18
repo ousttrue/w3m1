@@ -115,8 +115,8 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 
     if (w3mApp::Instance().useColor)
     {
-        setfcolor(basic_color);
-        setbcolor(bg_color);
+        setfcolor(w3mApp::Instance().basic_color);
+        setbcolor(w3mApp::Instance().bg_color);
     }
 
     BufferPtr buf = top;
