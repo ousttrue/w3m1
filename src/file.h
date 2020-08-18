@@ -33,8 +33,8 @@ LinePtr getNextPage(BufferPtr buf, int plen);
 int doFileMove(char *tmpf, char *defstr);
 
 int checkSaveFile(const InputStreamPtr &stream, char *path);
-int checkOverWrite(char *path);
-char *inputAnswer(const char* prompt);
+int checkOverWrite(const char *path);
+const char *inputAnswer(const char* prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);
 
 // char *checkHeader(BufferPtr buf, const char *field);
@@ -123,9 +123,7 @@ void sync_with_option(void);
 char *libFile(char *base);
 char *helpFile(char *base);
 Str localCookie(void);
-
-FILE *openSecretFile(char *fname);
-
+FILE *openSecretFile(const char *fname);
 void loadPreForm(void);
 char *last_modified(const BufferPtr &buf);
 

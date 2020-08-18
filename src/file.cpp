@@ -953,23 +953,21 @@ int checkSaveFile(const InputStreamPtr &stream, char *path2)
     return 0;
 }
 
-int checkOverWrite(char *path)
+int checkOverWrite(const char *path)
 {
     struct stat st;
-    char *ans;
-
     if (stat(path, &st) < 0)
         return 0;
+
     /* FIXME: gettextize? */
-    ans = inputAnswer("File exists. Overwrite? (y/n)");
+    auto ans = inputAnswer("File exists. Overwrite? (y/n)");
     if (ans && TOLOWER(*ans) == 'y')
         return 0;
     else
         return -1;
 }
 
-char *
-inputAnswer(const char *prompt)
+const char *inputAnswer(const char *prompt)
 {
     char *ans;
 
@@ -1206,8 +1204,7 @@ last_modified(const BufferPtr &buf)
 /* FIXME: gettextize? */
 #define FILE_IS_READABLE_MSG "SECURITY NOTE: file %s must not be accessible by others"
 
-FILE *
-openSecretFile(char *fname)
+FILE *openSecretFile(const char *fname)
 {
     char *efname;
     struct stat st;

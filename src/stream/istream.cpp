@@ -506,7 +506,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
     char buf[2048];
     Str amsg = NULL;
     Str emsg;
-    char *ans;
+    const char *ans;
 
     if (ssl == NULL)
         return NULL;

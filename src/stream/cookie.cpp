@@ -1029,8 +1029,8 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
                        comment, version, port, commentURL);
         if (err)
         {
-            char *ans = (accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
-                            ? (char *)"y"
+            const char *ans = (accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
+                            ? "y"
                             : NULL;
             if (fmInitialized && (err & COO_OVERRIDE_OK) &&
                 accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
