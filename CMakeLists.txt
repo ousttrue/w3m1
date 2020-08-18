@@ -15,6 +15,12 @@ INTERFACE
     _external/tcb_span/include
 )
 
+add_library(plog INTERFACE)
+target_include_directories(plog
+INTERFACE
+    _external/plog/include
+)
+
 subdirs(
     charutil
     libwc
@@ -174,9 +180,11 @@ target_link_libraries(w3m
 PRIVATE
     z
     tcb_span
-    wc
     m
     ncurses
     ssl
     crypto
+    plog
+    #
+    wc
 )

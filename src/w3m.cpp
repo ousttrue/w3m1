@@ -1,3 +1,6 @@
+#define MAINPROGRAM
+#include "fm.h"
+
 #include "config.h"
 #include <gc.h>
 #include <locale.h>
