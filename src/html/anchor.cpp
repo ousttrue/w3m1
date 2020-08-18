@@ -634,7 +634,7 @@ link_list_panel(const BufferPtr &buf)
                 auto pu = URL::Parse(l.url()).Resolve(buf->BaseURL());
                 p = pu.ToStr()->ptr;
                 u = html_quote(p);
-                if (DecodeURL)
+                if (w3mApp::Instance().DecodeURL)
                     p = html_quote(url_unquote_conv(p, buf->document_charset));
                 else
                     p = u;
@@ -662,7 +662,7 @@ link_list_panel(const BufferPtr &buf)
             auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
-            if (DecodeURL)
+            if (w3mApp::Instance().DecodeURL)
                 p = html_quote(url_unquote_conv(p, buf->document_charset));
             else
                 p = u;
@@ -686,14 +686,14 @@ link_list_panel(const BufferPtr &buf)
             auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
-            if (DecodeURL)
+            if (w3mApp::Instance().DecodeURL)
                 p = html_quote(url_unquote_conv(p, buf->document_charset));
             else
                 p = u;
             const char *t;
             if (a->title.size() && a->title[0])
                 t = html_quote(a->title.c_str());
-            else if (DecodeURL)
+            else if (w3mApp::Instance().DecodeURL)
                 t = html_quote(url_unquote_conv(a->url.c_str(), buf->document_charset));
             else
                 t = html_quote(a->url.c_str());
@@ -721,14 +721,14 @@ link_list_panel(const BufferPtr &buf)
                     auto pu = URL::Parse(m->url).Resolve(buf->BaseURL());
                     p = pu.ToStr()->ptr;
                     u = html_quote(p);
-                    if (DecodeURL)
+                    if (w3mApp::Instance().DecodeURL)
                         p = html_quote(url_unquote_conv(p,
                                                         buf->document_charset));
                     else
                         p = u;
                     if (m->alt && *m->alt)
                         t = html_quote(m->alt);
-                    else if (DecodeURL)
+                    else if (w3mApp::Instance().DecodeURL)
                         t = html_quote(url_unquote_conv(m->url,
                                                         buf->document_charset));
                     else

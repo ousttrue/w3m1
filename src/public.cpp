@@ -60,7 +60,7 @@ void disp_srchresult(int result, const char *prompt, char *str)
         disp_message(Sprintf("Not found: %s", str)->ptr, TRUE);
     else if (result & SR_WRAPPED)
         disp_message(Sprintf("Search wrapped: %s", str)->ptr, TRUE);
-    else if (show_srch_str)
+    else if (w3mApp::Instance().show_srch_str)
         disp_message(Sprintf("%s%s", prompt, str)->ptr, TRUE);
 }
 
@@ -155,7 +155,7 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
         {
             int i;
             saveBuffer(buf, stdout, FALSE);
-            if (displayLinkNumber && buf->href)
+            if (w3mApp::Instance().displayLinkNumber && buf->href)
             {
                 printf("\nReferences:\n\n");
                 for (i = 0; i < buf->href.size(); i++)
@@ -165,7 +165,7 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
 
                     auto pu = URL::Parse(buf->href.anchors[i].url).Resolve(buf->BaseURL());
                     auto s = pu.ToStr();
-                    if (DecodeURL)
+                    if (w3mApp::Instance().DecodeURL)
                         s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
                     printf("[%d] %s\n", buf->href.anchors[i].hseq + 1, s->ptr);
                 }
@@ -1519,7 +1519,7 @@ void goURL0(const char *prompt, int relative)
             if (DefaultURLString == DEFAULT_URL_CURRENT)
             {
                 url = c_url;
-                if (DecodeURL)
+                if (w3mApp::Instance().DecodeURL)
                     url = url_unquote_conv(url, WC_CES_NONE);
             }
             else
@@ -1533,7 +1533,7 @@ void goURL0(const char *prompt, int relative)
             if (DefaultURLString == DEFAULT_URL_LINK)
             {
                 url = a_url;
-                if (DecodeURL)
+                if (w3mApp::Instance().DecodeURL)
                     url = url_unquote_conv(url, buf->document_charset);
             }
             else
@@ -1643,7 +1643,7 @@ void _peekURL(int only_img)
         auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
         s = pu.ToStr();
     }
-    if (DecodeURL)
+    if (w3mApp::Instance().DecodeURL)
         s = Strnew(url_unquote_conv(s->ptr, buf->document_charset));
 
     s = checkType(s, &pp, NULL);

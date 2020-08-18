@@ -3192,7 +3192,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             if (i == 0)
             {
                 Str tmp = seq->process_anchor(tag, line);
-                if (displayLinkNumber)
+                if (w3mApp::Instance().displayLinkNumber)
                 {
                     Str t = seq->GetLinkNumberStr(-1);
                     feed_table_inline_tag(tbl, NULL, mode, t->Size());

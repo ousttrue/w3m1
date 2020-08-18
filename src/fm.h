@@ -144,12 +144,6 @@
  */
 
 
-global int displayLink init(FALSE);
-global int displayLinkNumber init(FALSE);
-global int displayLineInfo init(FALSE);
-global int DecodeURL init(FALSE);
-global int retryAsHttp init(TRUE);
-global int show_srch_str init(TRUE);
 #ifdef USE_IMAGE
 global char *Imgdisplay init(IMGDISPLAY);
 global int autoImage init(TRUE);

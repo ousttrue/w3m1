@@ -22,7 +22,7 @@ historyBuffer(Hist *hist)
     if (hist && hist->list) {
 	for (item = hist->list->last; item; item = item->prev) {
 	    q = html_quote((char *)item->ptr);
-	    if (DecodeURL)
+	    if (w3mApp::Instance().DecodeURL)
 		p = html_quote(url_unquote_conv((char *)item->ptr, WC_CES_NONE));
 	    else
 		p = q;

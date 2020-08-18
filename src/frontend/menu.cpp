@@ -1766,7 +1766,7 @@ Link *link_menu(const BufferPtr &buf)
         std::string_view p;
         if (l.url().empty())
             p = "";
-        else if (DecodeURL)
+        else if (w3mApp::Instance().DecodeURL)
             p = url_unquote_conv(l.url(), buf->document_charset);
         else
             p = l.url();

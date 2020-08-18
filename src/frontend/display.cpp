@@ -351,7 +351,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
 
     auto pu = URL::Parse(url).Resolve(buf->BaseURL());
     u = pu.ToStr();
-    if (DecodeURL)
+    if (w3mApp::Instance().DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));
 
     Lineprop *pr;
@@ -387,7 +387,7 @@ static Str make_lastline_message(const BufferPtr &buf)
     Str msg, s = NULL;
     int sl = 0;
 
-    if (displayLink)
+    if (w3mApp::Instance().displayLink)
     {
         MapArea *a = retrieveCurrentMapArea(buf);
         if (a)
@@ -420,7 +420,7 @@ static Str make_lastline_message(const BufferPtr &buf)
         msg = Strnew(GetMouseActionLastlineStr());
     else
         msg = Strnew();
-    if (displayLineInfo && buf->LineCount() > 0)
+    if (w3mApp::Instance().displayLineInfo && buf->LineCount() > 0)
     {
         int cl = buf->CurrentLine()->real_linenumber;
         int ll = buf->LastLine()->real_linenumber;

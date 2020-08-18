@@ -64,7 +64,7 @@ std::string Link::toHtml(const URL &baseUrl, CharacterEncodingScheme ces) const
 
     if (m_url.empty())
         url = "(empty)";
-    else if (DecodeURL)
+    else if (w3mApp::Instance().DecodeURL)
         url = html_quote(url_unquote_conv(m_url, ces));
     else
         url = html_quote(m_url);

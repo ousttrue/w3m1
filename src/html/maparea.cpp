@@ -434,7 +434,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
             continue;
         auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
         q = html_quote(pu.ToStr()->ptr);
-        if (DecodeURL)
+        if (w3mApp::Instance().DecodeURL)
             p = html_quote(url_unquote_conv(a->url, buf->document_charset));
         else
             p = html_quote(a->url);
@@ -493,7 +493,7 @@ append_frame_info(BufferPtr buf, Str html, struct frameset *set, int level)
                                                     buf->document_charset));
                     html->Push(p);
                 }
-                if (DecodeURL)
+                if (w3mApp::Instance().DecodeURL)
                     p = html_quote(url_unquote_conv(frame.body->url,
                                                     buf->document_charset));
                 else
@@ -546,7 +546,7 @@ page_info_panel(const BufferPtr &buf)
     tmp->Push("<form method=internal action=charset>");
 
     p = buf->currentURL.ToStr()->ptr;
-    if (DecodeURL)
+    if (w3mApp::Instance().DecodeURL)
         p = url_unquote_conv(p, WC_CES_NONE);
     Strcat_m_charp(tmp, "<table cellpadding=0>",
                    "<tr valign=top><td nowrap>Title<td>",
@@ -587,7 +587,7 @@ page_info_panel(const BufferPtr &buf)
         auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
         p = pu.ToStr()->ptr;
         q = html_quote(p);
-        if (DecodeURL)
+        if (w3mApp::Instance().DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));
         else
             p = q;
@@ -601,7 +601,7 @@ page_info_panel(const BufferPtr &buf)
         auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
         p = pu.ToStr()->ptr;
         q = html_quote(p);
-        if (DecodeURL)
+        if (w3mApp::Instance().DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));
         else
             p = q;
@@ -614,7 +614,7 @@ page_info_panel(const BufferPtr &buf)
     {
         FormItemList *fi = a->item;
         p = form2str(fi);
-        if (DecodeURL)
+        if (w3mApp::Instance().DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));
         else
             p = html_quote(p);

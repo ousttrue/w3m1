@@ -63,6 +63,12 @@ public:
     bool vi_prec_num = false;
     bool label_topline = false;
     bool nextpage_topline = false;
+    bool displayLink = false;
+    bool displayLinkNumber = false;
+    bool displayLineInfo = false;
+    bool DecodeURL = false;
+    bool retryAsHttp = true;
+    bool show_srch_str = true;
 
     // files settings
     std::string config_file;

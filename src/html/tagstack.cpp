@@ -1736,7 +1736,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             obuf->anchor.hseq = seq->Get();
             tmp = seq->process_anchor(tag, h_env->tagbuf->ptr);
             push_tag(obuf, tmp->ptr, HTML_A);
-            if (displayLinkNumber)
+            if (w3mApp::Instance().displayLinkNumber)
                 HTMLlineproc1(seq->GetLinkNumberStr(-1)->ptr, h_env, seq);
             return 1;
         }

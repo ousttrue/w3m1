@@ -813,7 +813,7 @@ _prev(void)
             return;
         strCurrentBuf = strBuf;
     }
-    if (DecodeURL && (cm_mode & CPL_URL))
+    if (w3mApp::Instance().DecodeURL && (cm_mode & CPL_URL))
         p = url_unquote_conv(p, WC_CES_NONE);
     strBuf = Strnew(p);
     CLen = CPos = setStrType(strBuf, strProp);
@@ -832,7 +832,7 @@ _next(void)
         return;
     p = nextHist(hist);
     if (p) {
-        if (DecodeURL && (cm_mode & CPL_URL))
+        if (w3mApp::Instance().DecodeURL && (cm_mode & CPL_URL))
             p = url_unquote_conv(p, WC_CES_NONE);
         strBuf = Strnew(p);
     }

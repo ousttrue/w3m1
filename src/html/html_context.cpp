@@ -360,7 +360,7 @@ Str HtmlContext::process_select(struct parsed_tag *tag)
     if (!select_is_multiple)
     {
         select_str = Strnew("<pre_int>");
-        if (displayLinkNumber)
+        if (w3mApp::Instance().displayLinkNumber)
             select_str->Push(GetLinkNumberStr(0));
         select_str->Push(Sprintf("[<input_alt hseq=\"%d\" "
                                  "fid=\"%d\" type=select name=\"%s\" selectnumber=%d",
@@ -607,12 +607,12 @@ Str HtmlContext::process_input(struct parsed_tag *tag)
     case FORM_INPUT_TEXT:
     case FORM_INPUT_FILE:
     case FORM_INPUT_CHECKBOX:
-        if (displayLinkNumber)
+        if (w3mApp::Instance().displayLinkNumber)
             tmp->Push(GetLinkNumberStr(0));
         tmp->Push('[');
         break;
     case FORM_INPUT_RADIO:
-        if (displayLinkNumber)
+        if (w3mApp::Instance().displayLinkNumber)
             tmp->Push(GetLinkNumberStr(0));
         tmp->Push('(');
     }
@@ -661,7 +661,7 @@ Str HtmlContext::process_input(struct parsed_tag *tag)
         case FORM_INPUT_SUBMIT:
         case FORM_INPUT_BUTTON:
         case FORM_INPUT_RESET:
-            if (displayLinkNumber)
+            if (w3mApp::Instance().displayLinkNumber)
                 tmp->Push(GetLinkNumberStr(-1));
             tmp->Push("[");
             break;

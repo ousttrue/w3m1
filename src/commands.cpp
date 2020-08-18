@@ -1476,7 +1476,7 @@ void curURL(w3mApp *w3m)
     {
         offset = 0;
         s = currentURL();
-        if (DecodeURL)
+        if (w3mApp::Instance().DecodeURL)
             s = Strnew(url_unquote_conv(s->ptr, WC_CES_NONE));
 
         Lineprop *pp;
