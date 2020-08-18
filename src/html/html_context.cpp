@@ -856,7 +856,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
         i0 = i;
         if (w < 0 || i < 0)
         {
-            auto u = URL::Parse(wc_conv(p, w3mApp::Instance().InnerCharset, CES())->ptr, nullptr);
+            auto u = URL::Parse(wc_conv(p, w3mApp::Instance().InnerCharset, CES())->ptr);
             Image image;
             image.url = u.ToStr()->ptr;
             auto [t, ext] = uncompressed_file_type(u.path);
@@ -1676,7 +1676,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                buf->document_charset)
                     ->ptr;
-            buf->baseURL = URL::Parse(p, nullptr);
+            buf->baseURL = URL::Parse(p);
         }
         if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
             buf->baseTarget =

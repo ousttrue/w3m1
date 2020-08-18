@@ -1025,7 +1025,7 @@ void followA(w3mApp *w3m)
         return;
     }
 
-    auto u = URL::Parse(a->url, buf->BaseURL());
+    auto u = URL::Parse(a->url).Resolve(buf->BaseURL());
     if (u.ToStr()->Cmp(buf->currentURL.ToStr()) == 0)
     {
         /* index within this buffer */
@@ -1283,7 +1283,7 @@ void linkMn(w3mApp *w3m)
         return;
     }
 
-    auto p_url = URL::Parse(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    auto p_url = URL::Parse(l->url()).Resolve(GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 }
@@ -1883,7 +1883,7 @@ void linkbrz(w3mApp *w3m)
     if (a == NULL)
         return;
 
-    auto pu = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    auto pu = URL::Parse(a->url).Resolve(GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     invoke_browser(pu.ToStr()->ptr);
 }
 

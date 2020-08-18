@@ -97,7 +97,7 @@ public:
         return scheme == SCM_LOCAL && path == "-";
     }
 
-    static URL Parse(std::string_view url, const URL *current = nullptr);
+    static URL Parse(std::string_view url);
     static URL ParsePath(std::string_view path);
     URL Resolve(const URL *base) const;
 

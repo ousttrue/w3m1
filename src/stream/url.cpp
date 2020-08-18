@@ -404,7 +404,7 @@ static std::tuple<std::string_view, std::string_view> ParseQuery(std::string_vie
     return {p, q.substr(0, p.data() - q.data())};
 }
 
-URL URL::Parse(std::string_view _url, const URL *current)
+URL URL::Parse(std::string_view _url)
 {
     /* quote 0x01-0x20, 0x7F-0xFF */
     auto quoted = url_quote(_url);
@@ -422,40 +422,6 @@ URL URL::Parse(std::string_view _url, const URL *current)
     // }
 
     auto [p1, scheme] = URLScheme::Parse(url);
-    if (scheme == SCM_MISSING)
-    {
-        // url without scheme://host
-        if (current)
-        {
-            switch (current->scheme)
-            {
-            case SCM_LOCAL:
-            case SCM_LOCAL_CGI:
-                scheme = SCM_LOCAL;
-                break;
-            case SCM_FTP:
-            case SCM_FTPDIR:
-                scheme = SCM_FTP;
-                break;
-            case SCM_NNTP:
-            case SCM_NNTP_GROUP:
-                scheme = SCM_NNTP;
-                break;
-            case SCM_NEWS:
-            case SCM_NEWS_GROUP:
-                scheme = SCM_NEWS;
-                break;
-            default:
-                scheme = current->scheme;
-                break;
-            }
-        }
-        else
-        {
-            scheme = SCM_LOCAL;
-        }
-    }
-
     auto [p2, userinfo, host, port] = ParseUserinfoHostPort(p1, scheme);
 
     // /* scheme part has been found */
@@ -495,12 +461,12 @@ URL URL::Parse(std::string_view _url, const URL *current)
 
     // ParseFragment(p);
     std::string_view fragment;
-    if (scheme == SCM_MISSING)
-    {
-        scheme = SCM_LOCAL;
-        path = remain;
-    }
-    else if (remain.size() && remain[0] == '#')
+    // if (scheme == SCM_MISSING)
+    // {
+    //     scheme = SCM_LOCAL;
+    //     path = remain;
+    // }
+    if (remain.size() && remain[0] == '#')
     {
         fragment = remain.substr(1);
     }
@@ -517,47 +483,6 @@ URL URL::Parse(std::string_view _url, const URL *current)
     }
 
     bool relative_uri = false;
-    if (current && scheme == current->scheme && host.empty())
-    {
-        /* Copy omitted element from the current URL */
-        userinfo = current->userinfo;
-        host = current->host;
-        port = current->port;
-        if (path.size() && path[0])
-        {
-            if (scheme == SCM_UNKNOWN && strchr(const_cast<char *>(path.data()), ':') == NULL && current && (p = string_strchr(current->path, ':')) != NULL)
-            {
-                path = Strnew_m_charp(current->path.substr(0, p - current->path.data()), ":", path)->ptr;
-            }
-            else if (path[0] != '/')
-            {
-                /* file is relative [process 1] */
-                p = path.data();
-                if (current->path.size())
-                {
-                    auto tmp = Strnew(current->path);
-                    while (tmp->Size() > 0)
-                    {
-                        if (tmp->Back() == '/')
-                            break;
-                        tmp->Pop(1);
-                    }
-                    tmp->Push(p);
-                    path = tmp->ptr;
-                    relative_uri = TRUE;
-                }
-            }
-        }
-        else
-        { /* scheme:[?query][#label] */
-            path = current->path;
-            if (query.empty())
-                query = current->query;
-        }
-        /* comment: query part need not to be completed
-	    * from the current URL. */
-    }
-
     if (path.size())
     {
         if (scheme == SCM_LOCAL && path[0] != '/' && path != "-")
@@ -637,6 +562,52 @@ URL URL::Resolve(const URL *base) const
             url.scheme = SCM_LOCAL;
         }
     }
+
+    if (url.host.empty())
+    {
+        if (base && base->scheme == url.scheme)
+        {
+            /* Copy omitted element from the base URL */
+            url.userinfo = base->userinfo;
+            url.host = base->host;
+            url.port = base->port;
+            if (path.size() && path[0])
+            {
+                const char *p;
+                if (scheme == SCM_UNKNOWN && strchr(const_cast<char *>(path.data()), ':') == NULL && base && (p = string_strchr(base->path, ':')) != NULL)
+                {
+                    url.path = Strnew_m_charp(base->path.substr(0, p - base->path.data()), ":", path)->ptr;
+                }
+                else if (path[0] != '/')
+                {
+                    /* file is relative [process 1] */
+                    auto p = url.path.data();
+                    if (base->path.size())
+                    {
+                        auto tmp = Strnew(base->path);
+                        while (tmp->Size() > 0)
+                        {
+                            if (tmp->Back() == '/')
+                                break;
+                            tmp->Pop(1);
+                        }
+                        tmp->Push(p);
+                        url.path = tmp->ptr;
+                        // relative_uri = TRUE;
+                    }
+                }
+            }
+            else
+            { /* scheme:[?query][#label] */
+                url.path = base->path;
+                if (url.query.empty())
+                    url.query = base->query;
+            }
+            /* comment: query part need not to be completed
+	    * from the base URL. */
+        }
+    }
+
     return url;
 }
 

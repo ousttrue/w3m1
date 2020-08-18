@@ -91,7 +91,7 @@ print_headers(BufferPtr buf, int len)
 }
 
 static void
-internal_get(char *url, int flag, FormList *request)
+internal_get(const char *url, int flag, FormList *request)
 {
     BufferPtr buf;
 

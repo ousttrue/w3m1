@@ -434,7 +434,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
         a = (MapArea *)al->ptr;
         if (!a)
             continue;
-        auto pu = URL::Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
         q = html_quote(pu.ToStr()->ptr);
         if (DecodeURL)
             p = html_quote(url_unquote_conv(a->url, buf->document_charset));
@@ -586,7 +586,7 @@ page_info_panel(const BufferPtr &buf)
     a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
-        auto pu = URL::Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
@@ -600,7 +600,7 @@ page_info_panel(const BufferPtr &buf)
     a = buf->img.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
-        auto pu = URL::Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
