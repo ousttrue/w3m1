@@ -305,7 +305,7 @@ struct SSLContextImpl
             else
             {
                 /* FIXME: gettextize? */
-                char *e = "This SSL session was rejected "
+                const char *e = "This SSL session was rejected "
                           "to prevent security violation: no peer certificate";
                 disp_err_message(e, FALSE);
                 return NULL;

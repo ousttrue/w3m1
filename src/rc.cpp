@@ -537,8 +537,8 @@ static int OptionEncode = FALSE;
 struct sel_c
 {
     int value;
-    char *cvalue;
-    char *text;
+    const char *cvalue;
+    const char *text;
 };
 
 #ifdef USE_COLOR

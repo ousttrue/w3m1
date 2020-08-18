@@ -451,19 +451,12 @@ void ldfile(w3mApp *w3m)
 
 void ldhelp(w3mApp *w3m)
 {
-#ifdef USE_HELP_CGI
-    char *lang;
-    int n;
-    Str tmp;
-    lang = AcceptLang;
-    n = strcspn(lang, ";, \t");
-    tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
+    auto lang = AcceptLang;
+    auto n = strcspn(lang, ";, \t");
+    auto tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
                   UrlEncode(Strnew(w3mApp::Instance().w3m_version))->ptr,
                   UrlEncode(Strnew_charp_n(lang, n))->ptr);
     cmd_loadURL(tmp->ptr, NULL, HttpReferrerPolicy::NoReferer, NULL);
-#else
-    cmd_loadURL(helpFile(HELP_FILE), NULL, HttpReferrerPolicy::NoReferer, NULL);
-#endif
 }
 
 void movL(w3mApp *w3m)

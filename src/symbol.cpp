@@ -189,8 +189,8 @@ void push_symbol(Str str, char symbol, int width, int n)
 
     const char buf[] =
         {
-            (p[0] == ' ') ? NBSP_CODE : p[0],
-            (p[1] == ' ') ? NBSP_CODE : p[1],
+            (p[0] == ' ') ? (char)NBSP_CODE : p[0],
+            (p[1] == ' ') ? (char)NBSP_CODE : p[1],
         };
 
     str->Push(Sprintf("<_SYMBOL TYPE=%d>", symbol));
