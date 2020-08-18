@@ -1,5 +1,6 @@
 #include "fm.h"
 #include "indep.h"
+#include "w3m.h"
 #include "gc_helper.h"
 #include "html/frame.h"
 #include "html/html.h"
@@ -579,7 +580,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     p_target = f->name;
                     s_target = frame.body->name;
                     t_target = "_blank";
-                    d_target = TargetSelf ? s_target : t_target;
+                    d_target = w3mApp::Instance().TargetSelf ? s_target : t_target;
 
                     charset = WC_CES_US_ASCII;
                     if (current->document_charset != WC_CES_US_ASCII)

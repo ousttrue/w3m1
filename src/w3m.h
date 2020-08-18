@@ -95,6 +95,8 @@ public:
     int IndentIncr = 4;
     int Tabstop = 8;
     bool ShowEffect = true;
+    bool TargetSelf = false;
+
     // Maximum line kept as pager
     int PagerMax = 10000;
     bool SearchHeader = false;

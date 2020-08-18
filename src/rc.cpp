@@ -644,7 +644,7 @@ auto sections = make_array(
                      {"pixel_per_char", P_PIXELS, PI_TEXT, w3mApp::Instance().pixel_per_char, CMT_PIXEL_PER_CHAR},
                      {"pixel_per_line", P_PIXELS, PI_TEXT, w3mApp::Instance().pixel_per_line, CMT_PIXEL_PER_LINE},
                      {"frame", P_CHARINT, PI_ONOFF, w3mApp::Instance().RenderFrame, CMT_FRAME},
-                     {"target_self", P_CHARINT, PI_ONOFF, TargetSelf, CMT_TSELF},
+                     {"target_self", P_CHARINT, PI_ONOFF, w3mApp::Instance().TargetSelf, CMT_TSELF},
                      {"open_tab_blank", P_INT, PI_ONOFF, open_tab_blank, CMT_OPEN_TAB_BLANK},
                      {"open_tab_dl_list", P_INT, PI_ONOFF, open_tab_dl_list, CMT_OPEN_TAB_DL_LIST},
                      {"display_link", P_INT, PI_ONOFF, displayLink, CMT_DISPLINK},
