@@ -62,7 +62,7 @@ void pgFore(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (vi_prec_num)
+    if (w3mApp::Instance().vi_prec_num)
     {
         buf->NScroll(searchKeyNum() * (buf->rect.lines - 1));
         displayCurrentbuf(B_NORMAL);
@@ -79,7 +79,7 @@ void pgBack(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (vi_prec_num)
+    if (w3mApp::Instance().vi_prec_num)
     {
         buf->NScroll(-searchKeyNum() * (buf->rect.lines - 1));
         displayCurrentbuf(B_NORMAL);
@@ -532,7 +532,7 @@ void quitfm(w3mApp *w3m)
 /* Question and Quit */
 void qquitfm(w3mApp *w3m)
 {
-    w3m->_quitfm(confirm_on_quit);
+    w3m->_quitfm(w3mApp::Instance().confirm_on_quit);
 }
 
 /* Select buffer */
@@ -708,7 +708,7 @@ void editScr(w3mApp *w3m)
 void _mark(w3mApp *w3m)
 {
     LinePtr l;
-    if (!use_mark)
+    if (!w3mApp::Instance().use_mark)
         return;
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
@@ -722,7 +722,7 @@ void nextMk(w3mApp *w3m)
 {
     LinePtr l;
     int i;
-    if (!use_mark)
+    if (!w3mApp::Instance().use_mark)
         return;
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -760,7 +760,7 @@ void prevMk(w3mApp *w3m)
 {
     LinePtr l;
     int i;
-    if (!use_mark)
+    if (!w3mApp::Instance().use_mark)
         return;
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -798,7 +798,7 @@ void prevMk(w3mApp *w3m)
 
 void reMark(w3mApp *w3m)
 {
-    if (!use_mark)
+    if (!w3mApp::Instance().use_mark)
         return;
 
     auto str = searchKeyData();

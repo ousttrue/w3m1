@@ -57,6 +57,12 @@ public:
     std::string cgi_bin;
     std::string index_file;
     std::string CurrentCmdData;
+    bool confirm_on_quit = true;
+    bool use_mark = false;
+    bool emacs_like_lineedit = false;
+    bool vi_prec_num = false;
+    bool label_topline = false;
+    bool nextpage_topline = false;
 
     // files settings
     std::string config_file;

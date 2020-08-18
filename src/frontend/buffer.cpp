@@ -459,7 +459,7 @@ void Buffer::LineSkip(LinePtr line, int offset, int last)
 {
     auto l = find(CurrentLineSkip(line, offset, last));
     int i;
-    if (!nextpage_topline)
+    if (!w3mApp::Instance().nextpage_topline)
         for (i = this->rect.lines - 1 - (this->LastLine()->linenumber - (*l)->linenumber);
              i > 0 && l != lines.begin();
              i--, --l)
@@ -540,7 +540,7 @@ void Buffer::Scroll(int n)
         auto tlnum = this->topLine->linenumber;
         auto llnum = this->topLine->linenumber + this->rect.lines - 1;
         int diff_n;
-        if (nextpage_topline)
+        if (w3mApp::Instance().nextpage_topline)
             diff_n = 0;
         else
             diff_n = n - (tlnum - top->linenumber);

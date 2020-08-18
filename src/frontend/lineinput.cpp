@@ -228,7 +228,7 @@ _esc(void)
         break;
     case CTRL_I:
     case ' ':
-        if (emacs_like_lineedit) {
+        if (w3mApp::Instance().emacs_like_lineedit) {
             _rdcompl();
             cm_clear = FALSE;
             need_redraw = TRUE;
@@ -237,20 +237,20 @@ _esc(void)
             _rcompl();
         break;
     case CTRL_D:
-        if (!emacs_like_lineedit)
+        if (!w3mApp::Instance().emacs_like_lineedit)
             _rdcompl();
         need_redraw = TRUE;
         break;
     case 'f':
-        if (emacs_like_lineedit)
+        if (w3mApp::Instance().emacs_like_lineedit)
             _mvRw();
         break;
     case 'b':
-        if (emacs_like_lineedit)
+        if (w3mApp::Instance().emacs_like_lineedit)
             _mvLw();
         break;
     case CTRL_H:
-        if (emacs_like_lineedit)
+        if (w3mApp::Instance().emacs_like_lineedit)
             _bsw();
         break;
         #ifdef USE_M17N
@@ -622,7 +622,7 @@ next_dcompl(int next)
         move(y, 0);
         clrtoeolx();
         bold();
-        if (emacs_like_lineedit)
+        if (w3mApp::Instance().emacs_like_lineedit)
             /* FIXME: gettextize? */
             addstr("----- Press TAB to continue -----");
         else
@@ -1026,7 +1026,7 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
         if (!i_quote &&
             (((cm_mode & CPL_ALWAYS) && (c == CTRL_I || c == ' ')) ||
                 ((cm_mode & CPL_ON) && (c == CTRL_I)))) {
-            if (emacs_like_lineedit && cm_next) {
+            if (w3mApp::Instance().emacs_like_lineedit && cm_next) {
                 _dcompl();
                 need_redraw = TRUE;
             }
@@ -1037,7 +1037,7 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
         }
         else if (!i_quote && CLen == CPos &&
             (cm_mode & CPL_ALWAYS || cm_mode & CPL_ON) && c == CTRL_D) {
-            if (!emacs_like_lineedit) {
+            if (!w3mApp::Instance().emacs_like_lineedit) {
                 _dcompl();
                 need_redraw = TRUE;
             }

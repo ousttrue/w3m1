@@ -1393,7 +1393,7 @@ void gotoLabel(std::string_view label)
     // pushHashHist(w3mApp::Instance().URLHist, copy->currentURL.ToStr()->ptr);
     // (*copy->clone)++;
     GetCurrentTab()->Push(buf->currentURL);
-    GetCurrentTab()->GetCurrentBuffer()->Goto(al->start, label_topline);
+    GetCurrentTab()->GetCurrentBuffer()->Goto(al->start, w3mApp::Instance().label_topline);
     displayCurrentbuf(B_FORCE_REDRAW);
     return;
 }
