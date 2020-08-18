@@ -493,7 +493,7 @@ void html_feed_environ::PUSH_ENV(unsigned char cmd)
         envs[envc].env = cmd;
         envs[envc].count = 0;
         if (envc <= MAX_INDENT_LEVEL)
-            envs[envc].indent = envs[envc - 1].indent + INDENT_INCR;
+            envs[envc].indent = envs[envc - 1].indent + w3mApp::Instance().IndentIncr;
         else
             envs[envc].indent = envs[envc - 1].indent;
     }
@@ -1367,7 +1367,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             {
                 do_blankline(h_env, obuf,
                              h_env->currentEnv().indent,
-                             INDENT_INCR, h_env->limit);
+                             w3mApp::Instance().IndentIncr, h_env->limit);
                 obuf->flag |= RB_IGNORE_P;
             }
         }
@@ -1408,7 +1408,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             {
             case HTML_UL:
                 h_env->currentEnv().type = ul_type(tag, h_env->currentEnv().type);
-                for (i = 0; i < INDENT_INCR - 3; i++)
+                for (i = 0; i < w3mApp::Instance().IndentIncr - 3; i++)
                     push_charp(obuf, 1, NBSP, PC_ASCII);
                 tmp = Strnew();
                 switch (h_env->currentEnv().type)
@@ -1458,17 +1458,17 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                     num = Sprintf("%d", h_env->currentEnv().count);
                     break;
                 }
-                if (INDENT_INCR >= 4)
+                if (w3mApp::Instance().IndentIncr >= 4)
                     num->Push(". ");
                 else
                     num->Push('.');
-                push_spaces(obuf, 1, INDENT_INCR - num->Size());
+                push_spaces(obuf, 1, w3mApp::Instance().IndentIncr - num->Size());
                 push_str(obuf, num->Size(), num, PC_ASCII);
-                if (INDENT_INCR >= 4)
+                if (w3mApp::Instance().IndentIncr >= 4)
                     set_space_to_prevchar(obuf->prevchar);
                 break;
             default:
-                push_spaces(obuf, 1, INDENT_INCR);
+                push_spaces(obuf, 1, w3mApp::Instance().IndentIncr);
                 break;
             }
         }

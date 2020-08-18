@@ -92,7 +92,7 @@ public:
     // frontend
     bool FoldLine = false;
     bool showLineNum = false;
-
+    int IndentIncr = 4;
     int Tabstop = 8;
     bool ShowEffect = true;
     // Maximum line kept as pager

@@ -143,7 +143,6 @@
  * Globals.
  */
 
-global int IndentIncr init(4);
 
 global char TargetSelf init(FALSE);
 global char PermitSaveToPipe init(FALSE);

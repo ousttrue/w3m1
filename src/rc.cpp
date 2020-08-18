@@ -640,7 +640,7 @@ auto sections = make_array(
     ParamSection{N_("Display Settings"),
                  {
                      {"tabstop", P_NZINT, PI_TEXT, w3mApp::Instance().Tabstop, CMT_TABSTOP},
-                     {"indent_incr", P_NZINT, PI_TEXT, IndentIncr, CMT_INDENT_INCR},
+                     {"indent_incr", P_NZINT, PI_TEXT, w3mApp::Instance().IndentIncr, CMT_INDENT_INCR},
                      {"pixel_per_char", P_PIXELS, PI_TEXT, w3mApp::Instance().pixel_per_char, CMT_PIXEL_PER_CHAR},
                      {"pixel_per_line", P_PIXELS, PI_TEXT, w3mApp::Instance().pixel_per_line, CMT_PIXEL_PER_LINE},
                      {"frame", P_CHARINT, PI_ONOFF, w3mApp::Instance().RenderFrame, CMT_FRAME},

@@ -2540,19 +2540,19 @@ feed_table_block_tag(struct table *tbl, const char *line, struct table_mode *mod
     {
         mode->indent_level++;
         if (mode->indent_level <= MAX_INDENT_LEVEL)
-            tbl->indent += INDENT_INCR;
+            tbl->indent += w3mApp::Instance().IndentIncr;
     }
     else if (indent == -1)
     {
         mode->indent_level--;
         if (mode->indent_level < MAX_INDENT_LEVEL)
-            tbl->indent -= INDENT_INCR;
+            tbl->indent -= w3mApp::Instance().IndentIncr;
     }
     offset = tbl->indent;
     if (cmd == HTML_DT)
     {
         if (mode->indent_level > 0 && mode->indent_level <= MAX_INDENT_LEVEL)
-            offset -= INDENT_INCR;
+            offset -= w3mApp::Instance().IndentIncr;
     }
     if (tbl->indent > 0)
     {
