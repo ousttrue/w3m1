@@ -4,8 +4,7 @@
 
 #include "html/parsetag.h"
 
-char *
-tag_get_value(struct parsed_tagarg *t, char *arg)
+const char *tag_get_value(struct parsed_tagarg *t, const char *arg)
 {
     for (; t; t = t->next)
     {
@@ -15,7 +14,7 @@ tag_get_value(struct parsed_tagarg *t, char *arg)
     return NULL;
 }
 
-int tag_exists(struct parsed_tagarg *t, char *arg)
+int tag_exists(struct parsed_tagarg *t, const char *arg)
 {
     for (; t; t = t->next)
     {

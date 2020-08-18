@@ -13,8 +13,7 @@
 #include "html/html_processor.h"
 #include <math.h>
 
-MapList *
-searchMapList(BufferPtr buf, char *name)
+MapList *searchMapList(BufferPtr buf, const char *name)
 {
     MapList *ml;
 
@@ -209,8 +208,7 @@ retrieveCurrentMap(const BufferPtr &buf)
     return NULL;
 }
 
-MapArea *
-follow_map_menu(BufferPtr buf, char *name, const Anchor *a_img, int x, int y)
+MapArea *follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y)
 {
     MapList *ml;
     ListItem *al;

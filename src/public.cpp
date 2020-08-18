@@ -1984,7 +1984,7 @@ void change_charset(struct parsed_tagarg *arg)
 
 void follow_map(struct parsed_tagarg *arg)
 {
-    char *name = tag_get_value(arg, "link");
+    auto name = tag_get_value(arg, "link");
 
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();

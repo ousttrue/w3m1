@@ -7,7 +7,7 @@ struct parsed_tagarg {
     struct parsed_tagarg *next;
 };
 
-char *tag_get_value(struct parsed_tagarg *t, char *arg);
-int tag_exists(struct parsed_tagarg *t, char *arg);
+const char *tag_get_value(struct parsed_tagarg *t, const char *arg);
+int tag_exists(struct parsed_tagarg *t, const char *arg);
 struct parsed_tagarg *cgistr2tagarg(const char *cgistr);
 #endif				/* not PARSETAG_H */

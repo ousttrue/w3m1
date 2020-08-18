@@ -31,7 +31,7 @@
 
 char *local_cookie;
 
-void extractMailcapEntry(char *mcap_entry, char **type, char **cmd)
+void extractMailcapEntry(const char *mcap_entry, const char **type, const char **cmd)
 {
     int j;
 
@@ -60,7 +60,7 @@ void printMailcapPanel(char *mailcap)
 {
     FILE *f;
     Str tmp;
-    char *type, *viewer;
+    const char *type, *viewer;
 
     if ((f = fopen(mailcap, "rt")) == NULL)
     {
@@ -126,7 +126,7 @@ void editMailcap(char *mailcap, struct parsed_tagarg *args)
     TextListItem *ti;
     FILE *f;
     Str tmp;
-    char *type, *viewer;
+    const char *type, *viewer;
     struct parsed_tagarg *a;
     int delete_it;
 
@@ -174,8 +174,8 @@ int main(int argc, char *argv[], char **envp)
     int length;
     Str qs = NULL;
     struct parsed_tagarg *cgiarg;
-    char *mode;
-    char *sent_cookie;
+    const char *mode;
+    const char *sent_cookie;
 
     GC_INIT();
     p = getenv("REQUEST_METHOD");

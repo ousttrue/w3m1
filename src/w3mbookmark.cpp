@@ -9,9 +9,9 @@
 
 #define BKMARK_TITLE "Register to my bookmark"
 #define BKMARK_ADD "ADD"
-#define DEFAULT_SECTION "Miscellaneous"
+auto DEFAULT_SECTION = "Miscellaneous";
 
-static char *bkmark_src1 =
+static auto bkmark_src1 =
     "<html>\n\
 <head>\n\
 <title>" BKMARK_TITLE "</title>\n\
@@ -24,7 +24,7 @@ static char *bkmark_src1 =
 <input type=hidden name=cookie value=\"%s\">\n\
 <table cellpadding=0>\n";
 
-static char *bkmark_src2 =
+static auto bkmark_src2 =
     "<tr><td>New&nbsp;Section:<td><input type=text name=newsection size=60>\n\
 <tr><td>URL:<td><input type=text name=url value=\"%s\" size=60>\n\
 <tr><td>Title:<td><input type=text name=title value=\"%s\" size=60>\n\
@@ -39,12 +39,12 @@ static char *bkmark_src2 =
 #undef TRUE
 #define TRUE 1
 
-static char end_section[] =
+static const char end_section[] =
     "<!--End of section (do not delete this comment)-->\n";
 
 static const char *Local_cookie = NULL;
 
-void print_bookmark_panel(char *bmark, char *url, char *title, char *charset)
+void print_bookmark_panel(const char *bmark, const char *url, const char *title, const char *charset)
 {
     Str tmp, tmp2;
     FILE *f;
@@ -70,9 +70,9 @@ void print_bookmark_panel(char *bmark, char *url, char *title, char *charset)
                 tmp2 = Strnew();
                 while (*p && *p != '<')
                     tmp2->Push(*p++);
-                printf("<option value=\"%s\">%s\n", 
-                    tmp2->c_str(), 
-                    tmp2->c_str());
+                printf("<option value=\"%s\">%s\n",
+                       tmp2->c_str(),
+                       tmp2->c_str());
             }
         }
         printf("</select>\n");
@@ -82,8 +82,8 @@ void print_bookmark_panel(char *bmark, char *url, char *title, char *charset)
 
 /* create new bookmark */
 static int
-create_new_bookmark(char *bmark, char *section, char *title, char *url,
-                    char *mode)
+create_new_bookmark(const char *bmark, const char *section, const char *title, const char *url,
+                    const char *mode)
 {
     FILE *f;
     f = fopen(bmark, mode);
@@ -107,7 +107,7 @@ create_new_bookmark(char *bmark, char *section, char *title, char *url,
 
 int insert_bookmark(char *bmark, struct parsed_tagarg *data)
 {
-    char *url, *title, *section;
+    const char *url, *title, *section;
     FILE *f;
     TextList *tl = newTextList();
     int section_found = 0;
@@ -190,12 +190,12 @@ int main(int argc, char *argv[], char **envp)
     int length;
     Str qs = NULL;
     struct parsed_tagarg *cgiarg;
-    char *mode;
     char *bmark;
-    char *url;
-    char *title;
-    char *charset;
-    char *sent_cookie;
+    const char *mode;
+    const char *url;
+    const char *title;
+    const char *charset;
+    const char *sent_cookie;
 
     GC_INIT();
     p = getenv("REQUEST_METHOD");
