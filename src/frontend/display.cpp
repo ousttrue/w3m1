@@ -199,7 +199,7 @@ static void effect_visited_end()
 
 void fmTerm(void)
 {
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         move((LINES - 1), 0);
         clrtoeolx();
@@ -212,7 +212,7 @@ void fmTerm(void)
             mouse_end();
 
         reset_tty();
-        fmInitialized = FALSE;
+        w3mApp::Instance().fmInitialized = FALSE;
     }
 }
 
@@ -221,7 +221,7 @@ void fmTerm(void)
  */
 void fmInit(void)
 {
-    if (!fmInitialized)
+    if (!w3mApp::Instance().fmInitialized)
     {
         initscr();
         term_raw();
@@ -231,7 +231,7 @@ void fmInit(void)
             initImage();
 #endif
     }
-    fmInitialized = TRUE;
+    w3mApp::Instance().fmInitialized = TRUE;
 }
 
 /*
@@ -833,7 +833,7 @@ static GeneralList *message_list = NULL;
 
 void record_err_message(const char *s)
 {
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         if (!message_list)
             message_list = newGeneralList();
@@ -866,7 +866,7 @@ BufferPtr message_list_panel(void)
 
 void show_message(std::string_view msg)
 {
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         term_cbreak();
         /* FIXME: gettextize? */
@@ -877,7 +877,7 @@ void show_message(std::string_view msg)
 
 void message(std::string_view s, int return_x, int return_y)
 {
-    if (!fmInitialized)
+    if (!w3mApp::Instance().fmInitialized)
         return;
     move((LINES - 1), 0);
     addnstr(s.data(), COLS - 1);
@@ -896,7 +896,7 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
 {
     if (QuietMessage)
         return;
-    if (!fmInitialized)
+    if (!w3mApp::Instance().fmInitialized)
     {
         fprintf(stderr, "%s\n", conv_to_system(s));
         return;

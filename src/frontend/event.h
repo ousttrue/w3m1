@@ -21,14 +21,14 @@ struct AlarmEvent
     if (TrapSignal)                            \
     {                                          \
         prevtrap = mySignal(SIGINT, KeyAbort); \
-        if (fmInitialized)                     \
+        if (w3mApp::Instance().fmInitialized)                     \
             term_cbreak();                     \
     }
 
 #define TRAP_OFF                        \
     if (TrapSignal)                     \
     {                                   \
-        if (fmInitialized)              \
+        if (w3mApp::Instance().fmInitialized)              \
             term_raw();                 \
         if (prevtrap)                   \
             mySignal(SIGINT, prevtrap); \

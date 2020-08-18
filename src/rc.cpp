@@ -1348,7 +1348,7 @@ void sync_with_option(void)
     init_migemo();
 #endif
 #ifdef USE_IMAGE
-    if (fmInitialized && w3mApp::Instance().displayImage)
+    if (w3mApp::Instance().fmInitialized && w3mApp::Instance().displayImage)
         initImage();
 #else
     displayImage = FALSE; /* XXX */
@@ -1370,7 +1370,7 @@ void sync_with_option(void)
     if (AcceptMedia == NULL || *AcceptMedia == '\0')
         AcceptMedia = acceptableMimeTypes();
 
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         initKeymap(FALSE);
 #ifdef USE_MOUSE

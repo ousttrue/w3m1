@@ -382,7 +382,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
     Str messages;
     char *fmtrbyte, *fmrate;
 
-    if (!fmInitialized)
+    if (!w3mApp::Instance().fmInitialized)
         return;
 
     if (*linelen < 1024)
@@ -973,7 +973,7 @@ const char *inputAnswer(const char *prompt)
 
     if (QuietMessage)
         return "n";
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         term_raw();
         ans = inputChar(prompt);
@@ -1228,7 +1228,7 @@ FILE *openSecretFile(const char *fname)
         /* do nothing */;
     else if ((st.st_mode & (S_IRWXG | S_IRWXO)) != 0)
     {
-        if (fmInitialized)
+        if (w3mApp::Instance().fmInitialized)
         {
             message(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, 0, 0);
             refresh();

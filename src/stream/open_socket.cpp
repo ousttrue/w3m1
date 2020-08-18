@@ -24,7 +24,7 @@ int openSocket4(const char *hostname,
     unsigned long adr;
     MySignalHandler prevtrap = NULL;
 
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         /* FIXME: gettextize? */
         message(Sprintf("Opening socket...")->ptr, 0, 0);
@@ -57,7 +57,7 @@ int openSocket4(const char *hostname,
             bcopy((void *)&adr, (void *)&hostaddr.sin_addr, sizeof(long));
             hostaddr.sin_family = AF_INET;
             hostaddr.sin_port = s_port;
-            if (fmInitialized)
+            if (w3mApp::Instance().fmInitialized)
             {
                 message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
                 refresh();
@@ -72,7 +72,7 @@ int openSocket4(const char *hostname,
         {
             char **h_addr_list;
             int result = -1;
-            if (fmInitialized)
+            if (w3mApp::Instance().fmInitialized)
             {
                 message(Sprintf("Performing hostname lookup on %s", hostname)->ptr,
                         0, 0);
@@ -88,7 +88,7 @@ int openSocket4(const char *hostname,
             {
                 bcopy((void *)h_addr_list[0], (void *)&hostaddr.sin_addr,
                       entry->h_length);
-                if (fmInitialized)
+                if (w3mApp::Instance().fmInitialized)
                 {
                     message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
                     refresh();
@@ -121,7 +121,7 @@ int openSocket6(const char *hostname,
     char *hname;
     MySignalHandler prevtrap = NULL;
 
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         /* FIXME: gettextize? */
         message(Sprintf("Opening socket...")->ptr, 0, 0);

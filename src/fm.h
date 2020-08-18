@@ -142,7 +142,6 @@
 /* 
  * Globals.
  */
-global char fmInitialized init(FALSE);
 global char QuietMessage init(FALSE);
 global char TrapSignal init(TRUE);
 global char NoCache init(FALSE);

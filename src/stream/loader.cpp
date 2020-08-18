@@ -95,7 +95,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
     clen_t size = 0;
     int is_pipe = FALSE;
 
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         p = searchKeyData();
         if (p == NULL || *p == '\0')

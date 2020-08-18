@@ -34,7 +34,7 @@ HtmlContext::HtmlContext()
 {
     doc_charset = w3mApp::Instance().DocumentCharset;
 
-    if (fmInitialized && graph_ok())
+    if (w3mApp::Instance().fmInitialized && graph_ok())
     {
         symbol_width = symbol_width0 = 1;
     }

@@ -51,6 +51,7 @@ public:
     int CurrentPid = -1;
     std::string CurrentDir;
     TextList *fileToDelete = nullptr;
+    bool fmInitialized = false;
 
     // files settings
     std::string config_file;

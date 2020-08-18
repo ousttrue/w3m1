@@ -332,11 +332,10 @@ BufferPtr DownloadListBuffer(w3mApp *w3m)
 //
 
 // TODO
-extern char fmInitialized;
 #define GC_WARN_KEEP_MAX (20)
 static void wrap_GC_warn_proc(char *msg, GC_word arg)
 {
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         /* *INDENT-OFF* */
         static struct
@@ -973,13 +972,13 @@ int w3mApp::Main(int argc, char **argv)
         }
         else
         {
-            if (fmInitialized)
+            if (w3mApp::Instance().fmInitialized)
                 fmTerm();
             usage(show_params_p);
         }
         if (newbuf == NULL)
         {
-            if (fmInitialized)
+            if (w3mApp::Instance().fmInitialized)
                 fmTerm();
             if (err_msg->Size())
                 fprintf(stderr, "%s", err_msg->c_str());
@@ -1130,7 +1129,7 @@ int w3mApp::Main(int argc, char **argv)
 
     if (!GetFirstTab() || GetCurrentTab()->GetBufferCount() == 0)
     {
-        if (fmInitialized)
+        if (w3mApp::Instance().fmInitialized)
             fmTerm();
         if (err_msg->Size())
             fprintf(stderr, "%s", err_msg->c_str());

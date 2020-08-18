@@ -151,7 +151,7 @@ void setup_child(int child, int i, int f)
     close_tty();
     close_all_fds_except(i, f);
     QuietMessage = TRUE;
-    fmInitialized = FALSE;
+    w3mApp::Instance().fmInitialized = FALSE;
     TrapSignal = FALSE;
 }
 
@@ -182,7 +182,7 @@ struct ScopedTrap
         if (TrapSignal)
         {
             prevtrap = mySignal(SIGINT, KeyAbort);
-            if (fmInitialized)
+            if (w3mApp::Instance().fmInitialized)
                 term_cbreak();
         }
     }
@@ -190,7 +190,7 @@ struct ScopedTrap
     {
         if (TrapSignal)
         {
-            if (fmInitialized)
+            if (w3mApp::Instance().fmInitialized)
                 term_raw();
             if (prevtrap)
                 mySignal(SIGINT, prevtrap);

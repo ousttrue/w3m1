@@ -624,7 +624,7 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
         /* This means that *-Authenticate: header is received after
          * Authorization: header is sent to the server. 
          */
-        if (fmInitialized)
+        if (w3mApp::Instance().fmInitialized)
         {
             message("Wrong username or password", 0, 0);
             refresh();
@@ -650,7 +650,7 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
             return;
         /* input username and password */
         sleep(2);
-        if (fmInitialized)
+        if (w3mApp::Instance().fmInitialized)
         {
             char *pp;
             term_raw();

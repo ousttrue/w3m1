@@ -772,7 +772,7 @@ void term_cbreak(void)
 
 void term_title(char *s)
 {
-    if (!fmInitialized)
+    if (!w3mApp::Instance().fmInitialized)
         return;
     if (title_str != NULL)
     {

@@ -1626,7 +1626,7 @@ void reload(w3mApp *w3m)
         (fbuf = buf->linkBuffer[LB_N_FRAME]))
     {
         // frame
-        if (fmInitialized)
+        if (w3mApp::Instance().fmInitialized)
         {
             message("Rendering frame", 0, 0);
             refresh();
@@ -1829,7 +1829,7 @@ void rFrame(w3mApp *w3m)
     //     }
     //     return;
     // }
-    if (fmInitialized)
+    if (w3mApp::Instance().fmInitialized)
     {
         message("Rendering frame", 0, 0);
         refresh();
@@ -1843,7 +1843,7 @@ void rFrame(w3mApp *w3m)
     buf->linkBuffer[LB_N_FRAME] = GetCurrentTab()->GetCurrentBuffer();
     GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME] = buf;
     // GetCurrentTab()->Push(buf);
-    if (fmInitialized && display_ok())
+    if (w3mApp::Instance().fmInitialized && display_ok())
         displayCurrentbuf(B_FORCE_REDRAW);
 }
 

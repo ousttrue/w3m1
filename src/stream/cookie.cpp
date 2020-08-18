@@ -1032,7 +1032,7 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
             const char *ans = (accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
                             ? "y"
                             : NULL;
-            if (fmInitialized && (err & COO_OVERRIDE_OK) &&
+            if (w3mApp::Instance().fmInitialized && (err & COO_OVERRIDE_OK) &&
                 accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
             {
                 Str msg = Sprintf("Accept bad cookie from %s for %s?",
