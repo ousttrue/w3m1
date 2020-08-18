@@ -39,7 +39,7 @@ int cur_real_linenumber(const BufferPtr &buf);
 char *MarkString();
 void SetMarkString(char *str);
 void do_dump(w3mApp *w3m, BufferPtr buf);
-void _followForm(int submit);
+void _followForm(bool submit);
 void query_from_followform(Str *query, FormItemList *fi, int multipart);
 // BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy referer, FormList *request);
 FormItemList *save_submit_formlist(FormItemList *src);

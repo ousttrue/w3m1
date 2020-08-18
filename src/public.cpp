@@ -651,13 +651,8 @@ void SetMarkString(char *str)
     s_MarkString = str;
 }
 
-void _followForm(int submit)
+void _followForm(bool submit)
 {
-    char *p;
-    FormItemList *fi, *f2;
-    Str tmp, tmp2;
-    int multipart = 0, i;
-
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     if (buf->LineCount() == 0)
@@ -667,17 +662,18 @@ void _followForm(int submit)
         return;
 
     auto l = buf->CurrentLine();
-    fi = a->item;
+    auto fi = a->item;
     switch (fi->type)
     {
     case FORM_INPUT_TEXT:
+    {
         if (submit)
             goto do_submit;
         if (fi->readonly)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
         /* FIXME: gettextize? */
-        p = inputStrHist("TEXT:", fi->value ? fi->value->ptr : NULL, w3mApp::Instance().TextHist);
+        auto p = inputStrHist("TEXT:", fi->value ? fi->value->ptr : NULL, w3mApp::Instance().TextHist);
         if (p == NULL || fi->readonly)
             break;
         fi->value = Strnew(p);
@@ -685,14 +681,16 @@ void _followForm(int submit)
         if (fi->accept || fi->parent->nitems == 1)
             goto do_submit;
         break;
+    }
     case FORM_INPUT_FILE:
+    {
         if (submit)
             goto do_submit;
         if (fi->readonly)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
         /* FIXME: gettextize? */
-        p = inputFilenameHist("Filename:", fi->value ? fi->value->ptr : NULL,
+        auto p = inputFilenameHist("Filename:", fi->value ? fi->value->ptr : NULL,
                               NULL);
         if (p == NULL || fi->readonly)
             break;
@@ -701,7 +699,9 @@ void _followForm(int submit)
         if (fi->accept || fi->parent->nitems == 1)
             goto do_submit;
         break;
+    }
     case FORM_INPUT_PASSWORD:
+    {
         if (submit)
             goto do_submit;
         if (fi->readonly)
@@ -711,7 +711,7 @@ void _followForm(int submit)
             break;
         }
         /* FIXME: gettextize? */
-        p = inputLine("Password:", fi->value ? fi->value->ptr : NULL,
+        auto p = inputLine("Password:", fi->value ? fi->value->ptr : NULL,
                       IN_PASSWORD);
         if (p == NULL)
             break;
@@ -720,7 +720,9 @@ void _followForm(int submit)
         if (fi->accept)
             goto do_submit;
         break;
+    }
     case FORM_TEXTAREA:
+    {
         if (submit)
             goto do_submit;
         if (fi->readonly)
@@ -729,7 +731,9 @@ void _followForm(int submit)
         input_textarea(fi);
         formUpdateBuffer(a, buf, fi);
         break;
+    }
     case FORM_INPUT_RADIO:
+    {
         if (submit)
             goto do_submit;
         if (fi->readonly)
@@ -740,7 +744,9 @@ void _followForm(int submit)
         }
         formRecheckRadio(a, buf, fi);
         break;
+    }
     case FORM_INPUT_CHECKBOX:
+    {
         if (submit)
             goto do_submit;
         if (fi->readonly)
@@ -752,8 +758,9 @@ void _followForm(int submit)
         fi->checked = !fi->checked;
         formUpdateBuffer(a, buf, fi);
         break;
-#ifdef MENU_SELECT
+    }
     case FORM_SELECT:
+    {
         if (submit)
             goto do_submit;
         if (!formChooseOptionByMenu(fi,
@@ -765,14 +772,15 @@ void _followForm(int submit)
         if (fi->parent->nitems == 1)
             goto do_submit;
         break;
-#endif /* MENU_SELECT */
+    }
     case FORM_INPUT_IMAGE:
     case FORM_INPUT_SUBMIT:
     case FORM_INPUT_BUTTON:
+    {
     do_submit:
-        tmp = Strnew();
-        tmp2 = Strnew();
-        multipart = (fi->parent->method == FORM_METHOD_POST &&
+        auto tmp = Strnew();
+        auto tmp2 = Strnew();
+        auto multipart = (fi->parent->method == FORM_METHOD_POST &&
                      fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
         query_from_followform(&tmp, fi, multipart);
 
@@ -781,13 +789,13 @@ void _followForm(int submit)
         {
             /* It means "current URL" */
             tmp2 = buf->currentURL.ToStr();
-            if ((p = strchr(tmp2->ptr, '?')) != NULL)
+            if (auto p = strchr(tmp2->ptr, '?'))
                 tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
         }
 
         if (fi->parent->method == FORM_METHOD_GET)
         {
-            if ((p = strchr(tmp2->ptr, '?')) != NULL)
+            if (auto p = strchr(tmp2->ptr, '?'))
                 tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
             tmp2->Push("?");
             tmp2->Push(tmp);
@@ -833,11 +841,13 @@ void _followForm(int submit)
                              FALSE);
         }
         break;
+    }
     case FORM_INPUT_RESET:
-        for (i = 0; i < buf->formitem.size(); i++)
+    {
+        for (auto i = 0; i < buf->formitem.size(); i++)
         {
             auto a2 = &buf->formitem.anchors[i];
-            f2 = a2->item;
+            auto f2 = a2->item;
             if (f2->parent == fi->parent &&
                 f2->name && f2->value &&
                 f2->type != FORM_INPUT_SUBMIT &&
@@ -846,14 +856,13 @@ void _followForm(int submit)
             {
                 f2->value = f2->init_value;
                 f2->checked = f2->init_checked;
-#ifdef MENU_SELECT
                 f2->label = f2->init_label;
                 f2->selected = f2->init_selected;
-#endif /* MENU_SELECT */
                 formUpdateBuffer(a2, buf, f2);
             }
         }
         break;
+    }
     case FORM_INPUT_HIDDEN:
     default:
         break;

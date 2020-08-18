@@ -598,6 +598,48 @@ URL URL::Parse(std::string_view _url, const URL *current)
     }
 }
 
+URL URL::Resolve(const URL *base) const
+{
+    auto url = *this;
+    if (url.scheme == SCM_MISSING)
+    {
+        /* scheme part is not found in the url. This means either
+        * (a) the url is relative to the current or (b) the url
+        * denotes a filename (therefore the scheme is SCM_LOCAL).
+        */
+        if (base)
+        {
+            switch (base->scheme)
+            {
+            case SCM_LOCAL:
+            case SCM_LOCAL_CGI:
+                url.scheme = SCM_LOCAL;
+                break;
+            case SCM_FTP:
+            case SCM_FTPDIR:
+                url.scheme = SCM_FTP;
+                break;
+            case SCM_NNTP:
+            case SCM_NNTP_GROUP:
+                url.scheme = SCM_NNTP;
+                break;
+            case SCM_NEWS:
+            case SCM_NEWS_GROUP:
+                url.scheme = SCM_NEWS;
+                break;
+            default:
+                url.scheme = base->scheme;
+                break;
+            }
+        }
+        else
+        {
+            url.scheme = SCM_LOCAL;
+        }
+    }
+    return url;
+}
+
 URL URL::ParsePath(std::string_view file)
 {
     return URL(SCM_LOCAL, {}, {}, {}, expandPath(file.data()), {}, {});

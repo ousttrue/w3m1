@@ -607,8 +607,10 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
 /* 
  * Dispatch URL, return Buffer
  */
-BufferPtr loadGeneralFile(const URL &url, const URL *_current, HttpReferrerPolicy referer, FormList *form)
+BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPolicy referer, FormList *form)
 {
+    auto url = _url.Resolve(_current);
+    
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
         //
