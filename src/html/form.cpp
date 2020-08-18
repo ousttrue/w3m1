@@ -22,8 +22,6 @@
 #include "html/html_processor.h"
 #include "html/html_context.h"
 
-
-
 extern FormSelectOption *select_option;
 
 /* *INDENT-OFF* */
@@ -134,7 +132,7 @@ formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
         item->value = item->init_value = context->Textarea(i);
 
     if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
-        item->select_option= context->FormSelect(i)->first;
+        item->select_option = context->FormSelect(i)->first;
 
     if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
         item->rows = atoi(p);
@@ -285,16 +283,14 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
 
 static int form_update_line(LinePtr line, char **str, int spos, int epos, int width, int newline, int password)
 {
-    int c_len = 1, c_width = 1, w, i, len, pos;
-    char *p, *buf;
-    Lineprop c_type, effect, *prop;
-
-    for (p = *str, w = 0, pos = 0; *p && w < width;)
+    auto p = *str;
+    auto pos = 0;
+    auto w = 0;
+    for (; *p && w < width;)
     {
-        c_type = get_mctype(*p);
-        c_len = get_mclen(p);
-        c_width = get_mcwidth(p);
-
+        auto c_type = get_mctype(*p);
+        auto c_len = get_mclen(p);
+        auto c_width = get_mcwidth(p);
         if (c_type == PC_CTRL)
         {
             if (newline && *p == '\n')
@@ -307,13 +303,10 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
         }
         else if (password)
         {
-#ifdef USE_M17N
             if (w + c_width > width)
                 break;
-#endif
             w += c_width;
             pos += c_width;
-#ifdef USE_M17N
         }
         else if (c_type & PC_UNKNOWN)
         {
@@ -324,7 +317,7 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
         {
             if (w + c_width > width)
                 break;
-#endif
+
             w += c_width;
             pos += c_len;
         }
@@ -332,18 +325,18 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
     }
     pos += width - w;
 
-    len = line->len() + pos + spos - epos;
-    buf = New_N(char, len);
-    prop = New_N(Lineprop, len);
-    bcopy((void *)line->lineBuf(), (void *)buf, spos * sizeof(char));
-    bcopy((void *)line->propBuf(), (void *)prop, spos * sizeof(Lineprop));
+    auto len = line->len() + pos + spos - epos;
 
-    effect = CharEffect(line->propBuf()[spos]);
+    auto copy = line->buffer;
+    auto buf = const_cast<char*>(copy.lineBuf());
+    auto prop = const_cast<Lineprop*>(copy.propBuf());
+
+    auto effect = CharEffect(line->propBuf()[spos]);
     for (p = *str, w = 0, pos = spos; *p && w < width;)
     {
-        c_type = get_mctype(*p);
-        c_len = get_mclen(p);
-        c_width = get_mcwidth(p);
+        auto c_type = get_mctype(*p);
+        auto c_len = get_mclen(p);
+        auto c_width = get_mcwidth(p);
 
         if (c_type == PC_CTRL)
         {
@@ -359,18 +352,16 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
         }
         else if (password)
         {
-#ifdef USE_M17N
             if (w + c_width > width)
                 break;
-#endif
-            for (i = 0; i < c_width; i++)
+
+            for (int i = 0; i < c_width; i++)
             {
                 buf[pos] = '*';
                 prop[pos] = effect | PC_ASCII;
                 pos++;
                 w++;
             }
-#ifdef USE_M17N
         }
         else if (c_type & PC_UNKNOWN)
         {
@@ -383,23 +374,16 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
         {
             if (w + c_width > width)
                 break;
-#else
-        }
-        else
-        {
-#endif
             buf[pos] = *p;
             prop[pos] = effect | c_type;
             pos++;
-#ifdef USE_M17N
             c_type = (c_type & ~PC_WCHAR1) | PC_WCHAR2;
-            for (i = 1; i < c_len; i++)
+            for (int i = 1; i < c_len; i++)
             {
                 buf[pos] = p[i];
                 prop[pos] = effect | c_type;
                 pos++;
             }
-#endif
             w += c_width;
         }
         p += c_len;
@@ -424,11 +408,6 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
     }
     *str = p;
 
-    bcopy((void *)&line->lineBuf()[epos], (void *)&buf[pos],
-          (line->len() - epos) * sizeof(char));
-    bcopy((void *)&line->propBuf()[epos], (void *)&prop[pos],
-          (line->len() - epos) * sizeof(Lineprop));
-
     line->buffer = {buf, prop, len};
 
     return pos;
@@ -436,12 +415,10 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
 
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
 {
-    char *p;
-    int spos, epos, rows, c_rows, pos, col = 0;
-    LinePtr l;
-
     auto save = buf->Copy();
     buf->GotoLine(a->start.line);
+    int spos;
+    int epos;
     switch (form->type)
     {
     case FORM_TEXTAREA:
@@ -459,6 +436,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
         spos = a->start.pos + 1;
         epos = a->end.pos - 1;
     }
+
     switch (form->type)
     {
     case FORM_INPUT_CHECKBOX:
@@ -473,14 +451,19 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
     case FORM_INPUT_PASSWORD:
     case FORM_TEXTAREA:
     case FORM_SELECT:
+    {
+        char *p;
         if (form->type == FORM_SELECT)
         {
             p = form->label->ptr;
             updateSelectOption(form, form->select_option);
         }
         else
+        {
             p = form->value->ptr;
-        l = buf->CurrentLine();
+        }
+
+        auto l = buf->CurrentLine();
         if (form->type == FORM_TEXTAREA)
         {
             int n = a->y - buf->CurrentLine()->linenumber;
@@ -489,39 +472,43 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
                     ;
             else if (n < 0)
                 for (; l && n; l = buf->PrevLine(l), n++)
-                    ;
-            if (!l)
-                break;
+                    if (!l)
+                        break;
         }
-        rows = form->rows ? form->rows : 1;
-        col = l->COLPOS(a->start.pos);
-        for (c_rows = 0; c_rows < rows; c_rows++, l = buf->NextLine(l))
+
+        auto rows = form->rows ? form->rows : 1;
+        auto col = l->COLPOS(a->start.pos);
+        for (auto c_rows = 0; c_rows < rows; c_rows++, l = buf->NextLine(l))
         {
             if (rows > 1)
             {
-                pos = columnPos(l, col);
+                auto pos = columnPos(l, col);
                 auto a = buf->formitem.RetrieveAnchor({l->linenumber, pos});
                 if (a == NULL)
                     break;
                 spos = a->start.pos;
                 epos = a->end.pos;
             }
-            pos = form_update_line(l, &p, spos, epos, l->COLPOS(epos) - col,
-                                   rows > 1,
-                                   form->type == FORM_INPUT_PASSWORD);
-            if (pos != epos)
+
             {
-                auto bp = BufferPoint{
-                    line : a->start.line,
-                    pos : spos,
-                };
-                buf->shiftAnchorPosition(buf->href, bp, pos - epos);
-                buf->shiftAnchorPosition(buf->name, bp, pos - epos);
-                buf->shiftAnchorPosition(buf->img, bp, pos - epos);
-                buf->shiftAnchorPosition(buf->formitem, bp, pos - epos);
+                auto pos = form_update_line(l, &p, spos, epos, l->COLPOS(epos) - col,
+                                            rows > 1,
+                                            form->type == FORM_INPUT_PASSWORD);
+                if (pos != epos)
+                {
+                    auto bp = BufferPoint{
+                        line : a->start.line,
+                        pos : spos,
+                    };
+                    buf->shiftAnchorPosition(buf->href, bp, pos - epos);
+                    buf->shiftAnchorPosition(buf->name, bp, pos - epos);
+                    buf->shiftAnchorPosition(buf->img, bp, pos - epos);
+                    buf->shiftAnchorPosition(buf->formitem, bp, pos - epos);
+                }
             }
         }
         break;
+    }
     }
     buf->CopyFrom(save);
     buf->ArrangeLine();

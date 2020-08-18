@@ -661,7 +661,6 @@ void _followForm(bool submit)
     if (a == NULL)
         return;
 
-    auto l = buf->CurrentLine();
     auto fi = a->item;
     switch (fi->type)
     {
