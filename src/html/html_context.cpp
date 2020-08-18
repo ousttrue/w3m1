@@ -1091,7 +1091,7 @@ img_end:
     return tmp;
 }
 
-Str HtmlContext::process_anchor(struct parsed_tag *tag, char *tagbuf)
+Str HtmlContext::process_anchor(struct parsed_tag *tag, const char *tagbuf)
 {
     if (tag->need_reconstruct)
     {

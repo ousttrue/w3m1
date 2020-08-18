@@ -138,7 +138,7 @@ public:
     void feed_select(const char *str);
     Str process_input(struct parsed_tag *tag);
     Str process_img(struct parsed_tag *tag, int width);
-    Str process_anchor(struct parsed_tag *tag, char *tagbuf);
+    Str process_anchor(struct parsed_tag *tag, const char *tagbuf);
     // void clear(int n);
     void TextareaGrow(int textareanumber);
     void Textarea(int n, Str str);

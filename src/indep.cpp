@@ -12,7 +12,6 @@
 #include "myctype.h"
 #include "entity.h"
 
-
 unsigned char QUOTE_MAP[0x100] = {
     /* NUL SOH STX ETX EOT ENQ ACK BEL  BS  HT  LF  VT  FF  CR  SO  SI */
     24,
@@ -281,7 +280,7 @@ unsigned char QUOTE_MAP[0x100] = {
     16,
 };
 
-char *HTML_QUOTE_MAP[] = {
+const char *HTML_QUOTE_MAP[] = {
     NULL,
     "&amp;",
     "&lt;",
@@ -291,6 +290,11 @@ char *HTML_QUOTE_MAP[] = {
     NULL,
     NULL,
 };
+
+const char* html_quote_char(int c)
+{
+    return HTML_QUOTE_MAP[(int)is_html_quote(c)];
+}
 
 clen_t
 strtoclen(const char *s)

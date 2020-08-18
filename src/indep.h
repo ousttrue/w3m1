@@ -18,7 +18,7 @@
 #define HEADER_MODE 3
 
 extern unsigned char QUOTE_MAP[];
-extern char *HTML_QUOTE_MAP[];
+// extern char *HTML_QUOTE_MAP[];
 #define HTML_QUOTE_MASK 0x07   /* &, <, >, " */
 #define SHELL_UNSAFE_MASK 0x08 /* [^A-Za-z0-9_./:\200-\377] */
 
@@ -29,7 +29,8 @@ extern char *HTML_QUOTE_MAP[];
 #define is_shell_unsafe(c) (GET_QUOTE_TYPE(c) & SHELL_UNSAFE_MASK)
 #define is_file_quote(c) (GET_QUOTE_TYPE(c) & FILE_QUOTE_MASK)
 #define is_url_unsafe(c) (GET_QUOTE_TYPE(c) & URL_UNSAFE_MASK)
-#define html_quote_char(c) HTML_QUOTE_MAP[(int)is_html_quote(c)]
+
+const char* html_quote_char(int c);
 
 #define url_unquote_char(pstr) \
     ((IS_XDIGIT((*(pstr))[1]) && IS_XDIGIT((*(pstr))[2])) ? (*(pstr) += 3, (GET_MYCDIGIT((*(pstr))[-2]) << 4) | GET_MYCDIGIT((*(pstr))[-1])) : -1)

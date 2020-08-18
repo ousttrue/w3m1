@@ -433,7 +433,7 @@ void pushdata(struct table *t, int row, int col, const char *data)
     pushText((TextList *)t->tabdata[row][col], data ? data : "");
 }
 
-void suspend_or_pushdata(struct table *tbl, char *line)
+void suspend_or_pushdata(struct table *tbl, const char *line)
 {
     if (tbl->flag & TBL_IN_COL)
         pushdata(tbl, tbl->row, tbl->col, line);
@@ -452,7 +452,7 @@ void suspend_or_pushdata(struct table *tbl, char *line)
 #endif
 
 int visible_length_offset = 0;
-int visible_length(char *str)
+int visible_length(const char *str)
 {
     int len = 0, n, max_len = 0;
     int status = R_ST_NORMAL;
@@ -548,7 +548,7 @@ int visible_length(char *str)
     return len > max_len ? len : max_len;
 }
 
-int visible_length_plain(char *str)
+int visible_length_plain(const char *str)
 {
     int len = 0, max_len = 0;
 
@@ -584,14 +584,14 @@ int visible_length_plain(char *str)
 }
 
 static int
-maximum_visible_length(char *str, int offset)
+maximum_visible_length(const char *str, int offset)
 {
     visible_length_offset = offset;
     return visible_length(str);
 }
 
 static int
-maximum_visible_length_plain(char *str, int offset)
+maximum_visible_length_plain(const char *str, int offset)
 {
     visible_length_offset = offset;
     return visible_length_plain(str);
@@ -2422,7 +2422,7 @@ void check_rowcol(struct table *tbl, struct table_mode *mode)
     tbl->flag |= TBL_IN_COL;
 }
 
-int skip_space(struct table *t, char *line, struct table_linfo *linfo,
+int skip_space(struct table *t, const char *line, struct table_linfo *linfo,
                int checkminimum)
 {
     int skip = 0, s = linfo->prev_spaces;
@@ -2440,7 +2440,7 @@ int skip_space(struct table *t, char *line, struct table_linfo *linfo,
 
     while (*line)
     {
-        char *save = line, *c = line;
+        const char *save = line, *c = line;
         int ec, len, wlen, plen;
         ctype = get_mctype(*line);
         len = get_mcwidth(line);
@@ -2627,7 +2627,7 @@ table_close_anchor0(struct table *tbl, struct table_mode *mode)
 #define ATTR_ROWSPAN_MAX 32766
 
 static int
-feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
+feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
                int width, struct parsed_tag *tag, HtmlContext *seq)
 {
     int cmd;
@@ -3381,7 +3381,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
     return TAG_ACTION_NONE;
 }
 
-int feed_table(struct table *tbl, char *line, struct table_mode *mode,
+int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
                int width, int internal, HtmlContext *seq)
 {
     int i;
@@ -3449,7 +3449,7 @@ int feed_table(struct table *tbl, char *line, struct table_mode *mode,
         tmp = Strnew();
         for (auto p = line; *p;)
         {
-            char *q, *r;
+            const char *q, *r;
             if (*p == '&')
             {
                 if (!strncasecmp(p, "&amp;", 5) ||
@@ -3533,8 +3533,8 @@ int feed_table(struct table *tbl, char *line, struct table_mode *mode,
         while (*line)
         {
             int nl = FALSE;
-            char *p;
-            if ((p = strchr(line, '\r')) || (p = strchr(line, '\n')))
+            const char *p;
+            if ((p = strchr(const_cast<char*>(line), '\r')) || (p = strchr(const_cast<char*>(line), '\n')))
             {
                 if (*p == '\r' && p[1] == '\n')
                     p++;

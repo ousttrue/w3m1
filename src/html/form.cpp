@@ -27,7 +27,7 @@ extern FormSelectOption *select_option;
 /* *INDENT-OFF* */
 struct
 {
-    char *action;
+    const char *action;
     void (*rout)(struct parsed_tagarg *);
 } internal_action[] = {
     {"map", follow_map},

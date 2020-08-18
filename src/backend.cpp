@@ -81,7 +81,7 @@ print_headers(BufferPtr buf, int len)
     printf("w3m-current-url: %s\n", buf->currentURL.ToStr()->ptr);
     if (buf->baseURL)
         printf("w3m-base-url: %s\n", buf->baseURL.ToStr()->ptr);
-    printf("w3m-content-type: %s\n", buf->type);
+    printf("w3m-content-type: %s\n", buf->type.c_str());
     if (buf->document_charset)
         printf("w3m-content-charset: %s\n",
                wc_ces_to_charset(buf->document_charset));

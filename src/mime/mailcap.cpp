@@ -95,11 +95,10 @@ searchMailcap(Mailcap *table, std::string_view type)
     return mcap;
 }
 
-static int
-matchMailcapAttr(char *p, char *attr, int len, Str *value)
+static int matchMailcapAttr(const char *p, const char *attr, int len, Str *value)
 {
     int quoted;
-    char *q = NULL;
+    const char *q = NULL;
 
     if (strncasecmp(p, attr, len) == 0)
     {

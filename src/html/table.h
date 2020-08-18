@@ -155,8 +155,9 @@ struct table_mode
 
 void align(TextLine *lbuf, int width, int mode);
 
-int feed_table(struct table *tbl, char *line, struct table_mode *mode, int width, int internal, class HtmlContext *seq);
+int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal, class HtmlContext *seq);
 void do_refill(struct table *tbl, int row, int col, int maxlimit, class HtmlContext *seq);
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, class HtmlContext *seq);
 struct table *begin_table(int border, int spacing, int padding, int vspace, class HtmlContext *seq);
 void end_table(struct table *tbl, class HtmlContext *seq);
+int visible_length(const char *str);

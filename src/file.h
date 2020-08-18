@@ -74,7 +74,7 @@ void ldHist(void);
 double log_like(int x);
 struct table *newTable(void);
 
-int visible_length(char *str);
+
 void print_item(struct table *t, int row, int col, int width, Str buf);
 
 

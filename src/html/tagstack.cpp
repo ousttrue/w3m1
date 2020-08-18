@@ -225,7 +225,7 @@ push_spaces(struct readbuffer *obuf, int pre_mode, int width)
 
 static void
 proc_mchar(struct readbuffer *obuf, int pre_mode,
-           int width, char **str, Lineprop mode)
+           int width, const char **str, Lineprop mode)
 {
     check_breakpoint(obuf, pre_mode, *str);
     obuf->pos += width;
@@ -508,9 +508,9 @@ void html_feed_environ::POP_ENV()
 }
 
 static void
-proc_escape(struct readbuffer *obuf, char **str_return)
+proc_escape(struct readbuffer *obuf, const char **str_return)
 {
-    char *str = *str_return, *estr;
+    const char *str = *str_return, *estr;
     int ech = ucs4_from_entity(str_return);
     int width, n_add = *str_return - str;
     Lineprop mode = PC_ASCII;
@@ -883,7 +883,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
         }
         if (obuf->anchor.accesskey)
         {
-            char *c = html_quote_char(obuf->anchor.accesskey);
+            const char *c = html_quote_char(obuf->anchor.accesskey);
             tmp->Push("\" ACCESSKEY=\"");
             if (c)
                 tmp->Push(c);
@@ -2288,7 +2288,7 @@ table_start:
 
     while (*line != '\0')
     {
-        char *str;
+        const char *str;
         int is_tag = FALSE;
         int pre_mode = (obuf->table_level >= 0) ? tbl_mode->pre_mode : obuf->flag;
         int end_tag = (obuf->table_level >= 0) ? tbl_mode->end_tag : obuf->end_tag;
@@ -2360,7 +2360,7 @@ table_start:
             if (is_tag)
             {
                 char *p;
-                if (strncmp(str, "<!--", 4) && (p = strchr(str + 1, '<')))
+                if (strncmp(str, "<!--", 4) && (p = strchr(const_cast<char*>(str) + 1, '<')))
                 {
                     str = Strnew_charp_n(str, p - str)->ptr;
                     line = Strnew_m_charp(p, line, NULL)->ptr;
@@ -2480,7 +2480,7 @@ table_start:
                 char ch = *str;
                 if (!(obuf->flag & RB_PLAIN) && (*str == '&'))
                 {
-                    char *p = str;
+                    const char *p = str;
                     int ech = ucs4_from_entity(&p);
                     if (ech == '\n' || ech == '\r')
                     {
@@ -2519,7 +2519,7 @@ table_start:
                 }
                 else if (obuf->flag & RB_PLAIN)
                 {
-                    char *p = html_quote_char(*str);
+                    const char *p = html_quote_char(*str);
                     if (p)
                     {
                         push_charp(obuf, 1, p, PC_ASCII);
