@@ -969,22 +969,18 @@ int checkOverWrite(const char *path)
 
 const char *inputAnswer(const char *prompt)
 {
-    char *ans;
-
-    if (QuietMessage)
+    if (w3mApp::Instance().QuietMessage)
         return "n";
+
     if (w3mApp::Instance().fmInitialized)
     {
         term_raw();
-        ans = inputChar(prompt);
+        return inputChar(prompt);
     }
-    else
-    {
-        printf("%s", prompt);
-        fflush(stdout);
-        ans = Strfgets(stdin)->ptr;
-    }
-    return ans;
+
+    printf("%s", prompt);
+    fflush(stdout);
+    return Strfgets(stdin)->ptr;
 }
 
 char *guess_filename(std::string_view file)

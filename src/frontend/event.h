@@ -18,7 +18,7 @@ struct AlarmEvent
 };
 
 #define TRAP_ON                                \
-    if (TrapSignal)                            \
+    if (w3mApp::Instance().TrapSignal)                            \
     {                                          \
         prevtrap = mySignal(SIGINT, KeyAbort); \
         if (w3mApp::Instance().fmInitialized)                     \
@@ -26,7 +26,7 @@ struct AlarmEvent
     }
 
 #define TRAP_OFF                        \
-    if (TrapSignal)                     \
+    if (w3mApp::Instance().TrapSignal)                     \
     {                                   \
         if (w3mApp::Instance().fmInitialized)              \
             term_raw();                 \

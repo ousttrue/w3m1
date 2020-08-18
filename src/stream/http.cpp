@@ -231,7 +231,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     {
         Push(request, "Host: ", url.host, url.NonDefaultPort(), "\r\n");
     }
-    if (url.is_nocache || NoCache)
+    if (url.is_nocache || w3mApp::Instance().NoCache)
     {
         Push(request, "Pragma: no-cache\r\n");
         Push(request, "Cache-control: no-cache\r\n");

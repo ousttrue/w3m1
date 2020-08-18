@@ -894,7 +894,7 @@ void disp_err_message(const char *s, int redraw_current)
 void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
                        int mouse)
 {
-    if (QuietMessage)
+    if (w3mApp::Instance().QuietMessage)
         return;
     if (!w3mApp::Instance().fmInitialized)
     {

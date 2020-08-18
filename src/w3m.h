@@ -89,7 +89,8 @@ public:
     char *NO_proxy = nullptr;
     bool NOproxy_netaddr = true;
     int DNS_order = DNS_ORDER_UNSPEC;
-
+    bool NoCache = false;
+    
     // frontend
     bool FoldLine = false;
     bool showLineNum = false;
@@ -103,6 +104,8 @@ public:
     bool PreserveTimestamp = true;
     bool ArgvIsURL = false;
     bool MetaRefresh = false;
+    bool QuietMessage = false;
+    bool TrapSignal = true;
 
     // Maximum line kept as pager
     int PagerMax = 10000;

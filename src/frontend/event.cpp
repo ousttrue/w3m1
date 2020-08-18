@@ -150,9 +150,9 @@ void setup_child(int child, int i, int f)
 #endif /* __MINGW32_VERSION */
     close_tty();
     close_all_fds_except(i, f);
-    QuietMessage = TRUE;
+    w3mApp::Instance().QuietMessage = TRUE;
     w3mApp::Instance().fmInitialized = FALSE;
-    TrapSignal = FALSE;
+    w3mApp::Instance().TrapSignal = FALSE;
 }
 
 #ifndef SIGIOT
@@ -179,7 +179,7 @@ struct ScopedTrap
 
     ScopedTrap()
     {
-        if (TrapSignal)
+        if (w3mApp::Instance().TrapSignal)
         {
             prevtrap = mySignal(SIGINT, KeyAbort);
             if (w3mApp::Instance().fmInitialized)
@@ -188,7 +188,7 @@ struct ScopedTrap
     }
     ~ScopedTrap()
     {
-        if (TrapSignal)
+        if (w3mApp::Instance().TrapSignal)
         {
             if (w3mApp::Instance().fmInitialized)
                 term_raw();

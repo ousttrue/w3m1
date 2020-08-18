@@ -646,7 +646,7 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
     }
     else
     {
-        if (QuietMessage)
+        if (w3mApp::Instance().QuietMessage)
             return;
         /* input username and password */
         sleep(2);

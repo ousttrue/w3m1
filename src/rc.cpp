@@ -769,7 +769,7 @@ auto sections = make_array(
                      {"ftp_proxy", P_STRING, PI_TEXT, w3mApp::Instance().FTP_proxy, CMT_FTP_PROXY},
                      {"no_proxy", P_STRING, PI_TEXT, w3mApp::Instance().NO_proxy, CMT_NO_PROXY},
                      {"noproxy_netaddr", P_INT, PI_ONOFF, w3mApp::Instance().NOproxy_netaddr, CMT_NOPROXY_NETADDR},
-                     {"no_cache", P_CHARINT, PI_ONOFF, NoCache, CMT_NO_CACHE},
+                     {"no_cache", P_CHARINT, PI_ONOFF, w3mApp::Instance().NoCache, CMT_NO_CACHE},
                  }},
     ParamSection{N_("SSL Settings"),
                  {

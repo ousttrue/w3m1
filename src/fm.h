@@ -142,9 +142,7 @@
 /* 
  * Globals.
  */
-global char QuietMessage init(FALSE);
-global char TrapSignal init(TRUE);
-global char NoCache init(FALSE);
+
 global char *document_root init(NULL);
 global char *personal_document_root init(NULL);
 global char *cgi_bin init(NULL);
