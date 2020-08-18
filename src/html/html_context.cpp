@@ -1689,7 +1689,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
         char *q = nullptr;
         tag->TryGetAttributeValue(ATTR_CONTENT, &q);
-        if (p && q && !strcasecmp(p, "refresh") && MetaRefresh)
+        if (p && q && !strcasecmp(p, "refresh") && w3mApp::Instance().MetaRefresh)
         {
             Str tmp = nullptr;
             int refresh_interval = getMetaRefreshParam(q, &tmp);

@@ -151,7 +151,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
         if (!pid)
         {
             setup_child(FALSE, 0, -1);
-            if (!_MoveFile(tmpf, p) && PreserveTimestamp && !is_pipe &&
+            if (!_MoveFile(tmpf, p) && w3mApp::Instance().PreserveTimestamp && !is_pipe &&
                 !stat(tmpf, &st))
                 setModtime(p, st.st_mtime);
             unlink(lock);
@@ -200,7 +200,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
             printf("Can't save to %s\n", p);
             return -1;
         }
-        if (PreserveTimestamp && !is_pipe && !stat(tmpf, &st))
+        if (w3mApp::Instance().PreserveTimestamp && !is_pipe && !stat(tmpf, &st))
             setModtime(p, st.st_mtime);
     }
 #endif /* __MINGW32_VERSION */

@@ -142,55 +142,29 @@
 /* 
  * Globals.
  */
-
-
-
-global char DecodeCTE init(FALSE);
-global char AutoUncompress init(FALSE);
-global char PreserveTimestamp init(TRUE);
-global char ArgvIsURL init(FALSE);
-global char MetaRefresh init(FALSE);
-
 global char fmInitialized init(FALSE);
 global char QuietMessage init(FALSE);
 global char TrapSignal init(TRUE);
-
-
 global char NoCache init(FALSE);
-
-
-
-#ifdef USE_NNTP
-global char *NNTP_server init(NULL);
-global char *NNTP_mode init(NULL);
-global int MaxNewsMessage init(50);
-#endif
-
 global char *document_root init(NULL);
 global char *personal_document_root init(NULL);
 global char *cgi_bin init(NULL);
 global char *index_file init(NULL);
-
 global int open_tab_blank init(FALSE);
 global int open_tab_dl_list init(FALSE);
 global int close_tab_back init(FALSE);
 global int TabCols init(10);
-
 global char *CurrentCmdData;
-
 global int basic_color init(8);  /* don't change */
 global int anchor_color init(4); /* blue  */
 global int image_color init(2);  /* green */
 global int form_color init(1);   /* red   */
-
 global int bg_color init(8);   /* don't change */
 global int mark_color init(6); /* cyan */
-
 global int useActiveColor init(FALSE);
 global int active_color init(6); /* cyan */
 global int useVisitedColor init(FALSE);
 global int visited_color init(5); /* magenta  */
-
 global int confirm_on_quit init(TRUE);
 #ifdef USE_MARK
 global int use_mark init(FALSE);
@@ -199,7 +173,6 @@ global int emacs_like_lineedit init(FALSE);
 global int vi_prec_num init(FALSE);
 global int label_topline init(FALSE);
 global int nextpage_topline init(FALSE);
-
 global int displayLink init(FALSE);
 global int displayLinkNumber init(FALSE);
 global int displayLineInfo init(FALSE);

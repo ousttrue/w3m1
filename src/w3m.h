@@ -97,6 +97,12 @@ public:
     bool ShowEffect = true;
     bool TargetSelf = false;
     bool PermitSaveToPipe = false;
+    bool DecodeCTE = false;
+    bool AutoUncompress = false;
+    bool PreserveTimestamp = true;
+    bool ArgvIsURL = false;
+    bool MetaRefresh = false;
+
     // Maximum line kept as pager
     int PagerMax = 10000;
     bool SearchHeader = false;
