@@ -38,6 +38,6 @@ void MatchedPosition(Regex *re, char **first, char **last);
 /* backward compatibility */
 char *regexCompile(const char *ex, int igncase);
 
-int regexMatch(char *str, int len, int firstp);
+int regexMatch(const char *str, int len, int firstp);
 
 void matchedPosition(char **first, char **last);

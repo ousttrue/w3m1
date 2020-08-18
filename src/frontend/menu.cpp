@@ -264,7 +264,7 @@ static Menu *CurrentMenu = NULL;
 void new_menu(Menu *menu, MenuItem *item)
 {
     int i, l;
-    char *p;
+    const char *p;
 
     menu->cursorX = 0;
     menu->cursorY = 0;
@@ -570,7 +570,7 @@ int action_menu(Menu *menu)
         {
             ClearCurrentKey();
             ClearCurrentKeyData();
-            CurrentCmdData = item.data;
+            CurrentCmdData = const_cast<char*>(item.data);
             (*item.func)(&w3mApp::Instance());
             CurrentCmdData = NULL;
         }

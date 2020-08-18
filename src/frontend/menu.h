@@ -39,13 +39,13 @@ struct Menu;
 struct MenuItem
 {
     int type;
-    char *label;
+    const char *label;
     int *variable;
     int value;
     Command func;
     Menu *popup;
-    char *keys;
-    char *data;
+    const char *keys;
+    const char *data;
 };
 
 struct Menu
