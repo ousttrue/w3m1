@@ -33,7 +33,7 @@ static int checkCopyFile(const char *path1, const char *path2)
 {
     struct stat st1, st2;
 
-    if (*path2 == '|' && PermitSaveToPipe)
+    if (*path2 == '|' && w3mApp::Instance().PermitSaveToPipe)
         return 0;
     if ((stat(path1, &st1) == 0) && (stat(path2, &st2) == 0))
         if (st1.st_ino == st2.st_ino)
@@ -49,7 +49,7 @@ static int _MoveFile(const char *path1, const char *path2)
 
     FILE *f2;
     bool is_pipe;
-    if (*path2 == '|' && PermitSaveToPipe)
+    if (*path2 == '|' && w3mApp::Instance().PermitSaveToPipe)
     {
         is_pipe = TRUE;
         f2 = popen(path2 + 1, "w");
@@ -107,7 +107,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
                 return FALSE;
             p = conv_to_system(q);
         }
-        if (*p == '|' && PermitSaveToPipe)
+        if (*p == '|' && w3mApp::Instance().PermitSaveToPipe)
             is_pipe = TRUE;
         else
         {
@@ -180,7 +180,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
         if (*q == '\0')
             return -1;
         p = q;
-        if (*p == '|' && PermitSaveToPipe)
+        if (*p == '|' && w3mApp::Instance().PermitSaveToPipe)
             is_pipe = TRUE;
         else
         {

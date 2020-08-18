@@ -144,7 +144,7 @@
  */
 
 
-global char PermitSaveToPipe init(FALSE);
+
 global char DecodeCTE init(FALSE);
 global char AutoUncompress init(FALSE);
 global char PreserveTimestamp init(TRUE);

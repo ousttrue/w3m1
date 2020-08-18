@@ -945,7 +945,7 @@ int checkSaveFile(const InputStreamPtr &stream, char *path2)
 
     if (des < 0)
         return 0;
-    if (*path2 == '|' && PermitSaveToPipe)
+    if (*path2 == '|' && w3mApp::Instance().PermitSaveToPipe)
         return 0;
     if ((fstat(des, &st1) == 0) && (stat(path2, &st2) == 0))
         if (st1.st_ino == st2.st_ino)

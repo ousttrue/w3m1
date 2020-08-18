@@ -96,7 +96,7 @@ public:
     int Tabstop = 8;
     bool ShowEffect = true;
     bool TargetSelf = false;
-
+    bool PermitSaveToPipe = false;
     // Maximum line kept as pager
     int PagerMax = 10000;
     bool SearchHeader = false;

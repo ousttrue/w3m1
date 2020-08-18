@@ -1434,14 +1434,14 @@ void svSrc(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
         return;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    PermitSaveToPipe = TRUE;
+    w3mApp::Instance().PermitSaveToPipe = TRUE;
     // if (GetCurrentTab()->GetCurrentBuffer()->real_scheme == SCM_LOCAL)
     //     file = conv_from_system(guess_save_name(NULL,
     //                                             GetCurrentTab()->GetCurrentBuffer()->currentURL.real_file));
     // else
     //     file = guess_save_name(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentURL.path);
     doFileCopy(GetCurrentTab()->GetCurrentBuffer()->sourcefile.c_str(), file);
-    PermitSaveToPipe = FALSE;
+    w3mApp::Instance().PermitSaveToPipe = FALSE;
     displayCurrentbuf(B_NORMAL);
 }
 
