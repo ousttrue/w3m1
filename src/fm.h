@@ -143,8 +143,8 @@
  * Globals.
  */
 
-global char *document_root init(NULL);
-global char *personal_document_root init(NULL);
+
+
 global char *cgi_bin init(NULL);
 global char *index_file init(NULL);
 global int open_tab_blank init(FALSE);

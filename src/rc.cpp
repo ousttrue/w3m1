@@ -720,8 +720,8 @@ auto sections = make_array(
                  }},
     ParamSection{N_("Directory Settings"),
                  {
-                     {"document_root", P_STRING, PI_TEXT, document_root, CMT_DROOT},
-                     {"personal_document_root", P_STRING, PI_TEXT, personal_document_root, CMT_PDROOT},
+                     {"document_root", P_STRING, PI_TEXT, w3mApp::Instance().document_root, CMT_DROOT},
+                     {"personal_document_root", P_STRING, PI_TEXT, w3mApp::Instance().personal_document_root, CMT_PDROOT},
                      {"cgi_bin", P_STRING, PI_TEXT, cgi_bin, CMT_CGIBIN},
                      {"index_file", P_STRING, PI_TEXT, index_file, CMT_IFILE},
                  }},

@@ -52,6 +52,8 @@ public:
     std::string CurrentDir;
     TextList *fileToDelete = nullptr;
     bool fmInitialized = false;
+    std::string document_root;
+    std::string personal_document_root;
 
     // files settings
     std::string config_file;
@@ -90,7 +92,7 @@ public:
     bool NOproxy_netaddr = true;
     int DNS_order = DNS_ORDER_UNSPEC;
     bool NoCache = false;
-    
+
     // frontend
     bool FoldLine = false;
     bool showLineNum = false;

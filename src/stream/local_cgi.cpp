@@ -87,9 +87,9 @@ struct LocalCGIStatus
             offset = 6;
         else if (strncmp(uri, tmp->ptr, tmp->Size()) == 0)
             offset = tmp->Size();
-        else if (*uri == '/' && document_root != NULL)
+        else if (*uri == '/' && w3mApp::Instance().document_root.size())
         {
-            Str tmp2 = Strnew(document_root);
+            Str tmp2 = Strnew(w3mApp::Instance().document_root.c_str());
             if (tmp2->Back() != '/')
                 tmp2->Push('/');
             tmp2->Push(uri + 1);

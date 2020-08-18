@@ -175,7 +175,7 @@ static char *expandName(char *name)
     p = name;
     if (*p == '/')
     {
-        if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2))) && personal_document_root)
+        if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2))) && w3mApp::Instance().personal_document_root.size())
         {
             char *q;
             p += 2;
@@ -193,8 +193,8 @@ static char *expandName(char *name)
             if (!passent)
                 goto rest;
             extpath = Strnew_m_charp(passent->pw_dir, "/",
-                                     personal_document_root, NULL);
-            if (*personal_document_root == '\0' && *p == '/')
+                                     w3mApp::Instance().personal_document_root, NULL);
+            if (w3mApp::Instance().personal_document_root[0] == '\0' && *p == '/')
                 p++;
         }
         else
