@@ -144,14 +144,6 @@
  */
 
 
-
-global char *cgi_bin init(NULL);
-global char *index_file init(NULL);
-global int open_tab_blank init(FALSE);
-global int open_tab_dl_list init(FALSE);
-global int close_tab_back init(FALSE);
-global int TabCols init(10);
-global char *CurrentCmdData;
 global int basic_color init(8);  /* don't change */
 global int anchor_color init(4); /* blue  */
 global int image_color init(2);  /* green */

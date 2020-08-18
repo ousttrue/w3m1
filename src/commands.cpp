@@ -2338,7 +2338,7 @@ void ldDL(w3mApp *w3m)
         newBuf->rect = GetCurrentTab()->GetCurrentBuffer()->rect;
         newBuf->restorePosition(GetCurrentTab()->GetCurrentBuffer());
     }
-    if (!replace && open_tab_dl_list)
+    if (!replace && w3mApp::Instance().open_tab_dl_list)
     {
         CreateTabSetCurrent();
         new_tab = TRUE;

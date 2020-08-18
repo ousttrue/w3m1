@@ -102,6 +102,8 @@ void SetCurrentTab(TabPtr current)
     }
 }
 
+int TabCols = 10;
+
 void calcTabPos()
 {
     int lcol = GetMouseActionMenuStr() ? GetMouseActionMenuWidth() : 0;

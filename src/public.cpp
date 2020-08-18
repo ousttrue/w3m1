@@ -2012,7 +2012,7 @@ void follow_map(struct parsed_tagarg *arg)
 
     auto p_url = URL::Parse(a->url).Resolve(GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
-    if (check_target() && open_tab_blank && a->target &&
+    if (check_target() && w3mApp::Instance().open_tab_blank && a->target &&
         (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
     {
         auto tab = CreateTabSetCurrent();

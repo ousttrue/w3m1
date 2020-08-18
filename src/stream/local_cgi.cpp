@@ -25,14 +25,14 @@ enum LocalCGITypes
     CGIFN_CGIBIN = 2,
 };
 
-static Str checkPath(char *fn, char *path)
+static Str checkPath(const char *fn, const char *path)
 {
     char *p;
     Str tmp;
     struct stat st;
     while (*path)
     {
-        p = strchr(path, ':');
+        p = strchr(const_cast<char *>(path), ':');
         tmp = Strnew(expandPath(p ? allocStr(path, p - path) : path));
         if (tmp->Back() != '/')
             tmp->Push('/');
@@ -62,12 +62,12 @@ struct LocalCGIStatus
         name = uri;
         path_info;
 
-        if (cgi_bin != NULL && strncmp(uri, "/cgi-bin/", 9) == 0)
+        if (w3mApp::Instance().cgi_bin.size() && strncmp(uri, "/cgi-bin/", 9) == 0)
         {
             int offset = 9;
             if ((path_info = strchr(uri + offset, '/')))
                 name = allocStr(uri, path_info - uri);
-            auto tmp = checkPath(name + offset, cgi_bin);
+            auto tmp = checkPath(name + offset, w3mApp::Instance().cgi_bin.c_str());
             if (tmp == NULL)
             {
                 status = CGIFN_NORMAL;

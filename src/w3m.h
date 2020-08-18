@@ -54,6 +54,9 @@ public:
     bool fmInitialized = false;
     std::string document_root;
     std::string personal_document_root;
+    std::string cgi_bin;
+    std::string index_file;
+    std::string CurrentCmdData;
 
     // files settings
     std::string config_file;
@@ -108,6 +111,9 @@ public:
     bool MetaRefresh = false;
     bool QuietMessage = false;
     bool TrapSignal = true;
+    int open_tab_blank = false;
+    int open_tab_dl_list = false;
+    int close_tab_back = false;
 
     // Maximum line kept as pager
     int PagerMax = 10000;
