@@ -43,7 +43,7 @@ struct frameset
 {
     char attr;
     char dummy;
-    char *name;
+    const char *name;
     URL currentURL = {};
     char **width;
     char **height;

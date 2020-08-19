@@ -26,25 +26,22 @@ static void KeyAbort(SIGNAL_ARG)
 }
 
 static int
-parseFrameSetLength(char *s, char ***ret)
+parseFrameSetLength(const char *s, char ***ret)
 {
-    int i, len;
-    char *p, *q, **lv;
-
-    i = 1;
-
+    int i = 1;
     if (s)
-        for (p = s; (p = strchr(p, ',')); ++p)
+        for (auto p = s; (p = strchr(p, ',')); ++p)
             ++i;
     else
         s = "*";
 
-    lv = New_N(char *, i);
-
-    for (i = 0, p = s;; ++p)
+    auto lv = New_N(char *, i);
+    i = 0;
+    for (auto p = s;; ++p)
     {
         SKIP_BLANKS(&p);
-        len = strtol(p, &q, 10);
+        char *q;
+        int len = strtol(p, &q, 10);
 
         switch (*q)
         {
@@ -464,7 +461,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
 {
     int r, c, t_stack;
     CharacterEncodingScheme charset, doc_charset;
-    char *d_target, *p_target, *s_target, *t_target;
+    const char *d_target, *p_target, *s_target, *t_target;
     URL *currentURL, base;
     MySignalHandler prevtrap = NULL;
     // LoadFlags flag;

@@ -76,11 +76,11 @@ inline Str Str_form_unquote(Str x)
 }
 extern char *shell_quote(std::string_view str);
 
-extern char *w3m_auxbin_dir();
-extern char *w3m_lib_dir();
-extern char *w3m_etc_dir();
-extern char *w3m_conf_dir();
-extern char *w3m_help_dir();
+extern const char *w3m_auxbin_dir();
+extern const char *w3m_lib_dir();
+extern const char *w3m_etc_dir();
+extern const char *w3m_conf_dir();
+extern const char *w3m_help_dir();
 
 std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterEncodingScheme ces);
 char *html_unquote(const char *str, CharacterEncodingScheme ces);

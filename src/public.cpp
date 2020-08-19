@@ -1942,7 +1942,7 @@ int sysm_process_mouse(int x, int y, int nbs, int obs)
 /* mark Message-ID-like patterns as NEWS anchors */
 void chkNMIDBuffer(const BufferPtr &buf)
 {
-    static char *url_like_pat[] = {
+    static const char *url_like_pat[] = {
         "<[!-;=?-~]+@[a-zA-Z0-9\\.\\-_]+>",
         NULL,
     };
