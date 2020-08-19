@@ -587,29 +587,29 @@ ContentStream GetStream(const URL &_url,
         return client.GetStream(url, current, referer, form);
     }
 
-    // if (url.scheme == SCM_LOCAL_CGI)
-    // {
-    //     //
-    //     // local CGI
-    //     //
-    //     LocalCGI cgi;
-    //     return cgi.Request(url, _current, referer, form);
-    // }
+    if (url.scheme == SCM_LOCAL_CGI)
+    {
+        //
+        // local CGI
+        //
+        LocalCGI cgi;
+        return cgi.GetStream(url, current, referer, form);
+    }
 
-    // if (url.scheme == SCM_LOCAL)
-    // {
-    //     //
-    //     // local file
-    //     //
-    //     auto stream = StreamFromFile(url.real_file);
-    //     if (!stream)
-    //     {
-    //         // fail to open file
-    //         assert(false);
-    //         return nullptr;
-    //     }
-    //     return LoadStream(url, stream, "text/html");
-    // }
+    if (url.scheme == SCM_LOCAL)
+    {
+        //
+        // local file
+        //
+        auto stream = StreamFromFile(url.real_file);
+        if (!stream)
+        {
+            // fail to open file
+            assert(false);
+            return {};
+        }
+        return {url, stream, "text/html"};
+    }
 
     // not implemened
     assert(false);

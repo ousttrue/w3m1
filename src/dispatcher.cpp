@@ -171,13 +171,35 @@ static void _escKeyProc(int c, int esc, Command map[])
     //     esc |= (CurrentKey() & ~0xFFFF);
     // }
     SetCurrentKey(esc | c);
-    map[c](&w3mApp::Instance());
+    auto callback = map[c];
+
+    std::string_view key;
+    for (auto &[k, v] : g_commandMap)
+    {
+        if (v == callback)
+        {
+            key = k;
+            break;
+        }
+    }
+    if (key.empty())
+    {
+        LOGD << callback;
+    }
+    else
+    {
+        LOGD << key;
+    }
+
+    callback(&w3mApp::Instance());
 }
 
 void escKeyProc(char c)
 {
     if (IS_ASCII(c))
+    {
         _escKeyProc((int)c, K_ESC, EscKeymap);
+    }
 }
 
 void MultiKeyProc(char c)

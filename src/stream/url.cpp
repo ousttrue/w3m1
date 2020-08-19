@@ -649,9 +649,9 @@ Str URL::ToStr(bool usePass, bool useLabel) const
         tmp->Push(':');
 
         // host
+        tmp->Push("//");
         if (this->host.size())
         {
-            tmp->Push("//");
             if (this->userinfo.name.size())
             {
                 tmp->Push(this->userinfo.name);

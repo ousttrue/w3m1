@@ -48,14 +48,6 @@ BufferPtr message_list_panel(void);
 char *lastFileName(const char *path);
 const char *mydirname(const char *s);
 
-#ifdef USE_MIGEMO
-void init_migemo(void);
-#endif
-
-void pcmap(void);
-void escmap(void);
-void escbmap(void);
-void multimap(void);
 Str unescape_spaces(Str s);
 #ifdef USE_HISTORY
 BufferPtr historyBuffer(Hist *hist);

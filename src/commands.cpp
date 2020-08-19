@@ -457,8 +457,8 @@ void ldhelp(w3mApp *w3m)
     std::string_view lang = w3mApp::Instance().AcceptLang;
     auto n = strcspn(lang.data(), ";, \t");
     auto tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
-                  UrlEncode(Strnew_m_charp(w3mApp::w3m_version))->ptr,
-                  UrlEncode(Strnew_m_charp(lang.substr(n)))->ptr);
+                       UrlEncode(Strnew_m_charp(w3mApp::w3m_version))->ptr,
+                       UrlEncode(Strnew_m_charp(lang.substr(n)))->ptr);
     cmd_loadURL(tmp->ptr, NULL, HttpReferrerPolicy::NoReferer, NULL);
 }
 
@@ -674,7 +674,7 @@ void editBf(w3mApp *w3m)
     else
     {
         cmd = myEditor(
-            w3mApp::Instance().Editor.c_str(), 
+            w3mApp::Instance().Editor.c_str(),
             shell_quote(fn),
             cur_real_linenumber(GetCurrentTab()->GetCurrentBuffer()));
     }
@@ -806,7 +806,7 @@ void reMark(w3mApp *w3m)
     if (!w3mApp::Instance().use_mark)
         return;
 
-    const char* str = searchKeyData();
+    const char *str = searchKeyData();
     if (str == NULL || *str == '\0')
     {
         str = inputStrHist("(Mark)Regexp: ", MarkString(), w3mApp::Instance().TextHist);
@@ -1210,14 +1210,15 @@ void gorURL(w3mApp *w3m)
 {
     goURL0("Goto relative URL: ", true);
 }
-/* load bookmark */
 
+/* load bookmark */
 void ldBmark(w3mApp *w3m)
 {
-    cmd_loadURL(w3mApp::Instance().BookmarkFile, NULL, HttpReferrerPolicy::NoReferer, NULL);
+    auto tab = GetCurrentTab();
+    tab->Push(URL::ParsePath(w3m->BookmarkFile));
 }
-/* Add current to bookmark */
 
+/* Add current to bookmark */
 void adBmark(w3mApp *w3m)
 {
     auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",

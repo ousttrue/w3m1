@@ -79,7 +79,7 @@ inline void register_commands()
   RegisterCommand("deletePrevBuf", "DELETE_PREVBUF", "Delete previous buffer (mainly for local-CGI)", &deletePrevBuf);
   RegisterCommand("goURL", "GOTO", "Go to URL", &goURL);
   RegisterCommand("gorURL", "GOTO_RELATIVE", "Go to relative URL", &gorURL);
-  RegisterCommand("ldBmark", "BOOKMARK VIEW_BOOKMARK", "Read bookmark", &ldBmark);
+  RegisterCommand("ldBmark", "VIEW_BOOKMARK", "Read bookmark", &ldBmark);
   RegisterCommand("adBmark", "ADD_BOOKMARK", "Add current page to bookmark", &adBmark);
   RegisterCommand("ldOpt", "OPTIONS", "Option setting panel", &ldOpt);
   RegisterCommand("msgs", "MSGS", "Display error messages", &msgs);

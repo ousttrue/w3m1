@@ -529,7 +529,6 @@ int w3mApp::Main(const URL &url)
     // load initial buffer
     //
     GetCurrentTab()->Push(url);
-    displayCurrentbuf(B_FORCE_REDRAW);
 
     SearchHeader = false;
     DefaultType.clear();

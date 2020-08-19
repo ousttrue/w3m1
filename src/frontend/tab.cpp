@@ -30,8 +30,22 @@ bool Tab::SetCurrent(int index)
     }
 
     auto url = m_history[index];
-    auto buf = loadGeneralFile(url, m_buffer ? m_buffer->BaseURL() : nullptr);
+    auto stream = GetStream(url, m_buffer ? m_buffer->BaseURL() : nullptr);
+    if(!stream.stream)
+    {
+        LOGE << "fail to GetStream";
+        return false;
+    }
+
+    auto buf = LoadStream(stream);
+    if(!buf)
+    {
+        LOGE << "fail to LoadStream";
+        return false;
+    }
+   
     m_buffer = buf;
+    displayCurrentbuf(B_NORMAL);
     return true;
 }
 
