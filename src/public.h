@@ -2,6 +2,7 @@
 #include "dispatcher.h"
 #include "frontend/tab.h"
 #include "frontend/buffer.h"
+#include "frontend/search.h"
 #include "stream/http.h"
 class w3mApp;
 
@@ -12,8 +13,10 @@ int searchKeyNum();
 
 void srch_nxtprv(int reverse);
 int dispincsrch(int ch, Str buf, Lineprop *prop);
-void isrch(int (*func)(BufferPtr , char *), const char* prompt);
-void srch(int (*func)(BufferPtr , char *), const char* prompt);
+
+void isrch(SearchFunc func, const char* prompt);
+void srch(SearchFunc func, const char* prompt);
+
 void clear_mark(LinePtr l);
 void disp_srchresult(int result, const char* prompt, char *str);
 void shiftvisualpos(BufferPtr buf, int shift);
@@ -32,7 +35,7 @@ void prevChar(int *s, LinePtr l);
 void nextChar(int *s, LinePtr l);
 uint32_t getChar(char *p);
 int is_wordchar(uint32_t c);
-int srchcore(char * str, int (*func)(BufferPtr , char *));
+SearchResultTypes srchcore(char * str, SearchFunc search);
 
 void _goLine(std::string_view l);
 int cur_real_linenumber(const BufferPtr &buf);

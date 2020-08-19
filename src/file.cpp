@@ -679,6 +679,7 @@ void saveBufferBody(BufferPtr buf, FILE *f, int cont)
 /*
  * getshell: execute shell command and get the result into a buffer
  */
+#define SHELLBUFFERNAME "*Shellout*"
 BufferPtr
 getshell(char *cmd)
 {
@@ -692,6 +693,7 @@ getshell(char *cmd)
     return buf;
 }
 
+#define PIPEBUFFERNAME "*stream*"
 /*
  * getpipe: execute shell command and connect pipe to the buffer
  */
@@ -807,6 +809,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
     return buf;
 }
 
+#define CPIPEBUFFERNAME "*stream(closed)*"
 LinePtr getNextPage(BufferPtr buf, int plen)
 {
     LinePtr top = buf->TopLine();

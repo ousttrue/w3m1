@@ -70,18 +70,6 @@
 #define FALSE 0
 #define TRUE 1
 
-#define SHELLBUFFERNAME "*Shellout*"
-#define PIPEBUFFERNAME "*stream*"
-#define CPIPEBUFFERNAME "*stream(closed)*"
-#ifdef USE_DICT
-#define DICTBUFFERNAME "*dictionary*"
-#endif /* USE_DICT */
-
-
-/* Search Result */
-#define SR_FOUND 0x1
-#define SR_NOTFOUND 0x2
-#define SR_WRAPPED 0x4
 
 /* mark URL, Message-ID */
 #define CHK_URL 1

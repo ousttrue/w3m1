@@ -56,8 +56,6 @@ char *mydirname(const char *s);
 void init_migemo(void);
 #endif
 char *conv_search_string(char *str, CharacterEncodingScheme f_ces);
-int forwardSearch(BufferPtr buf, char *str);
-int backwardSearch(BufferPtr buf, char *str);
 void pcmap(void);
 void escmap(void);
 void escbmap(void);

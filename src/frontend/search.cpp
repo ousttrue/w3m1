@@ -1,3 +1,4 @@
+#include "search.h"
 #include "fm.h"
 #include "regex.h"
 #include "file.h"
@@ -100,7 +101,7 @@ conv_search_string(char *str, CharacterEncodingScheme f_ces)
 }
 #endif
 
-int forwardSearch(BufferPtr buf, char *str)
+SearchResultTypes forwardSearch(const BufferPtr &buf, char *str)
 {
     char *p, *first, *last;
     LinePtr l;
@@ -203,7 +204,7 @@ int forwardSearch(BufferPtr buf, char *str)
             buf->GotoLine(l->linenumber);
             buf->ArrangeCursor();
             set_mark(l, pos, pos + last - first);
-            return SR_FOUND | (wrapped ? SR_WRAPPED : 0);
+            return SR_FOUND | (wrapped ? SR_WRAPPED : SR_NONE);
         }
         if (wrapped && l == begin) /* no match */
             break;
@@ -211,7 +212,7 @@ int forwardSearch(BufferPtr buf, char *str)
     return SR_NOTFOUND;
 }
 
-int backwardSearch(BufferPtr buf, char *str)
+SearchResultTypes backwardSearch(const BufferPtr &buf, char *str)
 {
     char *p, *q, *found, *found_last, *first, *last;
     LinePtr l;
@@ -335,7 +336,7 @@ int backwardSearch(BufferPtr buf, char *str)
             buf->GotoLine(l->linenumber);
             buf->ArrangeCursor();
             set_mark(l, pos, pos + found_last - found);
-            return SR_FOUND | (wrapped ? SR_WRAPPED : 0);
+            return SR_FOUND | (wrapped ? SR_WRAPPED : SR_NONE);
         }
         if (wrapped && l == begin) /* no match */
             break;

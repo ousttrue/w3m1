@@ -41,7 +41,7 @@ int searchKeyNum(void)
 }
 
 static char *SearchString = NULL;
-int (*searchRoutine)(BufferPtr, char *);
+SearchFunc searchRoutine = nullptr;
 
 void clear_mark(LinePtr l)
 {
@@ -68,7 +68,7 @@ void srch_nxtprv(int reverse)
 {
     int result;
     /* *INDENT-OFF* */
-    static int (*routine[2])(BufferPtr, char *) = {
+    static SearchFunc routine[2] = {
         forwardSearch, backwardSearch};
     /* *INDENT-ON* */
 
@@ -177,9 +177,10 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
 }
 
 /* search by regular expression */
-int srchcore(char *str, int (*func)(BufferPtr, char *))
+SearchResultTypes srchcore(char *str, SearchFunc func)
 {
-    int i, result = SR_NOTFOUND;
+    int i;
+    SearchResultTypes result = SR_NOTFOUND;
 
     if (str != NULL && str != SearchString)
         SearchString = str;
@@ -289,7 +290,7 @@ done:
     return -1;
 }
 
-void isrch(int (*func)(BufferPtr, char *), const char *prompt)
+void isrch(SearchFunc func, const char *prompt)
 {
     char *str;
     BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
@@ -305,7 +306,7 @@ void isrch(int (*func)(BufferPtr, char *), const char *prompt)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void srch(int (*func)(BufferPtr, char *), const char *prompt)
+void srch(SearchFunc func, const char *prompt)
 {
     char *str;
     int result;
@@ -1737,6 +1738,7 @@ void invoke_browser(char *url)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
+#define DICTBUFFERNAME "*dictionary*"
 void execdict(char *word)
 {
     char *w, *dictcmd;

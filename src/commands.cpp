@@ -29,6 +29,7 @@
 #include "frontend/event.h"
 #include "frontend/line.h"
 #include "frontend/lineinput.h"
+#include "frontend/search.h"
 
 #include "rc.h"
 #include "w3m.h"
