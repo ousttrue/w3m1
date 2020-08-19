@@ -74,6 +74,49 @@ public:
     static inline const std::string_view w3m_version = CURRENT_VERSION;
     static inline const std::string_view DOWNLOAD_LIST_TITLE = "Download List Panel";
 
+    // rc.cpp
+    //
+    // Display Settings
+    //
+    int Tabstop = 8;
+    int IndentIncr = 4;
+    double pixel_per_char = 7.0;
+    double pixel_per_line = 14.0;
+    bool RenderFrame = false;
+    bool TargetSelf = false;
+    int open_tab_blank = false;
+    int open_tab_dl_list = false;
+    bool displayLink = false;
+    bool displayLinkNumber = false;
+    bool DecodeURL = false;
+    bool displayLineInfo = false;
+    bool UseExternalDirBuffer = true;
+    std::string DirBufferCommand = "file:///$LIB/dirlist.cgi"; // CGI_EXTENSION;
+    bool UseDictCommand = false;
+    std::string DictCommand = "file:///$LIB/w3mdict.cgi"; // CGI_EXTENSION;
+    bool multicolList = false;
+    GraphicCharTypes UseGraphicChar = GRAPHIC_CHAR_CHARSET;
+    bool FoldTextarea = false;
+    DisplayInsDel displayInsDel = DISPLAY_INS_DEL_NORMAL;
+    bool ignore_null_img_alt = true;
+    bool view_unseenobject = false;
+    bool displayImage = true;
+    int pseudoInlines = true;
+    bool autoImage = true;
+    int maxLoadImage = 4;
+    bool useExtImageViewer = true;
+    double image_scale = 100;
+    std::string Imgdisplay = IMGDISPLAY;
+    bool image_map_list = true;
+    bool FoldLine = false;
+    bool showLineNum = false;
+    bool show_srch_str = true;
+    bool label_topline = false;
+    bool nextpage_topline = false;
+    //
+    //
+    //
+
     // globals
     int CurrentPid = -1;
     std::string CurrentDir;
@@ -88,15 +131,7 @@ public:
     bool use_mark = false;
     bool emacs_like_lineedit = false;
     bool vi_prec_num = false;
-    bool label_topline = false;
-    bool nextpage_topline = false;
-    bool displayLink = false;
-    bool displayLinkNumber = false;
-    bool displayLineInfo = false;
-    bool DecodeURL = false;
     bool retryAsHttp = true;
-    bool show_srch_str = true;
-    int pseudoInlines = true;
     std::string Editor = DEF_EDITOR;
     std::string Mailer = DEF_MAILER;
     MailtoOption MailtoOptions = MAILTO_OPTIONS_IGNORE;
@@ -118,19 +153,11 @@ public:
     std::string AcceptMedia;
     bool IgnoreCase = true;
     bool WrapSearch = false;
-    bool UseExternalDirBuffer = true;
-    std::string DirBufferCommand = "file:///$LIB/dirlist.cgi"; // CGI_EXTENSION;
-    bool UseDictCommand = false;
-    std::string DictCommand = "file:///$LIB/w3mdict.cgi"; // CGI_EXTENSION;
-    bool ignore_null_img_alt = true;
-    DisplayInsDel displayInsDel = DISPLAY_INS_DEL_NORMAL;
-    bool FoldTextarea = false;
     DefaultUrlTypes DefaultURLString = DEFAULT_URL_EMPTY;
     bool MarkAllPages = false;
     std::string mailcap_files = USER_MAILCAP ", " SYS_MAILCAP;
     std::string mimetypes_files = USER_MIMETYPES ", " SYS_MIMETYPES;
     std::string urimethodmap_files = USER_URIMETHODMAP ", " SYS_URIMETHODMAP;
-    bool multicolList = false;
     bool SearchConv = true;
     bool SimplePreserveSpace = false;
     bool no_rc_dir = false;
@@ -149,7 +176,6 @@ public:
     TextList *Cookie_reject_domains = nullptr;
     TextList *Cookie_accept_domains = nullptr;
     TextList *Cookie_avoid_wrong_number_of_dots_domains = nullptr;
-    bool view_unseenobject = false;
     bool is_redisplay = false;
     bool clear_buffer = true;
     bool use_lessopen = false;
@@ -164,13 +190,6 @@ public:
     std::string ssl_ca_file;
     bool ssl_path_modified = false;
     std::string ssl_forbid_method;
-
-    // image
-    std::string Imgdisplay = IMGDISPLAY;
-    bool autoImage = true;
-    bool useExtImageViewer = true;
-    int maxLoadImage = 4;
-    bool image_map_list = true;
 
     // files settings
     std::string config_file;
@@ -193,7 +212,6 @@ public:
     CharacterEncodingScheme SystemCharset = SYSTEM_CHARSET;
     CharacterEncodingScheme BookmarkCharset = SYSTEM_CHARSET;
     bool UseContentCharset = true;
-    GraphicCharTypes UseGraphicChar = GRAPHIC_CHAR_CHARSET;
     bool ExtHalfdump = false;
 
     // proxy
@@ -211,12 +229,8 @@ public:
     bool NoCache = false;
 
     // frontend
-    bool FoldLine = false;
-    bool showLineNum = false;
-    int IndentIncr = 4;
-    int Tabstop = 8;
+
     bool ShowEffect = true;
-    bool TargetSelf = false;
     bool PermitSaveToPipe = false;
     bool DecodeCTE = false;
     bool AutoUncompress = false;
@@ -225,8 +239,6 @@ public:
     bool MetaRefresh = false;
     bool QuietMessage = false;
     bool TrapSignal = true;
-    int open_tab_blank = false;
-    int open_tab_dl_list = false;
     int close_tab_back = false;
 
     bool useColor = true;
@@ -244,7 +256,6 @@ public:
     // Maximum line kept as pager
     int PagerMax = 10000;
     bool SearchHeader = false;
-    bool RenderFrame = false;
     bool WrapDefault = false;
     bool use_mouse = true;
     bool squeezeBlankLine = false;
@@ -252,13 +263,9 @@ public:
     std::string displayTitleTerm;
 
     // image
-    double pixel_per_char = 7.0;
     bool set_pixel_per_char = false;
-    double pixel_per_line = 14.0;
     bool set_pixel_per_line = false;
-    double image_scale = 100;
     bool activeImage = false;
-    bool displayImage = true;
 
     // hittory
     bool UseHistory = true;
