@@ -139,30 +139,7 @@
 #define TMPF_COOKIE 4
 #define MAX_TMPF_TYPE 5
 
-/* 
- * Globals.
- */
 
-
-
-
-global int pseudoInlines init(TRUE);
-global char *Editor init(DEF_EDITOR);
-#ifdef USE_W3MMAILER
-global char *Mailer init(NULL);
-#else
-global char *Mailer init(DEF_MAILER);
-#endif
-#ifdef USE_W3MMAILER
-#define MAILTO_OPTIONS_USE_W3MMAILER 0
-#endif
-#define MAILTO_OPTIONS_IGNORE 1
-#define MAILTO_OPTIONS_USE_MAILTO_URL 2
-global int MailtoOptions init(MAILTO_OPTIONS_IGNORE);
-global char *ExtBrowser init(DEF_EXT_BROWSER);
-global char *ExtBrowser2 init(NULL);
-global char *ExtBrowser3 init(NULL);
-global int BackgroundExtViewer init(TRUE);
 global int disable_secret_security_check init(FALSE);
 global char *passwd_file init(PASSWD_FILE);
 global char *pre_form_file init(PRE_FORM_FILE);

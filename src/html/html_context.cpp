@@ -755,7 +755,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
     p = remove_space(p);
     q = nullptr;
     tag->TryGetAttributeValue(ATTR_ALT, &q);
-    if (!pseudoInlines && (q == nullptr || (*q == '\0' && ignore_null_img_alt)))
+    if (!w3mApp::Instance().pseudoInlines && (q == nullptr || (*q == '\0' && ignore_null_img_alt)))
         return tmp;
     t = q;
     tag->TryGetAttributeValue(ATTR_TITLE, &t);

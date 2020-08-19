@@ -1047,13 +1047,12 @@ Str tmpfname(int type, const char *ext)
     return tmpf;
 }
 
-Str myEditor(char *cmd, char *file, int line)
+Str myEditor(const char *cmd, const char *file, int line)
 {
     Str tmp = NULL;
-    char *p;
     int set_file = FALSE, set_line = FALSE;
 
-    for (p = cmd; *p; p++)
+    for (auto p = cmd; *p; p++)
     {
         if (*p == '%' && *(p + 1) == 's' && !set_file)
         {
@@ -1088,13 +1087,12 @@ Str myEditor(char *cmd, char *file, int line)
     return tmp;
 }
 
-Str myExtCommand(char *cmd, char *arg, int redirect)
+Str myExtCommand(const char *cmd, const char *arg, int redirect)
 {
     Str tmp = NULL;
-    char *p;
     int set_arg = FALSE;
 
-    for (p = cmd; *p; p++)
+    for (auto p = cmd; *p; p++)
     {
         if (*p == '%' && *(p + 1) == 's' && !set_arg)
         {

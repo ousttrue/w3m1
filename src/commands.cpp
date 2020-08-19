@@ -670,8 +670,10 @@ void editBf(w3mApp *w3m)
     }
     else
     {
-        cmd = myEditor(Editor, shell_quote(fn),
-                       cur_real_linenumber(GetCurrentTab()->GetCurrentBuffer()));
+        cmd = myEditor(
+            w3mApp::Instance().Editor.c_str(), 
+            shell_quote(fn),
+            cur_real_linenumber(GetCurrentTab()->GetCurrentBuffer()));
     }
     fmTerm();
     system(cmd->ptr);
@@ -696,7 +698,7 @@ void editScr(w3mApp *w3m)
     saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
     fclose(f);
     fmTerm();
-    system(myEditor(Editor, shell_quote(tmpf),
+    system(myEditor(w3mApp::Instance().Editor.c_str(), shell_quote(tmpf),
                     cur_real_linenumber(GetCurrentTab()->GetCurrentBuffer()))
                ->ptr);
     fmInit();

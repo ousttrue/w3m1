@@ -100,4 +100,9 @@ inline std::string join(std::string_view delemeter, ARGS... args)
     return ss.str();
 }
 
+inline bool is_null_or_space(std::string_view s)
+{
+    return strip_left(s).empty();
+}
+
 } // namespace  svu

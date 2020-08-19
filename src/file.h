@@ -129,8 +129,8 @@ char *last_modified(const BufferPtr &buf);
 
 void myExec(const char *command);
 void mySystem(char *command, int background);
-Str myExtCommand(char *cmd, char *arg, int redirect);
-Str myEditor(char *cmd, char *file, int line);
+Str myExtCommand(const char *cmd, const char *arg, int redirect);
+Str myEditor(const char *cmd, const char *file, int line);
 
 Str tmpfname(int type, const char *ext);
 

@@ -32,6 +32,12 @@ enum DnsOrderTypes
     DNS_ORDER_INET6_ONLY = 6,
 };
 
+enum MailtoOption
+{
+    MAILTO_OPTIONS_IGNORE = 1,
+    MAILTO_OPTIONS_USE_MAILTO_URL = 2,
+};
+
 class w3mApp
 {
     w3mApp();
@@ -69,6 +75,14 @@ public:
     bool DecodeURL = false;
     bool retryAsHttp = true;
     bool show_srch_str = true;
+    int pseudoInlines = true;
+    std::string Editor = DEF_EDITOR;
+    std::string Mailer = DEF_MAILER;
+    MailtoOption MailtoOptions = MAILTO_OPTIONS_IGNORE;
+    std::string ExtBrowser = DEF_EXT_BROWSER;
+    std::string ExtBrowser2;
+    std::string ExtBrowser3;
+    bool BackgroundExtViewer = true;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

@@ -594,7 +594,7 @@ void input_textarea(FormItemList *fi)
     fclose(f);
 
     fmTerm();
-    system(myEditor(Editor, tmpf, 1)->ptr);
+    system(myEditor(w3mApp::Instance().Editor.c_str(), tmpf, 1)->ptr);
     fmInit();
 
     if (fi->readonly)

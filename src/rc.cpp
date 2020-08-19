@@ -579,14 +579,11 @@ static struct sel_c displayinsdel[] = {
     {N_S(DISPLAY_INS_DEL_FONTIFY), N_("fontify")},
     {0, NULL, NULL}};
 
-#ifdef USE_MOUSE
 static struct sel_c wheelmode[] = {
     {TRUE, "1", N_("A:relative to screen height")},
     {FALSE, "0", N_("B:fixed speed")},
     {0, NULL, NULL}};
-#endif /* MOUSE */
 
-#ifdef INET6
 static struct sel_c dnsorders[] = {
     {N_S(DNS_ORDER_UNSPEC), N_("unspecified")},
     {N_S(DNS_ORDER_INET_INET6), N_("inet inet6")},
@@ -594,27 +591,18 @@ static struct sel_c dnsorders[] = {
     {N_S(DNS_ORDER_INET_ONLY), N_("inet only")},
     {N_S(DNS_ORDER_INET6_ONLY), N_("inet6 only")},
     {0, NULL, NULL}};
-#endif /* INET6 */
 
-#ifdef USE_COOKIE
+
 static struct sel_c badcookiestr[] = {
     {N_S(ACCEPT_BAD_COOKIE_DISCARD), N_("discard")},
-#if 0
-    {N_S(ACCEPT_BAD_COOKIE_ACCEPT), N_("accept")},
-#endif
     {N_S(ACCEPT_BAD_COOKIE_ASK), N_("ask")},
     {0, NULL, NULL}};
-#endif /* USE_COOKIE */
 
 static struct sel_c mailtooptionsstr[] = {
-#ifdef USE_W3MMAILER
-    {N_S(MAILTO_OPTIONS_USE_W3MMAILER), N_("use internal mailer instead")},
-#endif
     {N_S(MAILTO_OPTIONS_IGNORE), N_("ignore options and use only the address")},
     {N_S(MAILTO_OPTIONS_USE_MAILTO_URL), N_("use full mailto URL")},
     {0, NULL, NULL}};
 
-#ifdef USE_M17N
 static wc_ces_list *display_charset_str = NULL;
 static wc_ces_list *document_charset_str = NULL;
 static wc_ces_list *system_charset_str = NULL;
@@ -623,7 +611,6 @@ static struct sel_c auto_detect_str[] = {
     {N_S(WC_OPT_DETECT_ISO_2022), N_("Only ISO 2022")},
     {N_S(WC_OPT_DETECT_ON), N_("ON")},
     {0, NULL, NULL}};
-#endif
 
 static struct sel_c graphic_char_str[] = {
     {N_S(GRAPHIC_CHAR_ASCII), N_("ASCII")},
@@ -664,7 +651,7 @@ auto sections = make_array(
                      {"view_unseenobject", P_INT, PI_ONOFF, view_unseenobject, CMT_VIEW_UNSEENOBJECTS},
                      /* XXX: emacs-w3m force to off display_image even if image options off */
                      {"display_image", P_INT, PI_ONOFF, w3mApp::Instance().displayImage, CMT_DISP_IMAGE},
-                     {"pseudo_inlines", P_INT, PI_ONOFF, pseudoInlines, CMT_PSEUDO_INLINES},
+                     {"pseudo_inlines", P_INT, PI_ONOFF, w3mApp::Instance().pseudoInlines, CMT_PSEUDO_INLINES},
                      {"auto_image", P_INT, PI_ONOFF, w3mApp::Instance().autoImage, CMT_AUTO_IMAGE},
                      {"max_load_image", P_INT, PI_TEXT, w3mApp::Instance().maxLoadImage, CMT_MAX_LOAD_IMAGE},
                      {"ext_image_viewer", P_INT, PI_ONOFF, w3mApp::Instance().useExtImageViewer, CMT_EXT_IMAGE_VIEWER},
@@ -730,13 +717,13 @@ auto sections = make_array(
                      {"mime_types", P_STRING, PI_TEXT, mimetypes_files, CMT_MIMETYPES},
                      {"mailcap", P_STRING, PI_TEXT, mailcap_files, CMT_MAILCAP},
                      {"urimethodmap", P_STRING, PI_TEXT, urimethodmap_files, CMT_URIMETHODMAP},
-                     {"editor", P_STRING, PI_TEXT, Editor, CMT_EDITOR},
-                     {"mailto_options", P_INT, PI_SEL_C, MailtoOptions, CMT_MAILTO_OPTIONS, (void *)mailtooptionsstr},
-                     {"mailer", P_STRING, PI_TEXT, Mailer, CMT_MAILER},
-                     {"extbrowser", P_STRING, PI_TEXT, ExtBrowser, CMT_EXTBRZ},
-                     {"extbrowser2", P_STRING, PI_TEXT, ExtBrowser2, CMT_EXTBRZ2},
-                     {"extbrowser3", P_STRING, PI_TEXT, ExtBrowser3, CMT_EXTBRZ3},
-                     {"bgextviewer", P_INT, PI_ONOFF, BackgroundExtViewer, CMT_BGEXTVIEW},
+                     {"editor", P_STRING, PI_TEXT, w3mApp::Instance().Editor, CMT_EDITOR},
+                     {"mailto_options", P_INT, PI_SEL_C, w3mApp::Instance().MailtoOptions, CMT_MAILTO_OPTIONS, (void *)mailtooptionsstr},
+                     {"mailer", P_STRING, PI_TEXT, w3mApp::Instance().Mailer, CMT_MAILER},
+                     {"extbrowser", P_STRING, PI_TEXT, w3mApp::Instance().ExtBrowser, CMT_EXTBRZ},
+                     {"extbrowser2", P_STRING, PI_TEXT, w3mApp::Instance().ExtBrowser2, CMT_EXTBRZ2},
+                     {"extbrowser3", P_STRING, PI_TEXT, w3mApp::Instance().ExtBrowser3, CMT_EXTBRZ3},
+                     {"bgextviewer", P_INT, PI_ONOFF, w3mApp::Instance().BackgroundExtViewer, CMT_BGEXTVIEW},
                      {"use_lessopen", P_INT, PI_ONOFF, use_lessopen, CMT_USE_LESSOPEN},
                  }},
     ParamSection{N_("Network Settings"),

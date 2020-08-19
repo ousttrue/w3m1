@@ -1,4 +1,4 @@
-
+#include <string_view_util.h>
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -411,20 +411,15 @@ int handleMailto(const char *url)
 
     if (strncasecmp(url, "mailto:", 7))
         return 0;
-#ifdef USE_W3MMAILER
-    if (!non_null(Mailer) || MailtoOptions == MAILTO_OPTIONS_USE_W3MMAILER)
-        return 0;
-#else
-    if (!non_null(Mailer))
+    if (svu::is_null_or_space(w3mApp::Instance().Mailer))
     {
         /* FIXME: gettextize? */
         disp_err_message("no mailer is specified", TRUE);
         return 1;
     }
-#endif
 
     /* invoke external mailer */
-    if (MailtoOptions == MAILTO_OPTIONS_USE_MAILTO_URL)
+    if (w3mApp::Instance().MailtoOptions == MAILTO_OPTIONS_USE_MAILTO_URL)
     {
         to = Strnew(html_unquote(const_cast<char *>(url), w3mApp::Instance().InnerCharset));
     }
@@ -435,7 +430,7 @@ int handleMailto(const char *url)
             to->Truncate(pos - to->ptr);
     }
     fmTerm();
-    system(myExtCommand(Mailer, shell_quote(file_unquote(to->ptr)),
+    system(myExtCommand(w3mApp::Instance().Mailer.c_str(), shell_quote(file_unquote(to->ptr)),
                         FALSE)
                ->ptr);
     fmInit();
@@ -1696,51 +1691,45 @@ int display_ok()
 /* spawn external browser */
 void invoke_browser(char *url)
 {
-    Str cmd;
-    char *browser = NULL;
-    int bg = 0, len;
-
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    browser = searchKeyData();
-    if (browser == NULL || *browser == '\0')
+    std::string_view browser = searchKeyData();
+    if (browser.empty())
     {
         switch (prec_num())
         {
         case 0:
         case 1:
-            browser = ExtBrowser;
+            browser = w3mApp::Instance().ExtBrowser;
             break;
         case 2:
-            browser = ExtBrowser2;
+            browser = w3mApp::Instance().ExtBrowser2;
             break;
         case 3:
-            browser = ExtBrowser3;
+            browser = w3mApp::Instance().ExtBrowser3;
             break;
         }
-        if (browser == NULL || *browser == '\0')
+        if (browser.empty())
         {
             browser = inputStr("Browse command: ", NULL);
-            if (browser != NULL)
-                browser = conv_to_system(browser);
         }
     }
-    else
-    {
-        browser = conv_to_system(browser);
-    }
-    if (browser == NULL || *browser == '\0')
+
+    browser = conv_to_system(browser.data());
+    if (browser.empty())
     {
         displayCurrentbuf(B_NORMAL);
         return;
     }
 
-    if ((len = strlen(browser)) >= 2 && browser[len - 1] == '&' &&
+    bool bg = 0;
+    int len;
+    if ((len = browser.size()) >= 2 && browser[len - 1] == '&' &&
         browser[len - 2] != '\\')
     {
-        browser = allocStr(browser, len - 2);
+        browser.remove_suffix(2);
         bg = 1;
     }
-    cmd = myExtCommand(browser, shell_quote(url), FALSE);
+    auto cmd = myExtCommand(browser.data(), shell_quote(url), FALSE);
     StripRight(cmd);
     fmTerm();
     mySystem(cmd->ptr, bg);
