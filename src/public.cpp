@@ -1742,7 +1742,7 @@ void execdict(char *word)
     char *w, *dictcmd;
     BufferPtr buf;
 
-    if (!UseDictCommand || word == NULL || *word == '\0')
+    if (!w3mApp::Instance().UseDictCommand || word == NULL || *word == '\0')
     {
         displayCurrentbuf(B_NORMAL);
         return;
@@ -1753,7 +1753,7 @@ void execdict(char *word)
         displayCurrentbuf(B_NORMAL);
         return;
     }
-    dictcmd = Sprintf("%s?%s", DictCommand, UrlEncode(Strnew(w))->ptr)->ptr;
+    dictcmd = Sprintf("%s?%s", w3mApp::Instance().DictCommand, UrlEncode(Strnew(w))->ptr)->ptr;
     GetCurrentTab()->Push(URL::ParsePath(dictcmd));
     // buf = loadGeneralFile(URL::ParsePath(dictcmd), NULL, HttpReferrerPolicy::NoReferer, NULL);
     // if (buf == NULL)

@@ -638,10 +638,10 @@ auto sections = make_array(
                      {"display_link_number", P_INT, PI_ONOFF, w3mApp::Instance().displayLinkNumber, CMT_DISPLINKNUMBER},
                      {"decode_url", P_INT, PI_ONOFF, w3mApp::Instance().DecodeURL, CMT_DECODE_URL},
                      {"display_lineinfo", P_INT, PI_ONOFF, w3mApp::Instance().displayLineInfo, CMT_DISPLINEINFO},
-                     {"ext_dirlist", P_INT, PI_ONOFF, UseExternalDirBuffer, CMT_EXT_DIRLIST},
-                     {"dirlist_cmd", P_STRING, PI_TEXT, DirBufferCommand, CMT_DIRLIST_CMD},
-                     {"use_dictcommand", P_INT, PI_ONOFF, UseDictCommand, CMT_USE_DICTCOMMAND},
-                     {"dictcommand", P_STRING, PI_TEXT, DictCommand, CMT_DICTCOMMAND},
+                     {"ext_dirlist", P_INT, PI_ONOFF, w3mApp::Instance().UseExternalDirBuffer, CMT_EXT_DIRLIST},
+                     {"dirlist_cmd", P_STRING, PI_TEXT, w3mApp::Instance().DirBufferCommand, CMT_DIRLIST_CMD},
+                     {"use_dictcommand", P_INT, PI_ONOFF, w3mApp::Instance().UseDictCommand, CMT_USE_DICTCOMMAND},
+                     {"dictcommand", P_STRING, PI_TEXT, w3mApp::Instance().DictCommand, CMT_DICTCOMMAND},
                      {"multicol", P_INT, PI_ONOFF, multicolList, CMT_MULTICOL},
                      //  {"alt_entity", P_CHARINT, PI_ONOFF, UseAltEntity, CMT_ALT_ENTITY},
                      {"graphic_char", P_CHARINT, PI_SEL_C, w3mApp::Instance().UseGraphicChar, CMT_GRAPHIC_CHAR, (void *)graphic_char_str},
@@ -691,7 +691,7 @@ auto sections = make_array(
                      {"vi_prec_num", P_INT, PI_ONOFF, w3mApp::Instance().vi_prec_num, CMT_VI_PREC_NUM},
                      {"mark_all_pages", P_INT, PI_ONOFF, MarkAllPages, CMT_MARK_ALL_PAGES},
                      {"wrap_search", P_INT, PI_ONOFF, w3mApp::Instance().WrapDefault, CMT_WRAP},
-                     {"ignorecase_search", P_INT, PI_ONOFF, IgnoreCase, CMT_IGNORE_CASE},
+                     {"ignorecase_search", P_INT, PI_ONOFF, w3mApp::Instance().IgnoreCase, CMT_IGNORE_CASE},
                      //  {"use_migemo", P_INT, PI_ONOFF, use_migemo, CMT_USE_MIGEMO},
                      //  {"migemo_command", P_STRING, PI_TEXT, migemo_command, CMT_MIGEMO_COMMAND},
                      {"use_mouse", P_INT, PI_ONOFF, w3mApp::Instance().use_mouse, CMT_MOUSE},
@@ -1321,7 +1321,7 @@ void sync_with_option(void)
 {
     if (w3mApp::Instance().PagerMax < ::LINES)
         w3mApp::Instance().PagerMax = ::LINES;
-    WrapSearch = w3mApp::Instance().WrapDefault;
+    w3mApp::Instance().WrapSearch = w3mApp::Instance().WrapDefault;
     parse_proxy();
 #ifdef USE_COOKIE
     parse_cookie();

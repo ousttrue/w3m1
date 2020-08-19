@@ -913,7 +913,7 @@ menuForwardSearch(Menu *menu, char *str, int from)
 {
     int i;
     char *p;
-    if ((p = regexCompile(str, IgnoreCase)) != NULL)
+    if ((p = regexCompile(str, w3mApp::Instance().IgnoreCase)) != NULL)
     {
         message(p, 0, 0);
         return -1;
@@ -941,7 +941,7 @@ menu_search_forward(Menu *menu, int from)
     str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuForwardSearch;
     found = menuForwardSearch(menu, str, from + 1);
-    if (WrapSearch && found == -1)
+    if (w3mApp::Instance().WrapSearch && found == -1)
         found = menuForwardSearch(menu, str, 0);
     if (found >= 0)
         return found;
@@ -964,7 +964,7 @@ menuBackwardSearch(Menu *menu, char *str, int from)
 {
     int i;
     char *p;
-    if ((p = regexCompile(str, IgnoreCase)) != NULL)
+    if ((p = regexCompile(str, w3mApp::Instance().IgnoreCase)) != NULL)
     {
         message(p, 0, 0);
         return -1;
@@ -992,7 +992,7 @@ menu_search_backward(Menu *menu, int from)
     str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuBackwardSearch;
     found = menuBackwardSearch(menu, str, from - 1);
-    if (WrapSearch && found == -1)
+    if (w3mApp::Instance().WrapSearch && found == -1)
         found = menuBackwardSearch(menu, str, menu->nitem);
     if (found >= 0)
         return found;
@@ -1030,7 +1030,7 @@ menu_search_next_previous(Menu *menu, int from, int reverse)
         reverse ^= 1;
     from += reverse ? -1 : 1;
     found = (*routine[reverse])(menu, str, from);
-    if (WrapSearch && found == -1)
+    if (w3mApp::Instance().WrapSearch && found == -1)
         found = (*routine[reverse])(menu, str, reverse * menu->nitem);
     if (found >= 0)
         return found;

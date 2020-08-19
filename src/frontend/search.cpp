@@ -119,7 +119,7 @@ int forwardSearch(BufferPtr buf, char *str)
     }
     else
 #endif
-        if ((p = regexCompile(str, IgnoreCase)) != NULL)
+        if ((p = regexCompile(str, w3mApp::Instance().IgnoreCase)) != NULL)
     {
         message(p, 0, 0);
         return SR_NOTFOUND;
@@ -166,7 +166,7 @@ int forwardSearch(BufferPtr buf, char *str)
                 l = getNextPage(buf, 1);
                 if (l == NULL)
                 {
-                    if (WrapSearch && !wrapped)
+                    if (w3mApp::Instance().WrapSearch && !wrapped)
                     {
                         l = buf->FirstLine();
                         wrapped = TRUE;
@@ -177,7 +177,7 @@ int forwardSearch(BufferPtr buf, char *str)
                     }
                 }
             }
-            else if (WrapSearch)
+            else if (w3mApp::Instance().WrapSearch)
             {
                 l = buf->FirstLine();
                 wrapped = TRUE;
@@ -230,7 +230,7 @@ int backwardSearch(BufferPtr buf, char *str)
     }
     else
 #endif
-        if ((p = regexCompile(str, IgnoreCase)) != NULL)
+        if ((p = regexCompile(str, w3mApp::Instance().IgnoreCase)) != NULL)
     {
         message(p, 0, 0);
         return SR_NOTFOUND;
@@ -297,7 +297,7 @@ int backwardSearch(BufferPtr buf, char *str)
     {
         if (l == NULL)
         {
-            if (WrapSearch)
+            if (w3mApp::Instance().WrapSearch)
             {
                 l = buf->LastLine();
                 wrapped = TRUE;

@@ -2058,15 +2058,15 @@ void dispVer(w3mApp *w3m)
 
 void wrapToggle(w3mApp *w3m)
 {
-    if (WrapSearch)
+    if (w3m->WrapSearch)
     {
-        WrapSearch = FALSE;
+        w3m->WrapSearch = FALSE;
         /* FIXME: gettextize? */
         disp_message("Wrap search off", TRUE);
     }
     else
     {
-        WrapSearch = TRUE;
+        w3m->WrapSearch = TRUE;
         /* FIXME: gettextize? */
         disp_message("Wrap search on", TRUE);
     }

@@ -95,6 +95,12 @@ public:
     std::string AcceptLang;
     std::string AcceptEncoding;
     std::string AcceptMedia;
+    bool IgnoreCase = true;
+    bool WrapSearch = false;
+    bool UseExternalDirBuffer = true;
+    std::string DirBufferCommand = "file:///$LIB/dirlist.cgi"; // CGI_EXTENSION;
+    bool UseDictCommand = false;
+    std::string DictCommand = "file:///$LIB/w3mdict.cgi"; // CGI_EXTENSION;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;
