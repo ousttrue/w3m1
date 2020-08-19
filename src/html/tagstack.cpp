@@ -1188,16 +1188,13 @@ static Str romanAlphabet(int n)
 
 int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlContext *seq)
 {
-    char *p, *q, *r;
-    int i, w, x, y, z, count, width;
     struct readbuffer *obuf = h_env->obuf;
-    // struct environment *envs = h_env->envs;
-    Str tmp;
-    int hseq;
-
-#ifdef ID_EXT
-    char *id = NULL;
-#endif /* ID_EXT */
+    // char *p, *q, *r;
+    // int i, w, x, y, z, count, width;
+    // // struct environment *envs = h_env->envs;
+    // Str tmp;
+    // int hseq;
+    // char *id = NULL;
 
     int cmd = tag->tagid;
 
@@ -1216,11 +1213,14 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     switch (cmd)
     {
     case HTML_B:
+    {
         obuf->fontstat.in_bold++;
         if (obuf->fontstat.in_bold > 1)
             return 1;
         return 0;
+    }
     case HTML_N_B:
+    {
         if (obuf->fontstat.in_bold == 1 && close_effect0(obuf, HTML_B))
             obuf->fontstat.in_bold = 0;
         if (obuf->fontstat.in_bold > 0)
@@ -1230,12 +1230,16 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 return 0;
         }
         return 1;
+    }
     case HTML_I:
+    {
         obuf->fontstat.in_italic++;
         if (obuf->fontstat.in_italic > 1)
             return 1;
         return 0;
+    }
     case HTML_N_I:
+    {
         if (obuf->fontstat.in_italic == 1 && close_effect0(obuf, HTML_I))
             obuf->fontstat.in_italic = 0;
         if (obuf->fontstat.in_italic > 0)
@@ -1245,12 +1249,16 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 return 0;
         }
         return 1;
+    }
     case HTML_U:
+    {
         obuf->fontstat.in_under++;
         if (obuf->fontstat.in_under > 1)
             return 1;
         return 0;
+    }
     case HTML_N_U:
+    {
         if (obuf->fontstat.in_under == 1 && close_effect0(obuf, HTML_U))
             obuf->fontstat.in_under = 0;
         if (obuf->fontstat.in_under > 0)
@@ -1260,26 +1268,40 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 return 0;
         }
         return 1;
+    }
     case HTML_EM:
+    {
         HTMLlineproc1("<i>", h_env, seq);
         return 1;
+    }
     case HTML_N_EM:
+    {
         HTMLlineproc1("</i>", h_env, seq);
         return 1;
+    }
     case HTML_STRONG:
+    {
         HTMLlineproc1("<b>", h_env, seq);
         return 1;
+    }
     case HTML_N_STRONG:
+    {
         HTMLlineproc1("</b>", h_env, seq);
         return 1;
+    }
     case HTML_Q:
+    {
         HTMLlineproc1("`", h_env, seq);
         return 1;
+    }
     case HTML_N_Q:
+    {
         HTMLlineproc1("'", h_env, seq);
         return 1;
+    }
     case HTML_P:
     case HTML_N_P:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1294,11 +1316,15 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             obuf->flag |= RB_P;
         }
         return 1;
+    }
     case HTML_BR:
+    {
         flushline(h_env, obuf, h_env->currentEnv().indent, 1, h_env->limit);
         h_env->blank_lines = 0;
         return 1;
+    }
     case HTML_H:
+    {
         if (!(obuf->flag & (RB_PREMODE | RB_IGNORE_P)))
         {
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
@@ -1308,7 +1334,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         HTMLlineproc1("<b>", h_env, seq);
         set_alignment(obuf, tag);
         return 1;
+    }
     case HTML_N_H:
+    {
         HTMLlineproc1("</b>", h_env, seq);
         if (!(obuf->flag & RB_PREMODE))
         {
@@ -1319,9 +1347,11 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         close_anchor(h_env, obuf, seq);
         obuf->flag |= RB_IGNORE_P;
         return 1;
+    }
     case HTML_UL:
     case HTML_OL:
     case HTML_BLQ:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1334,6 +1364,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         h_env->PUSH_ENV(cmd);
         if (cmd == HTML_UL || cmd == HTML_OL)
         {
+            int count;
             if (tag->TryGetAttributeValue(ATTR_START, &count))
             {
                 h_env->currentEnv().count = count - 1;
@@ -1342,6 +1373,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         if (cmd == HTML_OL)
         {
             h_env->currentEnv().type = '1';
+            char *p;
             if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
             {
                 h_env->currentEnv().type = (int)*p;
@@ -1351,10 +1383,12 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             h_env->currentEnv().type = ul_type(tag, 0);
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         return 1;
+    }
     case HTML_N_UL:
     case HTML_N_OL:
     case HTML_N_DL:
     case HTML_N_BLQ:
+    {
         CLOSE_DT;
         CLOSE_A;
         if (h_env->currentIndex() > 0)
@@ -1373,7 +1407,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         close_anchor(h_env, obuf, seq);
         return 1;
+    }
     case HTML_DL:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1387,7 +1423,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             h_env->currentEnv().env = HTML_DL_COMPACT;
         obuf->flag |= RB_IGNORE_P;
         return 1;
+    }
     case HTML_LI:
+    {
         CLOSE_A;
         CLOSE_DT;
         if (h_env->currentIndex() > 0)
@@ -1396,9 +1434,10 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             flushline(h_env, obuf,
                       h_env->prevEnv().indent, 0, h_env->limit);
             h_env->currentEnv().count++;
+            char *p;
             if (tag->TryGetAttributeValue(ATTR_VALUE, &p))
             {
-                count = atoi(p);
+                int count = atoi(p);
                 if (count > 0)
                     h_env->currentEnv().count = count;
                 else
@@ -1407,10 +1446,11 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             switch (h_env->currentEnv().env)
             {
             case HTML_UL:
+            {
                 h_env->currentEnv().type = ul_type(tag, h_env->currentEnv().type);
-                for (i = 0; i < w3mApp::Instance().IndentIncr - 3; i++)
+                for (int i = 0; i < w3mApp::Instance().IndentIncr - 3; i++)
                     push_charp(obuf, 1, NBSP, PC_ASCII);
-                tmp = Strnew();
+                auto tmp = Strnew();
                 switch (h_env->currentEnv().type)
                 {
                 case 'd':
@@ -1435,7 +1475,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 push_charp(obuf, 1, NBSP, PC_ASCII);
                 set_space_to_prevchar(obuf->prevchar);
                 break;
+            }
             case HTML_OL:
+            {
                 if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
                     h_env->currentEnv().type = (int)*p;
                 switch ((h_env->currentEnv().count > 0) ? h_env->currentEnv().type : '1')
@@ -1467,6 +1509,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 if (w3mApp::Instance().IndentIncr >= 4)
                     set_space_to_prevchar(obuf->prevchar);
                 break;
+            }
             default:
                 push_spaces(obuf, 1, w3mApp::Instance().IndentIncr);
                 break;
@@ -1478,7 +1521,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         obuf->flag |= RB_IGNORE_P;
         return 1;
+    }
     case HTML_DT:
+    {
         CLOSE_A;
         if (h_env->currentIndex() == 0 ||
             (h_env->realIndex() < h_env->capacity() &&
@@ -1499,7 +1544,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         obuf->flag |= RB_IGNORE_P;
         return 1;
+    }
     case HTML_DD:
+    {
         CLOSE_A;
         CLOSE_DT;
         if (h_env->currentEnv().env == HTML_DL_COMPACT)
@@ -1514,54 +1561,69 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         /* obuf->flag |= RB_IGNORE_P; */
         return 1;
-
+    }
     case HTML_TITLE:
+    {
         close_anchor(h_env, obuf, seq);
         seq->TitleOpen(tag);
         obuf->flag |= RB_TITLE;
         obuf->end_tag = HTML_N_TITLE;
         return 1;
-
+    }
     case HTML_N_TITLE:
+    {
         if (!(obuf->flag & RB_TITLE))
             return 1;
         obuf->flag &= ~RB_TITLE;
         obuf->end_tag = 0;
-        tmp = seq->TitleClose(tag);
+        auto tmp = seq->TitleClose(tag);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
-
+    }
     case HTML_TITLE_ALT:
+    {
+        char *p;
         if (tag->TryGetAttributeValue(ATTR_TITLE, &p))
             h_env->title = html_unquote(p, w3mApp::Instance().InnerCharset);
         return 0;
+    }
     case HTML_FRAMESET:
+    {
         h_env->PUSH_ENV(cmd);
         push_charp(obuf, 9, "--FRAME--", PC_ASCII);
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         return 0;
+    }
     case HTML_N_FRAMESET:
+    {
         if (h_env->currentIndex() > 0)
         {
             h_env->POP_ENV();
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         }
         return 0;
+    }
     case HTML_NOFRAMES:
+    {
         CLOSE_A;
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         obuf->flag |= (RB_NOFRAMES | RB_IGNORE_P);
         /* istr = str; */
         return 1;
+    }
     case HTML_N_NOFRAMES:
+    {
         CLOSE_A;
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         obuf->flag &= ~RB_NOFRAMES;
         return 1;
+    }
     case HTML_FRAME:
-        q = r = NULL;
+    {
+        char *q;
         tag->TryGetAttributeValue(ATTR_SRC, &q);
+        char *r;
         tag->TryGetAttributeValue(ATTR_NAME, &r);
         if (q)
         {
@@ -1574,14 +1636,18 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         return 0;
+    }
     case HTML_HR:
+    {
         close_anchor(h_env, obuf, seq);
-        tmp = process_hr(tag, h_env->limit, h_env->currentEnv().indent, seq);
+        auto tmp = process_hr(tag, h_env->limit, h_env->currentEnv().indent, seq);
         HTMLlineproc1(tmp->ptr, h_env, seq);
         set_space_to_prevchar(obuf->prevchar);
         return 1;
+    }
     case HTML_PRE:
-        x = tag->HasAttribute(ATTR_FOR_TABLE);
+    {
+        auto x = tag->HasAttribute(ATTR_FOR_TABLE);
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1595,7 +1661,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         obuf->flag |= (RB_PRE | RB_IGNORE_P);
         /* istr = str; */
         return 1;
+    }
     case HTML_N_PRE:
+    {
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1607,8 +1675,10 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         obuf->flag &= ~RB_PRE;
         close_anchor(h_env, obuf, seq);
         return 1;
+    }
     case HTML_PRE_INT:
-        i = obuf->line->Size();
+    {
+        auto i = obuf->line->Size();
         append_tags(obuf);
         if (!(obuf->flag & RB_SPECIAL))
         {
@@ -1616,7 +1686,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         obuf->flag |= RB_PRE_INT;
         return 0;
+    }
     case HTML_N_PRE_INT:
+    {
         push_tag(obuf, "</pre_int>", HTML_N_PRE_INT);
         obuf->flag &= ~RB_PRE_INT;
         if (!(obuf->flag & RB_SPECIAL) && obuf->pos > obuf->bp.pos())
@@ -1625,17 +1697,23 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             obuf->prev_ctype = PC_CTRL;
         }
         return 1;
+    }
     case HTML_NOBR:
+    {
         obuf->flag |= RB_NOBR;
         obuf->nobr_level++;
         return 0;
+    }
     case HTML_N_NOBR:
+    {
         if (obuf->nobr_level > 0)
             obuf->nobr_level--;
         if (obuf->nobr_level == 0)
             obuf->flag &= ~RB_NOBR;
         return 0;
+    }
     case HTML_PRE_PLAIN:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1645,7 +1723,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         obuf->flag |= (RB_PRE | RB_IGNORE_P);
         return 1;
+    }
     case HTML_N_PRE_PLAIN:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1656,9 +1736,11 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         obuf->flag &= ~RB_PRE;
         return 1;
+    }
     case HTML_LISTING:
     case HTML_XMP:
     case HTML_PLAINTEXT:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1680,8 +1762,10 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             break;
         }
         return 1;
+    }
     case HTML_N_LISTING:
     case HTML_N_XMP:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
         {
@@ -1693,26 +1777,36 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         obuf->flag &= ~RB_PLAIN;
         obuf->end_tag = 0;
         return 1;
+    }
     case HTML_SCRIPT:
+    {
         obuf->flag |= RB_SCRIPT;
         obuf->end_tag = HTML_N_SCRIPT;
         return 1;
+    }
     case HTML_STYLE:
+    {
         obuf->flag |= RB_STYLE;
         obuf->end_tag = HTML_N_STYLE;
         return 1;
+    }
     case HTML_N_SCRIPT:
+    {
         obuf->flag &= ~RB_SCRIPT;
         obuf->end_tag = 0;
         return 1;
+    }
     case HTML_N_STYLE:
+    {
         obuf->flag &= ~RB_STYLE;
         obuf->end_tag = 0;
         return 1;
+    }
     case HTML_A:
+    {
         if (obuf->anchor.url.size())
             close_anchor(h_env, obuf, seq);
-
+        char *p;
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
             obuf->anchor.url = Strnew(p)->ptr;
         if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
@@ -1727,32 +1821,39 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         if (tag->TryGetAttributeValue(ATTR_ACCESSKEY, &p))
             obuf->anchor.accesskey = (unsigned char)*p;
 
-        hseq = 0;
+        auto hseq = 0;
         if (tag->TryGetAttributeValue(ATTR_HSEQ, &hseq))
             obuf->anchor.hseq = hseq;
 
         if (hseq == 0 && obuf->anchor.url.size())
         {
             obuf->anchor.hseq = seq->Get();
-            tmp = seq->process_anchor(tag, h_env->tagbuf->ptr);
+            auto tmp = seq->process_anchor(tag, h_env->tagbuf->ptr);
             push_tag(obuf, tmp->ptr, HTML_A);
             if (w3mApp::Instance().displayLinkNumber)
                 HTMLlineproc1(seq->GetLinkNumberStr(-1)->ptr, h_env, seq);
             return 1;
         }
         return 0;
+    }
     case HTML_N_A:
+    {
         close_anchor(h_env, obuf, seq);
         return 1;
+    }
     case HTML_IMG:
-        tmp = seq->process_img(tag, h_env->limit);
+    {
+        auto tmp = seq->process_img(tag, h_env->limit);
         HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
+    }
     case HTML_IMG_ALT:
+    {
+        char *p;
         if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             obuf->img_alt = Strnew(p);
-#ifdef USE_IMAGE
-        i = 0;
+
+        auto i = 0;
         if (tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &i))
         {
             if (i > obuf->top_margin)
@@ -1764,9 +1865,11 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             if (i > obuf->bottom_margin)
                 obuf->bottom_margin = i;
         }
-#endif
+
         return 0;
+    }
     case HTML_N_IMG_ALT:
+    {
         if (obuf->img_alt)
         {
             if (!close_effect0(obuf, HTML_IMG_ALT))
@@ -1774,8 +1877,10 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             obuf->img_alt = NULL;
         }
         return 1;
+    }
     case HTML_INPUT_ALT:
-        i = 0;
+    {
+        auto i = 0;
         if (tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &i))
         {
             if (i > obuf->top_margin)
@@ -1788,17 +1893,19 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 obuf->bottom_margin = i;
         }
         return 0;
+    }
     case HTML_TABLE:
+    {
         close_anchor(h_env, obuf, seq);
         obuf->table_level++;
         if (obuf->table_level >= MAX_TABLE)
             break;
-        w = BORDER_NONE;
+        auto w = BORDER_NONE;
         /* x: cellspacing, y: cellpadding */
-        x = 2;
-        y = 1;
-        z = 0;
-        width = 0;
+        auto x = 2;
+        auto y = 1;
+        auto z = 0;
+        auto width = 0;
         if (tag->HasAttribute(ATTR_BORDER))
         {
             if (tag->TryGetAttributeValue(ATTR_BORDER, &w))
@@ -1813,6 +1920,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             else
                 w = BORDER_THIN;
         }
+        int i;
         if (tag->TryGetAttributeValue(ATTR_WIDTH, &i))
         {
             if (obuf->table_level == 0)
@@ -1825,14 +1933,12 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         tag->TryGetAttributeValue(ATTR_CELLSPACING, &x);
         tag->TryGetAttributeValue(ATTR_CELLPADDING, &y);
         tag->TryGetAttributeValue(ATTR_VSPACE, &z);
-#ifdef ID_EXT
+        char *id;
         tag->TryGetAttributeValue(ATTR_ID, &id);
-#endif /* ID_EXT */
         tables[obuf->table_level] = begin_table(w, x, y, z, seq);
-#ifdef ID_EXT
         if (id != NULL)
             tables[obuf->table_level]->id = Strnew(id);
-#endif /* ID_EXT */
+
         table_mode[obuf->table_level].pre_mode = 0;
         table_mode[obuf->table_level].indent_level = 0;
         table_mode[obuf->table_level].nobr_level = 0;
@@ -1845,115 +1951,144 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         tables[obuf->table_level]->total_width = 0;
 #endif
         return 1;
+    }
     case HTML_N_TABLE:
         /* should be processed in HTMLlineproc() */
         return 1;
     case HTML_CENTER:
+    {
         CLOSE_A;
         if (!(obuf->flag & (RB_PREMODE | RB_IGNORE_P)))
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         RB_SAVE_FLAG(obuf);
         RB_SET_ALIGN(obuf, RB_CENTER);
         return 1;
+    }
     case HTML_N_CENTER:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_PREMODE))
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         RB_RESTORE_FLAG(obuf);
         return 1;
+    }
     case HTML_DIV:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         set_alignment(obuf, tag);
         return 1;
+    }
     case HTML_N_DIV:
+    {
         CLOSE_A;
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         RB_RESTORE_FLAG(obuf);
         return 1;
+    }
     case HTML_DIV_INT:
+    {
         CLOSE_P;
         if (!(obuf->flag & RB_IGNORE_P))
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         set_alignment(obuf, tag);
         return 1;
+    }
     case HTML_N_DIV_INT:
+    {
         CLOSE_P;
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         RB_RESTORE_FLAG(obuf);
         return 1;
+    }
     case HTML_FORM:
+    {
         CLOSE_A;
         if (!(obuf->flag & RB_IGNORE_P))
             flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
-        tmp = seq->FormOpen(tag);
+        auto tmp = seq->FormOpen(tag);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
+    }
     case HTML_N_FORM:
+    {
         CLOSE_A;
         flushline(h_env, obuf, h_env->currentEnv().indent, 0, h_env->limit);
         obuf->flag |= RB_IGNORE_P;
         seq->FormClose();
         return 1;
+    }
     case HTML_INPUT:
+    {
         close_anchor(h_env, obuf, seq);
-        tmp = seq->process_input(tag);
+        auto tmp = seq->process_input(tag);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
+    }
     case HTML_SELECT:
+    {
         close_anchor(h_env, obuf, seq);
-        tmp = seq->process_select(tag);
+        auto tmp = seq->process_select(tag);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         obuf->flag |= RB_INSELECT;
         obuf->end_tag = HTML_N_SELECT;
         return 1;
+    }
     case HTML_N_SELECT:
+    {
         obuf->flag &= ~RB_INSELECT;
         obuf->end_tag = 0;
-        tmp = seq->process_n_select();
+        auto tmp = seq->process_n_select();
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
+    }
     case HTML_OPTION:
         /* nothing */
         return 1;
     case HTML_TEXTAREA:
+    {
         close_anchor(h_env, obuf, seq);
-        tmp = seq->process_textarea(tag, h_env->limit);
+        auto tmp = seq->process_textarea(tag, h_env->limit);
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         obuf->flag |= RB_INTXTA;
         obuf->end_tag = HTML_N_TEXTAREA;
         return 1;
+    }
     case HTML_N_TEXTAREA:
+    {
         obuf->flag &= ~RB_INTXTA;
         obuf->end_tag = 0;
-        tmp = seq->process_n_textarea();
+        auto tmp = seq->process_n_textarea();
         if (tmp)
             HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
+    }
     case HTML_ISINDEX:
     {
-        p = "";
+        auto p = "";
         tag->TryGetAttributeValue(ATTR_PROMPT, &p);
-        q = "!CURRENT_URL!";
+        auto q = "!CURRENT_URL!";
         tag->TryGetAttributeValue(ATTR_ACTION, &q);
-        tmp = Strnew_m_charp("<form method=get action=\"",
-                             html_quote(q),
-                             "\">",
-                             html_quote(p),
-                             "<input type=text name=\"\" accept></form>",
-                             NULL);
+        auto tmp = Strnew_m_charp("<form method=get action=\"",
+                                  html_quote(q),
+                                  "\">",
+                                  html_quote(p),
+                                  "<input type=text name=\"\" accept></form>",
+                                  NULL);
         HTMLlineproc1(tmp->ptr, h_env, seq);
         return 1;
     }
     case HTML_META:
-        p = q = NULL;
+    {
+        char *p;
         tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
+        char *q;
         tag->TryGetAttributeValue(ATTR_CONTENT, &q);
 
         if (p && q && !strcasecmp(p, "Content-Type") &&
@@ -1971,7 +2106,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         else if (p && q && !strcasecmp(p, "refresh"))
         {
             int refresh_interval;
-            tmp = NULL;
+            Str tmp = NULL;
             refresh_interval = getMetaRefreshParam(q, &tmp);
             if (tmp)
             {
@@ -1995,17 +2130,21 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             }
         }
         return 1;
+    }
     case HTML_BASE:
-        p = NULL;
+    {
+        char *p = NULL;
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
         {
             // *GetCurBaseUrl() = URL::Parse(p, NULL);
         }
+    }
     case HTML_MAP:
     case HTML_N_MAP:
     case HTML_AREA:
         return 0;
     case HTML_DEL:
+    {
         switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
@@ -2023,7 +2162,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             break;
         }
         return 1;
+    }
     case HTML_N_DEL:
+    {
         switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
@@ -2047,7 +2188,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             break;
         }
         return 1;
+    }
     case HTML_S:
+    {
         switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
@@ -2065,7 +2208,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             break;
         }
         return 1;
+    }
     case HTML_N_S:
+    {
         switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
@@ -2089,7 +2234,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             }
         }
         return 1;
+    }
     case HTML_INS:
+    {
         switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
@@ -2106,7 +2253,9 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             break;
         }
         return 1;
+    }
     case HTML_N_INS:
+    {
         switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
@@ -2130,74 +2279,93 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             break;
         }
         return 1;
+    }
     case HTML_SUP:
+    {
         if (!(obuf->flag & (RB_DEL | RB_S)))
             HTMLlineproc1("^", h_env, seq);
         return 1;
+    }
     case HTML_N_SUP:
         return 1;
     case HTML_SUB:
+    {
         if (!(obuf->flag & (RB_DEL | RB_S)))
             HTMLlineproc1("[", h_env, seq);
         return 1;
+    }
     case HTML_N_SUB:
+    {
         if (!(obuf->flag & (RB_DEL | RB_S)))
             HTMLlineproc1("]", h_env, seq);
         return 1;
+    }
     case HTML_FONT:
     case HTML_N_FONT:
     case HTML_NOP:
         return 1;
     case HTML_BGSOUND:
+    {
         if (w3mApp::Instance().view_unseenobject)
         {
+            char *p;
             if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             {
-                Str s;
-                q = html_quote(p);
-                s = Sprintf("<A HREF=\"%s\">bgsound(%s)</A>", q, q);
+                auto q = html_quote(p);
+                Str s = Sprintf("<A HREF=\"%s\">bgsound(%s)</A>", q, q);
                 HTMLlineproc1(s->ptr, h_env, seq);
             }
         }
         return 1;
+    }
     case HTML_EMBED:
+    {
         if (w3mApp::Instance().view_unseenobject)
         {
+            char *p;
             if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             {
-                Str s;
-                q = html_quote(p);
-                s = Sprintf("<A HREF=\"%s\">embed(%s)</A>", q, q);
+                auto q = html_quote(p);
+                Str s = Sprintf("<A HREF=\"%s\">embed(%s)</A>", q, q);
                 HTMLlineproc1(s->ptr, h_env, seq);
             }
         }
         return 1;
+    }
     case HTML_APPLET:
+    {
         if (w3mApp::Instance().view_unseenobject)
         {
+            char *p;
             if (tag->TryGetAttributeValue(ATTR_ARCHIVE, &p))
             {
-                Str s;
-                q = html_quote(p);
-                s = Sprintf("<A HREF=\"%s\">applet archive(%s)</A>", q, q);
+                auto q = html_quote(p);
+                auto s = Sprintf("<A HREF=\"%s\">applet archive(%s)</A>", q, q);
                 HTMLlineproc1(s->ptr, h_env, seq);
             }
         }
         return 1;
+    }
     case HTML_BODY:
+    {
         if (w3mApp::Instance().view_unseenobject)
         {
+            char *p;
             if (tag->TryGetAttributeValue(ATTR_BACKGROUND, &p))
             {
-                Str s;
-                q = html_quote(p);
-                s = Sprintf("<IMG SRC=\"%s\" ALT=\"bg image(%s)\"><BR>", q, q);
+                auto q = html_quote(p);
+                auto s = Sprintf("<IMG SRC=\"%s\" ALT=\"bg image(%s)\"><BR>", q, q);
                 HTMLlineproc1(s->ptr, h_env, seq);
             }
         }
+        return 1;
+    }
     case HTML_N_HEAD:
+    {
         if (obuf->flag & RB_TITLE)
             HTMLlineproc1("</title>", h_env, seq);
+        return 1;
+    }
     case HTML_HEAD:
     case HTML_N_BODY:
         return 1;
@@ -2360,7 +2528,7 @@ table_start:
             if (is_tag)
             {
                 char *p;
-                if (strncmp(str, "<!--", 4) && (p = strchr(const_cast<char*>(str) + 1, '<')))
+                if (strncmp(str, "<!--", 4) && (p = strchr(const_cast<char *>(str) + 1, '<')))
                 {
                     str = Strnew_charp_n(str, p - str)->ptr;
                     line = Strnew_m_charp(p, line, NULL)->ptr;

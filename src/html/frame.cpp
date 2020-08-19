@@ -499,7 +499,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                 union frameset_element frame;
                 struct frameset *f_frameset;
                 int i = c + r * f->col;
-                char *p = "";
+                const char *p = "";
                 int status = R_ST_NORMAL;
                 Str tok = Strnew();
                 int pre_mode = 0;
@@ -618,7 +618,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                                   doc_charset);
                                 p = tmp->ptr;
                             }
-                            read_token(tok, &p, &status, 1, status != R_ST_NORMAL);
+                            read_token(tok, const_cast<char**>(&p), &status, 1, status != R_ST_NORMAL);
                         } while (status != R_ST_NORMAL);
 
                         if (tok->Size() == 0)
