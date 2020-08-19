@@ -29,7 +29,7 @@ Screen g_screen;
 static int is_xterm = 0;
 void mouse_init(), mouse_end();
 int mouseActive = 0;
-static char *title_str = NULL;
+static const char *title_str = NULL;
 static int tty = -1;
 
 void reset_exit(SIGNAL_ARG);
@@ -54,54 +54,38 @@ typedef struct termios TerminalMode;
 #define MAX_LINE 200
 #define MAX_COLUMN 400
 
-
-
-
-
-
-
-
-
-
-
-
-#define ISDIRTY(d) ((d)&L_DIRTY)
-#define ISUNUSED(d) ((d)&L_UNUSED)
-#define NEED_CE(d) ((d)&L_NEED_CE)
-
 static TerminalMode d_ioval;
 
 extern "C" int tputs(char *, int, int (*)(char));
+
 static FILE *ttyf = NULL;
+
 int write1(char c)
 {
     putc(c, ttyf);
-#ifdef SCREEN_DEBUG
-    flush_tty();
-#endif /* SCREEN_DEBUG */
     return 0;
 }
+
 void writestr(char *s)
 {
     tputs(s, 1, write1);
 }
 
 // termcap
-extern "C" int tgetnum(char *);
-extern "C" char *tgoto(char *, int, int);
+extern "C" int tgetnum(const char *);
+extern "C" char *tgoto(const char *, int, int);
 
 void clear(), wrap(), touch_line();
 void clrtoeol(void); /* conflicts with curs_clear(3)? */
 
-#define MOVE(line, column) writestr(tgoto(T_cm, column, line));
+inline void MOVE(int line, int column)
+{
+    writestr(tgoto(T_cm, column, line));
+}
 
-#ifdef USE_MOUSE
 #define W3M_TERM_INFO(name, title, mouse) name, title, mouse
 #define NEED_XTERM_ON (1)
 #define NEED_XTERM_OFF (1 << 1)
-#else
-#define W3M_TERM_INFO(name, title, mouse) name, title
-#endif
 
 static char XTERM_TITLE[] = "\033]0;w3m: %s\007";
 static char SCREEN_TITLE[] = "\033k%s\033\134";
@@ -109,11 +93,9 @@ static char SCREEN_TITLE[] = "\033k%s\033\134";
 /* *INDENT-OFF* */
 static struct w3m_term_info
 {
-    char *term;
-    char *title_str;
-#ifdef USE_MOUSE
+    const char *term;
+    const char *title_str;
     int mouse_flag;
-#endif
 } w3m_term_info_list[] = {
     {W3M_TERM_INFO("xterm", XTERM_TITLE, (NEED_XTERM_ON | NEED_XTERM_OFF))},
     {W3M_TERM_INFO("kterm", XTERM_TITLE, (NEED_XTERM_ON | NEED_XTERM_OFF))},
@@ -127,7 +109,7 @@ static struct w3m_term_info
 
 int set_tty(void)
 {
-    char *ttyn;
+    const char *ttyn;
 
     if (isatty(0)) /* stdin */
         ttyn = ttyname(0);
@@ -153,7 +135,7 @@ int set_tty(void)
             }
         }
     }
-#ifdef USE_MOUSE
+
     {
         char *term = getenv("TERM");
         if (term != NULL)
@@ -169,7 +151,7 @@ int set_tty(void)
             }
         }
     }
-#endif
+
     return 0;
 }
 
@@ -310,9 +292,6 @@ void set_int(void)
     /* mySignal(SIGSEGV, error_dump); */
 }
 
-
-
-
 void setlinescols(void)
 {
     char *p;
@@ -379,17 +358,10 @@ int initscr(void)
     return 0;
 }
 
-
 void move(int line, int column)
 {
     g_screen.Move(line, column);
 }
-
-
-
-
-
-
 
 void addch(char c)
 {
@@ -472,7 +444,6 @@ void setfcolor(int color)
 {
     g_screen.SetFGColor(color);
 }
-
 
 void setbcolor(int color)
 {
@@ -627,7 +598,7 @@ void clrtobotx(void)
 
 void addstr(const char *s)
 {
-    if(!s)
+    if (!s)
     {
         return;
     }

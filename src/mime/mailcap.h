@@ -12,11 +12,11 @@
 struct Mailcap
 {
     const char *type;
-    char *viewer;
+    const char *viewer;
     int flags;
-    char *test;
-    char *nametemplate;
-    char *edit;
+    const char *test;
+    const char *nametemplate;
+    const char *edit;
 };
 
 int mailcapMatch(Mailcap *mcap, const char *type);

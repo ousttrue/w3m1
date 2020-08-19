@@ -196,7 +196,8 @@ static void
 interpret_mouse_action(FILE *mf)
 {
     Str line;
-    char *p, *s;
+    char *p;
+    const char *s;
     int b;
 
     while (!feof(mf))

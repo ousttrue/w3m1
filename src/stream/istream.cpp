@@ -528,7 +528,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
         else
         {
             /* FIXME: gettextize? */
-            char *e = "This SSL session was rejected "
+            const char *e = "This SSL session was rejected "
                       "to prevent security violation: no peer certificate";
             disp_err_message(e, false);
             return NULL;

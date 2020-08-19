@@ -17,6 +17,13 @@ enum LineStatus
     L_NEED_CE = 0x04,
     L_CLRTOEOL = 0x08,
 };
+inline bool ISDIRTY(LineStatus d)
+{
+    return d & L_DIRTY;
+}
+
+#define ISUNUSED(d) ((d)&L_UNUSED)
+#define NEED_CE(d) ((d)&L_NEED_CE)
 
 // termcap
 extern "C" char *tgoto(char *, int, int);
