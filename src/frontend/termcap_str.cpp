@@ -9,19 +9,20 @@
 #include <stdio.h>
 
 // termcap
-extern "C" int tgetent(char *, char *);
-extern "C" char *tgetstr(char *, char **);
-extern "C" int tgetflag(char *);
+extern "C" int tgetent(const char *, char *);
+extern "C" char *tgetstr(const char *, char **);
+extern "C" int tgetflag(const char *);
 
-#define GETSTR(v, s)               \
-    {                              \
-        v = pt;                    \
-        suc = tgetstr(s, &pt);     \
-        if (!suc)                  \
-            v = "";                \
-        else                       \
-            v = allocStr(suc, -1); \
-    }
+inline void GETSTR(char **v, const char *s)
+{
+    // v = pt;
+    auto pt = v;
+    auto suc = tgetstr(s, pt);
+    if (!suc)
+        *v = "";
+    else
+        *v = allocStr(suc, -1);
+}
 
 static char gcmap[96];
 static void
@@ -59,7 +60,7 @@ static char bp[1024];
 void getTCstr(void)
 {
     char *ent;
-    char *suc;
+    // char *suc;
     char *pt = funcstr;
     int r;
 
@@ -78,43 +79,43 @@ void getTCstr(void)
         reset_error_exit(SIGNAL_ARGLIST);
     }
 
-    GETSTR(T_ce, "ce"); /* clear to the end of line */
-    GETSTR(T_cd, "cd"); /* clear to the end of display */
-    GETSTR(T_kr, "nd"); /* cursor right */
-    if (suc == NULL)
-        GETSTR(T_kr, "kr");
+    GETSTR(&T_ce, "ce"); /* clear to the end of line */
+    GETSTR(&T_cd, "cd"); /* clear to the end of display */
+    GETSTR(&T_kr, "nd"); /* cursor right */
+    if (T_kr[0]=='\0')
+        GETSTR(&T_kr, "kr");
     if (tgetflag("bs"))
         T_kl = "\b"; /* cursor left */
     else
     {
-        GETSTR(T_kl, "le");
-        if (suc == NULL)
-            GETSTR(T_kl, "kb");
-        if (suc == NULL)
-            GETSTR(T_kl, "kl");
+        GETSTR(&T_kl, "le");
+        if (T_kl[0]=='\0')
+            GETSTR(&T_kl, "kb");
+        if (T_kl[0]=='\0')
+            GETSTR(&T_kl, "kl");
     }
-    GETSTR(T_cr, "cr"); /* carriage return */
-    GETSTR(T_ta, "ta"); /* tab */
-    GETSTR(T_sc, "sc"); /* save cursor */
-    GETSTR(T_rc, "rc"); /* restore cursor */
-    GETSTR(T_so, "so"); /* standout mode */
-    GETSTR(T_se, "se"); /* standout mode end */
-    GETSTR(T_us, "us"); /* underline mode */
-    GETSTR(T_ue, "ue"); /* underline mode end */
-    GETSTR(T_md, "md"); /* bold mode */
-    GETSTR(T_me, "me"); /* bold mode end */
-    GETSTR(T_cl, "cl"); /* clear screen */
-    GETSTR(T_cm, "cm"); /* cursor move */
-    GETSTR(T_al, "al"); /* append line */
-    GETSTR(T_sr, "sr"); /* scroll reverse */
-    GETSTR(T_ti, "ti"); /* terminal init */
-    GETSTR(T_te, "te"); /* terminal end */
-    GETSTR(T_nd, "nd"); /* move right one space */
-    GETSTR(T_eA, "eA"); /* enable alternative charset */
-    GETSTR(T_as, "as"); /* alternative (graphic) charset start */
-    GETSTR(T_ae, "ae"); /* alternative (graphic) charset end */
-    GETSTR(T_ac, "ac"); /* graphics charset pairs */
-    GETSTR(T_op, "op"); /* set default color pair to its original value */
+    GETSTR(&T_cr, "cr"); /* carriage return */
+    GETSTR(&T_ta, "ta"); /* tab */
+    GETSTR(&T_sc, "sc"); /* save cursor */
+    GETSTR(&T_rc, "rc"); /* restore cursor */
+    GETSTR(&T_so, "so"); /* standout mode */
+    GETSTR(&T_se, "se"); /* standout mode end */
+    GETSTR(&T_us, "us"); /* underline mode */
+    GETSTR(&T_ue, "ue"); /* underline mode end */
+    GETSTR(&T_md, "md"); /* bold mode */
+    GETSTR(&T_me, "me"); /* bold mode end */
+    GETSTR(&T_cl, "cl"); /* clear screen */
+    GETSTR(&T_cm, "cm"); /* cursor move */
+    GETSTR(&T_al, "al"); /* append line */
+    GETSTR(&T_sr, "sr"); /* scroll reverse */
+    GETSTR(&T_ti, "ti"); /* terminal init */
+    GETSTR(&T_te, "te"); /* terminal end */
+    GETSTR(&T_nd, "nd"); /* move right one space */
+    GETSTR(&T_eA, "eA"); /* enable alternative charset */
+    GETSTR(&T_as, "as"); /* alternative (graphic) charset start */
+    GETSTR(&T_ae, "ae"); /* alternative (graphic) charset end */
+    GETSTR(&T_ac, "ac"); /* graphics charset pairs */
+    GETSTR(&T_op, "op"); /* set default color pair to its original value */
 
     LINES = COLS = 0;
     setlinescols();
