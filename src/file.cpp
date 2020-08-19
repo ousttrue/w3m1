@@ -936,12 +936,6 @@ LinePtr getNextPage(BufferPtr buf, int plen)
     return last;
 }
 
-int doFileMove(char *tmpf, char *defstr)
-{
-    int ret = doFileCopy(tmpf, defstr);
-    unlink(tmpf);
-    return ret;
-}
 
 int checkSaveFile(const InputStreamPtr &stream, char *path2)
 {
@@ -988,7 +982,7 @@ const char *inputAnswer(const char *prompt)
     return Strfgets(stdin)->ptr;
 }
 
-char *guess_filename(std::string_view file)
+const char *guess_filename(std::string_view file)
 {
     if (file.empty())
     {

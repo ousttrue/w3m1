@@ -568,6 +568,13 @@ int doFileCopy(const char *tmpf, const char *defstr)
     return _doFileCopy(tmpf, defstr, false);
 }
 
+static int doFileMove(const char *tmpf, const char *defstr)
+{
+    int ret = doFileCopy(tmpf, defstr);
+    unlink(tmpf);
+    return ret;
+}
+
 BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, const char *t)
 {
     if (w3mApp::Instance().image_source.size())
@@ -584,10 +591,9 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
     }
     if (w3mApp::Instance().do_download)
     {
-        char *file;
         if (!src)
             return NULL;
-        file = guess_filename(pu.path);
+        auto file = guess_filename(pu.path);
         doFileMove(tmp->ptr, file);
         return nullptr;
     }

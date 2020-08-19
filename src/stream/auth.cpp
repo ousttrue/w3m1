@@ -19,6 +19,20 @@ enum
     AUTHCHR_TOKEN,
 };
 
+struct auth_param
+{
+    const char *name;
+    Str val;
+};
+struct http_auth
+{
+    int pri;
+    const char *scheme;
+    auth_param *param;
+    Str (*cred)(http_auth *ha, Str uname, Str pw, URL *pu,
+                HttpRequest *hr, FormList *request);
+};
+http_auth *findAuthentication(http_auth *hauth, BufferPtr buf, char *auth_field);
 static int
 skip_auth_token(char **pp)
 {
@@ -214,7 +228,7 @@ extract_auth_param(char *q, struct auth_param *auth)
     return q;
 }
 
-Str get_auth_param(struct auth_param *auth, char *name)
+Str get_auth_param(struct auth_param *auth, const char *name)
 {
     struct auth_param *ap;
     for (ap = auth; ap->name != NULL; ap++)

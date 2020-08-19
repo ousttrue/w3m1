@@ -1263,8 +1263,7 @@ void w3mApp::mainloop()
 
 void w3mApp::_quitfm(int confirm)
 {
-    char *ans = "y";
-
+    const char *ans = "y";
     if (checkDownloadList())
         /* FIXME: gettextize? */
         ans = inputChar("Download process retains. "

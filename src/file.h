@@ -9,7 +9,7 @@ struct Hist;
 // char *guess_save_name(BufferPtr buf, std::string_view file);
 
 Str convertLine(URLSchemeTypes scheme, Str line, int mode, CharacterEncodingScheme *charset, CharacterEncodingScheme doc_charset);
-char *guess_filename(std::string_view file);
+const char *guess_filename(std::string_view file);
 int is_boundary(unsigned char *, unsigned char *);
 int is_blank_line(char *line, int indent);
 int getMetaRefreshParam(const char *q, Str *refresh_uri);
@@ -27,7 +27,7 @@ BufferPtr openPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme 
 BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme content_charset = WC_CES_UTF_8);
 LinePtr getNextPage(BufferPtr buf, int plen);
 
-int doFileMove(char *tmpf, char *defstr);
+
 
 int checkSaveFile(const InputStreamPtr &stream, char *path);
 int checkOverWrite(const char *path);

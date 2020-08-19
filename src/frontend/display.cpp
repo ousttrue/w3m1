@@ -907,15 +907,15 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
     else
         message(s, 0, (LINES - 1));
     refresh();
-#ifdef w3mApp::Instance().use_mouse
+
     if (mouse && w3mApp::Instance().use_mouse)
         mouse_active();
-#endif
+
     sleep_till_anykey(sec, purge);
-#ifdef w3mApp::Instance().use_mouse
+
     if (mouse && w3mApp::Instance().use_mouse)
         mouse_inactive();
-#endif
+
     if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL &&
         redraw_current)
         displayCurrentbuf(B_NORMAL);

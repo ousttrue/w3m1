@@ -30,7 +30,7 @@ void term_noecho(void);
 void term_raw(void);
 void term_cooked(void);
 void term_cbreak(void);
-void term_title(char *s);
+void term_title(const char *s);
 void flush_tty(void);
 void toggle_stand(void);
 char getch(void);
