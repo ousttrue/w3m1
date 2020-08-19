@@ -13,3 +13,4 @@ int str_to_bool(const char *value, int old);
 void show_params(FILE *fp);
 char *auxbinFile(const char *base);
 int set_param_option(const char *option);
+const char *get_param_option(const char *name);

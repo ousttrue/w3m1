@@ -1302,7 +1302,7 @@ void setOpt(w3mApp *w3m)
     {
         if (opt != NULL && *opt != '\0')
         {
-            char *v = get_param_option(opt);
+            auto v = get_param_option(opt);
             opt = Sprintf("%s=%s", opt, v ? v : "")->ptr;
         }
         opt = inputStrHist("Set option: ", opt, w3mApp::Instance().TextHist);

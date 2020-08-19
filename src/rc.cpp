@@ -960,8 +960,7 @@ option_assigned:
     return 1;
 }
 
-char *
-get_param_option(char *name)
+const char *get_param_option(const char *name)
 {
     auto found = RC_search_table.find(name);
     if (found == RC_search_table.end())

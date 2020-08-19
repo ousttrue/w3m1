@@ -102,7 +102,7 @@ char *acceptableMimeTypes();
 
 BufferPtr link_list_panel(const BufferPtr &buf);
 
-char *get_param_option(char *name);
+
 
 BufferPtr load_option_panel(void);
 void sync_with_option(void);
