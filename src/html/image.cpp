@@ -1,3 +1,4 @@
+#include <string_view_util.h>
 #include "fm.h"
 #include "html/image.h"
 #include "indep.h"
@@ -22,7 +23,6 @@
 #include <sys/wait.h>
 #endif
 
-#ifdef USE_IMAGE
 
 static int image_index = 0;
 
@@ -64,9 +64,9 @@ int getCharSize()
 
     set_environ("W3M_TTY", ttyname_tty());
     tmp = Strnew();
-    if (!strchr(Imgdisplay, '/'))
+    if (w3mApp::Instance().Imgdisplay.find('/') == std::string::npos)
         Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
-    Strcat_m_charp(tmp, Imgdisplay, " -test 2>/dev/null", NULL);
+    Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -test 2>/dev/null", NULL);
     f = popen(tmp->ptr, "r");
     if (!f)
         return FALSE;
@@ -108,13 +108,13 @@ openImgdisplay()
     if (Imgdisplay_pid == 0)
     {
         /* child */
-        char *cmd;
+        std::string cmd;
         setup_child(FALSE, 2, -1);
-        if (!strchr(Imgdisplay, '/'))
-            cmd = Strnew_m_charp(w3m_auxbin_dir(), "/", Imgdisplay, NULL)->ptr;
+        if (!strchr(w3mApp::Instance().Imgdisplay.c_str(), '/'))
+            cmd = svu::join("", w3m_auxbin_dir(), "/", w3mApp::Instance().Imgdisplay);
         else
-            cmd = Imgdisplay;
-        myExec(cmd);
+            cmd = w3mApp::Instance().Imgdisplay;
+        myExec(cmd.c_str());
         /* XXX: ifdef __EMX__, use start /f ? */
     }
     w3mApp::Instance().activeImage = TRUE;
@@ -569,9 +569,9 @@ int getImageSize(ImageCache *cache)
         (cache->width > 0 && cache->height > 0))
         return FALSE;
     tmp = Strnew();
-    if (!strchr(Imgdisplay, '/'))
+    if (w3mApp::Instance().Imgdisplay.find('/')==std::string::npos)
         Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
-    Strcat_m_charp(tmp, Imgdisplay, " -size ", shell_quote(cache->file), NULL);
+    Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -size ", shell_quote(cache->file), NULL);
     f = popen(tmp->ptr, "r");
     if (!f)
         return FALSE;
@@ -613,7 +613,7 @@ int getImageSize(ImageCache *cache)
     putHash_sv(image_hash, tmp->ptr, (void *)cache);
     return TRUE;
 }
-#endif
+
 
 #ifdef USE_IMAGE
 #ifdef USE_XFACE

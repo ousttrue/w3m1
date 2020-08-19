@@ -1143,7 +1143,7 @@ void mySystem(char *command, int background)
         system(command);
 }
 
-void myExec(char *command)
+void myExec(const char *command)
 {
     mySignal(SIGINT, SIG_DFL);
     execl("/bin/sh", "sh", "-c", command, NULL);

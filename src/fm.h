@@ -144,15 +144,12 @@
  */
 
 
-#ifdef USE_IMAGE
-global char *Imgdisplay init(IMGDISPLAY);
+
 global int autoImage init(TRUE);
 global int useExtImageViewer init(TRUE);
 global int maxLoadImage init(4);
 global int image_map_list init(TRUE);
-#else
-global int displayImage init(FALSE); /* XXX: emacs-w3m use display_image=off */
-#endif
+
 global int pseudoInlines init(TRUE);
 global char *Editor init(DEF_EDITOR);
 #ifdef USE_W3MMAILER
@@ -282,6 +279,7 @@ global int use_lessopen init(FALSE);
 global char *keymap_file init(KEYMAP_FILE);
 
 global int FollowRedirection init(10);
+#undef init
 
 global TextLineList *backend_halfdump_buf;
 

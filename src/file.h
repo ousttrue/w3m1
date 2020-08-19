@@ -127,7 +127,7 @@ FILE *openSecretFile(const char *fname);
 void loadPreForm(void);
 char *last_modified(const BufferPtr &buf);
 
-void myExec(char *command);
+void myExec(const char *command);
 void mySystem(char *command, int background);
 Str myExtCommand(char *cmd, char *arg, int redirect);
 Str myEditor(char *cmd, char *file, int line);

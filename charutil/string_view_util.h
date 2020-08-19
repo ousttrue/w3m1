@@ -1,5 +1,6 @@
 #pragma once
 #include <string_view>
+#include <sstream>
 #include "myctype.h"
 
 namespace svu
@@ -75,7 +76,28 @@ inline bool ic_ends_with(std::string_view src, std::string_view find)
     {
         return false;
     }
-    return ic_eq(src.substr(src.size()-find.size()), find);
+    return ic_eq(src.substr(src.size() - find.size()), find);
+}
+
+inline void _join(std::string_view delemeter, std::ostream &os, int index)
+{
+}
+template <typename... ARGS>
+inline void _join(std::string_view delemeter, std::ostream &os, int index, std::string_view arg, ARGS... args)
+{
+    if (index > 0)
+    {
+        os << delemeter;
+    }
+    os << arg;
+    _join(delemeter, os, index + 1, args...);
+}
+template <typename... ARGS>
+inline std::string join(std::string_view delemeter, ARGS... args)
+{
+    std::stringstream ss;
+    _join(delemeter, ss, 0, args...);
+    return ss.str();
 }
 
 } // namespace  svu

@@ -1,3 +1,4 @@
+#include <string_view_util.h>
 #include "stream/compression.h"
 #include "mime/mimetypes.h"
 #include "textlist.h"
@@ -5,7 +6,6 @@
 #include "stream/istream.h"
 #include "rc.h"
 #include "file.h"
-#include <string_view_util.h>
 #include "fm.h"
 #include "html/html.h"
 #include "stream/local_cgi.h"

@@ -669,7 +669,7 @@ auto sections = make_array(
                      {"max_load_image", P_INT, PI_TEXT, maxLoadImage, CMT_MAX_LOAD_IMAGE},
                      {"ext_image_viewer", P_INT, PI_ONOFF, useExtImageViewer, CMT_EXT_IMAGE_VIEWER},
                      {"image_scale", P_SCALE, PI_TEXT, w3mApp::Instance().image_scale, CMT_IMAGE_SCALE},
-                     {"imgdisplay", P_STRING, PI_TEXT, Imgdisplay, CMT_IMGDISPLAY},
+                     {"imgdisplay", P_STRING, PI_TEXT, w3mApp::Instance().Imgdisplay, CMT_IMGDISPLAY},
                      {"image_map_list", P_INT, PI_ONOFF, image_map_list, CMT_IMAGE_MAP_LIST},
                      {"fold_line", P_INT, PI_ONOFF, w3mApp::Instance().FoldLine, CMT_FOLD_LINE},
                      {"show_lnum", P_INT, PI_ONOFF, w3mApp::Instance().showLineNum, CMT_SHOW_NUM},

@@ -70,6 +70,9 @@ public:
     bool retryAsHttp = true;
     bool show_srch_str = true;
 
+    // image
+    std::string Imgdisplay = IMGDISPLAY;
+
     // files settings
     std::string config_file;
     std::string BookmarkFile;
