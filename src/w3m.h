@@ -120,6 +120,10 @@ public:
     bool FoldTextarea = false;
     DefaultUrlTypes DefaultURLString = DEFAULT_URL_EMPTY;
     bool MarkAllPages = false;
+    std::string mailcap_files =USER_MAILCAP ", " SYS_MAILCAP;
+    std::string mimetypes_files =USER_MIMETYPES ", " SYS_MIMETYPES;
+    std::string urimethodmap_files =USER_URIMETHODMAP ", " SYS_URIMETHODMAP;
+    bool multicolList =false;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

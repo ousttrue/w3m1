@@ -139,25 +139,6 @@
 #define TMPF_COOKIE 4
 #define MAX_TMPF_TYPE 5
 
-
-
-
-#ifdef USE_MIGEMO
-global int use_migemo init(FALSE);
-global int migemo_active init(0);
-global char *migemo_command init(DEF_MIGEMO_COMMAND);
-#endif /* USE_MIGEMO */
-
-global char *mailcap_files init(USER_MAILCAP ", " SYS_MAILCAP);
-global char *mimetypes_files init(USER_MIMETYPES ", " SYS_MIMETYPES);
-#ifdef USE_EXTERNAL_URI_LOADER
-global char *urimethodmap_files init(USER_URIMETHODMAP ", " SYS_URIMETHODMAP);
-#endif
-
-global int multicolList init(FALSE);
-
-
-
 global char SearchConv init(TRUE);
 global char SimplePreserveSpace init(FALSE);
 

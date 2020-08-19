@@ -266,8 +266,8 @@ void initMailcap()
     TextListItem *tl;
     int i;
 
-    if (non_null(mailcap_files))
-        mailcap_list = make_domain_list(mailcap_files);
+    if (w3mApp::Instance().mailcap_files.size())
+        mailcap_list = make_domain_list(w3mApp::Instance().mailcap_files.c_str());
     else
         mailcap_list = NULL;
     if (mailcap_list == NULL)

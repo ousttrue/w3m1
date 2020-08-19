@@ -1,9 +1,11 @@
+#include <string_view_util.h>
 #include "urimethod.h"
 #include "fm.h"
 #include "indep.h"
 #include "myctype.h"
 #include "textlist.h"
 #include "frontend/buffer.h"
+#include "w3m.h"
 
 struct UriMethod
 {
@@ -63,8 +65,8 @@ static struct std::vector<UriMethod> urimethods;
 void initURIMethods()
 {
     TextList *methodmap_list = NULL;
-    if (non_null(urimethodmap_files))
-        methodmap_list = make_domain_list(urimethodmap_files);
+    if (!svu::is_null_or_space(w3mApp::Instance().urimethodmap_files))
+        methodmap_list = make_domain_list(w3mApp::Instance().urimethodmap_files.c_str());
     if (methodmap_list == NULL)
         return;
 

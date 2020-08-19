@@ -117,3 +117,4 @@ char *mybasename(std::string_view s);
 char *url_unquote_conv(std::string_view url, CharacterEncodingScheme charset);
 // char *url_quote(std::string_view str);
 std::string url_quote(std::string_view p);
+struct TextList *make_domain_list(const char *domain_list);

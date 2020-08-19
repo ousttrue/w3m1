@@ -688,14 +688,12 @@ Str URL::ToStr(bool usePass, bool useLabel) const
     }
 }
 
-TextList *
-make_domain_list(char *domain_list)
+TextList *make_domain_list(const char *domain_list)
 {
-    char *p;
     Str tmp;
     TextList *domains = NULL;
 
-    p = domain_list;
+    auto p = domain_list;
     tmp = Strnew_size(64);
     while (*p)
     {

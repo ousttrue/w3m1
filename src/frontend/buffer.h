@@ -380,5 +380,3 @@ char *reAnchorNewsheader(const BufferPtr &buf);
 void addMultirowsForm(BufferPtr buf, AnchorList &al);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
-
-TextList *make_domain_list(char *domain_list);

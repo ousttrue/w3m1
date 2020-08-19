@@ -4,7 +4,7 @@
 #include "indep.h"
 #include "textlist.h"
 #include "frontend/buffer.h"
-// #include "stream/url.h"
+#include "w3m.h"
 #include <vector>
 #include <string_view>
 
@@ -92,8 +92,8 @@ static std::vector<ExtensionWithMime> loadMimeTypes(std::string_view filename)
 void initMimeTypes()
 {
     TextList *mimetypes_list;
-    if (non_null(mimetypes_files))
-        mimetypes_list = make_domain_list(mimetypes_files);
+    if (w3mApp::Instance().mimetypes_files.size())
+        mimetypes_list = make_domain_list(w3mApp::Instance().mimetypes_files.c_str());
     else
         mimetypes_list = NULL;
     if (mimetypes_list == NULL)

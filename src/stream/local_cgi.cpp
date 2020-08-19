@@ -428,7 +428,7 @@ Str loadLocalDir(std::string_view dname)
     while ((dir = readdir(d)) != NULL)
     {
         flist.push_back(allocStr(dir->d_name, -1));
-        if (multicolList)
+        if (w3mApp::Instance().multicolList)
         {
             l = strlen(dir->d_name);
             if (l > maxlen)
@@ -437,7 +437,7 @@ Str loadLocalDir(std::string_view dname)
         }
     }
 
-    if (multicolList)
+    if (w3mApp::Instance().multicolList)
     {
         l = COLS / (maxlen + 2);
         if (!l)
@@ -462,7 +462,7 @@ Str loadLocalDir(std::string_view dname)
 #endif /* HAVE_LSTAT */
         if (stat(fbuf->ptr, &st) < 0)
             continue;
-        if (multicolList)
+        if (w3mApp::Instance().multicolList)
         {
             if (n == 1)
                 tmp->Push("<TD><NOBR>");
@@ -486,7 +486,7 @@ Str loadLocalDir(std::string_view dname)
         if (S_ISDIR(st.st_mode))
             tmp->Push('/');
         tmp->Push("</A>");
-        if (multicolList)
+        if (w3mApp::Instance().multicolList)
         {
             if (n++ == nrow)
             {
@@ -516,7 +516,7 @@ Str loadLocalDir(std::string_view dname)
             tmp->Push("<br>\n");
         }
     }
-    if (multicolList)
+    if (w3mApp::Instance().multicolList)
     {
         tmp->Push("</TR>\n</TABLE>\n");
     }
