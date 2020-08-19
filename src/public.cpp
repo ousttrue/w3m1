@@ -1511,7 +1511,7 @@ void goURL0(const char *prompt, int relative)
         if (current)
         {
             char *c_url = current->ToStr()->ptr;
-            if (DefaultURLString == DEFAULT_URL_CURRENT)
+            if (w3mApp::Instance().DefaultURLString == DEFAULT_URL_CURRENT)
             {
                 url = c_url;
                 if (w3mApp::Instance().DecodeURL)
@@ -1525,7 +1525,7 @@ void goURL0(const char *prompt, int relative)
         {
             auto p_url = URL::Parse(a->url).Resolve(current);
             auto a_url = p_url.ToStr()->ptr;
-            if (DefaultURLString == DEFAULT_URL_LINK)
+            if (w3mApp::Instance().DefaultURLString == DEFAULT_URL_LINK)
             {
                 url = a_url;
                 if (w3mApp::Instance().DecodeURL)

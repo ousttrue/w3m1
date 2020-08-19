@@ -44,6 +44,14 @@ enum DisplayInsDel
     DISPLAY_INS_DEL_NORMAL= 1,
     DISPLAY_INS_DEL_FONTIFY= 2,
 };
+
+enum DefaultUrlTypes
+{
+    DEFAULT_URL_EMPTY= 0,
+    DEFAULT_URL_CURRENT= 1,
+    DEFAULT_URL_LINK= 2,
+};
+
 class w3mApp
 {
     w3mApp();
@@ -110,6 +118,8 @@ public:
     bool ignore_null_img_alt = true;
     DisplayInsDel displayInsDel = DISPLAY_INS_DEL_NORMAL;
     bool FoldTextarea = false;
+    DefaultUrlTypes DefaultURLString = DEFAULT_URL_EMPTY;
+    bool MarkAllPages = false;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

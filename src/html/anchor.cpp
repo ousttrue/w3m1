@@ -267,8 +267,8 @@ reAnchorAny(BufferPtr buf, char *re,
     {
         return re;
     }
-    for (l = MarkAllPages ? buf->FirstLine() : buf->TopLine(); l != NULL &&
-                                                           (MarkAllPages || l->linenumber < buf->TopLine()->linenumber + ::LINES - 1);
+    for (l = w3mApp::Instance().MarkAllPages ? buf->FirstLine() : buf->TopLine(); l != NULL &&
+                                                           (w3mApp::Instance().MarkAllPages || l->linenumber < buf->TopLine()->linenumber + ::LINES - 1);
          l = buf->NextLine(l))
     {
         if (p && l->bpos)
@@ -285,7 +285,7 @@ reAnchorAny(BufferPtr buf, char *re,
                 break;
         }
     next_line:
-        if (MarkAllPages && buf->NextLine(l) == NULL && buf->pagerSource &&
+        if (w3mApp::Instance().MarkAllPages && buf->NextLine(l) == NULL && buf->pagerSource &&
             !(buf->bufferprop & BP_CLOSE))
             getNextPage(buf, w3mApp::Instance().PagerMax);
     }
