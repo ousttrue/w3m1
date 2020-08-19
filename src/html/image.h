@@ -1,6 +1,9 @@
 #pragma once
 struct URL;
 
+#define MAX_IMAGE 1000
+#define MAX_IMAGE_SIZE 2048
+
 struct ImageCache
 {
     char *url;
@@ -12,6 +15,20 @@ struct ImageCache
     int index;
     short width;
     short height;
+};
+
+enum ImageFlags
+{
+    IMG_FLAG_SKIP = 1,
+    IMG_FLAG_AUTO = 2,
+};
+
+enum ImageLoadFlags
+{
+    IMG_FLAG_UNLOADED = 0,
+    IMG_FLAG_LOADED = 1,
+    IMG_FLAG_ERROR = 2,
+    IMG_FLAG_DONT_REMOVE = 4,
 };
 
 struct Image

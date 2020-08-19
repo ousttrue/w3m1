@@ -1039,7 +1039,7 @@ static const char *tmpf_base[MAX_TMPF_TYPE] = {
 };
 static unsigned int tmpf_seq[MAX_TMPF_TYPE];
 
-Str tmpfname(int type, const char *ext)
+Str tmpfname(TmpFileTypes type, const char *ext)
 {
     Str tmpf;
     tmpf = Sprintf("%s/w3m%s%d-%d%s",

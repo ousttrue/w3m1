@@ -3,12 +3,10 @@
 #include "frontend/buffer.h"
 #include "frontend/event.h"
 
-
 struct HttpRequest;
 struct Hist;
 
 // char *guess_save_name(BufferPtr buf, std::string_view file);
-
 
 Str convertLine(URLSchemeTypes scheme, Str line, int mode, CharacterEncodingScheme *charset, CharacterEncodingScheme doc_charset);
 char *guess_filename(std::string_view file);
@@ -19,7 +17,6 @@ int getMetaRefreshParam(const char *q, Str *refresh_uri);
 char *convert_size(clen_t size, int usefloat);
 char *convert_size2(clen_t size1, clen_t size2, int usefloat);
 void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length);
-
 
 BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream);
 void saveBuffer(BufferPtr buf, FILE *f, int cont);
@@ -34,7 +31,7 @@ int doFileMove(char *tmpf, char *defstr);
 
 int checkSaveFile(const InputStreamPtr &stream, char *path);
 int checkOverWrite(const char *path);
-const char *inputAnswer(const char* prompt);
+const char *inputAnswer(const char *prompt);
 int matchattr(char *p, const char *attr, int len, Str *value);
 
 // char *checkHeader(BufferPtr buf, const char *field);
@@ -47,7 +44,6 @@ void addChar(char c, Lineprop mode = P_UNKNOWN);
 void addMChar(char *c, Lineprop mode, size_t len);
 
 BufferPtr message_list_panel(void);
-
 
 char *lastFileName(const char *path);
 char *mydirname(const char *s);
@@ -72,17 +68,12 @@ void ldHist(void);
 double log_like(int x);
 struct table *newTable(void);
 
-
 void print_item(struct table *t, int row, int col, int width, Str buf);
-
 
 void check_rowcol(struct table *tbl, struct table_mode *mode);
 int minimum_length(char *line);
 void pushTable(struct table *, struct table *);
 char *form2str(FormItemList *fi);
-
-
-
 
 void preFormUpdateBuffer(const BufferPtr &buf);
 
@@ -109,9 +100,7 @@ MySignalHandler error_dump(SIGNAL_ARG);
 
 char *acceptableMimeTypes();
 
-
 BufferPtr link_list_panel(const BufferPtr &buf);
-
 
 char *get_param_option(char *name);
 
@@ -130,6 +119,15 @@ void mySystem(char *command, int background);
 Str myExtCommand(const char *cmd, const char *arg, int redirect);
 Str myEditor(const char *cmd, const char *file, int line);
 
-Str tmpfname(int type, const char *ext);
+enum TmpFileTypes
+{
+    TMPF_DFL = 0,
+    TMPF_SRC = 1,
+    TMPF_FRAME = 2,
+    TMPF_CACHE = 3,
+    TMPF_COOKIE = 4,
+    MAX_TMPF_TYPE = 5,
+};
+Str tmpfname(TmpFileTypes type, const char *ext);
 
 int setModtime(char *path, time_t modtime);

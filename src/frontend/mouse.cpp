@@ -22,6 +22,8 @@
 #include "frontend/buffer.h"
 #include "frontend/terms.h"
 
+#define LIMIT_MOUSE_MENU 100
+
 struct MouseActionMap
 {
     Command func;

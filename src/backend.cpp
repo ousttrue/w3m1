@@ -90,6 +90,7 @@ print_headers(BufferPtr buf, int len)
         printf("w3m-content-length: %d\n", len);
 }
 
+TextLineList *backend_halfdump_buf = nullptr;
 static void
 internal_get(const char *url, int flag, FormList *request)
 {

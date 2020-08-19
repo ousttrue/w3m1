@@ -1,5 +1,9 @@
 #pragma once
 
+extern const char *graph_symbol[];
+extern const char *graph2_symbol[];
+#define N_GRAPH_SYMBOL 32
+
 #define SYMBOL_BASE 0x20
 
 enum GraphicCharTypes

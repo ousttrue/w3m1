@@ -2,6 +2,8 @@
 #include <memory>
 #include <string_view>
 
+#define SAVE_BUF_SIZE 1536
+
 enum CompressionTypes
 {
     CMP_NOCOMPRESS,

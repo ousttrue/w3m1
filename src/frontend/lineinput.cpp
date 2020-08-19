@@ -419,6 +419,18 @@ _inbrk(void)
     i_broken = TRUE;
 }
 
+/* Completion status. */
+#define CPL_OK 0
+#define CPL_AMBIG 1
+#define CPL_FAIL 2
+#define CPL_MENU 3
+
+#define CPL_NEVER 0x0
+#define CPL_OFF 0x1
+#define CPL_ON 0x2
+#define CPL_ALWAYS 0x4
+#define CPL_URL 0x8
+
 static void
 _compl(void)
 {
