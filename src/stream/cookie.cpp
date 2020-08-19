@@ -590,19 +590,17 @@ nth_cookie(int n)
 
 void save_cookies(void)
 {
-    struct Cookie *p;
-    char *cookie_file;
-    FILE *fp;
-
-    check_expired_cookies();
-
     if (!First_cookie || is_saved || w3mApp::Instance().no_rc_dir)
         return;
 
-    cookie_file = rcFile(COOKIE_FILE);
+    check_expired_cookies();
+
+    auto cookie_file = rcFile(COOKIE_FILE);
+    FILE *fp;
     if (!(fp = fopen(cookie_file, "w")))
         return;
 
+    struct Cookie *p;
     for (p = First_cookie; p; p = p->next)
     {
         if (!(p->flag & COO_USE) || p->flag & COO_DISCARD)

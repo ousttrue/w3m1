@@ -1153,8 +1153,7 @@ void myExec(const char *command)
     exit(127);
 }
 
-char *
-mydirname(const char *s)
+const char *mydirname(const char *s)
 {
     const char *p = s;
     while (*p)
@@ -1265,8 +1264,7 @@ long lrand48(void)
 }
 #endif
 
-char *
-lastFileName(const char *path)
+char *lastFileName(const char *path)
 {
     auto p = path;
     auto q = path;

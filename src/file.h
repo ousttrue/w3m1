@@ -46,7 +46,7 @@ void addMChar(char *c, Lineprop mode, size_t len);
 BufferPtr message_list_panel(void);
 
 char *lastFileName(const char *path);
-char *mydirname(const char *s);
+const char *mydirname(const char *s);
 
 #ifdef USE_MIGEMO
 void init_migemo(void);

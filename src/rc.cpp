@@ -1506,14 +1506,15 @@ load_option_panel(void)
                 {
                     for (s = (struct sel_c *)param.select; s->text != NULL; s++)
                     {
-                        s->text =wc_conv(s->text, OptionCharset,w3mApp::Instance().InnerCharset)->ptr;
+                        s->text = wc_conv(s->text, OptionCharset, w3mApp::Instance().InnerCharset)->ptr;
                     }
                 }
             }
         }
 
-        for (s = colorstr; s->text; s++){
-            s->text = wc_conv(s->text, OptionCharset,w3mApp::Instance().InnerCharset)->ptr;
+        for (s = colorstr; s->text; s++)
+        {
+            s->text = wc_conv(s->text, OptionCharset, w3mApp::Instance().InnerCharset)->ptr;
         }
         OptionEncode = true;
     }
@@ -1635,8 +1636,7 @@ void panel_set_option(struct parsed_tagarg *arg)
     backBf(&w3mApp::Instance());
 }
 
-char *
-rcFile(const char *base)
+const char *rcFile(const char *base)
 {
     if (base &&
         (base[0] == '/' ||
@@ -1646,34 +1646,22 @@ rcFile(const char *base)
     return expandPath(Strnew_m_charp(w3mApp::Instance().rc_dir, "/", base)->ptr);
 }
 
-char *
-auxbinFile(const char *base)
+const char *auxbinFile(const char *base)
 {
     return expandPath(Strnew_m_charp(w3m_auxbin_dir(), "/", base, NULL)->ptr);
 }
 
-#if 0 /* not used */
-char *
-libFile(char *base)
-{
-    return expandPath(Strnew_m_charp(w3m_lib_dir(), "/", base, NULL)->ptr);
-}
-#endif
-
-char *
-etcFile(char *base)
+const char *etcFile(const char *base)
 {
     return expandPath(Strnew_m_charp(w3m_etc_dir(), "/", base, NULL)->ptr);
 }
 
-char *
-confFile(char *base)
+const char *confFile(const char *base)
 {
     return expandPath(Strnew_m_charp(w3m_conf_dir(), "/", base, NULL)->ptr);
 }
 
-char *
-helpFile(char *base)
+const char *helpFile(const char *base)
 {
     return expandPath(Strnew_m_charp(w3m_help_dir(), "/", base, NULL)->ptr);
 }
