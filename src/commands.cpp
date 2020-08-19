@@ -806,7 +806,7 @@ void reMark(w3mApp *w3m)
     if (!w3mApp::Instance().use_mark)
         return;
 
-    auto str = searchKeyData();
+    const char* str = searchKeyData();
     if (str == NULL || *str == '\0')
     {
         str = inputStrHist("(Mark)Regexp: ", MarkString(), w3mApp::Instance().TextHist);

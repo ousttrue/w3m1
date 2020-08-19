@@ -1172,8 +1172,7 @@ const char *mydirname(const char *s)
 }
 
 /* get last modified time */
-char *
-last_modified(const BufferPtr &buf)
+const char *last_modified(const BufferPtr &buf)
 {
     TextListItem *ti;
     struct stat st;

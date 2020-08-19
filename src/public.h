@@ -18,7 +18,7 @@ void isrch(SearchFunc func, const char* prompt);
 void srch(SearchFunc func, const char* prompt);
 
 void clear_mark(LinePtr l);
-void disp_srchresult(int result, const char* prompt, char *str);
+void disp_srchresult(int result, const char* prompt, const char *str);
 void shiftvisualpos(BufferPtr buf, int shift);
 
 void cmd_loadfile(const char *fn);
@@ -35,12 +35,12 @@ void prevChar(int *s, LinePtr l);
 void nextChar(int *s, LinePtr l);
 uint32_t getChar(char *p);
 int is_wordchar(uint32_t c);
-SearchResultTypes srchcore(char * str, SearchFunc search);
+SearchResultTypes srchcore(const char * str, SearchFunc search);
 
 void _goLine(std::string_view l);
 int cur_real_linenumber(const BufferPtr &buf);
-char *MarkString();
-void SetMarkString(char *str);
+const char *MarkString();
+void SetMarkString(const char *str);
 void do_dump(w3mApp *w3m, BufferPtr buf);
 void _followForm(bool submit);
 void query_from_followform(Str *query, FormItemList *fi, int multipart);

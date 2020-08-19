@@ -374,8 +374,8 @@ void set_buffer_environ(const BufferPtr &buf);
 
 // anchor
 void reAnchorWord(BufferPtr buf, LinePtr l, int spos, int epos);
-char *reAnchor(BufferPtr buf, char *re);
-char *reAnchorNews(BufferPtr buf, char *re);
+const char *reAnchor(BufferPtr buf, const char *re);
+const char *reAnchorNews(BufferPtr buf, const char *re);
 char *reAnchorNewsheader(const BufferPtr &buf);
 void addMultirowsForm(BufferPtr buf, AnchorList &al);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);

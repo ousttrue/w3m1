@@ -253,8 +253,8 @@ void reAnchorWord(BufferPtr buf, LinePtr l, int spos, int epos)
 
 /* search regexp and register them as anchors */
 /* returns error message if any               */
-static char *
-reAnchorAny(BufferPtr buf, char *re,
+static const char *
+reAnchorAny(BufferPtr buf, const char *re,
             Anchor *(*anchorproc)(BufferPtr, char *, char *, int, int))
 {
     LinePtr l;
@@ -293,14 +293,14 @@ reAnchorAny(BufferPtr buf, char *re,
     return NULL;
 }
 
-char *
-reAnchor(BufferPtr buf, char *re)
+const char *
+reAnchor(BufferPtr buf, const char *re)
 {
     return reAnchorAny(buf, re, _put_anchor_all);
 }
 
-char *
-reAnchorNews(BufferPtr buf, char *re)
+const char *
+reAnchorNews(BufferPtr buf, const char *re)
 {
     return reAnchorAny(buf, re, _put_anchor_news);
 }

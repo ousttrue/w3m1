@@ -660,8 +660,8 @@ bool wtf_is_hangul(uint8_t *p)
     return false;
 }
 
-char *
-wtf_conv_fit(char *s, CharacterEncodingScheme ces)
+const char *
+wtf_conv_fit(const char *s, CharacterEncodingScheme ces)
 {
     uint8_t *p;
     Str os;

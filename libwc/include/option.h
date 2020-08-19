@@ -31,7 +31,5 @@ struct wc_option
 };
 extern wc_option WcOption;
 
-extern char *WcReplace;
-extern char *WcReplaceW;
-#define WC_REPLACE WcReplace
-#define WC_REPLACE_W WcReplaceW
+extern const char *WC_REPLACE;
+extern const char *WC_REPLACE_W;

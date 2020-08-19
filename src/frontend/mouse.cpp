@@ -32,8 +32,8 @@ struct MouseActionMap
 
 struct MouseAction
 {
-    char *menu_str;
-    char *lastline_str;
+    const char *menu_str;
+    const char *lastline_str;
     int menu_width;
     int lastline_width;
     int in_action;
@@ -93,7 +93,7 @@ bool TryGetMouseActionPosition(int *x, int *y)
     return false;
 }
 
-char *GetMouseActionMenuStr()
+const char *GetMouseActionMenuStr()
 {
     return mouse_action.menu_str;
 };
@@ -103,13 +103,13 @@ int GetMouseActionMenuWidth()
     return mouse_action.menu_width;
 };
 
-char *GetMouseActionLastlineStr()
+const char *GetMouseActionLastlineStr()
 {
     return mouse_action.lastline_str;
 }
 
 static void
-setMouseAction0(char **str, int *width, MouseActionMap **map, char *p)
+setMouseAction0(const char **str, int *width, MouseActionMap **map, char *p)
 {
     char *s;
     int b, w, x;

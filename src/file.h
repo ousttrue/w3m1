@@ -51,7 +51,7 @@ const char *mydirname(const char *s);
 #ifdef USE_MIGEMO
 void init_migemo(void);
 #endif
-char *conv_search_string(char *str, CharacterEncodingScheme f_ces);
+
 void pcmap(void);
 void escmap(void);
 void escbmap(void);
@@ -112,7 +112,7 @@ char *helpFile(char *base);
 Str localCookie(void);
 FILE *openSecretFile(const char *fname);
 void loadPreForm(void);
-char *last_modified(const BufferPtr &buf);
+const char *last_modified(const BufferPtr &buf);
 
 void myExec(const char *command);
 void mySystem(char *command, int background);

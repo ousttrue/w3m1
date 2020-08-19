@@ -52,7 +52,7 @@ wc_wchar_t wtf_parse1(uint8_t **p);
 CodedCharacterSet wtf_get_ccs(uint8_t *p);
 uint32_t wtf_get_code(uint8_t *p);
 bool wtf_is_hangul(uint8_t *p);
-char *wtf_conv_fit(char *s, CharacterEncodingScheme ces);
+const char *wtf_conv_fit(const char *s, CharacterEncodingScheme ces);
 
 inline int get_mclen(const char *c)
 {

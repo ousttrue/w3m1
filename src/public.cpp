@@ -43,7 +43,7 @@ int searchKeyNum(void)
     return n * (std::max(1, prec_num()));
 }
 
-static char *SearchString = NULL;
+static const char *SearchString = NULL;
 SearchFunc searchRoutine = nullptr;
 
 void clear_mark(LinePtr l)
@@ -55,7 +55,7 @@ void clear_mark(LinePtr l)
         l->propBuf()[pos] &= ~PE_MARK;
 }
 
-void disp_srchresult(int result, const char *prompt, char *str)
+void disp_srchresult(int result, const char *prompt, const char *str)
 {
     if (str == NULL)
         str = "";
@@ -180,7 +180,7 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
 }
 
 /* search by regular expression */
-SearchResultTypes srchcore(char *str, SearchFunc func)
+SearchResultTypes srchcore(const char *str, SearchFunc func)
 {
     int i;
     SearchResultTypes result = SR_NOTFOUND;
@@ -311,7 +311,7 @@ void isrch(SearchFunc func, const char *prompt)
 
 void srch(SearchFunc func, const char *prompt)
 {
-    char *str;
+    const char *str;
     int result;
     int disp = false;
     int pos;
@@ -638,14 +638,14 @@ int cur_real_linenumber(const BufferPtr &buf)
     return n;
 }
 
-static char *s_MarkString = NULL;
+static const char *s_MarkString = NULL;
 
-char *MarkString()
+const char *MarkString()
 {
     return s_MarkString;
 }
 
-void SetMarkString(char *str)
+void SetMarkString(const char *str)
 {
     s_MarkString = str;
 }

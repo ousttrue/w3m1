@@ -89,21 +89,20 @@ err:
 }
 #endif /* USE_MIGEMO */
 
-#ifdef USE_M17N
 /* normalize search string */
-char *
-conv_search_string(char *str, CharacterEncodingScheme f_ces)
+const char *
+conv_search_string(const char *str, CharacterEncodingScheme f_ces)
 {
     if (w3mApp::Instance().SearchConv && !WcOption.pre_conv &&
         GetCurrentTab()->GetCurrentBuffer()->document_charset != f_ces)
         str = wtf_conv_fit(str, GetCurrentTab()->GetCurrentBuffer()->document_charset);
     return str;
 }
-#endif
 
-SearchResultTypes forwardSearch(const BufferPtr &buf, char *str)
+SearchResultTypes forwardSearch(const BufferPtr &buf, const char *str)
 {
-    char *p, *first, *last;
+    const char *p;
+    char *first, *last;
     LinePtr l;
     LinePtr begin;
     int wrapped = false;
@@ -212,9 +211,10 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, char *str)
     return SR_NOTFOUND;
 }
 
-SearchResultTypes backwardSearch(const BufferPtr &buf, char *str)
+SearchResultTypes backwardSearch(const BufferPtr &buf, const char *str)
 {
-    char *p, *q, *found, *found_last, *first, *last;
+    const char *p;
+    char *q, *found, *found_last, *first, *last;
     LinePtr l;
     LinePtr begin;
     int wrapped = false;

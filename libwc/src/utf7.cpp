@@ -222,8 +222,6 @@ wc_push_tag_to_utf7(Str os, int ntag, wc_status *st)
 void
 wc_push_to_utf7(Str os, wc_wchar_t cc, wc_status *st)
 {
-    char *p;
-
   while (1) {
     switch (WC_CCS_SET(cc.ccs)) {
     case WC_CCS_UCS4:
@@ -251,7 +249,7 @@ wc_push_to_utf7(Str os, wc_wchar_t cc, wc_status *st)
 	if (!WcOption.no_replace) {
 	    if (st->ntag)
 	        st->ntag = wc_push_tag_to_utf7(os, 0, st);
-	    for (p = WC_REPLACE_W; *p; p++)
+	    for (auto p = WC_REPLACE_W; *p; p++)
 		wc_push_ucs_to_utf7(os, (uint32_t)*p, st);
 	}
 	return;
@@ -259,7 +257,7 @@ wc_push_to_utf7(Str os, wc_wchar_t cc, wc_status *st)
 	if (!WcOption.no_replace) {
 	    if (st->ntag)
 	        st->ntag = wc_push_tag_to_utf7(os, 0, st);
-	    for (p = WC_REPLACE; *p; p++)
+	    for (auto p = WC_REPLACE; *p; p++)
 		wc_push_ucs_to_utf7(os, (uint32_t)*p, st);
 	}
 	return;

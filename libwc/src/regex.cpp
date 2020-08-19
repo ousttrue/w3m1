@@ -66,7 +66,7 @@ int verbose;
 #define RE_TYPE_SYMBOL 4
 
 static longchar
-set_longchar(char *str)
+set_longchar(const char *str)
 {
     unsigned char *p = (unsigned char *)str;
     longchar r;
@@ -109,18 +109,18 @@ static int match_range_longchar(longchar *, longchar *, longchar *, int);
 /* 
  * regexCompile: compile regular expression
  */
-char *
+const char *
 regexCompile(const char *ex, int igncase)
 {
-    char *msg;
+    const char *msg;
     newRegex(const_cast<char *>(ex), igncase, &DefaultRegex, &msg);
     return msg;
 }
 
 static Regex *
-newRegex0(char **ex, int igncase, Regex *regex, char **msg, int level)
+newRegex0(const char **ex, int igncase, Regex *regex, const char **msg, int level)
 {
-    char *p;
+    // char *p;
     longchar *r;
     regexchar *re;
     int m;
@@ -131,7 +131,8 @@ newRegex0(char **ex, int igncase, Regex *regex, char **msg, int level)
     regex->alt_regex = NULL;
     re = regex->re;
     st_ptr = regex->storage;
-    for (p = *ex; *p != '\0'; p++)
+    auto p = *ex;
+    for (; *p != '\0'; p++)
     {
         re->mode = 0;
         switch (*p)
@@ -288,7 +289,7 @@ newRegex0(char **ex, int igncase, Regex *regex, char **msg, int level)
 }
 
 Regex *
-newRegex(char *ex, int igncase, Regex *regex, char **msg)
+newRegex(const char *ex, int igncase, Regex *regex, const char **msg)
 {
     return newRegex0(&ex, igncase, regex, msg, 0);
 }
@@ -298,7 +299,7 @@ newRegex(char *ex, int igncase, Regex *regex, char **msg)
  */
 int regexMatch(const char *str, int len, int firstp)
 {
-    return RegexMatch(&DefaultRegex, const_cast<char*>(str), len, firstp);
+    return RegexMatch(&DefaultRegex, const_cast<char *>(str), len, firstp);
 }
 
 int RegexMatch(Regex *re, char *str, int len, int firstp)
@@ -877,7 +878,6 @@ int main(int argc, char **argv)
     char *fpos, *epos;
     FILE *f = stdin;
     int i = 1;
-
 
     wtf_init(WC_CES_EUC_JP, WC_CES_EUC_JP);
 

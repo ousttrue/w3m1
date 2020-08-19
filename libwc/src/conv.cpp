@@ -9,8 +9,8 @@
 #include "utf8.h"
 #include "utf7.h"
 
-char *WcReplace = "?";
-char *WcReplaceW = "??";
+const char *WC_REPLACE = "?";
+const char *WC_REPLACE_W = "??";
 
 SingleCharacter GetCharacter(CharacterEncodingScheme ces, const uint8_t **src)
 {
