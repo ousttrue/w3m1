@@ -83,6 +83,11 @@ public:
     std::string ExtBrowser2;
     std::string ExtBrowser3;
     bool BackgroundExtViewer = true;
+    bool disable_secret_security_check = false;
+    std::string passwd_file = PASSWD_FILE;
+    std::string pre_form_file = PRE_FORM_FILE;
+    std::string ftppasswd;
+    bool ftppass_hostnamegen = true;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

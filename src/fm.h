@@ -140,15 +140,8 @@
 #define MAX_TMPF_TYPE 5
 
 
-global int disable_secret_security_check init(FALSE);
-global char *passwd_file init(PASSWD_FILE);
-global char *pre_form_file init(PRE_FORM_FILE);
-global char *ftppasswd init(NULL);
-global int ftppass_hostnamegen init(TRUE);
 global int do_download init(FALSE);
-#ifdef USE_IMAGE
 global char *image_source init(NULL);
-#endif
 global char *UserAgent init(NULL);
 global int NoSendReferer init(FALSE);
 global char *AcceptLang init(NULL);

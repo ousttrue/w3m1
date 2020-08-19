@@ -1218,7 +1218,7 @@ FILE *openSecretFile(const char *fname)
      *    readable and writable.
      *   [w3m-dev 03368][w3m-dev 03369][w3m-dev 03370]
      */
-    if (disable_secret_security_check)
+    if (w3mApp::Instance().disable_secret_security_check)
         /* do nothing */;
     else if ((st.st_mode & (S_IRWXG | S_IRWXO)) != 0)
     {

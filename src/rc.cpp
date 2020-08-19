@@ -728,11 +728,11 @@ auto sections = make_array(
                  }},
     ParamSection{N_("Network Settings"),
                  {
-                     {"passwd_file", P_STRING, PI_TEXT, passwd_file, CMT_PASSWDFILE},
-                     {"disable_secret_security_check", P_INT, PI_ONOFF, disable_secret_security_check, CMT_DISABLE_SECRET_SECURITY_CHECK},
-                     {"ftppasswd", P_STRING, PI_TEXT, ftppasswd, CMT_FTPPASS},
-                     {"ftppass_hostnamegen", P_INT, PI_ONOFF, ftppass_hostnamegen, CMT_FTPPASS_HOSTNAMEGEN},
-                     {"pre_form_file", P_STRING, PI_TEXT, pre_form_file, CMT_PRE_FORM_FILE},
+                     {"passwd_file", P_STRING, PI_TEXT, w3mApp::Instance().passwd_file, CMT_PASSWDFILE},
+                     {"disable_secret_security_check", P_INT, PI_ONOFF, w3mApp::Instance().disable_secret_security_check, CMT_DISABLE_SECRET_SECURITY_CHECK},
+                     {"ftppasswd", P_STRING, PI_TEXT, w3mApp::Instance().ftppasswd, CMT_FTPPASS},
+                     {"ftppass_hostnamegen", P_INT, PI_ONOFF, w3mApp::Instance().ftppass_hostnamegen, CMT_FTPPASS_HOSTNAMEGEN},
+                     {"pre_form_file", P_STRING, PI_TEXT, w3mApp::Instance().pre_form_file, CMT_PRE_FORM_FILE},
                      {"user_agent", P_STRING, PI_TEXT, UserAgent, CMT_USERAGENT},
                      {"no_referer", P_INT, PI_ONOFF, NoSendReferer, CMT_NOSENDREFERER},
                      {"accept_language", P_STRING, PI_TEXT, AcceptLang, CMT_ACCEPTLANG},
@@ -1300,7 +1300,7 @@ static void loadPasswd(void)
     FILE *fp;
 
     passwords = NULL;
-    fp = openSecretFile(passwd_file);
+    fp = openSecretFile(w3mApp::Instance().passwd_file.c_str());
     if (fp != NULL)
     {
         parsePasswd(fp, 0);

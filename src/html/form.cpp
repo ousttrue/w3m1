@@ -885,7 +885,7 @@ void loadPreForm(void)
     char *name = NULL;
 
     PreForm = NULL;
-    fp = openSecretFile(pre_form_file);
+    fp = openSecretFile(w3mApp::Instance().pre_form_file.c_str());
     if (fp == NULL)
         return;
     while (1)
