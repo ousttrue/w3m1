@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include "mailcap.h"
-#include "fm.h"
+
 #include "indep.h"
 #include "gc_helper.h"
 #include "myctype.h"

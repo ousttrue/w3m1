@@ -1,7 +1,7 @@
 #include "event.h"
 #include "commands.h"
 #include "dispatcher.h"
-#include "fm.h"
+
 #include "terms.h"
 #include "tab.h"
 #include "buffer.h"

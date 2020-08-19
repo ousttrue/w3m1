@@ -1,7 +1,7 @@
 #include <sstream>
 #include <assert.h>
 #include <unistd.h>
-#include "fm.h"
+
 #include "history.h"
 #include "frontend/buffer.h"
 #include "frontend/display.h"

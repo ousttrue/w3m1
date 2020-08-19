@@ -4,7 +4,7 @@
 #include "textlist.h"
 #include "ctrlcode.h"
 #include "file.h"
-#include "fm.h"
+
 #include "frontend/buffer.h"
 #include "frontend/line.h"
 #include "frontend/mouse.h"

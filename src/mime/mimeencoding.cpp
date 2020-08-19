@@ -5,7 +5,7 @@
 
 #include <sys/types.h>
 #include <wc.h>
-#include "fm.h"
+
 #include "mime/mimeencoding.h"
 #include "myctype.h"
 

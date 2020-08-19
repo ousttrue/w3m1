@@ -1,6 +1,6 @@
 #include "mime/mimetypes.h"
 #include "mime/mailcap.h"
-#include "fm.h"
+
 #include "indep.h"
 #include "textlist.h"
 #include "frontend/buffer.h"

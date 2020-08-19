@@ -4,7 +4,7 @@
  */
 #include "config.h"
 #include "termcap_str.h"
-#include "fm.h"
+
 #include "commands.h"
 #include "frontend/terms.h"
 #include "indep.h"

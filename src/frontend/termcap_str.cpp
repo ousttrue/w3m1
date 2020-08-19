@@ -1,5 +1,5 @@
 #include "config.h"
-#include "fm.h"
+
 #include "indep.h"
 #include "termcap_str.h"
 #include "event.h"

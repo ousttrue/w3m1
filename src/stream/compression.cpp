@@ -6,7 +6,7 @@
 #include "stream/istream.h"
 #include "rc.h"
 #include "file.h"
-#include "fm.h"
+
 #include "html/html.h"
 #include "stream/local_cgi.h"
 

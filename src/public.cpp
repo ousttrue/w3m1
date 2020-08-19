@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include "textlist.h"
 #include "history.h"
-#include "fm.h"
+
 #include "indep.h"
 #include "gc_helper.h"
 #include "rc.h"

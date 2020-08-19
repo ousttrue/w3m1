@@ -1,7 +1,7 @@
 #include <sstream>
 #include "link.h"
 #include "indep.h"
-#include "fm.h"
+
 #include "w3m.h"
 
 Link Link::create(const parsed_tag &tag, CharacterEncodingScheme ces)
