@@ -7,5 +7,11 @@ int main(int argc, char **argv)
     std::u32string a = U"日本語";
     plog::init(plog::debug, "w3m.log"); // Step2: initialize the logger
     PLOGD << "==== utf-8: 開始 ====";
-    return w3mApp::Instance().Main(argc, argv);
+
+    if(argc<2)
+    {
+        return 1;
+    }
+
+    return w3mApp::Instance().Main(URL::Parse(argv[1]));
 }

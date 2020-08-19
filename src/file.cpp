@@ -709,7 +709,7 @@ getpipe(char *cmd)
     auto f = popen(cmd, "r");
     if (f == NULL)
         return NULL;
-    
+
     auto buf = newBuffer({});
     buf->pagerSource = newFileStream(f, pclose);
     buf->filename = cmd;
@@ -786,7 +786,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
         buf->type = "text/plain";
     }
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !w3mApp::Instance().useExtImageViewer &&
-             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
+             t.starts_with("image/"))
     {
         // *GetCurBaseUrl() = URL::Parse("-", NULL);
         buf = loadImageBuffer({}, stream);
@@ -935,7 +935,6 @@ LinePtr getNextPage(BufferPtr buf, int plen)
         last = buf->NextLine(last);
     return last;
 }
-
 
 int checkSaveFile(const InputStreamPtr &stream, char *path2)
 {
@@ -1182,7 +1181,7 @@ const char *last_modified(const BufferPtr &buf)
     //     }
     //     return "unknown";
     // }
-    // else 
+    // else
     if (buf->currentURL.scheme == SCM_LOCAL)
     {
         if (stat(buf->currentURL.path.c_str(), &st) < 0)

@@ -148,13 +148,9 @@ dump_head(w3mApp *w3m, BufferPtr buf)
 void do_dump(w3mApp *w3m, BufferPtr buf)
 {
     TrapJmp([&]() {
-        if (w3m->w3m_dump & DUMP_EXTRA)
             dump_extra(buf);
-        if (w3m->w3m_dump & DUMP_HEAD)
             dump_head(w3m, buf);
-        if (w3m->w3m_dump & DUMP_SOURCE)
             buf->DumpSource();
-        if (w3m->w3m_dump == DUMP_BUFFER)
         {
             int i;
             saveBuffer(buf, stdout, false);
@@ -2043,8 +2039,8 @@ void saveBufferInfo()
 {
     FILE *fp;
 
-    if (w3mApp::Instance().w3m_dump)
-        return;
+    // if (w3mApp::Instance().w3m_dump)
+    //     return;
     if ((fp = fopen(rcFile("bufinfo"), "w")) == NULL)
     {
         return;

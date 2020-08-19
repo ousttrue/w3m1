@@ -283,23 +283,7 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     }
     form_stack[form_sp] = fid;
 
-    if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
-    {
-        Str tmp = Sprintf("<form_int fid=\"%d\" action=\"%s\" method=\"%s\"",
-                          fid, html_quote(q), html_quote(p));
-        if (s)
-            tmp->Push(Sprintf(" enctype=\"%s\"", html_quote(s)));
-        if (tg)
-            tmp->Push(Sprintf(" target=\"%s\"", html_quote(tg)));
-        if (n)
-            tmp->Push(Sprintf(" name=\"%s\"", html_quote(n)));
-#ifdef USE_M17N
-        if (r)
-            tmp->Push(Sprintf(" accept-charset=\"%s\"", html_quote(r)));
-#endif
-        tmp->Push(">");
-        return tmp;
-    }
+
 
     forms[fid] = newFormList(q, p, r, s, tg, n, nullptr);
     return nullptr;

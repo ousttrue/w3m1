@@ -43,10 +43,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
     struct html_feed_environ htmlenv1;
     struct readbuffer obuf;
     init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, nullptr, newBuf->width, 0);
-    if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
-        htmlenv1.f = stdout;
-    else
-        htmlenv1.buf = newTextLineList();
+    htmlenv1.buf = newTextLineList();
 
     //
     //
@@ -80,8 +77,6 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
             linelen += lineBuf2->Size();
             // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
             //     printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), true));
-            if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
-                continue;
             showProgress(&linelen, &trbyte, 0);
             /*
             * if (frame_source)
@@ -150,7 +145,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
     return newBuf;
 }
 
-// /* 
+// /*
 //  * loadHTMLBuffer: read file and make new buffer
 //  */
 // BufferPtr loadHTMLBuffer(const URLFilePtr &f)

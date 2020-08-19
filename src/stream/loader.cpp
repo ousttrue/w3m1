@@ -429,7 +429,7 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_v
         b = loadBuffer(url, stream, content_charset);
     }
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !w3mApp::Instance().useExtImageViewer &&
-             !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && content_type.starts_with("image/"))
+             content_type.starts_with("image/"))
     {
         b = loadImageBuffer(url, stream);
     }
@@ -445,11 +445,6 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_v
             b->currentURL = url;
         if (is_html_type(content_type))
             b->type = "text/html";
-        else if (w3mApp::Instance().w3m_backend)
-        {
-            Str s = Strnew(content_type);
-            b->type = s->ptr;
-        }
         // else if (proc == loadImageBuffer)
         //     b->type = "text/html";
         // else
@@ -530,8 +525,6 @@ BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEnco
         linelen += lineBuf2->Size();
         // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
         //     printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, true));
-        if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
-            continue;
         showProgress(&linelen, &trbyte, 0);
         // if (frame_source)
         //     continue;

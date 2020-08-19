@@ -318,14 +318,6 @@ public:
     // lineeditor
     Hist *TextHist = nullptr;
 
-    // backend mode
-    bool w3m_backend = false;
-    TextList *backend_batch_commands = nullptr;
-
-    // debug & logging
-    bool w3m_debug = false;
-    DumpFlags w3m_dump = DUMP_NONE;
-
 public:
     // 最終的にはこれを使わず引数経由で得るようにする
     static w3mApp &Instance()
@@ -334,7 +326,7 @@ public:
         return w3m;
     }
 
-    int Main(int argc, char **argv);
+    int Main(const URL &url);
 
     void _quitfm(int confirm);
 
