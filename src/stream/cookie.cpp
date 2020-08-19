@@ -529,7 +529,7 @@ int add_cookie(const URL &pu, Str name, Str value,
     {
         p = new Cookie;
         p->flag = 0;
-        if (default_use_cookie)
+        if (w3mApp::Instance().default_use_cookie)
             p->flag |= COO_USE;
         p->next = First_cookie;
         First_cookie = p;
@@ -1013,7 +1013,7 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
     if (pu && name->Size() > 0)
     {
         int err;
-        if (show_cookie)
+        if (w3mApp::Instance().show_cookie)
         {
             if (flag & COO_SECURE)
                 disp_message_nsec("Received a secured cookie", FALSE, 1,
@@ -1029,11 +1029,11 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
                        comment, version, port, commentURL);
         if (err)
         {
-            const char *ans = (accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
+            const char *ans = (w3mApp::Instance().accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
                             ? "y"
                             : NULL;
             if (w3mApp::Instance().fmInitialized && (err & COO_OVERRIDE_OK) &&
-                accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
+                w3mApp::Instance().accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
             {
                 Str msg = Sprintf("Accept bad cookie from %s for %s?",
                                   pu.host,
@@ -1062,10 +1062,10 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
                     emsg =
                         "This cookie was rejected to prevent security violation.";
                 record_err_message(emsg);
-                if (show_cookie)
+                if (w3mApp::Instance().show_cookie)
                     disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
             }
-            else if (show_cookie)
+            else if (w3mApp::Instance().show_cookie)
                 disp_message_nsec(Sprintf("Accepting invalid cookie: %s=%s",
                                           name->ptr, value->ptr)
                                       ->ptr,

@@ -40,16 +40,23 @@ enum MailtoOption
 
 enum DisplayInsDel
 {
-    DISPLAY_INS_DEL_SIMPLE= 0,
-    DISPLAY_INS_DEL_NORMAL= 1,
-    DISPLAY_INS_DEL_FONTIFY= 2,
+    DISPLAY_INS_DEL_SIMPLE = 0,
+    DISPLAY_INS_DEL_NORMAL = 1,
+    DISPLAY_INS_DEL_FONTIFY = 2,
 };
 
 enum DefaultUrlTypes
 {
-    DEFAULT_URL_EMPTY= 0,
-    DEFAULT_URL_CURRENT= 1,
-    DEFAULT_URL_LINK= 2,
+    DEFAULT_URL_EMPTY = 0,
+    DEFAULT_URL_CURRENT = 1,
+    DEFAULT_URL_LINK = 2,
+};
+
+enum AcceptBadCookieTypes
+{
+    ACCEPT_BAD_COOKIE_DISCARD = 0,
+    ACCEPT_BAD_COOKIE_ACCEPT = 1,
+    ACCEPT_BAD_COOKIE_ASK = 2,
 };
 
 class w3mApp
@@ -120,19 +127,22 @@ public:
     bool FoldTextarea = false;
     DefaultUrlTypes DefaultURLString = DEFAULT_URL_EMPTY;
     bool MarkAllPages = false;
-    std::string mailcap_files =USER_MAILCAP ", " SYS_MAILCAP;
-    std::string mimetypes_files =USER_MIMETYPES ", " SYS_MIMETYPES;
-    std::string urimethodmap_files =USER_URIMETHODMAP ", " SYS_URIMETHODMAP;
-    bool multicolList =false;
-    bool SearchConv=true;
-    bool SimplePreserveSpace=false;
-    bool no_rc_dir=false;
+    std::string mailcap_files = USER_MAILCAP ", " SYS_MAILCAP;
+    std::string mimetypes_files = USER_MIMETYPES ", " SYS_MIMETYPES;
+    std::string urimethodmap_files = USER_URIMETHODMAP ", " SYS_URIMETHODMAP;
+    bool multicolList = false;
+    bool SearchConv = true;
+    bool SimplePreserveSpace = false;
+    bool no_rc_dir = false;
     std::string rc_dir;
-    bool reverse_mouse=false;
-    bool relative_wheel_scroll=false;
-    int fixed_wheel_scroll_count=5;
-    int relative_wheel_scroll_ratio=30;
+    bool reverse_mouse = false;
+    bool relative_wheel_scroll = false;
+    int fixed_wheel_scroll_count = 5;
+    int relative_wheel_scroll_ratio = 30;
     std::string tmp_dir;
+    int default_use_cookie = true;
+    int show_cookie = true;
+    AcceptBadCookieTypes accept_bad_cookie = ACCEPT_BAD_COOKIE_DISCARD;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

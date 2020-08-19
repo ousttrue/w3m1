@@ -769,9 +769,9 @@ auto sections = make_array(
     ParamSection{N_("Cookie Settings"),
                  {
                      {"use_cookie", P_INT, PI_ONOFF, w3mApp::Instance().use_cookie, CMT_USECOOKIE},
-                     {"show_cookie", P_INT, PI_ONOFF, show_cookie, CMT_SHOWCOOKIE},
+                     {"show_cookie", P_INT, PI_ONOFF, w3mApp::Instance().show_cookie, CMT_SHOWCOOKIE},
                      {"accept_cookie", P_INT, PI_ONOFF, w3mApp::Instance().accept_cookie, CMT_ACCEPTCOOKIE},
-                     {"accept_bad_cookie", P_INT, PI_SEL_C, accept_bad_cookie, CMT_ACCEPTBADCOOKIE, (void *)badcookiestr},
+                     {"accept_bad_cookie", P_INT, PI_SEL_C, w3mApp::Instance().accept_bad_cookie, CMT_ACCEPTBADCOOKIE, (void *)badcookiestr},
                      {"cookie_reject_domains", P_STRING, PI_TEXT, cookie_reject_domains, CMT_COOKIE_REJECT_DOMAINS},
                      {"cookie_accept_domains", P_STRING, PI_TEXT, cookie_accept_domains, CMT_COOKIE_ACCEPT_DOMAINS},
                      {"cookie_avoid_wrong_number_of_dots", P_STRING, PI_TEXT, cookie_avoid_wrong_number_of_dots, CMT_COOKIE_AVOID_WONG_NUMBER_OF_DOTS},
