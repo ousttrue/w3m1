@@ -396,7 +396,7 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
     }
     if (newline)
     {
-        if (!FoldTextarea)
+        if (!w3mApp::Instance().FoldTextarea)
         {
             while (*p && *p != '\r' && *p != '\n')
                 p++;

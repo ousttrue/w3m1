@@ -38,6 +38,12 @@ enum MailtoOption
     MAILTO_OPTIONS_USE_MAILTO_URL = 2,
 };
 
+enum DisplayInsDel
+{
+    DISPLAY_INS_DEL_SIMPLE= 0,
+    DISPLAY_INS_DEL_NORMAL= 1,
+    DISPLAY_INS_DEL_FONTIFY= 2,
+};
 class w3mApp
 {
     w3mApp();
@@ -101,6 +107,9 @@ public:
     std::string DirBufferCommand = "file:///$LIB/dirlist.cgi"; // CGI_EXTENSION;
     bool UseDictCommand = false;
     std::string DictCommand = "file:///$LIB/w3mdict.cgi"; // CGI_EXTENSION;
+    bool ignore_null_img_alt = true;
+    DisplayInsDel displayInsDel = DISPLAY_INS_DEL_NORMAL;
+    bool FoldTextarea = false;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

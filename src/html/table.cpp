@@ -3212,7 +3212,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             suspend_or_pushdata(tbl, line);
         break;
     case HTML_DEL:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             mode->pre_mode |= TBLM_DEL;
@@ -3226,7 +3226,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         }
         break;
     case HTML_N_DEL:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             mode->pre_mode &= ~TBLM_DEL;
@@ -3240,7 +3240,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         }
         break;
     case HTML_S:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             mode->pre_mode |= TBLM_S;
@@ -3254,7 +3254,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         }
         break;
     case HTML_N_S:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             mode->pre_mode &= ~TBLM_S;
@@ -3269,7 +3269,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         break;
     case HTML_INS:
     case HTML_N_INS:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             break;

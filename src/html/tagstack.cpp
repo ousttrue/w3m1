@@ -2006,7 +2006,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_AREA:
         return 0;
     case HTML_DEL:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             obuf->flag |= RB_DEL;
@@ -2024,7 +2024,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         return 1;
     case HTML_N_DEL:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             obuf->flag &= ~RB_DEL;
@@ -2048,7 +2048,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         return 1;
     case HTML_S:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             obuf->flag |= RB_S;
@@ -2066,7 +2066,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         return 1;
     case HTML_N_S:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             obuf->flag &= ~RB_S;
@@ -2090,7 +2090,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         return 1;
     case HTML_INS:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             break;
@@ -2107,7 +2107,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         return 1;
     case HTML_N_INS:
-        switch (displayInsDel)
+        switch (w3mApp::Instance().displayInsDel)
         {
         case DISPLAY_INS_DEL_SIMPLE:
             break;

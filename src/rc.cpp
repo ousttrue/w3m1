@@ -645,9 +645,9 @@ auto sections = make_array(
                      {"multicol", P_INT, PI_ONOFF, multicolList, CMT_MULTICOL},
                      //  {"alt_entity", P_CHARINT, PI_ONOFF, UseAltEntity, CMT_ALT_ENTITY},
                      {"graphic_char", P_CHARINT, PI_SEL_C, w3mApp::Instance().UseGraphicChar, CMT_GRAPHIC_CHAR, (void *)graphic_char_str},
-                     {"fold_textarea", P_CHARINT, PI_ONOFF, FoldTextarea, CMT_FOLD_TEXTAREA},
-                     {"display_ins_del", P_INT, PI_SEL_C, displayInsDel, CMT_DISP_INS_DEL, displayinsdel},
-                     {"ignore_null_img_alt", P_INT, PI_ONOFF, ignore_null_img_alt, CMT_IGNORE_NULL_IMG_ALT},
+                     {"fold_textarea", P_CHARINT, PI_ONOFF, w3mApp::Instance().FoldTextarea, CMT_FOLD_TEXTAREA},
+                     {"display_ins_del", P_INT, PI_SEL_C, w3mApp::Instance().displayInsDel, CMT_DISP_INS_DEL, displayinsdel},
+                     {"ignore_null_img_alt", P_INT, PI_ONOFF, w3mApp::Instance().ignore_null_img_alt, CMT_IGNORE_NULL_IMG_ALT},
                      {"view_unseenobject", P_INT, PI_ONOFF, view_unseenobject, CMT_VIEW_UNSEENOBJECTS},
                      /* XXX: emacs-w3m force to off display_image even if image options off */
                      {"display_image", P_INT, PI_ONOFF, w3mApp::Instance().displayImage, CMT_DISP_IMAGE},

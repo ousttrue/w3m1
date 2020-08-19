@@ -140,12 +140,6 @@
 #define MAX_TMPF_TYPE 5
 
 
-global int ignore_null_img_alt init(TRUE);
-#define DISPLAY_INS_DEL_SIMPLE 0
-#define DISPLAY_INS_DEL_NORMAL 1
-#define DISPLAY_INS_DEL_FONTIFY 2
-global int displayInsDel init(DISPLAY_INS_DEL_NORMAL);
-global int FoldTextarea init(FALSE);
 
 #define DEFAULT_URL_EMPTY 0
 #define DEFAULT_URL_CURRENT 1
