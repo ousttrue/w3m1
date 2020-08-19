@@ -139,24 +139,14 @@
 #define TMPF_COOKIE 4
 #define MAX_TMPF_TYPE 5
 
-global char SearchConv init(TRUE);
-global char SimplePreserveSpace init(FALSE);
-
-
 extern const char *graph_symbol[];
 extern const char *graph2_symbol[];
 #define N_GRAPH_SYMBOL 32
 
-global int no_rc_dir init(FALSE);
-global char *rc_dir init(NULL);
-global char *tmp_dir;
 
 extern int mouseActive;
-global int reverse_mouse init(FALSE);
-global int relative_wheel_scroll init(FALSE);
-global int fixed_wheel_scroll_count init(5);
-global int relative_wheel_scroll_ratio init(30);
 #define LIMIT_MOUSE_MENU 100
+
 
 global int default_use_cookie init(TRUE);
 global int show_cookie init(TRUE);

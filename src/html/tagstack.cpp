@@ -2559,7 +2559,7 @@ table_start:
                         is_hangul = wtf_is_hangul((uint8_t *)str);
                     else
                         is_hangul = 0;
-                    if (!SimplePreserveSpace && mode == PC_KANJI1 &&
+                    if (!w3mApp::Instance().SimplePreserveSpace && mode == PC_KANJI1 &&
                         !is_hangul && !prev_is_hangul &&
                         obuf->pos > h_env->currentEnv().indent &&
                         obuf->line->Back() == ' ')

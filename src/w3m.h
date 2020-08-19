@@ -124,6 +124,15 @@ public:
     std::string mimetypes_files =USER_MIMETYPES ", " SYS_MIMETYPES;
     std::string urimethodmap_files =USER_URIMETHODMAP ", " SYS_URIMETHODMAP;
     bool multicolList =false;
+    bool SearchConv=true;
+    bool SimplePreserveSpace=false;
+    bool no_rc_dir=false;
+    std::string rc_dir;
+    bool reverse_mouse=false;
+    bool relative_wheel_scroll=false;
+    int fixed_wheel_scroll_count=5;
+    int relative_wheel_scroll_ratio=30;
+    std::string tmp_dir;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

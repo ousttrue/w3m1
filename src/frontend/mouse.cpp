@@ -383,10 +383,10 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
 
 static int mouse_scroll_line()
 {
-    if (relative_wheel_scroll)
-        return (relative_wheel_scroll_ratio * (::LINES - 1) + 99) / 100;
+    if (w3mApp::Instance().relative_wheel_scroll)
+        return (w3mApp::Instance().relative_wheel_scroll_ratio * (::LINES - 1) + 99) / 100;
     else
-        return fixed_wheel_scroll_count;
+        return w3mApp::Instance().fixed_wheel_scroll_count;
 }
 
 void process_mouse(MouseBtnAction btn, int x, int y)
@@ -452,7 +452,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                     delta_x = 0;
                 if (abs(delta_y) < abs(delta_x) / 3)
                     delta_y = 0;
-                if (reverse_mouse)
+                if (w3mApp::Instance().reverse_mouse)
                 {
                     delta_y = -delta_y;
                     delta_x = -delta_x;

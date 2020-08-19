@@ -93,7 +93,7 @@ err:
 char *
 conv_search_string(char *str, CharacterEncodingScheme f_ces)
 {
-    if (SearchConv && !WcOption.pre_conv &&
+    if (w3mApp::Instance().SearchConv && !WcOption.pre_conv &&
         GetCurrentTab()->GetCurrentBuffer()->document_charset != f_ces)
         str = wtf_conv_fit(str, GetCurrentTab()->GetCurrentBuffer()->document_charset);
     return str;

@@ -1040,7 +1040,7 @@ Str tmpfname(int type, const char *ext)
 {
     Str tmpf;
     tmpf = Sprintf("%s/w3m%s%d-%d%s",
-                   tmp_dir,
+                   w3mApp::Instance().tmp_dir.c_str(),
                    tmpf_base[type],
                    w3mApp::Instance().CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
     pushText(w3mApp::Instance().fileToDelete, tmpf->ptr);

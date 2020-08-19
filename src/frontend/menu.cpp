@@ -1062,10 +1062,10 @@ static int
 mMouse_scroll_line(void)
 {
     int i = 0;
-    if (relative_wheel_scroll)
-        i = (relative_wheel_scroll_ratio * CurrentMenu->height + 99) / 100;
+    if (w3mApp::Instance().relative_wheel_scroll)
+        i = (w3mApp::Instance().relative_wheel_scroll_ratio * CurrentMenu->height + 99) / 100;
     else
-        i = fixed_wheel_scroll_count;
+        i = w3mApp::Instance().fixed_wheel_scroll_count;
     return i ? i : 1;
 }
 

@@ -592,7 +592,6 @@ static struct sel_c dnsorders[] = {
     {N_S(DNS_ORDER_INET6_ONLY), N_("inet6 only")},
     {0, NULL, NULL}};
 
-
 static struct sel_c badcookiestr[] = {
     {N_S(ACCEPT_BAD_COOKIE_DISCARD), N_("discard")},
     {N_S(ACCEPT_BAD_COOKIE_ASK), N_("ask")},
@@ -695,10 +694,10 @@ auto sections = make_array(
                      //  {"use_migemo", P_INT, PI_ONOFF, use_migemo, CMT_USE_MIGEMO},
                      //  {"migemo_command", P_STRING, PI_TEXT, migemo_command, CMT_MIGEMO_COMMAND},
                      {"use_mouse", P_INT, PI_ONOFF, w3mApp::Instance().use_mouse, CMT_MOUSE},
-                     {"reverse_mouse", P_INT, PI_ONOFF, reverse_mouse, CMT_REVERSE_MOUSE},
-                     {"relative_wheel_scroll", P_INT, PI_SEL_C, relative_wheel_scroll, CMT_RELATIVE_WHEEL_SCROLL, (void *)wheelmode},
-                     {"relative_wheel_scroll_ratio", P_INT, PI_TEXT, relative_wheel_scroll_ratio, CMT_RELATIVE_WHEEL_SCROLL_RATIO},
-                     {"fixed_wheel_scroll_count", P_INT, PI_TEXT, fixed_wheel_scroll_count, CMT_FIXED_WHEEL_SCROLL_COUNT},
+                     {"reverse_mouse", P_INT, PI_ONOFF, w3mApp::Instance().reverse_mouse, CMT_REVERSE_MOUSE},
+                     {"relative_wheel_scroll", P_INT, PI_SEL_C, w3mApp::Instance().relative_wheel_scroll, CMT_RELATIVE_WHEEL_SCROLL, (void *)wheelmode},
+                     {"relative_wheel_scroll_ratio", P_INT, PI_TEXT, w3mApp::Instance().relative_wheel_scroll_ratio, CMT_RELATIVE_WHEEL_SCROLL_RATIO},
+                     {"fixed_wheel_scroll_count", P_INT, PI_TEXT, w3mApp::Instance().fixed_wheel_scroll_count, CMT_FIXED_WHEEL_SCROLL_COUNT},
                      {"clear_buffer", P_INT, PI_ONOFF, clear_buffer, CMT_CLEAR_BUF},
                      {"decode_cte", P_CHARINT, PI_ONOFF, w3mApp::Instance().DecodeCTE, CMT_DECODE_CTE},
                      {"auto_uncompress", P_CHARINT, PI_ONOFF, w3mApp::Instance().AutoUncompress, CMT_AUTO_UNCOMPRESS},
@@ -744,9 +743,9 @@ auto sections = make_array(
                      {"follow_redirection", P_INT, PI_TEXT, FollowRedirection, CMT_FOLLOW_REDIRECTION},
                      {"meta_refresh", P_CHARINT, PI_ONOFF, w3mApp::Instance().MetaRefresh, CMT_META_REFRESH},
                      {"dns_order", P_INT, PI_SEL_C, w3mApp::Instance().DNS_order, CMT_DNS_ORDER, (void *)dnsorders},
-                    //  {"nntpserver", P_STRING, PI_TEXT, NNTP_server, CMT_NNTP_SERVER},
-                    //  {"nntpmode", P_STRING, PI_TEXT, NNTP_mode, CMT_NNTP_MODE},
-                    //  {"max_news", P_INT, PI_TEXT, MaxNewsMessage, CMT_MAX_NEWS},
+                     //  {"nntpserver", P_STRING, PI_TEXT, NNTP_server, CMT_NNTP_SERVER},
+                     //  {"nntpmode", P_STRING, PI_TEXT, NNTP_mode, CMT_NNTP_MODE},
+                     //  {"max_news", P_INT, PI_TEXT, MaxNewsMessage, CMT_MAX_NEWS},
                  }},
     ParamSection{N_("Proxy Settings"),
                  {
@@ -791,7 +790,7 @@ auto sections = make_array(
                      {"use_language_tag", P_CHARINT, PI_ONOFF, WcOption.use_language_tag, CMT_USE_LANGUAGE_TAG},
                      {"ucs_conv", P_CHARINT, PI_ONOFF, WcOption.ucs_conv, CMT_UCS_CONV},
                      {"pre_conv", P_CHARINT, PI_ONOFF, WcOption.pre_conv, CMT_PRE_CONV},
-                     {"search_conv", P_CHARINT, PI_ONOFF, SearchConv, CMT_SEARCH_CONV},
+                     {"search_conv", P_CHARINT, PI_ONOFF, w3mApp::Instance().SearchConv, CMT_SEARCH_CONV},
                      {"fix_width_conv", P_CHARINT, PI_ONOFF, WcOption.fix_width_conv, CMT_FIX_WIDTH_CONV},
                      {"use_gb12345_map", P_CHARINT, PI_ONOFF, WcOption.use_gb12345_map, CMT_USE_GB12345_MAP},
                      {"use_jisx0201", P_CHARINT, PI_ONOFF, WcOption.use_jisx0201, CMT_USE_JISX0201},
@@ -801,7 +800,7 @@ auto sections = make_array(
                      {"use_jisx0213", P_CHARINT, PI_ONOFF, WcOption.use_jisx0213, CMT_USE_JISX0213},
                      {"strict_iso2022", P_CHARINT, PI_ONOFF, WcOption.strict_iso2022, CMT_STRICT_ISO2022},
                      {"gb18030_as_ucs", P_CHARINT, PI_ONOFF, WcOption.gb18030_as_ucs, CMT_GB18030_AS_UCS},
-                     {"simple_preserve_space", P_CHARINT, PI_ONOFF, SimplePreserveSpace, CMT_SIMPLE_PRESERVE_SPACE},
+                     {"simple_preserve_space", P_CHARINT, PI_ONOFF, w3mApp::Instance().SimplePreserveSpace, CMT_SIMPLE_PRESERVE_SPACE},
                  }});
 
 static void create_option_search_table()
@@ -1371,57 +1370,56 @@ void sync_with_option(void)
 
 void init_rc(void)
 {
-    int i;
     struct stat st;
     FILE *f;
 
-    if (rc_dir != NULL)
+    if (w3mApp::Instance().rc_dir.size())
         goto open_rc;
 
-    rc_dir = expandPath(RC_DIR);
-    i = strlen(rc_dir);
-    if (i > 1 && rc_dir[i - 1] == '/')
-        rc_dir[i - 1] = '\0';
+    w3mApp::Instance().rc_dir = expandPath(RC_DIR);
+    {
+        int i = w3mApp::Instance().rc_dir.size();
+        if (i > 1 && w3mApp::Instance().rc_dir[i - 1] == '/')
+            w3mApp::Instance().rc_dir[i - 1] = '\0';
+    }
 
-#ifdef USE_M17N
     display_charset_str = wc_get_ces_list();
     document_charset_str = display_charset_str;
     system_charset_str = display_charset_str;
-#endif
 
-    if (stat(rc_dir, &st) < 0)
+    if (stat(w3mApp::Instance().rc_dir.c_str(), &st) < 0)
     {
         if (errno == ENOENT)
         { /* no directory */
-            if (do_mkdir(rc_dir, 0700) < 0)
+            if (do_mkdir(w3mApp::Instance().rc_dir.c_str(), 0700) < 0)
             {
-                fprintf(stderr, "Can't create config directory (%s)!", rc_dir);
+                fprintf(stderr, "Can't create config directory (%s)!", w3mApp::Instance().rc_dir.c_str());
                 goto rc_dir_err;
             }
             else
             {
-                stat(rc_dir, &st);
+                stat(w3mApp::Instance().rc_dir.c_str(), &st);
             }
         }
         else
         {
-            fprintf(stderr, "Can't open config directory (%s)!", rc_dir);
+            fprintf(stderr, "Can't open config directory (%s)!", w3mApp::Instance().rc_dir.c_str());
             goto rc_dir_err;
         }
     }
     if (!S_ISDIR(st.st_mode))
     {
         /* not a directory */
-        fprintf(stderr, "%s is not a directory!", rc_dir);
+        fprintf(stderr, "%s is not a directory!", w3mApp::Instance().rc_dir.c_str());
         goto rc_dir_err;
     }
     if (!(st.st_mode & S_IWUSR))
     {
-        fprintf(stderr, "%s is not writable!", rc_dir);
+        fprintf(stderr, "%s is not writable!", w3mApp::Instance().rc_dir.c_str());
         goto rc_dir_err;
     }
-    no_rc_dir = FALSE;
-    tmp_dir = rc_dir;
+    w3mApp::Instance().no_rc_dir = FALSE;
+    w3mApp::Instance().tmp_dir = w3mApp::Instance().rc_dir;
 
     if (w3mApp::Instance().config_file.empty())
         w3mApp::Instance().config_file = rcFile(CONFIG_FILE);
@@ -1448,11 +1446,14 @@ open_rc:
     return;
 
 rc_dir_err:
-    no_rc_dir = TRUE;
-    if (((tmp_dir = getenv("TMPDIR")) == NULL || *tmp_dir == '\0') &&
-        ((tmp_dir = getenv("TMP")) == NULL || *tmp_dir == '\0') &&
-        ((tmp_dir = getenv("TEMP")) == NULL || *tmp_dir == '\0'))
-        tmp_dir = "/tmp";
+    w3mApp::Instance().no_rc_dir = TRUE;
+    {
+        char *tmp_dir;
+        if (((tmp_dir = getenv("TMPDIR")) == NULL || *tmp_dir == '\0') &&
+            ((tmp_dir = getenv("TMP")) == NULL || *tmp_dir == '\0') &&
+            ((tmp_dir = getenv("TEMP")) == NULL || *tmp_dir == '\0'))
+            w3mApp::Instance().tmp_dir = "/tmp";
+    }
     create_option_search_table();
     goto open_rc;
 }
@@ -1648,7 +1649,7 @@ rcFile(const char *base)
          (base[0] == '.' && (base[1] == '/' || (base[1] == '.' && base[2] == '/'))) || (base[0] == '~' && base[1] == '/')))
         /* /file, ./file, ../file, ~/file */
         return expandPath(base);
-    return expandPath(Strnew_m_charp(rc_dir, "/", base)->ptr);
+    return expandPath(Strnew_m_charp(w3mApp::Instance().rc_dir, "/", base)->ptr);
 }
 
 char *
@@ -1677,10 +1678,8 @@ confFile(char *base)
     return expandPath(Strnew_m_charp(w3m_conf_dir(), "/", base, NULL)->ptr);
 }
 
-#ifndef USE_HELP_CGI
 char *
 helpFile(char *base)
 {
     return expandPath(Strnew_m_charp(w3m_help_dir(), "/", base, NULL)->ptr);
 }
-#endif

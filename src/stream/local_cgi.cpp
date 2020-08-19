@@ -140,7 +140,7 @@ static void writeLocalCookie()
 {
     FILE *f;
 
-    if (no_rc_dir)
+    if (w3mApp::Instance().no_rc_dir)
         return;
     if (Local_cookie_file)
         return;

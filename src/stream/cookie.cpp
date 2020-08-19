@@ -595,7 +595,7 @@ void save_cookies(void)
 
     check_expired_cookies();
 
-    if (!First_cookie || is_saved || no_rc_dir)
+    if (!First_cookie || is_saved || w3mApp::Instance().no_rc_dir)
         return;
 
     cookie_file = rcFile(COOKIE_FILE);
