@@ -24,6 +24,7 @@ add_library(${TARGET_NAME}
     src/utf8.cpp
     src/viet.cpp
     src/wtf.cpp
+    src/regex.cpp
 )
 target_include_directories(${TARGET_NAME}
 PRIVATE

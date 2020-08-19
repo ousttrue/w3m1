@@ -32,7 +32,6 @@ subdirs(
 add_executable(w3mbookmark
     src/w3mbookmark.cpp
     src/indep.cpp
-    src/regex.cpp
     src/textlist.cpp
     src/html/parsetag.cpp
     src/hash.cpp
@@ -148,7 +147,6 @@ add_executable(w3m
     src/mytime.cpp
     src/indep.cpp
     src/rc.cpp
-    src/regex.cpp    
     src/textlist.cpp
     src/hash.cpp
     src/symbol.cpp

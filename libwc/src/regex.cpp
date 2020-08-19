@@ -11,17 +11,15 @@
 #include <malloc.h>
 #endif /* REGEX_DEBUG */
 
+// #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gc.h>
-#include "config.h"
-
 #include <wtf.h>
 #include <ucs.h>
 
 #include "regex.h"
-#include "config.h"
 #include "myctype.h"
 
 #ifndef NULL
@@ -53,11 +51,7 @@ char *lc2c(longchar *, int);
 int verbose;
 #endif /* REGEX_DEBUG */
 
-#ifdef USE_M17N
 #define get_mclen(c) wtf_len1((uint8_t *)(c))
-#else
-#define get_mclen(c) 1
-#endif
 
 #ifndef TOLOWER
 #include <ctype.h>
@@ -77,7 +71,6 @@ set_longchar(char *str)
     unsigned char *p = (unsigned char *)str;
     longchar r;
 
-#ifdef USE_M17N
     if (*p & 0x80)
     {
         r.wch = wtf_parse1(&p);
@@ -97,7 +90,7 @@ set_longchar(char *str)
         r.type = RE_TYPE_WCHAR_T;
         return r;
     }
-#endif
+
     r.ch = *p;
     r.type = RE_TYPE_CHAR;
     return r;
@@ -664,10 +657,9 @@ regmatch1(regexchar *re, longchar *c)
 {
     int ans;
 
-#ifdef USE_M17N
     if (c->type == RE_TYPE_SYMBOL)
         return 0;
-#endif
+
     switch (RE_MODE(re))
     {
     case RE_ANY:
@@ -733,7 +725,6 @@ matchWhich(longchar *pattern, longchar *c, int igncase)
 static int
 match_longchar(longchar *a, longchar *b, int ignore)
 {
-#ifdef USE_M17N
     if (a->type != b->type)
         return 0;
     if (a->type == RE_TYPE_WCHAR_T)
@@ -750,7 +741,7 @@ match_longchar(longchar *a, longchar *b, int ignore)
 
         return (a->wch.ccs == b->wch.ccs) && (a->wch.code == b->wch.code);
     }
-#endif
+
     if (ignore && IS_ALPHA(b->ch))
         return (a->ch == TOLOWER(b->ch) || a->ch == TOUPPER(b->ch));
     else
@@ -760,7 +751,6 @@ match_longchar(longchar *a, longchar *b, int ignore)
 static int
 match_range_longchar(longchar *a, longchar *b, longchar *c, int ignore)
 {
-#ifdef USE_M17N
     if (a->type != b->type || a->type != c->type)
         return 0;
     if (a->type == RE_TYPE_WCHAR_T)
@@ -786,7 +776,6 @@ match_range_longchar(longchar *a, longchar *b, longchar *c, int ignore)
         }
         return (a->wch.code <= c->wch.code && c->wch.code <= b->wch.code);
     }
-#endif
     if (ignore && IS_ALPHA(c->ch))
         return ((a->ch <= TOLOWER(c->ch) && TOLOWER(c->ch) <= b->ch) ||
                 (a->ch <= TOUPPER(c->ch) && TOUPPER(c->ch) <= b->ch));
@@ -806,7 +795,7 @@ lc2c(longchar *x, int len)
     {
         if (x[j].type == RE_WHICH_RANGE)
             y[i++] = '-';
-#ifdef USE_M17N
+
         else if (x[j].type == RE_TYPE_WCHAR_T)
         {
             char buf[20];
@@ -814,7 +803,7 @@ lc2c(longchar *x, int len)
             strcpy(&y[i], buf);
             i += strlen(buf);
         }
-#endif
+
         else
             y[i++] = x[j].ch;
         j++;
@@ -889,9 +878,9 @@ int main(int argc, char **argv)
     FILE *f = stdin;
     int i = 1;
 
-#ifdef USE_M17N
+
     wtf_init(WC_CES_EUC_JP, WC_CES_EUC_JP);
-#endif
+
 #ifdef REGEX_DEBUG
     for (i = 1; i < argc; i++)
     {
