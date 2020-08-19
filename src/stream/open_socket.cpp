@@ -3,6 +3,7 @@
 #include "regex.h"
 #include "open_socket.h"
 #include "gc_helper.h"
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>

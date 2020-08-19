@@ -53,7 +53,7 @@ static MouseAction default_mouse_action = {
     "<=UpDn",
     0,
     6,
-    FALSE,
+    false,
     0,
     0,
     {{movMs, NULL}, {backBf, NULL}, {menuMs, NULL}}, /* default */
@@ -73,7 +73,7 @@ static MouseActionMap default_lastline_action[6] = {
 
 void DisableMouseAction()
 {
-    mouse_action.in_action = FALSE;
+    mouse_action.in_action = false;
 }
 
 bool TryGetMouseActionPosition(int *x, int *y)
@@ -372,7 +372,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         map = &mouse_action.default_map[(int)btn];
     if (map && map->func)
     {
-        mouse_action.in_action = TRUE;
+        mouse_action.in_action = true;
         mouse_action.cursorX = x;
         mouse_action.cursorY = y;
         ClearCurrentKey();

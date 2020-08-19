@@ -9,6 +9,8 @@
 #include "frontend/terms.h"
 #include "frontend/lineinput.h"
 #include "public.h"
+#include "textlist.h"
+#include <unistd.h>
 
 enum
 {
@@ -78,7 +80,7 @@ extract_auth_val(char **q)
     SKIP_BLANKS(&qq);
     if (*qq == '"')
     {
-        quoted = TRUE;
+        quoted = true;
         val->Push(*qq++);
     }
     while (*qq != '\0')
@@ -608,12 +610,12 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
     if (!realm)
         return;
 
-    a_found = FALSE;
+    a_found = false;
     for (i = extra_header->first; i != NULL; i = i->next)
     {
         if (!strncasecmp(i->ptr, auth_header, auth_header_len))
         {
-            a_found = TRUE;
+            a_found = true;
             break;
         }
     }

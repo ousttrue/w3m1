@@ -10,6 +10,7 @@
 #include <sstream>
 #include "stream/cookie.h"
 #include "fm.h"
+#include "textlist.h"
 #include "indep.h"
 #include <gc_cpp.h>
 #include "rc.h"
@@ -384,7 +385,7 @@ const char *special_domain[] = {
 int check_avoid_wrong_number_of_dots_domain(Str domain)
 {
     TextListItem *tl;
-    int avoid_wrong_number_of_dots_domain = FALSE;
+    int avoid_wrong_number_of_dots_domain = false;
 
     if (w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains &&
         w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains->nitem > 0)
@@ -394,19 +395,19 @@ int check_avoid_wrong_number_of_dots_domain(Str domain)
         {
             if (domain_match(domain->ptr, tl->ptr))
             {
-                avoid_wrong_number_of_dots_domain = TRUE;
+                avoid_wrong_number_of_dots_domain = true;
                 break;
             }
         }
     }
 
-    if (avoid_wrong_number_of_dots_domain == TRUE)
+    if (avoid_wrong_number_of_dots_domain == true)
     {
-        return TRUE;
+        return true;
     }
     else
     {
-        return FALSE;
+        return false;
     }
 }
 
@@ -1016,13 +1017,13 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
         if (w3mApp::Instance().show_cookie)
         {
             if (flag & COO_SECURE)
-                disp_message_nsec("Received a secured cookie", FALSE, 1,
-                                  TRUE, FALSE);
+                disp_message_nsec("Received a secured cookie", false, 1,
+                                  true, false);
             else
                 disp_message_nsec(Sprintf("Received cookie: %s=%s",
                                           name->ptr, value->ptr)
                                       ->ptr,
-                                  FALSE, 1, TRUE, FALSE);
+                                  false, 1, true, false);
         }
         err =
             add_cookie(pu, name, value, expires, domain, path, flag,
@@ -1063,14 +1064,14 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
                         "This cookie was rejected to prevent security violation.";
                 record_err_message(emsg);
                 if (w3mApp::Instance().show_cookie)
-                    disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
+                    disp_message_nsec(emsg, false, 1, true, false);
             }
             else if (w3mApp::Instance().show_cookie)
                 disp_message_nsec(Sprintf("Accepting invalid cookie: %s=%s",
                                           name->ptr, value->ptr)
                                       ->ptr,
-                                  FALSE,
-                                  1, TRUE, FALSE);
+                                  false,
+                                  1, true, false);
         }
     }
 }

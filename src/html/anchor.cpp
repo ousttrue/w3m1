@@ -5,6 +5,7 @@
 #include "myctype.h"
 #include "regex.h"
 #include "file.h"
+#include "textlist.h"
 #include "html/form.h"
 #include "frontend/buffer.h"
 #include "html/maparea.h"
@@ -315,7 +316,7 @@ reAnchorNewsheader(const BufferPtr &buf)
         "Newsgroups:", NULL};
     const char **header;
     const char **q;
-    int i, search = FALSE;
+    int i, search = false;
 
     if (!buf || !buf->FirstLine())
         return NULL;
@@ -339,12 +340,12 @@ reAnchorNewsheader(const BufferPtr &buf)
             p = l->lineBuf();
             if (!IS_SPACE(*p))
             {
-                search = FALSE;
+                search = false;
                 for (q = header; *q; q++)
                 {
                     if (!strncasecmp(p, *q, strlen(*q)))
                     {
-                        search = TRUE;
+                        search = true;
                         p = strchr(p, ':') + 1;
                         break;
                     }
@@ -467,7 +468,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
                 // img
                 auto a = Anchor::CreateImage(a_img.url, a_img.title, l->linenumber, pos);
                 a.hseq = -a_img.hseq;
-                a.slave = TRUE;
+                a.slave = true;
                 a.image = img;
                 a.end.pos = pos + ecol - col;
                 buf->img.Put(a);
@@ -481,7 +482,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
                                             a_href.referer, a_href.title,
                                             a_href.accesskey, l->linenumber, pos);
                 a.hseq = a_href.hseq;
-                a.slave = TRUE;
+                a.slave = true;
                 a.end.pos = pos + ecol - col;
                 buf->href.Put(a);
                 for (int k = pos; k < a.end.pos; k++)

@@ -396,7 +396,7 @@ void addch(char c)
     addmch(&c, 1);
 }
 
-void addmch(const char *pc, size_t len)
+void addmch(const char *pc, int len)
 {
     g_screen.AddChar(pc, len);
 }

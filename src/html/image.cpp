@@ -6,7 +6,7 @@
 #include "file.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
-
+#include "history.h"
 #include "frontend/buffer.h"
 #include "stream/local_cgi.h"
 #include "html/anchor.h"
@@ -53,7 +53,7 @@ void initImage()
     if (w3mApp::Instance().activeImage)
         return;
     if (getCharSize())
-        w3mApp::Instance().activeImage = TRUE;
+        w3mApp::Instance().activeImage = true;
 }
 
 int getCharSize()
@@ -69,7 +69,7 @@ int getCharSize()
     Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -test 2>/dev/null", NULL);
     f = popen(tmp->ptr, "r");
     if (!f)
-        return FALSE;
+        return false;
     while (fscanf(f, "%d %d", &w, &h) < 0)
     {
         if (feof(f))
@@ -78,12 +78,12 @@ int getCharSize()
     pclose(f);
 
     if (!(w > 0 && h > 0))
-        return FALSE;
+        return false;
     if (!w3mApp::Instance().set_pixel_per_char)
         w3mApp::Instance().pixel_per_char = (int)(1.0 * w / COLS + 0.5);
     if (!w3mApp::Instance().set_pixel_per_line)
         w3mApp::Instance().pixel_per_line = (int)(1.0 * h / LINES + 0.5);
-    return TRUE;
+    return true;
 }
 
 void termImage()
@@ -109,7 +109,7 @@ openImgdisplay()
     {
         /* child */
         std::string cmd;
-        setup_child(FALSE, 2, -1);
+        setup_child(false, 2, -1);
         if (!strchr(w3mApp::Instance().Imgdisplay.c_str(), '/'))
             cmd = svu::join("", w3m_auxbin_dir(), "/", w3mApp::Instance().Imgdisplay);
         else
@@ -117,12 +117,12 @@ openImgdisplay()
         myExec(cmd.c_str());
         /* XXX: ifdef __EMX__, use start /f ? */
     }
-    w3mApp::Instance().activeImage = TRUE;
-    return TRUE;
+    w3mApp::Instance().activeImage = true;
+    return true;
 err0:
     Imgdisplay_pid = 0;
-    w3mApp::Instance().activeImage = FALSE;
-    return FALSE;
+    w3mApp::Instance().activeImage = false;
+    return false;
 }
 
 static void
@@ -188,7 +188,7 @@ err:
 void drawImage()
 {
     static char buf[64];
-    int j, draw = FALSE;
+    int j, draw = false;
     TerminalImage *i;
 
     if (!w3mApp::Instance().activeImage)
@@ -221,7 +221,7 @@ void drawImage()
         fputs(buf, Imgdisplay_wf);
         fputs(i->cache->file, Imgdisplay_wf);
         fputs("\n", Imgdisplay_wf);
-        draw = TRUE;
+        draw = true;
     }
     if (!draw)
         return;
@@ -301,7 +301,7 @@ void getAllImage(const BufferPtr &buf)
     image_buffer = buf;
     if (!buf)
         return;
-    buf->image_loaded = TRUE;
+    buf->image_loaded = true;
     auto &al = buf->img;
     if (!al)
         return;
@@ -313,7 +313,7 @@ void getAllImage(const BufferPtr &buf)
             a.image->cache = getImage(a.image, current, buf->image_flag);
             if (a.image->cache &&
                 a.image->cache->loaded == IMG_FLAG_UNLOADED)
-                buf->image_loaded = FALSE;
+                buf->image_loaded = false;
         }
     }
 }
@@ -348,7 +348,7 @@ void loadImage(BufferPtr buf, int flag)
 {
     ImageCache *cache;
     struct stat st;
-    int i, draw = FALSE;
+    int i, draw = false;
     /* int wait_st; */
 
     if (w3mApp::Instance().maxLoadImage > MAX_LOAD_IMAGE)
@@ -387,9 +387,9 @@ void loadImage(BufferPtr buf, int flag)
             if (getImageSize(cache))
             {
                 if (image_buffer)
-                    image_buffer->need_reshape = TRUE;
+                    image_buffer->need_reshape = true;
             }
-            draw = TRUE;
+            draw = true;
         }
         else
             cache->loaded = IMG_FLAG_ERROR;
@@ -467,9 +467,9 @@ void loadImage(BufferPtr buf, int flag)
         {
             BufferPtr b;
             /*
-	     * setup_child(TRUE, 0, -1);
+	     * setup_child(true, 0, -1);
 	     */
-            setup_child(FALSE, 0, -1);
+            setup_child(false, 0, -1);
             w3mApp::Instance().image_source = cache->file;
             b = loadGeneralFile(URL::Parse(cache->url), cache->current, HttpReferrerPolicy::StrictOriginWhenCrossOrigin);
             if (!b || b->real_type.empty() || !b->real_type.starts_with("image/"))
@@ -564,17 +564,17 @@ int getImageSize(ImageCache *cache)
     int w = 0, h = 0;
 
     if (!w3mApp::Instance().activeImage)
-        return FALSE;
+        return false;
     if (!cache || !(cache->loaded & IMG_FLAG_LOADED) ||
         (cache->width > 0 && cache->height > 0))
-        return FALSE;
+        return false;
     tmp = Strnew();
     if (w3mApp::Instance().Imgdisplay.find('/')==std::string::npos)
         Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
     Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -size ", shell_quote(cache->file), NULL);
     f = popen(tmp->ptr, "r");
     if (!f)
-        return FALSE;
+        return false;
     while (fscanf(f, "%d %d", &w, &h) < 0)
     {
         if (feof(f))
@@ -583,7 +583,7 @@ int getImageSize(ImageCache *cache)
     pclose(f);
 
     if (!(w > 0 && h > 0))
-        return FALSE;
+        return false;
     w = (int)(w * w3mApp::Instance().image_scale / 100 + 0.5);
     if (w == 0)
         w = 1;
@@ -611,7 +611,7 @@ int getImageSize(ImageCache *cache)
         cache->height = 1;
     tmp = Sprintf("%d;%d;%s", cache->width, cache->height, cache->url);
     putHash_sv(image_hash, tmp->ptr, (void *)cache);
-    return TRUE;
+    return true;
 }
 
 

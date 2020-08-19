@@ -1,3 +1,5 @@
+#include <unistd.h>
+#include "textlist.h"
 #include "fm.h"
 #include "html/table.h"
 #include "indep.h"
@@ -755,7 +757,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
     // if (w3mApp::Instance().SearchHeader)
     // {
     //     t_buf = newBuffer(INIT_BUFFER_WIDTH());
-    //     readHeader(uf, t_buf, TRUE, NULL);
+    //     readHeader(uf, t_buf, true, NULL);
     //     t = checkContentType(t_buf);
     //     if (t.empty())
     //         t = "text/plain";
@@ -764,7 +766,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
     //         t_buf->SetTopLine(t_buf->FirstLine());
     //         t_buf->SetCurrentLine(t_buf->LastLine());
     //     }
-    //     w3mApp::Instance().SearchHeader = FALSE;
+    //     w3mApp::Instance().SearchHeader = false;
     // }
     // else if (w3mApp::Instance().DefaultType.size())
     // {
@@ -825,7 +827,7 @@ LinePtr getNextPage(BufferPtr buf, int plen)
     CharacterEncodingScheme doc_charset = w3mApp::Instance().DocumentCharset;
     uint8_t old_auto_detect = WcOption.auto_detect;
 
-    int squeeze_flag = FALSE;
+    int squeeze_flag = false;
 
     MySignalHandler prevtrap = NULL;
 
@@ -875,12 +877,12 @@ LinePtr getNextPage(BufferPtr buf, int plen)
             lineBuf2 = convertLine(SCM_UNKNOWN, lineBuf2, PAGER_MODE, &charset, doc_charset);
             if (w3mApp::Instance().squeezeBlankLine)
             {
-                squeeze_flag = FALSE;
+                squeeze_flag = false;
                 if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
                 {
                     ++nlines;
                     --i;
-                    squeeze_flag = TRUE;
+                    squeeze_flag = true;
                     continue;
                 }
                 pre_lbuf = lineBuf2->ptr[0];
@@ -1053,7 +1055,7 @@ Str tmpfname(TmpFileTypes type, const char *ext)
 Str myEditor(const char *cmd, const char *file, int line)
 {
     Str tmp = NULL;
-    int set_file = FALSE, set_line = FALSE;
+    int set_file = false, set_line = false;
 
     for (auto p = cmd; *p; p++)
     {
@@ -1062,7 +1064,7 @@ Str myEditor(const char *cmd, const char *file, int line)
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
             tmp->Push(file);
-            set_file = TRUE;
+            set_file = true;
             p++;
         }
         else if (*p == '%' && *(p + 1) == 'd' && !set_line && line > 0)
@@ -1070,7 +1072,7 @@ Str myEditor(const char *cmd, const char *file, int line)
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
             tmp->Push(Sprintf("%d", line));
-            set_line = TRUE;
+            set_line = true;
             p++;
         }
         else
@@ -1093,7 +1095,7 @@ Str myEditor(const char *cmd, const char *file, int line)
 Str myExtCommand(const char *cmd, const char *arg, int redirect)
 {
     Str tmp = NULL;
-    int set_arg = FALSE;
+    int set_arg = false;
 
     for (auto p = cmd; *p; p++)
     {
@@ -1102,7 +1104,7 @@ Str myExtCommand(const char *cmd, const char *arg, int redirect)
             if (tmp == NULL)
                 tmp = Strnew_charp_n(cmd, (int)(p - cmd));
             tmp->Push(arg);
-            set_arg = TRUE;
+            set_arg = true;
             p++;
         }
         else
@@ -1130,7 +1132,7 @@ void mySystem(char *command, int background)
         flush_tty();
         if (!fork())
         {
-            setup_child(FALSE, 0, -1);
+            setup_child(false, 0, -1);
             myExec(command);
         }
 #else

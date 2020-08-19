@@ -8,6 +8,7 @@
 #include "tabbar.h"
 #include <fcntl.h>
 #include <signal.h>
+#include <unistd.h>
 
 static AlarmEvent s_DefaultAlarm = {
     0, AL_UNSET, &nulcmd, nullptr};
@@ -150,9 +151,9 @@ void setup_child(int child, int i, int f)
 #endif /* __MINGW32_VERSION */
     close_tty();
     close_all_fds_except(i, f);
-    w3mApp::Instance().QuietMessage = TRUE;
-    w3mApp::Instance().fmInitialized = FALSE;
-    w3mApp::Instance().TrapSignal = FALSE;
+    w3mApp::Instance().QuietMessage = true;
+    w3mApp::Instance().fmInitialized = false;
+    w3mApp::Instance().TrapSignal = false;
 }
 
 #ifndef SIGIOT

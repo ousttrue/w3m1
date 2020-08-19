@@ -271,7 +271,7 @@ FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy
             fclose(fw);
         return fr;
     }
-    setup_child(TRUE, 2, fw ? fileno(fw) : -1);
+    setup_child(true, 2, fw ? fileno(fw) : -1);
 
     if (qstr)
         uri = Strnew_m_charp(uri, "?", qstr, NULL)->ptr;
@@ -559,7 +559,7 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
 
     assert(stream);
     // {
-    //     uf->is_cgi = TRUE;
+    //     uf->is_cgi = true;
     //     // TODO:
     //     // url.scheme =
     //     uf->scheme = SCM_LOCAL_CGI;
@@ -568,13 +568,13 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
     // if (uf->is_cgi)
     // {
     //     /* local CGI */
-    //     // searchHeader = TRUE;
-    //     // searchHeader_through = FALSE;
+    //     // searchHeader = true;
+    //     // searchHeader_through = false;
     // }
 
     // if (searchHeader)
     // {
-    //     searchHeader = w3mApp::Instance().SearchHeader = FALSE;
+    //     searchHeader = w3mApp::Instance().SearchHeader = false;
     //     if (t_buf == NULL)
     //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
     //     readHeader(&f, t_buf, searchHeader_through, &pu);

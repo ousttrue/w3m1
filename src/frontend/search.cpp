@@ -46,7 +46,7 @@ open_migemo(char *migemo_command)
     if (migemo_pid == 0)
     {
         /* child */
-        setup_child(FALSE, 2, -1);
+        setup_child(false, 2, -1);
         myExec(migemo_command);
         /* XXX: ifdef __EMX__, use start /f ? */
     }
@@ -106,7 +106,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, char *str)
     char *p, *first, *last;
     LinePtr l;
     LinePtr begin;
-    int wrapped = FALSE;
+    int wrapped = false;
     int pos;
 
 #ifdef USE_MIGEMO
@@ -170,7 +170,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, char *str)
                     if (w3mApp::Instance().WrapSearch && !wrapped)
                     {
                         l = buf->FirstLine();
-                        wrapped = TRUE;
+                        wrapped = true;
                     }
                     else
                     {
@@ -181,7 +181,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, char *str)
             else if (w3mApp::Instance().WrapSearch)
             {
                 l = buf->FirstLine();
-                wrapped = TRUE;
+                wrapped = true;
             }
             else
             {
@@ -217,7 +217,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, char *str)
     char *p, *q, *found, *found_last, *first, *last;
     LinePtr l;
     LinePtr begin;
-    int wrapped = FALSE;
+    int wrapped = false;
     int pos;
 
 #ifdef USE_MIGEMO
@@ -301,7 +301,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, char *str)
             if (w3mApp::Instance().WrapSearch)
             {
                 l = buf->LastLine();
-                wrapped = TRUE;
+                wrapped = true;
             }
             else
             {

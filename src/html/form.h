@@ -1,10 +1,7 @@
-/* $Id: form.h,v 1.6 2003/09/22 21:02:18 ukai Exp $ */
 /*
  * HTML forms 
  */
-#ifndef FORM_H
-#define FORM_H
-
+#pragma once
 #include "html/html.h"
 #include "frontend/buffer.h"
 
@@ -83,8 +80,6 @@ struct FormList
     unsigned long length;
 };
 
-#ifdef MENU_SELECT
-
 struct FormSelectOption
 {
     FormSelectOptionItem *first;
@@ -95,7 +90,6 @@ void addSelectOption(FormSelectOption *fso, Str value, Str label, int chk);
 void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item);
 void updateSelectOption(FormItemList *fi, FormSelectOptionItem *item);
 int formChooseOptionByMenu(FormItemList *fi, int x, int y);
-#endif /* MENU_SELECT */
 
 FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, class HtmlContext *context);
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
@@ -107,4 +101,3 @@ FormList *newFormList(const char *action, const char *method, const char *charse
 int formtype(const char *typestr);
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 Str textfieldrep(Str s, int width);
-#endif /* not FORM_H */

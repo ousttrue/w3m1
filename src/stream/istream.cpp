@@ -1,4 +1,5 @@
 
+#include <unistd.h>
 #include "fm.h"
 #include "indep.h"
 #include "myctype.h"
@@ -26,7 +27,7 @@ void InputStream::do_update()
                                        std::placeholders::_1, std::placeholders::_2));
     if (len <= 0)
     {
-        iseos = TRUE;
+        iseos = true;
     }
 }
 
@@ -97,7 +98,7 @@ int InputStream::read(unsigned char *buffer, int size)
         auto len = ReadFunc((unsigned char *)&buffer[readsize], size - readsize);
         if (len <= 0)
         {
-            iseos = TRUE;
+            iseos = true;
             len = 0;
         }
         readsize += len;
@@ -114,7 +115,7 @@ bool InputStream::readto(Str buf, int count)
         len = ReadFunc((unsigned char *)&buf->ptr[len], rest);
         if (len <= 0)
         {
-            iseos = TRUE;
+            iseos = true;
             len = 0;
         }
         rest -= len;
@@ -374,7 +375,7 @@ ssl_match_cert_ident(char *ident, int ilen, char *hostname)
 
     /* Is this an exact match? */
     if ((ilen == hlen) && strncasecmp(ident, hostname, hlen) == 0)
-        return TRUE;
+        return true;
 
     for (i = 0; i < ilen; i++)
     {
@@ -388,7 +389,7 @@ ssl_match_cert_ident(char *ident, int ilen, char *hostname)
         else
         {
             if (ident[i] != *hostname++)
-                return FALSE;
+                return false;
         }
     }
     return *hostname == '\0';
@@ -399,7 +400,7 @@ ssl_check_cert_ident(X509 *x, char *hostname)
 {
     int i;
     Str ret = NULL;
-    int match_ident = FALSE;
+    int match_ident = false;
     /*
      * All we need to do here is check that the CN matches.
      *
@@ -454,7 +455,7 @@ ssl_check_cert_ident(X509 *x, char *hostname)
             auto method = X509V3_EXT_get(ex);
             sk_GENERAL_NAME_free(alt);
             if (i < n) /* Found a match */
-                match_ident = TRUE;
+                match_ident = true;
             else if (seen_dnsname)
                 /* FIXME: gettextize? */
                 ret = Sprintf("Bad cert ident from %s: dNSName=%s", hostname,
@@ -462,7 +463,7 @@ ssl_check_cert_ident(X509 *x, char *hostname)
         }
     }
 
-    if (match_ident == FALSE && ret == NULL)
+    if (match_ident == false && ret == NULL)
     {
         X509_NAME *xn;
         char buf[2048];
@@ -490,7 +491,7 @@ ssl_check_cert_ident(X509 *x, char *hostname)
             ret = Sprintf("Bad cert ident %s from %s", buf, hostname);
         }
         else
-            match_ident = TRUE;
+            match_ident = true;
     }
     return ret;
 }
@@ -529,11 +530,11 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
             /* FIXME: gettextize? */
             char *e = "This SSL session was rejected "
                       "to prevent security violation: no peer certificate";
-            disp_err_message(e, FALSE);
+            disp_err_message(e, false);
             return NULL;
         }
         if (amsg)
-            disp_err_message(amsg->ptr, FALSE);
+            disp_err_message(amsg->ptr, false);
         ssl_accept_this_site(hostname);
         /* FIXME: gettextize? */
         s = amsg ? amsg : Strnew("valid certificate");
@@ -570,7 +571,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
                 /* FIXME: gettextize? */
                 char *e =
                     Sprintf("This SSL session was rejected: %s", em)->ptr;
-                disp_err_message(e, FALSE);
+                disp_err_message(e, false);
                 return NULL;
             }
         }
@@ -600,12 +601,12 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
             /* FIXME: gettextize? */
             const char *e = "This SSL session was rejected "
                             "to prevent security violation";
-            disp_err_message(e, FALSE);
+            disp_err_message(e, false);
             return NULL;
         }
     }
     if (amsg)
-        disp_err_message(amsg->ptr, FALSE);
+        disp_err_message(amsg->ptr, false);
     ssl_accept_this_site(hostname);
     /* FIXME: gettextize? */
     s = amsg ? amsg : Strnew("valid certificate");

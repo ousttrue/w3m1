@@ -65,7 +65,7 @@ void set_need_resize_screen(int need)
 }
 void resize_screen()
 {
-    s_need_resize_screen = FALSE;
+    s_need_resize_screen = false;
     setlinescols();
     setupscreen();
     if (GetCurrentTab())
@@ -182,16 +182,16 @@ int checkDownloadList()
     struct stat st;
 
     if (!FirstDL)
-        return FALSE;
+        return false;
     for (d = FirstDL; d != NULL; d = d->next)
     {
         if (d->running && !lstat(d->lock, &st))
-            return TRUE;
+            return true;
     }
-    return FALSE;
+    return false;
 }
 
-static int s_add_download_list = FALSE;
+static int s_add_download_list = false;
 int add_download_list()
 {
     return s_add_download_list;
@@ -214,7 +214,7 @@ void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
     d->lock = lock;
     d->size = size;
     d->time = time(0);
-    d->running = TRUE;
+    d->running = true;
     d->err = 0;
     d->next = NULL;
     d->prev = LastDL;
@@ -223,7 +223,7 @@ void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
     else
         FirstDL = d;
     LastDL = d;
-    set_add_download_list(TRUE);
+    set_add_download_list(true);
 }
 
 BufferPtr DownloadListBuffer(w3mApp *w3m)
@@ -245,7 +245,7 @@ BufferPtr DownloadListBuffer(w3mApp *w3m)
     for (d = LastDL; d != NULL; d = d->prev)
     {
         if (lstat(d->lock, &st))
-            d->running = FALSE;
+            d->running = false;
         src->Push("<pre>\n");
         src->Push(Sprintf("%s\n  --&gt; %s\n  ", html_quote(d->url),
                           html_quote(conv_from_system(d->save))));
@@ -447,7 +447,7 @@ std::string w3mApp::make_optional_header_string(const char *s)
     auto hs = Strnew_size(strlen(s) + 3);
     hs->CopyFrom(s, p - s);
     if (hs->ICaseCmp("content-type") == 0)
-        override_content_type = TRUE;
+        override_content_type = true;
     hs->Push(": ");
     if (*(++p))
     {                    /* not null header */
@@ -615,7 +615,7 @@ int w3mApp::Main(int argc, char **argv)
                 }
                 DocumentCharset = wc_guess_charset_short(p, DocumentCharset);
                 WcOption.auto_detect = WC_OPT_DETECT_OFF;
-                UseContentCharset = FALSE;
+                UseContentCharset = false;
             }
             else if (!strncmp("-O", argv[i], 2))
             {
@@ -646,23 +646,23 @@ int w3mApp::Main(int argc, char **argv)
             }
             else if (!strcmp("-m", argv[i]))
             {
-                SearchHeader = search_header = TRUE;
+                SearchHeader = search_header = true;
             }
             else if (!strcmp("-v", argv[i]))
             {
-                visual_start = TRUE;
+                visual_start = true;
             }
             else if (!strcmp("-N", argv[i]))
             {
-                open_new_tab = TRUE;
+                open_new_tab = true;
             }
             else if (!strcmp("-M", argv[i]))
             {
-                useColor = FALSE;
+                useColor = false;
             }
             else if (!strcmp("-B", argv[i]))
             {
-                load_bookmark = TRUE;
+                load_bookmark = true;
             }
             else if (!strcmp("-bookmark", argv[i]))
             {
@@ -680,7 +680,7 @@ int w3mApp::Main(int argc, char **argv)
             }
             else if (!strcmp("-F", argv[i]))
             {
-                RenderFrame = TRUE;
+                RenderFrame = true;
             }
             else if (!strcmp("-W", argv[i]))
             {
@@ -712,11 +712,11 @@ int w3mApp::Main(int argc, char **argv)
             }
             else if (!strcmp("-backend", argv[i]))
             {
-                w3m_backend = TRUE;
+                w3m_backend = true;
             }
             else if (!strcmp("-backend_batch", argv[i]))
             {
-                w3m_backend = TRUE;
+                w3m_backend = true;
                 if (++i >= argc)
                     usage(show_params_p);
                 if (!backend_batch_commands)
@@ -743,7 +743,7 @@ int w3mApp::Main(int argc, char **argv)
                     ppc <= MAXIMUM_PIXEL_PER_CHAR)
                 {
                     pixel_per_char = ppc;
-                    set_pixel_per_char = TRUE;
+                    set_pixel_per_char = true;
                 }
             }
             else if (!strcmp("-ppl", argv[i]))
@@ -756,16 +756,16 @@ int w3mApp::Main(int argc, char **argv)
                     ppc <= MAXIMUM_PIXEL_PER_CHAR * 2)
                 {
                     pixel_per_line = ppc;
-                    set_pixel_per_line = TRUE;
+                    set_pixel_per_line = true;
                 }
             }
             else if (!strcmp("-num", argv[i]))
             {
-                showLineNum = TRUE;
+                showLineNum = true;
             }
             else if (!strcmp("-no-proxy", argv[i]))
             {
-                use_proxy = FALSE;
+                use_proxy = false;
             }
             else if (!strcmp("-4", argv[i]) || !strcmp("-6", argv[i]))
             {
@@ -794,25 +794,25 @@ int w3mApp::Main(int argc, char **argv)
             }
             else if (!strcmp("-no-mouse", argv[i]))
             {
-                use_mouse = FALSE;
+                use_mouse = false;
             }
             else if (!strcmp("-no-cookie", argv[i]))
             {
-                use_cookie = FALSE;
-                accept_cookie = FALSE;
+                use_cookie = false;
+                accept_cookie = false;
             }
             else if (!strcmp("-cookie", argv[i]))
             {
-                use_cookie = TRUE;
-                accept_cookie = TRUE;
+                use_cookie = true;
+                accept_cookie = true;
             }
             else if (!strcmp("-S", argv[i]))
             {
-                squeezeBlankLine = TRUE;
+                squeezeBlankLine = true;
             }
             else if (!strcmp("-X", argv[i]))
             {
-                Do_not_use_ti_te = TRUE;
+                Do_not_use_ti_te = true;
             }
             else if (!strcmp("-title", argv[i]))
             {
@@ -846,7 +846,7 @@ int w3mApp::Main(int argc, char **argv)
             }
             else if (!strcmp("-debug", argv[i]))
             {
-                w3m_debug = TRUE;
+                w3m_debug = true;
             }
             else
             {
@@ -890,7 +890,7 @@ int w3mApp::Main(int argc, char **argv)
     {
         if ((w3m_dump & DUMP_HALFDUMP) && displayImage)
         {
-            activeImage = TRUE;
+            activeImage = true;
         }
 
         mySignal(SIGINT, SIG_IGN);
@@ -1110,7 +1110,7 @@ int w3mApp::Main(int argc, char **argv)
 
     if (add_download_list())
     {
-        set_add_download_list(FALSE);
+        set_add_download_list(false);
         SetCurrentTab(GetLastTab());
         if (GetCurrentTab()->GetBufferCount() == 0)
         {
@@ -1138,12 +1138,12 @@ int w3mApp::Main(int argc, char **argv)
 
     if (err_msg->Size())
     {
-        disp_message_nsec(err_msg->c_str(), FALSE, 1, TRUE, FALSE);
+        disp_message_nsec(err_msg->c_str(), false, 1, true, false);
     }
 
-    SearchHeader = FALSE;
+    SearchHeader = false;
     DefaultType.clear();
-    UseContentCharset = TRUE;
+    UseContentCharset = true;
     WcOption.auto_detect = auto_detect;
 
     GetCurrentTab()->SetCurrent(0);
@@ -1167,7 +1167,7 @@ void w3mApp::mainloop()
     {
         if (add_download_list())
         {
-            set_add_download_list(FALSE);
+            set_add_download_list(false);
             ldDL(&w3mApp::Instance());
         }
 
@@ -1178,7 +1178,7 @@ void w3mApp::mainloop()
             auto a = buf->submit;
             buf->submit = NULL;
             buf->Goto(a->start);
-            _followForm(TRUE);
+            _followForm(true);
             continue;
         }
 

@@ -1,5 +1,6 @@
 #include <sstream>
 #include "fm.h"
+#include "textlist.h"
 #include "gc_helper.h"
 #include "file.h"
 #include "stream/url.h"
@@ -593,7 +594,7 @@ URL URL::Resolve(const URL *base) const
                         }
                         tmp->Push(p);
                         url.path = tmp->ptr;
-                        // relative_uri = TRUE;
+                        // relative_uri = true;
                     }
                 }
             }
@@ -796,7 +797,7 @@ char *
 url_unquote_conv(std::string_view url, CharacterEncodingScheme charset)
 {
     auto old_auto_detect = WcOption.auto_detect;
-    Str tmp = UrlDecode(Strnew(url), FALSE, TRUE);
+    Str tmp = UrlDecode(Strnew(url), false, true);
     if (!charset || charset == WC_CES_US_ASCII)
         charset = w3mApp::Instance().SystemCharset;
     WcOption.auto_detect = WC_OPT_DETECT_ON;

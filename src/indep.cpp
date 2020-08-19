@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include "indep.h"
 #include "fm.h"
 #include "gc_helper.h"
@@ -640,14 +641,14 @@ char *remove_space(const char *str)
 int non_null(char *s)
 {
     if (s == NULL)
-        return FALSE;
+        return false;
     while (*s)
     {
         if (!IS_SPACE(*s))
-            return TRUE;
+            return true;
         s++;
     }
-    return FALSE;
+    return false;
 }
 
 // newline to '\n'

@@ -13,6 +13,7 @@
 #include "stream/loader.h"
 #include "html/form.h"
 #include "frontend/terms.h"
+#include "textlist.h"
 
 /* Prototype declaration of internal functions */
 #ifdef HAVE_READLINE
@@ -99,7 +100,7 @@ internal_get(const char *url, int flag, FormList *request)
     backend_halfdump_buf = NULL;
     w3mApp::Instance().do_download = flag;
     buf = loadGeneralFile(URL::Parse(url), NULL, HttpReferrerPolicy::NoReferer, request);
-    w3mApp::Instance().do_download = FALSE;
+    w3mApp::Instance().do_download = false;
     if (buf != NULL)
     {
         if (is_html_type(buf->type) && backend_halfdump_buf)
@@ -133,7 +134,7 @@ internal_get(const char *url, int flag, FormList *request)
                 });
                 print_headers(buf, len);
                 printf("\n");
-                saveBuffer(buf, stdout, TRUE);
+                saveBuffer(buf, stdout, true);
             }
             else
             {
@@ -148,12 +149,12 @@ static void
 get(TextList *argv)
 {
     char *p, *url = NULL;
-    int flag = FALSE;
+    int flag = false;
 
     while ((p = popText(argv)))
     {
         if (!strcasecmp(p, "-download_only"))
-            flag = TRUE;
+            flag = true;
         else
             url = p;
     }
@@ -170,12 +171,12 @@ post(TextList *argv)
     FormList *request;
     char *p, *target = NULL, *charset = NULL,
              *enctype = NULL, *body = NULL, *boundary = NULL, *url = NULL;
-    int flag = FALSE, length = 0;
+    int flag = false, length = 0;
 
     while ((p = popText(argv)))
     {
         if (!strcasecmp(p, "-download_only"))
-            flag = TRUE;
+            flag = true;
         else if (!strcasecmp(p, "-target"))
             target = popText(argv);
         else if (!strcasecmp(p, "-charset"))
@@ -308,7 +309,7 @@ int backend(void)
     if (::COLS == 0)
         ::COLS = 80;
 #ifdef USE_MOUSE
-    w3mApp::Instance().use_mouse = FALSE;
+    w3mApp::Instance().use_mouse = false;
 #endif /* USE_MOUSE */
 
     if (w3mApp::Instance().backend_batch_commands)
@@ -345,7 +346,7 @@ readline(const char *prompt)
 static TextList *
 split(char *p)
 {
-    int in_double_quote = FALSE, in_single_quote = FALSE;
+    int in_double_quote = false, in_single_quote = false;
     Str s = Strnew();
     TextList *tp = newTextList();
 

@@ -1,4 +1,4 @@
-
+#include "history.h"
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -7,7 +7,6 @@
 #include "html/html_processor.h"
 #include "frontend/display.h"
 
-#ifdef USE_HISTORY
 BufferPtr 
 historyBuffer(Hist *hist)
 {
@@ -70,7 +69,7 @@ saveHistory(Hist *hist, size_t size)
     tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
     if ((f = fopen(tmpf, "w")) == NULL) {
 	/* FIXME: gettextize? */
-	disp_err_message("Can't open history", FALSE);
+	disp_err_message("Can't open history", false);
 	return;
     }
     for (item = hist->list->first; item && hist->list->nitem > size;
@@ -80,12 +79,11 @@ saveHistory(Hist *hist, size_t size)
 	fprintf(f, "%s\n", (char *)item->ptr);
     if (fclose(f) == EOF) {
 	/* FIXME: gettextize? */
-	disp_err_message("Can't save history", FALSE);
+	disp_err_message("Can't save history", false);
 	return;
     }
     rename(tmpf, rcFile(HISTORY_FILE));
 }
-#endif				/* USE_HISTORY */
 
 Hist *
 newHist()

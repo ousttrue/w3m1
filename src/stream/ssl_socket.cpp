@@ -5,6 +5,7 @@
 #include "file.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
+#include <unistd.h>
 #include <myctype.h>
 #include <string_view>
 #include <string>
@@ -62,7 +63,7 @@ static int ssl_match_cert_ident(const char *ident, int ilen, std::string_view _h
 
     /* Is this an exact match? */
     if ((ilen == _hostname.size()) && strncasecmp(ident, _hostname.data(), _hostname.size()) == 0)
-        return TRUE;
+        return true;
 
     auto hostname = _hostname.data();
     for (i = 0; i < ilen; i++)
@@ -77,7 +78,7 @@ static int ssl_match_cert_ident(const char *ident, int ilen, std::string_view _h
         else
         {
             if (ident[i] != *hostname++)
-                return FALSE;
+                return false;
         }
     }
     return *hostname == '\0';
@@ -87,7 +88,7 @@ static Str ssl_check_cert_ident(X509 *x, std::string_view hostname)
 {
     int i;
     Str ret = NULL;
-    int match_ident = FALSE;
+    int match_ident = false;
     /*
      * All we need to do here is check that the CN matches.
      *
@@ -142,7 +143,7 @@ static Str ssl_check_cert_ident(X509 *x, std::string_view hostname)
             auto method = X509V3_EXT_get(ex);
             sk_GENERAL_NAME_free(alt);
             if (i < n) /* Found a match */
-                match_ident = TRUE;
+                match_ident = true;
             else if (seen_dnsname)
                 /* FIXME: gettextize? */
                 ret = Sprintf("Bad cert ident from %s: dNSName=%s", hostname,
@@ -150,7 +151,7 @@ static Str ssl_check_cert_ident(X509 *x, std::string_view hostname)
         }
     }
 
-    if (match_ident == FALSE && ret == NULL)
+    if (match_ident == false && ret == NULL)
     {
         X509_NAME *xn;
         char buf[2048];
@@ -178,7 +179,7 @@ static Str ssl_check_cert_ident(X509 *x, std::string_view hostname)
             ret = Sprintf("Bad cert ident %s from %s", buf, hostname);
         }
         else
-            match_ident = TRUE;
+            match_ident = true;
     }
     return ret;
 }
@@ -307,11 +308,11 @@ struct SSLContextImpl
                 /* FIXME: gettextize? */
                 const char *e = "This SSL session was rejected "
                                 "to prevent security violation: no peer certificate";
-                disp_err_message(e, FALSE);
+                disp_err_message(e, false);
                 return NULL;
             }
             if (amsg)
-                disp_err_message(amsg->ptr, FALSE);
+                disp_err_message(amsg->ptr, false);
             ssl_accept_this_site(hostname);
             /* FIXME: gettextize? */
             s = amsg ? amsg : Strnew("valid certificate");
@@ -348,7 +349,7 @@ struct SSLContextImpl
                     /* FIXME: gettextize? */
                     char *e =
                         Sprintf("This SSL session was rejected: %s", em)->ptr;
-                    disp_err_message(e, FALSE);
+                    disp_err_message(e, false);
                     return NULL;
                 }
             }
@@ -378,12 +379,12 @@ struct SSLContextImpl
                 /* FIXME: gettextize? */
                 const char *e = "This SSL session was rejected "
                                 "to prevent security violation";
-                disp_err_message(e, FALSE);
+                disp_err_message(e, false);
                 return NULL;
             }
         }
         if (amsg)
-            disp_err_message(amsg->ptr, FALSE);
+            disp_err_message(amsg->ptr, false);
         ssl_accept_this_site(hostname);
         /* FIXME: gettextize? */
         s = amsg ? amsg : Strnew("valid certificate");
@@ -513,6 +514,6 @@ std::shared_ptr<SSLSocket> SSLContext::Open(int sock, std::string_view hostname)
     disp_err_message(Sprintf("SSL error: %s",
                              ERR_error_string(ERR_get_error(), NULL))
                          ->ptr,
-                     FALSE);
+                     false);
     return NULL;
 }

@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "stream/loader.h"
 #include "fm.h"
 #include "indep.h"
@@ -51,12 +52,12 @@ static int _MoveFile(const char *path1, const char *path2)
     bool is_pipe;
     if (*path2 == '|' && w3mApp::Instance().PermitSaveToPipe)
     {
-        is_pipe = TRUE;
+        is_pipe = true;
         f2 = popen(path2 + 1, "w");
     }
     else
     {
-        is_pipe = FALSE;
+        is_pipe = false;
         f2 = fopen(path2, "wb");
     }
     if (f2 == NULL)
@@ -93,7 +94,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
 #endif
     struct stat st;
     clen_t size = 0;
-    int is_pipe = FALSE;
+    int is_pipe = false;
 
     if (w3mApp::Instance().fmInitialized)
     {
@@ -104,11 +105,11 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
             q = inputLineHist("(Download)Save file to: ",
                               defstr, IN_COMMAND, w3mApp::Instance().SaveHist);
             if (q == NULL || *q == '\0')
-                return FALSE;
+                return false;
             p = conv_to_system(q);
         }
         if (*p == '|' && w3mApp::Instance().PermitSaveToPipe)
-            is_pipe = TRUE;
+            is_pipe = true;
         else
         {
             if (q)
@@ -125,7 +126,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
             /* FIXME: gettextize? */
             msg = Sprintf("Can't copy. %s and %s are identical.",
                           conv_from_system(tmpf), conv_from_system(p));
-            disp_err_message(msg->ptr, FALSE);
+            disp_err_message(msg->ptr, false);
             return -1;
         }
         if (!download)
@@ -134,7 +135,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
             {
                 /* FIXME: gettextize? */
                 msg = Sprintf("Can't save to %s", conv_from_system(p));
-                disp_err_message(msg->ptr, FALSE);
+                disp_err_message(msg->ptr, false);
             }
             return -1;
         }
@@ -150,7 +151,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
         pid = fork();
         if (!pid)
         {
-            setup_child(FALSE, 0, -1);
+            setup_child(false, 0, -1);
             if (!_MoveFile(tmpf, p) && w3mApp::Instance().PreserveTimestamp && !is_pipe &&
                 !stat(tmpf, &st))
                 setModtime(p, st.st_mtime);
@@ -181,7 +182,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
             return -1;
         p = q;
         if (*p == '|' && w3mApp::Instance().PermitSaveToPipe)
-            is_pipe = TRUE;
+            is_pipe = true;
         else
         {
             p = expandPath(p);
@@ -251,7 +252,7 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_v
     // if (t_buf == NULL)
     // auto t_buf = newBuffer(url);
 
-    // readHeader(f, t_buf, FALSE, &pu);
+    // readHeader(f, t_buf, false, &pu);
     // char *p;
     // if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) &&
     //     (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(pu))
@@ -390,7 +391,7 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_v
     //         // {
     //         //     // f.Close();
     //         //     _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
-    //         //                 conv_from_system(guess_save_name(NULL, pu.real_file)), TRUE);
+    //         //                 conv_from_system(guess_save_name(NULL, pu.real_file)), true);
     //         // }
     //         // else
     //         // {
@@ -528,7 +529,7 @@ BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEnco
             lineBuf2->Puts(src);
         linelen += lineBuf2->Size();
         // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
-        //     printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, TRUE));
+        //     printf("W3m-in-progress: %s\n", convert_size2(linelen, current_content_length, true));
         if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
             continue;
         showProgress(&linelen, &trbyte, 0);
@@ -564,7 +565,7 @@ _end:
 
 int doFileCopy(const char *tmpf, const char *defstr)
 {
-    return _doFileCopy(tmpf, defstr, FALSE);
+    return _doFileCopy(tmpf, defstr, false);
 }
 
 BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, const char *t)
@@ -699,7 +700,7 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
 //         disp_err_message(Sprintf("Unknown URI: %s",
 //                                  pu.ToStr()->ptr)
 //                              ->ptr,
-//                          FALSE);
+//                          false);
 //         break;
 //     }
 

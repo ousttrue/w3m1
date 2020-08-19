@@ -14,7 +14,7 @@ class Terminal
 void mouse_active();
 void mouse_inactive();
 void mouse_end();
-void addmch(const char *p, size_t len);
+void addmch(const char *p, int len);
 void clrtoeol(void);
 void clrtoeolx(void);
 void clrtobot(void);

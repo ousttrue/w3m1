@@ -34,10 +34,10 @@ static auto bkmark_src2 =
 </body>\n\
 </html>\n";
 
-#undef FALSE
-#define FALSE 0
-#undef TRUE
-#define TRUE 1
+#undef false
+#define false 0
+#undef true
+#define true 1
 
 static const char end_section[] =
     "<!--End of section (do not delete this comment)-->\n";
@@ -90,7 +90,7 @@ create_new_bookmark(const char *bmark, const char *section, const char *title, c
     if (f == NULL)
     {
         printf("\nCan't open bookmark %s\n", bmark);
-        return FALSE;
+        return false;
     }
     else
     {
@@ -102,7 +102,7 @@ create_new_bookmark(const char *bmark, const char *section, const char *title, c
         fprintf(f, "</ul>\n</body>\n</html>\n");
         fclose(f);
     }
-    return TRUE;
+    return true;
 }
 
 int insert_bookmark(char *bmark, struct parsed_tagarg *data)
@@ -125,7 +125,7 @@ int insert_bookmark(char *bmark, struct parsed_tagarg *data)
     if (url == NULL || *url == '\0' || title == NULL || *title == '\0')
     {
         /* Bookmark not added */
-        return FALSE;
+        return false;
     }
     url = html_quote(url);
     title = html_quote(title);
@@ -179,7 +179,7 @@ int insert_bookmark(char *bmark, struct parsed_tagarg *data)
         fputs(popText(tl), f);
     }
     fclose(f);
-    return TRUE;
+    return true;
 }
 
 // extern "C" char *getenv(const char *);

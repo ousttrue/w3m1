@@ -262,7 +262,7 @@ static int GetKey(char **p, int lineno, int verbose)
             emsg = Sprintf("defkey: unknown key '%s'", s)->ptr;
         record_err_message(emsg);
         if (verbose)
-            disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
+            disp_message_nsec(emsg, false, 1, true, false);
     }
     return c;
 }
@@ -282,7 +282,7 @@ static Command GetFunc(char **p, int lineno, int verbose)
             emsg = Sprintf("defkey: invalid command '%s'", s)->ptr;
         record_err_message(emsg);
         if (verbose)
-            disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
+            disp_message_nsec(emsg, false, 1, true, false);
     }
     return f;
 }
@@ -651,7 +651,7 @@ char *getQWord(char **str)
     return tmp->ptr;
 }
 
-static char keymap_initialized = FALSE;
+static char keymap_initialized = false;
 static struct stat sys_current_keymap_file;
 static struct stat current_keymap_file;
 
@@ -714,7 +714,7 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
             emsg = Sprintf("line %d: syntax error '%s'", lineno, s)->ptr;
             record_err_message(emsg);
             if (verbose)
-                disp_message_nsec(emsg, FALSE, 1, TRUE, FALSE);
+                disp_message_nsec(emsg, false, 1, true, false);
             continue;
         }
         SetKeymap(p, lineno, verbose);
@@ -737,5 +737,5 @@ void initKeymap(int force)
                          force || !keymap_initialized);
         fclose(kf);
     }
-    keymap_initialized = TRUE;
+    keymap_initialized = true;
 }

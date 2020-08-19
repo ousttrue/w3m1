@@ -1,4 +1,7 @@
 #include <string_view_util.h>
+#include <unistd.h>
+#include "textlist.h"
+#include "history.h"
 #include "fm.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -57,11 +60,11 @@ void disp_srchresult(int result, const char *prompt, char *str)
     if (str == NULL)
         str = "";
     if (result & SR_NOTFOUND)
-        disp_message(Sprintf("Not found: %s", str)->ptr, TRUE);
+        disp_message(Sprintf("Not found: %s", str)->ptr, true);
     else if (result & SR_WRAPPED)
-        disp_message(Sprintf("Search wrapped: %s", str)->ptr, TRUE);
+        disp_message(Sprintf("Search wrapped: %s", str)->ptr, true);
     else if (w3mApp::Instance().show_srch_str)
-        disp_message(Sprintf("%s%s", prompt, str)->ptr, TRUE);
+        disp_message(Sprintf("%s%s", prompt, str)->ptr, true);
 }
 
 void srch_nxtprv(int reverse)
@@ -75,7 +78,7 @@ void srch_nxtprv(int reverse)
     if (searchRoutine == NULL)
     {
         /* FIXME: gettextize? */
-        disp_message("No previous regular expression", TRUE);
+        disp_message("No previous regular expression", true);
         return;
     }
     if (reverse != 0)
@@ -154,7 +157,7 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
         if (w3m->w3m_dump == DUMP_BUFFER)
         {
             int i;
-            saveBuffer(buf, stdout, FALSE);
+            saveBuffer(buf, stdout, false);
             if (w3mApp::Instance().displayLinkNumber && buf->href)
             {
                 printf("\nReferences:\n\n");
@@ -213,7 +216,7 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
     static LinePtr currentLine;
     static int pos;
     char *str;
-    int do_next_search = FALSE;
+    int do_next_search = false;
 
     if (ch == 0 && buf == NULL)
     {
@@ -228,11 +231,11 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
     {
     case 022: /* C-r */
         searchRoutine = backwardSearch;
-        do_next_search = TRUE;
+        do_next_search = true;
         break;
     case 023: /* C-s */
         searchRoutine = forwardSearch;
-        do_next_search = TRUE;
+        do_next_search = true;
         break;
 
 #ifdef USE_MIGEMO
@@ -310,7 +313,7 @@ void srch(SearchFunc func, const char *prompt)
 {
     char *str;
     int result;
-    int disp = FALSE;
+    int disp = false;
     int pos;
 
     str = searchKeyData();
@@ -324,7 +327,7 @@ void srch(SearchFunc func, const char *prompt)
             displayCurrentbuf(B_NORMAL);
             return;
         }
-        disp = TRUE;
+        disp = true;
     }
     pos = GetCurrentTab()->GetCurrentBuffer()->pos;
     if (func == forwardSearch)
@@ -361,7 +364,7 @@ void cmd_loadfile(const char *fn)
     // {
     //     /* FIXME: gettextize? */
     //     char *emsg = Sprintf("%s not found", conv_from_system(fn))->ptr;
-    //     disp_err_message(emsg, FALSE);
+    //     disp_err_message(emsg, false);
     // }
     // else
     // {
@@ -382,7 +385,7 @@ void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer,
     if (!strncasecmp(url, "news:", 5) && strchr(url, '@') == NULL) {
         /* news:newsgroup is not supported */
         /* FIXME: gettextize? */
-        disp_err_message("news:newsgroup_name is not supported", TRUE);
+        disp_err_message("news:newsgroup_name is not supported", true);
         return;
     }
 #endif /* USE_NNTP */
@@ -393,7 +396,7 @@ void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer,
     // {
     //     /* FIXME: gettextize? */
     //     char *emsg = Sprintf("Can't load %s", conv_from_system(url))->ptr;
-    //     disp_err_message(emsg, FALSE);
+    //     disp_err_message(emsg, false);
     // }
     // else
     // {
@@ -415,7 +418,7 @@ int handleMailto(const char *url)
     if (svu::is_null_or_space(w3mApp::Instance().Mailer))
     {
         /* FIXME: gettextize? */
-        disp_err_message("no mailer is specified", TRUE);
+        disp_err_message("no mailer is specified", true);
         return 1;
     }
 
@@ -432,7 +435,7 @@ int handleMailto(const char *url)
     }
     fmTerm();
     system(myExtCommand(w3mApp::Instance().Mailer.c_str(), shell_quote(file_unquote(to->ptr)),
-                        FALSE)
+                        false)
                ->ptr);
     fmInit();
     displayCurrentbuf(B_FORCE_REDRAW);
@@ -610,7 +613,7 @@ void _goLine(std::string_view l)
     else if (l[0] == '$')
     {
         buf->LineSkip(buf->LastLine(),
-                      -(buf->rect.lines + 1) / 2, TRUE);
+                      -(buf->rect.lines + 1) / 2, true);
         buf->SetCurrentLine(buf->LastLine());
     }
     else
@@ -666,7 +669,7 @@ void _followForm(bool submit)
             goto do_submit;
         if (fi->readonly)
             /* FIXME: gettextize? */
-            disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
+            disp_message_nsec("Read only field!", false, 1, true, false);
         /* FIXME: gettextize? */
         auto p = inputStrHist("TEXT:", fi->value ? fi->value->ptr : NULL, w3mApp::Instance().TextHist);
         if (p == NULL || fi->readonly)
@@ -683,7 +686,7 @@ void _followForm(bool submit)
             goto do_submit;
         if (fi->readonly)
             /* FIXME: gettextize? */
-            disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
+            disp_message_nsec("Read only field!", false, 1, true, false);
         /* FIXME: gettextize? */
         auto p = inputFilenameHist("Filename:", fi->value ? fi->value->ptr : NULL,
                                    NULL);
@@ -702,7 +705,7 @@ void _followForm(bool submit)
         if (fi->readonly)
         {
             /* FIXME: gettextize? */
-            disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
+            disp_message_nsec("Read only field!", false, 1, true, false);
             break;
         }
         /* FIXME: gettextize? */
@@ -722,7 +725,7 @@ void _followForm(bool submit)
             goto do_submit;
         if (fi->readonly)
             /* FIXME: gettextize? */
-            disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
+            disp_message_nsec("Read only field!", false, 1, true, false);
         input_textarea(fi);
         formUpdateBuffer(a, buf, fi);
         break;
@@ -734,7 +737,7 @@ void _followForm(bool submit)
         if (fi->readonly)
         {
             /* FIXME: gettextize? */
-            disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
+            disp_message_nsec("Read only field!", false, 1, true, false);
             break;
         }
         formRecheckRadio(a, buf, fi);
@@ -747,7 +750,7 @@ void _followForm(bool submit)
         if (fi->readonly)
         {
             /* FIXME: gettextize? */
-            disp_message_nsec("Read only field!", FALSE, 1, TRUE, FALSE);
+            disp_message_nsec("Read only field!", false, 1, true, false);
             break;
         }
         fi->checked = !fi->checked;
@@ -833,7 +836,7 @@ void _followForm(bool submit)
         else
         {
             disp_err_message("Can't send form because of illegal method.",
-                             FALSE);
+                             false);
         }
         break;
     }
@@ -998,9 +1001,9 @@ int on_target = 1;
 /* follow HREF link in the buffer */
 void bufferA(void)
 {
-    on_target = FALSE;
+    on_target = false;
     followA(&w3mApp::Instance());
-    on_target = TRUE;
+    on_target = true;
 }
 
 // BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy referer, FormList *request)
@@ -1020,7 +1023,7 @@ void bufferA(void)
 //     if (newBuf == NULL)
 //     {
 //         char *emsg = Sprintf("Can't load %s", url)->ptr;
-//         disp_err_message(emsg, FALSE);
+//         disp_err_message(emsg, false);
 //         return NULL;
 //     }
 
@@ -1028,30 +1031,30 @@ void bufferA(void)
 //     pushHashHist(w3mApp::Instance().URLHist, pu.ToStr()->ptr);
 
 //     if (!on_target) /* open link as an indivisual page */
-//         return loadNormalBuf(newBuf, TRUE);
+//         return loadNormalBuf(newBuf, true);
 
 //     if (do_download) /* download (thus no need to render frame) */
-//         return loadNormalBuf(newBuf, FALSE);
+//         return loadNormalBuf(newBuf, false);
 
 //     if (target == NULL ||                                             /* no target specified (that means this page is not a frame page) */
 //         !strcmp(target, "_top") ||                                    /* this link is specified to be opened as an indivisual * page */
 //         !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME) /* This page is not a frame page */
 //     )
 //     {
-//         return loadNormalBuf(newBuf, TRUE);
+//         return loadNormalBuf(newBuf, true);
 //     }
 //     nfbuf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
 //     if (nfbuf == NULL)
 //     {
 //         /* original page (that contains <frameset> tag) doesn't exist */
-//         return loadNormalBuf(newBuf, TRUE);
+//         return loadNormalBuf(newBuf, true);
 //     }
 
 //     f_element = search_frame(nfbuf->frameset, const_cast<char *>(target));
 //     if (f_element == NULL)
 //     {
 //         /* specified target doesn't exist in this frameset */
-//         return loadNormalBuf(newBuf, TRUE);
+//         return loadNormalBuf(newBuf, true);
 //     }
 
 //     /* frame page */
@@ -1211,7 +1214,7 @@ void _nextA(int visited)
     auto x = buf->pos;
 
     int n = searchKeyNum();
-    if (visited == TRUE)
+    if (visited == true)
     {
         n = buf->hmarklist.size();
     }
@@ -1226,17 +1229,17 @@ void _nextA(int visited)
             {
                 if (hseq >= buf->hmarklist.size())
                 {
-                    if (visited == TRUE)
+                    if (visited == true)
                         return;
                     an = pan;
                     goto _end;
                 }
                 auto &po = buf->hmarklist[hseq];
                 an = buf->href.RetrieveAnchor(po);
-                if (visited != TRUE && an == NULL)
+                if (visited != true && an == NULL)
                     an = buf->formitem.RetrieveAnchor(po);
                 hseq++;
-                if (visited == TRUE && an)
+                if (visited == true && an)
                 {
                     auto url = URL::Parse(an->url).Resolve(buf->BaseURL());
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
@@ -1260,7 +1263,7 @@ void _nextA(int visited)
             }
             x = an->start.pos;
             y = an->start.line;
-            if (visited == TRUE)
+            if (visited == true)
             {
                 auto url = URL::Parse(an->url).Resolve(buf->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
@@ -1270,7 +1273,7 @@ void _nextA(int visited)
             }
         }
     }
-    if (visited == TRUE)
+    if (visited == true)
         return;
 
 _end:
@@ -1299,7 +1302,7 @@ void _prevA(int visited)
     auto x = buf->pos;
 
     int n = searchKeyNum();
-    if (visited == TRUE)
+    if (visited == true)
     {
         n = buf->hmarklist.size();
     }
@@ -1314,17 +1317,17 @@ void _prevA(int visited)
             {
                 if (hseq < 0)
                 {
-                    if (visited == TRUE)
+                    if (visited == true)
                         return;
                     an = pan;
                     goto _end;
                 }
                 auto &po = buf->hmarklist[hseq];
                 an = buf->href.RetrieveAnchor(po);
-                if (visited != TRUE && an == NULL)
+                if (visited != true && an == NULL)
                     an = buf->formitem.RetrieveAnchor(po);
                 hseq--;
-                if (visited == TRUE && an)
+                if (visited == true && an)
                 {
                     auto url = URL::Parse(an->url).Resolve(buf->BaseURL());
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
@@ -1337,18 +1340,18 @@ void _prevA(int visited)
         else
         {
             an = buf->href.ClosestPrev(NULL, x, y);
-            if (visited != TRUE)
+            if (visited != true)
                 an = buf->formitem.ClosestPrev(an, x, y);
             if (an == NULL)
             {
-                if (visited == TRUE)
+                if (visited == true)
                     return;
                 an = pan;
                 break;
             }
             x = an->start.pos;
             y = an->start.line;
-            if (visited == TRUE && an)
+            if (visited == true && an)
             {
                 auto url = URL::Parse(an->url).Resolve(buf->BaseURL());
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
@@ -1358,7 +1361,7 @@ void _prevA(int visited)
             }
         }
     }
-    if (visited == TRUE)
+    if (visited == true)
         return;
 
 _end:
@@ -1377,7 +1380,7 @@ void gotoLabel(std::string_view label)
     if (al == NULL)
     {
         /* FIXME: gettextize? */
-        disp_message(Sprintf("%s is not found", label)->ptr, TRUE);
+        disp_message(Sprintf("%s is not found", label)->ptr, true);
         return;
     }
 
@@ -1654,7 +1657,7 @@ disp:
     while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;
 
-    disp_message_nomouse(&s->ptr[offset], TRUE);
+    disp_message_nomouse(&s->ptr[offset], true);
 }
 
 /* show current URL */
@@ -1675,15 +1678,15 @@ void _docCSet(CharacterEncodingScheme charset)
         return;
     if (buf->sourcefile.empty())
     {
-        disp_message("Can't reload...", FALSE);
+        disp_message("Can't reload...", false);
         return;
     }
     buf->document_charset = charset;
-    buf->need_reshape = TRUE;
+    buf->need_reshape = true;
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-static int s_display_ok = FALSE;
+static int s_display_ok = false;
 int display_ok()
 {
     return s_display_ok;
@@ -1730,7 +1733,7 @@ void invoke_browser(char *url)
         browser.remove_suffix(2);
         bg = 1;
     }
-    auto cmd = myExtCommand(browser.data(), shell_quote(url), FALSE);
+    auto cmd = myExtCommand(browser.data(), shell_quote(url), false);
     StripRight(cmd);
     fmTerm();
     mySystem(cmd->ptr, bg);
@@ -1760,7 +1763,7 @@ void execdict(char *word)
     // buf = loadGeneralFile(URL::ParsePath(dictcmd), NULL, HttpReferrerPolicy::NoReferer, NULL);
     // if (buf == NULL)
     // {
-    //     disp_message("Execution failed", TRUE);
+    //     disp_message("Execution failed", true);
     //     return;
     // }
     // else
@@ -2024,7 +2027,7 @@ void follow_map(struct parsed_tagarg *arg)
 /* process form */
 void followForm(void)
 {
-    _followForm(FALSE);
+    _followForm(false);
 }
 
 void SigPipe(SIGNAL_ARG)
@@ -2194,7 +2197,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
     char *es = NULL;
     char *str = s->ptr;
     char *endp = &s->ptr[s->Size()];
-    int do_copy = FALSE;
+    int do_copy = false;
     if (w3mApp::Instance().ShowEffect)
     {
         bs = (char *)memchr(str, '\b', s->Size());
@@ -2218,7 +2221,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
         {
             char *sp = str, *ep;
             s = Strnew_size(s->Size());
-            do_copy = TRUE;
+            do_copy = true;
             ep = bs ? (bs - 2) : endp;
             if (es && ep > es - 2)
                 ep = es - 2;
@@ -2243,7 +2246,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
     int clen = 0;
     Lineprop ceffect = PE_NORMAL;
     Linecolor cmode = 0;
-    int check_color = FALSE;
+    int check_color = false;
     while (str < endp)
     {
         if (prop - prop_buffer >= prop_size)
@@ -2361,7 +2364,7 @@ Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor)
                 if (ok)
                 {
                     if (cmode)
-                        check_color = TRUE;
+                        check_color = true;
                     continue;
                 }
             }
@@ -2417,7 +2420,7 @@ void pcmap(void)
 // {
 //     if (buf == NULL)
 //     {
-//         disp_err_message("Can't load string", FALSE);
+//         disp_err_message("Can't load string", false);
 //     }
 //     else
 //     {

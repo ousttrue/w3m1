@@ -11,8 +11,8 @@
 #include "entity.h"
 #include "symbol.h"
 #include "ctrlcode.h"
+#include "textlist.h"
 #include "html/html_processor.h"
-
 #include "html/html_context.h"
 #include "html/tokenizer.h"
 #include "frontend/buffer.h"
@@ -1989,7 +1989,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 if (!w3mApp::Instance().is_redisplay &&
                     !((obuf->flag & RB_NOFRAMES) && w3mApp::Instance().RenderFrame))
                 {
-                    tag->need_reconstruct = TRUE;
+                    tag->need_reconstruct = true;
                     return 0;
                 }
             }
@@ -2289,7 +2289,7 @@ table_start:
     while (*line != '\0')
     {
         const char *str;
-        int is_tag = FALSE;
+        int is_tag = false;
         int pre_mode = (obuf->table_level >= 0) ? tbl_mode->pre_mode : obuf->flag;
         int end_tag = (obuf->table_level >= 0) ? tbl_mode->end_tag : obuf->end_tag;
 
@@ -2313,7 +2313,7 @@ table_start:
             if (*str == '<')
             {
                 if (str[1] && REALLY_THE_BEGINNING_OF_A_TAG(str))
-                    is_tag = TRUE;
+                    is_tag = true;
                 else if (!(pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT |
                                        RB_SCRIPT | RB_STYLE | RB_TITLE)))
                 {
@@ -2365,7 +2365,7 @@ table_start:
                     str = Strnew_charp_n(str, p - str)->ptr;
                     line = Strnew_m_charp(p, line, NULL)->ptr;
                 }
-                is_tag = FALSE;
+                is_tag = false;
             }
             if (obuf->table_level >= 0)
                 goto proc_normal;
@@ -2407,7 +2407,7 @@ table_start:
                     tbl = tbl0;
                     tbl_mode = &table_mode[obuf->table_level];
                     tbl_width = table_width(h_env, obuf->table_level);
-                    feed_table(tbl, str, tbl_mode, tbl_width, TRUE, seq);
+                    feed_table(tbl, str, tbl_mode, tbl_width, true, seq);
                     continue;
                     /* continue to the next */
                 }

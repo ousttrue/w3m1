@@ -21,6 +21,7 @@
 #include "charset.h"
 #include "html/html_processor.h"
 #include "html/html_context.h"
+#include <unistd.h>
 
 extern FormSelectOption *select_option;
 
@@ -586,7 +587,7 @@ void input_textarea(FormItemList *fi)
     if (f == NULL)
     {
         /* FIXME: gettextize? */
-        disp_err_message("Can't open temporary file", FALSE);
+        disp_err_message("Can't open temporary file", false);
         return;
     }
     if (fi->value)
@@ -603,7 +604,7 @@ void input_textarea(FormItemList *fi)
     if (f == NULL)
     {
         /* FIXME: gettextize? */
-        disp_err_message("Can't open temporary file", FALSE);
+        disp_err_message("Can't open temporary file", false);
         goto input_end;
     }
     fi->value = Strnew();
@@ -707,9 +708,9 @@ void updateSelectOption(FormItemList *fi, FormSelectOptionItem *item)
     for (i = 0; item != NULL; i++, item = item->next)
     {
         if (i == fi->selected)
-            item->checked = TRUE;
+            item->checked = true;
         else
-            item->checked = FALSE;
+            item->checked = false;
     }
 }
 
@@ -819,7 +820,7 @@ add_pre_form(struct pre_form *prev, char *url, char *name, char *action)
             newForm->url = allocStr(url + 1, l - 2);
         else
             newForm->url = url + 1;
-        newForm->re_url = newRegex(newForm->url, FALSE, NULL, NULL);
+        newForm->re_url = newRegex(newForm->url, false, NULL, NULL);
         if (!newForm->re_url)
             newForm->url = NULL;
     }

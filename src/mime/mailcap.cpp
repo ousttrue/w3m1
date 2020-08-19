@@ -19,6 +19,9 @@
 #include "frontend/terms.h"
 #include "frontend/display.h"
 #include "frontend/tabbar.h"
+#include <unistd.h>
+#include "textlist.h"
+#include "history.h"
 
 #define MCSTAT_REPNAME 0x01
 #define MCSTAT_REPTYPE 0x02
@@ -574,7 +577,7 @@ BufferPtr doExternal(const URL &url, const InputStreamPtr &stream, std::string_v
 //         flush_tty();
 //         if (!fork())
 //         {
-//             setup_child(FALSE, 0, uf->stream->FD());
+//             setup_child(false, 0, uf->stream->FD());
 //             if (save2tmp(uf, tmpf->ptr) < 0)
 //                 exit(1);
 //             myExec(command->ptr);

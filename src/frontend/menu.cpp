@@ -44,7 +44,7 @@ extern int do_getch();
 
 static const char **FRAME;
 static int FRAME_WIDTH;
-static int graph_mode = FALSE;
+static int graph_mode = false;
 #define G_start           \
     {                     \
         if (graph_mode)   \
@@ -221,33 +221,33 @@ static Menu MainMenu;
 #ifdef USE_M17N
 /* FIXME: gettextize here */
 static CharacterEncodingScheme MainMenuCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
-static int MainMenuEncode = FALSE;
+static int MainMenuEncode = false;
 #endif
 
 static MenuItem MainMenuItem[] = {
     /* type        label           variable value func     popup keys data  */
-    {MENU_FUNC, N_(" Back         (b) "), NULL, 0, backBf, NULL, "b", NULL},
-    {MENU_POPUP, N_(" Select Buffer(s) "), NULL, 0, NULL, &SelectMenu, "s",
+    {MENU_FUNC, " Back         (b) ", NULL, 0, backBf, NULL, "b", NULL},
+    {MENU_POPUP, " Select Buffer(s) ", NULL, 0, NULL, &SelectMenu, "s",
      NULL},
-    {MENU_POPUP, N_(" Select Tab   (t) "), NULL, 0, NULL, &SelTabMenu, "tT",
+    {MENU_POPUP, " Select Tab   (t) ", NULL, 0, NULL, &SelTabMenu, "tT",
      NULL},
-    {MENU_FUNC, N_(" View Source  (v) "), NULL, 0, vwSrc, NULL, "vV", NULL},
-    {MENU_FUNC, N_(" Edit Source  (e) "), NULL, 0, editBf, NULL, "eE", NULL},
-    {MENU_FUNC, N_(" Save Source  (S) "), NULL, 0, svSrc, NULL, "S", NULL},
-    {MENU_FUNC, N_(" Reload       (r) "), NULL, 0, reload, NULL, "rR", NULL},
-    {MENU_NOP, N_(" ---------------- "), NULL, 0, nulcmd, NULL, "", NULL},
-    {MENU_FUNC, N_(" Go Link      (a) "), NULL, 0, followA, NULL, "a", NULL},
-    {MENU_FUNC, N_("   on New Tab (n) "), NULL, 0, tabA, NULL, "nN", NULL},
-    {MENU_FUNC, N_(" Save Link    (A) "), NULL, 0, svA, NULL, "A", NULL},
-    {MENU_FUNC, N_(" View Image   (i) "), NULL, 0, followI, NULL, "i", NULL},
-    {MENU_FUNC, N_(" Save Image   (I) "), NULL, 0, svI, NULL, "I", NULL},
-    {MENU_FUNC, N_(" View Frame   (f) "), NULL, 0, rFrame, NULL, "fF", NULL},
-    {MENU_NOP, N_(" ---------------- "), NULL, 0, nulcmd, NULL, "", NULL},
-    {MENU_FUNC, N_(" Bookmark     (B) "), NULL, 0, ldBmark, NULL, "B", NULL},
-    {MENU_FUNC, N_(" Help         (h) "), NULL, 0, ldhelp, NULL, "hH", NULL},
-    {MENU_FUNC, N_(" Option       (o) "), NULL, 0, ldOpt, NULL, "oO", NULL},
-    {MENU_NOP, N_(" ---------------- "), NULL, 0, nulcmd, NULL, "", NULL},
-    {MENU_FUNC, N_(" Quit         (q) "), NULL, 0, qquitfm, NULL, "qQ", NULL},
+    {MENU_FUNC, " View Source  (v) ", NULL, 0, vwSrc, NULL, "vV", NULL},
+    {MENU_FUNC, " Edit Source  (e) ", NULL, 0, editBf, NULL, "eE", NULL},
+    {MENU_FUNC, " Save Source  (S) ", NULL, 0, svSrc, NULL, "S", NULL},
+    {MENU_FUNC, " Reload       (r) ", NULL, 0, reload, NULL, "rR", NULL},
+    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, "", NULL},
+    {MENU_FUNC, " Go Link      (a) ", NULL, 0, followA, NULL, "a", NULL},
+    {MENU_FUNC, "   on New Tab (n) ", NULL, 0, tabA, NULL, "nN", NULL},
+    {MENU_FUNC, " Save Link    (A) ", NULL, 0, svA, NULL, "A", NULL},
+    {MENU_FUNC, " View Image   (i) ", NULL, 0, followI, NULL, "i", NULL},
+    {MENU_FUNC, " Save Image   (I) ", NULL, 0, svI, NULL, "I", NULL},
+    {MENU_FUNC, " View Frame   (f) ", NULL, 0, rFrame, NULL, "fF", NULL},
+    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, "", NULL},
+    {MENU_FUNC, " Bookmark     (B) ", NULL, 0, ldBmark, NULL, "B", NULL},
+    {MENU_FUNC, " Help         (h) ", NULL, 0, ldhelp, NULL, "hH", NULL},
+    {MENU_FUNC, " Option       (o) ", NULL, 0, ldOpt, NULL, "oO", NULL},
+    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, "", NULL},
+    {MENU_FUNC, " Quit         (q) ", NULL, 0, qquitfm, NULL, "qQ", NULL},
     {MENU_END, "", NULL, 0, nulcmd, NULL, "", NULL},
 };
 
@@ -683,13 +683,13 @@ set_menu_frame(void)
 {
     if (graph_ok())
     {
-        graph_mode = TRUE;
+        graph_mode = true;
         FRAME_WIDTH = 1;
         FRAME = graph_symbol;
     }
     else
     {
-        graph_mode = FALSE;
+        graph_mode = false;
 
         FRAME_WIDTH = 0;
         FRAME = get_symbol(w3mApp::Instance().DisplayCharset, &FRAME_WIDTH);
@@ -945,7 +945,7 @@ menu_search_forward(Menu *menu, int from)
         found = menuForwardSearch(menu, str, 0);
     if (found >= 0)
         return found;
-    disp_message("Not found", TRUE);
+    disp_message("Not found", true);
     return -1;
 }
 
@@ -996,7 +996,7 @@ menu_search_backward(Menu *menu, int from)
         found = menuBackwardSearch(menu, str, menu->nitem);
     if (found >= 0)
         return found;
-    disp_message("Not found", TRUE);
+    disp_message("Not found", true);
     return -1;
 }
 
@@ -1020,7 +1020,7 @@ menu_search_next_previous(Menu *menu, int from, int reverse)
 
     if (menuSearchRoutine == NULL)
     {
-        disp_message("No previous regular expression", TRUE);
+        disp_message("No previous regular expression", true);
         return -1;
     }
     str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
@@ -1034,7 +1034,7 @@ menu_search_next_previous(Menu *menu, int from, int reverse)
         found = (*routine[reverse])(menu, str, reverse * menu->nitem);
     if (found >= 0)
         return found;
-    disp_message("Not found", TRUE);
+    disp_message("Not found", true);
     return -1;
 }
 
@@ -1643,8 +1643,8 @@ void initMenu(void)
 #endif
         for (item = MainMenuItem; item->type != MENU_END; item++)
             item->label =
-                wc_conv(_(item->label), MainMenuCharset, w3mApp::Instance().InnerCharset)->ptr;
-        MainMenuEncode = TRUE;
+                wc_conv(item->label, MainMenuCharset, w3mApp::Instance().InnerCharset)->ptr;
+        MainMenuEncode = true;
     }
 #endif
     if ((mf = fopen(confFile(MENU_FILE), "rt")) != NULL)
@@ -1914,7 +1914,7 @@ list_menu(const BufferPtr &buf)
     Menu menu;
     AnchorList &al = buf->href;
     Anchor **ap;
-    int i, n, nitem = 0, key = -1, two = FALSE;
+    int i, n, nitem = 0, key = -1, two = false;
     char **label;
     char *t;
     unsigned char c;
@@ -1931,7 +1931,7 @@ list_menu(const BufferPtr &buf)
         return NULL;
 
     if (nitem >= nlmKeys)
-        two = TRUE;
+        two = true;
     label = New_N(char *, nitem + 1);
     ap = New_N(Anchor *, nitem);
     for (i = 0, n = 0; i < al.size(); i++)

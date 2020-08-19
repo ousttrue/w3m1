@@ -61,7 +61,7 @@ struct table_in
     short row;
     short cell;
     short indent;
-    TextLineList *buf;
+    struct TextLineList *buf;
 };
 
 struct table_linfo
@@ -96,7 +96,7 @@ struct table
 #ifdef ID_EXT
     Str id;
 #endif
-    GeneralList ***tabdata;
+    struct GeneralList ***tabdata;
     table_attr **tabattr;
     table_attr trattr;
 #ifdef ID_EXT
@@ -111,7 +111,7 @@ struct table
     struct table_in *tables;
     short ntable;
     short tables_size;
-    TextList *suspended_data;
+    struct TextList *suspended_data;
     /* use for counting skipped spaces */
     struct table_linfo linfo;
 #ifdef MATRIX
@@ -153,7 +153,7 @@ struct table_mode
 /* tab-width: 8        */
 /* End:                */
 
-void align(TextLine *lbuf, int width, int mode);
+void align(struct TextLine *lbuf, int width, int mode);
 
 int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal, class HtmlContext *seq);
 void do_refill(struct table *tbl, int row, int col, int maxlimit, class HtmlContext *seq);

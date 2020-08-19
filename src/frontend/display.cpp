@@ -1,6 +1,7 @@
 /* $Id: display.c,v 1.71 2010/07/18 14:10:09 htrb Exp $ */
 
 #include "frontend/display.h"
+#include "textlist.h"
 #include "ctrlcode.h"
 #include "file.h"
 #include "fm.h"
@@ -212,7 +213,7 @@ void fmTerm(void)
             mouse_end();
 
         reset_tty();
-        w3mApp::Instance().fmInitialized = FALSE;
+        w3mApp::Instance().fmInitialized = false;
     }
 }
 
@@ -231,7 +232,7 @@ void fmInit(void)
             initImage();
 #endif
     }
-    w3mApp::Instance().fmInitialized = TRUE;
+    w3mApp::Instance().fmInitialized = true;
 }
 
 /*
@@ -255,58 +256,58 @@ void clear_effect()
 {
     if (somode)
     {
-        somode = FALSE;
+        somode = false;
         standend();
     }
     if (ulmode)
     {
-        ulmode = FALSE;
+        ulmode = false;
         underlineend();
     }
     if (bomode)
     {
-        bomode = FALSE;
+        bomode = false;
         boldend();
     }
     if (emph_mode)
     {
-        emph_mode = FALSE;
+        emph_mode = false;
         boldend();
     }
 
     if (anch_mode)
     {
-        anch_mode = FALSE;
+        anch_mode = false;
         effect_anchor_end();
     }
     if (imag_mode)
     {
-        imag_mode = FALSE;
+        imag_mode = false;
         effect_image_end();
     }
     if (form_mode)
     {
-        form_mode = FALSE;
+        form_mode = false;
         effect_form_end();
     }
     if (visited_mode)
     {
-        visited_mode = FALSE;
+        visited_mode = false;
         effect_visited_end();
     }
     if (active_mode)
     {
-        active_mode = FALSE;
+        active_mode = false;
         effect_active_end();
     }
     if (mark_mode)
     {
-        mark_mode = FALSE;
+        mark_mode = false;
         effect_mark_end();
     }
     if (graph_mode)
     {
-        graph_mode = FALSE;
+        graph_mode = false;
         graphend();
     }
 
@@ -317,7 +318,7 @@ void clear_effect()
 static void drawAnchorCursor(const BufferPtr &buf);
 
 static int image_touch = 0;
-static int draw_image_flag = FALSE;
+static int draw_image_flag = false;
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i);
 
 static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos,
@@ -629,7 +630,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                 {
                     image->width = cache->width;
                     image->height = cache->height;
-                    buf->need_reshape = TRUE;
+                    buf->need_reshape = true;
                 }
                 x = (int)((rcol - column + buf->rect.rootX) *
                           w3mApp::Instance().pixel_per_char);
@@ -661,7 +662,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                     h = (int)((LINES - 1) * w3mApp::Instance().pixel_per_line - y);
                 addImage(cache, x, y, sx, sy, w, h);
                 image->touch = image_touch;
-                draw_image_flag = TRUE;
+                draw_image_flag = true;
             }
         }
         rcol = l->COLPOS(pos + j + 1);
@@ -675,7 +676,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
         if (!modeflag)                                         \
         {                                                      \
             action_start;                                      \
-            modeflag = TRUE;                                   \
+            modeflag = true;                                   \
         }                                                      \
     }
 
@@ -683,7 +684,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
     if (modeflag)                                              \
     {                                                          \
         action_end;                                            \
-        modeflag = FALSE;                                      \
+        modeflag = false;                                      \
     }
 
 static void do_effects(Lineprop m)
@@ -704,7 +705,7 @@ static void do_effects(Lineprop m)
     if (graph_mode)
     {
         graphend();
-        graph_mode = FALSE;
+        graph_mode = false;
     }
 
     /* effect start */
@@ -771,7 +772,7 @@ void addChar(char c, Lineprop mode)
             if (!graph_mode)
             {
                 graphstart();
-                graph_mode = TRUE;
+                graph_mode = true;
             }
 #ifdef USE_M17N
             if (w == 2 && WcOption.use_wide)
@@ -922,12 +923,12 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
 
 void disp_message(const char *s, int redraw_current)
 {
-    disp_message_nsec(s, redraw_current, 10, FALSE, TRUE);
+    disp_message_nsec(s, redraw_current, 10, false, true);
 }
 
 void disp_message_nomouse(const char *s, int redraw_current)
 {
-    disp_message_nsec(s, redraw_current, 10, FALSE, FALSE);
+    disp_message_nsec(s, redraw_current, 10, false, false);
 }
 
 void set_delayed_message(const char *s) { delayed_msg = allocStr(s, -1); }
@@ -953,7 +954,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
          (is_html_type(buf->type) || w3mApp::Instance().FoldLine)) ||
         buf->need_reshape)
     {
-        buf->need_reshape = TRUE;
+        buf->need_reshape = true;
         // buf->Reshape();
     }
 
@@ -994,7 +995,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
             clearImage();
             loadImage(buf, IMG_FLAG_STOP);
             image_touch++;
-            draw_image_flag = FALSE;
+            draw_image_flag = false;
         }
 
         if (w3mApp::Instance().useColor)
@@ -1067,7 +1068,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     }
     if (delayed_msg != NULL)
     {
-        disp_message(delayed_msg, FALSE);
+        disp_message(delayed_msg, false);
         delayed_msg = NULL;
         refresh();
     }

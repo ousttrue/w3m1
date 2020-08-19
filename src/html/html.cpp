@@ -455,7 +455,7 @@ bool parsed_tag::parse_attr(const char **s, int nattr, bool internal)
             {
                 value_tmp->Push(*q);
                 if (!this->need_reconstruct && is_html_quote(*q))
-                    this->need_reconstruct = TRUE;
+                    this->need_reconstruct = true;
                 q++;
             }
             if (*q == '"')
@@ -468,7 +468,7 @@ bool parsed_tag::parse_attr(const char **s, int nattr, bool internal)
             {
                 value_tmp->Push(*q);
                 if (!this->need_reconstruct && is_html_quote(*q))
-                    this->need_reconstruct = TRUE;
+                    this->need_reconstruct = true;
                 q++;
             }
             if (*q == '\'')
@@ -480,7 +480,7 @@ bool parsed_tag::parse_attr(const char **s, int nattr, bool internal)
             {
                 value_tmp->Push(*q);
                 if (!this->need_reconstruct && is_html_quote(*q))
-                    this->need_reconstruct = TRUE;
+                    this->need_reconstruct = true;
                 q++;
             }
         }
@@ -501,13 +501,13 @@ bool parsed_tag::parse_attr(const char **s, int nattr, bool internal)
 
     if (value_tmp)
     {
-        int j, hidden = FALSE;
+        int j, hidden = false;
         for (j = 0; j < i; j++)
         {
             if (this->attrid[j] == ATTR_TYPE &&
                 strcmp("hidden", this->value[j]) == 0)
             {
-                hidden = TRUE;
+                hidden = true;
                 break;
             }
         }
@@ -536,7 +536,7 @@ bool parsed_tag::parse_attr(const char **s, int nattr, bool internal)
                 (value && AttrMAP[attr_id].vtype == VTYPE_METHOD &&
                     !strcasecmp(value->ptr, "internal"))))
         {
-            this->need_reconstruct = TRUE;
+            this->need_reconstruct = true;
             return true;
         }
         this->attrid[i] = attr_id;
@@ -547,7 +547,7 @@ bool parsed_tag::parse_attr(const char **s, int nattr, bool internal)
     }
     else
     {
-        this->need_reconstruct = TRUE;
+        this->need_reconstruct = true;
     }
     return true;
 }
@@ -638,7 +638,7 @@ bool parsed_tag::SetAttributeValue(HtmlTagAttributes id, const char *value)
         this->value[i] = allocStr(value, -1);
     else
         this->value[i] = NULL;
-    this->need_reconstruct = TRUE;
+    this->need_reconstruct = true;
     return 1;
 }
 

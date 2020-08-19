@@ -18,6 +18,7 @@
 #include "html/maparea.h"
 #include "html/tokenizer.h"
 #include "w3m.h"
+#include "textlist.h"
 #include "frontend/terms.h"
 #include "frontend/line.h"
 #include "stream/istream.h"
@@ -70,7 +71,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
             //         lineBuf2->ptr[0] == '\0')
             //     {
             //         /*
-            //      * iseos(stream) = TRUE;
+            //      * iseos(stream) = true;
             //      */
             //         break;
             //     }
@@ -78,7 +79,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 
             linelen += lineBuf2->Size();
             // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
-            //     printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), TRUE));
+            //     printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), true));
             if (w3mApp::Instance().w3m_dump & DUMP_SOURCE)
                 continue;
             showProgress(&linelen, &trbyte, 0);
@@ -185,7 +186,7 @@ BufferPtr loadHTMLString(const URL &url, Str page, CharacterEncodingScheme conte
     auto success = TrapJmp([&]() {
         auto f = newStrStream(page);
 
-        newBuf = loadHTMLStream(url, f, content_charset, TRUE);
+        newBuf = loadHTMLStream(url, f, content_charset, true);
         newBuf->document_charset = w3mApp::Instance().InnerCharset;
         newBuf->document_charset = WC_CES_US_ASCII;
 

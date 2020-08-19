@@ -5,12 +5,12 @@
 #include "config.h"
 #include <wc.h>
 
-#ifndef TRUE
-#define TRUE 1
-#endif /* TRUE */
-#ifndef FALSE
-#define FALSE 0
-#endif /* FALSE */
+#ifndef true
+#define true 1
+#endif /* true */
+#ifndef false
+#define false 0
+#endif /* false */
 
 #define RAW_MODE 0
 #define PAGER_MODE 1
@@ -72,7 +72,7 @@ GCStr *UrlEncode(GCStr *src);
 GCStr *UrlDecode(GCStr* src, bool is_form, bool safe);
 inline Str Str_form_unquote(Str x)
 {
-    return UrlDecode(x, TRUE, FALSE);
+    return UrlDecode(x, true, false);
 }
 extern char *shell_quote(std::string_view str);
 

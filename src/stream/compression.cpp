@@ -219,7 +219,7 @@ char *acceptableEncoding()
 //             Str buf = Strnew_size(SAVE_BUF_SIZE);
 //             FILE *f = NULL;
 
-//             setup_child(TRUE, 2, uf->stream->FD());
+//             setup_child(true, 2, uf->stream->FD());
 //             if (tmpf)
 //                 f = fopen(tmpf, "wb");
 //             while (uf->stream->readto(buf, SAVE_BUF_SIZE))
@@ -236,7 +236,7 @@ char *acceptableEncoding()
 //         }
 //         /* child1 */
 //         dup2(1, 2); /* stderr>&stdout */
-//         setup_child(TRUE, -1, -1);
+//         setup_child(true, -1, -1);
 //         execlp(d->expand_cmd(), d->name, NULL);
 //         exit(1);
 //     }

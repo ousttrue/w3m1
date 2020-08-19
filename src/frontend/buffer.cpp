@@ -1,6 +1,8 @@
 #include <sstream>
 #include <assert.h>
+#include <unistd.h>
 #include "fm.h"
+#include "history.h"
 #include "frontend/buffer.h"
 #include "frontend/display.h"
 #include "frontend/line.h"
@@ -500,7 +502,7 @@ void Buffer::GotoLine(int n, bool topline)
         sprintf(msg, "Last line is #%ld", this->LastLine()->linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
-        LineSkip(this->currentLine, -(this->rect.lines - 1), FALSE);
+        LineSkip(this->currentLine, -(this->rect.lines - 1), false);
         return;
     }
     auto it = find(l);
@@ -511,7 +513,7 @@ void Buffer::GotoLine(int n, bool topline)
             this->currentLine = *it;
             if (n < this->topLine->linenumber ||
                 this->topLine->linenumber + this->rect.lines <= n)
-                LineSkip(*it, -(this->rect.lines + 1) / 2, FALSE);
+                LineSkip(*it, -(this->rect.lines + 1) / 2, false);
             break;
         }
     }
@@ -526,7 +528,7 @@ void Buffer::Scroll(int n)
 {
     auto lnum = currentLine->linenumber;
     auto top = topLine;
-    this->LineSkip(top, n, FALSE);
+    this->LineSkip(top, n, false);
     if (this->topLine == top)
     {
         lnum += n;
@@ -622,7 +624,7 @@ void Buffer::GotoRealLine(int n)
         set_delayed_message(msg);
         this->currentLine = l;
         LineSkip(this->currentLine, -(this->rect.lines - 1),
-                 FALSE);
+                 false);
         return;
     }
 
@@ -634,7 +636,7 @@ void Buffer::GotoRealLine(int n)
             this->currentLine = *it;
             if (n < this->topLine->real_linenumber ||
                 this->topLine->real_linenumber + this->rect.lines <= n)
-                LineSkip(*it, -(this->rect.lines + 1) / 2, FALSE);
+                LineSkip(*it, -(this->rect.lines + 1) / 2, false);
             break;
         }
     }
@@ -649,7 +651,7 @@ void Buffer::GotoRealLine(int n)
 
 //     if (!need_reshape)
 //         return;
-//     need_reshape = FALSE;
+//     need_reshape = false;
 
 //     this->width = INIT_BUFFER_WIDTH();
 //     if (this->sourcefile.empty())
@@ -684,15 +686,15 @@ void Buffer::GotoRealLine(int n)
 //             auto h = URLFile::OpenFile(this->header_source);
 //             if (h->stream)
 //             {
-//                 readHeader(h, shared_from_this(), TRUE, NULL);
+//                 readHeader(h, shared_from_this(), true, NULL);
 //             }
 //         }
 //         else if (this->search_header) /* -m option */
-//             readHeader(f, shared_from_this(), TRUE, NULL);
+//             readHeader(f, shared_from_this(), true, NULL);
 //     }
 
 //     WcOption.auto_detect = WC_OPT_DETECT_OFF;
-//     w3mApp::Instance().UseContentCharset = FALSE;
+//     w3mApp::Instance().UseContentCharset = false;
 
 //     if (is_html_type(this->type))
 //         loadHTMLBuffer(f, shared_from_this());
@@ -700,7 +702,7 @@ void Buffer::GotoRealLine(int n)
 //         loadBuffer(f, shared_from_this());
 
 //     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
-//     w3mApp::Instance().UseContentCharset = TRUE;
+//     w3mApp::Instance().UseContentCharset = true;
 
 //     this->height = (rect.lines - 1) + 1;
 //     if (this->FirstLine() && sbuf->FirstLine())
@@ -718,7 +720,7 @@ void Buffer::GotoRealLine(int n)
 //         n = (this->currentLine->linenumber - this->topLine->linenumber) - (cur->linenumber - sbuf->topLine->linenumber);
 //         if (n)
 //         {
-//             LineSkip(this->topLine, n, FALSE);
+//             LineSkip(this->topLine, n, false);
 //             if (cur->real_linenumber > 0)
 //                 this->GotoRealLine(cur->real_linenumber);
 //             else
@@ -895,7 +897,7 @@ void Buffer::CursorUp0(int n)
         CursorUpDown(-1);
     else
     {
-        this->LineSkip(this->topLine, -n, FALSE);
+        this->LineSkip(this->topLine, -n, false);
         if (PrevLine(this->currentLine) != NULL)
             this->currentLine = PrevLine(this->currentLine);
         ArrangeLine();
@@ -927,7 +929,7 @@ void Buffer::CursorDown0(int n)
         CursorUpDown(1);
     else
     {
-        this->LineSkip(this->topLine, n, FALSE);
+        this->LineSkip(this->topLine, n, false);
         if (NextLine(this->currentLine) != NULL)
             this->currentLine = NextLine(this->currentLine);
         ArrangeLine();
@@ -960,7 +962,7 @@ void Buffer::CursorUpDown(int n)
 
     if (this->LineCount() == 0)
         return;
-    if ((this->currentLine = this->CurrentLineSkip(cl, n, FALSE)) == cl)
+    if ((this->currentLine = this->CurrentLineSkip(cl, n, false)) == cl)
         return;
     ArrangeLine();
 }
@@ -1095,7 +1097,7 @@ void Buffer::ArrangeCursor()
     /* Arrange line */
     if (this->currentLine->linenumber - this->topLine->linenumber >= this->rect.lines || this->currentLine->linenumber < this->topLine->linenumber)
     {
-        this->LineSkip(this->currentLine, 0, FALSE);
+        this->LineSkip(this->currentLine, 0, false);
     }
     /* Arrange column */
     while (this->pos < 0 && PrevLine(this->currentLine) && this->currentLine->bpos)

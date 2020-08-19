@@ -349,190 +349,190 @@ std::unordered_map<std::string_view, Param *> RC_search_table;
 /* FIXME: gettextize here */
 #ifdef USE_M17N
 static CharacterEncodingScheme OptionCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
-static int OptionEncode = FALSE;
+static int OptionEncode = false;
 #endif
 
-#define CMT_HELPER N_("External Viewer Setup")
-#define CMT_TABSTOP N_("Tab width in characters")
-#define CMT_INDENT_INCR N_("Indent for HTML rendering")
-#define CMT_PIXEL_PER_CHAR N_("Number of pixels per character (4.0...32.0)")
-#define CMT_PIXEL_PER_LINE N_("Number of pixels per line (4.0...64.0)")
-#define CMT_PAGERLINE N_("Number of remembered lines when used as a pager")
-#define CMT_HISTORY N_("Use URL history")
-#define CMT_HISTSIZE N_("Number of remembered URL")
-#define CMT_SAVEHIST N_("Save URL history")
-#define CMT_FRAME N_("Render frames automatically")
-#define CMT_ARGV_IS_URL N_("Treat argument without scheme as URL")
-#define CMT_TSELF N_("Use _self as default target")
-#define CMT_OPEN_TAB_BLANK N_("Open link on new tab if target is _blank or _new")
-#define CMT_OPEN_TAB_DL_LIST N_("Open download list panel on new tab")
-#define CMT_DISPLINK N_("Display link URL automatically")
-#define CMT_DISPLINKNUMBER N_("Display link numbers")
-#define CMT_DECODE_URL N_("Display decoded URL")
-#define CMT_DISPLINEINFO N_("Display current line number")
-#define CMT_DISP_IMAGE N_("Display inline images")
-#define CMT_PSEUDO_INLINES N_("Display pseudo-ALTs for inline images with no ALT or TITLE string")
+#define CMT_HELPER "External Viewer Setup"
+#define CMT_TABSTOP "Tab width in characters"
+#define CMT_INDENT_INCR "Indent for HTML rendering"
+#define CMT_PIXEL_PER_CHAR "Number of pixels per character (4.0...32.0)"
+#define CMT_PIXEL_PER_LINE "Number of pixels per line (4.0...64.0)"
+#define CMT_PAGERLINE "Number of remembered lines when used as a pager"
+#define CMT_HISTORY "Use URL history"
+#define CMT_HISTSIZE "Number of remembered URL"
+#define CMT_SAVEHIST "Save URL history"
+#define CMT_FRAME "Render frames automatically"
+#define CMT_ARGV_IS_URL "Treat argument without scheme as URL"
+#define CMT_TSELF "Use _self as default target"
+#define CMT_OPEN_TAB_BLANK "Open link on new tab if target is _blank or _new"
+#define CMT_OPEN_TAB_DL_LIST "Open download list panel on new tab"
+#define CMT_DISPLINK "Display link URL automatically"
+#define CMT_DISPLINKNUMBER "Display link numbers"
+#define CMT_DECODE_URL "Display decoded URL"
+#define CMT_DISPLINEINFO "Display current line number"
+#define CMT_DISP_IMAGE "Display inline images"
+#define CMT_PSEUDO_INLINES "Display pseudo-ALTs for inline images with no ALT or TITLE string"
 #ifdef USE_IMAGE
-#define CMT_AUTO_IMAGE N_("Load inline images automatically")
-#define CMT_MAX_LOAD_IMAGE N_("Maximum processes for parallel image loading")
-#define CMT_EXT_IMAGE_VIEWER N_("Use external image viewer")
-#define CMT_IMAGE_SCALE N_("Scale of image (%)")
-#define CMT_IMGDISPLAY N_("External command to display image")
-#define CMT_IMAGE_MAP_LIST N_("Use link list of image map")
+#define CMT_AUTO_IMAGE "Load inline images automatically"
+#define CMT_MAX_LOAD_IMAGE "Maximum processes for parallel image loading"
+#define CMT_EXT_IMAGE_VIEWER "Use external image viewer"
+#define CMT_IMAGE_SCALE "Scale of image (%)"
+#define CMT_IMGDISPLAY "External command to display image"
+#define CMT_IMAGE_MAP_LIST "Use link list of image map"
 #endif
-#define CMT_MULTICOL N_("Display file names in multi-column format")
-#define CMT_ALT_ENTITY N_("Use ASCII equivalents to display entities")
-#define CMT_GRAPHIC_CHAR N_("Character type for border of table and menu")
-#define CMT_FOLD_TEXTAREA N_("Fold lines in TEXTAREA")
-#define CMT_DISP_INS_DEL N_("Display INS, DEL, S and STRIKE element")
-#define CMT_COLOR N_("Display with color")
-#define CMT_B_COLOR N_("Color of normal character")
-#define CMT_A_COLOR N_("Color of anchor")
-#define CMT_I_COLOR N_("Color of image link")
-#define CMT_F_COLOR N_("Color of form")
-#define CMT_ACTIVE_STYLE N_("Enable coloring of active link")
-#define CMT_C_COLOR N_("Color of currently active link")
-#define CMT_VISITED_ANCHOR N_("Use visited link color")
-#define CMT_V_COLOR N_("Color of visited link")
-#define CMT_BG_COLOR N_("Color of background")
-#define CMT_MARK_COLOR N_("Color of mark")
-#define CMT_USE_PROXY N_("Use proxy")
-#define CMT_HTTP_PROXY N_("URL of HTTP proxy host")
+#define CMT_MULTICOL "Display file names in multi-column format"
+#define CMT_ALT_ENTITY "Use ASCII equivalents to display entities"
+#define CMT_GRAPHIC_CHAR "Character type for border of table and menu"
+#define CMT_FOLD_TEXTAREA "Fold lines in TEXTAREA"
+#define CMT_DISP_INS_DEL "Display INS, DEL, S and STRIKE element"
+#define CMT_COLOR "Display with color"
+#define CMT_B_COLOR "Color of normal character"
+#define CMT_A_COLOR "Color of anchor"
+#define CMT_I_COLOR "Color of image link"
+#define CMT_F_COLOR "Color of form"
+#define CMT_ACTIVE_STYLE "Enable coloring of active link"
+#define CMT_C_COLOR "Color of currently active link"
+#define CMT_VISITED_ANCHOR "Use visited link color"
+#define CMT_V_COLOR "Color of visited link"
+#define CMT_BG_COLOR "Color of background"
+#define CMT_MARK_COLOR "Color of mark"
+#define CMT_USE_PROXY "Use proxy"
+#define CMT_HTTP_PROXY "URL of HTTP proxy host"
 #ifdef USE_SSL
-#define CMT_HTTPS_PROXY N_("URL of HTTPS proxy host")
+#define CMT_HTTPS_PROXY "URL of HTTPS proxy host"
 #endif /* USE_SSL */
 #ifdef USE_GOPHER
-#define CMT_GOPHER_PROXY N_("URL of GOPHER proxy host")
+#define CMT_GOPHER_PROXY "URL of GOPHER proxy host"
 #endif /* USE_GOPHER */
-#define CMT_FTP_PROXY N_("URL of FTP proxy host")
-#define CMT_NO_PROXY N_("Domains to be accessed directly (no proxy)")
-#define CMT_NOPROXY_NETADDR N_("Check noproxy by network address")
-#define CMT_NO_CACHE N_("Disable cache")
+#define CMT_FTP_PROXY "URL of FTP proxy host"
+#define CMT_NO_PROXY "Domains to be accessed directly (no proxy)"
+#define CMT_NOPROXY_NETADDR "Check noproxy by network address"
+#define CMT_NO_CACHE "Disable cache"
 #ifdef USE_NNTP
-#define CMT_NNTP_SERVER N_("News server")
-#define CMT_NNTP_MODE N_("Mode of news server")
-#define CMT_MAX_NEWS N_("Number of news messages")
+#define CMT_NNTP_SERVER "News server"
+#define CMT_NNTP_MODE "Mode of news server"
+#define CMT_MAX_NEWS "Number of news messages"
 #endif
-#define CMT_DNS_ORDER N_("Order of name resolution")
-#define CMT_DROOT N_("Directory corresponding to / (document root)")
-#define CMT_PDROOT N_("Directory corresponding to /~user")
-#define CMT_CGIBIN N_("Directory corresponding to /cgi-bin")
-#define CMT_CONFIRM_QQ N_("Confirm when quitting with q")
-#define CMT_CLOSE_TAB_BACK N_("Close tab if buffer is last when back")
+#define CMT_DNS_ORDER "Order of name resolution"
+#define CMT_DROOT "Directory corresponding to / (document root)"
+#define CMT_PDROOT "Directory corresponding to /~user"
+#define CMT_CGIBIN "Directory corresponding to /cgi-bin"
+#define CMT_CONFIRM_QQ "Confirm when quitting with q"
+#define CMT_CLOSE_TAB_BACK "Close tab if buffer is last when back"
 #ifdef USE_MARK
-#define CMT_USE_MARK N_("Enable mark operations")
+#define CMT_USE_MARK "Enable mark operations"
 #endif
-#define CMT_EMACS_LIKE_LINEEDIT N_("Enable Emacs-style line editing")
-#define CMT_VI_PREC_NUM N_("Enable vi-like numeric prefix")
-#define CMT_LABEL_TOPLINE N_("Move cursor to top line when going to label")
-#define CMT_NEXTPAGE_TOPLINE N_("Move cursor to top line when moving to next page")
-#define CMT_FOLD_LINE N_("Fold lines of plain text file")
-#define CMT_SHOW_NUM N_("Show line numbers")
-#define CMT_SHOW_SRCH_STR N_("Show search string")
-#define CMT_MIMETYPES N_("List of mime.types files")
-#define CMT_MAILCAP N_("List of mailcap files")
-#define CMT_URIMETHODMAP N_("List of urimethodmap files")
-#define CMT_EDITOR N_("Editor")
-#define CMT_MAILER N_("Mailer")
-#define CMT_MAILTO_OPTIONS N_("How to call Mailer for mailto URLs with options")
-#define CMT_EXTBRZ N_("External Browser")
-#define CMT_EXTBRZ2 N_("Second External Browser")
-#define CMT_EXTBRZ3 N_("Third External Browser")
-#define CMT_DISABLE_SECRET_SECURITY_CHECK N_("Disable secret file security check")
-#define CMT_PASSWDFILE N_("Password file")
-#define CMT_PRE_FORM_FILE N_("File for setting form on loading")
-#define CMT_FTPPASS N_("Password for anonymous FTP (your mail address)")
-#define CMT_FTPPASS_HOSTNAMEGEN N_("Generate domain part of password for FTP")
-#define CMT_USERAGENT N_("User-Agent identification string")
-#define CMT_ACCEPTENCODING N_("Accept-Encoding header")
-#define CMT_ACCEPTMEDIA N_("Accept header")
-#define CMT_ACCEPTLANG N_("Accept-Language header")
-#define CMT_MARK_ALL_PAGES N_("Treat URL-like strings as links in all pages")
-#define CMT_WRAP N_("Wrap search")
-#define CMT_VIEW_UNSEENOBJECTS N_("Display unseen objects (e.g. bgimage tag)")
-#define CMT_AUTO_UNCOMPRESS N_("Uncompress compressed data automatically when downloading")
+#define CMT_EMACS_LIKE_LINEEDIT "Enable Emacs-style line editing"
+#define CMT_VI_PREC_NUM "Enable vi-like numeric prefix"
+#define CMT_LABEL_TOPLINE "Move cursor to top line when going to label"
+#define CMT_NEXTPAGE_TOPLINE "Move cursor to top line when moving to next page"
+#define CMT_FOLD_LINE "Fold lines of plain text file"
+#define CMT_SHOW_NUM "Show line numbers"
+#define CMT_SHOW_SRCH_STR "Show search string"
+#define CMT_MIMETYPES "List of mime.types files"
+#define CMT_MAILCAP "List of mailcap files"
+#define CMT_URIMETHODMAP "List of urimethodmap files"
+#define CMT_EDITOR "Editor"
+#define CMT_MAILER "Mailer"
+#define CMT_MAILTO_OPTIONS "How to call Mailer for mailto URLs with options"
+#define CMT_EXTBRZ "External Browser"
+#define CMT_EXTBRZ2 "Second External Browser"
+#define CMT_EXTBRZ3 "Third External Browser"
+#define CMT_DISABLE_SECRET_SECURITY_CHECK "Disable secret file security check"
+#define CMT_PASSWDFILE "Password file"
+#define CMT_PRE_FORM_FILE "File for setting form on loading"
+#define CMT_FTPPASS "Password for anonymous FTP (your mail address)"
+#define CMT_FTPPASS_HOSTNAMEGEN "Generate domain part of password for FTP"
+#define CMT_USERAGENT "User-Agent identification string"
+#define CMT_ACCEPTENCODING "Accept-Encoding header"
+#define CMT_ACCEPTMEDIA "Accept header"
+#define CMT_ACCEPTLANG "Accept-Language header"
+#define CMT_MARK_ALL_PAGES "Treat URL-like strings as links in all pages"
+#define CMT_WRAP "Wrap search"
+#define CMT_VIEW_UNSEENOBJECTS "Display unseen objects (e.g. bgimage tag)"
+#define CMT_AUTO_UNCOMPRESS "Uncompress compressed data automatically when downloading"
 #ifdef __EMX__
-#define CMT_BGEXTVIEW N_("Run external viewer in a separate session")
+#define CMT_BGEXTVIEW "Run external viewer in a separate session"
 #else
-#define CMT_BGEXTVIEW N_("Run external viewer in the background")
+#define CMT_BGEXTVIEW "Run external viewer in the background"
 #endif
-#define CMT_EXT_DIRLIST N_("Use external program for directory listing")
-#define CMT_DIRLIST_CMD N_("URL of directory listing command")
+#define CMT_EXT_DIRLIST "Use external program for directory listing"
+#define CMT_DIRLIST_CMD "URL of directory listing command"
 #ifdef USE_DICT
-#define CMT_USE_DICTCOMMAND N_("Enable dictionary lookup through CGI")
-#define CMT_DICTCOMMAND N_("URL of dictionary lookup command")
+#define CMT_USE_DICTCOMMAND "Enable dictionary lookup through CGI"
+#define CMT_DICTCOMMAND "URL of dictionary lookup command"
 #endif /* USE_DICT */
-#define CMT_IGNORE_NULL_IMG_ALT N_("Display link name for images lacking ALT")
-#define CMT_IFILE N_("Index file for directories")
-#define CMT_RETRY_HTTP N_("Prepend http:// to URL automatically")
-#define CMT_DEFAULT_URL N_("Default value for open-URL command")
-#define CMT_DECODE_CTE N_("Decode Content-Transfer-Encoding when saving")
-#define CMT_PRESERVE_TIMESTAMP N_("Preserve timestamp when saving")
+#define CMT_IGNORE_NULL_IMG_ALT "Display link name for images lacking ALT"
+#define CMT_IFILE "Index file for directories"
+#define CMT_RETRY_HTTP "Prepend http:// to URL automatically"
+#define CMT_DEFAULT_URL "Default value for open-URL command"
+#define CMT_DECODE_CTE "Decode Content-Transfer-Encoding when saving"
+#define CMT_PRESERVE_TIMESTAMP "Preserve timestamp when saving"
 #ifdef USE_MOUSE
-#define CMT_MOUSE N_("Enable mouse")
-#define CMT_REVERSE_MOUSE N_("Scroll in reverse direction of mouse drag")
-#define CMT_RELATIVE_WHEEL_SCROLL N_("Behavior of wheel scroll speed")
-#define CMT_RELATIVE_WHEEL_SCROLL_RATIO N_("(A only)Scroll by # (%) of screen")
-#define CMT_FIXED_WHEEL_SCROLL_COUNT N_("(B only)Scroll by # lines")
+#define CMT_MOUSE "Enable mouse"
+#define CMT_REVERSE_MOUSE "Scroll in reverse direction of mouse drag"
+#define CMT_RELATIVE_WHEEL_SCROLL "Behavior of wheel scroll speed"
+#define CMT_RELATIVE_WHEEL_SCROLL_RATIO "(A only)Scroll by # (%) of screen"
+#define CMT_FIXED_WHEEL_SCROLL_COUNT "(B only)Scroll by # lines"
 #endif /* USE_MOUSE */
-#define CMT_CLEAR_BUF N_("Free memory of undisplayed buffers")
-#define CMT_NOSENDREFERER N_("Suppress `Referer:' header")
-#define CMT_IGNORE_CASE N_("Search case-insensitively")
-#define CMT_USE_LESSOPEN N_("Use LESSOPEN")
+#define CMT_CLEAR_BUF "Free memory of undisplayed buffers"
+#define CMT_NOSENDREFERER "Suppress `Referer:' header"
+#define CMT_IGNORE_CASE "Search case-insensitively"
+#define CMT_USE_LESSOPEN "Use LESSOPEN"
 #ifdef USE_SSL
 #ifdef USE_SSL_VERIFY
-#define CMT_SSL_VERIFY_SERVER N_("Perform SSL server verification")
-#define CMT_SSL_CERT_FILE N_("PEM encoded certificate file of client")
-#define CMT_SSL_KEY_FILE N_("PEM encoded private key file of client")
-#define CMT_SSL_CA_PATH N_("Path to directory for PEM encoded certificates of CAs")
-#define CMT_SSL_CA_FILE N_("File consisting of PEM encoded certificates of CAs")
+#define CMT_SSL_VERIFY_SERVER "Perform SSL server verification"
+#define CMT_SSL_CERT_FILE "PEM encoded certificate file of client"
+#define CMT_SSL_KEY_FILE "PEM encoded private key file of client"
+#define CMT_SSL_CA_PATH "Path to directory for PEM encoded certificates of CAs"
+#define CMT_SSL_CA_FILE "File consisting of PEM encoded certificates of CAs"
 #endif /* USE_SSL_VERIFY */
-#define CMT_SSL_FORBID_METHOD N_("List of forbidden SSL methods (2: SSLv2, 3: SSLv3, t:TLSv1)")
+#define CMT_SSL_FORBID_METHOD "List of forbidden SSL methods (2: SSLv2, 3: SSLv3, t:TLSv1)"
 #endif /* USE_SSL */
 #ifdef USE_COOKIE
-#define CMT_USECOOKIE N_("Enable cookie processing")
-#define CMT_SHOWCOOKIE N_("Print a message when receiving a cookie")
-#define CMT_ACCEPTCOOKIE N_("Accept cookies")
-#define CMT_ACCEPTBADCOOKIE N_("Action to be taken on invalid cookie")
-#define CMT_COOKIE_REJECT_DOMAINS N_("Domains to reject cookies from")
-#define CMT_COOKIE_ACCEPT_DOMAINS N_("Domains to accept cookies from")
-#define CMT_COOKIE_AVOID_WONG_NUMBER_OF_DOTS N_("Domains to avoid [wrong number of dots]")
+#define CMT_USECOOKIE "Enable cookie processing"
+#define CMT_SHOWCOOKIE "Print a message when receiving a cookie"
+#define CMT_ACCEPTCOOKIE "Accept cookies"
+#define CMT_ACCEPTBADCOOKIE "Action to be taken on invalid cookie"
+#define CMT_COOKIE_REJECT_DOMAINS "Domains to reject cookies from"
+#define CMT_COOKIE_ACCEPT_DOMAINS "Domains to accept cookies from"
+#define CMT_COOKIE_AVOID_WONG_NUMBER_OF_DOTS "Domains to avoid [wrong number of dots]"
 #endif
-#define CMT_FOLLOW_REDIRECTION N_("Number of redirections to follow")
-#define CMT_META_REFRESH N_("Enable processing of meta-refresh tag")
+#define CMT_FOLLOW_REDIRECTION "Number of redirections to follow"
+#define CMT_META_REFRESH "Enable processing of meta-refresh tag"
 
 #ifdef USE_MIGEMO
-#define CMT_USE_MIGEMO N_("Enable Migemo (Roma-ji search)")
-#define CMT_MIGEMO_COMMAND N_("Migemo command")
+#define CMT_USE_MIGEMO "Enable Migemo (Roma-ji search)"
+#define CMT_MIGEMO_COMMAND "Migemo command"
 #endif /* USE_MIGEMO */
 
 #ifdef USE_M17N
-#define CMT_DISPLAY_CHARSET N_("Display charset")
-#define CMT_DOCUMENT_CHARSET N_("Default document charset")
-#define CMT_AUTO_DETECT N_("Automatic charset detect when loading")
-#define CMT_SYSTEM_CHARSET N_("System charset")
-#define CMT_FOLLOW_LOCALE N_("System charset follows locale(LC_CTYPE)")
-#define CMT_EXT_HALFDUMP N_("Output halfdump with display charset")
-#define CMT_USE_WIDE N_("Use multi column characters")
-#define CMT_USE_COMBINING N_("Use combining characters")
-#define CMT_EAST_ASIAN_WIDTH N_("Use double width for some Unicode characters")
-#define CMT_USE_LANGUAGE_TAG N_("Use Unicode language tags")
-#define CMT_UCS_CONV N_("Charset conversion using Unicode map")
-#define CMT_PRE_CONV N_("Charset conversion when loading")
-#define CMT_SEARCH_CONV N_("Adjust search string for document charset")
-#define CMT_FIX_WIDTH_CONV N_("Fix character width when conversion")
-#define CMT_USE_GB12345_MAP N_("Use GB 12345 Unicode map instead of GB 2312's")
-#define CMT_USE_JISX0201 N_("Use JIS X 0201 Roman for ISO-2022-JP")
-#define CMT_USE_JISC6226 N_("Use JIS C 6226:1978 for ISO-2022-JP")
-#define CMT_USE_JISX0201K N_("Use JIS X 0201 Katakana")
-#define CMT_USE_JISX0212 N_("Use JIS X 0212:1990 (Supplemental Kanji)")
-#define CMT_USE_JISX0213 N_("Use JIS X 0213:2000 (2000JIS)")
-#define CMT_STRICT_ISO2022 N_("Strict ISO-2022-JP/KR/CN")
-#define CMT_GB18030_AS_UCS N_("Treat 4 bytes char. of GB18030 as Unicode")
-#define CMT_SIMPLE_PRESERVE_SPACE N_("Simple Preserve space")
+#define CMT_DISPLAY_CHARSET "Display charset"
+#define CMT_DOCUMENT_CHARSET "Default document charset"
+#define CMT_AUTO_DETECT "Automatic charset detect when loading"
+#define CMT_SYSTEM_CHARSET "System charset"
+#define CMT_FOLLOW_LOCALE "System charset follows locale(LC_CTYPE)"
+#define CMT_EXT_HALFDUMP "Output halfdump with display charset"
+#define CMT_USE_WIDE "Use multi column characters"
+#define CMT_USE_COMBINING "Use combining characters"
+#define CMT_EAST_ASIAN_WIDTH "Use double width for some Unicode characters"
+#define CMT_USE_LANGUAGE_TAG "Use Unicode language tags"
+#define CMT_UCS_CONV "Charset conversion using Unicode map"
+#define CMT_PRE_CONV "Charset conversion when loading"
+#define CMT_SEARCH_CONV "Adjust search string for document charset"
+#define CMT_FIX_WIDTH_CONV "Fix character width when conversion"
+#define CMT_USE_GB12345_MAP "Use GB 12345 Unicode map instead of GB 2312's"
+#define CMT_USE_JISX0201 "Use JIS X 0201 Roman for ISO-2022-JP"
+#define CMT_USE_JISC6226 "Use JIS C 6226:1978 for ISO-2022-JP"
+#define CMT_USE_JISX0201K "Use JIS X 0201 Katakana"
+#define CMT_USE_JISX0212 "Use JIS X 0212:1990 (Supplemental Kanji)"
+#define CMT_USE_JISX0213 "Use JIS X 0213:2000 (2000JIS)"
+#define CMT_STRICT_ISO2022 "Strict ISO-2022-JP/KR/CN"
+#define CMT_GB18030_AS_UCS "Treat 4 bytes char. of GB18030 as Unicode"
+#define CMT_SIMPLE_PRESERVE_SPACE "Simple Preserve space"
 #endif
 
-#define CMT_KEYMAP_FILE N_("keymap file")
+#define CMT_KEYMAP_FILE "keymap file"
 
 struct sel_c
 {
@@ -543,15 +543,15 @@ struct sel_c
 
 #ifdef USE_COLOR
 static struct sel_c colorstr[] = {
-    {0, "black", N_("black")},
-    {1, "red", N_("red")},
-    {2, "green", N_("green")},
-    {3, "yellow", N_("yellow")},
-    {4, "blue", N_("blue")},
-    {5, "magenta", N_("magenta")},
-    {6, "cyan", N_("cyan")},
-    {7, "white", N_("white")},
-    {8, "terminal", N_("terminal")},
+    {0, "black", "black"},
+    {1, "red", "red"},
+    {2, "green", "green"},
+    {3, "yellow", "yellow"},
+    {4, "blue", "blue"},
+    {5, "magenta", "magenta"},
+    {6, "cyan", "cyan"},
+    {7, "white", "white"},
+    {8, "terminal", "terminal"},
     {0, NULL, NULL}};
 #endif /* USE_COLOR */
 
@@ -568,53 +568,53 @@ static char n_s[][2] = {
 #endif
 
 static struct sel_c defaulturls[] = {
-    {N_S(DEFAULT_URL_EMPTY), N_("none")},
-    {N_S(DEFAULT_URL_CURRENT), N_("current URL")},
-    {N_S(DEFAULT_URL_LINK), N_("link URL")},
+    {N_S(DEFAULT_URL_EMPTY), "none"},
+    {N_S(DEFAULT_URL_CURRENT), "current URL"},
+    {N_S(DEFAULT_URL_LINK), "link URL"},
     {0, NULL, NULL}};
 
 static struct sel_c displayinsdel[] = {
-    {N_S(DISPLAY_INS_DEL_SIMPLE), N_("simple")},
-    {N_S(DISPLAY_INS_DEL_NORMAL), N_("use tag")},
-    {N_S(DISPLAY_INS_DEL_FONTIFY), N_("fontify")},
+    {N_S(DISPLAY_INS_DEL_SIMPLE), "simple"},
+    {N_S(DISPLAY_INS_DEL_NORMAL), "use tag"},
+    {N_S(DISPLAY_INS_DEL_FONTIFY), "fontify"},
     {0, NULL, NULL}};
 
 static struct sel_c wheelmode[] = {
-    {TRUE, "1", N_("A:relative to screen height")},
-    {FALSE, "0", N_("B:fixed speed")},
+    {true, "1", "A:relative to screen height"},
+    {false, "0", "B:fixed speed"},
     {0, NULL, NULL}};
 
 static struct sel_c dnsorders[] = {
-    {N_S(DNS_ORDER_UNSPEC), N_("unspecified")},
-    {N_S(DNS_ORDER_INET_INET6), N_("inet inet6")},
-    {N_S(DNS_ORDER_INET6_INET), N_("inet6 inet")},
-    {N_S(DNS_ORDER_INET_ONLY), N_("inet only")},
-    {N_S(DNS_ORDER_INET6_ONLY), N_("inet6 only")},
+    {N_S(DNS_ORDER_UNSPEC), "unspecified"},
+    {N_S(DNS_ORDER_INET_INET6), "inet inet6"},
+    {N_S(DNS_ORDER_INET6_INET), "inet6 inet"},
+    {N_S(DNS_ORDER_INET_ONLY), "inet only"},
+    {N_S(DNS_ORDER_INET6_ONLY), "inet6 only"},
     {0, NULL, NULL}};
 
 static struct sel_c badcookiestr[] = {
-    {N_S(ACCEPT_BAD_COOKIE_DISCARD), N_("discard")},
-    {N_S(ACCEPT_BAD_COOKIE_ASK), N_("ask")},
+    {N_S(ACCEPT_BAD_COOKIE_DISCARD), "discard"},
+    {N_S(ACCEPT_BAD_COOKIE_ASK), "ask"},
     {0, NULL, NULL}};
 
 static struct sel_c mailtooptionsstr[] = {
-    {N_S(MAILTO_OPTIONS_IGNORE), N_("ignore options and use only the address")},
-    {N_S(MAILTO_OPTIONS_USE_MAILTO_URL), N_("use full mailto URL")},
+    {N_S(MAILTO_OPTIONS_IGNORE), "ignore options and use only the address"},
+    {N_S(MAILTO_OPTIONS_USE_MAILTO_URL), "use full mailto URL"},
     {0, NULL, NULL}};
 
 static wc_ces_list *display_charset_str = NULL;
 static wc_ces_list *document_charset_str = NULL;
 static wc_ces_list *system_charset_str = NULL;
 static struct sel_c auto_detect_str[] = {
-    {N_S(WC_OPT_DETECT_OFF), N_("OFF")},
-    {N_S(WC_OPT_DETECT_ISO_2022), N_("Only ISO 2022")},
-    {N_S(WC_OPT_DETECT_ON), N_("ON")},
+    {N_S(WC_OPT_DETECT_OFF), "OFF"},
+    {N_S(WC_OPT_DETECT_ISO_2022), "Only ISO 2022"},
+    {N_S(WC_OPT_DETECT_ON), "ON"},
     {0, NULL, NULL}};
 
 static struct sel_c graphic_char_str[] = {
-    {N_S(GRAPHIC_CHAR_ASCII), N_("ASCII")},
-    {N_S(GRAPHIC_CHAR_CHARSET), N_("charset specific")},
-    {N_S(GRAPHIC_CHAR_DEC), N_("DEC special graphics")},
+    {N_S(GRAPHIC_CHAR_ASCII), "ASCII"},
+    {N_S(GRAPHIC_CHAR_CHARSET), "charset specific"},
+    {N_S(GRAPHIC_CHAR_DEC), "DEC special graphics"},
     {0, NULL, NULL}};
 
 struct ParamSection
@@ -623,7 +623,7 @@ struct ParamSection
     std::vector<Param> params;
 };
 auto sections = make_array(
-    ParamSection{N_("Display Settings"),
+    ParamSection{"Display Settings",
                  {
                      {"tabstop", P_NZINT, PI_TEXT, w3mApp::Instance().Tabstop, CMT_TABSTOP},
                      {"indent_incr", P_NZINT, PI_TEXT, w3mApp::Instance().IndentIncr, CMT_INDENT_INCR},
@@ -663,7 +663,7 @@ auto sections = make_array(
                      {"label_topline", P_INT, PI_ONOFF, w3mApp::Instance().label_topline, CMT_LABEL_TOPLINE},
                      {"nextpage_topline", P_INT, PI_ONOFF, w3mApp::Instance().nextpage_topline, CMT_NEXTPAGE_TOPLINE},
                  }},
-    ParamSection{N_("Color Settings"),
+    ParamSection{"Color Settings",
                  {
                      {"color", P_INT, PI_ONOFF, w3mApp::Instance().useColor, CMT_COLOR},
                      {"basic_color", P_COLOR, PI_SEL_C, w3mApp::Instance().basic_color, CMT_B_COLOR, (void *)colorstr},
@@ -677,7 +677,7 @@ auto sections = make_array(
                      {"visited_anchor", P_INT, PI_ONOFF, w3mApp::Instance().useVisitedColor, CMT_VISITED_ANCHOR},
                      {"visited_color", P_COLOR, PI_SEL_C, w3mApp::Instance().visited_color, CMT_V_COLOR, (void *)colorstr},
                  }},
-    ParamSection{N_("Miscellaneous Settings"),
+    ParamSection{"Miscellaneous Settings",
                  {
                      {"pagerline", P_NZINT, PI_TEXT, w3mApp::Instance().PagerMax, CMT_PAGERLINE},
                      {"use_history", P_INT, PI_ONOFF, w3mApp::Instance().UseHistory, CMT_HISTORY},
@@ -704,14 +704,14 @@ auto sections = make_array(
                      {"preserve_timestamp", P_CHARINT, PI_ONOFF, w3mApp::Instance().PreserveTimestamp, CMT_PRESERVE_TIMESTAMP},
                      {"keymap_file", P_STRING, PI_TEXT, w3mApp::Instance().keymap_file, CMT_KEYMAP_FILE},
                  }},
-    ParamSection{N_("Directory Settings"),
+    ParamSection{"Directory Settings",
                  {
                      {"document_root", P_STRING, PI_TEXT, w3mApp::Instance().document_root, CMT_DROOT},
                      {"personal_document_root", P_STRING, PI_TEXT, w3mApp::Instance().personal_document_root, CMT_PDROOT},
                      {"cgi_bin", P_STRING, PI_TEXT, w3mApp::Instance().cgi_bin, CMT_CGIBIN},
                      {"index_file", P_STRING, PI_TEXT, w3mApp::Instance().index_file, CMT_IFILE},
                  }},
-    ParamSection{N_("External Program Settings"),
+    ParamSection{"External Program Settings",
                  {
                      {"mime_types", P_STRING, PI_TEXT, w3mApp::Instance().mimetypes_files, CMT_MIMETYPES},
                      {"mailcap", P_STRING, PI_TEXT, w3mApp::Instance().mailcap_files, CMT_MAILCAP},
@@ -725,7 +725,7 @@ auto sections = make_array(
                      {"bgextviewer", P_INT, PI_ONOFF, w3mApp::Instance().BackgroundExtViewer, CMT_BGEXTVIEW},
                      {"use_lessopen", P_INT, PI_ONOFF, w3mApp::Instance().use_lessopen, CMT_USE_LESSOPEN},
                  }},
-    ParamSection{N_("Network Settings"),
+    ParamSection{"Network Settings",
                  {
                      {"passwd_file", P_STRING, PI_TEXT, w3mApp::Instance().passwd_file, CMT_PASSWDFILE},
                      {"disable_secret_security_check", P_INT, PI_ONOFF, w3mApp::Instance().disable_secret_security_check, CMT_DISABLE_SECRET_SECURITY_CHECK},
@@ -747,7 +747,7 @@ auto sections = make_array(
                      //  {"nntpmode", P_STRING, PI_TEXT, NNTP_mode, CMT_NNTP_MODE},
                      //  {"max_news", P_INT, PI_TEXT, MaxNewsMessage, CMT_MAX_NEWS},
                  }},
-    ParamSection{N_("Proxy Settings"),
+    ParamSection{"Proxy Settings",
                  {
                      {"use_proxy", P_CHARINT, PI_ONOFF, w3mApp::Instance().use_proxy, CMT_USE_PROXY},
                      {"http_proxy", P_STRING, PI_TEXT, w3mApp::Instance().HTTP_proxy, CMT_HTTP_PROXY},
@@ -757,7 +757,7 @@ auto sections = make_array(
                      {"noproxy_netaddr", P_INT, PI_ONOFF, w3mApp::Instance().NOproxy_netaddr, CMT_NOPROXY_NETADDR},
                      {"no_cache", P_CHARINT, PI_ONOFF, w3mApp::Instance().NoCache, CMT_NO_CACHE},
                  }},
-    ParamSection{N_("SSL Settings"),
+    ParamSection{"SSL Settings",
                  {
                      {"ssl_forbid_method", P_STRING, PI_TEXT, w3mApp::Instance().ssl_forbid_method, CMT_SSL_FORBID_METHOD},
                      {"ssl_verify_server", P_INT, PI_ONOFF, w3mApp::Instance().ssl_verify_server, CMT_SSL_VERIFY_SERVER},
@@ -766,7 +766,7 @@ auto sections = make_array(
                      {"ssl_ca_path", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_ca_path, CMT_SSL_CA_PATH},
                      {"ssl_ca_file", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_ca_file, CMT_SSL_CA_FILE},
                  }},
-    ParamSection{N_("Cookie Settings"),
+    ParamSection{"Cookie Settings",
                  {
                      {"use_cookie", P_INT, PI_ONOFF, w3mApp::Instance().use_cookie, CMT_USECOOKIE},
                      {"show_cookie", P_INT, PI_ONOFF, w3mApp::Instance().show_cookie, CMT_SHOWCOOKIE},
@@ -776,7 +776,7 @@ auto sections = make_array(
                      {"cookie_accept_domains", P_STRING, PI_TEXT, w3mApp::Instance().cookie_accept_domains, CMT_COOKIE_ACCEPT_DOMAINS},
                      {"cookie_avoid_wrong_number_of_dots", P_STRING, PI_TEXT, w3mApp::Instance().cookie_avoid_wrong_number_of_dots, CMT_COOKIE_AVOID_WONG_NUMBER_OF_DOTS},
                  }},
-    ParamSection{N_("Charset Settings"),
+    ParamSection{"Charset Settings",
                  {
                      {"display_charset", P_CODE, PI_CODE, w3mApp::Instance().DisplayCharset, CMT_DISPLAY_CHARSET, display_charset_str},
                      {"document_charset", P_CODE, PI_CODE, w3mApp::Instance().DocumentCharset, CMT_DOCUMENT_CHARSET, document_charset_str},
@@ -824,7 +824,7 @@ void show_params(FILE *fp)
         std::string_view cmt;
         if (!OptionEncode)
             cmt =
-                wc_conv(_(section.name.c_str()), OptionCharset,
+                wc_conv(section.name.c_str(), OptionCharset,
                         w3mApp::Instance().InnerCharset)
                     ->ptr;
         else
@@ -867,7 +867,7 @@ void show_params(FILE *fp)
                 break;
             }
             if (!OptionEncode)
-                cmt = wc_conv(_(param.comment.data()),
+                cmt = wc_conv(param.comment.data(),
                               OptionCharset, w3mApp::Instance().InnerCharset)
                           ->ptr;
             else
@@ -1127,7 +1127,7 @@ find_auth_pass_entry(char *host, int port, char *realm, char *uname,
     struct auth_pass *ent;
     for (ent = passwords; ent != NULL; ent = ent->next)
     {
-        if (ent->is_proxy == is_proxy && (ent->bad != TRUE) && (!ent->host || ent->host->ICaseCmp(host) == 0) && (!ent->port || ent->port == port) && (!ent->uname || !uname || ent->uname->Cmp(uname) == 0) && (!ent->realm || !realm || ent->realm->Cmp(realm) == 0))
+        if (ent->is_proxy == is_proxy && (ent->bad != true) && (!ent->host || ent->host->ICaseCmp(host) == 0) && (!ent->port || ent->port == port) && (!ent->uname || !uname || ent->uname->Cmp(uname) == 0) && (!ent->realm || !realm || ent->realm->Cmp(realm) == 0))
             return ent;
     }
     return NULL;
@@ -1174,7 +1174,7 @@ void invalidate_auth_user_passwd(URL *pu, char *realm, Str uname, Str pwd,
     ent = find_auth_pass_entry(const_cast<char *>(pu->host.c_str()), pu->port, realm, NULL, is_proxy);
     if (ent)
     {
-        ent->bad = TRUE;
+        ent->bad = true;
     }
     return;
 }
@@ -1337,7 +1337,7 @@ void sync_with_option(void)
     if (w3mApp::Instance().fmInitialized && w3mApp::Instance().displayImage)
         initImage();
 #else
-    displayImage = FALSE; /* XXX */
+    displayImage = false; /* XXX */
 #endif
     loadPasswd();
     loadPreForm();
@@ -1349,7 +1349,7 @@ void sync_with_option(void)
         * header. For example, ja.po should translate it as
         * "ja;q=1.0, en;q=0.5" like that.
         */
-        w3mApp::Instance().AcceptLang = _("en;q=1.0");
+        w3mApp::Instance().AcceptLang = "en;q=1.0";
     }
     if (w3mApp::Instance().AcceptEncoding.empty())
         w3mApp::Instance().AcceptEncoding = acceptableEncoding();
@@ -1358,7 +1358,7 @@ void sync_with_option(void)
 
     if (w3mApp::Instance().fmInitialized)
     {
-        initKeymap(FALSE);
+        initKeymap(false);
 #ifdef USE_MOUSE
         initMouseAction();
 #endif /* MOUSE */
@@ -1418,7 +1418,7 @@ void init_rc(void)
         fprintf(stderr, "%s is not writable!", w3mApp::Instance().rc_dir.c_str());
         goto rc_dir_err;
     }
-    w3mApp::Instance().no_rc_dir = FALSE;
+    w3mApp::Instance().no_rc_dir = false;
     w3mApp::Instance().tmp_dir = w3mApp::Instance().rc_dir;
 
     if (w3mApp::Instance().config_file.empty())
@@ -1446,7 +1446,7 @@ open_rc:
     return;
 
 rc_dir_err:
-    w3mApp::Instance().no_rc_dir = TRUE;
+    w3mApp::Instance().no_rc_dir = true;
     {
         char *tmp_dir;
         if (((tmp_dir = getenv("TMPDIR")) == NULL || *tmp_dir == '\0') &&
@@ -1482,7 +1482,7 @@ load_option_panel(void)
 
     if (optionpanel_str == NULL)
         optionpanel_str = Sprintf(optionpanel_src1, w3mApp::w3m_version.data(),
-                                  html_quote(localCookie()->ptr), _(CMT_HELPER));
+                                  html_quote(localCookie()->ptr), CMT_HELPER);
     if (!OptionEncode)
     {
         optionpanel_str =
@@ -1490,13 +1490,13 @@ load_option_panel(void)
         for (auto &section : sections)
         {
             section.name =
-                wc_conv(_(section.name.c_str()), OptionCharset, w3mApp::Instance().InnerCharset)
+                wc_conv(section.name.c_str(), OptionCharset, w3mApp::Instance().InnerCharset)
                     ->ptr;
 
             for (auto &param : section.params)
             {
                 param.comment =
-                    wc_conv(_(param.comment.data()), OptionCharset,
+                    wc_conv(param.comment.data(), OptionCharset,
                             w3mApp::Instance().InnerCharset)
                         ->ptr;
                 if (param.inputtype == PI_SEL_C
@@ -1507,21 +1507,16 @@ load_option_panel(void)
                 {
                     for (s = (struct sel_c *)param.select; s->text != NULL; s++)
                     {
-                        s->text =
-                            wc_conv(_(s->text), OptionCharset,
-                                    w3mApp::Instance().InnerCharset)
-                                ->ptr;
+                        s->text =wc_conv(s->text, OptionCharset,w3mApp::Instance().InnerCharset)->ptr;
                     }
                 }
             }
         }
 
-        for (s = colorstr; s->text; s++)
-            s->text = wc_conv(_(s->text), OptionCharset,
-                              w3mApp::Instance().InnerCharset)
-                          ->ptr;
-
-        OptionEncode = TRUE;
+        for (s = colorstr; s->text; s++){
+            s->text = wc_conv(s->text, OptionCharset,w3mApp::Instance().InnerCharset)->ptr;
+        }
+        OptionEncode = true;
     }
     src = optionpanel_str->Clone();
 
@@ -1611,14 +1606,14 @@ void panel_set_option(struct parsed_tagarg *arg)
 
     if (w3mApp::Instance().config_file.empty())
     {
-        disp_message("There's no config file... config not saved", FALSE);
+        disp_message("There's no config file... config not saved", false);
     }
     else
     {
         f = fopen(w3mApp::Instance().config_file.c_str(), "wt");
         if (f == NULL)
         {
-            disp_message("Can't write option!", FALSE);
+            disp_message("Can't write option!", false);
         }
     }
     while (arg)

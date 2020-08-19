@@ -358,7 +358,7 @@ static struct frameset *frame_download_source(struct frame_body *b, URL *current
 #endif
         b->flags = 0;
     default:
-        w3mApp::Instance().is_redisplay = TRUE;
+        w3mApp::Instance().is_redisplay = true;
         w3mApp::Instance().w3m_dump |= DUMP_FRAME;
         buf = loadGeneralFile(URL::Parse(b->url),
                               baseURL ? baseURL : currentURL,
@@ -369,7 +369,7 @@ static struct frameset *frame_download_source(struct frame_body *b, URL *current
             b->ssl_certificate = Strnew(buf->ssl_certificate)->ptr;
 
         w3mApp::Instance().w3m_dump &= ~DUMP_FRAME;
-        w3mApp::Instance().is_redisplay = FALSE;
+        w3mApp::Instance().is_redisplay = false;
         break;
     }
 
@@ -606,7 +606,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                     }
                     do
                     {
-                        int is_tag = FALSE;
+                        int is_tag = false;
                         const char *q;
                         struct parsed_tag *tag;
 
@@ -631,7 +631,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                         {
                             if (tok->ptr[1] &&
                                 REALLY_THE_BEGINNING_OF_A_TAG(tok->ptr))
-                                is_tag = TRUE;
+                                is_tag = true;
                             else if (!(pre_mode & (RB_PLAIN | RB_INTXTA |
                                                    RB_SCRIPT | RB_STYLE)))
                             {
@@ -645,7 +645,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                             RB_STYLE))
                             {
                                 q = tok->ptr;
-                                if ((tag = parse_tag(&q, FALSE)) &&
+                                if ((tag = parse_tag(&q, false)) &&
                                     tag->tagid == end_tag)
                                 {
                                     if (pre_mode & RB_PLAIN)
@@ -666,12 +666,12 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     p = Strnew_m_charp(q, p, NULL)->ptr;
                                     status = R_ST_NORMAL;
                                 }
-                                is_tag = FALSE;
+                                is_tag = false;
                             }
                             else if (pre_mode & RB_INSELECT)
                             {
                                 q = tok->ptr;
-                                if ((tag = parse_tag(&q, FALSE)))
+                                if ((tag = parse_tag(&q, false)))
                                 {
                                     if ((tag->tagid == end_tag) ||
                                         (tag->tagid == HTML_N_FORM))
@@ -706,7 +706,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                             int j, a_target = 0;
                             URL url;
 
-                            if (!(tag = parse_tag(&q, FALSE)))
+                            if (!(tag = parse_tag(&q, false)))
                                 goto token_end;
 
                             switch (tag->tagid)
@@ -855,7 +855,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                         break;
                                     tag->value[j] =
                                         wc_conv_strict(remove_space(tag->value[j]), w3mApp::Instance().InnerCharset, charset)->ptr;
-                                    tag->need_reconstruct = TRUE;
+                                    tag->need_reconstruct = true;
                                     url = URL::Parse(tag->value[j]).Resolve(&base);
                                     if (url.scheme == SCM_UNKNOWN ||
                                         url.scheme == SCM_MAILTO ||

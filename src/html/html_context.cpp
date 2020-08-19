@@ -14,6 +14,7 @@
 #include "myctype.h"
 #include "file.h"
 #include "commands.h"
+#include "textlist.h"
 
 #define MAX_SELECT 10 /* max number of <select>..</select> \
                        * within one document */
@@ -349,7 +350,7 @@ Str HtmlContext::process_select(struct parsed_tag *tag)
     if (cur_form_id() < 0)
     {
         auto s = "<form_int method=internal action=none>";
-        tmp = FormOpen(parse_tag(&s, TRUE));
+        tmp = FormOpen(parse_tag(&s, true));
     }
 
     auto p = "";
@@ -404,7 +405,7 @@ void HtmlContext::feed_select(const char *str)
         {
             struct parsed_tag *tag;
             char *q;
-            if (!(tag = parse_tag(&p, FALSE)))
+            if (!(tag = parse_tag(&p, false)))
                 continue;
             switch (tag->tagid)
             {
@@ -539,7 +540,7 @@ Str HtmlContext::process_input(struct parsed_tag *tag)
     if (cur_form_id() < 0)
     {
         const char *s = "<form_int method=internal action=none>";
-        tmp = FormOpen(parse_tag(&s, TRUE));
+        tmp = FormOpen(parse_tag(&s, true));
     }
     if (tmp == nullptr)
     {
@@ -747,7 +748,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
 #else
     int w, i, nw, n;
 #endif
-    int pre_int = FALSE, ext_pre_int = FALSE;
+    int pre_int = false, ext_pre_int = false;
     Str tmp = Strnew();
 
     if (!tag->TryGetAttributeValue(ATTR_SRC, &p))
@@ -814,7 +815,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
     r = nullptr;
     tag->TryGetAttributeValue(ATTR_USEMAP, &r);
     if (tag->HasAttribute(ATTR_PRE_INT))
-        ext_pre_int = TRUE;
+        ext_pre_int = true;
 
     tmp = Strnew_size(128);
 #ifdef USE_IMAGE
@@ -838,7 +839,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
     {
         r2 = strchr(r, '#');
         auto s = "<form_int method=internal action=map>";
-        auto tmp2 = FormOpen(parse_tag(&s, TRUE));
+        auto tmp2 = FormOpen(parse_tag(&s, true));
         if (tmp2)
             tmp->Push(tmp2);
         tmp->Push(Sprintf("<input_alt fid=\"%d\" "
@@ -866,7 +867,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
             }
             else
             {
-                image.ext = filename_extension(u.path.c_str(), TRUE);
+                image.ext = filename_extension(u.path.c_str(), true);
             }
             image.cache = nullptr;
             image.width = w;
@@ -888,7 +889,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
         ni = (i > 3) ? (int)((i - 3) / w3mApp::Instance().pixel_per_line + 1) : 1;
         tmp->Push(
             Sprintf("<pre_int><img_alt hseq=\"%d\" src=\"", cur_iseq++));
-        pre_int = TRUE;
+        pre_int = true;
     }
     else
     {
@@ -898,7 +899,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
         if (r)
         {
             tmp->Push("<pre_int>");
-            pre_int = TRUE;
+            pre_int = true;
         }
         tmp->Push("<img_alt src=\"");
     }
@@ -1014,7 +1015,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
                     if (!pre_int)
                     {
                         tmp->Push("<pre_int>");
-                        pre_int = TRUE;
+                        pre_int = true;
                     }
                     push_symbol(tmp, IMG_SYMBOL, SymbolWidth(), 1);
                     n = SymbolWidth();
@@ -1028,7 +1029,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
             if (!pre_int)
             {
                 tmp->Push("<pre_int>");
-                pre_int = TRUE;
+                pre_int = true;
             }
             w = w / w3mApp::Instance().pixel_per_char / SymbolWidth();
             if (w <= 0)
@@ -1178,7 +1179,7 @@ Str HtmlContext::process_textarea(struct parsed_tag *tag, int width)
     if (cur_form_id() < 0)
     {
         auto s = "<form_int method=internal action=none>";
-        tmp = FormOpen(parse_tag(&s, TRUE));
+        tmp = FormOpen(parse_tag(&s, true));
     }
 
     auto p = "";
@@ -1219,7 +1220,7 @@ Str HtmlContext::process_textarea(struct parsed_tag *tag, int width)
         textarea_str = New_Reuse(Str, textarea_str, max_textarea);
     }
     textarea_str[n_textarea] = Strnew();
-    ignore_nl_textarea = TRUE;
+    ignore_nl_textarea = true;
 
     return tmp;
 }
@@ -1372,7 +1373,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
                                                             s ? s : "",
                                                             *t, currentLn(buf), pos));
             this->a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
-            this->a_href->slave = (hseq > 0) ? FALSE : TRUE;
+            this->a_href->slave = (hseq > 0) ? false : true;
         }
         break;
     }
@@ -1445,7 +1446,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
                 }
                 else
                 {
-                    image->ext = filename_extension(u.path.c_str(), TRUE);
+                    image->ext = filename_extension(u.path.c_str(), true);
                 }
                 image->cache = nullptr;
                 image->width =
@@ -1958,7 +1959,7 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
             else
             {
                 /* tag processing */
-                auto tag = parse_tag(&str, TRUE);
+                auto tag = parse_tag(&str, true);
                 if (!tag)
                     continue;
 

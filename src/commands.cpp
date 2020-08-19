@@ -1,3 +1,5 @@
+#include <unistd.h>
+#include "history.h"
 #include "commands.h"
 #include "dispatcher.h"
 #include "fm.h"
@@ -121,7 +123,7 @@ void ctrCsrV(w3mApp *w3m)
     int offsety = buf->rect.lines / 2 - buf->rect.cursorY;
     if (offsety)
     {
-        buf->LineSkip(buf->TopLine(), -offsety, FALSE);
+        buf->LineSkip(buf->TopLine(), -offsety, false);
         buf->ArrangeLine();
         displayCurrentbuf(B_NORMAL);
     }
@@ -298,18 +300,18 @@ void pipeBuf(w3mApp *w3m)
     if (f == NULL)
     {
         /* FIXME: gettextize? */
-        disp_message(Sprintf("Can't save buffer to %s", cmd)->ptr, TRUE);
+        disp_message(Sprintf("Can't save buffer to %s", cmd)->ptr, true);
         return;
     }
-    saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
+    saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, true);
     fclose(f);
 
     GetCurrentTab()->Push(URL::Parse(shell_quote(tmpf)));
 
-    // auto newBuf = getpipe(myExtCommand(cmd, shell_quote(tmpf), TRUE)->ptr);
+    // auto newBuf = getpipe(myExtCommand(cmd, shell_quote(tmpf), true)->ptr);
     // if (newBuf == NULL)
     // {
-    //     disp_message("Execution failed", TRUE);
+    //     disp_message("Execution failed", true);
     //     return;
     // }
     // else
@@ -348,7 +350,7 @@ void pipesh(w3mApp *w3m)
     buf = getpipe(cmd);
     // if (buf == NULL)
     // {
-    //     disp_message("Execution failed", TRUE);
+    //     disp_message("Execution failed", true);
     //     return;
     // }
     // else
@@ -392,7 +394,7 @@ void readsh(w3mApp *w3m)
     if (!success)
     {
         /* FIXME: gettextize? */
-        disp_message("Execution failed", TRUE);
+        disp_message("Execution failed", true);
         return;
     }
 
@@ -527,7 +529,7 @@ void movRW(w3mApp *w3m)
 /* Quit */
 void quitfm(w3mApp *w3m)
 {
-    w3m->_quitfm(FALSE);
+    w3m->_quitfm(false);
 }
 
 /* Question and Quit */
@@ -540,7 +542,7 @@ void qquitfm(w3mApp *w3m)
 void selBuf(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
-    int ok = FALSE;
+    int ok = false;
     do
     {
         char cmd;
@@ -549,13 +551,13 @@ void selBuf(w3mApp *w3m)
         switch (cmd)
         {
         case 'B':
-            ok = TRUE;
+            ok = true;
             break;
 
         case '\n':
         case ' ':
             // tab->SetCurrent(tab->GetBufferIndex(buf));
-            ok = TRUE;
+            ok = true;
             break;
 
         case 'D':
@@ -657,7 +659,7 @@ void editBf(w3mApp *w3m)
         GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentTab()->GetCurrentBuffer()->currentURL.path == "-" || /* file is std input  */
         GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
     { /* Frame */
-        disp_err_message("Can't edit other than local file", TRUE);
+        disp_err_message("Can't edit other than local file", true);
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->edit.size())
@@ -693,10 +695,10 @@ void editScr(w3mApp *w3m)
     if (f == NULL)
     {
         /* FIXME: gettextize? */
-        disp_err_message(Sprintf("Can't open %s", tmpf)->ptr, TRUE);
+        disp_err_message(Sprintf("Can't open %s", tmpf)->ptr, true);
         return;
     }
-    saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
+    saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, true);
     fclose(f);
     fmTerm();
     system(myEditor(w3mApp::Instance().Editor.c_str(), shell_quote(tmpf),
@@ -755,7 +757,7 @@ void nextMk(w3mApp *w3m)
         i = 0;
     }
     /* FIXME: gettextize? */
-    disp_message("No mark exist after here", TRUE);
+    disp_message("No mark exist after here", true);
 }
 /* Go to previous mark */
 
@@ -795,7 +797,7 @@ void prevMk(w3mApp *w3m)
             i = l->len() - 1;
     }
     /* FIXME: gettextize? */
-    disp_message("No mark exist before here", TRUE);
+    disp_message("No mark exist before here", true);
 }
 /* Mark place to which the regular expression matches */
 
@@ -817,7 +819,7 @@ void reMark(w3mApp *w3m)
     str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
     if ((str = regexCompile(str, 1)) != NULL)
     {
-        disp_message(str, TRUE);
+        disp_message(str, true);
         return;
     }
     SetMarkString(str);
@@ -861,7 +863,7 @@ void followI(w3mApp *w3m)
     // {
     //     /* FIXME: gettextize? */
     //     char *emsg = Sprintf("Can't load %s", a->url)->ptr;
-    //     disp_err_message(emsg, FALSE);
+    //     disp_err_message(emsg, false);
     // }
     // else
     // {
@@ -873,7 +875,7 @@ void followI(w3mApp *w3m)
 
 void submitForm(w3mApp *w3m)
 {
-    _followForm(TRUE);
+    _followForm(true);
 }
 /* go to the top anchor */
 
@@ -950,25 +952,25 @@ void lastA(w3mApp *w3m)
 
 void nextA(w3mApp *w3m)
 {
-    _nextA(FALSE);
+    _nextA(false);
 }
 /* go to the previous anchor */
 
 void prevA(w3mApp *w3m)
 {
-    _prevA(FALSE);
+    _prevA(false);
 }
 /* go to the next visited anchor */
 
 void nextVA(w3mApp *w3m)
 {
-    _nextA(TRUE);
+    _nextA(true);
 }
 /* go to the previous visited anchor */
 
 void prevVA(w3mApp *w3m)
 {
-    _prevA(TRUE);
+    _prevA(true);
 }
 
 static std::tuple<bool, int, int> isMap(const BufferPtr &buf, const Anchor *a)
@@ -1001,7 +1003,7 @@ void followA(w3mApp *w3m)
         auto a = buf->img.RetrieveAnchor(buf->CurrentPoint());
         if (a && a->image && a->image->map)
         {
-            _followForm(FALSE);
+            _followForm(false);
             return;
         }
 
@@ -1011,7 +1013,7 @@ void followA(w3mApp *w3m)
     auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
     {
-        _followForm(FALSE);
+        _followForm(false);
         return;
     }
 
@@ -1154,7 +1156,7 @@ void backBf(w3mApp *w3m)
     //     }
     //     else
     //         /* FIXME: gettextize? */
-    //         disp_message("Can't back...", TRUE);
+    //         disp_message("Can't back...", true);
     //     return;
     // }
     // tab->DeleteBuffer(tab->GetCurrentBuffer());
@@ -1176,7 +1178,7 @@ void backBf(w3mApp *w3m)
     //             rFrame(w3m);
     //             GetCurrentTab()->GetCurrentBuffer()->LineSkip(
     //                 GetCurrentTab()->GetCurrentBuffer()->FirstLine(), top - 1,
-    //                 FALSE);
+    //                 false);
     //             GetCurrentTab()->GetCurrentBuffer()->Goto({linenumber, pos});
     //             // GetCurrentTab()->GetCurrentBuffer()->pos = pos;
     //             // GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
@@ -1201,12 +1203,12 @@ void deletePrevBuf(w3mApp *w3m)
 
 void goURL(w3mApp *w3m)
 {
-    goURL0("Goto URL: ", FALSE);
+    goURL0("Goto URL: ", false);
 }
 
 void gorURL(w3mApp *w3m)
 {
-    goURL0("Goto relative URL: ", TRUE);
+    goURL0("Goto relative URL: ", true);
 }
 /* load bookmark */
 
@@ -1287,7 +1289,7 @@ void linkMn(w3mApp *w3m)
 
 void accessKey(w3mApp *w3m)
 {
-    anchorMn(accesskey_menu, TRUE);
+    anchorMn(accesskey_menu, true);
 }
 /* set an option */
 
@@ -1318,12 +1320,12 @@ void setOpt(w3mApp *w3m)
 
 void listMn(w3mApp *w3m)
 {
-    anchorMn(list_menu, TRUE);
+    anchorMn(list_menu, true);
 }
 
 void movlistMn(w3mApp *w3m)
 {
-    anchorMn(list_menu, FALSE);
+    anchorMn(list_menu, false);
 }
 /* link,anchor,image list */
 
@@ -1361,18 +1363,18 @@ void ldHist(w3mApp *w3m)
 void svA(w3mApp *w3m)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    w3mApp::Instance().do_download = TRUE;
+    w3mApp::Instance().do_download = true;
     followA(w3m);
-    w3mApp::Instance().do_download = FALSE;
+    w3mApp::Instance().do_download = false;
 }
 /* download IMG link */
 
 void svI(w3mApp *w3m)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    w3mApp::Instance().do_download = TRUE;
+    w3mApp::Instance().do_download = true;
     followI(w3m);
-    w3mApp::Instance().do_download = FALSE;
+    w3mApp::Instance().do_download = false;
 }
 /* save buffer */
 
@@ -1396,7 +1398,7 @@ void svBuf(w3mApp *w3m)
     file = conv_to_system(qfile ? qfile : file);
     if (*file == '|')
     {
-        is_pipe = TRUE;
+        is_pipe = true;
         f = popen(file + 1, "w");
     }
     else
@@ -1413,16 +1415,16 @@ void svBuf(w3mApp *w3m)
             return;
         }
         f = fopen(file, "w");
-        is_pipe = FALSE;
+        is_pipe = false;
     }
     if (f == NULL)
     {
         /* FIXME: gettextize? */
         char *emsg = Sprintf("Can't open %s", conv_from_system(file))->ptr;
-        disp_err_message(emsg, TRUE);
+        disp_err_message(emsg, true);
         return;
     }
-    saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, TRUE);
+    saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, true);
     if (is_pipe)
         pclose(f);
     else
@@ -1437,14 +1439,14 @@ void svSrc(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
         return;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    w3mApp::Instance().PermitSaveToPipe = TRUE;
+    w3mApp::Instance().PermitSaveToPipe = true;
     // if (GetCurrentTab()->GetCurrentBuffer()->real_scheme == SCM_LOCAL)
     //     file = conv_from_system(guess_save_name(NULL,
     //                                             GetCurrentTab()->GetCurrentBuffer()->currentURL.real_file));
     // else
     //     file = guess_save_name(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->currentURL.path);
     doFileCopy(GetCurrentTab()->GetCurrentBuffer()->sourcefile.c_str(), file);
-    w3mApp::Instance().PermitSaveToPipe = FALSE;
+    w3mApp::Instance().PermitSaveToPipe = false;
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1493,7 +1495,7 @@ void curURL(w3mApp *w3m)
         offset = (n - 1) * (COLS - 1);
     while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;
-    disp_message_nomouse(&s->ptr[offset], TRUE);
+    disp_message_nomouse(&s->ptr[offset], true);
 }
 
 /* view HTML source */
@@ -1537,7 +1539,7 @@ void vwSrc(w3mApp *w3m)
                                                     : WC_CES_NONE;
             WcOption.fix_width_conv = false;
 
-            saveBufferBody(buf, f, TRUE);
+            saveBufferBody(buf, f, true);
 
             w3mApp::Instance().DisplayCharset = old_charset;
             WcOption.fix_width_conv = old_fix_width_conv;
@@ -1590,7 +1592,7 @@ void vwSrc(w3mApp *w3m)
         newBuf->document_charset = buf->document_charset;
         newBuf->clone = buf->clone;
         (*newBuf->clone)++;
-        newBuf->need_reshape = TRUE;
+        newBuf->need_reshape = true;
         // buf->Reshape();
         GetCurrentTab()->Push(URL::Parse("w3m://htmlsource"));
         displayCurrentbuf(B_NORMAL);
@@ -1611,7 +1613,7 @@ void reload(w3mApp *w3m)
         }
 
         /* FIXME: gettextize? */
-        disp_err_message("Can't reload...", TRUE);
+        disp_err_message("Can't reload...", true);
         return;
     }
 
@@ -1619,7 +1621,7 @@ void reload(w3mApp *w3m)
     {
         /* file is std input */
         /* FIXME: gettextize? */
-        disp_err_message("Can't reload stdin", TRUE);
+        disp_err_message("Can't reload stdin", true);
         return;
     }
 
@@ -1710,7 +1712,7 @@ void reload(w3mApp *w3m)
 
         w3m->DocumentCharset = old_charset;
 
-        w3m->SearchHeader = FALSE;
+        w3m->SearchHeader = false;
         w3m->DefaultType.clear();
         if (multipart)
             unlink(request->body);
@@ -1718,7 +1720,7 @@ void reload(w3mApp *w3m)
         if (newBuf == NULL)
         {
             /* FIXME: gettextize? */
-            disp_err_message("Can't reload...", TRUE);
+            disp_err_message("Can't reload...", true);
             return;
         }
 
@@ -1752,7 +1754,7 @@ void reload(w3mApp *w3m)
 
 void reshape(w3mApp *w3m)
 {
-    GetCurrentTab()->GetCurrentBuffer()->need_reshape = TRUE;
+    GetCurrentTab()->GetCurrentBuffer()->need_reshape = true;
     // GetCurrentTab()->GetCurrentBuffer()->Reshape();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -1855,14 +1857,14 @@ void extbrz(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
     {
         /* FIXME: gettextize? */
-        disp_err_message("Can't browse...", TRUE);
+        disp_err_message("Can't browse...", true);
         return;
     }
     if (GetCurrentTab()->GetCurrentBuffer()->currentURL.IsStdin())
     {
         /* file is std input */
         /* FIXME: gettextize? */
-        disp_err_message("Can't browse stdin", TRUE);
+        disp_err_message("Can't browse stdin", true);
         return;
     }
     invoke_browser(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr);
@@ -1913,7 +1915,7 @@ void curlno(w3mApp *w3m)
     tmp->Push("  ");
     tmp->Push(wc_ces_to_charset_desc(buf->document_charset));
 
-    disp_message(tmp->ptr, FALSE);
+    disp_message(tmp->ptr, false);
 }
 
 void dispI(w3mApp *w3m)
@@ -1922,13 +1924,13 @@ void dispI(w3mApp *w3m)
         initImage();
     if (!w3mApp::Instance().activeImage)
         return;
-    w3mApp::Instance().displayImage = TRUE;
+    w3mApp::Instance().displayImage = true;
     /*
      * if (!(GetCurrentTab()->GetCurrentBuffer()->type && is_html_type(GetCurrentTab()->GetCurrentBuffer()->type)))
      * return;
      */
     GetCurrentTab()->GetCurrentBuffer()->image_flag = IMG_FLAG_AUTO;
-    GetCurrentTab()->GetCurrentBuffer()->need_reshape = TRUE;
+    GetCurrentTab()->GetCurrentBuffer()->need_reshape = true;
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
@@ -1948,11 +1950,11 @@ void msToggle(w3mApp *w3m)
 {
     if (w3mApp::Instance().use_mouse)
     {
-        w3mApp::Instance().use_mouse = FALSE;
+        w3mApp::Instance().use_mouse = false;
     }
     else
     {
-        w3mApp::Instance().use_mouse = TRUE;
+        w3mApp::Instance().use_mouse = true;
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -2054,22 +2056,22 @@ void closeTMs(w3mApp *w3m)
 
 void dispVer(w3mApp *w3m)
 {
-    disp_message(Sprintf("w3m version %s", w3mApp::w3m_version)->ptr, TRUE);
+    disp_message(Sprintf("w3m version %s", w3mApp::w3m_version)->ptr, true);
 }
 
 void wrapToggle(w3mApp *w3m)
 {
     if (w3m->WrapSearch)
     {
-        w3m->WrapSearch = FALSE;
+        w3m->WrapSearch = false;
         /* FIXME: gettextize? */
-        disp_message("Wrap search off", TRUE);
+        disp_message("Wrap search off", true);
     }
     else
     {
-        w3m->WrapSearch = TRUE;
+        w3m->WrapSearch = true;
         /* FIXME: gettextize? */
-        disp_message("Wrap search on", TRUE);
+        disp_message("Wrap search on", true);
     }
 }
 
@@ -2132,7 +2134,7 @@ void setAlarm(w3mApp *w3m)
         disp_message_nsec(Sprintf("%dsec %s %s", sec, "ID",
                                   data)
                               ->ptr,
-                          FALSE, 1, FALSE, TRUE);
+                          false, 1, false, true);
     }
     else
     {
@@ -2170,7 +2172,7 @@ void reinit(w3mApp *w3m)
 #endif
     if (!strcasecmp(resource, "KEYMAP"))
     {
-        initKeymap(TRUE);
+        initKeymap(true);
         return;
     }
     if (!strcasecmp(resource, "MAILCAP"))
@@ -2205,7 +2207,7 @@ void reinit(w3mApp *w3m)
         return;
     }
 #endif
-    disp_err_message(Sprintf("Don't know how to reinitialize '%s'", resource)->ptr, FALSE);
+    disp_err_message(Sprintf("Don't know how to reinitialize '%s'", resource)->ptr, false);
 }
 
 void defKey(w3mApp *w3m)
@@ -2222,7 +2224,7 @@ void defKey(w3mApp *w3m)
             return;
         }
     }
-    SetKeymap(allocStr(data, -1), -1, TRUE);
+    SetKeymap(allocStr(data, -1), -1, true);
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -2276,7 +2278,7 @@ void tabURL(w3mApp *w3m)
     else
         tab = GetCurrentTab();
     tabURL0(prec_num() ? tab : NULL,
-            "Goto URL on new tab: ", FALSE);
+            "Goto URL on new tab: ", false);
 }
 
 void tabrURL(w3mApp *w3m)
@@ -2287,7 +2289,7 @@ void tabrURL(w3mApp *w3m)
     else
         tab = GetCurrentTab();
     tabURL0(prec_num() ? tab : NULL,
-            "Goto relative URL on new tab: ", TRUE);
+            "Goto relative URL on new tab: ", true);
 }
 
 void tabR(w3mApp *w3m)
@@ -2305,11 +2307,11 @@ void tabL(w3mApp *w3m)
 
 void ldDL(w3mApp *w3m)
 {
-    int replace = FALSE, new_tab = FALSE;
+    int replace = false, new_tab = false;
     auto tab = GetCurrentTab();
     if (tab->GetCurrentBuffer()->bufferprop & BP_INTERNAL &&
         tab->GetCurrentBuffer()->buffername == w3mApp::Instance().DOWNLOAD_LIST_TITLE)
-        replace = TRUE;
+        replace = true;
 
     // TOOD:
     // if (!FirstDL)
@@ -2344,7 +2346,7 @@ void ldDL(w3mApp *w3m)
     if (!replace && w3mApp::Instance().open_tab_dl_list)
     {
         CreateTabSetCurrent();
-        new_tab = TRUE;
+        new_tab = true;
     }
     // GetCurrentTab()->Push(newBuf);
     if (replace || new_tab)

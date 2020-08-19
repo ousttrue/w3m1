@@ -15,12 +15,11 @@
 #include "entity.h"
 #include "file.h"
 #include "tagstack.h"
+#include "textlist.h"
 #include "html.h"
 #include "html/html.h"
 #include "html/html_context.h"
-
 #include "html/html_processor.h"
-
 #include "html/tokenizer.h"
 
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
@@ -824,7 +823,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
             int id = -1;
             const char *p = l->ptr;
             struct parsed_tag *tag;
-            if ((tag = parse_tag(&p, TRUE)) != NULL)
+            if ((tag = parse_tag(&p, true)) != NULL)
                 tag->TryGetAttributeValue(ATTR_TID, &id);
             if (id >= 0 && id < tbl->ntable)
             {
@@ -1830,7 +1829,7 @@ make_caption(struct table *t, struct html_feed_environ *h_env, HtmlContext *seq)
     init_henv(&henv, &obuf, envs, MAX_ENV_LEVEL, newTextLineList(),
               limit, h_env->currentEnv().indent);
     HTMLlineproc1("<center>", &henv, seq);
-    HTMLlineproc0(t->caption->ptr, &henv, FALSE, seq);
+    HTMLlineproc0(t->caption->ptr, &henv, false, seq);
     HTMLlineproc1("</center>", &henv, seq);
 
     if (t->total_width < henv.maxlimit)
@@ -1838,7 +1837,7 @@ make_caption(struct table *t, struct html_feed_environ *h_env, HtmlContext *seq)
     limit = h_env->limit;
     h_env->limit = t->total_width;
     HTMLlineproc1("<center>", h_env, seq);
-    HTMLlineproc0(t->caption->ptr, h_env, FALSE, seq);
+    HTMLlineproc0(t->caption->ptr, h_env, false, seq);
     HTMLlineproc1("</center>", h_env, seq);
     h_env->limit = limit;
 }
@@ -3532,7 +3531,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
         check_rowcol(tbl, mode);
         while (*line)
         {
-            int nl = FALSE;
+            int nl = false;
             const char *p;
             if ((p = strchr(const_cast<char*>(line), '\r')) || (p = strchr(const_cast<char*>(line), '\n')))
             {
@@ -3550,7 +3549,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
                     p = line;
                     line = "";
                 }
-                nl = TRUE;
+                nl = true;
             }
             else
             {
@@ -3582,7 +3581,7 @@ void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width,
     status = R_ST_NORMAL;
     line = tok->ptr;
     while (read_token(tokbuf, &line, &status, mode->pre_mode & TBLM_PREMODE, 0))
-        feed_table(tbl, tokbuf->ptr, mode, width, TRUE, seq);
+        feed_table(tbl, tokbuf->ptr, mode, width, true, seq);
 }
 
 void pushTable(struct table *tbl, struct table *tbl1)

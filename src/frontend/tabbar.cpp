@@ -290,7 +290,7 @@ void MoveTab(int x)
     moveTab(GetCurrentTab(), tab ? tab : GetLastTab(), x > 0);
 }
 
-static int s_check_target = TRUE;
+static int s_check_target = true;
 int check_target()
 {
     return s_check_target;
@@ -304,17 +304,17 @@ void followTab(TabPtr tab)
 {
     if (tab == GetCurrentTab())
     {
-        set_check_target(FALSE);
+        set_check_target(false);
         followA(&w3mApp::Instance());
-        set_check_target(TRUE);
+        set_check_target(true);
         return;
     }
 
     CreateTabSetCurrent();
     auto buf = GetCurrentTab()->GetCurrentBuffer();
-    set_check_target(FALSE);
+    set_check_target(false);
     followA(&w3mApp::Instance());
-    set_check_target(TRUE);
+    set_check_target(true);
     if (tab == NULL)
     {
         // if (buf != GetCurrentTab()->GetCurrentBuffer())

@@ -1,4 +1,5 @@
 #pragma once
+#include <wc.h>
 
 extern const char *graph_symbol[];
 extern const char *graph2_symbol[];
