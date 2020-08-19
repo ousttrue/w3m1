@@ -731,7 +731,7 @@ void initKeymap(int force)
                          force || !keymap_initialized);
         fclose(kf);
     }
-    if ((kf = fopen(rcFile(keymap_file), "rt")) != NULL)
+    if ((kf = fopen(rcFile(w3mApp::Instance().keymap_file.c_str()), "rt")) != NULL)
     {
         interpret_keymap(kf, &current_keymap_file,
                          force || !keymap_initialized);

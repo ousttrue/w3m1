@@ -1986,7 +1986,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 HTMLlineproc1(tmp->ptr, h_env, seq);
                 do_blankline(h_env, obuf, h_env->currentEnv().indent, 0,
                              h_env->limit);
-                if (!is_redisplay &&
+                if (!w3mApp::Instance().is_redisplay &&
                     !((obuf->flag & RB_NOFRAMES) && w3mApp::Instance().RenderFrame))
                 {
                     tag->need_reconstruct = TRUE;
@@ -2149,7 +2149,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_NOP:
         return 1;
     case HTML_BGSOUND:
-        if (view_unseenobject)
+        if (w3mApp::Instance().view_unseenobject)
         {
             if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             {
@@ -2161,7 +2161,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         return 1;
     case HTML_EMBED:
-        if (view_unseenobject)
+        if (w3mApp::Instance().view_unseenobject)
         {
             if (tag->TryGetAttributeValue(ATTR_SRC, &p))
             {
@@ -2173,7 +2173,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         return 1;
     case HTML_APPLET:
-        if (view_unseenobject)
+        if (w3mApp::Instance().view_unseenobject)
         {
             if (tag->TryGetAttributeValue(ATTR_ARCHIVE, &p))
             {
@@ -2185,7 +2185,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         return 1;
     case HTML_BODY:
-        if (view_unseenobject)
+        if (w3mApp::Instance().view_unseenobject)
         {
             if (tag->TryGetAttributeValue(ATTR_BACKGROUND, &p))
             {

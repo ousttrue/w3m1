@@ -358,7 +358,7 @@ static struct frameset *frame_download_source(struct frame_body *b, URL *current
 #endif
         b->flags = 0;
     default:
-        is_redisplay = TRUE;
+        w3mApp::Instance().is_redisplay = TRUE;
         w3mApp::Instance().w3m_dump |= DUMP_FRAME;
         buf = loadGeneralFile(URL::Parse(b->url),
                               baseURL ? baseURL : currentURL,
@@ -369,7 +369,7 @@ static struct frameset *frame_download_source(struct frame_body *b, URL *current
             b->ssl_certificate = Strnew(buf->ssl_certificate)->ptr;
 
         w3mApp::Instance().w3m_dump &= ~DUMP_FRAME;
-        is_redisplay = FALSE;
+        w3mApp::Instance().is_redisplay = FALSE;
         break;
     }
 

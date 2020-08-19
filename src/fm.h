@@ -143,12 +143,6 @@ extern const char *graph2_symbol[];
 extern int mouseActive;
 #define LIMIT_MOUSE_MENU 100
 
-global int view_unseenobject init(FALSE);
-global int is_redisplay init(FALSE);
-global int clear_buffer init(TRUE);
-global int use_lessopen init(FALSE);
-global char *keymap_file init(KEYMAP_FILE);
-global int FollowRedirection init(10);
 
 #undef init
 

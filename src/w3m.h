@@ -149,6 +149,12 @@ public:
     TextList *Cookie_reject_domains = nullptr;
     TextList *Cookie_accept_domains = nullptr;
     TextList *Cookie_avoid_wrong_number_of_dots_domains = nullptr;
+    bool view_unseenobject = false;
+    bool is_redisplay = false;
+    bool clear_buffer = true;
+    bool use_lessopen = false;
+    std::string keymap_file = KEYMAP_FILE;
+    int FollowRedirection = 10;
 
     // ssl
     bool ssl_verify_server = false;
