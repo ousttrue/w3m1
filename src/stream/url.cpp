@@ -167,13 +167,12 @@ std::string url_quote(std::string_view p)
 
 static char *expandName(char *name)
 {
-    char *p;
-    struct passwd *passent, *getpwnam(const char *);
-    Str extpath = NULL;
-
     if (name == NULL)
         return NULL;
-    p = name;
+
+    Str extpath = NULL;
+
+    auto p = name;
     if (*p == '/')
     {
         if ((*(p + 1) == '~' && IS_ALPHA(*(p + 2))) && w3mApp::Instance().personal_document_root.size())
@@ -181,6 +180,7 @@ static char *expandName(char *name)
             char *q;
             p += 2;
             q = strchr(p, '/');
+            struct passwd *passent, *getpwnam(const char *);
             if (q)
             { /* /~user/dir... */
                 passent = getpwnam(allocStr(p, q - p));
@@ -519,9 +519,8 @@ URL URL::Parse(std::string_view _url)
             */
             path = cleanupName(path.data());
         }
-
-        return URL(scheme, userinfo, std::string(host), port, std::string(path), std::string(query), std::string(fragment));
     }
+    return URL(scheme, userinfo, std::string(host), port, std::string(path), std::string(query), std::string(fragment));
 }
 
 URL URL::Resolve(const URL *base) const
