@@ -72,6 +72,10 @@ public:
 
     // image
     std::string Imgdisplay = IMGDISPLAY;
+    bool autoImage = true;
+    bool useExtImageViewer = true;
+    int maxLoadImage = 4;
+    bool image_map_list = true;
 
     // files settings
     std::string config_file;

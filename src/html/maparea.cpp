@@ -224,7 +224,7 @@ MapArea *follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, i
     initial = searchMapArea(buf, ml, a_img);
     if (initial < 0)
         initial = 0;
-    else if (!image_map_list)
+    else if (!w3mApp::Instance().image_map_list)
     {
         selected = initial;
         goto map_end;

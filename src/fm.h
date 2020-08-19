@@ -145,10 +145,6 @@
 
 
 
-global int autoImage init(TRUE);
-global int useExtImageViewer init(TRUE);
-global int maxLoadImage init(4);
-global int image_map_list init(TRUE);
 
 global int pseudoInlines init(TRUE);
 global char *Editor init(DEF_EDITOR);

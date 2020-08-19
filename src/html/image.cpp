@@ -351,12 +351,12 @@ void loadImage(BufferPtr buf, int flag)
     int i, draw = FALSE;
     /* int wait_st; */
 
-    if (maxLoadImage > MAX_LOAD_IMAGE)
-        maxLoadImage = MAX_LOAD_IMAGE;
-    else if (maxLoadImage < 1)
-        maxLoadImage = 1;
+    if (w3mApp::Instance().maxLoadImage > MAX_LOAD_IMAGE)
+        w3mApp::Instance().maxLoadImage = MAX_LOAD_IMAGE;
+    else if (w3mApp::Instance().maxLoadImage < 1)
+        w3mApp::Instance().maxLoadImage = 1;
     if (n_load_image == 0)
-        n_load_image = maxLoadImage;
+        n_load_image = w3mApp::Instance().maxLoadImage;
     if (!image_cache)
     {
         image_cache = New_N(ImageCache *, MAX_LOAD_IMAGE);
@@ -397,7 +397,7 @@ void loadImage(BufferPtr buf, int flag)
         image_cache[i] = NULL;
     }
 
-    for (i = (buf != image_buffer) ? 0 : maxLoadImage; i < n_load_image; i++)
+    for (i = (buf != image_buffer) ? 0 : w3mApp::Instance().maxLoadImage; i < n_load_image; i++)
     {
         cache = image_cache[i];
         if (!cache)
@@ -422,7 +422,7 @@ void loadImage(BufferPtr buf, int flag)
     {
         image_list = NULL;
         image_file = NULL;
-        n_load_image = maxLoadImage;
+        n_load_image = w3mApp::Instance().maxLoadImage;
         image_buffer = NULL;
         return;
     }

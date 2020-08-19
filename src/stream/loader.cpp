@@ -427,7 +427,7 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_v
     {
         b = loadBuffer(url, stream, content_charset);
     }
-    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
+    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !w3mApp::Instance().useExtImageViewer &&
              !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && content_type.starts_with("image/"))
     {
         b = loadImageBuffer(url, stream);

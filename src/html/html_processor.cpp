@@ -132,7 +132,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
     int image_flag;
     if (newBuf->image_flag)
         image_flag = newBuf->image_flag;
-    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && autoImage)
+    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && w3mApp::Instance().autoImage)
         image_flag = IMG_FLAG_AUTO;
     else
         image_flag = IMG_FLAG_SKIP;
