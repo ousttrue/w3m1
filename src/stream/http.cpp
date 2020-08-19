@@ -164,7 +164,7 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
                 auto [_, cs] = svu::split(charset, '=');
                 if (cs.size())
                 {
-                    content_charset = wc_guess_charset(cs.data(), WC_CES_NONE);
+                    content_charset = cs;
                 }
             }
         }
@@ -216,7 +216,9 @@ std::string_view HttpResponse::FindHeader(std::string_view key) const
 ///
 /// HttpClient
 ///
-BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form)
+std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &url,
+                                                                    const URL *base, HttpReferrerPolicy referer,
+                                                                    struct FormList *form)
 {
     //
     // build HTTP request
@@ -310,7 +312,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     if (!stream)
     {
         // fail to open stream
-        return nullptr;
+        return {};
     }
     show_message(Strnew_m_charp(url.host, " contacted. Waiting for reply...")->ptr);
 
@@ -329,12 +331,19 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
         auto location = response->FindHeader("Location");
         if (location.empty())
         {
-            return nullptr;
+            return {};
         }
 
         // redirect
-        return Request(URL::Parse(location), &url, referer, nullptr);
+        return GetResponse(URL::Parse(location), &url, referer, nullptr);
     }
+
+    return {stream, response};
+}
+
+ContentStream HttpClient::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form)
+{
+    auto [stream, response] = GetResponse(url, base, referer, form);
 
     //
     // read HTTP response body
@@ -368,21 +377,9 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
         assert(stream);
     }
 
+    return {url, stream, response->content_type, response->content_charset};
+
     // auto proc = loadBuffer;
-    if (is_html_type(response->content_type))
-    {
-        return loadHTMLStream(url, stream, response->content_charset);
-    }
-    else if (is_plain_text_type(response->content_type))
-    {
-        return loadBuffer(url, stream, response->content_charset);
-    }
-    else
-    {
-        // not implemented
-        assert(false);
-        return nullptr;
-    }
     // else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
     //          !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     //     proc = loadImageBuffer;

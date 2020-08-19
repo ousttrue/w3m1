@@ -6,9 +6,14 @@
 
 using LoaderFunc = BufferPtr (*)(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset);
 BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset);
+int doFileCopy(const char *tmpf, const char *defstr);
+BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingScheme content_charset = WC_CES_UTF_8);
+
 BufferPtr loadGeneralFile(const URL &url,
                           const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
                           struct FormList *form = nullptr);
-int doFileCopy(const char *tmpf, const char *defstr);
-BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingScheme content_charset = WC_CES_UTF_8);
-BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_view content_type = "text/plain", CharacterEncodingScheme content_charset = WC_CES_UTF_8);
+
+ContentStream GetStream(const URL &url,
+                        const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
+                        struct FormList *form = nullptr);
+BufferPtr LoadStream(const ContentStream &stream);

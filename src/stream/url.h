@@ -2,6 +2,7 @@
 #include <Str.h>
 #include <string>
 #include <string_view>
+#include <memory>
 #include <wc.h>
 
 extern int ai_family_order_table[7][3]; /* XXX */
@@ -107,6 +108,14 @@ public:
     }
     Str ToStr(bool usePass = false, bool useLabel = true) const;
     std::string NonDefaultPort() const;
+};
+
+struct ContentStream
+{
+    URL url;
+    std::shared_ptr<class InputStream> stream;
+    std::string content_type;
+    std::string content_charset;
 };
 
 const char *filename_extension(const char *patch, int is_url);

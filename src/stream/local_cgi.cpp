@@ -525,12 +525,12 @@ Str loadLocalDir(std::string_view dname)
     return tmp;
 }
 
-std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form)
+ContentStream LocalCGI::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form)
 {
     auto cgi = LocalCGIStatus(url.real_file);
     if (!cgi.check_local_cgi())
     {
-        return nullptr;
+        return {};
     }
 
     //
@@ -607,10 +607,6 @@ std::shared_ptr<struct Buffer> LocalCGI::Request(const URL &url, const URL *base
         auto t = guessContentType(url.path);
         if (t == NULL)
             t = "text/plain";
-        auto real_type = t;
-        // if (uf->guess_type.size())
-        //     t = uf->guess_type.c_str();
+        return {url, stream, t};
     }
-
-    return LoadStream(url, stream);
 }

@@ -91,8 +91,8 @@ struct HttpResponse
     HttpResponseStatusCode status_code = HttpResponseStatusCode::NONE;
     std::vector<std::string> lines;
     CompressionTypes content_encoding = CMP_NOCOMPRESS;
-    std::string content_type = "text/plain";
-    CharacterEncodingScheme content_charset = WC_CES_US_ASCII;
+    std::string content_type;
+    std::string content_charset;
 
     static std::shared_ptr<HttpResponse> Read(const std::shared_ptr<class InputStream> &stream);
 
@@ -119,5 +119,6 @@ class HttpClient
     std::vector<HttpExchange> exchanges;
 
 public:
-    std::shared_ptr<struct Buffer> Request(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form);
+    std::tuple<std::shared_ptr<class InputStream>, HttpResponsePtr> GetResponse(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form);
+    ContentStream GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form);
 };

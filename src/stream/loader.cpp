@@ -247,232 +247,95 @@ BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingSche
     return loadproc(url, stream, content_charset);
 }
 
-BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_view content_type, CharacterEncodingScheme content_charset)
-{
-    // if (t_buf == NULL)
-    // auto t_buf = newBuffer(url);
+// BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_view content_type, CharacterEncodingScheme content_charset)
+// {
+//     // auto t = "text/plain";
+//     // // const char *t = checkContentType(t_buf);
+//     // // if (t == NULL && pu.path.size())
+//     // // {
+//     // //     if (!((http_response_code >= 400 && http_response_code <= 407) ||
+//     // //           (http_response_code >= 500 && http_response_code <= 505)))
+//     // //         t = guessContentType(pu.path);
+//     // // }
+//     // if (t == NULL)
+//     //     t = "text/plain";
 
-    // readHeader(f, t_buf, false, &pu);
-    // char *p;
-    // if (((http_response_code >= 301 && http_response_code <= 303) || http_response_code == 307) &&
-    //     (p = checkHeader(t_buf, "Location:")) != NULL && checkRedirection(pu))
-    // {
-    //     /* document moved */
-    //     /* 301: Moved Permanently */
-    //     /* 302: Found */
-    //     /* 303: See Other */
-    //     /* 307: Temporary Redirect (HTTP/1.1) */
-    //     auto tpath = wc_conv_strict(p, w3mApp::Instance().InnerCharset, w3mApp::Instance().DocumentCharset)->ptr;
-    //     // request = NULL;
-    //     // f.Close();
-    //     // *current = pu;
-    //     t_buf = newBuffer(INIT_BUFFER_WIDTH());
-    //     t_buf->bufferprop |= BP_REDIRECTED;
-    //     // auto status = HTST_NORMAL;
-    //     // goto load_doc;
+//     if (w3mApp::Instance().do_download)
+//     {
+//         /* download only */
+//         char *file;
+//         // TRAP_OFF;
+//         // if (DecodeCTE && f->stream->type() != IST_ENCODED)
+//         //     f->stream = newEncodedStream(f->stream, f->encoding);
+//         // if (pu.scheme == SCM_LOCAL)
+//         // {
+//         //     struct stat st;
+//         //     if (PreserveTimestamp && !stat(pu.real_file.c_str(), &st))
+//         //         f->modtime = st.st_mtime;
+//         //     file = conv_from_system(guess_save_name(NULL, pu.real_file.c_str()));
+//         // }
+//         // else
+//         //     file = guess_save_name(t_buf, pu.path);
 
-    //     // TODO: REDIRECT
+//         // f->DoFileSave(file, 0);
 
-    //     assert(false);
-    // }
-    // auto t = "text/plain";
-    // // const char *t = checkContentType(t_buf);
-    // // if (t == NULL && pu.path.size())
-    // // {
-    // //     if (!((http_response_code >= 400 && http_response_code <= 407) ||
-    // //           (http_response_code >= 500 && http_response_code <= 505)))
-    // //         t = guessContentType(pu.path);
-    // // }
-    // if (t == NULL)
-    //     t = "text/plain";
+//         return nullptr;
+//     }
 
-    /* XXX: can we use guess_type to give the type to loadHTMLStream
-         *      to support default utf8 encoding for XHTML here? */
-    // f->guess_type = t;
+//     // if (image_source)
+//     // {
+//     //     BufferPtr b = NULL;
+//     //     if (f->stream->type() != IST_ENCODED)
+//     //         f->stream = newEncodedStream(f->stream, f->encoding);
+//     //     if (save2tmp(f, image_source) == 0)
+//     //     {
+//     //         b = newBuffer(INIT_BUFFER_WIDTH());
+//     //         b->sourcefile = image_source;
+//     //         b->real_type = t;
+//     //     }
+//     //     // f->Close();
+//     //     // TRAP_OFF;
+//     //     return b;
+//     // }
 
-    // if (real_type == NULL)
-    //     real_type = t;
-    // auto proc = loadBuffer;
+//     // if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(content_type))
+//     // {
+//     //     BufferPtr b = NULL;
+//     //     if (!do_download)
+//     //     {
+//     //         // auto url = URL::Parse(pu.real_file.size() ? pu.real_file.c_str() : pu.path.c_str());
+//     //         auto b = doExternal(url, stream, content_type);
+//     //         if (b)
+//     //         {
+//     //             b->real_scheme = url.scheme;
+//     //             b->real_type = content_type;
+//     //             if (b->currentURL.host.empty() && b->currentURL.path.empty())
+//     //                 b->currentURL = url;
+//     //         }
+//     //         // f.Close();
+//     //         // TRAP_OFF;
+//     //         return b;
+//     //     }
+//     //     else
+//     //     {
+//     //         // TRAP_OFF;
+//     //         // if (pu.scheme == SCM_LOCAL)
+//     //         // {
+//     //         //     // f.Close();
+//     //         //     _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
+//     //         //                 conv_from_system(guess_save_name(NULL, pu.real_file)), true);
+//     //         // }
+//     //         // else
+//     //         // {
+//     //         //     if (DecodeCTE && f->stream->type() != IST_ENCODED)
+//     //         //         f->stream = newEncodedStream(f->stream, f->encoding);
+//     //         //     f->DoFileSave(guess_save_name(t_buf, pu.path), current_content_length);
+//     //         // }
+//     //         return nullptr;
+//     //     }
+//     // }
 
-    // *GetCurBaseUrl() = url;
-
-    // if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
-    //     current_content_length = strtoclen(p);
-    if (w3mApp::Instance().do_download)
-    {
-        /* download only */
-        char *file;
-        // TRAP_OFF;
-        // if (DecodeCTE && f->stream->type() != IST_ENCODED)
-        //     f->stream = newEncodedStream(f->stream, f->encoding);
-        // if (pu.scheme == SCM_LOCAL)
-        // {
-        //     struct stat st;
-        //     if (PreserveTimestamp && !stat(pu.real_file.c_str(), &st))
-        //         f->modtime = st.st_mtime;
-        //     file = conv_from_system(guess_save_name(NULL, pu.real_file.c_str()));
-        // }
-        // else
-        //     file = guess_save_name(t_buf, pu.path);
-
-        // f->DoFileSave(file, 0);
-
-        return nullptr;
-    }
-
-    // if ((f->content_encoding != CMP_NOCOMPRESS) && AutoUncompress && !(w3mApp::Instance().w3m_dump & DUMP_EXTRA))
-    // {
-    //     // TODO:
-    //     // pu.real_file = uncompress_stream(&f, true);
-    // }
-    // else
-
-    // if (f->compression != CMP_NOCOMPRESS)
-    // {
-    //     // compressed
-    //     if (!(w3mApp::Instance().w3m_dump & DUMP_SOURCE) &&
-    //         (w3mApp::Instance().w3m_dump & ~DUMP_FRAME || is_text_type(t) || searchExtViewer(t)))
-    //     {
-    //         // extract compression
-    //         if (t_buf == NULL)
-    //             t_buf = newBuffer(INIT_BUFFER_WIDTH());
-    //         t_buf->sourcefile = uncompress_stream(f, true);
-    //         auto [type, ext] = uncompressed_file_type(pu.path);
-    //         if (ext.size())
-    //         {
-    //             f->ext = ext.data();
-    //         }
-    //     }
-    //     else
-    //     {
-    //         t = compress_application_type(f->compression).data();
-    //         f->compression = CMP_NOCOMPRESS;
-    //     }
-    // }
-
-    // if (image_source)
-    // {
-    //     BufferPtr b = NULL;
-    //     if (f->stream->type() != IST_ENCODED)
-    //         f->stream = newEncodedStream(f->stream, f->encoding);
-    //     if (save2tmp(f, image_source) == 0)
-    //     {
-    //         b = newBuffer(INIT_BUFFER_WIDTH());
-    //         b->sourcefile = image_source;
-    //         b->real_type = t;
-    //     }
-    //     // f->Close();
-    //     // TRAP_OFF;
-    //     return b;
-    // }
-
-    // if (!(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) || is_dump_text_type(content_type))
-    // {
-    //     BufferPtr b = NULL;
-    //     if (!do_download)
-    //     {
-    //         // auto url = URL::Parse(pu.real_file.size() ? pu.real_file.c_str() : pu.path.c_str());
-    //         auto b = doExternal(url, stream, content_type);
-    //         if (b)
-    //         {
-    //             b->real_scheme = url.scheme;
-    //             b->real_type = content_type;
-    //             if (b->currentURL.host.empty() && b->currentURL.path.empty())
-    //                 b->currentURL = url;
-    //         }
-    //         // f.Close();
-    //         // TRAP_OFF;
-    //         return b;
-    //     }
-    //     else
-    //     {
-    //         // TRAP_OFF;
-    //         // if (pu.scheme == SCM_LOCAL)
-    //         // {
-    //         //     // f.Close();
-    //         //     _doFileCopy(const_cast<char *>(pu.real_file.c_str()),
-    //         //                 conv_from_system(guess_save_name(NULL, pu.real_file)), true);
-    //         // }
-    //         // else
-    //         // {
-    //         //     if (DecodeCTE && f->stream->type() != IST_ENCODED)
-    //         //         f->stream = newEncodedStream(f->stream, f->encoding);
-    //         //     f->DoFileSave(guess_save_name(t_buf, pu.path), current_content_length);
-    //         // }
-    //         return nullptr;
-    //     }
-    // }
-    // else if (w3mApp::Instance().w3m_dump & DUMP_FRAME)
-    //     return NULL;
-
-    // if (flag & RG_FRAME)
-    // {
-    //     if (t_buf == NULL)
-    //         t_buf = newBuffer(url);
-    //     t_buf->bufferprop |= BP_FRAME;
-    // }
-
-    // if (t_buf && f->ssl_certificate)
-    // {
-    //     t_buf->ssl_certificate = f->ssl_certificate;
-    // }
-
-    // frame_source = flag & RG_FRAME_SRC;
-    // auto b = loadSomething(f, pu.real_file.size() ? const_cast<char *>(pu.real_file.c_str()) : const_cast<char *>(pu.path.c_str()), proc);
-    BufferPtr b;
-    if (is_html_type(content_type))
-    {
-        b = loadHTMLStream(url, stream, content_charset);
-    }
-    else if (is_plain_text_type(content_type))
-    {
-        b = loadBuffer(url, stream, content_charset);
-    }
-    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !w3mApp::Instance().useExtImageViewer &&
-             content_type.starts_with("image/"))
-    {
-        b = loadImageBuffer(url, stream);
-    }
-    else
-    {
-        assert(false);
-    }
-    if (b)
-    {
-        b->real_scheme = url.scheme;
-        b->real_type = content_type;
-        if (b->currentURL.host.empty() && b->currentURL.path.empty())
-            b->currentURL = url;
-        if (is_html_type(content_type))
-            b->type = "text/html";
-        // else if (proc == loadImageBuffer)
-        //     b->type = "text/html";
-        // else
-        //     b->type = "text/plain";
-        if (url.fragment.size())
-        {
-            // if (proc == loadHTMLBuffer)
-            // {
-            //     auto a = searchURLLabel(b, const_cast<char *>(url.fragment.c_str()));
-            //     if (a != NULL)
-            //     {
-            //         b->Goto(a->start, label_topline);
-            //     }
-            // }
-            // else
-            // { /* plain text */
-            //     int l = atoi(url.fragment.c_str());
-            //     b->GotoRealLine(l);
-            //     b->pos = 0;
-            //     b->ArrangeCursor();
-            // }
-        }
-    }
-    if (w3mApp::Instance().header_string.size())
-        w3mApp::Instance().header_string.clear();
-    preFormUpdateBuffer(b);
-    return b;
-}
+// }
 
 /* 
  * loadBuffer: read file and make new buffer
@@ -620,7 +483,7 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
         // HTTP
         //
         HttpClient client;
-        return client.Request(url, _current, referer, form);
+        return LoadStream(client.GetStream(url, _current, referer, form));
     }
 
     if (url.scheme == SCM_LOCAL_CGI)
@@ -629,7 +492,7 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
         // local CGI
         //
         LocalCGI cgi;
-        return cgi.Request(url, _current, referer, form);
+        return LoadStream(cgi.GetStream(url, _current, referer, form));
     }
 
     if (url.scheme == SCM_LOCAL)
@@ -644,7 +507,7 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
             assert(false);
             return nullptr;
         }
-        return LoadStream(url, stream, "text/html");
+        return LoadStream({url, stream, "text/html"});
     }
 
     // not implemened
@@ -704,3 +567,105 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
 //     }
 
 // f.modtime = mymktime(checkHeader(t_buf, "Last-Modified:"));
+
+ContentStream GetStream(const URL &_url,
+                        const URL *current, HttpReferrerPolicy referer,
+                        struct FormList *form)
+{
+    if (_url.scheme == SCM_MISSING)
+    {
+        auto a = 0;
+    }
+    auto url = _url.Resolve(current);
+
+    if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
+    {
+        //
+        // HTTP
+        //
+        HttpClient client;
+        return client.GetStream(url, current, referer, form);
+    }
+
+    // if (url.scheme == SCM_LOCAL_CGI)
+    // {
+    //     //
+    //     // local CGI
+    //     //
+    //     LocalCGI cgi;
+    //     return cgi.Request(url, _current, referer, form);
+    // }
+
+    // if (url.scheme == SCM_LOCAL)
+    // {
+    //     //
+    //     // local file
+    //     //
+    //     auto stream = StreamFromFile(url.real_file);
+    //     if (!stream)
+    //     {
+    //         // fail to open file
+    //         assert(false);
+    //         return nullptr;
+    //     }
+    //     return LoadStream(url, stream, "text/html");
+    // }
+
+    // not implemened
+    assert(false);
+    return {};
+}
+
+BufferPtr LoadStream(const ContentStream &content)
+{
+    if (!content.stream)
+    {
+        return nullptr;
+    }
+
+    auto content_charset = content.content_charset.size()
+                               ? wc_guess_charset(content.content_charset.data(), WC_CES_NONE)
+                               : WC_CES_UTF_8;
+
+    BufferPtr b;
+    if (is_html_type(content.content_type))
+    {
+        b = loadHTMLStream(content.url, content.stream, content_charset);
+    }
+    else if (is_plain_text_type(content.content_type))
+    {
+        b = loadBuffer(content.url, content.stream, content_charset);
+    }
+    else
+    {
+        // not implemented
+        assert(false);
+        return nullptr;
+    }
+
+    if (b)
+    {
+        if (content.url.fragment.size())
+        {
+            // if (proc == loadHTMLBuffer)
+            // {
+            //     auto a = searchURLLabel(b, const_cast<char *>(url.fragment.c_str()));
+            //     if (a != NULL)
+            //     {
+            //         b->Goto(a->start, label_topline);
+            //     }
+            // }
+            // else
+            // { /* plain text */
+            //     int l = atoi(url.fragment.c_str());
+            //     b->GotoRealLine(l);
+            //     b->pos = 0;
+            //     b->ArrangeCursor();
+            // }
+        }
+    }
+    if (w3mApp::Instance().header_string.size())
+        w3mApp::Instance().header_string.clear();
+    preFormUpdateBuffer(b);
+    return b;
+}
