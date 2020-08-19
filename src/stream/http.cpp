@@ -222,10 +222,10 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
     // build HTTP request
     //
     auto request = HttpRequest::Create(url, form);
-    Push(request, "User-Agent: ", ((UserAgent == NULL || *UserAgent == '\0') ? w3mApp::w3m_version : UserAgent), "\r\n");
-    Push(request, "Accept: ", AcceptMedia, "\r\n");
-    Push(request, "Accept-Encoding: ", AcceptEncoding, "\r\n");
-    Push(request, "Accept-Language: ", AcceptLang, "\r\n");
+    Push(request, "User-Agent: ", (w3mApp::Instance().UserAgent.empty() ? w3mApp::w3m_version : w3mApp::Instance().UserAgent), "\r\n");
+    Push(request, "Accept: ", w3mApp::Instance().AcceptMedia, "\r\n");
+    Push(request, "Accept-Encoding: ", w3mApp::Instance().AcceptEncoding, "\r\n");
+    Push(request, "Accept-Language: ", w3mApp::Instance().AcceptLang, "\r\n");
 
     if (url.host.size())
     {
@@ -280,7 +280,7 @@ BufferPtr HttpClient::Request(const URL &url, const URL *base, HttpReferrerPolic
         }
     }
 
-    if (!NoSendReferer)
+    if (!w3mApp::Instance().NoSendReferer)
     {
         if (referer == HttpReferrerPolicy::StrictOriginWhenCrossOrigin)
         {

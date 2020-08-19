@@ -733,11 +733,11 @@ auto sections = make_array(
                      {"ftppasswd", P_STRING, PI_TEXT, w3mApp::Instance().ftppasswd, CMT_FTPPASS},
                      {"ftppass_hostnamegen", P_INT, PI_ONOFF, w3mApp::Instance().ftppass_hostnamegen, CMT_FTPPASS_HOSTNAMEGEN},
                      {"pre_form_file", P_STRING, PI_TEXT, w3mApp::Instance().pre_form_file, CMT_PRE_FORM_FILE},
-                     {"user_agent", P_STRING, PI_TEXT, UserAgent, CMT_USERAGENT},
-                     {"no_referer", P_INT, PI_ONOFF, NoSendReferer, CMT_NOSENDREFERER},
-                     {"accept_language", P_STRING, PI_TEXT, AcceptLang, CMT_ACCEPTLANG},
-                     {"accept_encoding", P_STRING, PI_TEXT, AcceptEncoding, CMT_ACCEPTENCODING},
-                     {"accept_media", P_STRING, PI_TEXT, AcceptMedia, CMT_ACCEPTMEDIA},
+                     {"user_agent", P_STRING, PI_TEXT, w3mApp::Instance().UserAgent, CMT_USERAGENT},
+                     {"no_referer", P_INT, PI_ONOFF, w3mApp::Instance().NoSendReferer, CMT_NOSENDREFERER},
+                     {"accept_language", P_STRING, PI_TEXT, w3mApp::Instance().AcceptLang, CMT_ACCEPTLANG},
+                     {"accept_encoding", P_STRING, PI_TEXT, w3mApp::Instance().AcceptEncoding, CMT_ACCEPTENCODING},
+                     {"accept_media", P_STRING, PI_TEXT, w3mApp::Instance().AcceptMedia, CMT_ACCEPTMEDIA},
                      {"argv_is_url", P_CHARINT, PI_ONOFF, w3mApp::Instance().ArgvIsURL, CMT_ARGV_IS_URL},
                      {"retry_http", P_INT, PI_ONOFF, w3mApp::Instance().retryAsHttp, CMT_RETRY_HTTP},
                      {"default_url", P_INT, PI_SEL_C, DefaultURLString, CMT_DEFAULT_URL, (void *)defaulturls},
@@ -1343,19 +1343,19 @@ void sync_with_option(void)
     loadPasswd();
     loadPreForm();
 
-    if (AcceptLang == NULL || *AcceptLang == '\0')
+    if (w3mApp::Instance().AcceptLang.empty())
     {
         /* TRANSLATORS: 
         * AcceptLang default: this is used in Accept-Language: HTTP request 
         * header. For example, ja.po should translate it as
         * "ja;q=1.0, en;q=0.5" like that.
         */
-        AcceptLang = _("en;q=1.0");
+        w3mApp::Instance().AcceptLang = _("en;q=1.0");
     }
-    if (AcceptEncoding == NULL || *AcceptEncoding == '\0')
-        AcceptEncoding = acceptableEncoding();
-    if (AcceptMedia == NULL || *AcceptMedia == '\0')
-        AcceptMedia = acceptableMimeTypes();
+    if (w3mApp::Instance().AcceptEncoding.empty())
+        w3mApp::Instance().AcceptEncoding = acceptableEncoding();
+    if (w3mApp::Instance().AcceptMedia.empty())
+        w3mApp::Instance().AcceptMedia = acceptableMimeTypes();
 
     if (w3mApp::Instance().fmInitialized)
     {

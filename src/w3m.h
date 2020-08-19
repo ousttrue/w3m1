@@ -88,6 +88,13 @@ public:
     std::string pre_form_file = PRE_FORM_FILE;
     std::string ftppasswd;
     bool ftppass_hostnamegen = true;
+    bool do_download = false;
+    std::string image_source;
+    std::string UserAgent;
+    bool NoSendReferer = false;
+    std::string AcceptLang;
+    std::string AcceptEncoding;
+    std::string AcceptMedia;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

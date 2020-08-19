@@ -451,11 +451,11 @@ void ldfile(w3mApp *w3m)
 
 void ldhelp(w3mApp *w3m)
 {
-    auto lang = AcceptLang;
-    auto n = strcspn(lang, ";, \t");
+    std::string_view lang = w3mApp::Instance().AcceptLang;
+    auto n = strcspn(lang.data(), ";, \t");
     auto tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
-                  UrlEncode(Strnew(w3mApp::Instance().w3m_version))->ptr,
-                  UrlEncode(Strnew_charp_n(lang, n))->ptr);
+                  UrlEncode(Strnew_m_charp(w3mApp::w3m_version))->ptr,
+                  UrlEncode(Strnew_m_charp(lang.substr(n)))->ptr);
     cmd_loadURL(tmp->ptr, NULL, HttpReferrerPolicy::NoReferer, NULL);
 }
 
@@ -1360,18 +1360,18 @@ void ldHist(w3mApp *w3m)
 void svA(w3mApp *w3m)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    do_download = TRUE;
+    w3mApp::Instance().do_download = TRUE;
     followA(w3m);
-    do_download = FALSE;
+    w3mApp::Instance().do_download = FALSE;
 }
 /* download IMG link */
 
 void svI(w3mApp *w3m)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    do_download = TRUE;
+    w3mApp::Instance().do_download = TRUE;
     followI(w3m);
-    do_download = FALSE;
+    w3mApp::Instance().do_download = FALSE;
 }
 /* save buffer */
 

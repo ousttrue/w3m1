@@ -297,7 +297,7 @@ BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, std::string_v
 
     // if ((p = checkHeader(t_buf, "Content-Length:")) != NULL)
     //     current_content_length = strtoclen(p);
-    if (do_download)
+    if (w3mApp::Instance().do_download)
     {
         /* download only */
         char *file;
@@ -569,12 +569,11 @@ int doFileCopy(const char *tmpf, const char *defstr)
 
 BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, const char *t)
 {
-    FILE *src;
-    if (image_source)
+    if (w3mApp::Instance().image_source.size())
         return NULL;
 
     auto tmp = tmpfname(TMPF_SRC, ".html");
-    src = fopen(tmp->ptr, "w");
+    auto src = fopen(tmp->ptr, "w");
     if (src)
     {
         Str s;
@@ -582,7 +581,7 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
         s->Puts(src);
         fclose(src);
     }
-    if (do_download)
+    if (w3mApp::Instance().do_download)
     {
         char *file;
         if (!src)

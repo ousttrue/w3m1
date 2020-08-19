@@ -96,9 +96,9 @@ internal_get(const char *url, int flag, FormList *request)
     BufferPtr buf;
 
     backend_halfdump_buf = NULL;
-    do_download = flag;
+    w3mApp::Instance().do_download = flag;
     buf = loadGeneralFile(URL::Parse(url), NULL, HttpReferrerPolicy::NoReferer, request);
-    do_download = FALSE;
+    w3mApp::Instance().do_download = FALSE;
     if (buf != NULL)
     {
         if (is_html_type(buf->type) && backend_halfdump_buf)
