@@ -306,7 +306,7 @@ struct SSLContextImpl
             {
                 /* FIXME: gettextize? */
                 const char *e = "This SSL session was rejected "
-                          "to prevent security violation: no peer certificate";
+                                "to prevent security violation: no peer certificate";
                 disp_err_message(e, FALSE);
                 return NULL;
             }
@@ -317,12 +317,12 @@ struct SSLContextImpl
             s = amsg ? amsg : Strnew("valid certificate");
             return s;
         }
-#ifdef USE_SSL_VERIFY
+
         /* check the cert chain.
-     * The chain length is automatically checked by OpenSSL when we
-     * set the verify depth in the ctx.
-     */
-        if (ssl_verify_server)
+        * The chain length is automatically checked by OpenSSL when we
+        * set the verify depth in the ctx.
+        */
+        if (w3mApp::Instance().ssl_verify_server)
         {
             long verr;
             if ((verr = SSL_get_verify_result(ssl)) != X509_V_OK)
@@ -353,7 +353,7 @@ struct SSLContextImpl
                 }
             }
         }
-#endif
+
         emsg = ssl_check_cert_ident(x, hostname);
         if (emsg != NULL)
         {
@@ -438,19 +438,19 @@ std::shared_ptr<SSLContext> SSLContext::Create()
     auto impl = std::make_shared<SSLContext>(new SSLContextImpl(ssl_ctx));
 
     int option = SSL_OP_ALL;
-    if (ssl_forbid_method)
+    if (w3mApp::Instance().ssl_forbid_method.size())
     {
-        if (strchr(ssl_forbid_method, '2'))
+        if (w3mApp::Instance().ssl_forbid_method.find('2') != std::string::npos)
             option |= SSL_OP_NO_SSLv2;
-        if (strchr(ssl_forbid_method, '3'))
+        if (w3mApp::Instance().ssl_forbid_method.find('3') != std::string::npos)
             option |= SSL_OP_NO_SSLv3;
-        if (strchr(ssl_forbid_method, 't'))
+        if (w3mApp::Instance().ssl_forbid_method.find('t') != std::string::npos)
             option |= SSL_OP_NO_TLSv1;
-        if (strchr(ssl_forbid_method, 'T'))
+        if (w3mApp::Instance().ssl_forbid_method.find('T') != std::string::npos)
             option |= SSL_OP_NO_TLSv1;
     }
     SSL_CTX_set_options(ssl_ctx, option);
-#ifdef USE_SSL_VERIFY
+
     /* derived from openssl-0.9.5/apps/s_{client,cb}.c */
 #if 1 /* use SSL_get_verify_result() to verify cert */
     SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_NONE, NULL);
@@ -458,16 +458,15 @@ std::shared_ptr<SSLContext> SSLContext::Create()
     SSL_CTX_set_verify(ssl_ctx,
                        ssl_verify_server ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, NULL);
 #endif
-    if (ssl_cert_file != NULL && *ssl_cert_file != '\0')
+    if (w3mApp::Instance().ssl_cert_file.size())
     {
         int ng = 1;
-        if (SSL_CTX_use_certificate_file(ssl_ctx, ssl_cert_file, SSL_FILETYPE_PEM) > 0)
+        if (SSL_CTX_use_certificate_file(ssl_ctx, w3mApp::Instance().ssl_cert_file.c_str(), SSL_FILETYPE_PEM) > 0)
         {
-            char *key_file = (ssl_key_file == NULL || *ssl_key_file ==
-                                                          '\0')
-                                 ? ssl_cert_file
-                                 : ssl_key_file;
-            if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_file, SSL_FILETYPE_PEM) > 0)
+            std::string_view key_file = (w3mApp::Instance().ssl_key_file.empty())
+                                            ? w3mApp::Instance().ssl_cert_file
+                                            : w3mApp::Instance().ssl_key_file;
+            if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_file.data(), SSL_FILETYPE_PEM) > 0)
                 if (SSL_CTX_check_private_key(ssl_ctx))
                     ng = 0;
         }
@@ -476,8 +475,8 @@ std::shared_ptr<SSLContext> SSLContext::Create()
             return nullptr;
         }
     }
-    if ((!ssl_ca_file && !ssl_ca_path) || SSL_CTX_load_verify_locations(ssl_ctx, ssl_ca_file, ssl_ca_path))
-#endif /* defined(USE_SSL_VERIFY) */
+    if ((w3mApp::Instance().ssl_ca_file.empty() && w3mApp::Instance().ssl_ca_path.empty()) ||
+        SSL_CTX_load_verify_locations(ssl_ctx, w3mApp::Instance().ssl_ca_file.c_str(), w3mApp::Instance().ssl_ca_path.c_str()))
         SSL_CTX_set_default_verify_paths(ssl_ctx);
 #endif /* SSLEAY_VERSION_NUMBER >= 0x0800 */
 

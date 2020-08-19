@@ -544,7 +544,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
      * The chain length is automatically checked by OpenSSL when we
      * set the verify depth in the ctx.
      */
-    if (ssl_verify_server)
+    if (w3mApp::Instance().ssl_verify_server)
     {
         long verr;
         if ((verr = SSL_get_verify_result(ssl)) != X509_V_OK)

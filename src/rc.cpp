@@ -282,7 +282,7 @@ struct Param
                 this->value = std::string(rcFile(src.data()));
             else
                 this->value = std::string("");
-            ssl_path_modified = 1;
+            w3mApp::Instance().ssl_path_modified = 1;
             break;
 
         case P_COLOR:
@@ -759,12 +759,12 @@ auto sections = make_array(
                  }},
     ParamSection{N_("SSL Settings"),
                  {
-                     {"ssl_forbid_method", P_STRING, PI_TEXT, ssl_forbid_method, CMT_SSL_FORBID_METHOD},
-                     {"ssl_verify_server", P_INT, PI_ONOFF, ssl_verify_server, CMT_SSL_VERIFY_SERVER},
-                     {"ssl_cert_file", P_SSLPATH, PI_TEXT, ssl_cert_file, CMT_SSL_CERT_FILE},
-                     {"ssl_key_file", P_SSLPATH, PI_TEXT, ssl_key_file, CMT_SSL_KEY_FILE},
-                     {"ssl_ca_path", P_SSLPATH, PI_TEXT, ssl_ca_path, CMT_SSL_CA_PATH},
-                     {"ssl_ca_file", P_SSLPATH, PI_TEXT, ssl_ca_file, CMT_SSL_CA_FILE},
+                     {"ssl_forbid_method", P_STRING, PI_TEXT, w3mApp::Instance().ssl_forbid_method, CMT_SSL_FORBID_METHOD},
+                     {"ssl_verify_server", P_INT, PI_ONOFF, w3mApp::Instance().ssl_verify_server, CMT_SSL_VERIFY_SERVER},
+                     {"ssl_cert_file", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_cert_file, CMT_SSL_CERT_FILE},
+                     {"ssl_key_file", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_key_file, CMT_SSL_KEY_FILE},
+                     {"ssl_ca_path", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_ca_path, CMT_SSL_CA_PATH},
+                     {"ssl_ca_file", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_ca_file, CMT_SSL_CA_FILE},
                  }},
     ParamSection{N_("Cookie Settings"),
                  {

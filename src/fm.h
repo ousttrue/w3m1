@@ -144,13 +144,6 @@ extern int mouseActive;
 #define LIMIT_MOUSE_MENU 100
 
 global int view_unseenobject init(FALSE);
-global int ssl_verify_server init(FALSE);
-global char *ssl_cert_file init(NULL);
-global char *ssl_key_file init(NULL);
-global char *ssl_ca_path init(NULL);
-global char *ssl_ca_file init(NULL);
-global int ssl_path_modified init(FALSE);
-global char *ssl_forbid_method init(NULL);
 global int is_redisplay init(FALSE);
 global int clear_buffer init(TRUE);
 global int use_lessopen init(FALSE);

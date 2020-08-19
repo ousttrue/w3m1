@@ -140,8 +140,8 @@ public:
     int fixed_wheel_scroll_count = 5;
     int relative_wheel_scroll_ratio = 30;
     std::string tmp_dir;
-    int default_use_cookie = true;
-    int show_cookie = true;
+    bool default_use_cookie = true;
+    bool show_cookie = true;
     AcceptBadCookieTypes accept_bad_cookie = ACCEPT_BAD_COOKIE_DISCARD;
     std::string cookie_reject_domains;
     std::string cookie_accept_domains;
@@ -149,6 +149,15 @@ public:
     TextList *Cookie_reject_domains = nullptr;
     TextList *Cookie_accept_domains = nullptr;
     TextList *Cookie_avoid_wrong_number_of_dots_domains = nullptr;
+
+    // ssl
+    bool ssl_verify_server = false;
+    std::string ssl_cert_file;
+    std::string ssl_key_file;
+    std::string ssl_ca_path;
+    std::string ssl_ca_file;
+    bool ssl_path_modified = false;
+    std::string ssl_forbid_method;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;
