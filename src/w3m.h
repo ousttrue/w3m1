@@ -143,6 +143,12 @@ public:
     int default_use_cookie = true;
     int show_cookie = true;
     AcceptBadCookieTypes accept_bad_cookie = ACCEPT_BAD_COOKIE_DISCARD;
+    std::string cookie_reject_domains;
+    std::string cookie_accept_domains;
+    std::string cookie_avoid_wrong_number_of_dots;
+    TextList *Cookie_reject_domains = nullptr;
+    TextList *Cookie_accept_domains = nullptr;
+    TextList *Cookie_avoid_wrong_number_of_dots_domains = nullptr;
 
     // image
     std::string Imgdisplay = IMGDISPLAY;

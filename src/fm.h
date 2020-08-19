@@ -1,4 +1,3 @@
-/* $Id: fm.h,v 1.149 2010/08/20 09:47:09 htrb Exp $ */
 /* 
  * w3m: WWW wo Miru utility
  * 
@@ -6,10 +5,7 @@
  * 
  * You can use,copy,modify and distribute this program without any permission.
  */
-
-#ifndef FM_H
-#define FM_H
-
+#pragma once
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* strcasestr() */
 #endif
@@ -147,43 +143,20 @@ extern const char *graph2_symbol[];
 extern int mouseActive;
 #define LIMIT_MOUSE_MENU 100
 
-
-global char *cookie_reject_domains init(NULL);
-global char *cookie_accept_domains init(NULL);
-global char *cookie_avoid_wrong_number_of_dots init(NULL);
-global TextList *Cookie_reject_domains;
-global TextList *Cookie_accept_domains;
-global TextList *Cookie_avoid_wrong_number_of_dots_domains;
-
-#ifdef USE_IMAGE
 global int view_unseenobject init(FALSE);
-#else
-global int view_unseenobject init(TRUE);
-#endif
-
-#if defined(USE_SSL) && defined(USE_SSL_VERIFY)
 global int ssl_verify_server init(FALSE);
 global char *ssl_cert_file init(NULL);
 global char *ssl_key_file init(NULL);
 global char *ssl_ca_path init(NULL);
 global char *ssl_ca_file init(NULL);
 global int ssl_path_modified init(FALSE);
-#endif /* defined(USE_SSL) && \
-        * defined(USE_SSL_VERIFY) */
-#ifdef USE_SSL
 global char *ssl_forbid_method init(NULL);
-#endif
-
 global int is_redisplay init(FALSE);
 global int clear_buffer init(TRUE);
-
 global int use_lessopen init(FALSE);
-
 global char *keymap_file init(KEYMAP_FILE);
-
 global int FollowRedirection init(10);
+
 #undef init
 
 global TextLineList *backend_halfdump_buf;
-
-#endif /* not FM_H */

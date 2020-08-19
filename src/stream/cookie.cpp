@@ -386,10 +386,10 @@ int check_avoid_wrong_number_of_dots_domain(Str domain)
     TextListItem *tl;
     int avoid_wrong_number_of_dots_domain = FALSE;
 
-    if (Cookie_avoid_wrong_number_of_dots_domains &&
-        Cookie_avoid_wrong_number_of_dots_domains->nitem > 0)
+    if (w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains &&
+        w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains->nitem > 0)
     {
-        for (tl = Cookie_avoid_wrong_number_of_dots_domains->first;
+        for (tl = w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains->first;
              tl != NULL; tl = tl->next)
         {
             if (domain_match(domain->ptr, tl->ptr))
@@ -867,17 +867,17 @@ int check_cookie_accept_domain(std::string_view domain)
     if (domain.empty())
         return 0;
 
-    if (Cookie_accept_domains && Cookie_accept_domains->nitem > 0)
+    if (w3mApp::Instance().Cookie_accept_domains && w3mApp::Instance().Cookie_accept_domains->nitem > 0)
     {
-        for (tl = Cookie_accept_domains->first; tl != NULL; tl = tl->next)
+        for (tl = w3mApp::Instance().Cookie_accept_domains->first; tl != NULL; tl = tl->next)
         {
             if (domain_match(const_cast<char *>(domain.data()), tl->ptr))
                 return 1;
         }
     }
-    if (Cookie_reject_domains && Cookie_reject_domains->nitem > 0)
+    if (w3mApp::Instance().Cookie_reject_domains && w3mApp::Instance().Cookie_reject_domains->nitem > 0)
     {
-        for (tl = Cookie_reject_domains->first; tl != NULL; tl = tl->next)
+        for (tl = w3mApp::Instance().Cookie_reject_domains->first; tl != NULL; tl = tl->next)
         {
             if (domain_match(const_cast<char *>(domain.data()), tl->ptr))
                 return 0;
