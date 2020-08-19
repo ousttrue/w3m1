@@ -69,7 +69,7 @@ struct Menu
 
 struct MenuList
 {
-    char *id;
+    const char *id;
     Menu *menu;
     MenuItem *item;
 };

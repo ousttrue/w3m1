@@ -23,25 +23,6 @@
 #include "frontend/tabbar.h"
 #include "frontend/lineinput.h"
 
-#ifdef USE_MOUSE
-#ifdef USE_GPM
-#include <gpm.h>
-static int gpm_process_menu_mouse(Gpm_Event *event, void *data);
-#endif /* USE_GPM */
-#ifdef USE_SYSMOUSE
-extern int (*sysm_handler)(int x, int y, int nbs, int obs);
-static int sysm_process_menu_mouse(int, int, int, int);
-#endif /* USE_SYSMOUSE */
-#if defined(USE_GPM) || defined(USE_SYSMOUSE)
-#define X_MOUSE_SELECTED (char)0xff
-static int X_Mouse_Selection;
-extern int do_getch();
-#define getch() do_getch()
-#endif /* defined(USE_GPM) || defined(USE_SYSMOUSE) */
-#endif /* USE_MOUSE */
-
-#ifdef USE_MENU
-
 static const char **FRAME;
 static int FRAME_WIDTH;
 static int graph_mode = false;
@@ -218,11 +199,11 @@ static int smDelTab(char c);
 /* --- MainMenu --- */
 
 static Menu MainMenu;
-#ifdef USE_M17N
+
 /* FIXME: gettextize here */
 static CharacterEncodingScheme MainMenuCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
 static int MainMenuEncode = false;
-#endif
+
 
 static MenuItem MainMenuItem[] = {
     /* type        label           variable value func     popup keys data  */
@@ -530,23 +511,15 @@ int action_menu(Menu *menu)
 
     while (1)
     {
-#ifdef USE_MOUSE
+
         if (w3mApp::Instance().use_mouse)
             mouse_active();
-#endif /* USE_MOUSE */
+
         c = getch();
-#ifdef USE_MOUSE
+
         if (w3mApp::Instance().use_mouse)
             mouse_inactive();
-#if defined(USE_GPM) || defined(USE_SYSMOUSE)
-        if (c == X_MOUSE_SELECTED)
-        {
-            mselect = X_Mouse_Selection;
-            if (mselect != MENU_NOTHING)
-                break;
-        }
-#endif /* defined(USE_GPM) || defined(USE_SYSMOUSE) */
-#endif /* USE_MOUSE */
+
         if (IS_ASCII(c))
         { /* Ascii */
             mselect = (*menu->keymap[(int)c])(c);
@@ -592,14 +565,6 @@ void popup_menu(Menu *parent, Menu *menu)
     if (menu->active)
         return;
 
-#ifdef USE_MOUSE
-#ifdef USE_GPM
-    gpm_handler = gpm_process_menu_mouse;
-#endif /* USE_GPM */
-#ifdef USE_SYSMOUSE
-    sysm_handler = sysm_process_menu_mouse;
-#endif /* USE_SYSMOUSE */
-#endif /* USE_MOUSE */
     menu->parent = parent;
     menu->select = menu->initial;
     menu->offset = 0;
@@ -620,16 +585,6 @@ void popup_menu(Menu *parent, Menu *menu)
     }
     menu->active = 0;
     CurrentMenu = parent;
-#ifdef USE_MOUSE
-#ifdef USE_GPM
-    if (CurrentMenu == NULL)
-        gpm_handler = gpm_process_mouse;
-#endif /* USE_GPM */
-#ifdef USE_SYSMOUSE
-    if (CurrentMenu == NULL)
-        sysm_handler = sysm_process_mouse;
-#endif /* USE_SYSMOUSE */
-#endif /* USE_MOUSE */
 }
 
 void guess_menu_xy(Menu *parent, int width, int *x, int *y)
@@ -1183,63 +1138,6 @@ mMouse(char c)
     return process_mMouse(btn, x, y);
 }
 
-#ifdef USE_GPM
-static int
-gpm_process_menu_mouse(Gpm_Event *event, void *data)
-{
-    int btn = MOUSE_BTN_RESET, x, y;
-    if (event->type & GPM_UP)
-        btn = MOUSE_BTN_UP;
-    else if (event->type & GPM_DOWN)
-    {
-        switch (event->buttons)
-        {
-        case GPM_B_LEFT:
-            btn = MOUSE_BTN1_DOWN;
-            break;
-        case GPM_B_MIDDLE:
-            btn = MOUSE_BTN2_DOWN;
-            break;
-        case GPM_B_RIGHT:
-            btn = MOUSE_BTN3_DOWN;
-            break;
-        }
-    }
-    else
-    {
-        GPM_DRAWPOINTER(event);
-        return 0;
-    }
-    x = event->x;
-    y = event->y;
-    X_Mouse_Selection = process_mMouse(btn, x - 1, y - 1);
-    return X_MOUSE_SELECTED;
-}
-#endif /* USE_GPM */
-
-#ifdef USE_SYSMOUSE
-static int
-sysm_process_menu_mouse(int x, int y, int nbs, int obs)
-{
-    int btn;
-    int bits;
-
-    if (obs & ~nbs)
-        btn = MOUSE_BTN_UP;
-    else if (nbs & ~obs)
-    {
-        bits = nbs & ~obs;
-        btn = bits & 0x1 ? MOUSE_BTN1_DOWN : (bits & 0x2 ? MOUSE_BTN2_DOWN : (bits & 0x4 ? MOUSE_BTN3_DOWN : 0));
-    }
-    else /* nbs == obs */
-        return 0;
-    X_Mouse_Selection = process_mMouse(btn, x, y);
-    return X_MOUSE_SELECTED;
-}
-#endif /* USE_SYSMOUSE */
-
-/* --- MenuFunctions (END) --- */
-
 /* --- MainMenu --- */
 
 void popupMenu(int x, int y, Menu *menu)
@@ -1277,7 +1175,7 @@ initSelectMenu(void)
     Str str;
     char **label;
     char *p;
-    static char *comment = " SPC for select / D for delete buffer ";
+    static const char *comment = " SPC for select / D for delete buffer ";
 
 assert(false);
 
@@ -1399,7 +1297,7 @@ initSelTabMenu(void)
     Str str;
     char **label;
     char *p;
-    static char *comment = " SPC for select / D for delete tab ";
+    static const char *comment = " SPC for select / D for delete tab ";
 
     // TODO
 
@@ -1560,9 +1458,8 @@ interpret_menu(FILE *mf)
     char *p, *s;
     int in_menu = 0, nmenu = 0, nitem = 0, type;
     MenuItem *item = NULL;
-#ifdef USE_M17N
+
     CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
-#endif
 
     while (!feof(mf))
     {
@@ -1570,9 +1467,9 @@ interpret_menu(FILE *mf)
         Strip(line);
         if (line->Size() == 0)
             continue;
-#ifdef USE_M17N
+
         line = wc_Str_conv(line, charset, w3mApp::Instance().InnerCharset);
-#endif
+
         p = line->ptr;
         s = getWord(&p);
         if (*s == '#') /* comment */
@@ -1633,7 +1530,6 @@ void initMenu(void)
     w3mMenuList[2].item = NULL;
     w3mMenuList[3].id = NULL;
 
-#ifdef USE_M17N
     if (!MainMenuEncode)
     {
         MenuItem *item;
@@ -1646,7 +1542,7 @@ void initMenu(void)
                 wc_conv(item->label, MainMenuCharset, w3mApp::Instance().InnerCharset)->ptr;
         MainMenuEncode = true;
     }
-#endif
+
     if ((mf = fopen(confFile(MENU_FILE), "rt")) != NULL)
     {
         interpret_menu(mf);
@@ -1916,7 +1812,7 @@ list_menu(const BufferPtr &buf)
     Anchor **ap;
     int i, n, nitem = 0, key = -1, two = false;
     char **label;
-    char *t;
+    const char *t;
     unsigned char c;
 
     if (!al)
@@ -2010,8 +1906,6 @@ list_menu(const BufferPtr &buf)
 
     return (key >= 0) ? ap[key] : NULL;
 }
-
-#endif /* USE_MENU */
 
 void PopupMenu()
 {
