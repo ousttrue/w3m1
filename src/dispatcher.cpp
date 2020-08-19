@@ -1,3 +1,4 @@
+#include <plog/Log.h>
 #include "dispatcher.h"
 
 #include "public.h"
@@ -37,6 +38,7 @@ extern Command EscDKeymap[];
 
 // static Hash_iv *g_keyData = NULL;
 static std::unordered_map<int, std::string> g_keyData;
+std::unordered_map<std::string, Command> g_commandMap;
 
 int prec_num()
 {
@@ -99,13 +101,6 @@ void SetPrevKey(int key)
     g_prev_key = key;
 }
 
-void KeyPressEventProc(int c)
-{
-    SetCurrentKey(c);
-    GlobalKeymap[c](&w3mApp::Instance());
-    // w3mFuncList[index].func();
-}
-
 void DispatchKey(int c)
 {
     if (IS_ASCII(c))
@@ -119,9 +114,29 @@ void DispatchKey(int c)
         }
         else
         {
+            SetCurrentKey(c);
+            auto callback = GlobalKeymap[c];
+            std::string_view key;
+            for (auto &[k, v] : g_commandMap)
+            {
+                if (v == callback)
+                {
+                    key = k;
+                    break;
+                }
+            }
+            if (key.empty())
+            {
+                LOGD << callback;
+            }
+            else
+            {
+                LOGD << key;
+            }
+            // auto command =
             set_buffer_environ(GetCurrentTab()->GetCurrentBuffer());
             GetCurrentTab()->GetCurrentBuffer()->SavePosition();
-            KeyPressEventProc((int)c);
+            callback(&w3mApp::Instance());
             set_prec_num(0);
         }
     }
@@ -374,8 +389,6 @@ void SetKeymap(char *p, int lineno, int verbose)
         }
     }
 }
-
-std::unordered_map<std::string, Command> g_commandMap;
 
 void RegisterCommand(const char *name, const char *key, const char *description, Command command)
 {

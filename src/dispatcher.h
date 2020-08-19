@@ -14,7 +14,6 @@ int CurrentIsMultiKey();
 int MultiKey(int c);
 int PrevKey();
 void SetPrevKey(int key);
-void KeyPressEventProc(int c);
 void escKeyProc(char c);
 void escbKeyProc(char c);
 void MultiKeyProc(char c);

@@ -1,6 +1,6 @@
+#include <plog/Log.h>
 #include "frontend/tab.h"
 #include "frontend/buffer.h"
-
 #include "indep.h"
 #include "file.h"
 #include "frontend/display.h"
@@ -67,6 +67,8 @@ void Tab::DeleteBack()
 
 void Tab::Push(const URL &url)
 {
+    LOGI << url.ToStr()->ptr;
+
     if (m_history.size() > m_current + 1)
     {
         // drop
