@@ -462,7 +462,7 @@ void loadImage(BufferPtr buf, int flag)
         }
         image_cache[i] = cache;
 
-        flush_tty();
+        Terminal::flush();
         if ((cache->pid = fork()) == 0)
         {
             BufferPtr b;

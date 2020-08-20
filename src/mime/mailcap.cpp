@@ -574,7 +574,7 @@ BufferPtr doExternal(const URL &url, const InputStreamPtr &stream, std::string_v
 //     if (!(mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)) &&
 //         !(mcap->flags & MAILCAP_NEEDSTERMINAL) && BackgroundExtViewer)
 //     {
-//         flush_tty();
+//         Terminal::flush();
 //         if (!fork())
 //         {
 //             setup_child(false, 0, uf->stream->FD());

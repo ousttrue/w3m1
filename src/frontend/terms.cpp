@@ -34,7 +34,7 @@ static const char *title_str = NULL;
 void reset_exit(SIGNAL_ARG);
 
 void setlinescols(void);
-void flush_tty();
+
 
 #ifndef SIGIOT
 #define SIGIOT SIGABRT
@@ -311,7 +311,7 @@ void setbcolor(int color)
 void refresh(void)
 {
     g_screen.Refresh();
-    flush_tty();
+    Terminal::flush();
 }
 
 void clear(void)
@@ -579,13 +579,13 @@ int sleep_till_anykey(int sec, int purge)
 void XTERM_ON()
 {
     fputs("\033[?1001s\033[?1000h", Terminal::file());
-    flush_tty();
+    Terminal::flush();
 }
 
 void XTERM_OFF()
 {
     fputs("\033[?1000l\033[?1001r", Terminal::file());
-    flush_tty();
+    Terminal::flush();
 }
 
 void mouse_init()
@@ -604,7 +604,7 @@ void mouse_end()
         return;
 
     Terminal::xterm_off();
-    
+
     mouseActive = 0;
 }
 
@@ -618,11 +618,6 @@ void mouse_inactive()
 {
     if (mouseActive && Terminal::is_xterm())
         mouse_end();
-}
-
-void flush_tty()
-{
-    Terminal::flush();
 }
 
 void touch_cursor()

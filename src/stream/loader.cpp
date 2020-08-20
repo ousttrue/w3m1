@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <sstream>
 #include "stream/loader.h"
-
+#include "frontend/terminal.h"
 #include "indep.h"
 #include "file.h"
 #include "mytime.h"
@@ -149,7 +149,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
         if (f)
             fclose(f);
 #endif
-        flush_tty();
+        Terminal::flush();
         pid = fork();
         if (!pid)
         {

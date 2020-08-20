@@ -1,4 +1,4 @@
-
+#include "frontend/terminal.h"
 #include "indep.h"
 #include "file.h"
 #include <string.h>
@@ -336,7 +336,7 @@ pid_t open_pipe_rw(FILE **fr, FILE **fw)
     if (fw && pipe(fdw) < 0)
         goto err1;
 
-    flush_tty();
+    Terminal::flush();
     pid = fork();
     if (pid < 0)
         goto err2;

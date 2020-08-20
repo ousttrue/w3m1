@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include "textlist.h"
-
+#include "frontend/terminal.h"
 #include "html/table.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -1122,7 +1122,7 @@ void mySystem(char *command, int background)
     if (background)
     {
 #ifndef __EMX__
-        flush_tty();
+        Terminal::flush();
         if (!fork())
         {
             setup_child(false, 0, -1);
