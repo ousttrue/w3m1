@@ -431,12 +431,12 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         pos = 42;
         i = pos + (Terminal::columns() - pos - 1) * (*trbyte) / content_length;
         Screen::Instance().Move((Terminal::lines() - 1), pos);
-        standout();
+        Screen::Instance().Enable(S_STANDOUT);
 
         Screen::Instance().Putc(' ');
         for (j = pos + 1; j <= i; j++)
             Screen::Instance().Putc('|');
-        standend();
+        Screen::Instance().Disable(S_STANDOUT);
         /* no_clrtoeol(); */
         refresh();
     }

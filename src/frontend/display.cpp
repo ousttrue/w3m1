@@ -44,7 +44,7 @@ static void effect_anchor_start()
     }
     else
     {
-        underline();
+        Screen::Instance().Enable(S_UNDERLINE);
     }
 }
 static void effect_anchor_end()
@@ -55,7 +55,7 @@ static void effect_anchor_end()
     }
     else
     {
-        underlineend();
+        Screen::Instance().Disable(S_UNDERLINE);
     }
 }
 
@@ -67,7 +67,7 @@ static void effect_image_start()
     }
     else
     {
-        standout();
+        Screen::Instance().Enable(S_STANDOUT);
     }
 }
 static void effect_image_end()
@@ -78,7 +78,7 @@ static void effect_image_end()
     }
     else
     {
-        standend();
+        Screen::Instance().Disable(S_STANDOUT);
     }
 }
 
@@ -90,7 +90,7 @@ static void effect_from_start()
     }
     else
     {
-        standout();
+        Screen::Instance().Enable(S_STANDOUT);
     }
 }
 static void effect_form_end()
@@ -101,7 +101,7 @@ static void effect_form_end()
     }
     else
     {
-        standend();
+        Screen::Instance().Disable(S_STANDOUT);
     }
 }
 
@@ -113,7 +113,7 @@ static void effect_mark_start()
     }
     else
     {
-        standout();
+        Screen::Instance().Enable(S_STANDOUT);
     }
 }
 static void effect_mark_end()
@@ -124,7 +124,7 @@ static void effect_mark_end()
     }
     else
     {
-        standend();
+        Screen::Instance().Disable(S_STANDOUT);
     }
 }
 
@@ -135,16 +135,16 @@ static void effect_active_start()
     {
         if (w3mApp::Instance().useActiveColor)
         {
-            Screen::Instance().SetFGColor(w3mApp::Instance().active_color), underline();
+            Screen::Instance().SetFGColor(w3mApp::Instance().active_color), Screen::Instance().Enable(S_UNDERLINE);
         }
         else
         {
-            underline();
+            Screen::Instance().Enable(S_UNDERLINE);
         }
     }
     else
     {
-        bold();
+        Screen::Instance().Enable(S_BOLD);
     }
 }
 
@@ -154,16 +154,16 @@ static void effect_active_end()
     {
         if (w3mApp::Instance().useActiveColor)
         {
-            (Screen::Instance().SetFGColor(w3mApp::Instance().basic_color), underlineend());
+            (Screen::Instance().SetFGColor(w3mApp::Instance().basic_color), Screen::Instance().Disable(S_UNDERLINE));
         }
         else
         {
-            underlineend();
+            Screen::Instance().Disable(S_UNDERLINE);
         }
     }
     else
     {
-        boldend();
+        Screen::Instance().Disable(S_BOLD);
     }
 }
 
@@ -255,22 +255,22 @@ void clear_effect()
     if (somode)
     {
         somode = false;
-        standend();
+        Screen::Instance().Disable(S_STANDOUT);
     }
     if (ulmode)
     {
         ulmode = false;
-        underlineend();
+        Screen::Instance().Disable(S_UNDERLINE);
     }
     if (bomode)
     {
         bomode = false;
-        boldend();
+        Screen::Instance().Disable(S_BOLD);
     }
     if (emph_mode)
     {
         emph_mode = false;
-        boldend();
+        Screen::Instance().Disable(S_BOLD);
     }
 
     if (anch_mode)
@@ -306,7 +306,7 @@ void clear_effect()
     if (graph_mode)
     {
         graph_mode = false;
-        graphend();
+        Screen::Instance().Disable(S_GRAPHICS);
     }
 
     if (color_mode)
@@ -684,10 +684,10 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
 static void do_effects(Lineprop m)
 {
     /* effect end */
-    do_effect2(PE_UNDER, ulmode, underline(), underlineend());
-    do_effect2(PE_STAND, somode, standout(), standend());
-    do_effect2(PE_BOLD, bomode, bold(), boldend());
-    do_effect2(PE_EMPH, emph_mode, bold(), boldend());
+    do_effect2(PE_UNDER, ulmode, Screen::Instance().Enable(S_UNDERLINE), Screen::Instance().Disable(S_UNDERLINE));
+    do_effect2(PE_STAND, somode, Screen::Instance().Enable(S_STANDOUT), Screen::Instance().Disable(S_STANDOUT));
+    do_effect2(PE_BOLD, bomode, Screen::Instance().Enable(S_BOLD), Screen::Instance().Disable(S_BOLD));
+    do_effect2(PE_EMPH, emph_mode, Screen::Instance().Enable(S_BOLD), Screen::Instance().Disable(S_BOLD));
     do_effect2(PE_ANCHOR, anch_mode, effect_anchor_start(), effect_anchor_end());
     do_effect2(PE_IMAGE, imag_mode, effect_image_start(), effect_image_end());
     do_effect2(PE_FORM, form_mode, effect_from_start(), effect_form_end());
@@ -698,15 +698,15 @@ static void do_effects(Lineprop m)
     do_effect2(PE_MARK, mark_mode, effect_mark_start(), effect_mark_end());
     if (graph_mode)
     {
-        graphend();
+        Screen::Instance().Disable(S_GRAPHICS);
         graph_mode = false;
     }
 
     /* effect start */
-    do_effect1(PE_UNDER, ulmode, underline(), underlineend());
-    do_effect1(PE_STAND, somode, standout(), standend());
-    do_effect1(PE_BOLD, bomode, bold(), boldend());
-    do_effect1(PE_EMPH, emph_mode, bold(), boldend());
+    do_effect1(PE_UNDER, ulmode, Screen::Instance().Enable(S_UNDERLINE), Screen::Instance().Disable(S_UNDERLINE));
+    do_effect1(PE_STAND, somode, Screen::Instance().Enable(S_STANDOUT), Screen::Instance().Disable(S_STANDOUT));
+    do_effect1(PE_BOLD, bomode, Screen::Instance().Enable(S_BOLD), Screen::Instance().Disable(S_BOLD));
+    do_effect1(PE_EMPH, emph_mode, Screen::Instance().Enable(S_BOLD), Screen::Instance().Disable(S_BOLD));
     do_effect1(PE_ANCHOR, anch_mode, effect_anchor_start(), effect_anchor_end());
     do_effect1(PE_IMAGE, imag_mode, effect_image_start(), effect_image_end());
     do_effect1(PE_FORM, form_mode, effect_from_start(), effect_form_end());
@@ -765,7 +765,7 @@ void addChar(char c, Lineprop mode)
         {
             if (!graph_mode)
             {
-                graphstart();
+                Screen::Instance().Enable(S_GRAPHICS);
                 graph_mode = true;
             }
 #ifdef USE_M17N
@@ -1007,7 +1007,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
                 auto b = t->GetCurrentBuffer();
                 Screen::Instance().Move(t->Y(), t->Left());
                 if (t == GetCurrentTab())
-                    bold();
+                    Screen::Instance().Enable(S_BOLD);
                 Screen::Instance().Putc('[');
                 auto l = t->Width() - get_strwidth(b->buffername.c_str());
                 if (l < 0)
@@ -1024,7 +1024,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
                 Screen::Instance().Move(t->Y(), t->Right());
                 Screen::Instance().Putc(']');
                 if (t == GetCurrentTab())
-                    boldend();
+                    Screen::Instance().Disable(S_BOLD);
             });
             Screen::Instance().Move(GetTabbarHeight(), 0);
             for (int i = 0; i < Terminal::columns(); i++)
@@ -1062,9 +1062,9 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         delayed_msg = NULL;
         refresh();
     }
-    standout();
+    Screen::Instance().Enable(S_STANDOUT);
     message(msg->c_str(), buf->rect);
-    standend();
+    Screen::Instance().Disable(S_STANDOUT);
     term_title(conv_to_system(buf->buffername.c_str()));
     refresh();
 

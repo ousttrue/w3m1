@@ -14,7 +14,7 @@
 #include "frontend/tabbar.h"
 #include "history.h"
 
-#define STR_LEN	1024
+#define STR_LEN 1024
 #define CLEN (Terminal::columns() - 2)
 
 static Str strBuf;
@@ -30,32 +30,60 @@ static int NCFileBuf;
 static int NCFileOffset;
 
 static void insertself(char c),
-_mvR(void), _mvL(void), _mvRw(void), _mvLw(void), delC(void), insC(void),
-_mvB(void), _mvE(void), _enter(void), _quo(void), _bs(void), _bsw(void),
-killn(void), killb(void), _inbrk(void), _esc(void), _editor(void),
-_prev(void), _next(void), _compl(void), _tcompl(void),
-_dcompl(void), _rdcompl(void), _rcompl(void);
+    _mvR(void), _mvL(void), _mvRw(void), _mvLw(void), delC(void), insC(void),
+    _mvB(void), _mvE(void), _enter(void), _quo(void), _bs(void), _bsw(void),
+    killn(void), killb(void), _inbrk(void), _esc(void), _editor(void),
+    _prev(void), _next(void), _compl(void), _tcompl(void),
+    _dcompl(void), _rdcompl(void), _rcompl(void);
 #ifdef __EMX__
 static int getcntrl(void);
 #endif
 
 static int terminated(unsigned char c);
-#define iself ((void(*)())insertself)
+#define iself ((void (*)())insertself)
 
 static void next_compl(int next);
 static void next_dcompl(int next);
 static Str doComplete(Str ifn, int *status, int next);
 
 /* *INDENT-OFF* */
-void (*InputKeymap[32]) () ={
+void (*InputKeymap[32])() = {
     /*  C-@     C-a     C-b     C-c     C-d     C-e     C-f     C-g     */
-    _compl, _mvB, _mvL, _inbrk, delC, _mvE, _mvR, _inbrk,
+    _compl,
+    _mvB,
+    _mvL,
+    _inbrk,
+    delC,
+    _mvE,
+    _mvR,
+    _inbrk,
     /*  C-h     C-i     C-j     C-k     C-l     C-m     C-n     C-o     */
-    _bs, iself, _enter, killn, iself, _enter, _next, _editor,
+    _bs,
+    iself,
+    _enter,
+    killn,
+    iself,
+    _enter,
+    _next,
+    _editor,
     /*  C-p     C-q     C-r     C-s     C-t     C-u     C-v     C-w     */
-    _prev, _quo, _bsw, iself, _mvLw, killb, _quo, _bsw,
+    _prev,
+    _quo,
+    _bsw,
+    iself,
+    _mvLw,
+    killb,
+    _quo,
+    _bsw,
     /*  C-x     C-y     C-z     C-[     C-\     C-]     C-^     C-_     */
-    _tcompl, _mvRw, iself, _esc, iself, iself, iself, iself,
+    _tcompl,
+    _mvRw,
+    iself,
+    _esc,
+    iself,
+    iself,
+    iself,
+    iself,
 };
 /* *INDENT-ON* */
 
@@ -82,7 +110,8 @@ static void ins_char(char c);
 static int
 getcntrl(void)
 {
-    switch (getch()) {
+    switch (getch())
+    {
     case K_DEL:
         return CTRL_D;
     case K_LEFT:
@@ -116,7 +145,8 @@ addPasswd(char *p, Lineprop *pr, int len, int offset, int limit)
     ncol = calcPosition({p, pr, len}, len, 0, CP_AUTO);
     if (ncol > offset + limit)
         ncol = offset + limit;
-    if (offset) {
+    if (offset)
+    {
         addChar('{');
         rcol = offset + 1;
     }
@@ -129,45 +159,50 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
 {
     int i = 0, rcol = 0, ncol, delta = 1;
 
-    if (offset) {
-        for (i = 0; i < len; i++) {
+    if (offset)
+    {
+        for (i = 0; i < len; i++)
+        {
             if (calcPosition({p, pr, len}, i, 0, CP_AUTO) > offset)
                 break;
         }
         if (i >= len)
             return;
-        #ifdef USE_M17N
+#ifdef USE_M17N
         while (pr[i] & PC_WCHAR2)
             i++;
-        #endif
+#endif
         addChar('{');
         rcol = offset + 1;
         ncol = calcPosition({p, pr, len}, i, 0, CP_AUTO);
         for (; rcol < ncol; rcol++)
             addChar(' ');
-        }
-    for (; i < len; i += delta) {
-        #ifdef USE_M17N
+    }
+    for (; i < len; i += delta)
+    {
+#ifdef USE_M17N
         delta = wtf_len((uint8_t *)&p[i]);
-        #endif
+#endif
         ncol = calcPosition({p, pr, len}, i + delta, 0, CP_AUTO);
         if (ncol - offset > limit)
             break;
-        if (p[i] == '\t') {
+        if (p[i] == '\t')
+        {
             for (; rcol < ncol; rcol++)
                 addChar(' ');
             continue;
         }
-        else {
-            #ifdef USE_M17N
+        else
+        {
+#ifdef USE_M17N
             addMChar(&p[i], pr[i], delta);
-            #else
+#else
             addChar(p[i], pr[i]);
-            #endif
+#endif
         }
         rcol = ncol;
     }
-    }
+}
 
 #ifdef USE_M17N
 static void
@@ -179,10 +214,12 @@ ins_char(Str str)
 
     if (CLen + str->Size() >= STR_LEN)
         return;
-    while (p < ep) {
+    while (p < ep)
+    {
         len = get_mclen(p);
         ctype = get_mctype(*p);
-        if (is_passwd) {
+        if (is_passwd)
+        {
             if (ctype & PC_CTRL)
                 ctype = PC_ASCII;
             if (ctype & PC_UNKNOWN)
@@ -192,9 +229,11 @@ ins_char(Str str)
         strBuf->ptr[CPos] = *(p++);
         strProp[CPos] = ctype;
         CPos++;
-        if (--len) {
+        if (--len)
+        {
             ctype = (ctype & ~PC_WCHAR1) | PC_WCHAR2;
-            while (len--) {
+            while (len--)
+            {
                 insC();
                 strBuf->ptr[CPos] = *(p++);
                 strProp[CPos] = ctype;
@@ -210,10 +249,12 @@ _esc(void)
 {
     char c;
 
-    switch (c = getch()) {
+    switch (c = getch())
+    {
     case '[':
     case 'O':
-        switch (c = getch()) {
+        switch (c = getch())
+        {
         case 'A':
             _prev();
             break;
@@ -230,7 +271,8 @@ _esc(void)
         break;
     case CTRL_I:
     case ' ':
-        if (w3mApp::Instance().emacs_like_lineedit) {
+        if (w3mApp::Instance().emacs_like_lineedit)
+        {
             _rdcompl();
             cm_clear = false;
             need_redraw = true;
@@ -255,19 +297,20 @@ _esc(void)
         if (w3mApp::Instance().emacs_like_lineedit)
             _bsw();
         break;
-        #ifdef USE_M17N
+#ifdef USE_M17N
     default:
         if (wc_char_conv(ESC_CODE) == NULL && wc_char_conv(c) == NULL)
             i_quote = true;
-        #endif
-        }
+#endif
     }
+}
 
 static void insC()
 {
     strBuf->Insert(CPos, ' ');
     CLen = strBuf->Size();
-    for (int i = CLen; i > CPos; i--) {
+    for (int i = CLen; i > CPos; i--)
+    {
         strProp[i] = strProp[i - 1];
     }
 }
@@ -280,11 +323,12 @@ delC(void)
 
     if (CLen == CPos)
         return;
-    #ifdef USE_M17N
+#ifdef USE_M17N
     while (i + delta < CLen && strProp[i + delta] & PC_WCHAR2)
         delta++;
-    #endif
-    for (i = CPos; i < CLen; i++) {
+#endif
+    for (i = CPos; i < CLen; i++)
+    {
         strProp[i] = strProp[i + delta];
     }
     strBuf->Delete(CPos, delta);
@@ -296,39 +340,41 @@ _mvL(void)
 {
     if (CPos > 0)
         CPos--;
-    #ifdef USE_M17N
+#ifdef USE_M17N
     while (CPos > 0 && strProp[CPos] & PC_WCHAR2)
         CPos--;
-    #endif
+#endif
 }
 
 static void
 _mvLw(void)
 {
     int first = 1;
-    while (CPos > 0 && (first || !terminated(strBuf->ptr[CPos - 1]))) {
+    while (CPos > 0 && (first || !terminated(strBuf->ptr[CPos - 1])))
+    {
         CPos--;
         first = 0;
-        #ifdef USE_M17N
+#ifdef USE_M17N
         if (CPos > 0 && strProp[CPos] & PC_WCHAR2)
             CPos--;
-        #endif
+#endif
         if (!move_word)
             break;
-}
+    }
 }
 
 static void
 _mvRw(void)
 {
     int first = 1;
-    while (CPos < CLen && (first || !terminated(strBuf->ptr[CPos - 1]))) {
+    while (CPos < CLen && (first || !terminated(strBuf->ptr[CPos - 1])))
+    {
         CPos++;
         first = 0;
-        #ifdef USE_M17N
+#ifdef USE_M17N
         if (CPos < CLen && strProp[CPos] & PC_WCHAR2)
             CPos++;
-        #endif
+#endif
         if (!move_word)
             break;
     }
@@ -339,26 +385,28 @@ _mvR(void)
 {
     if (CPos < CLen)
         CPos++;
-    #ifdef USE_M17N
+#ifdef USE_M17N
     while (CPos < CLen && strProp[CPos] & PC_WCHAR2)
         CPos++;
-    #endif
+#endif
 }
 
 static void
 _bs(void)
 {
-    if (CPos > 0) {
+    if (CPos > 0)
+    {
         _mvL();
         delC();
     }
-    }
+}
 
 static void
 _bsw(void)
 {
     int t = 0;
-    while (CPos > 0 && !t) {
+    while (CPos > 0 && !t)
+    {
         _mvL();
         t = (move_word && terminated(strBuf->ptr[CPos - 1]));
         delC();
@@ -465,12 +513,16 @@ next_compl(int next)
     if (cm_mode == CPL_NEVER || cm_mode & CPL_OFF)
         return;
     cm_clear = false;
-    if (!cm_next) {
-        if (cm_mode & CPL_ALWAYS) {
+    if (!cm_next)
+    {
+        if (cm_mode & CPL_ALWAYS)
+        {
             b = 0;
         }
-        else {
-            for (b = CPos - 1; b >= 0; b--) {
+        else
+        {
+            for (b = CPos - 1; b >= 0; b--)
+            {
                 if ((strBuf->ptr[b] == ' ' || strBuf->ptr[b] == CTRL_I) &&
                     !((b > 0) && strBuf->ptr[b - 1] == '\\'))
                     break;
@@ -483,7 +535,8 @@ next_compl(int next)
         CAfterBuf = strBuf->Substr(a, strBuf->Size() - a);
         s = doComplete(buf, &status, next);
     }
-    else {
+    else
+    {
         s = doComplete(strBuf, &status, next);
     }
     if (next == 0)
@@ -492,7 +545,7 @@ next_compl(int next)
     if (status != CPL_OK && status != CPL_MENU)
     {
         // bell
-        Terminal::write1(7);        
+        Terminal::write1(7);
     }
 
     if (status == CPL_FAIL)
@@ -533,32 +586,38 @@ next_dcompl(int next)
     cm_disp_clear = false;
     if (GetCurrentTab())
         displayCurrentbuf(B_FORCE_REDRAW);
-    if ((Terminal::lines()-1) >= 3) {
+    if ((Terminal::lines() - 1) >= 3)
+    {
         comment = true;
-        nline = (Terminal::lines()-1) - 2;
+        nline = (Terminal::lines() - 1) - 2;
     }
-    else if ((Terminal::lines()-1)) {
+    else if ((Terminal::lines() - 1))
+    {
         comment = false;
-        nline = (Terminal::lines()-1);
+        nline = (Terminal::lines() - 1);
     }
-    else {
+    else
+    {
         return;
     }
 
-    if (cm_disp_next >= 0) {
-        if (next == 1) {
+    if (cm_disp_next >= 0)
+    {
+        if (next == 1)
+        {
             cm_disp_next += col * nline;
             if (cm_disp_next >= NCFileBuf)
                 cm_disp_next = 0;
-}
-        else if (next == -1) {
+        }
+        else if (next == -1)
+        {
             cm_disp_next -= col * nline;
             if (cm_disp_next < 0)
                 cm_disp_next = 0;
         }
         row = (NCFileBuf - cm_disp_next + col - 1) / col;
         goto disp_next;
-}
+    }
 
     cm_next = false;
     next_compl(0);
@@ -569,7 +628,8 @@ next_dcompl(int next)
     d = Str_conv_to_system(CDirBuf->Clone());
     if (d->Size() > 0 && d->Back() != '/')
         d->Push('/');
-    if (cm_mode & CPL_URL && d->ptr[0] == 'f') {
+    if (cm_mode & CPL_URL && d->ptr[0] == 'f')
+    {
         p = d->ptr;
         if (strncmp(p, "file://localhost/", 17) == 0)
             p = &p[16];
@@ -581,7 +641,8 @@ next_dcompl(int next)
     }
 
     len = 0;
-    for (i = 0; i < NCFileBuf; i++) {
+    for (i = 0; i < NCFileBuf; i++)
+    {
         n = strlen(CFileBuf[i]) + 3;
         if (len < n)
             len = n;
@@ -591,38 +652,46 @@ next_dcompl(int next)
         col = 1;
     row = (NCFileBuf + col - 1) / col;
 
-    disp_next:
-    if (comment) {
-        if (row > nline) {
+disp_next:
+    if (comment)
+    {
+        if (row > nline)
+        {
             row = nline;
             y = 0;
         }
         else
             y = nline - row + 1;
     }
-    else {
-        if (row >= nline) {
+    else
+    {
+        if (row >= nline)
+        {
             row = nline;
             y = 0;
         }
         else
             y = nline - row - 1;
     }
-    if (y) {
+    if (y)
+    {
         Screen::Instance().Move(y - 1, 0);
         clrtoeolx();
     }
-    if (comment) {
+    if (comment)
+    {
         Screen::Instance().Move(y, 0);
         clrtoeolx();
-        bold();
+        Screen::Instance().Enable(S_BOLD);
         /* FIXME: gettextize? */
         addstr("----- Completion list -----");
-        boldend();
+        Screen::Instance().Disable(S_BOLD);
         y++;
     }
-    for (i = 0; i < row; i++) {
-        for (j = 0; j < col; j++) {
+    for (i = 0; i < row; i++)
+    {
+        for (j = 0; j < col; j++)
+        {
             n = cm_disp_next + j * row + i;
             if (n >= NCFileBuf)
                 break;
@@ -636,31 +705,32 @@ next_dcompl(int next)
         }
         y++;
     }
-    if (comment && y == (Terminal::lines()-1) - 1) {
+    if (comment && y == (Terminal::lines() - 1) - 1)
+    {
         Screen::Instance().Move(y, 0);
         clrtoeolx();
-        bold();
+        Screen::Instance().Enable(S_BOLD);
         if (w3mApp::Instance().emacs_like_lineedit)
             /* FIXME: gettextize? */
             addstr("----- Press TAB to continue -----");
         else
             /* FIXME: gettextize? */
             addstr("----- Press CTRL-D to continue -----");
-        boldend();
+        Screen::Instance().Disable(S_BOLD);
     }
 }
 
-
-Str
-escape_spaces(Str s)
+Str escape_spaces(Str s)
 {
     Str tmp = NULL;
     char *p;
 
     if (s == NULL)
         return s;
-    for (p = s->ptr; *p; p++) {
-        if (*p == ' ' || *p == CTRL_I) {
+    for (p = s->ptr; *p; p++)
+    {
+        if (*p == ' ' || *p == CTRL_I)
+        {
             if (tmp == NULL)
                 tmp = Strnew_charp_n(s->ptr, (int)(p - s->ptr));
             tmp->Push('\\');
@@ -673,21 +743,22 @@ escape_spaces(Str s)
     return s;
 }
 
-
-Str
-unescape_spaces(Str s)
+Str unescape_spaces(Str s)
 {
     Str tmp = NULL;
     char *p;
 
     if (s == NULL)
         return s;
-    for (p = s->ptr; *p; p++) {
-        if (*p == '\\' && (*(p + 1) == ' ' || *(p + 1) == CTRL_I)) {
+    for (p = s->ptr; *p; p++)
+    {
+        if (*p == '\\' && (*(p + 1) == ' ' || *(p + 1) == CTRL_I))
+        {
             if (tmp == NULL)
                 tmp = Strnew_charp_n(s->ptr, (int)(p - s->ptr));
         }
-        else {
+        else
+        {
             if (tmp)
                 tmp->Push(*p);
         }
@@ -706,7 +777,8 @@ doComplete(Str ifn, int *status, int next)
     Directory *dir;
     struct stat st;
 
-    if (!cm_next) {
+    if (!cm_next)
+    {
         NCFileBuf = 0;
         ifn = Str_conv_to_system(ifn);
         if (cm_mode & CPL_ON)
@@ -715,27 +787,32 @@ doComplete(Str ifn, int *status, int next)
         while (CompleteBuf->Back() != '/' && CompleteBuf->Size() > 0)
             CompleteBuf->Pop(1);
         CDirBuf = CompleteBuf->Clone();
-        if (cm_mode & CPL_URL) {
+        if (cm_mode & CPL_URL)
+        {
             if (strncmp(CompleteBuf->ptr, "file://localhost/", 17) == 0)
                 CompleteBuf->Delete(0, 16);
             else if (strncmp(CompleteBuf->ptr, "file:///", 8) == 0)
                 CompleteBuf->Delete(0, 7);
             else if (strncmp(CompleteBuf->ptr, "file:/", 6) == 0 &&
-                CompleteBuf->ptr[6] != '/')
+                     CompleteBuf->ptr[6] != '/')
                 CompleteBuf->Delete(0, 5);
-            else {
+            else
+            {
                 CompleteBuf = ifn->Clone();
                 *status = CPL_FAIL;
                 return Str_conv_to_system(CompleteBuf);
             }
         }
-        if (CompleteBuf->Size() == 0) {
+        if (CompleteBuf->Size() == 0)
+        {
             CompleteBuf->Push('.');
         }
-        if (CompleteBuf->Back() == '/' && CompleteBuf->Size() > 1) {
+        if (CompleteBuf->Back() == '/' && CompleteBuf->Size() > 1)
+        {
             CompleteBuf->Pop(1);
         }
-        if ((d = opendir(expandPath(CompleteBuf->ptr))) == NULL) {
+        if ((d = opendir(expandPath(CompleteBuf->ptr))) == NULL)
+        {
             CompleteBuf = ifn->Clone();
             *status = CPL_FAIL;
             if (cm_mode & CPL_ON)
@@ -745,30 +822,35 @@ doComplete(Str ifn, int *status, int next)
         fn = lastFileName(ifn->ptr);
         fl = strlen(fn);
         CFileName = Strnew();
-        for (;;) {
+        for (;;)
+        {
             dir = readdir(d);
             if (dir == NULL)
                 break;
-            if (fl == 0
-                && (!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")))
+            if (fl == 0 && (!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")))
                 continue;
-            if (!strncmp(dir->d_name, fn, fl)) {	/* match */
+            if (!strncmp(dir->d_name, fn, fl))
+            { /* match */
                 NCFileBuf++;
                 CFileBuf = New_Reuse(char *, CFileBuf, NCFileBuf);
                 CFileBuf[NCFileBuf - 1] =
                     NewAtom_N(char, strlen(dir->d_name) + 1);
                 strcpy(CFileBuf[NCFileBuf - 1], dir->d_name);
-                if (NCFileBuf == 1) {
+                if (NCFileBuf == 1)
+                {
                     CFileName = Strnew(dir->d_name);
                 }
-                else {
-                    for (i = 0; CFileName->ptr[i] == dir->d_name[i]; i++);
+                else
+                {
+                    for (i = 0; CFileName->ptr[i] == dir->d_name[i]; i++)
+                        ;
                     CFileName->Truncate(i);
                 }
             }
         }
         closedir(d);
-        if (NCFileBuf == 0) {
+        if (NCFileBuf == 0)
+        {
             CompleteBuf = ifn->Clone();
             *status = CPL_FAIL;
             if (cm_mode & CPL_ON)
@@ -777,15 +859,18 @@ doComplete(Str ifn, int *status, int next)
         }
         qsort(CFileBuf, NCFileBuf, sizeof(CFileBuf[0]), strCmp);
         NCFileOffset = 0;
-        if (NCFileBuf >= 2) {
+        if (NCFileBuf >= 2)
+        {
             cm_next = true;
             *status = CPL_AMBIG;
         }
-        else {
+        else
+        {
             *status = CPL_OK;
         }
     }
-    else {
+    else
+    {
         CFileName = Strnew(CFileBuf[NCFileOffset]);
         NCFileOffset = (NCFileOffset + next + NCFileBuf) % NCFileBuf;
         *status = CPL_MENU;
@@ -794,9 +879,11 @@ doComplete(Str ifn, int *status, int next)
     if (CompleteBuf->Size() && CompleteBuf->Back() != '/')
         CompleteBuf->Push('/');
     CompleteBuf->Push(CFileName);
-    if (*status != CPL_AMBIG) {
+    if (*status != CPL_AMBIG)
+    {
         p = CompleteBuf->ptr;
-        if (cm_mode & CPL_URL) {
+        if (cm_mode & CPL_URL)
+        {
             if (strncmp(p, "file://localhost/", 17) == 0)
                 p = &p[16];
             else if (strncmp(p, "file:///", 8) == 0)
@@ -820,12 +907,14 @@ _prev(void)
 
     if (!use_hist)
         return;
-    if (strCurrentBuf) {
+    if (strCurrentBuf)
+    {
         p = prevHist(hist);
         if (p == NULL)
             return;
     }
-    else {
+    else
+    {
         p = lastHist(hist);
         if (p == NULL)
             return;
@@ -849,12 +938,14 @@ _next(void)
     if (strCurrentBuf == NULL)
         return;
     p = nextHist(hist);
-    if (p) {
+    if (p)
+    {
         if (w3mApp::Instance().DecodeURL && (cm_mode & CPL_URL))
             p = url_unquote_conv(p, WC_CES_NONE);
         strBuf = Strnew(p);
     }
-    else {
+    else
+    {
         strBuf = strCurrentBuf;
         strCurrentBuf = NULL;
     }
@@ -869,32 +960,35 @@ setStrType(Str str, Lineprop *prop)
     char *p = str->ptr, *ep = p + str->Size();
     int i, len = 1;
 
-    for (i = 0; p < ep;) {
-        #ifdef USE_M17N
+    for (i = 0; p < ep;)
+    {
+#ifdef USE_M17N
         len = get_mclen(p);
-        #endif
+#endif
         if (i + len > STR_LEN)
             break;
         ctype = get_mctype(*p);
-        if (is_passwd) {
+        if (is_passwd)
+        {
             if (ctype & PC_CTRL)
                 ctype = PC_ASCII;
-            #ifdef USE_M17N
+#ifdef USE_M17N
             if (ctype & PC_UNKNOWN)
                 ctype = PC_WCHAR1;
-            #endif
+#endif
         }
         prop[i++] = ctype;
-        #ifdef USE_M17N
+#ifdef USE_M17N
         p += len;
-        if (--len) {
+        if (--len)
+        {
             ctype = (ctype & ~PC_WCHAR1) | PC_WCHAR2;
             while (len--)
                 prop[i++] = ctype;
         }
-        #else
+#else
         p++;
-        #endif
+#endif
     }
     return i;
 }
@@ -902,11 +996,13 @@ setStrType(Str str, Lineprop *prop)
 static int
 terminated(unsigned char c)
 {
-    int termchar[] ={ '/', '&', '?', ' ', -1 };
+    int termchar[] = {'/', '&', '?', ' ', -1};
     int *tp;
 
-    for (tp = termchar; *tp > 0; tp++) {
-        if (c == *tp) {
+    for (tp = termchar; *tp > 0; tp++)
+    {
+        if (c == *tp)
+        {
             return 1;
         }
     }
@@ -930,7 +1026,8 @@ _editor(void)
     input_textarea(&fi);
 
     strBuf = Strnew();
-    for (p = fi.value->ptr; *p; p++) {
+    for (p = fi.value->ptr; *p; p++)
+    {
         if (*p == '\r' || *p == '\n')
             continue;
         strBuf->Push(*p);
@@ -941,34 +1038,39 @@ _editor(void)
 }
 
 char *
-inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag, Hist *hist,
-    int (*incrfunc) (int ch, Str str, Lineprop *prop))
+inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag, Hist *hist,
+                    int (*incrfunc)(int ch, Str str, Lineprop *prop))
 {
     int opos, x, y, lpos, rpos, epos;
     unsigned char c;
     char *p;
-    #ifdef USE_M17N
+#ifdef USE_M17N
     Str tmp;
-    #endif
+#endif
 
     is_passwd = false;
     move_word = true;
 
     CurrentHist = hist;
-    if (hist != NULL) {
+    if (hist != NULL)
+    {
         use_hist = true;
         strCurrentBuf = NULL;
     }
-    else {
+    else
+    {
         use_hist = false;
     }
-    if (flag & IN_URL) {
+    if (flag & IN_URL)
+    {
         cm_mode = CPL_ALWAYS | CPL_URL;
     }
-    else if (flag & IN_FILENAME) {
+    else if (flag & IN_FILENAME)
+    {
         cm_mode = CPL_ALWAYS;
     }
-    else if (flag & IN_PASSWORD) {
+    else if (flag & IN_PASSWORD)
+    {
         cm_mode = CPL_NEVER;
         is_passwd = true;
         move_word = false;
@@ -985,18 +1087,20 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
     rpos = epos * 2 / 3;
     offset = 0;
 
-    if (def_str) {
+    if (def_str)
+    {
         strBuf = Strnew(def_str);
         CLen = CPos = setStrType(strBuf, strProp);
     }
-    else {
+    else
+    {
         strBuf = Strnew();
         CLen = CPos = 0;
     }
 
-    #ifdef SUPPORT_WIN9X_CONSOLE_MBCS
+#ifdef SUPPORT_WIN9X_CONSOLE_MBCS
     enable_win9x_console_input();
-    #endif
+#endif
     i_cont = true;
     i_broken = false;
     i_quote = false;
@@ -1006,69 +1110,79 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
 
     wc_char_conv_init(wc_guess_8bit_charset(w3mApp::Instance().DisplayCharset), w3mApp::Instance().InnerCharset);
 
-    do {
+    do
+    {
         x = calcPosition({strBuf->ptr, strProp, CLen}, CPos, 0, CP_FORCE);
-        if (x - rpos > offset) {
+        if (x - rpos > offset)
+        {
             y = calcPosition({strBuf->ptr, strProp, CLen}, CLen, 0, CP_AUTO);
             if (y - epos > x - rpos)
                 offset = x - rpos;
             else if (y - epos > 0)
                 offset = y - epos;
         }
-        else if (x - lpos < offset) {
+        else if (x - lpos < offset)
+        {
             if (x - lpos > 0)
                 offset = x - lpos;
             else
                 offset = 0;
         }
-        Screen::Instance().Move(Terminal::lines()-1, 0);
+        Screen::Instance().Move(Terminal::lines() - 1, 0);
         addstr(prompt);
         if (is_passwd)
             addPasswd(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         else
             addStr(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         clrtoeolx();
-        Screen::Instance().Move((Terminal::lines()-1), opos + x - offset);
+        Screen::Instance().Move((Terminal::lines() - 1), opos + x - offset);
         refresh();
 
-        next_char:
+    next_char:
         c = getch();
-        #ifdef __EMX__
-        if (c == 0) {
+#ifdef __EMX__
+        if (c == 0)
+        {
             if (!(c = getcntrl()))
                 goto next_char;
         }
-        #endif
+#endif
         cm_clear = true;
         cm_disp_clear = true;
         if (!i_quote &&
             (((cm_mode & CPL_ALWAYS) && (c == CTRL_I || c == ' ')) ||
-                ((cm_mode & CPL_ON) && (c == CTRL_I)))) {
-            if (w3mApp::Instance().emacs_like_lineedit && cm_next) {
+             ((cm_mode & CPL_ON) && (c == CTRL_I))))
+        {
+            if (w3mApp::Instance().emacs_like_lineedit && cm_next)
+            {
                 _dcompl();
                 need_redraw = true;
             }
-            else {
+            else
+            {
                 _compl();
                 cm_disp_next = -1;
             }
         }
         else if (!i_quote && CLen == CPos &&
-            (cm_mode & CPL_ALWAYS || cm_mode & CPL_ON) && c == CTRL_D) {
-            if (!w3mApp::Instance().emacs_like_lineedit) {
+                 (cm_mode & CPL_ALWAYS || cm_mode & CPL_ON) && c == CTRL_D)
+        {
+            if (!w3mApp::Instance().emacs_like_lineedit)
+            {
                 _dcompl();
                 need_redraw = true;
             }
         }
-        else if (!i_quote && c == DEL_CODE) {
+        else if (!i_quote && c == DEL_CODE)
+        {
             _bs();
             cm_next = false;
             cm_disp_next = -1;
         }
-        else if (!i_quote && c < 0x20) {	/* Control code */
-            if (incrfunc == NULL
-                || (c = incrfunc((int)c, strBuf, strProp)) < 0x20)
-                (*InputKeymap[(int)c]) ();
+        else if (!i_quote && c < 0x20)
+        { /* Control code */
+            if (incrfunc == NULL || (c = incrfunc((int)c, strBuf, strProp)) < 0x20)
+                (*InputKeymap[(int)c])();
             if (incrfunc && c != (unsigned char)-1 && c != CTRL_J)
                 incrfunc(-1, strBuf, strProp);
             if (cm_clear)
@@ -1076,10 +1190,12 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
             if (cm_disp_clear)
                 cm_disp_next = -1;
         }
-        #ifdef USE_M17N
-        else {
+#ifdef USE_M17N
+        else
+        {
             tmp = wc_char_conv(c);
-            if (tmp == NULL) {
+            if (tmp == NULL)
+            {
                 i_quote = true;
                 goto next_char;
             }
@@ -1092,8 +1208,9 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
             if (incrfunc)
                 incrfunc(-1, strBuf, strProp);
         }
-        #else
-        else {
+#else
+        else
+        {
             i_quote = false;
             cm_next = false;
             cm_disp_next = -1;
@@ -1109,30 +1226,33 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
             if (incrfunc)
                 incrfunc(-1, strBuf, strProp);
         }
-        #endif
+#endif
         if (CLen && (flag & IN_CHAR))
             break;
     } while (i_cont);
 
-    if (GetCurrentTab()) {
+    if (GetCurrentTab())
+    {
         if (need_redraw)
             displayCurrentbuf(B_FORCE_REDRAW);
     }
 
-    #ifdef SUPPORT_WIN9X_CONSOLE_MBCS
+#ifdef SUPPORT_WIN9X_CONSOLE_MBCS
     disable_win9x_console_input();
-    #endif
+#endif
 
     if (i_broken)
         return NULL;
 
-    Screen::Instance().Move((Terminal::lines()-1), 0);
+    Screen::Instance().Move((Terminal::lines() - 1), 0);
     refresh();
     p = strBuf->ptr;
-    if (flag & (IN_FILENAME | IN_COMMAND)) {
+    if (flag & (IN_FILENAME | IN_COMMAND))
+    {
         SKIP_BLANKS(&p);
     }
-    if (use_hist && !(flag & IN_URL) && *p != '\0') {
+    if (use_hist && !(flag & IN_URL) && *p != '\0')
+    {
         char *q = lastHist(hist);
         if (!q || strcmp(q, p))
             pushHist(hist, p);

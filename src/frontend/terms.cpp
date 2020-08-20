@@ -123,66 +123,6 @@ void set_cc(int spec, int val)
 }
 #endif /* not HAVE_SGTTY_H */
 
-void wrap(void)
-{
-    Screen::Instance().Wrap();
-}
-
-void touch_column(int col)
-{
-    Screen::Instance().TouchColumn(col);
-}
-
-void touch_line(void)
-{
-    Screen::Instance().TouchCurrentLine();
-}
-
-void standout(void)
-{
-    Screen::Instance().Enable(S_STANDOUT);
-}
-
-void standend(void)
-{
-    Screen::Instance().Disable(S_STANDOUT);
-}
-
-void toggle_stand(void)
-{
-    Screen::Instance().StandToggle();
-}
-
-void bold(void)
-{
-    Screen::Instance().Enable(S_BOLD);
-}
-
-void boldend(void)
-{
-    Screen::Instance().Disable(S_BOLD);
-}
-
-void underline(void)
-{
-    Screen::Instance().Enable(S_UNDERLINE);
-}
-
-void underlineend(void)
-{
-    Screen::Instance().Disable(S_UNDERLINE);
-}
-
-void graphstart(void)
-{
-    Screen::Instance().Enable(S_GRAPHICS);
-}
-
-void graphend(void)
-{
-    Screen::Instance().Disable(S_GRAPHICS);
-}
-
 int graph_ok(void)
 {
     if (w3mApp::Instance().UseGraphicChar != GRAPHIC_CHAR_DEC)

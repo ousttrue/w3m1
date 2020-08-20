@@ -218,7 +218,7 @@ public:
         }
 
         m_lineStatus[CurLine] |= L_CLRTOEOL;
-        touch_line();
+        TouchCurrentLine();
         for (int i = CurColumn; i < Cols() && !(lprop[i] & S_EOL); i++)
         {
             lprop[i] = S_EOL | S_DIRTY;
@@ -250,7 +250,7 @@ public:
 
     void TouchCursor()
     {
-        touch_line();
+        TouchCurrentLine();
 
         auto lineprop = m_props.data() + LineHead();
         for (int i = CurColumn; i >= 0; i--)
@@ -334,7 +334,7 @@ public:
             (((pr[i] & S_BOLD) && need_redraw(p[i], pr[i], pc, CurrentMode)) ||
              ((pr[i] & S_UNDERLINE) && !(CurrentMode & S_UNDERLINE))))
         {
-            touch_line();
+            TouchCurrentLine();
             i++;
             if (i < cols)
             {
@@ -354,14 +354,14 @@ public:
 
         if (CurColumn + width > cols)
         {
-            touch_line();
+            TouchCurrentLine();
             for (i = CurColumn; i < cols; i++)
             {
                 SETCH(p[i], SPACE, 1);
                 SETPROP(pr[i], (pr[i] & ~C_WHICHCHAR) | C_ASCII);
                 TouchColumn(i);
             }
-            wrap();
+            Wrap();
             if (CurColumn + width > cols)
                 return;
             p = m_chars.data() + LineHead();
@@ -369,7 +369,7 @@ public:
         }
         if (CHMODE(pr[CurColumn]) == C_WCHAR2)
         {
-            touch_line();
+            TouchCurrentLine();
             for (i = CurColumn - 1; i >= 0; i--)
             {
                 l_prop l = CHMODE(pr[i]);
@@ -387,7 +387,7 @@ public:
             {
                 SETCH(p[CurColumn], pc, len);
                 SETPROP(pr[CurColumn], CurrentMode);
-                touch_line();
+                TouchCurrentLine();
                 TouchColumn(CurColumn);
                 SETCHMODE(CurrentMode, C_WCHAR2);
                 for (i = CurColumn + 1; i < CurColumn + width; i++)
@@ -410,8 +410,8 @@ public:
             auto dest = (CurColumn + tab_step) / tab_step * tab_step;
             if (dest >= cols)
             {
-                wrap();
-                touch_line();
+                Wrap();
+                TouchCurrentLine();
                 dest = tab_step;
                 p = m_chars.data() + LineHead();
                 pr = m_props.data() + LineHead();
@@ -422,7 +422,7 @@ public:
                 {
                     SETCH(p[i], SPACE, 1);
                     SETPROP(pr[i], CurrentMode);
-                    touch_line();
+                    TouchCurrentLine();
                     TouchColumn(i);
                 }
             }
@@ -430,7 +430,7 @@ public:
         }
         else if (c == '\n')
         {
-            wrap();
+            Wrap();
         }
         else if (c == '\r')
         { /* Carriage return */

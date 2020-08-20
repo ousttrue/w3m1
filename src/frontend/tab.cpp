@@ -26,26 +26,26 @@ Tab::~Tab()
 
 bool Tab::SetCurrent(int index)
 {
-    if(index<0 || index>=m_history.size())
+    if (index < 0 || index >= m_history.size())
     {
         return false;
     }
 
     auto url = m_history[index];
     auto stream = GetStream(url, m_buffer ? m_buffer->BaseURL() : nullptr);
-    if(!stream.stream)
+    if (!stream.stream)
     {
         LOGE << "fail to GetStream";
         return false;
     }
 
     auto buf = LoadStream(stream);
-    if(!buf)
+    if (!buf)
     {
         LOGE << "fail to LoadStream";
         return false;
     }
-   
+
     m_buffer = buf;
     displayCurrentbuf(B_NORMAL);
     return true;
@@ -145,15 +145,15 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
         if (buf == current)
         {
             c = i;
-            standout();
+            Screen::Instance().Enable(S_STANDOUT);
         }
         writeBufferName(buf, i);
         if (buf == current)
         {
-            standend();
+            Screen::Instance().Disable(S_STANDOUT);
             clrtoeolx();
             Screen::Instance().Move(i, 0);
-            toggle_stand();
+            Screen::Instance().StandToggle();
         }
         else
             clrtoeolx();
@@ -165,11 +165,10 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
         }
         buf = tab->GetCurrentBuffer();
     }
-    standout();
+    Screen::Instance().Enable(S_STANDOUT);
     /* FIXME: gettextize? */
-    message("Buffer selection mode: SPC for select / D for delete buffer", 0,
-            0);
-    standend();
+    message("Buffer selection mode: SPC for select / D for delete buffer", 0, 0);
+    Screen::Instance().Disable(S_STANDOUT);
     /* 
      * move((Terminal::lines()-1), Terminal::columns() - 1); */
     Screen::Instance().Move(c, 0);
@@ -185,7 +184,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 // {
 //     int i, cpoint,                     /* Current Buffer Number */
 //         spoint,                        /* Current Line on Screen */
-//         maxbuf, sclimit = (Terminal::lines() - 1); /* Upper limit of line * number in 
+//         maxbuf, sclimit = (Terminal::lines() - 1); /* Upper limit of line * number in
 // 					 * the * screen */
 
 //     BufferPtr topbuf;
@@ -320,7 +319,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 //             *selectchar = c;
 //             return currentbuf;
 //         }
-//         /* 
+//         /*
 // 	 * move((Terminal::lines()-1), Terminal::columns() - 1);
 // 	 */
 //         move(spoint, 0);

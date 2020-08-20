@@ -1,4 +1,3 @@
-/* $Id: terms.h,v 1.10 2004/07/15 16:32:39 ukai Exp $ */
 #pragma once
 
 int INIT_BUFFER_WIDTH();
@@ -23,18 +22,7 @@ void term_raw(void);
 void term_cooked(void);
 void term_cbreak(void);
 void term_title(const char *s);
-void toggle_stand(void);
 char getch(void);
-void wrap(void);
-void touch_line(void);
-void standout(void);
-void standend(void);
-void bold(void);
-void boldend(void);
-void underline(void);
-void underlineend(void);
-void graphstart(void);
-void graphend(void);
 int graph_ok(void);
 void refresh(void);
 int sleep_till_anykey(int sec, int purge);

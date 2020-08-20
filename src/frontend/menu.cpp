@@ -31,12 +31,12 @@ static int graph_mode = false;
 #define G_start           \
     {                     \
         if (graph_mode)   \
-            graphstart(); \
+            Screen::Instance().Enable(S_GRAPHICS); \
     }
 #define G_end           \
     {                   \
         if (graph_mode) \
-            graphend(); \
+            Screen::Instance().Disable(S_GRAPHICS); \
     }
 
 static int mEsc(char c);
@@ -426,13 +426,13 @@ int select_menu(Menu *menu, int mselect)
         menu->select < menu->offset + menu->height)
         draw_menu_item(menu, menu->select);
     menu->select = mselect;
-    standout();
+    Screen::Instance().Enable(S_STANDOUT);
     draw_menu_item(menu, menu->select);
-    standend();
+    Screen::Instance().Disable(S_STANDOUT);
     /* 
      * move(menu->cursorY, menu->cursorX); */
     Screen::Instance().Move(menu->y + mselect - menu->offset, menu->x);
-    toggle_stand();
+    Screen::Instance().StandToggle();
     refresh();
 
     return (menu->select);
