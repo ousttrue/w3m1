@@ -39,6 +39,7 @@
 #include "frontend/display.h"
 #include "frontend/terms.h"
 #include "frontend/terminal.h"
+#include "frontend/screen.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -66,7 +67,7 @@ void resize_screen()
 {
     s_need_resize_screen = false;
 
-    setupscreen();
+    Screen::Instance().Setup();
     if (GetCurrentTab())
         displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -503,7 +504,7 @@ int w3mApp::Main(const URL &url)
 
         mySignal(SIGWINCH, resize_hook);
 
-        setupscreen();
+        Screen::Instance().Setup();
     }
 
     sync_with_option();

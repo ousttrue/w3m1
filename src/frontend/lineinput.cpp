@@ -1,4 +1,5 @@
 #include "frontend/terminal.h"
+#include "frontend/screen.h"
 #include "lineinput.h"
 #include "gc_helper.h"
 #include "indep.h"
@@ -604,11 +605,11 @@ next_dcompl(int next)
             y = nline - row - 1;
     }
     if (y) {
-        move(y - 1, 0);
+        Screen::Instance().Move(y - 1, 0);
         clrtoeolx();
     }
     if (comment) {
-        move(y, 0);
+        Screen::Instance().Move(y, 0);
         clrtoeolx();
         bold();
         /* FIXME: gettextize? */
@@ -621,7 +622,7 @@ next_dcompl(int next)
             n = cm_disp_next + j * row + i;
             if (n >= NCFileBuf)
                 break;
-            move(y, j * len);
+            Screen::Instance().Move(y, j * len);
             clrtoeolx();
             f = d->Clone();
             f->Push(CFileBuf[n]);
@@ -632,7 +633,7 @@ next_dcompl(int next)
         y++;
     }
     if (comment && y == (Terminal::lines()-1) - 1) {
-        move(y, 0);
+        Screen::Instance().Move(y, 0);
         clrtoeolx();
         bold();
         if (w3mApp::Instance().emacs_like_lineedit)
@@ -1016,14 +1017,14 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
             else
                 offset = 0;
         }
-        move(Terminal::lines()-1, 0);
+        Screen::Instance().Move(Terminal::lines()-1, 0);
         addstr(prompt);
         if (is_passwd)
             addPasswd(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         else
             addStr(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         clrtoeolx();
-        move((Terminal::lines()-1), opos + x - offset);
+        Screen::Instance().Move((Terminal::lines()-1), opos + x - offset);
         refresh();
 
         next_char:
@@ -1121,7 +1122,7 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
     if (i_broken)
         return NULL;
 
-    move((Terminal::lines()-1), 0);
+    Screen::Instance().Move((Terminal::lines()-1), 0);
     refresh();
     p = strBuf->ptr;
     if (flag & (IN_FILENAME | IN_COMMAND)) {

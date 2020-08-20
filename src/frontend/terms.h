@@ -61,12 +61,11 @@ int sleep_till_anykey(int sec, int purge);
 
 void set_cc(int spec, int val);
 
-void set_int(void);
 
-void setupscreen(void);
+
 void touch_cursor();
-int initscr(void);
-void move(int line, int column);
+
+
 
 void reset_error_exit(int);
 

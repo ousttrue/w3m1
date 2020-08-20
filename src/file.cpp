@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include "textlist.h"
 #include "frontend/terminal.h"
+#include "frontend/screen.h"
 #include "html/table.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -396,7 +397,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         cur_time = time(0);
         if (*trbyte == 0)
         {
-            move((Terminal::lines() - 1), 0);
+            Screen::Instance().Move((Terminal::lines() - 1), 0);
             clrtoeolx();
             start_time = cur_time;
         }
@@ -405,7 +406,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         if (cur_time == last_time)
             return;
         last_time = cur_time;
-        move((Terminal::lines() - 1), 0);
+        Screen::Instance().Move((Terminal::lines() - 1), 0);
         ratio = 100.0 * (*trbyte) / content_length;
         fmtrbyte = convert_size2(*trbyte, content_length, 1);
         duration = cur_time - start_time;
@@ -429,7 +430,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         addstr(messages->ptr);
         pos = 42;
         i = pos + (Terminal::columns() - pos - 1) * (*trbyte) / content_length;
-        move((Terminal::lines() - 1), pos);
+        Screen::Instance().Move((Terminal::lines() - 1), pos);
         standout();
         addch(' ');
         for (j = pos + 1; j <= i; j++)
@@ -443,7 +444,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         cur_time = time(0);
         if (*trbyte == 0)
         {
-            move((Terminal::lines() - 1), 0);
+            Screen::Instance().Move((Terminal::lines() - 1), 0);
             clrtoeolx();
             start_time = cur_time;
         }
@@ -452,7 +453,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         if (cur_time == last_time)
             return;
         last_time = cur_time;
-        move((Terminal::lines() - 1), 0);
+        Screen::Instance().Move((Terminal::lines() - 1), 0);
         fmtrbyte = convert_size(*trbyte, 1);
         duration = cur_time - start_time;
         if (duration)

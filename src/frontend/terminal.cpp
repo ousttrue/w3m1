@@ -1,10 +1,12 @@
 #include "config.h"
 #include "terminal.h"
 #include "termcap_str.h"
+#include "event.h"
 #include "w3m.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <assert.h>
 #include <termios.h>
@@ -38,6 +40,7 @@ static struct w3m_term_info
 /* *INDENT-ON * */
 
 FILE *g_ttyf = nullptr;
+
 
 Terminal::Terminal()
 {
@@ -86,6 +89,22 @@ Terminal::Terminal()
             }
         }
     }
+
+//     mySignal(SIGHUP, reset_exit);
+//     mySignal(SIGINT, reset_exit);
+//     mySignal(SIGQUIT, reset_exit);
+//     mySignal(SIGTERM, reset_exit);
+//     mySignal(SIGILL, error_dump);
+//     mySignal(SIGIOT, error_dump);
+//     mySignal(SIGFPE, error_dump);
+// #ifdef SIGBUS
+//     mySignal(SIGBUS, error_dump);
+// #endif /* SIGBUS */
+//     /* mySignal(SIGSEGV, error_dump); */
+
+    getTCstr();
+    if (T_ti && !w3mApp::Instance().Do_not_use_ti_te)
+        Terminal::writestr(T_ti);
 }
 
 // if (w3mApp::Instance().displayTitleTerm.size())
@@ -123,10 +142,22 @@ Terminal::~Terminal()
     }
 }
 
+// int initscr(void)
+// {
+//     Terminal::Instance();
+
+//     setupscreen();
+//     return 0;
+// }
+
 Terminal &Terminal::Instance()
 {
-    static Terminal t;
-    return t;
+    static std::unique_ptr<Terminal> t;
+    if (!t)
+    {
+        t.reset(new Terminal());
+    }
+    return *t;
 }
 
 int Terminal::tty()
@@ -204,11 +235,13 @@ void Terminal::xterm_off()
 
 int Terminal::lines()
 {
+    Instance();
     return tgetnum("li");
 };
 
 int Terminal::columns()
 {
+    Instance();
     return tgetnum("co");
 }
 // void setlinescols(void)

@@ -13,6 +13,7 @@
 #include "html/image.h"
 #include "frontend/terms.h"
 #include "frontend/terminal.h"
+#include "frontend/screen.h"
 #include "ctrlcode.h"
 #include "stream/loader.h"
 #include <stdexcept>
@@ -98,7 +99,7 @@ static void
 writeBufferName(BufferPtr buf, int n)
 {
     auto all = buf->LineCount();
-    move(n, 0);
+    Screen::Instance().Move(n, 0);
     /* FIXME: gettextize? */
     auto msg = Sprintf("<%s> [%d lines]", buf->buffername, all);
     if (buf->filename.size())
@@ -128,7 +129,7 @@ writeBufferName(BufferPtr buf, int n)
 static BufferPtr
 listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 {
-    move(0, 0);
+    Screen::Instance().Move(0, 0);
 
     if (w3mApp::Instance().useColor)
     {
@@ -151,14 +152,14 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
         {
             standend();
             clrtoeolx();
-            move(i, 0);
+            Screen::Instance().Move(i, 0);
             toggle_stand();
         }
         else
             clrtoeolx();
         if (!tab->Back())
         {
-            move(i + 1, 0);
+            Screen::Instance().Move(i + 1, 0);
             clrtobotx();
             break;
         }
@@ -171,7 +172,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
     standend();
     /* 
      * move((Terminal::lines()-1), Terminal::columns() - 1); */
-    move(c, 0);
+    Screen::Instance().Move(c, 0);
     refresh();
     // return tab->BackBuffer(buf);
     return buf;

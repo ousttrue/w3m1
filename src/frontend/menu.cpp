@@ -23,6 +23,7 @@
 #include "frontend/tabbar.h"
 #include "frontend/lineinput.h"
 #include "frontend/terminal.h"
+#include "frontend/screen.h"
 
 static const char **FRAME;
 static int FRAME_WIDTH;
@@ -239,9 +240,9 @@ static MenuList *w3mMenuList;
 
 static Menu *CurrentMenu = NULL;
 
-#define mvaddch(y, x, c) (move(y, x), addch(c))
-#define mvaddstr(y, x, str) (move(y, x), addstr(str))
-#define mvaddnstr(y, x, str, n) (move(y, x), addnstr_sup(str, n))
+#define mvaddch(y, x, c) (Screen::Instance().Move(y, x), addch(c))
+#define mvaddstr(y, x, str) (Screen::Instance().Move(y, x), addstr(str))
+#define mvaddnstr(y, x, str, n) (Screen::Instance().Move(y, x), addnstr_sup(str, n))
 
 void new_menu(Menu *menu, MenuItem *item)
 {
@@ -430,7 +431,7 @@ int select_menu(Menu *menu, int mselect)
     standend();
     /* 
      * move(menu->cursorY, menu->cursorX); */
-    move(menu->y + mselect - menu->offset, menu->x);
+    Screen::Instance().Move(menu->y + mselect - menu->offset, menu->x);
     toggle_stand();
     refresh();
 

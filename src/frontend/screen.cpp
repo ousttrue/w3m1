@@ -115,7 +115,7 @@ public:
     void Setup(int newLines, int newCols)
     {
         Terminal::Instance();
-        
+
         auto lines = Lines();
         auto cols = Cols();
         if (newLines == lines && newCols == cols)
@@ -148,6 +148,8 @@ public:
         std::swap(props, m_props);
         std::swap(lineStatus, m_lineStatus);
         std::swap(lineEnds, m_lineEnds);
+
+        Clear();
     }
 
     void Wrap()
@@ -169,7 +171,7 @@ public:
     void Clear()
     {
         Terminal::Terminal::writestr(T_cl);
-        move(0, 0);
+        Move(0, 0);
         std::fill(m_lineStatus.begin(), m_lineStatus.end(), L_NONE);
         std::fill(m_props.begin(), m_props.end(), S_EOL);
     }
@@ -229,7 +231,7 @@ public:
         int cco = CurColumn;
         for (int i = CurColumn; i < Cols(); i++)
             addch(' ');
-        move(cli, cco);
+        Move(cli, cco);
     }
 
     void CtrlToBottomEol()
@@ -641,9 +643,15 @@ Screen::~Screen()
     delete m_impl;
 }
 
-void Screen::Setup(int lines, int cols)
+Screen &Screen::Instance()
 {
-    m_impl->Setup(lines, cols);
+    static Screen screen;
+    return screen;
+}
+
+void Screen::Setup()
+{
+    m_impl->Setup(Terminal::lines(), Terminal::columns());
 }
 
 void Screen::AddChar(const char *pc, int len)

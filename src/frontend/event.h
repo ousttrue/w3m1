@@ -17,6 +17,10 @@ struct AlarmEvent
     void *data;
 };
 
+#ifndef SIGIOT
+#define SIGIOT SIGABRT
+#endif /* not SIGIOT */
+
 #define TRAP_ON                                \
     if (w3mApp::Instance().TrapSignal)                            \
     {                                          \

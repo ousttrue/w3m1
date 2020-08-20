@@ -156,10 +156,6 @@ void setup_child(int child, int i, int f)
     w3mApp::Instance().TrapSignal = false;
 }
 
-#ifndef SIGIOT
-#define SIGIOT SIGABRT
-#endif /* not SIGIOT */
-
 #ifndef FOPEN_MAX
 #define FOPEN_MAX 1024 /* XXX */
 #endif

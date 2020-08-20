@@ -27,7 +27,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-Screen g_screen;
+
 
 int mouseActive = 0;
 static const char *title_str = NULL;
@@ -45,6 +45,33 @@ typedef struct termios TerminalMode;
 inline void MOVE(int line, int column)
 {
     Terminal::move(line, column);
+}
+
+static void reset_exit_with_value(SIGNAL_ARG, int rval)
+{
+    if (mouseActive)
+        mouse_end();
+
+    // w3m_exit(rval);
+    exit(rval);
+    SIGNAL_RETURN;
+}
+
+void reset_error_exit(SIGNAL_ARG)
+{
+    reset_exit_with_value(SIGNAL_ARGLIST, 1);
+}
+
+static void reset_exit(SIGNAL_ARG)
+{
+    reset_exit_with_value(SIGNAL_ARGLIST, 0);
+}
+
+static void error_dump(SIGNAL_ARG)
+{
+    mySignal(SIGIOT, SIG_DFL);
+    abort();
+    SIGNAL_RETURN;
 }
 
 static void ttymode_set(int mode, int imode)
@@ -106,78 +133,15 @@ void set_cc(int spec, int val)
 }
 #endif /* not HAVE_SGTTY_H */
 
-static void
-reset_exit_with_value(SIGNAL_ARG, int rval)
-{
-    if (mouseActive)
-        mouse_end();
-
-    // w3m_exit(rval);
-    exit(rval);
-    SIGNAL_RETURN;
-}
-
-void
-    reset_error_exit(SIGNAL_ARG)
-{
-    reset_exit_with_value(SIGNAL_ARGLIST, 1);
-}
-
-void
-    reset_exit(SIGNAL_ARG)
-{
-    reset_exit_with_value(SIGNAL_ARGLIST, 0);
-}
-
-void
-    error_dump(SIGNAL_ARG)
-{
-    mySignal(SIGIOT, SIG_DFL);    
-    abort();
-    SIGNAL_RETURN;
-}
-
-void set_int(void)
-{
-    mySignal(SIGHUP, reset_exit);
-    mySignal(SIGINT, reset_exit);
-    mySignal(SIGQUIT, reset_exit);
-    mySignal(SIGTERM, reset_exit);
-    mySignal(SIGILL, error_dump);
-    mySignal(SIGIOT, error_dump);
-    mySignal(SIGFPE, error_dump);
-#ifdef SIGBUS
-    mySignal(SIGBUS, error_dump);
-#endif /* SIGBUS */
-    /* mySignal(SIGSEGV, error_dump); */
-}
 
 
-void setupscreen(void)
-{
-    g_screen.Setup(Terminal::lines(), Terminal::columns());
-    clear();
-}
+
+
+
 
 /* 
  * Screen initialize
  */
-int initscr(void)
-{
-    Terminal::Instance();
-    
-    set_int();
-    getTCstr();
-    if (T_ti && !w3mApp::Instance().Do_not_use_ti_te)
-        Terminal::writestr(T_ti);
-    setupscreen();
-    return 0;
-}
-
-void move(int line, int column)
-{
-    g_screen.Move(line, column);
-}
 
 void addch(char c)
 {
@@ -186,67 +150,67 @@ void addch(char c)
 
 void addmch(const char *pc, int len)
 {
-    g_screen.AddChar(pc, len);
+    Screen::Instance().AddChar(pc, len);
 }
 
 void wrap(void)
 {
-    g_screen.Wrap();
+    Screen::Instance().Wrap();
 }
 
 void touch_column(int col)
 {
-    g_screen.TouchColumn(col);
+    Screen::Instance().TouchColumn(col);
 }
 
 void touch_line(void)
 {
-    g_screen.TouchCurrentLine();
+    Screen::Instance().TouchCurrentLine();
 }
 
 void standout(void)
 {
-    g_screen.Enable(S_STANDOUT);
+    Screen::Instance().Enable(S_STANDOUT);
 }
 
 void standend(void)
 {
-    g_screen.Disable(S_STANDOUT);
+    Screen::Instance().Disable(S_STANDOUT);
 }
 
 void toggle_stand(void)
 {
-    g_screen.StandToggle();
+    Screen::Instance().StandToggle();
 }
 
 void bold(void)
 {
-    g_screen.Enable(S_BOLD);
+    Screen::Instance().Enable(S_BOLD);
 }
 
 void boldend(void)
 {
-    g_screen.Disable(S_BOLD);
+    Screen::Instance().Disable(S_BOLD);
 }
 
 void underline(void)
 {
-    g_screen.Enable(S_UNDERLINE);
+    Screen::Instance().Enable(S_UNDERLINE);
 }
 
 void underlineend(void)
 {
-    g_screen.Disable(S_UNDERLINE);
+    Screen::Instance().Disable(S_UNDERLINE);
 }
 
 void graphstart(void)
 {
-    g_screen.Enable(S_GRAPHICS);
+    Screen::Instance().Enable(S_GRAPHICS);
 }
 
 void graphend(void)
 {
-    g_screen.Disable(S_GRAPHICS);
+    Screen::Instance().Disable(S_GRAPHICS);
 }
 
 int graph_ok(void)
@@ -258,34 +222,34 @@ int graph_ok(void)
 
 void setfcolor(int color)
 {
-    g_screen.SetFGColor(color);
+    Screen::Instance().SetFGColor(color);
 }
 
 void setbcolor(int color)
 {
-    g_screen.SetBGColor(color);
+    Screen::Instance().SetBGColor(color);
 }
 
 void refresh(void)
 {
-    g_screen.Refresh();
+    Screen::Instance().Refresh();
     Terminal::flush();
 }
 
 void clear(void)
 {
-    g_screen.Clear();
+    Screen::Instance().Clear();
 }
 
 /* XXX: conflicts with curses's clrtoeol(3) ? */
 void clrtoeol(void)
 { /* Clear to the end of line */
-    g_screen.CtrlToEol();
+    Screen::Instance().CtrlToEol();
 }
 
 void clrtoeol_with_bcolor(void)
 {
-    g_screen.CtrlToEolWithBGColor();
+    Screen::Instance().CtrlToEolWithBGColor();
 }
 
 void clrtoeolx(void)
@@ -295,7 +259,7 @@ void clrtoeolx(void)
 
 void clrtobot_eol(void (*clrtoeol)())
 {
-    g_screen.CtrlToBottomEol();
+    Screen::Instance().CtrlToBottomEol();
 }
 
 void clrtobot(void)
@@ -580,7 +544,7 @@ void mouse_inactive()
 
 void touch_cursor()
 {
-    g_screen.TouchCursor();
+    Screen::Instance().TouchCursor();
 }
 
 int _INIT_BUFFER_WIDTH()

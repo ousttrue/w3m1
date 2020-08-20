@@ -10,9 +10,9 @@ class Terminal
     Terminal(const Terminal &) = delete;
     Terminal &operator=(const Terminal &) = delete;
     Terminal();
-    ~Terminal();
 
 public:
+    ~Terminal();
     static Terminal &Instance();
     static int tty();
     static FILE *file();

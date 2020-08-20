@@ -3,6 +3,7 @@
 #include "commands.h"
 #include "dispatcher.h"
 #include "frontend/terminal.h"
+#include "frontend/screen.h"
 #include "urimethod.h"
 #include "gc_helper.h"
 #include "indep.h"
@@ -583,7 +584,7 @@ void susp(w3mApp *w3m)
 #ifndef SIGSTOP
     char *shell;
 #endif /* not SIGSTOP */
-    move((Terminal::lines() - 1), 0);
+    Screen::Instance().Move((Terminal::lines() - 1), 0);
     clrtoeolx();
     refresh();
     fmTerm();

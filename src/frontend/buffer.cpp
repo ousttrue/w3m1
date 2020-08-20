@@ -7,6 +7,7 @@
 #include "frontend/display.h"
 #include "frontend/line.h"
 #include "frontend/line.h"
+#include "frontend/screen.h"
 #include "urimethod.h"
 #include "public.h"
 #include "indep.h"
@@ -1212,7 +1213,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     ///
     /// show line number
     ///
-    move(line, 0);
+    Screen::Instance().Move(line, 0);
     if (w3mApp::Instance().showLineNum)
     {
         rect.updateRootX(this->LastLine()->real_linenumber);
@@ -1235,7 +1236,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     ///
     /// draw line
     ///
-    move(line, rect.rootX);
+    Screen::Instance().Move(line, rect.rootX);
     auto pos = columnPos(l, currentColumn);
     auto p = &(l->lineBuf()[pos]);
     auto pr = &(l->propBuf()[pos]);
@@ -1358,12 +1359,12 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
         {
             if (rcol < currentColumn)
             {
-                move(i, rect.rootX);
+                Screen::Instance().Move(i, rect.rootX);
                 for (rcol = currentColumn; rcol < ncol; rcol++)
                     addChar(' ');
                 continue;
             }
-            move(i, rcol - currentColumn + rect.rootX);
+            Screen::Instance().Move(i, rcol - currentColumn + rect.rootX);
             if (p[j] == '\t')
             {
                 for (; rcol < ncol; rcol++)

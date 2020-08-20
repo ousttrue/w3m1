@@ -3,6 +3,7 @@
 #include "file.h"
 #include "frontend/display.h"
 #include "frontend/terminal.h"
+#include "frontend/screen.h"
 #include "frontend/buffer.h"
 #include "frontend/line.h"
 #include "frontend/mouse.h"
@@ -200,7 +201,7 @@ void fmTerm(void)
 {
     if (w3mApp::Instance().fmInitialized)
     {
-        move((Terminal::lines() - 1), 0);
+        Screen::Instance().Move((Terminal::lines() - 1), 0);
         clrtoeolx();
         refresh();
 
@@ -221,7 +222,7 @@ void fmInit(void)
 {
     if (!w3mApp::Instance().fmInitialized)
     {
-        initscr();
+        Screen::Instance().Setup();
         term_raw();
         term_noecho();
 #ifdef USE_IMAGE
@@ -547,12 +548,6 @@ static void drawAnchorCursor(const BufferPtr &buf)
     buf->prevhseq = hseq;
 }
 
-static void move(const TermRect &rect)
-{
-    auto [x, y] = rect.globalXY();
-    move(y, x);
-}
-
 ///
 /// term に描画する
 ///
@@ -574,7 +569,7 @@ static void redrawNLine(const BufferPtr &buf)
                 break;
             buf->DrawLine(l, i + buf->rect.rootY);
         }
-        move(i + buf->rect.rootY, 0);
+        Screen::Instance().Move(i + buf->rect.rootY, 0);
         clrtobotx();
     }
 
@@ -582,7 +577,9 @@ static void redrawNLine(const BufferPtr &buf)
           buf->img))
         return;
 
-    move(buf->rect);
+    auto [x, y] = buf->rect.globalXY();
+    Screen::Instance().Move(y, x);
+
     {
         int i = 0;
         for (auto l = buf->TopLine(); i < buf->rect.lines && l;
@@ -877,10 +874,10 @@ void message(std::string_view s, int return_x, int return_y)
 {
     if (!w3mApp::Instance().fmInitialized)
         return;
-    move((Terminal::lines() - 1), 0);
+    Screen::Instance().Move((Terminal::lines() - 1), 0);
     addnstr(s.data(), Terminal::columns() - 1);
     clrtoeolx();
-    move(return_y, return_x);
+    Screen::Instance().Move(return_y, return_x);
 }
 
 void disp_err_message(const char *s, int redraw_current)
@@ -1004,7 +1001,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         // TAB
         if (GetTabCount() > 1 || GetMouseActionMenuStr())
         {
-            move(0, 0);
+            Screen::Instance().Move(0, 0);
 
             if (GetMouseActionMenuStr())
                 addstr(GetMouseActionMenuStr());
@@ -1012,7 +1009,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
             clrtoeolx();
             EachTab([](auto t) {
                 auto b = t->GetCurrentBuffer();
-                move(t->Y(), t->Left());
+                Screen::Instance().Move(t->Y(), t->Left());
                 if (t == GetCurrentTab())
                     bold();
                 addch('[');
@@ -1028,12 +1025,12 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
                     effect_active_end();
                 if ((l + 1) / 2 > 0)
                     addnstr_sup(" ", (l + 1) / 2);
-                move(t->Y(), t->Right());
+                Screen::Instance().Move(t->Y(), t->Right());
                 addch(']');
                 if (t == GetCurrentTab())
                     boldend();
             });
-            move(GetTabbarHeight(), 0);
+            Screen::Instance().Move(GetTabbarHeight(), 0);
             for (int i = 0; i < Terminal::columns(); i++)
                 addch('~');
         }

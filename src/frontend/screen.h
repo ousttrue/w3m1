@@ -58,10 +58,16 @@ class Screen
     class ScreenImpl *m_impl;
     l_prop CurrentMode = 0;
 
+    Screen(const Screen &) = delete;
+    Screen &operator=(const Screen &) = delete;
+
 public:
     Screen();
     ~Screen();
-    void Setup(int lines, int cols);
+
+    static Screen &Instance();
+
+    void Setup();
     void Clear();
     void Move(int line, int column);
     void AddChar(const char *c, int len);
