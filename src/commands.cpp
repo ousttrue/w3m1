@@ -581,7 +581,7 @@ void susp(w3mApp *w3m)
     char *shell;
 #endif /* not SIGSTOP */
     Screen::Instance().Move((Terminal::lines() - 1), 0);
-    clrtoeolx();
+    Screen::Instance().CtrlToEolWithBGColor();
     refresh();
     fmTerm();
 #ifndef SIGSTOP

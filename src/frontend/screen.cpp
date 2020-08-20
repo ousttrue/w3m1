@@ -238,12 +238,12 @@ public:
     {
         auto l = CurLine;
         auto c = CurColumn;
-        (*clrtoeol)();
+        CtrlToEol();         
         CurColumn = 0;
         CurLine++;
         auto lines = Lines();
         for (; CurLine < lines; CurLine++)
-            (*clrtoeol)();
+            CtrlToEol();
         CurLine = l;
         CurColumn = c;
     }
@@ -764,7 +764,7 @@ void Screen::CtrlToEolWithBGColor()
 {
     if (!(CurrentMode & S_BCOLORED))
     {
-        clrtoeol();
+        m_impl->CtrlToEol();
         return;
     }
     auto pr = CurrentMode;

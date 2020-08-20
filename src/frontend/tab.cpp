@@ -143,7 +143,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 
     BufferPtr buf = top;
     int i, c = 0;
-    clrtobotx();
+    Screen::Instance().CtrlToBottomEol();
     for (i = 0; i < (Terminal::lines() - 1); i++)
     {
         if (buf == current)
@@ -155,16 +155,16 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
         if (buf == current)
         {
             Screen::Instance().Disable(S_STANDOUT);
-            clrtoeolx();
+            Screen::Instance().CtrlToEolWithBGColor();
             Screen::Instance().Move(i, 0);
             Screen::Instance().StandToggle();
         }
         else
-            clrtoeolx();
+            Screen::Instance().CtrlToEolWithBGColor();
         if (!tab->Back())
         {
             Screen::Instance().Move(i + 1, 0);
-            clrtobotx();
+            Screen::Instance().CtrlToBottomEol();
             break;
         }
         buf = tab->GetCurrentBuffer();

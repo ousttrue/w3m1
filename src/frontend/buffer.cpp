@@ -1229,7 +1229,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     l->CalcWidth();
     if (l->len() == 0 || l->width() - 1 < currentColumn)
     {
-        clrtoeolx();
+        Screen::Instance().CtrlToEolWithBGColor();
         return;
     }
 
@@ -1310,7 +1310,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     clear_effect();
 
     if (rcol - currentColumn < this->rect.cols)
-        clrtoeolx();
+        Screen::Instance().CtrlToEolWithBGColor();
 }
 
 int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)

@@ -3196,9 +3196,9 @@ From: Hironori Sakamoto <hsaka@mth.biglobe.ne.jp>
 ���ȡ��٤��������Ȥ��Ǥ���
 
 �����ɤˤĤ��ơ�
-��clrtobotx, clrtoeolx �ΰ�̣���Ѥ��Ƥ��ޤ���
+��Screen::Instance().CtrlToBottomEol, Screen::Instance().CtrlToEolWithBGColor �ΰ�̣���Ѥ��Ƥ��ޤ���
   clrtobot, clrtoeol �� term.c �ʳ��ǻȤ����ȤϤޤ��ʤ��Τ�
-  �ष����clrtobotx �� clrtobot ��̾�դ��������������⡣
+  �ष����Screen::Instance().CtrlToBottomEol �� clrtobot ��̾�դ��������������⡣
 ��term.c �� l_prop �� int �ˤ��Ƥ��ޤä��ΤǤ���ä�
   ����򿩤����⤷��ޤ���
 

@@ -398,7 +398,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         if (*trbyte == 0)
         {
             Screen::Instance().Move((Terminal::lines() - 1), 0);
-            clrtoeolx();
+            Screen::Instance().CtrlToEolWithBGColor();
             start_time = cur_time;
         }
         *trbyte += *linelen;
@@ -446,7 +446,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         if (*trbyte == 0)
         {
             Screen::Instance().Move((Terminal::lines() - 1), 0);
-            clrtoeolx();
+            Screen::Instance().CtrlToEolWithBGColor();
             start_time = cur_time;
         }
         *trbyte += *linelen;

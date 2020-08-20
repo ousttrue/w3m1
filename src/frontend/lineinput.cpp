@@ -676,12 +676,12 @@ disp_next:
     if (y)
     {
         Screen::Instance().Move(y - 1, 0);
-        clrtoeolx();
+        Screen::Instance().CtrlToEolWithBGColor();
     }
     if (comment)
     {
         Screen::Instance().Move(y, 0);
-        clrtoeolx();
+        Screen::Instance().CtrlToEolWithBGColor();
         Screen::Instance().Enable(S_BOLD);
         /* FIXME: gettextize? */
         Screen::Instance().Puts("----- Completion list -----");
@@ -696,7 +696,7 @@ disp_next:
             if (n >= NCFileBuf)
                 break;
             Screen::Instance().Move(y, j * len);
-            clrtoeolx();
+            Screen::Instance().CtrlToEolWithBGColor();
             f = d->Clone();
             f->Push(CFileBuf[n]);
             Screen::Instance().Puts(conv_from_system(CFileBuf[n]));
@@ -708,7 +708,7 @@ disp_next:
     if (comment && y == (Terminal::lines() - 1) - 1)
     {
         Screen::Instance().Move(y, 0);
-        clrtoeolx();
+        Screen::Instance().CtrlToEolWithBGColor();
         Screen::Instance().Enable(S_BOLD);
         if (w3mApp::Instance().emacs_like_lineedit)
             /* FIXME: gettextize? */
@@ -1134,7 +1134,7 @@ inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag
             addPasswd(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         else
             addStr(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
-        clrtoeolx();
+        Screen::Instance().CtrlToEolWithBGColor();
         Screen::Instance().Move((Terminal::lines() - 1), opos + x - offset);
         refresh();
 

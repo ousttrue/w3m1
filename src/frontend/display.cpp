@@ -202,7 +202,7 @@ void fmTerm(void)
     if (w3mApp::Instance().fmInitialized)
     {
         Screen::Instance().Move((Terminal::lines() - 1), 0);
-        clrtoeolx();
+        Screen::Instance().CtrlToEolWithBGColor();
         refresh();
 
         if (w3mApp::Instance().activeImage)
@@ -569,7 +569,7 @@ static void redrawNLine(const BufferPtr &buf)
             buf->DrawLine(l, i + buf->rect.rootY);
         }
         Screen::Instance().Move(i + buf->rect.rootY, 0);
-        clrtobotx();
+        Screen::Instance().CtrlToBottomEol();
     }
 
     if (!(w3mApp::Instance().activeImage && w3mApp::Instance().displayImage &&
@@ -871,7 +871,7 @@ void message(std::string_view s, int return_x, int return_y)
         return;
     Screen::Instance().Move((Terminal::lines() - 1), 0);
     Screen::Instance().PutsColumns(s.data(), Terminal::columns() - 1);
-    clrtoeolx();
+    Screen::Instance().CtrlToEolWithBGColor();
     Screen::Instance().Move(return_y, return_x);
 }
 
@@ -997,7 +997,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
             if (GetMouseActionMenuStr())
                 Screen::Instance().Puts(GetMouseActionMenuStr());
 
-            clrtoeolx();
+            Screen::Instance().CtrlToEolWithBGColor();
             EachTab([](auto t) {
                 auto b = t->GetCurrentBuffer();
                 Screen::Instance().Move(t->Y(), t->Left());

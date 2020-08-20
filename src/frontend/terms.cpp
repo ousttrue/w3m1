@@ -40,35 +40,3 @@ void refresh(void)
     Terminal::flush();
 }
 
-/* XXX: conflicts with curses's clrtoeol(3) ? */
-void clrtoeol(void)
-{ /* Clear to the end of line */
-    Screen::Instance().CtrlToEol();
-}
-
-void clrtoeol_with_bcolor(void)
-{
-    Screen::Instance().CtrlToEolWithBGColor();
-}
-
-void clrtoeolx(void)
-{
-    clrtoeol_with_bcolor();
-}
-
-void clrtobot_eol(void (*clrtoeol)())
-{
-    Screen::Instance().CtrlToBottomEol();
-}
-
-void clrtobot(void)
-{
-    clrtobot_eol(clrtoeol);
-}
-
-void clrtobotx(void)
-{
-    clrtobot_eol(clrtoeolx);
-}
-
-
