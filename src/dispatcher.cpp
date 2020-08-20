@@ -40,6 +40,28 @@ extern Command EscDKeymap[];
 static std::unordered_map<int, std::string> g_keyData;
 std::unordered_map<std::string, Command> g_commandMap;
 
+static void DebugPrint(Command map[], int c)
+{
+    auto callback = map[c];
+    std::string_view key;
+    for (auto &[k, v] : g_commandMap)
+    {
+        if (v == callback)
+        {
+            key = k;
+            break;
+        }
+    }
+    if (key.empty())
+    {
+        LOGD << (char)c << " => " << callback;
+    }
+    else
+    {
+        LOGD << (char)c << " => " << key;
+    }
+}
+
 int prec_num()
 {
     return g_prec_num;
@@ -115,28 +137,13 @@ void DispatchKey(int c)
         else
         {
             SetCurrentKey(c);
-            auto callback = GlobalKeymap[c];
-            std::string_view key;
-            for (auto &[k, v] : g_commandMap)
-            {
-                if (v == callback)
-                {
-                    key = k;
-                    break;
-                }
-            }
-            if (key.empty())
-            {
-                LOGD << callback;
-            }
-            else
-            {
-                LOGD << key;
-            }
+
+            DebugPrint(GlobalKeymap, c);
+
             // auto command =
             set_buffer_environ(GetCurrentTab()->GetCurrentBuffer());
             GetCurrentTab()->GetCurrentBuffer()->SavePosition();
-            callback(&w3mApp::Instance());
+            GlobalKeymap[c](&w3mApp::Instance());
             set_prec_num(0);
         }
     }
@@ -171,27 +178,8 @@ static void _escKeyProc(int c, int esc, Command map[])
     //     esc |= (CurrentKey() & ~0xFFFF);
     // }
     SetCurrentKey(esc | c);
-    auto callback = map[c];
-
-    std::string_view key;
-    for (auto &[k, v] : g_commandMap)
-    {
-        if (v == callback)
-        {
-            key = k;
-            break;
-        }
-    }
-    if (key.empty())
-    {
-        LOGD << callback;
-    }
-    else
-    {
-        LOGD << key;
-    }
-
-    callback(&w3mApp::Instance());
+    DebugPrint(map, c);
+    map[c](&w3mApp::Instance());
 }
 
 void escKeyProc(char c)
