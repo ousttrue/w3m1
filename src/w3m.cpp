@@ -391,18 +391,10 @@ w3mApp::w3mApp()
 
     NO_proxy_domains = newTextList();
     fileToDelete = newTextList();
-
-    m_term = new Terminal();
 }
 
 w3mApp::~w3mApp()
 {
-    delete m_term;
-
-#ifdef USE_MIGEMO
-    init_migemo(); /* close pipe to migemo */
-#endif
-
     stopDownload();
 
     DeleteAllTabs();

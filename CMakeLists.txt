@@ -111,6 +111,7 @@ add_executable(w3m
     src/frontend/tabbar.cpp
     src/frontend/search.cpp
     src/frontend/menu.cpp
+    src/frontend/terminal.cpp
     src/frontend/terms.cpp
     src/frontend/termcap_str.cpp
     src/frontend/screen.cpp

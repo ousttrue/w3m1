@@ -10,7 +10,6 @@
 
 struct TextList;
 struct Hist;
-class Terminal;
 
 enum DumpFlags
 {
@@ -66,8 +65,6 @@ class w3mApp
 
     w3mApp(const w3mApp &) = delete;
     w3mApp &operator=(const w3mApp &) = delete;
-
-    Terminal *m_term = nullptr;
 
 public:
     // const
@@ -329,11 +326,6 @@ public:
     int Main(const URL &url);
 
     void _quitfm(int confirm);
-
-    Terminal *term()
-    {
-        return m_term;
-    }
 
     bool UseProxy(const URL &url);
 
