@@ -39,12 +39,16 @@ bool Tab::SetCurrent(int index)
         return false;
     }
 
+    LOGI << stream.content_type << ";" << stream.content_charset;
+
     auto buf = LoadStream(stream);
     if (!buf)
     {
         LOGE << "fail to LoadStream";
         return false;
     }
+
+    buf->GotoLine(0, true);
 
     m_buffer = buf;
     displayCurrentbuf(B_NORMAL);

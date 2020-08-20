@@ -506,7 +506,7 @@ URL URL::Parse(std::string_view _url, const URL *base)
                 * elements like `//', `..' or `.' in the file. It is 
                 * server's responsibility to canonicalize such path.
                 */
-                path = cleanupName(path.data());
+                path = cleanupName(std::string(path).data());
             }
         }
         else if (path[0] == '/')
@@ -517,7 +517,7 @@ URL URL::Parse(std::string_view _url, const URL *base)
             * In both case, there must be no side effect with
             * cleanupName(). (I hope so...)
             */
-            path = cleanupName(path.data());
+            path = cleanupName(std::string(path).data());
         }
     }
 

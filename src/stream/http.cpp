@@ -1,5 +1,5 @@
 #include <sstream>
-
+#include <plog/Log.h>
 #include "stream/http.h"
 #include "stream/url.h"
 #include "stream/loader.h"
@@ -335,7 +335,9 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
         }
 
         // redirect
-        return GetResponse(URL::Parse(location, nullptr), &url, referer, nullptr);
+        auto new_url = URL::Parse(location, nullptr);
+        LOGD << "redirect to:" << location;
+        return GetResponse(new_url, &url, referer, nullptr);
     }
 
     return {stream, response};
