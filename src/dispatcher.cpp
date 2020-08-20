@@ -1,12 +1,12 @@
 #include <plog/Log.h>
 #include "dispatcher.h"
-
 #include "public.h"
 #include "commands.h"
 #include "file.h"
 #include "rc.h"
 #include "ctrlcode.h"
 #include "indep.h"
+#include "frontend/terminal.h"
 #include "frontend/terms.h"
 #include "frontend/display.h"
 #include "frontend/buffer.h"
@@ -248,15 +248,9 @@ void ExecuteCommand(char *data)
         ClearCurrentKeyData();
         w3mApp::Instance().CurrentCmdData = *p ? p : "";
 
-        if (w3mApp::Instance().use_mouse)
-        {
-            mouse_inactive();
-        }
+        Terminal::mouse_on();
         cmd(&w3mApp::Instance());
-        if (w3mApp::Instance().use_mouse)
-        {
-            mouse_active();
-        }
+        Terminal::mouse_off();
 
         w3mApp::Instance().CurrentCmdData.clear();
     }

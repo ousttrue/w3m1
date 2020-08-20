@@ -1,7 +1,7 @@
 #include "event.h"
 #include "commands.h"
 #include "dispatcher.h"
-
+#include "terminal.h"
 #include "terms.h"
 #include "tab.h"
 #include "buffer.h"
@@ -35,15 +35,11 @@ void SigAlarm(int)
         ClearCurrentKey();
         ClearCurrentKeyData();
         w3mApp::Instance().CurrentCmdData = data = (char *)CurrentAlarm()->data;
-#ifdef USE_MOUSE
-        if (w3mApp::Instance().use_mouse)
-            mouse_inactive();
-#endif
+
+        Terminal::mouse_on();
         CurrentAlarm()->cmd(&w3mApp::Instance());
-#ifdef USE_MOUSE
-        if (w3mApp::Instance().use_mouse)
-            mouse_active();
-#endif
+        Terminal::mouse_off();
+
         w3mApp::Instance().CurrentCmdData.clear();
         if (CurrentAlarm()->status == AL_IMPLICIT_ONCE)
         {

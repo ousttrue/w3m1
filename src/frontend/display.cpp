@@ -208,8 +208,7 @@ void fmTerm(void)
         if (w3mApp::Instance().activeImage)
             loadImage(NULL, IMG_FLAG_STOP);
 
-        if (w3mApp::Instance().use_mouse)
-            mouse_end();
+        Terminal::mouse_off();
 
         w3mApp::Instance().fmInitialized = false;
     }
@@ -225,10 +224,10 @@ void fmInit(void)
         Screen::Instance().Setup();
         term_raw();
         term_noecho();
-#ifdef USE_IMAGE
+
         if (w3mApp::Instance().displayImage)
             initImage();
-#endif
+
     }
     w3mApp::Instance().fmInitialized = true;
 }
@@ -898,13 +897,9 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
         message(s, 0, (Terminal::lines() - 1));
     refresh();
 
-    if (mouse && w3mApp::Instance().use_mouse)
-        mouse_active();
-
+    Terminal::mouse_on();
     sleep_till_anykey(sec, purge);
-
-    if (mouse && w3mApp::Instance().use_mouse)
-        mouse_inactive();
+    Terminal::mouse_off();
 
     if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL &&
         redraw_current)

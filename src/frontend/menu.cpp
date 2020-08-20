@@ -513,14 +513,9 @@ int action_menu(Menu *menu)
 
     while (1)
     {
-
-        if (w3mApp::Instance().use_mouse)
-            mouse_active();
-
+        Terminal::mouse_on();
         c = getch();
-
-        if (w3mApp::Instance().use_mouse)
-            mouse_inactive();
+        Terminal::mouse_off();
 
         if (IS_ASCII(c))
         { /* Ascii */

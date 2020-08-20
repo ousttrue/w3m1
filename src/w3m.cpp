@@ -586,8 +586,7 @@ void w3mApp::mainloop()
             SetCurrentAlarm(DefaultAlarm());
 
         DisableMouseAction();
-        if (use_mouse)
-            mouse_active();
+        Terminal::mouse_on();
 
         if (CurrentAlarm()->sec > 0)
         {
@@ -625,10 +624,7 @@ void w3mApp::mainloop()
             alarm(0);
         }
 
-        if (use_mouse)
-        {
-            mouse_inactive();
-        }
+        Terminal::mouse_off();
 
         DispatchKey(c);
     }

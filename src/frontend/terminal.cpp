@@ -40,8 +40,68 @@ static struct w3m_term_info
 /* *INDENT-ON * */
 
 FILE *g_ttyf = nullptr;
+bool g_mouseActive = false;
 
+void mouse_init()
+{
+    if (g_mouseActive)
+        return;
 
+    Terminal::xterm_on();
+
+    g_mouseActive = 1;
+}
+void mouse_active()
+{
+    if (!g_mouseActive)
+        mouse_init();
+}
+
+void mouse_end()
+{
+    if (g_mouseActive == 0)
+        return;
+
+    Terminal::xterm_off();
+
+    g_mouseActive = 0;
+}
+void mouse_inactive()
+{
+    if (g_mouseActive && Terminal::is_xterm())
+        mouse_end();
+}
+
+static void reset_exit_with_value(SIGNAL_ARG, int rval)
+{
+    if (g_mouseActive)
+        mouse_end();
+
+    // w3m_exit(rval);
+    exit(rval);
+    SIGNAL_RETURN;
+}
+
+void reset_error_exit(SIGNAL_ARG)
+{
+    reset_exit_with_value(SIGNAL_ARGLIST, 1);
+}
+
+static void reset_exit(SIGNAL_ARG)
+{
+    reset_exit_with_value(SIGNAL_ARGLIST, 0);
+}
+
+static void error_dump(SIGNAL_ARG)
+{
+    mySignal(SIGIOT, SIG_DFL);
+    abort();
+    SIGNAL_RETURN;
+}
+
+///
+/// Terminal
+///
 Terminal::Terminal()
 {
     // name
@@ -90,17 +150,17 @@ Terminal::Terminal()
         }
     }
 
-//     mySignal(SIGHUP, reset_exit);
-//     mySignal(SIGINT, reset_exit);
-//     mySignal(SIGQUIT, reset_exit);
-//     mySignal(SIGTERM, reset_exit);
-//     mySignal(SIGILL, error_dump);
-//     mySignal(SIGIOT, error_dump);
-//     mySignal(SIGFPE, error_dump);
-// #ifdef SIGBUS
-//     mySignal(SIGBUS, error_dump);
-// #endif /* SIGBUS */
-//     /* mySignal(SIGSEGV, error_dump); */
+    //     mySignal(SIGHUP, reset_exit);
+    //     mySignal(SIGINT, reset_exit);
+    //     mySignal(SIGQUIT, reset_exit);
+    //     mySignal(SIGTERM, reset_exit);
+    //     mySignal(SIGILL, error_dump);
+    //     mySignal(SIGIOT, error_dump);
+    //     mySignal(SIGFPE, error_dump);
+    // #ifdef SIGBUS
+    //     mySignal(SIGBUS, error_dump);
+    // #endif /* SIGBUS */
+    //     /* mySignal(SIGSEGV, error_dump); */
 
     getTCstr();
     if (T_ti && !w3mApp::Instance().Do_not_use_ti_te)
@@ -270,3 +330,15 @@ int Terminal::columns()
 //     if (LINES > MAX_LINE)
 //         LINES = MAX_LINE;
 // }
+
+void Terminal::mouse_on()
+{
+    if (w3mApp::Instance().use_mouse)
+        mouse_active();
+}
+
+void Terminal::mouse_off()
+{
+    if (w3mApp::Instance().use_mouse)
+        mouse_inactive();
+}

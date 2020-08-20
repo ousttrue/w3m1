@@ -28,4 +28,6 @@ public:
     static void xterm_off();
     static int lines();
     static int columns();
+    static void mouse_on();
+    static void mouse_off();
 };

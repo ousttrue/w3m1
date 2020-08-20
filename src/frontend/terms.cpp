@@ -29,7 +29,6 @@
 
 
 
-int mouseActive = 0;
 static const char *title_str = NULL;
 
 typedef struct termios TerminalMode;
@@ -37,32 +36,6 @@ typedef struct termios TerminalMode;
 #define MODEFLAG(d) ((d).c_lflag)
 #define IMODEFLAG(d) ((d).c_iflag)
 
-static void reset_exit_with_value(SIGNAL_ARG, int rval)
-{
-    if (mouseActive)
-        mouse_end();
-
-    // w3m_exit(rval);
-    exit(rval);
-    SIGNAL_RETURN;
-}
-
-void reset_error_exit(SIGNAL_ARG)
-{
-    reset_exit_with_value(SIGNAL_ARGLIST, 1);
-}
-
-static void reset_exit(SIGNAL_ARG)
-{
-    reset_exit_with_value(SIGNAL_ARGLIST, 0);
-}
-
-static void error_dump(SIGNAL_ARG)
-{
-    mySignal(SIGIOT, SIG_DFL);
-    abort();
-    SIGNAL_RETURN;
-}
 
 static void ttymode_set(int mode, int imode)
 {
@@ -386,50 +359,6 @@ int sleep_till_anykey(int sec, int purge)
         reset_error_exit(SIGNAL_ARGLIST);
     }
     return ret;
-}
-
-void XTERM_ON()
-{
-    fputs("\033[?1001s\033[?1000h", Terminal::file());
-    Terminal::flush();
-}
-
-void XTERM_OFF()
-{
-    fputs("\033[?1000l\033[?1001r", Terminal::file());
-    Terminal::flush();
-}
-
-void mouse_init()
-{
-    if (mouseActive)
-        return;
-
-    Terminal::xterm_on();
-
-    mouseActive = 1;
-}
-
-void mouse_end()
-{
-    if (mouseActive == 0)
-        return;
-
-    Terminal::xterm_off();
-
-    mouseActive = 0;
-}
-
-void mouse_active()
-{
-    if (!mouseActive)
-        mouse_init();
-}
-
-void mouse_inactive()
-{
-    if (mouseActive && Terminal::is_xterm())
-        mouse_end();
 }
 
 int _INIT_BUFFER_WIDTH()

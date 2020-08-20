@@ -3,9 +3,6 @@
 int INIT_BUFFER_WIDTH();
 int INIT_BUFFER_WIDTH();
 int FOLD_BUFFER_WIDTH();
-void mouse_active();
-void mouse_inactive();
-void mouse_end();
 void clrtoeol(void);
 void clrtoeolx(void);
 void clrtobot(void);
