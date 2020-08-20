@@ -432,9 +432,10 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         i = pos + (Terminal::columns() - pos - 1) * (*trbyte) / content_length;
         Screen::Instance().Move((Terminal::lines() - 1), pos);
         standout();
-        addch(' ');
+
+        Screen::Instance().Putc(' ');
         for (j = pos + 1; j <= i; j++)
-            addch('|');
+            Screen::Instance().Putc('|');
         standend();
         /* no_clrtoeol(); */
         refresh();

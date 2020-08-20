@@ -71,6 +71,11 @@ public:
     void Clear();
     void Move(int line, int column);
     void Puts(const char *c, int len);
+    void Putc(char c)
+    {
+        Puts(&c, 1);
+    }
+
     void Wrap();
     void TouchColumn(int col);
     void TouchCurrentLine();

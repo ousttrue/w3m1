@@ -230,7 +230,7 @@ public:
         int cli = CurLine;
         int cco = CurColumn;
         for (int i = CurColumn; i < Cols(); i++)
-            addch(' ');
+            Screen::Instance().Putc(' ');
         Move(cli, cco);
     }
 

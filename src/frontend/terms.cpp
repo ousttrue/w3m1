@@ -37,16 +37,6 @@ typedef struct termios TerminalMode;
 #define MODEFLAG(d) ((d).c_lflag)
 #define IMODEFLAG(d) ((d).c_iflag)
 
-
-#define MAX_LINE 200
-#define MAX_COLUMN 400
-
-// termcap
-inline void MOVE(int line, int column)
-{
-    Terminal::move(line, column);
-}
-
 static void reset_exit_with_value(SIGNAL_ARG, int rval)
 {
     if (mouseActive)
@@ -132,26 +122,6 @@ void set_cc(int spec, int val)
     }
 }
 #endif /* not HAVE_SGTTY_H */
-
-
-
-
-
-
-
-/* 
- * Screen initialize
- */
-
-void addch(char c)
-{
-    addmch(&c, 1);
-}
-
-void addmch(const char *pc, int len)
-{
-    Screen::Instance().Puts(pc, len);
-}
 
 void wrap(void)
 {
@@ -282,7 +252,7 @@ void addstr(const char *s)
     while (*s != '\0')
     {
         int len = wtf_len((uint8_t *)s);
-        addmch(s, len);
+        Screen::Instance().Puts(s, len);
         s += len;
     }
 }
@@ -299,7 +269,7 @@ void addnstr(const char *s, int n)
         if (i + width > n)
             break;
         int len = wtf_len((uint8_t *)s);
-        addmch(s, len);
+        Screen::Instance().Puts(s, len);
         s += len;
         i += width;
     }
@@ -316,12 +286,12 @@ void addnstr_sup(const char *s, int n)
         if (i + width > n)
             break;
         len = wtf_len((uint8_t *)s);
-        addmch(s, len);
+        Screen::Instance().Puts(s, len);
         s += len;
         i += width;
     }
     for (; i < n; i++)
-        addch(' ');
+        Screen::Instance().Putc(' ');
 }
 
 void crmode(void)

@@ -773,7 +773,7 @@ void addChar(char c, Lineprop mode)
                 addstr(graph2_symbol[(int)c]);
             else
 #endif
-                addch(*graph_symbol[(int)c]);
+                Screen::Instance().Putc(*graph_symbol[(int)c]);
         }
         else
         {
@@ -782,7 +782,7 @@ void addChar(char c, Lineprop mode)
             addstr(symbol[(int)c]);
 #else
             symbol = get_symbol();
-            addch(*symbol[(int)c]);
+            Screen::Instance().Putc(*symbol[(int)c]);
 #endif
         }
     }
@@ -791,10 +791,10 @@ void addChar(char c, Lineprop mode)
         switch (c)
         {
         case '\t':
-            addch(c);
+            Screen::Instance().Putc(c);
             break;
         case '\n':
-            addch(' ');
+            Screen::Instance().Putc(' ');
             break;
         case '\r':
             break;
@@ -802,12 +802,12 @@ void addChar(char c, Lineprop mode)
             addstr("^?");
             break;
         default:
-            addch('^');
-            addch(c + '@');
+            Screen::Instance().Putc('^');
+            Screen::Instance().Putc(c + '@');
             break;
         }
     }
-#ifdef USE_M17N
+
     else if (mode & PC_UNKNOWN)
     {
         char buf[5];
@@ -815,13 +815,9 @@ void addChar(char c, Lineprop mode)
         addstr(buf);
     }
     else
-        addmch(p, len);
-#else
-    else if (0x80 <= (unsigned char)c && (unsigned char)c <= NBSP_CODE)
-        addch(' ');
-    else
-        addch(c);
-#endif
+    {
+        Screen::Instance().Puts(p, len);
+    }
 }
 
 static GeneralList *message_list = NULL;
@@ -1012,7 +1008,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
                 Screen::Instance().Move(t->Y(), t->Left());
                 if (t == GetCurrentTab())
                     bold();
-                addch('[');
+                Screen::Instance().Putc('[');
                 auto l = t->Width() - get_strwidth(b->buffername.c_str());
                 if (l < 0)
                     l = 0;
@@ -1026,13 +1022,13 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
                 if ((l + 1) / 2 > 0)
                     addnstr_sup(" ", (l + 1) / 2);
                 Screen::Instance().Move(t->Y(), t->Right());
-                addch(']');
+                Screen::Instance().Putc(']');
                 if (t == GetCurrentTab())
                     boldend();
             });
             Screen::Instance().Move(GetTabbarHeight(), 0);
             for (int i = 0; i < Terminal::columns(); i++)
-                addch('~');
+                Screen::Instance().Putc('~');
         }
 
         // draw

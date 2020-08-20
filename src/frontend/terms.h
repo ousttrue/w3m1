@@ -9,7 +9,7 @@ int FOLD_BUFFER_WIDTH();
 void mouse_active();
 void mouse_inactive();
 void mouse_end();
-void addmch(const char *p, int len);
+
 void clrtoeol(void);
 void clrtoeolx(void);
 void clrtobot(void);
@@ -30,7 +30,7 @@ void term_title(const char *s);
 void toggle_stand(void);
 char getch(void);
 void bell(void);
-void addch(char c);
+
 void wrap(void);
 void touch_line(void);
 void standout(void);
