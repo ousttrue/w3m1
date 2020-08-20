@@ -46,7 +46,7 @@ std::string Link::toHtml(const URL &baseUrl, CharacterEncodingScheme ces) const
     std::string_view url;
     if (m_url.size())
     {
-        auto pu = URL::Parse(m_url).Resolve(&baseUrl);
+        auto pu = URL::Parse(m_url, &baseUrl);
         url = html_quote(pu.ToStr()->ptr);
     }
     else

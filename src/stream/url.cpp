@@ -405,7 +405,7 @@ static std::tuple<std::string_view, std::string_view> ParseQuery(std::string_vie
     return {p, q.substr(0, p.data() - q.data())};
 }
 
-URL URL::Parse(std::string_view _url)
+URL URL::Parse(std::string_view _url, const URL *base)
 {
     /* quote 0x01-0x20, 0x7F-0xFF */
     auto quoted = url_quote(_url);
@@ -520,15 +520,24 @@ URL URL::Parse(std::string_view _url)
             path = cleanupName(path.data());
         }
     }
-    return URL(scheme, userinfo, std::string(host), port, std::string(path), std::string(query), std::string(fragment));
+
+    auto ret = URL(scheme, userinfo, std::string(host), port, std::string(path), std::string(query), std::string(fragment));
+    ret.ResolveInplace(base);
+    return ret;
 }
 
 URL URL::Resolve(const URL *base) const
 {
     auto url = *this;
-    if (url.scheme == SCM_MISSING)
+    url.ResolveInplace(base);
+    return url;
+}
+
+void URL::ResolveInplace(const URL *base)
+{
+    if (scheme == SCM_MISSING)
     {
-        /* scheme part is not found in the url. This means either
+        /* scheme part is not found in the  This means either
         * (a) the url is relative to the current or (b) the url
         * denotes a filename (therefore the scheme is SCM_LOCAL).
         */
@@ -538,50 +547,50 @@ URL URL::Resolve(const URL *base) const
             {
             case SCM_LOCAL:
             case SCM_LOCAL_CGI:
-                url.scheme = SCM_LOCAL;
+                scheme = SCM_LOCAL;
                 break;
             case SCM_FTP:
             case SCM_FTPDIR:
-                url.scheme = SCM_FTP;
+                scheme = SCM_FTP;
                 break;
             case SCM_NNTP:
             case SCM_NNTP_GROUP:
-                url.scheme = SCM_NNTP;
+                scheme = SCM_NNTP;
                 break;
             case SCM_NEWS:
             case SCM_NEWS_GROUP:
-                url.scheme = SCM_NEWS;
+                scheme = SCM_NEWS;
                 break;
             default:
-                url.scheme = base->scheme;
+                scheme = base->scheme;
                 break;
             }
         }
         else
         {
-            url.scheme = SCM_LOCAL;
+            scheme = SCM_LOCAL;
         }
     }
 
-    if (url.host.empty())
+    if (host.empty())
     {
-        if (base && base->scheme == url.scheme)
+        if (base && base->scheme == scheme)
         {
             /* Copy omitted element from the base URL */
-            url.userinfo = base->userinfo;
-            url.host = base->host;
-            url.port = base->port;
+            userinfo = base->userinfo;
+            host = base->host;
+            port = base->port;
             if (path.size() && path[0])
             {
                 const char *p;
                 if (scheme == SCM_UNKNOWN && strchr(const_cast<char *>(path.data()), ':') == NULL && base && (p = string_strchr(base->path, ':')) != NULL)
                 {
-                    url.path = Strnew_m_charp(base->path.substr(0, p - base->path.data()), ":", path)->ptr;
+                    path = Strnew_m_charp(base->path.substr(0, p - base->path.data()), ":", path)->ptr;
                 }
                 else if (path[0] != '/')
                 {
                     /* file is relative [process 1] */
-                    auto p = url.path.data();
+                    auto p = path.data();
                     if (base->path.size())
                     {
                         auto tmp = Strnew(base->path);
@@ -592,26 +601,24 @@ URL URL::Resolve(const URL *base) const
                             tmp->Pop(1);
                         }
                         tmp->Push(p);
-                        url.path = tmp->ptr;
+                        path = tmp->ptr;
                         // relative_uri = true;
                     }
                 }
             }
             else
             { /* scheme:[?query][#label] */
-                url.path = base->path;
-                if (url.query.empty())
-                    url.query = base->query;
+                path = base->path;
+                if (query.empty())
+                    query = base->query;
             }
             /* comment: query part need not to be completed
-	    * from the base URL. */
+	    * from the base  */
         }
     }
-
-    return url;
 }
 
-URL URL::ParsePath(std::string_view file)
+URL URL::LocalPath(std::string_view file)
 {
     return URL(SCM_LOCAL, {}, {}, {}, expandPath(file.data()), {}, {});
 }
@@ -818,4 +825,46 @@ std::string URL::NonDefaultPort() const
         << ":"
         << port;
     return ss.str();
+}
+
+std::ostream &operator<<(std::ostream &os, const URL &url)
+{
+    switch (url.scheme)
+    {
+    case SCM_HTTP:
+        os << "http://";
+        break;
+    case SCM_HTTPS:
+        os << "https://";
+        break;
+    case SCM_LOCAL:
+        os << "file://";
+        break;
+    case SCM_MISSING:
+        break;
+    default:
+        os << "not_implemented";
+        break;
+    }
+
+    if (url.host.size())
+    {
+        os
+            << url.host
+            << url.NonDefaultPort();
+    }
+    os << url.path;
+    if (url.query.size())
+    {
+        os
+            << '?'
+            << url.query;
+    }
+    if (url.fragment.size())
+    {
+        os
+            << '#'
+            << url.fragment;
+    }
+    return os;
 }

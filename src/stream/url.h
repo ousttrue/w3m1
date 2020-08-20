@@ -3,9 +3,15 @@
 #include <string>
 #include <string_view>
 #include <memory>
+// #include <ostream>
 #include <wc.h>
 
 extern int ai_family_order_table[7][3]; /* XXX */
+
+namespace std
+{
+    typedef basic_ostream<char> ostream;
+}
 
 enum URLSchemeTypes
 {
@@ -26,6 +32,7 @@ enum URLSchemeTypes
     SCM_MAILTO = 12,
     SCM_HTTPS = 13,
 };
+std::ostream &operator<<(std::ostream &os, URLSchemeTypes scheme);
 
 struct URLScheme
 {
@@ -98,9 +105,16 @@ public:
         return scheme == SCM_LOCAL && path == "-";
     }
 
-    static URL Parse(std::string_view url);
-    static URL ParsePath(std::string_view path);
+    static URL Parse(std::string_view url, const URL *base);
+    static URL LocalPath(std::string_view path);
+    void ResolveInplace(const URL *base);
     URL Resolve(const URL *base) const;
+    URL CopyWithoutFragment()const
+    {
+        auto copy = *this;
+        copy.fragment.clear();
+        return copy;
+    }
 
     operator bool() const
     {
@@ -109,6 +123,7 @@ public:
     Str ToStr(bool usePass = false, bool useLabel = true) const;
     std::string NonDefaultPort() const;
 };
+std::ostream &operator<<(std::ostream &os, const URL &url);
 
 struct ContentStream
 {

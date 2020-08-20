@@ -632,7 +632,7 @@ link_list_panel(const BufferPtr &buf)
             const char *p;
             if (l.url().size())
             {
-                auto pu = URL::Parse(l.url()).Resolve(buf->BaseURL());
+                auto pu = URL::Parse(l.url(), buf->BaseURL());
                 p = pu.ToStr()->ptr;
                 u = html_quote(p);
                 if (w3mApp::Instance().DecodeURL)
@@ -660,7 +660,7 @@ link_list_panel(const BufferPtr &buf)
             auto a = &al.anchors[i];
             if (a->hseq < 0 || a->slave)
                 continue;
-            auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
+            auto pu = URL::Parse(a->url, buf->BaseURL());
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (w3mApp::Instance().DecodeURL)
@@ -684,7 +684,7 @@ link_list_panel(const BufferPtr &buf)
             auto a = &al.anchors[i];
             if (a->slave)
                 continue;
-            auto pu = URL::Parse(a->url).Resolve(buf->BaseURL());
+            auto pu = URL::Parse(a->url, buf->BaseURL());
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (w3mApp::Instance().DecodeURL)
@@ -719,7 +719,7 @@ link_list_panel(const BufferPtr &buf)
                     m = (MapArea *)mi->ptr;
                     if (!m)
                         continue;
-                    auto pu = URL::Parse(m->url).Resolve(buf->BaseURL());
+                    auto pu = URL::Parse(m->url, buf->BaseURL());
                     p = pu.ToStr()->ptr;
                     u = html_quote(p);
                     if (w3mApp::Instance().DecodeURL)

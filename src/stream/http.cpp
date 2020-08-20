@@ -335,7 +335,7 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
         }
 
         // redirect
-        return GetResponse(URL::Parse(location), &url, referer, nullptr);
+        return GetResponse(URL::Parse(location, nullptr), &url, referer, nullptr);
     }
 
     return {stream, response};

@@ -350,7 +350,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
     if (!url)
         return s;
 
-    auto pu = URL::Parse(url).Resolve(buf->BaseURL());
+    auto pu = URL::Parse(url, buf->BaseURL());
     u = pu.ToStr();
     if (w3mApp::Instance().DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));

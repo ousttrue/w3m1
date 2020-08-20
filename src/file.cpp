@@ -794,7 +794,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
     }
     else
     {
-        buf = doExternal(URL::Parse("-"), stream, t.c_str());
+        buf = doExternal(URL::StdIn(), stream, t.c_str());
         if (buf)
         {
             return buf;

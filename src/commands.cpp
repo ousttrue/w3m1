@@ -306,7 +306,7 @@ void pipeBuf(w3mApp *w3m)
     saveBuffer(GetCurrentTab()->GetCurrentBuffer(), f, true);
     fclose(f);
 
-    GetCurrentTab()->Push(URL::Parse(shell_quote(tmpf)));
+    GetCurrentTab()->Push(URL::LocalPath(shell_quote(tmpf)));
 
     // auto newBuf = getpipe(myExtCommand(cmd, shell_quote(tmpf), true)->ptr);
     // if (newBuf == NULL)
@@ -857,7 +857,7 @@ void followI(w3mApp *w3m)
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
     refresh();
-    GetCurrentTab()->Push(URL::Parse(a->url));
+    GetCurrentTab()->Push(URL::Parse(a->url, buf->BaseURL()));
     // auto newBuf = loadGeneralFile(URL::Parse(a->url), buf->BaseURL());
     // if (newBuf == NULL)
     // {
@@ -1023,7 +1023,7 @@ void followA(w3mApp *w3m)
         return;
     }
 
-    auto u = URL::Parse(a->url).Resolve(buf->BaseURL());
+    auto u = URL::Parse(a->url, buf->BaseURL());
     if (u.ToStr()->Cmp(buf->currentURL.ToStr()) == 0)
     {
         /* index within this buffer */
@@ -1062,7 +1062,7 @@ void followA(w3mApp *w3m)
     //     displayCurrentbuf(B_NORMAL);
     // }
 
-    tab->Push(URL::Parse(url));
+    tab->Push(URL::Parse(url, buf->BaseURL()));
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -1215,7 +1215,7 @@ void gorURL(w3mApp *w3m)
 void ldBmark(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
-    tab->Push(URL::ParsePath(w3m->BookmarkFile));
+    tab->Push(URL::LocalPath(w3m->BookmarkFile));
 }
 
 /* Add current to bookmark */
@@ -1282,7 +1282,7 @@ void linkMn(w3mApp *w3m)
         return;
     }
 
-    auto p_url = URL::Parse(l->url()).Resolve(GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    auto p_url = URL::Parse(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     cmd_loadURL(l->url(), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 }
@@ -1595,7 +1595,7 @@ void vwSrc(w3mApp *w3m)
         (*newBuf->clone)++;
         newBuf->need_reshape = true;
         // buf->Reshape();
-        GetCurrentTab()->Push(URL::Parse("w3m://htmlsource"));
+        GetCurrentTab()->Push(URL::Parse("w3m://htmlsource", &buf->currentURL));
         displayCurrentbuf(B_NORMAL);
     }
 }
@@ -1882,7 +1882,7 @@ void linkbrz(w3mApp *w3m)
     if (a == NULL)
         return;
 
-    auto pu = URL::Parse(a->url).Resolve(GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    auto pu = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     invoke_browser(pu.ToStr()->ptr);
 }
 

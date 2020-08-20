@@ -1,4 +1,6 @@
 #include <unistd.h>
+#include <unordered_map>
+#include <sstream>
 #include "stream/loader.h"
 
 #include "indep.h"
@@ -242,7 +244,7 @@ BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingSche
         return NULL;
 
     auto stream = newFileStream(f, pclose);
-    auto url = URL::Parse(cmd);
+    auto url = URL::LocalPath(cmd);
 
     return loadproc(url, stream, content_charset);
 }
@@ -568,15 +570,23 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
 
 // f.modtime = mymktime(checkHeader(t_buf, "Last-Modified:"));
 
-ContentStream GetStream(const URL &_url,
+std::unordered_map<std::string, ContentStream> g_cache;
+
+ContentStream GetStream(const URL &url,
                         const URL *current, HttpReferrerPolicy referer,
                         struct FormList *form)
 {
-    if (_url.scheme == SCM_MISSING)
+    auto without_fragment = url.CopyWithoutFragment();
+    std::stringstream ss;
+    ss << without_fragment;
+    auto key = ss.str();
+    auto found = g_cache.find(key);
+    if (found != g_cache.end())
     {
-        auto a = 0;
+        return found->second;
     }
-    auto url = _url.Resolve(current);
+
+    // auto url = _url.Resolve(current);
 
     if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
     {
@@ -584,7 +594,12 @@ ContentStream GetStream(const URL &_url,
         // HTTP
         //
         HttpClient client;
-        return client.GetStream(url, current, referer, form);
+        auto stream = client.GetStream(url, current, referer, form);
+        if (stream.stream)
+        {
+            g_cache.insert(std::make_pair(key, stream));
+        }
+        return stream;
     }
 
     if (url.scheme == SCM_LOCAL_CGI)

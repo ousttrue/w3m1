@@ -826,7 +826,7 @@ add_pre_form(struct pre_form *prev, const char *url, const char *name, const cha
     }
     else if (url)
     {
-        auto pu = URL::Parse(url);
+        auto pu = URL::Parse(url, nullptr);
         newForm->url = pu.ToStr()->ptr;
         newForm->re_url = NULL;
     }

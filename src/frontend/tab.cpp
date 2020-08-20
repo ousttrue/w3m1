@@ -81,7 +81,7 @@ void Tab::DeleteBack()
 
 void Tab::Push(const URL &url)
 {
-    LOGI << url.ToStr()->ptr;
+    LOGI << url;
 
     if (m_history.size() > m_current + 1)
     {

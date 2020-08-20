@@ -471,7 +471,7 @@ void loadImage(BufferPtr buf, int flag)
 	     */
             setup_child(false, 0, -1);
             w3mApp::Instance().image_source = cache->file;
-            b = loadGeneralFile(URL::Parse(cache->url), cache->current, HttpReferrerPolicy::StrictOriginWhenCrossOrigin);
+            b = loadGeneralFile(URL::Parse(cache->url, nullptr), cache->current, HttpReferrerPolicy::StrictOriginWhenCrossOrigin);
             if (!b || b->real_type.empty() || !b->real_type.starts_with("image/"))
                 unlink(cache->file);
 #if defined(HAVE_SYMLINK) && defined(HAVE_LSTAT)

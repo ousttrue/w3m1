@@ -346,7 +346,7 @@ static struct frameset *frame_download_source(struct frame_body *b, URL *current
     if (b->baseURL)
         *baseURL = b->baseURL;
 
-    auto url = URL::Parse(b->url).Resolve(currentURL);
+    auto url = URL::Parse(b->url, currentURL);
     switch (url.scheme)
     {
     case SCM_LOCAL:
@@ -356,7 +356,7 @@ static struct frameset *frame_download_source(struct frame_body *b, URL *current
         b->flags = 0;
     default:
         w3mApp::Instance().is_redisplay = true;
-        buf = loadGeneralFile(URL::Parse(b->url),
+        buf = loadGeneralFile(URL::Parse(b->url, baseURL),
                               baseURL ? baseURL : currentURL,
                               b->referer, /*flag | RG_FRAME_SRC,*/ b->request);
 
@@ -571,7 +571,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                                      : "(no name)");
                         break;
                     }
-                    base = URL::Parse(frame.body->url).Resolve(currentURL);
+                    base = URL::Parse(frame.body->url, currentURL);
                     p_target = f->name;
                     s_target = frame.body->name;
                     t_target = "_blank";
@@ -717,7 +717,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                 if (tag->TryGetAttributeValue(ATTR_HREF, &q))
                                 {
                                     q = wc_conv_strict(remove_space(q), w3mApp::Instance().InnerCharset, charset)->ptr;
-                                    base = URL::Parse(q);
+                                    base = URL::Parse(q, nullptr);
                                 }
                                 if (tag->TryGetAttributeValue(ATTR_TARGET, &q))
                                 {
@@ -851,7 +851,7 @@ createFrameFile(struct frameset *f, FILE *f1, BufferPtr current, int level,
                                     tag->value[j] =
                                         wc_conv_strict(remove_space(tag->value[j]), w3mApp::Instance().InnerCharset, charset)->ptr;
                                     tag->need_reconstruct = true;
-                                    url = URL::Parse(tag->value[j]).Resolve(&base);
+                                    url = URL::Parse(tag->value[j], &base);
                                     if (url.scheme == SCM_UNKNOWN ||
                                         url.scheme == SCM_MAILTO ||
                                         url.scheme == SCM_MISSING)
@@ -995,7 +995,7 @@ renderFrame(BufferPtr Cbuf, int force_reload)
         renderFrameSet = Cbuf->frameset;
         flushFrameSet(renderFrameSet);
         w3mApp::Instance().DocumentCharset = w3mApp::Instance().InnerCharset;
-        buf = loadGeneralFile(URL::Parse(tmp->ptr));
+        buf = loadGeneralFile(URL::Parse(tmp->ptr, nullptr));
     }
     w3mApp::Instance().DocumentCharset = doc_charset;
     renderFrameSet = NULL;
