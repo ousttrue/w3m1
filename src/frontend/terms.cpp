@@ -54,39 +54,14 @@ typedef struct termios TerminalMode;
 
 // termcap
 extern "C" int tgetnum(const char *);
-extern "C" char *tgoto(const char *, int, int);
 
 void clear(), wrap(), touch_line();
 void clrtoeol(void); /* conflicts with curs_clear(3)? */
 
 inline void MOVE(int line, int column)
 {
-    Terminal::Terminal::writestr(tgoto(T_cm, column, line));
+    Terminal::move(line, column);
 }
-
-#define W3M_TERM_INFO(name, title, mouse) name, title, mouse
-#define NEED_XTERM_ON (1)
-#define NEED_XTERM_OFF (1 << 1)
-
-static char XTERM_TITLE[] = "\033]0;w3m: %s\007";
-static char SCREEN_TITLE[] = "\033k%s\033\134";
-
-/* *INDENT-OFF* */
-static struct w3m_term_info
-{
-    const char *term;
-    const char *title_str;
-    int mouse_flag;
-} w3m_term_info_list[] = {
-    {W3M_TERM_INFO("xterm", XTERM_TITLE, (NEED_XTERM_ON | NEED_XTERM_OFF))},
-    {W3M_TERM_INFO("kterm", XTERM_TITLE, (NEED_XTERM_ON | NEED_XTERM_OFF))},
-    {W3M_TERM_INFO("rxvt", XTERM_TITLE, (NEED_XTERM_ON | NEED_XTERM_OFF))},
-    {W3M_TERM_INFO("Eterm", XTERM_TITLE, (NEED_XTERM_ON | NEED_XTERM_OFF))},
-    {W3M_TERM_INFO("mlterm", XTERM_TITLE, (NEED_XTERM_ON | NEED_XTERM_OFF))},
-    {W3M_TERM_INFO("screen", SCREEN_TITLE, 0)},
-    {W3M_TERM_INFO(NULL, NULL, 0)}};
-#undef W3M_TERM_INFO
-/* *INDENT-ON * */
 
 void ttymode_set(int mode, int imode)
 {
@@ -617,10 +592,9 @@ void mouse_init()
 {
     if (mouseActive)
         return;
-    if (Terminal::is_xterm() & NEED_XTERM_ON)
-    {
-        XTERM_ON;
-    }
+
+    Terminal::xterm_on();
+
     mouseActive = 1;
 }
 
@@ -628,10 +602,9 @@ void mouse_end()
 {
     if (mouseActive == 0)
         return;
-    if (Terminal::is_xterm() & NEED_XTERM_OFF)
-    {
-        XTERM_OFF;
-    }
+
+    Terminal::xterm_off();
+    
     mouseActive = 0;
 }
 
