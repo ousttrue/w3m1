@@ -23,4 +23,7 @@ public:
     static int tcgetattr(struct termios *__termios_p);
     static int tcsetattr(const struct termios *__termios_p);
     static const char *ttyname_tty();
+    static void move(int line, int column);
+    static void xterm_on();
+    static void xterm_off();
 };

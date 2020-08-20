@@ -10,6 +10,7 @@
 #include <termios.h>
 // #include <term.h> // danger macros
 extern "C" int tputs(const char *, int, int (*)(int));
+extern "C" char *tgoto(const char *, int, int);
 
 #define W3M_TERM_INFO(name, title, mouse) name, title, mouse
 #define NEED_XTERM_ON (1)
@@ -175,4 +176,27 @@ int Terminal::tcsetattr(const struct termios *__termios_p)
 const char *Terminal::ttyname_tty(void)
 {
     return ttyname(Instance().m_tty);
+}
+
+void Terminal::move(int line, int column)
+{
+    writestr(tgoto(T_cm, column, line));
+}
+
+void Terminal::xterm_on()
+{
+    if (is_xterm() & NEED_XTERM_ON)
+    {
+        fputs("\033[?1001s\033[?1000h", Terminal::file());
+        Terminal::flush();
+    }
+}
+
+void Terminal::xterm_off()
+{
+    if (is_xterm() & NEED_XTERM_OFF)
+    {
+        fputs("\033[?1000l\033[?1001r", Terminal::file());
+        Terminal::flush();
+    }
 }
