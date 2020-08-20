@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include "textlist.h"
 #include "history.h"
-
+#include "frontend/terminal.h"
 #include "indep.h"
 #include "gc_helper.h"
 #include "rc.h"
@@ -1609,7 +1609,7 @@ void _peekURL(int only_img)
         return;
     if (CurrentKey == PrevKey && s != NULL)
     {
-        if (s->Size() - offset >= COLS)
+        if (s->Size() - offset >= Terminal::columns())
             offset++;
         else if (s->Size() <= offset) /* bug ? */
             offset = 0;
@@ -1647,8 +1647,8 @@ void _peekURL(int only_img)
 
 disp:
     n = searchKeyNum();
-    if (n > 1 && s->Size() > (n - 1) * (COLS - 1))
-        offset = (n - 1) * (COLS - 1);
+    if (n > 1 && s->Size() > (n - 1) * (Terminal::columns() - 1))
+        offset = (n - 1) * (Terminal::columns() - 1);
 
     while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;

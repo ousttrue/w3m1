@@ -2,7 +2,7 @@
 #include "history.h"
 #include "commands.h"
 #include "dispatcher.h"
-
+#include "frontend/terminal.h"
 #include "urimethod.h"
 #include "gc_helper.h"
 #include "indep.h"
@@ -583,7 +583,7 @@ void susp(w3mApp *w3m)
 #ifndef SIGSTOP
     char *shell;
 #endif /* not SIGSTOP */
-    move((LINES - 1), 0);
+    move((Terminal::lines() - 1), 0);
     clrtoeolx();
     refresh();
     fmTerm();
@@ -1473,7 +1473,7 @@ void curURL(w3mApp *w3m)
     static int offset = 0;
     if (CurrentKey() == PrevKey() && s)
     {
-        if (s->Size() - offset >= COLS)
+        if (s->Size() - offset >= Terminal::columns())
             offset++;
         else if (s->Size() <= offset) /* bug ? */
             offset = 0;
@@ -1492,8 +1492,8 @@ void curURL(w3mApp *w3m)
     }
 
     int n = searchKeyNum();
-    if (n > 1 && s->Size() > (n - 1) * (COLS - 1))
-        offset = (n - 1) * (COLS - 1);
+    if (n > 1 && s->Size() > (n - 1) * (Terminal::columns() - 1))
+        offset = (n - 1) * (Terminal::columns() - 1);
     while (offset < s->Size() && p[offset] & PC_WCHAR2)
         offset++;
     disp_message_nomouse(&s->ptr[offset], true);
@@ -1969,7 +1969,7 @@ void mouse(w3mApp *w3m)
     int y = (unsigned char)getch() - 33;
     if (y < 0)
         y += 0x100;
-    if (x < 0 || x >= COLS || y < 0 || y > (LINES - 1))
+    if (x < 0 || x >= Terminal::columns() || y < 0 || y > (Terminal::lines() - 1))
         return;
     process_mouse(btn, x, y);
 }
@@ -1990,7 +1990,7 @@ void movMs(w3mApp *w3m)
 
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (x >= buf->rect.rootX && y < (LINES - 1))
+    if (x >= buf->rect.rootX && y < (Terminal::lines() - 1))
     {
         GetCurrentTab()->GetCurrentBuffer()->CursorXY(x, y);
     }
@@ -2016,7 +2016,7 @@ void menuMs(w3mApp *w3m)
     {
         x -= FRAME_WIDTH + 1;
     }
-    else if (x >= buf->rect.rootX && y < (LINES - 1))
+    else if (x >= buf->rect.rootX && y < (Terminal::lines() - 1))
     {
         GetCurrentTab()->GetCurrentBuffer()->CursorXY(x, y);
         displayCurrentbuf(B_NORMAL);

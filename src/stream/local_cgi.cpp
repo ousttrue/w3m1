@@ -439,7 +439,7 @@ Str loadLocalDir(std::string_view dname)
 
     if (w3mApp::Instance().multicolList)
     {
-        l = COLS / (maxlen + 2);
+        l = Terminal::columns() / (maxlen + 2);
         if (!l)
             l = 1;
         nrow = (n + l - 1) / l;

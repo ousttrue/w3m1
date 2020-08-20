@@ -2,7 +2,6 @@
 #ifndef TERMS_H
 #define TERMS_H
 
-extern int LINES, COLS;
 int INIT_BUFFER_WIDTH();
 int INIT_BUFFER_WIDTH();
 int FOLD_BUFFER_WIDTH();
@@ -64,7 +63,6 @@ void set_cc(int spec, int val);
 
 void set_int(void);
 
-void setlinescols(void);
 void setupscreen(void);
 void touch_cursor();
 int initscr(void);

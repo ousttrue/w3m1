@@ -38,7 +38,7 @@
 #include "frontend/tabbar.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
-
+#include "frontend/terminal.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -65,7 +65,7 @@ void set_need_resize_screen(int need)
 void resize_screen()
 {
     s_need_resize_screen = false;
-    setlinescols();
+
     setupscreen();
     if (GetCurrentTab())
         displayCurrentbuf(B_FORCE_REDRAW);
@@ -263,7 +263,7 @@ BufferPtr DownloadListBuffer(w3mApp *w3m)
             size = 0;
         if (d->size)
         {
-            int i, l = COLS - 6;
+            int i, l = Terminal::columns() - 6;
             if (size < d->size)
                 i = 1.0 * l * size / d->size;
             else
@@ -503,7 +503,6 @@ int w3mApp::Main(const URL &url)
 
         mySignal(SIGWINCH, resize_hook);
 
-        setlinescols();
         setupscreen();
     }
 

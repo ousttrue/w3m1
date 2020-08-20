@@ -1,10 +1,8 @@
-/* $Id: display.c,v 1.71 2010/07/18 14:10:09 htrb Exp $ */
-
-#include "frontend/display.h"
 #include "textlist.h"
 #include "ctrlcode.h"
 #include "file.h"
-
+#include "frontend/display.h"
+#include "frontend/terminal.h"
 #include "frontend/buffer.h"
 #include "frontend/line.h"
 #include "frontend/mouse.h"
@@ -202,7 +200,7 @@ void fmTerm(void)
 {
     if (w3mApp::Instance().fmInitialized)
     {
-        move((LINES - 1), 0);
+        move((Terminal::lines() - 1), 0);
         clrtoeolx();
         refresh();
 
@@ -328,7 +326,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
 {
     Str s = NULL, u;
     char *p;
-    int l = COLS - 1, i;
+    int l = Terminal::columns() - 1, i;
 
     if (title.size() && title[0])
     {
@@ -365,7 +363,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
         return s;
     }
     if (!s)
-        s = Strnew_size(COLS);
+        s = Strnew_size(Terminal::columns());
     i = (l - 2) / 2;
 
     while (i && pr[i] & PC_WCHAR2)
@@ -373,7 +371,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
 
     s->Push(u->c_str(), i);
     s->Push("..");
-    i = get_Str_strwidth(u) - (COLS - 1 - get_Str_strwidth(s));
+    i = get_Str_strwidth(u) - (Terminal::columns() - 1 - get_Str_strwidth(s));
 #ifdef USE_M17N
     while (i < u->Size() && pr[i] & PC_WCHAR2)
         i++;
@@ -411,7 +409,7 @@ static Str make_lastline_message(const BufferPtr &buf)
         if (s)
         {
             sl = get_Str_strwidth(s);
-            if (sl >= COLS - 3)
+            if (sl >= Terminal::columns() - 3)
                 return s;
         }
     }
@@ -437,7 +435,7 @@ static Str make_lastline_message(const BufferPtr &buf)
 
     if (s)
     {
-        int l = COLS - 3 - sl;
+        int l = Terminal::columns() - 3 - sl;
         if (get_Str_strwidth(msg) > l)
         {
             const char *p;
@@ -657,8 +655,8 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                 if (w >
                     (int)((buf->rect.right()) * w3mApp::Instance().pixel_per_char - x))
                     w = (int)((buf->rect.right()) * w3mApp::Instance().pixel_per_char - x);
-                if (h > (int)((LINES - 1) * w3mApp::Instance().pixel_per_line - y))
-                    h = (int)((LINES - 1) * w3mApp::Instance().pixel_per_line - y);
+                if (h > (int)((Terminal::lines() - 1) * w3mApp::Instance().pixel_per_line - y))
+                    h = (int)((Terminal::lines() - 1) * w3mApp::Instance().pixel_per_line - y);
                 addImage(cache, x, y, sx, sy, w, h);
                 image->touch = image_touch;
                 draw_image_flag = true;
@@ -837,7 +835,7 @@ void record_err_message(const char *s)
     {
         if (!message_list)
             message_list = newGeneralList();
-        if (message_list->nitem >= LINES)
+        if (message_list->nitem >= Terminal::lines())
             popValue(message_list);
         pushValue(message_list, allocStr(s, -1));
     }
@@ -848,7 +846,7 @@ void record_err_message(const char *s)
  */
 BufferPtr message_list_panel(void)
 {
-    Str tmp = Strnew_size(LINES * COLS);
+    Str tmp = Strnew_size(Terminal::lines() * Terminal::columns());
     ListItem *p;
 
     /* FIXME: gettextize? */
@@ -879,8 +877,8 @@ void message(std::string_view s, int return_x, int return_y)
 {
     if (!w3mApp::Instance().fmInitialized)
         return;
-    move((LINES - 1), 0);
-    addnstr(s.data(), COLS - 1);
+    move((Terminal::lines() - 1), 0);
+    addnstr(s.data(), Terminal::columns() - 1);
     clrtoeolx();
     move(return_y, return_x);
 }
@@ -904,7 +902,7 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
     if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL)
         message(s, GetCurrentTab()->GetCurrentBuffer()->rect);
     else
-        message(s, 0, (LINES - 1));
+        message(s, 0, (Terminal::lines() - 1));
     refresh();
 
     if (mouse && w3mApp::Instance().use_mouse)
@@ -948,7 +946,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     if (buf->width == 0)
         buf->width = INIT_BUFFER_WIDTH();
     if (buf->height == 0)
-        buf->height = (LINES - 1) + 1;
+        buf->height = (Terminal::lines() - 1) + 1;
     if ((buf->width != INIT_BUFFER_WIDTH() &&
          (is_html_type(buf->type) || w3mApp::Instance().FoldLine)) ||
         buf->need_reshape)
@@ -966,19 +964,19 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         buf->rect.rootX = 0;
     }
 
-    buf->rect.cols = COLS - buf->rect.rootX;
+    buf->rect.cols = Terminal::columns() - buf->rect.rootX;
     if (GetTabCount() > 1 || GetMouseActionMenuStr())
     {
         if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
             calcTabPos();
         ny = GetTabbarHeight() + 1;
-        if (ny > (LINES - 1))
-            ny = (LINES - 1);
+        if (ny > (Terminal::lines() - 1))
+            ny = (Terminal::lines() - 1);
     }
-    if (buf->rect.rootY != ny || buf->rect.lines != (LINES - 1) - ny)
+    if (buf->rect.rootY != ny || buf->rect.lines != (Terminal::lines() - 1) - ny)
     {
         buf->rect.rootY = ny;
-        buf->rect.lines = (LINES - 1) - ny;
+        buf->rect.lines = (Terminal::lines() - 1) - ny;
         buf->ArrangeCursor();
         mode = B_REDRAW_IMAGE;
     }
@@ -1036,7 +1034,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
                     boldend();
             });
             move(GetTabbarHeight(), 0);
-            for (int i = 0; i < COLS; i++)
+            for (int i = 0; i < Terminal::columns(); i++)
                 addch('~');
         }
 

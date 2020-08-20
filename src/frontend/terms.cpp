@@ -152,36 +152,10 @@ void set_int(void)
     /* mySignal(SIGSEGV, error_dump); */
 }
 
-void setlinescols(void)
-{
-    char *p;
-    int i;
-
-    // struct winsize wins;
-    // i = ioctl(tty, TIOCGWINSZ, &wins);
-    // if (i >= 0 && wins.ws_row != 0 && wins.ws_col != 0)
-    // {
-    //     LINES = wins.ws_row;
-    //     COLS = wins.ws_col;
-    // }
-
-    if (LINES <= 0 && (p = getenv("LINES")) != NULL && (i = atoi(p)) >= 0)
-        LINES = i;
-    if (COLS <= 0 && (p = getenv("COLUMNS")) != NULL && (i = atoi(p)) >= 0)
-        COLS = i;
-    if (LINES <= 0)
-        LINES =Terminal::lines();
-    if (COLS <= 0)
-        COLS = Terminal::columns();
-    if (COLS > MAX_COLUMN)
-        COLS = MAX_COLUMN;
-    if (LINES > MAX_LINE)
-        LINES = MAX_LINE;
-}
 
 void setupscreen(void)
 {
-    g_screen.Setup(LINES, COLS);
+    g_screen.Setup(Terminal::lines(), Terminal::columns());
     clear();
 }
 
@@ -611,7 +585,7 @@ void touch_cursor()
 
 int _INIT_BUFFER_WIDTH()
 {
-    return COLS - (w3mApp::Instance().showLineNum ? 6 : 1);
+    return Terminal::columns() - (w3mApp::Instance().showLineNum ? 6 : 1);
 }
 int INIT_BUFFER_WIDTH()
 {

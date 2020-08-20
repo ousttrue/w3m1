@@ -22,6 +22,7 @@
 #include "frontend/buffer.h"
 #include "frontend/tabbar.h"
 #include "frontend/lineinput.h"
+#include "frontend/terminal.h"
 
 static const char **FRAME;
 static int FRAME_WIDTH;
@@ -298,14 +299,14 @@ void geom_menu(Menu *menu, int x, int y, int mselect)
         menu->width = (menu->width / FRAME_WIDTH + 1) * FRAME_WIDTH;
     win_x = menu->x - FRAME_WIDTH;
     win_w = menu->width + 2 * FRAME_WIDTH;
-    if (win_x + win_w > COLS)
-        win_x = COLS - win_w;
+    if (win_x + win_w > Terminal::columns())
+        win_x = Terminal::columns() - win_w;
     if (win_x < 0)
     {
         win_x = 0;
-        if (win_w > COLS)
+        if (win_w > Terminal::columns())
         {
-            menu->width = COLS - 2 * FRAME_WIDTH;
+            menu->width = Terminal::columns() - 2 * FRAME_WIDTH;
             menu->width -= menu->width % FRAME_WIDTH;
             win_w = menu->width + 2 * FRAME_WIDTH;
         }
@@ -314,14 +315,14 @@ void geom_menu(Menu *menu, int x, int y, int mselect)
 
     win_y = menu->y - mselect - 1;
     win_h = menu->height + 2;
-    if (win_y + win_h > (LINES - 1))
-        win_y = (LINES - 1) - win_h;
+    if (win_y + win_h > (Terminal::lines() - 1))
+        win_y = (Terminal::lines() - 1) - win_h;
     if (win_y < 0)
     {
         win_y = 0;
-        if (win_y + win_h > (LINES - 1))
+        if (win_y + win_h > (Terminal::lines() - 1))
         {
-            win_h = (LINES - 1) - win_y;
+            win_h = (Terminal::lines() - 1) - win_y;
             menu->height = win_h - 2;
             if (menu->height <= mselect)
                 menu->offset = mselect - menu->height + 1;
@@ -590,11 +591,11 @@ void popup_menu(Menu *parent, Menu *menu)
 void guess_menu_xy(Menu *parent, int width, int *x, int *y)
 {
     *x = parent->x + parent->width + FRAME_WIDTH - 1;
-    if (*x + width + FRAME_WIDTH > COLS)
+    if (*x + width + FRAME_WIDTH > Terminal::columns())
     {
-        *x = COLS - width - FRAME_WIDTH;
+        *x = Terminal::columns() - width - FRAME_WIDTH;
         if ((parent->x + parent->width / 2 > *x) &&
-            (parent->x + parent->width / 2 > COLS / 2))
+            (parent->x + parent->width / 2 > Terminal::columns() / 2))
             *x = parent->x - width - FRAME_WIDTH + 1;
     }
     *y = parent->y + parent->select - parent->offset;
@@ -1034,7 +1035,7 @@ process_mMouse(int btn, int x, int y)
 
     menu = CurrentMenu;
 
-    if (x < 0 || x >= COLS || y < 0 || y > (LINES - 1))
+    if (x < 0 || x >= Terminal::columns() || y < 0 || y > (Terminal::lines() - 1))
         return (MENU_NOTHING);
 
     if (btn == MOUSE_BTN_UP)
@@ -1134,7 +1135,7 @@ mMouse(char c)
         y += 0x100;
 
     /* 
-     * if (x < 0 || x >= COLS || y < 0 || y > (LINES-1)) return; */
+     * if (x < 0 || x >= Terminal::columns() || y < 0 || y > (Terminal::lines()-1)) return; */
     return process_mMouse(btn, x, y);
 }
 
@@ -1219,8 +1220,8 @@ assert(false);
     // l = get_strwidth(comment);
     // if (len < l + 4)
     //     len = l + 4;
-    // if (len > COLS - 2 * FRAME_WIDTH)
-    //     len = COLS - 2 * FRAME_WIDTH;
+    // if (len > Terminal::columns() - 2 * FRAME_WIDTH)
+    //     len = Terminal::columns() - 2 * FRAME_WIDTH;
     // len = (len > 1) ? ((len - l + 1) / 2) : 0;
     // str = Strnew();
     // for (i = 0; i < len; i++)
@@ -1344,8 +1345,8 @@ initSelTabMenu(void)
     // l = strlen(comment);
     // if (len < l + 4)
     //     len = l + 4;
-    // if (len > COLS - 2 * FRAME_WIDTH)
-    //     len = COLS - 2 * FRAME_WIDTH;
+    // if (len > Terminal::columns() - 2 * FRAME_WIDTH)
+    //     len = Terminal::columns() - 2 * FRAME_WIDTH;
     // len = (len > 1) ? ((len - l + 1) / 2) : 0;
     // str = Strnew();
     // for (i = 0; i < len; i++)
@@ -1438,8 +1439,8 @@ void optionMenu(int x, int y, char **label, int *variable, int initial,
     set_menu_frame();
 
     new_option_menu(&menu, label, variable, func);
-    menu.cursorX = COLS - 1;
-    menu.cursorY = (LINES - 1);
+    menu.cursorX = Terminal::columns() - 1;
+    menu.cursorY = (Terminal::lines() - 1);
     menu.x = x;
     menu.y = y;
     menu.initial = initial;

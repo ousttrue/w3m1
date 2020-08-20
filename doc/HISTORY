@@ -1650,7 +1650,7 @@ If an <input type=button> tag has no `name' attribute,
 w3m adds it an inappropriate name attribute.
 
 From: やま
-Now w3m can handle a frameset that has both ROWS and COLS.
+Now w3m can handle a frameset that has both ROWS and Terminal::columns().
 
 From: aito
 Now bookmarking is done by a separate command w3mbookmark.
@@ -1910,7 +1910,7 @@ From: Hironori Sakamoto <h-saka@lsi.nec.co.jp>
 Bugfix about Content-Transfer-Encoding: quoted-printable
 
 From:aito
-When <frameset > contains both COLS= and ROWS=, w3m can't render
+When <frameset > contains both Terminal::columns()= and ROWS=, w3m can't render
 that frame correctly. [fixed]
 
 From: sakane@d4.bsd.nes.nec.co.jp (Yoshinobu Sakane)

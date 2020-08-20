@@ -437,7 +437,7 @@ From: Hironori Sakamoto <h-saka@lsi.nec.co.jp>
 Subject: [w3m-dev 01602] Re: first body with -m (Re: w3m-m17n-0.7)
   ...
   �ɤ����ˡ�
-    buf->lastLine->linenumber - buf->topLine->linenumber < (LINES-1) - 1
+    buf->lastLine->linenumber - buf->topLine->linenumber < (Terminal::lines()-1) - 1
   �Ȥ��������ä���Ȥ����Τ��ʡ�
   �Ȥ����櫓�� patch ���äƤߤ��ΤǤ���������äȼ���̵���Ǥ���
   �ʤ���pgFore, pgBack �Υ���������֤�����򡢥���������('J', 'K')
@@ -2771,8 +2771,8 @@ From: hsaka@mth.biglobe.ne.jp (Hironori Sakamoto)
 ��menu.c: graphic char �ط��ν���(Cygwin ����ߤ� terms.c ��)
 ��terms.c: Cygwin �ξ��ˤ� T_as = T_as = T_ac = ""
            graph_ok() �� T_ac != '\0' ���ɲ�
-��LINES - 1 �ȤʤäƤ��ޤäƤ����ս�� LASTLINE �ˤ��ޤ�����
-  (����ǡ�LINES �� terms.c �ʳ�����ä��ޤ���)
+��Terminal::lines() - 1 �ȤʤäƤ��ޤäƤ����ս�� LASTLINE �ˤ��ޤ�����
+  (����ǡ�Terminal::lines() �� terms.c �ʳ�����ä��ޤ���)
 ��bookmark.c: KANJI_SYMBOL -> LANG == JA 
 
 From: "OMAE, jun" <jun-o@osb.att.ne.jp>
@@ -2925,7 +2925,7 @@ From: Hironori Sakamoto <h-saka@lsi.nec.co.jp>
   (��������� table �ˤʤäƤ���ȻפäƤ���˺��Ƥޤ���)
 
 From:aito
-<frameset > ����� COLS= ��
+<frameset > ����� Terminal::columns()= ��
 ROWS= ��ξ�����ꤷ�Ƥ���ȡ��ե졼�ब���ޤ��������
 �Ǥ��ʤ��ʤ�褦�Ǥ���
 

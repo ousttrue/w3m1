@@ -22,6 +22,7 @@
 #include "file.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
+#include "frontend/terminal.h"
 #include "html/parsetag.h"
 #include "html/html_processor.h"
 #include <time.h>
@@ -1039,8 +1040,8 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
                                   ((domain && domain->ptr)
                                        ? domain->ptr
                                        : "<localdomain>"));
-                if (msg->Size() > ::COLS - 10)
-                    msg->Pop(msg->Size() - (::COLS - 10));
+                if (msg->Size() > ::Terminal::columns() - 10)
+                    msg->Pop(msg->Size() - (::Terminal::columns() - 10));
                 msg->Push(" (y/n)");
                 ans = inputAnswer(msg->ptr);
             }

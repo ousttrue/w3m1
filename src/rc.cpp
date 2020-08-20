@@ -22,6 +22,7 @@
 #include "html/parsetag.h"
 #include "make_array.h"
 #include "frontend/terms.h"
+#include "frontend/terminal.h"
 #include <stdlib.h>
 #include <vector>
 #include <unordered_map>
@@ -1317,8 +1318,8 @@ static void loadPasswd(void)
 
 void sync_with_option(void)
 {
-    if (w3mApp::Instance().PagerMax < ::LINES)
-        w3mApp::Instance().PagerMax = ::LINES;
+    if (w3mApp::Instance().PagerMax < ::Terminal::lines())
+        w3mApp::Instance().PagerMax = ::Terminal::lines();
     w3mApp::Instance().WrapSearch = w3mApp::Instance().WrapDefault;
     parse_proxy();
 #ifdef USE_COOKIE

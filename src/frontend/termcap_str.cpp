@@ -117,7 +117,5 @@ void getTCstr(void)
     GETSTR(&T_ac, "ac"); /* graphics charset pairs */
     GETSTR(&T_op, "op"); /* set default color pair to its original value */
 
-    LINES = COLS = 0;
-    setlinescols();
     setgraphchar();
 }

@@ -80,9 +80,9 @@ int getCharSize()
     if (!(w > 0 && h > 0))
         return false;
     if (!w3mApp::Instance().set_pixel_per_char)
-        w3mApp::Instance().pixel_per_char = (int)(1.0 * w / COLS + 0.5);
+        w3mApp::Instance().pixel_per_char = (int)(1.0 * w / Terminal::columns() + 0.5);
     if (!w3mApp::Instance().set_pixel_per_line)
-        w3mApp::Instance().pixel_per_line = (int)(1.0 * h / LINES + 0.5);
+        w3mApp::Instance().pixel_per_line = (int)(1.0 * h / Terminal::lines() + 0.5);
     return true;
 }
 

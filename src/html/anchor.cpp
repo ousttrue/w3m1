@@ -13,6 +13,7 @@
 #include "html/html_processor.h"
 #include "stream/loader.h"
 #include "frontend/terms.h"
+#include "frontend/terminal.h"
 
 #define FIRST_ANCHOR_SIZE 30
 
@@ -269,7 +270,7 @@ reAnchorAny(BufferPtr buf, const char *re,
         return re;
     }
     for (l = w3mApp::Instance().MarkAllPages ? buf->FirstLine() : buf->TopLine(); l != NULL &&
-                                                           (w3mApp::Instance().MarkAllPages || l->linenumber < buf->TopLine()->linenumber + ::LINES - 1);
+                                                           (w3mApp::Instance().MarkAllPages || l->linenumber < buf->TopLine()->linenumber + ::Terminal::lines() - 1);
          l = buf->NextLine(l))
     {
         if (p && l->bpos)

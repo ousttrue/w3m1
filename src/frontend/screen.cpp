@@ -526,13 +526,13 @@ public:
 
                     /* 
                 * some terminal emulators do linefeed when a
-                * character is put on COLS-th column. this behavior
+                * character is put on Terminal::columns()-th column. this behavior
                 * is different from one of vt100, but such terminal
                 * emulators are used as vt100-compatible
                 * emulators. This behaviour causes scroll when a
-                * character is drawn on (COLS-1,LINES-1) point.  To
+                * character is drawn on (Terminal::columns()-1,Terminal::lines()-1) point.  To
                 * avoid the scroll, I prohibit to draw character on
-                * (COLS-1,LINES-1).
+                * (Terminal::columns()-1,Terminal::lines()-1).
                 */
                     if ((!(pr[col] & S_STANDOUT) && (mode & S_STANDOUT)) ||
                         (!(pr[col] & S_UNDERLINE) && (mode & S_UNDERLINE)) ||

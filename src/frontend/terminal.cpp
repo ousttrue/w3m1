@@ -211,3 +211,29 @@ int Terminal::columns()
 {
     return tgetnum("co");
 }
+// void setlinescols(void)
+// {
+//     char *p;
+//     int i;
+
+//     // struct winsize wins;
+//     // i = ioctl(tty, TIOCGWINSZ, &wins);
+//     // if (i >= 0 && wins.ws_row != 0 && wins.ws_col != 0)
+//     // {
+//     //     LINES = wins.ws_row;
+//     //     Terminal::columns() = wins.ws_col;
+//     // }
+
+//     if (LINES <= 0 && (p = getenv("LINES")) != NULL && (i = atoi(p)) >= 0)
+//         LINES = i;
+//     if (Terminal::columns() <= 0 && (p = getenv("COLUMNS")) != NULL && (i = atoi(p)) >= 0)
+//         Terminal::columns() = i;
+//     if (LINES <= 0)
+//         LINES =Terminal::lines();
+//     if (Terminal::columns() <= 0)
+//         Terminal::columns() = Terminal::columns();
+//     if (Terminal::columns() > MAX_COLUMN)
+//         Terminal::columns() = MAX_COLUMN;
+//     if (LINES > MAX_LINE)
+//         LINES = MAX_LINE;
+// }

@@ -1,11 +1,11 @@
 #include "tabbar.h"
 #include "mouse.h"
-
 #include "commands.h"
 #include "display.h"
 #include "html/image.h"
 #include "w3m.h"
 #include "frontend/terms.h"
+#include "frontend/terminal.h"
 
 using TabList = std::list<TabPtr>;
 struct TabBar
@@ -110,7 +110,7 @@ void calcTabPos()
 
     if (g_tabBar.tabs.size() <= 0)
         return;
-    int n1 = (::COLS - lcol) / TabCols;
+    int n1 = (::Terminal::columns() - lcol) / TabCols;
     int n2;
     int ny;
     if (n1 >= g_tabBar.tabs.size())
@@ -122,7 +122,7 @@ void calcTabPos()
     {
         if (n1 < 0)
             n1 = 0;
-        n2 = ::COLS / TabCols;
+        n2 = ::Terminal::columns() / TabCols;
         if (n2 == 0)
             n2 = 1;
         ny = (g_tabBar.tabs.size() - n1 - 1) / n2 + 2;
@@ -140,12 +140,12 @@ void calcTabPos()
         if (iy == 0)
         {
             nx = n1;
-            col = ::COLS - lcol;
+            col = ::Terminal::columns() - lcol;
         }
         else
         {
             nx = n2 - (na - g_tabBar.tabs.size() + (iy - 1)) / (ny - 1);
-            col = ::COLS;
+            col = ::Terminal::columns();
         }
         int ix = 0;
         for (ix = 0; ix < nx && it != g_tabBar.tabs.end(); ix++, ++it)

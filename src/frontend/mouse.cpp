@@ -1,10 +1,8 @@
-/* $Id: func.c,v 1.27 2003/09/26 17:59:51 ukai Exp $ */
 /*
  * w3m func.c
  */
 
 #include <stdio.h>
-
 #include "gc_helper.h"
 #include "rc.h"
 #include "indep.h"
@@ -21,6 +19,7 @@
 #include "frontend/tabbar.h"
 #include "frontend/buffer.h"
 #include "frontend/terms.h"
+#include "frontend/terminal.h"
 
 #define LIMIT_MOUSE_MENU 100
 
@@ -323,7 +322,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         else
             map = &mouse_action.tab_map[(int)btn];
     }
-    else if (y == (::LINES - 1))
+    else if (y == (::Terminal::lines() - 1))
     {
         if (mouse_action.lastline_str && x >= 0 &&
             x < mouse_action.lastline_width)
@@ -387,7 +386,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
 static int mouse_scroll_line()
 {
     if (w3mApp::Instance().relative_wheel_scroll)
-        return (w3mApp::Instance().relative_wheel_scroll_ratio * (::LINES - 1) + 99) / 100;
+        return (w3mApp::Instance().relative_wheel_scroll_ratio * (::Terminal::lines() - 1) + 99) / 100;
     else
         return w3mApp::Instance().fixed_wheel_scroll_count;
 }

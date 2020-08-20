@@ -12,6 +12,7 @@
 #include "html/anchor.h"
 #include "html/image.h"
 #include "frontend/terms.h"
+#include "frontend/terminal.h"
 #include "ctrlcode.h"
 #include "stream/loader.h"
 #include <stdexcept>
@@ -121,7 +122,7 @@ writeBufferName(BufferPtr buf, int n)
             break;
         }
     }
-    addnstr_sup(msg->ptr, COLS - 1);
+    addnstr_sup(msg->ptr, Terminal::columns() - 1);
 }
 
 static BufferPtr
@@ -138,7 +139,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
     BufferPtr buf = top;
     int i, c = 0;
     clrtobotx();
-    for (i = 0; i < (LINES - 1); i++)
+    for (i = 0; i < (Terminal::lines() - 1); i++)
     {
         if (buf == current)
         {
@@ -169,7 +170,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
             0);
     standend();
     /* 
-     * move((LINES-1), COLS - 1); */
+     * move((Terminal::lines()-1), Terminal::columns() - 1); */
     move(c, 0);
     refresh();
     // return tab->BackBuffer(buf);
@@ -183,7 +184,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 // {
 //     int i, cpoint,                     /* Current Buffer Number */
 //         spoint,                        /* Current Line on Screen */
-//         maxbuf, sclimit = (LINES - 1); /* Upper limit of line * number in 
+//         maxbuf, sclimit = (Terminal::lines() - 1); /* Upper limit of line * number in 
 // 					 * the * screen */
 
 //     BufferPtr topbuf;
@@ -319,7 +320,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 //             return currentbuf;
 //         }
 //         /* 
-// 	 * move((LINES-1), COLS - 1);
+// 	 * move((Terminal::lines()-1), Terminal::columns() - 1);
 // 	 */
 //         move(spoint, 0);
 //         refresh();

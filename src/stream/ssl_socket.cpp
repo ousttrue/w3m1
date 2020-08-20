@@ -5,6 +5,7 @@
 #include "file.h"
 #include "frontend/display.h"
 #include "frontend/terms.h"
+#include "frontend/terminal.h"
 #include <unistd.h>
 #include <myctype.h>
 #include <string_view>
@@ -363,8 +364,8 @@ struct SSLContextImpl
             else
             {
                 Str ep = emsg->Clone();
-                if (ep->Size() > ::COLS - 16)
-                    ep->Pop(ep->Size() - (::COLS - 16));
+                if (ep->Size() > ::Terminal::columns() - 16)
+                    ep->Pop(ep->Size() - (::Terminal::columns() - 16));
                 ep->Push(": accept? (y/n)");
                 ans = inputAnswer(ep->ptr);
             }

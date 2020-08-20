@@ -21,6 +21,7 @@
 #include "html/html_context.h"
 #include "html/html_processor.h"
 #include "html/tokenizer.h"
+#include "frontend/terminal.h"
 
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
 #define TK_VERTICALBAR(mode) RULE(mode, 5)
@@ -79,16 +80,16 @@ static double
 weight(int x)
 {
 
-    if (x < ::COLS)
+    if (x < ::Terminal::columns())
         return (double)x;
     else
-        return ::COLS * (log((double)x / ::COLS) + 1.);
+        return ::Terminal::columns() * (log((double)x / ::Terminal::columns()) + 1.);
 }
 
 static double
 weight2(int a)
 {
-    return (double)a / ::COLS * 4 + 1.;
+    return (double)a / ::Terminal::columns() * 4 + 1.;
 }
 
 #define sigma_td(a) (0.5 * weight2(a))     /* <td width=...> */

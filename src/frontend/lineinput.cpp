@@ -1,4 +1,4 @@
-
+#include "frontend/terminal.h"
 #include "lineinput.h"
 #include "gc_helper.h"
 #include "indep.h"
@@ -14,7 +14,7 @@
 #include "history.h"
 
 #define STR_LEN	1024
-#define CLEN (COLS - 2)
+#define CLEN (Terminal::columns() - 2)
 
 static Str strBuf;
 static Lineprop strProp[STR_LEN];
@@ -528,13 +528,13 @@ next_dcompl(int next)
     cm_disp_clear = false;
     if (GetCurrentTab())
         displayCurrentbuf(B_FORCE_REDRAW);
-    if ((LINES-1) >= 3) {
+    if ((Terminal::lines()-1) >= 3) {
         comment = true;
-        nline = (LINES-1) - 2;
+        nline = (Terminal::lines()-1) - 2;
     }
-    else if ((LINES-1)) {
+    else if ((Terminal::lines()-1)) {
         comment = false;
-        nline = (LINES-1);
+        nline = (Terminal::lines()-1);
     }
     else {
         return;
@@ -581,7 +581,7 @@ next_dcompl(int next)
         if (len < n)
             len = n;
     }
-    col = COLS / len;
+    col = Terminal::columns() / len;
     if (col == 0)
         col = 1;
     row = (NCFileBuf + col - 1) / col;
@@ -631,7 +631,7 @@ next_dcompl(int next)
         }
         y++;
     }
-    if (comment && y == (LINES-1) - 1) {
+    if (comment && y == (Terminal::lines()-1) - 1) {
         move(y, 0);
         clrtoeolx();
         bold();
@@ -1016,14 +1016,14 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
             else
                 offset = 0;
         }
-        move(LINES-1, 0);
+        move(Terminal::lines()-1, 0);
         addstr(prompt);
         if (is_passwd)
-            addPasswd(strBuf->ptr, strProp, CLen, offset, COLS - opos);
+            addPasswd(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         else
-            addStr(strBuf->ptr, strProp, CLen, offset, COLS - opos);
+            addStr(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         clrtoeolx();
-        move((LINES-1), opos + x - offset);
+        move((Terminal::lines()-1), opos + x - offset);
         refresh();
 
         next_char:
@@ -1121,7 +1121,7 @@ inputLineHistSearch(const char* prompt, const char *def_str, LineInputFlags flag
     if (i_broken)
         return NULL;
 
-    move((LINES-1), 0);
+    move((Terminal::lines()-1), 0);
     refresh();
     p = strBuf->ptr;
     if (flag & (IN_FILENAME | IN_COMMAND)) {
