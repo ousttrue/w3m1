@@ -149,7 +149,7 @@ void setup_child(int child, int i, int f)
     if (!child)
         SETPGRP();
 #endif /* __MINGW32_VERSION */
-    close_tty();
+    // close_tty();
     close_all_fds_except(i, f);
     w3mApp::Instance().QuietMessage = true;
     w3mApp::Instance().fmInitialized = false;

@@ -7,10 +7,6 @@ int INIT_BUFFER_WIDTH();
 int INIT_BUFFER_WIDTH();
 int FOLD_BUFFER_WIDTH();
 
-class Terminal
-{
-};
-
 void mouse_active();
 void mouse_inactive();
 void mouse_end();
@@ -63,11 +59,9 @@ void rscroll(int);
 void need_clrtoeol(void);
 #endif
 int sleep_till_anykey(int sec, int purge);
-int set_tty(void);
+
 void set_cc(int spec, int val);
-void close_tty(void);
-char *ttyname_tty(void);
-void reset_tty(void);
+
 void set_int(void);
 
 void setlinescols(void);
@@ -76,8 +70,6 @@ void touch_cursor();
 int initscr(void);
 void move(int line, int column);
 
-int write1(char c);
-void writestr(char *s);
 void reset_error_exit(int);
 
 #endif /* not TERMS_H */

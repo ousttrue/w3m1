@@ -4,9 +4,9 @@
  */
 #include "config.h"
 #include "termcap_str.h"
-
-#include "commands.h"
+#include "frontend/terminal.h"
 #include "frontend/terms.h"
+#include "commands.h"
 #include "indep.h"
 #include "gc_helper.h"
 #include "public.h"
@@ -22,15 +22,14 @@
 #include <string.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 #include "screen.h"
 
 Screen g_screen;
 
-static int is_xterm = 0;
 void mouse_init(), mouse_end();
 int mouseActive = 0;
 static const char *title_str = NULL;
-static int tty = -1;
 
 void reset_exit(SIGNAL_ARG);
 
@@ -45,31 +44,13 @@ void flush_tty();
 #include <termios.h>
 #include <unistd.h>
 typedef struct termios TerminalMode;
-#define TerminalSet(fd, x) tcsetattr(fd, TCSANOW, x)
-#define TerminalGet(fd, x) tcgetattr(fd, x)
+
 #define MODEFLAG(d) ((d).c_lflag)
 #define IMODEFLAG(d) ((d).c_iflag)
 #endif /* HAVE_TERMIOS_H */
 
 #define MAX_LINE 200
 #define MAX_COLUMN 400
-
-static TerminalMode d_ioval;
-
-extern "C" int tputs(char *, int, int (*)(char));
-
-static FILE *ttyf = NULL;
-
-int write1(char c)
-{
-    putc(c, ttyf);
-    return 0;
-}
-
-void writestr(char *s)
-{
-    tputs(s, 1, write1);
-}
 
 // termcap
 extern "C" int tgetnum(const char *);
@@ -80,7 +61,7 @@ void clrtoeol(void); /* conflicts with curs_clear(3)? */
 
 inline void MOVE(int line, int column)
 {
-    writestr(tgoto(T_cm, column, line));
+    Terminal::Terminal::writestr(tgoto(T_cm, column, line));
 }
 
 #define W3M_TERM_INFO(name, title, mouse) name, title, mouse
@@ -107,66 +88,18 @@ static struct w3m_term_info
 #undef W3M_TERM_INFO
 /* *INDENT-ON * */
 
-int set_tty(void)
-{
-    const char *ttyn;
-
-    if (isatty(0)) /* stdin */
-        ttyn = ttyname(0);
-    else
-        ttyn = DEV_TTY_PATH;
-    tty = open(ttyn, O_RDWR);
-    if (tty < 0)
-    {
-        /* use stderr instead of stdin... is it OK???? */
-        tty = 2;
-    }
-    ttyf = fdopen(tty, "w");
-    TerminalGet(tty, &d_ioval);
-    if (w3mApp::Instance().displayTitleTerm.size())
-    {
-        struct w3m_term_info *p;
-        for (p = w3m_term_info_list; p->term != NULL; p++)
-        {
-            if (!strncmp(w3mApp::Instance().displayTitleTerm.c_str(), p->term, strlen(p->term)))
-            {
-                title_str = p->title_str;
-                break;
-            }
-        }
-    }
-
-    {
-        char *term = getenv("TERM");
-        if (term != NULL)
-        {
-            struct w3m_term_info *p;
-            for (p = w3m_term_info_list; p->term != NULL; p++)
-            {
-                if (!strncmp(term, p->term, strlen(p->term)))
-                {
-                    is_xterm = p->mouse_flag;
-                    break;
-                }
-            }
-        }
-    }
-
-    return 0;
-}
-
 void ttymode_set(int mode, int imode)
 {
 #ifndef __MINGW32_VERSION
     TerminalMode ioval;
 
-    TerminalGet(tty, &ioval);
+    Terminal::tcgetattr(&ioval);
     MODEFLAG(ioval) |= mode;
 #ifndef HAVE_SGTTY_H
     IMODEFLAG(ioval) |= imode;
 #endif /* not HAVE_SGTTY_H */
 
-    while (TerminalSet(tty, &ioval) == -1)
+    while (Terminal::tcsetattr(&ioval) == -1)
     {
         if (errno == EINTR || errno == EAGAIN)
             continue;
@@ -181,13 +114,13 @@ void ttymode_reset(int mode, int imode)
 #ifndef __MINGW32_VERSION
     TerminalMode ioval;
 
-    TerminalGet(tty, &ioval);
+    Terminal::tcgetattr(&ioval);
     MODEFLAG(ioval) &= ~mode;
 #ifndef HAVE_SGTTY_H
     IMODEFLAG(ioval) &= ~imode;
 #endif /* not HAVE_SGTTY_H */
 
-    while (TerminalSet(tty, &ioval) == -1)
+    while (Terminal::tcsetattr(&ioval) == -1)
     {
         if (errno == EINTR || errno == EAGAIN)
             continue;
@@ -202,9 +135,9 @@ void set_cc(int spec, int val)
 {
     TerminalMode ioval;
 
-    TerminalGet(tty, &ioval);
+    Terminal::tcgetattr(&ioval);
     ioval.c_cc[spec] = val;
-    while (TerminalSet(tty, &ioval) == -1)
+    while (Terminal::tcsetattr(&ioval) == -1)
     {
         if (errno == EINTR || errno == EAGAIN)
             continue;
@@ -214,42 +147,12 @@ void set_cc(int spec, int val)
 }
 #endif /* not HAVE_SGTTY_H */
 
-void close_tty(void)
-{
-    if (tty > 2)
-        close(tty);
-}
-
-char *
-ttyname_tty(void)
-{
-    return ttyname(tty);
-}
-
-void reset_tty(void)
-{
-    writestr(T_op); /* turn off */
-    writestr(T_me);
-    if (!w3mApp::Instance().Do_not_use_ti_te)
-    {
-        if (T_te && *T_te)
-            writestr(T_te);
-        else
-            writestr(T_cl);
-    }
-    writestr(T_se); /* reset terminal */
-    flush_tty();
-    TerminalSet(tty, &d_ioval);
-    close_tty();
-}
-
 static void
 reset_exit_with_value(SIGNAL_ARG, int rval)
 {
     if (mouseActive)
         mouse_end();
 
-    reset_tty();
     // w3m_exit(rval);
     exit(rval);
     SIGNAL_RETURN;
@@ -270,8 +173,7 @@ void
 void
     error_dump(SIGNAL_ARG)
 {
-    mySignal(SIGIOT, SIG_DFL);
-    reset_tty();
+    mySignal(SIGIOT, SIG_DFL);    
     abort();
     SIGNAL_RETURN;
 }
@@ -295,14 +197,15 @@ void setlinescols(void)
 {
     char *p;
     int i;
-    struct winsize wins;
 
-    i = ioctl(tty, TIOCGWINSZ, &wins);
-    if (i >= 0 && wins.ws_row != 0 && wins.ws_col != 0)
-    {
-        LINES = wins.ws_row;
-        COLS = wins.ws_col;
-    }
+    // struct winsize wins;
+    // i = ioctl(tty, TIOCGWINSZ, &wins);
+    // if (i >= 0 && wins.ws_row != 0 && wins.ws_col != 0)
+    // {
+    //     LINES = wins.ws_row;
+    //     COLS = wins.ws_col;
+    // }
+
     if (LINES <= 0 && (p = getenv("LINES")) != NULL && (i = atoi(p)) >= 0)
         LINES = i;
     if (COLS <= 0 && (p = getenv("COLUMNS")) != NULL && (i = atoi(p)) >= 0)
@@ -328,12 +231,12 @@ void setupscreen(void)
  */
 int initscr(void)
 {
-    if (set_tty() < 0)
-        return -1;
+    Terminal::Instance();
+    
     set_int();
     getTCstr();
     if (T_ti && !w3mApp::Instance().Do_not_use_ti_te)
-        writestr(T_ti);
+        Terminal::writestr(T_ti);
     setupscreen();
     return 0;
 }
@@ -432,7 +335,7 @@ void setbcolor(int color)
 
 void refresh(void)
 {
-    g_screen.Refresh(ttyf);
+    g_screen.Refresh();
     flush_tty();
 }
 
@@ -623,14 +526,14 @@ void term_title(const char *s)
         return;
     if (title_str != NULL)
     {
-        fprintf(ttyf, title_str, s);
+        // fprintf(ttyf, title_str, s);
     }
 }
 
 char getch(void)
 {
     char c;
-    while (read(tty, &c, 1) < (int)1)
+    while (read(Terminal::tty(), &c, 1) < (int)1)
     {
         if (errno == EINTR || errno == EAGAIN)
             continue;
@@ -643,7 +546,7 @@ char getch(void)
 
 void bell(void)
 {
-    write1(7);
+    Terminal::write1(7);
 }
 
 void skip_escseq(void)
@@ -654,7 +557,7 @@ void skip_escseq(void)
     if (c == '[' || c == 'O')
     {
         c = getch();
-        if (is_xterm && c == 'M')
+        if (Terminal::is_xterm() && c == 'M')
         {
             getch();
             getch();
@@ -673,23 +576,23 @@ int sleep_till_anykey(int sec, int purge)
     int er, c, ret;
     TerminalMode ioval;
 
-    TerminalGet(tty, &ioval);
+    Terminal::tcgetattr(&ioval);
     term_raw();
 
     tim.tv_sec = sec;
     tim.tv_usec = 0;
 
     FD_ZERO(&rfd);
-    FD_SET(tty, &rfd);
+    FD_SET(Terminal::tty(), &rfd);
 
-    ret = select(tty + 1, &rfd, 0, 0, &tim);
+    ret = select(Terminal::tty() + 1, &rfd, 0, 0, &tim);
     if (ret > 0 && purge)
     {
         c = getch();
         if (c == ESC_CODE)
             skip_escseq();
     }
-    er = TerminalSet(tty, &ioval);
+    er = Terminal::tcsetattr(&ioval);
     if (er == -1)
     {
         printf("Error occured: errno=%d\n", errno);
@@ -700,13 +603,13 @@ int sleep_till_anykey(int sec, int purge)
 
 void XTERM_ON()
 {
-    fputs("\033[?1001s\033[?1000h", ttyf);
+    fputs("\033[?1001s\033[?1000h", Terminal::file());
     flush_tty();
 }
 
 void XTERM_OFF()
 {
-    fputs("\033[?1000l\033[?1001r", ttyf);
+    fputs("\033[?1000l\033[?1001r", Terminal::file());
     flush_tty();
 }
 
@@ -714,7 +617,7 @@ void mouse_init()
 {
     if (mouseActive)
         return;
-    if (is_xterm & NEED_XTERM_ON)
+    if (Terminal::is_xterm() & NEED_XTERM_ON)
     {
         XTERM_ON;
     }
@@ -725,7 +628,7 @@ void mouse_end()
 {
     if (mouseActive == 0)
         return;
-    if (is_xterm & NEED_XTERM_OFF)
+    if (Terminal::is_xterm() & NEED_XTERM_OFF)
     {
         XTERM_OFF;
     }
@@ -740,14 +643,13 @@ void mouse_active()
 
 void mouse_inactive()
 {
-    if (mouseActive && is_xterm)
+    if (mouseActive && Terminal::is_xterm())
         mouse_end();
 }
 
 void flush_tty()
 {
-    if (ttyf)
-        fflush(ttyf);
+    Terminal::flush();
 }
 
 void touch_cursor()

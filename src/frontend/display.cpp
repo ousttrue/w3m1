@@ -212,7 +212,6 @@ void fmTerm(void)
         if (w3mApp::Instance().use_mouse)
             mouse_end();
 
-        reset_tty();
         w3mApp::Instance().fmInitialized = false;
     }
 }

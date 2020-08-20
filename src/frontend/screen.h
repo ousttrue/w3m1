@@ -95,5 +95,5 @@ public:
     void CtrlToEol();
     void CtrlToEolWithBGColor();
     void CtrlToBottomEol();
-    void Refresh(FILE *ttyf);
+    void Refresh();
 };

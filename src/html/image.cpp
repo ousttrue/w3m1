@@ -1,5 +1,5 @@
 #include <string_view_util.h>
-
+#include "frontend/terminal.h"
 #include "html/image.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -62,7 +62,7 @@ int getCharSize()
     Str tmp;
     int w = 0, h = 0;
 
-    set_environ("W3M_TTY", ttyname_tty());
+    set_environ("W3M_TTY", Terminal::ttyname_tty());
     tmp = Strnew();
     if (w3mApp::Instance().Imgdisplay.find('/') == std::string::npos)
         Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);

@@ -1,5 +1,7 @@
 #include "config.h"
 #include "terminal.h"
+#include "termcap_str.h"
+#include "w3m.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,7 +9,7 @@
 #include <assert.h>
 #include <termios.h>
 // #include <term.h> // danger macros
-extern "C" int tputs (const char *, int, int (*)(int));
+extern "C" int tputs(const char *, int, int (*)(int));
 
 #define W3M_TERM_INFO(name, title, mouse) name, title, mouse
 #define NEED_XTERM_ON (1)
@@ -61,7 +63,7 @@ Terminal::Terminal()
     }
 
     termios d_ioval;
-    if (tcgetattr(m_tty, &d_ioval) < 0)
+    if (::tcgetattr(m_tty, &d_ioval) < 0)
     {
         assert(false);
         return;
@@ -76,7 +78,7 @@ Terminal::Terminal()
             {
                 if (m_term.starts_with(p->term))
                 {
-                    is_xterm = p->mouse_flag;
+                    m_is_xterm = p->mouse_flag;
                     break;
                 }
             }
@@ -84,14 +86,65 @@ Terminal::Terminal()
     }
 }
 
+// if (w3mApp::Instance().displayTitleTerm.size())
+// {
+//     struct w3m_term_info *p;
+//     for (p = w3m_term_info_list; p->term != NULL; p++)
+//     {
+//         if (!strncmp(w3mApp::Instance().displayTitleTerm.c_str(), p->term, strlen(p->term)))
+//         {
+//             title_str = p->title_str;
+//             break;
+//         }
+//     }
+// }
+
 Terminal::~Terminal()
 {
+    Terminal::writestr(T_op); /* turn off */
+    Terminal::writestr(T_me);
+    if (!w3mApp::Instance().Do_not_use_ti_te)
+    {
+        if (T_te && *T_te)
+            Terminal::writestr(T_te);
+        else
+            Terminal::writestr(T_cl);
+    }
+    Terminal::writestr(T_se); /* reset terminal */
+    flush();
+    // Terminal::tcsetattr(&d_ioval);
+
+    if (m_tty > 2)
+    {
+        // except stdin, stdout or stderr
+        close(m_tty);
+    }
 }
 
 Terminal &Terminal::Instance()
 {
     static Terminal t;
     return t;
+}
+
+int Terminal::tty()
+{
+    return Instance().m_tty;
+}
+
+FILE *Terminal::file()
+{
+    return g_ttyf;
+}
+
+void Terminal::flush()
+{
+    fflush(g_ttyf);
+}
+
+int Terminal::is_xterm()
+{
+    return Instance().m_is_xterm;
 }
 
 int Terminal::write1(int c)
@@ -107,4 +160,19 @@ extern "C" int write1(int c)
 void Terminal::writestr(const char *s)
 {
     tputs(s, 1, ::write1);
+}
+
+int Terminal::tcgetattr(struct termios *__termios_p)
+{
+    return ::tcgetattr(Instance().m_tty, __termios_p);
+}
+
+int Terminal::tcsetattr(const struct termios *__termios_p)
+{
+    return ::tcsetattr(Instance().m_tty, TCSANOW, __termios_p);
+}
+
+const char *Terminal::ttyname_tty(void)
+{
+    return ttyname(Instance().m_tty);
 }

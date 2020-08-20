@@ -1,6 +1,7 @@
 #include "screen.h"
 #include "termcap_str.h"
 #include "terms.h"
+#include "terminal.h"
 #include "w3m.h"
 #include <myctype.h>
 #include <stdint.h>
@@ -41,7 +42,7 @@ void SETCH(SingleCharacter &var, const char *ch, int len)
 #define SETPROP(var, prop) (var = (((var)&S_DIRTY) | prop))
 #define SETCHMODE(var, mode) ((var) = (((var) & ~C_WHICHCHAR) | mode))
 #define CHMODE(c) ((c)&C_WHICHCHAR)
-#define MOVE(line, column) writestr(tgoto(T_cm, column, line));
+#define MOVE(line, column) Terminal::Terminal::writestr(tgoto(T_cm, column, line));
 
 const auto SPACE = " ";
 
@@ -113,6 +114,8 @@ class ScreenImpl
 public:
     void Setup(int newLines, int newCols)
     {
+        Terminal::Instance();
+        
         auto lines = Lines();
         auto cols = Cols();
         if (newLines == lines && newCols == cols)
@@ -165,7 +168,7 @@ public:
 
     void Clear()
     {
-        writestr(T_cl);
+        Terminal::Terminal::writestr(T_cl);
         move(0, 0);
         std::fill(m_lineStatus.begin(), m_lineStatus.end(), L_NONE);
         std::fill(m_props.begin(), m_props.end(), S_EOL);
@@ -439,7 +442,7 @@ public:
         }
     }
 
-    void Refresh(FILE *ttyf)
+    void Refresh()
     {
         int col, pcol;
         int pline = CurLine;
@@ -448,7 +451,7 @@ public:
         l_prop color = COL_FTERM;
         l_prop bcolor = COL_BTERM;
 
-        WCWriter writer(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset, ttyf);
+        WCWriter writer(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset, Terminal::file());
 
         auto pc = m_chars.data();
         auto pr = m_props.data();
@@ -495,8 +498,8 @@ public:
                         moved = RF_CR_OK;
                         break;
                     case RF_CR_OK:
-                        write1('\n');
-                        write1('\r');
+                        Terminal::write1('\n');
+                        Terminal::write1('\r');
                         break;
                     case RF_NONEED_TO_MOVE:
                         moved = RF_CR_OK;
@@ -510,7 +513,7 @@ public:
                 }
                 if (*dirty & (L_NEED_CE | L_CLRTOEOL))
                 {
-                    writestr(T_ce);
+                    Terminal::writestr(T_ce);
                     if (col != pcol)
                         MOVE(line, col);
                 }
@@ -537,10 +540,10 @@ public:
                         (!(pr[col] & S_COLORED) && (mode & S_COLORED)) || (!(pr[col] & S_BCOLORED) && (mode & S_BCOLORED)) || (!(pr[col] & S_GRAPHICS) && (mode & S_GRAPHICS)))
                     {
                         if ((mode & S_COLORED) || (mode & S_BCOLORED))
-                            writestr(T_op);
+                            Terminal::writestr(T_op);
                         if (mode & S_GRAPHICS)
-                            writestr(T_ae);
-                        writestr(T_me);
+                            Terminal::writestr(T_ae);
+                        Terminal::writestr(T_me);
                         mode &= ~M_MEND;
                     }
                     if ((*dirty & L_NEED_CE && col >= m_lineEnds[line])
@@ -548,37 +551,37 @@ public:
                             : (pr[col] & S_DIRTY))
                     {
                         if (pcol == col - 1)
-                            writestr(T_nd);
+                            Terminal::writestr(T_nd);
                         else if (pcol != col)
                             MOVE(line, col);
 
                         if ((pr[col] & S_STANDOUT) && !(mode & S_STANDOUT))
                         {
-                            writestr(T_so);
+                            Terminal::writestr(T_so);
                             mode |= S_STANDOUT;
                         }
                         if ((pr[col] & S_UNDERLINE) && !(mode & S_UNDERLINE))
                         {
-                            writestr(T_us);
+                            Terminal::writestr(T_us);
                             mode |= S_UNDERLINE;
                         }
                         if ((pr[col] & S_BOLD) && !(mode & S_BOLD))
                         {
-                            writestr(T_md);
+                            Terminal::writestr(T_md);
                             mode |= S_BOLD;
                         }
                         if ((pr[col] & S_COLORED) && (pr[col] ^ mode) & COL_FCOLOR)
                         {
                             color = (pr[col] & COL_FCOLOR);
                             mode = ((mode & ~COL_FCOLOR) | color);
-                            writestr(color_seq(color));
+                            Terminal::writestr(color_seq(color));
                         }
 
                         if ((pr[col] & S_BCOLORED) && (pr[col] ^ mode) & COL_BCOLOR)
                         {
                             bcolor = (pr[col] & COL_BCOLOR);
                             mode = ((mode & ~COL_BCOLOR) | bcolor);
-                            writestr(bcolor_seq(bcolor));
+                            Terminal::writestr(bcolor_seq(bcolor));
                         }
 
                         if ((pr[col] & S_GRAPHICS) && !(mode & S_GRAPHICS))
@@ -587,14 +590,14 @@ public:
                             if (!graph_enabled)
                             {
                                 graph_enabled = 1;
-                                writestr(T_eA);
+                                Terminal::writestr(T_eA);
                             }
-                            writestr(T_as);
+                            Terminal::writestr(T_as);
                             mode |= S_GRAPHICS;
                         }
 
                         if (pr[col] & S_GRAPHICS)
-                            write1(graphchar(*pc[col].bytes.data()));
+                            Terminal::write1(graphchar(*pc[col].bytes.data()));
                         else if (CHMODE(pr[col]) != C_WCHAR2)
                             writer.putc(pc[col]);
                         pcol = col + 1;
@@ -610,14 +613,14 @@ public:
             {
                 if (mode & (S_COLORED | S_BCOLORED))
                 {
-                    writestr(T_op);
+                    Terminal::writestr(T_op);
                 }
                 if (mode & S_GRAPHICS)
                 {
-                    writestr(T_ae);
+                    Terminal::writestr(T_ae);
                     writer.clear_status();
                 }
-                writestr(T_me);
+                Terminal::writestr(T_me);
                 mode &= ~M_MEND;
             }
         }
@@ -678,9 +681,9 @@ void Screen::Move(int line, int column)
     m_impl->Move(line, column);
 }
 
-void Screen::Refresh(FILE *ttyf)
+void Screen::Refresh()
 {
-    m_impl->Refresh(ttyf);
+    m_impl->Refresh();
 }
 
 void Screen::Clear()
