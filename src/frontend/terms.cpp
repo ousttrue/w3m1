@@ -190,25 +190,10 @@ int graph_ok(void)
     return T_as[0] != 0 && T_ae[0] != 0 && T_ac[0] != 0;
 }
 
-void setfcolor(int color)
-{
-    Screen::Instance().SetFGColor(color);
-}
-
-void setbcolor(int color)
-{
-    Screen::Instance().SetBGColor(color);
-}
-
 void refresh(void)
 {
     Screen::Instance().Refresh();
     Terminal::flush();
-}
-
-void clear(void)
-{
-    Screen::Instance().Clear();
 }
 
 /* XXX: conflicts with curses's clrtoeol(3) ? */

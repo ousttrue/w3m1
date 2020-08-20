@@ -151,7 +151,7 @@ void rdrwSc(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    clear();
+    Screen::Instance().Clear();
     buf->ArrangeCursor();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
