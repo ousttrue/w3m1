@@ -278,7 +278,7 @@ public:
         }
     }
 
-    void AddChar(l_prop CurrentMode, const char *pc, int len)
+    void Puts(l_prop CurrentMode, const char *pc, int len)
     {
         // l_prop *pr;
         // int dest, i;
@@ -327,7 +327,7 @@ public:
             return;
 
         /* Required to erase bold or underlined character for some * terminal
-     * emulators. */
+        * emulators. */
         int i = CurColumn + width - 1;
         auto cols = Cols();
         if (i < cols &&
@@ -656,7 +656,7 @@ void Screen::Setup()
 
 void Screen::Puts(const char *pc, int len)
 {
-    m_impl->AddChar(CurrentMode, pc, len);
+    m_impl->Puts(CurrentMode, pc, len);
 }
 
 void Screen::Wrap()
