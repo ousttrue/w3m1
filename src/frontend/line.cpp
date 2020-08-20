@@ -124,3 +124,9 @@ int Buffer::ColumnSkip(int offset)
     this->currentColumn = maxColumn;
     return 1;
 }
+
+void Line::clear_mark()
+{
+    for (int pos = 0; pos < len(); pos++)
+        propBuf()[pos] &= ~PE_MARK;
+}

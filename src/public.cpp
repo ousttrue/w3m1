@@ -46,14 +46,6 @@ int searchKeyNum(void)
 static const char *SearchString = NULL;
 SearchFunc searchRoutine = nullptr;
 
-void clear_mark(LinePtr l)
-{
-    int pos;
-    if (!l)
-        return;
-    for (pos = 0; pos < l->len(); pos++)
-        l->propBuf()[pos] &= ~PE_MARK;
-}
 
 void disp_srchresult(int result, const char *prompt, const char *str)
 {
@@ -81,15 +73,19 @@ void srch_nxtprv(int reverse)
         disp_message("No previous regular expression", true);
         return;
     }
+
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+
     if (reverse != 0)
         reverse = 1;
     if (searchRoutine == backwardSearch)
         reverse ^= 1;
     if (reverse == 0)
-        GetCurrentTab()->GetCurrentBuffer()->pos += 1;
+        buf->pos += 1;
     result = srchcore(SearchString, routine[reverse]);
     if (result & SR_FOUND)
-        clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
+        buf->CurrentLine()->clear_mark();
     displayCurrentbuf(B_NORMAL);
     disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
                     SearchString);
@@ -188,14 +184,17 @@ SearchResultTypes srchcore(const char *str, SearchFunc func)
 
     str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
 
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+
     TrapJmp([&]() {
         {
             int prec = prec_num() ? prec_num() : 1;
             for (i = 0; i < prec; i++)
             {
-                result = func(GetCurrentTab()->GetCurrentBuffer(), str);
+                result = func(buf, str);
                 if (i < prec - 1 && result & SR_FOUND)
-                    clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
+                    buf->CurrentLine()->clear_mark();
             }
         }
         return true;
@@ -204,23 +203,25 @@ SearchResultTypes srchcore(const char *str, SearchFunc func)
     return result;
 }
 
-int dispincsrch(int ch, Str buf, Lineprop *prop)
+int dispincsrch(int ch, Str src, Lineprop *prop)
 {
     static BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
     static LinePtr currentLine;
     static int pos;
-    char *str;
     int do_next_search = false;
+
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
 
     if (ch == 0 && buf == NULL)
     {
-        sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer()); /* search starting point */
+        sbuf->COPY_BUFPOSITION_FROM(buf); /* search starting point */
         currentLine = sbuf->CurrentLine();
         pos = sbuf->pos;
         return -1;
     }
 
-    str = buf->ptr;
+    auto str = src->ptr;
     switch (ch)
     {
     case 022: /* C-r */
@@ -248,16 +249,16 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
         if (*str)
         {
             if (searchRoutine == forwardSearch)
-                GetCurrentTab()->GetCurrentBuffer()->pos += 1;
-            sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
+                buf->pos += 1;
+            sbuf->COPY_BUFPOSITION_FROM(buf);
             if (srchcore(str, searchRoutine) == SR_NOTFOUND && searchRoutine == forwardSearch)
             {
-                GetCurrentTab()->GetCurrentBuffer()->pos -= 1;
-                sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
+                buf->pos -= 1;
+                sbuf->COPY_BUFPOSITION_FROM(buf);
             }
-            GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+            buf->ArrangeCursor();
             displayCurrentbuf(B_FORCE_REDRAW);
-            clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
+            buf->CurrentLine()->clear_mark();
             return -1;
         }
         else
@@ -265,15 +266,15 @@ int dispincsrch(int ch, Str buf, Lineprop *prop)
     }
     else if (*str)
     {
-        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(sbuf);
-        GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
+        buf->COPY_BUFPOSITION_FROM(sbuf);
+        buf->ArrangeCursor();
         srchcore(str, searchRoutine);
-        GetCurrentTab()->GetCurrentBuffer()->ArrangeCursor();
-        currentLine = GetCurrentTab()->GetCurrentBuffer()->CurrentLine();
-        pos = GetCurrentTab()->GetCurrentBuffer()->pos;
+        buf->ArrangeCursor();
+        currentLine = buf->CurrentLine();
+        pos = buf->pos;
     }
     displayCurrentbuf(B_FORCE_REDRAW);
-    clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
+    buf->CurrentLine()->clear_mark();
 #ifdef USE_MIGEMO
 done:
     while (*str++ != '\0')
@@ -305,12 +306,8 @@ void isrch(SearchFunc func, const char *prompt)
 
 void srch(SearchFunc func, const char *prompt)
 {
-    const char *str;
-    int result;
     int disp = false;
-    int pos;
-
-    str = searchKeyData();
+    const char* str = searchKeyData();
     if (str == NULL || *str == '\0')
     {
         str = inputStrHist(prompt, NULL, w3mApp::Instance().TextHist);
@@ -323,14 +320,18 @@ void srch(SearchFunc func, const char *prompt)
         }
         disp = true;
     }
-    pos = GetCurrentTab()->GetCurrentBuffer()->pos;
+
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+
+    auto pos = buf->pos;
     if (func == forwardSearch)
-        GetCurrentTab()->GetCurrentBuffer()->pos += 1;
-    result = srchcore(str, func);
+        buf->pos += 1;
+    auto result = srchcore(str, func);
     if (result & SR_FOUND)
-        clear_mark(GetCurrentTab()->GetCurrentBuffer()->CurrentLine());
+        buf->CurrentLine()->clear_mark();
     else
-        GetCurrentTab()->GetCurrentBuffer()->pos = pos;
+        buf->pos = pos;
     displayCurrentbuf(B_NORMAL);
     if (disp)
         disp_srchresult(result, prompt, str);

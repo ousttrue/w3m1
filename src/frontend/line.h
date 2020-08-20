@@ -68,6 +68,8 @@ public:
 
     void CalcWidth(bool force = false);
     int COLPOS(int c);
+
+    void clear_mark();
 };
 using LinePtr = std::shared_ptr<Line>;
 

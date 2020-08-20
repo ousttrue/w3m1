@@ -17,7 +17,7 @@ int dispincsrch(int ch, Str buf, Lineprop *prop);
 void isrch(SearchFunc func, const char* prompt);
 void srch(SearchFunc func, const char* prompt);
 
-void clear_mark(LinePtr l);
+
 void disp_srchresult(int result, const char* prompt, const char *str);
 void shiftvisualpos(BufferPtr buf, int shift);
 
