@@ -24,46 +24,30 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 #include "screen.h"
+#include <termios.h>
+#include <unistd.h>
 
 Screen g_screen;
 
-void mouse_init(), mouse_end();
 int mouseActive = 0;
 static const char *title_str = NULL;
 
-void reset_exit(SIGNAL_ARG);
-
-void setlinescols(void);
-
-
-#ifndef SIGIOT
-#define SIGIOT SIGABRT
-#endif /* not SIGIOT */
-
-#ifdef HAVE_TERMIOS_H
-#include <termios.h>
-#include <unistd.h>
 typedef struct termios TerminalMode;
 
 #define MODEFLAG(d) ((d).c_lflag)
 #define IMODEFLAG(d) ((d).c_iflag)
-#endif /* HAVE_TERMIOS_H */
+
 
 #define MAX_LINE 200
 #define MAX_COLUMN 400
 
 // termcap
-extern "C" int tgetnum(const char *);
-
-void clear(), wrap(), touch_line();
-void clrtoeol(void); /* conflicts with curs_clear(3)? */
-
 inline void MOVE(int line, int column)
 {
     Terminal::move(line, column);
 }
 
-void ttymode_set(int mode, int imode)
+static void ttymode_set(int mode, int imode)
 {
 #ifndef __MINGW32_VERSION
     TerminalMode ioval;
@@ -186,9 +170,9 @@ void setlinescols(void)
     if (COLS <= 0 && (p = getenv("COLUMNS")) != NULL && (i = atoi(p)) >= 0)
         COLS = i;
     if (LINES <= 0)
-        LINES = tgetnum("li"); /* number of line */
+        LINES =Terminal::lines();
     if (COLS <= 0)
-        COLS = tgetnum("co"); /* number of column */
+        COLS = Terminal::columns();
     if (COLS > MAX_COLUMN)
         COLS = MAX_COLUMN;
     if (LINES > MAX_LINE)

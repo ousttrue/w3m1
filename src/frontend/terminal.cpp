@@ -11,6 +11,7 @@
 // #include <term.h> // danger macros
 extern "C" int tputs(const char *, int, int (*)(int));
 extern "C" char *tgoto(const char *, int, int);
+extern "C" int tgetnum(const char *);
 
 #define W3M_TERM_INFO(name, title, mouse) name, title, mouse
 #define NEED_XTERM_ON (1)
@@ -199,4 +200,14 @@ void Terminal::xterm_off()
         fputs("\033[?1000l\033[?1001r", Terminal::file());
         Terminal::flush();
     }
+}
+
+int Terminal::lines()
+{
+    return tgetnum("li");
+};
+
+int Terminal::columns()
+{
+    return tgetnum("co");
 }

@@ -26,4 +26,6 @@ public:
     static void move(int line, int column);
     static void xterm_on();
     static void xterm_off();
+    static int lines();
+    static int columns();
 };
