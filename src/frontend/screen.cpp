@@ -654,7 +654,7 @@ void Screen::Setup()
     m_impl->Setup(Terminal::lines(), Terminal::columns());
 }
 
-void Screen::AddChar(const char *pc, int len)
+void Screen::Puts(const char *pc, int len)
 {
     m_impl->AddChar(CurrentMode, pc, len);
 }

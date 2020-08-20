@@ -150,7 +150,7 @@ void addch(char c)
 
 void addmch(const char *pc, int len)
 {
-    Screen::Instance().AddChar(pc, len);
+    Screen::Instance().Puts(pc, len);
 }
 
 void wrap(void)

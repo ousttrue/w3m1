@@ -70,7 +70,7 @@ public:
     void Setup();
     void Clear();
     void Move(int line, int column);
-    void AddChar(const char *c, int len);
+    void Puts(const char *c, int len);
     void Wrap();
     void TouchColumn(int col);
     void TouchCurrentLine();
