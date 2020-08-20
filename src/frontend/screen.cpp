@@ -230,7 +230,7 @@ public:
         int cli = CurLine;
         int cco = CurColumn;
         for (int i = CurColumn; i < Cols(); i++)
-            Screen::Instance().Putc(' ');
+            Screen::Instance().PutAscii(' ');
         Move(cli, cco);
     }
 
@@ -654,9 +654,59 @@ void Screen::Setup()
     m_impl->Setup(Terminal::lines(), Terminal::columns());
 }
 
-void Screen::Puts(const char *pc, int len)
+void Screen::PutChar(const char *pc, int len)
 {
     m_impl->Puts(CurrentMode, pc, len);
+}
+
+void Screen::PutsColumnsFillSpace(const char *s, int n)
+{
+    int i = 0;
+    for (; *s != '\0';)
+    {
+        int width = wtf_width((uint8_t *)s);
+        if (i + width > n)
+            break;
+        int len = wtf_len((uint8_t *)s);
+        Screen::Instance().PutChar(s, len);
+        s += len;
+        i += width;
+    }
+    for (; i < n; i++)
+        Screen::Instance().PutAscii(' ');
+}
+
+void Screen::PutsColumns(const char *s, int n)
+{
+    if (!s)
+    {
+        return;
+    }
+    for (int i = 0; *s != '\0';)
+    {
+        int width = wtf_width((uint8_t *)s);
+        if (i + width > n)
+            break;
+        int len = wtf_len((uint8_t *)s);
+        Screen::Instance().PutChar(s, len);
+        s += len;
+        i += width;
+    }
+}
+
+void Screen::Puts(const char *s)
+{
+    if (!s)
+    {
+        return;
+    }
+
+    while (*s != '\0')
+    {
+        int len = wtf_len((uint8_t *)s);
+        Screen::Instance().PutChar(s, len);
+        s += len;
+    }
 }
 
 void Screen::Wrap()

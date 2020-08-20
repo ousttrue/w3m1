@@ -241,8 +241,8 @@ static MenuList *w3mMenuList;
 static Menu *CurrentMenu = NULL;
 
 #define mvaddch(y, x, c) (Screen::Instance().Move(y, x), addch(c))
-#define mvaddstr(y, x, str) (Screen::Instance().Move(y, x), addstr(str))
-#define mvaddnstr(y, x, str, n) (Screen::Instance().Move(y, x), addnstr_sup(str, n))
+#define mvaddstr(y, x, str) (Screen::Instance().Move(y, x), Screen::Instance().Puts(str))
+#define mvaddnstr(y, x, str, n) (Screen::Instance().Move(y, x), Screen::Instance().PutsColumns(str, n))
 
 void new_menu(Menu *menu, MenuItem *item)
 {

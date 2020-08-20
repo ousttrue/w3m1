@@ -769,16 +769,16 @@ void addChar(char c, Lineprop mode)
             }
 #ifdef USE_M17N
             if (w == 2 && WcOption.use_wide)
-                addstr(graph2_symbol[(int)c]);
+                Screen::Instance().Puts(graph2_symbol[(int)c]);
             else
 #endif
-                Screen::Instance().Putc(*graph_symbol[(int)c]);
+                Screen::Instance().PutAscii(*graph_symbol[(int)c]);
         }
         else
         {
 #ifdef USE_M17N
             symbol = get_symbol(w3mApp::Instance().DisplayCharset, &w);
-            addstr(symbol[(int)c]);
+            Screen::Instance().Puts(symbol[(int)c]);
 #else
             symbol = get_symbol();
             Screen::Instance().Putc(*symbol[(int)c]);
@@ -790,19 +790,19 @@ void addChar(char c, Lineprop mode)
         switch (c)
         {
         case '\t':
-            Screen::Instance().Putc(c);
+            Screen::Instance().PutAscii(c);
             break;
         case '\n':
-            Screen::Instance().Putc(' ');
+            Screen::Instance().PutAscii(' ');
             break;
         case '\r':
             break;
         case DEL_CODE:
-            addstr("^?");
+            Screen::Instance().Puts("^?");
             break;
         default:
-            Screen::Instance().Putc('^');
-            Screen::Instance().Putc(c + '@');
+            Screen::Instance().PutAscii('^');
+            Screen::Instance().PutAscii(c + '@');
             break;
         }
     }
@@ -811,11 +811,11 @@ void addChar(char c, Lineprop mode)
     {
         char buf[5];
         sprintf(buf, "[%.2X]", (unsigned char)wtf_get_code((uint8_t *)p) | 0x80);
-        addstr(buf);
+        Screen::Instance().Puts(buf);
     }
     else
     {
-        Screen::Instance().Puts(p, len);
+        Screen::Instance().PutChar(p, len);
     }
 }
 
@@ -870,7 +870,7 @@ void message(std::string_view s, int return_x, int return_y)
     if (!w3mApp::Instance().fmInitialized)
         return;
     Screen::Instance().Move((Terminal::lines() - 1), 0);
-    addnstr(s.data(), Terminal::columns() - 1);
+    Screen::Instance().PutsColumns(s.data(), Terminal::columns() - 1);
     clrtoeolx();
     Screen::Instance().Move(return_y, return_x);
 }
@@ -995,7 +995,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
             Screen::Instance().Move(0, 0);
 
             if (GetMouseActionMenuStr())
-                addstr(GetMouseActionMenuStr());
+                Screen::Instance().Puts(GetMouseActionMenuStr());
 
             clrtoeolx();
             EachTab([](auto t) {
@@ -1003,27 +1003,27 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
                 Screen::Instance().Move(t->Y(), t->Left());
                 if (t == GetCurrentTab())
                     Screen::Instance().Enable(S_BOLD);
-                Screen::Instance().Putc('[');
+                Screen::Instance().PutAscii('[');
                 auto l = t->Width() - get_strwidth(b->buffername.c_str());
                 if (l < 0)
                     l = 0;
                 if (l / 2 > 0)
-                    addnstr_sup(" ", l / 2);
+                    Screen::Instance().PutsColumnsFillSpace(" ", l / 2);
                 if (t == GetCurrentTab())
                     effect_active_start();
-                addnstr(b->buffername.c_str(), t->Width());
+                Screen::Instance().PutsColumns(b->buffername.c_str(), t->Width());
                 if (t == GetCurrentTab())
                     effect_active_end();
                 if ((l + 1) / 2 > 0)
-                    addnstr_sup(" ", (l + 1) / 2);
+                    Screen::Instance().PutsColumnsFillSpace(" ", (l + 1) / 2);
                 Screen::Instance().Move(t->Y(), t->Right());
-                Screen::Instance().Putc(']');
+                Screen::Instance().PutAscii(']');
                 if (t == GetCurrentTab())
                     Screen::Instance().Disable(S_BOLD);
             });
             Screen::Instance().Move(GetTabbarHeight(), 0);
             for (int i = 0; i < Terminal::columns(); i++)
-                Screen::Instance().Putc('~');
+                Screen::Instance().PutAscii('~');
         }
 
         // draw
@@ -1060,7 +1060,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     Screen::Instance().Enable(S_STANDOUT);
     message(msg->c_str(), buf->rect);
     Screen::Instance().Disable(S_STANDOUT);
-    term_title(conv_to_system(buf->buffername.c_str()));
+    Terminal::title(conv_to_system(buf->buffername.c_str()));
     refresh();
 
     if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage &&

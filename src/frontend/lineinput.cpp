@@ -684,7 +684,7 @@ disp_next:
         clrtoeolx();
         Screen::Instance().Enable(S_BOLD);
         /* FIXME: gettextize? */
-        addstr("----- Completion list -----");
+        Screen::Instance().Puts("----- Completion list -----");
         Screen::Instance().Disable(S_BOLD);
         y++;
     }
@@ -699,9 +699,9 @@ disp_next:
             clrtoeolx();
             f = d->Clone();
             f->Push(CFileBuf[n]);
-            addstr(conv_from_system(CFileBuf[n]));
+            Screen::Instance().Puts(conv_from_system(CFileBuf[n]));
             if (stat(expandPath(f->ptr), &st) != -1 && S_ISDIR(st.st_mode))
-                addstr("/");
+                Screen::Instance().Puts("/");
         }
         y++;
     }
@@ -712,10 +712,10 @@ disp_next:
         Screen::Instance().Enable(S_BOLD);
         if (w3mApp::Instance().emacs_like_lineedit)
             /* FIXME: gettextize? */
-            addstr("----- Press TAB to continue -----");
+            Screen::Instance().Puts("----- Press TAB to continue -----");
         else
             /* FIXME: gettextize? */
-            addstr("----- Press CTRL-D to continue -----");
+            Screen::Instance().Puts("----- Press CTRL-D to continue -----");
         Screen::Instance().Disable(S_BOLD);
     }
 }
@@ -1129,7 +1129,7 @@ inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag
                 offset = 0;
         }
         Screen::Instance().Move(Terminal::lines() - 1, 0);
-        addstr(prompt);
+        Screen::Instance().Puts(prompt);
         if (is_passwd)
             addPasswd(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         else

@@ -427,15 +427,15 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
             messages = Sprintf("%11s %3.0f%%                          ",
                                fmtrbyte, ratio);
         }
-        addstr(messages->ptr);
+        Screen::Instance().Puts(messages->ptr);
         pos = 42;
         i = pos + (Terminal::columns() - pos - 1) * (*trbyte) / content_length;
         Screen::Instance().Move((Terminal::lines() - 1), pos);
         Screen::Instance().Enable(S_STANDOUT);
 
-        Screen::Instance().Putc(' ');
+        Screen::Instance().PutAscii(' ');
         for (j = pos + 1; j <= i; j++)
-            Screen::Instance().Putc('|');
+            Screen::Instance().PutAscii('|');
         Screen::Instance().Disable(S_STANDOUT);
         /* no_clrtoeol(); */
         refresh();

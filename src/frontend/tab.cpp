@@ -48,7 +48,7 @@ bool Tab::SetCurrent(int index)
         return false;
     }
 
-    buf->GotoLine(0, true);
+    buf->GotoLine(1, true);
 
     m_buffer = buf;
     displayCurrentbuf(B_NORMAL);
@@ -127,7 +127,7 @@ writeBufferName(BufferPtr buf, int n)
             break;
         }
     }
-    addnstr_sup(msg->ptr, Terminal::columns() - 1);
+    Screen::Instance().PutsColumns(msg->ptr, Terminal::columns() - 1);
 }
 
 static BufferPtr

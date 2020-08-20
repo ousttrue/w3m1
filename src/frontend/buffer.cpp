@@ -1223,7 +1223,7 @@ void Buffer::DrawLine(LinePtr l, int line)
             sprintf(tmp, "%*ld:", rect.rootX - 1, l->real_linenumber);
         else
             sprintf(tmp, "%*s ", rect.rootX - 1, "");
-        addstr(tmp);
+        Screen::Instance().Puts(tmp);
     }
 
     l->CalcWidth();

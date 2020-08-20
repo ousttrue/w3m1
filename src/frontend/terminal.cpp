@@ -40,8 +40,9 @@ static struct w3m_term_info
 #undef W3M_TERM_INFO
 /* *INDENT-ON * */
 
-FILE *g_ttyf = nullptr;
-bool g_mouseActive = false;
+static const char *g_title_str = NULL;
+static FILE *g_ttyf = nullptr;
+static bool g_mouseActive = false;
 
 void mouse_init()
 {
@@ -143,7 +144,6 @@ static void ttymode_reset(int mode, int imode)
 #endif /* __MINGW32_VERSION */
 }
 
-
 ///
 /// Terminal
 ///
@@ -210,23 +210,25 @@ Terminal::Terminal()
     getTCstr();
     if (T_ti && !w3mApp::Instance().Do_not_use_ti_te)
         Terminal::writestr(T_ti);
-}
 
-// if (w3mApp::Instance().displayTitleTerm.size())
-// {
-//     struct w3m_term_info *p;
-//     for (p = w3m_term_info_list; p->term != NULL; p++)
-//     {
-//         if (!strncmp(w3mApp::Instance().displayTitleTerm.c_str(), p->term, strlen(p->term)))
-//         {
-//             title_str = p->title_str;
-//             break;
-//         }
-//     }
-// }
+    if (w3mApp::Instance().displayTitleTerm.size())
+    {
+        struct w3m_term_info *p;
+        for (p = w3m_term_info_list; p->term != NULL; p++)
+        {
+            if (!strncmp(w3mApp::Instance().displayTitleTerm.c_str(), p->term, strlen(p->term)))
+            {
+                g_title_str = p->title_str;
+                break;
+            }
+        }
+    }
+}
 
 Terminal::~Terminal()
 {
+    Terminal::title(""); /* XXX */
+
     Terminal::writestr(T_op); /* turn off */
     Terminal::writestr(T_me);
     if (!w3mApp::Instance().Do_not_use_ti_te)
@@ -558,4 +560,14 @@ int Terminal::sleep_till_anykey(int sec, int purge)
         reset_error_exit(SIGNAL_ARGLIST);
     }
     return ret;
+}
+
+void Terminal::title(const char *s)
+{
+    if (!w3mApp::Instance().fmInitialized)
+        return;
+    if (g_title_str != NULL)
+    {
+        fprintf(g_ttyf, g_title_str, s);
+    }
 }

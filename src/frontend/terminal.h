@@ -39,4 +39,5 @@ public:
     static char getch();
     static void skip_escseq();
     static int sleep_till_anykey(int sec, int purge);
+    static void title(const char *s);
 };

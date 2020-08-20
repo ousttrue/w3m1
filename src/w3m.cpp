@@ -646,7 +646,6 @@ void w3mApp::_quitfm(int confirm)
         return;
     }
 
-    term_title(""); /* XXX */
 
     if (activeImage)
         termImage();

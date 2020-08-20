@@ -27,8 +27,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-static const char *title_str = NULL;
-
 int graph_ok(void)
 {
     if (w3mApp::Instance().UseGraphicChar != GRAPHIC_CHAR_DEC)
@@ -73,65 +71,4 @@ void clrtobotx(void)
     clrtobot_eol(clrtoeolx);
 }
 
-void addstr(const char *s)
-{
-    if (!s)
-    {
-        return;
-    }
 
-    while (*s != '\0')
-    {
-        int len = wtf_len((uint8_t *)s);
-        Screen::Instance().Puts(s, len);
-        s += len;
-    }
-}
-
-void addnstr(const char *s, int n)
-{
-    if (!s)
-    {
-        return;
-    }
-    for (int i = 0; *s != '\0';)
-    {
-        int width = wtf_width((uint8_t *)s);
-        if (i + width > n)
-            break;
-        int len = wtf_len((uint8_t *)s);
-        Screen::Instance().Puts(s, len);
-        s += len;
-        i += width;
-    }
-}
-
-void addnstr_sup(const char *s, int n)
-{
-    int i;
-    int len, width;
-
-    for (i = 0; *s != '\0';)
-    {
-        width = wtf_width((uint8_t *)s);
-        if (i + width > n)
-            break;
-        len = wtf_len((uint8_t *)s);
-        Screen::Instance().Puts(s, len);
-        s += len;
-        i += width;
-    }
-    for (; i < n; i++)
-        Screen::Instance().Putc(' ');
-}
-
-
-void term_title(const char *s)
-{
-    if (!w3mApp::Instance().fmInitialized)
-        return;
-    if (title_str != NULL)
-    {
-        // fprintf(ttyf, title_str, s);
-    }
-}

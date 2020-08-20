@@ -70,12 +70,14 @@ public:
     void Setup();
     void Clear();
     void Move(int line, int column);
-    void Puts(const char *c, int len);
-    void Putc(char c)
+    void PutChar(const char *c, int len);
+    void PutAscii(char c)
     {
-        Puts(&c, 1);
+        PutChar(&c, 1);
     }
-
+    void PutsColumnsFillSpace(const char *s, int cols);
+    void PutsColumns(const char *s, int cols);
+    void Puts(const char *s);
     void Wrap();
     void TouchColumn(int col);
     void TouchCurrentLine();
