@@ -16,7 +16,7 @@
 #include <setjmp.h>
 #include <signal.h>
 #include "ucs.h"
-#include "frontend/terms.h"
+
 #include "dispatcher.h"
 #include "html/image.h"
 #include "commands.h"
@@ -371,20 +371,14 @@ void cmd_loadfile(const char *fn)
 
 void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, FormList *request)
 {
-    BufferPtr buf;
 
     if (handleMailto(url.data()))
         return;
-#if 0
-    if (!strncasecmp(url, "news:", 5) && strchr(url, '@') == NULL) {
-        /* news:newsgroup is not supported */
-        /* FIXME: gettextize? */
-        disp_err_message("news:newsgroup_name is not supported", true);
-        return;
-    }
-#endif /* USE_NNTP */
 
-    refresh();
+    // Screen::Instance().Refresh();
+    // Terminal::flush();
+
+    // BufferPtr buf;
     // buf = loadGeneralFile(URL::Parse(url), current, referer, request);
     // if (buf == NULL)
     // {

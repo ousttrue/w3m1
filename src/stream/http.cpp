@@ -9,7 +9,7 @@
 #include "html/html_processor.h"
 #include "html/form.h"
 #include "frontend/display.h"
-#include "frontend/terms.h"
+
 #include "w3m.h"
 #include "file.h"
 #include "mime/mimetypes.h"

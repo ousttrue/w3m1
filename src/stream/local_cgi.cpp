@@ -12,7 +12,7 @@
 #include "stream/local_cgi.h"
 #include "stream/loader.h"
 #include "html/form.h"
-#include "frontend/terms.h"
+
 #include "mime/mimetypes.h"
 
 static Str Local_cookie = NULL;

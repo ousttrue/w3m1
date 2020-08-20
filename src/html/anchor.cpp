@@ -12,7 +12,7 @@
 #include "html/image.h"
 #include "html/html_processor.h"
 #include "stream/loader.h"
-#include "frontend/terms.h"
+
 #include "frontend/terminal.h"
 
 #define FIRST_ANCHOR_SIZE 30

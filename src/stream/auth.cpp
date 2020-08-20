@@ -6,7 +6,8 @@
 #include "html/form.h"
 #include "frontend/display.h"
 #include "frontend/terminal.h"
-#include "frontend/terms.h"
+#include "frontend/screen.h"
+
 #include "frontend/lineinput.h"
 #include "public.h"
 #include "textlist.h"
@@ -315,7 +316,8 @@ AuthDigestCred(struct http_auth *ha, Str uname, Str pw, URL *pu,
     /* cnonce is what client should generate. */
     Str qop = qstr_unquote(get_auth_param(ha->param, "qop"));
 
-    static union {
+    static union
+    {
         int r[4];
         unsigned char s[sizeof(int) * 4];
     } cnonce_seed;
@@ -604,11 +606,10 @@ http_auth *findAuthentication(struct http_auth *hauth, BufferPtr buf, char *auth
     return hauth->scheme ? hauth : NULL;
 }
 
-void
-getAuthCookie(struct http_auth *hauth, char *auth_header,
-              TextList *extra_header, URL *pu, HttpRequest *hr,
-              FormList *request,
-              Str *uname, Str *pwd)
+void getAuthCookie(struct http_auth *hauth, char *auth_header,
+                   TextList *extra_header, URL *pu, HttpRequest *hr,
+                   FormList *request,
+                   Str *uname, Str *pwd)
 {
     Str ss = NULL;
     Str tmp;
@@ -643,7 +644,8 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
         if (w3mApp::Instance().fmInitialized)
         {
             message("Wrong username or password", 0, 0);
-            refresh();
+            Screen::Instance().Refresh();
+            Terminal::flush();
         }
         else
             fprintf(stderr, "Wrong username or password\n");

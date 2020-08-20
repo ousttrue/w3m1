@@ -11,7 +11,7 @@
 #include "html/form.h"
 #include "mime/mimeencoding.h"
 #include "frontend/display.h"
-#include "frontend/terms.h"
+
 #include "frontend/terminal.h"
 #include <signal.h>
 #include <openssl/x509v3.h>

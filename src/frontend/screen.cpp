@@ -1,6 +1,5 @@
 #include "screen.h"
-#include "termcap_str.h"
-#include "terms.h"
+
 #include "terminal.h"
 #include "w3m.h"
 #include <myctype.h>
@@ -42,7 +41,7 @@ void SETCH(SingleCharacter &var, const char *ch, int len)
 #define SETPROP(var, prop) (var = (((var)&S_DIRTY) | prop))
 #define SETCHMODE(var, mode) ((var) = (((var) & ~C_WHICHCHAR) | mode))
 #define CHMODE(c) ((c)&C_WHICHCHAR)
-#define MOVE(line, column) Terminal::Terminal::writestr(tgoto(T_cm, column, line));
+// #define Terminal::move(line, column) Terminal::Terminal::writestr(tgoto(T_cm, column, line));
 
 const auto SPACE = " ";
 
@@ -238,7 +237,7 @@ public:
     {
         auto l = CurLine;
         auto c = CurColumn;
-        CtrlToEol();         
+        CtrlToEol();
         CurColumn = 0;
         CurLine++;
         auto lines = Lines();
@@ -496,7 +495,7 @@ public:
                     switch (moved)
                     {
                     case RF_NEED_TO_MOVE:
-                        MOVE(line, 0);
+                        Terminal::move(line, 0);
                         moved = RF_CR_OK;
                         break;
                     case RF_CR_OK:
@@ -510,21 +509,23 @@ public:
                 }
                 else
                 {
-                    MOVE(line, pcol);
+                    Terminal::move(line, pcol);
                     moved = RF_CR_OK;
                 }
                 if (*dirty & (L_NEED_CE | L_CLRTOEOL))
                 {
                     Terminal::writestr(T_ce);
                     if (col != pcol)
-                        MOVE(line, col);
+                        Terminal::move(line, col);
                 }
                 pline = line;
                 pcol = col;
                 for (; col < cols; col++)
                 {
                     if (pr[col] & S_EOL)
+                    {
                         break;
+                    }
 
                     /* 
                 * some terminal emulators do linefeed when a
@@ -555,7 +556,7 @@ public:
                         if (pcol == col - 1)
                             Terminal::writestr(T_nd);
                         else if (pcol != col)
-                            MOVE(line, col);
+                            Terminal::move(line, col);
 
                         if ((pr[col] & S_STANDOUT) && !(mode & S_STANDOUT))
                         {
@@ -599,7 +600,7 @@ public:
                         }
 
                         if (pr[col] & S_GRAPHICS)
-                            Terminal::write1(graphchar(*pc[col].bytes.data()));
+                            Terminal::write_graphchar(*pc[col].bytes.data());
                         else if (CHMODE(pr[col]) != C_WCHAR2)
                             writer.putc(pc[col]);
                         pcol = col + 1;
@@ -629,7 +630,7 @@ public:
 
         writer.end();
 
-        MOVE(CurLine, CurColumn);
+        Terminal::move(CurLine, CurColumn);
     }
 };
 

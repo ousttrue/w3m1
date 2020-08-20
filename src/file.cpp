@@ -22,7 +22,7 @@
 #include "stream/url.h"
 #include "entity.h"
 #include "stream/cookie.h"
-#include "frontend/terms.h"
+
 #include "html/image.h"
 #include "ctrlcode.h"
 #include "mime/mimeencoding.h"
@@ -438,7 +438,8 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
             Screen::Instance().PutAscii('|');
         Screen::Instance().Disable(S_STANDOUT);
         /* no_clrtoeol(); */
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
     }
     else
     {
@@ -467,7 +468,8 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
             messages = Sprintf("%7s loaded", fmtrbyte);
         }
         message(messages->ptr, 0, 0);
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
     }
 }
 
@@ -1223,7 +1225,8 @@ FILE *openSecretFile(const char *fname)
         if (w3mApp::Instance().fmInitialized)
         {
             message(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, 0, 0);
-            refresh();
+            Screen::Instance().Refresh();
+            Terminal::flush();
         }
         else
         {

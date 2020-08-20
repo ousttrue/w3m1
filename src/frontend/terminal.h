@@ -1,6 +1,10 @@
 #pragma once
 #include <string>
 
+extern char *T_cd, *T_ce, *T_kr, *T_kl, *T_cr, *T_bt, *T_ta, *T_sc, *T_rc,
+    *T_so, *T_se, *T_us, *T_ue, *T_cl, *T_cm, *T_al, *T_sr, *T_md, *T_me,
+    *T_ti, *T_te, *T_nd, *T_as, *T_ae, *T_eA, *T_ac, *T_op;
+
 class Terminal
 {
     int m_tty = -1;
@@ -35,9 +39,10 @@ public:
     static void term_raw();
     static void term_cooked();
     static void term_cbreak();
-    //
     static char getch();
     static void skip_escseq();
     static int sleep_till_anykey(int sec, int purge);
     static void title(const char *s);
+    static bool graph_ok();
+    static void write_graphchar(int c);
 };

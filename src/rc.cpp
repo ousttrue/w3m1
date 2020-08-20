@@ -21,7 +21,7 @@
 #include "mime/mailcap.h"
 #include "html/parsetag.h"
 #include "make_array.h"
-#include "frontend/terms.h"
+
 #include "frontend/terminal.h"
 #include <stdlib.h>
 #include <vector>

@@ -18,7 +18,7 @@
 #include "frontend/tab.h"
 #include "frontend/tabbar.h"
 #include "frontend/buffer.h"
-#include "frontend/terms.h"
+
 #include "frontend/terminal.h"
 
 #define LIMIT_MOUSE_MENU 100

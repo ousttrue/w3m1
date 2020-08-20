@@ -6,7 +6,7 @@
 #include "html/html.h"
 #include "myctype.h"
 #include "file.h"
-#include "frontend/terms.h"
+
 #include "html/table.h"
 #include "stream/url.h"
 #include "entity.h"

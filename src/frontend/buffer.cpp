@@ -25,7 +25,7 @@
 #include "html/html.h"
 #include "html/form.h"
 #include "html/html_processor.h"
-#include "frontend/terms.h"
+
 #include "stream/istream.h"
 #include <iostream>
 
@@ -1197,7 +1197,7 @@ void Buffer::DumpSource()
     fclose(f);
 }
 
-#include "terms.h"
+
 #include <math.h>
 
 ///

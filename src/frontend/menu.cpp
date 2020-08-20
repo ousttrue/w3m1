@@ -17,7 +17,7 @@
 #include "stream/url.h"
 #include "frontend/display.h"
 #include "frontend/menu.h"
-#include "frontend/terms.h"
+
 #include "frontend/mouse.h"
 #include "frontend/buffer.h"
 #include "frontend/tabbar.h"
@@ -28,14 +28,14 @@
 static const char **FRAME;
 static int FRAME_WIDTH;
 static int graph_mode = false;
-#define G_start           \
-    {                     \
-        if (graph_mode)   \
+#define G_start                                    \
+    {                                              \
+        if (graph_mode)                            \
             Screen::Instance().Enable(S_GRAPHICS); \
     }
-#define G_end           \
-    {                   \
-        if (graph_mode) \
+#define G_end                                       \
+    {                                               \
+        if (graph_mode)                             \
             Screen::Instance().Disable(S_GRAPHICS); \
     }
 
@@ -205,7 +205,6 @@ static Menu MainMenu;
 /* FIXME: gettextize here */
 static CharacterEncodingScheme MainMenuCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
 static int MainMenuEncode = false;
-
 
 static MenuItem MainMenuItem[] = {
     /* type        label           variable value func     popup keys data  */
@@ -433,7 +432,8 @@ int select_menu(Menu *menu, int mselect)
      * move(menu->cursorY, menu->cursorX); */
     Screen::Instance().Move(menu->y + mselect - menu->offset, menu->x);
     Screen::Instance().StandToggle();
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
 
     return (menu->select);
 }
@@ -633,7 +633,7 @@ void new_option_menu(Menu *menu, char **label, int *variable, Command func)
 static void
 set_menu_frame(void)
 {
-    if (graph_ok())
+    if (Terminal::graph_ok())
     {
         graph_mode = true;
         FRAME_WIDTH = 1;
@@ -1174,7 +1174,7 @@ initSelectMenu(void)
     char *p;
     static const char *comment = " SPC for select / D for delete buffer ";
 
-assert(false);
+    assert(false);
 
     // SelectV = GetCurrentTab()->GetCurrentBufferIndex();
     // nitem = i;
@@ -1940,7 +1940,7 @@ void PopupTabMenu()
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     auto [x, y] = buf->rect.globalXY();
-    
+
     TryGetMouseActionPosition(&x, &y);
     popupMenu(x, y, &SelTabMenu);
 }

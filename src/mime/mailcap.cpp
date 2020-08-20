@@ -16,7 +16,7 @@
 #include "stream/istream.h"
 #include "frontend/tab.h"
 #include "frontend/buffer.h"
-#include "frontend/terms.h"
+
 #include "frontend/display.h"
 #include "frontend/tabbar.h"
 #include <unistd.h>

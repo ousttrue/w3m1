@@ -9,7 +9,7 @@
 #include "frontend/mouse.h"
 #include "frontend/tab.h"
 #include "frontend/tabbar.h"
-#include "frontend/terms.h"
+
 #include "html/anchor.h"
 #include "html/image.h"
 #include "html/maparea.h"
@@ -203,7 +203,8 @@ void fmTerm(void)
     {
         Screen::Instance().Move((Terminal::lines() - 1), 0);
         Screen::Instance().CtrlToEolWithBGColor();
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
 
         if (w3mApp::Instance().activeImage)
             loadImage(NULL, IMG_FLAG_STOP);
@@ -227,7 +228,6 @@ void fmInit(void)
 
         if (w3mApp::Instance().displayImage)
             initImage();
-
     }
     w3mApp::Instance().fmInitialized = true;
 }
@@ -760,7 +760,7 @@ void addChar(char c, Lineprop mode)
 #else
         c -= SYMBOL_BASE;
 #endif
-        if (graph_ok() && c < N_GRAPH_SYMBOL)
+        if (Terminal::graph_ok() && c < N_GRAPH_SYMBOL)
         {
             if (!graph_mode)
             {
@@ -861,7 +861,8 @@ void show_message(std::string_view msg)
         Terminal::term_cbreak();
         /* FIXME: gettextize? */
         message(msg, 0, 0);
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
     }
 }
 
@@ -895,7 +896,8 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
         message(s, GetCurrentTab()->GetCurrentBuffer()->rect);
     else
         message(s, 0, (Terminal::lines() - 1));
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
 
     Terminal::mouse_on();
     Terminal::sleep_till_anykey(sec, purge);
@@ -1055,13 +1057,15 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     {
         disp_message(delayed_msg, false);
         delayed_msg = NULL;
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
     }
     Screen::Instance().Enable(S_STANDOUT);
     message(msg->c_str(), buf->rect);
     Screen::Instance().Disable(S_STANDOUT);
     Terminal::title(conv_to_system(buf->buffername.c_str()));
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
 
     if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage &&
         buf->img)

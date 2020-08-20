@@ -33,11 +33,11 @@
 #include "stream/cookie.h"
 #include "frontend/mouse.h"
 #include "frontend/lineinput.h"
-#include "frontend/terms.h"
+
 #include "frontend/event.h"
 #include "frontend/tabbar.h"
 #include "frontend/display.h"
-#include "frontend/terms.h"
+
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
 #include <sys/types.h>

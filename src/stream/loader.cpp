@@ -19,7 +19,7 @@
 #include "public.h"
 #include "html/image.h"
 #include "frontend/display.h"
-#include "frontend/terms.h"
+
 #include "mime/mailcap.h"
 #include "mime/mimetypes.h"
 #include "frontend/lineinput.h"

@@ -19,7 +19,7 @@
 #include "html/tokenizer.h"
 #include "w3m.h"
 #include "textlist.h"
-#include "frontend/terms.h"
+
 #include "frontend/line.h"
 #include "stream/istream.h"
 #include <signal.h>

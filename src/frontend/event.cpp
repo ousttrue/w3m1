@@ -2,7 +2,7 @@
 #include "commands.h"
 #include "dispatcher.h"
 #include "terminal.h"
-#include "terms.h"
+
 #include "tab.h"
 #include "buffer.h"
 #include "tabbar.h"

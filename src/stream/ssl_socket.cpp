@@ -4,7 +4,7 @@
 #include "ssl_socket.h"
 #include "file.h"
 #include "frontend/display.h"
-#include "frontend/terms.h"
+
 #include "frontend/terminal.h"
 #include <unistd.h>
 #include <myctype.h>

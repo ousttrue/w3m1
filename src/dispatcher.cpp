@@ -7,7 +7,7 @@
 #include "ctrlcode.h"
 #include "indep.h"
 #include "frontend/terminal.h"
-#include "frontend/terms.h"
+
 #include "frontend/display.h"
 #include "frontend/buffer.h"
 #include "frontend/tab.h"

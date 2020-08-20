@@ -11,7 +11,9 @@
 #include <netdb.h>
 #include "frontend/event.h"
 #include "frontend/display.h"
-#include "frontend/terms.h"
+
+#include "frontend/terminal.h"
+#include "frontend/screen.h"
 
 int openSocket4(const char *hostname,
                 const char *remoteport_name, unsigned short remoteport_num)
@@ -29,7 +31,8 @@ int openSocket4(const char *hostname,
     {
         /* FIXME: gettextize? */
         message(Sprintf("Opening socket...")->ptr, 0, 0);
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
     }
 
     if (hostname == NULL)
@@ -61,7 +64,8 @@ int openSocket4(const char *hostname,
             if (w3mApp::Instance().fmInitialized)
             {
                 message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
-                refresh();
+                Screen::Instance().Refresh();
+                Terminal::flush();
             }
             if (connect(sock, (struct sockaddr *)&hostaddr,
                         sizeof(struct sockaddr_in)) < 0)
@@ -77,7 +81,8 @@ int openSocket4(const char *hostname,
             {
                 message(Sprintf("Performing hostname lookup on %s", hostname)->ptr,
                         0, 0);
-                refresh();
+                Screen::Instance().Refresh();
+                Terminal::flush();
             }
             if ((entry = gethostbyname(hostname)) == NULL)
             {
@@ -92,7 +97,8 @@ int openSocket4(const char *hostname,
                 if (w3mApp::Instance().fmInitialized)
                 {
                     message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
-                    refresh();
+                    Screen::Instance().Refresh();
+                    Terminal::flush();
                 }
                 if ((result = connect(sock, (struct sockaddr *)&hostaddr,
                                       sizeof(struct sockaddr_in))) == 0)
@@ -126,7 +132,8 @@ int openSocket6(const char *hostname,
     {
         /* FIXME: gettextize? */
         message(Sprintf("Opening socket...")->ptr, 0, 0);
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
     }
 
     if (hostname == NULL)

@@ -6,7 +6,7 @@
 #include "stream/url.h"
 #include "indep.h"
 #include "stream/cookie.h"
-#include "frontend/terms.h"
+
 #include "html/form.h"
 #include "frontend/display.h"
 #include "html/anchor.h"

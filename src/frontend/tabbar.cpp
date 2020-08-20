@@ -4,7 +4,7 @@
 #include "display.h"
 #include "html/image.h"
 #include "w3m.h"
-#include "frontend/terms.h"
+
 #include "frontend/terminal.h"
 
 using TabList = std::list<TabPtr>;

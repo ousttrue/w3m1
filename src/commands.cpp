@@ -21,7 +21,7 @@
 #include "frontend/display.h"
 #include "frontend/tab.h"
 #include "stream/cookie.h"
-#include "frontend/terms.h"
+
 #include "frontend/mouse.h"
 #include "frontend/tabbar.h"
 #include "mime/mimetypes.h"
@@ -582,7 +582,9 @@ void susp(w3mApp *w3m)
 #endif /* not SIGSTOP */
     Screen::Instance().Move((Terminal::lines() - 1), 0);
     Screen::Instance().CtrlToEolWithBGColor();
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
+
     fmTerm();
 #ifndef SIGSTOP
     shell = getenv("SHELL");
@@ -853,7 +855,9 @@ void followI(w3mApp *w3m)
     auto l = buf->CurrentLine();
     /* FIXME: gettextize? */
     message(Sprintf("loading %s", a->url)->ptr, 0, 0);
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
+
     GetCurrentTab()->Push(URL::Parse(a->url, buf->BaseURL()));
     // auto newBuf = loadGeneralFile(URL::Parse(a->url), buf->BaseURL());
     // if (newBuf == NULL)
@@ -1632,7 +1636,8 @@ void reload(w3mApp *w3m)
         if (w3mApp::Instance().fmInitialized)
         {
             message("Rendering frame", 0, 0);
-            refresh();
+            Screen::Instance().Refresh();
+            Terminal::flush();
         }
 
         BufferPtr renderBuf;
@@ -1696,7 +1701,8 @@ void reload(w3mApp *w3m)
     //
     /* FIXME: gettextize? */
     message("Reloading...", 0, 0);
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
 
     auto old_charset = w3m->DocumentCharset;
     if (buf->document_charset != WC_CES_US_ASCII)
@@ -1835,7 +1841,8 @@ void rFrame(w3mApp *w3m)
     if (w3mApp::Instance().fmInitialized)
     {
         message("Rendering frame", 0, 0);
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
     }
     buf = renderFrame(GetCurrentTab()->GetCurrentBuffer(), 0);
     if (buf == NULL)

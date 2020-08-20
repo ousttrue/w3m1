@@ -6,7 +6,7 @@
 #include "gc_helper.h"
 #include "file.h"
 #include "frontend/display.h"
-#include "frontend/terms.h"
+
 #include "history.h"
 #include "frontend/buffer.h"
 #include "stream/local_cgi.h"
@@ -23,7 +23,6 @@
 #ifdef HAVE_WAITPID
 #include <sys/wait.h>
 #endif
-
 
 static int image_index = 0;
 
@@ -228,7 +227,8 @@ void drawImage()
         return;
     syncImage();
     Screen::Instance().TouchCursor();
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
 }
 
 void clearImage()
@@ -271,7 +271,7 @@ static GeneralList *image_list = NULL;
 static ImageCache **image_cache = NULL;
 static BufferPtr image_buffer = NULL;
 
-void deleteImage(Buffer* buf)
+void deleteImage(Buffer *buf)
 {
     Anchor *a;
     int i;
@@ -281,8 +281,8 @@ void deleteImage(Buffer* buf)
     auto &al = buf->img;
     if (!al)
         return;
-        
-    for (auto &a: al.anchors)
+
+    for (auto &a : al.anchors)
     {
         if (a.image && a.image->cache &&
             a.image->cache->loaded != IMG_FLAG_UNLOADED &&
@@ -307,7 +307,7 @@ void getAllImage(const BufferPtr &buf)
     if (!al)
         return;
     current = buf->BaseURL();
-    for (auto &a: al.anchors)
+    for (auto &a : al.anchors)
     {
         if (a.image)
         {
@@ -329,7 +329,7 @@ void showImageProgress(const BufferPtr &buf)
     auto &al = buf->img;
     if (!al)
         return;
-    for (auto &a: al.anchors)
+    for (auto &a : al.anchors)
     {
         if (a.image && a.hseq >= 0)
         {
@@ -341,7 +341,8 @@ void showImageProgress(const BufferPtr &buf)
     if (n)
     {
         message(Sprintf("%d/%d images loaded", l, n)->ptr, buf->rect);
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
     }
 }
 
@@ -570,7 +571,7 @@ int getImageSize(ImageCache *cache)
         (cache->width > 0 && cache->height > 0))
         return false;
     tmp = Strnew();
-    if (w3mApp::Instance().Imgdisplay.find('/')==std::string::npos)
+    if (w3mApp::Instance().Imgdisplay.find('/') == std::string::npos)
         Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
     Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -size ", shell_quote(cache->file), NULL);
     f = popen(tmp->ptr, "r");
@@ -614,7 +615,6 @@ int getImageSize(ImageCache *cache)
     putHash_sv(image_hash, tmp->ptr, (void *)cache);
     return true;
 }
-
 
 #ifdef USE_IMAGE
 #ifdef USE_XFACE

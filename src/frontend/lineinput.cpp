@@ -10,7 +10,7 @@
 #include "html/form.h"
 #include "ctrlcode.h"
 #include "frontend/display.h"
-#include "frontend/terms.h"
+
 #include "frontend/tabbar.h"
 #include "history.h"
 
@@ -1136,7 +1136,8 @@ inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag
             addStr(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         Screen::Instance().CtrlToEolWithBGColor();
         Screen::Instance().Move((Terminal::lines() - 1), opos + x - offset);
-        refresh();
+        Screen::Instance().Refresh();
+        Terminal::flush();
 
     next_char:
         c = Terminal::getch();
@@ -1238,7 +1239,9 @@ inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag
         return NULL;
 
     Screen::Instance().Move((Terminal::lines() - 1), 0);
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
+
     p = strBuf->ptr;
     if (flag & (IN_FILENAME | IN_COMMAND))
     {

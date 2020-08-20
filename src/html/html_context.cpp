@@ -7,7 +7,8 @@
 #include "html/form.h"
 #include "html/maparea.h"
 #include "stream/compression.h"
-#include "frontend/terms.h"
+
+#include "frontend/terminal.h"
 #include "indep.h"
 #include "gc_helper.h"
 #include "w3m.h"
@@ -35,7 +36,7 @@ HtmlContext::HtmlContext()
 {
     doc_charset = w3mApp::Instance().DocumentCharset;
 
-    if (w3mApp::Instance().fmInitialized && graph_ok())
+    if (Terminal::graph_ok())
     {
         symbol_width = symbol_width0 = 1;
     }

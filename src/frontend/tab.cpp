@@ -11,7 +11,7 @@
 #include "frontend/buffer.h"
 #include "html/anchor.h"
 #include "html/image.h"
-#include "frontend/terms.h"
+
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
 #include "ctrlcode.h"
@@ -176,7 +176,9 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
     /* 
      * move((Terminal::lines()-1), Terminal::columns() - 1); */
     Screen::Instance().Move(c, 0);
-    refresh();
+    Screen::Instance().Refresh();
+    Terminal::flush();
+
     // return tab->BackBuffer(buf);
     return buf;
 }
