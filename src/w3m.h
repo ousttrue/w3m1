@@ -249,7 +249,6 @@ public:
     bool fmInitialized = false;
     std::string CurrentCmdData;
 
-
     bool do_download = false;
     std::string image_source;
     bool WrapSearch = false;
@@ -263,7 +262,7 @@ public:
     bool is_redisplay = false;
 
     // ssl
-    
+
     bool ssl_path_modified = false;
 
     // files settings
@@ -328,6 +327,9 @@ public:
     void _quitfm(int confirm);
 
     bool UseProxy(const URL &url);
+
+    int INIT_BUFFER_WIDTH();
+    int FOLD_BUFFER_WIDTH();
 
 private:
     bool check_no_proxy(std::string_view domain);

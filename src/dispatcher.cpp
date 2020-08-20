@@ -199,15 +199,14 @@ void MultiKeyProc(char c)
     }
 }
 
-void escdmap(char c)
+void escdmap(char _c)
 {
-    int d;
-    d = (int)c - (int)'0';
-    c = getch();
+    auto d = (int)_c - (int)'0';
+    auto c = Terminal::getch();
     if (IS_DIGIT(c))
     {
         d = d * 10 + (int)c - (int)'0';
-        c = getch();
+        c = Terminal::getch();
     }
     if (c == '~')
         _escKeyProc((int)d, K_ESCD, EscDKeymap);

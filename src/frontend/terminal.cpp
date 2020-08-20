@@ -2,6 +2,7 @@
 #include "terminal.h"
 #include "termcap_str.h"
 #include "event.h"
+#include "ctrlcode.h"
 #include "w3m.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -493,4 +494,68 @@ void Terminal::term_cbreak()
 {
     term_cooked();
     term_noecho();
+}
+
+char Terminal::getch()
+{
+    char c;
+    while (read(Terminal::tty(), &c, 1) < (int)1)
+    {
+        if (errno == EINTR || errno == EAGAIN)
+            continue;
+        /* error happend on read(2) */
+        w3mApp::Instance()._quitfm(false);
+        break; /* unreachable */
+    }
+    return c;
+}
+
+void Terminal::skip_escseq()
+{
+    int c;
+
+    c = getch();
+    if (c == '[' || c == 'O')
+    {
+        c = getch();
+        if (Terminal::is_xterm() && c == 'M')
+        {
+            getch();
+            getch();
+            getch();
+        }
+        else
+            while (IS_DIGIT(c))
+                c = getch();
+    }
+}
+
+int Terminal::sleep_till_anykey(int sec, int purge)
+{
+    termios ioval;
+    Terminal::tcgetattr(&ioval);
+    Terminal::term_raw();
+
+    struct timeval tim;
+    tim.tv_sec = sec;
+    tim.tv_usec = 0;
+
+    fd_set rfd;
+    FD_ZERO(&rfd);
+    FD_SET(Terminal::tty(), &rfd);
+
+    auto ret = select(Terminal::tty() + 1, &rfd, 0, 0, &tim);
+    if (ret > 0 && purge)
+    {
+        auto c = getch();
+        if (c == ESC_CODE)
+            skip_escseq();
+    }
+    auto er = Terminal::tcsetattr(&ioval);
+    if (er == -1)
+    {
+        printf("Error occured: errno=%d\n", errno);
+        reset_error_exit(SIGNAL_ARGLIST);
+    }
+    return ret;
 }

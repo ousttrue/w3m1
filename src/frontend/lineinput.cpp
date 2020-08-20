@@ -249,11 +249,11 @@ _esc(void)
 {
     char c;
 
-    switch (c = getch())
+    switch (c = Terminal::getch())
     {
     case '[':
     case 'O':
-        switch (c = getch())
+        switch (c = Terminal::getch())
         {
         case 'A':
             _prev();
@@ -1139,14 +1139,7 @@ inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag
         refresh();
 
     next_char:
-        c = getch();
-#ifdef __EMX__
-        if (c == 0)
-        {
-            if (!(c = getcntrl()))
-                goto next_char;
-        }
-#endif
+        c = Terminal::getch();
         cm_clear = true;
         cm_disp_clear = true;
         if (!i_quote &&

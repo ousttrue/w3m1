@@ -367,7 +367,7 @@ static void wrap_GC_warn_proc(char *msg, GC_word arg)
                 i %= sizeof(msg_ring) / sizeof(msg_ring[0]);
 
                 printf(msg_ring[i].msg, (unsigned long)msg_ring[i].arg);
-                sleep_till_anykey(1, 1);
+                Terminal::sleep_till_anykey(1, 1);
             }
 
             lock = 0;
@@ -606,7 +606,7 @@ void w3mApp::mainloop()
                     resize_screen();
 
                 loadImage(GetCurrentTab()->GetCurrentBuffer(), IMG_FLAG_NEXT);
-            } while (sleep_till_anykey(1, 0) <= 0);
+            } while (Terminal::sleep_till_anykey(1, 0) <= 0);
         }
         else
         // ここで入力をブロックする
@@ -615,9 +615,9 @@ void w3mApp::mainloop()
             {
                 if (need_resize_screen())
                     resize_screen();
-            } while (sleep_till_anykey(1, 0) <= 0);
+            } while (Terminal::sleep_till_anykey(1, 0) <= 0);
         }
-        auto c = getch();
+        auto c = Terminal::getch();
 
         if (CurrentAlarm()->sec > 0)
         {
@@ -835,4 +835,18 @@ bool w3mApp::UseProxy(const URL &url)
     }
 
     return true;
+}
+
+int _INIT_BUFFER_WIDTH()
+{
+    return Terminal::columns() - (w3mApp::Instance().showLineNum ? 6 : 1);
+}
+
+int w3mApp::INIT_BUFFER_WIDTH()
+{
+    return (_INIT_BUFFER_WIDTH() > 0) ? _INIT_BUFFER_WIDTH() : 0;
+}
+int w3mApp::FOLD_BUFFER_WIDTH()
+{
+    return this->FoldLine ? (INIT_BUFFER_WIDTH() + 1) : -1;
 }

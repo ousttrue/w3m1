@@ -412,7 +412,7 @@ BufferPtr
 newBuffer(const URL &url)
 {
     auto n = std::make_shared<Buffer>();
-    n->width = INIT_BUFFER_WIDTH();
+    n->width = w3mApp::Instance().INIT_BUFFER_WIDTH();
     n->currentURL = url;
     return n;
 }

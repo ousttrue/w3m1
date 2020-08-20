@@ -898,7 +898,7 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
     refresh();
 
     Terminal::mouse_on();
-    sleep_till_anykey(sec, purge);
+    Terminal::sleep_till_anykey(sec, purge);
     Terminal::mouse_off();
 
     if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL &&
@@ -932,10 +932,10 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     }
 
     if (buf->width == 0)
-        buf->width = INIT_BUFFER_WIDTH();
+        buf->width = w3mApp::Instance().INIT_BUFFER_WIDTH();
     if (buf->height == 0)
         buf->height = (Terminal::lines() - 1) + 1;
-    if ((buf->width != INIT_BUFFER_WIDTH() &&
+    if ((buf->width != w3mApp::Instance().INIT_BUFFER_WIDTH() &&
          (is_html_type(buf->type) || w3mApp::Instance().FoldLine)) ||
         buf->need_reshape)
     {

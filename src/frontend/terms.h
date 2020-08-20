@@ -12,10 +12,7 @@ void addstr(const char *s);
 void addnstr(const char *s, int n);
 void addnstr_sup(const char *s, int n);
 
-
 void term_title(const char *s);
-char getch(void);
 int graph_ok(void);
 void refresh(void);
-int sleep_till_anykey(int sec, int purge);
 void reset_error_exit(int);

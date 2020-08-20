@@ -35,4 +35,8 @@ public:
     static void term_raw();
     static void term_cooked();
     static void term_cbreak();
+    //
+    static char getch();
+    static void skip_escseq();
+    static int sleep_till_anykey(int sec, int purge);
 };

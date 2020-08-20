@@ -45,19 +45,19 @@ void nulcmd(w3mApp *w3m)
 
 void escmap(w3mApp *w3m)
 {
-    char c = getch();
+    char c = Terminal::getch();
     escKeyProc(c);
 }
 
 void escbmap(w3mApp *w3m)
 {
-    char c = getch();
+    char c = Terminal::getch();
     escbKeyProc(c);
 }
 
 void multimap(w3mApp *w3m)
 {
-    char c = getch();
+    char c = Terminal::getch();
     MultiKeyProc(c);
 }
 
@@ -423,7 +423,7 @@ void execsh(w3mApp *w3m)
         printf("\n[Hit any key]");
         fflush(stdout);
         fmInit();
-        getch();
+        Terminal::getch();
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
@@ -1959,11 +1959,11 @@ void msToggle(w3mApp *w3m)
 
 void mouse(w3mApp *w3m)
 {
-    auto btn = static_cast<MouseBtnAction>((unsigned char)getch() - 32);
-    int x = (unsigned char)getch() - 33;
+    auto btn = static_cast<MouseBtnAction>((unsigned char)Terminal::getch() - 32);
+    int x = (unsigned char)Terminal::getch() - 33;
     if (x < 0)
         x += 0x100;
-    int y = (unsigned char)getch() - 33;
+    int y = (unsigned char)Terminal::getch() - 33;
     if (y < 0)
         y += 0x100;
     if (x < 0 || x >= Terminal::columns() || y < 0 || y > (Terminal::lines() - 1))

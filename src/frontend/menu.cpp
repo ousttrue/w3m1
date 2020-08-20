@@ -514,7 +514,7 @@ int action_menu(Menu *menu)
     while (1)
     {
         Terminal::mouse_on();
-        c = getch();
+        c = Terminal::getch();
         Terminal::mouse_off();
 
         if (IS_ASCII(c))
@@ -664,14 +664,14 @@ mPc(char c)
 static int
 mEsc(char c)
 {
-    c = getch();
+    c = Terminal::getch();
     return (MenuEscKeymap[(int)c](c));
 }
 
 static int
 mEscB(char c)
 {
-    c = getch();
+    c = Terminal::getch();
     if (IS_DIGIT(c))
         return (mEscD(c));
     else
@@ -684,11 +684,11 @@ mEscD(char c)
     int d;
 
     d = (int)c - (int)'0';
-    c = getch();
+    c = Terminal::getch();
     if (IS_DIGIT(c))
     {
         d = d * 10 + (int)c - (int)'0';
-        c = getch();
+        c = Terminal::getch();
     }
     if (c == '~')
         return (MenuEscDKeymap[d](c));
@@ -1122,11 +1122,11 @@ mMouse(char c)
 {
     int btn, x, y;
 
-    btn = (unsigned char)getch() - 32;
-    x = (unsigned char)getch() - 33;
+    btn = (unsigned char)Terminal::getch() - 32;
+    x = (unsigned char)Terminal::getch() - 33;
     if (x < 0)
         x += 0x100;
-    y = (unsigned char)getch() - 33;
+    y = (unsigned char)Terminal::getch() - 33;
     if (y < 0)
         y += 0x100;
 
