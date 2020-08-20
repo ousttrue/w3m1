@@ -411,11 +411,6 @@ char getch(void)
     return c;
 }
 
-void bell(void)
-{
-    Terminal::write1(7);
-}
-
 void skip_escseq(void)
 {
     int c;
@@ -510,11 +505,6 @@ void mouse_inactive()
 {
     if (mouseActive && Terminal::is_xterm())
         mouse_end();
-}
-
-void touch_cursor()
-{
-    Screen::Instance().TouchCursor();
 }
 
 int _INIT_BUFFER_WIDTH()

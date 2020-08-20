@@ -490,7 +490,11 @@ next_compl(int next)
         return;
 
     if (status != CPL_OK && status != CPL_MENU)
-        bell();
+    {
+        // bell
+        Terminal::write1(7);        
+    }
+
     if (status == CPL_FAIL)
         return;
 

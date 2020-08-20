@@ -1,5 +1,6 @@
 #include <string_view_util.h>
 #include "frontend/terminal.h"
+#include "frontend/screen.h"
 #include "html/image.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -226,7 +227,7 @@ void drawImage()
     if (!draw)
         return;
     syncImage();
-    touch_cursor();
+    Screen::Instance().TouchCursor();
     refresh();
 }
 
