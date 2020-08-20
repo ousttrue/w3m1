@@ -148,9 +148,9 @@ dump_head(w3mApp *w3m, BufferPtr buf)
 void do_dump(w3mApp *w3m, BufferPtr buf)
 {
     TrapJmp([&]() {
-            dump_extra(buf);
-            dump_head(w3m, buf);
-            buf->DumpSource();
+        dump_extra(buf);
+        dump_head(w3m, buf);
+        buf->DumpSource();
         {
             int i;
             saveBuffer(buf, stdout, false);
@@ -187,7 +187,6 @@ SearchResultTypes srchcore(const char *str, SearchFunc func)
         return SR_NOTFOUND;
 
     str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
-    crmode();
 
     TrapJmp([&]() {
         {
@@ -202,7 +201,6 @@ SearchResultTypes srchcore(const char *str, SearchFunc func)
         return true;
     });
 
-    term_raw();
     return result;
 }
 

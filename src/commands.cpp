@@ -383,14 +383,10 @@ void readsh(w3mApp *w3m)
         return;
     }
 
-    crmode();
-
     auto success = TrapJmp([&]() {
         buf = getshell(cmd);
         return true;
     });
-
-    term_raw();
 
     if (!success)
     {

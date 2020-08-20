@@ -22,20 +22,20 @@ struct AlarmEvent
 #endif /* not SIGIOT */
 
 #define TRAP_ON                                \
-    if (w3mApp::Instance().TrapSignal)                            \
+    if (w3mApp::Instance().TrapSignal)         \
     {                                          \
         prevtrap = mySignal(SIGINT, KeyAbort); \
-        if (w3mApp::Instance().fmInitialized)                     \
-            term_cbreak();                     \
+        if (w3mApp::Instance().fmInitialized)  \
+            Terminal::term_cbreak();           \
     }
 
-#define TRAP_OFF                        \
-    if (w3mApp::Instance().TrapSignal)                     \
-    {                                   \
-        if (w3mApp::Instance().fmInitialized)              \
-            term_raw();                 \
-        if (prevtrap)                   \
-            mySignal(SIGINT, prevtrap); \
+#define TRAP_OFF                              \
+    if (w3mApp::Instance().TrapSignal)        \
+    {                                         \
+        if (w3mApp::Instance().fmInitialized) \
+            Terminal::term_raw();             \
+        if (prevtrap)                         \
+            mySignal(SIGINT, prevtrap);       \
     }
 // typedef RETSIGTYPE MySignalHandler;
 using MySignalHandler = void (*)(int);

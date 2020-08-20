@@ -27,74 +27,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-
-
 static const char *title_str = NULL;
-
-typedef struct termios TerminalMode;
-
-#define MODEFLAG(d) ((d).c_lflag)
-#define IMODEFLAG(d) ((d).c_iflag)
-
-
-static void ttymode_set(int mode, int imode)
-{
-#ifndef __MINGW32_VERSION
-    TerminalMode ioval;
-
-    Terminal::tcgetattr(&ioval);
-    MODEFLAG(ioval) |= mode;
-#ifndef HAVE_SGTTY_H
-    IMODEFLAG(ioval) |= imode;
-#endif /* not HAVE_SGTTY_H */
-
-    while (Terminal::tcsetattr(&ioval) == -1)
-    {
-        if (errno == EINTR || errno == EAGAIN)
-            continue;
-        printf("Error occured while set %x: errno=%d\n", mode, errno);
-        reset_error_exit(SIGNAL_ARGLIST);
-    }
-#endif
-}
-
-void ttymode_reset(int mode, int imode)
-{
-#ifndef __MINGW32_VERSION
-    TerminalMode ioval;
-
-    Terminal::tcgetattr(&ioval);
-    MODEFLAG(ioval) &= ~mode;
-#ifndef HAVE_SGTTY_H
-    IMODEFLAG(ioval) &= ~imode;
-#endif /* not HAVE_SGTTY_H */
-
-    while (Terminal::tcsetattr(&ioval) == -1)
-    {
-        if (errno == EINTR || errno == EAGAIN)
-            continue;
-        printf("Error occured while reset %x: errno=%d\n", mode, errno);
-        reset_error_exit(SIGNAL_ARGLIST);
-    }
-#endif /* __MINGW32_VERSION */
-}
-
-#ifndef HAVE_SGTTY_H
-void set_cc(int spec, int val)
-{
-    TerminalMode ioval;
-
-    Terminal::tcgetattr(&ioval);
-    ioval.c_cc[spec] = val;
-    while (Terminal::tcsetattr(&ioval) == -1)
-    {
-        if (errno == EINTR || errno == EAGAIN)
-            continue;
-        printf("Error occured: errno=%d\n", errno);
-        reset_error_exit(SIGNAL_ARGLIST);
-    }
-}
-#endif /* not HAVE_SGTTY_H */
 
 int graph_ok(void)
 {
@@ -192,98 +125,6 @@ void addnstr_sup(const char *s, int n)
         Screen::Instance().Putc(' ');
 }
 
-void crmode(void)
-#ifndef HAVE_SGTTY_H
-{
-    ttymode_reset(ICANON, IXON);
-    ttymode_set(ISIG, 0);
-#ifdef HAVE_TERMIOS_H
-    set_cc(VMIN, 1);
-#else  /* not HAVE_TERMIOS_H */
-    set_cc(VEOF, 1);
-#endif /* not HAVE_TERMIOS_H */
-}
-#else  /* HAVE_SGTTY_H */
-{
-    ttymode_set(CBREAK, 0);
-}
-#endif /* HAVE_SGTTY_H */
-
-void nocrmode(void)
-#ifndef HAVE_SGTTY_H
-{
-    ttymode_set(ICANON, 0);
-#ifdef HAVE_TERMIOS_H
-    set_cc(VMIN, 4);
-#else  /* not HAVE_TERMIOS_H */
-    set_cc(VEOF, 4);
-#endif /* not HAVE_TERMIOS_H */
-}
-#else  /* HAVE_SGTTY_H */
-{
-    ttymode_reset(CBREAK, 0);
-}
-#endif /* HAVE_SGTTY_H */
-
-void term_echo(void)
-{
-    ttymode_set(ECHO, 0);
-}
-
-void term_noecho(void)
-{
-    ttymode_reset(ECHO, 0);
-}
-
-void term_raw(void)
-#ifndef HAVE_SGTTY_H
-#ifdef IEXTEN
-#define TTY_MODE ISIG | ICANON | ECHO | IEXTEN
-#else /* not IEXTEN */
-#define TTY_MODE ISIG | ICANON | ECHO
-#endif /* not IEXTEN */
-{
-    ttymode_reset(TTY_MODE, IXON | IXOFF);
-#ifdef HAVE_TERMIOS_H
-    set_cc(VMIN, 1);
-#else  /* not HAVE_TERMIOS_H */
-    set_cc(VEOF, 1);
-#endif /* not HAVE_TERMIOS_H */
-}
-#else  /* HAVE_SGTTY_H */
-{
-    ttymode_set(RAW, 0);
-}
-#endif /* HAVE_SGTTY_H */
-
-void term_cooked(void)
-#ifndef HAVE_SGTTY_H
-{
-#ifdef __EMX__
-    /* On XFree86/OS2, some scrambled characters
-     * will appear when asserting IEXTEN flag.
-     */
-    ttymode_set((TTY_MODE) & ~IEXTEN, 0);
-#else
-    ttymode_set(TTY_MODE, 0);
-#endif
-#ifdef HAVE_TERMIOS_H
-    set_cc(VMIN, 4);
-#else  /* not HAVE_TERMIOS_H */
-    set_cc(VEOF, 4);
-#endif /* not HAVE_TERMIOS_H */
-}
-#else  /* HAVE_SGTTY_H */
-{
-    ttymode_reset(RAW, 0);
-}
-#endif /* HAVE_SGTTY_H */
-
-void term_cbreak(void)
-{
-    term_cooked();
-    term_noecho();
-}
 
 void term_title(const char *s)
 {
@@ -331,28 +172,26 @@ void skip_escseq(void)
 
 int sleep_till_anykey(int sec, int purge)
 {
-    fd_set rfd;
-    struct timeval tim;
-    int er, c, ret;
-    TerminalMode ioval;
-
+    termios ioval;
     Terminal::tcgetattr(&ioval);
-    term_raw();
+    Terminal::term_raw();
 
+    struct timeval tim;
     tim.tv_sec = sec;
     tim.tv_usec = 0;
 
+    fd_set rfd;
     FD_ZERO(&rfd);
     FD_SET(Terminal::tty(), &rfd);
 
-    ret = select(Terminal::tty() + 1, &rfd, 0, 0, &tim);
+    auto ret = select(Terminal::tty() + 1, &rfd, 0, 0, &tim);
     if (ret > 0 && purge)
     {
-        c = getch();
+        auto c = getch();
         if (c == ESC_CODE)
             skip_escseq();
     }
-    er = Terminal::tcsetattr(&ioval);
+    auto er = Terminal::tcsetattr(&ioval);
     if (er == -1)
     {
         printf("Error occured: errno=%d\n", errno);

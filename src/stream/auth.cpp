@@ -1,11 +1,11 @@
 #include "stream/auth.h"
-
 #include "myctype.h"
 #include "indep.h"
 #include "mime/mimeencoding.h"
 #include "stream/http.h"
 #include "html/form.h"
 #include "frontend/display.h"
+#include "frontend/terminal.h"
 #include "frontend/terms.h"
 #include "frontend/lineinput.h"
 #include "public.h"
@@ -669,7 +669,7 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
         if (w3mApp::Instance().fmInitialized)
         {
             char *pp;
-            term_raw();
+            Terminal::term_raw();
             /* FIXME: gettextize? */
             if ((pp = inputStr(Sprintf("Username for %s: ", realm)->ptr,
                                NULL)) == NULL)
@@ -682,7 +682,7 @@ getAuthCookie(struct http_auth *hauth, char *auth_header,
                 return;
             }
             *pwd = Str_conv_to_system(Strnew(pp));
-            term_cbreak();
+            Terminal::term_cbreak();
         }
         else
         {

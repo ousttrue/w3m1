@@ -11,17 +11,11 @@ void no_clrtoeol(void);
 void addstr(const char *s);
 void addnstr(const char *s, int n);
 void addnstr_sup(const char *s, int n);
-void crmode(void);
-void nocrmode(void);
-void term_echo(void);
-void term_noecho(void);
-void term_raw(void);
-void term_cooked(void);
-void term_cbreak(void);
+
+
 void term_title(const char *s);
 char getch(void);
 int graph_ok(void);
 void refresh(void);
 int sleep_till_anykey(int sec, int purge);
-void set_cc(int spec, int val);
 void reset_error_exit(int);

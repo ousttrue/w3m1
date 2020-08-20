@@ -30,4 +30,9 @@ public:
     static int columns();
     static void mouse_on();
     static void mouse_off();
+    static void term_echo();
+    static void term_noecho();
+    static void term_raw();
+    static void term_cooked();
+    static void term_cbreak();
 };

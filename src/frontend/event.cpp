@@ -176,7 +176,7 @@ struct ScopedTrap
         {
             prevtrap = mySignal(SIGINT, KeyAbort);
             if (w3mApp::Instance().fmInitialized)
-                term_cbreak();
+                Terminal::term_cbreak();
         }
     }
     ~ScopedTrap()
@@ -184,7 +184,7 @@ struct ScopedTrap
         if (w3mApp::Instance().TrapSignal)
         {
             if (w3mApp::Instance().fmInitialized)
-                term_raw();
+                Terminal::term_raw();
             if (prevtrap)
                 mySignal(SIGINT, prevtrap);
         }

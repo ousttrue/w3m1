@@ -222,8 +222,8 @@ void fmInit(void)
     if (!w3mApp::Instance().fmInitialized)
     {
         Screen::Instance().Setup();
-        term_raw();
-        term_noecho();
+        Terminal::term_raw();
+        Terminal::term_noecho();
 
         if (w3mApp::Instance().displayImage)
             initImage();
@@ -858,7 +858,7 @@ void show_message(std::string_view msg)
 {
     if (w3mApp::Instance().fmInitialized)
     {
-        term_cbreak();
+        Terminal::term_cbreak();
         /* FIXME: gettextize? */
         message(msg, 0, 0);
         refresh();

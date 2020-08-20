@@ -99,6 +99,50 @@ static void error_dump(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
+#define MODEFLAG(d) ((d).c_lflag)
+#define IMODEFLAG(d) ((d).c_iflag)
+static void ttymode_set(int mode, int imode)
+{
+#ifndef __MINGW32_VERSION
+    termios ioval;
+
+    Terminal::tcgetattr(&ioval);
+    MODEFLAG(ioval) |= mode;
+#ifndef HAVE_SGTTY_H
+    IMODEFLAG(ioval) |= imode;
+#endif /* not HAVE_SGTTY_H */
+
+    while (Terminal::tcsetattr(&ioval) == -1)
+    {
+        if (errno == EINTR || errno == EAGAIN)
+            continue;
+        printf("Error occured while set %x: errno=%d\n", mode, errno);
+        reset_error_exit(SIGNAL_ARGLIST);
+    }
+#endif
+}
+static void ttymode_reset(int mode, int imode)
+{
+#ifndef __MINGW32_VERSION
+    termios ioval;
+
+    Terminal::tcgetattr(&ioval);
+    MODEFLAG(ioval) &= ~mode;
+#ifndef HAVE_SGTTY_H
+    IMODEFLAG(ioval) &= ~imode;
+#endif /* not HAVE_SGTTY_H */
+
+    while (Terminal::tcsetattr(&ioval) == -1)
+    {
+        if (errno == EINTR || errno == EAGAIN)
+            continue;
+        printf("Error occured while reset %x: errno=%d\n", mode, errno);
+        reset_error_exit(SIGNAL_ARGLIST);
+    }
+#endif /* __MINGW32_VERSION */
+}
+
+
 ///
 /// Terminal
 ///
@@ -341,4 +385,112 @@ void Terminal::mouse_off()
 {
     if (w3mApp::Instance().use_mouse)
         mouse_inactive();
+}
+
+static void set_cc(int spec, int val)
+{
+    termios ioval;
+
+    Terminal::tcgetattr(&ioval);
+    ioval.c_cc[spec] = val;
+    while (Terminal::tcsetattr(&ioval) == -1)
+    {
+        if (errno == EINTR || errno == EAGAIN)
+            continue;
+        printf("Error occured: errno=%d\n", errno);
+        reset_error_exit(SIGNAL_ARGLIST);
+    }
+}
+
+static void crmode(void)
+#ifndef HAVE_SGTTY_H
+{
+    ttymode_reset(ICANON, IXON);
+    ttymode_set(ISIG, 0);
+#ifdef HAVE_TERMIOS_H
+    set_cc(VMIN, 1);
+#else  /* not HAVE_TERMIOS_H */
+    set_cc(VEOF, 1);
+#endif /* not HAVE_TERMIOS_H */
+}
+#else  /* HAVE_SGTTY_H */
+{
+    ttymode_set(CBREAK, 0);
+}
+#endif /* HAVE_SGTTY_H */
+
+static void nocrmode(void)
+#ifndef HAVE_SGTTY_H
+{
+    ttymode_set(ICANON, 0);
+#ifdef HAVE_TERMIOS_H
+    set_cc(VMIN, 4);
+#else  /* not HAVE_TERMIOS_H */
+    set_cc(VEOF, 4);
+#endif /* not HAVE_TERMIOS_H */
+}
+#else  /* HAVE_SGTTY_H */
+{
+    ttymode_reset(CBREAK, 0);
+}
+#endif /* HAVE_SGTTY_H */
+
+void Terminal::term_echo()
+{
+    ttymode_set(ECHO, 0);
+}
+
+void Terminal::term_noecho()
+{
+    ttymode_reset(ECHO, 0);
+}
+
+void Terminal::term_raw()
+#ifndef HAVE_SGTTY_H
+#ifdef IEXTEN
+#define TTY_MODE ISIG | ICANON | ECHO | IEXTEN
+#else /* not IEXTEN */
+#define TTY_MODE ISIG | ICANON | ECHO
+#endif /* not IEXTEN */
+{
+    ttymode_reset(TTY_MODE, IXON | IXOFF);
+#ifdef HAVE_TERMIOS_H
+    set_cc(VMIN, 1);
+#else  /* not HAVE_TERMIOS_H */
+    set_cc(VEOF, 1);
+#endif /* not HAVE_TERMIOS_H */
+}
+#else  /* HAVE_SGTTY_H */
+{
+    ttymode_set(RAW, 0);
+}
+#endif /* HAVE_SGTTY_H */
+
+void Terminal::term_cooked()
+#ifndef HAVE_SGTTY_H
+{
+#ifdef __EMX__
+    /* On XFree86/OS2, some scrambled characters
+     * will appear when asserting IEXTEN flag.
+     */
+    ttymode_set((TTY_MODE) & ~IEXTEN, 0);
+#else
+    ttymode_set(TTY_MODE, 0);
+#endif
+#ifdef HAVE_TERMIOS_H
+    set_cc(VMIN, 4);
+#else  /* not HAVE_TERMIOS_H */
+    set_cc(VEOF, 4);
+#endif /* not HAVE_TERMIOS_H */
+}
+#else  /* HAVE_SGTTY_H */
+{
+    ttymode_reset(RAW, 0);
+}
+#endif /* HAVE_SGTTY_H */
+
+void Terminal::term_cbreak()
+{
+    term_cooked();
+    term_noecho();
 }

@@ -974,7 +974,7 @@ const char *inputAnswer(const char *prompt)
 
     if (w3mApp::Instance().fmInitialized)
     {
-        term_raw();
+        Terminal::term_raw();
         return inputChar(prompt);
     }
 
