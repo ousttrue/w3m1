@@ -246,10 +246,9 @@ void reset_tty(void)
 static void
 reset_exit_with_value(SIGNAL_ARG, int rval)
 {
-#ifdef USE_MOUSE
     if (mouseActive)
         mouse_end();
-#endif /* USE_MOUSE */
+
     reset_tty();
     // w3m_exit(rval);
     exit(rval);
@@ -296,24 +295,6 @@ void setlinescols(void)
 {
     char *p;
     int i;
-#ifdef __EMX__
-    {
-        int s[2];
-        _scrsize(s);
-        COLS = s[0];
-        LINES = s[1];
-
-        if (getenv("WINDOWID"))
-        {
-            FILE *fd = popen("scrsize", "rt");
-            if (fd)
-            {
-                fscanf(fd, "%i %i", &COLS, &LINES);
-                pclose(fd);
-            }
-        }
-    }
-#elif defined(HAVE_TERMIOS_H) && defined(TIOCGWINSZ)
     struct winsize wins;
 
     i = ioctl(tty, TIOCGWINSZ, &wins);
@@ -322,7 +303,6 @@ void setlinescols(void)
         LINES = wins.ws_row;
         COLS = wins.ws_col;
     }
-#endif /* defined(HAVE-TERMIOS_H) && defined(TIOCGWINSZ) */
     if (LINES <= 0 && (p = getenv("LINES")) != NULL && (i = atoi(p)) >= 0)
         LINES = i;
     if (COLS <= 0 && (p = getenv("COLUMNS")) != NULL && (i = atoi(p)) >= 0)
@@ -460,110 +440,6 @@ void clear(void)
 {
     g_screen.Clear();
 }
-
-#ifdef USE_RAW_SCROLL
-static void
-scroll_raw(void)
-{ /* raw scroll */
-    MOVE(LINES - 1, 0);
-    write1('\n');
-}
-
-void scroll(int n)
-{ /* scroll up */
-    int cli = CurLine, cco = CurColumn;
-    Screen *t;
-    int i, j, k;
-
-    i = LINES;
-    j = n;
-    do
-    {
-        k = j;
-        j = i % k;
-        i = k;
-    } while (j);
-    do
-    {
-        k--;
-        i = k;
-        j = (i + n) % LINES;
-        t = ScreenImage[k];
-        while (j != k)
-        {
-            ScreenImage[i] = ScreenImage[j];
-            i = j;
-            j = (i + n) % LINES;
-        }
-        ScreenImage[i] = t;
-    } while (k);
-
-    for (i = 0; i < n; i++)
-    {
-        t = ScreenImage[LINES - 1 - i];
-        t->isdirty = 0;
-        for (j = 0; j < COLS; j++)
-            t->lineprop[j] = S_EOL;
-        scroll_raw();
-    }
-    move(cli, cco);
-}
-
-void rscroll(int n)
-{ /* scroll down */
-    int cli = CurLine, cco = CurColumn;
-    Screen *t;
-    int i, j, k;
-
-    i = LINES;
-    j = n;
-    do
-    {
-        k = j;
-        j = i % k;
-        i = k;
-    } while (j);
-    do
-    {
-        k--;
-        i = k;
-        j = (LINES + i - n) % LINES;
-        t = ScreenImage[k];
-        while (j != k)
-        {
-            ScreenImage[i] = ScreenImage[j];
-            i = j;
-            j = (LINES + i - n) % LINES;
-        }
-        ScreenImage[i] = t;
-    } while (k);
-    if (T_sr && *T_sr)
-    {
-        MOVE(0, 0);
-        for (i = 0; i < n; i++)
-        {
-            t = ScreenImage[i];
-            t->isdirty = 0;
-            for (j = 0; j < COLS; j++)
-                t->lineprop[j] = S_EOL;
-            writestr(T_sr);
-        }
-        move(cli, cco);
-    }
-    else
-    {
-        for (i = 0; i < LINES; i++)
-        {
-            t = ScreenImage[i];
-            t->isdirty |= L_DIRTY | L_NEED_CE;
-            for (j = 0; j < COLS; j++)
-            {
-                t->lineprop[j] |= S_DIRTY;
-            }
-        }
-    }
-}
-#endif
 
 /* XXX: conflicts with curses's clrtoeol(3) ? */
 void clrtoeol(void)
@@ -754,14 +630,7 @@ void term_title(const char *s)
 char getch(void)
 {
     char c;
-
-    while (
-#ifdef SUPPORT_WIN9X_CONSOLE_MBCS
-        read_win32_console(&c, 1)
-#else
-        read(tty, &c, 1)
-#endif
-        < (int)1)
+    while (read(tty, &c, 1) < (int)1)
     {
         if (errno == EINTR || errno == EAGAIN)
             continue;
@@ -771,84 +640,6 @@ char getch(void)
     }
     return c;
 }
-
-#ifdef USE_MOUSE
-#ifdef USE_GPM
-char wgetch(void *p)
-{
-    char c;
-
-    /* read(tty, &c, 1); */
-    while (read(tty, &c, 1) < (ssize_t)1)
-    {
-        if (errno == EINTR || errno == EAGAIN)
-            continue;
-        /* error happend on read(2) */
-        quitfm();
-        break; /* unreachable */
-    }
-    return c;
-}
-
-int do_getch()
-{
-    if (is_xterm || !gpm_handler)
-        return getch();
-    else
-        return Gpm_Getch();
-}
-#endif /* USE_GPM */
-
-#ifdef USE_SYSMOUSE
-int sysm_getch()
-{
-    fd_set rfd;
-    int key, x, y;
-
-    FD_ZERO(&rfd);
-    FD_SET(tty, &rfd);
-    while (select(tty + 1, &rfd, NULL, NULL, NULL) <= 0)
-    {
-        if (errno == EINTR)
-        {
-            x = xpix / cwidth;
-            y = ypix / cheight;
-            key = (*sysm_handler)(x, y, nbs, obs);
-            if (key != 0)
-                return key;
-        }
-    }
-    return getch();
-}
-
-int do_getch()
-{
-    if (is_xterm || !sysm_handler)
-        return getch();
-    else
-        return sysm_getch();
-}
-
-MySignalHandler
-    sysmouse(SIGNAL_ARG)
-{
-    struct mouse_info mi;
-
-    mi.operation = MOUSE_GETINFO;
-    if (ioctl(tty, CONS_MOUSECTL, &mi) == -1)
-        return;
-    xpix = mi.u.data.x;
-    ypix = mi.u.data.y;
-    obs = nbs;
-    nbs = mi.u.data.buttons & 0x7;
-    /* for cosmetic bug in syscons.c on FreeBSD 3.[34] */
-    mi.operation = MOUSE_HIDE;
-    ioctl(tty, CONS_MOUSECTL, &mi);
-    mi.operation = MOUSE_SHOW;
-    ioctl(tty, CONS_MOUSECTL, &mi);
-}
-#endif /* USE_SYSMOUSE */
-#endif /* USE_MOUSE */
 
 void bell(void)
 {
@@ -863,7 +654,6 @@ void skip_escseq(void)
     if (c == '[' || c == 'O')
     {
         c = getch();
-#ifdef USE_MOUSE
         if (is_xterm && c == 'M')
         {
             getch();
@@ -871,7 +661,6 @@ void skip_escseq(void)
             getch();
         }
         else
-#endif
             while (IS_DIGIT(c))
                 c = getch();
     }
@@ -909,139 +698,17 @@ int sleep_till_anykey(int sec, int purge)
     return ret;
 }
 
-#ifdef USE_MOUSE
-
-#define XTERM_ON                               \
-    {                                          \
-        fputs("\033[?1001s\033[?1000h", ttyf); \
-        flush_tty();                           \
-    }
-#define XTERM_OFF                              \
-    {                                          \
-        fputs("\033[?1000l\033[?1001r", ttyf); \
-        flush_tty();                           \
-    }
-
-#ifdef USE_GPM
-/* Linux console with GPM support */
-
-void mouse_init()
+void XTERM_ON()
 {
-    Gpm_Connect conn;
-    int r;
-
-    if (mouseActive)
-        return;
-    conn.eventMask = ~0;
-    conn.defaultMask = 0;
-    conn.maxMod = 0;
-    conn.minMod = 0;
-
-    gpm_handler = NULL;
-    r = Gpm_Open(&conn, 0);
-    if (r == -2)
-    {
-        /*
-	 * If Gpm_Open() success, returns >= 0
-	 * Gpm_Open() returns -2 in case of xterm.
-	 * Gpm_Close() is necessary here. Otherwise,
-	 * xterm is being left in the mode where the mouse clicks are
-	 * passed through to the application.
-	 */
-        Gpm_Close();
-        is_xterm = (NEED_XTERM_ON | NEED_XTERM_OFF);
-    }
-    else if (r >= 0)
-    {
-        gpm_handler = gpm_process_mouse;
-        is_xterm = 0;
-    }
-    if (is_xterm)
-    {
-        XTERM_ON;
-    }
-    mouseActive = 1;
+    fputs("\033[?1001s\033[?1000h", ttyf);
+    flush_tty();
 }
 
-void mouse_end()
+void XTERM_OFF()
 {
-    if (mouseActive == 0)
-        return;
-    if (is_xterm)
-    {
-        XTERM_OFF;
-    }
-    else
-        Gpm_Close();
-    mouseActive = 0;
+    fputs("\033[?1000l\033[?1001r", ttyf);
+    flush_tty();
 }
-
-#elif defined(USE_SYSMOUSE)
-/* *BSD console with sysmouse support */
-void mouse_init()
-{
-    mouse_info_t mi;
-
-    if (mouseActive)
-        return;
-    if (is_xterm)
-    {
-        XTERM_ON;
-    }
-    else
-    {
-#if defined(FBIO_MODEINFO) || defined(CONS_MODEINFO) /* FreeBSD > 2.x */
-#ifndef FBIO_GETMODE                                 /* FreeBSD 3.x */
-#define FBIO_GETMODE CONS_GET
-#define FBIO_MODEINFO CONS_MODEINFO
-#endif /* FBIO_GETMODE */
-        video_info_t vi;
-
-        if (ioctl(tty, FBIO_GETMODE, &vi.vi_mode) != -1 &&
-            ioctl(tty, FBIO_MODEINFO, &vi) != -1)
-        {
-            cwidth = vi.vi_cwidth;
-            cheight = vi.vi_cheight;
-        }
-#endif /* defined(FBIO_MODEINFO) || \
-        * defined(CONS_MODEINFO) */
-        mySignal(SIGUSR2, SIG_IGN);
-        mi.operation = MOUSE_MODE;
-        mi.u.mode.mode = 0;
-        mi.u.mode.signal = SIGUSR2;
-        sysm_handler = NULL;
-        if (ioctl(tty, CONS_MOUSECTL, &mi) != -1)
-        {
-            mySignal(SIGUSR2, sysmouse);
-            mi.operation = MOUSE_SHOW;
-            ioctl(tty, CONS_MOUSECTL, &mi);
-            sysm_handler = sysm_process_mouse;
-        }
-    }
-    mouseActive = 1;
-}
-
-void mouse_end()
-{
-    if (mouseActive == 0)
-        return;
-    if (is_xterm)
-    {
-        XTERM_OFF;
-    }
-    else
-    {
-        mouse_info_t mi;
-        mi.operation = MOUSE_MODE;
-        mi.u.mode.mode = 0;
-        mi.u.mode.signal = 0;
-        ioctl(tty, CONS_MOUSECTL, &mi);
-    }
-    mouseActive = 0;
-}
-
-#else
-/* not GPM nor SYSMOUSE, but use mouse with xterm */
 
 void mouse_init()
 {
@@ -1065,8 +732,6 @@ void mouse_end()
     mouseActive = 0;
 }
 
-#endif /* not USE_GPM nor USE_SYSMOUSE */
-
 void mouse_active()
 {
     if (!mouseActive)
@@ -1078,8 +743,6 @@ void mouse_inactive()
     if (mouseActive && is_xterm)
         mouse_end();
 }
-
-#endif /* USE_MOUSE */
 
 void flush_tty()
 {
