@@ -3,15 +3,12 @@
 #include "frontend/propstring.h"
 #include "frontend/buffer.h"
 #include "html/html.h"
+#include "html/form.h"
 
 struct Anchor;
 
-struct FormSelectOptionList
-{
-    struct FormSelectOptionItem *first = nullptr;
-    struct FormSelectOptionItem *last = nullptr;    
-    void addSelectOption(std::string_view value, std::string_view label, bool chk);
-};
+using FormSelectOptionList = std::vector<FormSelectOptionItem>;
+// void addSelectOption(std::string_view value, std::string_view label, bool chk);
 
 class HtmlContext
 {
@@ -62,7 +59,7 @@ class HtmlContext
     Str cur_option = nullptr;
     Str cur_option_value = nullptr;
     Str cur_option_label = nullptr;
-    int cur_option_selected = 0;
+    bool cur_option_selected = false;
     int cur_status = 0;
     std::vector<Anchor *> a_textarea;
     int max_textarea = 0;

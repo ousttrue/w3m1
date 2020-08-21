@@ -583,6 +583,7 @@ ContentStream GetStream(const URL &url,
     auto found = g_cache.find(key);
     if (found != g_cache.end())
     {
+        found->second.stream->Rewind();
         return found->second;
     }
 

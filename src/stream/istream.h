@@ -150,6 +150,10 @@ public:
     {
         return -1;
     }
+
+    virtual void Rewind()
+    {
+    }
 };
 using InputStreamPtr = std::shared_ptr<InputStream>;
 
@@ -193,6 +197,10 @@ public:
     ~StrStream();
     InputStreamTypes type() const override { return IST_STR; }
     int ReadFunc(unsigned char *buffer, int size) override;
+    void Rewind() override
+    {
+        m_pos = 0;
+    }
 };
 
 class SSLSocket;

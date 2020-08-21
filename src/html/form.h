@@ -4,6 +4,7 @@
 #pragma once
 #include "html/html.h"
 #include "frontend/buffer.h"
+#include <tcb/span.hpp>
 
 enum FormItemTypes
 {
@@ -41,12 +42,18 @@ enum FormEncodingTypes
     FORM_ENCTYPE_MULTIPART = 1,
 };
 
-struct FormSelectOptionItem : gc_cleanup
+struct FormSelectOptionItem
 {
     std::string value;
     std::string label;
     bool checked = false;
-    FormSelectOptionItem *next = nullptr;
+
+    FormSelectOptionItem(std::string_view v, std::string_view l, bool c)
+        : value(v), label(l), checked(c)
+    {
+        if (value.empty())
+            value = label;
+    }
 };
 
 struct FormItemList
@@ -62,7 +69,9 @@ struct FormItemList
     int rows;
     int maxlength;
     int readonly;
-    FormSelectOptionItem *select_option;
+
+    std::vector<FormSelectOptionItem> select_option;
+
     std::string label;
     std::string init_label;
     int selected;
@@ -105,9 +114,9 @@ struct FormList : gc_cleanup
         std::string_view name = "");
 };
 
-void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item);
-void updateSelectOption(FormItemList *fi, FormSelectOptionItem *item);
-int formChooseOptionByMenu(FormItemList *fi, int x, int y);
+void chooseSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item);
+void updateSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item);
+bool formChooseOptionByMenu(FormItemList *fi, int x, int y);
 
 FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, class HtmlContext *context);
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);

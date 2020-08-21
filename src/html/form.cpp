@@ -197,7 +197,7 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
         item->value = item->init_value = context->Textarea(i)->ptr;
 
     if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
-        item->select_option = context->FormSelect(i)->first;
+        item->select_option = *context->FormSelect(i);
 
     if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
         item->rows = atoi(p);
@@ -696,24 +696,25 @@ void do_internal(std::string_view action, std::string_view data)
     }
 }
 
-void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item)
+void chooseSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item)
 {
     fi->selected = 0;
-    if (item == NULL)
+    if (item.empty())
     {
         fi->value.clear();
         fi->label.clear();
         return;
     }
-    fi->value = item->value;
-    fi->label = item->label;
+    fi->value = item.front().value;
+    fi->label = item.front().label;
+
     int i = 0;
-    for (auto opt = item; opt != NULL; i++, opt = opt->next)
+    for (auto &opt : item)
     {
-        if (opt->checked)
+        if (opt.checked)
         {
-            fi->value = opt->value;
-            fi->label = opt->label;
+            fi->value = opt.value;
+            fi->label = opt.label;
             fi->selected = i;
             break;
         }
@@ -721,37 +722,37 @@ void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item)
     updateSelectOption(fi, item);
 }
 
-void updateSelectOption(FormItemList *fi, FormSelectOptionItem *item)
+void updateSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item)
 {
-    int i;
-
-    if (fi == NULL || item == NULL)
+    if (fi == NULL || item.empty())
         return;
-    for (i = 0; item != NULL; i++, item = item->next)
+
+    int i = 0;
+    for (auto &opt : item)
     {
-        if (i == fi->selected)
-            item->checked = true;
-        else
-            item->checked = false;
+        opt.checked = i == fi->selected;
+        ++i;
     }
 }
 
-int formChooseOptionByMenu(FormItemList *fi, int x, int y)
+bool formChooseOptionByMenu(FormItemList *fi, int x, int y)
 {
-    int i, n, selected = -1, init_select = fi->selected;
-    FormSelectOptionItem *opt;
-
-    for (n = 0, opt = fi->select_option; opt != NULL; n++, opt = opt->next)
+    int n = 0;
+    for (auto opt = fi->select_option.begin(); opt != fi->select_option.end(); ++n, ++opt)
         ;
+
     std::vector<std::string> label;
-    for (i = 0, opt = fi->select_option; opt != NULL; i++, opt = opt->next)
-        label.push_back(opt->label);
+    for (auto &opt : fi->select_option)
+        label.push_back(opt.label);
 
+    int selected = -1;
+    int init_select = fi->selected;
     optionMenu(x, y, label, &selected, init_select, NULL);
-
     if (selected < 0)
         return 0;
-    for (i = 0, opt = fi->select_option; opt != NULL; i++, opt = opt->next)
+
+    int i = 0;
+    for (auto opt = fi->select_option.begin(); opt != fi->select_option.end(); ++i, ++opt)
     {
         if (i == selected)
         {
@@ -1084,8 +1085,10 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                     break;
 
                 case FORM_SELECT:
-                    for (j = 0, opt = fi->select_option; opt != NULL;
-                         j++, opt = opt->next)
+                {
+                    j = 0;
+                    for (auto opt = fi->select_option.begin(); opt != fi->select_option.end();
+                         ++j, ++opt)
                     {
                         if (pi->value && opt->value.size() && opt->value == pi->value)
                         {
@@ -1098,6 +1101,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                         }
                     }
                     break;
+                }
                 }
             }
         }

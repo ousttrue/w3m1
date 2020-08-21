@@ -136,12 +136,12 @@ void HtmlContext::print_internal(TextLineList *tl)
         {
             auto s = Sprintf("<select_int selectnumber=%d>", i++);
             pushTextLine(tl, newTextLine(s, 0));
-            for (auto ip = so.first; ip; ip = ip->next)
+            for (auto ip : so)
             {
                 s = Sprintf("<option_int value=\"%s\" label=\"%s\"%s>",
-                            html_quote(ip->value.size() ? ip->value : ip->label),
-                            html_quote(ip->label),
-                            ip->checked ? " selected" : "");
+                            html_quote(ip.value.size() ? ip.value : ip.label),
+                            html_quote(ip.label),
+                            ip.checked ? " selected" : "");
                 pushTextLine(tl, newTextLine(s, 0));
             }
             s = Strnew("</select_int>");
@@ -448,10 +448,10 @@ Str HtmlContext::process_n_select()
 
     if (!select_is_multiple)
     {
-        if (select_option[n_select].first)
+        if (select_option[n_select].size())
         {
             FormItemList sitem;
-            chooseSelectOption(&sitem, select_option[n_select].first);
+            chooseSelectOption(&sitem, select_option[n_select]);
             select_str->Push(textfieldrep(Strnew(sitem.label), cur_option_maxwidth));
         }
         select_str->Push("</input_alt>]</pre_int>");
@@ -485,7 +485,11 @@ void HtmlContext::process_option()
         int len = get_Str_strwidth(cur_option_label);
         if (len > cur_option_maxwidth)
             cur_option_maxwidth = len;
-        select_option[n_select].addSelectOption(cur_option_value->ptr, cur_option_label->ptr, cur_option_selected);
+        select_option[n_select].push_back({
+            cur_option_value->ptr,
+            cur_option_label->ptr,
+            cur_option_selected
+        });
         return;
     }
 
@@ -1737,7 +1741,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         if (select)
         {
             FormItemList *item = a_select[n_select]->item;
-            item->select_option = select->first;
+            item->select_option = *select;
             chooseSelectOption(item, item->select_option);
             item->init_selected = item->selected;
             item->init_value = item->value;
@@ -1755,7 +1759,11 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             auto p = q;
             tag->TryGetAttributeValue(ATTR_VALUE, &p);
             auto selected = tag->HasAttribute(ATTR_SELECTED);
-            select->addSelectOption(p, q, selected);
+            select->push_back({
+                p,
+                q,
+                selected,
+            });
         }
         break;
     }
@@ -1962,22 +1970,4 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
 
     addMultirowsForm(buf, buf->formitem);
     addMultirowsImg(buf, buf->img);
-}
-
-void FormSelectOptionList::addSelectOption(std::string_view value, std::string_view label, bool chk)
-{
-    auto o = new FormSelectOptionItem;
-    if (value.empty())
-        value = label;
-    o->value = value;
-    o->label = svu::strip(label);
-    o->checked = chk;
-    o->next = NULL;
-    if (this->first == NULL)
-        this->first = this->last = o;
-    else
-    {
-        this->last->next = o;
-        this->last = o;
-    }
 }
