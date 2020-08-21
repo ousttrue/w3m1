@@ -704,9 +704,9 @@ link_list_panel(const BufferPtr &buf)
             a = const_cast<Anchor *>(buf->formitem.RetrieveAnchor(a->start));
             if (!a)
                 continue;
-            auto fi = a->item->parent->item();
-            if (fi->parent->method == FORM_METHOD_INTERNAL &&
-                fi->parent->action == "map" && fi->value.size())
+            auto fi = a->item->parent.lock()->item();
+            if (fi->parent.lock()->method == FORM_METHOD_INTERNAL &&
+                fi->parent.lock()->action == "map" && fi->value.size())
             {
                 MapListPtr ml = searchMapList(buf, fi->value.c_str());
                 MapAreaPtr m;

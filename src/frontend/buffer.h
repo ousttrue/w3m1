@@ -312,7 +312,7 @@ public:
     CharacterEncodingScheme document_charset = WC_CES_NONE;
     AutoDetectTypes auto_detect = WC_OPT_DETECT_OFF;
     // TextList *document_header = nullptr;
-    FormItem *form_submit = nullptr;
+    FormItemPtr form_submit;
     // ReadBufferCache, WriteBufferCache
     std::string savecache;
     // editBf

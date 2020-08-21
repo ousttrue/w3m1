@@ -73,7 +73,7 @@ struct FormItem
     std::string init_label;
     int selected;
     int init_selected;
-    struct Form *parent;
+    std::weak_ptr<struct Form> parent;
 
     void input_textarea();
     Str ToStr() const;
@@ -88,7 +88,7 @@ using FormItemPtr = std::shared_ptr<FormItem>;
 // <form action="some.cgi" method="pos"></form>
 // representation
 //
-struct Form : gc_cleanup
+struct Form
 {
     std::vector<FormItemPtr> items;
     FormItemPtr item() { return items.empty() ? nullptr : items.front(); }
@@ -110,7 +110,7 @@ struct Form : gc_cleanup
     {
     }
 
-    static Form *Create(
+    static std::shared_ptr<Form> Create(
         std::string_view action,
         std::string_view method,
         std::string_view charset = "",
@@ -118,10 +118,10 @@ struct Form : gc_cleanup
         std::string_view target = "",
         std::string_view name = "");
 };
-using FormPtr = Form *;
+using FormPtr = std::shared_ptr<Form>;
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
-FormItemPtr formList_addInput(Form *fl, struct parsed_tag *tag, class HtmlContext *context);
+FormItemPtr formList_addInput(FormPtr fl, struct parsed_tag *tag, class HtmlContext *context);
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemPtr form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemPtr form);
 

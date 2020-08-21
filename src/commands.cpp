@@ -1669,11 +1669,11 @@ void reload(w3mApp *w3m)
     //
     // form
     //
-    Form *request;
+    FormPtr request;
     int multipart = 0;
     if (GetCurrentTab()->GetCurrentBuffer()->form_submit)
     {
-        request = GetCurrentTab()->GetCurrentBuffer()->form_submit->parent;
+        request = GetCurrentTab()->GetCurrentBuffer()->form_submit->parent.lock();
         if (request->method == FORM_METHOD_POST && request->enctype == FORM_ENCTYPE_MULTIPART)
         {
             Str query;

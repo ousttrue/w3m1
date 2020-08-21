@@ -42,7 +42,7 @@ class HtmlContext
     std::vector<struct frameset *> frameset_s;
 
     std::vector<int> form_stack;
-    std::vector<struct Form *> forms;
+    std::vector<FormPtr> forms;
 
     std::vector<Anchor *> a_select;
     std::vector<FormSelectOptionList> select_option;
@@ -118,14 +118,14 @@ public:
             form_stack.pop_back();
         return nullptr;
     }
-    Form *FormCurrent(int form_id)
+    FormPtr FormCurrent(int form_id)
     {
         if (form_id < 0 || form_id >= forms.size())
             /* outside of <form>..</form> */
             return nullptr;
         return forms[form_id];
     }
-    std::vector<Form *> &FormEnd();
+    std::vector<FormPtr > &FormEnd();
     void FormSetSelect(int n);
     FormSelectOptionList *FormSelect(int n);
     std::pair<int, FormSelectOptionList *> FormSelectCurrent();

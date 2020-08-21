@@ -54,7 +54,7 @@ void Push(const HttpRequestPtr &request, ARGS... args)
 ///
 /// HttpRequest
 ///
-std::shared_ptr<HttpRequest> HttpRequest::Create(const URL &url, struct Form *form)
+std::shared_ptr<HttpRequest> HttpRequest::Create(const URL &url, FormPtr form)
 {
     auto request = std::make_shared<HttpRequest>();
     request->url = url;
@@ -218,7 +218,7 @@ std::string_view HttpResponse::FindHeader(std::string_view key) const
 ///
 std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &url,
                                                                     const URL *base, HttpReferrerPolicy referer,
-                                                                    struct Form *form)
+                                                                    FormPtr form)
 {
     //
     // build HTTP request
@@ -343,7 +343,7 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
     return {stream, response};
 }
 
-ContentStream HttpClient::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct Form *form)
+ContentStream HttpClient::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, FormPtr form)
 {
     auto [stream, response] = GetResponse(url, base, referer, form);
 

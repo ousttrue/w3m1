@@ -146,9 +146,9 @@ retrieveCurrentMapArea(const BufferPtr &buf)
     if (!(a_form && a_form->url.size()))
         return NULL;
     auto fi = a_form->item;
-    if (!(fi && fi->parent && fi->parent->item()))
+    if (!(fi && fi->parent.lock() && fi->parent.lock()->item()))
         return NULL;
-    fi = fi->parent->item();
+    fi = fi->parent.lock()->item();
     ml = searchMapList(buf, fi->value.c_str());
     if (!ml)
         return NULL;
@@ -183,7 +183,7 @@ const Anchor *retrieveCurrentMap(const BufferPtr &buf)
     if (!a || !a->url.size())
         return NULL;
     auto fi = a->item;
-    if (fi->parent->method == FORM_METHOD_INTERNAL && fi->parent->action == "map")
+    if (fi->parent.lock()->method == FORM_METHOD_INTERNAL && fi->parent.lock()->action == "map")
         return a;
     return NULL;
 }
@@ -362,7 +362,7 @@ MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, cons
 
 /* append image map links */
 static void
-append_map_info(BufferPtr buf, Str tmp, FormItem *fi)
+append_map_info(BufferPtr buf, Str tmp, FormItemPtr fi)
 {
     auto ml = searchMapList(buf, fi->value.c_str());
     if (ml == NULL)
@@ -566,8 +566,8 @@ page_info_panel(const BufferPtr &buf)
         Strcat_m_charp(tmp,
                        "<tr valign=top><td nowrap>Method/type of current form&nbsp;<td>",
                        p, NULL);
-        if (fi->parent->method == FORM_METHOD_INTERNAL && fi->parent->action == "map")
-            append_map_info(buf, tmp, fi->parent->item().get());
+        if (fi->parent.lock()->method == FORM_METHOD_INTERNAL && fi->parent.lock()->action == "map")
+            append_map_info(buf, tmp, fi->parent.lock()->item());
     }
     tmp->Push("</table>\n");
     tmp->Push("</form>");

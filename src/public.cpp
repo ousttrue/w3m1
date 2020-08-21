@@ -360,7 +360,7 @@ void cmd_loadfile(const char *fn)
     displayCurrentbuf(B_NORMAL);
 }
 
-void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, Form *request)
+void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, FormPtr request)
 {
 
     if (handleMailto(url.data()))
@@ -655,7 +655,7 @@ void _followForm(bool submit)
             break;
         fi->value = p;
         formUpdateBuffer(a, buf, fi);
-        if (fi->accept || fi->parent->nitems() == 1)
+        if (fi->accept || fi->parent.lock()->nitems() == 1)
             goto do_submit;
         break;
     }
@@ -673,7 +673,7 @@ void _followForm(bool submit)
             break;
         fi->value = p;
         formUpdateBuffer(a, buf, fi);
-        if (fi->accept || fi->parent->nitems() == 1)
+        if (fi->accept || fi->parent.lock()->nitems() == 1)
             goto do_submit;
         break;
     }
@@ -746,7 +746,7 @@ void _followForm(bool submit)
                                     buf->rect.cursorY + buf->rect.rootY))
             break;
         formUpdateBuffer(a, buf, fi);
-        if (fi->parent->nitems() == 1)
+        if (fi->parent.lock()->nitems() == 1)
             goto do_submit;
         break;
     }
@@ -756,11 +756,11 @@ void _followForm(bool submit)
     {
     do_submit:
         auto tmp = Strnew();
-        auto multipart = (fi->parent->method == FORM_METHOD_POST &&
-                          fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
-        query_from_followform(&tmp, fi.get(), multipart);
+        auto multipart = (fi->parent.lock()->method == FORM_METHOD_POST &&
+                          fi->parent.lock()->enctype == FORM_ENCTYPE_MULTIPART);
+        query_from_followform(&tmp, fi, multipart);
 
-        std::string tmp2 = fi->parent->action;
+        std::string tmp2 = fi->parent.lock()->action;
         if (tmp2 == "!CURRENT_URL!")
         {
             /* It means "current URL" */
@@ -769,7 +769,7 @@ void _followForm(bool submit)
             tmp2 = buf->currentURL.ToStr()->ptr;
         }
 
-        if (fi->parent->method == FORM_METHOD_GET)
+        if (fi->parent.lock()->method == FORM_METHOD_GET)
         {
             auto pos = tmp2.find('?');
             if (pos != std::string::npos)
@@ -784,25 +784,25 @@ void _followForm(bool submit)
             // loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
             tab->Push(URL::Parse(tmp2, buf->BaseURL()));
         }
-        else if (fi->parent->method == FORM_METHOD_POST)
+        else if (fi->parent.lock()->method == FORM_METHOD_POST)
         {
             BufferPtr buf;
             if (multipart)
             {
                 struct stat st;
-                stat(fi->parent->body, &st);
-                fi->parent->length = st.st_size;
+                stat(fi->parent.lock()->body, &st);
+                fi->parent.lock()->length = st.st_size;
             }
             else
             {
-                fi->parent->body = tmp->ptr;
-                fi->parent->length = tmp->Size();
+                fi->parent.lock()->body = tmp->ptr;
+                fi->parent.lock()->length = tmp->Size();
             }
             // buf = loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, fi->parent);
             tab->Push(URL::Parse(tmp2, buf->BaseURL()));
             if (multipart)
             {
-                unlink(fi->parent->body);
+                unlink(fi->parent.lock()->body);
             }
             if (buf && !(buf->bufferprop & BP_REDIRECTED))
             { /* buf must be Currentbuf */
@@ -810,10 +810,10 @@ void _followForm(bool submit)
          * Location: header. In this case, buf->form_submit must not be set
          * because the page is not loaded by POST method but GET method.
          */
-                buf->form_submit = save_submit_formlist(fi.get());
+                buf->form_submit = save_submit_formlist(fi);
             }
         }
-        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action == "map" || fi->parent->action == "none")) || buf->bufferprop & BP_INTERNAL)
+        else if ((fi->parent.lock()->method == FORM_METHOD_INTERNAL && (fi->parent.lock()->action == "map" || fi->parent.lock()->action == "none")) || buf->bufferprop & BP_INTERNAL)
         { /* internal */
             do_internal(tmp2, tmp->ptr);
         }
@@ -830,7 +830,7 @@ void _followForm(bool submit)
         {
             auto a2 = &buf->formitem.anchors[i];
             auto f2 = a2->item;
-            if (f2->parent == fi->parent &&
+            if (f2->parent.lock() == fi->parent.lock() &&
                 f2->name.size() && f2->value.size() &&
                 f2->type != FORM_INPUT_SUBMIT &&
                 f2->type != FORM_INPUT_HIDDEN &&
@@ -852,7 +852,7 @@ void _followForm(bool submit)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void query_from_followform(Str *query, FormItem *fi, int multipart)
+void query_from_followform(Str *query, FormItemPtr fi, int multipart)
 {
     FILE *body = NULL;
     if (multipart)
@@ -863,17 +863,17 @@ void query_from_followform(Str *query, FormItem *fi, int multipart)
         {
             return;
         }
-        fi->parent->body = (*query)->ptr;
-        fi->parent->boundary =
+        fi->parent.lock()->body = (*query)->ptr;
+        fi->parent.lock()->boundary =
             Sprintf("------------------------------%d%ld%ld%ld", w3mApp::Instance().CurrentPid,
-                    fi->parent, fi->parent->body, fi->parent->boundary)
+                    fi->parent, fi->parent.lock()->body, fi->parent.lock()->boundary)
                 ->ptr;
     }
 
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     *query = Strnew();
-    for (auto &f2: fi->parent->items)
+    for (auto &f2: fi->parent.lock()->items)
     {
         if (f2->name.empty())
             continue;
@@ -888,7 +888,7 @@ void query_from_followform(Str *query, FormItem *fi, int multipart)
             continue;
         case FORM_INPUT_SUBMIT:
         case FORM_INPUT_IMAGE:
-            if (f2.get() != fi || f2->value.empty())
+            if (f2 != fi || f2->value.empty())
                 continue;
             break;
         case FORM_INPUT_RADIO:
@@ -906,11 +906,11 @@ void query_from_followform(Str *query, FormItem *fi, int multipart)
 
                 *query = conv_form_encoding(f2->name, fi, buf)->Clone();
                 (*query)->Push(".x");
-                form_write_data(body, fi->parent->boundary, (*query)->ptr,
+                form_write_data(body, fi->parent.lock()->boundary, (*query)->ptr,
                                 Sprintf("%d", x)->ptr);
                 *query = conv_form_encoding(f2->name, fi, buf)->Clone();
                 (*query)->Push(".y");
-                form_write_data(body, fi->parent->boundary, (*query)->ptr,
+                form_write_data(body, fi->parent.lock()->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
             }
             else if (f2->name.size() && f2->value.size())
@@ -918,14 +918,14 @@ void query_from_followform(Str *query, FormItem *fi, int multipart)
                 /* not IMAGE */
                 *query = conv_form_encoding(f2->value.c_str(), fi, buf);
                 if (f2->type == FORM_INPUT_FILE)
-                    form_write_from_file(body, fi->parent->boundary,
+                    form_write_from_file(body, fi->parent.lock()->boundary,
                                          conv_form_encoding(f2->name, fi,
                                                             buf)
                                              ->ptr,
                                          (*query)->ptr,
                                          conv_to_system(f2->value.c_str()));
                 else
-                    form_write_data(body, fi->parent->boundary,
+                    form_write_data(body, fi->parent.lock()->boundary,
                                     conv_form_encoding(f2->name, fi,
                                                        buf)
                                         ->ptr,
@@ -955,7 +955,7 @@ void query_from_followform(Str *query, FormItem *fi, int multipart)
                 }
                 if (f2->value.size())
                 {
-                    if (fi->parent->method == FORM_METHOD_INTERNAL)
+                    if (fi->parent.lock()->method == FORM_METHOD_INTERNAL)
                         (*query)->Push(UrlEncode(Strnew(f2->value)));
                     else
                     {
@@ -963,13 +963,13 @@ void query_from_followform(Str *query, FormItem *fi, int multipart)
                     }
                 }
             }
-            if (&f2 != &f2->parent->items.back())
+            if (&f2 != &f2->parent.lock()->items.back())
                 (*query)->Push('&');
         }
     }
     if (multipart)
     {
-        fprintf(body, "--%s--\r\n", fi->parent->boundary);
+        fprintf(body, "--%s--\r\n", fi->parent.lock()->boundary);
         fclose(body);
     }
     else
@@ -1079,22 +1079,22 @@ void bufferA(void)
 //     return newBuf;
 // }
 
-FormItem *save_submit_formlist(FormItem *src)
+FormItemPtr save_submit_formlist(FormItemPtr src)
 {
     if (src == NULL)
         return NULL;
 
-    Form *list;
-    Form *srclist;
-    FormItem *srcitem;
-    FormItem *item;
-    FormItem *ret = NULL;
+    FormPtr list;
+    FormPtr srclist;
+    FormItemPtr srcitem;
+    FormItemPtr item;
+    FormItemPtr ret = NULL;
     FormSelectOptionItem *opt;
     FormSelectOptionItem *curopt;
     FormSelectOptionItem *srcopt;
 
-    srclist = src->parent;
-    list = new Form(srclist->action, srclist->method);
+    srclist = src->parent.lock();
+    list = std::make_shared<Form>(srclist->action, srclist->method);
     list->charset = srclist->charset;
     list->enctype = srclist->enctype;
     list->items = srclist->items;
@@ -1102,11 +1102,11 @@ FormItem *save_submit_formlist(FormItem *src)
     list->boundary = srclist->boundary;
     list->length = srclist->length;
 
-    for(int i=0; i<src->parent->items.size(); ++i)
+    for(int i=0; i<src->parent.lock()->items.size(); ++i)
     {
-        if(src->parent->items[i].get() == src)
+        if(src->parent.lock()->items[i] == src)
         {
-            return list->items[i].get(); 
+            return list->items[i]; 
         }
     }
 
@@ -1169,12 +1169,12 @@ FormItem *save_submit_formlist(FormItem *src)
     // return ret;
 }
 
-Str conv_form_encoding(std::string_view val, FormItem *fi, BufferPtr buf)
+Str conv_form_encoding(std::string_view val, FormItemPtr fi, BufferPtr buf)
 {
     CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
 
-    if (fi->parent->charset)
-        charset = fi->parent->charset;
+    if (fi->parent.lock()->charset)
+        charset = fi->parent.lock()->charset;
     else if (buf->document_charset && buf->document_charset != WC_CES_US_ASCII)
         charset = buf->document_charset;
     return wc_conv_strict(val.data(), w3mApp::Instance().InnerCharset, charset);

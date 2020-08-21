@@ -119,7 +119,7 @@ struct
 };
 /* *INDENT-ON* */
 
-Form *Form::Create(
+FormPtr Form::Create(
     std::string_view action,
     std::string_view method,
     std::string_view charset,
@@ -149,7 +149,7 @@ Form *Form::Create(
     if (charset.size())
         c = wc_guess_charset(charset.data(), WC_CES_NONE);
 
-    auto l = new Form(action, m);
+    auto l = std::make_shared<Form>(action, m);
     l->charset = c;
     l->enctype = e;
     l->target = target;
@@ -160,7 +160,7 @@ Form *Form::Create(
 /* 
  * add <input> element to form_list
  */
-FormItemPtr formList_addInput(Form *fl, struct parsed_tag *tag, HtmlContext *context)
+FormItemPtr formList_addInput(FormPtr fl, struct parsed_tag *tag, HtmlContext *context)
 {
     /* if not in <form>..</form> environment, just ignore <input> tag */
     if (fl == NULL)
@@ -263,8 +263,8 @@ Str FormItem::ToStr() const
          this->type == FORM_SELECT) &&
         this->value.size())
         Strcat_m_charp(tmp, " value=\"", this->value, "\"", NULL);
-    Strcat_m_charp(tmp, " (", _formmethodtbl[this->parent->method], " ",
-                   this->parent->action, ")", NULL);
+    Strcat_m_charp(tmp, " (", _formmethodtbl[this->parent.lock()->method], " ",
+                   this->parent.lock()->action, ")", NULL);
 
     return tmp;
 }
@@ -275,7 +275,7 @@ void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemPtr fi)
     {
         auto a2 = &buf->formitem.anchors[i];
         auto f2 = a2->item;
-        if (f2->parent == fi->parent && f2 != fi &&
+        if (f2->parent.lock() == fi->parent.lock() && f2 != fi &&
             f2->type == FORM_INPUT_RADIO && f2->name == fi->name)
         {
             f2->checked = 0;
@@ -1007,7 +1007,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
     struct pre_form_item *pi;
     int i;
     Anchor *a;
-    Form *fl;
+    FormPtr fl;
     FormItemPtr fi;
     FormSelectOptionItem *opt;
     int j;
@@ -1034,7 +1034,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
         {
             a = &buf->formitem.anchors[i];
             fi = a->item;
-            fl = fi->parent;
+            fl = fi->parent.lock();
             if (pf->name && (fl->name.empty() || fl->name != pf->name))
                 continue;
             if (pf->action && (fl->action.empty() || fl->action != pf->action))

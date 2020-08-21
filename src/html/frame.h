@@ -29,7 +29,7 @@ struct frame_body
     char *type;
     HttpReferrerPolicy referer;
     AnchorList nameList;
-    Form *request;
+    FormPtr request;
     char *ssl_certificate;
 };
 
@@ -71,4 +71,4 @@ void addFrameSetElement(struct frameset *f,
                         union frameset_element element);
 void deleteFrameSetElement(union frameset_element e);
 void resetFrameElement(union frameset_element *f_element, BufferPtr buf,
-                       HttpReferrerPolicy referer, Form *request);
+                       HttpReferrerPolicy referer, FormPtr request);

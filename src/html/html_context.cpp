@@ -258,13 +258,13 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     // if (forms_size == 0)
     // {
     //     forms_size = INITIAL_FORM_SIZE;
-    //     forms = New_N(Form *, forms_size);
+    //     forms = New_N(FormPtr , forms_size);
     //     form_stack = NewAtom_N(int, forms_size);
     // }
     // else if (forms_size <= form_max)
     // {
     //     forms_size += form_max;
-    //     forms = New_Reuse(Form *, forms, forms_size);
+    //     forms = New_Reuse(FormPtr , forms, forms_size);
     //     form_stack = New_Reuse(int, form_stack, forms_size);
     // }
 
@@ -278,7 +278,7 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     return nullptr;
 }
 
-std::vector<Form *> &HtmlContext::FormEnd()
+std::vector<FormPtr > &HtmlContext::FormEnd()
 {
     return forms;
 }

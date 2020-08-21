@@ -11,9 +11,9 @@ BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingSche
 
 BufferPtr loadGeneralFile(const URL &url,
                           const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
-                          struct Form *form = nullptr);
+                          FormPtr form = nullptr);
 
 ContentStream GetStream(const URL &url,
                         const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
-                        struct Form *form = nullptr);
+                        FormPtr form = nullptr);
 BufferPtr LoadStream(const ContentStream &stream);
