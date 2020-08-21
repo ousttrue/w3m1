@@ -109,7 +109,7 @@ public:
     // process <form></form>
     int cur_form_id()
     {
-        return form_stack.size() >= 0 ? form_stack.back() : -1;
+        return form_stack.size() ? form_stack.back() : -1;
     }
     Str FormOpen(struct parsed_tag *tag, int fid = -1);
     Str FormClose(void)

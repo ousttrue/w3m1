@@ -4,7 +4,6 @@
 #include <string_view_util.h>
 #include <stdio.h>
 #include "indep.h"
-#include "gc_helper.h"
 #include "html/form.h"
 #include "file.h"
 #include "public.h"
@@ -805,8 +804,8 @@ struct pre_form_item
     char *name;
     char *value;
     int checked;
-    struct pre_form_item *next;
 };
+using pre_form_item_ptr = std::shared_ptr<pre_form_item>;
 
 struct pre_form
 {
@@ -814,21 +813,17 @@ struct pre_form
     Regex *re_url;
     const char *name;
     const char *action;
-    struct pre_form_item *item;
-    struct pre_form *next;
+    std::vector<pre_form_item_ptr> item;
 };
+using pre_form_ptr = std::shared_ptr<pre_form>;
 
-static struct pre_form *PreForm = NULL;
+static std::vector<pre_form_ptr> PreForm;
 
-static struct pre_form *
-add_pre_form(struct pre_form *prev, const char *url, const char *name, const char *action)
+static pre_form_ptr add_pre_form(const char *url, const char *name, const char *action)
 {
-    struct pre_form *newForm;
+    auto newForm = std::make_shared<pre_form>();
+    PreForm.push_back(newForm);
 
-    if (prev)
-        newForm = prev->next = New(struct pre_form);
-    else
-        newForm = PreForm = New(struct pre_form);
     if (url && *url == '/')
     {
         int l = strlen(url);
@@ -848,23 +843,17 @@ add_pre_form(struct pre_form *prev, const char *url, const char *name, const cha
     }
     newForm->name = (name && *name) ? name : NULL;
     newForm->action = (action && *action) ? action : NULL;
-    newForm->item = NULL;
-    newForm->next = NULL;
+
     return newForm;
 }
 
-static struct pre_form_item *
-add_pre_form_item(struct pre_form *pf, struct pre_form_item *prev, int type,
-                  char *name, char *value, char *checked)
+static pre_form_item_ptr add_pre_form_item(pre_form_ptr pf, int type,
+                                           char *name, char *value, char *checked)
 {
-    struct pre_form_item *newForm;
-
     if (!pf)
         return NULL;
-    if (prev)
-        newForm = prev->next = New(struct pre_form_item);
-    else
-        newForm = pf->item = New(struct pre_form_item);
+
+    auto newForm = std::make_shared<pre_form_item>();
     newForm->type = type;
     newForm->name = name;
     newForm->value = value;
@@ -872,7 +861,6 @@ add_pre_form_item(struct pre_form *pf, struct pre_form_item *prev, int type,
         newForm->checked = 0;
     else
         newForm->checked = 1;
-    newForm->next = NULL;
     return newForm;
 }
 
@@ -894,17 +882,19 @@ add_pre_form_item(struct pre_form *pf, struct pre_form_item *prev, int type,
 
 void loadPreForm(void)
 {
-    FILE *fp;
-    Str line = NULL, textarea = NULL;
-    struct pre_form *pf = NULL;
-    struct pre_form_item *pi = NULL;
+    // FILE *fp;
+    Str line = NULL;
+    Str textarea = NULL;
+    pre_form_ptr pf;
+    pre_form_item_ptr pi;
     int type = -1;
     char *name = NULL;
 
-    PreForm = NULL;
-    fp = openSecretFile(w3mApp::Instance().pre_form_file.c_str());
+    auto fp = openSecretFile(w3mApp::Instance().pre_form_file.c_str());
     if (fp == NULL)
         return;
+
+    PreForm.clear();
     while (1)
     {
         char *p, *s, *arg;
@@ -930,8 +920,8 @@ void loadPreForm(void)
             if (!arg || !*arg)
                 continue;
             p = getQWord(&p);
-            pf = add_pre_form(pf, arg, NULL, p);
-            pi = pf->item;
+            pf = add_pre_form(arg, NULL, p);
+            pi = pf->item.size() ? pf->item[0] : nullptr;
             continue;
         }
         if (!pf)
@@ -947,10 +937,10 @@ void loadPreForm(void)
                 p = s;
                 s = NULL;
             }
-            if (pf->item)
+            if (pf->item.size())
             {
-                struct pre_form *prev = pf;
-                pf = add_pre_form(prev, "", s, p);
+                auto prev = pf;
+                auto pf = add_pre_form("", s, p);
                 /* copy previous URL */
                 pf->url = prev->url;
                 pf->re_url = prev->re_url;
@@ -960,7 +950,7 @@ void loadPreForm(void)
                 pf->name = s;
                 pf->action = (p && *p) ? p : NULL;
             }
-            pi = pf->item;
+            pi = pf->item.size() ? pf->item[0] : nullptr;
             continue;
         }
         if (!strcmp(s, "text"))
@@ -988,7 +978,7 @@ void loadPreForm(void)
         }
         else if (textarea && name && !strcmp(s, "/textarea"))
         {
-            pi = add_pre_form_item(pf, pi, type, name, textarea->ptr, NULL);
+            pi = add_pre_form_item(pf, type, name, textarea->ptr, NULL);
             textarea = NULL;
             name = NULL;
             continue;
@@ -996,15 +986,13 @@ void loadPreForm(void)
         else
             continue;
         s = getQWord(&p);
-        pi = add_pre_form_item(pf, pi, type, arg, s, getQWord(&p));
+        pi = add_pre_form_item(pf, type, arg, s, getQWord(&p));
     }
     fclose(fp);
 }
 
 void preFormUpdateBuffer(const BufferPtr &buf)
 {
-    struct pre_form *pf;
-    struct pre_form_item *pi;
     int i;
     Anchor *a;
     FormPtr fl;
@@ -1012,10 +1000,10 @@ void preFormUpdateBuffer(const BufferPtr &buf)
     FormSelectOptionItem *opt;
     int j;
 
-    if (!buf || !buf->formitem || !PreForm)
+    if (!buf || !buf->formitem || PreForm.empty())
         return;
 
-    for (pf = PreForm; pf; pf = pf->next)
+    for (auto &pf : PreForm)
     {
         if (pf->re_url)
         {
@@ -1039,7 +1027,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                 continue;
             if (pf->action && (fl->action.empty() || fl->action != pf->action))
                 continue;
-            for (pi = pf->item; pi; pi = pi->next)
+            for (auto &pi : pf->item)
             {
                 if (pi->type != fi->type)
                     continue;
