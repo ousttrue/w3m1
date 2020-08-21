@@ -45,7 +45,7 @@ struct FormSelectOptionItem : gc_cleanup
     FormSelectOptionItem *next = nullptr;
 };
 
-struct FormItemList : gc_cleanup
+struct FormItemList
 {
     int type;
     std::string name;
@@ -64,13 +64,18 @@ struct FormItemList : gc_cleanup
     int selected;
     int init_selected;
     struct FormList *parent;
-    FormItemList *next;
 };
 
+//
+// <form action="some.cgi" method="pos"></form>
+// representation
+//
 struct FormList : gc_cleanup
 {
-    FormItemList *item = nullptr;
-    FormItemList *lastitem = nullptr;
+    std::vector<FormItemList> items;
+    FormItemList *item() { return items.empty() ? nullptr : &items.front(); }
+    FormItemList *lastitem() { return items.empty() ? nullptr : &items.back(); }
+    int nitems() const { return items.size(); }
 
     std::string action;
     FormMethodTypes method;
@@ -79,7 +84,6 @@ struct FormList : gc_cleanup
     CharacterEncodingScheme charset;
     int enctype;
     char *boundary;
-    int nitems = 0;
     char *body = nullptr;
     unsigned long length = 0;
 

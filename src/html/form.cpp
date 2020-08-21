@@ -161,7 +161,10 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
     if (fl == NULL)
         return NULL;
 
-    auto item = new FormItemList;
+    fl->items.push_back({});
+    auto item = &fl->items.back();
+    item->parent = fl;
+
     item->type = FORM_UNKNOWN;
     item->size = -1;
     item->rows = 0;
@@ -203,7 +206,7 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
         /* type attribute is missing. Ignore the tag. */
         return NULL;
     }
-#ifdef MENU_SELECT
+
     if (item->type == FORM_SELECT)
     {
         chooseSelectOption(item, item->select_option);
@@ -211,26 +214,14 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
         item->init_value = item->value;
         item->init_label = item->label;
     }
-#endif /* MENU_SELECT */
+
     if (item->type == FORM_INPUT_FILE && item->value.size())
     {
         /* security hole ! */
         return NULL;
     }
-    item->parent = fl;
-    item->next = NULL;
-    if (fl->item == NULL)
-    {
-        fl->item = fl->lastitem = item;
-    }
-    else
-    {
-        fl->lastitem->next = item;
-        fl->lastitem = item;
-    }
     if (item->type == FORM_INPUT_HIDDEN)
         return NULL;
-    fl->nitems++;
     return item;
 }
 

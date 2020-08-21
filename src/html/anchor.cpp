@@ -704,8 +704,7 @@ link_list_panel(const BufferPtr &buf)
             a = const_cast<Anchor *>(buf->formitem.RetrieveAnchor(a->start));
             if (!a)
                 continue;
-            auto fi = a->item;
-            fi = fi->parent->item;
+            auto fi = a->item->parent->item();
             if (fi->parent->method == FORM_METHOD_INTERNAL &&
                 fi->parent->action == "map" && fi->value.size())
             {

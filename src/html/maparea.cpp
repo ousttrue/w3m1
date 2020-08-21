@@ -163,9 +163,9 @@ retrieveCurrentMapArea(const BufferPtr &buf)
     if (!(a_form && a_form->url.size()))
         return NULL;
     fi = a_form->item;
-    if (!(fi && fi->parent && fi->parent->item))
+    if (!(fi && fi->parent && fi->parent->item()))
         return NULL;
-    fi = fi->parent->item;
+    fi = fi->parent->item();
     ml = searchMapList(buf, fi->value.c_str());
     if (!ml)
         return NULL;
@@ -550,7 +550,7 @@ page_info_panel(const BufferPtr &buf)
                    buf->real_type.size() ? html_quote(buf->real_type) : "unknown",
                    "<tr valign=top><td nowrap>Last Modified<td>",
                    html_quote(last_modified(buf)), NULL);
-#ifdef USE_M17N
+
     if (buf->document_charset != w3mApp::Instance().InnerCharset)
     {
         list = wc_get_ces_list();
@@ -567,7 +567,7 @@ page_info_panel(const BufferPtr &buf)
         tmp->Push("</select>");
         tmp->Push("<tr><td><td><input type=submit value=Change>");
     }
-#endif
+
     Strcat_m_charp(tmp,
                    "<tr valign=top><td nowrap>Number of lines<td>",
                    Sprintf("%d", all)->ptr,
@@ -615,12 +615,10 @@ page_info_panel(const BufferPtr &buf)
                        "<tr valign=top><td nowrap>Method/type of current form&nbsp;<td>",
                        p, NULL);
         if (fi->parent->method == FORM_METHOD_INTERNAL && fi->parent->action == "map")
-            append_map_info(buf, tmp, fi->parent->item);
+            append_map_info(buf, tmp, fi->parent->item());
     }
     tmp->Push("</table>\n");
-#ifdef USE_M17N
     tmp->Push("</form>");
-#endif
 
     append_link_info(buf, tmp);
 

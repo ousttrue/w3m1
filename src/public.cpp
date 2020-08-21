@@ -655,7 +655,7 @@ void _followForm(bool submit)
             break;
         fi->value = p;
         formUpdateBuffer(a, buf, fi);
-        if (fi->accept || fi->parent->nitems == 1)
+        if (fi->accept || fi->parent->nitems() == 1)
             goto do_submit;
         break;
     }
@@ -673,7 +673,7 @@ void _followForm(bool submit)
             break;
         fi->value = p;
         formUpdateBuffer(a, buf, fi);
-        if (fi->accept || fi->parent->nitems == 1)
+        if (fi->accept || fi->parent->nitems() == 1)
             goto do_submit;
         break;
     }
@@ -746,7 +746,7 @@ void _followForm(bool submit)
                                     buf->rect.cursorY + buf->rect.rootY))
             break;
         formUpdateBuffer(a, buf, fi);
-        if (fi->parent->nitems == 1)
+        if (fi->parent->nitems() == 1)
             goto do_submit;
         break;
     }
@@ -873,60 +873,60 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     *query = Strnew();
-    for (auto f2 = fi->parent->item; f2; f2 = f2->next)
+    for (auto &f2: fi->parent->items)
     {
-        if (f2->name.empty())
+        if (f2.name.empty())
             continue;
         /* <ISINDEX> is translated into single text form */
-        // if (f2->name->Size() == 0 &&
-        //     (multipart || f2->type != FORM_INPUT_TEXT))
+        // if (f2.name->Size() == 0 &&
+        //     (multipart || f2.type != FORM_INPUT_TEXT))
         //     continue;
-        switch (f2->type)
+        switch (f2.type)
         {
         case FORM_INPUT_RESET:
             /* do nothing */
             continue;
         case FORM_INPUT_SUBMIT:
         case FORM_INPUT_IMAGE:
-            if (f2 != fi || f2->value.empty())
+            if (&f2 != fi || f2.value.empty())
                 continue;
             break;
         case FORM_INPUT_RADIO:
         case FORM_INPUT_CHECKBOX:
-            if (!f2->checked)
+            if (!f2.checked)
                 continue;
         }
         if (multipart)
         {
-            if (f2->type == FORM_INPUT_IMAGE)
+            if (f2.type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
 
                 getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
 
-                *query = conv_form_encoding(f2->name, fi, buf)->Clone();
+                *query = conv_form_encoding(f2.name, fi, buf)->Clone();
                 (*query)->Push(".x");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", x)->ptr);
-                *query = conv_form_encoding(f2->name, fi, buf)->Clone();
+                *query = conv_form_encoding(f2.name, fi, buf)->Clone();
                 (*query)->Push(".y");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
             }
-            else if (f2->name.size() && f2->value.size())
+            else if (f2.name.size() && f2.value.size())
             {
                 /* not IMAGE */
-                *query = conv_form_encoding(f2->value.c_str(), fi, buf);
-                if (f2->type == FORM_INPUT_FILE)
+                *query = conv_form_encoding(f2.value.c_str(), fi, buf);
+                if (f2.type == FORM_INPUT_FILE)
                     form_write_from_file(body, fi->parent->boundary,
-                                         conv_form_encoding(f2->name, fi,
+                                         conv_form_encoding(f2.name, fi,
                                                             buf)
                                              ->ptr,
                                          (*query)->ptr,
-                                         conv_to_system(f2->value.c_str()));
+                                         conv_to_system(f2.value.c_str()));
                 else
                     form_write_data(body, fi->parent->boundary,
-                                    conv_form_encoding(f2->name, fi,
+                                    conv_form_encoding(f2.name, fi,
                                                        buf)
                                         ->ptr,
                                     (*query)->ptr);
@@ -935,35 +935,35 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
         else
         {
             /* not multipart */
-            if (f2->type == FORM_INPUT_IMAGE)
+            if (f2.type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
                 getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
                 (*query)->Push(
-                    UrlEncode(conv_form_encoding(f2->name, fi, buf)));
+                    UrlEncode(conv_form_encoding(f2.name, fi, buf)));
                 (*query)->Push(Sprintf(".x=%d&", x));
-                (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
+                (*query)->Push(UrlEncode(conv_form_encoding(f2.name, fi, buf)));
                 (*query)->Push(Sprintf(".y=%d", y));
             }
             else
             {
                 /* not IMAGE */
-                if (f2->name.size())
+                if (f2.name.size())
                 {
-                    (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
+                    (*query)->Push(UrlEncode(conv_form_encoding(f2.name, fi, buf)));
                     (*query)->Push('=');
                 }
-                if (f2->value.size())
+                if (f2.value.size())
                 {
                     if (fi->parent->method == FORM_METHOD_INTERNAL)
-                        (*query)->Push(UrlEncode(Strnew(f2->value)));
+                        (*query)->Push(UrlEncode(Strnew(f2.value)));
                     else
                     {
-                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value, fi, buf)));
+                        (*query)->Push(UrlEncode(conv_form_encoding(f2.value, fi, buf)));
                     }
                 }
             }
-            if (f2->next)
+            if (&f2 != &f2.parent->items.back())
                 (*query)->Push('&');
         }
     }
@@ -1081,82 +1081,92 @@ void bufferA(void)
 
 FormItemList *save_submit_formlist(FormItemList *src)
 {
+    if (src == NULL)
+        return NULL;
+
     FormList *list;
     FormList *srclist;
     FormItemList *srcitem;
     FormItemList *item;
     FormItemList *ret = NULL;
-#ifdef MENU_SELECT
     FormSelectOptionItem *opt;
     FormSelectOptionItem *curopt;
     FormSelectOptionItem *srcopt;
-#endif /* MENU_SELECT */
 
-    if (src == NULL)
-        return NULL;
     srclist = src->parent;
     list = new FormList(srclist->action, srclist->method);
     list->charset = srclist->charset;
     list->enctype = srclist->enctype;
-    list->nitems = srclist->nitems;
+    list->items = srclist->items;
     list->body = srclist->body;
     list->boundary = srclist->boundary;
     list->length = srclist->length;
 
-    for (srcitem = srclist->item; srcitem; srcitem = srcitem->next)
+    for(int i=0; i<src->parent->items.size(); ++i)
     {
-        item = new FormItemList;
-        item->type = srcitem->type;
-        item->name = srcitem->name;
-        item->value = srcitem->value;
-        item->checked = srcitem->checked;
-        item->accept = srcitem->accept;
-        item->size = srcitem->size;
-        item->rows = srcitem->rows;
-        item->maxlength = srcitem->maxlength;
-        item->readonly = srcitem->readonly;
-
-        opt = curopt = NULL;
-        for (srcopt = srcitem->select_option; srcopt; srcopt = srcopt->next)
+        if(&src->parent->items[i] == src)
         {
-            if (!srcopt->checked)
-                continue;
-            opt = new FormSelectOptionItem;
-            opt->value = srcopt->value;
-            opt->label = srcopt->label;
-            opt->checked = srcopt->checked;
-            if (item->select_option == NULL)
-            {
-                item->select_option = curopt = opt;
-            }
-            else
-            {
-                curopt->next = opt;
-                curopt = curopt->next;
-            }
+            return &list->items[i]; 
         }
-        item->select_option = opt;
-        if (srcitem->label.size())
-            item->label = srcitem->label;
-
-        item->parent = list;
-        item->next = NULL;
-
-        if (list->lastitem == NULL)
-        {
-            list->item = list->lastitem = item;
-        }
-        else
-        {
-            list->lastitem->next = item;
-            list->lastitem = item;
-        }
-
-        if (srcitem == src)
-            ret = item;
     }
 
-    return ret;
+    assert(false);
+    return nullptr;
+
+    // for (srcitem = srclist->item; srcitem; srcitem = srcitem->next)
+    // {
+    //     item = new FormItemList;
+    //     item->type = srcitem->type;
+    //     item->name = srcitem->name;
+    //     item->value = srcitem->value;
+    //     item->checked = srcitem->checked;
+    //     item->accept = srcitem->accept;
+    //     item->size = srcitem->size;
+    //     item->rows = srcitem->rows;
+    //     item->maxlength = srcitem->maxlength;
+    //     item->readonly = srcitem->readonly;
+
+    //     opt = curopt = NULL;
+    //     for (srcopt = srcitem->select_option; srcopt; srcopt = srcopt->next)
+    //     {
+    //         if (!srcopt->checked)
+    //             continue;
+    //         opt = new FormSelectOptionItem;
+    //         opt->value = srcopt->value;
+    //         opt->label = srcopt->label;
+    //         opt->checked = srcopt->checked;
+    //         if (item->select_option == NULL)
+    //         {
+    //             item->select_option = curopt = opt;
+    //         }
+    //         else
+    //         {
+    //             curopt->next = opt;
+    //             curopt = curopt->next;
+    //         }
+    //     }
+    //     item->select_option = opt;
+    //     if (srcitem->label.size())
+    //         item->label = srcitem->label;
+
+    //     item->parent = list;
+    //     item->next = NULL;
+
+    //     if (list->lastitem == NULL)
+    //     {
+    //         list->item = list->lastitem = item;
+    //     }
+    //     else
+    //     {
+    //         list->lastitem->next = item;
+    //         list->lastitem = item;
+    //     }
+
+    //     if (srcitem == src)
+    //         ret = item;
+    // }
+
+    // return ret;
 }
 
 Str conv_form_encoding(std::string_view val, FormItemList *fi, BufferPtr buf)
