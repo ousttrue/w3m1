@@ -89,15 +89,14 @@ inMapArea(MapArea *a, int x, int y)
 static int
 nearestMapArea(MapList *ml, int x, int y)
 {
-    ListItem *al;
-    MapArea *a;
     int i, l, n = -1, min = -1, limit = w3mApp::Instance().pixel_per_char * w3mApp::Instance().pixel_per_char + w3mApp::Instance().pixel_per_line * w3mApp::Instance().pixel_per_line;
 
-    if (!ml || !ml->area)
+    if (!ml)
         return n;
-    for (i = 0, al = ml->area->first; al != NULL; i++, al = al->next)
+    i = 0;
+    for (auto al = ml->area.begin(); al != ml->area.end(); ++al)
     {
-        a = (MapArea *)al->ptr;
+        auto a = *al;
         if (a)
         {
             l = (a->center_x - x) * (a->center_x - x) + (a->center_y - y) * (a->center_y - y);
@@ -114,33 +113,32 @@ nearestMapArea(MapList *ml, int x, int y)
 static int
 searchMapArea(BufferPtr buf, MapList *ml, const Anchor *a_img)
 {
-    ListItem *al;
-    MapArea *a;
     int i, n;
     int px, py;
 
-    if (!(ml && ml->area && ml->area->nitem))
+    if (!(ml && ml->area.size()))
         return -1;
     if (!getMapXY(buf, a_img, &px, &py))
         return -1;
-    n = -ml->area->nitem;
-    for (i = 0, al = ml->area->first; al != NULL; i++, al = al->next)
+    n = -ml->area.size();
+    i = 0;
+    for (auto al = ml->area.begin(); al != ml->area.end(); i++, ++al)
     {
-        a = (MapArea *)al->ptr;
+        auto a = *al;
         if (!a)
             continue;
-        if (n < 0 && inMapArea(a, px, py))
+        if (n < 0 && inMapArea(&*a, px, py))
         {
             if (a->shape == SHAPE_DEFAULT)
             {
-                if (n == -ml->area->nitem)
+                if (n == -ml->area.size())
                     n = -i;
             }
             else
                 n = i;
         }
     }
-    if (n == -ml->area->nitem)
+    if (n == -ml->area.size())
         return nearestMapArea(ml, px, py);
     else if (n < 0)
         return -n;
@@ -151,8 +149,6 @@ MapArea *
 retrieveCurrentMapArea(const BufferPtr &buf)
 {
     MapList *ml;
-    ListItem *al;
-    MapArea *a;
     int i, n;
 
     auto a_img = buf->img.RetrieveAnchor(buf->CurrentPoint());
@@ -171,11 +167,11 @@ retrieveCurrentMapArea(const BufferPtr &buf)
     n = searchMapArea(buf, ml, a_img);
     if (n < 0)
         return NULL;
-    for (i = 0, al = ml->area->first; al != NULL; i++, al = al->next)
+    i = 0;
+    for (auto al = ml->area.begin(); al != ml->area.end(); i++, ++al)
     {
-        a = (MapArea *)al->ptr;
-        if (a && i == n)
-            return a;
+        if (i == n)
+            return *al;
     }
     return NULL;
 }
@@ -207,7 +203,7 @@ const Anchor *retrieveCurrentMap(const BufferPtr &buf)
 MapArea *follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y)
 {
     auto ml = searchMapList(buf, name);
-    if (ml == NULL || ml->area == NULL || ml->area->nitem == 0)
+    if (ml == NULL || ml->area.empty())
         return NULL;
 
     auto initial = searchMapArea(buf, ml, a_img);
@@ -227,9 +223,9 @@ MapArea *follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, i
     {
         std::vector<std::string> label;
         int i = 0;
-        for (auto al = ml->area->first; al != NULL; i++, al = al->next)
+        for (auto al = ml->area.begin(); al != ml->area.end(); i++, ++al)
         {
-            auto a = (MapArea *)al->ptr;
+            auto a = *al;
             if (a)
                 label.push_back(*a->alt ? const_cast<char *>(a->alt) : const_cast<char *>(a->url));
             else
@@ -242,10 +238,10 @@ MapArea *follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, i
     if (selected >= 0)
     {
         int i = 0;
-        for (auto al = ml->area->first; al != NULL; i++, al = al->next)
+        for (auto al = ml->area.begin(); al != ml->area.end(); i++, ++al)
         {
-            if (al->ptr && i == selected)
-                return (MapArea *)al->ptr;
+            if (i == selected)
+                return *al;
         }
     }
     return NULL;
@@ -299,8 +295,7 @@ follow_map_panel(BufferPtr buf, char *name)
 }
 #endif
 
-MapArea *
-newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords)
+MapArea *newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords)
 {
     MapArea *a = New(MapArea);
 
@@ -418,9 +413,9 @@ append_map_info(BufferPtr buf, Str tmp, FormItem *fi)
     Strcat_m_charp(tmp,
                    "<tr valign=top><td colspan=2>Links of current image map",
                    "<tr valign=top><td colspan=2><table>", NULL);
-    for (auto al = ml->area->first; al != NULL; al = al->next)
+    for (auto al = ml->area.begin(); al != ml->area.end(); ++al)
     {
-        auto a = (MapArea *)al->ptr;
+        auto a = *al;
         if (!a)
             continue;
         auto pu = URL::Parse(a->url, buf->BaseURL());

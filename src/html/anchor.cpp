@@ -709,16 +709,13 @@ link_list_panel(const BufferPtr &buf)
                 fi->parent->action == "map" && fi->value.size())
             {
                 MapList *ml = searchMapList(buf, fi->value.c_str());
-                ListItem *mi;
                 MapArea *m;
                 if (!ml)
                     continue;
                 tmp->Push("<br>\n<b>Image map</b>\n<ol>\n");
-                for (mi = ml->area->first; mi != NULL; mi = mi->next)
+                for (auto it = ml->area.begin(); it != ml->area.end(); ++it)
                 {
-                    m = (MapArea *)mi->ptr;
-                    if (!m)
-                        continue;
+                    auto m = *it;
                     auto pu = URL::Parse(m->url, buf->BaseURL());
                     p = pu.ToStr()->ptr;
                     u = html_quote(p);

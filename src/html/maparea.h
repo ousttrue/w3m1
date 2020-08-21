@@ -1,5 +1,5 @@
 #pragma once
-
+#include <gc_cpp.h>
 #include "frontend/buffer.h"
 
 struct GeneralList;
@@ -16,10 +16,10 @@ struct MapArea
     short center_y;
 };
 
-struct MapList
+struct MapList : gc_cleanup
 {
     Str name;
-    GeneralList *area;
+    std::vector<MapArea *> area;
     MapList *next;
 };
 

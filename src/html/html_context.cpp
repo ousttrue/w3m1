@@ -1538,9 +1538,9 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         char *p = nullptr;
         if (tag->TryGetAttributeValue(ATTR_NAME, &p))
         {
-            MapList *m = New(MapList);
+            MapList *m = new MapList;
             m->name = Strnew(p);
-            m->area = newGeneralList();
+            // m->area = newGeneralList();
             m->next = buf->maplist;
             buf->maplist = m;
         }
@@ -1569,7 +1569,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             char *s = nullptr;
             tag->TryGetAttributeValue(ATTR_COORDS, &s);
             auto a = newMapArea(p, t, q, r, s);
-            pushValue(buf->maplist->area, (void *)a);
+            buf->maplist->area.push_back(a);
         }
         break;
     }
