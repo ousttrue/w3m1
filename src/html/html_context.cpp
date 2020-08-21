@@ -458,7 +458,7 @@ Str HtmlContext::process_n_select()
         {
             FormItemList sitem;
             chooseSelectOption(&sitem, select_option[n_select].first);
-            select_str->Push(textfieldrep(sitem.label, cur_option_maxwidth));
+            select_str->Push(textfieldrep(Strnew(sitem.label), cur_option_maxwidth));
         }
         select_str->Push("</input_alt>]</pre_int>");
         n_select++;

@@ -521,7 +521,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
         std::string_view p;
         if (form->type == FORM_SELECT)
         {
-            p = form->label->ptr;
+            p = form->label;
             updateSelectOption(form, form->select_option);
         }
         else
@@ -740,17 +740,17 @@ void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item)
     if (item == NULL)
     {
         fi->value.clear();
-        fi->label = Strnew_size(0);
+        fi->label.clear();
         return;
     }
     fi->value = item->value->ptr;
-    fi->label = item->label;
+    fi->label = item->label->ptr;
     for (i = 0, opt = item; opt != NULL; i++, opt = opt->next)
     {
         if (opt->checked)
         {
             fi->value = opt->value->ptr;
-            fi->label = opt->label;
+            fi->label = opt->label->ptr;
             fi->selected = i;
             break;
         }
@@ -796,7 +796,7 @@ int formChooseOptionByMenu(FormItemList *fi, int x, int y)
         {
             fi->selected = selected;
             fi->value = opt->value->ptr;
-            fi->label = opt->label;
+            fi->label = opt->label->ptr;
             break;
         }
     }
@@ -1132,7 +1132,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                         {
                             fi->selected = j;
                             fi->value = opt->value->ptr;
-                            fi->label = opt->label;
+                            fi->label = opt->label->ptr;
                             updateSelectOption(fi, fi->select_option);
                             formUpdateBuffer(a, buf, fi);
                             break;

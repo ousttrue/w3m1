@@ -59,9 +59,10 @@ struct FormItemList: gc_cleanup
     int maxlength;
     int readonly;
     FormSelectOptionItem *select_option;
-    Str label;
-    Str init_label;
-    int selected, init_selected;
+    std::string label;
+    std::string init_label;
+    int selected;
+    int init_selected;
     struct FormList *parent;
     FormItemList *next;
 };

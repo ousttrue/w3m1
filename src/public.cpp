@@ -1113,7 +1113,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
         item->rows = srcitem->rows;
         item->maxlength = srcitem->maxlength;
         item->readonly = srcitem->readonly;
-#ifdef MENU_SELECT
+
         opt = curopt = NULL;
         for (srcopt = srcitem->select_option; srcopt; srcopt = srcopt->next)
         {
@@ -1134,9 +1134,9 @@ FormItemList *save_submit_formlist(FormItemList *src)
             }
         }
         item->select_option = opt;
-        if (srcitem->label)
-            item->label = srcitem->label->Clone();
-#endif /* MENU_SELECT */
+        if (srcitem->label.size())
+            item->label = srcitem->label;
+
         item->parent = list;
         item->next = NULL;
 
