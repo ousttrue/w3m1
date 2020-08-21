@@ -707,7 +707,7 @@ link_list_panel(const BufferPtr &buf)
             auto fi = a->item;
             fi = fi->parent->item;
             if (fi->parent->method == FORM_METHOD_INTERNAL &&
-                fi->parent->action->Cmp("map") == 0 && fi->value.size())
+                fi->parent->action == "map" && fi->value.size())
             {
                 MapList *ml = searchMapList(buf, fi->value.c_str());
                 ListItem *mi;

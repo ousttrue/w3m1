@@ -194,17 +194,13 @@ int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y)
     return 1;
 }
 
-const Anchor *
-retrieveCurrentMap(const BufferPtr &buf)
+const Anchor *retrieveCurrentMap(const BufferPtr &buf)
 {
-    FormItemList *fi;
-
     auto a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (!a || !a->url.size())
         return NULL;
-    fi = a->item;
-    if (fi->parent->method == FORM_METHOD_INTERNAL &&
-        fi->parent->action->Cmp("map") == 0)
+    auto fi = a->item;
+    if (fi->parent->method == FORM_METHOD_INTERNAL && fi->parent->action == "map")
         return a;
     return NULL;
 }
@@ -618,7 +614,7 @@ page_info_panel(const BufferPtr &buf)
         Strcat_m_charp(tmp,
                        "<tr valign=top><td nowrap>Method/type of current form&nbsp;<td>",
                        p, NULL);
-        if (fi->parent->method == FORM_METHOD_INTERNAL && fi->parent->action->Cmp("map") == 0)
+        if (fi->parent->method == FORM_METHOD_INTERNAL && fi->parent->action == "map")
             append_map_info(buf, tmp, fi->parent->item);
     }
     tmp->Push("</table>\n");

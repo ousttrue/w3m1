@@ -114,11 +114,9 @@ struct
 };
 /* *INDENT-ON* */
 
-FormList *
-newFormList(const char *action, const char *method, const char *charset, const char *enctype,
-            const char *target, const char *name)
+FormList *newFormList(std::string_view action, const char *method, const char *charset, const char *enctype,
+                      const char *target, const char *name)
 {
-    Str a = Strnew(action ? action : "");
     FormMethodTypes m = FORM_METHOD_GET;
     int e = FORM_ENCTYPE_URLENCODED;
     CharacterEncodingScheme c = WC_CES_NONE;
@@ -141,7 +139,7 @@ newFormList(const char *action, const char *method, const char *charset, const c
     if (charset != NULL)
         c = wc_guess_charset(charset, WC_CES_NONE);
 
-    auto l = new FormList(a, m);
+    auto l = new FormList(action, m);
     l->charset = c;
     l->enctype = e;
     l->target = target;
@@ -254,7 +252,7 @@ form2str(FormItemList *fi)
         fi->value.size())
         Strcat_m_charp(tmp, " value=\"", fi->value, "\"", NULL);
     Strcat_m_charp(tmp, " (", _formmethodtbl[fi->parent->method], " ",
-                   fi->parent->action->ptr, ")", NULL);
+                   fi->parent->action, ")", NULL);
     return tmp->ptr;
 }
 
@@ -688,16 +686,14 @@ input_end:
     unlink(tmpf);
 }
 
-void do_internal(char *action, char *data)
+void do_internal(std::string_view action, std::string_view data)
 {
-    int i;
-
-    for (i = 0; internal_action[i].action; i++)
+    for (auto i = 0; internal_action[i].action; i++)
     {
-        if (strcasecmp(internal_action[i].action, action) == 0)
+        if (svu::ic_eq(internal_action[i].action, action))
         {
             if (internal_action[i].rout)
-                internal_action[i].rout(cgistr2tagarg(data));
+                internal_action[i].rout(cgistr2tagarg(data.data()));
             return;
         }
     }
@@ -1049,7 +1045,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
             fl = fi->parent;
             if (pf->name && (!fl->name || strcmp(fl->name, pf->name)))
                 continue;
-            if (pf->action && (!fl->action || fl->action->Cmp(pf->action) != 0))
+            if (pf->action && (fl->action.empty() || fl->action != pf->action))
                 continue;
             for (pi = pf->item; pi; pi = pi->next)
             {

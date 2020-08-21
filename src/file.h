@@ -70,7 +70,7 @@ char *form2str(FormItemList *fi);
 void preFormUpdateBuffer(const BufferPtr &buf);
 
 void input_textarea(FormItemList *fi);
-void do_internal(char *action, char *data);
+
 void form_write_data(FILE *f, char *boundary, char *name, char *value);
 void form_write_from_file(FILE *f, char *boundary, char *name,
                           char *filename, char *file);

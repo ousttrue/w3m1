@@ -34,7 +34,6 @@
 #include "charset.h"
 #include "w3m.h"
 
-
 static const char *SearchString = NULL;
 SearchFunc searchRoutine = nullptr;
 
@@ -757,28 +756,33 @@ void _followForm(bool submit)
     {
     do_submit:
         auto tmp = Strnew();
-        auto tmp2 = Strnew();
         auto multipart = (fi->parent->method == FORM_METHOD_POST &&
                           fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
         query_from_followform(&tmp, fi, multipart);
 
-        tmp2 = fi->parent->action->Clone();
-        if (tmp2->Cmp("!CURRENT_URL!") == 0)
+        std::string tmp2 = fi->parent->action;
+        if (tmp2 == "!CURRENT_URL!")
         {
             /* It means "current URL" */
-            tmp2 = buf->currentURL.ToStr();
-            if (auto p = strchr(tmp2->ptr, '?'))
-                tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
+            auto url = buf->currentURL;
+            url.query.clear();
+            tmp2 = buf->currentURL.ToStr()->ptr;
         }
 
         if (fi->parent->method == FORM_METHOD_GET)
         {
-            if (auto p = strchr(tmp2->ptr, '?'))
-                tmp2->Pop((tmp2->ptr + tmp2->Size()) - p);
-            tmp2->Push("?");
-            tmp2->Push(tmp);
+            auto pos = tmp2.find('?');
+            if (pos != std::string::npos)
+            {
+                tmp2 = tmp2.substr(0, pos);
+            }
+            tmp2.push_back('?');
+            for (auto p = tmp->ptr; *p; ++p)
+            {
+                tmp2.push_back(*p);
+            }
             // loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
-            tab->Push(URL::Parse(tmp2->ptr, buf->BaseURL()));
+            tab->Push(URL::Parse(tmp2, buf->BaseURL()));
         }
         else if (fi->parent->method == FORM_METHOD_POST)
         {
@@ -795,7 +799,7 @@ void _followForm(bool submit)
                 fi->parent->length = tmp->Size();
             }
             // buf = loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, fi->parent);
-            tab->Push(URL::Parse(tmp2->ptr, buf->BaseURL()));
+            tab->Push(URL::Parse(tmp2, buf->BaseURL()));
             if (multipart)
             {
                 unlink(fi->parent->body);
@@ -809,9 +813,9 @@ void _followForm(bool submit)
                 buf->form_submit = save_submit_formlist(fi);
             }
         }
-        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action->Cmp("map") == 0 || fi->parent->action->Cmp("none") == 0)) || buf->bufferprop & BP_INTERNAL)
+        else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action == "map" || fi->parent->action == "none")) || buf->bufferprop & BP_INTERNAL)
         { /* internal */
-            do_internal(tmp2->ptr, tmp->ptr);
+            do_internal(tmp2, tmp->ptr);
         }
         else
         {
@@ -1091,7 +1095,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
     if (src == NULL)
         return NULL;
     srclist = src->parent;
-    list = new FormList(srclist->action->Clone(), srclist->method);
+    list = new FormList(srclist->action, srclist->method);
     list->charset = srclist->charset;
     list->enctype = srclist->enctype;
     list->nitems = srclist->nitems;

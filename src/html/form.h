@@ -72,7 +72,7 @@ struct FormList : gc_cleanup
     FormItemList *item = nullptr;
     FormItemList *lastitem = nullptr;
 
-    Str action;
+    std::string action;
     FormMethodTypes method;
     const char *target;
     const char *name;
@@ -83,7 +83,7 @@ struct FormList : gc_cleanup
     char *body = nullptr;
     unsigned long length = 0;
 
-    FormList(Str a, FormMethodTypes m)
+    FormList(std::string_view a, FormMethodTypes m)
         : action(a), method(m)
     {
     }
@@ -97,8 +97,9 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, class Html
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
 
-FormList *newFormList(const char *action, const char *method, const char *charset,
+FormList *newFormList(std::string_view action, const char *method, const char *charset,
                       const char *enctype, const char *target, const char *name);
 int formtype(const char *typestr);
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 Str textfieldrep(Str s, int width);
+void do_internal(std::string_view action, std::string_view data);
