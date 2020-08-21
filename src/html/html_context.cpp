@@ -278,12 +278,9 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     return nullptr;
 }
 
-Form *HtmlContext::FormEnd()
+std::vector<Form *> &HtmlContext::FormEnd()
 {
-    // for (int i = 1; i < forms.size(); ++i)
-    //     forms[i]->next = forms[i - 1];
-    return forms.size() ? forms.back() : nullptr;
-    ;
+    return forms;
 }
 
 FormSelectOptionList *HtmlContext::FormSelect(int n)

@@ -43,7 +43,7 @@ static void follow_map(struct parsed_tagarg *arg)
     auto an = buf->img.RetrieveAnchor(buf->CurrentPoint());
     auto [x, y] = buf->rect.globalXY();
     auto a = follow_map_menu(GetCurrentTab()->GetCurrentBuffer(), name, an, x, y);
-    if (a == NULL || a->url == NULL || *(a->url) == '\0')
+    if (a == NULL || a->url.empty())
     {
 
 #ifndef MENU_MAP
@@ -55,16 +55,16 @@ static void follow_map(struct parsed_tagarg *arg)
 #if defined(MENU_MAP) || defined(USE_IMAGE)
         return;
     }
-    if (*(a->url) == '#')
+    if (a->url[0] == '#')
     {
-        gotoLabel(a->url + 1);
+        gotoLabel(a->url.c_str() + 1);
         return;
     }
 
     auto p_url = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
-    if (check_target() && w3mApp::Instance().open_tab_blank && a->target &&
-        (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
+    if (check_target() && w3mApp::Instance().open_tab_blank &&
+        (a->target == "_new" || a->target == "_blank"))
     {
         auto tab = CreateTabSetCurrent();
         BufferPtr buf = tab->GetCurrentBuffer();

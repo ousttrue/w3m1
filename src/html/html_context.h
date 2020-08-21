@@ -125,7 +125,7 @@ public:
             return nullptr;
         return forms[form_id];
     }
-    Form *FormEnd();
+    std::vector<Form *> &FormEnd();
     void FormSetSelect(int n);
     FormSelectOptionList *FormSelect(int n);
     std::pair<int, FormSelectOptionList *> FormSelectCurrent();

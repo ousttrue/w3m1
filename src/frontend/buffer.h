@@ -2,6 +2,7 @@
 #include "stream/url.h"
 #include "html/anchor.h"
 #include "html/maparea.h"
+#include "html/form.h"
 #include "termrect.h"
 #include "line.h"
 #include "link.h"
@@ -14,8 +15,6 @@
 
 struct Line;
 class InputStream;
-struct Form;
-struct FormItem;
 struct MapList;
 struct AlarmEvent;
 struct TextList;
@@ -296,7 +295,7 @@ public:
     int prevhseq = -1;
 
     std::vector<Link> linklist;
-    Form *formlist = nullptr;
+    std::vector<FormPtr> formlist;
     std::vector<MapListPtr> maplist;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;

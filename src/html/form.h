@@ -118,6 +118,7 @@ struct Form : gc_cleanup
         std::string_view target = "",
         std::string_view name = "");
 };
+using FormPtr = Form *;
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
 FormItemPtr formList_addInput(Form *fl, struct parsed_tag *tag, class HtmlContext *context);
