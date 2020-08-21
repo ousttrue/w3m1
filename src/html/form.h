@@ -67,7 +67,7 @@ struct FormItemList: gc_cleanup
     FormItemList *next;
 };
 
-struct FormList
+struct FormList: gc_cleanup
 {
     FormItemList *item;
     FormItemList *lastitem;

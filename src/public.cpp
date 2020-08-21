@@ -1091,7 +1091,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
     if (src == NULL)
         return NULL;
     srclist = src->parent;
-    list = New(FormList);
+    list = new FormList;
     list->method = srclist->method;
     list->action = srclist->action->Clone();
     list->charset = srclist->charset;

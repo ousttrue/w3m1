@@ -142,7 +142,7 @@ newFormList(const char *action, const char *method, const char *charset, const c
     if (charset != NULL)
         c = wc_guess_charset(charset, WC_CES_NONE);
 
-    l = New(FormList);
+    l = new FormList;
     l->item = l->lastitem = NULL;
     l->action = a;
     l->method = m;
