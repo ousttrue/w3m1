@@ -1808,11 +1808,6 @@ void chkWORD(w3mApp *w3m)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void chkNMID(w3mApp *w3m)
-{
-    chkNMIDBuffer(GetCurrentTab()->GetCurrentBuffer());
-    displayCurrentbuf(B_FORCE_REDRAW);
-}
 /* render frame */
 
 void rFrame(w3mApp *w3m)

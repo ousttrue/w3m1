@@ -83,11 +83,11 @@ char *searchKeyData();
 
 int sysm_process_mouse();
 // int gpm_process_mouse(Gpm_Event *, void *);
-void chkNMIDBuffer(const BufferPtr &buf);
 
-void change_charset(struct parsed_tagarg *arg);
-void follow_map(struct parsed_tagarg *arg);
-void followForm();
+
+
+
+
 void SigPipe(SIGNAL_ARG);
 
 void intTrap(SIGNAL_ARG);

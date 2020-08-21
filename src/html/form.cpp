@@ -17,13 +17,86 @@
 #include "frontend/menu.h"
 #include "mime/mimetypes.h"
 #include "frontend/display.h"
+#include "frontend/tabbar.h"
 #include "html/anchor.h"
 #include "charset.h"
+#include "history.h"
 #include "html/html_processor.h"
 #include "html/html_context.h"
+#include "html/maparea.h"
 #include <unistd.h>
 
 extern FormSelectOption *select_option;
+
+static void follow_map(struct parsed_tagarg *arg)
+{
+    auto name = tag_get_value(arg, "link");
+
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+
+    auto an = buf->img.RetrieveAnchor(buf->CurrentPoint());
+    auto [x, y] = buf->rect.globalXY();
+    auto a = follow_map_menu(GetCurrentTab()->GetCurrentBuffer(), name, an, x, y);
+    if (a == NULL || a->url == NULL || *(a->url) == '\0')
+    {
+
+#ifndef MENU_MAP
+        BufferPtr buf = follow_map_panel(GetCurrentTab()->GetCurrentBuffer(), name);
+
+        if (buf != NULL)
+            cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
+#endif
+#if defined(MENU_MAP) || defined(USE_IMAGE)
+        return;
+    }
+    if (*(a->url) == '#')
+    {
+        gotoLabel(a->url + 1);
+        return;
+    }
+
+    auto p_url = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
+    if (check_target() && w3mApp::Instance().open_tab_blank && a->target &&
+        (!strcasecmp(a->target, "_new") || !strcasecmp(a->target, "_blank")))
+    {
+        auto tab = CreateTabSetCurrent();
+        BufferPtr buf = tab->GetCurrentBuffer();
+        cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
+                    HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
+        // if (buf != GetCurrentTab()->GetCurrentBuffer())
+        //     GetCurrentTab()->DeleteBuffer(buf);
+        // else
+        //     deleteTab(GetCurrentTab());
+        displayCurrentbuf(B_FORCE_REDRAW);
+        return;
+    }
+    cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
+                HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
+#endif
+}
+
+static void change_charset(struct parsed_tagarg *arg)
+{
+    BufferPtr buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_INFO];
+    CharacterEncodingScheme charset;
+
+    if (buf == NULL)
+        return;
+    auto tab = GetCurrentTab();
+    tab->Back(true);
+    // tab->Push(buf);
+    if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
+        return;
+    charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
+    for (; arg; arg = arg->next)
+    {
+        if (!strcmp(arg->arg, "charset"))
+            charset = (CharacterEncodingScheme)atoi(arg->value);
+    }
+    _docCSet(charset);
+}
 
 /* *INDENT-OFF* */
 struct
@@ -33,13 +106,9 @@ struct
 } internal_action[] = {
     {"map", follow_map},
     {"option", panel_set_option},
-#ifdef USE_COOKIE
     {"cookie", set_cookie_flag},
-#endif /* USE_COOKIE */
     {"download", download_action},
-#ifdef USE_M17N
     {"charset", change_charset},
-#endif
     {"none", NULL},
     {NULL, NULL},
 };

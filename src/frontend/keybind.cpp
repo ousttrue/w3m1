@@ -54,7 +54,7 @@ Command EscKeymap[128] = {
     /*  0       1       2       3       4       5       6       7        */
     nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd,
     /*  8       9       :       ;       <       =       >       ?        */
-    nulcmd, nulcmd, chkNMID, nulcmd, goLineF, nulcmd, goLineL, nulcmd,
+    nulcmd, nulcmd, nulcmd, nulcmd, goLineF, nulcmd, goLineL, nulcmd,
     /*  @       A       B       C       D       E       F       G        */
     nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd,
     /*  H       I       J       K       L       M       N       O        */

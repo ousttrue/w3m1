@@ -106,7 +106,6 @@ inline void register_commands()
   RegisterCommand("defCSet", "DEFAULT_CHARSET", "Change the default document charset", &defCSet);
   RegisterCommand("chkURL", "MARK_URL", "Mark URL-like strings as anchors", &chkURL);
   RegisterCommand("chkWORD", "MARK_WORD", "Mark current word as anchor", &chkWORD);
-  RegisterCommand("chkNMID", "MARK_MID", "Mark Message-ID-like strings as anchors", &chkNMID);
   RegisterCommand("rFrame", "FRAME", "Render frame", &rFrame);
   RegisterCommand("extbrz", "EXTERN", "Execute external browser", &extbrz);
   RegisterCommand("linkbrz", "EXTERN_LINK", "View current link using external browser", &linkbrz);

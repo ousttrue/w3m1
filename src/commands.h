@@ -101,7 +101,6 @@ void docCSet(w3mApp *w3m);
 void defCSet(w3mApp *w3m);
 void chkURL(w3mApp *w3m);
 void chkWORD(w3mApp *w3m);
-void chkNMID(w3mApp *w3m);
 void rFrame(w3mApp *w3m);
 void extbrz(w3mApp *w3m);
 void linkbrz(w3mApp *w3m);
