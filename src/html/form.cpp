@@ -26,6 +26,10 @@
 #include "html/maparea.h"
 #include <unistd.h>
 
+#define FORM_I_TEXT_DEFAULT_SIZE 40
+#define FORM_I_SELECT_DEFAULT_SIZE 40
+#define FORM_I_TEXTAREA_DEFAULT_WIDTH 40
+
 extern FormSelectOptionList *select_option;
 
 static void follow_map(struct parsed_tagarg *arg)

@@ -2,9 +2,10 @@
  * HTML forms 
  */
 #pragma once
-#include "html/html.h"
-#include "frontend/buffer.h"
 #include <tcb/span.hpp>
+#include <memory>
+
+struct Anchor;
 
 enum FormItemTypes
 {
@@ -23,10 +24,6 @@ enum FormItemTypes
     FORM_INPUT_FILE = 11,
 };
 FormItemTypes formtype(std::string_view typestr);
-
-#define FORM_I_TEXT_DEFAULT_SIZE 40
-#define FORM_I_SELECT_DEFAULT_SIZE 40
-#define FORM_I_TEXTAREA_DEFAULT_WIDTH 40
 
 enum FormMethodTypes
 {
@@ -119,10 +116,11 @@ void chooseSelectOption(FormItemListPtr fi, tcb::span<FormSelectOptionItem> item
 void updateSelectOption(FormItemListPtr fi, tcb::span<FormSelectOptionItem> item);
 bool formChooseOptionByMenu(FormItemListPtr fi, int x, int y);
 
+using BufferPtr = std::shared_ptr<struct Buffer>;
 FormItemListPtr formList_addInput(FormList *fl, struct parsed_tag *tag, class HtmlContext *context);
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemListPtr form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemListPtr form);
 
-void formResetBuffer(BufferPtr buf, AnchorList &formitem);
+void formResetBuffer(BufferPtr buf, struct AnchorList &formitem);
 Str textfieldrep(Str s, int width);
 void do_internal(std::string_view action, std::string_view data);
