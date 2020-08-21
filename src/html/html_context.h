@@ -58,9 +58,8 @@ class HtmlContext
     bool cur_option_selected = false;
     int cur_status = 0;
     std::vector<Anchor *> a_textarea;
-    int max_textarea = 0;
-    int n_textarea;
-    Str *textarea_str;
+    std::vector<Str> textarea_str;
+    int n_textarea = -1;
     Str cur_textarea;
     int cur_textarea_size;
     int cur_textarea_rows;
@@ -127,7 +126,6 @@ public:
         return forms[form_id];
     }
     Form *FormEnd();
-    void FormSelectGrow(int selectnumber);
     void FormSetSelect(int n);
     FormSelectOptionList *FormSelect(int n);
     std::pair<int, FormSelectOptionList *> FormSelectCurrent();
@@ -139,7 +137,6 @@ public:
     Str process_img(struct parsed_tag *tag, int width);
     Str process_anchor(struct parsed_tag *tag, const char *tagbuf);
     // void clear(int n);
-    void TextareaGrow(int textareanumber);
     void Textarea(int n, Str str);
     Str Textarea(int n) const;
     std::pair<int, Str> TextareaCurrent() const;

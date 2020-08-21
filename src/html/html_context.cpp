@@ -47,10 +47,6 @@ HtmlContext::HtmlContext()
     }
 
     cur_select = nullptr;
-
-    n_textarea = -1;
-    max_textarea = MAX_TEXTAREA;
-    textarea_str = New_N(Str, max_textarea);
     cur_textarea = nullptr;
 }
 
@@ -288,17 +284,6 @@ Form *HtmlContext::FormEnd()
     //     forms[i]->next = forms[i - 1];
     return forms.size() ? forms.back() : nullptr;
     ;
-}
-
-void HtmlContext::FormSelectGrow(int selectnumber)
-{
-    // if (selectnumber >= max_select)
-    // {
-    //     max_select = 2 * selectnumber;
-    //     select_option = New_Reuse(FormSelectOptionList,
-    //                               select_option,
-    //                               max_select);
-    // }
 }
 
 FormSelectOptionList *HtmlContext::FormSelect(int n)
@@ -1081,16 +1066,6 @@ Str HtmlContext::process_anchor(struct parsed_tag *tag, const char *tagbuf)
     }
 }
 
-void HtmlContext::TextareaGrow(int textareanumber)
-{
-    if (textareanumber >= max_textarea)
-    {
-        max_textarea = 2 * textareanumber;
-        textarea_str = New_Reuse(Str, textarea_str,
-                                 max_textarea);
-    }
-}
-
 void HtmlContext::Textarea(int n, Str str)
 {
     n_textarea = n;
@@ -1188,10 +1163,9 @@ Str HtmlContext::process_textarea(struct parsed_tag *tag, int width)
         }
     }
     cur_textarea_readonly = tag->HasAttribute(ATTR_READONLY);
-    if (n_textarea >= max_textarea)
+    if (n_textarea >= textarea_str.size())
     {
-        max_textarea *= 2;
-        textarea_str = New_Reuse(Str, textarea_str, max_textarea);
+        textarea_str.resize(n_textarea + 1);
     }
     textarea_str[n_textarea] = Strnew();
     ignore_nl_textarea = true;
@@ -1491,13 +1465,13 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         int textareanumber = -1;
         if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &textareanumber))
         {
-            TextareaGrow(textareanumber);
+            // TextareaGrow(textareanumber);
         }
 
         int selectnumber = -1;
         if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &selectnumber))
         {
-            FormSelectGrow(selectnumber);
+            // FormSelectGrow(selectnumber);
         }
 
         auto fi = formList_addInput(form, tag, this);
