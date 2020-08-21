@@ -116,9 +116,8 @@ struct
 
 FormList *
 newFormList(const char *action, const char *method, const char *charset, const char *enctype,
-            const char *target, const char *name, FormList *_next)
+            const char *target, const char *name)
 {
-    FormList *l;
     Str a = Strnew(action ? action : "");
     FormMethodTypes m = FORM_METHOD_GET;
     int e = FORM_ENCTYPE_URLENCODED;
@@ -142,18 +141,12 @@ newFormList(const char *action, const char *method, const char *charset, const c
     if (charset != NULL)
         c = wc_guess_charset(charset, WC_CES_NONE);
 
-    l = new FormList;
-    l->item = l->lastitem = NULL;
-    l->action = a;
-    l->method = m;
+    auto l = new FormList(a, m);
     l->charset = c;
     l->enctype = e;
     l->target = target;
     l->name = name;
-    l->next = _next;
-    l->nitems = 0;
-    l->body = NULL;
-    l->length = 0;
+    // l->next = _next;
     return l;
 }
 

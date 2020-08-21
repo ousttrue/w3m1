@@ -280,14 +280,14 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     }
     form_stack[form_sp] = fid;
 
-    forms[fid] = newFormList(q, p, r, s, tg, n, nullptr);
+    forms[fid] = newFormList(q, p, r, s, tg, n);
     return nullptr;
 }
 
 FormList *HtmlContext::FormEnd()
 {
-    for (int form_id = 1; form_id <= form_max; form_id++)
-        forms[form_id]->next = forms[form_id - 1];
+    // for (int form_id = 1; form_id <= form_max; form_id++)
+    //     forms[form_id]->next = forms[form_id - 1];
     return (form_max >= 0) ? forms[form_max] : nullptr;
 }
 

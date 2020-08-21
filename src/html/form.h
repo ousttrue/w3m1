@@ -37,7 +37,7 @@ enum FormEncodingTypes
     FORM_ENCTYPE_MULTIPART = 1,
 };
 
-struct FormSelectOptionItem: gc_cleanup
+struct FormSelectOptionItem : gc_cleanup
 {
     std::string value;
     std::string label;
@@ -45,7 +45,7 @@ struct FormSelectOptionItem: gc_cleanup
     FormSelectOptionItem *next = nullptr;
 };
 
-struct FormItemList: gc_cleanup
+struct FormItemList : gc_cleanup
 {
     int type;
     std::string name;
@@ -67,21 +67,26 @@ struct FormItemList: gc_cleanup
     FormItemList *next;
 };
 
-struct FormList: gc_cleanup
+struct FormList : gc_cleanup
 {
-    FormItemList *item;
-    FormItemList *lastitem;
-    FormMethodTypes method;
+    FormItemList *item = nullptr;
+    FormItemList *lastitem = nullptr;
+
     Str action;
+    FormMethodTypes method;
     const char *target;
     const char *name;
     CharacterEncodingScheme charset;
     int enctype;
-    FormList *next;
-    int nitems;
-    char *body;
     char *boundary;
-    unsigned long length;
+    int nitems = 0;
+    char *body = nullptr;
+    unsigned long length = 0;
+
+    FormList(Str a, FormMethodTypes m)
+        : action(a), method(m)
+    {
+    }
 };
 
 void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item);
@@ -93,8 +98,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
 
 FormList *newFormList(const char *action, const char *method, const char *charset,
-                      const char *enctype, const char *target, const char *name,
-                      FormList *_next);
+                      const char *enctype, const char *target, const char *name);
 int formtype(const char *typestr);
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 Str textfieldrep(Str s, int width);
