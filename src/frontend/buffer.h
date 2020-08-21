@@ -53,8 +53,6 @@ struct BufferPos
     int currentColumn;
     int pos;
     int bpos;
-    BufferPos *next;
-    BufferPos *prev;
 };
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
@@ -230,7 +228,7 @@ public:
     }
     bool MoveLeftWord(int n);
     bool MoveRightWord(int n);
-    void resetPos(BufferPos *b);
+    void resetPos(int i);
     void undoPos();
     void redoPos();
 
@@ -327,7 +325,7 @@ public:
     char image_flag = 0;
     char image_loaded = 0;
     Anchor *submit = nullptr;
-    BufferPos *undo = nullptr;
+    std::vector<BufferPos> undo;
     AlarmEvent *event = nullptr;
 
     Buffer();

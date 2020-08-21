@@ -11,7 +11,6 @@
 #include "urimethod.h"
 #include "public.h"
 #include "indep.h"
-#include "gc_helper.h"
 #include "file.h"
 #include "html/image.h"
 #include "html/html.h"
@@ -866,25 +865,26 @@ void Buffer::AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_l
 
 void Buffer::SavePosition()
 {
-    if (this->LineCount() == 0)
+    if (LineCount() == 0)
         return;
 
-    BufferPos *b = this->undo;
+    auto b = undo.size() ? &undo.back() : nullptr;
     if (b && b->top_linenumber == TOP_LINENUMBER() &&
         b->cur_linenumber == CUR_LINENUMBER() &&
-        b->currentColumn == this->currentColumn && b->pos == this->pos)
+        b->currentColumn == currentColumn &&
+        b->pos == pos)
+    {
         return;
-    b = New(BufferPos);
+    }
+
+    undo.push_back({});
+
+    b = &undo.back();
     b->top_linenumber = TOP_LINENUMBER();
     b->cur_linenumber = CUR_LINENUMBER();
     b->currentColumn = this->currentColumn;
     b->pos = this->pos;
     b->bpos = this->currentLine ? this->currentLine->bpos : 0;
-    b->next = NULL;
-    b->prev = this->undo;
-    if (this->undo)
-        this->undo->next = b;
-    this->undo = b;
 }
 
 void Buffer::CursorUp0(int n)
@@ -1469,22 +1469,25 @@ end:
     return true;
 }
 
-void Buffer::resetPos(BufferPos *b)
+void Buffer::resetPos(int i)
 {
     auto top = std::make_shared<Line>();
-    top->linenumber = b->top_linenumber;
+
+    auto &b = undo[i];
+    top->linenumber = b.top_linenumber;
 
     auto cur = std::make_shared<Line>();
-    cur->linenumber = b->cur_linenumber;
-    cur->bpos = b->bpos;
+    cur->linenumber = b.cur_linenumber;
+    cur->bpos = b.bpos;
 
     BufferPtr newBuf = std::make_shared<Buffer>();
     newBuf->SetTopLine(top);
     newBuf->SetCurrentLine(cur);
-    newBuf->pos = b->pos;
-    newBuf->currentColumn = b->currentColumn;
+    newBuf->pos = b.pos;
+    newBuf->currentColumn = b.currentColumn;
     restorePosition(newBuf);
-    undo = b;
+
+    // TODO: erase
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
@@ -1492,13 +1495,18 @@ void Buffer::undoPos()
 {
     if (LineCount() == 0)
         return;
-
-    BufferPos *b = undo;
-    if (!b || !b->prev)
+    if (undo.size() < 2)
+    {
         return;
-    for (int i = 0; i < (prec_num() ? prec_num() : 1) && b->prev; i++, b = b->prev)
+    }
+
+    auto b = undo.end();
+    --b;
+    int j = undo.size() - 1;
+    for (int i = 0; i < (prec_num() ? prec_num() : 1) && b != undo.begin(); i++, --b, --j)
         ;
-    resetPos(b);
+
+    resetPos(j);
 }
 
 void Buffer::redoPos()
@@ -1506,10 +1514,11 @@ void Buffer::redoPos()
     if (LineCount() == 0)
         return;
 
-    BufferPos *b = undo;
-    if (!b || !b->next)
-        return;
-    for (int i = 0; i < (prec_num() ? prec_num() : 1) && b->next; i++, b = b->next)
-        ;
-    resetPos(b);
+    // TODO:
+    // BufferPos *b = undo;
+    // if (!b || !b->next)
+    //     return;
+    // for (int i = 0; i < (prec_num() ? prec_num() : 1) && b->next; i++, b = b->next)
+    //     ;
+    // resetPos(b);
 }
