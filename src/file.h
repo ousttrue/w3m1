@@ -65,11 +65,11 @@ void print_item(struct table *t, int row, int col, int width, Str buf);
 void check_rowcol(struct table *tbl, struct table_mode *mode);
 int minimum_length(char *line);
 void pushTable(struct table *, struct table *);
-char *form2str(FormItemList *fi);
+
 
 void preFormUpdateBuffer(const BufferPtr &buf);
 
-void input_textarea(FormItemList *fi);
+
 
 void form_write_data(FILE *f, char *boundary, char *name, char *value);
 void form_write_from_file(FILE *f, char *boundary, char *name,

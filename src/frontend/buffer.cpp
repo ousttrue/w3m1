@@ -786,7 +786,7 @@ void set_buffer_environ(const BufferPtr &buf)
             set_environ("W3M_CURRENT_IMG", "");
         a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
         if (a)
-            set_environ("W3M_CURRENT_FORM", form2str(a->item.get()));
+            set_environ("W3M_CURRENT_FORM", a->item->ToStr()->ptr);
         else
             set_environ("W3M_CURRENT_FORM", "");
         set_environ("W3M_CURRENT_LINE", Sprintf("%d",

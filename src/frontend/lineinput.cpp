@@ -1020,8 +1020,7 @@ _editor(void)
     fi.readonly = false;
     fi.value = strBuf->ptr;
     fi.value.push_back('\n');
-
-    input_textarea(&fi);
+    fi.input_textarea();
 
     strBuf = Strnew();
     for (auto p = fi.value.c_str(); *p; p++)

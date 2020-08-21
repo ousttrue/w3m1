@@ -74,6 +74,9 @@ struct FormItemList
     int selected;
     int init_selected;
     struct FormList *parent;
+
+    void input_textarea();
+    Str ToStr() const;
 };
 using FormItemListPtr = std::shared_ptr<FormItemList>;
 

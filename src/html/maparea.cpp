@@ -605,7 +605,7 @@ page_info_panel(const BufferPtr &buf)
     if (a != NULL)
     {
         auto fi = a->item;
-        p = form2str(fi.get());
+        p = fi->ToStr()->ptr;
         if (w3mApp::Instance().DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));
         else

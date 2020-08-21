@@ -2,6 +2,7 @@
  * HTML forms
  */
 #include <string_view_util.h>
+#include <stdio.h>
 #include "indep.h"
 #include "gc_helper.h"
 #include "html/form.h"
@@ -249,23 +250,23 @@ FormItemTypes formtype(std::string_view typestr)
 static const char *_formmethodtbl[] = {
     "GET", "POST", "INTERNAL", "HEAD"};
 
-char *
-form2str(FormItemList *fi)
+Str FormItemList::ToStr() const
 {
     Str tmp = Strnew();
 
-    if (fi->type != FORM_SELECT && fi->type != FORM_TEXTAREA)
+    if (this->type != FORM_SELECT && this->type != FORM_TEXTAREA)
         tmp->Push("input type=");
-    tmp->Push(_formtypetbl[fi->type]);
-    if (fi->name.size())
-        Strcat_m_charp(tmp, " name=\"", fi->name, "\"", NULL);
-    if ((fi->type == FORM_INPUT_RADIO || fi->type == FORM_INPUT_CHECKBOX ||
-         fi->type == FORM_SELECT) &&
-        fi->value.size())
-        Strcat_m_charp(tmp, " value=\"", fi->value, "\"", NULL);
-    Strcat_m_charp(tmp, " (", _formmethodtbl[fi->parent->method], " ",
-                   fi->parent->action, ")", NULL);
-    return tmp->ptr;
+    tmp->Push(_formtypetbl[this->type]);
+    if (this->name.size())
+        Strcat_m_charp(tmp, " name=\"", this->name, "\"", NULL);
+    if ((this->type == FORM_INPUT_RADIO || this->type == FORM_INPUT_CHECKBOX ||
+         this->type == FORM_SELECT) &&
+        this->value.size())
+        Strcat_m_charp(tmp, " value=\"", this->value, "\"", NULL);
+    Strcat_m_charp(tmp, " (", _formmethodtbl[this->parent->method], " ",
+                   this->parent->action, ")", NULL);
+
+    return tmp;
 }
 
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemListPtr fi)
@@ -618,31 +619,28 @@ form_fputs_decode(std::string_view s, FILE *f)
     z->Puts(f);
 }
 
-void input_textarea(FormItemList *fi)
+void FormItemList::input_textarea()
 {
     char *tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
-    Str tmp;
-    FILE *f;
-
-    CharacterEncodingScheme charset = w3mApp::Instance().DisplayCharset;
-    uint8_t auto_detect;
-
-    f = fopen(tmpf, "w");
+    auto f = fopen(tmpf, "w");
     if (f == NULL)
     {
         /* FIXME: gettextize? */
         disp_err_message("Can't open temporary file", false);
         return;
     }
-    if (fi->value.size())
-        form_fputs_decode(fi->value.c_str(), f);
+
+    if (this->value.size())
+        form_fputs_decode(this->value.c_str(), f);
     fclose(f);
 
     fmTerm();
     system(myEditor(w3mApp::Instance().Editor.c_str(), tmpf, 1)->ptr);
     fmInit();
 
-    if (fi->readonly)
+    auto auto_detect = WcOption.auto_detect;
+    CharacterEncodingScheme charset = w3mApp::Instance().DisplayCharset;
+    if (this->readonly)
         goto input_end;
     f = fopen(tmpf, "r");
     if (f == NULL)
@@ -651,11 +649,11 @@ void input_textarea(FormItemList *fi)
         disp_err_message("Can't open temporary file", false);
         goto input_end;
     }
-    fi->value.clear();
+    this->value.clear();
 
-    auto_detect = WcOption.auto_detect;
     WcOption.auto_detect = WC_OPT_DETECT_ON;
 
+    Str tmp;
     while (tmp = Strfgets(f), tmp->Size() > 0)
     {
         if (tmp->Size() == 1 && tmp->ptr[tmp->Size() - 1] == '\n')
@@ -672,13 +670,14 @@ void input_textarea(FormItemList *fi)
         tmp = convertLine(SCM_UNKNOWN, tmp, RAW_MODE, &charset, w3mApp::Instance().DisplayCharset);
         for (auto p = tmp->ptr; *p; ++p)
         {
-            fi->value.push_back(*p);
+            this->value.push_back(*p);
         }
     }
 
     WcOption.auto_detect = (AutoDetectTypes)auto_detect;
 
     fclose(f);
+
 input_end:
     unlink(tmpf);
 }

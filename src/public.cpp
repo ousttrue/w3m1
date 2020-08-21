@@ -705,7 +705,7 @@ void _followForm(bool submit)
         if (fi->readonly)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", false, 1, true, false);
-        input_textarea(fi.get());
+        fi->input_textarea();
         formUpdateBuffer(a, buf, fi);
         break;
     }
@@ -1623,7 +1623,7 @@ void _peekURL(int only_img)
                 return;
         }
         else
-            s = Strnew(form2str(a->item.get()));
+            s = a->item->ToStr();
     }
     if (!s)
     {
