@@ -78,6 +78,7 @@ struct FormItemList
     int init_selected;
     struct FormList *parent;
 };
+using FormItemListPtr = std::shared_ptr<FormItemList>;
 
 //
 // <form action="some.cgi" method="pos"></form>
@@ -85,9 +86,9 @@ struct FormItemList
 //
 struct FormList : gc_cleanup
 {
-    std::vector<FormItemList> items;
-    FormItemList *item() { return items.empty() ? nullptr : &items.front(); }
-    FormItemList *lastitem() { return items.empty() ? nullptr : &items.back(); }
+    std::vector<FormItemListPtr> items;
+    FormItemListPtr item() { return items.empty() ? nullptr : items.front(); }
+    FormItemListPtr lastitem() { return items.empty() ? nullptr : items.back(); }
     int nitems() const { return items.size(); }
 
     std::string action;
@@ -114,13 +115,13 @@ struct FormList : gc_cleanup
         std::string_view name = "");
 };
 
-void chooseSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item);
-void updateSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item);
-bool formChooseOptionByMenu(FormItemList *fi, int x, int y);
+void chooseSelectOption(FormItemListPtr fi, tcb::span<FormSelectOptionItem> item);
+void updateSelectOption(FormItemListPtr fi, tcb::span<FormSelectOptionItem> item);
+bool formChooseOptionByMenu(FormItemListPtr fi, int x, int y);
 
-FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, class HtmlContext *context);
-void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
-void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
+FormItemListPtr formList_addInput(FormList *fl, struct parsed_tag *tag, class HtmlContext *context);
+void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemListPtr form);
+void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemListPtr form);
 
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 Str textfieldrep(Str s, int width);

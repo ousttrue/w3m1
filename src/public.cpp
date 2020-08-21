@@ -705,7 +705,7 @@ void _followForm(bool submit)
         if (fi->readonly)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", false, 1, true, false);
-        input_textarea(fi);
+        input_textarea(fi.get());
         formUpdateBuffer(a, buf, fi);
         break;
     }
@@ -758,7 +758,7 @@ void _followForm(bool submit)
         auto tmp = Strnew();
         auto multipart = (fi->parent->method == FORM_METHOD_POST &&
                           fi->parent->enctype == FORM_ENCTYPE_MULTIPART);
-        query_from_followform(&tmp, fi, multipart);
+        query_from_followform(&tmp, fi.get(), multipart);
 
         std::string tmp2 = fi->parent->action;
         if (tmp2 == "!CURRENT_URL!")
@@ -810,7 +810,7 @@ void _followForm(bool submit)
          * Location: header. In this case, buf->form_submit must not be set
          * because the page is not loaded by POST method but GET method.
          */
-                buf->form_submit = save_submit_formlist(fi);
+                buf->form_submit = save_submit_formlist(fi.get());
             }
         }
         else if ((fi->parent->method == FORM_METHOD_INTERNAL && (fi->parent->action == "map" || fi->parent->action == "none")) || buf->bufferprop & BP_INTERNAL)
@@ -875,58 +875,58 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
     *query = Strnew();
     for (auto &f2: fi->parent->items)
     {
-        if (f2.name.empty())
+        if (f2->name.empty())
             continue;
         /* <ISINDEX> is translated into single text form */
-        // if (f2.name->Size() == 0 &&
-        //     (multipart || f2.type != FORM_INPUT_TEXT))
+        // if (f2->name->Size() == 0 &&
+        //     (multipart || f2->type != FORM_INPUT_TEXT))
         //     continue;
-        switch (f2.type)
+        switch (f2->type)
         {
         case FORM_INPUT_RESET:
             /* do nothing */
             continue;
         case FORM_INPUT_SUBMIT:
         case FORM_INPUT_IMAGE:
-            if (&f2 != fi || f2.value.empty())
+            if (f2.get() != fi || f2->value.empty())
                 continue;
             break;
         case FORM_INPUT_RADIO:
         case FORM_INPUT_CHECKBOX:
-            if (!f2.checked)
+            if (!f2->checked)
                 continue;
         }
         if (multipart)
         {
-            if (f2.type == FORM_INPUT_IMAGE)
+            if (f2->type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
 
                 getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
 
-                *query = conv_form_encoding(f2.name, fi, buf)->Clone();
+                *query = conv_form_encoding(f2->name, fi, buf)->Clone();
                 (*query)->Push(".x");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", x)->ptr);
-                *query = conv_form_encoding(f2.name, fi, buf)->Clone();
+                *query = conv_form_encoding(f2->name, fi, buf)->Clone();
                 (*query)->Push(".y");
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
             }
-            else if (f2.name.size() && f2.value.size())
+            else if (f2->name.size() && f2->value.size())
             {
                 /* not IMAGE */
-                *query = conv_form_encoding(f2.value.c_str(), fi, buf);
-                if (f2.type == FORM_INPUT_FILE)
+                *query = conv_form_encoding(f2->value.c_str(), fi, buf);
+                if (f2->type == FORM_INPUT_FILE)
                     form_write_from_file(body, fi->parent->boundary,
-                                         conv_form_encoding(f2.name, fi,
+                                         conv_form_encoding(f2->name, fi,
                                                             buf)
                                              ->ptr,
                                          (*query)->ptr,
-                                         conv_to_system(f2.value.c_str()));
+                                         conv_to_system(f2->value.c_str()));
                 else
                     form_write_data(body, fi->parent->boundary,
-                                    conv_form_encoding(f2.name, fi,
+                                    conv_form_encoding(f2->name, fi,
                                                        buf)
                                         ->ptr,
                                     (*query)->ptr);
@@ -935,35 +935,35 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
         else
         {
             /* not multipart */
-            if (f2.type == FORM_INPUT_IMAGE)
+            if (f2->type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
                 getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
                 (*query)->Push(
-                    UrlEncode(conv_form_encoding(f2.name, fi, buf)));
+                    UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                 (*query)->Push(Sprintf(".x=%d&", x));
-                (*query)->Push(UrlEncode(conv_form_encoding(f2.name, fi, buf)));
+                (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                 (*query)->Push(Sprintf(".y=%d", y));
             }
             else
             {
                 /* not IMAGE */
-                if (f2.name.size())
+                if (f2->name.size())
                 {
-                    (*query)->Push(UrlEncode(conv_form_encoding(f2.name, fi, buf)));
+                    (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                     (*query)->Push('=');
                 }
-                if (f2.value.size())
+                if (f2->value.size())
                 {
                     if (fi->parent->method == FORM_METHOD_INTERNAL)
-                        (*query)->Push(UrlEncode(Strnew(f2.value)));
+                        (*query)->Push(UrlEncode(Strnew(f2->value)));
                     else
                     {
-                        (*query)->Push(UrlEncode(conv_form_encoding(f2.value, fi, buf)));
+                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value, fi, buf)));
                     }
                 }
             }
-            if (&f2 != &f2.parent->items.back())
+            if (&f2 != &f2->parent->items.back())
                 (*query)->Push('&');
         }
     }
@@ -1104,9 +1104,9 @@ FormItemList *save_submit_formlist(FormItemList *src)
 
     for(int i=0; i<src->parent->items.size(); ++i)
     {
-        if(&src->parent->items[i] == src)
+        if(src->parent->items[i].get() == src)
         {
-            return &list->items[i]; 
+            return list->items[i].get(); 
         }
     }
 
@@ -1623,7 +1623,7 @@ void _peekURL(int only_img)
                 return;
         }
         else
-            s = Strnew(form2str(a->item));
+            s = Strnew(form2str(a->item.get()));
     }
     if (!s)
     {

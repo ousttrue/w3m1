@@ -150,7 +150,6 @@ searchMapArea(BufferPtr buf, MapList *ml, const Anchor *a_img)
 MapArea *
 retrieveCurrentMapArea(const BufferPtr &buf)
 {
-    FormItemList *fi;
     MapList *ml;
     ListItem *al;
     MapArea *a;
@@ -162,7 +161,7 @@ retrieveCurrentMapArea(const BufferPtr &buf)
     auto a_form = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (!(a_form && a_form->url.size()))
         return NULL;
-    fi = a_form->item;
+    auto fi = a_form->item;
     if (!(fi && fi->parent && fi->parent->item()))
         return NULL;
     fi = fi->parent->item();
@@ -605,8 +604,8 @@ page_info_panel(const BufferPtr &buf)
     a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
-        FormItemList *fi = a->item;
-        p = form2str(fi);
+        auto fi = a->item;
+        p = form2str(fi.get());
         if (w3mApp::Instance().DecodeURL)
             p = html_quote(url_unquote_conv(p, buf->document_charset));
         else
@@ -615,7 +614,7 @@ page_info_panel(const BufferPtr &buf)
                        "<tr valign=top><td nowrap>Method/type of current form&nbsp;<td>",
                        p, NULL);
         if (fi->parent->method == FORM_METHOD_INTERNAL && fi->parent->action == "map")
-            append_map_info(buf, tmp, fi->parent->item());
+            append_map_info(buf, tmp, fi->parent->item().get());
     }
     tmp->Push("</table>\n");
     tmp->Push("</form>");

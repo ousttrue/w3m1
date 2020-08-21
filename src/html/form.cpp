@@ -155,14 +155,14 @@ FormList *FormList::Create(
 /* 
  * add <input> element to form_list
  */
-FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
+FormItemListPtr formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
 {
     /* if not in <form>..</form> environment, just ignore <input> tag */
     if (fl == NULL)
         return NULL;
 
-    fl->items.push_back({});
-    auto item = &fl->items.back();
+    auto item = std::make_shared<FormItemList>();
+    fl->items.push_back(item);
     item->parent = fl;
 
     item->type = FORM_UNKNOWN;
@@ -264,16 +264,12 @@ form2str(FormItemList *fi)
     return tmp->ptr;
 }
 
-void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *fi)
+void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemListPtr fi)
 {
-    int i;
-    Anchor *a2;
-    FormItemList *f2;
-
-    for (i = 0; i < buf->formitem.size(); i++)
+    for (int i = 0; i < buf->formitem.size(); i++)
     {
-        a2 = &buf->formitem.anchors[i];
-        f2 = a2->item;
+        auto a2 = &buf->formitem.anchors[i];
+        auto f2 = a2->item;
         if (f2->parent == fi->parent && f2 != fi &&
             f2->type == FORM_INPUT_RADIO && f2->name == fi->name)
         {
@@ -289,7 +285,7 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
 {
     int i;
     Anchor *a;
-    FormItemList *f1, *f2;
+    FormItemListPtr f1, f2;
 
     if (buf == NULL || !buf->formitem || !formitem)
         return;
@@ -467,7 +463,7 @@ static std::tuple<std::string_view, int> form_update_line(LinePtr line, std::str
     return {remain, pos};
 }
 
-void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
+void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemListPtr form)
 {
     auto save = buf->Copy();
     buf->GotoLine(a->start.line);
@@ -696,7 +692,7 @@ void do_internal(std::string_view action, std::string_view data)
     }
 }
 
-void chooseSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item)
+void chooseSelectOption(FormItemListPtr fi, tcb::span<FormSelectOptionItem> item)
 {
     fi->selected = 0;
     if (item.empty())
@@ -722,7 +718,7 @@ void chooseSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item)
     updateSelectOption(fi, item);
 }
 
-void updateSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item)
+void updateSelectOption(FormItemListPtr fi, tcb::span<FormSelectOptionItem> item)
 {
     if (fi == NULL || item.empty())
         return;
@@ -735,7 +731,7 @@ void updateSelectOption(FormItemList *fi, tcb::span<FormSelectOptionItem> item)
     }
 }
 
-bool formChooseOptionByMenu(FormItemList *fi, int x, int y)
+bool formChooseOptionByMenu(FormItemListPtr fi, int x, int y)
 {
     int n = 0;
     for (auto opt = fi->select_option.begin(); opt != fi->select_option.end(); ++n, ++opt)
@@ -1012,11 +1008,9 @@ void preFormUpdateBuffer(const BufferPtr &buf)
     int i;
     Anchor *a;
     FormList *fl;
-    FormItemList *fi;
-#ifdef MENU_SELECT
+    FormItemListPtr fi;
     FormSelectOptionItem *opt;
     int j;
-#endif
 
     if (!buf || !buf->formitem || !PreForm)
         return;

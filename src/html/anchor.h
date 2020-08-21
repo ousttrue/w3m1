@@ -21,7 +21,7 @@ struct Anchor
     short y = 0;
     short rows = 0;
     Image *image = nullptr;
-    FormItemList *item = nullptr;
+    std::shared_ptr<FormItemList> item;
 
     static Anchor CreateHref(std::string_view url, std::string_view target, HttpReferrerPolicy referer,
                              std::string title, unsigned char key, int line, int pos)
