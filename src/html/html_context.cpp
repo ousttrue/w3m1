@@ -54,7 +54,7 @@ HtmlContext::HtmlContext()
 
     n_select = -1;
     max_select = MAX_SELECT;
-    select_option = New_N(FormSelectOption, max_select);
+    select_option = New_N(FormSelectOptionList, max_select);
     cur_select = nullptr;
 
     n_textarea = -1;
@@ -302,13 +302,13 @@ void HtmlContext::FormSelectGrow(int selectnumber)
     if (selectnumber >= max_select)
     {
         max_select = 2 * selectnumber;
-        select_option = New_Reuse(FormSelectOption,
+        select_option = New_Reuse(FormSelectOptionList,
                                   select_option,
                                   max_select);
     }
 }
 
-FormSelectOption *HtmlContext::FormSelect(int n)
+FormSelectOptionList *HtmlContext::FormSelect(int n)
 {
     return &select_option[n];
 }
@@ -320,7 +320,7 @@ void HtmlContext::FormSetSelect(int n)
     select_option[n_select].last = nullptr;
 }
 
-std::pair<int, FormSelectOption *> HtmlContext::FormSelectCurrent()
+std::pair<int, FormSelectOptionList *> HtmlContext::FormSelectCurrent()
 {
     if (n_select < 0)
     {
@@ -356,7 +356,7 @@ Str HtmlContext::process_select(struct parsed_tag *tag)
         {
             max_select *= 2;
             select_option =
-                New_Reuse(FormSelectOption, select_option, max_select);
+                New_Reuse(FormSelectOptionList, select_option, max_select);
         }
         select_option[n_select].first = nullptr;
         select_option[n_select].last = nullptr;

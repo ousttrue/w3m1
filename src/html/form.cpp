@@ -26,7 +26,7 @@
 #include "html/maparea.h"
 #include <unistd.h>
 
-extern FormSelectOption *select_option;
+extern FormSelectOptionList *select_option;
 
 static void follow_map(struct parsed_tagarg *arg)
 {
@@ -710,7 +710,7 @@ void do_internal(char *action, char *data)
     }
 }
 
-void addSelectOption(FormSelectOption *fso, std::string_view value, std::string_view label, bool chk)
+void addSelectOption(FormSelectOptionList *fso, std::string_view value, std::string_view label, bool chk)
 {
     auto o = new FormSelectOptionItem;
     if (value.empty())

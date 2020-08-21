@@ -84,13 +84,13 @@ struct FormList: gc_cleanup
     unsigned long length;
 };
 
-struct FormSelectOption
+struct FormSelectOptionList
 {
     FormSelectOptionItem *first;
     FormSelectOptionItem *last;
 };
 
-void addSelectOption(FormSelectOption *fso, std::string_view value, std::string_view label, bool chk);
+void addSelectOption(FormSelectOptionList *fso, std::string_view value, std::string_view label, bool chk);
 void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item);
 void updateSelectOption(FormItemList *fi, FormSelectOptionItem *item);
 int formChooseOptionByMenu(FormItemList *fi, int x, int y);

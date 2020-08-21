@@ -4,7 +4,7 @@
 #include "frontend/buffer.h"
 #include "html/html.h"
 
-struct FormSelectOption;
+struct FormSelectOptionList;
 struct Anchor;
 class HtmlContext
 {
@@ -45,7 +45,7 @@ class HtmlContext
     int form_sp = 0;
     int forms_size = 0;
     std::vector<Anchor *> a_select;
-    FormSelectOption *select_option;
+    FormSelectOptionList *select_option;
     int max_select = 0;
     int n_select = 0;
     int cur_option_maxwidth = 0;
@@ -130,8 +130,8 @@ public:
     FormList *FormEnd();
     void FormSelectGrow(int selectnumber);
     void FormSetSelect(int n);
-    FormSelectOption *FormSelect(int n);
-    std::pair<int, FormSelectOption *> FormSelectCurrent();
+    FormSelectOptionList *FormSelect(int n);
+    std::pair<int, FormSelectOptionList *> FormSelectCurrent();
     Str process_n_select();
     void process_option();
     Str process_select(struct parsed_tag *tag);
