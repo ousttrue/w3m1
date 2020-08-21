@@ -55,8 +55,6 @@ Buffer::Buffer()
     baseURL = {};
     baseTarget = {};
     bufferprop = BP_NORMAL;
-    clone = New(int);
-    *clone = 1;
     trbyte = 0;
     auto_detect = WcOption.auto_detect;
 }
@@ -74,8 +72,6 @@ Buffer::~Buffer()
     }
     if (savecache.size())
         unlink(savecache.c_str());
-    if (--(*clone))
-        return;
     if (pagerSource)
         pagerSource = nullptr;
     if (sourcefile.size() &&
@@ -266,7 +262,6 @@ BufferPtr Buffer::Copy()
 void Buffer::CopyFrom(BufferPtr src)
 {
     src->ReadBufferCache();
-    ++(*src->clone);
 
     // *this = *src;
     filename = src->filename;
@@ -312,7 +307,7 @@ void Buffer::CopyFrom(BufferPtr src)
     sourcefile = src->sourcefile;
     frameset = src->frameset;
     frameQ = src->frameQ;
-    clone = src->clone;
+
     trbyte = src->trbyte;
     check_url = src->check_url;
     document_charset = src->document_charset;

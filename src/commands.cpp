@@ -1587,8 +1587,6 @@ void vwSrc(w3mApp *w3m)
         newBuf->header_source = buf->header_source;
         newBuf->search_header = buf->search_header;
         newBuf->document_charset = buf->document_charset;
-        newBuf->clone = buf->clone;
-        (*newBuf->clone)++;
         newBuf->need_reshape = true;
         // buf->Reshape();
         GetCurrentTab()->Push(URL::Parse("w3m://htmlsource", &buf->currentURL));

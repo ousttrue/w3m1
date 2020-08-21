@@ -306,7 +306,7 @@ public:
     std::string sourcefile;
     struct frameset *frameset = nullptr;
     struct frameset_queue *frameQ = nullptr;
-    int *clone = nullptr;
+
     size_t trbyte = 0;
     char check_url = 0;
     CharacterEncodingScheme document_charset = WC_CES_NONE;
