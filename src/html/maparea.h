@@ -4,14 +4,23 @@
 
 struct GeneralList;
 struct Anchor;
+
+enum ShapeTypes
+{
+    SHAPE_UNKNOWN = 0,
+    SHAPE_DEFAULT = 1,
+    SHAPE_RECT = 2,
+    SHAPE_CIRCLE = 3,
+    SHAPE_POLY = 4,
+};
+
 struct MapArea
 {
-    const char *url;
-    const char *target;
-    const char *alt;
-    char shape;
-    short *coords;
-    int ncoords;
+    std::string url;
+    std::string target;
+    std::string alt;
+    ShapeTypes shape;
+    std::vector<short> coords;
     short center_x;
     short center_y;
 };

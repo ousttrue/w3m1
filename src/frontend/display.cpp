@@ -322,7 +322,7 @@ static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos,
                             int epos);
 static void do_effects(Lineprop m);
 
-static Str make_lastline_link(BufferPtr buf, std::string_view title, const char *url)
+static Str make_lastline_link(BufferPtr buf, std::string_view title, std::string_view url)
 {
     int l = Terminal::columns() - 1;
     Str s = NULL;
@@ -336,13 +336,13 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
                 *c = ' ';
             }
         }
-        if (url)
+        if (url.size())
             s->Push(" ");
         l -= get_Str_strwidth(s);
         if (l <= 0)
             return s;
     }
-    if (!url)
+    if (url.empty())
         return s;
 
     auto pu = URL::Parse(url, buf->BaseURL());

@@ -724,13 +724,13 @@ link_list_panel(const BufferPtr &buf)
                                                         buf->document_charset));
                     else
                         p = u;
-                    if (m->alt && *m->alt)
-                        t = html_quote(m->alt);
+                    if (m->alt.size())
+                        t = html_quote(m->alt.c_str());
                     else if (w3mApp::Instance().DecodeURL)
                         t = html_quote(url_unquote_conv(m->url,
                                                         buf->document_charset));
                     else
-                        t = html_quote(m->url);
+                        t = html_quote(m->url.c_str());
                     Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t,
                                    "</a><br>", p, "\n", NULL);
                 }

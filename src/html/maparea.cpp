@@ -1,15 +1,11 @@
 #include "maparea.h"
-
 #include "indep.h"
-#include "gc_helper.h"
 #include "html/frame.h"
 #include "file.h"
 #include "ctrlcode.h"
-#include "charset.h"
 #include "textlist.h"
 #include "frontend/menu.h"
 #include "frontend/tabbar.h"
-#include "html/anchor.h"
 #include "html/image.h"
 #include "html/html_processor.h"
 #include <math.h>
@@ -28,15 +24,6 @@ MapListPtr searchMapList(BufferPtr buf, const char *name)
     }
     return nullptr;
 }
-
-enum ShapeTypes
-{
-    SHAPE_UNKNOWN = 0,
-    SHAPE_DEFAULT = 1,
-    SHAPE_RECT = 2,
-    SHAPE_CIRCLE = 3,
-    SHAPE_POLY = 4,
-};
 
 static int
 inMapArea(MapAreaPtr a, int x, int y)
@@ -58,7 +45,7 @@ inMapArea(MapAreaPtr a, int x, int y)
             return true;
         break;
     case SHAPE_POLY:
-        for (t = 0, i = 0; i < a->ncoords; i += 2)
+        for (t = 0, i = 0; i < a->coords.size(); i += 2)
         {
             r1 = sqrt((double)(x - a->coords[i]) * (x - a->coords[i]) + (double)(y - a->coords[i + 1]) * (y -
                                                                                                           a->coords[i + 1]));
@@ -146,7 +133,7 @@ searchMapArea(BufferPtr buf, MapListPtr ml, const Anchor *a_img)
     return n;
 }
 
-MapAreaPtr 
+MapAreaPtr
 retrieveCurrentMapArea(const BufferPtr &buf)
 {
     MapListPtr ml;
@@ -228,7 +215,7 @@ MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img,
         {
             auto a = *al;
             if (a)
-                label.push_back(*a->alt ? const_cast<char *>(a->alt) : const_cast<char *>(a->url));
+                label.push_back(a->alt.size() ? a->alt : a->url);
             else
                 label.push_back("");
         }
@@ -271,7 +258,7 @@ follow_map_panel(BufferPtr buf, char *name)
     mappage = Strnew(map1);
     for (al = ml->area->first; al != NULL; al = al->next)
     {
-        a = (MapAreaPtr )al->ptr;
+        a = (MapAreaPtr)al->ptr;
         if (!a)
             continue;
         parseURL2(a->url, &pu, buf->BaseURL());
@@ -317,8 +304,6 @@ MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, cons
         else
             a->shape = SHAPE_UNKNOWN;
     }
-    a->coords = NULL;
-    a->ncoords = 0;
     a->center_x = 0;
     a->center_y = 0;
     if (a->shape == SHAPE_UNKNOWN || a->shape == SHAPE_DEFAULT)
@@ -330,35 +315,21 @@ MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, cons
     }
     if (a->shape == SHAPE_RECT)
     {
-        a->coords = New_N(short, 4);
-        a->ncoords = 4;
+        a->coords.resize(4);
     }
     else if (a->shape == SHAPE_CIRCLE)
     {
-        a->coords = New_N(short, 3);
-        a->ncoords = 3;
+        a->coords.resize(3);
     }
 
-    auto max = a->ncoords;
     auto p = coords;
-    int i = 0;
-    for (; (a->shape == SHAPE_POLY || i < a->ncoords) && *p;)
+    for (; *p;)
     {
         while (IS_SPACE(*p))
             p++;
         if (!IS_DIGIT(*p) && *p != '-' && *p != '+')
             break;
-        if (a->shape == SHAPE_POLY)
-        {
-            if (max <= i)
-            {
-                max = i ? i * 2 : 6;
-                a->coords = New_Reuse(short, a->coords, max + 2);
-            }
-            a->ncoords++;
-        }
-        a->coords[i] = (short)atoi(p);
-        i++;
+        a->coords.push_back((short)atoi(p));
         if (*p == '-' || *p == '+')
             p++;
         while (IS_DIGIT(*p))
@@ -370,19 +341,6 @@ MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, cons
         if (*p == ',')
             p++;
     }
-    if (i != a->ncoords || (a->shape == SHAPE_POLY && a->ncoords < 6))
-    {
-        a->shape = SHAPE_UNKNOWN;
-        a->coords = NULL;
-        a->ncoords = 0;
-        return a;
-    }
-    if (a->shape == SHAPE_POLY)
-    {
-        a->ncoords = a->ncoords / 2 * 2;
-        a->coords[a->ncoords] = a->coords[0];
-        a->coords[a->ncoords + 1] = a->coords[1];
-    }
     if (a->shape == SHAPE_CIRCLE)
     {
         a->center_x = a->coords[0];
@@ -390,13 +348,13 @@ MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, cons
     }
     else
     {
-        for (i = 0; i < a->ncoords / 2; i++)
+        for (int i = 0; i < a->coords.size() / 2; i++)
         {
             a->center_x += a->coords[2 * i];
             a->center_y += a->coords[2 * i + 1];
         }
-        a->center_x /= a->ncoords / 2;
-        a->center_y /= a->ncoords / 2;
+        a->center_x /= a->coords.size() / 2;
+        a->center_y /= a->coords.size() / 2;
     }
 
     return a;
@@ -424,10 +382,10 @@ append_map_info(BufferPtr buf, Str tmp, FormItem *fi)
         if (w3mApp::Instance().DecodeURL)
             p = html_quote(url_unquote_conv(a->url, buf->document_charset));
         else
-            p = html_quote(a->url);
+            p = html_quote(a->url.c_str());
         Strcat_m_charp(tmp, "<tr valign=top><td>&nbsp;&nbsp;<td><a href=\"",
                        q, "\">",
-                       html_quote(*a->alt ? a->alt : mybasename(a->url)),
+                       html_quote(a->alt.size() ? a->alt : mybasename(a->url)),
                        "</a><td>", p, "\n", NULL);
     }
     tmp->Push("</table>");
@@ -645,9 +603,9 @@ page_info_panel(const BufferPtr &buf)
 end:
     tmp->Push("</body></html>");
     newbuf = loadHTMLString({}, tmp);
-#ifdef USE_M17N
+
     if (newbuf)
         newbuf->document_charset = buf->document_charset;
-#endif
+
     return newbuf;
 }
