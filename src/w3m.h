@@ -247,7 +247,10 @@ public:
     std::string CurrentDir;
     TextList *fileToDelete = nullptr;
     bool fmInitialized = false;
+
     std::string CurrentCmdData;
+    char *searchKeyData();
+    int searchKeyNum();
 
     bool do_download = false;
     std::string image_source;

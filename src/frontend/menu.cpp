@@ -1907,16 +1907,15 @@ list_menu(const BufferPtr &buf)
 void PopupMenu()
 {
     Menu *menu = &MainMenu;
-    char *data;
-    int n;
+
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     auto [x, y] = buf->rect.globalXY();
 
-    data = searchKeyData();
+    auto data = w3mApp::Instance().searchKeyData();
     if (data != NULL)
     {
-        n = getMenuN(w3mMenuList, data);
+        auto n = getMenuN(w3mMenuList, data);
         if (n < 0)
             return;
         menu = w3mMenuList[n].menu;

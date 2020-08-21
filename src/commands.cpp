@@ -68,12 +68,12 @@ void pgFore(w3mApp *w3m)
     auto buf = tab->GetCurrentBuffer();
     if (w3mApp::Instance().vi_prec_num)
     {
-        buf->NScroll(searchKeyNum() * (buf->rect.lines - 1));
+        buf->NScroll(w3m->searchKeyNum() * (buf->rect.lines - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        buf->NScroll(prec_num() ? searchKeyNum() : searchKeyNum() * (buf->rect.lines - 1));
+        buf->NScroll(prec_num() ? w3m->searchKeyNum() : w3m->searchKeyNum() * (buf->rect.lines - 1));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -85,12 +85,12 @@ void pgBack(w3mApp *w3m)
     auto buf = tab->GetCurrentBuffer();
     if (w3mApp::Instance().vi_prec_num)
     {
-        buf->NScroll(-searchKeyNum() * (buf->rect.lines - 1));
+        buf->NScroll(-w3m->searchKeyNum() * (buf->rect.lines - 1));
         displayCurrentbuf(B_NORMAL);
     }
     else
     {
-        buf->NScroll(-(prec_num() ? searchKeyNum() : searchKeyNum() * (buf->rect.lines - 1)));
+        buf->NScroll(-(prec_num() ? w3m->searchKeyNum() : w3m->searchKeyNum() * (buf->rect.lines - 1)));
         displayCurrentbuf(prec_num() ? B_SCROLL : B_NORMAL);
     }
 }
@@ -100,7 +100,7 @@ void lup1(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    buf->NScroll(searchKeyNum());
+    buf->NScroll(w3m->searchKeyNum());
     displayCurrentbuf(B_SCROLL);
 }
 
@@ -109,7 +109,7 @@ void ldown1(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    buf->NScroll(-searchKeyNum());
+    buf->NScroll(-w3m->searchKeyNum());
     displayCurrentbuf(B_SCROLL);
 }
 
@@ -198,7 +198,7 @@ void shiftl(w3mApp *w3m)
     if (buf->LineCount() == 0)
         return;
     int column = buf->currentColumn;
-    buf->ColumnSkip(searchKeyNum() * (-buf->rect.cols + 1) + 1);
+    buf->ColumnSkip(w3m->searchKeyNum() * (-buf->rect.cols + 1) + 1);
     shiftvisualpos(buf, buf->currentColumn - column);
     displayCurrentbuf(B_NORMAL);
 }
@@ -211,7 +211,7 @@ void shiftr(w3mApp *w3m)
     if (buf->LineCount() == 0)
         return;
     int column = buf->currentColumn;
-    buf->ColumnSkip(searchKeyNum() * (buf->rect.cols - 1) - 1);
+    buf->ColumnSkip(w3m->searchKeyNum() * (buf->rect.cols - 1) - 1);
     shiftvisualpos(buf, buf->currentColumn - column);
     displayCurrentbuf(B_NORMAL);
 }
@@ -221,7 +221,7 @@ void col1R(w3mApp *w3m)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     LinePtr l = buf->CurrentLine();
-    int j, column, n = searchKeyNum();
+    int j, column, n = w3m->searchKeyNum();
     if (l == NULL)
         return;
     for (j = 0; j < n; j++)
@@ -240,7 +240,7 @@ void col1L(w3mApp *w3m)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     LinePtr l = buf->CurrentLine();
-    int j, n = searchKeyNum();
+    int j, n = w3m->searchKeyNum();
     if (l == NULL)
         return;
     for (j = 0; j < n; j++)
@@ -258,7 +258,7 @@ void setEnv(w3mApp *w3m)
     char *env;
     char *var, *value;
     ClearCurrentKeyData();
-    env = searchKeyData();
+    env = w3m->searchKeyData();
     if (env == NULL || *env == '\0' || strchr(env, '=') == NULL)
     {
         if (env != NULL && *env != '\0')
@@ -282,7 +282,7 @@ void setEnv(w3mApp *w3m)
 void pipeBuf(w3mApp *w3m)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    auto cmd = searchKeyData();
+    auto cmd = w3m->searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
         /* FIXME: gettextize? */
@@ -336,7 +336,7 @@ void pipesh(w3mApp *w3m)
     BufferPtr buf;
     char *cmd;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    cmd = searchKeyData();
+    cmd = w3m->searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
         cmd = inputLineHist("(read shell[pipe])!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
@@ -370,7 +370,7 @@ void readsh(w3mApp *w3m)
     BufferPtr buf;
     char *cmd;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    cmd = searchKeyData();
+    cmd = w3m->searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
         cmd = inputLineHist("(read shell)!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
@@ -407,7 +407,7 @@ void execsh(w3mApp *w3m)
 {
     char *cmd;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    cmd = searchKeyData();
+    cmd = w3m->searchKeyData();
     if (cmd == NULL || *cmd == '\0')
     {
         cmd = inputLineHist("(exec shell)!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
@@ -432,7 +432,7 @@ void execsh(w3mApp *w3m)
 void ldfile(w3mApp *w3m)
 {
     char *fn;
-    fn = searchKeyData();
+    fn = w3m->searchKeyData();
     if (fn == NULL || *fn == '\0')
     {
         /* FIXME: gettextize? */
@@ -503,7 +503,7 @@ void movLW(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    int n = searchKeyNum();
+    int n = w3m->searchKeyNum();
     if (!buf->MoveLeftWord(n))
     {
         return;
@@ -515,7 +515,7 @@ void movRW(w3mApp *w3m)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    int n = searchKeyNum();
+    int n = w3m->searchKeyNum();
     if (!buf->MoveRightWord(n))
     {
         return;
@@ -600,7 +600,7 @@ void susp(w3mApp *w3m)
 
 void goLine(w3mApp *w3m)
 {
-    char *str = searchKeyData();
+    char *str = w3m->searchKeyData();
     if (prec_num())
         _goLine("^");
     else if (str)
@@ -805,7 +805,7 @@ void reMark(w3mApp *w3m)
     if (!w3mApp::Instance().use_mark)
         return;
 
-    const char *str = searchKeyData();
+    const char *str = w3m->searchKeyData();
     if (str == NULL || *str == '\0')
     {
         str = inputStrHist("(Mark)Regexp: ", MarkString(), w3mApp::Instance().TextHist);
@@ -1299,7 +1299,7 @@ void setOpt(w3mApp *w3m)
 {
     char *opt;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    opt = searchKeyData();
+    opt = w3m->searchKeyData();
     if (opt == NULL || *opt == '\0' || strchr(opt, '=') == NULL)
     {
         if (opt != NULL && *opt != '\0')
@@ -1386,7 +1386,7 @@ void svBuf(w3mApp *w3m)
     FILE *f;
     int is_pipe;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    file = searchKeyData();
+    file = w3m->searchKeyData();
     if (file == NULL || *file == '\0')
     {
         /* FIXME: gettextize? */
@@ -1487,7 +1487,7 @@ void curURL(w3mApp *w3m)
         s = Strnew(url_unquote_conv(s->ptr, WC_CES_NONE));
 
     auto propstr = PropertiedString::create(s);
-    int n = searchKeyNum();
+    int n = w3m->searchKeyNum();
     if (n > 1 && s->Size() > (n - 1) * (Terminal::columns() - 1))
         offset = (n - 1) * (Terminal::columns() - 1);
     while (offset < s->Size() && propstr.propBuf()[offset] & PC_WCHAR2)
@@ -1760,14 +1760,12 @@ void reshape(w3mApp *w3m)
 
 void docCSet(w3mApp *w3m)
 {
-    char *cs;
-    CharacterEncodingScheme charset;
-    cs = searchKeyData();
+    auto cs = w3m->searchKeyData();
     if (cs == NULL || *cs == '\0')
         /* FIXME: gettextize? */
         cs = inputStr("Document charset: ",
                       wc_ces_to_charset(GetCurrentTab()->GetCurrentBuffer()->document_charset));
-    charset = wc_guess_charset_short(cs, WC_CES_NONE);
+    auto charset = wc_guess_charset_short(cs, WC_CES_NONE);
     if (charset == 0)
     {
         displayCurrentbuf(B_NORMAL);
@@ -1778,14 +1776,12 @@ void docCSet(w3mApp *w3m)
 
 void defCSet(w3mApp *w3m)
 {
-    char *cs;
-    CharacterEncodingScheme charset;
-    cs = searchKeyData();
+    auto cs = w3m->searchKeyData();
     if (cs == NULL || *cs == '\0')
         /* FIXME: gettextize? */
         cs = inputStr("Default document charset: ",
                       wc_ces_to_charset(w3mApp::Instance().DocumentCharset));
-    charset = wc_guess_charset_short(cs, WC_CES_NONE);
+    auto charset = wc_guess_charset_short(cs, WC_CES_NONE);
     if (charset != 0)
         w3mApp::Instance().DocumentCharset = charset;
     displayCurrentbuf(B_NORMAL);
@@ -2085,7 +2081,7 @@ void execCmd(w3mApp *w3m)
     char *data, *p;
     int cmd;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    data = searchKeyData();
+    data = w3m->searchKeyData();
     if (data == NULL || *data == '\0')
     {
         data = inputStrHist("command [; ...]: ", "", w3mApp::Instance().TextHist);
@@ -2102,7 +2098,7 @@ void execCmd(w3mApp *w3m)
 void setAlarm(w3mApp *w3m)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    auto data = searchKeyData();
+    auto data = w3m->searchKeyData();
     if (data == NULL || *data == '\0')
     {
         data = inputStrHist("(Alarm)sec command: ", "", w3mApp::Instance().TextHist);
@@ -2140,7 +2136,7 @@ void setAlarm(w3mApp *w3m)
 
 void reinit(w3mApp *w3m)
 {
-    char *resource = searchKeyData();
+    char *resource = w3m->searchKeyData();
     if (resource == NULL)
     {
         init_rc();
@@ -2209,7 +2205,7 @@ void defKey(w3mApp *w3m)
 {
     char *data;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    data = searchKeyData();
+    data = w3m->searchKeyData();
     if (data == NULL || *data == '\0')
     {
         data = inputStrHist("Key definition: ", "", w3mApp::Instance().TextHist);

@@ -9,8 +9,6 @@ class w3mApp;
 /* 
  * Command functions: These functions are called with a keystroke.
  */
-int searchKeyNum();
-
 void srch_nxtprv(int reverse);
 int dispincsrch(int ch, Str buf, Lineprop *prop);
 
@@ -79,14 +77,6 @@ int add_download_list();
 void set_add_download_list(int add);
 
 void deleteFiles();
-char *searchKeyData();
-
-int sysm_process_mouse();
-// int gpm_process_mouse(Gpm_Event *, void *);
-
-
-
-
 
 void SigPipe(SIGNAL_ARG);
 

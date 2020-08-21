@@ -34,14 +34,6 @@
 #include "charset.h"
 #include "w3m.h"
 
-int searchKeyNum(void)
-{
-    int n = 1;
-    auto d = searchKeyData();
-    if (d != NULL)
-        n = atoi(d);
-    return n * (std::max(1, prec_num()));
-}
 
 static const char *SearchString = NULL;
 SearchFunc searchRoutine = nullptr;
@@ -306,7 +298,7 @@ void isrch(SearchFunc func, const char *prompt)
 void srch(SearchFunc func, const char *prompt)
 {
     int disp = false;
-    const char *str = searchKeyData();
+    const char *str = w3mApp::Instance().searchKeyData();
     if (str == NULL || *str == '\0')
     {
         str = inputStrHist(prompt, NULL, w3mApp::Instance().TextHist);
@@ -434,7 +426,7 @@ int handleMailto(const char *url)
 /* Move cursor left */
 void _movL(int n)
 {
-    int i, m = searchKeyNum();
+    int i, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
@@ -445,7 +437,7 @@ void _movL(int n)
 /* Move cursor downward */
 void _movD(int n)
 {
-    int i, m = searchKeyNum();
+    int i, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
@@ -456,7 +448,7 @@ void _movD(int n)
 /* move cursor upward */
 void _movU(int n)
 {
-    int i, m = searchKeyNum();
+    int i, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
@@ -467,7 +459,7 @@ void _movU(int n)
 /* Move cursor right */
 void _movR(int n)
 {
-    int i, m = searchKeyNum();
+    int i, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
@@ -1201,7 +1193,7 @@ void _nextA(int visited)
     auto y = buf->CurrentLine()->linenumber;
     auto x = buf->pos;
 
-    int n = searchKeyNum();
+    int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (visited == true)
     {
         n = buf->hmarklist.size();
@@ -1289,7 +1281,7 @@ void _prevA(int visited)
     auto y = buf->CurrentLine()->linenumber;
     auto x = buf->pos;
 
-    int n = searchKeyNum();
+    int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (visited == true)
     {
         n = buf->hmarklist.size();
@@ -1403,7 +1395,7 @@ void nextX(int d, int dy)
     auto x = buf->pos;
     auto y = l->linenumber;
     const Anchor *pan = NULL;
-    int n = searchKeyNum();
+    int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     for (int i = 0; i < n; i++)
     {
         if (an)
@@ -1459,7 +1451,7 @@ void nextY(int d)
     int x = buf->pos;
     int y = buf->CurrentLine()->linenumber + d;
     const Anchor *pan = NULL;
-    int n = searchKeyNum();
+    int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     int hseq = -1;
     for (int i = 0; i < n; i++)
     {
@@ -1494,7 +1486,7 @@ void goURL0(const char *prompt, int relative)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
 
-    auto url = searchKeyData();
+    auto url = w3mApp::Instance().searchKeyData();
     URL *current = nullptr;
     if (url == NULL)
     {
@@ -1636,7 +1628,7 @@ void _peekURL(int only_img)
     // bcopy((void *)pp, (void *)p, s->Size() * sizeof(Lineprop));
 
     // disp:
-    auto n = searchKeyNum();
+    auto n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (n > 1 && s->Size() > (n - 1) * (Terminal::columns() - 1))
         offset = (n - 1) * (Terminal::columns() - 1);
 
@@ -1682,7 +1674,7 @@ int display_ok()
 void invoke_browser(char *url)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    std::string_view browser = searchKeyData();
+    std::string_view browser = w3mApp::Instance().searchKeyData();
     if (browser.empty())
     {
         switch (prec_num())
@@ -1859,73 +1851,6 @@ AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd,
     event->data = data;
     return event;
 }
-
-char *searchKeyData()
-{
-    const char *data = NULL;
-    if (CurrentKeyData() != NULL && *CurrentKeyData() != '\0')
-        data = CurrentKeyData();
-    else if (w3mApp::Instance().CurrentCmdData.size())
-        data = w3mApp::Instance().CurrentCmdData.c_str();
-    else if (CurrentKey >= 0)
-        data = GetKeyData(CurrentKey());
-    ClearCurrentKeyData();
-    w3mApp::Instance().CurrentCmdData.clear();
-    if (data == NULL || *data == '\0')
-        return NULL;
-    return allocStr(data, -1);
-}
-
-int sysm_process_mouse(int x, int y, int nbs, int obs)
-{
-    MouseEventTypes btn;
-    if (obs & ~nbs)
-        btn = MOUSE_BTN_UP;
-    else if (nbs & ~obs)
-    {
-        auto bits = nbs & ~obs;
-        btn = (MouseEventTypes)((bits & 0x1)
-                                    ? MOUSE_BTN1_DOWN
-                                    : (bits & 0x2 ? MOUSE_BTN2_DOWN : (bits & 0x4 ? MOUSE_BTN3_DOWN : 0)));
-    }
-    else /* nbs == obs */
-        return 0;
-    process_mouse(static_cast<MouseBtnAction>(btn), x, y);
-    return 0;
-}
-
-// int gpm_process_mouse(Gpm_Event *event, void *data)
-// {
-//     int btn = MOUSE_BTN_RESET, x, y;
-//     if (event->type & GPM_UP)
-//         btn = MOUSE_BTN_UP;
-//     else if (event->type & GPM_DOWN)
-//     {
-//         switch (event->buttons)
-//         {
-//         case GPM_B_LEFT:
-//             btn = MOUSE_BTN1_DOWN;
-//             break;
-//         case GPM_B_MIDDLE:
-//             btn = MOUSE_BTN2_DOWN;
-//             break;
-//         case GPM_B_RIGHT:
-//             btn = MOUSE_BTN3_DOWN;
-//             break;
-//         }
-//     }
-//     else
-//     {
-//         GPM_DRAWPOINTER(event);
-//         return 0;
-//     }
-//     x = event->x;
-//     y = event->y;
-//     process_mouse(btn, x - 1, y - 1);
-//     return 0;
-// }
-
-
 
 
 void SigPipe(SIGNAL_ARG)
