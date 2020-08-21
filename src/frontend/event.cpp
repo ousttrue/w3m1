@@ -2,7 +2,7 @@
 #include "commands.h"
 #include "dispatcher.h"
 #include "terminal.h"
-
+#include "gc_helper.h"
 #include "tab.h"
 #include "buffer.h"
 #include "tabbar.h"
@@ -210,4 +210,64 @@ bool TrapJmp(bool enable, const std::function<bool()> &func)
     {
         return func();
     }
+}
+
+AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd, void *data)
+{
+    if (event == NULL)
+        event = New(AlarmEvent);
+    event->sec = sec;
+    event->status = status;
+    event->cmd = cmd;
+    event->data = data;
+    return event;
+}
+
+
+void SigPipe(SIGNAL_ARG)
+{
+#ifdef USE_MIGEMO
+    init_migemo();
+#endif
+    mySignal(SIGPIPE, SigPipe);
+    SIGNAL_RETURN;
+}
+
+struct Event
+{
+    Command cmd;
+    void *data;
+    Event *next;
+};
+static Event *CurrentEvent = NULL;
+static Event *LastEvent = NULL;
+
+void pushEvent(Command cmd, void *data)
+{
+    Event *event;
+
+    event = New(Event);
+    event->cmd = cmd;
+    event->data = data;
+    event->next = NULL;
+    if (CurrentEvent)
+        LastEvent->next = event;
+    else
+        CurrentEvent = event;
+    LastEvent = event;
+}
+
+int ProcessEvent()
+{
+    if (CurrentEvent)
+    {
+        ClearCurrentKey();
+        ClearCurrentKeyData();
+        w3mApp::Instance().CurrentCmdData = CurrentEvent->data ? (const char *)CurrentEvent->data : "";
+        CurrentEvent->cmd(&w3mApp::Instance());
+        w3mApp::Instance().CurrentCmdData.clear();
+        CurrentEvent = CurrentEvent->next;
+        return 1;
+    }
+    return 0;
 }

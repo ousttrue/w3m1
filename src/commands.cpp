@@ -2352,28 +2352,16 @@ void ldDL(w3mApp *w3m)
 
 void undoPos(w3mApp *w3m)
 {
-    BufferPos *b = GetCurrentTab()->GetCurrentBuffer()->undo;
-    int i;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
-        return;
-    if (!b || !b->prev)
-        return;
-    for (i = 0; i < (prec_num() ? prec_num() : 1) && b->prev; i++, b = b->prev)
-        ;
-    resetPos(b);
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    buf->undoPos();
 }
 
 void redoPos(w3mApp *w3m)
 {
-    BufferPos *b = GetCurrentTab()->GetCurrentBuffer()->undo;
-    int i;
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
-        return;
-    if (!b || !b->next)
-        return;
-    for (i = 0; i < (prec_num() ? prec_num() : 1) && b->next; i++, b = b->next)
-        ;
-    resetPos(b);
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    buf->redoPos();
 }
 
 void mainMn(w3mApp *w3m)

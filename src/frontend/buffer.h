@@ -230,6 +230,9 @@ public:
     }
     bool MoveLeftWord(int n);
     bool MoveRightWord(int n);
+    void resetPos(BufferPos *b);
+    void undoPos();
+    void redoPos();
 
     std::array<BufferPtr, MAX_LB> linkBuffer;
     short width;

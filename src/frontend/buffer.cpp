@@ -1197,7 +1197,6 @@ void Buffer::DumpSource()
     fclose(f);
 }
 
-
 #include <math.h>
 
 ///
@@ -1473,4 +1472,49 @@ bool Buffer::MoveRightWord(int n)
 end:
     this->ArrangeCursor();
     return true;
+}
+
+void Buffer::resetPos(BufferPos *b)
+{
+    auto top = std::make_shared<Line>();
+    top->linenumber = b->top_linenumber;
+
+    auto cur = std::make_shared<Line>();
+    cur->linenumber = b->cur_linenumber;
+    cur->bpos = b->bpos;
+
+    BufferPtr newBuf = std::make_shared<Buffer>();
+    newBuf->SetTopLine(top);
+    newBuf->SetCurrentLine(cur);
+    newBuf->pos = b->pos;
+    newBuf->currentColumn = b->currentColumn;
+    restorePosition(newBuf);
+    undo = b;
+    displayCurrentbuf(B_FORCE_REDRAW);
+}
+
+void Buffer::undoPos()
+{
+    if (LineCount() == 0)
+        return;
+
+    BufferPos *b = undo;
+    if (!b || !b->prev)
+        return;
+    for (int i = 0; i < (prec_num() ? prec_num() : 1) && b->prev; i++, b = b->prev)
+        ;
+    resetPos(b);
+}
+
+void Buffer::redoPos()
+{
+    if (LineCount() == 0)
+        return;
+
+    BufferPos *b = undo;
+    if (!b || !b->next)
+        return;
+    for (int i = 0; i < (prec_num() ? prec_num() : 1) && b->next; i++, b = b->next)
+        ;
+    resetPos(b);
 }

@@ -226,6 +226,20 @@ void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
     set_add_download_list(true);
 }
 
+static char *convert_size3(clen_t size)
+{
+    Str tmp = Strnew();
+    int n;
+
+    do
+    {
+        n = size % 1000;
+        size /= 1000;
+        tmp = Sprintf((char *)(size ? ",%.3d%s" : "%d%s"), n, tmp->ptr);
+    } while (size);
+    return tmp->ptr;
+}
+
 BufferPtr DownloadListBuffer(w3mApp *w3m)
 {
     DownloadList *d;
