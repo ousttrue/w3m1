@@ -1069,14 +1069,6 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     {
         drawImage();
     }
-
-#ifdef USE_BUFINFO
-    if (buf != save_current_buf)
-    {
-        saveBufferInfo();
-        save_current_buf = buf;
-    }
-#endif
 }
 
 void displayCurrentbuf(DisplayMode mode)

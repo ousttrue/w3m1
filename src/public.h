@@ -90,7 +90,6 @@ void follow_map(struct parsed_tagarg *arg);
 void followForm();
 void SigPipe(SIGNAL_ARG);
 
-void saveBufferInfo();
 void intTrap(SIGNAL_ARG);
 BufferPtr cookie_list_panel(void);
 // void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid);

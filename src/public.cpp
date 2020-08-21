@@ -2025,20 +2025,6 @@ void SigPipe(SIGNAL_ARG)
     SIGNAL_RETURN;
 }
 
-void saveBufferInfo()
-{
-    FILE *fp;
-
-    // if (w3mApp::Instance().w3m_dump)
-    //     return;
-    if ((fp = fopen(rcFile("bufinfo"), "w")) == NULL)
-    {
-        return;
-    }
-    fprintf(fp, "%s\n", currentURL()->ptr);
-    fclose(fp);
-}
-
 struct Event
 {
     Command cmd;
