@@ -708,8 +708,8 @@ link_list_panel(const BufferPtr &buf)
             if (fi->parent->method == FORM_METHOD_INTERNAL &&
                 fi->parent->action == "map" && fi->value.size())
             {
-                MapList *ml = searchMapList(buf, fi->value.c_str());
-                MapArea *m;
+                MapListPtr ml = searchMapList(buf, fi->value.c_str());
+                MapAreaPtr m;
                 if (!ml)
                     continue;
                 tmp->Push("<br>\n<b>Image map</b>\n<ol>\n");

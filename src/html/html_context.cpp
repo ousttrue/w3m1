@@ -1538,9 +1538,9 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         char *p = nullptr;
         if (tag->TryGetAttributeValue(ATTR_NAME, &p))
         {
-            MapList *m = new MapList;
+            auto m = std::make_shared<MapList>();
             buf->maplist.push_back(m);
-            m->name = Strnew(p);
+            m->name = p;
         }
         break;
     }

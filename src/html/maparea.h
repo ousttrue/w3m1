@@ -1,10 +1,10 @@
 #pragma once
-#include <gc_cpp.h>
-#include "frontend/buffer.h"
+#include <memory>
+#include <vector>
 
 struct GeneralList;
 struct Anchor;
-struct MapArea : gc_cleanup
+struct MapArea
 {
     const char *url;
     const char *target;
@@ -15,18 +15,19 @@ struct MapArea : gc_cleanup
     short center_x;
     short center_y;
 };
+using MapAreaPtr = std::shared_ptr<MapArea>;
 
-struct MapList : gc_cleanup
+struct MapList
 {
-    Str name;
-    std::vector<MapArea *> area;
+    std::string name;
+    std::vector<MapAreaPtr> area;
 };
+using MapListPtr = std::shared_ptr<MapList>;
 
+using BufferPtr = std::shared_ptr<struct Buffer>;
 const Anchor *retrieveCurrentMap(const BufferPtr &buf);
-MapArea *follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y);
-MapArea *retrieveCurrentMapArea(const BufferPtr &buf);
-MapArea *newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords);
-MapList *searchMapList(BufferPtr buf, const char *name);
-#ifndef MENU_MAP
+MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y);
+MapAreaPtr retrieveCurrentMapArea(const BufferPtr &buf);
+MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords);
+MapListPtr searchMapList(BufferPtr buf, const char *name);
 BufferPtr follow_map_panel(BufferPtr buf, char *name);
-#endif

@@ -384,7 +384,7 @@ static Str make_lastline_message(const BufferPtr &buf)
 
     if (w3mApp::Instance().displayLink)
     {
-        MapArea *a = retrieveCurrentMapArea(buf);
+        MapAreaPtr a = retrieveCurrentMapArea(buf);
         if (a)
             s = make_lastline_link(buf, a->alt, a->url);
         else

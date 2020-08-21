@@ -14,14 +14,14 @@
 #include "html/html_processor.h"
 #include <math.h>
 
-MapList *searchMapList(BufferPtr buf, const char *name)
+MapListPtr searchMapList(BufferPtr buf, const char *name)
 {
     if (name == NULL)
         return NULL;
 
     for (auto &ml : buf->maplist)
     {
-        if (ml->name->Cmp(name) == 0)
+        if (ml->name == name)
         {
             return ml;
         }
@@ -39,7 +39,7 @@ enum ShapeTypes
 };
 
 static int
-inMapArea(MapArea *a, int x, int y)
+inMapArea(MapAreaPtr a, int x, int y)
 {
     int i;
     double r1, r2, s, c, t;
@@ -88,7 +88,7 @@ inMapArea(MapArea *a, int x, int y)
 }
 
 static int
-nearestMapArea(MapList *ml, int x, int y)
+nearestMapArea(MapListPtr ml, int x, int y)
 {
     int i, l, n = -1, min = -1, limit = w3mApp::Instance().pixel_per_char * w3mApp::Instance().pixel_per_char + w3mApp::Instance().pixel_per_line * w3mApp::Instance().pixel_per_line;
 
@@ -112,7 +112,7 @@ nearestMapArea(MapList *ml, int x, int y)
 }
 
 static int
-searchMapArea(BufferPtr buf, MapList *ml, const Anchor *a_img)
+searchMapArea(BufferPtr buf, MapListPtr ml, const Anchor *a_img)
 {
     int i, n;
     int px, py;
@@ -128,7 +128,7 @@ searchMapArea(BufferPtr buf, MapList *ml, const Anchor *a_img)
         auto a = *al;
         if (!a)
             continue;
-        if (n < 0 && inMapArea(&*a, px, py))
+        if (n < 0 && inMapArea(a, px, py))
         {
             if (a->shape == SHAPE_DEFAULT)
             {
@@ -146,10 +146,10 @@ searchMapArea(BufferPtr buf, MapList *ml, const Anchor *a_img)
     return n;
 }
 
-MapArea *
+MapAreaPtr 
 retrieveCurrentMapArea(const BufferPtr &buf)
 {
-    MapList *ml;
+    MapListPtr ml;
     int i, n;
 
     auto a_img = buf->img.RetrieveAnchor(buf->CurrentPoint());
@@ -201,7 +201,7 @@ const Anchor *retrieveCurrentMap(const BufferPtr &buf)
     return NULL;
 }
 
-MapArea *follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y)
+MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y)
 {
     auto ml = searchMapList(buf, name);
     if (ml == NULL || ml->area.empty())
@@ -257,9 +257,9 @@ BufferPtr
 follow_map_panel(BufferPtr buf, char *name)
 {
     Str mappage;
-    MapList *ml;
+    MapListPtr ml;
     ListItem *al;
-    MapArea *a;
+    MapAreaPtr a;
     URL pu;
     char *p, *q;
     BufferPtr newbuf;
@@ -271,7 +271,7 @@ follow_map_panel(BufferPtr buf, char *name)
     mappage = Strnew(map1);
     for (al = ml->area->first; al != NULL; al = al->next)
     {
-        a = (MapArea *)al->ptr;
+        a = (MapAreaPtr )al->ptr;
         if (!a)
             continue;
         parseURL2(a->url, &pu, buf->BaseURL());
@@ -296,10 +296,9 @@ follow_map_panel(BufferPtr buf, char *name)
 }
 #endif
 
-MapArea *newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords)
+MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords)
 {
-    MapArea *a = new MapArea;
-
+    auto a = std::make_shared<MapArea>();
     a->url = url;
     a->target = target;
     a->alt = alt ? alt : (char *)"";

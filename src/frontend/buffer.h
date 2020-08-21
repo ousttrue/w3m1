@@ -1,6 +1,7 @@
 #pragma once
 #include "stream/url.h"
 #include "html/anchor.h"
+#include "html/maparea.h"
 #include "termrect.h"
 #include "line.h"
 #include "link.h"
@@ -296,7 +297,7 @@ public:
 
     std::vector<Link> linklist;
     Form *formlist = nullptr;
-    std::vector<MapList *> maplist;
+    std::vector<MapListPtr> maplist;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
     URL currentURL = {};
