@@ -1,7 +1,6 @@
 #include <sstream>
 
 #include "textlist.h"
-#include "gc_helper.h"
 #include "file.h"
 #include "stream/url.h"
 #include "indep.h"
