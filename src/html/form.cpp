@@ -1,7 +1,7 @@
 /* 
  * HTML forms
  */
-
+#include <string_view_util.h>
 #include "indep.h"
 #include "gc_helper.h"
 #include "html/form.h"
@@ -710,16 +710,13 @@ void do_internal(char *action, char *data)
     }
 }
 
-#ifdef MENU_SELECT
-void addSelectOption(FormSelectOption *fso, Str value, Str label, int chk)
+void addSelectOption(FormSelectOption *fso, std::string_view value, std::string_view label, bool chk)
 {
-    FormSelectOptionItem *o;
-    o = New(FormSelectOptionItem);
-    if (value == NULL)
+    auto o = new FormSelectOptionItem;
+    if (value.empty())
         value = label;
     o->value = value;
-    Strip(label);
-    o->label = label;
+    o->label = svu::strip(label);
     o->checked = chk;
     o->next = NULL;
     if (fso->first == NULL)
@@ -733,9 +730,6 @@ void addSelectOption(FormSelectOption *fso, Str value, Str label, int chk)
 
 void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item)
 {
-    FormSelectOptionItem *opt;
-    int i;
-
     fi->selected = 0;
     if (item == NULL)
     {
@@ -743,14 +737,15 @@ void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item)
         fi->label.clear();
         return;
     }
-    fi->value = item->value->ptr;
-    fi->label = item->label->ptr;
-    for (i = 0, opt = item; opt != NULL; i++, opt = opt->next)
+    fi->value = item->value;
+    fi->label = item->label;
+    int i = 0;
+    for (auto opt = item; opt != NULL; i++, opt = opt->next)
     {
         if (opt->checked)
         {
-            fi->value = opt->value->ptr;
-            fi->label = opt->label->ptr;
+            fi->value = opt->value;
+            fi->label = opt->label;
             fi->selected = i;
             break;
         }
@@ -777,14 +772,12 @@ int formChooseOptionByMenu(FormItemList *fi, int x, int y)
 {
     int i, n, selected = -1, init_select = fi->selected;
     FormSelectOptionItem *opt;
-    char **label;
 
     for (n = 0, opt = fi->select_option; opt != NULL; n++, opt = opt->next)
         ;
-    label = New_N(char *, n + 1);
+    std::vector<std::string> label;
     for (i = 0, opt = fi->select_option; opt != NULL; i++, opt = opt->next)
-        label[i] = opt->label->ptr;
-    label[n] = NULL;
+        label.push_back(opt->label);
 
     optionMenu(x, y, label, &selected, init_select, NULL);
 
@@ -795,15 +788,14 @@ int formChooseOptionByMenu(FormItemList *fi, int x, int y)
         if (i == selected)
         {
             fi->selected = selected;
-            fi->value = opt->value->ptr;
-            fi->label = opt->label->ptr;
+            fi->value = opt->value;
+            fi->label = opt->label;
             break;
         }
     }
     updateSelectOption(fi, fi->select_option);
     return 1;
 }
-#endif /* MENU_SELECT */
 
 void form_write_data(FILE *f, char *boundary, char *name, char *value)
 {
@@ -1127,12 +1119,11 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                     for (j = 0, opt = fi->select_option; opt != NULL;
                          j++, opt = opt->next)
                     {
-                        if (pi->value && opt->value &&
-                            opt->value->Cmp(pi->value) == 0)
+                        if (pi->value && opt->value.size() && opt->value == pi->value)
                         {
                             fi->selected = j;
-                            fi->value = opt->value->ptr;
-                            fi->label = opt->label->ptr;
+                            fi->value = opt->value;
+                            fi->label = opt->label;
                             updateSelectOption(fi, fi->select_option);
                             formUpdateBuffer(a, buf, fi);
                             break;

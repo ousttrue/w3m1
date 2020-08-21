@@ -37,12 +37,12 @@ enum FormEncodingTypes
     FORM_ENCTYPE_MULTIPART = 1,
 };
 
-struct FormSelectOptionItem
+struct FormSelectOptionItem: gc_cleanup
 {
-    Str value;
-    Str label;
-    int checked;
-    FormSelectOptionItem *next;
+    std::string value;
+    std::string label;
+    bool checked = false;
+    FormSelectOptionItem *next = nullptr;
 };
 
 struct FormItemList: gc_cleanup
@@ -90,7 +90,7 @@ struct FormSelectOption
     FormSelectOptionItem *last;
 };
 
-void addSelectOption(FormSelectOption *fso, Str value, Str label, int chk);
+void addSelectOption(FormSelectOption *fso, std::string_view value, std::string_view label, bool chk);
 void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item);
 void updateSelectOption(FormItemList *fi, FormSelectOptionItem *item);
 int formChooseOptionByMenu(FormItemList *fi, int x, int y);

@@ -1119,9 +1119,9 @@ FormItemList *save_submit_formlist(FormItemList *src)
         {
             if (!srcopt->checked)
                 continue;
-            opt = New(FormSelectOptionItem);
-            opt->value = srcopt->value->Clone();
-            opt->label = srcopt->label->Clone();
+            opt = new FormSelectOptionItem;
+            opt->value = srcopt->value;
+            opt->label = srcopt->label;
             opt->checked = srcopt->checked;
             if (item->select_option == NULL)
             {

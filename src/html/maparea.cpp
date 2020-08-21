@@ -211,43 +211,43 @@ retrieveCurrentMap(const BufferPtr &buf)
 
 MapArea *follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y)
 {
-    MapList *ml;
-    ListItem *al;
-    int i, selected = -1;
-    int initial = 0;
-    MapArea *a;
-    char **label;
-
-    ml = searchMapList(buf, name);
+    auto ml = searchMapList(buf, name);
     if (ml == NULL || ml->area == NULL || ml->area->nitem == 0)
         return NULL;
 
-    initial = searchMapArea(buf, ml, a_img);
+    auto initial = searchMapArea(buf, ml, a_img);
+    int selected = -1;
+    bool use_label = true;
     if (initial < 0)
+    {
         initial = 0;
+    }
     else if (!w3mApp::Instance().image_map_list)
     {
         selected = initial;
-        goto map_end;
+        use_label = false;
     }
 
-    label = New_N(char *, ml->area->nitem + 1);
-    for (i = 0, al = ml->area->first; al != NULL; i++, al = al->next)
+    if (use_label)
     {
-        a = (MapArea *)al->ptr;
-        if (a)
-            label[i] = *a->alt ? const_cast<char *>(a->alt) : const_cast<char *>(a->url);
-        else
-            label[i] = "";
+        std::vector<std::string> label;
+        int i = 0;
+        for (auto al = ml->area->first; al != NULL; i++, al = al->next)
+        {
+            auto a = (MapArea *)al->ptr;
+            if (a)
+                label.push_back(*a->alt ? const_cast<char *>(a->alt) : const_cast<char *>(a->url));
+            else
+                label.push_back("");
+        }
+
+        optionMenu(x, y, label, &selected, initial, NULL);
     }
-    label[ml->area->nitem] = NULL;
 
-    optionMenu(x, y, label, &selected, initial, NULL);
-
-map_end:
     if (selected >= 0)
     {
-        for (i = 0, al = ml->area->first; al != NULL; i++, al = al->next)
+        int i = 0;
+        for (auto al = ml->area->first; al != NULL; i++, al = al->next)
         {
             if (al->ptr && i == selected)
                 return (MapArea *)al->ptr;

@@ -6,6 +6,21 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include "w3m.h"
+#include "frontend/tab.h"
+#include "frontend/link.h"
+#include <tcb/span.hpp>
+
+#define MENU_END 0
+#define MENU_NOP 1
+#define MENU_VALUE 2
+#define MENU_FUNC 4
+#define MENU_POPUP 8
+
+#define MENU_NOTHING -1
+#define MENU_CANCEL -2
+#define MENU_CLOSE -3
+
 /* Addition:mouse event */
 enum MouseEventTypes
 {
@@ -19,20 +34,6 @@ enum MouseEventTypes
     MOUSE_BTN_UP = 3,
     MOUSE_BTN_RESET = -1,
 };
-
-#include "w3m.h"
-#include "frontend/tab.h"
-#include "frontend/link.h"
-
-#define MENU_END 0
-#define MENU_NOP 1
-#define MENU_VALUE 2
-#define MENU_FUNC 4
-#define MENU_POPUP 8
-
-#define MENU_NOTHING -1
-#define MENU_CANCEL -2
-#define MENU_CLOSE -3
 
 struct Menu;
 
@@ -86,12 +87,12 @@ void down_menu(Menu *menu, int n);
 int action_menu(Menu *menu);
 void popup_menu(Menu *parent, Menu *menu);
 void guess_menu_xy(Menu *menu, int width, int *x, int *y);
-void new_option_menu(Menu *menu, char **label, int *variable, Command func);
+void new_option_menu(Menu *menu, tcb::span<std::string> label, int *variable, Command func);
 int setMenuItem(MenuItem *item, char *type, char *line);
 int addMenuList(MenuList **list, char *id);
 int getMenuN(MenuList *list, char *id);
 void popupMenu(int x, int y, Menu *menu);
-void optionMenu(int x, int y, char **label, int *variable, int initial, Command func);
+void optionMenu(int x, int y, tcb::span<std::string> label, int *variable, int initial, Command func);
 void mainMenu(int x, int y);
 void initMenu(void);
 

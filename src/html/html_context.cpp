@@ -143,8 +143,8 @@ void HtmlContext::print_internal(TextLineList *tl)
             for (ip = select_option[i].first; ip; ip = ip->next)
             {
                 s = Sprintf("<option_int value=\"%s\" label=\"%s\"%s>",
-                            html_quote(ip->value ? ip->value->ptr : ip->label->ptr),
-                            html_quote(ip->label->ptr),
+                            html_quote(ip->value.size() ? ip->value : ip->label),
+                            html_quote(ip->label),
                             ip->checked ? " selected" : "");
                 pushTextLine(tl, newTextLine(s, 0));
             }
@@ -493,8 +493,8 @@ void HtmlContext::process_option()
         if (len > cur_option_maxwidth)
             cur_option_maxwidth = len;
         addSelectOption(&select_option[n_select],
-                        cur_option_value,
-                        cur_option_label, cur_option_selected);
+                        cur_option_value->ptr,
+                        cur_option_label->ptr, cur_option_selected);
         return;
     }
 
@@ -1765,7 +1765,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             tag->TryGetAttributeValue(ATTR_VALUE, &p);
             auto selected = tag->HasAttribute(ATTR_SELECTED);
             addSelectOption(select,
-                            Strnew(p), Strnew(q),
+                            p, q,
                             selected);
         }
         break;

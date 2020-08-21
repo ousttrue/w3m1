@@ -597,35 +597,27 @@ void guess_menu_xy(Menu *parent, int width, int *x, int *y)
     *y = parent->y + parent->select - parent->offset;
 }
 
-void new_option_menu(Menu *menu, char **label, int *variable, Command func)
+void new_option_menu(Menu *menu, tcb::span<std::string> label, int *variable, Command func)
 {
-    int i, nitem;
-    char **p;
-    MenuItem *item;
-
-    if (label == NULL || *label == NULL)
+    if (label.empty())
         return;
 
-    for (i = 0, p = label; *p != NULL; i++, p++)
-        ;
-    nitem = i;
-
-    item = New_N(MenuItem, nitem + 1);
-
-    for (i = 0, p = label; i < nitem; i++, p++)
+    auto item = New_N(MenuItem, label.size() + 1);
+    for (int i = 0; i < label.size(); i++)
     {
+        auto &p = label[i];
         if (func != NULL)
             item[i].type = MENU_VALUE | MENU_FUNC;
         else
             item[i].type = MENU_VALUE;
-        item[i].label = *p;
+        item[i].label = Strnew(p)->ptr;
         item[i].variable = variable;
         item[i].value = i;
         item[i].func = func;
         item[i].popup = NULL;
         item[i].keys = "";
     }
-    item[nitem].type = MENU_END;
+    item[label.size()].type = MENU_END;
 
     new_menu(menu, item);
 }
@@ -1427,7 +1419,7 @@ smDelTab(char c)
 
 /* --- OptionMenu --- */
 
-void optionMenu(int x, int y, char **label, int *variable, int initial,
+void optionMenu(int x, int y, tcb::span<std::string> label, int *variable, int initial,
                 Command func)
 {
     Menu menu;
@@ -1651,7 +1643,7 @@ Link *link_menu(const BufferPtr &buf)
     // Str str;
 
     std::vector<std::string> labelBuffer;
-    std::vector<const char *> labels;
+    std::vector<std::string> labels;
     auto maxLen = 0;
     for (auto &l : buf->linklist)
     {
@@ -1674,7 +1666,7 @@ Link *link_menu(const BufferPtr &buf)
     set_menu_frame();
     Menu menu;
     int linkV = -1;
-    new_option_menu(&menu, const_cast<char **>(labels.data()), &linkV, NULL);
+    new_option_menu(&menu, labels, &linkV, NULL);
     menu.initial = 0;
     auto [_x, _y] = buf->rect.globalXY();
     menu.cursorX = _x;
@@ -1693,17 +1685,12 @@ Link *link_menu(const BufferPtr &buf)
 Anchor *
 accesskey_menu(const BufferPtr &buf)
 {
-    Menu menu;
     AnchorList &al = buf->href;
-    Anchor **ap;
-    int i, n, nitem = 0, key = -1;
-    char **label;
-    char *t;
-    unsigned char c;
-
     if (!al)
         return NULL;
-    for (i = 0; i < al.size(); i++)
+
+    int nitem = 0;
+    for (int i = 0; i < al.size(); i++)
     {
         auto a = &al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
@@ -1712,20 +1699,25 @@ accesskey_menu(const BufferPtr &buf)
     if (!nitem)
         return NULL;
 
-    label = New_N(char *, nitem + 1);
-    ap = New_N(Anchor *, nitem);
+    Menu menu;
+    int i, key = -1;
+    char *t;
+    unsigned char c;
+
+    std::vector<std::string> label;
+    auto ap = New_N(Anchor *, nitem);
+    int n;
     for (i = 0, n = 0; i < al.size(); i++)
     {
         auto a = &al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
         {
             t = getAnchorText(buf, al, a);
-            label[n] = Sprintf("%c: %s", a->accesskey, t ? t : "")->ptr;
+            label.push_back(Sprintf("%c: %s", a->accesskey, t ? t : "")->ptr);
             ap[n] = a;
             n++;
         }
     }
-    label[nitem] = NULL;
 
     new_option_menu(&menu, label, &key, NULL);
 
@@ -1808,7 +1800,6 @@ list_menu(const BufferPtr &buf)
     AnchorList &al = buf->href;
     Anchor **ap;
     int i, n, nitem = 0, key = -1, two = false;
-    char **label;
     const char *t;
     unsigned char c;
 
@@ -1825,7 +1816,8 @@ list_menu(const BufferPtr &buf)
 
     if (nitem >= nlmKeys)
         two = true;
-    label = New_N(char *, nitem + 1);
+
+    std::vector<std::string> label;
     ap = New_N(Anchor *, nitem);
     for (i = 0, n = 0; i < al.size(); i++)
     {
@@ -1836,18 +1828,17 @@ list_menu(const BufferPtr &buf)
             if (!t)
                 t = "";
             if (two && n >= nlmKeys2 * nlmKeys)
-                label[n] = Sprintf("  : %s", t)->ptr;
+                label.push_back(Sprintf("  : %s", t)->ptr);
             else if (two)
-                label[n] = Sprintf("%c%c: %s", lmKeys2[n / nlmKeys],
+                label.push_back(Sprintf("%c%c: %s", lmKeys2[n / nlmKeys],
                                    lmKeys[n % nlmKeys], t)
-                               ->ptr;
+                               ->ptr);
             else
-                label[n] = Sprintf("%c: %s", lmKeys[n], t)->ptr;
+                label.push_back(Sprintf("%c: %s", lmKeys[n], t)->ptr);
             ap[n] = a;
             n++;
         }
     }
-    label[nitem] = NULL;
 
     set_menu_frame();
     set_menu_frame();
