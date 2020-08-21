@@ -5,19 +5,23 @@
 #include "html/html.h"
 #include "frontend/buffer.h"
 
-#define FORM_UNKNOWN -1
-#define FORM_INPUT_TEXT 0
-#define FORM_INPUT_PASSWORD 1
-#define FORM_INPUT_CHECKBOX 2
-#define FORM_INPUT_RADIO 3
-#define FORM_INPUT_SUBMIT 4
-#define FORM_INPUT_RESET 5
-#define FORM_INPUT_HIDDEN 6
-#define FORM_INPUT_IMAGE 7
-#define FORM_SELECT 8
-#define FORM_TEXTAREA 9
-#define FORM_INPUT_BUTTON 10
-#define FORM_INPUT_FILE 11
+enum FormItemTypes
+{
+    FORM_UNKNOWN = -1,
+    FORM_INPUT_TEXT = 0,
+    FORM_INPUT_PASSWORD = 1,
+    FORM_INPUT_CHECKBOX = 2,
+    FORM_INPUT_RADIO = 3,
+    FORM_INPUT_SUBMIT = 4,
+    FORM_INPUT_RESET = 5,
+    FORM_INPUT_HIDDEN = 6,
+    FORM_INPUT_IMAGE = 7,
+    FORM_SELECT = 8,
+    FORM_TEXTAREA = 9,
+    FORM_INPUT_BUTTON = 10,
+    FORM_INPUT_FILE = 11,
+};
+FormItemTypes formtype(std::string_view typestr);
 
 #define FORM_I_TEXT_DEFAULT_SIZE 40
 #define FORM_I_SELECT_DEFAULT_SIZE 40
@@ -47,7 +51,7 @@ struct FormSelectOptionItem : gc_cleanup
 
 struct FormItemList
 {
-    int type;
+    FormItemTypes type;
     std::string name;
     std::string value;
     std::string init_value;
@@ -109,7 +113,6 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, class Html
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
 
-int formtype(const char *typestr);
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 Str textfieldrep(Str s, int width);
 void do_internal(std::string_view action, std::string_view data);

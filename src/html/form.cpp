@@ -227,7 +227,20 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
 
 static const char *_formtypetbl[] = {
     "text", "password", "checkbox", "radio", "submit", "reset", "hidden",
-    "image", "select", "textarea", "button", "file", NULL};
+    "image", "select", "textarea", "button", "file"};
+FormItemTypes formtype(std::string_view typestr)
+{
+    int i = 0;
+    for (auto &name : _formtypetbl)
+    {
+        if (svu::ic_eq(typestr, name))
+        {
+            return (FormItemTypes)i;
+        }
+        ++i;
+    }
+    return FORM_UNKNOWN;
+}
 
 static const char *_formmethodtbl[] = {
     "GET", "POST", "INTERNAL", "HEAD"};
@@ -249,17 +262,6 @@ form2str(FormItemList *fi)
     Strcat_m_charp(tmp, " (", _formmethodtbl[fi->parent->method], " ",
                    fi->parent->action, ")", NULL);
     return tmp->ptr;
-}
-
-int formtype(const char *typestr)
-{
-    int i;
-    for (i = 0; _formtypetbl[i]; i++)
-    {
-        if (!strcasecmp(typestr, _formtypetbl[i]))
-            return i;
-    }
-    return FORM_UNKNOWN;
 }
 
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *fi)
