@@ -6,7 +6,7 @@
 #include "stream/http.h"
 
 struct Image;
-struct FormItemList;
+struct FormItem;
 struct Anchor
 {
     std::string url;
@@ -21,7 +21,7 @@ struct Anchor
     short y = 0;
     short rows = 0;
     Image *image = nullptr;
-    std::shared_ptr<FormItemList> item;
+    std::shared_ptr<FormItem> item;
 
     static Anchor CreateHref(std::string_view url, std::string_view target, HttpReferrerPolicy referer,
                              std::string title, unsigned char key, int line, int pos)

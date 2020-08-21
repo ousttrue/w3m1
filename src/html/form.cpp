@@ -119,7 +119,7 @@ struct
 };
 /* *INDENT-ON* */
 
-FormList *FormList::Create(
+Form *Form::Create(
     std::string_view action,
     std::string_view method,
     std::string_view charset,
@@ -149,7 +149,7 @@ FormList *FormList::Create(
     if (charset.size())
         c = wc_guess_charset(charset.data(), WC_CES_NONE);
 
-    auto l = new FormList(action, m);
+    auto l = new Form(action, m);
     l->charset = c;
     l->enctype = e;
     l->target = target;
@@ -160,13 +160,13 @@ FormList *FormList::Create(
 /* 
  * add <input> element to form_list
  */
-FormItemListPtr formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
+FormItemPtr formList_addInput(Form *fl, struct parsed_tag *tag, HtmlContext *context)
 {
     /* if not in <form>..</form> environment, just ignore <input> tag */
     if (fl == NULL)
         return NULL;
 
-    auto item = std::make_shared<FormItemList>();
+    auto item = std::make_shared<FormItem>();
     fl->items.push_back(item);
     item->parent = fl;
 
@@ -250,7 +250,7 @@ FormItemTypes formtype(std::string_view typestr)
 static const char *_formmethodtbl[] = {
     "GET", "POST", "INTERNAL", "HEAD"};
 
-Str FormItemList::ToStr() const
+Str FormItem::ToStr() const
 {
     Str tmp = Strnew();
 
@@ -269,7 +269,7 @@ Str FormItemList::ToStr() const
     return tmp;
 }
 
-void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemListPtr fi)
+void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemPtr fi)
 {
     for (int i = 0; i < buf->formitem.size(); i++)
     {
@@ -290,7 +290,7 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
 {
     int i;
     Anchor *a;
-    FormItemListPtr f1, f2;
+    FormItemPtr f1, f2;
 
     if (buf == NULL || !buf->formitem || !formitem)
         return;
@@ -468,7 +468,7 @@ static std::tuple<std::string_view, int> form_update_line(LinePtr line, std::str
     return {remain, pos};
 }
 
-void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemListPtr form)
+void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemPtr form)
 {
     auto save = buf->Copy();
     buf->GotoLine(a->start.line);
@@ -619,7 +619,7 @@ form_fputs_decode(std::string_view s, FILE *f)
     z->Puts(f);
 }
 
-void FormItemList::input_textarea()
+void FormItem::input_textarea()
 {
     char *tmpf = tmpfname(TMPF_DFL, NULL)->ptr;
     auto f = fopen(tmpf, "w");
@@ -695,7 +695,7 @@ void do_internal(std::string_view action, std::string_view data)
     }
 }
 
-void FormItemList::chooseSelectOption()
+void FormItem::chooseSelectOption()
 {
     this->selected = 0;
     if (select_option.empty())
@@ -721,7 +721,7 @@ void FormItemList::chooseSelectOption()
     updateSelectOption();
 }
 
-void FormItemList::updateSelectOption()
+void FormItem::updateSelectOption()
 {
     int i = 0;
     for (auto &opt : select_option)
@@ -731,7 +731,7 @@ void FormItemList::updateSelectOption()
     }
 }
 
-bool FormItemList::formChooseOptionByMenu(int x, int y)
+bool FormItem::formChooseOptionByMenu(int x, int y)
 {
     int n = 0;
     for (auto opt = this->select_option.begin(); opt != this->select_option.end(); ++n, ++opt)
@@ -1007,8 +1007,8 @@ void preFormUpdateBuffer(const BufferPtr &buf)
     struct pre_form_item *pi;
     int i;
     Anchor *a;
-    FormList *fl;
-    FormItemListPtr fi;
+    Form *fl;
+    FormItemPtr fi;
     FormSelectOptionItem *opt;
     int j;
 

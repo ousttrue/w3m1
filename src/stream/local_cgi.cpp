@@ -243,7 +243,7 @@ set_cgi_environ(char *name, char *fn, char *req_uri)
     set_environ("REQUEST_URI", req_uri);
 }
 
-FILE *localcgi_post(char *uri, char *qstr, FormList *request, HttpReferrerPolicy referer)
+FILE *localcgi_post(char *uri, char *qstr, Form *request, HttpReferrerPolicy referer)
 {
     auto cgi = LocalCGIStatus(uri);
     if (!cgi.check_local_cgi())
@@ -525,7 +525,7 @@ Str loadLocalDir(std::string_view dname)
     return tmp;
 }
 
-ContentStream LocalCGI::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form)
+ContentStream LocalCGI::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct Form *form)
 {
     auto cgi = LocalCGIStatus(url.real_file);
     if (!cgi.check_local_cgi())

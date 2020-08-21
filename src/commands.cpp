@@ -1232,7 +1232,7 @@ void adBmark(w3mApp *w3m)
                                                  w3mApp::Instance().BookmarkCharset)))
                            ->ptr,
                        wc_ces_to_charset(w3mApp::Instance().BookmarkCharset));
-    auto request = FormList::Create("", "post");
+    auto request = Form::Create("", "post");
     request->body = tmp->ptr;
     request->length = tmp->Size();
     cmd_loadURL("file:///$LIB/" W3MBOOKMARK_CMDNAME, NULL, HttpReferrerPolicy::NoReferer,
@@ -1671,7 +1671,7 @@ void reload(w3mApp *w3m)
     //
     // form
     //
-    FormList *request;
+    Form *request;
     int multipart = 0;
     if (GetCurrentTab()->GetCurrentBuffer()->form_submit)
     {

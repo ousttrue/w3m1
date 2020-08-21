@@ -409,7 +409,7 @@ newMapArea(const char *url, const char *target, const char *alt, const char *sha
 
 /* append image map links */
 static void
-append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
+append_map_info(BufferPtr buf, Str tmp, FormItem *fi)
 {
     auto ml = searchMapList(buf, fi->value.c_str());
     if (ml == NULL)

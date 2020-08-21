@@ -21,7 +21,7 @@ enum class HttpReferrerPolicy
 };
 
 struct URL;
-struct FormList;
+struct Form;
 struct TextList;
 struct HttpRequest
 {
@@ -30,14 +30,14 @@ struct HttpRequest
     std::vector<std::string> lines;
 
 public:
-    static std::shared_ptr<HttpRequest> Create(const URL &url, struct FormList *form);
+    static std::shared_ptr<HttpRequest> Create(const URL &url, struct Form *form);
 
     HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
-    FormList *form = nullptr;
+    Form *form = nullptr;
 
     HttpRequest() = default;
 
-    HttpRequest(HttpReferrerPolicy _referer, FormList *_request)
+    HttpRequest(HttpReferrerPolicy _referer, Form *_request)
         : referer(_referer), form(_request)
     {
     }
@@ -119,6 +119,6 @@ class HttpClient
     std::vector<HttpExchange> exchanges;
 
 public:
-    std::tuple<std::shared_ptr<class InputStream>, HttpResponsePtr> GetResponse(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form);
-    ContentStream GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form);
+    std::tuple<std::shared_ptr<class InputStream>, HttpResponsePtr> GetResponse(const URL &url, const URL *base, HttpReferrerPolicy referer, struct Form *form);
+    ContentStream GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct Form *form);
 };

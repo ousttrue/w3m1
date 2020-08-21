@@ -1016,7 +1016,7 @@ _editor(void)
     if (is_passwd)
         return;
 
-    FormItemList fi;
+    FormItem fi;
     fi.readonly = false;
     fi.value = strBuf->ptr;
     fi.value.push_back('\n');

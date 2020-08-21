@@ -269,18 +269,18 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     if (forms_size == 0)
     {
         forms_size = INITIAL_FORM_SIZE;
-        forms = New_N(FormList *, forms_size);
+        forms = New_N(Form *, forms_size);
         form_stack = NewAtom_N(int, forms_size);
     }
     else if (forms_size <= form_max)
     {
         forms_size += form_max;
-        forms = New_Reuse(FormList *, forms, forms_size);
+        forms = New_Reuse(Form *, forms, forms_size);
         form_stack = New_Reuse(int, form_stack, forms_size);
     }
     form_stack[form_sp] = fid;
 
-    forms[fid] = FormList::Create(q, p,
+    forms[fid] = Form::Create(q, p,
                                   r ? r : "",
                                   s ? s : "",
                                   tg ? tg : "",
@@ -288,7 +288,7 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     return nullptr;
 }
 
-FormList *HtmlContext::FormEnd()
+Form *HtmlContext::FormEnd()
 {
     // for (int form_id = 1; form_id <= form_max; form_id++)
     //     forms[form_id]->next = forms[form_id - 1];
@@ -450,7 +450,7 @@ Str HtmlContext::process_n_select()
     {
         if (select_option[n_select].size())
         {
-            auto sitem = std::make_shared<FormItemList>();
+            auto sitem = std::make_shared<FormItem>();
             sitem->select_option = select_option[n_select];
             sitem->chooseSelectOption();
             select_str->Push(textfieldrep(Strnew(sitem->label), cur_option_maxwidth));

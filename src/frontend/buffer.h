@@ -13,8 +13,8 @@
 
 struct Line;
 class InputStream;
-struct FormList;
-struct FormItemList;
+struct Form;
+struct FormItem;
 struct MapList;
 struct AlarmEvent;
 struct TextList;
@@ -295,7 +295,7 @@ public:
     int prevhseq = -1;
 
     std::vector<Link> linklist;
-    FormList *formlist = nullptr;
+    Form *formlist = nullptr;
     MapList *maplist = nullptr;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
@@ -312,7 +312,7 @@ public:
     CharacterEncodingScheme document_charset = WC_CES_NONE;
     AutoDetectTypes auto_detect = WC_OPT_DETECT_OFF;
     // TextList *document_header = nullptr;
-    FormItemList *form_submit = nullptr;
+    FormItem *form_submit = nullptr;
     // ReadBufferCache, WriteBufferCache
     std::string savecache;
     // editBf

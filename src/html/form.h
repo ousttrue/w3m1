@@ -53,7 +53,7 @@ struct FormSelectOptionItem
     }
 };
 
-struct FormItemList
+struct FormItem
 {
     FormItemTypes type;
     std::string name;
@@ -73,7 +73,7 @@ struct FormItemList
     std::string init_label;
     int selected;
     int init_selected;
-    struct FormList *parent;
+    struct Form *parent;
 
     void input_textarea();
     Str ToStr() const;
@@ -82,17 +82,17 @@ struct FormItemList
     void updateSelectOption();
     bool formChooseOptionByMenu(int x, int y);
 };
-using FormItemListPtr = std::shared_ptr<FormItemList>;
+using FormItemPtr = std::shared_ptr<FormItem>;
 
 //
 // <form action="some.cgi" method="pos"></form>
 // representation
 //
-struct FormList : gc_cleanup
+struct Form : gc_cleanup
 {
-    std::vector<FormItemListPtr> items;
-    FormItemListPtr item() { return items.empty() ? nullptr : items.front(); }
-    FormItemListPtr lastitem() { return items.empty() ? nullptr : items.back(); }
+    std::vector<FormItemPtr> items;
+    FormItemPtr item() { return items.empty() ? nullptr : items.front(); }
+    FormItemPtr lastitem() { return items.empty() ? nullptr : items.back(); }
     int nitems() const { return items.size(); }
 
     std::string action;
@@ -105,12 +105,12 @@ struct FormList : gc_cleanup
     char *body = nullptr;
     unsigned long length = 0;
 
-    FormList(std::string_view a, FormMethodTypes m)
+    Form(std::string_view a, FormMethodTypes m)
         : action(a), method(m)
     {
     }
 
-    static FormList *Create(
+    static Form *Create(
         std::string_view action,
         std::string_view method,
         std::string_view charset = "",
@@ -120,9 +120,9 @@ struct FormList : gc_cleanup
 };
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
-FormItemListPtr formList_addInput(FormList *fl, struct parsed_tag *tag, class HtmlContext *context);
-void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemListPtr form);
-void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemListPtr form);
+FormItemPtr formList_addInput(Form *fl, struct parsed_tag *tag, class HtmlContext *context);
+void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemPtr form);
+void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemPtr form);
 
 void formResetBuffer(BufferPtr buf, struct AnchorList &formitem);
 Str textfieldrep(Str s, int width);

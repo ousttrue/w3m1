@@ -47,5 +47,5 @@ Str loadLocalDir(std::string_view dname);
 class LocalCGI
 {
 public:
-    ContentStream GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct FormList *form);
+    ContentStream GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, struct Form *form);
 };

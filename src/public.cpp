@@ -360,7 +360,7 @@ void cmd_loadfile(const char *fn)
     displayCurrentbuf(B_NORMAL);
 }
 
-void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, FormList *request)
+void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, Form *request)
 {
 
     if (handleMailto(url.data()))
@@ -852,7 +852,7 @@ void _followForm(bool submit)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void query_from_followform(Str *query, FormItemList *fi, int multipart)
+void query_from_followform(Str *query, FormItem *fi, int multipart)
 {
     FILE *body = NULL;
     if (multipart)
@@ -1079,22 +1079,22 @@ void bufferA(void)
 //     return newBuf;
 // }
 
-FormItemList *save_submit_formlist(FormItemList *src)
+FormItem *save_submit_formlist(FormItem *src)
 {
     if (src == NULL)
         return NULL;
 
-    FormList *list;
-    FormList *srclist;
-    FormItemList *srcitem;
-    FormItemList *item;
-    FormItemList *ret = NULL;
+    Form *list;
+    Form *srclist;
+    FormItem *srcitem;
+    FormItem *item;
+    FormItem *ret = NULL;
     FormSelectOptionItem *opt;
     FormSelectOptionItem *curopt;
     FormSelectOptionItem *srcopt;
 
     srclist = src->parent;
-    list = new FormList(srclist->action, srclist->method);
+    list = new Form(srclist->action, srclist->method);
     list->charset = srclist->charset;
     list->enctype = srclist->enctype;
     list->items = srclist->items;
@@ -1169,7 +1169,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
     // return ret;
 }
 
-Str conv_form_encoding(std::string_view val, FormItemList *fi, BufferPtr buf)
+Str conv_form_encoding(std::string_view val, FormItem *fi, BufferPtr buf)
 {
     CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
 

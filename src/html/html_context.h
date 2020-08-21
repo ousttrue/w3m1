@@ -43,7 +43,7 @@ class HtmlContext
 
 #define FORMSTACK_SIZE 10
 #define INITIAL_FORM_SIZE 10
-    struct FormList **forms;
+    struct Form **forms;
     int *form_stack;
     int form_max = -1;
     int form_sp = 0;
@@ -123,14 +123,14 @@ public:
             form_sp--;
         return nullptr;
     }
-    FormList *FormCurrent(int form_id)
+    Form *FormCurrent(int form_id)
     {
         if (form_id < 0 || form_id > form_max || forms == nullptr)
             /* outside of <form>..</form> */
             return nullptr;
         return forms[form_id];
     }
-    FormList *FormEnd();
+    Form *FormEnd();
     void FormSelectGrow(int selectnumber);
     void FormSetSelect(int n);
     FormSelectOptionList *FormSelect(int n);

@@ -471,7 +471,7 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
 /* 
  * Dispatch URL, return Buffer
  */
-BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPolicy referer, FormList *form)
+BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPolicy referer, Form *form)
 {
     if (_url.scheme == SCM_MISSING)
     {
@@ -574,7 +574,7 @@ std::unordered_map<std::string, ContentStream> g_cache;
 
 ContentStream GetStream(const URL &url,
                         const URL *current, HttpReferrerPolicy referer,
-                        struct FormList *form)
+                        struct Form *form)
 {
     auto without_fragment = url.CopyWithoutFragment();
     std::stringstream ss;
