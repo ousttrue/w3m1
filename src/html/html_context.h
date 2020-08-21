@@ -41,13 +41,9 @@ class HtmlContext
     union frameset_element *idFrame = nullptr;
     std::vector<struct frameset *> frameset_s;
 
-#define FORMSTACK_SIZE 10
-#define INITIAL_FORM_SIZE 10
-    struct Form **forms;
-    int *form_stack;
-    int form_max = -1;
-    int form_sp = 0;
-    int forms_size = 0;
+    std::vector<int> form_stack;
+    std::vector<struct Form *> forms;
+
     std::vector<Anchor *> a_select;
     std::vector<FormSelectOptionList> select_option;
     int n_select = -1;
@@ -114,18 +110,18 @@ public:
     // process <form></form>
     int cur_form_id()
     {
-        return form_sp >= 0 ? form_stack[form_sp] : -1;
+        return form_stack.size() >= 0 ? form_stack.back() : -1;
     }
     Str FormOpen(struct parsed_tag *tag, int fid = -1);
     Str FormClose(void)
     {
-        if (form_sp >= 0)
-            form_sp--;
+        if (form_stack.size() >= 0)
+            form_stack.pop_back();
         return nullptr;
     }
     Form *FormCurrent(int form_id)
     {
-        if (form_id < 0 || form_id > form_max || forms == nullptr)
+        if (form_id < 0 || form_id >= forms.size())
             /* outside of <form>..</form> */
             return nullptr;
         return forms[form_id];

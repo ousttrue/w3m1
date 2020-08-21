@@ -46,11 +46,6 @@ HtmlContext::HtmlContext()
         symbol_width = WcOption.use_wide ? symbol_width0 : 1;
     }
 
-    form_sp = -1;
-    form_max = -1;
-    forms_size = 0;
-    forms = nullptr;
-
     cur_select = nullptr;
 
     n_textarea = -1;
@@ -256,43 +251,43 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
 
     if (fid < 0)
     {
-        form_max++;
-        form_sp++;
-        fid = form_max;
+        fid = forms.size();
+        forms.push_back(nullptr);
     }
     else
     { /* <form_int> */
-        if (form_max < fid)
-            form_max = fid;
-        form_sp = fid;
+        if (fid >= forms.size())
+            forms.resize(fid + 1);
     }
-    if (forms_size == 0)
-    {
-        forms_size = INITIAL_FORM_SIZE;
-        forms = New_N(Form *, forms_size);
-        form_stack = NewAtom_N(int, forms_size);
-    }
-    else if (forms_size <= form_max)
-    {
-        forms_size += form_max;
-        forms = New_Reuse(Form *, forms, forms_size);
-        form_stack = New_Reuse(int, form_stack, forms_size);
-    }
-    form_stack[form_sp] = fid;
+    // if (forms_size == 0)
+    // {
+    //     forms_size = INITIAL_FORM_SIZE;
+    //     forms = New_N(Form *, forms_size);
+    //     form_stack = NewAtom_N(int, forms_size);
+    // }
+    // else if (forms_size <= form_max)
+    // {
+    //     forms_size += form_max;
+    //     forms = New_Reuse(Form *, forms, forms_size);
+    //     form_stack = New_Reuse(int, form_stack, forms_size);
+    // }
 
     forms[fid] = Form::Create(q, p,
-                                  r ? r : "",
-                                  s ? s : "",
-                                  tg ? tg : "",
-                                  n ? n : "");
+                              r ? r : "",
+                              s ? s : "",
+                              tg ? tg : "",
+                              n ? n : "");
+    form_stack.push_back(fid);
+
     return nullptr;
 }
 
 Form *HtmlContext::FormEnd()
 {
-    // for (int form_id = 1; form_id <= form_max; form_id++)
-    //     forms[form_id]->next = forms[form_id - 1];
-    return (form_max >= 0) ? forms[form_max] : nullptr;
+    // for (int i = 1; i < forms.size(); ++i)
+    //     forms[i]->next = forms[i - 1];
+    return forms.size() ? forms.back() : nullptr;
+    ;
 }
 
 void HtmlContext::FormSelectGrow(int selectnumber)
@@ -486,11 +481,9 @@ void HtmlContext::process_option()
         int len = get_Str_strwidth(cur_option_label);
         if (len > cur_option_maxwidth)
             cur_option_maxwidth = len;
-        select_option[n_select].push_back({
-            cur_option_value->ptr,
-            cur_option_label->ptr,
-            cur_option_selected
-        });
+        select_option[n_select].push_back({cur_option_value->ptr,
+                                           cur_option_label->ptr,
+                                           cur_option_selected});
         return;
     }
 
