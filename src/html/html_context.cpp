@@ -280,7 +280,11 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     }
     form_stack[form_sp] = fid;
 
-    forms[fid] = newFormList(q, p, r, s, tg, n);
+    forms[fid] = FormList::Create(q, p,
+                                  r ? r : "",
+                                  s ? s : "",
+                                  tg ? tg : "",
+                                  n ? n : "");
     return nullptr;
 }
 
@@ -1483,8 +1487,8 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
                 hpos++;
             buf->putHmarker(currentLn(buf), hpos, hseq - 1);
         }
-        if (!form->target)
-            form->target = Strnew(buf->baseTarget)->ptr;
+        if (form->target.empty())
+            form->target = buf->baseTarget;
 
         int textareanumber = -1;
         if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &textareanumber))
@@ -1502,7 +1506,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         if (fi)
         {
             Anchor a;
-            a.target = form->target ? form->target : "";
+            a.target = form->target;
             a.item = fi;
             BufferPoint bp = {
                 line : currentLn(buf),

@@ -114,37 +114,41 @@ struct
 };
 /* *INDENT-ON* */
 
-FormList *newFormList(std::string_view action, const char *method, const char *charset, const char *enctype,
-                      const char *target, const char *name)
+FormList *FormList::Create(
+    std::string_view action,
+    std::string_view method,
+    std::string_view charset,
+    std::string_view enctype,
+    std::string_view target,
+    std::string_view name)
 {
-    FormMethodTypes m = FORM_METHOD_GET;
-    int e = FORM_ENCTYPE_URLENCODED;
-    CharacterEncodingScheme c = WC_CES_NONE;
 
-    if (method == NULL || !strcasecmp(method, "get"))
-        m = FORM_METHOD_GET;
-    else if (!strcasecmp(method, "post"))
-        m = FORM_METHOD_POST;
-    else if (!strcasecmp(method, "internal"))
-        m = FORM_METHOD_INTERNAL;
     /* unknown method is regarded as 'get' */
+    FormMethodTypes m = FORM_METHOD_GET;
+    if (method.empty() || svu::ic_eq(method, "get"))
+        m = FORM_METHOD_GET;
+    else if (svu::ic_eq(method, "post"))
+        m = FORM_METHOD_POST;
+    else if (svu::ic_eq(method, "internal"))
+        m = FORM_METHOD_INTERNAL;
 
-    if (enctype != NULL && !strcasecmp(enctype, "multipart/form-data"))
+    int e = FORM_ENCTYPE_URLENCODED;
+    if (enctype.size() && svu::ic_eq(enctype, "multipart/form-data"))
     {
         e = FORM_ENCTYPE_MULTIPART;
         if (m == FORM_METHOD_GET)
             m = FORM_METHOD_POST;
     }
 
-    if (charset != NULL)
-        c = wc_guess_charset(charset, WC_CES_NONE);
+    CharacterEncodingScheme c = WC_CES_NONE;
+    if (charset.size())
+        c = wc_guess_charset(charset.data(), WC_CES_NONE);
 
     auto l = new FormList(action, m);
     l->charset = c;
     l->enctype = e;
     l->target = target;
     l->name = name;
-    // l->next = _next;
     return l;
 }
 
@@ -1043,7 +1047,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
             a = &buf->formitem.anchors[i];
             fi = a->item;
             fl = fi->parent;
-            if (pf->name && (!fl->name || strcmp(fl->name, pf->name)))
+            if (pf->name && (fl->name.empty() || fl->name != pf->name))
                 continue;
             if (pf->action && (fl->action.empty() || fl->action != pf->action))
                 continue;

@@ -74,8 +74,8 @@ struct FormList : gc_cleanup
 
     std::string action;
     FormMethodTypes method;
-    const char *target;
-    const char *name;
+    std::string target;
+    std::string name;
     CharacterEncodingScheme charset;
     int enctype;
     char *boundary;
@@ -87,6 +87,14 @@ struct FormList : gc_cleanup
         : action(a), method(m)
     {
     }
+
+    static FormList *Create(
+        std::string_view action,
+        std::string_view method,
+        std::string_view charset = "",
+        std::string_view enctype = "",
+        std::string_view target = "",
+        std::string_view name = "");
 };
 
 void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item);
@@ -97,8 +105,6 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, class Html
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form);
 void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *form);
 
-FormList *newFormList(std::string_view action, const char *method, const char *charset,
-                      const char *enctype, const char *target, const char *name);
 int formtype(const char *typestr);
 void formResetBuffer(BufferPtr buf, AnchorList &formitem);
 Str textfieldrep(Str s, int width);
