@@ -52,9 +52,6 @@ HtmlContext::HtmlContext()
     forms_size = 0;
     forms = nullptr;
 
-    n_select = -1;
-    max_select = MAX_SELECT;
-    select_option = New_N(FormSelectOptionList, max_select);
     cur_select = nullptr;
 
     n_textarea = -1;
@@ -90,7 +87,7 @@ void HtmlContext::Initialize(const BufferPtr &newBuf, CharacterEncodingScheme co
     // }
 
     // if (content_charset && w3mApp::Instance().UseContentCharset)
-        doc_charset = content_charset;
+    doc_charset = content_charset;
     // else if (f->guess_type == "application/xhtml+xml")
     //     doc_charset = WC_CES_UTF_8;
 }
@@ -133,14 +130,14 @@ void HtmlContext::print_internal_information(struct html_feed_environ *henv)
 
 void HtmlContext::print_internal(TextLineList *tl)
 {
-    if (n_select > 0)
+    if (select_option.size())
     {
-        FormSelectOptionItem *ip;
-        for (int i = 0; i < n_select; i++)
+        int i = 0;
+        for (auto &so : select_option)
         {
-            auto s = Sprintf("<select_int selectnumber=%d>", i);
+            auto s = Sprintf("<select_int selectnumber=%d>", i++);
             pushTextLine(tl, newTextLine(s, 0));
-            for (ip = select_option[i].first; ip; ip = ip->next)
+            for (auto ip = so.first; ip; ip = ip->next)
             {
                 s = Sprintf("<option_int value=\"%s\" label=\"%s\"%s>",
                             html_quote(ip->value.size() ? ip->value : ip->label),
@@ -284,8 +281,6 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     }
     form_stack[form_sp] = fid;
 
-
-
     forms[fid] = newFormList(q, p, r, s, tg, n, nullptr);
     return nullptr;
 }
@@ -299,13 +294,13 @@ FormList *HtmlContext::FormEnd()
 
 void HtmlContext::FormSelectGrow(int selectnumber)
 {
-    if (selectnumber >= max_select)
-    {
-        max_select = 2 * selectnumber;
-        select_option = New_Reuse(FormSelectOptionList,
-                                  select_option,
-                                  max_select);
-    }
+    // if (selectnumber >= max_select)
+    // {
+    //     max_select = 2 * selectnumber;
+    //     select_option = New_Reuse(FormSelectOptionList,
+    //                               select_option,
+    //                               max_select);
+    // }
 }
 
 FormSelectOptionList *HtmlContext::FormSelect(int n)
@@ -315,9 +310,12 @@ FormSelectOptionList *HtmlContext::FormSelect(int n)
 
 void HtmlContext::FormSetSelect(int n)
 {
+    if(n>=select_option.size())
+    {
+        select_option.resize(n+1);
+    }
+    select_option[n] = {};
     n_select = n;
-    select_option[n_select].first = nullptr;
-    select_option[n_select].last = nullptr;
 }
 
 std::pair<int, FormSelectOptionList *> HtmlContext::FormSelectCurrent()
@@ -352,14 +350,7 @@ Str HtmlContext::process_select(struct parsed_tag *tag)
                                  "fid=\"%d\" type=select name=\"%s\" selectnumber=%d",
                                  Increment(), cur_form_id(), html_quote(p), n_select));
         select_str->Push(">");
-        if (n_select == max_select)
-        {
-            max_select *= 2;
-            select_option =
-                New_Reuse(FormSelectOptionList, select_option, max_select);
-        }
-        select_option[n_select].first = nullptr;
-        select_option[n_select].last = nullptr;
+        select_option[n_select] = {};
         cur_option_maxwidth = 0;
     }
     else

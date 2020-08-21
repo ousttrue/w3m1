@@ -45,9 +45,8 @@ class HtmlContext
     int form_sp = 0;
     int forms_size = 0;
     std::vector<Anchor *> a_select;
-    FormSelectOptionList *select_option;
-    int max_select = 0;
-    int n_select = 0;
+    std::vector<FormSelectOptionList> select_option;
+    int n_select = -1;
     int cur_option_maxwidth = 0;
     Str cur_select = nullptr;
     Str select_str = nullptr;

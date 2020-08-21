@@ -86,8 +86,8 @@ struct FormList: gc_cleanup
 
 struct FormSelectOptionList
 {
-    FormSelectOptionItem *first;
-    FormSelectOptionItem *last;
+    FormSelectOptionItem *first = nullptr;
+    FormSelectOptionItem *last = nullptr;
 };
 
 void addSelectOption(FormSelectOptionList *fso, std::string_view value, std::string_view label, bool chk);
