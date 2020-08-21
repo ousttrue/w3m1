@@ -16,16 +16,17 @@
 
 MapList *searchMapList(BufferPtr buf, const char *name)
 {
-    MapList *ml;
-
     if (name == NULL)
         return NULL;
-    for (ml = buf->maplist; ml != NULL; ml = ml->next)
+
+    for (auto &ml : buf->maplist)
     {
         if (ml->name->Cmp(name) == 0)
-            break;
+        {
+            return ml;
+        }
     }
-    return ml;
+    return nullptr;
 }
 
 enum ShapeTypes
@@ -297,7 +298,7 @@ follow_map_panel(BufferPtr buf, char *name)
 
 MapArea *newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords)
 {
-    MapArea *a = New(MapArea);
+    MapArea *a = new MapArea;
 
     a->url = url;
     a->target = target;

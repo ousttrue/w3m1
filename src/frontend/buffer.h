@@ -296,7 +296,7 @@ public:
 
     std::vector<Link> linklist;
     Form *formlist = nullptr;
-    MapList *maplist = nullptr;
+    std::vector<MapList *> maplist;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
     URL currentURL = {};

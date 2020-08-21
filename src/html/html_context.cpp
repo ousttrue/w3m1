@@ -1539,10 +1539,8 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         if (tag->TryGetAttributeValue(ATTR_NAME, &p))
         {
             MapList *m = new MapList;
+            buf->maplist.push_back(m);
             m->name = Strnew(p);
-            // m->area = newGeneralList();
-            m->next = buf->maplist;
-            buf->maplist = m;
         }
         break;
     }
@@ -1551,7 +1549,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         break;
     case HTML_AREA:
     {
-        if (buf->maplist == nullptr) /* outside of <map>..</map> */
+        if (buf->maplist.empty()) /* outside of <map>..</map> */
             break;
 
         char *p = nullptr;
@@ -1569,7 +1567,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             char *s = nullptr;
             tag->TryGetAttributeValue(ATTR_COORDS, &s);
             auto a = newMapArea(p, t, q, r, s);
-            buf->maplist->area.push_back(a);
+            buf->maplist.back()->area.push_back(a);
         }
         break;
     }

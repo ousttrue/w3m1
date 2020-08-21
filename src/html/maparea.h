@@ -4,7 +4,7 @@
 
 struct GeneralList;
 struct Anchor;
-struct MapArea
+struct MapArea : gc_cleanup
 {
     const char *url;
     const char *target;
@@ -20,7 +20,6 @@ struct MapList : gc_cleanup
 {
     Str name;
     std::vector<MapArea *> area;
-    MapList *next;
 };
 
 const Anchor *retrieveCurrentMap(const BufferPtr &buf);
