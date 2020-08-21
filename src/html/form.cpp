@@ -472,7 +472,7 @@ static std::tuple<std::string_view, int> form_update_line(LinePtr line, std::str
             p++;
     }
     // *str = p;
-    std::string_view remain = str.substr(p-str.data());
+    std::string_view remain = str.substr(p - str.data());
 
     line->buffer = {buf, prop, len};
 
@@ -559,8 +559,8 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
             {
                 int pos;
                 std::tie(p, pos) = form_update_line(l, p, spos, epos, l->COLPOS(epos) - col,
-                                            rows > 1,
-                                            form->type == FORM_INPUT_PASSWORD);
+                                                    rows > 1,
+                                                    form->type == FORM_INPUT_PASSWORD);
                 if (pos != epos)
                 {
                     auto bp = BufferPoint{
@@ -707,24 +707,6 @@ void do_internal(char *action, char *data)
                 internal_action[i].rout(cgistr2tagarg(data));
             return;
         }
-    }
-}
-
-void addSelectOption(FormSelectOptionList *fso, std::string_view value, std::string_view label, bool chk)
-{
-    auto o = new FormSelectOptionItem;
-    if (value.empty())
-        value = label;
-    o->value = value;
-    o->label = svu::strip(label);
-    o->checked = chk;
-    o->next = NULL;
-    if (fso->first == NULL)
-        fso->first = fso->last = o;
-    else
-    {
-        fso->last->next = o;
-        fso->last = o;
     }
 }
 

@@ -4,8 +4,15 @@
 #include "frontend/buffer.h"
 #include "html/html.h"
 
-struct FormSelectOptionList;
 struct Anchor;
+
+struct FormSelectOptionList
+{
+    struct FormSelectOptionItem *first = nullptr;
+    struct FormSelectOptionItem *last = nullptr;    
+    void addSelectOption(std::string_view value, std::string_view label, bool chk);
+};
+
 class HtmlContext
 {
     // // HTML <meta>

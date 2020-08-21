@@ -1,4 +1,4 @@
-
+#include <string_view_util.h>
 #include "html/html_context.h"
 #include "html/tokenizer.h"
 #include "html/tagstack.h"
@@ -7,7 +7,6 @@
 #include "html/form.h"
 #include "html/maparea.h"
 #include "stream/compression.h"
-
 #include "frontend/terminal.h"
 #include "indep.h"
 #include "gc_helper.h"
@@ -310,9 +309,9 @@ FormSelectOptionList *HtmlContext::FormSelect(int n)
 
 void HtmlContext::FormSetSelect(int n)
 {
-    if(n>=select_option.size())
+    if (n >= select_option.size())
     {
-        select_option.resize(n+1);
+        select_option.resize(n + 1);
     }
     select_option[n] = {};
     n_select = n;
@@ -466,11 +465,10 @@ Str HtmlContext::process_n_select()
 
 void HtmlContext::process_option()
 {
-    char begin_char = '[', end_char = ']';
-    int len;
-
     if (cur_select == nullptr || cur_option == nullptr)
         return;
+
+    char begin_char = '[', end_char = ']';
     while (cur_option->Size() > 0 && IS_SPACE(cur_option->Back()))
         cur_option->Pop(1);
     if (cur_option_value == nullptr)
@@ -480,12 +478,10 @@ void HtmlContext::process_option()
 
     if (!select_is_multiple)
     {
-        len = get_Str_strwidth(cur_option_label);
+        int len = get_Str_strwidth(cur_option_label);
         if (len > cur_option_maxwidth)
             cur_option_maxwidth = len;
-        addSelectOption(&select_option[n_select],
-                        cur_option_value->ptr,
-                        cur_option_label->ptr, cur_option_selected);
+        select_option[n_select].addSelectOption(cur_option_value->ptr, cur_option_label->ptr, cur_option_selected);
         return;
     }
 
@@ -1755,9 +1751,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             auto p = q;
             tag->TryGetAttributeValue(ATTR_VALUE, &p);
             auto selected = tag->HasAttribute(ATTR_SELECTED);
-            addSelectOption(select,
-                            p, q,
-                            selected);
+            select->addSelectOption(p, q, selected);
         }
         break;
     }
@@ -1964,4 +1958,22 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
 
     addMultirowsForm(buf, buf->formitem);
     addMultirowsImg(buf, buf->img);
+}
+
+void FormSelectOptionList::addSelectOption(std::string_view value, std::string_view label, bool chk)
+{
+    auto o = new FormSelectOptionItem;
+    if (value.empty())
+        value = label;
+    o->value = value;
+    o->label = svu::strip(label);
+    o->checked = chk;
+    o->next = NULL;
+    if (this->first == NULL)
+        this->first = this->last = o;
+    else
+    {
+        this->last->next = o;
+        this->last = o;
+    }
 }
