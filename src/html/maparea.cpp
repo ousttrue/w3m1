@@ -166,7 +166,7 @@ retrieveCurrentMapArea(const BufferPtr &buf)
     if (!(fi && fi->parent && fi->parent->item))
         return NULL;
     fi = fi->parent->item;
-    ml = searchMapList(buf, fi->value ? fi->value->ptr : NULL);
+    ml = searchMapList(buf, fi->value.c_str());
     if (!ml)
         return NULL;
     n = searchMapArea(buf, ml, a_img);
@@ -416,25 +416,21 @@ newMapArea(const char *url, const char *target, const char *alt, const char *sha
 static void
 append_map_info(BufferPtr buf, Str tmp, FormItemList *fi)
 {
-    MapList *ml;
-    ListItem *al;
-    MapArea *a;
-    char *p, *q;
-
-    ml = searchMapList(buf, fi->value ? fi->value->ptr : NULL);
+    auto ml = searchMapList(buf, fi->value.c_str());
     if (ml == NULL)
         return;
 
     Strcat_m_charp(tmp,
                    "<tr valign=top><td colspan=2>Links of current image map",
                    "<tr valign=top><td colspan=2><table>", NULL);
-    for (al = ml->area->first; al != NULL; al = al->next)
+    for (auto al = ml->area->first; al != NULL; al = al->next)
     {
-        a = (MapArea *)al->ptr;
+        auto a = (MapArea *)al->ptr;
         if (!a)
             continue;
         auto pu = URL::Parse(a->url, buf->BaseURL());
-        q = html_quote(pu.ToStr()->ptr);
+        auto q = html_quote(pu.ToStr()->ptr);
+        char *p;
         if (w3mApp::Instance().DecodeURL)
             p = html_quote(url_unquote_conv(a->url, buf->document_charset));
         else

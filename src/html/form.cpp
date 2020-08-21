@@ -173,7 +173,7 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
     item->checked = item->init_checked = 0;
     item->accept = 0;
     item->name;
-    item->value = item->init_value = NULL;
+    item->value = item->init_value;
     item->readonly = 0;
     const char *p;
     if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
@@ -188,7 +188,7 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
     if (tag->TryGetAttributeValue(ATTR_NAME, &p))
         item->name = p;
     if (tag->TryGetAttributeValue(ATTR_VALUE, &p))
-        item->value = item->init_value = Strnew(p);
+        item->value = item->init_value = p;
     item->checked = item->init_checked = tag->HasAttribute(ATTR_CHECKED);
     item->accept = tag->HasAttribute(ATTR_ACCEPT);
     tag->TryGetAttributeValue(ATTR_SIZE, &item->size);
@@ -196,7 +196,7 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
     item->readonly = tag->HasAttribute(ATTR_READONLY);
     int i;
     if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &i))
-        item->value = item->init_value = context->Textarea(i);
+        item->value = item->init_value = context->Textarea(i)->ptr;
 
     if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
         item->select_option = context->FormSelect(i)->first;
@@ -217,7 +217,7 @@ FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContex
         item->init_label = item->label;
     }
 #endif /* MENU_SELECT */
-    if (item->type == FORM_INPUT_FILE && item->value && item->value->Size())
+    if (item->type == FORM_INPUT_FILE && item->value.size())
     {
         /* security hole ! */
         return NULL;
@@ -258,8 +258,8 @@ form2str(FormItemList *fi)
         Strcat_m_charp(tmp, " name=\"", fi->name, "\"", NULL);
     if ((fi->type == FORM_INPUT_RADIO || fi->type == FORM_INPUT_CHECKBOX ||
          fi->type == FORM_SELECT) &&
-        fi->value)
-        Strcat_m_charp(tmp, " value=\"", fi->value->ptr, "\"", NULL);
+        fi->value.size())
+        Strcat_m_charp(tmp, " value=\"", fi->value, "\"", NULL);
     Strcat_m_charp(tmp, " (", _formmethodtbl[fi->parent->method], " ",
                    fi->parent->action->ptr, ")", NULL);
     return tmp->ptr;
@@ -346,9 +346,9 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
     }
 }
 
-static int form_update_line(LinePtr line, char **str, int spos, int epos, int width, int newline, int password)
+static std::tuple<std::string_view, int> form_update_line(LinePtr line, std::string_view str, int spos, int epos, int width, int newline, int password)
 {
-    auto p = *str;
+    auto p = str.data();
     auto pos = 0;
     auto w = 0;
     for (; *p && w < width;)
@@ -393,11 +393,11 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
     auto len = line->len() + pos + spos - epos;
 
     auto copy = line->buffer;
-    auto buf = const_cast<char*>(copy.lineBuf());
-    auto prop = const_cast<Lineprop*>(copy.propBuf());
+    auto buf = const_cast<char *>(copy.lineBuf());
+    auto prop = const_cast<Lineprop *>(copy.propBuf());
 
     auto effect = CharEffect(line->propBuf()[spos]);
-    for (p = *str, w = 0, pos = spos; *p && w < width;)
+    for (p = str.data(), w = 0, pos = spos; *p && w < width;)
     {
         auto c_type = get_mctype(*p);
         auto c_len = get_mclen(p);
@@ -471,11 +471,12 @@ static int form_update_line(LinePtr line, char **str, int spos, int epos, int wi
         if (*p == '\n')
             p++;
     }
-    *str = p;
+    // *str = p;
+    std::string_view remain = str.substr(p-str.data());
 
     line->buffer = {buf, prop, len};
 
-    return pos;
+    return {remain, pos};
 }
 
 void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
@@ -517,7 +518,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
     case FORM_TEXTAREA:
     case FORM_SELECT:
     {
-        char *p;
+        std::string_view p;
         if (form->type == FORM_SELECT)
         {
             p = form->label->ptr;
@@ -525,7 +526,7 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
         }
         else
         {
-            p = form->value->ptr;
+            p = form->value;
         }
 
         auto l = buf->CurrentLine();
@@ -556,7 +557,8 @@ void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemList *form)
             }
 
             {
-                auto pos = form_update_line(l, &p, spos, epos, l->COLPOS(epos) - col,
+                int pos;
+                std::tie(p, pos) = form_update_line(l, p, spos, epos, l->COLPOS(epos) - col,
                                             rows > 1,
                                             form->type == FORM_INPUT_PASSWORD);
                 if (pos != epos)
@@ -617,24 +619,14 @@ Str textfieldrep(Str s, int width)
 }
 
 static void
-form_fputs_decode(Str s, FILE *f)
+form_fputs_decode(std::string_view s, FILE *f)
 {
-    char *p;
     Str z = Strnew();
-
-    for (p = s->ptr; *p;)
+    for (auto p = s.begin(); p != s.end(); ++p)
     {
-        switch (*p)
-        {
-        default:
-            z->Push(*p);
-            p++;
-            break;
-        }
+        z->Push(*p);
     }
-#ifdef USE_M17N
     z = wc_Str_conv_strict(z, w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset);
-#endif
     z->Puts(f);
 }
 
@@ -654,8 +646,8 @@ void input_textarea(FormItemList *fi)
         disp_err_message("Can't open temporary file", false);
         return;
     }
-    if (fi->value)
-        form_fputs_decode(fi->value, f);
+    if (fi->value.size())
+        form_fputs_decode(fi->value.c_str(), f);
     fclose(f);
 
     fmTerm();
@@ -671,7 +663,7 @@ void input_textarea(FormItemList *fi)
         disp_err_message("Can't open temporary file", false);
         goto input_end;
     }
-    fi->value = Strnew();
+    fi->value.clear();
 
     auto_detect = WcOption.auto_detect;
     WcOption.auto_detect = WC_OPT_DETECT_ON;
@@ -690,7 +682,10 @@ void input_textarea(FormItemList *fi)
             tmp->Push("\r\n");
         }
         tmp = convertLine(SCM_UNKNOWN, tmp, RAW_MODE, &charset, w3mApp::Instance().DisplayCharset);
-        fi->value->Push(tmp);
+        for (auto p = tmp->ptr; *p; ++p)
+        {
+            fi->value.push_back(*p);
+        }
     }
 
     WcOption.auto_detect = (AutoDetectTypes)auto_detect;
@@ -744,17 +739,17 @@ void chooseSelectOption(FormItemList *fi, FormSelectOptionItem *item)
     fi->selected = 0;
     if (item == NULL)
     {
-        fi->value = Strnew_size(0);
+        fi->value.clear();
         fi->label = Strnew_size(0);
         return;
     }
-    fi->value = item->value;
+    fi->value = item->value->ptr;
     fi->label = item->label;
     for (i = 0, opt = item; opt != NULL; i++, opt = opt->next)
     {
         if (opt->checked)
         {
-            fi->value = opt->value;
+            fi->value = opt->value->ptr;
             fi->label = opt->label;
             fi->selected = i;
             break;
@@ -800,7 +795,7 @@ int formChooseOptionByMenu(FormItemList *fi, int x, int y)
         if (i == selected)
         {
             fi->selected = selected;
-            fi->value = opt->value;
+            fi->value = opt->value->ptr;
             fi->label = opt->label;
             break;
         }
@@ -1099,7 +1094,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                     if ((!pi->name || !*pi->name ||
                          (fi->name == pi->name)) &&
                         (!pi->value || !*pi->value ||
-                         (fi->value && fi->value->Cmp(pi->value) == 0)))
+                         (fi->value == pi->value)))
                         buf->submit = a;
                     continue;
                 }
@@ -1111,23 +1106,23 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                 case FORM_INPUT_FILE:
                 case FORM_INPUT_PASSWORD:
                 case FORM_TEXTAREA:
-                    fi->value = Strnew(pi->value);
+                    fi->value = pi->value;
                     formUpdateBuffer(a, buf, fi);
                     break;
                 case FORM_INPUT_CHECKBOX:
-                    if (pi->value && fi->value &&
-                        fi->value->Cmp(pi->value) == 0)
+                    if (fi->value.size() && fi->value == pi->value)
                     {
                         fi->checked = pi->checked;
                         formUpdateBuffer(a, buf, fi);
                     }
                     break;
                 case FORM_INPUT_RADIO:
-                    if (pi->value && fi->value &&
-                        fi->value->Cmp(pi->value) == 0)
+                    if (fi->value.size() && fi->value == pi->value)
+                    {
                         formRecheckRadio(a, buf, fi);
+                    }
                     break;
-#ifdef MENU_SELECT
+
                 case FORM_SELECT:
                     for (j = 0, opt = fi->select_option; opt != NULL;
                          j++, opt = opt->next)
@@ -1136,7 +1131,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                             opt->value->Cmp(pi->value) == 0)
                         {
                             fi->selected = j;
-                            fi->value = opt->value;
+                            fi->value = opt->value->ptr;
                             fi->label = opt->label;
                             updateSelectOption(fi, fi->select_option);
                             formUpdateBuffer(a, buf, fi);
@@ -1144,7 +1139,6 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                         }
                     }
                     break;
-#endif
                 }
             }
         }

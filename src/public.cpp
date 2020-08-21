@@ -651,10 +651,10 @@ void _followForm(bool submit)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", false, 1, true, false);
         /* FIXME: gettextize? */
-        auto p = inputStrHist("TEXT:", fi->value ? fi->value->ptr : NULL, w3mApp::Instance().TextHist);
+        auto p = inputStrHist("TEXT:", fi->value.size() ? fi->value.c_str() : NULL, w3mApp::Instance().TextHist);
         if (p == NULL || fi->readonly)
             break;
-        fi->value = Strnew(p);
+        fi->value = p;
         formUpdateBuffer(a, buf, fi);
         if (fi->accept || fi->parent->nitems == 1)
             goto do_submit;
@@ -668,11 +668,11 @@ void _followForm(bool submit)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", false, 1, true, false);
         /* FIXME: gettextize? */
-        auto p = inputFilenameHist("Filename:", fi->value ? fi->value->ptr : NULL,
+        auto p = inputFilenameHist("Filename:", fi->value.size() ? fi->value.c_str() : NULL,
                                    NULL);
         if (p == NULL || fi->readonly)
             break;
-        fi->value = Strnew(p);
+        fi->value = p;
         formUpdateBuffer(a, buf, fi);
         if (fi->accept || fi->parent->nitems == 1)
             goto do_submit;
@@ -689,11 +689,11 @@ void _followForm(bool submit)
             break;
         }
         /* FIXME: gettextize? */
-        auto p = inputLine("Password:", fi->value ? fi->value->ptr : NULL,
+        auto p = inputLine("Password:", fi->value.size() ? fi->value.c_str() : NULL,
                            IN_PASSWORD);
         if (p == NULL)
             break;
-        fi->value = Strnew(p);
+        fi->value = p;
         formUpdateBuffer(a, buf, fi);
         if (fi->accept)
             goto do_submit;
@@ -827,7 +827,7 @@ void _followForm(bool submit)
             auto a2 = &buf->formitem.anchors[i];
             auto f2 = a2->item;
             if (f2->parent == fi->parent &&
-                f2->name.size() && f2->value &&
+                f2->name.size() && f2->value.size() &&
                 f2->type != FORM_INPUT_SUBMIT &&
                 f2->type != FORM_INPUT_HIDDEN &&
                 f2->type != FORM_INPUT_RESET)
@@ -884,7 +884,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
             continue;
         case FORM_INPUT_SUBMIT:
         case FORM_INPUT_IMAGE:
-            if (f2 != fi || f2->value == NULL)
+            if (f2 != fi || f2->value.empty())
                 continue;
             break;
         case FORM_INPUT_RADIO:
@@ -909,17 +909,17 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
             }
-            else if (f2->name.size() && f2->value != NULL)
+            else if (f2->name.size() && f2->value.size())
             {
                 /* not IMAGE */
-                *query = conv_form_encoding(f2->value->ptr, fi, buf);
+                *query = conv_form_encoding(f2->value.c_str(), fi, buf);
                 if (f2->type == FORM_INPUT_FILE)
                     form_write_from_file(body, fi->parent->boundary,
                                          conv_form_encoding(f2->name, fi,
                                                             buf)
                                              ->ptr,
                                          (*query)->ptr,
-                                         Str_conv_to_system(f2->value)->ptr);
+                                         conv_to_system(f2->value.c_str()));
                 else
                     form_write_data(body, fi->parent->boundary,
                                     conv_form_encoding(f2->name, fi,
@@ -949,13 +949,13 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                     (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                     (*query)->Push('=');
                 }
-                if (f2->value != NULL)
+                if (f2->value.size())
                 {
                     if (fi->parent->method == FORM_METHOD_INTERNAL)
-                        (*query)->Push(UrlEncode(f2->value));
+                        (*query)->Push(UrlEncode(Strnew(f2->value)));
                     else
                     {
-                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value->ptr, fi, buf)));
+                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value, fi, buf)));
                     }
                 }
             }
@@ -1106,7 +1106,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
         item = new FormItemList;
         item->type = srcitem->type;
         item->name = srcitem->name;
-        item->value = srcitem->value->Clone();
+        item->value = srcitem->value;
         item->checked = srcitem->checked;
         item->accept = srcitem->accept;
         item->size = srcitem->size;

@@ -1727,7 +1727,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         if (anchor)
         {
             FormItemList *item = anchor->item;
-            item->init_value = item->value = t;
+            item->init_value = item->value = t->ptr;
         }
         break;
     }

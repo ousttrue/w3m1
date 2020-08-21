@@ -1013,20 +1013,18 @@ terminated(unsigned char c)
 static void
 _editor(void)
 {
-    FormItemList fi;
-    char *p;
-
     if (is_passwd)
         return;
 
+    FormItemList fi;
     fi.readonly = false;
-    fi.value = strBuf->Clone();
-    fi.value->Push('\n');
+    fi.value = strBuf->ptr;
+    fi.value.push_back('\n');
 
     input_textarea(&fi);
 
     strBuf = Strnew();
-    for (p = fi.value->ptr; *p; p++)
+    for (auto p = fi.value.c_str(); *p; p++)
     {
         if (*p == '\r' || *p == '\n')
             continue;

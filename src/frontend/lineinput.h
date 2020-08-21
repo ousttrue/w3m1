@@ -26,7 +26,7 @@ inline char *inputStrHist(const char *prompt, const char *def_str, Hist *hist)
     return inputLineHist(prompt, def_str, IN_STRING, hist);
 }
 
-inline char *inputFilenameHist(const char *p, char *d, Hist *h)
+inline char *inputFilenameHist(const char *p, const char *d, Hist *h)
 {
     return inputLineHist(p, d, IN_FILENAME, h);
 }

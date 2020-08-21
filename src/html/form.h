@@ -49,15 +49,18 @@ struct FormItemList: gc_cleanup
 {
     int type;
     std::string name;
-    Str value, init_value;
-    int checked, init_checked;
+    std::string value;
+    std::string init_value;
+    int checked;
+    int init_checked;
     int accept;
     int size;
     int rows;
     int maxlength;
     int readonly;
     FormSelectOptionItem *select_option;
-    Str label, init_label;
+    Str label;
+    Str init_label;
     int selected, init_selected;
     struct FormList *parent;
     FormItemList *next;
