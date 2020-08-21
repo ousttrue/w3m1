@@ -160,26 +160,22 @@ newFormList(const char *action, const char *method, const char *charset, const c
 /* 
  * add <input> element to form_list
  */
-FormItemList *
-formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
+FormItemList *formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
 {
-    FormItemList *item;
-    char *p;
-    int i;
-
     /* if not in <form>..</form> environment, just ignore <input> tag */
     if (fl == NULL)
         return NULL;
 
-    item = New(FormItemList);
+    auto item = new FormItemList;
     item->type = FORM_UNKNOWN;
     item->size = -1;
     item->rows = 0;
     item->checked = item->init_checked = 0;
     item->accept = 0;
-    item->name = NULL;
+    item->name;
     item->value = item->init_value = NULL;
     item->readonly = 0;
+    const char *p;
     if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
     {
         item->type = formtype(p);
@@ -190,7 +186,7 @@ formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
             item->size = FORM_I_TEXT_DEFAULT_SIZE;
     }
     if (tag->TryGetAttributeValue(ATTR_NAME, &p))
-        item->name = Strnew(p);
+        item->name = p;
     if (tag->TryGetAttributeValue(ATTR_VALUE, &p))
         item->value = item->init_value = Strnew(p);
     item->checked = item->init_checked = tag->HasAttribute(ATTR_CHECKED);
@@ -198,6 +194,7 @@ formList_addInput(FormList *fl, struct parsed_tag *tag, HtmlContext *context)
     tag->TryGetAttributeValue(ATTR_SIZE, &item->size);
     tag->TryGetAttributeValue(ATTR_MAXLENGTH, &item->maxlength);
     item->readonly = tag->HasAttribute(ATTR_READONLY);
+    int i;
     if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &i))
         item->value = item->init_value = context->Textarea(i);
 
@@ -257,8 +254,8 @@ form2str(FormItemList *fi)
     if (fi->type != FORM_SELECT && fi->type != FORM_TEXTAREA)
         tmp->Push("input type=");
     tmp->Push(_formtypetbl[fi->type]);
-    if (fi->name && fi->name->Size())
-        Strcat_m_charp(tmp, " name=\"", fi->name->ptr, "\"", NULL);
+    if (fi->name.size())
+        Strcat_m_charp(tmp, " name=\"", fi->name, "\"", NULL);
     if ((fi->type == FORM_INPUT_RADIO || fi->type == FORM_INPUT_CHECKBOX ||
          fi->type == FORM_SELECT) &&
         fi->value)
@@ -290,7 +287,7 @@ void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemList *fi)
         a2 = &buf->formitem.anchors[i];
         f2 = a2->item;
         if (f2->parent == fi->parent && f2 != fi &&
-            f2->type == FORM_INPUT_RADIO && f2->name->Cmp(fi->name) == 0)
+            f2->type == FORM_INPUT_RADIO && f2->name == fi->name)
         {
             f2->checked = 0;
             formUpdateBuffer(a2, buf, f2);
@@ -315,9 +312,7 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
             continue;
         f1 = a->item;
         f2 = formitem.anchors[i].item;
-        if (f1->type != f2->type ||
-            strcmp(((f1->name == NULL) ? "" : f1->name->ptr),
-                   ((f2->name == NULL) ? "" : f2->name->ptr)))
+        if (f1->type != f2->type || f1->name != f2->name)
             break; /* What's happening */
         switch (f1->type)
         {
@@ -1102,13 +1097,13 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                     pi->type == FORM_INPUT_IMAGE)
                 {
                     if ((!pi->name || !*pi->name ||
-                         (fi->name && fi->name->Cmp(pi->name) == 0)) &&
+                         (fi->name == pi->name)) &&
                         (!pi->value || !*pi->value ||
                          (fi->value && fi->value->Cmp(pi->value) == 0)))
                         buf->submit = a;
                     continue;
                 }
-                if (!pi->name || !fi->name || fi->name->Cmp(pi->name) != 0)
+                if (fi->name != pi->name)
                     continue;
                 switch (pi->type)
                 {

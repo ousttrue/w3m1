@@ -45,10 +45,10 @@ struct FormSelectOptionItem
     FormSelectOptionItem *next;
 };
 
-struct FormItemList
+struct FormItemList: gc_cleanup
 {
     int type;
-    Str name;
+    std::string name;
     Str value, init_value;
     int checked, init_checked;
     int accept;

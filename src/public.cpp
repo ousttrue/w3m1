@@ -827,7 +827,7 @@ void _followForm(bool submit)
             auto a2 = &buf->formitem.anchors[i];
             auto f2 = a2->item;
             if (f2->parent == fi->parent &&
-                f2->name && f2->value &&
+                f2->name.size() && f2->value &&
                 f2->type != FORM_INPUT_SUBMIT &&
                 f2->type != FORM_INPUT_HIDDEN &&
                 f2->type != FORM_INPUT_RESET)
@@ -871,12 +871,12 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
     *query = Strnew();
     for (auto f2 = fi->parent->item; f2; f2 = f2->next)
     {
-        if (f2->name == NULL)
+        if (f2->name.empty())
             continue;
         /* <ISINDEX> is translated into single text form */
-        if (f2->name->Size() == 0 &&
-            (multipart || f2->type != FORM_INPUT_TEXT))
-            continue;
+        // if (f2->name->Size() == 0 &&
+        //     (multipart || f2->type != FORM_INPUT_TEXT))
+        //     continue;
         switch (f2->type)
         {
         case FORM_INPUT_RESET:
@@ -909,10 +909,10 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                 form_write_data(body, fi->parent->boundary, (*query)->ptr,
                                 Sprintf("%d", y)->ptr);
             }
-            else if (f2->name && f2->name->Size() > 0 && f2->value != NULL)
+            else if (f2->name.size() && f2->value != NULL)
             {
                 /* not IMAGE */
-                *query = conv_form_encoding(f2->value, fi, buf);
+                *query = conv_form_encoding(f2->value->ptr, fi, buf);
                 if (f2->type == FORM_INPUT_FILE)
                     form_write_from_file(body, fi->parent->boundary,
                                          conv_form_encoding(f2->name, fi,
@@ -944,7 +944,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
             else
             {
                 /* not IMAGE */
-                if (f2->name && f2->name->Size() > 0)
+                if (f2->name.size())
                 {
                     (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                     (*query)->Push('=');
@@ -955,7 +955,7 @@ void query_from_followform(Str *query, FormItemList *fi, int multipart)
                         (*query)->Push(UrlEncode(f2->value));
                     else
                     {
-                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value, fi, buf)));
+                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value->ptr, fi, buf)));
                     }
                 }
             }
@@ -1103,9 +1103,9 @@ FormItemList *save_submit_formlist(FormItemList *src)
 
     for (srcitem = srclist->item; srcitem; srcitem = srcitem->next)
     {
-        item = New(FormItemList);
+        item = new FormItemList;
         item->type = srcitem->type;
-        item->name = srcitem->name->Clone();
+        item->name = srcitem->name;
         item->value = srcitem->value->Clone();
         item->checked = srcitem->checked;
         item->accept = srcitem->accept;
@@ -1157,7 +1157,7 @@ FormItemList *save_submit_formlist(FormItemList *src)
     return ret;
 }
 
-Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf)
+Str conv_form_encoding(std::string_view val, FormItemList *fi, BufferPtr buf)
 {
     CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
 
@@ -1165,7 +1165,7 @@ Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf)
         charset = fi->parent->charset;
     else if (buf->document_charset && buf->document_charset != WC_CES_US_ASCII)
         charset = buf->document_charset;
-    return wc_Str_conv_strict(val, w3mApp::Instance().InnerCharset, charset);
+    return wc_conv_strict(val.data(), w3mApp::Instance().InnerCharset, charset);
 }
 
 // BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)

@@ -44,7 +44,7 @@ void _followForm(bool submit);
 void query_from_followform(Str *query, FormItemList *fi, int multipart);
 // BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy referer, FormList *request);
 FormItemList *save_submit_formlist(FormItemList *src);
-Str conv_form_encoding(Str val, FormItemList *fi, BufferPtr buf);
+Str conv_form_encoding(std::string_view val, FormItemList *fi, BufferPtr buf);
 void bufferA();
 // BufferPtr loadNormalBuf(BufferPtr buf, int renderframe);
 void _nextA(int visited);
