@@ -77,6 +77,10 @@ struct FormItemList
 
     void input_textarea();
     Str ToStr() const;
+
+    void chooseSelectOption();
+    void updateSelectOption();
+    bool formChooseOptionByMenu(int x, int y);
 };
 using FormItemListPtr = std::shared_ptr<FormItemList>;
 
@@ -114,10 +118,6 @@ struct FormList : gc_cleanup
         std::string_view target = "",
         std::string_view name = "");
 };
-
-void chooseSelectOption(FormItemListPtr fi, tcb::span<FormSelectOptionItem> item);
-void updateSelectOption(FormItemListPtr fi, tcb::span<FormSelectOptionItem> item);
-bool formChooseOptionByMenu(FormItemListPtr fi, int x, int y);
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
 FormItemListPtr formList_addInput(FormList *fl, struct parsed_tag *tag, class HtmlContext *context);

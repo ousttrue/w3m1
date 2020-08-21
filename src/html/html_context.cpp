@@ -451,7 +451,8 @@ Str HtmlContext::process_n_select()
         if (select_option[n_select].size())
         {
             auto sitem = std::make_shared<FormItemList>();
-            chooseSelectOption(sitem, select_option[n_select]);
+            sitem->select_option = select_option[n_select];
+            sitem->chooseSelectOption();
             select_str->Push(textfieldrep(Strnew(sitem->label), cur_option_maxwidth));
         }
         select_str->Push("</input_alt>]</pre_int>");
@@ -1742,7 +1743,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         {
             auto item = a_select[n_select]->item;
             item->select_option = *select;
-            chooseSelectOption(item, item->select_option);
+            item->chooseSelectOption();
             item->init_selected = item->selected;
             item->init_value = item->value;
             item->init_label = item->label;

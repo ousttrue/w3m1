@@ -740,7 +740,7 @@ void _followForm(bool submit)
     {
         if (submit)
             goto do_submit;
-        if (!formChooseOptionByMenu(fi,
+        if (!fi->formChooseOptionByMenu(
                                     buf->rect.cursorX - buf->pos +
                                         a->start.pos + buf->rect.rootX,
                                     buf->rect.cursorY + buf->rect.rootY))
