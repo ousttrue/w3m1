@@ -108,7 +108,7 @@ public:
     {
     }
 
-    PropertiedString(char *l, Lineprop *p, int len, Linecolor *c = nullptr)
+    PropertiedString(const char *l, Lineprop *p, int len, Linecolor *c = nullptr)
     {
         m_lineBuf.assign(l, l + len);
         m_propBuf.assign(p, p + len);
@@ -124,6 +124,8 @@ public:
     {
         PropertiedString(str->ptr, str->Size());
     }
+
+    static PropertiedString create(Str s, bool use_color = false);
 
     void push(Lineprop prop, char c)
     {

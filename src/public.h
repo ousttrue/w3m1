@@ -91,7 +91,6 @@ void followForm();
 void SigPipe(SIGNAL_ARG);
 
 void saveBufferInfo();
-Str checkType(Str s, Lineprop **oprop, Linecolor **ocolor);
 void intTrap(SIGNAL_ARG);
 BufferPtr cookie_list_panel(void);
 // void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid);

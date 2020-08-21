@@ -324,10 +324,8 @@ static void do_effects(Lineprop m);
 
 static Str make_lastline_link(BufferPtr buf, std::string_view title, const char *url)
 {
-    Str s = NULL, u;
-    char *p;
-    int l = Terminal::columns() - 1, i;
-
+    int l = Terminal::columns() - 1;
+    Str s = NULL;
     if (title.size() && title[0])
     {
         s = Strnew_m_charp("[", title, "]");
@@ -348,12 +346,11 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
         return s;
 
     auto pu = URL::Parse(url, buf->BaseURL());
-    u = pu.ToStr();
+    auto u = pu.ToStr();
     if (w3mApp::Instance().DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));
 
-    Lineprop *pr;
-    u = checkType(u, &pr, nullptr);
+    auto propstr = PropertiedString::create(u);
 
     if (l <= 4 || l >= get_Str_strwidth(u))
     {
@@ -364,18 +361,18 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, const char 
     }
     if (!s)
         s = Strnew_size(Terminal::columns());
-    i = (l - 2) / 2;
+    auto i = (l - 2) / 2;
 
-    while (i && pr[i] & PC_WCHAR2)
+    while (i && propstr.propBuf()[i] & PC_WCHAR2)
         i--;
 
     s->Push(u->c_str(), i);
     s->Push("..");
     i = get_Str_strwidth(u) - (Terminal::columns() - 1 - get_Str_strwidth(s));
-#ifdef USE_M17N
-    while (i < u->Size() && pr[i] & PC_WCHAR2)
+
+    while (i < u->Size() && propstr.propBuf()[i] & PC_WCHAR2)
         i++;
-#endif
+
     s->Push(&u->c_str()[i]);
     return s;
 }

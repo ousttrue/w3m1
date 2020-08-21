@@ -1469,33 +1469,28 @@ void curURL(w3mApp *w3m)
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
 
-    static Str s = NULL;
-    static Lineprop *p = NULL;
-    static int offset = 0;
-    if (CurrentKey() == PrevKey() && s)
-    {
-        if (s->Size() - offset >= Terminal::columns())
-            offset++;
-        else if (s->Size() <= offset) /* bug ? */
-            offset = 0;
-    }
-    else
-    {
-        offset = 0;
-        s = currentURL();
-        if (w3mApp::Instance().DecodeURL)
-            s = Strnew(url_unquote_conv(s->ptr, WC_CES_NONE));
+    // static Str s = NULL;
+    // static Lineprop *p = NULL;
+    // static int offset = 0;
+    // if (CurrentKey() == PrevKey() && s)
+    // {
+    //     if (s->Size() - offset >= Terminal::columns())
+    //         offset++;
+    //     else if (s->Size() <= offset) /* bug ? */
+    //         offset = 0;
+    // }
+    // else
 
-        Lineprop *pp;
-        s = checkType(s, &pp, NULL);
-        p = NewAtom_N(Lineprop, s->Size());
-        bcopy((void *)pp, (void *)p, s->Size() * sizeof(Lineprop));
-    }
+    auto offset = 0;
+    auto s = currentURL();
+    if (w3mApp::Instance().DecodeURL)
+        s = Strnew(url_unquote_conv(s->ptr, WC_CES_NONE));
 
+    auto propstr = PropertiedString::create(s);
     int n = searchKeyNum();
     if (n > 1 && s->Size() > (n - 1) * (Terminal::columns() - 1))
         offset = (n - 1) * (Terminal::columns() - 1);
-    while (offset < s->Size() && p[offset] & PC_WCHAR2)
+    while (offset < s->Size() && propstr.propBuf()[offset] & PC_WCHAR2)
         offset++;
     disp_message_nomouse(&s->ptr[offset], true);
 }
