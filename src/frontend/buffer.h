@@ -324,7 +324,7 @@ public:
     std::string ssl_certificate;
     char image_flag = 0;
     char image_loaded = 0;
-    Anchor *submit = nullptr;
+    AnchorPtr submit = nullptr;
     std::vector<BufferPos> undo;
     AlarmEvent *event = nullptr;
 
@@ -380,4 +380,4 @@ const char *reAnchorNews(BufferPtr buf, const char *re);
 char *reAnchorNewsheader(const BufferPtr &buf);
 void addMultirowsForm(BufferPtr buf, AnchorList &al);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);
-char *getAnchorText(BufferPtr buf, AnchorList &al, Anchor *a);
+char *getAnchorText(BufferPtr buf, AnchorList &al, AnchorPtr a);

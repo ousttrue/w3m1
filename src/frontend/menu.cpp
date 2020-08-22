@@ -1682,8 +1682,7 @@ Link *link_menu(const BufferPtr &buf)
 
 /* --- LinkMenu (END) --- */
 
-Anchor *
-accesskey_menu(const BufferPtr &buf)
+AnchorPtr accesskey_menu(const BufferPtr &buf)
 {
     AnchorList &al = buf->href;
     if (!al)
@@ -1692,7 +1691,7 @@ accesskey_menu(const BufferPtr &buf)
     int nitem = 0;
     for (int i = 0; i < al.size(); i++)
     {
-        auto a = &al.anchors[i];
+        auto a = al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
             nitem++;
     }
@@ -1705,11 +1704,11 @@ accesskey_menu(const BufferPtr &buf)
     unsigned char c;
 
     std::vector<std::string> label;
-    auto ap = New_N(Anchor *, nitem);
+    auto ap = New_N(AnchorPtr , nitem);
     int n;
     for (i = 0, n = 0; i < al.size(); i++)
     {
-        auto a = &al.anchors[i];
+        auto a = al.anchors[i];
         if (!a->slave && a->accesskey && IS_ASCII(a->accesskey))
         {
             t = getAnchorText(buf, al, a);
@@ -1793,12 +1792,10 @@ lmSelect(char c)
         return (MENU_NOTHING);
 }
 
-Anchor *
-list_menu(const BufferPtr &buf)
+AnchorPtr list_menu(const BufferPtr &buf)
 {
     Menu menu;
     AnchorList &al = buf->href;
-    Anchor **ap;
     int i, n, nitem = 0, key = -1, two = false;
     const char *t;
     unsigned char c;
@@ -1807,7 +1804,7 @@ list_menu(const BufferPtr &buf)
         return NULL;
     for (i = 0; i < al.size(); i++)
     {
-        auto a = &al.anchors[i];
+        auto a = al.anchors[i];
         if (!a->slave)
             nitem++;
     }
@@ -1818,10 +1815,10 @@ list_menu(const BufferPtr &buf)
         two = true;
 
     std::vector<std::string> label;
-    ap = New_N(Anchor *, nitem);
+    std::vector<AnchorPtr> ap(nitem);
     for (i = 0, n = 0; i < al.size(); i++)
     {
-        auto a = &al.anchors[i];
+        auto a = al.anchors[i];
         if (!a->slave)
         {
             t = getAnchorText(buf, al, a);

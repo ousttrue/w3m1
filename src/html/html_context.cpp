@@ -278,7 +278,7 @@ Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
     return nullptr;
 }
 
-std::vector<FormPtr > &HtmlContext::FormEnd()
+std::vector<FormPtr> &HtmlContext::FormEnd()
 {
     return forms;
 }
@@ -1312,11 +1312,12 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
 
             this->effect |= PE_ANCHOR;
-            this->a_href = buf->href.Put(Anchor::CreateHref(p,
-                                                            q ? q : "",
-                                                            referer,
-                                                            s ? s : "",
-                                                            *t, currentLn(buf), pos));
+            this->a_href = Anchor::CreateHref(p,
+                                              q ? q : "",
+                                              referer,
+                                              s ? s : "",
+                                              *t, currentLn(buf), pos);
+            buf->href.Put(this->a_href);
             this->a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
             this->a_href->slave = (hseq > 0) ? false : true;
         }
@@ -1371,10 +1372,11 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
                                buf->document_charset)
                     ->ptr;
-            this->a_img = buf->img.Put(Anchor::CreateImage(
+            this->a_img = Anchor::CreateImage(
                 p,
                 s ? s : "",
-                currentLn(buf), pos));
+                currentLn(buf), pos);
+            buf->img.Put(this->a_img);
 
             this->a_img->hseq = iseq;
             this->a_img->image = nullptr;
@@ -1474,16 +1476,17 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         auto fi = formList_addInput(form, tag, this);
         if (fi)
         {
-            Anchor a;
-            a.target = form->target;
-            a.item = fi;
+            auto a = std::make_shared<Anchor>();
+            a->target = form->target;
+            a->item = fi;
             BufferPoint bp = {
                 line : currentLn(buf),
                 pos : pos
             };
-            a.start = bp;
-            a.end = bp;
-            this->a_form = buf->formitem.Put(a);
+            a->start = bp;
+            a->end = bp;
+            this->a_form = a;
+            buf->formitem.Put(a);
         }
         else
         {

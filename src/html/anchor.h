@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <memory>
 #include "bufferpoint.h"
 #include "stream/http.h"
 
@@ -23,10 +24,11 @@ struct Anchor
     Image *image = nullptr;
     std::shared_ptr<FormItem> item;
 
-    static Anchor CreateHref(std::string_view url, std::string_view target, HttpReferrerPolicy referer,
-                             std::string title, unsigned char key, int line, int pos)
+    static std::shared_ptr<Anchor> CreateHref(std::string_view url, std::string_view target, HttpReferrerPolicy referer,
+                                std::string title, unsigned char key, int line, int pos)
     {
-        return Anchor{
+        auto p = std::make_shared<Anchor>();
+        *p = Anchor{
             url : std::move(std::string(url)),
             target : std::move(std::string(target)),
             referer : referer,
@@ -41,11 +43,13 @@ struct Anchor
                 pos : pos,
             },
         };
+        return p;
     }
 
-    static Anchor CreateName(std::string_view url, int line, int pos)
+    static std::shared_ptr<Anchor> CreateName(std::string_view url, int line, int pos)
     {
-        return Anchor{
+        auto p = std::make_shared<Anchor>();
+        *p = Anchor{
             url : std::move(std::string(url)),
             accesskey : '\0',
             start : {
@@ -57,11 +61,13 @@ struct Anchor
                 pos : pos,
             },
         };
+        return p;
     }
 
-    static Anchor CreateImage(std::string_view url, std::string_view title, int line, int pos)
+    static std::shared_ptr<Anchor> CreateImage(std::string_view url, std::string_view title, int line, int pos)
     {
-        return Anchor{
+        auto p = std::make_shared<Anchor>();
+        *p = Anchor{
             url : std::move(std::string(url)),
             title : std::move(std::string(title)),
             accesskey : '\0',
@@ -74,17 +80,19 @@ struct Anchor
                 pos : pos,
             },
         };
+        return p;
     }
 
     int CmpOnAnchor(const BufferPoint &bp) const;
 };
+using AnchorPtr = std::shared_ptr<Anchor>;
 
 class AnchorList
 {
     mutable int m_acache = -1;
 
 public:
-    std::vector<Anchor> anchors;
+    std::vector<AnchorPtr> anchors;
 
     void clear()
     {
@@ -101,10 +109,10 @@ public:
         return !anchors.empty();
     }
 
-    Anchor *Put(const Anchor &a);
+    void Put(const AnchorPtr &a);
 
-    const Anchor *RetrieveAnchor(const BufferPoint &bp) const;
-    const Anchor *SearchByUrl(const char *str) const;
-    const Anchor *ClosestNext(const Anchor *an, int x, int y) const;
-    const Anchor *ClosestPrev(const Anchor *an, int x, int y) const;
+    AnchorPtr RetrieveAnchor(const BufferPoint &bp) const;
+    AnchorPtr SearchByUrl(const char *str) const;
+    AnchorPtr ClosestNext(const AnchorPtr &an, int x, int y) const;
+    AnchorPtr ClosestPrev(const AnchorPtr &an, int x, int y) const;
 };

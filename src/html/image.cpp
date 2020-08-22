@@ -273,7 +273,7 @@ static BufferPtr image_buffer = NULL;
 
 void deleteImage(Buffer *buf)
 {
-    Anchor *a;
+    AnchorPtr a;
     int i;
 
     if (!buf)
@@ -284,18 +284,18 @@ void deleteImage(Buffer *buf)
 
     for (auto &a : al.anchors)
     {
-        if (a.image && a.image->cache &&
-            a.image->cache->loaded != IMG_FLAG_UNLOADED &&
-            !(a.image->cache->loaded & IMG_FLAG_DONT_REMOVE) &&
-            a.image->cache->index < 0)
-            unlink(a.image->cache->file);
+        if (a->image && a->image->cache &&
+            a->image->cache->loaded != IMG_FLAG_UNLOADED &&
+            !(a->image->cache->loaded & IMG_FLAG_DONT_REMOVE) &&
+            a->image->cache->index < 0)
+            unlink(a->image->cache->file);
     }
     loadImage(NULL, IMG_FLAG_STOP);
 }
 
 void getAllImage(const BufferPtr &buf)
 {
-    Anchor *a;
+    AnchorPtr a;
     URL *current;
     int i;
 
@@ -309,11 +309,11 @@ void getAllImage(const BufferPtr &buf)
     current = buf->BaseURL();
     for (auto &a : al.anchors)
     {
-        if (a.image)
+        if (a->image)
         {
-            a.image->cache = getImage(a.image, current, buf->image_flag);
-            if (a.image->cache &&
-                a.image->cache->loaded == IMG_FLAG_UNLOADED)
+            a->image->cache = getImage(a->image, current, buf->image_flag);
+            if (a->image->cache &&
+                a->image->cache->loaded == IMG_FLAG_UNLOADED)
                 buf->image_loaded = false;
         }
     }
@@ -321,7 +321,7 @@ void getAllImage(const BufferPtr &buf)
 
 void showImageProgress(const BufferPtr &buf)
 {
-    Anchor *a;
+    AnchorPtr a;
     int i, l, n;
 
     if (!buf)
@@ -331,10 +331,10 @@ void showImageProgress(const BufferPtr &buf)
         return;
     for (auto &a : al.anchors)
     {
-        if (a.image && a.hseq >= 0)
+        if (a->image && a->hseq >= 0)
         {
             n++;
-            if (a.image->cache && a.image->cache->loaded & IMG_FLAG_LOADED)
+            if (a->image->cache && a->image->cache->loaded & IMG_FLAG_LOADED)
                 l++;
         }
     }

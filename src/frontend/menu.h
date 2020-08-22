@@ -100,7 +100,7 @@ void PopupMenu();
 void PopupBufferMenu();
 void PopupTabMenu();
 Link *link_menu(const BufferPtr &buf);
-Anchor *accesskey_menu(const BufferPtr &buf);
-Anchor *list_menu(const BufferPtr &buf);
+AnchorPtr accesskey_menu(const BufferPtr &buf);
+AnchorPtr list_menu(const BufferPtr &buf);
 
 #endif /* not MENU_H */

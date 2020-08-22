@@ -145,14 +145,15 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
                 printf("\nReferences:\n\n");
                 for (i = 0; i < buf->href.size(); i++)
                 {
-                    if (buf->href.anchors[i].slave)
+                    auto a = buf->href.anchors[i];
+                    if (a->slave)
                         continue;
 
-                    auto pu = URL::Parse(buf->href.anchors[i].url, buf->BaseURL());
+                    auto pu = URL::Parse(a->url, buf->BaseURL());
                     auto s = pu.ToStr();
                     if (w3mApp::Instance().DecodeURL)
                         s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
-                    printf("[%d] %s\n", buf->href.anchors[i].hseq + 1, s->ptr);
+                    printf("[%d] %s\n", a->hseq + 1, s->ptr);
                 }
             }
         }
@@ -828,7 +829,7 @@ void _followForm(bool submit)
     {
         for (auto i = 0; i < buf->formitem.size(); i++)
         {
-            auto a2 = &buf->formitem.anchors[i];
+            auto a2 = buf->formitem.anchors[i];
             auto f2 = a2->item;
             if (f2->parent.lock() == fi->parent.lock() &&
                 f2->name.size() && f2->value.size() &&
@@ -1054,7 +1055,7 @@ void bufferA(void)
 //     resetFrameElement(f_element, newBuf, referer, request);
 //     rFrame(&w3mApp::Instance());
 //     {
-//         const Anchor *al = NULL;
+//         const AnchorPtr al = NULL;
 //         auto label = pu.fragment;
 
 //         if (label.size() && f_element->element->attr == F_BODY)
@@ -1406,7 +1407,7 @@ void nextX(int d, int dy)
     auto l = buf->CurrentLine();
     auto x = buf->pos;
     auto y = l->linenumber;
-    const Anchor *pan = NULL;
+    AnchorPtr pan;
     int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     for (int i = 0; i < n; i++)
     {
@@ -1462,7 +1463,7 @@ void nextY(int d)
 
     int x = buf->pos;
     int y = buf->CurrentLine()->linenumber + d;
-    const Anchor *pan = NULL;
+    AnchorPtr pan;
     int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     int hseq = -1;
     for (int i = 0; i < n; i++)
@@ -1574,7 +1575,7 @@ void goURL0(const char *prompt, int relative)
         pushHashHist(w3mApp::Instance().URLHist, buf->currentURL.ToStr()->ptr);
 }
 
-void anchorMn(Anchor *(*menu_func)(const BufferPtr &), int go)
+void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();

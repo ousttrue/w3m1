@@ -897,20 +897,20 @@ void topA(w3mApp *w3m)
     else if (prec_num() > 0)
         hseq = prec_num() - 1;
 
-    BufferPoint *po;
-    const Anchor *an;
+    BufferPoint po = {};
+    AnchorPtr an;
     do
     {
         if (hseq >= hl.size())
             return;
-        auto &po = hl[hseq];
+        po = hl[hseq];
         an = buf->href.RetrieveAnchor(po);
         if (an == NULL)
             an = buf->formitem.RetrieveAnchor(po);
         hseq++;
     } while (an == NULL);
 
-    buf->Goto(*po);
+    buf->Goto(po);
     displayCurrentbuf(B_NORMAL);
 }
 /* go to the last anchor */
@@ -923,7 +923,6 @@ void lastA(w3mApp *w3m)
         return;
 
     auto &hl = buf->hmarklist;
-    BufferPoint *po;
     int hseq;
     if (hl.empty())
         return;
@@ -934,19 +933,20 @@ void lastA(w3mApp *w3m)
     else
         hseq = hl.size() - 1;
 
-    const Anchor *an;
+    BufferPoint po = {};
+    AnchorPtr an;
     do
     {
         if (hseq < 0)
             return;
-        auto &po = hl[hseq];
+        po = hl[hseq];
         an = buf->href.RetrieveAnchor(po);
         if (an == NULL)
             an = buf->formitem.RetrieveAnchor(po);
         hseq--;
     } while (an == NULL);
 
-    buf->Goto(*po);
+    buf->Goto(po);
     displayCurrentbuf(B_NORMAL);
 }
 /* go to the next anchor */
@@ -974,7 +974,7 @@ void prevVA(w3mApp *w3m)
     _prevA(true);
 }
 
-static std::tuple<bool, int, int> isMap(const BufferPtr &buf, const Anchor *a)
+static std::tuple<bool, int, int> isMap(const BufferPtr &buf, const AnchorPtr a)
 {
     int x = 0;
     int y = 0;

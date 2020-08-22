@@ -32,9 +32,9 @@ class HtmlContext
 
     Str cur_title = nullptr;
 
-    Anchor *a_href = nullptr;
-    Anchor *a_img = nullptr;
-    Anchor *a_form = nullptr;
+    AnchorPtr a_href = nullptr;
+    AnchorPtr a_img = nullptr;
+    AnchorPtr a_form = nullptr;
 
     HtmlTags internal = HTML_UNKNOWN;
 
@@ -44,7 +44,7 @@ class HtmlContext
     std::vector<int> form_stack;
     std::vector<FormPtr> forms;
 
-    std::vector<Anchor *> a_select;
+    std::vector<AnchorPtr > a_select;
     std::vector<FormSelectOptionList> select_option;
     int n_select = -1;
     int cur_option_maxwidth = 0;
@@ -57,7 +57,7 @@ class HtmlContext
     Str cur_option_label = nullptr;
     bool cur_option_selected = false;
     int cur_status = 0;
-    std::vector<Anchor *> a_textarea;
+    std::vector<AnchorPtr > a_textarea;
     std::vector<Str> textarea_str;
     int n_textarea = -1;
     Str cur_textarea;

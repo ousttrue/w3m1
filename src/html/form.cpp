@@ -268,11 +268,11 @@ Str FormItem::ToStr() const
     return tmp;
 }
 
-void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemPtr fi)
+void formRecheckRadio(const AnchorPtr &a, BufferPtr buf, FormItemPtr fi)
 {
     for (int i = 0; i < buf->formitem.size(); i++)
     {
-        auto a2 = &buf->formitem.anchors[i];
+        auto a2 = buf->formitem.anchors[i];
         auto f2 = a2->item;
         if (f2->parent.lock() == fi->parent.lock() && f2 != fi &&
             f2->type == FORM_INPUT_RADIO && f2->name == fi->name)
@@ -288,18 +288,18 @@ void formRecheckRadio(const Anchor *a, BufferPtr buf, FormItemPtr fi)
 void formResetBuffer(BufferPtr buf, AnchorList &formitem)
 {
     int i;
-    Anchor *a;
+    AnchorPtr a;
     FormItemPtr f1, f2;
 
     if (buf == NULL || !buf->formitem || !formitem)
         return;
     for (i = 0; i < buf->formitem.size() && i < formitem.size(); i++)
     {
-        a = &buf->formitem.anchors[i];
+        a = buf->formitem.anchors[i];
         if (a->y != a->start.line)
             continue;
         f1 = a->item;
-        f2 = formitem.anchors[i].item;
+        f2 = formitem.anchors[i]->item;
         if (f1->type != f2->type || f1->name != f2->name)
             break; /* What's happening */
         switch (f1->type)
@@ -467,7 +467,7 @@ static std::tuple<std::string_view, int> form_update_line(LinePtr line, std::str
     return {remain, pos};
 }
 
-void formUpdateBuffer(const Anchor *a, BufferPtr buf, FormItemPtr form)
+void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
 {
     auto save = buf->Copy();
     buf->GotoLine(a->start.line);
@@ -994,7 +994,7 @@ void loadPreForm(void)
 void preFormUpdateBuffer(const BufferPtr &buf)
 {
     int i;
-    Anchor *a;
+    AnchorPtr a;
     FormPtr fl;
     FormItemPtr fi;
     FormSelectOptionItem *opt;
@@ -1020,7 +1020,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
             continue;
         for (i = 0; i < buf->formitem.size(); i++)
         {
-            a = &buf->formitem.anchors[i];
+            a = buf->formitem.anchors[i];
             fi = a->item;
             fl = fi->parent.lock();
             if (pf->name && (fl->name.empty() || fl->name != pf->name))

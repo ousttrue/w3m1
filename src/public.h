@@ -55,7 +55,7 @@ void nextX(int d, int dy);
 void nextY(int d);
 
 void goURL0(const char *prompt, int relative);
-void anchorMn(Anchor *(*menu_func)(const BufferPtr &), int go);
+void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go);
 void _peekURL(int only_img);
 Str currentURL(void);
 

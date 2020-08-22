@@ -372,7 +372,7 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
     auto e = al.size() - 1;
     for (auto b = 0; b <= e; s = (b + e + 1) / 2)
     {
-        auto a = &al.anchors[s];
+        auto a = al.anchors[s];
         auto cmp = a->CmpOnAnchor(bp);
         if (cmp == 0)
             break;
@@ -385,7 +385,7 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
     }
     for (; s < al.size(); s++)
     {
-        auto a = &al.anchors[s];
+        auto a = al.anchors[s];
         if (a->start.line > bp.line)
             break;
         if (a->start.pos > bp.pos)

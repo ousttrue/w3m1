@@ -2,9 +2,6 @@
 #include <memory>
 #include <vector>
 
-struct GeneralList;
-struct Anchor;
-
 enum ShapeTypes
 {
     SHAPE_UNKNOWN = 0,
@@ -34,8 +31,9 @@ struct MapList
 using MapListPtr = std::shared_ptr<MapList>;
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
-const Anchor *retrieveCurrentMap(const BufferPtr &buf);
-MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y);
+using AnchorPtr = std::shared_ptr<struct Anchor>;
+AnchorPtr retrieveCurrentMap(const BufferPtr &buf);
+MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const AnchorPtr &a_img, int x, int y);
 MapAreaPtr retrieveCurrentMapArea(const BufferPtr &buf);
 MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords);
 MapListPtr searchMapList(BufferPtr buf, const char *name);

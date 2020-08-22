@@ -461,7 +461,7 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
     auto l = buf->TopLine();
     for (int j = 0; j < al.size(); j++)
     {
-        auto an = &al.anchors[j];
+        auto an = al.anchors[j];
         if (an->start.line < tline)
             continue;
         if (an->start.line >= eline)

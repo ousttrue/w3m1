@@ -99,7 +99,7 @@ nearestMapArea(MapListPtr ml, int x, int y)
 }
 
 static int
-searchMapArea(BufferPtr buf, MapListPtr ml, const Anchor *a_img)
+searchMapArea(BufferPtr buf, MapListPtr ml, const AnchorPtr a_img)
 {
     int i, n;
     int px, py;
@@ -164,7 +164,7 @@ retrieveCurrentMapArea(const BufferPtr &buf)
     return NULL;
 }
 
-int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y)
+int getMapXY(BufferPtr buf, const AnchorPtr a, int *x, int *y)
 {
     if (!buf || !a || !a->image || !x || !y)
         return 0;
@@ -177,7 +177,7 @@ int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y)
     return 1;
 }
 
-const Anchor *retrieveCurrentMap(const BufferPtr &buf)
+AnchorPtr retrieveCurrentMap(const BufferPtr &buf)
 {
     auto a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (!a || !a->url.size())
@@ -188,7 +188,7 @@ const Anchor *retrieveCurrentMap(const BufferPtr &buf)
     return NULL;
 }
 
-MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const Anchor *a_img, int x, int y)
+MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const AnchorPtr a_img, int x, int y)
 {
     auto ml = searchMapList(buf, name);
     if (ml == NULL || ml->area.empty())
@@ -467,7 +467,7 @@ BufferPtr
 page_info_panel(const BufferPtr &buf)
 {
     Str tmp = Strnew_size(1024);
-    const Anchor *a;
+    AnchorPtr a;
     TextListItem *ti;
     struct frameset *f_set = NULL;
     char *p, *q;

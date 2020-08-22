@@ -74,7 +74,7 @@ void preFormUpdateBuffer(const BufferPtr &buf);
 void form_write_data(FILE *f, char *boundary, char *name, char *value);
 void form_write_from_file(FILE *f, char *boundary, char *name,
                           char *filename, char *file);
-int getMapXY(BufferPtr buf, const Anchor *a, int *x, int *y);
+int getMapXY(BufferPtr buf, const AnchorPtr a, int *x, int *y);
 BufferPtr page_info_panel(const BufferPtr &buf);
 struct frame_body *newFrame(struct parsed_tag *tag, BufferPtr buf);
 struct frameset *newFrameSet(struct parsed_tag *tag);
