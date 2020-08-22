@@ -109,8 +109,7 @@ static int match_range_longchar(longchar *, longchar *, longchar *, int);
 /* 
  * regexCompile: compile regular expression
  */
-const char *
-regexCompile(const char *ex, int igncase)
+const char *regexCompile(const char *ex, bool igncase)
 {
     const char *msg;
     newRegex(const_cast<char *>(ex), igncase, &DefaultRegex, &msg);
@@ -118,7 +117,7 @@ regexCompile(const char *ex, int igncase)
 }
 
 static Regex *
-newRegex0(const char **ex, int igncase, Regex *regex, const char **msg, int level)
+newRegex0(const char **ex, bool igncase, Regex *regex, const char **msg, int level)
 {
     // char *p;
     longchar *r;
@@ -289,7 +288,7 @@ newRegex0(const char **ex, int igncase, Regex *regex, const char **msg, int leve
 }
 
 Regex *
-newRegex(const char *ex, int igncase, Regex *regex, const char **msg)
+newRegex(const char *ex, bool igncase, Regex *regex, const char **msg)
 {
     return newRegex0(&ex, igncase, regex, msg, 0);
 }
@@ -297,7 +296,7 @@ newRegex(const char *ex, int igncase, Regex *regex, const char **msg)
 /* 
  * regexMatch: match regular expression
  */
-int regexMatch(const char *str, int len, int firstp)
+int regexMatch(const char *str, int len, bool firstp)
 {
     return RegexMatch(&DefaultRegex, const_cast<char *>(str), len, firstp);
 }

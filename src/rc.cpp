@@ -2,7 +2,7 @@
 #include "urimethod.h"
 #include "gc_helper.h"
 #include "rc.h"
-
+#include "stream/open_socket.h"
 #include "symbol.h"
 #include "myctype.h"
 #include "indep.h"

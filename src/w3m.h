@@ -22,15 +22,6 @@ enum DumpFlags
     DUMP_FRAME = 0x20,
 };
 
-enum DnsOrderTypes
-{
-    DNS_ORDER_UNSPEC = 0,
-    DNS_ORDER_INET_INET6 = 1,
-    DNS_ORDER_INET6_INET = 2,
-    DNS_ORDER_INET_ONLY = 4,
-    DNS_ORDER_INET6_ONLY = 6,
-};
-
 enum MailtoOption
 {
     MAILTO_OPTIONS_IGNORE = 1,
@@ -193,7 +184,7 @@ public:
     DefaultUrlTypes DefaultURLString = DEFAULT_URL_EMPTY;
     int FollowRedirection = 10;
     bool MetaRefresh = false;
-    int DNS_order = DNS_ORDER_UNSPEC;
+    int DNS_order = 0;
 
     //
     // Proxy

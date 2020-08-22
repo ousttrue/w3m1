@@ -1,226 +1,203 @@
-#include "indep.h"
-#include "regex.h"
+#include <sstream>
 #include "open_socket.h"
+#include "regex.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include "frontend/event.h"
-#include "frontend/display.h"
-#include "frontend/terminal.h"
-#include "frontend/screen.h"
 
-int openSocket4(const char *hostname,
-                const char *remoteport_name, unsigned short remoteport_num)
+static int openSocket4(
+    const std::string &hostname,
+    std::string_view remoteport_name, unsigned short remoteport_num)
 {
-    if (w3mApp::Instance().fmInitialized)
-    {
-        /* FIXME: gettextize? */
-        message(Sprintf("Opening socket...")->ptr, 0, 0);
-        Screen::Instance().Refresh();
-        Terminal::flush();
-    }
+    // if (w3mApp::Instance().fmInitialized)
+    // {
+    //     /* FIXME: gettextize? */
+    //     message(Sprintf("Opening socket...")->ptr, 0, 0);
+    //     Screen::Instance().Refresh();
+    //     Terminal::flush();
+    // }
 
-    if (hostname == NULL)
+    if (hostname.empty())
     {
         return -1;
     }
 
+    // unsigned short s_port;
+    // unsigned long adr;
+    // MySignalHandler prevtrap = NULL;
+    // auto success = TrapJmp([&] {
+    auto s_port = htons(remoteport_num);
+
+    auto proto = getprotobyname("tcp");
+    struct protoent _proto = {0};
+    if (!proto)
+    {
+        /* protocol number of TCP is 6 */
+        proto = &_proto;
+        proto->p_proto = 6;
+    }
+
     int sock = -1;
-    struct sockaddr_in hostaddr;
-    struct hostent *entry;
-    unsigned short s_port;
-    int a1, a2, a3, a4;
-    unsigned long adr;
-    MySignalHandler prevtrap = NULL;
-    auto success = TrapJmp([&] {
-        s_port = htons(remoteport_num);
-        bzero((char *)&hostaddr, sizeof(struct sockaddr_in));
-        auto proto = getprotobyname("tcp");
-        struct protoent _proto;
-        if (!proto)
+    if ((sock = socket(AF_INET, SOCK_STREAM, proto->p_proto)) < 0)
+    {
+        return -1;
+    }
+
+    regexCompile("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", 0);
+    if (regexMatch(hostname))
+    {
+        //
+        // IP Address. ex: 127.0.0.1 like
+        //
+        int a1, a2, a3, a4;
+        sscanf(hostname.c_str(), "%d.%d.%d.%d", &a1, &a2, &a3, &a4);
+        auto adr = htonl((a1 << 24) | (a2 << 16) | (a3 << 8) | a4);
+        struct sockaddr_in hostaddr = {0};
+        bcopy((void *)&adr, (void *)&hostaddr.sin_addr, sizeof(long));
+        hostaddr.sin_family = AF_INET;
+        hostaddr.sin_port = s_port;
+        // if (w3mApp::Instance().fmInitialized)
+        // {
+        //     message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
+        //     Screen::Instance().Refresh();
+        //     Terminal::flush();
+        // }
+        if (connect(sock, (struct sockaddr *)&hostaddr,
+                    sizeof(struct sockaddr_in)) != 0)
         {
-            /* protocol number of TCP is 6 */
-            proto = &_proto;
-            bzero(proto, sizeof(struct protoent));
-            proto->p_proto = 6;
+            return -1;
         }
-        if ((sock = socket(AF_INET, SOCK_STREAM, proto->p_proto)) < 0)
+
+        return sock;
+    }
+    else
+    {
+        // char **h_addr_list;
+        // if (w3mApp::Instance().fmInitialized)
+        // {
+        //     message(Sprintf("Performing hostname lookup on %s", hostname)->ptr,
+        //             0, 0);
+        //     Screen::Instance().Refresh();
+        //     Terminal::flush();
+        // }
+        auto entry = gethostbyname(hostname.c_str());
+        if (!entry)
         {
-            return false;
+            return -1;
         }
-        regexCompile("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", 0);
-        if (regexMatch(const_cast<char *>(hostname), -1, 1))
+
+        for (auto h_addr_list = entry->h_addr_list; *h_addr_list; h_addr_list++)
         {
-            sscanf(hostname, "%d.%d.%d.%d", &a1, &a2, &a3, &a4);
-            adr = htonl((a1 << 24) | (a2 << 16) | (a3 << 8) | a4);
-            bcopy((void *)&adr, (void *)&hostaddr.sin_addr, sizeof(long));
+            struct sockaddr_in hostaddr = {0};
             hostaddr.sin_family = AF_INET;
             hostaddr.sin_port = s_port;
-            if (w3mApp::Instance().fmInitialized)
-            {
-                message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
-                Screen::Instance().Refresh();
-                Terminal::flush();
-            }
+            bcopy((void *)h_addr_list[0], (void *)&hostaddr.sin_addr, entry->h_length);
+            // if (w3mApp::Instance().fmInitialized)
+            // {
+            //     message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
+            //     Screen::Instance().Refresh();
+            //     Terminal::flush();
+            // }
             if (connect(sock, (struct sockaddr *)&hostaddr,
-                        sizeof(struct sockaddr_in)) < 0)
+                        sizeof(struct sockaddr_in)) == 0)
             {
-                return false;
-            }
-        }
-        else
-        {
-            char **h_addr_list;
-            int result = -1;
-            if (w3mApp::Instance().fmInitialized)
-            {
-                message(Sprintf("Performing hostname lookup on %s", hostname)->ptr,
-                        0, 0);
-                Screen::Instance().Refresh();
-                Terminal::flush();
-            }
-            if ((entry = gethostbyname(hostname)) == NULL)
-            {
-                return false;
-            }
-            hostaddr.sin_family = AF_INET;
-            hostaddr.sin_port = s_port;
-            for (h_addr_list = entry->h_addr_list; *h_addr_list; h_addr_list++)
-            {
-                bcopy((void *)h_addr_list[0], (void *)&hostaddr.sin_addr,
-                      entry->h_length);
-                if (w3mApp::Instance().fmInitialized)
-                {
-                    message(Sprintf("Connecting to %s", hostname)->ptr, 0, 0);
-                    Screen::Instance().Refresh();
-                    Terminal::flush();
-                }
-                if ((result = connect(sock, (struct sockaddr *)&hostaddr,
-                                      sizeof(struct sockaddr_in))) == 0)
-                {
-                    break;
-                }
-            }
-            if (result < 0)
-            {
-                return false;
+                return sock;
             }
         }
 
-        return true;
-    });
-
-    return success ? sock : -1;
+        return -1;
+    }
 }
 
-int openSocket6(const char *hostname,
-                const char *remoteport_name, unsigned short remoteport_num)
+struct Socket6
 {
-    int sock = -1;
-    int *af;
-    struct addrinfo hints, *res0, *res;
-    int error;
-    char *hname;
-    MySignalHandler prevtrap = NULL;
+    struct addrinfo *res0 = nullptr;
 
-    if (w3mApp::Instance().fmInitialized)
+    ~Socket6()
     {
-        /* FIXME: gettextize? */
-        message(Sprintf("Opening socket...")->ptr, 0, 0);
-        Screen::Instance().Refresh();
-        Terminal::flush();
+        freeaddrinfo(res0);
     }
 
-    if (hostname == NULL)
+    int open(std::string hostname,
+             const std::string &remoteport_name, unsigned short remoteport_num, DnsOrderTypes order)
     {
-        return -1;
-    }
-
-    auto success = TrapJmp([&] {
-        /* rfc2732 compliance */
-        hname = const_cast<char *>(hostname);
-        if (hname != NULL && hname[0] == '[' && hname[strlen(hname) - 1] == ']')
+        if (hostname.empty())
         {
-            hname = allocStr(hostname + 1, -1);
-            hname[strlen(hname) - 1] = '\0';
-            if (strspn(hname, "0123456789abcdefABCDEF:.") != strlen(hname))
-                return false;
+            return -1;
         }
-        for (af = ai_family_order_table[w3mApp::Instance().DNS_order];; af++)
+
+        /* rfc2732 compliance */
+        if (hostname.size() && hostname.front() == '[' && hostname.back() == ']')
         {
-            memset(&hints, 0, sizeof(hints));
+            hostname = hostname.substr(1, hostname.size() - 2);
+            if (strspn(hostname.c_str(), "0123456789abcdefABCDEF:.") != hostname.size())
+            {
+                return -1;
+            }
+        }
+
+        for (auto af = ai_family_order_table[order];; af++)
+        {
+            struct addrinfo hints = {0};
             hints.ai_family = *af;
             hints.ai_socktype = SOCK_STREAM;
+
+            int error = -1;
             if (remoteport_num != 0)
             {
-                Str portbuf = Sprintf("%d", remoteport_num);
-                error = getaddrinfo(hname, portbuf->ptr, &hints, &res0);
+                std::stringstream ss;
+                ss << remoteport_num;
+                // Str portbuf = Sprintf("%d", remoteport_num);
+                error = getaddrinfo(hostname.c_str(), ss.str().c_str(), &hints, &res0);
             }
-            else
-            {
-                error = -1;
-            }
-            if (error && remoteport_name && remoteport_name[0] != '\0')
+
+            if (error && remoteport_name.size() && remoteport_name[0] != '\0')
             {
                 /* try default port */
-                error = getaddrinfo(hname, remoteport_name, &hints, &res0);
-            }
-            if (error)
-            {
-                if (*af == PF_UNSPEC)
-                {
-                    return false;
-                }
-                /* try next ai family */
-                continue;
+                error = getaddrinfo(hostname.c_str(), remoteport_name.c_str(), &hints, &res0);
             }
 
-            sock = -1;
-            for (res = res0; res; res = res->ai_next)
+            if (error == 0)
             {
-                sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-                if (sock < 0)
+                for (auto res = res0; res; res = res->ai_next)
                 {
-                    continue;
+                    auto sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+                    if (sock < 0)
+                    {
+                        break;
+                    }
+                    if (connect(sock, res->ai_addr, res->ai_addrlen) < 0)
+                    {
+                        close(sock);
+                        break;
+                    }
+
+                    return sock;
                 }
-                if (connect(sock, res->ai_addr, res->ai_addrlen) < 0)
-                {
-                    close(sock);
-                    sock = -1;
-                    continue;
-                }
+            }
+
+            if (*af == PF_UNSPEC)
+            {
                 break;
             }
-            if (sock < 0)
-            {
-                freeaddrinfo(res0);
-                if (*af == PF_UNSPEC)
-                {
-                    return false;
-                }
-                /* try next ai family */
-                continue;
-            }
-            freeaddrinfo(res0);
-            break;
+
+            /* try next ai family */
         }
 
-        return true;
-    });
-
-    return success ? sock : -1;
-}
+        return -1;
+    }
+};
 
 int openSocket(const char *hostname,
-               const char *remoteport_name, unsigned short remoteport_num)
+               const char *remoteport_name, unsigned short remoteport_num, DnsOrderTypes order)
 {
-    return openSocket6(hostname, remoteport_name, remoteport_num);
+    return Socket6().open(hostname, remoteport_name, remoteport_num, order);
 }
 
-int openSocket(const URL &url)
+int openSocket(const URL &url, DnsOrderTypes order)
 {
-    return openSocket(url.host.c_str(), GetScheme(url.scheme)->name.data(), url.port);
+    return openSocket(url.host.c_str(), GetScheme(url.scheme)->name.data(), url.port, order);
 }
