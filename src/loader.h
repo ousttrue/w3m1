@@ -1,6 +1,6 @@
 #pragma once
 #include "frontend/buffer.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "stream/http.h"
 #include <memory>
 
@@ -13,7 +13,4 @@ BufferPtr loadGeneralFile(const URL &url,
                           const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
                           FormPtr form = nullptr);
 
-ContentStream GetStream(const URL &url,
-                        const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
-                        FormPtr form = nullptr);
 BufferPtr LoadStream(const ContentStream &stream);

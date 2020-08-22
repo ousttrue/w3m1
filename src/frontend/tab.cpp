@@ -15,7 +15,7 @@
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
 #include "ctrlcode.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include <stdexcept>
 #include <algorithm>
 #include <assert.h>

@@ -33,10 +33,10 @@
 #include "stream/auth.h"
 #include "stream/compression.h"
 #include "rc.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "html/html_processor.h"
 #include "wtf.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "mime/mailcap.h"
 #include "frontend/lineinput.h"
 #include <assert.h>

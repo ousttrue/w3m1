@@ -11,9 +11,9 @@
 #include "html/html.h"
 #include "html/html_processor.h"
 #include "stream/local_cgi.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "stream/url.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "frontend/tab.h"
 #include "frontend/buffer.h"
 

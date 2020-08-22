@@ -4,14 +4,14 @@
 #include "mime/mimetypes.h"
 #include "textlist.h"
 #include "indep.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "rc.h"
 #include "file.h"
 
 #include "html/html.h"
 #include "stream/local_cgi.h"
 
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include <sys/stat.h>
 #include <zlib.h>
 

@@ -2,7 +2,7 @@
 #include <wc.h>
 #include <string_view>
 #include <memory>
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "stream/url.h"
 
 #define MAILCAP_NEEDSTERMINAL 0x01

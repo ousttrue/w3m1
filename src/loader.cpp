@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <sstream>
-#include "stream/loader.h"
+#include "loader.h"
 #include "frontend/terminal.h"
 #include "indep.h"
 #include "file.h"
@@ -23,7 +23,7 @@
 #include "mime/mailcap.h"
 #include "mime/mimetypes.h"
 #include "frontend/lineinput.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "html/html_processor.h"
 #include "html/form.h"
 #include <assert.h>
@@ -569,68 +569,6 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
 //     }
 
 // f.modtime = mymktime(checkHeader(t_buf, "Last-Modified:"));
-
-std::unordered_map<std::string, ContentStream> g_cache;
-
-ContentStream GetStream(const URL &url,
-                        const URL *current, HttpReferrerPolicy referer,
-                        FormPtr form)
-{
-    auto without_fragment = url.CopyWithoutFragment();
-    std::stringstream ss;
-    ss << without_fragment;
-    auto key = ss.str();
-    auto found = g_cache.find(key);
-    if (found != g_cache.end())
-    {
-        found->second.stream->Rewind();
-        return found->second;
-    }
-
-    // auto url = _url.Resolve(current);
-
-    if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
-    {
-        //
-        // HTTP
-        //
-        HttpClient client;
-        auto stream = client.GetStream(url, current, referer, form);
-        if (stream.stream)
-        {
-            g_cache.insert(std::make_pair(key, stream));
-        }
-        return stream;
-    }
-
-    if (url.scheme == SCM_LOCAL_CGI)
-    {
-        //
-        // local CGI
-        //
-        LocalCGI cgi;
-        return cgi.GetStream(url, current, referer, form);
-    }
-
-    if (url.scheme == SCM_LOCAL)
-    {
-        //
-        // local file
-        //
-        auto stream = StreamFromFile(url.real_file);
-        if (!stream)
-        {
-            // fail to open file
-            assert(false);
-            return {};
-        }
-        return {url, stream, "text/html"};
-    }
-
-    // not implemened
-    assert(false);
-    return {};
-}
 
 BufferPtr LoadStream(const ContentStream &content)
 {

@@ -10,8 +10,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include "stream/local_cgi.h"
-#include "stream/loader.h"
-#include "html/form.h"
+#include "loader.h"#include "html/form.h"
 
 #include "mime/mimetypes.h"
 

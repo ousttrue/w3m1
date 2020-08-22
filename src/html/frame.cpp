@@ -10,10 +10,10 @@
 #include "html/table.h"
 #include "stream/url.h"
 #include "entity.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "html/html_processor.h"
 #include "html/tokenizer.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include <signal.h>
 #include <setjmp.h>
 

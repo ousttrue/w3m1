@@ -1,4 +1,5 @@
 #pragma once
+#include "http.h"
 #include <stdio.h>
 #include <openssl/bio.h>
 #include <openssl/x509.h>
@@ -260,3 +261,7 @@ inline InputStreamPtr openIS(const char *path)
 
 InputStreamPtr OpenHttpAndSendRequest(const std::shared_ptr<struct HttpRequest> &request);
 InputStreamPtr StreamFromFile(std::string_view path);
+
+ContentStream GetStream(const URL &url,
+                        const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
+                        const std::shared_ptr<Form> &form = nullptr);

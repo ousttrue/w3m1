@@ -18,14 +18,14 @@
 #include "stream/local_cgi.h"
 #include "html/anchor.h"
 #include "stream/url.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "mime/mimetypes.h"
 #include "charset.h"
 #include "html/html.h"
 #include "html/form.h"
 #include "html/html_processor.h"
 
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include <iostream>
 
 static int REV_LB[MAX_LB] = {

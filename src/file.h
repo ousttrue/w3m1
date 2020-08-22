@@ -1,5 +1,5 @@
 #pragma once
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "frontend/buffer.h"
 #include "frontend/event.h"
 

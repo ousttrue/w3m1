@@ -4,7 +4,7 @@
 #include "indep.h"
 #include "gc_helper.h"
 #include "html/form.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "file.h"
 #include "myctype.h"
 #include "entity.h"
@@ -21,7 +21,7 @@
 #include "textlist.h"
 
 #include "frontend/line.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include <signal.h>
 #include <setjmp.h>
 #include <vector>

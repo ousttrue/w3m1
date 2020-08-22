@@ -1,17 +1,16 @@
-
 #include <unistd.h>
-
+#include <sstream>
 #include "indep.h"
 #include "myctype.h"
 #include "file.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "stream/open_socket.h"
 #include "stream/ssl_socket.h"
+#include "stream/local_cgi.h"
 #include "html/html.h"
 #include "html/form.h"
 #include "mime/mimeencoding.h"
 #include "frontend/display.h"
-
 #include "frontend/terminal.h"
 #include <signal.h>
 #include <openssl/x509v3.h>
@@ -791,4 +790,66 @@ InputStreamPtr StreamFromFile(std::string_view path)
         return;
     }
     */
+}
+
+std::unordered_map<std::string, ContentStream> g_cache;
+
+ContentStream GetStream(const URL &url,
+                        const URL *current, HttpReferrerPolicy referer,
+                        const FormPtr &form)
+{
+    auto without_fragment = url.CopyWithoutFragment();
+    std::stringstream ss;
+    ss << without_fragment;
+    auto key = ss.str();
+    auto found = g_cache.find(key);
+    if (found != g_cache.end())
+    {
+        found->second.stream->Rewind();
+        return found->second;
+    }
+
+    // auto url = _url.Resolve(current);
+
+    if (url.scheme == SCM_HTTP || url.scheme == SCM_HTTPS)
+    {
+        //
+        // HTTP
+        //
+        HttpClient client;
+        auto stream = client.GetStream(url, current, referer, form);
+        if (stream.stream)
+        {
+            g_cache.insert(std::make_pair(key, stream));
+        }
+        return stream;
+    }
+
+    if (url.scheme == SCM_LOCAL_CGI)
+    {
+        //
+        // local CGI
+        //
+        LocalCGI cgi;
+        return cgi.GetStream(url, current, referer, form);
+    }
+
+    if (url.scheme == SCM_LOCAL)
+    {
+        //
+        // local file
+        //
+        auto stream = StreamFromFile(url.real_file);
+        if (!stream)
+        {
+            // fail to open file
+            assert(false);
+            return {};
+        }
+        return {url, stream, "text/html"};
+    }
+
+    // not implemened
+    assert(false);
+    return {};
 }

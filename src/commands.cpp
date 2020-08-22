@@ -27,7 +27,7 @@
 #include "mime/mimetypes.h"
 #include "stream/local_cgi.h"
 #include "html/anchor.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "mime/mailcap.h"
 #include "frontend/event.h"
 #include "frontend/line.h"

@@ -11,7 +11,7 @@
 #include "frontend/buffer.h"
 #include "stream/local_cgi.h"
 #include "html/anchor.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "rc.h"
 #include "myctype.h"
 #include <sys/types.h>

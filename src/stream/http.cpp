@@ -2,9 +2,9 @@
 #include <plog/Log.h>
 #include "stream/http.h"
 #include "stream/url.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "stream/cookie.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #include "stream/compression.h"
 #include "html/html_processor.h"
 #include "html/form.h"

@@ -30,7 +30,7 @@
 #include "frontend/tabbar.h"
 #include "frontend/menu.h"
 #include "entity.h"
-#include "stream/loader.h"
+#include "loader.h"
 #include "charset.h"
 #include "w3m.h"
 

@@ -11,7 +11,7 @@
 #include "html/maparea.h"
 #include "html/image.h"
 #include "html/html_processor.h"
-#include "stream/loader.h"
+#include "loader.h"
 
 #include "frontend/terminal.h"
 

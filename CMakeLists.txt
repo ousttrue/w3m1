@@ -117,8 +117,7 @@ add_executable(w3m
     src/frontend/keybind.cpp
     src/frontend/event.cpp
     src/file.cpp
-    src/stream/istream.cpp
-    src/stream/loader.cpp
+    src/stream/input_stream.cpp
     src/stream/local_cgi.cpp
     src/stream/url.cpp
     src/stream/open_socket.cpp
@@ -142,6 +141,7 @@ add_executable(w3m
     src/html/maparea.cpp
     src/html/image.cpp
     src/html/tokenizer.cpp
+    src/loader.cpp
     src/mytime.cpp
     src/indep.cpp
     src/rc.cpp

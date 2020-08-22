@@ -2,7 +2,7 @@
 #include <memory>
 // #include "html/html.h"
 #include "stream/url.h"
-#include "stream/istream.h"
+#include "stream/input_stream.h"
 #define MAX_ENV_LEVEL 20
 
 struct Buffer;
