@@ -1,8 +1,6 @@
-
 #include "indep.h"
 #include "regex.h"
 #include "open_socket.h"
-#include "gc_helper.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -11,22 +9,12 @@
 #include <netdb.h>
 #include "frontend/event.h"
 #include "frontend/display.h"
-
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
 
 int openSocket4(const char *hostname,
                 const char *remoteport_name, unsigned short remoteport_num)
 {
-    int sock = -1;
-    struct sockaddr_in hostaddr;
-    struct hostent *entry;
-    struct protoent *proto;
-    unsigned short s_port;
-    int a1, a2, a3, a4;
-    unsigned long adr;
-    MySignalHandler prevtrap = NULL;
-
     if (w3mApp::Instance().fmInitialized)
     {
         /* FIXME: gettextize? */
@@ -40,13 +28,23 @@ int openSocket4(const char *hostname,
         return -1;
     }
 
+    int sock = -1;
+    struct sockaddr_in hostaddr;
+    struct hostent *entry;
+    unsigned short s_port;
+    int a1, a2, a3, a4;
+    unsigned long adr;
+    MySignalHandler prevtrap = NULL;
     auto success = TrapJmp([&] {
         s_port = htons(remoteport_num);
         bzero((char *)&hostaddr, sizeof(struct sockaddr_in));
-        if ((proto = getprotobyname("tcp")) == NULL)
+        auto proto = getprotobyname("tcp");
+        struct protoent _proto;
+        if (!proto)
         {
             /* protocol number of TCP is 6 */
-            proto = New(struct protoent);
+            proto = &_proto;
+            bzero(proto, sizeof(struct protoent));
             proto->p_proto = 6;
         }
         if ((sock = socket(AF_INET, SOCK_STREAM, proto->p_proto)) < 0)
