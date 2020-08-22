@@ -315,7 +315,6 @@ public:
     std::string savecache;
     // editBf
     std::string edit;
-    Mailcap *mailcap = nullptr;
     std::string mailcap_source;
     // backup stream read contents ?
     std::string header_source;

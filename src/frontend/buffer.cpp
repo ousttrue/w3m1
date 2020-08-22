@@ -311,11 +311,9 @@ void Buffer::CopyFrom(BufferPtr src)
     check_url = src->check_url;
     document_charset = src->document_charset;
     auto_detect = src->auto_detect;
-    // document_header = src->document_header;
     form_submit = src->form_submit;
     savecache = src->savecache;
     edit = src->edit;
-    mailcap = src->mailcap;
     mailcap_source = src->mailcap_source;
     header_source = src->header_source;
     search_header = src->search_header;
