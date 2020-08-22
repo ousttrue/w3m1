@@ -200,15 +200,10 @@ int FileStream::FD() const
 //
 // StrStream
 //
-InputStreamPtr newStrStream(Str s)
+InputStreamPtr newStrStream(std::string_view s)
 {
-    if (s == NULL)
+    if (s.empty())
         return NULL;
-    if (s->Size() == 0)
-    {
-        // ""
-        return nullptr;
-    }
     return std::make_shared<StrStream>(STREAM_BUF_SIZE, s);
 }
 
@@ -218,7 +213,7 @@ StrStream::~StrStream()
 
 int StrStream::ReadFunc(unsigned char *buf, int len)
 {
-    auto strsize = m_str->Size() + 1; // \0 terminate
+    auto strsize = m_str.size() + 1; // \0 terminate
     if (m_pos + len > strsize)
     {
         len = strsize - m_pos;
@@ -228,7 +223,7 @@ int StrStream::ReadFunc(unsigned char *buf, int len)
         return 0;
     }
 
-    memcpy(buf, m_str->ptr + m_pos, len);
+    memcpy(buf, m_str.data() + m_pos, len);
     m_pos += len;
     return len;
 }
@@ -530,7 +525,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
         {
             /* FIXME: gettextize? */
             const char *e = "This SSL session was rejected "
-                      "to prevent security violation: no peer certificate";
+                            "to prevent security violation: no peer certificate";
             disp_err_message(e, false);
             return NULL;
         }

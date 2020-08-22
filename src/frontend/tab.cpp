@@ -30,6 +30,11 @@ bool Tab::SetCurrent(int index)
     {
         return false;
     }
+    if (index == m_current)
+    {
+        return false;
+    }
+    m_current = index;
 
     auto url = m_history[index];
     auto stream = GetStream(url, m_buffer ? m_buffer->BaseURL() : nullptr);

@@ -602,7 +602,7 @@ page_info_panel(const BufferPtr &buf)
 
 end:
     tmp->Push("</body></html>");
-    newbuf = loadHTMLString({}, tmp);
+    newbuf = loadHTMLString(URL::Parse("w3m://pageinfo"), tmp->ptr);
 
     if (newbuf)
         newbuf->document_charset = buf->document_charset;

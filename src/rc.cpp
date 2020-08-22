@@ -1592,11 +1592,11 @@ load_option_panel(void)
         src->Push("</table><hr width=50%>");
     }
     src->Push("</table></form></body></html>");
-    buf = loadHTMLString({}, src);
-#ifdef USE_M17N
+    buf = loadHTMLString(URL::Parse("w3m://option"), src->ptr);
+
     if (buf)
         buf->document_charset = OptionCharset;
-#endif
+
     return buf;
 }
 

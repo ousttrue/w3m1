@@ -455,7 +455,7 @@ BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, con
         doFileMove(tmp->ptr, file);
         return nullptr;
     }
-    auto b = loadHTMLString({}, page);
+    auto b = loadHTMLString({}, page->ptr);
     if (b)
     {
         b->currentURL = pu;

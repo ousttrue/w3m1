@@ -20,6 +20,13 @@ private:
 public:
     StreamBuffer(int bufsize) : buf(bufsize) {}
 
+    void clear()
+    {
+        // buf.clear();
+        cur = 0;
+        next = 0;
+    }
+
     int update(const std::function<int(unsigned char *, int)> &readfunc)
     {
         cur = next = 0;
@@ -153,6 +160,8 @@ public:
 
     virtual void Rewind()
     {
+        iseos = false;
+        stream.clear();
     }
 };
 using InputStreamPtr = std::shared_ptr<InputStream>;
@@ -189,16 +198,17 @@ public:
 
 class StrStream : public InputStream
 {
-    Str m_str = nullptr;
+    std::string m_str;
     int m_pos = 0;
 
 public:
-    StrStream(int size, Str str) : InputStream(size), m_str(str) {}
+    StrStream(int size, std::string_view str) : InputStream(size), m_str(str) {}
     ~StrStream();
     InputStreamTypes type() const override { return IST_STR; }
     int ReadFunc(unsigned char *buffer, int size) override;
     void Rewind() override
     {
+        InputStream::Rewind();
         m_pos = 0;
     }
 };
@@ -236,7 +246,7 @@ public:
 
 InputStreamPtr newInputStream(int des);
 InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep);
-InputStreamPtr newStrStream(Str s);
+InputStreamPtr newStrStream(std::string_view s);
 InputStreamPtr newSSLStream(const std::shared_ptr<SSLSocket> &ssl);
 InputStreamPtr newEncodedStream(InputStreamPtr is, char encoding);
 

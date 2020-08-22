@@ -22,7 +22,7 @@ class Tab
     Tab &operator=(const Tab &) = delete;
 
     std::vector<URL> m_history;
-    int m_current = 0;
+    int m_current = -1;
     BufferPtr m_buffer;
     // BufferList::const_iterator find(BufferPtr b) const
     // {

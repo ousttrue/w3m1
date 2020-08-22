@@ -174,7 +174,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 /* 
  * loadHTMLString: read string and make new buffer
  */
-BufferPtr loadHTMLString(const URL &url, Str page, CharacterEncodingScheme content_charset)
+BufferPtr loadHTMLString(const URL &url, std::string_view page, CharacterEncodingScheme content_charset)
 {
     BufferPtr newBuf = nullptr;
 

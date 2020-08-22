@@ -33,7 +33,7 @@ historyBuffer(Hist *hist)
 	}
     }
     src->Push("</ol>\n</body>\n</html>");
-    return loadHTMLString({}, src);
+    return loadHTMLString(URL::Parse("w3m://history"), src->ptr);
 }
 
 void

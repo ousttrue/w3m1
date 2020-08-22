@@ -1117,10 +1117,6 @@ void nextBf(w3mApp *w3m)
             break;
         }
     }
-    if (i)
-    {
-        displayCurrentbuf(B_FORCE_REDRAW);
-    }
 }
 
 /* go to the previous bufferr */
@@ -1135,10 +1131,6 @@ void prevBf(w3mApp *w3m)
         {
             break;
         }
-    }
-    if (i)
-    {
-        displayCurrentbuf(B_FORCE_REDRAW);
     }
 }
 

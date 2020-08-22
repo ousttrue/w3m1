@@ -831,7 +831,7 @@ cookie_list_panel(void)
         src->Push("</td></tr><tr><td><input type=submit value=\"OK\"></table><p>");
     }
     src->Push("</ol></form></body></html>");
-    return loadHTMLString({}, src);
+    return loadHTMLString(URL::Parse("w3m://cookie"), src->ptr);
 }
 
 void set_cookie_flag(struct parsed_tagarg *arg)

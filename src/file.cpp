@@ -622,7 +622,7 @@ image_buffer:
     newBuf->mailcap_source = tmpf->ptr;
 
     // auto f = URLFile::FromStream(SCM_LOCAL, );
-    newBuf = loadHTMLStream(url, newStrStream(tmp), WC_CES_UTF_8, true);
+    newBuf = loadHTMLStream(url, newStrStream(tmp->ptr), WC_CES_UTF_8, true);
     if (src)
         fclose(src);
 

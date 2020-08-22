@@ -1,4 +1,5 @@
 #include <string_view_util.h>
+#include <tcb/span.hpp>
 #include "stream/compression.h"
 #include "mime/mimetypes.h"
 #include "textlist.h"
@@ -343,10 +344,7 @@ public:
         }
     }
 
-    Str ToStr() const
-    {
-        return Strnew_charp_n((const char *)decompressed.data(), d_stream.total_out);
-    }
+    tcb::span<uint8_t> data() { return decompressed; }
 };
 
 std::shared_ptr<class InputStream> decompress(const std::shared_ptr<class InputStream> &stream, CompressionTypes type)
@@ -390,7 +388,7 @@ std::shared_ptr<class InputStream> decompress(const std::shared_ptr<class InputS
         }
     }
 
-    auto str = decompressor.ToStr();
+    auto data = decompressor.data();
 
-    return newStrStream(str);
+    return newStrStream(std::string_view((const char *)data.data(), data.size()));
 }

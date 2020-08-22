@@ -338,7 +338,7 @@ BufferPtr DownloadListBuffer(w3mApp *w3m)
         src->Push("\n</pre><hr>\n");
     }
     src->Push("</form></body></html>");
-    return loadHTMLString({}, src);
+    return loadHTMLString(URL::Parse("w3m://download"), src->ptr);
 }
 
 //

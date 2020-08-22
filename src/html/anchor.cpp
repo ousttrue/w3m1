@@ -740,5 +740,5 @@ link_list_panel(const BufferPtr &buf)
         tmp->Push("</ol>\n");
     }
 
-    return loadHTMLString(buf->currentURL, tmp);
+    return loadHTMLString(buf->currentURL, tmp->ptr);
 }
