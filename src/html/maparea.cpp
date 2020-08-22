@@ -188,7 +188,7 @@ AnchorPtr retrieveCurrentMap(const BufferPtr &buf)
     return NULL;
 }
 
-MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const AnchorPtr a_img, int x, int y)
+MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const AnchorPtr &a_img, int x, int y)
 {
     auto ml = searchMapList(buf, name);
     if (ml == NULL || ml->area.empty())

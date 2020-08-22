@@ -400,8 +400,7 @@ static Str make_lastline_message(const BufferPtr &buf)
                     p = a_img->title;
             }
             if (p.size() || a)
-                s = make_lastline_link(buf, p,
-                                       a ? const_cast<char *>(a->url.c_str()) : NULL);
+                s = make_lastline_link(buf, p, a ? a->url : "");
         }
         if (s)
         {
