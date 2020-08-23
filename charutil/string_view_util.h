@@ -1,6 +1,7 @@
 #pragma once
 #include <string_view>
 #include <sstream>
+#include <vector>
 #include "myctype.h"
 
 namespace svu
@@ -42,6 +43,100 @@ inline std::tuple<std::string_view, std::string_view> split(std::string_view src
 
     return {key, value};
 }
+
+struct splitter
+{
+    std::string_view src;
+    using Delemeter = std::function<bool(char)>;
+    Delemeter delemeter;
+
+    struct Iterator
+    {
+        const Delemeter *delemeter = nullptr;
+        std::string_view view;
+        std::string_view next;
+
+        Iterator()
+        {
+        }
+
+        Iterator(std::string_view p, const Delemeter *d)
+            : delemeter(d)
+        {
+            set(p, d);
+        }
+
+    private:
+        void set(std::string_view p, const Delemeter *d)
+        {
+            assert(d);
+
+            // skip left
+            while (p.size() && (*d)(p[0]))
+                p.remove_prefix(1);
+            if (p.empty())
+            {
+                // end
+                view = {};
+                next = {};
+                return;
+            }
+
+            // search tail
+            int i = 1;
+            for (; i < p.size(); ++i)
+            {
+                if ((*d)(p[i]))
+                {
+                    break;
+                }
+            }
+
+            view = p.substr(0, i);
+            if (i >= p.size())
+            {
+                // no next
+                next = {};
+            }
+            else
+            {
+                next = p.substr(i);
+            }
+        }
+
+    public:
+        std::string_view operator*() const
+        {
+            return view;
+        }
+
+        Iterator &operator++()
+        {
+            set(next, delemeter);
+            return *this;
+        }
+
+        bool operator==(const Iterator &rhs) const
+        {
+            return view == rhs.view && next == rhs.next;
+        }
+    };
+
+    splitter(std::string_view s, const Delemeter &d)
+        : src(s), delemeter(d)
+    {
+    }
+
+    Iterator begin()
+    {
+        return Iterator(src, &delemeter);
+    }
+
+    Iterator end()
+    {
+        return {};
+    }
+};
 
 // ignore case equal
 inline bool ic_eq(std::string_view l, std::string_view r)

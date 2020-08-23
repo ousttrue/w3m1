@@ -19,6 +19,7 @@ add_executable("${TARGET_NAME}_test"
     main_test.cpp
     charutil_test.cpp
     myctype_test.cpp
+    string_view_util_test.cpp
 )
 target_link_libraries("${TARGET_NAME}_test"
 PRIVATE
