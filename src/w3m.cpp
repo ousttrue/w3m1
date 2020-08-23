@@ -329,7 +329,7 @@ void w3mApp::_quitfm(int confirm)
 
     fmTerm();
 
-    save_cookies();
+    CookieManager::Instance().save_cookies();
     if (UseHistory && SaveURLHist)
         saveHistory(URLHist, URLHistSize);
 

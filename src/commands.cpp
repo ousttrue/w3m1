@@ -1339,12 +1339,8 @@ void linkLst(w3mApp *w3m)
 
 void cooLst(w3mApp *w3m)
 {
-    BufferPtr buf;
-    buf = cookie_list_panel();
-    if (buf != NULL)
-    {
-        // cmd_loadBuffer(buf, BP_NO_URL, LB_NOLINK);
-    }
+    auto tab = GetCurrentTab();
+    tab->Push(URL::Parse("w3m://cookielist"));
 }
 /* History page */
 

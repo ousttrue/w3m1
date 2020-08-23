@@ -759,13 +759,13 @@ auto sections = make_array(
                  }},
     ParamSection{"Cookie Settings",
                  {
-                     {"use_cookie", P_INT, PI_ONOFF, w3mApp::Instance().use_cookie, CMT_USECOOKIE},
-                     {"show_cookie", P_INT, PI_ONOFF, w3mApp::Instance().show_cookie, CMT_SHOWCOOKIE},
-                     {"accept_cookie", P_INT, PI_ONOFF, w3mApp::Instance().accept_cookie, CMT_ACCEPTCOOKIE},
-                     {"accept_bad_cookie", P_INT, PI_SEL_C, w3mApp::Instance().accept_bad_cookie, CMT_ACCEPTBADCOOKIE, (void *)badcookiestr},
-                     {"cookie_reject_domains", P_STRING, PI_TEXT, w3mApp::Instance().cookie_reject_domains, CMT_COOKIE_REJECT_DOMAINS},
-                     {"cookie_accept_domains", P_STRING, PI_TEXT, w3mApp::Instance().cookie_accept_domains, CMT_COOKIE_ACCEPT_DOMAINS},
-                     {"cookie_avoid_wrong_number_of_dots", P_STRING, PI_TEXT, w3mApp::Instance().cookie_avoid_wrong_number_of_dots, CMT_COOKIE_AVOID_WONG_NUMBER_OF_DOTS},
+                     {"use_cookie", P_INT, PI_ONOFF, CookieManager::Instance().use_cookie, CMT_USECOOKIE},
+                     {"show_cookie", P_INT, PI_ONOFF, CookieManager::Instance().show_cookie, CMT_SHOWCOOKIE},
+                     {"accept_cookie", P_INT, PI_ONOFF, CookieManager::Instance().accept_cookie, CMT_ACCEPTCOOKIE},
+                     {"accept_bad_cookie", P_INT, PI_SEL_C, CookieManager::Instance().accept_bad_cookie, CMT_ACCEPTBADCOOKIE, (void *)badcookiestr},
+                     {"cookie_reject_domains", P_STRING, PI_TEXT, CookieManager::Instance().cookie_reject_domains, CMT_COOKIE_REJECT_DOMAINS},
+                     {"cookie_accept_domains", P_STRING, PI_TEXT, CookieManager::Instance().cookie_accept_domains, CMT_COOKIE_ACCEPT_DOMAINS},
+                     {"cookie_avoid_wrong_number_of_dots", P_STRING, PI_TEXT, CookieManager::Instance().cookie_avoid_wrong_number_of_dots, CMT_COOKIE_AVOID_WONG_NUMBER_OF_DOTS},
                  }},
     ParamSection{"Charset Settings",
                  {
@@ -987,16 +987,6 @@ interpret_rc(FILE *f)
         ToLower(tmp);
         set_param(tmp->ptr, p);
     }
-}
-
-void parse_cookie()
-{
-    if (w3mApp::Instance().cookie_reject_domains.size())
-        w3mApp::Instance().Cookie_reject_domains = make_domain_list(w3mApp::Instance().cookie_reject_domains.c_str());
-    if (w3mApp::Instance().cookie_accept_domains.size())
-        w3mApp::Instance().Cookie_accept_domains = make_domain_list(w3mApp::Instance().cookie_accept_domains.c_str());
-    if (w3mApp::Instance().cookie_avoid_wrong_number_of_dots.size())
-        w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains = make_domain_list(w3mApp::Instance().cookie_avoid_wrong_number_of_dots.c_str());
 }
 
 #ifdef __EMX__
@@ -1298,7 +1288,7 @@ void sync_with_option(void)
     w3mApp::Instance().WrapSearch = w3mApp::Instance().WrapDefault;
     Network::Instance().ParseProxy();
 
-    parse_cookie();
+    CookieManager::Instance().Parse();
 
     initMailcap();
     initMimeTypes();

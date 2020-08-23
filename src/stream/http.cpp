@@ -174,7 +174,7 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
     return false;
 }
 
-//         else if (w3mApp::Instance().use_cookie && w3mApp::Instance().accept_cookie &&
+//         else if (CookieManager::Instance().use_cookie && CookieManager::Instance().accept_cookie &&
 //                  pu && check_cookie_accept_domain(pu->host) &&
 //                  (!strncasecmp(lineBuf2->ptr, "Set-Cookie:", 11) ||
 //                   !strncasecmp(lineBuf2->ptr, "Set-Cookie2:", 12)))
@@ -241,7 +241,7 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
 
     Str cookie;
     if (request->method != HTTP_METHOD_CONNECT &&
-        w3mApp::Instance().use_cookie && (cookie = find_cookie(&url)))
+        CookieManager::Instance().use_cookie && (cookie = find_cookie(&url)))
     {
         Push(request, "Cookie: ", cookie->c_str(), "\r\n");
         /* [DRAFT 12] s. 10.1 */

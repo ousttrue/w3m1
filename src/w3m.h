@@ -9,7 +9,6 @@
 #include "stream/url.h"
 #include "frontend/buffer.h"
 
-struct TextList;
 struct Hist;
 
 enum DumpFlags
@@ -34,13 +33,6 @@ enum DisplayInsDel
     DISPLAY_INS_DEL_SIMPLE = 0,
     DISPLAY_INS_DEL_NORMAL = 1,
     DISPLAY_INS_DEL_FONTIFY = 2,
-};
-
-enum AcceptBadCookieTypes
-{
-    ACCEPT_BAD_COOKIE_DISCARD = 0,
-    ACCEPT_BAD_COOKIE_ACCEPT = 1,
-    ACCEPT_BAD_COOKIE_ASK = 2,
 };
 
 class w3mApp
@@ -161,17 +153,6 @@ public:
     bool use_lessopen = false;
 
     //
-    // Cookie
-    //
-    bool use_cookie = false;
-    bool show_cookie = true;
-    bool accept_cookie = false;
-    AcceptBadCookieTypes accept_bad_cookie = ACCEPT_BAD_COOKIE_DISCARD;
-    std::string cookie_reject_domains;
-    std::string cookie_accept_domains;
-    std::string cookie_avoid_wrong_number_of_dots;
-
-    //
     // Charset
     //
     CharacterEncodingScheme DisplayCharset = DISPLAY_CHARSET;
@@ -202,10 +183,6 @@ public:
     bool no_rc_dir = false;
     std::string rc_dir;
     std::string tmp_dir;
-    bool default_use_cookie = true;
-    TextList *Cookie_reject_domains = nullptr;
-    TextList *Cookie_accept_domains = nullptr;
-    TextList *Cookie_avoid_wrong_number_of_dots_domains = nullptr;
     bool is_redisplay = false;
 
     // files settings

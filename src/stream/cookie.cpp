@@ -380,18 +380,34 @@ Str find_cookie(const URL *pu)
     return tmp;
 }
 
+CookieManager::CookieManager()
+{
+
+}
+
+CookieManager::~CookieManager()
+{
+
+}
+
+CookieManager& CookieManager::Instance()
+{
+    static CookieManager cm;
+    return cm;
+}
+
 const char *special_domain[] = {
     ".com", ".edu", ".gov", ".mil", ".net", ".org", ".int", NULL};
 
-int check_avoid_wrong_number_of_dots_domain(Str domain)
+int CookieManager::check_avoid_wrong_number_of_dots_domain(Str domain)
 {
     TextListItem *tl;
     int avoid_wrong_number_of_dots_domain = false;
 
-    if (w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains &&
-        w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains->nitem > 0)
+    if (this->Cookie_avoid_wrong_number_of_dots_domains &&
+        this->Cookie_avoid_wrong_number_of_dots_domains->nitem > 0)
     {
-        for (tl = w3mApp::Instance().Cookie_avoid_wrong_number_of_dots_domains->first;
+        for (tl = this->Cookie_avoid_wrong_number_of_dots_domains->first;
              tl != NULL; tl = tl->next)
         {
             if (domain_match(domain->ptr, tl->ptr))
@@ -412,7 +428,7 @@ int check_avoid_wrong_number_of_dots_domain(Str domain)
     }
 }
 
-int add_cookie(const URL &pu, Str name, Str value,
+int CookieManager::add_cookie(const URL &pu, Str name, Str value,
                time_t expires, Str domain, Str path,
                int flag, Str comment, int version, Str port, Str commentURL)
 {
@@ -531,7 +547,7 @@ int add_cookie(const URL &pu, Str name, Str value,
     {
         p = new Cookie;
         p->flag = 0;
-        if (w3mApp::Instance().default_use_cookie)
+        if (this->default_use_cookie)
             p->flag |= COO_USE;
         p->next = First_cookie;
         First_cookie = p;
@@ -589,7 +605,7 @@ nth_cookie(int n)
 
 #define str2charp(str) ((str) ? (str)->ptr : "")
 
-void save_cookies(void)
+void CookieManager::save_cookies()
 {
     if (!First_cookie || is_saved || w3mApp::Instance().no_rc_dir)
         return;
@@ -714,8 +730,7 @@ void initCookie(void)
     check_expired_cookies();
 }
 
-BufferPtr
-cookie_list_panel(void)
+BufferPtr CookieManager::cookie_list_panel()
 {
     /* FIXME: gettextize? */
     Str src = Strnew("<html><head><title>Cookies</title></head>"
@@ -725,7 +740,7 @@ cookie_list_panel(void)
     int i;
     char *tmp, tmp2[80];
 
-    if (!w3mApp::Instance().use_cookie || !First_cookie)
+    if (!use_cookie || !First_cookie)
         return NULL;
 
     src->Push("<ol>");
@@ -860,24 +875,24 @@ void set_cookie_flag(struct parsed_tagarg *arg)
     backBf(&w3mApp::Instance());
 }
 
-int check_cookie_accept_domain(std::string_view domain)
+int CookieManager::check_cookie_accept_domain(std::string_view domain)
 {
     TextListItem *tl;
 
     if (domain.empty())
         return 0;
 
-    if (w3mApp::Instance().Cookie_accept_domains && w3mApp::Instance().Cookie_accept_domains->nitem > 0)
+    if (this->Cookie_accept_domains && this->Cookie_accept_domains->nitem > 0)
     {
-        for (tl = w3mApp::Instance().Cookie_accept_domains->first; tl != NULL; tl = tl->next)
+        for (tl = this->Cookie_accept_domains->first; tl != NULL; tl = tl->next)
         {
             if (domain_match(const_cast<char *>(domain.data()), tl->ptr))
                 return 1;
         }
     }
-    if (w3mApp::Instance().Cookie_reject_domains && w3mApp::Instance().Cookie_reject_domains->nitem > 0)
+    if (this->Cookie_reject_domains && this->Cookie_reject_domains->nitem > 0)
     {
-        for (tl = w3mApp::Instance().Cookie_reject_domains->first; tl != NULL; tl = tl->next)
+        for (tl = this->Cookie_reject_domains->first; tl != NULL; tl = tl->next)
         {
             if (domain_match(const_cast<char *>(domain.data()), tl->ptr))
                 return 0;
@@ -899,7 +914,7 @@ const char *violations[COO_EMAX] = {
     "RFC 2109 4.3.2 rule 4",
     "RFC XXXX 4.3.2 rule 5"};
 
-void readHeaderCookie(const URL &pu, Str lineBuf2)
+void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
 {
     char *p = nullptr;
     int version;
@@ -1013,7 +1028,7 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
     if (pu && name->Size() > 0)
     {
         int err;
-        if (w3mApp::Instance().show_cookie)
+        if (this->show_cookie)
         {
             if (flag & COO_SECURE)
                 disp_message_nsec("Received a secured cookie", false, 1,
@@ -1029,11 +1044,11 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
                        comment, version, port, commentURL);
         if (err)
         {
-            const char *ans = (w3mApp::Instance().accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
+            const char *ans = (this->accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
                             ? "y"
                             : NULL;
-            if (w3mApp::Instance().fmInitialized && (err & COO_OVERRIDE_OK) &&
-                w3mApp::Instance().accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
+            if ((err & COO_OVERRIDE_OK) &&
+                this->accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
             {
                 Str msg = Sprintf("Accept bad cookie from %s for %s?",
                                   pu.host,
@@ -1062,10 +1077,10 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
                     emsg =
                         "This cookie was rejected to prevent security violation.";
                 record_err_message(emsg);
-                if (w3mApp::Instance().show_cookie)
+                if (this->show_cookie)
                     disp_message_nsec(emsg, false, 1, true, false);
             }
-            else if (w3mApp::Instance().show_cookie)
+            else if (this->show_cookie)
                 disp_message_nsec(Sprintf("Accepting invalid cookie: %s=%s",
                                           name->ptr, value->ptr)
                                       ->ptr,
@@ -1073,4 +1088,14 @@ void readHeaderCookie(const URL &pu, Str lineBuf2)
                                   1, true, false);
         }
     }
+}
+
+void CookieManager::Parse()
+{
+    if (this->cookie_reject_domains.size())
+        this->Cookie_reject_domains = make_domain_list(this->cookie_reject_domains.c_str());
+    if (this->cookie_accept_domains.size())
+        this->Cookie_accept_domains = make_domain_list(this->cookie_accept_domains.c_str());
+    if (this->cookie_avoid_wrong_number_of_dots.size())
+        this->Cookie_avoid_wrong_number_of_dots_domains = make_domain_list(this->cookie_avoid_wrong_number_of_dots.c_str());
 }
