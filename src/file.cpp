@@ -1045,7 +1045,7 @@ Str tmpfname(TmpFileTypes type, const char *ext)
                    w3mApp::Instance().tmp_dir.c_str(),
                    tmpf_base[type],
                    w3mApp::Instance().CurrentPid, tmpf_seq[type]++, (ext) ? ext : "");
-    pushText(w3mApp::Instance().fileToDelete, tmpf->ptr);
+    w3mApp::Instance().fileToDelete.push_back(tmpf->ptr);
     return tmpf;
 }
 

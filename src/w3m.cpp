@@ -99,23 +99,16 @@ w3mApp::w3mApp()
 
     CurrentPid = (int)getpid();
     CurrentDir = currentdir();
-
-    fileToDelete = newTextList();
 }
 
 w3mApp::~w3mApp()
 {
     stopDownload();
 
-    DeleteAllTabs();
-    // deleteFiles();
+    for (auto &f : fileToDelete)
     {
-        char *f;
-        while ((f = popText(fileToDelete)) != NULL)
-            unlink(f);
+        unlink(f.c_str());
     }
-
-    // exit(i);
 }
 
 std::string w3mApp::make_optional_header_string(const char *s)

@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <string>
 #include <string_view>
 #include "config.h"
@@ -188,7 +189,7 @@ public:
     // globals
     int CurrentPid = -1;
     std::string CurrentDir;
-    TextList *fileToDelete = nullptr;
+    std::vector<std::string> fileToDelete;
     bool fmInitialized = false;
 
     std::string CurrentCmdData;
