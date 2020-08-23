@@ -1,5 +1,6 @@
 #pragma once
 #include "url.h"
+#include <vector>
 #ifndef RC_DIR
 #define RC_DIR "~/.w3m"
 #endif
@@ -23,11 +24,13 @@ class Network
     Network &operator=(const Network &) = delete;
 
     // proxy
-    TextList *NO_proxy_domains = nullptr;
+    std::vector<std::string> NO_proxy_domains;
     URL HTTP_proxy_parsed;
     URL HTTPS_proxy_parsed;
     URL FTP_proxy_parsed;
-    bool check_no_proxy(std::string_view domain);
+    bool check_no_proxy(const std::string &domain);
+    bool check_no_proxy4(const std::string &domain);
+    bool check_no_proxy6(const std::string &domain);
 
 public:
     //
@@ -57,7 +60,7 @@ public:
     std::string HTTP_proxy;
     std::string HTTPS_proxy;
     std::string FTP_proxy;
-    char *NO_proxy = nullptr;
+    std::string NO_proxy;
     bool NOproxy_netaddr = true;
     bool NoCache = false;
 

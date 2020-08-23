@@ -120,6 +120,11 @@ struct splitter
         {
             return view == rhs.view && next == rhs.next;
         }
+
+        bool operator!=(const Iterator &rhs) const
+        {
+            return !(*this == rhs);
+        }
     };
 
     splitter(std::string_view s, const Delemeter &d)
