@@ -1,6 +1,7 @@
 #include "config.h"
 #include <unistd.h>
 #include <signal.h>
+#include <uv.h>
 #include "indep.h"
 #include "textlist.h"
 #include "rc.h"
@@ -214,7 +215,13 @@ extern char *CurrentCmdData;
 
 void w3mApp::mainloop2()
 {
+    uv_loop_t loop = {0};
+    uv_loop_init(&loop);
 
+    printf("Now quitting.\n");
+    uv_run(&loop, UV_RUN_DEFAULT);
+
+    uv_loop_close(&loop);
 }
 
 void w3mApp::mainloop()

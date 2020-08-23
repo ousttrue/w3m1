@@ -183,6 +183,7 @@ PRIVATE
     ssl
     crypto
     plog
+    uv
     #
     wc
 )
