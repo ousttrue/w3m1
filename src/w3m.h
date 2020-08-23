@@ -245,6 +245,7 @@ public:
 
 private:
     void mainloop();
+    void mainloop2();
     std::string make_optional_header_string(const char *s);
 };
 

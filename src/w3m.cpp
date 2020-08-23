@@ -204,13 +204,18 @@ int w3mApp::Main(const URL &url)
     DefaultType.clear();
     UseContentCharset = true;
 
-    mainloop();
+    mainloop2();
 
     return 0;
 }
 
 // TODO:
 extern char *CurrentCmdData;
+
+void w3mApp::mainloop2()
+{
+
+}
 
 void w3mApp::mainloop()
 {
