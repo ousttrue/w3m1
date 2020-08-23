@@ -8,9 +8,9 @@
  */
 
 #include <sstream>
+#include <string_view_util.h>
 #include "stream/cookie.h"
 #include "stream/network.h"
-#include "textlist.h"
 #include "indep.h"
 #include <gc_cpp.h>
 #include "rc.h"
@@ -57,7 +57,6 @@
 #define COO_EPORT (9)                       /* Port match failed (version 1' case 5) */
 #define COO_EMAX COO_EPORT
 
-
 static int
 total_dot_number(const char *p, const char *ep, int max_count)
 {
@@ -75,18 +74,17 @@ total_dot_number(const char *p, const char *ep, int max_count)
 
 #define contain_no_dots(p, ep) (total_dot_number((p), (ep), 1) == 0)
 
-static const char *
-domain_match(const char *host, const char *domain)
+static const char *domain_match(const char *host, const std::string &domain)
 {
     /* [RFC 2109] s. 2, "domain-match", case 1
      * (both are IP and identical)
      */
     regexCompile("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+", 0);
-    auto m0 = regexMatch(const_cast<char*>(host), -1, 1);
-    auto m1 = regexMatch(const_cast<char*>(domain), -1, 1);
+    auto m0 = regexMatch(const_cast<char *>(host), -1, 1);
+    auto m1 = regexMatch(const_cast<char *>(domain.c_str()), -1, 1);
     if (m0 && m1)
     {
-        if (strcasecmp(host, domain) == 0)
+        if (strcasecmp(host, domain.c_str()) == 0)
             return host;
     }
     else if (!m0 && !m1)
@@ -97,7 +95,7 @@ domain_match(const char *host, const char *domain)
         * "." match all domains (w3m only),
         * and ".local" match local domains ([DRAFT 12] s. 2)
         */
-        if (strcasecmp(domain, ".") == 0 || strcasecmp(domain, ".local") == 0)
+        if (domain == "." || domain == ".local")
         {
             offset = strlen(host);
             domain_p = &host[offset];
@@ -115,9 +113,9 @@ domain_match(const char *host, const char *domain)
         /* [RFC 2109] s. 2, cases 2, 3 */
         else
         {
-            offset = (domain[0] != '.') ? 0 : strlen(host) - strlen(domain);
+            offset = (domain[0] != '.') ? 0 : strlen(host) - domain.size();
             domain_p = &host[offset];
-            if (offset >= 0 && strcasecmp(domain_p, domain) == 0)
+            if (offset >= 0 && strcasecmp(domain_p, domain.c_str()) == 0)
                 return domain_p;
         }
     }
@@ -326,8 +324,6 @@ FQDN(char *host)
 #endif /* INET6 */
 }
 
-
-
 Str find_cookie(const URL *pu)
 {
     Str tmp;
@@ -382,15 +378,13 @@ Str find_cookie(const URL *pu)
 
 CookieManager::CookieManager()
 {
-
 }
 
 CookieManager::~CookieManager()
 {
-
 }
 
-CookieManager& CookieManager::Instance()
+CookieManager &CookieManager::Instance()
 {
     static CookieManager cm;
     return cm;
@@ -401,20 +395,15 @@ const char *special_domain[] = {
 
 int CookieManager::check_avoid_wrong_number_of_dots_domain(Str domain)
 {
-    TextListItem *tl;
+    // TextListItem *tl;
     int avoid_wrong_number_of_dots_domain = false;
 
-    if (this->Cookie_avoid_wrong_number_of_dots_domains &&
-        this->Cookie_avoid_wrong_number_of_dots_domains->nitem > 0)
+    for (auto &d : this->Cookie_avoid_wrong_number_of_dots_domains)
     {
-        for (tl = this->Cookie_avoid_wrong_number_of_dots_domains->first;
-             tl != NULL; tl = tl->next)
+        if (domain_match(domain->ptr, d))
         {
-            if (domain_match(domain->ptr, tl->ptr))
-            {
-                avoid_wrong_number_of_dots_domain = true;
-                break;
-            }
+            avoid_wrong_number_of_dots_domain = true;
+            break;
         }
     }
 
@@ -429,8 +418,8 @@ int CookieManager::check_avoid_wrong_number_of_dots_domain(Str domain)
 }
 
 int CookieManager::add_cookie(const URL &pu, Str name, Str value,
-               time_t expires, Str domain, Str path,
-               int flag, Str comment, int version, Str port, Str commentURL)
+                              time_t expires, Str domain, Str path,
+                              int flag, Str comment, int version, Str port, Str commentURL)
 {
     struct Cookie *p;
     const char *domainname = (version == 0) ? FQDN(const_cast<char *>(pu.host.c_str())) : pu.host.c_str();
@@ -875,30 +864,30 @@ void set_cookie_flag(struct parsed_tagarg *arg)
     backBf(&w3mApp::Instance());
 }
 
-int CookieManager::check_cookie_accept_domain(std::string_view domain)
+bool CookieManager::check_cookie_accept_domain(std::string_view domain)
 {
-    TextListItem *tl;
-
     if (domain.empty())
-        return 0;
+    {
+        return false;
+    }
 
-    if (this->Cookie_accept_domains && this->Cookie_accept_domains->nitem > 0)
+    for (auto &d : this->Cookie_accept_domains)
     {
-        for (tl = this->Cookie_accept_domains->first; tl != NULL; tl = tl->next)
+        if (domain_match(domain.data(), d))
         {
-            if (domain_match(const_cast<char *>(domain.data()), tl->ptr))
-                return 1;
+            return true;
         }
     }
-    if (this->Cookie_reject_domains && this->Cookie_reject_domains->nitem > 0)
+
+    for (auto &d : this->Cookie_reject_domains)
     {
-        for (tl = this->Cookie_reject_domains->first; tl != NULL; tl = tl->next)
+        if (domain_match(domain.data(), d))
         {
-            if (domain_match(const_cast<char *>(domain.data()), tl->ptr))
-                return 0;
+            return false;
         }
     }
-    return 1;
+
+    return true;
 }
 
 /* This array should be somewhere else */
@@ -1045,8 +1034,8 @@ void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
         if (err)
         {
             const char *ans = (this->accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
-                            ? "y"
-                            : NULL;
+                                  ? "y"
+                                  : NULL;
             if ((err & COO_OVERRIDE_OK) &&
                 this->accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
             {
@@ -1090,12 +1079,22 @@ void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
     }
 }
 
+std::vector<std::string> _make_domain_list(std::string_view src)
+{
+    auto splitter = svu::splitter(src, [](char c) -> bool {
+        return IS_SPACE(c) || c == ',';
+    });
+    std::vector<std::string> list;
+    for (auto s : splitter)
+    {
+        list.push_back(std::string(s));
+    }
+    return list;
+}
+
 void CookieManager::Parse()
 {
-    if (this->cookie_reject_domains.size())
-        this->Cookie_reject_domains = make_domain_list(this->cookie_reject_domains.c_str());
-    if (this->cookie_accept_domains.size())
-        this->Cookie_accept_domains = make_domain_list(this->cookie_accept_domains.c_str());
-    if (this->cookie_avoid_wrong_number_of_dots.size())
-        this->Cookie_avoid_wrong_number_of_dots_domains = make_domain_list(this->cookie_avoid_wrong_number_of_dots.c_str());
+    this->Cookie_reject_domains = _make_domain_list(this->cookie_reject_domains);
+    this->Cookie_accept_domains = _make_domain_list(this->cookie_accept_domains);
+    this->Cookie_avoid_wrong_number_of_dots_domains = _make_domain_list(this->cookie_avoid_wrong_number_of_dots);
 }

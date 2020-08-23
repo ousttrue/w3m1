@@ -31,7 +31,6 @@ Network &Network::Instance()
     return n;
 }
 
-// #define set_no_proxy(domains) (this->NO_proxy_domains = make_domain_list(domains))
 void Network::ParseProxy()
 {
     if (this->HTTP_proxy.size())
@@ -47,7 +46,7 @@ void Network::ParseProxy()
     if (this->NO_proxy.size())
     {
         auto splitter = svu::splitter(this->NO_proxy, [](char c) -> bool {
-            return false;
+            return IS_SPACE(c) || c == ',';
         });
         for (auto v : splitter)
         {

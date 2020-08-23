@@ -1,8 +1,8 @@
 #pragma once
+#include "stream/url.h"
 #include <string_view>
 #include <memory>
-#include "html/html.h"
-#include "stream/url.h"
+#include <vector>
 
 enum AcceptBadCookieTypes
 {
@@ -14,13 +14,12 @@ enum AcceptBadCookieTypes
 ///
 /// cookie singleton
 ///
-struct TextList;
 class CookieManager
 {
     bool default_use_cookie = true;
-    TextList *Cookie_reject_domains = nullptr;
-    TextList *Cookie_accept_domains = nullptr;
-    TextList *Cookie_avoid_wrong_number_of_dots_domains = nullptr;
+    std::vector<std::string> Cookie_reject_domains;
+    std::vector<std::string> Cookie_accept_domains;
+    std::vector<std::string> Cookie_avoid_wrong_number_of_dots_domains;
 
     int check_avoid_wrong_number_of_dots_domain(Str domain);
 
@@ -44,7 +43,7 @@ public:
     int add_cookie(const URL &pu, Str name, Str value, time_t expires,
                    Str domain, Str path, int flag, Str comment, int version,
                    Str port, Str commentURL);;
-    int check_cookie_accept_domain(std::string_view domain);
+    bool check_cookie_accept_domain(std::string_view domain);
     void save_cookies();
     std::shared_ptr<struct Buffer> cookie_list_panel();
 };
