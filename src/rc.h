@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <stdio.h>
 
 #define MINIMUM_PIXEL_PER_CHAR 4.0
@@ -14,3 +15,5 @@ int str_to_bool(const char *value, int old);
 void show_params(FILE *fp);
 int set_param_option(const char *option);
 const char *get_param_option(const char *name);
+void sync_with_option(void);
+std::shared_ptr<struct Buffer> load_option_panel(void);

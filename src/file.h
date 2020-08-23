@@ -36,9 +36,6 @@ int matchattr(char *p, const char *attr, int len, Str *value);
 
 // char *checkHeader(BufferPtr buf, const char *field);
 
-void fmTerm(void);
-void fmInit(void);
-
 void addChar(char c, Lineprop mode = P_UNKNOWN);
 
 void addMChar(char *c, Lineprop mode, size_t len);
@@ -49,14 +46,6 @@ char *lastFileName(const char *path);
 const char *mydirname(const char *s);
 
 Str unescape_spaces(Str s);
-#ifdef USE_HISTORY
-BufferPtr historyBuffer(Hist *hist);
-void loadHistory(Hist *hist);
-void saveHistory(Hist *hist, size_t size);
-void ldHist(void);
-#else /* not USE_HISTORY */
-#define ldHist nulcmd
-#endif /* not USE_HISTORY */
 double log_like(int x);
 struct table *newTable(void);
 
@@ -96,8 +85,8 @@ BufferPtr link_list_panel(const BufferPtr &buf);
 
 
 
-BufferPtr load_option_panel(void);
-void sync_with_option(void);
+
+
 
 char *libFile(char *base);
 char *helpFile(char *base);

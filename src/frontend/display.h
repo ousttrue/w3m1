@@ -29,3 +29,6 @@ void disp_message(const char *s, int redraw_current);
 void disp_message_nomouse(const char *s, int redraw_current);
 void set_delayed_message(const char *s);
 void record_err_message(const char *s);
+
+void fmTerm(void);
+void fmInit(void);

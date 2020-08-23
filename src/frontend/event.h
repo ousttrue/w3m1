@@ -55,3 +55,4 @@ inline bool TrapJmp(const std::function<bool()> &func)
 {
     return TrapJmp(true, func);
 }
+void SigPipe(SIGNAL_ARG);

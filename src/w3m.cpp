@@ -1,53 +1,25 @@
-#define MAINPROGRAM
-
 #include "config.h"
-#include <gc.h>
-#include <locale.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <signal.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include "make_array.h"
-#include "w3m.h"
-#include "cli.h"
-#include "backend.h"
 #include "indep.h"
-#include "gc_helper.h"
 #include "textlist.h"
-#include "charset.h"
 #include "rc.h"
 #include "register_commands.h"
 #include "history.h"
 #include "download_list.h"
-#include "symbol.h"
 #include "myctype.h"
-#include "file.h"
 #include "public.h"
-#include "html/parsetag.h"
-#include "html/form.h"
 #include "html/image.h"
-#include "html/html_processor.h"
-#include "loader.h"
-#include "stream/input_stream.h"
+#include "frontend/lineinput.h"
 #include "stream/cookie.h"
 #include "frontend/mouse.h"
-#include "frontend/lineinput.h"
-
 #include "frontend/event.h"
 #include "frontend/tabbar.h"
 #include "frontend/display.h"
-
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-
-#define MAXIMUM_COLS 1024
-#define DEFAULT_COLS 80
 
 static inline volatile bool s_need_resize_screen = false;
 static void resize_hook(SIGNAL_ARG)

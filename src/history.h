@@ -1,7 +1,4 @@
-/* $Id: history.h,v 1.5 2002/01/26 17:24:01 ukai Exp $ */
-#ifndef HISTORY_H
-#define HISTORY_H
-
+#include <memory>
 #include "textlist.h"
 #include "hash.h"
 
@@ -18,14 +15,17 @@ struct Hist
     Hash_sv *hash;
 };
 
-extern Hist *newHist();
-extern Hist *copyHist(Hist *hist);
-extern HistItem *unshiftHist(Hist *hist, char *ptr);
-extern HistItem *pushHist(Hist *hist, const char *ptr);
-extern HistItem *pushHashHist(Hist *hist, const char *ptr);
-extern HistItem *getHashHist(Hist *hist, const char *ptr);
-extern char *lastHist(Hist *hist);
-extern char *nextHist(Hist *hist);
-extern char *prevHist(Hist *hist);
+Hist *newHist();
+Hist *copyHist(Hist *hist);
+HistItem *unshiftHist(Hist *hist, char *ptr);
+HistItem *pushHist(Hist *hist, const char *ptr);
+HistItem *pushHashHist(Hist *hist, const char *ptr);
+HistItem *getHashHist(Hist *hist, const char *ptr);
+char *lastHist(Hist *hist);
+char *nextHist(Hist *hist);
+char *prevHist(Hist *hist);
 
-#endif /* HISTORY_H */
+std::shared_ptr<struct Buffer> historyBuffer(Hist *hist);
+void loadHistory(Hist *hist);
+void saveHistory(Hist *hist, size_t size);
+void ldHist(void);
