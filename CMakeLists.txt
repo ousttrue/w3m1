@@ -21,6 +21,16 @@ INTERFACE
     _external/plog/include
 )
 
+add_library(asio INTERFACE)
+target_include_directories(asio
+INTERFACE
+    _external/asio/asio/include
+)
+target_link_libraries(asio
+INTERFACE
+    pthread
+)
+
 subdirs(
     charutil
     libwc
@@ -183,7 +193,7 @@ PRIVATE
     ssl
     crypto
     plog
-    uv
+    asio
     #
     wc
 )

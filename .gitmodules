@@ -1,3 +1,6 @@
 [submodule "_external/plog"]
 	path = _external/plog
 	url = https://github.com/SergiusTheBest/plog.git
+[submodule "_external/asio"]
+	path = _external/asio
+	url = https://github.com/chriskohlhoff/asio.git

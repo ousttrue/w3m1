@@ -1,7 +1,7 @@
 #include "config.h"
 #include <unistd.h>
 #include <signal.h>
-#include <uv.h>
+#include <asio.hpp>
 #include "indep.h"
 #include "textlist.h"
 #include "rc.h"
@@ -213,15 +213,47 @@ int w3mApp::Main(const URL &url)
 // TODO:
 extern char *CurrentCmdData;
 
+class Asio
+{
+    asio::io_context context;
+    asio::posix::stream_descriptor tty;
+    char byteArray[1];
+
+public:
+    Asio()
+        : tty(context, Terminal::tty())
+    {
+    }
+
+    void ReadTty()
+    {
+        auto buffer = asio::buffer(byteArray);
+        auto callback = std::bind(&Asio::OnReadTty, this, std::placeholders::_1, std::placeholders::_2);
+        tty.async_read_some(buffer, callback);
+    }
+
+    void OnReadTty(asio::error_code ec, std::size_t n)
+    {
+        // dispatch
+
+        auto a = 0;
+
+        // read
+    }
+
+    void Run()
+    {
+        context.run();
+    }
+};
+
 void w3mApp::mainloop2()
 {
-    uv_loop_t loop = {0};
-    uv_loop_init(&loop);
+    Asio asio;
 
-    printf("Now quitting.\n");
-    uv_run(&loop, UV_RUN_DEFAULT);
+    asio.ReadTty();
 
-    uv_loop_close(&loop);
+    asio.Run();
 }
 
 void w3mApp::mainloop()
