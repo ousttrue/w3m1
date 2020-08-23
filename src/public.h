@@ -66,12 +66,6 @@ void execdict(char *word);
 char *GetWord(const BufferPtr &buf);
 void tabURL0(TabPtr tab, const char *prompt, int relative);
 
-void stopDownload();
-void download_action(struct parsed_tagarg *arg);
-int checkDownloadList();
-void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size);
-int add_download_list();
-void set_add_download_list(int add);
 
 void deleteFiles();
 

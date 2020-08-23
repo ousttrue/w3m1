@@ -25,6 +25,7 @@
 #include "html/html_context.h"
 #include "html/maparea.h"
 #include <unistd.h>
+#include "download_list.h"
 
 #define FORM_I_TEXT_DEFAULT_SIZE 40
 #define FORM_I_SELECT_DEFAULT_SIZE 40

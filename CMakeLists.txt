@@ -149,6 +149,7 @@ add_executable(w3m
     src/hash.cpp
     src/symbol.cpp
     src/history.cpp
+    src/download_list.cpp
 )
 target_include_directories(w3m
 PRIVATE

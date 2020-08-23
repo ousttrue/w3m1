@@ -33,7 +33,7 @@
 #include "frontend/line.h"
 #include "frontend/lineinput.h"
 #include "frontend/search.h"
-
+#include "download_list.h"
 #include "rc.h"
 #include "w3m.h"
 #include <signal.h>
@@ -2288,7 +2288,7 @@ void tabL(w3mApp *w3m)
 
 void ldDL(w3mApp *w3m)
 {
-    int replace = false, new_tab = false;
+    bool replace = false;
     auto tab = GetCurrentTab();
     if (tab->GetCurrentBuffer()->bufferprop & BP_INTERNAL &&
         tab->GetCurrentBuffer()->buffername == w3mApp::Instance().DOWNLOAD_LIST_TITLE)
@@ -2324,6 +2324,8 @@ void ldDL(w3mApp *w3m)
         newBuf->rect = GetCurrentTab()->GetCurrentBuffer()->rect;
         newBuf->restorePosition(GetCurrentTab()->GetCurrentBuffer());
     }
+
+    bool new_tab = false;
     if (!replace && w3mApp::Instance().open_tab_dl_list)
     {
         CreateTabSetCurrent();
