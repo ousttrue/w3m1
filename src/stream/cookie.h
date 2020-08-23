@@ -27,6 +27,9 @@ class CookieManager
     ~CookieManager();
     CookieManager(const CookieManager &) = delete;
     CookieManager &operator=(const CookieManager &) = delete;
+    int add_cookie(const URL &pu, Str name, Str value, time_t expires,
+                   Str domain, Str path, int flag, Str comment, bool version2,
+                   Str port, Str commentURL);;
 
 public:
     bool use_cookie = false;
@@ -39,10 +42,7 @@ public:
 
     static CookieManager &Instance();
     void Initialize();
-    void readHeaderCookie(const URL &pu, Str lineBuf2);
-    int add_cookie(const URL &pu, Str name, Str value, time_t expires,
-                   Str domain, Str path, int flag, Str comment, int version,
-                   Str port, Str commentURL);;
+    void ProcessHttpHeader(const URL &pu, bool version2, std::string_view value);
     bool check_cookie_accept_domain(const std::string &domain);
     void save_cookies();
     std::shared_ptr<struct Buffer> cookie_list_panel();

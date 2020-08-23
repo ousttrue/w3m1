@@ -98,10 +98,10 @@ Str convertLine(URLSchemeTypes scheme, Str line, int mode, CharacterEncodingSche
     return line;
 }
 
-int matchattr(char *p, const char *attr, int len, Str *value)
+int matchattr(const char *p, const char *attr, int len, Str *value)
 {
     int quoted;
-    char *q = NULL;
+    const char *q = NULL;
 
     if (strncasecmp(p, attr, len) == 0)
     {

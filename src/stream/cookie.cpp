@@ -345,10 +345,10 @@ int CookieManager::check_avoid_wrong_number_of_dots_domain(Str domain)
 
 int CookieManager::add_cookie(const URL &pu, Str name, Str value,
                               time_t expires, Str domain, Str path,
-                              int flag, Str comment, int version, Str port, Str commentURL)
+                              int flag, Str comment, bool version2, Str port, Str commentURL)
 {
     struct Cookie *p;
-    auto domainname = (version == 0) ? Network::Instance().FQDN(pu.host) : pu.host;
+    auto domainname = !version2 ? Network::Instance().FQDN(pu.host) : pu.host;
     Str odomain = domain, opath = path;
     std::vector<uint16_t> portlist;
     int use_security = !(flag & COO_OVERRIDE);
@@ -382,10 +382,10 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
         * tail match of [NETSCAPE].
         */
         if (domain->ptr[0] != '.' &&
-            (version > 0 || domainname ==  domain->ptr))
+            (version2 || domainname == domain->ptr))
             domain = Sprintf(".%s", domain->ptr);
 
-        if (version == 0)
+        if (!version2)
         {
             /* [NETSCAPE] rule */
             int n = total_dot_number(domain->ptr,
@@ -429,13 +429,13 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
             COOKIE_ERROR(COO_EDOM);
         /* [RFC 2409] s. 4.3.2 case 4 */
         /* Invariant: dp contains matched domain */
-        if (version > 0 && !contain_no_dots(domainname.c_str(), dp.c_str()))
+        if (version2 && !contain_no_dots(domainname.c_str(), dp.c_str()))
             COOKIE_ERROR(COO_EBADHOST);
     }
     if (path)
     {
         /* [RFC 2109] s. 4.3.2 case 1 */
-        if (version > 0 && strncmp(path->ptr, pu.path.c_str(), path->Size()) != 0)
+        if (version2 && strncmp(path->ptr, pu.path.c_str(), path->Size()) != 0)
             COOKIE_ERROR(COO_EPATH);
     }
     if (port)
@@ -475,7 +475,7 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
     p->domain = domain;
     p->path = path;
     p->comment = comment;
-    p->version = version;
+    p->version = version2 ? 2 : 1;
     p->portl = portlist;
     p->commentURL = commentURL;
 
@@ -829,26 +829,22 @@ const char *violations[COO_EMAX] = {
     "RFC 2109 4.3.2 rule 4",
     "RFC XXXX 4.3.2 rule 5"};
 
-void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
+void CookieManager::ProcessHttpHeader(const URL &url, bool version2, std::string_view line)
 {
-    char *p = nullptr;
-    int version;
-    if (lineBuf2->ptr[10] == '2')
+    if (!use_cookie)
     {
-        p = lineBuf2->ptr + 12;
-        version = 1;
+        return;
     }
-    else
+    if (!accept_cookie)
     {
-        p = lineBuf2->ptr + 11;
-        version = 0;
+        return;
     }
-#ifdef DEBUG
-    fprintf(stderr, "Set-Cookie: [%s]\n", p);
-#endif /* DEBUG */
+    if (!check_cookie_accept_domain(url.host))
+    {
+        return;
+    }
 
-    SKIP_BLANKS(&p);
-
+    auto p = line.data();
     auto name = Strnew();
     while (*p != '=' && !IS_ENDT(*p))
         name->Push(*(p++));
@@ -860,7 +856,7 @@ void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
         p++;
         SKIP_BLANKS(&p);
         int quoted = 0;
-        char *q = nullptr;
+        const char *q = nullptr;
         while (!IS_ENDL(*p) && (quoted || *p != ';'))
         {
             if (!IS_SPACE(*p))
@@ -913,7 +909,8 @@ void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
         }
         else if (matchattr(p, "version", 7, &tmp2))
         {
-            version = atoi(tmp2->ptr);
+            assert(false);
+            // version = (CookieVersions)atoi(tmp2->ptr);
         }
         else if (matchattr(p, "port", 4, &tmp2))
         {
@@ -940,7 +937,7 @@ void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
         }
     }
 
-    if (pu && name->Size() > 0)
+    if (name->Size() > 0)
     {
         int err;
         if (this->show_cookie)
@@ -955,8 +952,8 @@ void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
                                   false, 1, true, false);
         }
         err =
-            add_cookie(pu, name, value, expires, domain, path, flag,
-                       comment, version, port, commentURL);
+            add_cookie(url, name, value, expires, domain, path, flag,
+                       comment, version2, port, commentURL);
         if (err)
         {
             const char *ans = (this->accept_bad_cookie == ACCEPT_BAD_COOKIE_ACCEPT)
@@ -966,7 +963,7 @@ void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
                 this->accept_bad_cookie == ACCEPT_BAD_COOKIE_ASK)
             {
                 Str msg = Sprintf("Accept bad cookie from %s for %s?",
-                                  pu.host,
+                                  url.host,
                                   ((domain && domain->ptr)
                                        ? domain->ptr
                                        : "<localdomain>"));
@@ -977,8 +974,8 @@ void CookieManager::readHeaderCookie(const URL &pu, Str lineBuf2)
             }
             if (ans == NULL || TOLOWER(*ans) != 'y' ||
                 (err =
-                     add_cookie(pu, name, value, expires, domain, path,
-                                flag | COO_OVERRIDE, comment, version,
+                     add_cookie(url, name, value, expires, domain, path,
+                                flag | COO_OVERRIDE, comment, version2,
                                 port, commentURL)))
             {
                 err = (err & ~COO_OVERRIDE_OK) - 1;

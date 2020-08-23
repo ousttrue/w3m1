@@ -32,7 +32,7 @@ LinePtr getNextPage(BufferPtr buf, int plen);
 int checkSaveFile(const InputStreamPtr &stream, char *path);
 int checkOverWrite(const char *path);
 const char *inputAnswer(const char *prompt);
-int matchattr(char *p, const char *attr, int len, Str *value);
+int matchattr(const char *p, const char *attr, int len, Str *value);
 
 // char *checkHeader(BufferPtr buf, const char *field);
 

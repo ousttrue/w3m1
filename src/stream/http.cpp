@@ -80,14 +80,14 @@ std::shared_ptr<HttpRequest> HttpRequest::Create(const URL &url, FormPtr form)
 ///
 /// HttpResponse
 ///
-std::shared_ptr<HttpResponse> HttpResponse::Read(const std::shared_ptr<InputStream> &stream)
+std::shared_ptr<HttpResponse> HttpResponse::Read(const std::shared_ptr<InputStream> &stream, const URL &url)
 {
     auto res = std::make_shared<HttpResponse>();
 
     while (!stream->eos())
     {
         auto line = stream->mygets();
-        if (res->PushIsEndHeader(line->ptr))
+        if (res->PushIsEndHeader(line->ptr, url))
         {
             break;
         }
@@ -96,7 +96,7 @@ std::shared_ptr<HttpResponse> HttpResponse::Read(const std::shared_ptr<InputStre
     return res;
 }
 
-bool HttpResponse::PushIsEndHeader(std::string_view line)
+bool HttpResponse::PushIsEndHeader(std::string_view line, const URL &url)
 {
     if (line.ends_with("\r\n"))
     {
@@ -168,19 +168,20 @@ bool HttpResponse::PushIsEndHeader(std::string_view line)
                 }
             }
         }
+        else if (svu::ic_eq(key, "set-cookie"))
+        {
+            CookieManager::Instance().ProcessHttpHeader(url, false, value);
+        }
+        else if (svu::ic_eq(key, "set-cookie2"))
+        {
+            CookieManager::Instance().ProcessHttpHeader(url, true, value);
+        }
     }
 
     // header is continuous
     return false;
 }
 
-//         else if (CookieManager::Instance().use_cookie && CookieManager::Instance().accept_cookie &&
-//                  pu && check_cookie_accept_domain(pu->host) &&
-//                  (!strncasecmp(lineBuf2->ptr, "Set-Cookie:", 11) ||
-//                   !strncasecmp(lineBuf2->ptr, "Set-Cookie2:", 12)))
-//         {
-//             readHeaderCookie(*pu, lineBuf2);
-//         }
 //         else if (strncasecmp(lineBuf2->ptr, "w3m-control:", 12) == 0 &&
 //                  uf->scheme == SCM_LOCAL_CGI)
 //         {
@@ -319,7 +320,7 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
     //
     // read HTTP response headers
     //
-    auto response = HttpResponse::Read(stream);
+    auto response = HttpResponse::Read(stream, url);
     show_message(response->lines.front());
     exchanges.push_back({request, response});
 

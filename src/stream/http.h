@@ -95,9 +95,9 @@ struct HttpResponse
     std::string content_type;
     std::string content_charset;
 
-    static std::shared_ptr<HttpResponse> Read(const std::shared_ptr<class InputStream> &stream);
+    static std::shared_ptr<HttpResponse> Read(const std::shared_ptr<class InputStream> &stream, const URL &url);
 
-    bool PushIsEndHeader(std::string_view line);
+    bool PushIsEndHeader(std::string_view line, const URL &url);
 
     const bool HasRedirectionStatus() const
     {
