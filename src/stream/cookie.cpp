@@ -74,52 +74,50 @@ total_dot_number(const char *p, const char *ep, int max_count)
 
 #define contain_no_dots(p, ep) (total_dot_number((p), (ep), 1) == 0)
 
-static const char *domain_match(const char *host, const std::string &domain)
+static std::string domain_match(const std::string &host, const std::string &domain)
 {
     /* [RFC 2109] s. 2, "domain-match", case 1
      * (both are IP and identical)
      */
     regexCompile("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+", 0);
-    auto m0 = regexMatch(const_cast<char *>(host), -1, 1);
+    auto m0 = regexMatch(const_cast<char *>(host.c_str()), -1, 1);
     auto m1 = regexMatch(const_cast<char *>(domain.c_str()), -1, 1);
     if (m0 && m1)
     {
-        if (strcasecmp(host, domain.c_str()) == 0)
+        if (host == domain)
             return host;
     }
     else if (!m0 && !m1)
     {
-        int offset;
-        const char *domain_p;
         /*
         * "." match all domains (w3m only),
         * and ".local" match local domains ([DRAFT 12] s. 2)
         */
         if (domain == "." || domain == ".local")
         {
-            offset = strlen(host);
-            domain_p = &host[offset];
-            if (domain[1] == '\0' || contain_no_dots(host, domain_p))
+            auto offset = host.size();
+            auto domain_p = &host[offset];
+            if (domain[1] == '\0' || contain_no_dots(host.c_str(), domain_p))
                 return domain_p;
         }
         /*
-	 * special case for domainName = .hostName
-	 * see nsCookieService.cpp in Firefox.
-	 */
-        else if (domain[0] == '.' && strcasecmp(host, &domain[1]) == 0)
+        * special case for domainName = .hostName
+        * see nsCookieService.cpp in Firefox.
+        */
+        else if (domain[0] == '.' && host == &domain[1])
         {
             return host;
         }
         /* [RFC 2109] s. 2, cases 2, 3 */
         else
         {
-            offset = (domain[0] != '.') ? 0 : strlen(host) - domain.size();
-            domain_p = &host[offset];
+            auto offset = (domain[0] != '.') ? 0 : host.size() - domain.size();
+            auto domain_p = &host[offset];
             if (offset >= 0 && strcasecmp(domain_p, domain.c_str()) == 0)
                 return domain_p;
         }
     }
-    return NULL;
+    return "";
 }
 
 static bool
@@ -143,14 +141,14 @@ struct Cookie : public gc_cleanup
     char flag = 0;
     Cookie *next = nullptr;
 
-    bool Match(const URL *pu, const char *domainname) const
+    bool Match(const URL *pu, const std::string &domainname) const
     {
-        if (!domainname)
+        if (domainname.empty())
         {
             return false;
         }
 
-        if (!domain_match(domainname, this->domain->ptr))
+        if (domain_match(domainname, this->domain->ptr).empty())
             return false;
         if (strncmp(this->path->ptr, pu->path.c_str(), this->path->Size()) != 0)
             return false;
@@ -253,89 +251,17 @@ get_cookie_info(Str domain, Str path, Str name)
     return NULL;
 }
 
-char *
-FQDN(char *host)
-{
-    char *p;
-#ifndef INET6
-    struct hostent *entry;
-#else  /* INET6 */
-    int *af;
-#endif /* INET6 */
-
-    if (host == NULL)
-        return NULL;
-
-    if (strcasecmp(host, "localhost") == 0)
-        return host;
-
-    for (p = host; *p && *p != '.'; p++)
-        ;
-
-    if (*p == '.')
-        return host;
-
-#ifndef INET6
-    if (!(entry = gethostbyname(host)))
-        return NULL;
-
-    return allocStr(entry->h_name, -1);
-#else  /* INET6 */
-    for (af = ai_family_order_table[Network::Instance().DNS_order];; af++)
-    {
-        int error;
-        struct addrinfo hints;
-        struct addrinfo *res, *res0;
-        char *namebuf;
-
-        memset(&hints, 0, sizeof(hints));
-        hints.ai_flags = AI_CANONNAME;
-        hints.ai_family = *af;
-        hints.ai_socktype = SOCK_STREAM;
-        error = getaddrinfo(host, NULL, &hints, &res0);
-        if (error)
-        {
-            if (*af == PF_UNSPEC)
-            {
-                /* all done */
-                break;
-            }
-            /* try next address family */
-            continue;
-        }
-        for (res = res0; res != NULL; res = res->ai_next)
-        {
-            if (res->ai_canonname)
-            {
-                /* found */
-                namebuf = strdup(res->ai_canonname);
-                freeaddrinfo(res0);
-                return namebuf;
-            }
-        }
-        freeaddrinfo(res0);
-        if (*af == PF_UNSPEC)
-        {
-            break;
-        }
-    }
-    /* all failed */
-    return NULL;
-#endif /* INET6 */
-}
-
 Str find_cookie(const URL *pu)
 {
     Str tmp;
     struct Cookie *p, *p1, *fco = NULL;
     int version = 0;
-    char *fq_domainname;
 
-    fq_domainname = FQDN(const_cast<char *>(pu->host.c_str()));
+    auto fq_domainname = Network::Instance().FQDN(pu->host);
     check_expired_cookies();
     for (p = First_cookie; p; p = p->next)
     {
-        const char *domainname = (p->version == 0) ? fq_domainname : pu->host.c_str();
+        auto domainname = (p->version == 0) ? fq_domainname : pu->host;
         if (p->flag & COO_USE && p->Match(pu, domainname))
         {
             for (p1 = fco; p1 && p1->name->ICaseCmp(p->name);
@@ -400,7 +326,7 @@ int CookieManager::check_avoid_wrong_number_of_dots_domain(Str domain)
 
     for (auto &d : this->Cookie_avoid_wrong_number_of_dots_domains)
     {
-        if (domain_match(domain->ptr, d))
+        if (domain_match(domain->ptr, d).size())
         {
             avoid_wrong_number_of_dots_domain = true;
             break;
@@ -422,7 +348,7 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
                               int flag, Str comment, int version, Str port, Str commentURL)
 {
     struct Cookie *p;
-    const char *domainname = (version == 0) ? FQDN(const_cast<char *>(pu.host.c_str())) : pu.host.c_str();
+    auto domainname = (version == 0) ? Network::Instance().FQDN(pu.host) : pu.host;
     Str odomain = domain, opath = path;
     std::vector<uint16_t> portlist;
     int use_security = !(flag & COO_OVERRIDE);
@@ -444,12 +370,11 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
         fprintf(stderr, "port: [%s]\n", port->ptr);
 #endif /* DEBUG */
     /* [RFC 2109] s. 4.3.2 case 2; but this (no request-host) shouldn't happen */
-    if (!domainname)
+    if (domainname.empty())
         return COO_ENODOT;
 
     if (domain)
     {
-        const char *dp;
         /* [DRAFT 12] s. 4.2.2 (does not apply in the case that
         * host name is the same as domain attribute for version 0
         * cookie)
@@ -457,7 +382,7 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
         * tail match of [NETSCAPE].
         */
         if (domain->ptr[0] != '.' &&
-            (version > 0 || strcasecmp(domainname, domain->ptr) != 0))
+            (version > 0 || domainname ==  domain->ptr))
             domain = Sprintf(".%s", domain->ptr);
 
         if (version == 0)
@@ -499,11 +424,12 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
         }
 
         /* [RFC 2109] s. 4.3.2 case 3 */
-        if (!(dp = domain_match(domainname, domain->ptr)))
+        auto dp = domain_match(domainname, domain->ptr);
+        if (!dp.empty())
             COOKIE_ERROR(COO_EDOM);
         /* [RFC 2409] s. 4.3.2 case 4 */
         /* Invariant: dp contains matched domain */
-        if (version > 0 && !contain_no_dots(const_cast<char *>(domainname), dp))
+        if (version > 0 && !contain_no_dots(domainname.c_str(), dp.c_str()))
             COOKIE_ERROR(COO_EBADHOST);
     }
     if (path)
@@ -864,7 +790,7 @@ void set_cookie_flag(struct parsed_tagarg *arg)
     backBf(&w3mApp::Instance());
 }
 
-bool CookieManager::check_cookie_accept_domain(std::string_view domain)
+bool CookieManager::check_cookie_accept_domain(const std::string &domain)
 {
     if (domain.empty())
     {
@@ -873,7 +799,7 @@ bool CookieManager::check_cookie_accept_domain(std::string_view domain)
 
     for (auto &d : this->Cookie_accept_domains)
     {
-        if (domain_match(domain.data(), d))
+        if (domain_match(domain, d).size())
         {
             return true;
         }
@@ -881,7 +807,7 @@ bool CookieManager::check_cookie_accept_domain(std::string_view domain)
 
     for (auto &d : this->Cookie_reject_domains)
     {
-        if (domain_match(domain.data(), d))
+        if (domain_match(domain, d).size())
         {
             return false;
         }
@@ -1092,7 +1018,7 @@ std::vector<std::string> _make_domain_list(std::string_view src)
     return list;
 }
 
-void CookieManager::Parse()
+void CookieManager::Initialize()
 {
     this->Cookie_reject_domains = _make_domain_list(this->cookie_reject_domains);
     this->Cookie_accept_domains = _make_domain_list(this->cookie_accept_domains);

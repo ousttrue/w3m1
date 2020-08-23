@@ -1288,7 +1288,7 @@ void sync_with_option(void)
     w3mApp::Instance().WrapSearch = w3mApp::Instance().WrapDefault;
     Network::Instance().ParseProxy();
 
-    CookieManager::Instance().Parse();
+    CookieManager::Instance().Initialize();
 
     initMailcap();
     initMimeTypes();

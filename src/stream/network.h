@@ -78,4 +78,5 @@ public:
     void ParseProxy();
     bool UseProxy(const URL &url);
     URL GetProxy(URLSchemeTypes scheme);
+    std::string FQDN(const std::string &host);
 };

@@ -261,3 +261,56 @@ URL Network::GetProxy(URLSchemeTypes scheme)
     assert(false);
     return {};
 }
+
+std::string Network::FQDN(const std::string &host)
+{
+    if (host.empty())
+        return "";
+
+    if (host == "localhost")
+        return "localhost";
+
+    auto pos = host.find('.');
+    if (pos != std::string::npos)
+    {
+        return host;
+    }
+
+    for (auto af = ai_family_order_table[Network::Instance().DNS_order];; af++)
+    {
+        struct addrinfo hints = {0};
+        hints.ai_flags = AI_CANONNAME;
+        hints.ai_family = *af;
+        hints.ai_socktype = SOCK_STREAM;
+        struct addrinfo *res0;
+        int error = getaddrinfo(host.c_str(), NULL, &hints, &res0);
+        if (error)
+        {
+            if (*af == PF_UNSPEC)
+            {
+                /* all done */
+                break;
+            }
+            /* try next address family */
+            continue;
+        }
+        for (auto res = res0; res != NULL; res = res->ai_next)
+        {
+            if (res->ai_canonname)
+            {
+                /* found */
+                std::string namebuf = res->ai_canonname;
+                freeaddrinfo(res0);
+                return namebuf;
+            }
+        }
+
+        freeaddrinfo(res0);
+        if (*af == PF_UNSPEC)
+        {
+            break;
+        }
+    }
+    /* all failed */
+    return "";
+}
