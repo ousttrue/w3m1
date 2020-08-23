@@ -207,10 +207,6 @@ public:
     TextList *Cookie_avoid_wrong_number_of_dots_domains = nullptr;
     bool is_redisplay = false;
 
-    // ssl
-
-    bool ssl_path_modified = false;
-
     // files settings
     std::string config_file;
     std::string BookmarkFile;

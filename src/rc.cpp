@@ -283,7 +283,6 @@ struct Param
                 this->value = std::string(rcFile(src.data()));
             else
                 this->value = std::string("");
-            w3mApp::Instance().ssl_path_modified = 1;
             break;
 
         case P_COLOR:
