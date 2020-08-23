@@ -9,7 +9,7 @@
 
 #include <sstream>
 #include "stream/cookie.h"
-
+#include "stream/network.h"
 #include "textlist.h"
 #include "indep.h"
 #include <gc_cpp.h>
@@ -283,7 +283,7 @@ FQDN(char *host)
 
     return allocStr(entry->h_name, -1);
 #else  /* INET6 */
-    for (af = ai_family_order_table[w3mApp::Instance().DNS_order];; af++)
+    for (af = ai_family_order_table[Network::Instance().DNS_order];; af++)
     {
         int error;
         struct addrinfo hints;

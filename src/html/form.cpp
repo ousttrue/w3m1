@@ -26,6 +26,7 @@
 #include "html/maparea.h"
 #include <unistd.h>
 #include "download_list.h"
+#include "stream/network.h"
 
 #define FORM_I_TEXT_DEFAULT_SIZE 40
 #define FORM_I_SELECT_DEFAULT_SIZE 40
@@ -891,7 +892,7 @@ void loadPreForm(void)
     int type = -1;
     char *name = NULL;
 
-    auto fp = openSecretFile(w3mApp::Instance().pre_form_file.c_str());
+    auto fp = openSecretFile(Network::Instance().pre_form_file.c_str());
     if (fp == NULL)
         return;
 

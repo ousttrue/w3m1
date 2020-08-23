@@ -755,35 +755,6 @@ filename_extension(const char *path, int is_url)
         return last_dot;
 }
 
-URL *schemeToProxy(int scheme)
-{
-    URL *pu = NULL; /* for gcc */
-    switch (scheme)
-    {
-    case SCM_HTTP:
-        pu = &w3mApp::Instance().HTTP_proxy_parsed;
-        break;
-#ifdef USE_SSL
-    case SCM_HTTPS:
-        pu = &w3mApp::Instance().HTTPS_proxy_parsed;
-        break;
-#endif
-    case SCM_FTP:
-        pu = &w3mApp::Instance().FTP_proxy_parsed;
-        break;
-#ifdef USE_GOPHER
-    case SCM_GOPHER:
-        pu = &GOPHER_proxy_parsed;
-        break;
-#endif
-#ifdef DEBUG
-    default:
-        abort();
-#endif
-    }
-    return pu;
-}
-
 char *mybasename(std::string_view s)
 {
     const char *p = s.data();

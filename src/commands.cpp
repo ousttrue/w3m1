@@ -21,7 +21,7 @@
 #include "frontend/display.h"
 #include "frontend/tab.h"
 #include "stream/cookie.h"
-
+#include "stream/network.h"
 #include "frontend/mouse.h"
 #include "frontend/tabbar.h"
 #include "mime/mimetypes.h"
@@ -451,7 +451,7 @@ void ldfile(w3mApp *w3m)
 
 void ldhelp(w3mApp *w3m)
 {
-    std::string_view lang = w3mApp::Instance().AcceptLang;
+    std::string_view lang = Network::Instance().AcceptLang;
     auto n = strcspn(lang.data(), ";, \t");
     auto tmp = Sprintf("file:///$LIB/" HELP_CGI CGI_EXTENSION "?version=%s&lang=%s",
                        UrlEncode(Strnew_m_charp(w3mApp::w3m_version))->ptr,

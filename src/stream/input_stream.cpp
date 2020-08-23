@@ -7,6 +7,7 @@
 #include "stream/open_socket.h"
 #include "stream/ssl_socket.h"
 #include "stream/local_cgi.h"
+#include "stream/network.h"
 #include "html/html.h"
 #include "html/form.h"
 #include "mime/mimeencoding.h"
@@ -540,7 +541,7 @@ Str ssl_get_certificate(SSL *ssl, char *hostname)
      * The chain length is automatically checked by OpenSSL when we
      * set the verify depth in the ctx.
      */
-    if (w3mApp::Instance().ssl_verify_server)
+    if (Network::Instance().ssl_verify_server)
     {
         long verr;
         if ((verr = SSL_get_verify_result(ssl)) != X509_V_OK)
@@ -655,7 +656,7 @@ InputStreamPtr OpenHttpAndSendRequest(const std::shared_ptr<HttpRequest> &reques
         return nullptr;
     }
 
-    if (w3mApp::Instance().UseProxy(request->url))
+    if (Network::Instance().UseProxy(request->url))
     {
         assert(false);
         return nullptr;

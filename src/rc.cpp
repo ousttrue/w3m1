@@ -21,7 +21,7 @@
 #include "mime/mailcap.h"
 #include "html/parsetag.h"
 #include "make_array.h"
-
+#include "stream/network.h"
 #include "frontend/terminal.h"
 #include <stdlib.h>
 #include <vector>
@@ -728,44 +728,35 @@ auto sections = make_array(
                  }},
     ParamSection{"Network Settings",
                  {
-                     {"passwd_file", P_STRING, PI_TEXT, w3mApp::Instance().passwd_file, CMT_PASSWDFILE},
-                     {"disable_secret_security_check", P_INT, PI_ONOFF, w3mApp::Instance().disable_secret_security_check, CMT_DISABLE_SECRET_SECURITY_CHECK},
-                     {"ftppasswd", P_STRING, PI_TEXT, w3mApp::Instance().ftppasswd, CMT_FTPPASS},
-                     {"ftppass_hostnamegen", P_INT, PI_ONOFF, w3mApp::Instance().ftppass_hostnamegen, CMT_FTPPASS_HOSTNAMEGEN},
-                     {"pre_form_file", P_STRING, PI_TEXT, w3mApp::Instance().pre_form_file, CMT_PRE_FORM_FILE},
-                     {"user_agent", P_STRING, PI_TEXT, w3mApp::Instance().UserAgent, CMT_USERAGENT},
-                     {"no_referer", P_INT, PI_ONOFF, w3mApp::Instance().NoSendReferer, CMT_NOSENDREFERER},
-                     {"accept_language", P_STRING, PI_TEXT, w3mApp::Instance().AcceptLang, CMT_ACCEPTLANG},
-                     {"accept_encoding", P_STRING, PI_TEXT, w3mApp::Instance().AcceptEncoding, CMT_ACCEPTENCODING},
-                     {"accept_media", P_STRING, PI_TEXT, w3mApp::Instance().AcceptMedia, CMT_ACCEPTMEDIA},
-                     {"argv_is_url", P_CHARINT, PI_ONOFF, w3mApp::Instance().ArgvIsURL, CMT_ARGV_IS_URL},
-                     {"retry_http", P_INT, PI_ONOFF, w3mApp::Instance().retryAsHttp, CMT_RETRY_HTTP},
-                     {"default_url", P_INT, PI_SEL_C, w3mApp::Instance().DefaultURLString, CMT_DEFAULT_URL, (void *)defaulturls},
-                     {"follow_redirection", P_INT, PI_TEXT, w3mApp::Instance().FollowRedirection, CMT_FOLLOW_REDIRECTION},
-                     {"meta_refresh", P_CHARINT, PI_ONOFF, w3mApp::Instance().MetaRefresh, CMT_META_REFRESH},
-                     {"dns_order", P_INT, PI_SEL_C, w3mApp::Instance().DNS_order, CMT_DNS_ORDER, (void *)dnsorders},
-                     //  {"nntpserver", P_STRING, PI_TEXT, NNTP_server, CMT_NNTP_SERVER},
-                     //  {"nntpmode", P_STRING, PI_TEXT, NNTP_mode, CMT_NNTP_MODE},
-                     //  {"max_news", P_INT, PI_TEXT, MaxNewsMessage, CMT_MAX_NEWS},
+                     {"passwd_file", P_STRING, PI_TEXT, Network::Instance().passwd_file, CMT_PASSWDFILE},
+                     {"disable_secret_security_check", P_INT, PI_ONOFF, Network::Instance().disable_secret_security_check, CMT_DISABLE_SECRET_SECURITY_CHECK},
+                     {"pre_form_file", P_STRING, PI_TEXT, Network::Instance().pre_form_file, CMT_PRE_FORM_FILE},
+                     {"user_agent", P_STRING, PI_TEXT, Network::Instance().UserAgent, CMT_USERAGENT},
+                     {"no_referer", P_INT, PI_ONOFF, Network::Instance().NoSendReferer, CMT_NOSENDREFERER},
+                     {"accept_language", P_STRING, PI_TEXT, Network::Instance().AcceptLang, CMT_ACCEPTLANG},
+                     {"accept_encoding", P_STRING, PI_TEXT, Network::Instance().AcceptEncoding, CMT_ACCEPTENCODING},
+                     {"accept_media", P_STRING, PI_TEXT, Network::Instance().AcceptMedia, CMT_ACCEPTMEDIA},
+                     {"default_url", P_INT, PI_SEL_C, Network::Instance().DefaultURLString, CMT_DEFAULT_URL, (void *)defaulturls},
+                     {"meta_refresh", P_CHARINT, PI_ONOFF, Network::Instance().MetaRefresh, CMT_META_REFRESH},
+                     {"dns_order", P_INT, PI_SEL_C, Network::Instance().DNS_order, CMT_DNS_ORDER, (void *)dnsorders},
                  }},
     ParamSection{"Proxy Settings",
                  {
-                     {"use_proxy", P_CHARINT, PI_ONOFF, w3mApp::Instance().use_proxy, CMT_USE_PROXY},
-                     {"http_proxy", P_STRING, PI_TEXT, w3mApp::Instance().HTTP_proxy, CMT_HTTP_PROXY},
-                     {"https_proxy", P_STRING, PI_TEXT, w3mApp::Instance().HTTPS_proxy, CMT_HTTPS_PROXY},
-                     {"ftp_proxy", P_STRING, PI_TEXT, w3mApp::Instance().FTP_proxy, CMT_FTP_PROXY},
-                     {"no_proxy", P_STRING, PI_TEXT, w3mApp::Instance().NO_proxy, CMT_NO_PROXY},
-                     {"noproxy_netaddr", P_INT, PI_ONOFF, w3mApp::Instance().NOproxy_netaddr, CMT_NOPROXY_NETADDR},
-                     {"no_cache", P_CHARINT, PI_ONOFF, w3mApp::Instance().NoCache, CMT_NO_CACHE},
+                     {"use_proxy", P_CHARINT, PI_ONOFF, Network::Instance().use_proxy, CMT_USE_PROXY},
+                     {"http_proxy", P_STRING, PI_TEXT, Network::Instance().HTTP_proxy, CMT_HTTP_PROXY},
+                     {"https_proxy", P_STRING, PI_TEXT, Network::Instance().HTTPS_proxy, CMT_HTTPS_PROXY},
+                     {"no_proxy", P_STRING, PI_TEXT, Network::Instance().NO_proxy, CMT_NO_PROXY},
+                     {"noproxy_netaddr", P_INT, PI_ONOFF, Network::Instance().NOproxy_netaddr, CMT_NOPROXY_NETADDR},
+                     {"no_cache", P_CHARINT, PI_ONOFF, Network::Instance().NoCache, CMT_NO_CACHE},
                  }},
     ParamSection{"SSL Settings",
                  {
-                     {"ssl_forbid_method", P_STRING, PI_TEXT, w3mApp::Instance().ssl_forbid_method, CMT_SSL_FORBID_METHOD},
-                     {"ssl_verify_server", P_INT, PI_ONOFF, w3mApp::Instance().ssl_verify_server, CMT_SSL_VERIFY_SERVER},
-                     {"ssl_cert_file", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_cert_file, CMT_SSL_CERT_FILE},
-                     {"ssl_key_file", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_key_file, CMT_SSL_KEY_FILE},
-                     {"ssl_ca_path", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_ca_path, CMT_SSL_CA_PATH},
-                     {"ssl_ca_file", P_SSLPATH, PI_TEXT, w3mApp::Instance().ssl_ca_file, CMT_SSL_CA_FILE},
+                     {"ssl_forbid_method", P_STRING, PI_TEXT, Network::Instance().ssl_forbid_method, CMT_SSL_FORBID_METHOD},
+                     {"ssl_verify_server", P_INT, PI_ONOFF, Network::Instance().ssl_verify_server, CMT_SSL_VERIFY_SERVER},
+                     {"ssl_cert_file", P_SSLPATH, PI_TEXT, Network::Instance().ssl_cert_file, CMT_SSL_CERT_FILE},
+                     {"ssl_key_file", P_SSLPATH, PI_TEXT, Network::Instance().ssl_key_file, CMT_SSL_KEY_FILE},
+                     {"ssl_ca_path", P_SSLPATH, PI_TEXT, Network::Instance().ssl_ca_path, CMT_SSL_CA_PATH},
+                     {"ssl_ca_file", P_SSLPATH, PI_TEXT, Network::Instance().ssl_ca_file, CMT_SSL_CA_FILE},
                  }},
     ParamSection{"Cookie Settings",
                  {
@@ -997,21 +988,6 @@ interpret_rc(FILE *f)
         ToLower(tmp);
         set_param(tmp->ptr, p);
     }
-}
-
-#define set_no_proxy(domains) (w3mApp::Instance().NO_proxy_domains = make_domain_list(domains))
-void parse_proxy()
-{
-    if (w3mApp::Instance().HTTP_proxy.size())
-        w3mApp::Instance().HTTP_proxy_parsed = URL::Parse(w3mApp::Instance().HTTP_proxy, nullptr);
-
-    if (w3mApp::Instance().HTTPS_proxy.size())
-        w3mApp::Instance().HTTPS_proxy_parsed = URL::Parse(w3mApp::Instance().HTTPS_proxy, nullptr);
-
-    if (w3mApp::Instance().FTP_proxy.size())
-        w3mApp::Instance().FTP_proxy_parsed = URL::Parse(w3mApp::Instance().FTP_proxy, nullptr);
-    if (non_null(w3mApp::Instance().NO_proxy))
-        set_no_proxy(w3mApp::Instance().NO_proxy);
 }
 
 void parse_cookie()
@@ -1299,7 +1275,7 @@ static void loadPasswd(void)
     FILE *fp;
 
     passwords = NULL;
-    fp = openSecretFile(w3mApp::Instance().passwd_file.c_str());
+    fp = openSecretFile(Network::Instance().passwd_file.c_str());
     if (fp != NULL)
     {
         parsePasswd(fp, 0);
@@ -1321,10 +1297,10 @@ void sync_with_option(void)
     if (w3mApp::Instance().PagerMax < ::Terminal::lines())
         w3mApp::Instance().PagerMax = ::Terminal::lines();
     w3mApp::Instance().WrapSearch = w3mApp::Instance().WrapDefault;
-    parse_proxy();
-#ifdef USE_COOKIE
+    Network::Instance().ParseProxy();
+
     parse_cookie();
-#endif
+
     initMailcap();
     initMimeTypes();
 #ifdef USE_EXTERNAL_URI_LOADER
@@ -1342,19 +1318,19 @@ void sync_with_option(void)
     loadPasswd();
     loadPreForm();
 
-    if (w3mApp::Instance().AcceptLang.empty())
+    if (Network::Instance().AcceptLang.empty())
     {
         /* TRANSLATORS: 
         * AcceptLang default: this is used in Accept-Language: HTTP request 
         * header. For example, ja.po should translate it as
         * "ja;q=1.0, en;q=0.5" like that.
         */
-        w3mApp::Instance().AcceptLang = "en;q=1.0";
+        Network::Instance().AcceptLang = "en;q=1.0";
     }
-    if (w3mApp::Instance().AcceptEncoding.empty())
-        w3mApp::Instance().AcceptEncoding = acceptableEncoding();
-    if (w3mApp::Instance().AcceptMedia.empty())
-        w3mApp::Instance().AcceptMedia = acceptableMimeTypes();
+    if (Network::Instance().AcceptEncoding.empty())
+        Network::Instance().AcceptEncoding = acceptableEncoding();
+    if (Network::Instance().AcceptMedia.empty())
+        Network::Instance().AcceptMedia = acceptableMimeTypes();
 
     if (w3mApp::Instance().fmInitialized)
     {

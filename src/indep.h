@@ -56,6 +56,21 @@ extern int strcasemstr(char *str, char *srch[], char **ret_ptr);
 char *remove_space(const char *str);
 
 extern int non_null(char *s);
+inline const char *get_non_null_env()
+{
+    return "";
+}
+
+template <typename... ARGS>
+const char *get_non_null_env(const char *name, ARGS... args)
+{
+    auto value = getenv(name);
+    if (non_null(value))
+    {
+        return value;
+    }
+    return get_non_null_env(args...);
+}
 
 extern void cleanup_line(Str s, int mode);
 

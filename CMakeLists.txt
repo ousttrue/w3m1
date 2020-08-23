@@ -117,6 +117,7 @@ add_executable(w3m
     src/frontend/keybind.cpp
     src/frontend/event.cpp
     src/file.cpp
+    src/stream/network.cpp
     src/stream/input_stream.cpp
     src/stream/local_cgi.cpp
     src/stream/url.cpp

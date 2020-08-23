@@ -22,7 +22,7 @@
 #include "stream/url.h"
 #include "entity.h"
 #include "stream/cookie.h"
-
+#include "stream/network.h"
 #include "html/image.h"
 #include "ctrlcode.h"
 #include "mime/mimeencoding.h"
@@ -1218,7 +1218,7 @@ FILE *openSecretFile(const char *fname)
      *    readable and writable.
      *   [w3m-dev 03368][w3m-dev 03369][w3m-dev 03370]
      */
-    if (w3mApp::Instance().disable_secret_security_check)
+    if (Network::Instance().disable_secret_security_check)
         /* do nothing */;
     else if ((st.st_mode & (S_IRWXG | S_IRWXO)) != 0)
     {

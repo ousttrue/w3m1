@@ -1,5 +1,5 @@
 #include "config.h"
-
+#include "stream/network.h"
 #include "indep.h"
 #include "ssl_socket.h"
 #include "file.h"
@@ -324,7 +324,7 @@ struct SSLContextImpl
         * The chain length is automatically checked by OpenSSL when we
         * set the verify depth in the ctx.
         */
-        if (w3mApp::Instance().ssl_verify_server)
+        if (Network::Instance().ssl_verify_server)
         {
             long verr;
             if ((verr = SSL_get_verify_result(ssl)) != X509_V_OK)
@@ -440,15 +440,15 @@ std::shared_ptr<SSLContext> SSLContext::Create()
     auto impl = std::make_shared<SSLContext>(new SSLContextImpl(ssl_ctx));
 
     int option = SSL_OP_ALL;
-    if (w3mApp::Instance().ssl_forbid_method.size())
+    if (Network::Instance().ssl_forbid_method.size())
     {
-        if (w3mApp::Instance().ssl_forbid_method.find('2') != std::string::npos)
+        if (Network::Instance().ssl_forbid_method.find('2') != std::string::npos)
             option |= SSL_OP_NO_SSLv2;
-        if (w3mApp::Instance().ssl_forbid_method.find('3') != std::string::npos)
+        if (Network::Instance().ssl_forbid_method.find('3') != std::string::npos)
             option |= SSL_OP_NO_SSLv3;
-        if (w3mApp::Instance().ssl_forbid_method.find('t') != std::string::npos)
+        if (Network::Instance().ssl_forbid_method.find('t') != std::string::npos)
             option |= SSL_OP_NO_TLSv1;
-        if (w3mApp::Instance().ssl_forbid_method.find('T') != std::string::npos)
+        if (Network::Instance().ssl_forbid_method.find('T') != std::string::npos)
             option |= SSL_OP_NO_TLSv1;
     }
     SSL_CTX_set_options(ssl_ctx, option);
@@ -460,14 +460,14 @@ std::shared_ptr<SSLContext> SSLContext::Create()
     SSL_CTX_set_verify(ssl_ctx,
                        ssl_verify_server ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, NULL);
 #endif
-    if (w3mApp::Instance().ssl_cert_file.size())
+    if (Network::Instance().ssl_cert_file.size())
     {
         int ng = 1;
-        if (SSL_CTX_use_certificate_file(ssl_ctx, w3mApp::Instance().ssl_cert_file.c_str(), SSL_FILETYPE_PEM) > 0)
+        if (SSL_CTX_use_certificate_file(ssl_ctx, Network::Instance().ssl_cert_file.c_str(), SSL_FILETYPE_PEM) > 0)
         {
-            std::string_view key_file = (w3mApp::Instance().ssl_key_file.empty())
-                                            ? w3mApp::Instance().ssl_cert_file
-                                            : w3mApp::Instance().ssl_key_file;
+            std::string_view key_file = (Network::Instance().ssl_key_file.empty())
+                                            ? Network::Instance().ssl_cert_file
+                                            : Network::Instance().ssl_key_file;
             if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_file.data(), SSL_FILETYPE_PEM) > 0)
                 if (SSL_CTX_check_private_key(ssl_ctx))
                     ng = 0;
@@ -477,8 +477,8 @@ std::shared_ptr<SSLContext> SSLContext::Create()
             return nullptr;
         }
     }
-    if ((w3mApp::Instance().ssl_ca_file.empty() && w3mApp::Instance().ssl_ca_path.empty()) ||
-        SSL_CTX_load_verify_locations(ssl_ctx, w3mApp::Instance().ssl_ca_file.c_str(), w3mApp::Instance().ssl_ca_path.c_str()))
+    if ((Network::Instance().ssl_ca_file.empty() && Network::Instance().ssl_ca_path.empty()) ||
+        SSL_CTX_load_verify_locations(ssl_ctx, Network::Instance().ssl_ca_file.c_str(), Network::Instance().ssl_ca_path.c_str()))
         SSL_CTX_set_default_verify_paths(ssl_ctx);
 #endif /* SSLEAY_VERSION_NUMBER >= 0x0800 */
 

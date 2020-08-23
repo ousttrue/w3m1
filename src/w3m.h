@@ -35,13 +35,6 @@ enum DisplayInsDel
     DISPLAY_INS_DEL_FONTIFY = 2,
 };
 
-enum DefaultUrlTypes
-{
-    DEFAULT_URL_EMPTY = 0,
-    DEFAULT_URL_CURRENT = 1,
-    DEFAULT_URL_LINK = 2,
-};
-
 enum AcceptBadCookieTypes
 {
     ACCEPT_BAD_COOKIE_DISCARD = 0,
@@ -167,47 +160,6 @@ public:
     bool use_lessopen = false;
 
     //
-    // Network
-    //
-    std::string passwd_file = PASSWD_FILE;
-    bool disable_secret_security_check = false;
-    std::string ftppasswd;
-    bool ftppass_hostnamegen = true;
-    std::string pre_form_file = PRE_FORM_FILE;
-    std::string UserAgent;
-    bool NoSendReferer = false;
-    std::string AcceptLang;
-    std::string AcceptEncoding;
-    std::string AcceptMedia;
-    bool ArgvIsURL = false;
-    bool retryAsHttp = true;
-    DefaultUrlTypes DefaultURLString = DEFAULT_URL_EMPTY;
-    int FollowRedirection = 10;
-    bool MetaRefresh = false;
-    int DNS_order = 0;
-
-    //
-    // Proxy
-    //
-    bool use_proxy = true;
-    std::string HTTP_proxy;
-    std::string HTTPS_proxy;
-    std::string FTP_proxy;
-    char *NO_proxy = nullptr;
-    bool NOproxy_netaddr = true;
-    bool NoCache = false;
-
-    //
-    // SSL
-    //
-    std::string ssl_forbid_method;
-    bool ssl_verify_server = false;
-    std::string ssl_cert_file;
-    std::string ssl_key_file;
-    std::string ssl_ca_path;
-    std::string ssl_ca_file;
-
-    //
     // Cookie
     //
     bool use_cookie = false;
@@ -275,12 +227,6 @@ public:
     CharacterEncodingScheme BookmarkCharset = SYSTEM_CHARSET;
     bool UseContentCharset = true;
 
-    // proxy
-    TextList *NO_proxy_domains = nullptr;
-    URL HTTP_proxy_parsed;
-    URL HTTPS_proxy_parsed;
-    URL FTP_proxy_parsed;
-
     // frontend
 
     bool ShowEffect = true;
@@ -320,13 +266,10 @@ public:
 
     void _quitfm(int confirm);
 
-    bool UseProxy(const URL &url);
-
     int INIT_BUFFER_WIDTH();
     int FOLD_BUFFER_WIDTH();
 
 private:
-    bool check_no_proxy(std::string_view domain);
     void mainloop();
     std::string make_optional_header_string(const char *s);
 };

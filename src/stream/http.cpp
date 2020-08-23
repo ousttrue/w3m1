@@ -9,7 +9,7 @@
 #include "html/html_processor.h"
 #include "html/form.h"
 #include "frontend/display.h"
-
+#include "stream/network.h"
 #include "w3m.h"
 #include "file.h"
 #include "mime/mimetypes.h"
@@ -224,16 +224,16 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
     // build HTTP request
     //
     auto request = HttpRequest::Create(url, form);
-    Push(request, "User-Agent: ", (w3mApp::Instance().UserAgent.empty() ? w3mApp::w3m_version : w3mApp::Instance().UserAgent), "\r\n");
-    Push(request, "Accept: ", w3mApp::Instance().AcceptMedia, "\r\n");
-    Push(request, "Accept-Encoding: ", w3mApp::Instance().AcceptEncoding, "\r\n");
-    Push(request, "Accept-Language: ", w3mApp::Instance().AcceptLang, "\r\n");
+    Push(request, "User-Agent: ", (Network::Instance().UserAgent.empty() ? w3mApp::w3m_version : Network::Instance().UserAgent), "\r\n");
+    Push(request, "Accept: ", Network::Instance().AcceptMedia, "\r\n");
+    Push(request, "Accept-Encoding: ", Network::Instance().AcceptEncoding, "\r\n");
+    Push(request, "Accept-Language: ", Network::Instance().AcceptLang, "\r\n");
 
     if (url.host.size())
     {
         Push(request, "Host: ", url.host, url.NonDefaultPort(), "\r\n");
     }
-    if (url.is_nocache || w3mApp::Instance().NoCache)
+    if (url.is_nocache || Network::Instance().NoCache)
     {
         Push(request, "Pragma: no-cache\r\n");
         Push(request, "Cache-control: no-cache\r\n");
@@ -282,7 +282,7 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
         }
     }
 
-    if (!w3mApp::Instance().NoSendReferer)
+    if (!Network::Instance().NoSendReferer)
     {
         if (referer == HttpReferrerPolicy::StrictOriginWhenCrossOrigin)
         {

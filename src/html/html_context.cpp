@@ -15,6 +15,7 @@
 #include "file.h"
 #include "commands.h"
 #include "textlist.h"
+#include "stream/network.h"
 
 #define MAX_SELECT 10 /* max number of <select>..</select> \
                        * within one document */
@@ -1636,7 +1637,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         tag->TryGetAttributeValue(ATTR_HTTP_EQUIV, &p);
         char *q = nullptr;
         tag->TryGetAttributeValue(ATTR_CONTENT, &q);
-        if (p && q && !strcasecmp(p, "refresh") && w3mApp::Instance().MetaRefresh)
+        if (p && q && !strcasecmp(p, "refresh") && Network::Instance().MetaRefresh)
         {
             Str tmp = nullptr;
             int refresh_interval = getMetaRefreshParam(q, &tmp);

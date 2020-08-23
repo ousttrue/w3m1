@@ -135,7 +135,6 @@ struct ContentStream
 
 const char *filename_extension(const char *patch, int is_url);
 
-URL *schemeToProxy(int scheme);
 std::tuple<const char *, URLSchemeTypes> getURLScheme(const char *url);
 char *mybasename(std::string_view s);
 char *url_unquote_conv(std::string_view url, CharacterEncodingScheme charset);
