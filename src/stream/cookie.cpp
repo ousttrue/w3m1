@@ -8,11 +8,11 @@
  */
 
 #include <sstream>
+#include <list>
 #include <string_view_util.h>
 #include "stream/cookie.h"
 #include "stream/network.h"
 #include "indep.h"
-#include <gc_cpp.h>
 #include "rc.h"
 #include "commands.h"
 #include "mytime.h"
@@ -126,7 +126,7 @@ port_match(const std::vector<uint16_t> &l, int port)
     return std::find(l.begin(), l.end(), port) != l.end();
 }
 
-struct Cookie : public gc_cleanup
+struct Cookie
 {
     URL url;
     Str name = nullptr;
@@ -168,7 +168,8 @@ struct Cookie : public gc_cleanup
         return tmp;
     }
 };
-static Cookie *First_cookie = nullptr;
+using CookiePtr = std::shared_ptr<Cookie>;
+static std::list<CookiePtr> g_cookies;
 
 static int is_saved = 1;
 
@@ -208,95 +209,68 @@ portlist2str(const std::vector<uint16_t> &l)
     return ss.str();
 }
 
-static void
-check_expired_cookies(void)
+static void check_expired_cookies(void)
 {
-    struct Cookie *p, *p1;
-    time_t now = time(NULL);
-
-    if (!First_cookie)
+    if (g_cookies.empty())
         return;
 
-    if (First_cookie->expires != (time_t)-1 && First_cookie->expires < now)
+    time_t now = time(NULL);
+    for (auto &cookie : g_cookies)
     {
-        if (!(First_cookie->flag & COO_DISCARD))
-            is_saved = 0;
-        First_cookie = First_cookie->next;
-    }
-
-    for (p = First_cookie; p && p->next; p = p1)
-    {
-        p1 = p->next;
-        if (p1->expires != (time_t)-1 && p1->expires < now)
+        if (cookie->expires != (time_t)-1 && cookie->expires < now)
         {
-            if (!(p1->flag & COO_DISCARD))
+            if (!(cookie->flag & COO_DISCARD))
                 is_saved = 0;
-            p->next = p1->next;
-            p1 = p;
         }
     }
 }
 
-struct Cookie *
-get_cookie_info(Str domain, Str path, Str name)
+CookiePtr get_cookie_info(Str domain, Str path, Str name)
 {
-    struct Cookie *p;
-
-    for (p = First_cookie; p; p = p->next)
+    for (auto &cookie : g_cookies)
     {
-        if (p->domain->ICaseCmp(domain) == 0 &&
-            p->path->Cmp(path) == 0 && p->name->ICaseCmp(name) == 0)
-            return p;
+        if (cookie->domain->ICaseCmp(domain) == 0 &&
+            cookie->path->Cmp(path) == 0 && cookie->name->ICaseCmp(name) == 0)
+            return cookie;
     }
     return NULL;
 }
 
-Str find_cookie(const URL *pu)
+Str find_cookie(const URL &url)
 {
-    Str tmp;
-    struct Cookie *p, *p1, *fco = NULL;
-    int version = 0;
-
-    auto fq_domainname = Network::Instance().FQDN(pu->host);
+    auto fq_domainname = Network::Instance().FQDN(url.host);
     check_expired_cookies();
-    for (p = First_cookie; p; p = p->next)
+    CookiePtr fco;
+    for (auto &cookie : g_cookies)
     {
-        auto domainname = (p->version == 0) ? fq_domainname : pu->host;
-        if (p->flag & COO_USE && p->Match(pu, domainname))
+        auto domainname = (cookie->version == 0) ? fq_domainname : url.host;
+        if (cookie->flag & COO_USE && cookie->Match(&url, domainname))
         {
-            for (p1 = fco; p1 && p1->name->ICaseCmp(p->name);
-                 p1 = p1->next)
-                ;
-            if (p1)
-                continue;
-            p1 = new Cookie;
-            p1->next = fco;
-            fco = p1;
-            if (p1->version > version)
-                version = p1->version;
+            fco = cookie;
         }
     }
-
     if (!fco)
         return NULL;
 
-    tmp = Strnew();
+    // Cookie *p, *p1;
+    auto tmp = Strnew();
+    int version = 0;
     if (version > 0)
         tmp->Push(Sprintf("$Version=\"%d\"; ", version));
 
     tmp->Push(fco->ToStr());
-    for (p1 = fco->next; p1; p1 = p1->next)
+    // for (p1 = fco->next; p1; p1 = p1->next)
     {
         tmp->Push("; ");
-        tmp->Push(p1->ToStr());
+        tmp->Push(fco->ToStr());
         if (version > 0)
         {
-            if (p1->flag & COO_PATH)
-                tmp->Push(Sprintf("; $Path=\"%s\"", p1->path->ptr));
-            if (p1->flag & COO_DOMAIN)
-                tmp->Push(Sprintf("; $Domain=\"%s\"", p1->domain->ptr));
-            if (p1->portl.size())
-                tmp->Push(Sprintf("; $Port=\"%s\"", portlist2str(p1->portl)));
+            // if (p1->flag & COO_PATH)
+            //     tmp->Push(Sprintf("; $Path=\"%s\"", p1->path->ptr));
+            // if (p1->flag & COO_DOMAIN)
+            //     tmp->Push(Sprintf("; $Domain=\"%s\"", p1->domain->ptr));
+            // if (p1->portl.size())
+            //     tmp->Push(Sprintf("; $Port=\"%s\"", portlist2str(p1->portl)));
         }
     }
     return tmp;
@@ -347,7 +321,7 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
                               time_t expires, Str domain, Str path,
                               int flag, Str comment, bool version2, Str port, Str commentURL)
 {
-    struct Cookie *p;
+
     auto domainname = !version2 ? Network::Instance().FQDN(pu.host) : pu.host;
     Str odomain = domain, opath = path;
     std::vector<uint16_t> portlist;
@@ -457,15 +431,16 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
             path->Pop(1);
     }
 
-    p = get_cookie_info(domain, path, name);
+    auto p = get_cookie_info(domain, path, name);
     if (!p)
     {
-        p = new Cookie;
+        g_cookies.push_back({});
+        p = g_cookies.back();
         p->flag = 0;
         if (this->default_use_cookie)
             p->flag |= COO_USE;
-        p->next = First_cookie;
-        First_cookie = p;
+        // p->next = First_cookie;
+        // First_cookie = p;
     }
 
     p->url = pu;
@@ -505,15 +480,13 @@ int CookieManager::add_cookie(const URL &pu, Str name, Str value,
     return 0;
 }
 
-struct Cookie *
-nth_cookie(int n)
+static CookiePtr nth_cookie(int n)
 {
-    struct Cookie *p;
     int i;
-    for (p = First_cookie, i = 0; p; p = p->next, i++)
+    for (auto &cookie : g_cookies)
     {
-        if (i == n)
-            return p;
+        if (i++ == n)
+            return cookie;
     }
     return NULL;
 }
@@ -522,7 +495,7 @@ nth_cookie(int n)
 
 void CookieManager::save_cookies()
 {
-    if (!First_cookie || is_saved || w3mApp::Instance().no_rc_dir)
+    if (g_cookies.empty() || is_saved || w3mApp::Instance().no_rc_dir)
         return;
 
     check_expired_cookies();
@@ -532,18 +505,17 @@ void CookieManager::save_cookies()
     if (!(fp = fopen(cookie_file, "w")))
         return;
 
-    struct Cookie *p;
-    for (p = First_cookie; p; p = p->next)
+    for (auto &cookie : g_cookies)
     {
-        if (!(p->flag & COO_USE) || p->flag & COO_DISCARD)
+        if (!(cookie->flag & COO_USE) || cookie->flag & COO_DISCARD)
             continue;
         fprintf(fp, "%s\t%s\t%s\t%ld\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
-                p->url.ToStr()->ptr,
-                p->name->ptr, p->value->ptr, p->expires,
-                p->domain->ptr, p->path->ptr, p->flag,
-                p->version, str2charp(p->comment),
-                portlist2str(p->portl).c_str(),
-                str2charp(p->commentURL));
+                cookie->url.ToStr()->ptr,
+                cookie->name->ptr, cookie->value->ptr, cookie->expires,
+                cookie->domain->ptr, cookie->path->ptr, cookie->flag,
+                cookie->version, str2charp(cookie->comment),
+                portlist2str(cookie->portl).c_str(),
+                str2charp(cookie->commentURL));
     }
     fclose(fp);
     chmod(cookie_file, S_IRUSR | S_IWUSR);
@@ -562,32 +534,20 @@ readcol(char **p)
 
 void load_cookies(void)
 {
-    struct Cookie *cookie, *p;
     FILE *fp;
-    Str line;
-    char *str;
-
     if (!(fp = fopen(rcFile(COOKIE_FILE), "r")))
         return;
 
-    if (First_cookie)
-    {
-        for (p = First_cookie; p->next; p = p->next)
-            ;
-    }
-    else
-    {
-        p = NULL;
-    }
     for (;;)
     {
-        line = Strfgets(fp);
+        auto line = Strfgets(fp);
 
         if (line->Size() == 0)
             break;
-        str = line->ptr;
-        cookie = new Cookie;
-        cookie->next = NULL;
+        auto str = line->ptr;
+
+        auto cookie = std::make_shared<Cookie>();
+        g_cookies.push_back(cookie);
         cookie->flag = 0;
         cookie->version = 0;
         cookie->expires = (time_t)-1;
@@ -628,12 +588,6 @@ void load_cookies(void)
         cookie->commentURL = readcol(&str);
         if (cookie->commentURL->Size() == 0)
             cookie->commentURL = NULL;
-
-        if (p)
-            p->next = cookie;
-        else
-            First_cookie = cookie;
-        p = cookie;
     }
 
     fclose(fp);
@@ -647,19 +601,18 @@ void initCookie(void)
 
 BufferPtr CookieManager::cookie_list_panel()
 {
+    if (!use_cookie || g_cookies.empty())
+        return NULL;
+
     /* FIXME: gettextize? */
     Str src = Strnew("<html><head><title>Cookies</title></head>"
                      "<body><center><b>Cookies</b></center>"
                      "<p><form method=internal action=cookie>");
-    struct Cookie *p;
+
     int i;
     char *tmp, tmp2[80];
-
-    if (!use_cookie || !First_cookie)
-        return NULL;
-
     src->Push("<ol>");
-    for (p = First_cookie, i = 0; p; p = p->next, i++)
+    for (auto &p: g_cookies)
     {
         tmp = html_quote(p->url.ToStr()->ptr);
         if (p->expires != (time_t)-1)
@@ -766,16 +719,13 @@ BufferPtr CookieManager::cookie_list_panel()
 
 void set_cookie_flag(struct parsed_tagarg *arg)
 {
-    int n, v;
-    struct Cookie *p;
-
     while (arg)
     {
         if (arg->arg && *arg->arg && arg->value && *arg->value)
         {
-            n = atoi(arg->arg);
-            v = atoi(arg->value);
-            if ((p = nth_cookie(n)) != NULL)
+            auto n = atoi(arg->arg);
+            auto v = atoi(arg->value);
+            if (auto p = nth_cookie(n))
             {
                 if (v && !(p->flag & COO_USE))
                     p->flag |= COO_USE;

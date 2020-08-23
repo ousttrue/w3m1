@@ -242,7 +242,7 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
 
     Str cookie;
     if (request->method != HTTP_METHOD_CONNECT &&
-        CookieManager::Instance().use_cookie && (cookie = find_cookie(&url)))
+        CookieManager::Instance().use_cookie && (cookie = find_cookie(url)))
     {
         Push(request, "Cookie: ", cookie->c_str(), "\r\n");
         /* [DRAFT 12] s. 10.1 */

@@ -49,5 +49,5 @@ public:
 };
 
 void set_cookie_flag(struct parsed_tagarg *arg);
-Str find_cookie(const URL *pu);
+Str find_cookie(const URL &pu);
 void initCookie(void);
