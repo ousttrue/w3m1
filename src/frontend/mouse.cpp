@@ -360,7 +360,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         mouse_action.in_action = true;
         mouse_action.cursorX = x;
         mouse_action.cursorY = y;
-        ClearCurrentKey();
+        // ClearCurrentKey();
         ClearCurrentKeyData();
         w3mApp::Instance().CurrentCmdData = map->data;
         (*map->func)(&w3mApp::Instance(), {});

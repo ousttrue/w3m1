@@ -32,7 +32,7 @@ void SigAlarm(int)
 
     if (CurrentAlarm()->sec > 0)
     {
-        ClearCurrentKey();
+        // ClearCurrentKey();
         ClearCurrentKeyData();
         w3mApp::Instance().CurrentCmdData = data = (char *)CurrentAlarm()->data;
 
@@ -261,7 +261,7 @@ int ProcessEvent()
 {
     if (CurrentEvent)
     {
-        ClearCurrentKey();
+        // ClearCurrentKey();
         ClearCurrentKeyData();
         w3mApp::Instance().CurrentCmdData = CurrentEvent->data ? (const char *)CurrentEvent->data : "";
         CurrentEvent->cmd(&w3mApp::Instance(), {});

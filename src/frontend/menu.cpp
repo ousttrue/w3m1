@@ -537,7 +537,7 @@ int action_menu(Menu *menu)
             *item.variable = item.value;
         if (item.type & MENU_FUNC)
         {
-            ClearCurrentKey();
+            // ClearCurrentKey();
             ClearCurrentKeyData();
             w3mApp::Instance().CurrentCmdData = item.data;
             (*item.func)(&w3mApp::Instance(), {});

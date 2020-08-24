@@ -11,6 +11,8 @@
 
 struct Hist;
 
+const int K_MULTI = 0x10000000;
+
 enum DumpFlags
 {
     DUMP_NONE = 0x00,
@@ -240,9 +242,13 @@ private:
 
 struct CommandContext
 {
+    void clear()
+    {
+        prec = 0;
+    }
+
     const int PREC_LIMIT = 10000;
     int prec = 0;
-
     void set_prec(int c)
     {
         prec = prec * 10 + c;
@@ -252,10 +258,26 @@ struct CommandContext
         }
     }
 
-    void clear()
+    int key = -1;
+    int set_key(int c)
     {
-        prec = 0;
+        auto prev = key;
+        key = c;
+        return prev;
     }
+    void set_multi_key(int c)
+    {
+        key = K_MULTI | (key << 16) | c;
+    }
+    // int CurrentIsMultiKey()
+    // {
+    //     // != -1
+    //     return g_CurrentKey >= 0 && g_CurrentKey & K_MULTI;
+    // }
+    // int MultiKey(int c)
+    // {
+    //     return (((c) >> 16) & 0x77F);
+    // }
 };
 using Command = void (*)(w3mApp *w3m, const CommandContext &context);
 

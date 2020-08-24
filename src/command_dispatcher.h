@@ -5,11 +5,8 @@
 // void set_prec_num(int n);
 // inline int PREC_LIMIT() { return 10000; }
 
-int CurrentKey();
-void ClearCurrentKey();
 void ClearCurrentKeyData();
 char *CurrentKeyData();
-void SetCurrentKey(int c);
 void SetMultiKey(int c);
 int CurrentIsMultiKey();
 int MultiKey(int c);

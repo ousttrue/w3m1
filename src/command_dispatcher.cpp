@@ -15,9 +15,8 @@
 #include "frontend/tabbar.h"
 #include "charset.h"
 
-static int g_CurrentKey = -1;
 static char *g_CurrentKeyData = nullptr;
-static int g_prev_key = -1;
+
 const int KEYDATA_HASH_SIZE = 16;
 
 #define KEY_HASH_SIZE 127
@@ -25,7 +24,6 @@ const int KEYDATA_HASH_SIZE = 16;
 #define K_ESC 0x100
 #define K_ESCB 0x200
 #define K_ESCD 0x400
-#define K_MULTI 0x10000000
 
 // keybind.c
 extern Command GlobalKeymap[];
@@ -62,16 +60,6 @@ static void DebugPrint(Command map[], int c)
     }
 }
 
-int CurrentKey()
-{
-    return g_CurrentKey;
-}
-
-void ClearCurrentKey()
-{
-    g_CurrentKey = -1;
-}
-
 void ClearCurrentKeyData()
 {
     g_CurrentKeyData = NULL; /* not allowed in w3m-control: */
@@ -80,37 +68,6 @@ void ClearCurrentKeyData()
 char *CurrentKeyData()
 {
     return g_CurrentKeyData;
-}
-
-void SetCurrentKey(int c)
-{
-    g_CurrentKey = c;
-}
-
-void SetMultiKey(int c)
-{
-    g_CurrentKey = K_MULTI | (g_CurrentKey << 16) | c;
-}
-
-int CurrentIsMultiKey()
-{
-    // != -1
-    return g_CurrentKey >= 0 && g_CurrentKey & K_MULTI;
-}
-
-int MultiKey(int c)
-{
-    return (((c) >> 16) & 0x77F);
-}
-
-int PrevKey()
-{
-    return g_prev_key;
-}
-
-void SetPrevKey(int key)
-{
-    g_prev_key = key;
 }
 
 CommandContext g_context;
@@ -125,7 +82,7 @@ void DispatchKey(int c)
         }
         else
         {
-            SetCurrentKey(c);
+            auto prev = g_context.set_key(c);
 
             DebugPrint(GlobalKeymap, c);
 
@@ -138,8 +95,6 @@ void DispatchKey(int c)
             g_context.clear();
         }
     }
-    SetPrevKey(g_CurrentKey);
-    ClearCurrentKey();
     ClearCurrentKeyData();
 }
 
@@ -168,7 +123,7 @@ static void _escKeyProc(int c, int esc, Command map[])
     //     }
     //     esc |= (CurrentKey() & ~0xFFFF);
     // }
-    SetCurrentKey(esc | c);
+    g_context.set_key(esc | c);
     DebugPrint(map, c);
     map[c](&w3mApp::Instance(), g_context);
 }
@@ -185,7 +140,7 @@ void MultiKeyProc(char c)
 {
     if (IS_ASCII(c))
     {
-        SetMultiKey(c);
+        g_context.set_multi_key(c);
         _escKeyProc((int)c, 0, NULL);
     }
 }
@@ -241,7 +196,9 @@ void CommandDispatcher::ExecuteCommand(std::string_view data)
             break;
         }
         std::tie(data, p) = getQWord(data);
-        ClearCurrentKey();
+
+        g_context.clear();
+
         ClearCurrentKeyData();
         w3mApp::Instance().CurrentCmdData = p;
 

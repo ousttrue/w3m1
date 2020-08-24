@@ -175,7 +175,6 @@ int w3mApp::Main(const URL &url)
     //
     //
 
-    ClearCurrentKey();
     if (BookmarkFile.empty())
     {
         BookmarkFile = rcFile(BOOKMARK);
@@ -332,7 +331,7 @@ void w3mApp::mainloop()
                 if (CurrentAlarm()->sec == 0)
                 { /* refresh (0sec) */
                     buf->event = NULL;
-                    ClearCurrentKey();
+                    // ClearCurrentKey();
                     ClearCurrentKeyData();
                     CurrentCmdData = (const char *)CurrentAlarm()->data;
                     CurrentAlarm()->cmd(&w3mApp::Instance(), {});
@@ -446,8 +445,8 @@ char *w3mApp::searchKeyData()
         data = CurrentKeyData();
     else if (w3mApp::Instance().CurrentCmdData.size())
         data = w3mApp::Instance().CurrentCmdData.c_str();
-    else if (CurrentKey >= 0)
-        data = GetKeyData(CurrentKey());
+    // else if (CurrentKey >= 0)
+    //     data = GetKeyData(CurrentKey());
     ClearCurrentKeyData();
     w3mApp::Instance().CurrentCmdData.clear();
     if (data == NULL || *data == '\0')
