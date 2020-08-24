@@ -573,25 +573,21 @@ gopher_end:
 }
 #endif /* USE_GOPHER */
 
-#ifdef USE_IMAGE
 BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
 {
-    Image image;
-    ImageCachePtr cache;
-    Str tmp, tmpf;
-    FILE *src = NULL;
-    MySignalHandler prevtrap = NULL;
-    struct stat st;
-
     auto newBuf = newBuffer(url);
-    loadImage(newBuf, IMG_FLAG_STOP);
+    ImageManager::Instance().loadImage(newBuf, IMG_FLAG_STOP);
+
+    Image image;
     image.url = url.ToStr()->ptr;
     // image.ext = uf->ext;
     image.width = -1;
     image.height = -1;
     image.cache = NULL;
+
     // TODO:
-    cache = getImage(&image, nullptr, IMG_FLAG_AUTO);
+    auto cache = getImage(&image, nullptr, IMG_FLAG_AUTO);
+    struct stat st;
     // if (!GetCurBaseUrl()->is_nocache && cache->loaded & IMG_FLAG_LOADED &&
     //     !stat(cache->file, &st))
     //     goto image_buffer;
@@ -609,16 +605,16 @@ BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
     cache->loaded = IMG_FLAG_LOADED;
     cache->index = 0;
 
-image_buffer:
+// image_buffer:
     // if (newBuf == NULL)
     //     newBuf = newBuffer(INIT_BUFFER_WIDTH());
     // cache->loaded |= IMG_FLAG_DONT_REMOVE;
     // if (newBuf->sourcefile.empty() && uf->scheme != SCM_LOCAL)
     //     newBuf->sourcefile = cache->file;
 
-    tmp = Sprintf("<img src=\"%s\"><br><br>", html_quote(image.url));
-    tmpf = tmpfname(TMPF_SRC, ".html");
-    src = fopen(tmpf->ptr, "w");
+    auto tmp = Sprintf("<img src=\"%s\"><br><br>", html_quote(image.url));
+    auto tmpf = tmpfname(TMPF_SRC, ".html");
+    auto src = fopen(tmpf->ptr, "w");
     newBuf->mailcap_source = tmpf->ptr;
 
     // auto f = URLFile::FromStream(SCM_LOCAL, );
@@ -631,7 +627,6 @@ image_buffer:
     newBuf->image_flag = IMG_FLAG_AUTO;
     return newBuf;
 }
-#endif
 
 /*
  * saveBuffer: write buffer to file

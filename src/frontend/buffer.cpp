@@ -60,7 +60,7 @@ Buffer::Buffer()
 
 Buffer::~Buffer()
 {
-    deleteImage(this);
+    ImageManager::Instance().deleteImage(this);
     ClearLines();
     for (int i = 0; i < MAX_LB; i++)
     {

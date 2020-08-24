@@ -205,12 +205,8 @@ void fmTerm(void)
         Screen::Instance().CtrlToEolWithBGColor();
         Screen::Instance().Refresh();
         Terminal::flush();
-
-        if (w3mApp::Instance().activeImage)
-            loadImage(NULL, IMG_FLAG_STOP);
-
+        ImageManager::Instance().loadImage(NULL, IMG_FLAG_STOP);
         Terminal::mouse_off();
-
         w3mApp::Instance().fmInitialized = false;
     }
 }
@@ -648,7 +644,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                     w = (int)((buf->rect.right()) * w3mApp::Instance().pixel_per_char - x);
                 if (h > (int)((Terminal::lines() - 1) * w3mApp::Instance().pixel_per_line - y))
                     h = (int)((Terminal::lines() - 1) * w3mApp::Instance().pixel_per_line - y);
-                addImage(cache, x, y, sx, sy, w, h);
+                ImageManager::Instance().addImage(cache, x, y, sx, sy, w, h);
                 image->touch = image_touch;
                 draw_image_flag = true;
             }
@@ -975,7 +971,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
             if (draw_image_flag)
                 Screen::Instance().Clear();
             ImageManager::Instance().clearImage();
-            loadImage(buf, IMG_FLAG_STOP);
+            ImageManager::Instance().loadImage(buf, IMG_FLAG_STOP);
             image_touch++;
             draw_image_flag = false;
         }
@@ -1062,10 +1058,9 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     Screen::Instance().Refresh();
     Terminal::flush();
 
-    if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage &&
-        buf->img)
+    if (buf->img)
     {
-        drawImage();
+        ImageManager::Instance().drawImage();
     }
 }
 

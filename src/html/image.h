@@ -43,9 +43,6 @@ struct Image
     ImageCachePtr cache;
 };
 
-void addImage(ImageCachePtr cache, int x, int y, int sx, int sy, int w, int h);
-void drawImage();
-
 enum ImageFlags
 {
     IMG_FLAG_NONE = 0,
@@ -56,8 +53,20 @@ ImageCachePtr getImage(Image *image, URL *current, ImageFlags flag);
 int getImageSize(ImageCachePtr cache);
 char *xface2xpm(char *xface);
 
+enum ImageLoadFlags
+{
+    IMG_FLAG_START = 0,
+    IMG_FLAG_STOP = 1,
+    IMG_FLAG_NEXT = 2,
+};
+
+struct Buffer;
+using BufferPtr = std::shared_ptr<Buffer>;
+
 class ImageManager
 {
+    class ImageDisplay *m_imgDisplay = nullptr;
+
     ImageManager();
     ~ImageManager();
     ImageManager(const ImageManager &) = delete;
@@ -71,17 +80,10 @@ public:
     }
     void initImage();
     void clearImage();
+    void addImage(const ImageCachePtr &cache, int x, int y, int sx, int sy, int w, int h);
+    void loadImage(const BufferPtr &buf, ImageLoadFlags flag);
+    void drawImage();
+    void deleteImage(Buffer *buf);
 };
 
-struct Buffer;
-using BufferPtr = std::shared_ptr<Buffer>;
-void deleteImage(Buffer *buf);
 void getAllImage(const BufferPtr &buf);
-
-enum ImageLoadFlags
-{
-    IMG_FLAG_START = 0,
-    IMG_FLAG_STOP = 1,
-    IMG_FLAG_NEXT = 2,
-};
-void loadImage(BufferPtr buf, ImageLoadFlags flag);

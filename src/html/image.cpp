@@ -31,31 +31,140 @@ struct TerminalImage
 using TerminalImagePtr = std::shared_ptr<TerminalImage>;
 
 static std::vector<TerminalImagePtr> terminal_image;
-static FILE *Imgdisplay_rf = NULL;
-static FILE *Imgdisplay_wf = NULL;
-static pid_t Imgdisplay_pid = 0;
-static int openImgdisplay();
-static void closeImgdisplay();
+
+class ImageDisplay
+{
+    FILE *Imgdisplay_rf = NULL;
+    FILE *Imgdisplay_wf = NULL;
+    pid_t Imgdisplay_pid = 0;
+
+public:
+    bool openImgdisplay()
+    {
+        Imgdisplay_pid = open_pipe_rw(&Imgdisplay_rf, &Imgdisplay_wf);
+        if (Imgdisplay_pid < 0)
+            goto err0;
+        if (Imgdisplay_pid == 0)
+        {
+            /* child */
+            std::string cmd;
+            setup_child(false, 2, -1);
+            if (!strchr(w3mApp::Instance().Imgdisplay.c_str(), '/'))
+                cmd = svu::join("", w3m_auxbin_dir(), "/", w3mApp::Instance().Imgdisplay);
+            else
+                cmd = w3mApp::Instance().Imgdisplay;
+            myExec(cmd.c_str());
+            /* XXX: ifdef __EMX__, use start /f ? */
+        }
+        w3mApp::Instance().activeImage = true;
+        return true;
+    err0:
+        Imgdisplay_pid = 0;
+        w3mApp::Instance().activeImage = false;
+        return false;
+    }
+
+    ~ImageDisplay()
+    {
+        if (Imgdisplay_wf)
+        {
+            fputs("2;\n", Imgdisplay_wf); /* ClearImage() */
+            fflush(Imgdisplay_wf);
+        }
+        // closeImgdisplay();
+
+        if (Imgdisplay_wf)
+            fclose(Imgdisplay_wf);
+        if (Imgdisplay_rf)
+        {
+            /* sync with the child */
+            getc(Imgdisplay_rf); /* EOF expected */
+            fclose(Imgdisplay_rf);
+        }
+        if (Imgdisplay_pid)
+            kill(Imgdisplay_pid, SIGKILL);
+        Imgdisplay_rf = NULL;
+        Imgdisplay_wf = NULL;
+        Imgdisplay_pid = 0;
+    }
+
+    bool m_syncRequired = false;
+
+    bool syncImage()
+    {
+        if (!m_syncRequired)
+        {
+            return false;
+        }
+        m_syncRequired = false;
+
+        fputs("3;\n", Imgdisplay_wf); /* XSync() */
+        fputs("4;\n", Imgdisplay_wf); /* put '\n' */
+        while (fflush(Imgdisplay_wf) != 0)
+        {
+            if (ferror(Imgdisplay_wf))
+                return false;
+        }
+        if (!fgetc(Imgdisplay_rf))
+            return false;
+        return true;
+        // err:
+        // closeImgdisplay();
+        // image_index += MAX_IMAGE;
+        // terminal_image.clear();
+    }
+
+    void draw(const TerminalImagePtr &i)
+    {
+        char buf[64];
+        if (!(Imgdisplay_rf && Imgdisplay_wf))
+        {
+            if (!openImgdisplay())
+                return;
+        }
+        if (i->cache->index > 0)
+        {
+            i->cache->index *= -1;
+            fputs("0;", Imgdisplay_wf); /* DrawImage() */
+        }
+        else
+            fputs("1;", Imgdisplay_wf); /* DrawImage(redraw) */
+        sprintf(buf, "%d;%d;%d;%d;%d;%d;%d;%d;%d;",
+                (-i->cache->index - 1) % MAX_IMAGE + 1, i->x, i->y,
+                (i->cache->width > 0) ? i->cache->width : 0,
+                (i->cache->height > 0) ? i->cache->height : 0,
+                i->sx, i->sy, i->width, i->height);
+        fputs(buf, Imgdisplay_wf);
+        fputs(i->cache->file, Imgdisplay_wf);
+        fputs("\n", Imgdisplay_wf);
+
+        m_syncRequired = true;
+    }
+
+    void clear(const TerminalImagePtr &i)
+    {
+        char buf[64];
+        sprintf(buf, "6;%d;%d;%d;%d\n", i->x, i->y, i->width, i->height);
+        fputs(buf, Imgdisplay_wf);
+
+        m_syncRequired = true;
+    }
+};
+
 bool getCharSize();
 
 ///
 /// ImageManager
 ///
 ImageManager::ImageManager()
+    : m_imgDisplay(new ImageDisplay)
 {
 }
 
 ImageManager::~ImageManager()
 {
-    if (!w3mApp::Instance().activeImage)
-        return;
     clearImage();
-    if (Imgdisplay_wf)
-    {
-        fputs("2;\n", Imgdisplay_wf); /* ClearImage() */
-        fflush(Imgdisplay_wf);
-    }
-    closeImgdisplay();
+    delete m_imgDisplay;
 }
 
 void ImageManager::initImage()
@@ -98,51 +207,7 @@ bool getCharSize()
     return true;
 }
 
-static int
-openImgdisplay()
-{
-    Imgdisplay_pid = open_pipe_rw(&Imgdisplay_rf, &Imgdisplay_wf);
-    if (Imgdisplay_pid < 0)
-        goto err0;
-    if (Imgdisplay_pid == 0)
-    {
-        /* child */
-        std::string cmd;
-        setup_child(false, 2, -1);
-        if (!strchr(w3mApp::Instance().Imgdisplay.c_str(), '/'))
-            cmd = svu::join("", w3m_auxbin_dir(), "/", w3mApp::Instance().Imgdisplay);
-        else
-            cmd = w3mApp::Instance().Imgdisplay;
-        myExec(cmd.c_str());
-        /* XXX: ifdef __EMX__, use start /f ? */
-    }
-    w3mApp::Instance().activeImage = true;
-    return true;
-err0:
-    Imgdisplay_pid = 0;
-    w3mApp::Instance().activeImage = false;
-    return false;
-}
-
-static void
-closeImgdisplay()
-{
-    if (Imgdisplay_wf)
-        fclose(Imgdisplay_wf);
-    if (Imgdisplay_rf)
-    {
-        /* sync with the child */
-        getc(Imgdisplay_rf); /* EOF expected */
-        fclose(Imgdisplay_rf);
-    }
-    if (Imgdisplay_pid)
-        kill(Imgdisplay_pid, SIGKILL);
-    Imgdisplay_rf = NULL;
-    Imgdisplay_wf = NULL;
-    Imgdisplay_pid = 0;
-}
-
-void addImage(ImageCachePtr cache, int x, int y, int sx, int sy, int w, int h)
+void ImageManager::addImage(const ImageCachePtr &cache, int x, int y, int sx, int sy, int w, int h)
 {
     if (!w3mApp::Instance().activeImage)
         return;
@@ -158,65 +223,21 @@ void addImage(ImageCachePtr cache, int x, int y, int sx, int sy, int w, int h)
     i->height = h;
 }
 
-static void
-syncImage(void)
+void ImageManager::drawImage()
 {
-    fputs("3;\n", Imgdisplay_wf); /* XSync() */
-    fputs("4;\n", Imgdisplay_wf); /* put '\n' */
-    while (fflush(Imgdisplay_wf) != 0)
-    {
-        if (ferror(Imgdisplay_wf))
-            goto err;
-    }
-    if (!fgetc(Imgdisplay_rf))
-        goto err;
-    return;
-err:
-    closeImgdisplay();
-    image_index += MAX_IMAGE;
-    terminal_image.clear();
-}
-
-void drawImage()
-{
-    static char buf[64];
-    int j, draw = false;
-    TerminalImage *i;
-
     if (!w3mApp::Instance().activeImage)
         return;
-    if (!terminal_image.empty())
+    if (!w3mApp::Instance().displayImage)
         return;
+
     for (auto &i : terminal_image)
     {
         if (!(i->cache->loaded & IMG_FLAG_LOADED &&
               i->width > 0 && i->height > 0))
             continue;
-        if (!(Imgdisplay_rf && Imgdisplay_wf))
-        {
-            if (!openImgdisplay())
-                return;
-        }
-        if (i->cache->index > 0)
-        {
-            i->cache->index *= -1;
-            fputs("0;", Imgdisplay_wf); /* DrawImage() */
-        }
-        else
-            fputs("1;", Imgdisplay_wf); /* DrawImage(redraw) */
-        sprintf(buf, "%d;%d;%d;%d;%d;%d;%d;%d;%d;",
-                (-i->cache->index - 1) % MAX_IMAGE + 1, i->x, i->y,
-                (i->cache->width > 0) ? i->cache->width : 0,
-                (i->cache->height > 0) ? i->cache->height : 0,
-                i->sx, i->sy, i->width, i->height);
-        fputs(buf, Imgdisplay_wf);
-        fputs(i->cache->file, Imgdisplay_wf);
-        fputs("\n", Imgdisplay_wf);
-        draw = true;
+        m_imgDisplay->draw(i);
     }
-    if (!draw)
-        return;
-    syncImage();
+    m_imgDisplay->syncImage();
     Screen::Instance().TouchCursor();
     Screen::Instance().Refresh();
     Terminal::flush();
@@ -229,24 +250,14 @@ void ImageManager::clearImage()
     if (!terminal_image.empty())
         return;
 
-    static char buf[64];
-    int j;
-    TerminalImage *i;
-
-    if (!Imgdisplay_wf)
-    {
-        terminal_image.clear();
-        return;
-    }
     for (auto &i : terminal_image)
     {
         if (!(i->cache->loaded & IMG_FLAG_LOADED &&
               i->width > 0 && i->height > 0))
             continue;
-        sprintf(buf, "6;%d;%d;%d;%d\n", i->x, i->y, i->width, i->height);
-        fputs(buf, Imgdisplay_wf);
+        m_imgDisplay->clear(i);
     }
-    syncImage();
+    m_imgDisplay->syncImage();
     terminal_image.clear();
 }
 
@@ -262,18 +273,12 @@ static std::list<ImageCachePtr> image_list;
 static std::vector<ImageCachePtr> image_cache;
 static BufferPtr image_buffer = NULL;
 
-void deleteImage(Buffer *buf)
+void ImageManager::deleteImage(Buffer *buf)
 {
-    AnchorPtr a;
-    int i;
-
     if (!buf)
         return;
-    auto &al = buf->img;
-    if (!al)
-        return;
 
-    for (auto &a : al.anchors)
+    for (auto &a : buf->img.anchors)
     {
         if (a->image && a->image->cache &&
             a->image->cache->loaded != IMG_FLAG_UNLOADED &&
@@ -337,8 +342,11 @@ void showImageProgress(const BufferPtr &buf)
     }
 }
 
-void loadImage(BufferPtr buf, ImageLoadFlags flag)
+void ImageManager::loadImage(const BufferPtr &buf, ImageLoadFlags flag)
 {
+    if (!w3mApp::Instance().activeImage)
+        return;
+
     if (w3mApp::Instance().maxLoadImage > MAX_LOAD_IMAGE)
         w3mApp::Instance().maxLoadImage = MAX_LOAD_IMAGE;
     else if (w3mApp::Instance().maxLoadImage < 1)

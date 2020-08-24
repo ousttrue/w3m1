@@ -366,7 +366,7 @@ void w3mApp::mainloop()
                 if (need_resize_screen())
                     resize_screen();
 
-                loadImage(GetCurrentTab()->GetCurrentBuffer(), IMG_FLAG_NEXT);
+                ImageManager::Instance().loadImage(GetCurrentTab()->GetCurrentBuffer(), IMG_FLAG_NEXT);
             } while (Terminal::sleep_till_anykey(1, 0) <= 0);
         }
         else
