@@ -256,7 +256,7 @@ public:
         // dispatch
         DispatchKey(c);
 
-        if(w3mApp::Instance().IsQuit())
+        if (w3mApp::Instance().IsQuit())
         {
             // quit
             Quit();

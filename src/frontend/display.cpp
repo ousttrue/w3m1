@@ -578,7 +578,7 @@ static void redrawNLine(const BufferPtr &buf)
             redrawLineImage(buf, l, i + buf->rect.rootY);
         }
     }
-    getAllImage(buf);
+    ImageManager::Instance().getAllImage(buf);
 }
 
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)

@@ -151,8 +151,6 @@ public:
     }
 };
 
-bool getCharSize();
-
 ///
 /// ImageManager
 ///
@@ -177,34 +175,6 @@ void ImageManager::initImage()
         return;
     if (getCharSize())
         w3mApp::Instance().activeImage = true;
-}
-
-bool getCharSize()
-{
-    set_environ("W3M_TTY", Terminal::ttyname_tty());
-    auto tmp = Strnew();
-    if (w3mApp::Instance().Imgdisplay.find('/') == std::string::npos)
-        Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
-    Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -test 2>/dev/null", NULL);
-    auto f = popen(tmp->ptr, "r");
-    if (!f)
-        return false;
-
-    int w = 0, h = 0;
-    while (fscanf(f, "%d %d", &w, &h) < 0)
-    {
-        if (feof(f))
-            break;
-    }
-    pclose(f);
-
-    if (!(w > 0 && h > 0))
-        return false;
-    if (!w3mApp::Instance().set_pixel_per_char)
-        w3mApp::Instance().pixel_per_char = (int)(1.0 * w / Terminal::columns() + 0.5);
-    if (!w3mApp::Instance().set_pixel_per_line)
-        w3mApp::Instance().pixel_per_line = (int)(1.0 * h / Terminal::lines() + 0.5);
-    return true;
 }
 
 void ImageManager::addImage(const ImageCachePtr &cache, int x, int y, int sx, int sy, int w, int h)
@@ -289,15 +259,16 @@ void ImageManager::deleteImage(Buffer *buf)
     loadImage(NULL, IMG_FLAG_STOP);
 }
 
-void getAllImage(const BufferPtr &buf)
+void ImageManager::getAllImage(const BufferPtr &buf)
 {
+    image_buffer = buf;
+    if (!buf)
+        return;
+
     AnchorPtr a;
     URL *current;
     int i;
 
-    image_buffer = buf;
-    if (!buf)
-        return;
     buf->image_loaded = true;
     auto &al = buf->img;
     if (!al)
@@ -603,5 +574,37 @@ int getImageSize(ImageCachePtr cache)
         cache->height = 1;
     tmp = Sprintf("%d;%d;%s", cache->width, cache->height, cache->url);
     image_hash.insert(std::make_pair(tmp->ptr, cache));
+    return true;
+}
+
+bool ImageManager::getCharSize()
+{
+    set_environ("W3M_TTY", Terminal::ttyname_tty());
+    auto tmp = Strnew();
+    if (w3mApp::Instance().Imgdisplay.find('/') == std::string::npos)
+        Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
+    Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -test 2>/dev/null", NULL);
+
+    int w = 0, h = 0;
+    {
+        auto f = popen(tmp->ptr, "r");
+        if (!f)
+            return false;
+
+        while (fscanf(f, "%d %d", &w, &h) < 0)
+        {
+            if (feof(f))
+                break;
+        }
+        pclose(f);
+    }
+
+    if (w <= 0 || h <= 0)
+        return false;
+
+    if (!w3mApp::Instance().set_pixel_per_char)
+        w3mApp::Instance().pixel_per_char = (int)(1.0 * w / Terminal::columns() + 0.5);
+    if (!w3mApp::Instance().set_pixel_per_line)
+        w3mApp::Instance().pixel_per_line = (int)(1.0 * h / Terminal::lines() + 0.5);
     return true;
 }

@@ -71,6 +71,7 @@ class ImageManager
     ~ImageManager();
     ImageManager(const ImageManager &) = delete;
     ImageManager &operator=(const ImageManager &) = delete;
+    bool getCharSize();
 
 public:
     static ImageManager &Instance()
@@ -80,10 +81,9 @@ public:
     }
     void initImage();
     void clearImage();
+    void getAllImage(const BufferPtr &buf);
     void addImage(const ImageCachePtr &cache, int x, int y, int sx, int sy, int w, int h);
     void loadImage(const BufferPtr &buf, ImageLoadFlags flag);
     void drawImage();
     void deleteImage(Buffer *buf);
 };
-
-void getAllImage(const BufferPtr &buf);
