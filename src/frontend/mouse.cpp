@@ -344,11 +344,9 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         mouse_action.in_action = true;
         mouse_action.cursorX = x;
         mouse_action.cursorY = y;
-        // ClearCurrentKey();
-        ClearCurrentKeyData();
-        w3mApp::Instance().CurrentCmdData = map->data;
-        (*map->func)(&w3mApp::Instance(), {});
-        w3mApp::Instance().CurrentCmdData.clear();
+        (*map->func)(&w3mApp::Instance(), {
+            data: map->data,
+        });
     }
 }
 

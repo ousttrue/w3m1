@@ -1,12 +1,6 @@
 #pragma once
 #include "frontend/event.h"
 
-// int prec_num();
-// void set_prec_num(int n);
-// inline int PREC_LIMIT() { return 10000; }
-
-void ClearCurrentKeyData();
-char *CurrentKeyData();
 void SetMultiKey(int c);
 int CurrentIsMultiKey();
 int MultiKey(int c);

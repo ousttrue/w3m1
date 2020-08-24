@@ -11,7 +11,7 @@ enum SearchResultTypes
     SR_WRAPPED = 0x4,
 };
 
-using SearchFunc = SearchResultTypes (*)(const std::shared_ptr<struct Buffer> &buf, const char *str);
-SearchResultTypes forwardSearch(const std::shared_ptr<struct Buffer> &buf, const char *str);
-SearchResultTypes backwardSearch(const std::shared_ptr<struct Buffer> &buf, const char *str);
-const char *conv_search_string(const char *str, CharacterEncodingScheme f_ces);
+using SearchFunc = SearchResultTypes (*)(const std::shared_ptr<struct Buffer> &buf, std::string_view str);
+SearchResultTypes forwardSearch(const std::shared_ptr<struct Buffer> &buf, std::string_view str);
+SearchResultTypes backwardSearch(const std::shared_ptr<struct Buffer> &buf, std::string_view str);
+std::string conv_search_string(std::string_view str, CharacterEncodingScheme f_ces);

@@ -537,11 +537,9 @@ int action_menu(Menu *menu)
             *item.variable = item.value;
         if (item.type & MENU_FUNC)
         {
-            // ClearCurrentKey();
-            ClearCurrentKeyData();
-            w3mApp::Instance().CurrentCmdData = item.data;
-            (*item.func)(&w3mApp::Instance(), {});
-            w3mApp::Instance().CurrentCmdData.clear();
+            (*item.func)(&w3mApp::Instance(), {
+                data : item.data,
+            });
         }
     }
     else if (mselect == MENU_CLOSE)
@@ -847,16 +845,15 @@ mSusp(char c)
     return (MENU_NOTHING);
 }
 
-static const char *SearchString = NULL;
+static std::string SearchString;
 
-int (*menuSearchRoutine)(Menu *, const char *, int);
+int (*menuSearchRoutine)(Menu *, std::string_view, int);
 
-static int
-menuForwardSearch(Menu *menu, const char *str, int from)
+static int menuForwardSearch(Menu *menu, std::string_view str, int from)
 {
     int i;
     const char *p;
-    if ((p = regexCompile(str, w3mApp::Instance().IgnoreCase)) != NULL)
+    if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
     {
         message(p, 0, 0);
         return -1;
@@ -872,10 +869,10 @@ menuForwardSearch(Menu *menu, const char *str, int from)
 
 static int menu_search_forward(Menu *menu, int from)
 {
-    const char *str = inputStrHist("Forward: ", NULL, w3mApp::Instance().TextHist, 1);
-    if (str != NULL && *str == '\0')
+    std::string_view str = inputStrHist("Forward: ", NULL, w3mApp::Instance().TextHist, 1);
+    if (str.empty())
         str = SearchString;
-    if (str == NULL || *str == '\0')
+    if (str.empty())
         return -1;
     SearchString = str;
     str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
@@ -899,12 +896,11 @@ mSrchF(char c)
     return (MENU_NOTHING);
 }
 
-static int
-menuBackwardSearch(Menu *menu, const char *str, int from)
+static int menuBackwardSearch(Menu *menu, std::string_view str, int from)
 {
     int i;
     const char *p;
-    if ((p = regexCompile(str, w3mApp::Instance().IgnoreCase)) != NULL)
+    if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
     {
         message(p, 0, 0);
         return -1;
@@ -920,10 +916,10 @@ menuBackwardSearch(Menu *menu, const char *str, int from)
 
 static int menu_search_backward(Menu *menu, int from)
 {
-    const char *str = inputStrHist("Backward: ", NULL, w3mApp::Instance().TextHist, 1);
-    if (str != NULL && *str == '\0')
+    std::string_view str = inputStrHist("Backward: ", NULL, w3mApp::Instance().TextHist, 1);
+    if (str.empty())
         str = SearchString;
-    if (str == NULL || *str == '\0')
+    if (str.empty())
         return -1;
     SearchString = str;
     str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
@@ -947,7 +943,7 @@ static int mSrchB(char c)
 
 static int menu_search_next_previous(Menu *menu, int from, int reverse)
 {
-    static int (*routine[2])(Menu *, const char *, int) = {
+    static int (*routine[2])(Menu *, std::string_view, int) = {
         menuForwardSearch, menuBackwardSearch};
 
     if (menuSearchRoutine == NULL)
@@ -955,7 +951,7 @@ static int menu_search_next_previous(Menu *menu, int from, int reverse)
         disp_message("No previous regular expression", true);
         return -1;
     }
-    const char *str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
+    std::string_view str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
     if (reverse != 0)
         reverse = 1;
     if (menuSearchRoutine == menuBackwardSearch)
@@ -1612,11 +1608,11 @@ int addMenuList(MenuList **mlist, const char *id)
     return n;
 }
 
-int getMenuN(MenuList *list, const char *id)
+int getMenuN(MenuList *list, std::string_view id)
 {
     for (int n = 0; list->id != NULL; list++, n++)
     {
-        if (strcmp(id, list->id) == 0)
+        if (id == list->id)
             return n;
     }
     return -1;
@@ -1883,7 +1879,7 @@ AnchorPtr list_menu(const BufferPtr &buf)
     return (key >= 0) ? ap[key] : NULL;
 }
 
-void PopupMenu()
+void PopupMenu(std::string_view data)
 {
     Menu *menu = &MainMenu;
 
@@ -1891,8 +1887,7 @@ void PopupMenu()
     auto buf = tab->GetCurrentBuffer();
     auto [x, y] = buf->rect.globalXY();
 
-    auto data = w3mApp::Instance().searchKeyData();
-    if (data != NULL)
+    if (data.size())
     {
         auto n = getMenuN(w3mMenuList, data);
         if (n < 0)

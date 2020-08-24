@@ -5,13 +5,6 @@
 #include "config.h"
 #include <wc.h>
 
-#ifndef true
-#define true 1
-#endif /* true */
-#ifndef false
-#define false 0
-#endif /* false */
-
 #define RAW_MODE 0
 #define PAGER_MODE 1
 #define HTML_MODE 2

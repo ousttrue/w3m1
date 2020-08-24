@@ -34,20 +34,9 @@
 #include "charset.h"
 #include "w3m.h"
 
-static const char *SearchString = NULL;
+static std::string SearchString;
 SearchFunc searchRoutine = nullptr;
 
-void disp_srchresult(int result, const char *prompt, const char *str)
-{
-    if (str == NULL)
-        str = "";
-    if (result & SR_NOTFOUND)
-        disp_message(Sprintf("Not found: %s", str)->ptr, true);
-    else if (result & SR_WRAPPED)
-        disp_message(Sprintf("Search wrapped: %s", str)->ptr, true);
-    else if (w3mApp::Instance().show_srch_str)
-        disp_message(Sprintf("%s%s", prompt, str)->ptr, true);
-}
 
 void srch_nxtprv(int reverse, int prec_num)
 {
@@ -163,12 +152,11 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
 }
 
 /* search by regular expression */
-SearchResultTypes srchcore(const char *str, SearchFunc func, int prec_num)
+SearchResultTypes srchcore(std::string_view str, SearchFunc func, int prec_num)
 {
-
     if (str != NULL && str != SearchString)
         SearchString = str;
-    if (SearchString == NULL || *SearchString == '\0')
+    if (SearchString.empty())
         return SR_NOTFOUND;
 
     str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
@@ -284,7 +272,7 @@ void isrch(SearchFunc func, const char *prompt, int prec_num)
     dispincsrch(0, NULL, NULL, prec_num); /* initialize incremental search state */
 
     searchRoutine = func;
-    auto str = inputLineHistSearch(prompt, NULL, IN_STRING, w3mApp::Instance().TextHist, dispincsrch, prec_num);
+    auto str = inputLineHistSearch(prompt, "", IN_STRING, w3mApp::Instance().TextHist, dispincsrch, prec_num);
     if (str == NULL)
     {
         GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(sbuf);
@@ -292,16 +280,15 @@ void isrch(SearchFunc func, const char *prompt, int prec_num)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void srch(SearchFunc func, const char *prompt, int prec_num)
+void srch(SearchFunc func, const char *prompt, std::string_view str, int prec_num)
 {
     int disp = false;
-    const char *str = w3mApp::Instance().searchKeyData();
-    if (str == NULL || *str == '\0')
+    if (str.empty())
     {
-        str = inputStrHist(prompt, NULL, w3mApp::Instance().TextHist, prec_num);
-        if (str != NULL && *str == '\0')
+        str = inputStrHist(prompt, "", w3mApp::Instance().TextHist, prec_num);
+        if (str.empty())
             str = SearchString;
-        if (str == NULL)
+        if (str.empty())
         {
             displayCurrentbuf(B_NORMAL);
             return;
@@ -421,9 +408,9 @@ int handleMailto(const char *url)
 }
 
 /* Move cursor left */
-void _movL(int n)
+void _movL(int n, int m)
 {
-    int i, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    int i; //, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
@@ -432,9 +419,9 @@ void _movL(int n)
 }
 
 /* Move cursor downward */
-void _movD(int n)
+void _movD(int n, int m)
 {
-    int i, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    int i; //, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
@@ -443,9 +430,9 @@ void _movD(int n)
 }
 
 /* move cursor upward */
-void _movU(int n)
+void _movU(int n, int m)
 {
-    int i, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    int i; //, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
@@ -454,9 +441,9 @@ void _movU(int n)
 }
 
 /* Move cursor right */
-void _movR(int n)
+void _movR(int n, int m)
 {
-    int i, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    int i; //, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
         return;
     for (i = 0; i < m; i++)
@@ -648,7 +635,7 @@ void _followForm(bool submit)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", false, 1, true, false);
         /* FIXME: gettextize? */
-        auto p = inputStrHist("TEXT:", fi->value.size() ? fi->value.c_str() : NULL, w3mApp::Instance().TextHist, 1);
+        auto p = inputStrHist("TEXT:", fi->value.size() ? fi->value.c_str() : "", w3mApp::Instance().TextHist, 1);
         if (p == NULL || fi->readonly)
             break;
         fi->value = p;
@@ -665,7 +652,7 @@ void _followForm(bool submit)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", false, 1, true, false);
         /* FIXME: gettextize? */
-        auto p = inputFilenameHist("Filename:", fi->value.size() ? fi->value.c_str() : NULL, NULL, 1);
+        auto p = inputFilenameHist("Filename:", fi->value.size() ? fi->value.c_str() : "", nullptr, 1);
         if (p == NULL || fi->readonly)
             break;
         fi->value = p;
@@ -685,7 +672,7 @@ void _followForm(bool submit)
             break;
         }
         /* FIXME: gettextize? */
-        auto p = inputLine("Password:", fi->value.size() ? fi->value.c_str() : NULL, IN_PASSWORD, 1);
+        auto p = inputLine("Password:", fi->value.size() ? fi->value.c_str() : "", IN_PASSWORD, 1);
         if (p == NULL)
             break;
         fi->value = p;
@@ -1185,7 +1172,7 @@ Str conv_form_encoding(std::string_view val, FormItemPtr fi, BufferPtr buf)
 // }
 
 /* go to the next [visited] anchor */
-void _nextA(int visited)
+void _nextA(int visited, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1201,7 +1188,7 @@ void _nextA(int visited)
     auto y = buf->CurrentLine()->linenumber;
     auto x = buf->pos;
 
-    int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (visited == true)
     {
         n = buf->hmarklist.size();
@@ -1273,7 +1260,7 @@ _end:
 }
 
 /* go to the previous anchor */
-void _prevA(int visited)
+void _prevA(int visited, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1289,7 +1276,7 @@ void _prevA(int visited)
     auto y = buf->CurrentLine()->linenumber;
     auto x = buf->pos;
 
-    int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (visited == true)
     {
         n = buf->hmarklist.size();
@@ -1386,7 +1373,7 @@ void gotoLabel(std::string_view label)
 }
 
 /* go to the next left/right anchor */
-void nextX(int d, int dy)
+void nextX(int d, int dy, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1403,7 +1390,7 @@ void nextX(int d, int dy)
     auto x = buf->pos;
     auto y = l->linenumber;
     AnchorPtr pan;
-    int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     for (int i = 0; i < n; i++)
     {
         if (an)
@@ -1443,7 +1430,7 @@ void nextX(int d, int dy)
 }
 
 /* go to the next downward/upward anchor */
-void nextY(int d)
+void nextY(int d, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1459,7 +1446,7 @@ void nextY(int d)
     int x = buf->pos;
     int y = buf->CurrentLine()->linenumber + d;
     AnchorPtr pan;
-    int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     int hseq = -1;
     for (int i = 0; i < n; i++)
     {
@@ -1489,14 +1476,14 @@ void nextY(int d)
 }
 
 /* go to specified URL */
-void goURL0(const char *prompt, int relative)
+void goURL0(std::string_view url, std::string_view prompt, int relative)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
 
-    auto url = w3mApp::Instance().searchKeyData();
+    // auto url = w3mApp::Instance().searchKeyData();
     URL *current = nullptr;
-    if (url == NULL)
+    if (url.empty())
     {
         Hist *hist = copyHist(w3mApp::Instance().URLHist);
         current = buf->BaseURL();
@@ -1527,28 +1514,27 @@ void goURL0(const char *prompt, int relative)
                 pushHist(hist, a_url);
         }
         url = inputLineHist(prompt, url, IN_URL, hist, 1);
-        if (url != NULL)
-            SKIP_BLANKS(&url);
+        url = svu::strip_left(url);
     }
 
-    if (url != NULL)
+    if (url.size())
     {
-        if ((relative || *url == '#') && buf->document_charset)
-            url = wc_conv_strict(url, w3mApp::Instance().InnerCharset,
+        if ((relative || url[0] == '#') && buf->document_charset)
+            url = wc_conv_strict(url.data(), w3mApp::Instance().InnerCharset,
                                  buf->document_charset)
                       ->ptr;
         else
-            url = conv_to_system(url);
+            url = conv_to_system(url.data());
     }
 
-    if (url == NULL || *url == '\0')
+    if (url.empty())
     {
         displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
-    if (*url == '#')
+    if (url[0] == '#')
     {
-        gotoLabel(url + 1);
+        gotoLabel(url.substr(1));
         return;
     }
 
@@ -1587,7 +1573,7 @@ void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
         followA(&w3mApp::Instance(), {});
 }
 
-void _peekURL(int only_img)
+void _peekURL(int only_img, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1637,7 +1623,7 @@ void _peekURL(int only_img)
     // bcopy((void *)pp, (void *)p, s->Size() * sizeof(Lineprop));
 
     // disp:
-    auto n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
+    // auto n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (n > 1 && s->Size() > (n - 1) * (Terminal::columns() - 1))
         offset = (n - 1) * (Terminal::columns() - 1);
 
@@ -1680,10 +1666,8 @@ int display_ok()
 }
 
 /* spawn external browser */
-void invoke_browser(char *url, int prec_num)
+void invoke_browser(char *url, std::string_view browser, int prec_num)
 {
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    std::string_view browser = w3mApp::Instance().searchKeyData();
     if (browser.empty())
     {
         switch (prec_num)
@@ -1701,7 +1685,7 @@ void invoke_browser(char *url, int prec_num)
         }
         if (browser.empty())
         {
-            browser = inputStr("Browse command: ", NULL, 1);
+            browser = inputStr("Browse command: ", "", 1);
         }
     }
 
@@ -1776,17 +1760,17 @@ char *GetWord(const BufferPtr &buf)
     return NULL;
 }
 
-void tabURL0(TabPtr tab, const char *prompt, int relative)
+void tabURL0(TabPtr tab, std::string_view url, const char *prompt, int relative)
 {
     if (tab == GetCurrentTab())
     {
-        goURL0(prompt, relative);
+        goURL0(url, prompt, relative);
         return;
     }
 
     CreateTabSetCurrent();
     auto buf = GetCurrentTab()->GetCurrentBuffer();
-    goURL0(prompt, relative);
+    goURL0(url, prompt, relative);
     if (tab == NULL)
     {
         // if (buf != GetCurrentTab()->GetCurrentBuffer())

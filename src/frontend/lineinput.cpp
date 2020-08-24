@@ -1034,18 +1034,18 @@ _editor(void)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-char *inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag, Hist *hist, IncFunc incrfunc, int prec_num)
+char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, LineInputFlags flag, Hist *hist, IncFunc incrfunc, int prec_num)
 {
     int opos, x, y, lpos, rpos, epos;
     unsigned char c;
     char *p;
-
     Str tmp;
 
     is_passwd = false;
     move_word = true;
 
     CurrentHist = hist;
+
     if (hist != NULL)
     {
         use_hist = true;
@@ -1055,6 +1055,7 @@ char *inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlag
     {
         use_hist = false;
     }
+
     if (flag & IN_URL)
     {
         cm_mode = CPL_ALWAYS | CPL_URL;
@@ -1073,7 +1074,7 @@ char *inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlag
         cm_mode = CPL_ON;
     else
         cm_mode = CPL_OFF;
-    opos = get_strwidth(prompt);
+    opos = get_strwidth(prompt.data());
     epos = CLEN - opos;
     if (epos < 0)
         epos = 0;
@@ -1081,7 +1082,7 @@ char *inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlag
     rpos = epos * 2 / 3;
     offset = 0;
 
-    if (def_str)
+    if (def_str.size())
     {
         strBuf = Strnew(def_str);
         CLen = CPos = setStrType(strBuf, strProp);
@@ -1123,7 +1124,7 @@ char *inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlag
                 offset = 0;
         }
         Screen::Instance().Move(Terminal::lines() - 1, 0);
-        Screen::Instance().Puts(prompt);
+        Screen::Instance().Puts(prompt.data());
         if (is_passwd)
             addPasswd(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         else

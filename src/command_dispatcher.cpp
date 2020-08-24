@@ -15,8 +15,6 @@
 #include "frontend/tabbar.h"
 #include "charset.h"
 
-static char *g_CurrentKeyData = nullptr;
-
 const int KEYDATA_HASH_SIZE = 16;
 
 #define KEY_HASH_SIZE 127
@@ -60,15 +58,32 @@ static void DebugPrint(Command map[], int c)
     }
 }
 
-void ClearCurrentKeyData()
-{
-    g_CurrentKeyData = NULL; /* not allowed in w3m-control: */
-}
+// char *w3mApp::searchKeyData()
+// {
+//     const char *data = NULL;
+//     if (CurrentKeyData() != NULL && *CurrentKeyData() != '\0')
+//         data = CurrentKeyData();
+//     else if (w3mApp::Instance().CurrentCmdData.size())
+//         data = w3mApp::Instance().CurrentCmdData.c_str();
+//     // else if (CurrentKey >= 0)
+//     //     data = GetKeyData(CurrentKey());
+//     ClearCurrentKeyData();
+//     w3mApp::Instance().CurrentCmdData.clear();
+//     if (data == NULL || *data == '\0')
+//         return NULL;
+//     return allocStr(data, -1);
+// }
 
-char *CurrentKeyData()
-{
-    return g_CurrentKeyData;
-}
+// int w3mApp::searchKeyNum()
+// {
+//     // TODO:
+//     // int n = 1;
+//     // auto d = searchKeyData();
+//     // if (d != NULL)
+//     //     n = atoi(d);
+//     // return n * (std::max(1, prec_num()));
+//     return 1;
+// }
 
 CommandContext g_context;
 
@@ -95,7 +110,6 @@ void DispatchKey(int c)
             g_context.clear();
         }
     }
-    ClearCurrentKeyData();
 }
 
 static void _escKeyProc(int c, int esc, Command map[])
@@ -198,15 +212,11 @@ void CommandDispatcher::ExecuteCommand(std::string_view data)
         std::tie(data, p) = getQWord(data);
 
         g_context.clear();
-
-        ClearCurrentKeyData();
-        w3mApp::Instance().CurrentCmdData = p;
+        g_context.data = p;
 
         Terminal::mouse_on();
         cmd(&w3mApp::Instance(), g_context);
         Terminal::mouse_off();
-
-        w3mApp::Instance().CurrentCmdData.clear();
     }
 }
 

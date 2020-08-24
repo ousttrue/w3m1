@@ -90,13 +90,13 @@ void guess_menu_xy(Menu *menu, int width, int *x, int *y);
 void new_option_menu(Menu *menu, tcb::span<std::string> label, int *variable, Command func);
 int setMenuItem(MenuItem *item, const char* type, std::string_view line);
 int addMenuList(MenuList **list, const char *id);
-int getMenuN(MenuList *list, const char *id);
+int getMenuN(MenuList *list, std::string_view id);
 void popupMenu(int x, int y, Menu *menu);
 void optionMenu(int x, int y, tcb::span<std::string> label, int *variable, int initial, Command func);
 void mainMenu(int x, int y);
 void initMenu(void);
 
-void PopupMenu();
+void PopupMenu(std::string_view data);
 void PopupBufferMenu();
 void PopupTabMenu();
 Link *link_menu(const BufferPtr &buf);

@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <string_view_util.h>
 #include "history.h"
 #include "commands.h"
 #include "command_dispatcher.h"
@@ -68,13 +69,11 @@ void pgFore(w3mApp *w3m, const CommandContext &context)
     auto buf = tab->GetCurrentBuffer();
     if (w3mApp::Instance().vi_prec_num)
     {
-        buf->NScroll(w3m->searchKeyNum() * (buf->rect.lines - 1));
-        displayCurrentbuf(B_NORMAL);
+        buf->NScroll(context.prec * (buf->rect.lines - 1));
     }
     else
     {
-        buf->NScroll(context.prec ? w3m->searchKeyNum() : w3m->searchKeyNum() * (buf->rect.lines - 1));
-        displayCurrentbuf(context.prec ? B_SCROLL : B_NORMAL);
+        buf->NScroll(context.prec * (buf->rect.lines - 1));
     }
 }
 
@@ -85,13 +84,11 @@ void pgBack(w3mApp *w3m, const CommandContext &context)
     auto buf = tab->GetCurrentBuffer();
     if (w3mApp::Instance().vi_prec_num)
     {
-        buf->NScroll(-w3m->searchKeyNum() * (buf->rect.lines - 1));
-        displayCurrentbuf(B_NORMAL);
+        buf->NScroll(-context.prec * (buf->rect.lines - 1));
     }
     else
     {
-        buf->NScroll(-(context.prec ? w3m->searchKeyNum() : w3m->searchKeyNum() * (buf->rect.lines - 1)));
-        displayCurrentbuf(context.prec ? B_SCROLL : B_NORMAL);
+        buf->NScroll(-context.prec * (buf->rect.lines - 1));
     }
 }
 
@@ -100,8 +97,7 @@ void lup1(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    buf->NScroll(w3m->searchKeyNum());
-    displayCurrentbuf(B_SCROLL);
+    buf->NScroll(context.prec);
 }
 
 /* 1 line down */
@@ -109,8 +105,7 @@ void ldown1(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    buf->NScroll(-w3m->searchKeyNum());
-    displayCurrentbuf(B_SCROLL);
+    buf->NScroll(-context.prec);
 }
 
 /* move cursor position to the center of screen */
@@ -118,32 +113,17 @@ void ctrCsrV(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (buf->LineCount() == 0)
-        return;
-
     int offsety = buf->rect.lines / 2 - buf->rect.cursorY;
-    if (offsety)
-    {
-        buf->LineSkip(buf->TopLine(), -offsety, false);
-        buf->ArrangeLine();
-        displayCurrentbuf(B_NORMAL);
-    }
+    buf->LineSkip(buf->TopLine(), -offsety, false);
+    // buf->ArrangeLine();
 }
 
 void ctrCsrH(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (buf->LineCount() == 0)
-        return;
-
     int offsetx = buf->rect.cursorX - buf->rect.cols / 2;
-    if (offsetx)
-    {
-        buf->ColumnSkip(offsetx);
-        buf->ArrangeCursor();
-        displayCurrentbuf(B_NORMAL);
-    }
+    buf->ColumnSkip(offsetx);
 }
 
 /* Redraw screen */
@@ -152,14 +132,14 @@ void rdrwSc(w3mApp *w3m, const CommandContext &context)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     Screen::Instance().Clear();
-    buf->ArrangeCursor();
-    displayCurrentbuf(B_FORCE_REDRAW);
+    // buf->ArrangeCursor();
+    // displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 /* Search regular expression forward */
 void srchfor(w3mApp *w3m, const CommandContext &context)
 {
-    srch(forwardSearch, "Forward: ", context.prec);
+    srch(forwardSearch, "Forward: ", context.data, context.prec);
 }
 
 void isrchfor(w3mApp *w3m, const CommandContext &context)
@@ -170,7 +150,7 @@ void isrchfor(w3mApp *w3m, const CommandContext &context)
 /* Search regular expression backward */
 void srchbak(w3mApp *w3m, const CommandContext &context)
 {
-    srch(backwardSearch, "Backward: ", context.prec);
+    srch(backwardSearch, "Backward: ", context.data, context.prec);
 }
 
 void isrchbak(w3mApp *w3m, const CommandContext &context)
@@ -195,12 +175,9 @@ void shiftl(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (buf->LineCount() == 0)
-        return;
     int column = buf->currentColumn;
-    buf->ColumnSkip(w3m->searchKeyNum() * (-buf->rect.cols + 1) + 1);
+    buf->ColumnSkip(context.prec * (-buf->rect.cols + 1) + 1);
     shiftvisualpos(buf, buf->currentColumn - column);
-    displayCurrentbuf(B_NORMAL);
 }
 
 /* Shift screen right */
@@ -208,12 +185,9 @@ void shiftr(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (buf->LineCount() == 0)
-        return;
     int column = buf->currentColumn;
-    buf->ColumnSkip(w3m->searchKeyNum() * (buf->rect.cols - 1) - 1);
+    buf->ColumnSkip(context.prec * (buf->rect.cols - 1) - 1);
     shiftvisualpos(buf, buf->currentColumn - column);
-    displayCurrentbuf(B_NORMAL);
 }
 
 void col1R(w3mApp *w3m, const CommandContext &context)
@@ -221,18 +195,16 @@ void col1R(w3mApp *w3m, const CommandContext &context)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     LinePtr l = buf->CurrentLine();
-    int j, column, n = w3m->searchKeyNum();
     if (l == NULL)
         return;
-    for (j = 0; j < n; j++)
+    for (int j = 0; j < context.prec; j++)
     {
-        column = buf->currentColumn;
+        int column = buf->currentColumn;
         buf->ColumnSkip(1);
         if (column == buf->currentColumn)
             break;
         shiftvisualpos(buf, 1);
     }
-    displayCurrentbuf(B_NORMAL);
 }
 
 void col1L(w3mApp *w3m, const CommandContext &context)
@@ -240,59 +212,52 @@ void col1L(w3mApp *w3m, const CommandContext &context)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     LinePtr l = buf->CurrentLine();
-    int j, n = w3m->searchKeyNum();
     if (l == NULL)
         return;
-    for (j = 0; j < n; j++)
+    for (int j = 0; j < context.prec; j++)
     {
         if (buf->currentColumn == 0)
             break;
         buf->ColumnSkip(-1);
         shiftvisualpos(buf, -1);
     }
-    displayCurrentbuf(B_NORMAL);
 }
 
 void setEnv(w3mApp *w3m, const CommandContext &context)
 {
-    char *env;
-    char *var, *value;
-    ClearCurrentKeyData();
-    env = w3m->searchKeyData();
-    if (env == NULL || *env == '\0' || strchr(env, '=') == NULL)
+    auto env = context.data;
+    if (env.empty() || strchr(env.data(), '=') == NULL)
     {
-        if (env != NULL && *env != '\0')
+        if (env.empty())
             env = Sprintf("%s=", env)->ptr;
         env = inputStrHist("Set environ: ", env, w3mApp::Instance().TextHist);
-        if (env == NULL || *env == '\0')
+        if (env.empty())
         {
-            displayCurrentbuf(B_NORMAL);
             return;
         }
     }
-    if ((value = strchr(env, '=')) != NULL && value > env)
+
+    char *value;
+    if ((value = strchr(env.data(), '=')) != NULL && value > env.data())
     {
-        var = allocStr(env, value - env);
+        auto var = allocStr(env.data(), value - env.data());
         value++;
         set_environ(var, value);
     }
-    displayCurrentbuf(B_NORMAL);
 }
 
 void pipeBuf(w3mApp *w3m, const CommandContext &context)
 {
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    auto cmd = w3m->searchKeyData();
-    if (cmd == NULL || *cmd == '\0')
+    auto cmd = context.data;
+    if (cmd.empty())
     {
         /* FIXME: gettextize? */
         cmd = inputLineHist("Pipe buffer to: ", "", IN_COMMAND, w3mApp::Instance().ShellHist);
     }
-    if (cmd != NULL)
-        cmd = conv_to_system(cmd);
-    if (cmd == NULL || *cmd == '\0')
+    if (cmd.size())
+        cmd = conv_to_system(cmd.data());
+    if (cmd.empty())
     {
-        displayCurrentbuf(B_NORMAL);
         return;
     }
 
@@ -329,26 +294,22 @@ void pipeBuf(w3mApp *w3m, const CommandContext &context)
     // }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
-/* Execute shell command and read output ac pipe. */
 
+/* Execute shell command and read output ac pipe. */
 void pipesh(w3mApp *w3m, const CommandContext &context)
 {
-    BufferPtr buf;
-    char *cmd;
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    cmd = w3m->searchKeyData();
-    if (cmd == NULL || *cmd == '\0')
+    auto cmd = context.data;
+    if (cmd.empty())
     {
         cmd = inputLineHist("(read shell[pipe])!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
     }
-    if (cmd != NULL)
-        cmd = conv_to_system(cmd);
-    if (cmd == NULL || *cmd == '\0')
+    if (cmd.size())
+        cmd = conv_to_system(cmd.data());
+    if (cmd.empty())
     {
-        displayCurrentbuf(B_NORMAL);
         return;
     }
-    buf = getpipe(cmd);
+    auto newBuf = getpipe(cmd.data());
     // if (buf == NULL)
     // {
     //     disp_message("Execution failed", true);
@@ -363,32 +324,24 @@ void pipesh(w3mApp *w3m, const CommandContext &context)
     // }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
-/* Execute shell command and load entire output to buffer */
 
+/* Execute shell command and load entire output to buffer */
 void readsh(w3mApp *w3m, const CommandContext &context)
 {
-    BufferPtr buf;
-    char *cmd;
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    cmd = w3m->searchKeyData();
-    if (cmd == NULL || *cmd == '\0')
+    auto cmd = context.data;
+    if (cmd.empty())
     {
         cmd = inputLineHist("(read shell)!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
     }
-    if (cmd != NULL)
-        cmd = conv_to_system(cmd);
-    if (cmd == NULL || *cmd == '\0')
+    if (cmd.size())
+        cmd = conv_to_system(cmd.data());
+    if (cmd.empty())
     {
-        displayCurrentbuf(B_NORMAL);
         return;
     }
 
-    auto success = TrapJmp([&]() {
-        buf = getshell(cmd);
-        return true;
-    });
-
-    if (!success)
+    auto newBuf = getshell(cmd.data());
+    if (!newBuf)
     {
         /* FIXME: gettextize? */
         disp_message("Execution failed", true);
@@ -401,24 +354,22 @@ void readsh(w3mApp *w3m, const CommandContext &context)
     // GetCurrentTab()->Push(buf);
     displayCurrentbuf(B_FORCE_REDRAW);
 }
-/* Execute shell command */
 
+/* Execute shell command */
 void execsh(w3mApp *w3m, const CommandContext &context)
 {
-    char *cmd;
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    cmd = w3m->searchKeyData();
-    if (cmd == NULL || *cmd == '\0')
+    auto cmd = context.data;
+    if (cmd.empty())
     {
         cmd = inputLineHist("(exec shell)!", "", IN_COMMAND, w3mApp::Instance().ShellHist);
     }
-    if (cmd != NULL)
-        cmd = conv_to_system(cmd);
-    if (cmd != NULL && *cmd != '\0')
+    if (cmd.size())
+        cmd = conv_to_system(cmd.data());
+    if (cmd.size())
     {
         fmTerm();
         printf("\n");
-        system(cmd);
+        system(cmd.c_str());
         /* FIXME: gettextize? */
         printf("\n[Hit any key]");
         fflush(stdout);
@@ -427,28 +378,27 @@ void execsh(w3mApp *w3m, const CommandContext &context)
     }
     displayCurrentbuf(B_FORCE_REDRAW);
 }
-/* Load file */
 
+/* Load file */
 void ldfile(w3mApp *w3m, const CommandContext &context)
 {
-    char *fn;
-    fn = w3m->searchKeyData();
-    if (fn == NULL || *fn == '\0')
+    auto fn = context.data;
+    if (fn.empty())
     {
         /* FIXME: gettextize? */
-        fn = inputFilenameHist("(Load)Filename? ", NULL, w3mApp::Instance().LoadHist);
+        fn = inputFilenameHist("(Load)Filename? ", "", w3mApp::Instance().LoadHist);
     }
-    if (fn != NULL)
-        fn = conv_to_system(fn);
-    if (fn == NULL || *fn == '\0')
+    if (fn.size())
+        fn = conv_to_system(fn.data());
+    if (fn.empty())
     {
-        displayCurrentbuf(B_NORMAL);
         return;
     }
-    cmd_loadfile(fn);
-}
-/* Load help file */
 
+    cmd_loadfile(fn.data());
+}
+
+/* Load help file */
 void ldhelp(w3mApp *w3m, const CommandContext &context)
 {
     std::string_view lang = Network::Instance().AcceptLang;
@@ -461,66 +411,60 @@ void ldhelp(w3mApp *w3m, const CommandContext &context)
 
 void movL(w3mApp *w3m, const CommandContext &context)
 {
-    _movL(GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2);
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    _movL(buf->rect.cols / 2, context.prec);
 }
 
 void movL1(w3mApp *w3m, const CommandContext &context)
 {
-    _movL(1);
+    _movL(1, context.prec);
 }
 
 void movD(w3mApp *w3m, const CommandContext &context)
 {
-    _movD((GetCurrentTab()->GetCurrentBuffer()->rect.lines + 1) / 2);
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    _movD((buf->rect.lines + 1) / 2, context.prec);
 }
 
 void movD1(w3mApp *w3m, const CommandContext &context)
 {
-    _movD(1);
+    _movD(1, context.prec);
 }
 
 void movU(w3mApp *w3m, const CommandContext &context)
 {
-    _movU((GetCurrentTab()->GetCurrentBuffer()->rect.lines + 1) / 2);
+    _movU((GetCurrentTab()->GetCurrentBuffer()->rect.lines + 1) / 2, context.prec);
 }
 
 void movU1(w3mApp *w3m, const CommandContext &context)
 {
-    _movU(1);
+    _movU(1, context.prec);
 }
 
 void movR(w3mApp *w3m, const CommandContext &context)
 {
-    _movR(GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2);
+    _movR(GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2, context.prec);
 }
 
 void movR1(w3mApp *w3m, const CommandContext &context)
 {
-    _movR(1);
+    _movR(1, context.prec);
 }
 
 void movLW(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    int n = w3m->searchKeyNum();
-    if (!buf->MoveLeftWord(n))
-    {
-        return;
-    }
-    displayCurrentbuf(B_NORMAL);
+    buf->MoveLeftWord(context.prec);
 }
 
 void movRW(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    int n = w3m->searchKeyNum();
-    if (!buf->MoveRightWord(n))
-    {
-        return;
-    }
-    displayCurrentbuf(B_NORMAL);
+    buf->MoveRightWord(context.prec);
 }
 
 /* Quit */
@@ -573,8 +517,8 @@ void selBuf(w3mApp *w3m, const CommandContext &context)
 
     displayCurrentbuf(B_FORCE_REDRAW);
 }
-/* Suspend (on BSD), or run interactive shell (on SysV) */
 
+/* Suspend (on BSD), or run interactive shell (on SysV) */
 void susp(w3mApp *w3m, const CommandContext &context)
 {
 #ifndef SIGSTOP
@@ -600,11 +544,10 @@ void susp(w3mApp *w3m, const CommandContext &context)
 
 void goLine(w3mApp *w3m, const CommandContext &context)
 {
-    char *str = w3m->searchKeyData();
     if (context.prec)
         _goLine("^", context.prec);
-    else if (str)
-        _goLine(str, context.prec);
+    else if (context.data.size())
+        _goLine(context.data, context.prec);
     else
         /* FIXME: gettextize? */
         _goLine(inputStr("Goto line: ", ""), context.prec);
@@ -805,23 +748,23 @@ void reMark(w3mApp *w3m, const CommandContext &context)
     if (!w3mApp::Instance().use_mark)
         return;
 
-    const char *str = w3m->searchKeyData();
-    if (str == NULL || *str == '\0')
+    auto str = context.data;
+    if (str.empty())
     {
         str = inputStrHist("(Mark)Regexp: ", MarkString(), w3mApp::Instance().TextHist);
-        if (str == NULL || *str == '\0')
+        if (str.empty())
         {
             displayCurrentbuf(B_NORMAL);
             return;
         }
     }
     str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
-    if ((str = regexCompile(str, 1)) != NULL)
+    if ((str = regexCompile(str.data(), 1)).size())
     {
-        disp_message(str, true);
+        disp_message(str.data(), true);
         return;
     }
-    SetMarkString(str);
+    SetMarkString(str.data());
 
     GetCurrentTab()->GetCurrentBuffer()->EachLine([&](auto l) {
         char *p, *p1, *p2;
@@ -840,8 +783,8 @@ void reMark(w3mApp *w3m, const CommandContext &context)
     });
     displayCurrentbuf(B_FORCE_REDRAW);
 }
-/* view inline image */
 
+/* view inline image */
 void followI(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
@@ -953,25 +896,25 @@ void lastA(w3mApp *w3m, const CommandContext &context)
 
 void nextA(w3mApp *w3m, const CommandContext &context)
 {
-    _nextA(false);
+    _nextA(false, context.prec);
 }
 /* go to the previous anchor */
 
 void prevA(w3mApp *w3m, const CommandContext &context)
 {
-    _prevA(false);
+    _prevA(false, context.prec);
 }
 /* go to the next visited anchor */
 
 void nextVA(w3mApp *w3m, const CommandContext &context)
 {
-    _nextA(true);
+    _nextA(true, context.prec);
 }
 /* go to the previous visited anchor */
 
 void prevVA(w3mApp *w3m, const CommandContext &context)
 {
-    _prevA(true);
+    _prevA(true, context.prec);
 }
 
 static std::tuple<bool, int, int> isMap(const BufferPtr &buf, const AnchorPtr a)
@@ -1070,38 +1013,38 @@ void followA(w3mApp *w3m, const CommandContext &context)
 /* go to the next left anchor */
 void nextL(w3mApp *w3m, const CommandContext &context)
 {
-    nextX(-1, 0);
+    nextX(-1, 0, context.prec);
 }
 
 /* go to the next left-up anchor */
 
 void nextLU(w3mApp *w3m, const CommandContext &context)
 {
-    nextX(-1, -1);
+    nextX(-1, -1, context.prec);
 }
 /* go to the next right anchor */
 
 void nextR(w3mApp *w3m, const CommandContext &context)
 {
-    nextX(1, 0);
+    nextX(1, 0, context.prec);
 }
 /* go to the next right-down anchor */
 
 void nextRD(w3mApp *w3m, const CommandContext &context)
 {
-    nextX(1, 1);
+    nextX(1, 1, context.prec);
 }
 /* go to the next downward anchor */
 
 void nextD(w3mApp *w3m, const CommandContext &context)
 {
-    nextY(1);
+    nextY(1, context.prec);
 }
 /* go to the next upward anchor */
 
 void nextU(w3mApp *w3m, const CommandContext &context)
 {
-    nextY(-1);
+    nextY(-1, context.prec);
 }
 
 /* go to the next bufferr */
@@ -1196,12 +1139,12 @@ void deletePrevBuf(w3mApp *w3m, const CommandContext &context)
 
 void goURL(w3mApp *w3m, const CommandContext &context)
 {
-    goURL0("Goto URL: ", false);
+    goURL0(context.data, "Goto URL: ", false);
 }
 
 void gorURL(w3mApp *w3m, const CommandContext &context)
 {
-    goURL0("Goto relative URL: ", true);
+    goURL0(context.data, "Goto relative URL: ", true);
 }
 
 /* load bookmark */
@@ -1289,29 +1232,27 @@ void accessKey(w3mApp *w3m, const CommandContext &context)
 
 void setOpt(w3mApp *w3m, const CommandContext &context)
 {
-    char *opt;
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    opt = w3m->searchKeyData();
-    if (opt == NULL || *opt == '\0' || strchr(opt, '=') == NULL)
+    auto opt = context.data;
+    if (opt.empty() || strchr(opt.data(), '=') == NULL)
     {
-        if (opt != NULL && *opt != '\0')
+        if (opt.size())
         {
-            auto v = get_param_option(opt);
+            auto v = get_param_option(opt.data());
             opt = Sprintf("%s=%s", opt, v ? v : "")->ptr;
         }
         opt = inputStrHist("Set option: ", opt, w3mApp::Instance().TextHist);
-        if (opt == NULL || *opt == '\0')
+        if (opt.empty())
         {
             displayCurrentbuf(B_NORMAL);
             return;
         }
     }
-    if (set_param_option(opt))
+    if (set_param_option(opt.data()))
         sync_with_option();
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
-/* list menu */
 
+/* list menu */
 void listMn(w3mApp *w3m, const CommandContext &context)
 {
     anchorMn(list_menu, true);
@@ -1321,90 +1262,86 @@ void movlistMn(w3mApp *w3m, const CommandContext &context)
 {
     anchorMn(list_menu, false);
 }
-/* link,anchor,image list */
 
+/* link,anchor,image list */
 void linkLst(w3mApp *w3m, const CommandContext &context)
 {
     BufferPtr buf;
     buf = link_list_panel(GetCurrentTab()->GetCurrentBuffer());
     if (buf != NULL)
     {
-#ifdef USE_M17N
         buf->document_charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
-#endif
         // cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
     }
 }
-/* cookie list */
 
+/* cookie list */
 void cooLst(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     tab->Push(URL::Parse("w3m://cookielist"));
 }
-/* History page */
 
+/* History page */
 void ldHist(w3mApp *w3m, const CommandContext &context)
 {
     // cmd_loadBuffer(historyBuffer(w3mApp::Instance().URLHist), BP_NO_URL, LB_NOLINK);
 }
-/* download HREF link */
 
+/* download HREF link */
 void svA(w3mApp *w3m, const CommandContext &context)
 {
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
     w3mApp::Instance().do_download = true;
     followA(w3m, context);
     w3mApp::Instance().do_download = false;
 }
-/* download IMG link */
 
+/* download IMG link */
 void svI(w3mApp *w3m, const CommandContext &context)
 {
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
     w3mApp::Instance().do_download = true;
     followI(w3m, context);
     w3mApp::Instance().do_download = false;
 }
-/* save buffer */
 
+/* save buffer */
 void svBuf(w3mApp *w3m, const CommandContext &context)
 {
-    char *qfile = NULL, *file;
-    FILE *f;
+    char *qfile = NULL;
     int is_pipe;
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    file = w3m->searchKeyData();
-    if (file == NULL || *file == '\0')
+    auto file = context.data;
+    if (file.empty())
     {
         /* FIXME: gettextize? */
-        qfile = inputLineHist("Save buffer to: ", NULL, IN_COMMAND, w3mApp::Instance().SaveHist);
+        qfile = inputLineHist("Save buffer to: ", "", IN_COMMAND, w3mApp::Instance().SaveHist);
         if (qfile == NULL || *qfile == '\0')
         {
             displayCurrentbuf(B_NORMAL);
             return;
         }
     }
-    file = conv_to_system(qfile ? qfile : file);
-    if (*file == '|')
+    file = conv_to_system(qfile ? qfile : file.c_str());
+
+    FILE *f = nullptr;
+    if (file.size() && file[0] == '|')
     {
         is_pipe = true;
-        f = popen(file + 1, "w");
+        f = popen(file.c_str() + 1, "w");
     }
     else
     {
         if (qfile)
         {
             file = unescape_spaces(Strnew(qfile))->ptr;
-            file = conv_to_system(file);
+            file = conv_to_system(file.data());
         }
-        file = expandPath(file);
-        if (checkOverWrite(file) < 0)
+        file = expandPath(file.data());
+        if (checkOverWrite(file.data()) < 0)
         {
             displayCurrentbuf(B_NORMAL);
             return;
         }
-        f = fopen(file, "w");
+        f = fopen(file.data(), "w");
         is_pipe = false;
     }
     if (f == NULL)
@@ -1421,15 +1358,17 @@ void svBuf(w3mApp *w3m, const CommandContext &context)
         fclose(f);
     displayCurrentbuf(B_NORMAL);
 }
-/* save source */
 
+/* save source */
 void svSrc(w3mApp *w3m, const CommandContext &context)
 {
-    char *file = nullptr;
-    if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
+    auto tab = GetCurrentTab();
+    auto buf = tab->GetCurrentBuffer();
+    if (buf->sourcefile.empty())
         return;
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
+
     w3mApp::Instance().PermitSaveToPipe = true;
+    const char *file = nullptr;
     // if (GetCurrentTab()->GetCurrentBuffer()->real_scheme == SCM_LOCAL)
     //     file = conv_from_system(guess_save_name(NULL,
     //                                             GetCurrentTab()->GetCurrentBuffer()->currentURL.real_file));
@@ -1443,13 +1382,13 @@ void svSrc(w3mApp *w3m, const CommandContext &context)
 /* peek URL */
 void peekURL(w3mApp *w3m, const CommandContext &context)
 {
-    _peekURL(0);
+    _peekURL(0, context.prec);
 }
 
 /* peek URL of image */
 void peekIMG(w3mApp *w3m, const CommandContext &context)
 {
-    _peekURL(1);
+    _peekURL(1, context.prec);
 }
 
 void curURL(w3mApp *w3m, const CommandContext &context)
@@ -1475,7 +1414,7 @@ void curURL(w3mApp *w3m, const CommandContext &context)
         s = Strnew(url_unquote_conv(s->ptr, WC_CES_NONE));
 
     auto propstr = PropertiedString::create(s);
-    int n = w3m->searchKeyNum();
+    int n = context.prec;
     if (n > 1 && s->Size() > (n - 1) * (Terminal::columns() - 1))
         offset = (n - 1) * (Terminal::columns() - 1);
     while (offset < s->Size() && propstr.propBuf()[offset] & PC_WCHAR2)
@@ -1746,12 +1685,12 @@ void reshape(w3mApp *w3m, const CommandContext &context)
 
 void docCSet(w3mApp *w3m, const CommandContext &context)
 {
-    auto cs = w3m->searchKeyData();
-    if (cs == NULL || *cs == '\0')
+    auto cs = context.data;
+    if (cs.empty())
         /* FIXME: gettextize? */
         cs = inputStr("Document charset: ",
                       wc_ces_to_charset(GetCurrentTab()->GetCurrentBuffer()->document_charset));
-    auto charset = wc_guess_charset_short(cs, WC_CES_NONE);
+    auto charset = wc_guess_charset_short(cs.data(), WC_CES_NONE);
     if (charset == 0)
     {
         displayCurrentbuf(B_NORMAL);
@@ -1762,12 +1701,12 @@ void docCSet(w3mApp *w3m, const CommandContext &context)
 
 void defCSet(w3mApp *w3m, const CommandContext &context)
 {
-    auto cs = w3m->searchKeyData();
-    if (cs == NULL || *cs == '\0')
+    auto cs = context.data;
+    if (cs.empty())
         /* FIXME: gettextize? */
         cs = inputStr("Default document charset: ",
                       wc_ces_to_charset(w3mApp::Instance().DocumentCharset));
-    auto charset = wc_guess_charset_short(cs, WC_CES_NONE);
+    auto charset = wc_guess_charset_short(cs.data(), WC_CES_NONE);
     if (charset != 0)
         w3mApp::Instance().DocumentCharset = charset;
     displayCurrentbuf(B_NORMAL);
@@ -1844,7 +1783,7 @@ void extbrz(w3mApp *w3m, const CommandContext &context)
         disp_err_message("Can't browse stdin", true);
         return;
     }
-    invoke_browser(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, context.prec);
+    invoke_browser(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr, context.data, context.prec);
 }
 
 void linkbrz(w3mApp *w3m, const CommandContext &context)
@@ -1859,7 +1798,7 @@ void linkbrz(w3mApp *w3m, const CommandContext &context)
         return;
 
     auto pu = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
-    invoke_browser(pu.ToStr()->ptr, context.prec);
+    invoke_browser(pu.ToStr()->ptr, context.data, context.prec);
 }
 
 /* show current line number and number of lines in the entire document */
@@ -2063,14 +2002,11 @@ void dictwordat(w3mApp *w3m, const CommandContext &context)
 
 void execCmd(w3mApp *w3m, const CommandContext &context)
 {
-    char *data, *p;
-    int cmd;
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    data = w3m->searchKeyData();
-    if (data == NULL || *data == '\0')
+    auto data = context.data;
+    if (data.empty())
     {
         data = inputStrHist("command [; ...]: ", "", w3mApp::Instance().TextHist);
-        if (data == NULL)
+        if (data.empty())
         {
             displayCurrentbuf(B_NORMAL);
             return;
@@ -2082,8 +2018,7 @@ void execCmd(w3mApp *w3m, const CommandContext &context)
 
 void setAlarm(w3mApp *w3m, const CommandContext &context)
 {
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    std::string_view data = w3m->searchKeyData();
+    std::string_view data = context.data;
     if (data.empty())
     {
         data = inputStrHist("(Alarm)sec command: ", "", w3mApp::Instance().TextHist);
@@ -2099,7 +2034,8 @@ void setAlarm(w3mApp *w3m, const CommandContext &context)
     std::tie(data, _sec) = getWord(data);
     int sec = atoi(_sec.c_str());
     Command cmd = nullptr;
-    if (sec > 0){
+    if (sec > 0)
+    {
         std::string word;
         std::tie(data, word) = getWord(data);
         cmd = getFuncList(word);
@@ -2124,86 +2060,82 @@ void setAlarm(w3mApp *w3m, const CommandContext &context)
 
 void reinit(w3mApp *w3m, const CommandContext &context)
 {
-    char *resource = w3m->searchKeyData();
-    if (resource == NULL)
+    std::string_view resource = context.data;
+    if (resource.empty())
     {
         init_rc();
         sync_with_option();
-#ifdef USE_COOKIE
         initCookie();
-#endif
         displayCurrentbuf(B_REDRAW_IMAGE);
         return;
     }
-    if (!strcasecmp(resource, "CONFIG") || !strcasecmp(resource, "RC"))
+    if (svu::ic_eq(resource, "CONFIG") || svu::ic_eq(resource, "RC"))
     {
         init_rc();
         sync_with_option();
         displayCurrentbuf(B_REDRAW_IMAGE);
         return;
     }
-#ifdef USE_COOKIE
-    if (!strcasecmp(resource, "COOKIE"))
+
+    if (svu::ic_eq(resource, "COOKIE"))
     {
         initCookie();
         return;
     }
-#endif
-    if (!strcasecmp(resource, "KEYMAP"))
+
+    if (svu::ic_eq(resource, "KEYMAP"))
     {
         initKeymap(true);
         return;
     }
-    if (!strcasecmp(resource, "MAILCAP"))
+
+    if (svu::ic_eq(resource, "MAILCAP"))
     {
         initMailcap();
         return;
     }
-#ifdef USE_MOUSE
-    if (!strcasecmp(resource, "MOUSE"))
+
+    if (svu::ic_eq(resource, "MOUSE"))
     {
         initMouseAction();
         displayCurrentbuf(B_REDRAW_IMAGE);
         return;
     }
-#endif
-#ifdef USE_MENU
-    if (!strcasecmp(resource, "MENU"))
+
+    if (svu::ic_eq(resource, "MENU"))
     {
         initMenu();
         return;
     }
-#endif
-    if (!strcasecmp(resource, "MIMETYPES"))
+
+    if (svu::ic_eq(resource, "MIMETYPES"))
     {
         initMimeTypes();
         return;
     }
-#ifdef USE_EXTERNAL_URI_LOADER
-    if (!strcasecmp(resource, "URIMETHODS"))
+
+    if (svu::ic_eq(resource, "URIMETHODS"))
     {
         initURIMethods();
         return;
     }
-#endif
+
     disp_err_message(Sprintf("Don't know how to reinitialize '%s'", resource)->ptr, false);
 }
 
 void defKey(w3mApp *w3m, const CommandContext &context)
 {
-    char *data;
-    ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    data = w3m->searchKeyData();
-    if (data == NULL || *data == '\0')
+    std::string_view data = context.data;
+    if (data.empty())
     {
         data = inputStrHist("Key definition: ", "", w3mApp::Instance().TextHist);
-        if (data == NULL || *data == '\0')
+        if (data.empty())
         {
             displayCurrentbuf(B_NORMAL);
             return;
         }
     }
-    SetKeymap(allocStr(data, -1), -1, true);
+    SetKeymap(allocStr(data.data(), -1), -1, true);
     displayCurrentbuf(B_NORMAL);
 }
 
@@ -2257,6 +2189,7 @@ void tabURL(w3mApp *w3m, const CommandContext &context)
     else
         tab = GetCurrentTab();
     tabURL0(context.prec ? tab : NULL,
+            context.data,
             "Goto URL on new tab: ", false);
 }
 
@@ -2268,6 +2201,7 @@ void tabrURL(w3mApp *w3m, const CommandContext &context)
     else
         tab = GetCurrentTab();
     tabURL0(context.prec ? tab : NULL,
+            context.data,
             "Goto relative URL on new tab: ", true);
 }
 
@@ -2356,7 +2290,7 @@ void redoPos(w3mApp *w3m, const CommandContext &context)
 
 void mainMn(w3mApp *w3m, const CommandContext &context)
 {
-    PopupMenu();
+    PopupMenu(context.data);
 }
 
 void selMn(w3mApp *w3m, const CommandContext &context)

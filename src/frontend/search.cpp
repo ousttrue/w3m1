@@ -90,57 +90,44 @@ err:
 #endif /* USE_MIGEMO */
 
 /* normalize search string */
-const char *
-conv_search_string(const char *str, CharacterEncodingScheme f_ces)
+std::string conv_search_string(std::string_view str, CharacterEncodingScheme f_ces)
 {
     if (w3mApp::Instance().SearchConv && !WcOption.pre_conv &&
         GetCurrentTab()->GetCurrentBuffer()->document_charset != f_ces)
-        str = wtf_conv_fit(str, GetCurrentTab()->GetCurrentBuffer()->document_charset);
-    return str;
+        str = wtf_conv_fit(str.data(), GetCurrentTab()->GetCurrentBuffer()->document_charset);
+    return std::string(str);
 }
 
-SearchResultTypes forwardSearch(const BufferPtr &buf, const char *str)
+SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
 {
-    const char *p;
     char *first, *last;
-    LinePtr l;
-    LinePtr begin;
     int wrapped = false;
-    int pos;
 
-#ifdef USE_MIGEMO
-    if (migemo_active > 0)
-    {
-        if (((p = regexCompile(migemostr(str), IgnoreCase)) != NULL) && ((p = regexCompile(str, IgnoreCase)) != NULL))
-        {
-            message(p, 0, 0);
-            return SR_NOTFOUND;
-        }
-    }
-    else
-#endif
-        if ((p = regexCompile(str, w3mApp::Instance().IgnoreCase)) != NULL)
+    const char *p;
+    if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
     {
         message(p, 0, 0);
         return SR_NOTFOUND;
     }
-    l = buf->CurrentLine();
+
+    auto l = buf->CurrentLine();
     if (l == NULL)
     {
         return SR_NOTFOUND;
     }
-    pos = buf->pos;
+
+    auto pos = buf->pos;
     if (l->bpos)
     {
         pos += l->bpos;
         while (l->bpos && buf->PrevLine(l))
             l = buf->PrevLine(l);
     }
-    begin = l;
-#ifdef USE_M17N
+    
+    auto begin = l;
     while (pos < l->len() && l->propBuf()[pos] & PC_WCHAR2)
         pos++;
-#endif
+
     if (pos < l->len() && regexMatch(&l->lineBuf()[pos], l->len() - pos, 0) == 1)
     {
         matchedPosition(&first, &last);
@@ -211,7 +198,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, const char *str)
     return SR_NOTFOUND;
 }
 
-SearchResultTypes backwardSearch(const BufferPtr &buf, const char *str)
+SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
 {
     const char *p;
     char *q, *found, *found_last, *first, *last;
@@ -231,7 +218,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, const char *str)
     }
     else
 #endif
-        if ((p = regexCompile(str, w3mApp::Instance().IgnoreCase)) != NULL)
+        if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
     {
         message(p, 0, 0);
         return SR_NOTFOUND;

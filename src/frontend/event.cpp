@@ -28,19 +28,14 @@ void SetCurrentAlarm(AlarmEvent *alarm)
 
 void SigAlarm(int)
 {
-    char *data;
-
     if (CurrentAlarm()->sec > 0)
     {
-        // ClearCurrentKey();
-        ClearCurrentKeyData();
-        w3mApp::Instance().CurrentCmdData = data = (char *)CurrentAlarm()->data;
-
         Terminal::mouse_on();
-        CurrentAlarm()->cmd(&w3mApp::Instance(), {});
+        CurrentAlarm()->cmd(&w3mApp::Instance(), {
+            data: (char *)CurrentAlarm()->data,
+        });
         Terminal::mouse_off();
 
-        w3mApp::Instance().CurrentCmdData.clear();
         if (CurrentAlarm()->status == AL_IMPLICIT_ONCE)
         {
             CurrentAlarm()->sec = 0;
@@ -223,7 +218,6 @@ AlarmEvent *setAlarmEvent(AlarmEvent *event, int sec, short status, Command cmd,
     return event;
 }
 
-
 void SigPipe(SIGNAL_ARG)
 {
 #ifdef USE_MIGEMO
@@ -261,11 +255,9 @@ int ProcessEvent()
 {
     if (CurrentEvent)
     {
-        // ClearCurrentKey();
-        ClearCurrentKeyData();
-        w3mApp::Instance().CurrentCmdData = CurrentEvent->data ? (const char *)CurrentEvent->data : "";
-        CurrentEvent->cmd(&w3mApp::Instance(), {});
-        w3mApp::Instance().CurrentCmdData.clear();
+        CurrentEvent->cmd(&w3mApp::Instance(), {
+            data : CurrentEvent->data ? (const char *)CurrentEvent->data : ""
+        });
         CurrentEvent = CurrentEvent->next;
         return 1;
     }

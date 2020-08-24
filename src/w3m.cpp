@@ -331,11 +331,9 @@ void w3mApp::mainloop()
                 if (CurrentAlarm()->sec == 0)
                 { /* refresh (0sec) */
                     buf->event = NULL;
-                    // ClearCurrentKey();
-                    ClearCurrentKeyData();
-                    CurrentCmdData = (const char *)CurrentAlarm()->data;
-                    CurrentAlarm()->cmd(&w3mApp::Instance(), {});
-                    CurrentCmdData.clear();
+                    CurrentAlarm()->cmd(&w3mApp::Instance(), {
+                        data: (const char *)CurrentAlarm()->data
+                    });
                     continue;
                 }
             }
@@ -436,31 +434,4 @@ int w3mApp::INIT_BUFFER_WIDTH()
 int w3mApp::FOLD_BUFFER_WIDTH()
 {
     return this->FoldLine ? (INIT_BUFFER_WIDTH() + 1) : -1;
-}
-
-char *w3mApp::searchKeyData()
-{
-    const char *data = NULL;
-    if (CurrentKeyData() != NULL && *CurrentKeyData() != '\0')
-        data = CurrentKeyData();
-    else if (w3mApp::Instance().CurrentCmdData.size())
-        data = w3mApp::Instance().CurrentCmdData.c_str();
-    // else if (CurrentKey >= 0)
-    //     data = GetKeyData(CurrentKey());
-    ClearCurrentKeyData();
-    w3mApp::Instance().CurrentCmdData.clear();
-    if (data == NULL || *data == '\0')
-        return NULL;
-    return allocStr(data, -1);
-}
-
-int w3mApp::searchKeyNum()
-{
-    // TODO:
-    // int n = 1;
-    // auto d = searchKeyData();
-    // if (d != NULL)
-    //     n = atoi(d);
-    // return n * (std::max(1, prec_num()));
-    return 1;
 }

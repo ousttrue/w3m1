@@ -1076,3 +1076,15 @@ void displayCurrentbuf(DisplayMode mode)
         assert(false);
     }
 }
+
+void disp_srchresult(int result, std::string_view prompt, std::string_view str)
+{
+    if (str == NULL)
+        str = "";
+    if (result & SR_NOTFOUND)
+        disp_message(Sprintf("Not found: %s", str)->ptr, true);
+    else if (result & SR_WRAPPED)
+        disp_message(Sprintf("Search wrapped: %s", str)->ptr, true);
+    else if (w3mApp::Instance().show_srch_str)
+        disp_message(Sprintf("%s%s", prompt, str)->ptr, true);
+}

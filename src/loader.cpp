@@ -100,7 +100,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
 
     if (w3mApp::Instance().fmInitialized)
     {
-        p = w3mApp::Instance().searchKeyData();
+        // p = w3mApp::Instance().searchKeyData();
         if (p == NULL || *p == '\0')
         {
             /* FIXME: gettextize? */
@@ -165,7 +165,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
     }
     else
     {
-        q = w3mApp::Instance().searchKeyData();
+        // q = w3mApp::Instance().searchKeyData();
         if (q == NULL || *q == '\0')
         {
             /* FIXME: gettextize? */

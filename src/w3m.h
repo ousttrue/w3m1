@@ -165,10 +165,6 @@ public:
     std::vector<std::string> fileToDelete;
     bool fmInitialized = false;
 
-    std::string CurrentCmdData;
-    char *searchKeyData();
-    int searchKeyNum();
-
     bool do_download = false;
     bool WrapSearch = false;
     bool no_rc_dir = false;
@@ -278,6 +274,8 @@ struct CommandContext
     // {
     //     return (((c) >> 16) & 0x77F);
     // }
+
+    std::string data;
 };
 using Command = void (*)(w3mApp *w3m, const CommandContext &context);
 
