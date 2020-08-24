@@ -264,25 +264,26 @@ public:
         }
 
         auto currentTab = GetCurrentTab();
+        auto currentBuf = currentTab->GetCurrentBuffer();
         if (s_need_resize_screen)
         {
-            displayBuffer(tab->GetCurrentBuffer(), B_FORCE_REDRAW);
+            displayBuffer(currentBuf, B_FORCE_REDRAW);
         }
         else if (currentTab != tab)
         {
             // different tab
-            displayBuffer(tab->GetCurrentBuffer(), B_FORCE_REDRAW);
+            displayBuffer(currentBuf, B_FORCE_REDRAW);
         }
-        else if (currentTab->GetCurrentBuffer() != buf)
+        else if (currentBuf != buf)
         {
             // different buf
-            displayBuffer(buf, B_FORCE_REDRAW);
+            displayBuffer(currentBuf, B_FORCE_REDRAW);
         }
         else
         {
             // same buf
-            auto drawType = buf->Update();
-            displayBuffer(buf, drawType);
+            auto drawType = currentBuf->Update();
+            displayBuffer(currentBuf, drawType);
         }
 
         // next read

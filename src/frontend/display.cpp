@@ -910,14 +910,11 @@ void set_delayed_message(const char *s) { delayed_msg = allocStr(s, -1); }
 
 void displayBuffer(BufferPtr buf, DisplayMode mode)
 {
-    if(mode == B_NONE)
+    if (mode == B_NONE)
     {
         return;
     }
-    LOGI << "displayBuffer: " << mode;
-
-    Str msg;
-    int ny = 0;
+    LOGI << "displayBuffer: " << mode << ": " << buf->currentURL;
 
     if (!buf)
         return;
@@ -949,6 +946,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     }
 
     buf->rect.cols = Terminal::columns() - buf->rect.rootX;
+    int ny = 0;
     if (GetTabCount() > 1 || GetMouseActionMenuStr().size())
     {
         if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
@@ -1041,7 +1039,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 
     drawAnchorCursor(buf);
 
-    msg = make_lastline_message(buf);
+    auto msg = make_lastline_message(buf);
     if (buf->LineCount() == 0)
     {
         /* FIXME: gettextize? */
