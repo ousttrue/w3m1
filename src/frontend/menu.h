@@ -11,11 +11,15 @@
 #include "frontend/link.h"
 #include <tcb/span.hpp>
 
-#define MENU_END 0
-#define MENU_NOP 1
-#define MENU_VALUE 2
-#define MENU_FUNC 4
-#define MENU_POPUP 8
+enum MenuTypes
+{
+    MENU_ERROR = -1,
+    MENU_END = 0,
+    MENU_NOP = 1,
+    MENU_VALUE = 2,
+    MENU_FUNC = 4,
+    MENU_POPUP = 8,
+};
 
 #define MENU_NOTHING -1
 #define MENU_CANCEL -2
@@ -47,6 +51,8 @@ struct MenuItem
     Menu *popup;
     std::string keys;
     std::string data;
+
+    MenuTypes setMenuItem(std::string_view type, std::string_view line);
 };
 
 struct Menu
@@ -88,7 +94,7 @@ int action_menu(Menu *menu);
 void popup_menu(Menu *parent, Menu *menu);
 void guess_menu_xy(Menu *menu, int width, int *x, int *y);
 void new_option_menu(Menu *menu, tcb::span<std::string> label, int *variable, Command func);
-int setMenuItem(MenuItem *item, const char* type, std::string_view line);
+
 int addMenuList(MenuList **list, const char *id);
 int getMenuN(MenuList *list, std::string_view id);
 void popupMenu(int x, int y, Menu *menu);

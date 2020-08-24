@@ -1428,7 +1428,7 @@ static void
 interpret_menu(FILE *mf)
 {
     Str line;
-    int in_menu = 0, nmenu = 0, nitem = 0, type;
+    int in_menu = 0, nmenu = 0, nitem = 0;
     MenuItem *item = NULL;
 
     CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
@@ -1449,7 +1449,7 @@ interpret_menu(FILE *mf)
             continue;
         if (in_menu)
         {
-            type = setMenuItem(&item[nitem], s.data(), p.data());
+            auto type = item[nitem].setMenuItem(s, p);
             if (type == -1)
                 continue; /* error */
             if (type == MENU_END)
@@ -1535,22 +1535,25 @@ void initMenu(void)
     }
 }
 
-int setMenuItem(MenuItem *item, const char *type, std::string_view line)
+MenuTypes MenuItem::setMenuItem(std::string_view type, std::string_view line)
 {
-    if (type == NULL || *type == '\0') /* error */
-        return -1;
-    if (strcmp(type, "end") == 0)
+    if (type.empty()) /* error */
+        return MENU_ERROR;
+
+    if (type == "end")
     {
-        item->type = MENU_END;
+        this->type = MENU_END;
         return MENU_END;
     }
-    else if (strcmp(type, "nop") == 0)
+
+    if (type == "nop")
     {
-        item->type = MENU_NOP;
-        std::tie(line, item->label) = getQWord(line);
+        this->type = MENU_NOP;
+        std::tie(line, this->label) = getQWord(line);
         return MENU_NOP;
     }
-    else if (strcmp(type, "func") == 0)
+
+    if (type == "func")
     {
         std::string label;
         std::tie(line, label) = getQWord(line);
@@ -1561,16 +1564,17 @@ int setMenuItem(MenuItem *item, const char *type, std::string_view line)
         std::string data;
         std::tie(line, data) = getQWord(line);
         if (func.empty()) /* error */
-            return -1;
-        item->type = MENU_FUNC;
-        item->label = label;
+            return MENU_ERROR;
+        this->type = MENU_FUNC;
+        this->label = label;
         Command f = getFuncList(func);
-        item->func = f;
-        item->keys = keys;
-        item->data = data;
+        this->func = f;
+        this->keys = keys;
+        this->data = data;
         return MENU_FUNC;
     }
-    else if (strcmp(type, "popup") == 0)
+
+    if (type == "popup")
     {
         std::string label;
         std::tie(line, label) = getQWord(line);
@@ -1579,17 +1583,18 @@ int setMenuItem(MenuItem *item, const char *type, std::string_view line)
         std::string keys;
         std::tie(line, keys) = getQWord(line);
         if (popup.empty()) /* error */
-            return -1;
-        item->type = MENU_POPUP;
-        item->label = label;
+            return MENU_ERROR;
+        this->type = MENU_POPUP;
+        this->label = label;
         int n;
         if ((n = getMenuN(w3mMenuList, popup.data())) == -1)
             n = addMenuList(&w3mMenuList, popup.data());
-        item->popup = w3mMenuList[n].menu;
-        item->keys = keys;
+        this->popup = w3mMenuList[n].menu;
+        this->keys = keys;
         return MENU_POPUP;
     }
-    return -1; /* error */
+
+    return MENU_ERROR;
 }
 
 int addMenuList(MenuList **mlist, const char *id)
