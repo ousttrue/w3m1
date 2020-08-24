@@ -1,5 +1,5 @@
 #pragma once
-
+#include <functional>
 #include "frontend/line.h"
 
 /* Flags for inputLine() */
@@ -14,7 +14,7 @@ enum LineInputFlags
 };
 
 struct Hist;
-using IncFunc = int (*)(int ch, Str buf, Lineprop *prop, int prec_num);
+using IncFunc = std::function<int(int ch, Str buf, Lineprop *prop, int prec_num)>;
 char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, LineInputFlags flag, Hist *hist, IncFunc incfunc, int prec_num);
 
 inline char *inputLineHist(std::string_view prompt, std::string_view def_str, LineInputFlags flag, Hist *hist, int prec_num = 1)

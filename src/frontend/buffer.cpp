@@ -3,10 +3,11 @@
 #include <unistd.h>
 
 #include "history.h"
+#include "regex.h"
 #include "frontend/buffer.h"
 #include "frontend/display.h"
 #include "frontend/line.h"
-#include "frontend/line.h"
+#include "frontend/lineinput.h"
 #include "frontend/screen.h"
 #include "urimethod.h"
 #include "public.h"
@@ -1489,7 +1490,7 @@ void Buffer::resetPos(int i)
     restorePosition(newBuf);
 
     // TODO: erase
-    displayCurrentbuf(B_FORCE_REDRAW);
+    m_redraw = B_FORCE_REDRAW;
 }
 
 void Buffer::undoPos(int prec_num)
@@ -1527,4 +1528,512 @@ void Buffer::redoPos()
     // for (int i = 0; i < (prec_num() ? prec_num() : 1) && b->next; i++, b = b->next)
     //     ;
     // resetPos(b);
+}
+
+void Buffer::srch_nxtprv(bool reverse, int prec_num)
+{
+    static SearchFunc routine[2] = {forwardSearch, backwardSearch};
+
+    if (searchRoutine == NULL)
+    {
+        /* FIXME: gettextize? */
+        disp_message("No previous regular expression", true);
+        return;
+    }
+
+    if (searchRoutine == backwardSearch)
+        reverse = !reverse;
+    if (reverse)
+        pos += 1;
+    auto result = srchcore(SearchString, routine[reverse], prec_num);
+    if (result & SR_FOUND)
+        CurrentLine()->clear_mark();
+
+    m_redraw = B_NORMAL;
+    disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
+                    SearchString);
+}
+
+/* search by regular expression */
+SearchResultTypes Buffer::srchcore(std::string_view str, SearchFunc func, int prec_num)
+{
+    if (str != NULL && str != SearchString)
+        SearchString = str;
+    if (SearchString.empty())
+        return SR_NOTFOUND;
+
+    auto converted = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
+
+    SearchResultTypes result = SR_NOTFOUND;
+    for (int i = 0; i < prec_num; i++)
+    {
+        result = func(shared_from_this(), converted);
+        if (i < prec_num - 1 && result & SR_FOUND)
+            CurrentLine()->clear_mark();
+    }
+    return result;
+}
+
+int Buffer::dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
+{
+    static BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
+    static LinePtr currentLine;
+    static int s_pos;
+    int do_next_search = false;
+
+    if (ch == 0)
+    {
+        sbuf->COPY_BUFPOSITION_FROM(shared_from_this()); /* search starting point */
+        currentLine = sbuf->CurrentLine();
+        s_pos = sbuf->pos;
+        return -1;
+    }
+
+    auto str = src->ptr;
+    switch (ch)
+    {
+    case 022: /* C-r */
+        searchRoutine = backwardSearch;
+        do_next_search = true;
+        break;
+    case 023: /* C-s */
+        searchRoutine = forwardSearch;
+        do_next_search = true;
+        break;
+
+    default:
+        if (ch >= 0)
+            return ch; /* use InputKeymap */
+    }
+
+    if (do_next_search)
+    {
+        if (*str)
+        {
+            if (searchRoutine == forwardSearch)
+                this->pos += 1;
+            sbuf->COPY_BUFPOSITION_FROM(shared_from_this());
+            if (srchcore(str, searchRoutine, prec_num) == SR_NOTFOUND && searchRoutine == forwardSearch)
+            {
+                this->pos -= 1;
+                sbuf->COPY_BUFPOSITION_FROM(shared_from_this());
+            }
+            this->ArrangeCursor();
+            m_redraw = B_FORCE_REDRAW;
+            this->CurrentLine()->clear_mark();
+            return -1;
+        }
+        else
+            return 020; /* _prev completion for C-s C-s */
+    }
+    else if (*str)
+    {
+        this->COPY_BUFPOSITION_FROM(sbuf);
+        this->ArrangeCursor();
+        srchcore(str, searchRoutine, prec_num);
+        this->ArrangeCursor();
+        currentLine = this->CurrentLine();
+        s_pos = this->pos;
+    }
+    m_redraw = B_FORCE_REDRAW;
+    this->CurrentLine()->clear_mark();
+    return -1;
+}
+
+void Buffer::isrch(SearchFunc func, const char *prompt, int prec_num)
+{
+    BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
+    sbuf->COPY_BUFPOSITION_FROM(shared_from_this());
+    dispincsrch(0, NULL, NULL, prec_num); /* initialize incremental search state */
+
+    searchRoutine = func;
+    auto callback = std::bind(&Buffer::dispincsrch, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    auto str = inputLineHistSearch(prompt, "", IN_STRING, w3mApp::Instance().TextHist, callback, prec_num);
+    if (str == NULL)
+    {
+        COPY_BUFPOSITION_FROM(sbuf);
+    }
+
+    m_redraw = B_FORCE_REDRAW;
+}
+
+void Buffer::srch(SearchFunc func, const char *prompt, std::string_view str, int prec_num)
+{
+    int disp = false;
+    if (str.empty())
+    {
+        str = inputStrHist(prompt, "", w3mApp::Instance().TextHist, prec_num);
+        if (str.empty())
+            str = SearchString;
+        if (str.empty())
+        {
+            m_redraw = B_NORMAL;
+            return;
+        }
+        disp = true;
+    }
+
+    auto p = this->pos;
+    if (func == forwardSearch)
+        this->pos += 1;
+    auto result = srchcore(str, func, prec_num);
+    if (result & SR_FOUND)
+        this->CurrentLine()->clear_mark();
+    else
+        this->pos = p;
+    m_redraw = B_NORMAL;
+    if (disp)
+        disp_srchresult(result, prompt, str);
+    searchRoutine = func;
+}
+
+/* Go to specified line */
+void Buffer::_goLine(std::string_view l, int prec_num)
+{
+    if (l.empty() || this->CurrentLine() == NULL)
+    {
+        return;
+    }
+
+    this->pos = 0;
+    if (((l[0] == '^') || (l[0] == '$')) && prec_num)
+    {
+        this->GotoRealLine(prec_num);
+    }
+    else if (l[0] == '^')
+    {
+        this->SetCurrentLine(this->FirstLine());
+        this->SetTopLine(this->FirstLine());
+    }
+    else if (l[0] == '$')
+    {
+        this->LineSkip(this->LastLine(),
+                      -(this->rect.lines + 1) / 2, true);
+        this->SetCurrentLine(this->LastLine());
+    }
+    else
+    {
+        this->GotoRealLine(atoi(l.data()));
+    }
+    this->ArrangeCursor();
+}
+
+static void
+set_mark(LinePtr l, int pos, int epos)
+{
+    for (; pos < epos && pos < l->len(); pos++)
+        l->propBuf()[pos] |= PE_MARK;
+}
+
+#ifdef USE_MIGEMO
+/* Migemo: romaji --> kana+kanji in regexp */
+static FILE *migemor = NULL, *migemow = NULL;
+static int migemo_running;
+static int migemo_pid = 0;
+
+void init_migemo()
+{
+    migemo_active = migemo_running = use_migemo;
+    if (migemor != NULL)
+        fclose(migemor);
+    if (migemow != NULL)
+        fclose(migemow);
+    migemor = migemow = NULL;
+    if (migemo_pid)
+        kill(migemo_pid, SIGKILL);
+    migemo_pid = 0;
+}
+
+static int
+open_migemo(char *migemo_command)
+{
+    migemo_pid = open_pipe_rw(&migemor, &migemow);
+    if (migemo_pid < 0)
+        goto err0;
+    if (migemo_pid == 0)
+    {
+        /* child */
+        setup_child(false, 2, -1);
+        myExec(migemo_command);
+        /* XXX: ifdef __EMX__, use start /f ? */
+    }
+    return 1;
+err0:
+    migemo_pid = 0;
+    migemo_active = migemo_running = 0;
+    return 0;
+}
+
+static char *
+migemostr(char *str)
+{
+    Str tmp = NULL;
+    if (migemor == NULL || migemow == NULL)
+        if (open_migemo(migemo_command) == 0)
+            return str;
+    fprintf(migemow, "%s\n", conv_to_system(str));
+again:
+    if (fflush(migemow) != 0)
+    {
+        switch (errno)
+        {
+        case EINTR:
+            goto again;
+        default:
+            goto err;
+        }
+    }
+    tmp = Str_conv_from_system(Strfgets(migemor));
+    Strchop(tmp);
+    if (tmp->length == 0)
+        goto err;
+    return conv_search_string(tmp->ptr, SystemCharset);
+err:
+    /* XXX: backend migemo is not working? */
+    init_migemo();
+    migemo_active = migemo_running = 0;
+    return str;
+}
+#endif /* USE_MIGEMO */
+
+/* normalize search string */
+std::string Buffer::conv_search_string(std::string_view str, CharacterEncodingScheme f_ces)
+{
+    if (w3mApp::Instance().SearchConv && !WcOption.pre_conv &&
+        this->document_charset != f_ces)
+        str = wtf_conv_fit(str.data(), this->document_charset);
+    return std::string(str);
+}
+
+SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
+{
+    char *first, *last;
+    int wrapped = false;
+
+    const char *p;
+    if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
+    {
+        message(p, 0, 0);
+        return SR_NOTFOUND;
+    }
+
+    auto l = buf->CurrentLine();
+    if (l == NULL)
+    {
+        return SR_NOTFOUND;
+    }
+
+    auto pos = buf->pos;
+    if (l->bpos)
+    {
+        pos += l->bpos;
+        while (l->bpos && buf->PrevLine(l))
+            l = buf->PrevLine(l);
+    }
+    
+    auto begin = l;
+    while (pos < l->len() && l->propBuf()[pos] & PC_WCHAR2)
+        pos++;
+
+    if (pos < l->len() && regexMatch(&l->lineBuf()[pos], l->len() - pos, 0) == 1)
+    {
+        matchedPosition(&first, &last);
+        pos = first - l->lineBuf();
+        while (pos >= l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
+        {
+            pos -= l->len();
+            l = buf->NextLine(l);
+        }
+        buf->pos = pos;
+        if (l != buf->CurrentLine())
+            buf->GotoLine(l->linenumber);
+        buf->ArrangeCursor();
+        set_mark(l, pos, pos + last - first);
+        return SR_FOUND;
+    }
+    for (l = buf->NextLine(l);; l = buf->NextLine(l))
+    {
+        if (l == NULL)
+        {
+            if (buf->pagerSource)
+            {
+                l = getNextPage(buf, 1);
+                if (l == NULL)
+                {
+                    if (w3mApp::Instance().WrapSearch && !wrapped)
+                    {
+                        l = buf->FirstLine();
+                        wrapped = true;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            else if (w3mApp::Instance().WrapSearch)
+            {
+                l = buf->FirstLine();
+                wrapped = true;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if (l->bpos)
+            continue;
+        if (regexMatch(l->lineBuf(), l->len(), 1) == 1)
+        {
+            matchedPosition(&first, &last);
+            pos = first - l->lineBuf();
+            while (pos >= l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
+            {
+                pos -= l->len();
+                l = buf->NextLine(l);
+            }
+            buf->pos = pos;
+            buf->SetCurrentLine(l);
+            buf->GotoLine(l->linenumber);
+            buf->ArrangeCursor();
+            set_mark(l, pos, pos + last - first);
+            return SR_FOUND | (wrapped ? SR_WRAPPED : SR_NONE);
+        }
+        if (wrapped && l == begin) /* no match */
+            break;
+    }
+    return SR_NOTFOUND;
+}
+
+SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
+{
+    const char *p;
+    char *q, *found, *found_last, *first, *last;
+    LinePtr l;
+    LinePtr begin;
+    int wrapped = false;
+    int pos;
+
+#ifdef USE_MIGEMO
+    if (migemo_active > 0)
+    {
+        if (((p = regexCompile(migemostr(str), IgnoreCase)) != NULL) && ((p = regexCompile(str, IgnoreCase)) != NULL))
+        {
+            message(p, 0, 0);
+            return SR_NOTFOUND;
+        }
+    }
+    else
+#endif
+        if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
+    {
+        message(p, 0, 0);
+        return SR_NOTFOUND;
+    }
+    l = buf->CurrentLine();
+    if (l == NULL)
+    {
+        return SR_NOTFOUND;
+    }
+    pos = buf->pos;
+    if (l->bpos)
+    {
+        pos += l->bpos;
+        while (l->bpos && buf->PrevLine(l))
+            l = buf->PrevLine(l);
+    }
+    begin = l;
+    if (pos > 0)
+    {
+        pos--;
+#ifdef USE_M17N
+        while (pos > 0 && l->propBuf()[pos] & PC_WCHAR2)
+            pos--;
+#endif
+        p = &l->lineBuf()[pos];
+        found = NULL;
+        found_last = NULL;
+        q = l->lineBuf();
+        while (regexMatch(q, &l->lineBuf()[l->len()] - q, q == l->lineBuf()) == 1)
+        {
+            matchedPosition(&first, &last);
+            if (first <= p)
+            {
+                found = first;
+                found_last = last;
+            }
+            if (q - l->lineBuf() >= l->len())
+                break;
+            q++;
+#ifdef USE_M17N
+            while (q - l->lineBuf() < l->len() && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
+                q++;
+#endif
+            if (q > p)
+                break;
+        }
+        if (found)
+        {
+            pos = found - l->lineBuf();
+            while (pos >= l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
+            {
+                pos -= l->len();
+                l = buf->NextLine(l);
+            }
+            buf->pos = pos;
+            if (l != buf->CurrentLine())
+                buf->GotoLine(l->linenumber);
+            buf->ArrangeCursor();
+            set_mark(l, pos, pos + found_last - found);
+            return SR_FOUND;
+        }
+    }
+    for (l = buf->PrevLine(l);; l = buf->PrevLine(l))
+    {
+        if (l == NULL)
+        {
+            if (w3mApp::Instance().WrapSearch)
+            {
+                l = buf->LastLine();
+                wrapped = true;
+            }
+            else
+            {
+                break;
+            }
+        }
+        found = NULL;
+        found_last = NULL;
+        q = l->lineBuf();
+        while (regexMatch(q, &l->lineBuf()[l->len()] - q, q == l->lineBuf()) == 1)
+        {
+            matchedPosition(&first, &last);
+            found = first;
+            found_last = last;
+            if (q - l->lineBuf() >= l->len())
+                break;
+            q++;
+#ifdef USE_M17N
+            while (q - l->lineBuf() < l->len() && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
+                q++;
+#endif
+        }
+        if (found)
+        {
+            pos = found - l->lineBuf();
+            while (pos >= l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
+            {
+                pos -= l->len();
+                l = buf->NextLine(l);
+            }
+            buf->pos = pos;
+            buf->GotoLine(l->linenumber);
+            buf->ArrangeCursor();
+            set_mark(l, pos, pos + found_last - found);
+            return SR_FOUND | (wrapped ? SR_WRAPPED : SR_NONE);
+        }
+        if (wrapped && l == begin) /* no match */
+            break;
+    }
+    return SR_NOTFOUND;
 }

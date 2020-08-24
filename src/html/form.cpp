@@ -75,7 +75,7 @@ static void follow_map(struct parsed_tagarg *arg)
         //     GetCurrentTab()->DeleteBuffer(buf);
         // else
         //     deleteTab(GetCurrentTab());
-        displayCurrentbuf(B_FORCE_REDRAW);
+        // displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
     cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),

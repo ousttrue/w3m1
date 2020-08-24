@@ -584,8 +584,8 @@ next_dcompl(int next)
     if (cm_mode == CPL_NEVER || cm_mode & CPL_OFF)
         return;
     cm_disp_clear = false;
-    if (GetCurrentTab())
-        displayCurrentbuf(B_FORCE_REDRAW);
+    // if (GetCurrentTab())
+    //     displayCurrentbuf(B_FORCE_REDRAW);
     if ((Terminal::lines() - 1) >= 3)
     {
         comment = true;
@@ -1030,8 +1030,6 @@ _editor(void)
         strBuf->Push(*p);
     }
     CLen = CPos = setStrType(strBuf, strProp);
-
-    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, LineInputFlags flag, Hist *hist, IncFunc incrfunc, int prec_num)
@@ -1202,8 +1200,9 @@ char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, Lin
 
     if (GetCurrentTab())
     {
-        if (need_redraw)
-            displayCurrentbuf(B_FORCE_REDRAW);
+        if (need_redraw){
+            // displayCurrentbuf(B_FORCE_REDRAW);
+        }
     }
 
     if (i_broken)

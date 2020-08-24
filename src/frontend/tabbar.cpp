@@ -339,5 +339,5 @@ void followTab(TabPtr tab, const CommandContext &context)
         //     GetCurrentTab()->BufferPushBeforeCurrent(buf);
         // }
     }
-    displayCurrentbuf(B_FORCE_REDRAW);
+    // displayCurrentbuf(B_FORCE_REDRAW);
 }

@@ -56,7 +56,7 @@ bool Tab::SetCurrent(int index)
     buf->GotoLine(1, true);
 
     m_buffer = buf;
-    displayCurrentbuf(B_NORMAL);
+    // displayCurrentbuf(B_NORMAL);
     return true;
 }
 

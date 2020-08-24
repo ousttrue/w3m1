@@ -2,7 +2,7 @@
 #include "frontend/buffer.h"
 
 void displayBuffer(BufferPtr  buf, DisplayMode mode);
-void displayCurrentbuf(DisplayMode mode);
+// void displayCurrentbuf(DisplayMode mode);
 void do_color(Linecolor c);
 void clear_effect();
 

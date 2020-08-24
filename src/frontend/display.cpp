@@ -894,10 +894,6 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
     Terminal::mouse_on();
     Terminal::sleep_till_anykey(sec, purge);
     Terminal::mouse_off();
-
-    if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL &&
-        redraw_current)
-        displayCurrentbuf(B_NORMAL);
 }
 
 void disp_message(const char *s, int redraw_current)
@@ -1071,18 +1067,18 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     }
 }
 
-void displayCurrentbuf(DisplayMode mode)
-{
-    auto tab = GetCurrentTab();
-    if (tab)
-    {
-        displayBuffer(tab->GetCurrentBuffer(), mode);
-    }
-    else
-    {
-        assert(false);
-    }
-}
+// void displayCurrentbuf(DisplayMode mode)
+// {
+//     auto tab = GetCurrentTab();
+//     if (tab)
+//     {
+//         displayBuffer(tab->GetCurrentBuffer(), mode);
+//     }
+//     else
+//     {
+//         assert(false);
+//     }
+// }
 
 void disp_srchresult(int result, std::string_view prompt, std::string_view str)
 {

@@ -41,8 +41,6 @@ void resize_screen()
     s_need_resize_screen = false;
 
     Screen::Instance().Setup();
-    if (GetCurrentTab())
-        displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 #define GC_WARN_KEEP_MAX (20)
@@ -266,7 +264,11 @@ public:
         }
 
         auto currentTab = GetCurrentTab();
-        if (currentTab != tab)
+        if (s_need_resize_screen)
+        {
+            displayBuffer(tab->GetCurrentBuffer(), B_FORCE_REDRAW);
+        }
+        else if (currentTab != tab)
         {
             // different tab
             displayBuffer(tab->GetCurrentBuffer(), B_FORCE_REDRAW);
@@ -307,6 +309,9 @@ public:
 
 void w3mApp::mainloop2()
 {
+    // first draw
+    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    
     Asio asio;
 
     asio.ReadTty();
@@ -411,7 +416,7 @@ void w3mApp::mainloop()
 
 void w3mApp::Quit(bool confirm)
 {
-    const char *ans = "y";
+    std::string_view ans = "y";
     if (checkDownloadList())
     {
         /* FIXME: gettextize? */
@@ -424,9 +429,9 @@ void w3mApp::Quit(bool confirm)
         ans = inputChar("Do you want to exit w3m? (y/n)");
     }
 
-    if (!(ans && TOLOWER(*ans) == 'y'))
+    if (ans.empty() || TOLOWER(ans[0]) != 'y')
     {
-        displayCurrentbuf(B_NORMAL);
+        // displayCurrentbuf(B_NORMAL);
         return;
     }
 

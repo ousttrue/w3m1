@@ -34,44 +34,7 @@
 #include "charset.h"
 #include "w3m.h"
 
-static std::string SearchString;
-SearchFunc searchRoutine = nullptr;
-
-
-void srch_nxtprv(int reverse, int prec_num)
-{
-    int result;
-    /* *INDENT-OFF* */
-    static SearchFunc routine[2] = {
-        forwardSearch, backwardSearch};
-    /* *INDENT-ON* */
-
-    if (searchRoutine == NULL)
-    {
-        /* FIXME: gettextize? */
-        disp_message("No previous regular expression", true);
-        return;
-    }
-
-    auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
-
-    if (reverse != 0)
-        reverse = 1;
-    if (searchRoutine == backwardSearch)
-        reverse ^= 1;
-    if (reverse == 0)
-        buf->pos += 1;
-    result = srchcore(SearchString, routine[reverse], prec_num);
-    if (result & SR_FOUND)
-        buf->CurrentLine()->clear_mark();
-    displayCurrentbuf(B_NORMAL);
-    disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
-                    SearchString);
-}
-
-static void
-dump_extra(const BufferPtr &buf)
+static void dump_extra(const BufferPtr &buf)
 {
     printf("W3m-current-url: %s\n", buf->currentURL.ToStr()->ptr);
     if (buf->baseURL)
@@ -99,8 +62,7 @@ dump_extra(const BufferPtr &buf)
     }
 }
 
-static void
-dump_head(w3mApp *w3m, BufferPtr buf)
+static void dump_head(w3mApp *w3m, BufferPtr buf)
 {
     TextListItem *ti;
 
@@ -151,167 +113,6 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
     });
 }
 
-/* search by regular expression */
-SearchResultTypes srchcore(std::string_view str, SearchFunc func, int prec_num)
-{
-    if (str != NULL && str != SearchString)
-        SearchString = str;
-    if (SearchString.empty())
-        return SR_NOTFOUND;
-
-    str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
-
-    auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
-
-    if (prec_num <= 0)
-    {
-        prec_num = 1;
-    }
-
-    SearchResultTypes result = SR_NOTFOUND;
-    for (int i = 0; i < prec_num; i++)
-    {
-        result = func(buf, str);
-        if (i < prec_num - 1 && result & SR_FOUND)
-            buf->CurrentLine()->clear_mark();
-    }
-
-    return result;
-}
-
-int dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
-{
-    static BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
-    static LinePtr currentLine;
-    static int pos;
-    int do_next_search = false;
-
-    auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
-
-    if (ch == 0 && buf == NULL)
-    {
-        sbuf->COPY_BUFPOSITION_FROM(buf); /* search starting point */
-        currentLine = sbuf->CurrentLine();
-        pos = sbuf->pos;
-        return -1;
-    }
-
-    auto str = src->ptr;
-    switch (ch)
-    {
-    case 022: /* C-r */
-        searchRoutine = backwardSearch;
-        do_next_search = true;
-        break;
-    case 023: /* C-s */
-        searchRoutine = forwardSearch;
-        do_next_search = true;
-        break;
-
-#ifdef USE_MIGEMO
-    case 034:
-        migemo_active = -migemo_active;
-        goto done;
-#endif
-
-    default:
-        if (ch >= 0)
-            return ch; /* use InputKeymap */
-    }
-
-    if (do_next_search)
-    {
-        if (*str)
-        {
-            if (searchRoutine == forwardSearch)
-                buf->pos += 1;
-            sbuf->COPY_BUFPOSITION_FROM(buf);
-            if (srchcore(str, searchRoutine, prec_num) == SR_NOTFOUND && searchRoutine == forwardSearch)
-            {
-                buf->pos -= 1;
-                sbuf->COPY_BUFPOSITION_FROM(buf);
-            }
-            buf->ArrangeCursor();
-            displayCurrentbuf(B_FORCE_REDRAW);
-            buf->CurrentLine()->clear_mark();
-            return -1;
-        }
-        else
-            return 020; /* _prev completion for C-s C-s */
-    }
-    else if (*str)
-    {
-        buf->COPY_BUFPOSITION_FROM(sbuf);
-        buf->ArrangeCursor();
-        srchcore(str, searchRoutine, prec_num);
-        buf->ArrangeCursor();
-        currentLine = buf->CurrentLine();
-        pos = buf->pos;
-    }
-    displayCurrentbuf(B_FORCE_REDRAW);
-    buf->CurrentLine()->clear_mark();
-#ifdef USE_MIGEMO
-done:
-    while (*str++ != '\0')
-    {
-        if (migemo_active > 0)
-            *prop++ |= PE_UNDER;
-        else
-            *prop++ &= ~PE_UNDER;
-    }
-#endif
-    return -1;
-}
-
-void isrch(SearchFunc func, const char *prompt, int prec_num)
-{
-    BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
-    sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
-    dispincsrch(0, NULL, NULL, prec_num); /* initialize incremental search state */
-
-    searchRoutine = func;
-    auto str = inputLineHistSearch(prompt, "", IN_STRING, w3mApp::Instance().TextHist, dispincsrch, prec_num);
-    if (str == NULL)
-    {
-        GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(sbuf);
-    }
-    displayCurrentbuf(B_FORCE_REDRAW);
-}
-
-void srch(SearchFunc func, const char *prompt, std::string_view str, int prec_num)
-{
-    int disp = false;
-    if (str.empty())
-    {
-        str = inputStrHist(prompt, "", w3mApp::Instance().TextHist, prec_num);
-        if (str.empty())
-            str = SearchString;
-        if (str.empty())
-        {
-            displayCurrentbuf(B_NORMAL);
-            return;
-        }
-        disp = true;
-    }
-
-    auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
-
-    auto pos = buf->pos;
-    if (func == forwardSearch)
-        buf->pos += 1;
-    auto result = srchcore(str, func, prec_num);
-    if (result & SR_FOUND)
-        buf->CurrentLine()->clear_mark();
-    else
-        buf->pos = pos;
-    displayCurrentbuf(B_NORMAL);
-    if (disp)
-        disp_srchresult(result, prompt, str);
-    searchRoutine = func;
-}
 
 void shiftvisualpos(BufferPtr buf, int shift)
 {
@@ -342,7 +143,6 @@ void cmd_loadfile(const char *fn)
     //     if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
     //         rFrame(&w3mApp::Instance());
     // }
-    displayCurrentbuf(B_NORMAL);
 }
 
 void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, FormPtr request)
@@ -369,7 +169,6 @@ void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer,
     //         rFrame(&w3mApp::Instance());
     // }
     GetCurrentTab()->Push(URL::Parse(url, current));
-    displayCurrentbuf(B_NORMAL);
 }
 
 int handleMailto(const char *url)
@@ -402,7 +201,6 @@ int handleMailto(const char *url)
                         false)
                ->ptr);
     fmInit();
-    displayCurrentbuf(B_FORCE_REDRAW);
     pushHashHist(w3mApp::Instance().URLHist, url);
     return 1;
 }
@@ -507,41 +305,6 @@ uint32_t getChar(char *p)
 int is_wordchar(uint32_t c)
 {
     return wc_is_ucs_alnum(c);
-}
-
-/* Go to specified line */
-void _goLine(std::string_view l, int prec_num)
-{
-    auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
-    if (l.empty() || buf->CurrentLine() == NULL)
-    {
-        displayCurrentbuf(B_FORCE_REDRAW);
-        return;
-    }
-
-    buf->pos = 0;
-    if (((l[0] == '^') || (l[0] == '$')) && prec_num)
-    {
-        buf->GotoRealLine(prec_num);
-    }
-    else if (l[0] == '^')
-    {
-        buf->SetCurrentLine(buf->FirstLine());
-        buf->SetTopLine(buf->FirstLine());
-    }
-    else if (l[0] == '$')
-    {
-        buf->LineSkip(buf->LastLine(),
-                      -(buf->rect.lines + 1) / 2, true);
-        buf->SetCurrentLine(buf->LastLine());
-    }
-    else
-    {
-        buf->GotoRealLine(atoi(l.data()));
-    }
-    buf->ArrangeCursor();
-    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 int cur_real_linenumber(const BufferPtr &buf)
@@ -788,7 +551,6 @@ void _followForm(bool submit)
     default:
         break;
     }
-    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void query_from_followform(Str *query, FormItemPtr fi, int multipart)
@@ -1212,7 +974,6 @@ _end:
         return;
 
     buf->Goto(buf->hmarklist[an->hseq]);
-    displayCurrentbuf(B_NORMAL);
 }
 
 /* go to the previous anchor */
@@ -1300,7 +1061,6 @@ _end:
         return;
 
     buf->Goto(buf->hmarklist[an->hseq]);
-    displayCurrentbuf(B_NORMAL);
 }
 
 void gotoLabel(std::string_view label)
@@ -1324,8 +1084,6 @@ void gotoLabel(std::string_view label)
     // (*copy->clone)++;
     GetCurrentTab()->Push(buf->currentURL);
     GetCurrentTab()->GetCurrentBuffer()->Goto(al->start, w3mApp::Instance().label_topline);
-    displayCurrentbuf(B_FORCE_REDRAW);
-    return;
 }
 
 /* go to the next left/right anchor */
@@ -1382,7 +1140,6 @@ void nextX(int d, int dy, int n)
     buf->GotoLine(y);
     buf->pos = pan->start.pos;
     buf->ArrangeCursor();
-    displayCurrentbuf(B_NORMAL);
 }
 
 /* go to the next downward/upward anchor */
@@ -1428,7 +1185,6 @@ void nextY(int d, int n)
         return;
     buf->GotoLine(pan->start.line);
     buf->ArrangeLine();
-    displayCurrentbuf(B_NORMAL);
 }
 
 /* go to specified URL */
@@ -1485,7 +1241,6 @@ void goURL0(std::string_view url, std::string_view prompt, int relative)
 
     if (url.empty())
     {
-        displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
     if (url[0] == '#')
@@ -1524,7 +1279,6 @@ void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
         return;
 
     buf->Goto(buf->hmarklist[a->hseq]);
-    displayCurrentbuf(B_NORMAL);
     if (go)
         followA(&w3mApp::Instance(), {});
 }
@@ -1612,7 +1366,6 @@ void _docCSet(CharacterEncodingScheme charset)
     }
     buf->document_charset = charset;
     buf->need_reshape = true;
-    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 static int s_display_ok = false;
@@ -1648,7 +1401,6 @@ void invoke_browser(char *url, std::string_view browser, int prec_num)
     browser = conv_to_system(browser.data());
     if (browser.empty())
     {
-        displayCurrentbuf(B_NORMAL);
         return;
     }
 
@@ -1665,7 +1417,6 @@ void invoke_browser(char *url, std::string_view browser, int prec_num)
     fmTerm();
     mySystem(cmd->ptr, bg);
     fmInit();
-    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 #define DICTBUFFERNAME "*dictionary*"
@@ -1676,13 +1427,11 @@ void execdict(char *word)
 
     if (!w3mApp::Instance().UseDictCommand || word == NULL || *word == '\0')
     {
-        displayCurrentbuf(B_NORMAL);
         return;
     }
     w = conv_to_system(word);
     if (*w == '\0')
     {
-        displayCurrentbuf(B_NORMAL);
         return;
     }
     dictcmd = Sprintf("%s?%s", w3mApp::Instance().DictCommand, UrlEncode(Strnew(w))->ptr)->ptr;
@@ -1701,7 +1450,6 @@ void execdict(char *word)
     //         buf->type = "text/plain";
     //     GetCurrentTab()->Push(buf);
     // }
-    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 char *GetWord(const BufferPtr &buf)
@@ -1754,7 +1502,6 @@ void tabURL0(TabPtr tab, std::string_view url, const char *prompt, int relative)
         //     GetCurrentTab()->BufferPushBeforeCurrent(buf);
         // }
     }
-    displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 // void cmd_loadBuffer(BufferPtr buf, BufferProps prop, LinkBufferTypes linkid)

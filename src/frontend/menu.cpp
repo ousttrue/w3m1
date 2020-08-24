@@ -598,7 +598,7 @@ void popup_menu(MenuPtr parent, MenuPtr menu)
     while (active)
     {
         active = action_menu(CurrentMenu);
-        displayCurrentbuf(B_FORCE_REDRAW);
+        // displayCurrentbuf(B_FORCE_REDRAW);
     }
     menu->active = 0;
     CurrentMenu = parent;
@@ -898,7 +898,7 @@ static int menu_search_forward(MenuPtr menu, int from)
     if (str.empty())
         return -1;
     SearchString = str;
-    str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
+    str = GetCurrentTab()->GetCurrentBuffer()->conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuForwardSearch;
     auto found = menuForwardSearch(menu, str, from + 1);
     if (w3mApp::Instance().WrapSearch && found == -1)
@@ -945,7 +945,7 @@ static int menu_search_backward(MenuPtr menu, int from)
     if (str.empty())
         return -1;
     SearchString = str;
-    str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
+    str = GetCurrentTab()->GetCurrentBuffer()->conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuBackwardSearch;
     auto found = menuBackwardSearch(menu, str, from - 1);
     if (w3mApp::Instance().WrapSearch && found == -1)
@@ -974,7 +974,7 @@ static int menu_search_next_previous(MenuPtr menu, int from, int reverse)
         disp_message("No previous regular expression", true);
         return -1;
     }
-    std::string_view str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
+    std::string_view str = GetCurrentTab()->GetCurrentBuffer()->conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
     if (reverse != 0)
         reverse = 1;
     if (menuSearchRoutine == menuBackwardSearch)
@@ -1274,7 +1274,7 @@ smDelBuf(char c)
     CurrentMenu->select = (mselect <= CurrentMenu->nitem - 2) ? mselect
                                                               : (CurrentMenu->nitem - 2);
 
-    displayCurrentbuf(B_FORCE_REDRAW);
+    // displayCurrentbuf(B_FORCE_REDRAW);
     draw_all_menu(CurrentMenu);
     select_menu(CurrentMenu, CurrentMenu->select);
     return (MENU_NOTHING);

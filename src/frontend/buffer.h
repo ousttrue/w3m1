@@ -66,6 +66,15 @@ enum DisplayMode
     B_REDRAW_IMAGE,
 };
 
+/* Search Result */
+enum SearchResultTypes
+{
+    SR_NONE = 0,
+    SR_FOUND = 0x1,
+    SR_NOTFOUND = 0x2,
+    SR_WRAPPED = 0x4,
+};
+
 using BufferPtr = std::shared_ptr<struct Buffer>;
 using LinePtr = std::shared_ptr<struct Line>;
 using LineList = std::vector<LinePtr>;
@@ -166,6 +175,7 @@ public:
         return (currentLine ? currentLine->linenumber : 1);
     }
 
+    void _goLine(std::string_view l, int prec_num);
     void GotoLine(int n, bool topline = false);
     void Goto(const BufferPoint &po, bool topline = false)
     {
@@ -305,6 +315,19 @@ public:
         this->ArrangeCursor();
     }
 
+private:
+    using SearchFunc = SearchResultTypes (*)(const std::shared_ptr<struct Buffer> &buf, std::string_view str);
+    SearchFunc searchRoutine = nullptr;
+    std::string SearchString;    
+    SearchResultTypes srchcore(std::string_view str, SearchFunc func, int prec_num);
+    int dispincsrch(int ch, Str buf, Lineprop *prop, int prec_num);
+
+public:
+    void isrch(SearchFunc func, const char *prompt, int prec_num);
+    void srch(SearchFunc func, const char *prompt, std::string_view, int prec_num);
+    std::string conv_search_string(std::string_view str, CharacterEncodingScheme f_ces);
+    void srch_nxtprv(bool reverse, int prec_num);
+
     std::shared_ptr<class InputStream> pagerSource;
     AnchorList href;
     AnchorList name;
@@ -392,3 +415,7 @@ char *reAnchorNewsheader(const BufferPtr &buf);
 void addMultirowsForm(BufferPtr buf, AnchorList &al);
 void addMultirowsImg(BufferPtr buf, AnchorList &al);
 char *getAnchorText(BufferPtr buf, AnchorList &al, AnchorPtr a);
+
+// search
+SearchResultTypes forwardSearch(const std::shared_ptr<struct Buffer> &buf, std::string_view str);
+SearchResultTypes backwardSearch(const std::shared_ptr<struct Buffer> &buf, std::string_view str);
