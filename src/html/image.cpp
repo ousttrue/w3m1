@@ -1,9 +1,10 @@
 #include <string_view_util.h>
+#include <unordered_map>
+#include <list>
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
 #include "html/image.h"
 #include "indep.h"
-#include "gc_helper.h"
 #include "file.h"
 #include "frontend/display.h"
 #include "history.h"
@@ -26,7 +27,7 @@ static int image_index = 0;
 
 struct TerminalImage
 {
-    ImageCache *cache;
+    ImageCachePtr cache;
     short x;
     short y;
     short sx;
@@ -34,11 +35,11 @@ struct TerminalImage
     short width;
     short height;
 };
+using TerminalImagePtr = std::shared_ptr<TerminalImage>;
 
-static TerminalImage *terminal_image = NULL;
-static int n_terminal_image = 0;
-static int max_terminal_image = 0;
-static FILE *Imgdisplay_rf = NULL, *Imgdisplay_wf = NULL;
+static std::vector<TerminalImagePtr> terminal_image;
+static FILE *Imgdisplay_rf = NULL;
+static FILE *Imgdisplay_wf = NULL;
 static pid_t Imgdisplay_pid = 0;
 static int openImgdisplay();
 static void closeImgdisplay();
@@ -48,7 +49,7 @@ int getCharSize();
 /// ImageManager
 ///
 ImageManager::ImageManager()
-{    
+{
 }
 
 ImageManager::~ImageManager()
@@ -150,19 +151,13 @@ closeImgdisplay()
     Imgdisplay_pid = 0;
 }
 
-void addImage(ImageCache *cache, int x, int y, int sx, int sy, int w, int h)
+void addImage(ImageCachePtr cache, int x, int y, int sx, int sy, int w, int h)
 {
-    TerminalImage *i;
-
     if (!w3mApp::Instance().activeImage)
         return;
-    if (n_terminal_image >= max_terminal_image)
-    {
-        max_terminal_image = max_terminal_image ? (2 * max_terminal_image) : 8;
-        terminal_image = New_Reuse(TerminalImage, terminal_image,
-                                   max_terminal_image);
-    }
-    i = &terminal_image[n_terminal_image];
+
+    auto i = std::make_shared<TerminalImage>();
+    terminal_image.push_back(i);
     i->cache = cache;
     i->x = x;
     i->y = y;
@@ -170,7 +165,6 @@ void addImage(ImageCache *cache, int x, int y, int sx, int sy, int w, int h)
     i->sy = sy;
     i->width = w;
     i->height = h;
-    n_terminal_image++;
 }
 
 static void
@@ -189,7 +183,7 @@ syncImage(void)
 err:
     closeImgdisplay();
     image_index += MAX_IMAGE;
-    n_terminal_image = 0;
+    terminal_image.clear();
 }
 
 void drawImage()
@@ -200,11 +194,10 @@ void drawImage()
 
     if (!w3mApp::Instance().activeImage)
         return;
-    if (!n_terminal_image)
+    if (!terminal_image.empty())
         return;
-    for (j = 0; j < n_terminal_image; j++)
+    for (auto &i : terminal_image)
     {
-        i = &terminal_image[j];
         if (!(i->cache->loaded & IMG_FLAG_LOADED &&
               i->width > 0 && i->height > 0))
             continue;
@@ -242,7 +235,7 @@ void ImageManager::clearImage()
 {
     if (!w3mApp::Instance().activeImage)
         return;
-    if (!n_terminal_image)
+    if (!terminal_image.empty())
         return;
 
     static char buf[64];
@@ -251,12 +244,11 @@ void ImageManager::clearImage()
 
     if (!Imgdisplay_wf)
     {
-        n_terminal_image = 0;
+        terminal_image.clear();
         return;
     }
-    for (j = 0; j < n_terminal_image; j++)
+    for (auto &i : terminal_image)
     {
-        i = &terminal_image[j];
         if (!(i->cache->loaded & IMG_FLAG_LOADED &&
               i->width > 0 && i->height > 0))
             continue;
@@ -264,7 +256,7 @@ void ImageManager::clearImage()
         fputs(buf, Imgdisplay_wf);
     }
     syncImage();
-    n_terminal_image = 0;
+    terminal_image.clear();
 }
 
 /* load image */
@@ -272,11 +264,11 @@ void ImageManager::clearImage()
 #ifndef MAX_LOAD_IMAGE
 #define MAX_LOAD_IMAGE 8
 #endif
-static int n_load_image = 0;
-static Hash_sv *image_hash = NULL;
-static Hash_sv *image_file = NULL;
-static GeneralList *image_list = NULL;
-static ImageCache **image_cache = NULL;
+
+static std::unordered_map<std::string, ImageCachePtr> image_hash;
+static std::unordered_map<std::string, ImageCachePtr> image_file;
+static std::list<ImageCachePtr> image_list;
+static std::vector<ImageCachePtr> image_cache;
 static BufferPtr image_buffer = NULL;
 
 void deleteImage(Buffer *buf)
@@ -356,7 +348,7 @@ void showImageProgress(const BufferPtr &buf)
 
 void loadImage(BufferPtr buf, int flag)
 {
-    ImageCache *cache;
+    ImageCachePtr cache;
     struct stat st;
     int i, draw = false;
     /* int wait_st; */
@@ -365,16 +357,8 @@ void loadImage(BufferPtr buf, int flag)
         w3mApp::Instance().maxLoadImage = MAX_LOAD_IMAGE;
     else if (w3mApp::Instance().maxLoadImage < 1)
         w3mApp::Instance().maxLoadImage = 1;
-    if (n_load_image == 0)
-        n_load_image = w3mApp::Instance().maxLoadImage;
-    if (!image_cache)
+    for (auto &cache: image_cache)
     {
-        image_cache = New_N(ImageCache *, MAX_LOAD_IMAGE);
-        bzero(image_cache, sizeof(ImageCache *) * MAX_LOAD_IMAGE);
-    }
-    for (i = 0; i < n_load_image; i++)
-    {
-        cache = image_cache[i];
         if (!cache)
             continue;
         if (lstat(cache->touch, &st))
@@ -407,9 +391,8 @@ void loadImage(BufferPtr buf, int flag)
         image_cache[i] = NULL;
     }
 
-    for (i = (buf != image_buffer) ? 0 : w3mApp::Instance().maxLoadImage; i < n_load_image; i++)
+    for (auto &cache: image_cache)
     {
-        cache = image_cache[i];
         if (!cache)
             continue;
         if (cache->pid)
@@ -430,9 +413,9 @@ void loadImage(BufferPtr buf, int flag)
 
     if (flag == IMG_FLAG_STOP)
     {
-        image_list = NULL;
-        image_file = NULL;
-        n_load_image = w3mApp::Instance().maxLoadImage;
+        image_list.clear();
+        image_file.clear();
+        image_cache.clear();
         image_buffer = NULL;
         return;
     }
@@ -445,24 +428,23 @@ void loadImage(BufferPtr buf, int flag)
 
     image_buffer = buf;
 
-    if (!image_list)
+    if (image_list.empty())
         return;
-    for (i = 0; i < n_load_image; i++)
+    for (i = 0; i < image_cache.size(); i++)
     {
         if (image_cache[i])
             continue;
         while (1)
         {
-            cache = (ImageCache *)popValue(image_list);
+            cache = image_list.back();
+            image_list.pop_back();
             if (!cache)
             {
-                for (i = 0; i < n_load_image; i++)
+                for (i = 0; i < image_cache.size(); i++)
                 {
                     if (image_cache[i])
                         return;
                 }
-                image_list = NULL;
-                image_file = NULL;
                 if (image_buffer)
                     displayBuffer(image_buffer, B_NORMAL);
                 return;
@@ -503,22 +485,24 @@ void loadImage(BufferPtr buf, int flag)
     }
 }
 
-ImageCache *
+ImageCachePtr
 getImage(Image *image, URL *current, int flag)
 {
-    Str key = NULL;
-    ImageCache *cache;
+    std::string key;
+    ImageCachePtr cache;
 
     if (!w3mApp::Instance().activeImage)
         return NULL;
-    if (!image_hash)
-        image_hash = newHash_sv(100);
     if (image->cache)
         cache = image->cache;
     else
     {
-        key = Sprintf("%d;%d;%s", image->width, image->height, image->url);
-        cache = (ImageCache *)getHash_sv(image_hash, key->ptr, NULL);
+        key = Sprintf("%d;%d;%s", image->width, image->height, image->url)->ptr;
+        auto found = image_hash.find(key);
+        if (found != image_hash.end())
+        {
+            cache = found->second;
+        }
     }
     if (cache && cache->index && abs(cache->index) <= image_index - MAX_IMAGE)
     {
@@ -533,7 +517,7 @@ getImage(Image *image, URL *current, int flag)
         if (flag == IMG_FLAG_SKIP)
             return NULL;
 
-        cache = New(ImageCache);
+        cache = std::make_shared<ImageCache>();
         cache->url = image->url;
         cache->current = current;
         cache->file = tmpfname(TMPF_DFL, image->ext)->ptr;
@@ -543,20 +527,18 @@ getImage(Image *image, URL *current, int flag)
         cache->loaded = IMG_FLAG_UNLOADED;
         cache->width = image->width;
         cache->height = image->height;
-        putHash_sv(image_hash, key->ptr, (void *)cache);
+
+        image_hash.insert(std::make_pair(key, cache));
     }
     if (flag != IMG_FLAG_SKIP)
     {
         if (cache->loaded == IMG_FLAG_UNLOADED)
         {
-            if (!image_file)
-                image_file = newHash_sv(100);
-            if (!getHash_sv(image_file, cache->file, NULL))
+            auto found = image_file.find(cache->file);
+            if (found == image_file.end())
             {
-                putHash_sv(image_file, cache->file, (void *)cache);
-                if (!image_list)
-                    image_list = newGeneralList();
-                pushValue(image_list, (void *)cache);
+                image_file.insert(std::make_pair(cache->file, cache));
+                image_list.push_back(cache);
             }
         }
         if (!cache->index)
@@ -567,7 +549,7 @@ getImage(Image *image, URL *current, int flag)
     return cache;
 }
 
-int getImageSize(ImageCache *cache)
+int getImageSize(ImageCachePtr cache)
 {
     Str tmp;
     FILE *f;
@@ -620,44 +602,6 @@ int getImageSize(ImageCache *cache)
     if (cache->height == 0)
         cache->height = 1;
     tmp = Sprintf("%d;%d;%s", cache->width, cache->height, cache->url);
-    putHash_sv(image_hash, tmp->ptr, (void *)cache);
+    image_hash.insert(std::make_pair(tmp->ptr, cache));
     return true;
 }
-
-#ifdef USE_IMAGE
-#ifdef USE_XFACE
-char *
-xface2xpm(char *xface)
-{
-    Image image;
-    ImageCache *cache;
-    FILE *f;
-    struct stat st;
-
-    SKIP_BLANKS(&xface);
-    image.url = xface;
-    image.ext = ".xpm";
-    image.width = 48;
-    image.height = 48;
-    image.cache = NULL;
-    cache = getImage(&image, NULL, IMG_FLAG_AUTO);
-    if (cache->loaded & IMG_FLAG_LOADED && !stat(cache->file, &st))
-        return cache->file;
-    cache->loaded = IMG_FLAG_ERROR;
-
-    f = popen(Sprintf("%s > %s", shell_quote(auxbinFile(XFACE2XPM)),
-                      shell_quote(cache->file))
-                  ->ptr,
-              "w");
-    if (!f)
-        return NULL;
-    fputs(xface, f);
-    pclose(f);
-    if (stat(cache->file, &st) || !st.st_size)
-        return NULL;
-    cache->loaded = IMG_FLAG_LOADED | IMG_FLAG_DONT_REMOVE;
-    cache->index = 0;
-    return cache->file;
-}
-#endif
-#endif

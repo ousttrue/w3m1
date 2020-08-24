@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 struct URL;
 
 #define MAX_IMAGE 1000
@@ -16,6 +17,7 @@ struct ImageCache
     short width;
     short height;
 };
+using ImageCachePtr = std::shared_ptr<ImageCache>;
 
 enum ImageFlags
 {
@@ -44,13 +46,13 @@ struct Image
     char *map;
     char ismap;
     int touch;
-    ImageCache *cache;
+    ImageCachePtr cache;
 };
 
-void addImage(ImageCache *cache, int x, int y, int sx, int sy, int w, int h);
+void addImage(ImageCachePtr cache, int x, int y, int sx, int sy, int w, int h);
 void drawImage();
-ImageCache *getImage(Image *image, URL *current, int flag);
-int getImageSize(ImageCache *cache);
+ImageCachePtr getImage(Image *image, URL *current, int flag);
+int getImageSize(ImageCachePtr cache);
 char *xface2xpm(char *xface);
 
 class ImageManager

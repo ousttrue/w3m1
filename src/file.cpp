@@ -577,7 +577,7 @@ gopher_end:
 BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
 {
     Image image;
-    ImageCache *cache;
+    ImageCachePtr cache;
     Str tmp, tmpf;
     FILE *src = NULL;
     MySignalHandler prevtrap = NULL;
