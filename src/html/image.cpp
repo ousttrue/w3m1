@@ -1,25 +1,18 @@
 #include <string_view_util.h>
 #include <unordered_map>
 #include <list>
-#include "frontend/terminal.h"
-#include "frontend/screen.h"
-#include "html/image.h"
+#include "w3m.h"
 #include "indep.h"
 #include "file.h"
+#include "html/image.h"
+#include "frontend/terminal.h"
+#include "frontend/screen.h"
 #include "frontend/display.h"
-#include "history.h"
-#include "frontend/buffer.h"
+#include "frontend/event.h"
 #include "stream/local_cgi.h"
-#include "html/anchor.h"
 #include "loader.h"
-#include "rc.h"
-#include "myctype.h"
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <signal.h>
-#include <errno.h>
 #include <unistd.h>
-#include <sys/wait.h>
 
 static int image_index = 0;
 
@@ -43,7 +36,7 @@ static FILE *Imgdisplay_wf = NULL;
 static pid_t Imgdisplay_pid = 0;
 static int openImgdisplay();
 static void closeImgdisplay();
-int getCharSize();
+bool getCharSize();
 
 ///
 /// ImageManager
@@ -77,20 +70,18 @@ void ImageManager::initImage()
         w3mApp::Instance().activeImage = true;
 }
 
-int getCharSize()
+bool getCharSize()
 {
-    FILE *f;
-    Str tmp;
-    int w = 0, h = 0;
-
     set_environ("W3M_TTY", Terminal::ttyname_tty());
-    tmp = Strnew();
+    auto tmp = Strnew();
     if (w3mApp::Instance().Imgdisplay.find('/') == std::string::npos)
         Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
     Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -test 2>/dev/null", NULL);
-    f = popen(tmp->ptr, "r");
+    auto f = popen(tmp->ptr, "r");
     if (!f)
         return false;
+
+    int w = 0, h = 0;
     while (fscanf(f, "%d %d", &w, &h) < 0)
     {
         if (feof(f))
@@ -346,33 +337,32 @@ void showImageProgress(const BufferPtr &buf)
     }
 }
 
-void loadImage(BufferPtr buf, int flag)
+void loadImage(BufferPtr buf, ImageLoadFlags flag)
 {
-    ImageCachePtr cache;
-    struct stat st;
-    int i, draw = false;
-    /* int wait_st; */
-
     if (w3mApp::Instance().maxLoadImage > MAX_LOAD_IMAGE)
         w3mApp::Instance().maxLoadImage = MAX_LOAD_IMAGE;
     else if (w3mApp::Instance().maxLoadImage < 1)
         w3mApp::Instance().maxLoadImage = 1;
-    for (auto &cache: image_cache)
+
+    bool draw = false;
+    for (int i = 0; i < image_cache.size(); ++i)
     {
+        auto cache = image_cache[i];
         if (!cache)
             continue;
+        struct stat st;
         if (lstat(cache->touch, &st))
             continue;
         if (cache->pid)
         {
             kill(cache->pid, SIGKILL);
             /*
-	     * #ifdef HAVE_WAITPID
-	     * waitpid(cache->pid, &wait_st, 0);
-	     * #else
-	     * wait(&wait_st);
-	     * #endif
-	     */
+            * #ifdef HAVE_WAITPID
+            * waitpid(cache->pid, &wait_st, 0);
+            * #else
+            * wait(&wait_st);
+            * #endif
+            */
             cache->pid = 0;
         }
         if (!stat(cache->file, &st))
@@ -391,8 +381,9 @@ void loadImage(BufferPtr buf, int flag)
         image_cache[i] = NULL;
     }
 
-    for (auto &cache: image_cache)
+    for (int i = 0; i < image_cache.size(); ++i)
     {
+        auto cache = image_cache[i];
         if (!cache)
             continue;
         if (cache->pid)
@@ -430,10 +421,12 @@ void loadImage(BufferPtr buf, int flag)
 
     if (image_list.empty())
         return;
-    for (i = 0; i < image_cache.size(); i++)
+    for (int i = 0; i < image_cache.size(); i++)
     {
         if (image_cache[i])
             continue;
+
+        ImageCachePtr cache;
         while (1)
         {
             cache = image_list.back();
@@ -457,13 +450,12 @@ void loadImage(BufferPtr buf, int flag)
         Terminal::flush();
         if ((cache->pid = fork()) == 0)
         {
-            BufferPtr b;
             /*
-	     * setup_child(true, 0, -1);
-	     */
+            * setup_child(true, 0, -1);
+            */
             setup_child(false, 0, -1);
             w3mApp::Instance().image_source = cache->file;
-            b = loadGeneralFile(URL::Parse(cache->url, nullptr), cache->current, HttpReferrerPolicy::StrictOriginWhenCrossOrigin);
+            auto b = loadGeneralFile(URL::Parse(cache->url, nullptr), cache->current, HttpReferrerPolicy::StrictOriginWhenCrossOrigin);
             if (!b || b->real_type.empty() || !b->real_type.starts_with("image/"))
                 unlink(cache->file);
 #if defined(HAVE_SYMLINK) && defined(HAVE_LSTAT)
@@ -486,7 +478,7 @@ void loadImage(BufferPtr buf, int flag)
 }
 
 ImageCachePtr
-getImage(Image *image, URL *current, int flag)
+getImage(Image *image, URL *current, ImageFlags flag)
 {
     std::string key;
     ImageCachePtr cache;

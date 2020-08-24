@@ -3,6 +3,7 @@
 #include "html/anchor.h"
 #include "html/maparea.h"
 #include "html/form.h"
+#include "html/image.h"
 #include "termrect.h"
 #include "line.h"
 #include "link.h"
@@ -321,7 +322,7 @@ public:
     char search_header = 0;
     // https
     std::string ssl_certificate;
-    char image_flag = 0;
+    ImageFlags image_flag = IMG_FLAG_NONE;
     char image_loaded = 0;
     AnchorPtr submit = nullptr;
     std::vector<BufferPos> undo;
@@ -359,14 +360,6 @@ public:
 };
 
 BufferPtr newBuffer(const URL &url);
-
-void deleteImage(Buffer *buf);
-void getAllImage(const BufferPtr &buf);
-
-#define IMG_FLAG_START 0
-#define IMG_FLAG_STOP 1
-#define IMG_FLAG_NEXT 2
-void loadImage(BufferPtr buf, int flag);
 
 BufferPtr nullBuffer(void);
 

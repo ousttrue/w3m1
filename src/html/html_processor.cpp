@@ -125,7 +125,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
     if (!(newBuf->bufferprop & BP_FRAME))
         newBuf->document_charset = context.DocCharset();
 
-    int image_flag;
+    ImageFlags image_flag;
     if (newBuf->image_flag)
         image_flag = newBuf->image_flag;
     else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && w3mApp::Instance().autoImage)
