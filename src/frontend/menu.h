@@ -40,6 +40,7 @@ enum MouseEventTypes
 };
 
 struct Menu;
+using MenuPtr = std::shared_ptr<Menu>;
 
 struct MenuItem
 {
@@ -48,7 +49,7 @@ struct MenuItem
     int *variable;
     int value;
     Command func;
-    Menu *popup;
+    MenuPtr popup;
     std::string keys;
     std::string data;
 
@@ -57,7 +58,7 @@ struct MenuItem
 
 struct Menu
 {
-    Menu *parent;
+    MenuPtr parent;
     int cursorX;
     int cursorY;
     int x;
@@ -65,7 +66,7 @@ struct Menu
     int width;
     int height;
     int nitem;
-    MenuItem *item;
+    std::vector<MenuItem> item;
     int initial;
     int select;
     int offset;
@@ -80,29 +81,19 @@ struct Menu
     }
 };
 
-struct MenuList
-{
-    const char *id;
-    Menu *menu;
-    MenuItem *item;
-};
 
-void new_menu(Menu *menu, MenuItem *item);
-void draw_all_menu(Menu *menu);
-void draw_menu(Menu *menu);
-void draw_menu_item(Menu *menu, int mselect);
-int select_menu(Menu *menu, int mselect);
-void goto_menu(Menu *menu, int mselect, int down);
-void up_menu(Menu *menu, int n);
-void down_menu(Menu *menu, int n);
-int action_menu(Menu *menu);
-void popup_menu(Menu *parent, Menu *menu);
-void guess_menu_xy(Menu *menu, int width, int *x, int *y);
-void new_option_menu(Menu *menu, tcb::span<std::string> label, int *variable, Command func);
+void draw_all_menu(MenuPtr menu);
+void draw_menu(MenuPtr menu);
+void draw_menu_item(MenuPtr menu, int mselect);
+int select_menu(MenuPtr menu, int mselect);
+void goto_menu(MenuPtr menu, int mselect, int down);
+void up_menu(MenuPtr menu, int n);
+void down_menu(MenuPtr menu, int n);
+int action_menu(MenuPtr menu);
+void popup_menu(MenuPtr parent, MenuPtr menu);
+void guess_menu_xy(MenuPtr menu, int width, int *x, int *y);
 
-int addMenuList(MenuList **list, const char *id);
-int getMenuN(MenuList *list, std::string_view id);
-void popupMenu(int x, int y, Menu *menu);
+void popupMenu(int x, int y, MenuPtr menu);
 void optionMenu(int x, int y, tcb::span<std::string> label, int *variable, int initial, Command func);
 void mainMenu(int x, int y);
 void initMenu(void);

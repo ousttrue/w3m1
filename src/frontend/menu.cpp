@@ -1,8 +1,6 @@
 #include <stdio.h>
-
 #include "rc.h"
 #include "indep.h"
-#include "gc_helper.h"
 #include "regex.h"
 #include "public.h"
 #include "myctype.h"
@@ -180,7 +178,7 @@ static int (*MenuEscDKeymap[128])(char c) = {
 /* *INDENT-ON* */
 /* --- SelectMenu --- */
 
-static Menu SelectMenu;
+static MenuPtr SelectMenu = std::make_shared<Menu>();
 static int SelectV = 0;
 static void initSelectMenu(void);
 static void smChBuf(w3mApp *w3m, const CommandContext &context);
@@ -190,7 +188,7 @@ static int smDelBuf(char c);
 
 /* --- SelTabMenu --- */
 
-static Menu SelTabMenu;
+static MenuPtr SelTabMenu = std::make_shared<Menu>();
 static int SelTabV = 0;
 static void initSelTabMenu(void);
 static void smChTab(void);
@@ -200,17 +198,17 @@ static int smDelTab(char c);
 
 /* --- MainMenu --- */
 
-static Menu MainMenu;
+static MenuPtr MainMenu = std::make_shared<Menu>();
 
 /* FIXME: gettextize here */
 static CharacterEncodingScheme MainMenuCharset = WC_CES_US_ASCII; /* FIXME: charset of source code */
 static int MainMenuEncode = false;
 
-static MenuItem MainMenuItem[] = {
+static std::vector<MenuItem> MainMenuItem = {
     /* type        label           variable value func     popup keys data  */
     {MENU_FUNC, " Back         (b) ", NULL, 0, backBf, NULL, "b"},
-    {MENU_POPUP, " Select Buffer(s) ", NULL, 0, NULL, &SelectMenu, "s"},
-    {MENU_POPUP, " Select Tab   (t) ", NULL, 0, NULL, &SelTabMenu, "tT"},
+    {MENU_POPUP, " Select Buffer(s) ", NULL, 0, NULL, SelectMenu, "s"},
+    {MENU_POPUP, " Select Tab   (t) ", NULL, 0, NULL, SelTabMenu, "tT"},
     {MENU_FUNC, " View Source  (v) ", NULL, 0, vwSrc, NULL, "vV"},
     {MENU_FUNC, " Edit Source  (e) ", NULL, 0, editBf, NULL, "eE"},
     {MENU_FUNC, " Save Source  (S) ", NULL, 0, svSrc, NULL, "S"},
@@ -234,15 +232,40 @@ static MenuItem MainMenuItem[] = {
 
 /* --- MainMenu (END) --- */
 
-static MenuList *w3mMenuList;
+struct MenuList
+{
+    const char *id;
+    MenuPtr menu;
+    std::vector<MenuItem> item;
+};
+static std::vector<MenuList> w3mMenuList;
+int addMenuList(const char *id)
+{
+    w3mMenuList.push_back({});
+    auto list = &w3mMenuList.back();
+    list->id = id;
+    return w3mMenuList.size() - 1;
+}
 
-static Menu *CurrentMenu = NULL;
+int getMenuN(std::string_view id)
+{
+    int n = 0;
+    for (auto &list : w3mMenuList)
+    {
+        if (list.id == id)
+            return n;
+        ++n;
+    }
+    return -1;
+}
+
+static MenuPtr CurrentMenu = std::make_shared<Menu>();
 
 #define mvaddch(y, x, c) (Screen::Instance().Move(y, x), addch(c))
 #define mvaddstr(y, x, str) (Screen::Instance().Move(y, x), Screen::Instance().Puts(str))
 #define mvaddnstr(y, x, str, n) (Screen::Instance().Move(y, x), Screen::Instance().PutsColumns(str, n))
 
-void new_menu(Menu *menu, MenuItem *item)
+static void new_menu(MenuPtr menu, std::vector<MenuItem> &item)
 {
     int i, l;
     const char *p;
@@ -258,7 +281,7 @@ void new_menu(Menu *menu, MenuItem *item)
     menu->offset = 0;
     menu->active = 0;
 
-    if (item == NULL)
+    if (item.empty())
         return;
 
     for (i = 0; item[i].type != MENU_END; i++)
@@ -330,14 +353,14 @@ void Menu::geom_menu(int x, int y, bool mselect)
     this->y = win_y + 1;
 }
 
-void draw_all_menu(Menu *menu)
+void draw_all_menu(MenuPtr menu)
 {
     if (menu->parent != NULL)
         draw_all_menu(menu->parent);
     draw_menu(menu);
 }
 
-void draw_menu(Menu *menu)
+void draw_menu(MenuPtr menu)
 {
     int x, y, w;
     int i, j;
@@ -405,13 +428,13 @@ void draw_menu(Menu *menu)
     }
 }
 
-void draw_menu_item(Menu *menu, int mselect)
+void draw_menu_item(MenuPtr menu, int mselect)
 {
     mvaddnstr(menu->y + mselect - menu->offset, menu->x,
               menu->item[mselect].label.c_str(), menu->width);
 }
 
-int select_menu(Menu *menu, int mselect)
+int select_menu(MenuPtr menu, int mselect)
 {
     if (mselect < 0 || mselect >= menu->nitem)
         return (MENU_NOTHING);
@@ -437,7 +460,7 @@ int select_menu(Menu *menu, int mselect)
     return (menu->select);
 }
 
-void goto_menu(Menu *menu, int mselect, int down)
+void goto_menu(MenuPtr menu, int mselect, int down)
 {
     int select_in;
     if (mselect >= menu->nitem)
@@ -473,7 +496,7 @@ void goto_menu(Menu *menu, int mselect, int down)
     select_menu(menu, mselect);
 }
 
-void up_menu(Menu *menu, int n)
+void up_menu(MenuPtr menu, int n)
 {
     if (n < 0 || menu->offset == 0)
         return;
@@ -484,7 +507,7 @@ void up_menu(Menu *menu, int n)
     draw_menu(menu);
 }
 
-void down_menu(Menu *menu, int n)
+void down_menu(MenuPtr menu, int n)
 {
     if (n < 0 || menu->offset + menu->height == menu->nitem)
         return;
@@ -495,7 +518,7 @@ void down_menu(Menu *menu, int n)
     draw_menu(menu);
 }
 
-int action_menu(Menu *menu)
+int action_menu(MenuPtr menu)
 {
     char c;
     int mselect;
@@ -550,11 +573,11 @@ int action_menu(Menu *menu)
     return (0);
 }
 
-void popup_menu(Menu *parent, Menu *menu)
+void popup_menu(MenuPtr parent, MenuPtr menu)
 {
     int active = 1;
 
-    if (menu->item == NULL || menu->nitem == 0)
+    if (menu->item.empty())
         return;
     if (menu->active)
         return;
@@ -581,7 +604,7 @@ void popup_menu(Menu *parent, Menu *menu)
     CurrentMenu = parent;
 }
 
-void guess_menu_xy(Menu *parent, int width, int *x, int *y)
+void guess_menu_xy(MenuPtr parent, int width, int *x, int *y)
 {
     *x = parent->x + parent->width + FRAME_WIDTH - 1;
     if (*x + width + FRAME_WIDTH > Terminal::columns())
@@ -594,12 +617,12 @@ void guess_menu_xy(Menu *parent, int width, int *x, int *y)
     *y = parent->y + parent->select - parent->offset;
 }
 
-void new_option_menu(Menu *menu, tcb::span<std::string> label, int *variable, Command func)
+void new_option_menu(MenuPtr menu, tcb::span<std::string> label, int *variable, Command func)
 {
     if (label.empty())
         return;
 
-    auto item = New_N(MenuItem, label.size() + 1);
+    std::vector<MenuItem> item(label.size() + 1);
     for (int i = 0; i < label.size(); i++)
     {
         auto &p = label[i];
@@ -847,9 +870,9 @@ mSusp(char c)
 
 static std::string SearchString;
 
-int (*menuSearchRoutine)(Menu *, std::string_view, int);
+int (*menuSearchRoutine)(MenuPtr, std::string_view, int);
 
-static int menuForwardSearch(Menu *menu, std::string_view str, int from)
+static int menuForwardSearch(MenuPtr menu, std::string_view str, int from)
 {
     int i;
     const char *p;
@@ -867,9 +890,9 @@ static int menuForwardSearch(Menu *menu, std::string_view str, int from)
     return -1;
 }
 
-static int menu_search_forward(Menu *menu, int from)
+static int menu_search_forward(MenuPtr menu, int from)
 {
-    std::string_view str = inputStrHist("Forward: ", NULL, w3mApp::Instance().TextHist, 1);
+    std::string_view str = inputStrHist("Forward: ", "", w3mApp::Instance().TextHist, 1);
     if (str.empty())
         str = SearchString;
     if (str.empty())
@@ -896,7 +919,7 @@ mSrchF(char c)
     return (MENU_NOTHING);
 }
 
-static int menuBackwardSearch(Menu *menu, std::string_view str, int from)
+static int menuBackwardSearch(MenuPtr menu, std::string_view str, int from)
 {
     int i;
     const char *p;
@@ -914,9 +937,9 @@ static int menuBackwardSearch(Menu *menu, std::string_view str, int from)
     return -1;
 }
 
-static int menu_search_backward(Menu *menu, int from)
+static int menu_search_backward(MenuPtr menu, int from)
 {
-    std::string_view str = inputStrHist("Backward: ", NULL, w3mApp::Instance().TextHist, 1);
+    std::string_view str = inputStrHist("Backward: ", "", w3mApp::Instance().TextHist, 1);
     if (str.empty())
         str = SearchString;
     if (str.empty())
@@ -941,9 +964,9 @@ static int mSrchB(char c)
     return (MENU_NOTHING);
 }
 
-static int menu_search_next_previous(Menu *menu, int from, int reverse)
+static int menu_search_next_previous(MenuPtr menu, int from, int reverse)
 {
-    static int (*routine[2])(Menu *, std::string_view, int) = {
+    static int (*routine[2])(MenuPtr, std::string_view, int) = {
         menuForwardSearch, menuBackwardSearch};
 
     if (menuSearchRoutine == NULL)
@@ -1000,7 +1023,7 @@ mMouse_scroll_line(void)
 static int
 process_mMouse(int btn, int x, int y)
 {
-    Menu *menu;
+    MenuPtr menu;
     int mselect, i;
     static int press_btn = MOUSE_BTN_RESET, press_x, press_y;
     char c = ' ';
@@ -1113,7 +1136,7 @@ mMouse(char c)
 
 /* --- MainMenu --- */
 
-void popupMenu(int x, int y, Menu *menu)
+void popupMenu(int x, int y, MenuPtr menu)
 {
     set_menu_frame();
 
@@ -1133,7 +1156,7 @@ void popupMenu(int x, int y, Menu *menu)
 
 void mainMenu(int x, int y)
 {
-    popupMenu(x, y, &MainMenu);
+    popupMenu(x, y, MainMenu);
 }
 
 /* --- MainMenu (END) --- */
@@ -1216,7 +1239,7 @@ initSelectMenu(void)
 static void
 smChBuf(w3mApp *w3m, const CommandContext &context)
 {
-    if (SelectV < 0 || SelectV >= SelectMenu.nitem)
+    if (SelectV < 0 || SelectV >= SelectMenu->nitem)
         return;
 
     auto tab = GetCurrentTab();
@@ -1229,7 +1252,7 @@ smDelBuf(char c)
 {
     int i, x, y, mselect;
 
-    if (CurrentMenu->select < 0 || CurrentMenu->select >= SelectMenu.nitem)
+    if (CurrentMenu->select < 0 || CurrentMenu->select >= SelectMenu->nitem)
         return (MENU_NOTHING);
 
     auto tab = GetCurrentTab();
@@ -1406,18 +1429,18 @@ smDelTab(char c)
 void optionMenu(int x, int y, tcb::span<std::string> label, int *variable, int initial,
                 Command func)
 {
-    Menu menu;
+    auto menu = std::make_shared<Menu>();
 
     set_menu_frame();
 
-    new_option_menu(&menu, label, variable, func);
-    menu.cursorX = Terminal::columns() - 1;
-    menu.cursorY = (Terminal::lines() - 1);
-    menu.x = x;
-    menu.y = y;
-    menu.initial = initial;
+    new_option_menu(menu, label, variable, func);
+    menu->cursorX = Terminal::columns() - 1;
+    menu->cursorY = (Terminal::lines() - 1);
+    menu->x = x;
+    menu->y = y;
+    menu->initial = initial;
 
-    popup_menu(NULL, &menu);
+    popup_menu(NULL, menu);
 }
 
 /* --- OptionMenu (END) --- */
@@ -1429,7 +1452,7 @@ interpret_menu(FILE *mf)
 {
     Str line;
     int in_menu = 0, nmenu = 0, nitem = 0;
-    MenuItem *item = NULL;
+    std::vector<MenuItem> *item = nullptr;
 
     CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
 
@@ -1449,7 +1472,7 @@ interpret_menu(FILE *mf)
             continue;
         if (in_menu)
         {
-            auto type = item[nitem].setMenuItem(s, p);
+            auto type = (*item)[nitem].setMenuItem(s, p);
             if (type == -1)
                 continue; /* error */
             if (type == MENU_END)
@@ -1457,9 +1480,9 @@ interpret_menu(FILE *mf)
             else
             {
                 nitem++;
-                item = New_Reuse(MenuItem, item, (nitem + 1));
-                w3mMenuList[nmenu].item = item;
-                item[nitem].type = MENU_END;
+                item->resize(nitem + 1);
+                // w3mMenuList[nmenu].item = item;
+                (*item)[nitem].type = MENU_END;
             }
         }
         else if (s == "menu")
@@ -1468,13 +1491,13 @@ interpret_menu(FILE *mf)
             if (s.size()) /* error */
                 continue;
             in_menu = 1;
-            if ((nmenu = getMenuN(w3mMenuList, s.c_str())) != -1)
-                w3mMenuList[nmenu].item = New(MenuItem);
+            if ((nmenu = getMenuN(s.c_str())) != -1)
+                w3mMenuList[nmenu].item.resize(1);
             else
-                nmenu = addMenuList(&w3mMenuList, s.c_str());
-            item = w3mMenuList[nmenu].item;
+                nmenu = addMenuList(s.c_str());
+            item = &w3mMenuList[nmenu].item;
             nitem = 0;
-            item[nitem].type = MENU_END;
+            (*item)[nitem].type = MENU_END;
         }
         else if (s == "charset" || s == "encoding")
         {
@@ -1491,16 +1514,16 @@ void initMenu(void)
     FILE *mf;
     MenuList *list;
 
-    w3mMenuList = New_N(MenuList, 3);
+    w3mMenuList.resize(3);
     w3mMenuList[0].id = "Main";
-    w3mMenuList[0].menu = &MainMenu;
+    w3mMenuList[0].menu = MainMenu;
     w3mMenuList[0].item = MainMenuItem;
     w3mMenuList[1].id = "Select";
-    w3mMenuList[1].menu = &SelectMenu;
-    w3mMenuList[1].item = NULL;
+    w3mMenuList[1].menu = SelectMenu;
+    // w3mMenuList[1].item = NULL;
     w3mMenuList[2].id = "SelectTab";
-    w3mMenuList[2].menu = &SelTabMenu;
-    w3mMenuList[2].item = NULL;
+    w3mMenuList[2].menu = SelTabMenu;
+    // w3mMenuList[2].item = NULL;
     w3mMenuList[3].id = NULL;
 
     if (!MainMenuEncode)
@@ -1510,7 +1533,7 @@ void initMenu(void)
         /* FIXME: charset that gettext(3) returns */
         MainMenuCharset = SystemCharset;
 #endif
-        for (item = MainMenuItem; item->type != MENU_END; item++)
+        for (item = MainMenuItem.data(); item->type != MENU_END; item++)
             item->label =
                 wc_conv(item->label.c_str(), MainMenuCharset, w3mApp::Instance().InnerCharset)->ptr;
         MainMenuEncode = true;
@@ -1527,11 +1550,11 @@ void initMenu(void)
         fclose(mf);
     }
 
-    for (list = w3mMenuList; list->id != NULL; list++)
+    for (auto &list : w3mMenuList)
     {
-        if (list->item == NULL)
+        if (list.item.empty())
             continue;
-        new_menu(list->menu, list->item);
+        new_menu(list.menu, list.item);
     }
 }
 
@@ -1587,40 +1610,14 @@ MenuTypes MenuItem::setMenuItem(std::string_view type, std::string_view line)
         this->type = MENU_POPUP;
         this->label = label;
         int n;
-        if ((n = getMenuN(w3mMenuList, popup.data())) == -1)
-            n = addMenuList(&w3mMenuList, popup.data());
+        if ((n = getMenuN(popup.data())) == -1)
+            n = addMenuList(popup.data());
         this->popup = w3mMenuList[n].menu;
         this->keys = keys;
         return MENU_POPUP;
     }
 
     return MENU_ERROR;
-}
-
-int addMenuList(MenuList **mlist, const char *id)
-{
-    int n;
-    MenuList *list = *mlist;
-
-    for (n = 0; list->id != NULL; list++, n++)
-        ;
-    *mlist = New_Reuse(MenuList, *mlist, (n + 2));
-    list = *mlist + n;
-    list->id = id;
-    list->menu = New(Menu);
-    list->item = New(MenuItem);
-    (list + 1)->id = NULL;
-    return n;
-}
-
-int getMenuN(MenuList *list, std::string_view id)
-{
-    for (int n = 0; list->id != NULL; list++, n++)
-    {
-        if (id == list->id)
-            return n;
-    }
-    return -1;
 }
 
 ///
@@ -1656,16 +1653,16 @@ Link *link_menu(const BufferPtr &buf)
     }
 
     set_menu_frame();
-    Menu menu;
+    MenuPtr menu = std::make_shared<Menu>();
     int linkV = -1;
-    new_option_menu(&menu, labels, &linkV, NULL);
-    menu.initial = 0;
+    new_option_menu(menu, labels, &linkV, NULL);
+    menu->initial = 0;
     auto [_x, _y] = buf->rect.globalXY();
-    menu.cursorX = _x;
-    menu.cursorY = _y;
-    menu.x = menu.cursorX + FRAME_WIDTH + 1;
-    menu.y = menu.cursorY + 2;
-    popup_menu(NULL, &menu);
+    menu->cursorX = _x;
+    menu->cursorY = _y;
+    menu->x = menu->cursorX + FRAME_WIDTH + 1;
+    menu->y = menu->cursorY + 2;
+    popup_menu(NULL, menu);
 
     if (linkV < 0 || linkV >= buf->linklist.size())
         return NULL;
@@ -1690,13 +1687,13 @@ AnchorPtr accesskey_menu(const BufferPtr &buf)
     if (!nitem)
         return NULL;
 
-    Menu menu;
+    auto menu = std::make_shared<Menu>();
     int i, key = -1;
     char *t;
     unsigned char c;
 
     std::vector<std::string> label;
-    auto ap = New_N(AnchorPtr, nitem);
+    std::vector<AnchorPtr> ap(nitem);
     int n;
     for (i = 0, n = 0; i < al.size(); i++)
     {
@@ -1710,33 +1707,33 @@ AnchorPtr accesskey_menu(const BufferPtr &buf)
         }
     }
 
-    new_option_menu(&menu, label, &key, NULL);
+    new_option_menu(menu, label, &key, NULL);
 
-    menu.initial = 0;
+    menu->initial = 0;
     auto [_x, _y] = buf->rect.globalXY();
-    menu.cursorX = _x;
-    menu.cursorY = _y;
-    menu.x = menu.cursorX + FRAME_WIDTH + 1;
-    menu.y = menu.cursorY + 2;
+    menu->cursorX = _x;
+    menu->cursorY = _y;
+    menu->x = menu->cursorX + FRAME_WIDTH + 1;
+    menu->y = menu->cursorY + 2;
     for (i = 0; i < 128; i++)
-        menu.keyselect[i] = -1;
+        menu->keyselect[i] = -1;
     for (i = 0; i < nitem; i++)
     {
         c = ap[i]->accesskey;
-        menu.keymap[(int)c] = mSelect;
-        menu.keyselect[(int)c] = i;
+        menu->keymap[(int)c] = mSelect;
+        menu->keyselect[(int)c] = i;
     }
     for (i = 0; i < nitem; i++)
     {
         c = ap[i]->accesskey;
-        if (!IS_ALPHA(c) || menu.keyselect[n] >= 0)
+        if (!IS_ALPHA(c) || menu->keyselect[n] >= 0)
             continue;
         c = TOLOWER(c);
-        menu.keymap[(int)c] = mSelect;
-        menu.keyselect[(int)c] = i;
+        menu->keymap[(int)c] = mSelect;
+        menu->keyselect[(int)c] = i;
         c = TOUPPER(c);
-        menu.keymap[(int)c] = mSelect;
-        menu.keyselect[(int)c] = i;
+        menu->keymap[(int)c] = mSelect;
+        menu->keyselect[(int)c] = i;
     }
 
     auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
@@ -1746,13 +1743,13 @@ AnchorPtr accesskey_menu(const BufferPtr &buf)
         {
             if (a->hseq == ap[i]->hseq)
             {
-                menu.initial = i;
+                menu->initial = i;
                 break;
             }
         }
     }
 
-    popup_menu(NULL, &menu);
+    popup_menu(NULL, menu);
 
     return (key >= 0) ? ap[key] : NULL;
 }
@@ -1786,7 +1783,7 @@ lmSelect(char c)
 
 AnchorPtr list_menu(const BufferPtr &buf)
 {
-    Menu menu;
+    auto menu = std::make_shared<Menu>();
     AnchorList &al = buf->href;
     int i, n, nitem = 0, key = -1, two = false;
     const char *t;
@@ -1831,29 +1828,29 @@ AnchorPtr list_menu(const BufferPtr &buf)
 
     set_menu_frame();
     set_menu_frame();
-    new_option_menu(&menu, label, &key, NULL);
+    new_option_menu(menu, label, &key, NULL);
 
-    menu.initial = 0;
+    menu->initial = 0;
     auto [_x, _y] = buf->rect.globalXY();
-    menu.cursorX = _x;
-    menu.cursorY = _y;
-    menu.x = menu.cursorX + FRAME_WIDTH + 1;
-    menu.y = menu.cursorY + 2;
+    menu->cursorX = _x;
+    menu->cursorY = _y;
+    menu->x = menu->cursorX + FRAME_WIDTH + 1;
+    menu->y = menu->cursorY + 2;
     for (i = 0; i < 128; i++)
-        menu.keyselect[i] = -1;
+        menu->keyselect[i] = -1;
     if (two)
     {
         for (i = 0; i < nlmKeys2; i++)
         {
             c = lmKeys2[i];
-            menu.keymap[(int)c] = lmGoto;
-            menu.keyselect[(int)c] = i;
+            menu->keymap[(int)c] = lmGoto;
+            menu->keyselect[(int)c] = i;
         }
         for (i = 0; i < nlmKeys; i++)
         {
             c = lmKeys[i];
-            menu.keymap[(int)c] = lmSelect;
-            menu.keyselect[(int)c] = i;
+            menu->keymap[(int)c] = lmSelect;
+            menu->keyselect[(int)c] = i;
         }
     }
     else
@@ -1861,8 +1858,8 @@ AnchorPtr list_menu(const BufferPtr &buf)
         for (i = 0; i < nitem; i++)
         {
             c = lmKeys[i];
-            menu.keymap[(int)c] = mSelect;
-            menu.keyselect[(int)c] = i;
+            menu->keymap[(int)c] = mSelect;
+            menu->keyselect[(int)c] = i;
         }
     }
 
@@ -1873,20 +1870,20 @@ AnchorPtr list_menu(const BufferPtr &buf)
         {
             if (a->hseq == ap[i]->hseq)
             {
-                menu.initial = i;
+                menu->initial = i;
                 break;
             }
         }
     }
 
-    popup_menu(NULL, &menu);
+    popup_menu(NULL, menu);
 
     return (key >= 0) ? ap[key] : NULL;
 }
 
 void PopupMenu(std::string_view data)
 {
-    Menu *menu = &MainMenu;
+    MenuPtr menu = MainMenu;
 
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1894,7 +1891,7 @@ void PopupMenu(std::string_view data)
 
     if (data.size())
     {
-        auto n = getMenuN(w3mMenuList, data);
+        auto n = getMenuN(data);
         if (n < 0)
             return;
         menu = w3mMenuList[n].menu;
@@ -1910,7 +1907,7 @@ void PopupBufferMenu()
     auto [x, y] = buf->rect.globalXY();
 
     TryGetMouseActionPosition(&x, &y);
-    popupMenu(x, y, &SelectMenu);
+    popupMenu(x, y, SelectMenu);
 }
 
 void PopupTabMenu()
@@ -1920,5 +1917,5 @@ void PopupTabMenu()
     auto [x, y] = buf->rect.globalXY();
 
     TryGetMouseActionPosition(&x, &y);
-    popupMenu(x, y, &SelTabMenu);
+    popupMenu(x, y, SelTabMenu);
 }
