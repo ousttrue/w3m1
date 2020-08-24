@@ -54,8 +54,6 @@ public:
     //
     int Tabstop = 8;
     int IndentIncr = 4;
-    double pixel_per_char = 7.0;
-    double pixel_per_line = 14.0;
     bool RenderFrame = false;
     bool TargetSelf = false;
     int open_tab_blank = false;
@@ -74,14 +72,8 @@ public:
     DisplayInsDel displayInsDel = DISPLAY_INS_DEL_NORMAL;
     bool ignore_null_img_alt = true;
     bool view_unseenobject = false;
-    bool displayImage = true;
-    int pseudoInlines = true;
-    bool autoImage = true;
-    int maxLoadImage = 4;
-    bool useExtImageViewer = true;
-    double image_scale = 100;
-    std::string Imgdisplay = IMGDISPLAY;
-    bool image_map_list = true;
+    bool pseudoInlines = true;
+
     bool FoldLine = false;
     bool showLineNum = false;
     bool show_srch_str = true;
@@ -177,7 +169,6 @@ public:
     int searchKeyNum();
 
     bool do_download = false;
-    std::string image_source;
     bool WrapSearch = false;
     bool no_rc_dir = false;
     std::string rc_dir;
@@ -212,11 +203,6 @@ public:
     bool squeezeBlankLine = false;
     bool Do_not_use_ti_te = false;
     std::string displayTitleTerm;
-
-    // image
-    bool set_pixel_per_char = false;
-    bool set_pixel_per_line = false;
-    bool activeImage = false;
 
     // hittory
     Hist *LoadHist = nullptr;
@@ -279,7 +265,7 @@ inline Str Str_conv_to_halfdump(Str x)
 }
 inline int RELATIVE_WIDTH(int w)
 {
-    return (w >= 0) ? (int)(w / w3mApp::Instance().pixel_per_char) : w;
+    return (w >= 0) ? (int)(w / ImageManager::Instance().pixel_per_char) : w;
 }
 
 BufferPtr DownloadListBuffer(w3mApp *w3m);

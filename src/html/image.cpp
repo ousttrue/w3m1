@@ -49,18 +49,18 @@ public:
             /* child */
             std::string cmd;
             setup_child(false, 2, -1);
-            if (!strchr(w3mApp::Instance().Imgdisplay.c_str(), '/'))
-                cmd = svu::join("", w3m_auxbin_dir(), "/", w3mApp::Instance().Imgdisplay);
+            if (!strchr(ImageManager::Instance().Imgdisplay.c_str(), '/'))
+                cmd = svu::join("", w3m_auxbin_dir(), "/", ImageManager::Instance().Imgdisplay);
             else
-                cmd = w3mApp::Instance().Imgdisplay;
+                cmd = ImageManager::Instance().Imgdisplay;
             myExec(cmd.c_str());
             /* XXX: ifdef __EMX__, use start /f ? */
         }
-        w3mApp::Instance().activeImage = true;
+        ImageManager::Instance().activeImage = true;
         return true;
     err0:
         Imgdisplay_pid = 0;
-        w3mApp::Instance().activeImage = false;
+        ImageManager::Instance().activeImage = false;
         return false;
     }
 
@@ -167,19 +167,19 @@ ImageManager::~ImageManager()
 
 void ImageManager::initImage()
 {
-    // if (w3mApp::Instance().displayImage)
+    // if (ImageManager::Instance().displayImage)
     // initImage();
-    // if (w3mApp::Instance().fmInitialized && w3mApp::Instance().displayImage)
+    // if (this->fmInitialized && ImageManager::Instance().displayImage)
 
-    if (w3mApp::Instance().activeImage)
+    if (ImageManager::Instance().activeImage)
         return;
     if (getCharSize())
-        w3mApp::Instance().activeImage = true;
+        ImageManager::Instance().activeImage = true;
 }
 
 void ImageManager::addImage(const ImageCachePtr &cache, int x, int y, int sx, int sy, int w, int h)
 {
-    if (!w3mApp::Instance().activeImage)
+    if (!ImageManager::Instance().activeImage)
         return;
 
     auto i = std::make_shared<TerminalImage>();
@@ -195,9 +195,9 @@ void ImageManager::addImage(const ImageCachePtr &cache, int x, int y, int sx, in
 
 void ImageManager::drawImage()
 {
-    if (!w3mApp::Instance().activeImage)
+    if (!ImageManager::Instance().activeImage)
         return;
-    if (!w3mApp::Instance().displayImage)
+    if (!ImageManager::Instance().displayImage)
         return;
 
     for (auto &i : terminal_image)
@@ -215,7 +215,7 @@ void ImageManager::drawImage()
 
 void ImageManager::clearImage()
 {
-    if (!w3mApp::Instance().activeImage)
+    if (!ImageManager::Instance().activeImage)
         return;
     if (!terminal_image.empty())
         return;
@@ -315,13 +315,13 @@ void showImageProgress(const BufferPtr &buf)
 
 void ImageManager::loadImage(const BufferPtr &buf, ImageLoadFlags flag)
 {
-    if (!w3mApp::Instance().activeImage)
+    if (!ImageManager::Instance().activeImage)
         return;
 
-    if (w3mApp::Instance().maxLoadImage > MAX_LOAD_IMAGE)
-        w3mApp::Instance().maxLoadImage = MAX_LOAD_IMAGE;
-    else if (w3mApp::Instance().maxLoadImage < 1)
-        w3mApp::Instance().maxLoadImage = 1;
+    if (ImageManager::Instance().maxLoadImage > MAX_LOAD_IMAGE)
+        ImageManager::Instance().maxLoadImage = MAX_LOAD_IMAGE;
+    else if (ImageManager::Instance().maxLoadImage < 1)
+        ImageManager::Instance().maxLoadImage = 1;
 
     bool draw = false;
     for (int i = 0; i < image_cache.size(); ++i)
@@ -433,7 +433,7 @@ void ImageManager::loadImage(const BufferPtr &buf, ImageLoadFlags flag)
             * setup_child(true, 0, -1);
             */
             setup_child(false, 0, -1);
-            w3mApp::Instance().image_source = cache->file;
+            this->image_source = cache->file;
             auto b = loadGeneralFile(URL::Parse(cache->url, nullptr), cache->current, HttpReferrerPolicy::StrictOriginWhenCrossOrigin);
             if (!b || b->real_type.empty() || !b->real_type.starts_with("image/"))
                 unlink(cache->file);
@@ -462,7 +462,7 @@ getImage(Image *image, URL *current, ImageFlags flag)
     std::string key;
     ImageCachePtr cache;
 
-    if (!w3mApp::Instance().activeImage)
+    if (!ImageManager::Instance().activeImage)
         return NULL;
     if (image->cache)
         cache = image->cache;
@@ -526,15 +526,15 @@ int getImageSize(ImageCachePtr cache)
     FILE *f;
     int w = 0, h = 0;
 
-    if (!w3mApp::Instance().activeImage)
+    if (!ImageManager::Instance().activeImage)
         return false;
     if (!cache || !(cache->loaded & IMG_FLAG_LOADED) ||
         (cache->width > 0 && cache->height > 0))
         return false;
     tmp = Strnew();
-    if (w3mApp::Instance().Imgdisplay.find('/') == std::string::npos)
+    if (ImageManager::Instance().Imgdisplay.find('/') == std::string::npos)
         Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
-    Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -size ", shell_quote(cache->file), NULL);
+    Strcat_m_charp(tmp, ImageManager::Instance().Imgdisplay, " -size ", shell_quote(cache->file), NULL);
     f = popen(tmp->ptr, "r");
     if (!f)
         return false;
@@ -547,10 +547,10 @@ int getImageSize(ImageCachePtr cache)
 
     if (!(w > 0 && h > 0))
         return false;
-    w = (int)(w * w3mApp::Instance().image_scale / 100 + 0.5);
+    w = (int)(w * ImageManager::Instance().image_scale / 100 + 0.5);
     if (w == 0)
         w = 1;
-    h = (int)(h * w3mApp::Instance().image_scale / 100 + 0.5);
+    h = (int)(h * ImageManager::Instance().image_scale / 100 + 0.5);
     if (h == 0)
         h = 1;
     if (cache->width < 0 && cache->height < 0)
@@ -581,9 +581,9 @@ bool ImageManager::getCharSize()
 {
     set_environ("W3M_TTY", Terminal::ttyname_tty());
     auto tmp = Strnew();
-    if (w3mApp::Instance().Imgdisplay.find('/') == std::string::npos)
+    if (ImageManager::Instance().Imgdisplay.find('/') == std::string::npos)
         Strcat_m_charp(tmp, w3m_auxbin_dir(), "/", NULL);
-    Strcat_m_charp(tmp, w3mApp::Instance().Imgdisplay, " -test 2>/dev/null", NULL);
+    Strcat_m_charp(tmp, ImageManager::Instance().Imgdisplay, " -test 2>/dev/null", NULL);
 
     int w = 0, h = 0;
     {
@@ -602,9 +602,9 @@ bool ImageManager::getCharSize()
     if (w <= 0 || h <= 0)
         return false;
 
-    if (!w3mApp::Instance().set_pixel_per_char)
-        w3mApp::Instance().pixel_per_char = (int)(1.0 * w / Terminal::columns() + 0.5);
-    if (!w3mApp::Instance().set_pixel_per_line)
-        w3mApp::Instance().pixel_per_line = (int)(1.0 * h / Terminal::lines() + 0.5);
+    if (!this->set_pixel_per_char)
+        this->pixel_per_char = (int)(1.0 * w / Terminal::columns() + 0.5);
+    if (!this->set_pixel_per_line)
+        this->pixel_per_line = (int)(1.0 * h / Terminal::lines() + 0.5);
     return true;
 }

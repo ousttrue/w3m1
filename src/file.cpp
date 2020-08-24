@@ -784,7 +784,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
         buf = openPagerBuffer(stream, content_charset);
         buf->type = "text/plain";
     }
-    else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !w3mApp::Instance().useExtImageViewer &&
+    else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && !ImageManager::Instance().useExtImageViewer &&
              t.starts_with("image/"))
     {
         // *GetCurBaseUrl() = URL::Parse("-", NULL);

@@ -627,8 +627,8 @@ auto sections = make_array(
                  {
                      {"tabstop", P_NZINT, PI_TEXT, w3mApp::Instance().Tabstop, CMT_TABSTOP},
                      {"indent_incr", P_NZINT, PI_TEXT, w3mApp::Instance().IndentIncr, CMT_INDENT_INCR},
-                     {"pixel_per_char", P_PIXELS, PI_TEXT, w3mApp::Instance().pixel_per_char, CMT_PIXEL_PER_CHAR},
-                     {"pixel_per_line", P_PIXELS, PI_TEXT, w3mApp::Instance().pixel_per_line, CMT_PIXEL_PER_LINE},
+                     {"pixel_per_char", P_PIXELS, PI_TEXT, ImageManager::Instance().pixel_per_char, CMT_PIXEL_PER_CHAR},
+                     {"pixel_per_line", P_PIXELS, PI_TEXT, ImageManager::Instance().pixel_per_line, CMT_PIXEL_PER_LINE},
                      {"frame", P_CHARINT, PI_ONOFF, w3mApp::Instance().RenderFrame, CMT_FRAME},
                      {"target_self", P_CHARINT, PI_ONOFF, w3mApp::Instance().TargetSelf, CMT_TSELF},
                      {"open_tab_blank", P_INT, PI_ONOFF, w3mApp::Instance().open_tab_blank, CMT_OPEN_TAB_BLANK},
@@ -649,14 +649,14 @@ auto sections = make_array(
                      {"ignore_null_img_alt", P_INT, PI_ONOFF, w3mApp::Instance().ignore_null_img_alt, CMT_IGNORE_NULL_IMG_ALT},
                      {"view_unseenobject", P_INT, PI_ONOFF, w3mApp::Instance().view_unseenobject, CMT_VIEW_UNSEENOBJECTS},
                      /* XXX: emacs-w3m force to off display_image even if image options off */
-                     {"display_image", P_INT, PI_ONOFF, w3mApp::Instance().displayImage, CMT_DISP_IMAGE},
+                     {"display_image", P_INT, PI_ONOFF, ImageManager::Instance().displayImage, CMT_DISP_IMAGE},
                      {"pseudo_inlines", P_INT, PI_ONOFF, w3mApp::Instance().pseudoInlines, CMT_PSEUDO_INLINES},
-                     {"auto_image", P_INT, PI_ONOFF, w3mApp::Instance().autoImage, CMT_AUTO_IMAGE},
-                     {"max_load_image", P_INT, PI_TEXT, w3mApp::Instance().maxLoadImage, CMT_MAX_LOAD_IMAGE},
-                     {"ext_image_viewer", P_INT, PI_ONOFF, w3mApp::Instance().useExtImageViewer, CMT_EXT_IMAGE_VIEWER},
-                     {"image_scale", P_SCALE, PI_TEXT, w3mApp::Instance().image_scale, CMT_IMAGE_SCALE},
-                     {"imgdisplay", P_STRING, PI_TEXT, w3mApp::Instance().Imgdisplay, CMT_IMGDISPLAY},
-                     {"image_map_list", P_INT, PI_ONOFF, w3mApp::Instance().image_map_list, CMT_IMAGE_MAP_LIST},
+                     {"auto_image", P_INT, PI_ONOFF, ImageManager::Instance().autoImage, CMT_AUTO_IMAGE},
+                     {"max_load_image", P_INT, PI_TEXT, ImageManager::Instance().maxLoadImage, CMT_MAX_LOAD_IMAGE},
+                     {"ext_image_viewer", P_INT, PI_ONOFF, ImageManager::Instance().useExtImageViewer, CMT_EXT_IMAGE_VIEWER},
+                     {"image_scale", P_SCALE, PI_TEXT, ImageManager::Instance().image_scale, CMT_IMAGE_SCALE},
+                     {"imgdisplay", P_STRING, PI_TEXT, ImageManager::Instance().Imgdisplay, CMT_IMGDISPLAY},
+                     {"image_map_list", P_INT, PI_ONOFF, ImageManager::Instance().image_map_list, CMT_IMAGE_MAP_LIST},
                      {"fold_line", P_INT, PI_ONOFF, w3mApp::Instance().FoldLine, CMT_FOLD_LINE},
                      {"show_lnum", P_INT, PI_ONOFF, w3mApp::Instance().showLineNum, CMT_SHOW_NUM},
                      {"show_srch_str", P_INT, PI_ONOFF, w3mApp::Instance().show_srch_str, CMT_SHOW_SRCH_STR},
@@ -1487,7 +1487,7 @@ load_option_panel(void)
         {
             Strcat_m_charp(src, "<tr><td>", param.comment, NULL);
             src->Push(Sprintf("</td><td width=%d>",
-                              (int)(28 * w3mApp::Instance().pixel_per_char)));
+                              (int)(28 * ImageManager::Instance().pixel_per_char)));
             switch (param.inputtype)
             {
             case PI_TEXT:

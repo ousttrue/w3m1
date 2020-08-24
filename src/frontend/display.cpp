@@ -563,7 +563,7 @@ static void redrawNLine(const BufferPtr &buf)
         Screen::Instance().CtrlToBottomEol();
     }
 
-    if (!(w3mApp::Instance().activeImage && w3mApp::Instance().displayImage &&
+    if (!(ImageManager::Instance().activeImage && ImageManager::Instance().displayImage &&
           buf->img))
         return;
 
@@ -617,12 +617,12 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                     buf->need_reshape = true;
                 }
                 x = (int)((rcol - column + buf->rect.rootX) *
-                          w3mApp::Instance().pixel_per_char);
-                y = (int)(i * w3mApp::Instance().pixel_per_line);
+                          ImageManager::Instance().pixel_per_char);
+                y = (int)(i * ImageManager::Instance().pixel_per_line);
                 sx = (int)((rcol - l->COLPOS(a->start.pos)) *
-                           w3mApp::Instance().pixel_per_char);
+                           ImageManager::Instance().pixel_per_char);
                 sy = (int)((l->linenumber - image->y) *
-                           w3mApp::Instance().pixel_per_line);
+                           ImageManager::Instance().pixel_per_line);
                 if (sx == 0 && x + image->xoffset >= 0)
                     x += image->xoffset;
                 else
@@ -634,16 +634,16 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                 if (image->width > 0)
                     w = image->width - sx;
                 else
-                    w = (int)(8 * w3mApp::Instance().pixel_per_char - sx);
+                    w = (int)(8 * ImageManager::Instance().pixel_per_char - sx);
                 if (image->height > 0)
                     h = image->height - sy;
                 else
-                    h = (int)(w3mApp::Instance().pixel_per_line - sy);
+                    h = (int)(ImageManager::Instance().pixel_per_line - sy);
                 if (w >
-                    (int)((buf->rect.right()) * w3mApp::Instance().pixel_per_char - x))
-                    w = (int)((buf->rect.right()) * w3mApp::Instance().pixel_per_char - x);
-                if (h > (int)((Terminal::lines() - 1) * w3mApp::Instance().pixel_per_line - y))
-                    h = (int)((Terminal::lines() - 1) * w3mApp::Instance().pixel_per_line - y);
+                    (int)((buf->rect.right()) * ImageManager::Instance().pixel_per_char - x))
+                    w = (int)((buf->rect.right()) * ImageManager::Instance().pixel_per_char - x);
+                if (h > (int)((Terminal::lines() - 1) * ImageManager::Instance().pixel_per_line - y))
+                    h = (int)((Terminal::lines() - 1) * ImageManager::Instance().pixel_per_line - y);
                 ImageManager::Instance().addImage(cache, x, y, sx, sy, w, h);
                 image->touch = image_touch;
                 draw_image_flag = true;
@@ -964,7 +964,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     if (mode == B_FORCE_REDRAW || mode == B_SCROLL || mode == B_REDRAW_IMAGE ||
         cline != buf->TopLine() || ccolumn != buf->currentColumn)
     {
-        if (w3mApp::Instance().activeImage &&
+        if (ImageManager::Instance().activeImage &&
             (mode == B_REDRAW_IMAGE || cline != buf->TopLine() ||
              ccolumn != buf->currentColumn))
         {

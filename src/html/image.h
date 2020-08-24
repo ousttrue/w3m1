@@ -2,6 +2,8 @@
 #include <memory>
 struct URL;
 
+#define IMGDISPLAY   "w3mimgdisplay"
+
 #define MAX_IMAGE 1000
 #define MAX_IMAGE_SIZE 2048
 
@@ -73,7 +75,25 @@ class ImageManager
     ImageManager &operator=(const ImageManager &) = delete;
     bool getCharSize();
 
+    // 
+    bool set_pixel_per_char = false;
+    bool set_pixel_per_line = false;
+
 public:
+    bool activeImage = false;
+    std::string image_source;
+
+    // RC
+    double pixel_per_char = 7.0;
+    double pixel_per_line = 14.0;
+    bool displayImage = true;
+    bool autoImage = true;
+    int maxLoadImage = 4;
+    bool useExtImageViewer = true;
+    double image_scale = 100;
+    std::string Imgdisplay = IMGDISPLAY;
+    bool image_map_list = true;
+
     static ImageManager &Instance()
     {
         static ImageManager s_instance;

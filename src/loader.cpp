@@ -435,7 +435,7 @@ static int doFileMove(const char *tmpf, const char *defstr)
 
 BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, const char *t)
 {
-    if (w3mApp::Instance().image_source.size())
+    if (ImageManager::Instance().image_source.size())
         return NULL;
 
     auto tmp = tmpfname(TMPF_SRC, ".html");

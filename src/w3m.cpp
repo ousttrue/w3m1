@@ -357,19 +357,19 @@ void w3mApp::mainloop()
 
         mySignal(SIGWINCH, resize_hook);
 
-        if (activeImage && displayImage && GetCurrentTab()->GetCurrentBuffer()->img &&
-            !GetCurrentTab()->GetCurrentBuffer()->image_loaded)
-        {
-            do
-            {
+        // if (activeImage && displayImage && GetCurrentTab()->GetCurrentBuffer()->img &&
+        //     !GetCurrentTab()->GetCurrentBuffer()->image_loaded)
+        // {
+        //     do
+        //     {
 
-                if (need_resize_screen())
-                    resize_screen();
+        //         if (need_resize_screen())
+        //             resize_screen();
 
-                ImageManager::Instance().loadImage(GetCurrentTab()->GetCurrentBuffer(), IMG_FLAG_NEXT);
-            } while (Terminal::sleep_till_anykey(1, 0) <= 0);
-        }
-        else
+        //         ImageManager::Instance().loadImage(GetCurrentTab()->GetCurrentBuffer(), IMG_FLAG_NEXT);
+        //     } while (Terminal::sleep_till_anykey(1, 0) <= 0);
+        // }
+        // else
         // ここで入力をブロックする
         {
             do

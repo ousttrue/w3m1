@@ -701,7 +701,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
 #ifdef USE_IMAGE
     int w, i, nw, ni = 1, n, w0 = -1, i0 = -1;
     int align, xoffset, yoffset, top, bottom, ismap = 0;
-    int use_image = w3mApp::Instance().activeImage && w3mApp::Instance().displayImage;
+    int use_image = ImageManager::Instance().activeImage && ImageManager::Instance().displayImage;
 #else
     int w, i, nw, n;
 #endif
@@ -723,7 +723,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
         if (w < 0)
         {
             if (width > 0)
-                w = (int)(-width * w3mApp::Instance().pixel_per_char * w / 100 + 0.5);
+                w = (int)(-width * ImageManager::Instance().pixel_per_char * w / 100 + 0.5);
             else
                 w = -1;
         }
@@ -732,7 +732,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
         {
             if (w > 0)
             {
-                w = (int)(w * w3mApp::Instance().image_scale / 100 + 0.5);
+                w = (int)(w * ImageManager::Instance().image_scale / 100 + 0.5);
                 if (w == 0)
                     w = 1;
                 else if (w > MAX_IMAGE_SIZE)
@@ -749,7 +749,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
         {
             if (i > 0)
             {
-                i = (int)(i * w3mApp::Instance().image_scale / 100 + 0.5);
+                i = (int)(i * ImageManager::Instance().image_scale / 100 + 0.5);
                 if (i == 0)
                     i = 1;
                 else if (i > MAX_IMAGE_SIZE)
@@ -838,12 +838,12 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
                 i = i0 = image.cache->height;
             }
             if (w < 0)
-                w = 8 * w3mApp::Instance().pixel_per_char;
+                w = 8 * ImageManager::Instance().pixel_per_char;
             if (i < 0)
-                i = w3mApp::Instance().pixel_per_line;
+                i = ImageManager::Instance().pixel_per_line;
         }
-        nw = (w > 3) ? (int)((w - 3) / w3mApp::Instance().pixel_per_char + 1) : 1;
-        ni = (i > 3) ? (int)((i - 3) / w3mApp::Instance().pixel_per_line + 1) : 1;
+        nw = (w > 3) ? (int)((w - 3) / ImageManager::Instance().pixel_per_char + 1) : 1;
+        ni = (i > 3) ? (int)((i - 3) / ImageManager::Instance().pixel_per_line + 1) : 1;
         tmp->Push(
             Sprintf("<pre_int><img_alt hseq=\"%d\" src=\"", cur_iseq++));
         pre_int = true;
@@ -851,8 +851,8 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
     else
     {
         if (w < 0)
-            w = 12 * w3mApp::Instance().pixel_per_char;
-        nw = w ? (int)((w - 1) / w3mApp::Instance().pixel_per_char + 1) : 1;
+            w = 12 * ImageManager::Instance().pixel_per_char;
+        nw = w ? (int)((w - 1) / ImageManager::Instance().pixel_per_char + 1) : 1;
         if (r)
         {
             tmp->Push("<pre_int>");
@@ -886,29 +886,29 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
             top = ni / 2;
             bottom = top;
             if (top * 2 == ni)
-                yoffset = (int)(((ni + 1) * w3mApp::Instance().pixel_per_line - i) / 2);
+                yoffset = (int)(((ni + 1) * ImageManager::Instance().pixel_per_line - i) / 2);
             else
-                yoffset = (int)((ni * w3mApp::Instance().pixel_per_line - i) / 2);
+                yoffset = (int)((ni * ImageManager::Instance().pixel_per_line - i) / 2);
             break;
         case ALIGN_BOTTOM:
             top = ni - 1;
             bottom = 0;
-            yoffset = (int)(ni * w3mApp::Instance().pixel_per_line - i);
+            yoffset = (int)(ni * ImageManager::Instance().pixel_per_line - i);
             break;
         default:
             top = ni - 1;
             bottom = 0;
-            if (ni == 1 && ni * w3mApp::Instance().pixel_per_line > i)
+            if (ni == 1 && ni * ImageManager::Instance().pixel_per_line > i)
                 yoffset = 0;
             else
             {
-                yoffset = (int)(ni * w3mApp::Instance().pixel_per_line - i);
+                yoffset = (int)(ni * ImageManager::Instance().pixel_per_line - i);
                 if (yoffset <= -2)
                     yoffset++;
             }
             break;
         }
-        xoffset = (int)((nw * w3mApp::Instance().pixel_per_char - w) / 2);
+        xoffset = (int)((nw * ImageManager::Instance().pixel_per_char - w) / 2);
         if (xoffset)
             tmp->Push(Sprintf(" xoffset=%d", xoffset));
         if (yoffset)
@@ -988,7 +988,7 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
                 tmp->Push("<pre_int>");
                 pre_int = true;
             }
-            w = w / w3mApp::Instance().pixel_per_char / SymbolWidth();
+            w = w / ImageManager::Instance().pixel_per_char / SymbolWidth();
             if (w <= 0)
                 w = 1;
             push_symbol(tmp, HR_SYMBOL, SymbolWidth(), w);

@@ -2157,8 +2157,8 @@ begin_table(int border, int spacing, int padding, int vspace, HtmlContext *seq)
     struct table *t;
     int mincell = minimum_cellspacing(border, seq);
     int rcellspacing;
-    int mincell_pixels = round(mincell * w3mApp::Instance().pixel_per_char);
-    int ppc = round(w3mApp::Instance().pixel_per_char);
+    int mincell_pixels = round(mincell * ImageManager::Instance().pixel_per_char);
+    int ppc = round(ImageManager::Instance().pixel_per_char);
 
     t = newTable();
     t->row = t->col = -1;
@@ -2892,9 +2892,9 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             if (v > 0)
             {
                 if (tbl->real_width > 0)
-                    v = -(v * 100) / (tbl->real_width * w3mApp::Instance().pixel_per_char);
+                    v = -(v * 100) / (tbl->real_width * ImageManager::Instance().pixel_per_char);
                 else
-                    v = (int)(v / w3mApp::Instance().pixel_per_char);
+                    v = (int)(v / ImageManager::Instance().pixel_per_char);
             }
 #else
             v = RELATIVE_WIDTH(v);

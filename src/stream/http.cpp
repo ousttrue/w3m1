@@ -383,7 +383,7 @@ ContentStream HttpClient::GetStream(const URL &url, const URL *base, HttpReferre
     return {url, stream, response->content_type, response->content_charset};
 
     // auto proc = loadBuffer;
-    // else if (w3mApp::Instance().activeImage && w3mApp::Instance().displayImage && !useExtImageViewer &&
+    // else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && !useExtImageViewer &&
     //          !(w3mApp::Instance().w3m_dump & ~DUMP_FRAME) && t.starts_with("image/"))
     //     proc = loadImageBuffer;
     // else if (w3mApp::Instance().w3m_backend)

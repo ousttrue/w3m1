@@ -1897,9 +1897,9 @@ void curlno(w3mApp *w3m)
 
 void dispI(w3mApp *w3m)
 {
-    w3mApp::Instance().displayImage = true;
+    ImageManager::Instance().displayImage = true;
     ImageManager::Instance().initImage();
-    if (!w3mApp::Instance().activeImage)
+    if (!ImageManager::Instance().activeImage)
         return;
     /*
      * if (!(GetCurrentTab()->GetCurrentBuffer()->type && is_html_type(GetCurrentTab()->GetCurrentBuffer()->type)))
@@ -1912,7 +1912,7 @@ void dispI(w3mApp *w3m)
 
 void stopI(w3mApp *w3m)
 {
-    if (!w3mApp::Instance().activeImage)
+    if (!ImageManager::Instance().activeImage)
         return;
     /*
      * if (!(GetCurrentTab()->GetCurrentBuffer()->type && is_html_type(GetCurrentTab()->GetCurrentBuffer()->type)))

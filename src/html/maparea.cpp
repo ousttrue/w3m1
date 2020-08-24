@@ -77,7 +77,7 @@ inMapArea(MapAreaPtr a, int x, int y)
 static int
 nearestMapArea(MapListPtr ml, int x, int y)
 {
-    int i, l, n = -1, min = -1, limit = w3mApp::Instance().pixel_per_char * w3mApp::Instance().pixel_per_char + w3mApp::Instance().pixel_per_line * w3mApp::Instance().pixel_per_line;
+    int i, l, n = -1, min = -1, limit = ImageManager::Instance().pixel_per_char * ImageManager::Instance().pixel_per_char + ImageManager::Instance().pixel_per_line * ImageManager::Instance().pixel_per_line;
 
     if (!ml)
         return n;
@@ -168,8 +168,8 @@ int getMapXY(BufferPtr buf, const AnchorPtr a, int *x, int *y)
 {
     if (!buf || !a || !a->image || !x || !y)
         return 0;
-    *x = (int)((buf->currentColumn + buf->rect.cursorX - buf->CurrentLine()->COLPOS(a->start.pos) + 0.5) * w3mApp::Instance().pixel_per_char) - a->image->xoffset;
-    *y = (int)((buf->CurrentLine()->linenumber - a->image->y + 0.5) * w3mApp::Instance().pixel_per_line) - a->image->yoffset;
+    *x = (int)((buf->currentColumn + buf->rect.cursorX - buf->CurrentLine()->COLPOS(a->start.pos) + 0.5) * ImageManager::Instance().pixel_per_char) - a->image->xoffset;
+    *y = (int)((buf->CurrentLine()->linenumber - a->image->y + 0.5) * ImageManager::Instance().pixel_per_line) - a->image->yoffset;
     if (*x <= 0)
         *x = 1;
     if (*y <= 0)
@@ -201,7 +201,7 @@ MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const AnchorPtr &a_i
     {
         initial = 0;
     }
-    else if (!w3mApp::Instance().image_map_list)
+    else if (!ImageManager::Instance().image_map_list)
     {
         selected = initial;
         use_label = false;
