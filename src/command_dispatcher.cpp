@@ -124,6 +124,8 @@ void SetPrevKey(int key)
     g_prev_key = key;
 }
 
+CommandContext context;
+
 void DispatchKey(int c)
 {
     if (IS_ASCII(c))
@@ -144,7 +146,7 @@ void DispatchKey(int c)
             // auto command =
             set_buffer_environ(GetCurrentTab()->GetCurrentBuffer());
             GetCurrentTab()->GetCurrentBuffer()->SavePosition();
-            GlobalKeymap[c](&w3mApp::Instance());
+            GlobalKeymap[c](&w3mApp::Instance(), context);
             set_prec_num(0);
         }
     }
@@ -180,7 +182,7 @@ static void _escKeyProc(int c, int esc, Command map[])
     // }
     SetCurrentKey(esc | c);
     DebugPrint(map, c);
-    map[c](&w3mApp::Instance());
+    map[c](&w3mApp::Instance(), context);
 }
 
 void escKeyProc(char c)
@@ -256,7 +258,7 @@ void CommandDispatcher::ExecuteCommand(std::string_view data)
         w3mApp::Instance().CurrentCmdData = p;
 
         Terminal::mouse_on();
-        cmd(&w3mApp::Instance());
+        cmd(&w3mApp::Instance(), context);
         Terminal::mouse_off();
 
         w3mApp::Instance().CurrentCmdData.clear();

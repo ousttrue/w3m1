@@ -302,7 +302,7 @@ void w3mApp::mainloop()
         if (add_download_list())
         {
             set_add_download_list(false);
-            ldDL(&w3mApp::Instance());
+            ldDL(&w3mApp::Instance(), {});
         }
 
         auto tab = GetCurrentTab();
@@ -335,7 +335,7 @@ void w3mApp::mainloop()
                     ClearCurrentKey();
                     ClearCurrentKeyData();
                     CurrentCmdData = (const char *)CurrentAlarm()->data;
-                    CurrentAlarm()->cmd(&w3mApp::Instance());
+                    CurrentAlarm()->cmd(&w3mApp::Instance(), {});
                     CurrentCmdData.clear();
                     continue;
                 }

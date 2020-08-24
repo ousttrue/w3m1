@@ -39,30 +39,30 @@
 #include <signal.h>
 
 /* do nothing */
-void nulcmd(w3mApp *w3m)
+void nulcmd(w3mApp *w3m, const CommandContext &context)
 {
 }
 
-void escmap(w3mApp *w3m)
+void escmap(w3mApp *w3m, const CommandContext &context)
 {
     char c = Terminal::getch();
     escKeyProc(c);
 }
 
-void escbmap(w3mApp *w3m)
+void escbmap(w3mApp *w3m, const CommandContext &context)
 {
     char c = Terminal::getch();
     escbKeyProc(c);
 }
 
-void multimap(w3mApp *w3m)
+void multimap(w3mApp *w3m, const CommandContext &context)
 {
     char c = Terminal::getch();
     MultiKeyProc(c);
 }
 
 /* Move page forward */
-void pgFore(w3mApp *w3m)
+void pgFore(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -79,7 +79,7 @@ void pgFore(w3mApp *w3m)
 }
 
 /* Move page backward */
-void pgBack(w3mApp *w3m)
+void pgBack(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -96,7 +96,7 @@ void pgBack(w3mApp *w3m)
 }
 
 /* 1 line up */
-void lup1(w3mApp *w3m)
+void lup1(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -105,7 +105,7 @@ void lup1(w3mApp *w3m)
 }
 
 /* 1 line down */
-void ldown1(w3mApp *w3m)
+void ldown1(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -114,7 +114,7 @@ void ldown1(w3mApp *w3m)
 }
 
 /* move cursor position to the center of screen */
-void ctrCsrV(w3mApp *w3m)
+void ctrCsrV(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -130,7 +130,7 @@ void ctrCsrV(w3mApp *w3m)
     }
 }
 
-void ctrCsrH(w3mApp *w3m)
+void ctrCsrH(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -147,7 +147,7 @@ void ctrCsrH(w3mApp *w3m)
 }
 
 /* Redraw screen */
-void rdrwSc(w3mApp *w3m)
+void rdrwSc(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -157,41 +157,41 @@ void rdrwSc(w3mApp *w3m)
 }
 
 /* Search regular expression forward */
-void srchfor(w3mApp *w3m)
+void srchfor(w3mApp *w3m, const CommandContext &context)
 {
     srch(forwardSearch, "Forward: ");
 }
 
-void isrchfor(w3mApp *w3m)
+void isrchfor(w3mApp *w3m, const CommandContext &context)
 {
     isrch(forwardSearch, "I-search: ");
 }
 
 /* Search regular expression backward */
-void srchbak(w3mApp *w3m)
+void srchbak(w3mApp *w3m, const CommandContext &context)
 {
     srch(backwardSearch, "Backward: ");
 }
 
-void isrchbak(w3mApp *w3m)
+void isrchbak(w3mApp *w3m, const CommandContext &context)
 {
     isrch(backwardSearch, "I-search backward: ");
 }
 
 /* Search next matching */
-void srchnxt(w3mApp *w3m)
+void srchnxt(w3mApp *w3m, const CommandContext &context)
 {
     srch_nxtprv(0);
 }
 
 /* Search previous matching */
-void srchprv(w3mApp *w3m)
+void srchprv(w3mApp *w3m, const CommandContext &context)
 {
     srch_nxtprv(1);
 }
 
 /* Shift screen left */
-void shiftl(w3mApp *w3m)
+void shiftl(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -204,7 +204,7 @@ void shiftl(w3mApp *w3m)
 }
 
 /* Shift screen right */
-void shiftr(w3mApp *w3m)
+void shiftr(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -216,7 +216,7 @@ void shiftr(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void col1R(w3mApp *w3m)
+void col1R(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -235,7 +235,7 @@ void col1R(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void col1L(w3mApp *w3m)
+void col1L(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -253,7 +253,7 @@ void col1L(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void setEnv(w3mApp *w3m)
+void setEnv(w3mApp *w3m, const CommandContext &context)
 {
     char *env;
     char *var, *value;
@@ -279,7 +279,7 @@ void setEnv(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void pipeBuf(w3mApp *w3m)
+void pipeBuf(w3mApp *w3m, const CommandContext &context)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     auto cmd = w3m->searchKeyData();
@@ -331,7 +331,7 @@ void pipeBuf(w3mApp *w3m)
 }
 /* Execute shell command and read output ac pipe. */
 
-void pipesh(w3mApp *w3m)
+void pipesh(w3mApp *w3m, const CommandContext &context)
 {
     BufferPtr buf;
     char *cmd;
@@ -365,7 +365,7 @@ void pipesh(w3mApp *w3m)
 }
 /* Execute shell command and load entire output to buffer */
 
-void readsh(w3mApp *w3m)
+void readsh(w3mApp *w3m, const CommandContext &context)
 {
     BufferPtr buf;
     char *cmd;
@@ -403,7 +403,7 @@ void readsh(w3mApp *w3m)
 }
 /* Execute shell command */
 
-void execsh(w3mApp *w3m)
+void execsh(w3mApp *w3m, const CommandContext &context)
 {
     char *cmd;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
@@ -429,7 +429,7 @@ void execsh(w3mApp *w3m)
 }
 /* Load file */
 
-void ldfile(w3mApp *w3m)
+void ldfile(w3mApp *w3m, const CommandContext &context)
 {
     char *fn;
     fn = w3m->searchKeyData();
@@ -449,7 +449,7 @@ void ldfile(w3mApp *w3m)
 }
 /* Load help file */
 
-void ldhelp(w3mApp *w3m)
+void ldhelp(w3mApp *w3m, const CommandContext &context)
 {
     std::string_view lang = Network::Instance().AcceptLang;
     auto n = strcspn(lang.data(), ";, \t");
@@ -459,47 +459,47 @@ void ldhelp(w3mApp *w3m)
     cmd_loadURL(tmp->ptr, NULL, HttpReferrerPolicy::NoReferer, NULL);
 }
 
-void movL(w3mApp *w3m)
+void movL(w3mApp *w3m, const CommandContext &context)
 {
     _movL(GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2);
 }
 
-void movL1(w3mApp *w3m)
+void movL1(w3mApp *w3m, const CommandContext &context)
 {
     _movL(1);
 }
 
-void movD(w3mApp *w3m)
+void movD(w3mApp *w3m, const CommandContext &context)
 {
     _movD((GetCurrentTab()->GetCurrentBuffer()->rect.lines + 1) / 2);
 }
 
-void movD1(w3mApp *w3m)
+void movD1(w3mApp *w3m, const CommandContext &context)
 {
     _movD(1);
 }
 
-void movU(w3mApp *w3m)
+void movU(w3mApp *w3m, const CommandContext &context)
 {
     _movU((GetCurrentTab()->GetCurrentBuffer()->rect.lines + 1) / 2);
 }
 
-void movU1(w3mApp *w3m)
+void movU1(w3mApp *w3m, const CommandContext &context)
 {
     _movU(1);
 }
 
-void movR(w3mApp *w3m)
+void movR(w3mApp *w3m, const CommandContext &context)
 {
     _movR(GetCurrentTab()->GetCurrentBuffer()->rect.cols / 2);
 }
 
-void movR1(w3mApp *w3m)
+void movR1(w3mApp *w3m, const CommandContext &context)
 {
     _movR(1);
 }
 
-void movLW(w3mApp *w3m)
+void movLW(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -511,7 +511,7 @@ void movLW(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void movRW(w3mApp *w3m)
+void movRW(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -524,19 +524,19 @@ void movRW(w3mApp *w3m)
 }
 
 /* Quit */
-void quitfm(w3mApp *w3m)
+void quitfm(w3mApp *w3m, const CommandContext &context)
 {
     w3m->Quit();
 }
 
 /* Question and Quit */
-void qquitfm(w3mApp *w3m)
+void qquitfm(w3mApp *w3m, const CommandContext &context)
 {
     w3m->Quit(true);
 }
 
 /* Select buffer */
-void selBuf(w3mApp *w3m)
+void selBuf(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     int ok = false;
@@ -562,11 +562,11 @@ void selBuf(w3mApp *w3m)
             break;
 
         case 'q':
-            qquitfm(w3m);
+            qquitfm(w3m, context);
             break;
 
         case 'Q':
-            quitfm(w3m);
+            quitfm(w3m, context);
             break;
         }
     } while (!ok);
@@ -575,7 +575,7 @@ void selBuf(w3mApp *w3m)
 }
 /* Suspend (on BSD), or run interactive shell (on SysV) */
 
-void susp(w3mApp *w3m)
+void susp(w3mApp *w3m, const CommandContext &context)
 {
 #ifndef SIGSTOP
     char *shell;
@@ -598,7 +598,7 @@ void susp(w3mApp *w3m)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void goLine(w3mApp *w3m)
+void goLine(w3mApp *w3m, const CommandContext &context)
 {
     char *str = w3m->searchKeyData();
     if (prec_num())
@@ -610,18 +610,18 @@ void goLine(w3mApp *w3m)
         _goLine(inputStr("Goto line: ", ""));
 }
 
-void goLineF(w3mApp *w3m)
+void goLineF(w3mApp *w3m, const CommandContext &context)
 {
     _goLine("^");
 }
 
-void goLineL(w3mApp *w3m)
+void goLineL(w3mApp *w3m, const CommandContext &context)
 {
     _goLine("$");
 }
 
 /* Go to the beginning of the line */
-void linbeg(w3mApp *w3m)
+void linbeg(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -635,7 +635,7 @@ void linbeg(w3mApp *w3m)
 }
 
 /* Go to the bottom of the line */
-void linend(w3mApp *w3m)
+void linend(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -649,7 +649,7 @@ void linend(w3mApp *w3m)
 }
 
 /* Run editor on the current buffer */
-void editBf(w3mApp *w3m)
+void editBf(w3mApp *w3m, const CommandContext &context)
 {
     const char *fn = GetCurrentTab()->GetCurrentBuffer()->filename.c_str();
     Str cmd;
@@ -681,11 +681,11 @@ void editBf(w3mApp *w3m)
     system(cmd->ptr);
     fmInit();
     displayCurrentbuf(B_FORCE_REDRAW);
-    reload(w3m);
+    reload(w3m, context);
 }
 
 /* Run editor on the current screen */
-void editScr(w3mApp *w3m)
+void editScr(w3mApp *w3m, const CommandContext &context)
 {
     char *tmpf;
     FILE *f;
@@ -709,7 +709,7 @@ void editScr(w3mApp *w3m)
 }
 
 /* Set / unset mark */
-void _mark(w3mApp *w3m)
+void _mark(w3mApp *w3m, const CommandContext &context)
 {
     LinePtr l;
     if (!w3mApp::Instance().use_mark)
@@ -722,7 +722,7 @@ void _mark(w3mApp *w3m)
 }
 
 /* Go to next mark */
-void nextMk(w3mApp *w3m)
+void nextMk(w3mApp *w3m, const CommandContext &context)
 {
     LinePtr l;
     int i;
@@ -760,7 +760,7 @@ void nextMk(w3mApp *w3m)
 }
 /* Go to previous mark */
 
-void prevMk(w3mApp *w3m)
+void prevMk(w3mApp *w3m, const CommandContext &context)
 {
     LinePtr l;
     int i;
@@ -800,7 +800,7 @@ void prevMk(w3mApp *w3m)
 }
 /* Mark place to which the regular expression matches */
 
-void reMark(w3mApp *w3m)
+void reMark(w3mApp *w3m, const CommandContext &context)
 {
     if (!w3mApp::Instance().use_mark)
         return;
@@ -842,7 +842,7 @@ void reMark(w3mApp *w3m)
 }
 /* view inline image */
 
-void followI(w3mApp *w3m)
+void followI(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -874,13 +874,13 @@ void followI(w3mApp *w3m)
 }
 /* submit form */
 
-void submitForm(w3mApp *w3m)
+void submitForm(w3mApp *w3m, const CommandContext &context)
 {
     _followForm(true);
 }
 /* go to the top anchor */
 
-void topA(w3mApp *w3m)
+void topA(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -915,7 +915,7 @@ void topA(w3mApp *w3m)
 }
 /* go to the last anchor */
 
-void lastA(w3mApp *w3m)
+void lastA(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -951,25 +951,25 @@ void lastA(w3mApp *w3m)
 }
 /* go to the next anchor */
 
-void nextA(w3mApp *w3m)
+void nextA(w3mApp *w3m, const CommandContext &context)
 {
     _nextA(false);
 }
 /* go to the previous anchor */
 
-void prevA(w3mApp *w3m)
+void prevA(w3mApp *w3m, const CommandContext &context)
 {
     _prevA(false);
 }
 /* go to the next visited anchor */
 
-void nextVA(w3mApp *w3m)
+void nextVA(w3mApp *w3m, const CommandContext &context)
 {
     _nextA(true);
 }
 /* go to the previous visited anchor */
 
-void prevVA(w3mApp *w3m)
+void prevVA(w3mApp *w3m, const CommandContext &context)
 {
     _prevA(true);
 }
@@ -988,7 +988,7 @@ static std::tuple<bool, int, int> isMap(const BufferPtr &buf, const AnchorPtr a)
 }
 
 /* follow HREF link */
-void followA(w3mApp *w3m)
+void followA(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1068,44 +1068,44 @@ void followA(w3mApp *w3m)
 }
 
 /* go to the next left anchor */
-void nextL(w3mApp *w3m)
+void nextL(w3mApp *w3m, const CommandContext &context)
 {
     nextX(-1, 0);
 }
 
 /* go to the next left-up anchor */
 
-void nextLU(w3mApp *w3m)
+void nextLU(w3mApp *w3m, const CommandContext &context)
 {
     nextX(-1, -1);
 }
 /* go to the next right anchor */
 
-void nextR(w3mApp *w3m)
+void nextR(w3mApp *w3m, const CommandContext &context)
 {
     nextX(1, 0);
 }
 /* go to the next right-down anchor */
 
-void nextRD(w3mApp *w3m)
+void nextRD(w3mApp *w3m, const CommandContext &context)
 {
     nextX(1, 1);
 }
 /* go to the next downward anchor */
 
-void nextD(w3mApp *w3m)
+void nextD(w3mApp *w3m, const CommandContext &context)
 {
     nextY(1);
 }
 /* go to the next upward anchor */
 
-void nextU(w3mApp *w3m)
+void nextU(w3mApp *w3m, const CommandContext &context)
 {
     nextY(-1);
 }
 
 /* go to the next bufferr */
-void nextBf(w3mApp *w3m)
+void nextBf(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     int i = 0;
@@ -1120,7 +1120,7 @@ void nextBf(w3mApp *w3m)
 }
 
 /* go to the previous bufferr */
-void prevBf(w3mApp *w3m)
+void prevBf(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto prec = prec_num() ? prec_num() : 1;
@@ -1135,7 +1135,7 @@ void prevBf(w3mApp *w3m)
 }
 
 /* delete current buffer and back to the previous buffer */
-void backBf(w3mApp *w3m)
+void backBf(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     tab->Back(true);
@@ -1189,30 +1189,30 @@ void backBf(w3mApp *w3m)
 }
 
 // for local CGI replace
-void deletePrevBuf(w3mApp *w3m)
+void deletePrevBuf(w3mApp *w3m, const CommandContext &context)
 {
     GetCurrentTab()->DeleteBack();
 }
 
-void goURL(w3mApp *w3m)
+void goURL(w3mApp *w3m, const CommandContext &context)
 {
     goURL0("Goto URL: ", false);
 }
 
-void gorURL(w3mApp *w3m)
+void gorURL(w3mApp *w3m, const CommandContext &context)
 {
     goURL0("Goto relative URL: ", true);
 }
 
 /* load bookmark */
-void ldBmark(w3mApp *w3m)
+void ldBmark(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     tab->Push(URL::LocalPath(w3m->BookmarkFile));
 }
 
 /* Add current to bookmark */
-void adBmark(w3mApp *w3m)
+void adBmark(w3mApp *w3m, const CommandContext &context)
 {
     auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
                        UrlEncode((localCookie()))->ptr,
@@ -1232,19 +1232,19 @@ void adBmark(w3mApp *w3m)
 }
 /* option setting */
 
-void ldOpt(w3mApp *w3m)
+void ldOpt(w3mApp *w3m, const CommandContext &context)
 {
     // cmd_loadBuffer(load_option_panel(), BP_NO_URL, LB_NOLINK);
 }
 /* error message list */
 
-void msgs(w3mApp *w3m)
+void msgs(w3mApp *w3m, const CommandContext &context)
 {
     // cmd_loadBuffer(message_list_panel(), BP_NO_URL, LB_NOLINK);
 }
 /* page info */
 
-void pginfo(w3mApp *w3m)
+void pginfo(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     // BufferPtr buf;
@@ -1263,7 +1263,7 @@ void pginfo(w3mApp *w3m)
 }
 /* link menu */
 
-void linkMn(w3mApp *w3m)
+void linkMn(w3mApp *w3m, const CommandContext &context)
 {
     auto l = link_menu(GetCurrentTab()->GetCurrentBuffer());
     if (!l || l->url().empty())
@@ -1281,13 +1281,13 @@ void linkMn(w3mApp *w3m)
 }
 /* accesskey */
 
-void accessKey(w3mApp *w3m)
+void accessKey(w3mApp *w3m, const CommandContext &context)
 {
     anchorMn(accesskey_menu, true);
 }
 /* set an option */
 
-void setOpt(w3mApp *w3m)
+void setOpt(w3mApp *w3m, const CommandContext &context)
 {
     char *opt;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
@@ -1312,18 +1312,18 @@ void setOpt(w3mApp *w3m)
 }
 /* list menu */
 
-void listMn(w3mApp *w3m)
+void listMn(w3mApp *w3m, const CommandContext &context)
 {
     anchorMn(list_menu, true);
 }
 
-void movlistMn(w3mApp *w3m)
+void movlistMn(w3mApp *w3m, const CommandContext &context)
 {
     anchorMn(list_menu, false);
 }
 /* link,anchor,image list */
 
-void linkLst(w3mApp *w3m)
+void linkLst(w3mApp *w3m, const CommandContext &context)
 {
     BufferPtr buf;
     buf = link_list_panel(GetCurrentTab()->GetCurrentBuffer());
@@ -1337,38 +1337,38 @@ void linkLst(w3mApp *w3m)
 }
 /* cookie list */
 
-void cooLst(w3mApp *w3m)
+void cooLst(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     tab->Push(URL::Parse("w3m://cookielist"));
 }
 /* History page */
 
-void ldHist(w3mApp *w3m)
+void ldHist(w3mApp *w3m, const CommandContext &context)
 {
     // cmd_loadBuffer(historyBuffer(w3mApp::Instance().URLHist), BP_NO_URL, LB_NOLINK);
 }
 /* download HREF link */
 
-void svA(w3mApp *w3m)
+void svA(w3mApp *w3m, const CommandContext &context)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     w3mApp::Instance().do_download = true;
-    followA(w3m);
+    followA(w3m, context);
     w3mApp::Instance().do_download = false;
 }
 /* download IMG link */
 
-void svI(w3mApp *w3m)
+void svI(w3mApp *w3m, const CommandContext &context)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     w3mApp::Instance().do_download = true;
-    followI(w3m);
+    followI(w3m, context);
     w3mApp::Instance().do_download = false;
 }
 /* save buffer */
 
-void svBuf(w3mApp *w3m)
+void svBuf(w3mApp *w3m, const CommandContext &context)
 {
     char *qfile = NULL, *file;
     FILE *f;
@@ -1423,7 +1423,7 @@ void svBuf(w3mApp *w3m)
 }
 /* save source */
 
-void svSrc(w3mApp *w3m)
+void svSrc(w3mApp *w3m, const CommandContext &context)
 {
     char *file = nullptr;
     if (GetCurrentTab()->GetCurrentBuffer()->sourcefile.empty())
@@ -1441,18 +1441,18 @@ void svSrc(w3mApp *w3m)
 }
 
 /* peek URL */
-void peekURL(w3mApp *w3m)
+void peekURL(w3mApp *w3m, const CommandContext &context)
 {
     _peekURL(0);
 }
 
 /* peek URL of image */
-void peekIMG(w3mApp *w3m)
+void peekIMG(w3mApp *w3m, const CommandContext &context)
 {
     _peekURL(1);
 }
 
-void curURL(w3mApp *w3m)
+void curURL(w3mApp *w3m, const CommandContext &context)
 {
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
@@ -1484,7 +1484,7 @@ void curURL(w3mApp *w3m)
 }
 
 /* view HTML source */
-void vwSrc(w3mApp *w3m)
+void vwSrc(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1583,7 +1583,7 @@ void vwSrc(w3mApp *w3m)
 }
 
 /* reload */
-void reload(w3mApp *w3m)
+void reload(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1591,7 +1591,7 @@ void reload(w3mApp *w3m)
     {
         if (buf->buffername == w3mApp::DOWNLOAD_LIST_TITLE)
         {
-            ldDL(w3m);
+            ldDL(w3m, context);
             return;
         }
 
@@ -1721,7 +1721,7 @@ void reload(w3mApp *w3m)
              (is_html_type(newBuf->type) &&
               sbuf->type == "text/plain")))
         {
-            vwSrc(w3m);
+            vwSrc(w3m, context);
             // if (GetCurrentTab()->GetCurrentBuffer() != newBuf)
             //     GetCurrentTab()->DeleteBuffer(newBuf);
         }
@@ -1737,14 +1737,14 @@ void reload(w3mApp *w3m)
 }
 /* reshape */
 
-void reshape(w3mApp *w3m)
+void reshape(w3mApp *w3m, const CommandContext &context)
 {
     GetCurrentTab()->GetCurrentBuffer()->need_reshape = true;
     // GetCurrentTab()->GetCurrentBuffer()->Reshape();
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void docCSet(w3mApp *w3m)
+void docCSet(w3mApp *w3m, const CommandContext &context)
 {
     auto cs = w3m->searchKeyData();
     if (cs == NULL || *cs == '\0')
@@ -1760,7 +1760,7 @@ void docCSet(w3mApp *w3m)
     _docCSet(charset);
 }
 
-void defCSet(w3mApp *w3m)
+void defCSet(w3mApp *w3m, const CommandContext &context)
 {
     auto cs = w3m->searchKeyData();
     if (cs == NULL || *cs == '\0')
@@ -1773,13 +1773,13 @@ void defCSet(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void chkURL(w3mApp *w3m)
+void chkURL(w3mApp *w3m, const CommandContext &context)
 {
     chkURLBuffer(GetCurrentTab()->GetCurrentBuffer());
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void chkWORD(w3mApp *w3m)
+void chkWORD(w3mApp *w3m, const CommandContext &context)
 {
     char *p;
     int spos, epos;
@@ -1792,7 +1792,7 @@ void chkWORD(w3mApp *w3m)
 
 /* render frame */
 
-void rFrame(w3mApp *w3m)
+void rFrame(w3mApp *w3m, const CommandContext &context)
 {
     BufferPtr buf;
     // if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME]) != NULL)
@@ -1829,7 +1829,7 @@ void rFrame(w3mApp *w3m)
         displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void extbrz(w3mApp *w3m)
+void extbrz(w3mApp *w3m, const CommandContext &context)
 {
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
     {
@@ -1847,7 +1847,7 @@ void extbrz(w3mApp *w3m)
     invoke_browser(GetCurrentTab()->GetCurrentBuffer()->currentURL.ToStr()->ptr);
 }
 
-void linkbrz(w3mApp *w3m)
+void linkbrz(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -1863,7 +1863,7 @@ void linkbrz(w3mApp *w3m)
 }
 
 /* show current line number and number of lines in the entire document */
-void curlno(w3mApp *w3m)
+void curlno(w3mApp *w3m, const CommandContext &context)
 {
     int cur = 0, all = 0, col = 0, len = 0;
     auto tab = GetCurrentTab();
@@ -1895,7 +1895,7 @@ void curlno(w3mApp *w3m)
     disp_message(tmp->ptr, false);
 }
 
-void dispI(w3mApp *w3m)
+void dispI(w3mApp *w3m, const CommandContext &context)
 {
     ImageManager::Instance().displayImage = true;
     ImageManager::Instance().initImage();
@@ -1910,7 +1910,7 @@ void dispI(w3mApp *w3m)
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
-void stopI(w3mApp *w3m)
+void stopI(w3mApp *w3m, const CommandContext &context)
 {
     if (!ImageManager::Instance().activeImage)
         return;
@@ -1922,7 +1922,7 @@ void stopI(w3mApp *w3m)
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
-void msToggle(w3mApp *w3m)
+void msToggle(w3mApp *w3m, const CommandContext &context)
 {
     if (w3mApp::Instance().use_mouse)
     {
@@ -1935,7 +1935,7 @@ void msToggle(w3mApp *w3m)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void mouse(w3mApp *w3m)
+void mouse(w3mApp *w3m, const CommandContext &context)
 {
     auto btn = static_cast<MouseBtnAction>((unsigned char)Terminal::getch() - 32);
     int x = (unsigned char)Terminal::getch() - 33;
@@ -1949,7 +1949,7 @@ void mouse(w3mApp *w3m)
     process_mouse(btn, x, y);
 }
 
-void movMs(w3mApp *w3m)
+void movMs(w3mApp *w3m, const CommandContext &context)
 {
     int x, y;
     if (!TryGetMouseActionPosition(&x, &y))
@@ -1977,7 +1977,7 @@ void movMs(w3mApp *w3m)
 #else
 #define FRAME_WIDTH 1
 #endif
-void menuMs(w3mApp *w3m)
+void menuMs(w3mApp *w3m, const CommandContext &context)
 {
     int x, y;
     if (!TryGetMouseActionPosition(&x, &y))
@@ -2000,7 +2000,7 @@ void menuMs(w3mApp *w3m)
 }
 
 // mouse 位置の tab をアクティブにする
-void tabMs(w3mApp *w3m)
+void tabMs(w3mApp *w3m, const CommandContext &context)
 {
     int x, y;
     if (!TryGetMouseActionPosition(&x, &y))
@@ -2016,7 +2016,7 @@ void tabMs(w3mApp *w3m)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void closeTMs(w3mApp *w3m)
+void closeTMs(w3mApp *w3m, const CommandContext &context)
 {
     int x, y;
     if (!TryGetMouseActionPosition(&x, &y))
@@ -2030,12 +2030,12 @@ void closeTMs(w3mApp *w3m)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void dispVer(w3mApp *w3m)
+void dispVer(w3mApp *w3m, const CommandContext &context)
 {
     disp_message(Sprintf("w3m version %s", w3mApp::w3m_version)->ptr, true);
 }
 
-void wrapToggle(w3mApp *w3m)
+void wrapToggle(w3mApp *w3m, const CommandContext &context)
 {
     if (w3m->WrapSearch)
     {
@@ -2051,17 +2051,17 @@ void wrapToggle(w3mApp *w3m)
     }
 }
 
-void dictword(w3mApp *w3m)
+void dictword(w3mApp *w3m, const CommandContext &context)
 {
     execdict(inputStr("(dictionary)!", ""));
 }
 
-void dictwordat(w3mApp *w3m)
+void dictwordat(w3mApp *w3m, const CommandContext &context)
 {
     execdict(GetWord(GetCurrentTab()->GetCurrentBuffer()));
 }
 
-void execCmd(w3mApp *w3m)
+void execCmd(w3mApp *w3m, const CommandContext &context)
 {
     char *data, *p;
     int cmd;
@@ -2080,7 +2080,7 @@ void execCmd(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void setAlarm(w3mApp *w3m)
+void setAlarm(w3mApp *w3m, const CommandContext &context)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     std::string_view data = w3m->searchKeyData();
@@ -2122,7 +2122,7 @@ void setAlarm(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void reinit(w3mApp *w3m)
+void reinit(w3mApp *w3m, const CommandContext &context)
 {
     char *resource = w3m->searchKeyData();
     if (resource == NULL)
@@ -2189,7 +2189,7 @@ void reinit(w3mApp *w3m)
     disp_err_message(Sprintf("Don't know how to reinitialize '%s'", resource)->ptr, false);
 }
 
-void defKey(w3mApp *w3m)
+void defKey(w3mApp *w3m, const CommandContext &context)
 {
     char *data;
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
@@ -2207,13 +2207,13 @@ void defKey(w3mApp *w3m)
     displayCurrentbuf(B_NORMAL);
 }
 
-void newT(w3mApp *w3m)
+void newT(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = CreateTabSetCurrent();
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
-void closeT(w3mApp *w3m)
+void closeT(w3mApp *w3m, const CommandContext &context)
 {
     if (GetTabCount() <= 1)
         return;
@@ -2227,29 +2227,29 @@ void closeT(w3mApp *w3m)
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
-void nextT(w3mApp *w3m)
+void nextT(w3mApp *w3m, const CommandContext &context)
 {
     SelectRelativeTab(prec_num() ? prec_num() : 1);
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
-void prevT(w3mApp *w3m)
+void prevT(w3mApp *w3m, const CommandContext &context)
 {
     SelectRelativeTab(-(prec_num() ? prec_num() : 1));
     displayCurrentbuf(B_REDRAW_IMAGE);
 }
 
-void tabA(w3mApp *w3m)
+void tabA(w3mApp *w3m, const CommandContext &context)
 {
     TabPtr tab;
     if (prec_num())
         tab = GetTabByIndex(prec_num() - 1);
     else
         tab = GetCurrentTab();
-    followTab(prec_num() ? tab : NULL);
+    followTab(prec_num() ? tab : NULL, context);
 }
 
-void tabURL(w3mApp *w3m)
+void tabURL(w3mApp *w3m, const CommandContext &context)
 {
     TabPtr tab;
     if (prec_num())
@@ -2260,7 +2260,7 @@ void tabURL(w3mApp *w3m)
             "Goto URL on new tab: ", false);
 }
 
-void tabrURL(w3mApp *w3m)
+void tabrURL(w3mApp *w3m, const CommandContext &context)
 {
     TabPtr tab;
     if (prec_num())
@@ -2271,20 +2271,20 @@ void tabrURL(w3mApp *w3m)
             "Goto relative URL on new tab: ", true);
 }
 
-void tabR(w3mApp *w3m)
+void tabR(w3mApp *w3m, const CommandContext &context)
 {
     MoveTab(prec_num() ? prec_num() : 1);
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void tabL(w3mApp *w3m)
+void tabL(w3mApp *w3m, const CommandContext &context)
 {
     MoveTab(-(prec_num() ? prec_num() : 1));
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 /* download panel */
 
-void ldDL(w3mApp *w3m)
+void ldDL(w3mApp *w3m, const CommandContext &context)
 {
     bool replace = false;
     auto tab = GetCurrentTab();
@@ -2310,7 +2310,7 @@ void ldDL(w3mApp *w3m)
 
     auto nReload = checkDownloadList();
 
-    auto newBuf = DownloadListBuffer(w3m);
+    auto newBuf = DownloadListBuffer(w3m, context);
     if (!newBuf)
     {
         displayCurrentbuf(B_NORMAL);
@@ -2331,7 +2331,7 @@ void ldDL(w3mApp *w3m)
     }
     // GetCurrentTab()->Push(newBuf);
     if (replace || new_tab)
-        deletePrevBuf(w3m);
+        deletePrevBuf(w3m, context);
 
     if (nReload)
         GetCurrentTab()->GetCurrentBuffer()->event = setAlarmEvent(GetCurrentTab()->GetCurrentBuffer()->event, 1, AL_IMPLICIT,
@@ -2340,31 +2340,31 @@ void ldDL(w3mApp *w3m)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void undoPos(w3mApp *w3m)
+void undoPos(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     buf->undoPos();
 }
 
-void redoPos(w3mApp *w3m)
+void redoPos(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     buf->redoPos();
 }
 
-void mainMn(w3mApp *w3m)
+void mainMn(w3mApp *w3m, const CommandContext &context)
 {
     PopupMenu();
 }
 
-void selMn(w3mApp *w3m)
+void selMn(w3mApp *w3m, const CommandContext &context)
 {
     PopupBufferMenu();
 }
 
-void tabMn(w3mApp *w3m)
+void tabMn(w3mApp *w3m, const CommandContext &context)
 {
     PopupTabMenu();
 }

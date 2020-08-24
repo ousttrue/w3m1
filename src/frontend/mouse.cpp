@@ -363,7 +363,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         ClearCurrentKey();
         ClearCurrentKeyData();
         w3mApp::Instance().CurrentCmdData = map->data;
-        (*map->func)(&w3mApp::Instance());
+        (*map->func)(&w3mApp::Instance(), {});
         w3mApp::Instance().CurrentCmdData.clear();
     }
 }
@@ -423,7 +423,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                              ))
                     {
                         displayCurrentbuf(B_NORMAL);
-                        followTab(t);
+                        followTab(t, {});
                     }
                     if (buf == GetCurrentTab()->GetCurrentBuffer())
                         GetCurrentTab()->GetCurrentBuffer()->CursorXY(cx, cy);
@@ -447,22 +447,22 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                 if (delta_y > 0)
                 {
                     set_prec_num(delta_y);
-                    ldown1(&w3mApp::Instance());
+                    ldown1(&w3mApp::Instance(), {});
                 }
                 else if (delta_y < 0)
                 {
                     set_prec_num(-delta_y);
-                    lup1(&w3mApp::Instance());
+                    lup1(&w3mApp::Instance(), {});
                 }
                 if (delta_x > 0)
                 {
                     set_prec_num(delta_x);
-                    col1L(&w3mApp::Instance());
+                    col1L(&w3mApp::Instance(), {});
                 }
                 else if (delta_x < 0)
                 {
                     set_prec_num(-delta_x);
-                    col1R(&w3mApp::Instance());
+                    col1R(&w3mApp::Instance(), {});
                 }
             }
             break;
@@ -473,23 +473,23 @@ void process_mouse(MouseBtnAction btn, int x, int y)
             break;
         case MouseBtnAction::BTN4_DOWN_RXVT:
             for (i = 0; i < mouse_scroll_line(); i++)
-                ldown1(&w3mApp::Instance());
+                ldown1(&w3mApp::Instance(), {});
             break;
         case MouseBtnAction::BTN5_DOWN_RXVT:
             for (i = 0; i < mouse_scroll_line(); i++)
-                lup1(&w3mApp::Instance());
+                lup1(&w3mApp::Instance(), {});
             break;
         }
     }
     else if (btn == MouseBtnAction::BTN4_DOWN_XTERM)
     {
         for (i = 0; i < mouse_scroll_line(); i++)
-            ldown1(&w3mApp::Instance());
+            ldown1(&w3mApp::Instance(), {});
     }
     else if (btn == MouseBtnAction::BTN5_DOWN_XTERM)
     {
         for (i = 0; i < mouse_scroll_line(); i++)
-            lup1(&w3mApp::Instance());
+            lup1(&w3mApp::Instance(), {});
     }
 
     if (btn != MouseBtnAction::BTN4_DOWN_RXVT || press_btn == MouseBtnAction::BTN_RESET)

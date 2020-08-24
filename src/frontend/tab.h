@@ -104,4 +104,4 @@ public:
 };
 using TabPtr = std::shared_ptr<Tab>;
 
-void followTab(TabPtr tab);
+void followTab(TabPtr tab, const struct CommandContext &context);

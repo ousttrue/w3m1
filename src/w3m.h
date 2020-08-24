@@ -43,7 +43,6 @@ class w3mApp
     w3mApp &operator=(const w3mApp &) = delete;
 
 public:
-
     // const
     static inline const std::string_view w3m_version = CURRENT_VERSION;
     static inline const std::string_view DOWNLOAD_LIST_TITLE = "Download List Panel";
@@ -239,9 +238,11 @@ private:
     std::string make_optional_header_string(const char *s);
 };
 
-// keymap などで起動される関数。
-// この関数内で、global 変数 Currentbuf 等へのアクセスを避ける( w3m から取れるようにする)
-using Command = void (*)(w3mApp *w3m);
+struct CommandContext
+{
+    int prec = 1;
+};
+using Command = void (*)(w3mApp *w3m, const CommandContext &context);
 
 inline Str Str_conv_to_system(Str x)
 {
@@ -268,7 +269,7 @@ inline int RELATIVE_WIDTH(int w)
     return (w >= 0) ? (int)(w / ImageManager::Instance().pixel_per_char) : w;
 }
 
-BufferPtr DownloadListBuffer(w3mApp *w3m);
+BufferPtr DownloadListBuffer(w3mApp *w3m, const CommandContext &context);
 
 void resize_screen();
 int need_resize_screen();

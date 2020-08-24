@@ -984,10 +984,10 @@ void query_from_followform(Str *query, FormItemPtr fi, int multipart)
 int on_target = 1;
 
 /* follow HREF link in the buffer */
-void bufferA(void)
+void bufferA(w3mApp *w3m, const CommandContext &context)
 {
     on_target = false;
-    followA(&w3mApp::Instance());
+    followA(w3m, context);
     on_target = true;
 }
 
@@ -1581,6 +1581,7 @@ void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
     auto buf = tab->GetCurrentBuffer();
     if (!buf->href || buf->hmarklist.empty())
         return;
+
     auto a = menu_func(buf);
     if (!a || a->hseq < 0)
         return;
@@ -1588,7 +1589,7 @@ void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
     buf->Goto(buf->hmarklist[a->hseq]);
     displayCurrentbuf(B_NORMAL);
     if (go)
-        followA(&w3mApp::Instance());
+        followA(&w3mApp::Instance(), {});
 }
 
 void _peekURL(int only_img)

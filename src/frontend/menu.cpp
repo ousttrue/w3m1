@@ -183,7 +183,7 @@ static int (*MenuEscDKeymap[128])(char c) = {
 static Menu SelectMenu;
 static int SelectV = 0;
 static void initSelectMenu(void);
-static void smChBuf(w3mApp *w3m);
+static void smChBuf(w3mApp *w3m, const CommandContext &context);
 static int smDelBuf(char c);
 
 /* --- SelectMenu (END) --- */
@@ -540,7 +540,7 @@ int action_menu(Menu *menu)
             ClearCurrentKey();
             ClearCurrentKeyData();
             w3mApp::Instance().CurrentCmdData = item.data;
-            (*item.func)(&w3mApp::Instance());
+            (*item.func)(&w3mApp::Instance(), {});
             w3mApp::Instance().CurrentCmdData.clear();
         }
     }
@@ -841,7 +841,7 @@ mClose(char c)
 static int
 mSusp(char c)
 {
-    susp(&w3mApp::Instance());
+    susp(&w3mApp::Instance(), {});
     draw_all_menu(CurrentMenu);
     select_menu(CurrentMenu, CurrentMenu->select);
     return (MENU_NOTHING);
@@ -1229,7 +1229,7 @@ initSelectMenu(void)
 }
 
 static void
-smChBuf(w3mApp *w3m)
+smChBuf(w3mApp *w3m, const CommandContext &context)
 {
     if (SelectV < 0 || SelectV >= SelectMenu.nitem)
         return;

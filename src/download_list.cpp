@@ -117,7 +117,7 @@ void download_action(struct parsed_tagarg *arg)
             }
         }
     }
-    ldDL(&w3mApp::Instance());
+    ldDL(&w3mApp::Instance(), {});
 }
 
 int checkDownloadList()
@@ -184,7 +184,7 @@ static char *convert_size3(clen_t size)
     return tmp->ptr;
 }
 
-BufferPtr DownloadListBuffer(w3mApp *w3m)
+BufferPtr DownloadListBuffer(w3mApp *w3m, const CommandContext &context)
 {
     DownloadList *d;
     Str src = NULL;

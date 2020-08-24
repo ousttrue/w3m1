@@ -738,7 +738,7 @@ void set_cookie_flag(struct parsed_tagarg *arg)
         }
         arg = arg->next;
     }
-    backBf(&w3mApp::Instance());
+    backBf(&w3mApp::Instance(), {});
 }
 
 bool CookieManager::check_cookie_accept_domain(const std::string &domain)

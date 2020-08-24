@@ -300,12 +300,12 @@ void set_check_target(int check)
     s_check_target = check;
 }
 
-void followTab(TabPtr tab)
+void followTab(TabPtr tab, const CommandContext &context)
 {
     if (tab == GetCurrentTab())
     {
         set_check_target(false);
-        followA(&w3mApp::Instance());
+        followA(&w3mApp::Instance(), context);
         set_check_target(true);
         return;
     }
@@ -313,7 +313,7 @@ void followTab(TabPtr tab)
     CreateTabSetCurrent();
     auto buf = GetCurrentTab()->GetCurrentBuffer();
     set_check_target(false);
-    followA(&w3mApp::Instance());
+    followA(&w3mApp::Instance(), context);
     set_check_target(true);
     if (tab == NULL)
     {

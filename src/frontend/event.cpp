@@ -37,7 +37,7 @@ void SigAlarm(int)
         w3mApp::Instance().CurrentCmdData = data = (char *)CurrentAlarm()->data;
 
         Terminal::mouse_on();
-        CurrentAlarm()->cmd(&w3mApp::Instance());
+        CurrentAlarm()->cmd(&w3mApp::Instance(), {});
         Terminal::mouse_off();
 
         w3mApp::Instance().CurrentCmdData.clear();
@@ -264,7 +264,7 @@ int ProcessEvent()
         ClearCurrentKey();
         ClearCurrentKeyData();
         w3mApp::Instance().CurrentCmdData = CurrentEvent->data ? (const char *)CurrentEvent->data : "";
-        CurrentEvent->cmd(&w3mApp::Instance());
+        CurrentEvent->cmd(&w3mApp::Instance(), {});
         w3mApp::Instance().CurrentCmdData.clear();
         CurrentEvent = CurrentEvent->next;
         return 1;
