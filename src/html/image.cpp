@@ -6,7 +6,6 @@
 #include "gc_helper.h"
 #include "file.h"
 #include "frontend/display.h"
-
 #include "history.h"
 #include "frontend/buffer.h"
 #include "stream/local_cgi.h"
@@ -19,10 +18,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>
-
-#ifdef HAVE_WAITPID
 #include <sys/wait.h>
-#endif
 
 static int image_index = 0;
 
@@ -51,6 +47,23 @@ int getCharSize();
 ///
 /// ImageManager
 ///
+ImageManager::ImageManager()
+{    
+}
+
+ImageManager::~ImageManager()
+{
+    if (!w3mApp::Instance().activeImage)
+        return;
+    clearImage();
+    if (Imgdisplay_wf)
+    {
+        fputs("2;\n", Imgdisplay_wf); /* ClearImage() */
+        fflush(Imgdisplay_wf);
+    }
+    closeImgdisplay();
+}
+
 void ImageManager::initImage()
 {
     // if (w3mApp::Instance().displayImage)
@@ -91,19 +104,6 @@ int getCharSize()
     if (!w3mApp::Instance().set_pixel_per_line)
         w3mApp::Instance().pixel_per_line = (int)(1.0 * h / Terminal::lines() + 0.5);
     return true;
-}
-
-void termImage()
-{
-    if (!w3mApp::Instance().activeImage)
-        return;
-    clearImage();
-    if (Imgdisplay_wf)
-    {
-        fputs("2;\n", Imgdisplay_wf); /* ClearImage() */
-        fflush(Imgdisplay_wf);
-    }
-    closeImgdisplay();
 }
 
 static int
@@ -238,16 +238,17 @@ void drawImage()
     Terminal::flush();
 }
 
-void clearImage()
+void ImageManager::clearImage()
 {
-    static char buf[64];
-    int j;
-    TerminalImage *i;
-
     if (!w3mApp::Instance().activeImage)
         return;
     if (!n_terminal_image)
         return;
+
+    static char buf[64];
+    int j;
+    TerminalImage *i;
+
     if (!Imgdisplay_wf)
     {
         n_terminal_image = 0;

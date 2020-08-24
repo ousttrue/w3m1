@@ -282,6 +282,7 @@ CookieManager::CookieManager()
 
 CookieManager::~CookieManager()
 {
+    save_cookies();
 }
 
 CookieManager &CookieManager::Instance()

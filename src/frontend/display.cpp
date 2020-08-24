@@ -974,7 +974,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         {
             if (draw_image_flag)
                 Screen::Instance().Clear();
-            clearImage();
+            ImageManager::Instance().clearImage();
             loadImage(buf, IMG_FLAG_STOP);
             image_touch++;
             draw_image_flag = false;

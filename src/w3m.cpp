@@ -417,14 +417,8 @@ void w3mApp::Quit(bool confirm)
     //
     m_quit = true;
 
-    if (activeImage)
-    {
-        termImage();
-    }
-
     fmTerm();
 
-    CookieManager::Instance().save_cookies();
     if (UseHistory && SaveURLHist)
     {
         saveHistory(URLHist, URLHistSize);
