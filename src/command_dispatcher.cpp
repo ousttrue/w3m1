@@ -58,35 +58,11 @@ static void DebugPrint(Command map[], int c)
     }
 }
 
-// char *w3mApp::searchKeyData()
-// {
-//     const char *data = NULL;
-//     if (CurrentKeyData() != NULL && *CurrentKeyData() != '\0')
-//         data = CurrentKeyData();
-//     else if (w3mApp::Instance().CurrentCmdData.size())
-//         data = w3mApp::Instance().CurrentCmdData.c_str();
-//     // else if (CurrentKey >= 0)
-//     //     data = GetKeyData(CurrentKey());
-//     ClearCurrentKeyData();
-//     w3mApp::Instance().CurrentCmdData.clear();
-//     if (data == NULL || *data == '\0')
-//         return NULL;
-//     return allocStr(data, -1);
-// }
-
-// int w3mApp::searchKeyNum()
-// {
-//     // TODO:
-//     // int n = 1;
-//     // auto d = searchKeyData();
-//     // if (d != NULL)
-//     //     n = atoi(d);
-//     // return n * (std::max(1, prec_num()));
-//     return 1;
-// }
-
 CommandContext g_context;
 
+///
+/// main dispatcher
+///
 void DispatchKey(int c)
 {
     if (IS_ASCII(c))

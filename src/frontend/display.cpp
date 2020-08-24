@@ -1,3 +1,4 @@
+#include <plog/Log.h>
 #include "textlist.h"
 #include "ctrlcode.h"
 #include "file.h"
@@ -913,6 +914,12 @@ void set_delayed_message(const char *s) { delayed_msg = allocStr(s, -1); }
 
 void displayBuffer(BufferPtr buf, DisplayMode mode)
 {
+    if(mode == B_NONE)
+    {
+        return;
+    }
+    LOGI << "displayBuffer: " << mode;
+
     Str msg;
     int ny = 0;
 

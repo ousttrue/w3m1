@@ -1084,10 +1084,12 @@ void Buffer::CursorXY(int x, int y)
  */
 void Buffer::ArrangeCursor()
 {
-    int col, col2, pos;
-    int delta = 1;
     if (this->currentLine == NULL)
         return;
+
+    int col, col2, pos;
+    int delta = 1;
+    m_redraw = B_NORMAL;
     /* Arrange line */
     if (this->currentLine->linenumber - this->topLine->linenumber >= this->rect.lines || this->currentLine->linenumber < this->topLine->linenumber)
     {
@@ -1147,6 +1149,7 @@ void Buffer::ArrangeLine()
     if (this->LineCount() == 0)
         return;
 
+    m_redraw = B_NORMAL;
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
     auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos - this->currentLine->bwidth);
     auto cpos = this->currentLine->COLPOS(i) - this->currentColumn;

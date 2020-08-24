@@ -56,6 +56,16 @@ struct BufferPos
     int bpos;
 };
 
+enum DisplayMode
+{
+    B_NONE,
+    B_NORMAL,
+    B_FORCE_REDRAW,
+    B_REDRAW,
+    B_SCROLL,
+    B_REDRAW_IMAGE,
+};
+
 using BufferPtr = std::shared_ptr<struct Buffer>;
 using LinePtr = std::shared_ptr<struct Line>;
 using LineList = std::vector<LinePtr>;
@@ -68,6 +78,8 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     LineList lines;
 
 private:
+    DisplayMode m_redraw = B_REDRAW;
+
     // scroll
     LinePtr topLine;
     // cursor ?
@@ -85,6 +97,12 @@ private:
     }
 
 public:
+    DisplayMode Update()
+    {
+        auto redraw = m_redraw;
+        m_redraw = B_NONE;
+        return redraw;
+    }
     int LineCount() const
     {
         return lines.size();
@@ -155,6 +173,7 @@ public:
         pos = po.pos;
         ArrangeCursor();
     }
+
     void GotoRealLine(int n);
     // void Reshape();
     LinePtr CurrentLineSkip(LinePtr line, int offset, int last);

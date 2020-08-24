@@ -1,14 +1,6 @@
 #pragma once
 #include "frontend/buffer.h"
 
-enum DisplayMode
-{
-    B_NORMAL = 0,
-    B_FORCE_REDRAW = 1,
-    B_REDRAW = 2,
-    B_SCROLL = 3,
-    B_REDRAW_IMAGE = 4,
-};
 void displayBuffer(BufferPtr  buf, DisplayMode mode);
 void displayCurrentbuf(DisplayMode mode);
 void do_color(Linecolor c);

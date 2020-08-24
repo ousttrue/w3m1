@@ -673,12 +673,10 @@ void getAuthCookie(struct http_auth *hauth, char *auth_header,
             char *pp;
             Terminal::term_raw();
             /* FIXME: gettextize? */
-            if ((pp = inputStr(Sprintf("Username for %s: ", realm)->ptr,
-                               NULL)) == NULL)
+            if ((pp = inputStr(Sprintf("Username for %s: ", realm)->ptr, "")) == NULL)
                 return;
             *uname = Str_conv_to_system(Strnew(pp));
-            if ((pp = inputLine(Sprintf("Password for %s: ", realm)->ptr, NULL,
-                                IN_PASSWORD)) == NULL)
+            if ((pp = inputLine(Sprintf("Password for %s: ", realm)->ptr, "", IN_PASSWORD)) == NULL)
             {
                 *uname = NULL;
                 return;

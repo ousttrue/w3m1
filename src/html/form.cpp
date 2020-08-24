@@ -983,7 +983,7 @@ void loadPreForm(void)
         }
         else if (textarea && name && s == "/textarea")
         {
-            pi = add_pre_form_item(pf, type, name, textarea->ptr, NULL);
+            pi = add_pre_form_item(pf, type, name, textarea->ptr, "");
             textarea = NULL;
             name = NULL;
             continue;

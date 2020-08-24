@@ -238,22 +238,6 @@ private:
 
 struct CommandContext
 {
-    void clear()
-    {
-        prec = 0;
-    }
-
-    const int PREC_LIMIT = 10000;
-    int prec = 0;
-    void set_prec(int c)
-    {
-        prec = prec * 10 + c;
-        if (prec > PREC_LIMIT)
-        {
-            prec = PREC_LIMIT;
-        }
-    }
-
     int key = -1;
     int set_key(int c)
     {
@@ -275,9 +259,60 @@ struct CommandContext
     //     return (((c) >> 16) & 0x77F);
     // }
 
+    void clear()
+    {
+        prec = 0;
+        data.clear();
+    }
+
+    const int PREC_LIMIT = 10000;
+    int prec = 0;
+    void set_prec(int c)
+    {
+        prec = prec * 10 + c;
+        if (prec > PREC_LIMIT)
+        {
+            prec = PREC_LIMIT;
+        }
+    }
+    int prec_num()const
+    {
+        if(prec<=0)
+        {
+            return 1;
+        }
+        return prec;
+    }
+
     std::string data;
 };
 using Command = void (*)(w3mApp *w3m, const CommandContext &context);
+// char *w3mApp::searchKeyData()
+// {
+//     const char *data = NULL;
+//     if (CurrentKeyData() != NULL && *CurrentKeyData() != '\0')
+//         data = CurrentKeyData();
+//     else if (w3mApp::Instance().CurrentCmdData.size())
+//         data = w3mApp::Instance().CurrentCmdData.c_str();
+//     // else if (CurrentKey >= 0)
+//     //     data = GetKeyData(CurrentKey());
+//     ClearCurrentKeyData();
+//     w3mApp::Instance().CurrentCmdData.clear();
+//     if (data == NULL || *data == '\0')
+//         return NULL;
+//     return allocStr(data, -1);
+// }
+
+// int w3mApp::searchKeyNum()
+// {
+//     // TODO:
+//     // int n = 1;
+//     // auto d = searchKeyData();
+//     // if (d != NULL)
+//     //     n = atoi(d);
+//     // return n * (std::max(1, prec_num()));
+//     return 1;
+// }
 
 inline Str Str_conv_to_system(Str x)
 {

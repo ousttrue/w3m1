@@ -407,50 +407,6 @@ int handleMailto(const char *url)
     return 1;
 }
 
-/* Move cursor left */
-void _movL(int n, int m)
-{
-    int i; //, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
-        return;
-    for (i = 0; i < m; i++)
-        GetCurrentTab()->GetCurrentBuffer()->CursorLeft(n);
-    displayCurrentbuf(B_NORMAL);
-}
-
-/* Move cursor downward */
-void _movD(int n, int m)
-{
-    int i; //, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
-        return;
-    for (i = 0; i < m; i++)
-        GetCurrentTab()->GetCurrentBuffer()->CursorDown(n);
-    displayCurrentbuf(B_NORMAL);
-}
-
-/* move cursor upward */
-void _movU(int n, int m)
-{
-    int i; //, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
-        return;
-    for (i = 0; i < m; i++)
-        GetCurrentTab()->GetCurrentBuffer()->CursorUp(n);
-    displayCurrentbuf(B_NORMAL);
-}
-
-/* Move cursor right */
-void _movR(int n, int m)
-{
-    int i; //, m = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
-    if (GetCurrentTab()->GetCurrentBuffer()->LineCount() == 0)
-        return;
-    for (i = 0; i < m; i++)
-        GetCurrentTab()->GetCurrentBuffer()->CursorRight(n);
-    displayCurrentbuf(B_NORMAL);
-}
-
 int prev_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;

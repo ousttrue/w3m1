@@ -253,6 +253,9 @@ public:
         auto c = byteArray[0];
 
         // dispatch
+        auto tab = GetCurrentTab();
+        auto buf = tab->GetCurrentBuffer();
+
         DispatchKey(c);
 
         if (w3mApp::Instance().IsQuit())
@@ -260,6 +263,24 @@ public:
             // quit
             Quit();
             return;
+        }
+
+        auto currentTab = GetCurrentTab();
+        if (currentTab != tab)
+        {
+            // different tab
+            displayBuffer(tab->GetCurrentBuffer(), B_FORCE_REDRAW);
+        }
+        else if (currentTab->GetCurrentBuffer() != buf)
+        {
+            // different buf
+            displayBuffer(buf, B_FORCE_REDRAW);
+        }
+        else
+        {
+            // same buf
+            auto drawType = buf->Update();
+            displayBuffer(buf, drawType);
         }
 
         // next read
@@ -332,7 +353,7 @@ void w3mApp::mainloop()
                 { /* refresh (0sec) */
                     buf->event = NULL;
                     CurrentAlarm()->cmd(&w3mApp::Instance(), {
-                        data: (const char *)CurrentAlarm()->data
+                        data : (const char *)CurrentAlarm()->data
                     });
                     continue;
                 }
