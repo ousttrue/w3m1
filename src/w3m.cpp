@@ -1,3 +1,5 @@
+#include <plog/Log.h>
+#include <signal.h>
 #include "config.h"
 #include <unistd.h>
 #include <signal.h>
@@ -218,10 +220,11 @@ class Asio
     asio::io_context context;
     asio::posix::stream_descriptor tty;
     char byteArray[1];
+    asio::signal_set signals;
 
 public:
     Asio()
-        : tty(context, Terminal::tty())
+        : tty(context, Terminal::tty()), signals(context, SIGINT, SIGTERM, SIGWINCH)
     {
     }
 
@@ -234,11 +237,32 @@ public:
 
     void OnReadTty(asio::error_code ec, std::size_t n)
     {
-        // dispatch
+        if (n == 0)
+        {
+            LOGE << "error. read zero";
+            return;
+        }
 
-        auto a = 0;
+        // getch
+        auto c = byteArray[0];
+
+        // dispatch
+        DispatchKey(c);
 
         // read
+        ReadTty();
+    }
+
+    void OnSignal(const asio::error_code &error, int signal)
+    {
+        LOGI << "signal: " << signal;
+    }
+
+    void Signal()
+    {
+        // Construct a signal set registered for process termination.
+        auto callback = std::bind(&Asio::OnSignal, this, std::placeholders::_1, std::placeholders::_2);
+        signals.async_wait(callback);
     }
 
     void Run()
@@ -252,6 +276,7 @@ void w3mApp::mainloop2()
     Asio asio;
 
     asio.ReadTty();
+    asio.Signal();
 
     asio.Run();
 }
