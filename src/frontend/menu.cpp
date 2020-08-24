@@ -288,16 +288,16 @@ void new_menu(Menu *menu, MenuItem *item)
     }
 }
 
-void geom_menu(Menu *menu, int x, int y, int mselect)
+void Menu::geom_menu(int x, int y, bool mselect)
 {
     int win_x, win_y, win_w, win_h;
 
-    menu->select = mselect;
+    this->select = mselect;
 
-    if (menu->width % FRAME_WIDTH)
-        menu->width = (menu->width / FRAME_WIDTH + 1) * FRAME_WIDTH;
-    win_x = menu->x - FRAME_WIDTH;
-    win_w = menu->width + 2 * FRAME_WIDTH;
+    if (this->width % FRAME_WIDTH)
+        this->width = (this->width / FRAME_WIDTH + 1) * FRAME_WIDTH;
+    win_x = this->x - FRAME_WIDTH;
+    win_w = this->width + 2 * FRAME_WIDTH;
     if (win_x + win_w > Terminal::columns())
         win_x = Terminal::columns() - win_w;
     if (win_x < 0)
@@ -305,15 +305,15 @@ void geom_menu(Menu *menu, int x, int y, int mselect)
         win_x = 0;
         if (win_w > Terminal::columns())
         {
-            menu->width = Terminal::columns() - 2 * FRAME_WIDTH;
-            menu->width -= menu->width % FRAME_WIDTH;
-            win_w = menu->width + 2 * FRAME_WIDTH;
+            this->width = Terminal::columns() - 2 * FRAME_WIDTH;
+            this->width -= this->width % FRAME_WIDTH;
+            win_w = this->width + 2 * FRAME_WIDTH;
         }
     }
-    menu->x = win_x + FRAME_WIDTH;
+    this->x = win_x + FRAME_WIDTH;
 
-    win_y = menu->y - mselect - 1;
-    win_h = menu->height + 2;
+    win_y = this->y - mselect - 1;
+    win_h = this->height + 2;
     if (win_y + win_h > (Terminal::lines() - 1))
         win_y = (Terminal::lines() - 1) - win_h;
     if (win_y < 0)
@@ -322,12 +322,12 @@ void geom_menu(Menu *menu, int x, int y, int mselect)
         if (win_y + win_h > (Terminal::lines() - 1))
         {
             win_h = (Terminal::lines() - 1) - win_y;
-            menu->height = win_h - 2;
-            if (menu->height <= mselect)
-                menu->offset = mselect - menu->height + 1;
+            this->height = win_h - 2;
+            if (this->height <= mselect)
+                this->offset = mselect - this->height + 1;
         }
     }
-    menu->y = win_y + 1;
+    this->y = win_y + 1;
 }
 
 void draw_all_menu(Menu *menu)
@@ -569,7 +569,7 @@ void popup_menu(Menu *parent, Menu *menu)
         menu->cursorY = parent->cursorY;
         guess_menu_xy(parent, menu->width, &menu->x, &menu->y);
     }
-    geom_menu(menu, menu->x, menu->y, menu->select);
+    menu->geom_menu();
 
     CurrentMenu = menu;
     while (active)
@@ -1246,7 +1246,7 @@ smDelBuf(char c)
     CurrentMenu->x = x;
     CurrentMenu->y = y;
 
-    geom_menu(CurrentMenu, x, y, 0);
+    CurrentMenu->geom_menu(x, y);
 
     CurrentMenu->select = (mselect <= CurrentMenu->nitem - 2) ? mselect
                                                               : (CurrentMenu->nitem - 2);

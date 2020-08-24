@@ -72,6 +72,12 @@ struct Menu
     int active;
     int (*keymap[128])(char c);
     int keyselect[128];
+
+    void geom_menu(int x, int y, bool mselect = false);
+    void geom_menu()
+    {
+        geom_menu(x, y, select);
+    }
 };
 
 struct MenuList
@@ -82,7 +88,6 @@ struct MenuList
 };
 
 void new_menu(Menu *menu, MenuItem *item);
-void geom_menu(Menu *menu, int x, int y, int mselect);
 void draw_all_menu(Menu *menu);
 void draw_menu(Menu *menu);
 void draw_menu_item(Menu *menu, int mselect);
