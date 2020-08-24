@@ -1897,11 +1897,10 @@ void curlno(w3mApp *w3m)
 
 void dispI(w3mApp *w3m)
 {
-    if (!w3mApp::Instance().displayImage)
-        initImage();
+    w3mApp::Instance().displayImage = true;
+    ImageManager::Instance().initImage();
     if (!w3mApp::Instance().activeImage)
         return;
-    w3mApp::Instance().displayImage = true;
     /*
      * if (!(GetCurrentTab()->GetCurrentBuffer()->type && is_html_type(GetCurrentTab()->GetCurrentBuffer()->type)))
      * return;

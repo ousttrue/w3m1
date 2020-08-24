@@ -226,8 +226,7 @@ void fmInit(void)
         Terminal::term_raw();
         Terminal::term_noecho();
 
-        if (w3mApp::Instance().displayImage)
-            initImage();
+        ImageManager::Instance().initImage();
     }
     w3mApp::Instance().fmInitialized = true;
 }

@@ -1292,15 +1292,9 @@ void sync_with_option(void)
 #ifdef USE_EXTERNAL_URI_LOADER
     initURIMethods();
 #endif
-#ifdef USE_MIGEMO
-    init_migemo();
-#endif
-#ifdef USE_IMAGE
-    if (w3mApp::Instance().fmInitialized && w3mApp::Instance().displayImage)
-        initImage();
-#else
-    displayImage = false; /* XXX */
-#endif
+
+    ImageManager::Instance().initImage();
+
     loadPasswd();
     loadPreForm();
 

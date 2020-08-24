@@ -48,8 +48,15 @@ static int openImgdisplay();
 static void closeImgdisplay();
 int getCharSize();
 
-void initImage()
+///
+/// ImageManager
+///
+void ImageManager::initImage()
 {
+    // if (w3mApp::Instance().displayImage)
+    // initImage();
+    // if (w3mApp::Instance().fmInitialized && w3mApp::Instance().displayImage)
+
     if (w3mApp::Instance().activeImage)
         return;
     if (getCharSize())
