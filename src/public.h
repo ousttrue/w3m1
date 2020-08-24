@@ -9,11 +9,11 @@ class w3mApp;
 /* 
  * Command functions: These functions are called with a keystroke.
  */
-void srch_nxtprv(int reverse);
+void srch_nxtprv(int reverse, int prec_num);
 int dispincsrch(int ch, Str buf, Lineprop *prop);
 
-void isrch(SearchFunc func, const char *prompt);
-void srch(SearchFunc func, const char *prompt);
+void isrch(SearchFunc func, const char *prompt, int prec_num);
+void srch(SearchFunc func, const char *prompt, int prec_num);
 
 void disp_srchresult(int result, const char *prompt, const char *str);
 void shiftvisualpos(BufferPtr buf, int shift);
@@ -32,9 +32,9 @@ void prevChar(int *s, LinePtr l);
 void nextChar(int *s, LinePtr l);
 uint32_t getChar(char *p);
 int is_wordchar(uint32_t c);
-SearchResultTypes srchcore(const char *str, SearchFunc search);
+SearchResultTypes srchcore(const char *str, SearchFunc search, int prec_num);
 
-void _goLine(std::string_view l);
+void _goLine(std::string_view l, int prec_num);
 int cur_real_linenumber(const BufferPtr &buf);
 const char *MarkString();
 void SetMarkString(const char *str);
@@ -61,7 +61,7 @@ Str currentURL(void);
 
 void _docCSet(CharacterEncodingScheme charset);
 int display_ok();
-void invoke_browser(char *url);
+void invoke_browser(char *url, int prec_num);
 void execdict(char *word);
 char *GetWord(const BufferPtr &buf);
 void tabURL0(TabPtr tab, const char *prompt, int relative);

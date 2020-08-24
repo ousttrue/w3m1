@@ -1489,7 +1489,7 @@ void Buffer::resetPos(int i)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void Buffer::undoPos()
+void Buffer::undoPos(int prec_num)
 {
     if (LineCount() == 0)
         return;
@@ -1498,10 +1498,15 @@ void Buffer::undoPos()
         return;
     }
 
+    if (prec_num <= 0)
+    {
+        prec_num = 1;
+    }
+
     auto b = undo.end();
     --b;
     int j = undo.size() - 1;
-    for (int i = 0; i < (prec_num() ? prec_num() : 1) && b != undo.begin(); i++, --b, --j)
+    for (int i = 0; i < prec_num && b != undo.begin(); i++, --b, --j)
         ;
 
     resetPos(j);

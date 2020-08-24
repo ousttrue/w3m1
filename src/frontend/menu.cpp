@@ -870,12 +870,9 @@ menuForwardSearch(Menu *menu, const char *str, int from)
     return -1;
 }
 
-static int
-menu_search_forward(Menu *menu, int from)
+static int menu_search_forward(Menu *menu, int from)
 {
-    const char *str;
-    int found;
-    str = inputStrHist("Forward: ", NULL, w3mApp::Instance().TextHist);
+    const char *str = inputStrHist("Forward: ", NULL, w3mApp::Instance().TextHist, 1);
     if (str != NULL && *str == '\0')
         str = SearchString;
     if (str == NULL || *str == '\0')
@@ -883,7 +880,7 @@ menu_search_forward(Menu *menu, int from)
     SearchString = str;
     str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuForwardSearch;
-    found = menuForwardSearch(menu, str, from + 1);
+    auto found = menuForwardSearch(menu, str, from + 1);
     if (w3mApp::Instance().WrapSearch && found == -1)
         found = menuForwardSearch(menu, str, 0);
     if (found >= 0)
@@ -921,12 +918,9 @@ menuBackwardSearch(Menu *menu, const char *str, int from)
     return -1;
 }
 
-static int
-menu_search_backward(Menu *menu, int from)
+static int menu_search_backward(Menu *menu, int from)
 {
-    const char *str;
-    int found;
-    str = inputStrHist("Backward: ", NULL, w3mApp::Instance().TextHist);
+    const char *str = inputStrHist("Backward: ", NULL, w3mApp::Instance().TextHist, 1);
     if (str != NULL && *str == '\0')
         str = SearchString;
     if (str == NULL || *str == '\0')
@@ -934,7 +928,7 @@ menu_search_backward(Menu *menu, int from)
     SearchString = str;
     str = conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuBackwardSearch;
-    found = menuBackwardSearch(menu, str, from - 1);
+    auto found = menuBackwardSearch(menu, str, from - 1);
     if (w3mApp::Instance().WrapSearch && found == -1)
         found = menuBackwardSearch(menu, str, menu->nitem);
     if (found >= 0)
@@ -943,36 +937,31 @@ menu_search_backward(Menu *menu, int from)
     return -1;
 }
 
-static int
-mSrchB(char c)
+static int mSrchB(char c)
 {
-    int mselect;
-    mselect = menu_search_backward(CurrentMenu, CurrentMenu->select);
+    auto mselect = menu_search_backward(CurrentMenu, CurrentMenu->select);
     if (mselect >= 0)
         goto_menu(CurrentMenu, mselect, -1);
     return (MENU_NOTHING);
 }
 
-static int
-menu_search_next_previous(Menu *menu, int from, int reverse)
+static int menu_search_next_previous(Menu *menu, int from, int reverse)
 {
-    int found;
     static int (*routine[2])(Menu *, const char *, int) = {
         menuForwardSearch, menuBackwardSearch};
-    const char *str;
 
     if (menuSearchRoutine == NULL)
     {
         disp_message("No previous regular expression", true);
         return -1;
     }
-    str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
+    const char *str = conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
     if (reverse != 0)
         reverse = 1;
     if (menuSearchRoutine == menuBackwardSearch)
         reverse ^= 1;
     from += reverse ? -1 : 1;
-    found = (*routine[reverse])(menu, str, from);
+    auto found = (*routine[reverse])(menu, str, from);
     if (w3mApp::Instance().WrapSearch && found == -1)
         found = (*routine[reverse])(menu, str, reverse * menu->nitem);
     if (found >= 0)
@@ -1550,7 +1539,7 @@ void initMenu(void)
     }
 }
 
-int setMenuItem(MenuItem *item, const char* type, std::string_view line)
+int setMenuItem(MenuItem *item, const char *type, std::string_view line)
 {
     if (type == NULL || *type == '\0') /* error */
         return -1;
@@ -1706,7 +1695,7 @@ AnchorPtr accesskey_menu(const BufferPtr &buf)
     unsigned char c;
 
     std::vector<std::string> label;
-    auto ap = New_N(AnchorPtr , nitem);
+    auto ap = New_N(AnchorPtr, nitem);
     int n;
     for (i = 0, n = 0; i < al.size(); i++)
     {
@@ -1830,8 +1819,8 @@ AnchorPtr list_menu(const BufferPtr &buf)
                 label.push_back(Sprintf("  : %s", t)->ptr);
             else if (two)
                 label.push_back(Sprintf("%c%c: %s", lmKeys2[n / nlmKeys],
-                                   lmKeys[n % nlmKeys], t)
-                               ->ptr);
+                                        lmKeys[n % nlmKeys], t)
+                                    ->ptr);
             else
                 label.push_back(Sprintf("%c: %s", lmKeys[n], t)->ptr);
             ap[n] = a;

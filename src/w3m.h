@@ -240,7 +240,22 @@ private:
 
 struct CommandContext
 {
-    int prec = 1;
+    const int PREC_LIMIT = 10000;
+    int prec = 0;
+
+    void set_prec(int c)
+    {
+        prec = prec * 10 + c;
+        if (prec > PREC_LIMIT)
+        {
+            prec = PREC_LIMIT;
+        }
+    }
+
+    void clear()
+    {
+        prec = 0;
+    }
 };
 using Command = void (*)(w3mApp *w3m, const CommandContext &context);
 

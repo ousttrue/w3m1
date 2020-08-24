@@ -49,7 +49,7 @@ void disp_srchresult(int result, const char *prompt, const char *str)
         disp_message(Sprintf("%s%s", prompt, str)->ptr, true);
 }
 
-void srch_nxtprv(int reverse)
+void srch_nxtprv(int reverse, int prec_num)
 {
     int result;
     /* *INDENT-OFF* */
@@ -73,7 +73,7 @@ void srch_nxtprv(int reverse)
         reverse ^= 1;
     if (reverse == 0)
         buf->pos += 1;
-    result = srchcore(SearchString, routine[reverse]);
+    result = srchcore(SearchString, routine[reverse], prec_num);
     if (result & SR_FOUND)
         buf->CurrentLine()->clear_mark();
     displayCurrentbuf(B_NORMAL);
@@ -163,10 +163,8 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
 }
 
 /* search by regular expression */
-SearchResultTypes srchcore(const char *str, SearchFunc func)
+SearchResultTypes srchcore(const char *str, SearchFunc func, int prec_num)
 {
-    int i;
-    SearchResultTypes result = SR_NOTFOUND;
 
     if (str != NULL && str != SearchString)
         SearchString = str;
@@ -178,23 +176,23 @@ SearchResultTypes srchcore(const char *str, SearchFunc func)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
 
-    TrapJmp([&]() {
-        {
-            int prec = prec_num() ? prec_num() : 1;
-            for (i = 0; i < prec; i++)
-            {
-                result = func(buf, str);
-                if (i < prec - 1 && result & SR_FOUND)
-                    buf->CurrentLine()->clear_mark();
-            }
-        }
-        return true;
-    });
+    if (prec_num <= 0)
+    {
+        prec_num = 1;
+    }
+
+    SearchResultTypes result = SR_NOTFOUND;
+    for (int i = 0; i < prec_num; i++)
+    {
+        result = func(buf, str);
+        if (i < prec_num - 1 && result & SR_FOUND)
+            buf->CurrentLine()->clear_mark();
+    }
 
     return result;
 }
 
-int dispincsrch(int ch, Str src, Lineprop *prop)
+int dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
 {
     static BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
     static LinePtr currentLine;
@@ -242,7 +240,7 @@ int dispincsrch(int ch, Str src, Lineprop *prop)
             if (searchRoutine == forwardSearch)
                 buf->pos += 1;
             sbuf->COPY_BUFPOSITION_FROM(buf);
-            if (srchcore(str, searchRoutine) == SR_NOTFOUND && searchRoutine == forwardSearch)
+            if (srchcore(str, searchRoutine, prec_num) == SR_NOTFOUND && searchRoutine == forwardSearch)
             {
                 buf->pos -= 1;
                 sbuf->COPY_BUFPOSITION_FROM(buf);
@@ -259,7 +257,7 @@ int dispincsrch(int ch, Str src, Lineprop *prop)
     {
         buf->COPY_BUFPOSITION_FROM(sbuf);
         buf->ArrangeCursor();
-        srchcore(str, searchRoutine);
+        srchcore(str, searchRoutine, prec_num);
         buf->ArrangeCursor();
         currentLine = buf->CurrentLine();
         pos = buf->pos;
@@ -279,15 +277,14 @@ done:
     return -1;
 }
 
-void isrch(SearchFunc func, const char *prompt)
+void isrch(SearchFunc func, const char *prompt, int prec_num)
 {
-    char *str;
     BufferPtr sbuf = std::shared_ptr<Buffer>(new Buffer);
     sbuf->COPY_BUFPOSITION_FROM(GetCurrentTab()->GetCurrentBuffer());
-    dispincsrch(0, NULL, NULL); /* initialize incremental search state */
+    dispincsrch(0, NULL, NULL, prec_num); /* initialize incremental search state */
 
     searchRoutine = func;
-    str = inputLineHistSearch(prompt, NULL, IN_STRING, w3mApp::Instance().TextHist, dispincsrch);
+    auto str = inputLineHistSearch(prompt, NULL, IN_STRING, w3mApp::Instance().TextHist, dispincsrch, prec_num);
     if (str == NULL)
     {
         GetCurrentTab()->GetCurrentBuffer()->COPY_BUFPOSITION_FROM(sbuf);
@@ -295,13 +292,13 @@ void isrch(SearchFunc func, const char *prompt)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-void srch(SearchFunc func, const char *prompt)
+void srch(SearchFunc func, const char *prompt, int prec_num)
 {
     int disp = false;
     const char *str = w3mApp::Instance().searchKeyData();
     if (str == NULL || *str == '\0')
     {
-        str = inputStrHist(prompt, NULL, w3mApp::Instance().TextHist);
+        str = inputStrHist(prompt, NULL, w3mApp::Instance().TextHist, prec_num);
         if (str != NULL && *str == '\0')
             str = SearchString;
         if (str == NULL)
@@ -318,7 +315,7 @@ void srch(SearchFunc func, const char *prompt)
     auto pos = buf->pos;
     if (func == forwardSearch)
         buf->pos += 1;
-    auto result = srchcore(str, func);
+    auto result = srchcore(str, func, prec_num);
     if (result & SR_FOUND)
         buf->CurrentLine()->clear_mark();
     else
@@ -570,7 +567,7 @@ int is_wordchar(uint32_t c)
 }
 
 /* Go to specified line */
-void _goLine(std::string_view l)
+void _goLine(std::string_view l, int prec_num)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
@@ -581,9 +578,9 @@ void _goLine(std::string_view l)
     }
 
     buf->pos = 0;
-    if (((l[0] == '^') || (l[0] == '$')) && prec_num())
+    if (((l[0] == '^') || (l[0] == '$')) && prec_num)
     {
-        buf->GotoRealLine(prec_num());
+        buf->GotoRealLine(prec_num);
     }
     else if (l[0] == '^')
     {
@@ -651,7 +648,7 @@ void _followForm(bool submit)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", false, 1, true, false);
         /* FIXME: gettextize? */
-        auto p = inputStrHist("TEXT:", fi->value.size() ? fi->value.c_str() : NULL, w3mApp::Instance().TextHist);
+        auto p = inputStrHist("TEXT:", fi->value.size() ? fi->value.c_str() : NULL, w3mApp::Instance().TextHist, 1);
         if (p == NULL || fi->readonly)
             break;
         fi->value = p;
@@ -668,8 +665,7 @@ void _followForm(bool submit)
             /* FIXME: gettextize? */
             disp_message_nsec("Read only field!", false, 1, true, false);
         /* FIXME: gettextize? */
-        auto p = inputFilenameHist("Filename:", fi->value.size() ? fi->value.c_str() : NULL,
-                                   NULL);
+        auto p = inputFilenameHist("Filename:", fi->value.size() ? fi->value.c_str() : NULL, NULL, 1);
         if (p == NULL || fi->readonly)
             break;
         fi->value = p;
@@ -689,8 +685,7 @@ void _followForm(bool submit)
             break;
         }
         /* FIXME: gettextize? */
-        auto p = inputLine("Password:", fi->value.size() ? fi->value.c_str() : NULL,
-                           IN_PASSWORD);
+        auto p = inputLine("Password:", fi->value.size() ? fi->value.c_str() : NULL, IN_PASSWORD, 1);
         if (p == NULL)
             break;
         fi->value = p;
@@ -742,9 +737,9 @@ void _followForm(bool submit)
         if (submit)
             goto do_submit;
         if (!fi->formChooseOptionByMenu(
-                                    buf->rect.cursorX - buf->pos +
-                                        a->start.pos + buf->rect.rootX,
-                                    buf->rect.cursorY + buf->rect.rootY))
+                buf->rect.cursorX - buf->pos +
+                    a->start.pos + buf->rect.rootX,
+                buf->rect.cursorY + buf->rect.rootY))
             break;
         formUpdateBuffer(a, buf, fi);
         if (fi->parent.lock()->nitems() == 1)
@@ -874,7 +869,7 @@ void query_from_followform(Str *query, FormItemPtr fi, int multipart)
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
     *query = Strnew();
-    for (auto &f2: fi->parent.lock()->items)
+    for (auto &f2 : fi->parent.lock()->items)
     {
         if (f2->name.empty())
             continue;
@@ -1103,11 +1098,11 @@ FormItemPtr save_submit_formlist(FormItemPtr src)
     list->boundary = srclist->boundary;
     list->length = srclist->length;
 
-    for(int i=0; i<src->parent.lock()->items.size(); ++i)
+    for (int i = 0; i < src->parent.lock()->items.size(); ++i)
     {
-        if(src->parent.lock()->items[i] == src)
+        if (src->parent.lock()->items[i] == src)
         {
-            return list->items[i]; 
+            return list->items[i];
         }
     }
 
@@ -1531,7 +1526,7 @@ void goURL0(const char *prompt, int relative)
             else
                 pushHist(hist, a_url);
         }
-        url = inputLineHist(prompt, url, IN_URL, hist);
+        url = inputLineHist(prompt, url, IN_URL, hist, 1);
         if (url != NULL)
             SKIP_BLANKS(&url);
     }
@@ -1685,13 +1680,13 @@ int display_ok()
 }
 
 /* spawn external browser */
-void invoke_browser(char *url)
+void invoke_browser(char *url, int prec_num)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
     std::string_view browser = w3mApp::Instance().searchKeyData();
     if (browser.empty())
     {
-        switch (prec_num())
+        switch (prec_num)
         {
         case 0:
         case 1:
@@ -1706,7 +1701,7 @@ void invoke_browser(char *url)
         }
         if (browser.empty())
         {
-            browser = inputStr("Browse command: ", NULL);
+            browser = inputStr("Browse command: ", NULL, 1);
         }
     }
 

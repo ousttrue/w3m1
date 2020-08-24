@@ -104,8 +104,7 @@ static int _doFileCopy(const char *tmpf, const char *defstr, int download)
         if (p == NULL || *p == '\0')
         {
             /* FIXME: gettextize? */
-            q = inputLineHist("(Download)Save file to: ",
-                              defstr, IN_COMMAND, w3mApp::Instance().SaveHist);
+            q = inputLineHist("(Download)Save file to: ", defstr, IN_COMMAND, w3mApp::Instance().SaveHist, 1);
             if (q == NULL || *q == '\0')
                 return false;
             p = conv_to_system(q);

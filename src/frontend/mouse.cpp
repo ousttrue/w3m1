@@ -60,8 +60,8 @@ static MouseAction default_mouse_action = {
     {{NULL, ""}, {NULL, ""}, {NULL, ""}},      /* anchor */
     {{followA, ""}, {NULL, ""}, {NULL, ""}},   /* active */
     {{tabMs, ""}, {closeTMs, ""}, {NULL, ""}}, /* tab */
-    {NULL, NULL, NULL},                              /* menu */
-    {NULL, NULL, NULL}                               /* lastline */
+    {NULL, NULL, NULL},                        /* menu */
+    {NULL, NULL, NULL}                         /* lastline */
 };
 static MouseActionMap default_lastline_action[6] = {
     {backBf, ""},
@@ -207,7 +207,7 @@ interpret_mouse_action(FILE *mf)
             mouse_action.lastline_str = setMouseAction0(&mouse_action.lastline_width, mouse_action.lastline_map, p);
             continue;
         }
-        if (s ==  "button")
+        if (s == "button")
             continue; /* error */
         std::tie(p, s) = getWord(p);
         auto b = atoi(s.c_str()) - 1;
@@ -446,23 +446,27 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                 }
                 if (delta_y > 0)
                 {
-                    set_prec_num(delta_y);
-                    ldown1(&w3mApp::Instance(), {});
+                    ldown1(&w3mApp::Instance(), {
+                        prec : delta_y,
+                    });
                 }
                 else if (delta_y < 0)
                 {
-                    set_prec_num(-delta_y);
-                    lup1(&w3mApp::Instance(), {});
+                    lup1(&w3mApp::Instance(), {
+                        prec : -delta_y,
+                    });
                 }
                 if (delta_x > 0)
                 {
-                    set_prec_num(delta_x);
-                    col1L(&w3mApp::Instance(), {});
+                    col1L(&w3mApp::Instance(), {
+                        prec : delta_x,
+                    });
                 }
                 else if (delta_x < 0)
                 {
-                    set_prec_num(-delta_x);
-                    col1R(&w3mApp::Instance(), {});
+                    col1R(&w3mApp::Instance(), {
+                        prec : -delta_x,
+                    });
                 }
             }
             break;

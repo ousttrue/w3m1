@@ -972,7 +972,7 @@ const char *inputAnswer(const char *prompt)
     if (w3mApp::Instance().fmInitialized)
     {
         Terminal::term_raw();
-        return inputChar(prompt);
+        return inputChar(prompt, 1);
     }
 
     printf("%s", prompt);

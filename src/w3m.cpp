@@ -457,9 +457,11 @@ char *w3mApp::searchKeyData()
 
 int w3mApp::searchKeyNum()
 {
-    int n = 1;
-    auto d = searchKeyData();
-    if (d != NULL)
-        n = atoi(d);
-    return n * (std::max(1, prec_num()));
+    // TODO:
+    // int n = 1;
+    // auto d = searchKeyData();
+    // if (d != NULL)
+    //     n = atoi(d);
+    // return n * (std::max(1, prec_num()));
+    return 1;
 }

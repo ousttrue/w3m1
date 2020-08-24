@@ -15,7 +15,6 @@
 #include "frontend/tabbar.h"
 #include "charset.h"
 
-static int g_prec_num = 0;
 static int g_CurrentKey = -1;
 static char *g_CurrentKeyData = nullptr;
 static int g_prev_key = -1;
@@ -61,16 +60,6 @@ static void DebugPrint(Command map[], int c)
     {
         LOGD << (char)c << " => " << key;
     }
-}
-
-int prec_num()
-{
-    return g_prec_num;
-}
-
-void set_prec_num(int n)
-{
-    g_prec_num = n;
 }
 
 int CurrentKey()
@@ -124,18 +113,15 @@ void SetPrevKey(int key)
     g_prev_key = key;
 }
 
-CommandContext context;
+CommandContext g_context;
 
 void DispatchKey(int c)
 {
     if (IS_ASCII(c))
     { /* Ascii */
-        if (('0' <= c) && (c <= '9') &&
-            (prec_num() || (GlobalKeymap[c] == &nulcmd)))
+        if (('0' <= c) && (c <= '9'))
         {
-            set_prec_num(prec_num() * 10 + (int)(c - '0'));
-            if (prec_num() > PREC_LIMIT())
-                set_prec_num(PREC_LIMIT());
+            g_context.set_prec(c - '0');
         }
         else
         {
@@ -143,11 +129,13 @@ void DispatchKey(int c)
 
             DebugPrint(GlobalKeymap, c);
 
-            // auto command =
-            set_buffer_environ(GetCurrentTab()->GetCurrentBuffer());
-            GetCurrentTab()->GetCurrentBuffer()->SavePosition();
-            GlobalKeymap[c](&w3mApp::Instance(), context);
-            set_prec_num(0);
+            auto tab = GetCurrentTab();
+            auto buf = tab->GetCurrentBuffer();
+            set_buffer_environ(buf);
+            buf->SavePosition();
+            GlobalKeymap[c](&w3mApp::Instance(), g_context);
+
+            g_context.clear();
         }
     }
     SetPrevKey(g_CurrentKey);
@@ -182,7 +170,7 @@ static void _escKeyProc(int c, int esc, Command map[])
     // }
     SetCurrentKey(esc | c);
     DebugPrint(map, c);
-    map[c](&w3mApp::Instance(), context);
+    map[c](&w3mApp::Instance(), g_context);
 }
 
 void escKeyProc(char c)
@@ -258,7 +246,7 @@ void CommandDispatcher::ExecuteCommand(std::string_view data)
         w3mApp::Instance().CurrentCmdData = p;
 
         Terminal::mouse_on();
-        cmd(&w3mApp::Instance(), context);
+        cmd(&w3mApp::Instance(), g_context);
         Terminal::mouse_off();
 
         w3mApp::Instance().CurrentCmdData.clear();

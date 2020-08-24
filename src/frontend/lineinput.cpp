@@ -1034,16 +1034,13 @@ _editor(void)
     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
-char *
-inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag, Hist *hist,
-                    int (*incrfunc)(int ch, Str str, Lineprop *prop))
+char *inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag, Hist *hist, IncFunc incrfunc, int prec_num)
 {
     int opos, x, y, lpos, rpos, epos;
     unsigned char c;
     char *p;
-#ifdef USE_M17N
+
     Str tmp;
-#endif
 
     is_passwd = false;
     move_word = true;
@@ -1172,16 +1169,15 @@ inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag
         }
         else if (!i_quote && c < 0x20)
         { /* Control code */
-            if (incrfunc == NULL || (c = incrfunc((int)c, strBuf, strProp)) < 0x20)
+            if (incrfunc == NULL || (c = incrfunc((int)c, strBuf, strProp, prec_num)) < 0x20)
                 (*InputKeymap[(int)c])();
             if (incrfunc && c != (unsigned char)-1 && c != CTRL_J)
-                incrfunc(-1, strBuf, strProp);
+                incrfunc(-1, strBuf, strProp, prec_num);
             if (cm_clear)
                 cm_next = false;
             if (cm_disp_clear)
                 cm_disp_next = -1;
         }
-#ifdef USE_M17N
         else
         {
             tmp = wc_char_conv(c);
@@ -1197,27 +1193,8 @@ inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag
                 goto next_char;
             ins_char(tmp);
             if (incrfunc)
-                incrfunc(-1, strBuf, strProp);
+                incrfunc(-1, strBuf, strProp, prec_num);
         }
-#else
-        else
-        {
-            i_quote = false;
-            cm_next = false;
-            cm_disp_next = -1;
-            if (CLen >= STR_LEN)
-                goto next_char;
-            insC();
-            strBuf->ptr[CPos] = c;
-            if (!is_passwd && get_mctype(&c) == PC_CTRL)
-                strProp[CPos] = PC_CTRL;
-            else
-                strProp[CPos] = PC_ASCII;
-            CPos++;
-            if (incrfunc)
-                incrfunc(-1, strBuf, strProp);
-        }
-#endif
         if (CLen && (flag & IN_CHAR))
             break;
     } while (i_cont);
@@ -1227,10 +1204,6 @@ inputLineHistSearch(const char *prompt, const char *def_str, LineInputFlags flag
         if (need_redraw)
             displayCurrentbuf(B_FORCE_REDRAW);
     }
-
-#ifdef SUPPORT_WIN9X_CONSOLE_MBCS
-    disable_win9x_console_input();
-#endif
 
     if (i_broken)
         return NULL;
