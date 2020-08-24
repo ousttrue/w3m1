@@ -39,11 +39,11 @@ class w3mApp
 {
     w3mApp();
     ~w3mApp();
-
     w3mApp(const w3mApp &) = delete;
     w3mApp &operator=(const w3mApp &) = delete;
 
 public:
+
     // const
     static inline const std::string_view w3m_version = CURRENT_VERSION;
     static inline const std::string_view DOWNLOAD_LIST_TITLE = "Download List Panel";
@@ -110,7 +110,6 @@ public:
     bool UseHistory = true;
     int URLHistSize = 100;
     bool SaveURLHist = true;
-    bool confirm_on_quit = true;
     int close_tab_back = false;
     bool use_mark = false;
     bool emacs_like_lineedit = false;
@@ -232,13 +231,18 @@ public:
     // 最終的にはこれを使わず引数経由で得るようにする
     static w3mApp &Instance()
     {
-        static w3mApp w3m;
-        return w3m;
+        static w3mApp s_instance;
+        return s_instance;
     }
 
     int Main(const URL &url);
 
-    void _quitfm(int confirm);
+private:
+    bool m_quit = false;
+
+public:
+    void Quit(bool confirm = false);
+    bool IsQuit() const { return m_quit; }
 
     int INIT_BUFFER_WIDTH();
     int FOLD_BUFFER_WIDTH();

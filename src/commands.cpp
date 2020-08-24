@@ -526,13 +526,13 @@ void movRW(w3mApp *w3m)
 /* Quit */
 void quitfm(w3mApp *w3m)
 {
-    w3m->_quitfm(false);
+    w3m->Quit();
 }
 
 /* Question and Quit */
 void qquitfm(w3mApp *w3m)
 {
-    w3m->_quitfm(w3mApp::Instance().confirm_on_quit);
+    w3m->Quit(true);
 }
 
 /* Select buffer */

@@ -615,7 +615,7 @@ char Terminal::getch()
         if (errno == EINTR || errno == EAGAIN)
             continue;
         /* error happend on read(2) */
-        w3mApp::Instance()._quitfm(false);
+        w3mApp::Instance().Quit();
         break; /* unreachable */
     }
     return c;
@@ -673,8 +673,6 @@ int Terminal::sleep_till_anykey(int sec, int purge)
 
 void Terminal::title(const char *s)
 {
-    if (!w3mApp::Instance().fmInitialized)
-        return;
     if (g_title_str != NULL)
     {
         fprintf(g_ttyf, g_title_str, s);

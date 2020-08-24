@@ -106,6 +106,8 @@ w3mApp::w3mApp()
 
 w3mApp::~w3mApp()
 {
+    LOGI << "quit...";
+
     stopDownload();
 
     for (auto &f : fileToDelete)
@@ -228,6 +230,11 @@ public:
     {
     }
 
+    void Quit()
+    {
+        signals.cancel();
+    }
+
     void ReadTty()
     {
         auto buffer = asio::buffer(byteArray);
@@ -249,7 +256,14 @@ public:
         // dispatch
         DispatchKey(c);
 
-        // read
+        if(w3mApp::Instance().IsQuit())
+        {
+            // quit
+            Quit();
+            return;
+        }
+
+        // next read
         ReadTty();
     }
 
@@ -377,32 +391,44 @@ void w3mApp::mainloop()
     }
 }
 
-void w3mApp::_quitfm(int confirm)
+void w3mApp::Quit(bool confirm)
 {
     const char *ans = "y";
     if (checkDownloadList())
+    {
         /* FIXME: gettextize? */
         ans = inputChar("Download process retains. "
                         "Do you want to exit w3m? (y/n)");
+    }
     else if (confirm)
+    {
         /* FIXME: gettextize? */
         ans = inputChar("Do you want to exit w3m? (y/n)");
+    }
+
     if (!(ans && TOLOWER(*ans) == 'y'))
     {
         displayCurrentbuf(B_NORMAL);
         return;
     }
 
+    //
+    // quit
+    //
+    m_quit = true;
+
     if (activeImage)
+    {
         termImage();
+    }
 
     fmTerm();
 
     CookieManager::Instance().save_cookies();
     if (UseHistory && SaveURLHist)
+    {
         saveHistory(URLHist, URLHistSize);
-
-    exit(0);
+    }
 }
 
 int _INIT_BUFFER_WIDTH()

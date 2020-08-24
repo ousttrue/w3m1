@@ -41,5 +41,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    return w3mApp::Instance().Main(URL::Parse(argv[1], nullptr));
+    auto code = w3mApp::Instance().Main(URL::Parse(argv[1], nullptr));
+
+    return code;
 }
