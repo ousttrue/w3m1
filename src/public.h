@@ -1,5 +1,5 @@
 #pragma once
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "frontend/tab.h"
 #include "frontend/buffer.h"
 #include "frontend/search.h"

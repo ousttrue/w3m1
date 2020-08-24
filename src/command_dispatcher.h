@@ -29,4 +29,13 @@ char *getQWord(char **str);
 char *getWord(char **str);
 void initKeymap(int force);
 int getKey(char *s);
- 
+
+class CommandDispatcher
+{
+public:
+    static CommandDispatcher &Instance()
+    {
+        static CommandDispatcher s_instance;
+        return s_instance;
+    }
+};

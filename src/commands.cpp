@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include "history.h"
 #include "commands.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
 #include "urimethod.h"
@@ -14,7 +14,7 @@
 #include "public.h"
 #include "regex.h"
 #include "html/frame.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "frontend/menu.h"
 #include "html/image.h"
 #include "stream/url.h"

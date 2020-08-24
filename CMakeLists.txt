@@ -107,7 +107,7 @@ add_executable(w3m
     src/w3m.cpp
     src/cli.cpp
     #
-    src/dispatcher.cpp
+    src/command_dispatcher.cpp
     src/commands.cpp
     src/public.cpp
     src/urimethod.cpp

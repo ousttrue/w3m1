@@ -6,7 +6,7 @@
 #include "symbol.h"
 #include "myctype.h"
 #include "indep.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "frontend/mouse.h"
 #include "frontend/menu.h"
 #include "html/image.h"

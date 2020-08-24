@@ -1,5 +1,5 @@
 #include <plog/Log.h>
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "public.h"
 #include "commands.h"
 #include "file.h"

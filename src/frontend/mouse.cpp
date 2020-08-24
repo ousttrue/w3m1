@@ -7,7 +7,7 @@
 #include "rc.h"
 #include "indep.h"
 #include "myctype.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "commands.h"
 #include "symbol.h"
 #include "file.h"

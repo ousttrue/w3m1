@@ -4,7 +4,7 @@
 #include "indep.h"
 #include "file.h"
 #include "frontend/display.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "frontend/mouse.h"
 #include "public.h"
 #include "commands.h"

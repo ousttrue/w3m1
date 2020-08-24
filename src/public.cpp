@@ -17,7 +17,7 @@
 #include <signal.h>
 #include "ucs.h"
 #include "stream/network.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "html/image.h"
 #include "commands.h"
 #include "stream/url.h"

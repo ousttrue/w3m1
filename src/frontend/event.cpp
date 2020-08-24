@@ -1,6 +1,6 @@
 #include "event.h"
 #include "commands.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "terminal.h"
 #include "gc_helper.h"
 #include "tab.h"

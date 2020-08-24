@@ -18,7 +18,7 @@
 #include "html/html.h"
 #include "stream/local_cgi.h"
 #include "regex.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "stream/url.h"
 #include "entity.h"
 #include "stream/cookie.h"

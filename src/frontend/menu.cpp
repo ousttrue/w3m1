@@ -7,7 +7,7 @@
 #include "public.h"
 #include "myctype.h"
 #include "regex.h"
-#include "dispatcher.h"
+#include "command_dispatcher.h"
 #include "commands.h"
 #include "symbol.h"
 #include "file.h"
