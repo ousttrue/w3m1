@@ -16,7 +16,7 @@ enum class MouseBtnAction
 void initMouseAction();
 void DisableMouseAction();
 bool TryGetMouseActionPosition(int *x, int *y);
-const char *GetMouseActionMenuStr();
+std::string_view GetMouseActionMenuStr();
 int GetMouseActionMenuWidth();
 const char *GetMouseActionLastlineStr();
 void do_mouse_action(MouseBtnAction btn, int x, int y);

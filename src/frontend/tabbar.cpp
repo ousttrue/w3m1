@@ -106,7 +106,7 @@ int TabCols = 10;
 
 void calcTabPos()
 {
-    int lcol = GetMouseActionMenuStr() ? GetMouseActionMenuWidth() : 0;
+    int lcol = GetMouseActionMenuStr().size() ? GetMouseActionMenuWidth() : 0;
 
     if (g_tabBar.tabs.size() <= 0)
         return;
@@ -159,7 +159,7 @@ TabPtr GetTabByPosition(int x, int y)
 {
     TabPtr tab;
 
-    if (GetMouseActionMenuStr() && x < GetMouseActionMenuWidth() && y == 0)
+    if (GetMouseActionMenuStr().size() && x < GetMouseActionMenuWidth() && y == 0)
         return nullptr;
     for (auto tab : g_tabBar.tabs)
     {

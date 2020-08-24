@@ -1957,7 +1957,7 @@ void movMs(w3mApp *w3m)
         return;
     }
 
-    if ((GetTabCount() > 1 || GetMouseActionMenuStr()) && y < GetTabbarHeight())
+    if ((GetTabCount() > 1 || GetMouseActionMenuStr().size()) && y < GetTabbarHeight())
     {
         // mouse on tab
         return;
@@ -1987,7 +1987,7 @@ void menuMs(w3mApp *w3m)
 
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if ((GetTabCount() > 1 || GetMouseActionMenuStr()) && y < GetTabbarHeight())
+    if ((GetTabCount() > 1 || GetMouseActionMenuStr().size()) && y < GetTabbarHeight())
     {
         x -= FRAME_WIDTH + 1;
     }

@@ -93,9 +93,9 @@ bool TryGetMouseActionPosition(int *x, int *y)
     return false;
 }
 
-const char *GetMouseActionMenuStr()
+std::string_view GetMouseActionMenuStr()
 {
-    return mouse_action.menu_str.c_str();
+    return mouse_action.menu_str;
 };
 
 int GetMouseActionMenuWidth()
@@ -276,7 +276,7 @@ void initMouseAction(void)
 void do_mouse_action(MouseBtnAction btn, int x, int y)
 {
     int ny = -1;
-    if (GetTabCount() > 1 || GetMouseActionMenuStr())
+    if (GetTabCount() > 1 || GetMouseActionMenuStr().size())
         ny = GetTabbarHeight();
 
     switch (btn)
@@ -299,7 +299,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
     MouseActionMap *map = NULL;
     if (y < ny)
     {
-        if (GetMouseActionMenuStr() && x >= 0 && x < mouse_action.menu_width)
+        if (GetMouseActionMenuStr().size() && x >= 0 && x < mouse_action.menu_width)
         {
             if (mouse_action.menu_map[(int)btn])
                 map = &mouse_action.menu_map[(int)btn][x];
@@ -384,7 +384,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
     TabPtr t;
     int ny = -1;
 
-    if (GetTabCount() > 1 || GetMouseActionMenuStr())
+    if (GetTabCount() > 1 || GetMouseActionMenuStr().size())
         ny = GetTabbarHeight();
     if (btn == MouseBtnAction::BTN_UP)
     {

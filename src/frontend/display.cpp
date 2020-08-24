@@ -946,7 +946,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     }
 
     buf->rect.cols = Terminal::columns() - buf->rect.rootX;
-    if (GetTabCount() > 1 || GetMouseActionMenuStr())
+    if (GetTabCount() > 1 || GetMouseActionMenuStr().size())
     {
         if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
             calcTabPos();
@@ -983,12 +983,12 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         }
 
         // TAB
-        if (GetTabCount() > 1 || GetMouseActionMenuStr())
+        if (GetTabCount() > 1 || GetMouseActionMenuStr().size())
         {
             Screen::Instance().Move(0, 0);
 
-            if (GetMouseActionMenuStr())
-                Screen::Instance().Puts(GetMouseActionMenuStr());
+            if (GetMouseActionMenuStr().size())
+                Screen::Instance().Puts(GetMouseActionMenuStr().data());
 
             Screen::Instance().CtrlToEolWithBGColor();
             EachTab([](auto t) {
