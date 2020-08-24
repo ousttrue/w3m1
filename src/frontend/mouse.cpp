@@ -1,10 +1,6 @@
-/*
- * w3m func.c
- */
-
+#include <array>
 #include <stdio.h>
 #include <string_view_util.h>
-#include "gc_helper.h"
 #include "rc.h"
 #include "indep.h"
 #include "myctype.h"
@@ -19,7 +15,6 @@
 #include "frontend/tab.h"
 #include "frontend/tabbar.h"
 #include "frontend/buffer.h"
-
 #include "frontend/terminal.h"
 
 #define LIMIT_MOUSE_MENU 100
@@ -39,12 +34,12 @@ struct MouseAction
     int in_action;
     int cursorX;
     int cursorY;
-    MouseActionMap default_map[3];
-    MouseActionMap anchor_map[3];
-    MouseActionMap active_map[3];
-    MouseActionMap tab_map[3];
-    MouseActionMap *menu_map[3];
-    MouseActionMap *lastline_map[3];
+    std::array<MouseActionMap, 3> default_map;
+    std::array<MouseActionMap, 3> anchor_map;
+    std::array<MouseActionMap, 3> active_map;
+    std::array<MouseActionMap, 3> tab_map;
+    std::array<std::vector<MouseActionMap>, 3> menu_map;
+    std::array<std::vector<MouseActionMap>, 3> lastline_map;
 };
 static MouseAction mouse_action;
 
@@ -56,12 +51,10 @@ static MouseAction default_mouse_action = {
     false,
     0,
     0,
-    {{movMs, ""}, {backBf, ""}, {menuMs, ""}}, /* default */
-    {{NULL, ""}, {NULL, ""}, {NULL, ""}},      /* anchor */
-    {{followA, ""}, {NULL, ""}, {NULL, ""}},   /* active */
-    {{tabMs, ""}, {closeTMs, ""}, {NULL, ""}}, /* tab */
-    {NULL, NULL, NULL},                        /* menu */
-    {NULL, NULL, NULL}                         /* lastline */
+    {MouseActionMap{movMs, ""}, MouseActionMap{backBf, ""}, MouseActionMap{menuMs, ""}}, /* default */
+    {MouseActionMap{NULL, ""}, MouseActionMap{NULL, ""}, MouseActionMap{NULL, ""}},      /* anchor */
+    {MouseActionMap{followA, ""}, MouseActionMap{NULL, ""}, MouseActionMap{NULL, ""}},   /* active */
+    {MouseActionMap{tabMs, ""}, MouseActionMap{closeTMs, ""}, MouseActionMap{NULL, ""}}, /* tab */
 };
 static MouseActionMap default_lastline_action[6] = {
     {backBf, ""},
@@ -109,7 +102,7 @@ const char *GetMouseActionLastlineStr()
 }
 
 static std::string
-setMouseAction0(int *width, MouseActionMap **map, std::string_view p)
+setMouseAction0(int *width, std::array<std::vector<MouseActionMap>, 3> &map, std::string_view p)
 {
     std::string s;
     std::tie(p, s) = getQWord(p);
@@ -117,7 +110,7 @@ setMouseAction0(int *width, MouseActionMap **map, std::string_view p)
     {
         width = 0;
         for (int b = 0; b < 3; b++)
-            map[b] = NULL;
+            map[b].clear();
         return "";
     }
 
@@ -130,9 +123,7 @@ setMouseAction0(int *width, MouseActionMap **map, std::string_view p)
         return str;
     for (int b = 0; b < 3; b++)
     {
-        if (!map[b])
-            continue;
-        map[b] = New_Reuse(MouseActionMap, map[b], *width);
+        map[b].resize(*width);
         for (int x = w + 1; x < *width; x++)
         {
             map[b][x].func = NULL;
@@ -141,18 +132,15 @@ setMouseAction0(int *width, MouseActionMap **map, std::string_view p)
     }
 }
 
-static void
-setMouseAction1(MouseActionMap **map, int width, std::string_view p)
+static void setMouseAction1(std::vector<MouseActionMap> &map, int width, std::string_view p)
 {
-    if (!*map)
+    map.resize(width);
+    for (int x = 0; x < width; x++)
     {
-        *map = New_N(MouseActionMap, width);
-        for (int x = 0; x < width; x++)
-        {
-            (*map)[x].func = NULL;
-            (*map)[x].data.clear();
-        }
+        map[x].func = NULL;
+        map[x].data.clear();
     }
+
     std::string s;
     std::tie(p, s) = getWord(p);
     auto x = atoi(s.c_str());
@@ -167,8 +155,8 @@ setMouseAction1(MouseActionMap **map, int width, std::string_view p)
     std::tie(p, s) = getQWord(p);
     for (; x <= x2; x++)
     {
-        (*map)[x].func = f;
-        (*map)[x].data = s;
+        map[x].func = f;
+        map[x].data = s;
     }
 }
 
@@ -222,15 +210,13 @@ interpret_mouse_action(FILE *mf)
         {
             if (mouse_action.menu_str.empty())
                 continue;
-            setMouseAction1(&mouse_action.menu_map[b], mouse_action.menu_width,
-                            p);
+            setMouseAction1(mouse_action.menu_map[b], mouse_action.menu_width, p);
         }
         else if (svu::ic_eq(s, "lastline"))
         {
             if (mouse_action.lastline_str.empty())
                 continue;
-            setMouseAction1(&mouse_action.lastline_map[b],
-                            mouse_action.lastline_width, p);
+            setMouseAction1(mouse_action.lastline_map[b], mouse_action.lastline_width, p);
         }
         else if (svu::ic_eq(s, "default"))
             setMouseAction2(&mouse_action.default_map[b], p);
@@ -247,12 +233,10 @@ void initMouseAction(void)
 {
     FILE *mf;
 
-    bcopy((void *)&default_mouse_action, (void *)&mouse_action,
-          sizeof(default_mouse_action));
-    mouse_action.lastline_map[0] = New_N(MouseActionMap, 6);
-    bcopy((void *)&default_lastline_action,
-          (void *)mouse_action.lastline_map[0],
-          sizeof(default_lastline_action));
+    // bcopy((void *)&default_mouse_action, (void *)&mouse_action,
+    //       sizeof(default_mouse_action));
+    mouse_action.lastline_map[0].resize(6);
+    // bcopy((void *)&default_lastline_action, (void *)mouse_action.lastline_map[0], sizeof(default_lastline_action));
     {
 
         int w = 0;
@@ -301,7 +285,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
     {
         if (GetMouseActionMenuStr().size() && x >= 0 && x < mouse_action.menu_width)
         {
-            if (mouse_action.menu_map[(int)btn])
+            if (mouse_action.menu_map[(int)btn].size())
                 map = &mouse_action.menu_map[(int)btn][x];
         }
         else
@@ -312,7 +296,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         if (mouse_action.lastline_str.size() && x >= 0 &&
             x < mouse_action.lastline_width)
         {
-            if (mouse_action.lastline_map[(int)btn])
+            if (mouse_action.lastline_map[(int)btn].size())
                 map = &mouse_action.lastline_map[(int)btn][x];
         }
     }
