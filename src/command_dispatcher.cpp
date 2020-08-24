@@ -1,4 +1,5 @@
 #include <plog/Log.h>
+#include <string_view_util.h>
 #include "command_dispatcher.h"
 #include "public.h"
 #include "commands.h"
@@ -226,26 +227,33 @@ void escbKeyProc(char c)
 }
 
 /* data: FUNC [DATA] [; FUNC [DATA] ...] */
-void ExecuteCommand(char *data)
+void CommandDispatcher::ExecuteCommand(std::string_view data)
 {
-    while (*data)
+    while (data.size())
     {
-        SKIP_BLANKS(&data);
-        if (*data == ';')
+        data = svu::strip_left(data);
+        if (data.empty())
         {
-            data++;
+            break;
+        }
+
+        if (data[0] == ';')
+        {
+            data.remove_prefix(1);
             continue;
         }
-        auto p = getWord(&data);
-        auto cmd = getFuncList(p);
+
+        std::string_view p;
+        std::tie(data, p) = getWord(data);
+        auto cmd = getFuncList(std::string(p));
         if (cmd < 0)
         {
             break;
         }
-        p = getQWord(&data);
+        std::tie(data, p) = getQWord(data);
         ClearCurrentKey();
         ClearCurrentKeyData();
-        w3mApp::Instance().CurrentCmdData = *p ? p : "";
+        w3mApp::Instance().CurrentCmdData = p;
 
         Terminal::mouse_on();
         cmd(&w3mApp::Instance());
@@ -265,10 +273,190 @@ char *GetKeyData(int key)
     return (char *)found->second.c_str();
 }
 
-static int GetKey(char **p, int lineno, int verbose)
+static std::tuple<std::string_view, int> getKey2(std::string_view str)
 {
-    auto s = getQWord(p);
-    auto c = getKey(s);
+    if (str.empty())
+    {
+        return {str, -1};
+    }
+
+    // int c, esc = 0, ctrl = 0;
+    if (svu::ic_eq(str, "UP"))
+    { /* ^[[A */
+        return {str.substr(2), K_ESCB | 'A'};
+    }
+
+    if (svu::ic_eq(str, "DOWN"))
+    { /* ^[[B */
+        return {str.substr(4), K_ESCB | 'B'};
+    }
+
+    if (svu::ic_eq(str, "RIGHT"))
+    { /* ^[[C */
+        return {str.substr(5), K_ESCB | 'C'};
+    }
+
+    if (svu::ic_eq(str, "LEFT"))
+    { /* ^[[D */
+        return {str.substr(4), K_ESCB | 'D'};
+    }
+
+    int esc = 0;
+    auto s = str;
+    if (svu::ic_starts_with(s, "ESC-") || svu::ic_starts_with(s, "ESC "))
+    { /* ^[ */
+        s.remove_prefix(4);
+        esc = K_ESC;
+    }
+    else if (svu::ic_starts_with(s, "M-") || svu::ic_starts_with(s, "\\E"))
+    { /* ^[ */
+        s.remove_prefix(2);
+        esc = K_ESC;
+    }
+    else if (s[0] == ESC_CODE)
+    { /* ^[ */
+        s.remove_prefix(1);
+        esc = K_ESC;
+    }
+
+    int ctrl = 0;
+    if (svu::ic_starts_with(s, "C-"))
+    { /* ^, ^[^ */
+        s.remove_prefix(2);
+        ctrl = 1;
+    }
+    else if (s.size() >= 2 && s[0] == '^')
+    { /* ^, ^[^ */
+        s.remove_prefix(2);
+        ctrl = 1;
+    }
+
+    if (!esc && ctrl && s[0] == '[')
+    { /* ^[ */
+        s.remove_prefix(1);
+        ctrl = 0;
+        esc = K_ESC;
+    }
+    if (esc && !ctrl)
+    {
+        if (s[0] == '[' || s[0] == 'O')
+        { /* ^[[, ^[O */
+            s.remove_prefix(1);
+            esc = K_ESCB;
+        }
+        if (svu::ic_starts_with(s, "C-"))
+        { /* ^[^, ^[[^ */
+            s.remove_prefix(2);
+            ctrl = 1;
+        }
+        else if (s.size() >= 2 && s[0] == '^')
+        { /* ^[^, ^[[^ */
+            s.remove_prefix(1);
+            ctrl = 1;
+        }
+    }
+
+    if (ctrl)
+    {
+        if (s[0] >= '@' && s[0] <= '_') /* ^@ .. ^_ */
+            return {s.substr(1), esc | (s[0] - '@')};
+        else if (s[0] >= 'a' && s[0] <= 'z') /* ^a .. ^z */
+            return {s.substr(1), esc | (s[0] - 'a' + 1)};
+        else if (s[0] == '?') /* ^? */
+            return {s.substr(1), esc | DEL_CODE};
+        else
+            return {s.substr(1), -1};
+    }
+
+    if (esc == K_ESCB && IS_DIGIT(s[0]))
+    {
+        auto c = (int)(s[0] - '0');
+        s.remove_prefix(1);
+        if (IS_DIGIT(s[0]))
+        {
+            c = c * 10 + (int)(s[0] - '0');
+            s.remove_prefix(1);
+        }
+        if (s[0] == '~')
+            return {s.substr(1), K_ESCD | c};
+        else
+            return {s.substr(1), -1};
+    }
+
+    if (svu::ic_starts_with(s, "SPC"))
+    { /* ' ' */
+        return {s.substr(3), esc | ' '};
+    }
+
+    if (svu::ic_starts_with(s, "TAB"))
+    { /* ^i */
+        return {s.substr(3), esc | '\t'};
+    }
+
+    if (svu::ic_starts_with(s, "DEL"))
+    { /* ^? */
+        return {s.substr(3), esc | DEL_CODE};
+    }
+
+    if (s.size() >= 2 && s[0] == '\\')
+    {
+        s.remove_prefix(1);
+        switch (s[0])
+        {
+        case 'a': /* ^g */
+            return {s.substr(1), esc | CTRL_G};
+        case 'b': /* ^h */
+            return {s.substr(1), esc | CTRL_H};
+        case 't': /* ^i */
+            return {s.substr(1), esc | CTRL_I};
+        case 'n': /* ^j */
+            return {s.substr(1), esc | CTRL_J};
+        case 'r': /* ^m */
+            return {s.substr(1), esc | CTRL_M};
+        case 'e': /* ^[ */
+            return {s.substr(1), esc | ESC_CODE};
+        case '^': /* ^ */
+            return {s.substr(1), esc | '^'};
+        case '\\': /* \ */
+            return {s.substr(1), esc | '\\'};
+        default:
+            return {s.substr(1), -1};
+        }
+    }
+
+    if (IS_ASCII(s[0])) /* Ascii */
+        return {s.substr(1), esc | s[0]};
+    else
+        return {s.substr(1), -1};
+}
+
+std::tuple<std::string_view, int> getKey(std::string_view s)
+{
+    int c;
+    std::tie(s, c) = getKey2(s);
+    if (c < 0)
+        return {s, -1};
+
+    if (s.size() && s[0] == ' ' || s[0] == '-')
+        s.remove_prefix(1);
+
+    if (s.size())
+    {
+        int c2;
+        std::tie(s, c2) = getKey2(s);
+        if (c2 < 0)
+            return {s, -1};
+        c = K_MULTI | (c << 16) | c2;
+    }
+
+    return {s, c};
+}
+
+static std::tuple<std::string_view, int> GetKey(std::string_view p, int lineno, int verbose)
+{
+    std::string s;
+    std::tie(p, s) = getQWord(p);
+    auto [_, c] = getKey(s);
     if (c < 0)
     { /* error */
         char *emsg = nullptr;
@@ -282,12 +470,13 @@ static int GetKey(char **p, int lineno, int verbose)
         if (verbose)
             disp_message_nsec(emsg, false, 1, true, false);
     }
-    return c;
+    return {p, c};
 }
 
-static Command GetFunc(char **p, int lineno, int verbose)
+static std::tuple<std::string_view, Command> GetFunc(std::string_view p, int lineno, int verbose)
 {
-    auto s = getWord(p);
+    std::string s;
+    std::tie(p, s) = getWord(p);
     auto f = getFuncList(s);
     if (!f)
     {
@@ -302,21 +491,25 @@ static Command GetFunc(char **p, int lineno, int verbose)
         if (verbose)
             disp_message_nsec(emsg, false, 1, true, false);
     }
-    return f;
+    return {p, f};
 }
 
-void SetKeymap(char *p, int lineno, int verbose)
+void SetKeymap(std::string_view p, int lineno, int verbose)
 {
-    auto c = GetKey(&p, lineno, verbose);
+    int c;
+    std::tie(p, c) = GetKey(p, lineno, verbose);
     if (c < 0)
     {
         return;
     }
-    auto f = GetFunc(&p, lineno, verbose);
+
+    Command f;
+    std::tie(p, f) = GetFunc(p, lineno, verbose);
     if (!f)
     {
         return;
     }
+
     Command *map = nullptr;
     // if (c & K_MULTI)
     // {
@@ -378,8 +571,9 @@ void SetKeymap(char *p, int lineno, int verbose)
     map[c & 0x7F] = f;
 
     // data
-    auto s = getQWord(&p);
-    if (*s)
+    std::string s;
+    std::tie(p, s) = getQWord(p);
+    if (s.size())
     {
         g_keyData[c] = s;
     }
@@ -398,7 +592,7 @@ void RegisterCommand(const char *name, const char *key, const char *description,
     g_commandMap[key] = command;
 }
 
-Command getFuncList(char *name)
+Command getFuncList(const std::string &name)
 {
     auto found = g_commandMap.find(name);
     if (found == g_commandMap.end())
@@ -408,282 +602,110 @@ Command getFuncList(char *name)
     return found->second;
 }
 
-static int
-getKey2(char **str)
+std::tuple<std::string_view, std::string_view> getWord(std::string_view str)
 {
-    char *s = *str;
-    int c, esc = 0, ctrl = 0;
-
-    if (s == NULL || *s == '\0')
-        return -1;
-
-    if (strcasecmp(s, "UP") == 0)
-    { /* ^[[A */
-        *str = s + 2;
-        return K_ESCB | 'A';
-    }
-    else if (strcasecmp(s, "DOWN") == 0)
-    { /* ^[[B */
-        *str = s + 4;
-        return K_ESCB | 'B';
-    }
-    else if (strcasecmp(s, "RIGHT") == 0)
-    { /* ^[[C */
-        *str = s + 5;
-        return K_ESCB | 'C';
-    }
-    else if (strcasecmp(s, "LEFT") == 0)
-    { /* ^[[D */
-        *str = s + 4;
-        return K_ESCB | 'D';
-    }
-
-    if (strncasecmp(s, "ESC-", 4) == 0 || strncasecmp(s, "ESC ", 4) == 0)
-    { /* ^[ */
-        s += 4;
-        esc = K_ESC;
-    }
-    else if (strncasecmp(s, "M-", 2) == 0 || strncasecmp(s, "\\E", 2) == 0)
-    { /* ^[ */
-        s += 2;
-        esc = K_ESC;
-    }
-    else if (*s == ESC_CODE)
-    { /* ^[ */
-        s++;
-        esc = K_ESC;
-    }
-    if (strncasecmp(s, "C-", 2) == 0)
-    { /* ^, ^[^ */
-        s += 2;
-        ctrl = 1;
-    }
-    else if (*s == '^' && *(s + 1))
-    { /* ^, ^[^ */
-        s++;
-        ctrl = 1;
-    }
-    if (!esc && ctrl && *s == '[')
-    { /* ^[ */
-        s++;
-        ctrl = 0;
-        esc = K_ESC;
-    }
-    if (esc && !ctrl)
+    int start = 0;
+    for (; start < str.size(); ++start)
     {
-        if (*s == '[' || *s == 'O')
-        { /* ^[[, ^[O */
-            s++;
-            esc = K_ESCB;
-        }
-        if (strncasecmp(s, "C-", 2) == 0)
-        { /* ^[^, ^[[^ */
-            s += 2;
-            ctrl = 1;
-        }
-        else if (*s == '^' && *(s + 1))
-        { /* ^[^, ^[[^ */
-            s++;
-            ctrl = 1;
-        }
-    }
-
-    if (ctrl)
-    {
-        *str = s + 1;
-        if (*s >= '@' && *s <= '_') /* ^@ .. ^_ */
-            return esc | (*s - '@');
-        else if (*s >= 'a' && *s <= 'z') /* ^a .. ^z */
-            return esc | (*s - 'a' + 1);
-        else if (*s == '?') /* ^? */
-            return esc | DEL_CODE;
-        else
-            return -1;
-    }
-
-    if (esc == K_ESCB && IS_DIGIT(*s))
-    {
-        c = (int)(*s - '0');
-        s++;
-        if (IS_DIGIT(*s))
+        if (!IS_SPACE(str[start]))
         {
-            c = c * 10 + (int)(*s - '0');
-            s++;
+            break;
         }
-        *str = s + 1;
-        if (*s == '~')
-            return K_ESCD | c;
-        else
-            return -1;
     }
-
-    if (strncasecmp(s, "SPC", 3) == 0)
-    { /* ' ' */
-        *str = s + 3;
-        return esc | ' ';
-    }
-    else if (strncasecmp(s, "TAB", 3) == 0)
-    { /* ^i */
-        *str = s + 3;
-        return esc | '\t';
-    }
-    else if (strncasecmp(s, "DEL", 3) == 0)
-    { /* ^? */
-        *str = s + 3;
-        return esc | DEL_CODE;
-    }
-
-    if (*s == '\\' && *(s + 1) != '\0')
+    int end = start;
+    for (; end < str.size(); ++end)
     {
-        s++;
-        *str = s + 1;
-        switch (*s)
+        if (IS_SPACE(str[end]) || str[end] == ';')
         {
-        case 'a': /* ^g */
-            return esc | CTRL_G;
-        case 'b': /* ^h */
-            return esc | CTRL_H;
-        case 't': /* ^i */
-            return esc | CTRL_I;
-        case 'n': /* ^j */
-            return esc | CTRL_J;
-        case 'r': /* ^m */
-            return esc | CTRL_M;
-        case 'e': /* ^[ */
-            return esc | ESC_CODE;
-        case '^': /* ^ */
-            return esc | '^';
-        case '\\': /* \ */
-            return esc | '\\';
-        default:
-            return -1;
+            break;
         }
     }
-    *str = s + 1;
-    if (IS_ASCII(*s)) /* Ascii */
-        return esc | *s;
-    else
-        return -1;
+
+    return {str.substr(end), str.substr(start, end - start)};
 }
 
-int getKey(char *s)
+std::tuple<std::string_view, std::string> getQWord(std::string_view str)
 {
-    int c, c2;
+    // char *p;
 
-    c = getKey2(&s);
-    if (c < 0)
-        return -1;
-    if (*s == ' ' || *s == '-')
-        s++;
-    if (*s)
-    {
-        c2 = getKey2(&s);
-        if (c2 < 0)
-            return -1;
-        c = K_MULTI | (c << 16) | c2;
-    }
-    return c;
-}
-
-char *getWord(char **str)
-{
-    char *p, *s;
-
-    p = *str;
-    SKIP_BLANKS(&p);
-    for (s = p; *p && !IS_SPACE(*p) && *p != ';'; p++)
-        ;
-    *str = p;
-    return Strnew_charp_n(s, p - s)->ptr;
-}
-
-char *getQWord(char **str)
-{
-    Str tmp = Strnew();
-    char *p;
-    int in_q = 0, in_dq = 0, esc = 0;
-
-    p = *str;
-    SKIP_BLANKS(&p);
-    for (; *p; p++)
+    std::string tmp;
+    int in_q = 0;
+    int in_dq = 0;
+    int esc = 0;
+    auto p = svu::strip_left(str);
+    for (; p.size(); p.remove_prefix(1))
     {
         if (esc)
         {
             if (in_q)
             {
-                if (*p != '\\' && *p != '\'') /* '..\\..', '..\'..' */
-                    tmp->Push('\\');
+                if (p[0] != '\\' && p[0] != '\'') /* '..\\..', '..\'..' */
+                    tmp.push_back('\\');
             }
             else if (in_dq)
             {
-                if (*p != '\\' && *p != '"') /* "..\\..", "..\".." */
-                    tmp->Push('\\');
+                if (p[0] != '\\' && p[0] != '"') /* "..\\..", "..\".." */
+                    tmp.push_back('\\');
             }
             else
             {
-                if (*p != '\\' && *p != '\'' && /* ..\\.., ..\'.. */
-                    *p != '"' && !IS_SPACE(*p)) /* ..\".., ..\.. */
-                    tmp->Push('\\');
+                if (p[0] != '\\' && p[0] != '\'' && /* ..\\.., ..\'.. */
+                    p[0] != '"' && !IS_SPACE(p[0])) /* ..\".., ..\.. */
+                    tmp.push_back('\\');
             }
-            tmp->Push(*p);
+            tmp.push_back(p[0]);
             esc = 0;
         }
-        else if (*p == '\\')
+        else if (p[0] == '\\')
         {
             esc = 1;
         }
         else if (in_q)
         {
-            if (*p == '\'')
+            if (p[0] == '\'')
                 in_q = 0;
             else
-                tmp->Push(*p);
+                tmp.push_back(p[0]);
         }
         else if (in_dq)
         {
-            if (*p == '"')
+            if (p[0] == '"')
                 in_dq = 0;
             else
-                tmp->Push(*p);
+                tmp.push_back(p[0]);
         }
-        else if (*p == '\'')
+        else if (p[0] == '\'')
         {
             in_q = 1;
         }
-        else if (*p == '"')
+        else if (p[0] == '"')
         {
             in_dq = 1;
         }
-        else if (IS_SPACE(*p) || *p == ';')
+        else if (IS_SPACE(p[0]) || p[0] == ';')
         {
             break;
         }
         else
         {
-            tmp->Push(*p);
+            tmp.push_back(p[0]);
         }
     }
-    *str = p;
-    return tmp->ptr;
+    return {p, tmp};
 }
 
 static char keymap_initialized = false;
 static struct stat sys_current_keymap_file;
 static struct stat current_keymap_file;
 
-static void
-interpret_keymap(FILE *kf, struct stat *current, int force)
+static void interpret_keymap(FILE *kf, struct stat *current, int force)
 {
-    int fd;
-    struct stat kstat;
-    Str line;
-    char *p, *s, *emsg;
-    int lineno;
-#ifdef USE_M17N
-    CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
-#endif
-    int verbose = 1;
+    // Str line;
+    // char *p, *s, *emsg;
+    // int lineno;
 
+    struct stat kstat;
+    int fd;
     if ((fd = fileno(kf)) < 0 || fstat(fd, &kstat) ||
         (!force &&
          kstat.st_mtime == current->st_mtime &&
@@ -692,42 +714,43 @@ interpret_keymap(FILE *kf, struct stat *current, int force)
         return;
     *current = kstat;
 
-    lineno = 0;
+    int verbose = 1;
+    CharacterEncodingScheme charset = w3mApp::Instance().SystemCharset;
+    int lineno = 0;
     while (!feof(kf))
     {
-        line = Strfgets(kf);
+        auto line = Strfgets(kf);
         lineno++;
         Strip(line);
         if (line->Size() == 0)
             continue;
-#ifdef USE_M17N
+
         line = wc_Str_conv(line, charset, w3mApp::Instance().InnerCharset);
-#endif
-        p = line->ptr;
-        s = getWord(&p);
-        if (*s == '#') /* comment */
+
+        std::string_view p = line->ptr;
+        std::string s;
+        std::tie(p, s) = getWord(p);
+        if (s.size() && s[0] == '#') /* comment */
             continue;
-        if (!strcmp(s, "keymap"))
+        if (s == "keymap")
             ;
-#ifdef USE_M17N
-        else if (!strcmp(s, "charset") || !strcmp(s, "encoding"))
+        else if (s == "charset" || s == "encoding")
         {
-            s = getQWord(&p);
-            if (*s)
-                charset = wc_guess_charset(s, charset);
+            std::tie(p, s) = getQWord(p);
+            if (s.size())
+                charset = wc_guess_charset(s.c_str(), charset);
             continue;
         }
-#endif
-        else if (!strcmp(s, "verbose"))
+        else if (s == "verbose")
         {
-            s = getWord(&p);
-            if (*s)
-                verbose = str_to_bool(s, verbose);
+            std::tie(p, s) = getWord(p);
+            if (s.size())
+                verbose = str_to_bool(s.c_str(), verbose);
             continue;
         }
         else
         { /* error */
-            emsg = Sprintf("line %d: syntax error '%s'", lineno, s)->ptr;
+            auto emsg = Sprintf("line %d: syntax error '%s'", lineno, s)->ptr;
             record_err_message(emsg);
             if (verbose)
                 disp_message_nsec(emsg, false, 1, true, false);

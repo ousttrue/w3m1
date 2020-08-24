@@ -2076,39 +2076,42 @@ void execCmd(w3mApp *w3m)
             return;
         }
     }
-    ExecuteCommand(data);
+    CommandDispatcher::Instance().ExecuteCommand(data);
     displayCurrentbuf(B_NORMAL);
 }
 
 void setAlarm(w3mApp *w3m)
 {
     ClearCurrentKeyData(); /* not allowed in w3m-control: */
-    auto data = w3m->searchKeyData();
-    if (data == NULL || *data == '\0')
+    std::string_view data = w3m->searchKeyData();
+    if (data.empty())
     {
         data = inputStrHist("(Alarm)sec command: ", "", w3mApp::Instance().TextHist);
-        if (data == NULL)
+        if (data.empty())
         {
             displayCurrentbuf(B_NORMAL);
             return;
         }
     }
+    assert(data.size());
 
-    int sec = 0;
+    std::string _sec;
+    std::tie(data, _sec) = getWord(data);
+    int sec = atoi(_sec.c_str());
     Command cmd = nullptr;
-    if (*data != '\0')
-    {
-        sec = atoi(getWord(&data));
-        if (sec > 0)
-            cmd = getFuncList(getWord(&data));
+    if (sec > 0){
+        std::string word;
+        std::tie(data, word) = getWord(data);
+        cmd = getFuncList(word);
     }
 
     if (cmd)
     {
-        data = getQWord(&data);
-        setAlarmEvent(DefaultAlarm(), sec, AL_EXPLICIT, cmd, data);
+        std::string word;
+        std::tie(data, word) = getQWord(data);
+        setAlarmEvent(DefaultAlarm(), sec, AL_EXPLICIT, cmd, word.data());
         disp_message_nsec(Sprintf("%dsec %s %s", sec, "ID",
-                                  data)
+                                  word.c_str())
                               ->ptr,
                           false, 1, false, true);
     }

@@ -208,29 +208,28 @@ static int MainMenuEncode = false;
 
 static MenuItem MainMenuItem[] = {
     /* type        label           variable value func     popup keys data  */
-    {MENU_FUNC, " Back         (b) ", NULL, 0, backBf, NULL, "b", NULL},
-    {MENU_POPUP, " Select Buffer(s) ", NULL, 0, NULL, &SelectMenu, "s",
-     NULL},
-    {MENU_POPUP, " Select Tab   (t) ", NULL, 0, NULL, &SelTabMenu, "tT",
-     NULL},
-    {MENU_FUNC, " View Source  (v) ", NULL, 0, vwSrc, NULL, "vV", NULL},
-    {MENU_FUNC, " Edit Source  (e) ", NULL, 0, editBf, NULL, "eE", NULL},
-    {MENU_FUNC, " Save Source  (S) ", NULL, 0, svSrc, NULL, "S", NULL},
-    {MENU_FUNC, " Reload       (r) ", NULL, 0, reload, NULL, "rR", NULL},
-    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, "", NULL},
-    {MENU_FUNC, " Go Link      (a) ", NULL, 0, followA, NULL, "a", NULL},
-    {MENU_FUNC, "   on New Tab (n) ", NULL, 0, tabA, NULL, "nN", NULL},
-    {MENU_FUNC, " Save Link    (A) ", NULL, 0, svA, NULL, "A", NULL},
-    {MENU_FUNC, " View Image   (i) ", NULL, 0, followI, NULL, "i", NULL},
-    {MENU_FUNC, " Save Image   (I) ", NULL, 0, svI, NULL, "I", NULL},
-    {MENU_FUNC, " View Frame   (f) ", NULL, 0, rFrame, NULL, "fF", NULL},
-    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, "", NULL},
-    {MENU_FUNC, " Bookmark     (B) ", NULL, 0, ldBmark, NULL, "B", NULL},
-    {MENU_FUNC, " Help         (h) ", NULL, 0, ldhelp, NULL, "hH", NULL},
-    {MENU_FUNC, " Option       (o) ", NULL, 0, ldOpt, NULL, "oO", NULL},
-    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, "", NULL},
-    {MENU_FUNC, " Quit         (q) ", NULL, 0, qquitfm, NULL, "qQ", NULL},
-    {MENU_END, "", NULL, 0, nulcmd, NULL, "", NULL},
+    {MENU_FUNC, " Back         (b) ", NULL, 0, backBf, NULL, "b"},
+    {MENU_POPUP, " Select Buffer(s) ", NULL, 0, NULL, &SelectMenu, "s"},
+    {MENU_POPUP, " Select Tab   (t) ", NULL, 0, NULL, &SelTabMenu, "tT"},
+    {MENU_FUNC, " View Source  (v) ", NULL, 0, vwSrc, NULL, "vV"},
+    {MENU_FUNC, " Edit Source  (e) ", NULL, 0, editBf, NULL, "eE"},
+    {MENU_FUNC, " Save Source  (S) ", NULL, 0, svSrc, NULL, "S"},
+    {MENU_FUNC, " Reload       (r) ", NULL, 0, reload, NULL, "rR"},
+    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, ""},
+    {MENU_FUNC, " Go Link      (a) ", NULL, 0, followA, NULL, "a"},
+    {MENU_FUNC, "   on New Tab (n) ", NULL, 0, tabA, NULL, "nN"},
+    {MENU_FUNC, " Save Link    (A) ", NULL, 0, svA, NULL, "A"},
+    {MENU_FUNC, " View Image   (i) ", NULL, 0, followI, NULL, "i"},
+    {MENU_FUNC, " Save Image   (I) ", NULL, 0, svI, NULL, "I"},
+    {MENU_FUNC, " View Frame   (f) ", NULL, 0, rFrame, NULL, "fF"},
+    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, ""},
+    {MENU_FUNC, " Bookmark     (B) ", NULL, 0, ldBmark, NULL, "B"},
+    {MENU_FUNC, " Help         (h) ", NULL, 0, ldhelp, NULL, "hH"},
+    {MENU_FUNC, " Option       (o) ", NULL, 0, ldOpt, NULL, "oO"},
+    {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, ""},
+    {MENU_FUNC, " Quit         (q) ", NULL, 0, qquitfm, NULL, "qQ"},
+    {MENU_END, "", NULL, 0, nulcmd, NULL, ""},
+    // keep indent
 };
 
 /* --- MainMenu (END) --- */
@@ -271,7 +270,7 @@ void new_menu(Menu *menu, MenuItem *item)
     menu->width = 0;
     for (i = 0; i < menu->nitem; i++)
     {
-        if ((p = item[i].keys) != NULL)
+        if ((p = item[i].keys.c_str()) != NULL)
         {
             while (*p)
             {
@@ -283,7 +282,7 @@ void new_menu(Menu *menu, MenuItem *item)
                 p++;
             }
         }
-        l = get_strwidth(item[i].label);
+        l = get_strwidth(item[i].label.c_str());
         if (l > menu->width)
             menu->width = l;
     }
@@ -409,7 +408,7 @@ void draw_menu(Menu *menu)
 void draw_menu_item(Menu *menu, int mselect)
 {
     mvaddnstr(menu->y + mselect - menu->offset, menu->x,
-              menu->item[mselect].label, menu->width);
+              menu->item[mselect].label.c_str(), menu->width);
 }
 
 int select_menu(Menu *menu, int mselect)
@@ -866,7 +865,7 @@ menuForwardSearch(Menu *menu, const char *str, int from)
         from = 0;
     for (i = from; i < menu->nitem; i++)
         if (menu->item[i].type != MENU_NOP &&
-            regexMatch(menu->item[i].label, -1, 1) == 1)
+            regexMatch(menu->item[i].label.c_str(), -1, 1) == 1)
             return i;
     return -1;
 }
@@ -917,7 +916,7 @@ menuBackwardSearch(Menu *menu, const char *str, int from)
         from = menu->nitem - 1;
     for (i = from; i >= 0; i--)
         if (menu->item[i].type != MENU_NOP &&
-            regexMatch(menu->item[i].label, -1, 1) == 1)
+            regexMatch(menu->item[i].label.c_str(), -1, 1) == 1)
             return i;
     return -1;
 }
@@ -1444,7 +1443,6 @@ static void
 interpret_menu(FILE *mf)
 {
     Str line;
-    char *p, *s;
     int in_menu = 0, nmenu = 0, nitem = 0, type;
     MenuItem *item = NULL;
 
@@ -1459,13 +1457,14 @@ interpret_menu(FILE *mf)
 
         line = wc_Str_conv(line, charset, w3mApp::Instance().InnerCharset);
 
-        p = line->ptr;
-        s = getWord(&p);
-        if (*s == '#') /* comment */
+        std::string_view p = line->ptr;
+        std::string s;
+        std::tie(p, s) = getWord(p);
+        if (s.size() && s[0] == '#') /* comment */
             continue;
         if (in_menu)
         {
-            type = setMenuItem(&item[nitem], s, p);
+            type = setMenuItem(&item[nitem], s.data(), p.data());
             if (type == -1)
                 continue; /* error */
             if (type == MENU_END)
@@ -1478,26 +1477,26 @@ interpret_menu(FILE *mf)
                 item[nitem].type = MENU_END;
             }
         }
-        else if (!strcmp(s, "menu"))
+        else if (s == "menu")
         {
-            s = getQWord(&p);
-            if (*s == '\0') /* error */
+            std::tie(p, s) = getQWord(p);
+            if (s.size()) /* error */
                 continue;
             in_menu = 1;
-            if ((nmenu = getMenuN(w3mMenuList, s)) != -1)
+            if ((nmenu = getMenuN(w3mMenuList, s.c_str())) != -1)
                 w3mMenuList[nmenu].item = New(MenuItem);
             else
-                nmenu = addMenuList(&w3mMenuList, s);
+                nmenu = addMenuList(&w3mMenuList, s.c_str());
             item = w3mMenuList[nmenu].item;
             nitem = 0;
             item[nitem].type = MENU_END;
         }
-        else if (!strcmp(s, "charset") || !strcmp(s, "encoding"))
+        else if (s == "charset" || s == "encoding")
         {
-            s = getQWord(&p);
-            if (*s == '\0') /* error */
+            std::tie(p, s) = getQWord(p);
+            if (s.size()) /* error */
                 continue;
-            charset = wc_guess_charset(s, charset);
+            charset = wc_guess_charset(s.c_str(), charset);
         }
     }
 }
@@ -1528,7 +1527,7 @@ void initMenu(void)
 #endif
         for (item = MainMenuItem; item->type != MENU_END; item++)
             item->label =
-                wc_conv(item->label, MainMenuCharset, w3mApp::Instance().InnerCharset)->ptr;
+                wc_conv(item->label.c_str(), MainMenuCharset, w3mApp::Instance().InnerCharset)->ptr;
         MainMenuEncode = true;
     }
 
@@ -1551,11 +1550,8 @@ void initMenu(void)
     }
 }
 
-int setMenuItem(MenuItem *item, char *type, char *line)
+int setMenuItem(MenuItem *item, const char* type, std::string_view line)
 {
-    char *label, *func, *popup, *keys, *data;
-    int n;
-
     if (type == NULL || *type == '\0') /* error */
         return -1;
     if (strcmp(type, "end") == 0)
@@ -1566,16 +1562,20 @@ int setMenuItem(MenuItem *item, char *type, char *line)
     else if (strcmp(type, "nop") == 0)
     {
         item->type = MENU_NOP;
-        item->label = getQWord(&line);
+        std::tie(line, item->label) = getQWord(line);
         return MENU_NOP;
     }
     else if (strcmp(type, "func") == 0)
     {
-        label = getQWord(&line);
-        func = getWord(&line);
-        keys = getQWord(&line);
-        data = getQWord(&line);
-        if (*func == '\0') /* error */
+        std::string label;
+        std::tie(line, label) = getQWord(line);
+        std::string func;
+        std::tie(line, func) = getWord(line);
+        std::string keys;
+        std::tie(line, keys) = getQWord(line);
+        std::string data;
+        std::tie(line, data) = getQWord(line);
+        if (func.empty()) /* error */
             return -1;
         item->type = MENU_FUNC;
         item->label = label;
@@ -1587,15 +1587,19 @@ int setMenuItem(MenuItem *item, char *type, char *line)
     }
     else if (strcmp(type, "popup") == 0)
     {
-        label = getQWord(&line);
-        popup = getQWord(&line);
-        keys = getQWord(&line);
-        if (*popup == '\0') /* error */
+        std::string label;
+        std::tie(line, label) = getQWord(line);
+        std::string popup;
+        std::tie(line, popup) = getQWord(line);
+        std::string keys;
+        std::tie(line, keys) = getQWord(line);
+        if (popup.empty()) /* error */
             return -1;
         item->type = MENU_POPUP;
         item->label = label;
-        if ((n = getMenuN(w3mMenuList, popup)) == -1)
-            n = addMenuList(&w3mMenuList, popup);
+        int n;
+        if ((n = getMenuN(w3mMenuList, popup.data())) == -1)
+            n = addMenuList(&w3mMenuList, popup.data());
         item->popup = w3mMenuList[n].menu;
         item->keys = keys;
         return MENU_POPUP;
@@ -1603,7 +1607,7 @@ int setMenuItem(MenuItem *item, char *type, char *line)
     return -1; /* error */
 }
 
-int addMenuList(MenuList **mlist, char *id)
+int addMenuList(MenuList **mlist, const char *id)
 {
     int n;
     MenuList *list = *mlist;
@@ -1619,11 +1623,9 @@ int addMenuList(MenuList **mlist, char *id)
     return n;
 }
 
-int getMenuN(MenuList *list, char *id)
+int getMenuN(MenuList *list, const char *id)
 {
-    int n;
-
-    for (n = 0; list->id != NULL; list++, n++)
+    for (int n = 0; list->id != NULL; list++, n++)
     {
         if (strcmp(id, list->id) == 0)
             return n;

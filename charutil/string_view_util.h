@@ -161,7 +161,7 @@ inline bool ic_eq(std::string_view l, std::string_view r)
     return true;
 }
 
-inline bool ic_begin_with(std::string_view src, std::string_view find)
+inline bool ic_starts_with(std::string_view src, std::string_view find)
 {
     if (src.size() < find.size())
     {

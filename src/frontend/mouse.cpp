@@ -3,6 +3,7 @@
  */
 
 #include <stdio.h>
+#include <string_view_util.h>
 #include "gc_helper.h"
 #include "rc.h"
 #include "indep.h"
@@ -26,13 +27,13 @@
 struct MouseActionMap
 {
     Command func;
-    char *data;
+    std::string data;
 };
 
 struct MouseAction
 {
-    const char *menu_str;
-    const char *lastline_str;
+    std::string menu_str;
+    std::string lastline_str;
     int menu_width;
     int lastline_width;
     int in_action;
@@ -48,27 +49,27 @@ struct MouseAction
 static MouseAction mouse_action;
 
 static MouseAction default_mouse_action = {
-    NULL,
+    "",
     "<=UpDn",
     0,
     6,
     false,
     0,
     0,
-    {{movMs, NULL}, {backBf, NULL}, {menuMs, NULL}}, /* default */
-    {{NULL, NULL}, {NULL, NULL}, {NULL, NULL}},      /* anchor */
-    {{followA, NULL}, {NULL, NULL}, {NULL, NULL}},   /* active */
-    {{tabMs, NULL}, {closeTMs, NULL}, {NULL, NULL}}, /* tab */
+    {{movMs, ""}, {backBf, ""}, {menuMs, ""}}, /* default */
+    {{NULL, ""}, {NULL, ""}, {NULL, ""}},      /* anchor */
+    {{followA, ""}, {NULL, ""}, {NULL, ""}},   /* active */
+    {{tabMs, ""}, {closeTMs, ""}, {NULL, ""}}, /* tab */
     {NULL, NULL, NULL},                              /* menu */
     {NULL, NULL, NULL}                               /* lastline */
 };
 static MouseActionMap default_lastline_action[6] = {
-    {backBf, NULL},
-    {backBf, NULL},
-    {pgBack, NULL},
-    {pgBack, NULL},
-    {pgFore, NULL},
-    {pgFore, NULL}};
+    {backBf, ""},
+    {backBf, ""},
+    {pgBack, ""},
+    {pgBack, ""},
+    {pgFore, ""},
+    {pgFore, ""}};
 
 void DisableMouseAction()
 {
@@ -94,7 +95,7 @@ bool TryGetMouseActionPosition(int *x, int *y)
 
 const char *GetMouseActionMenuStr()
 {
-    return mouse_action.menu_str;
+    return mouse_action.menu_str.c_str();
 };
 
 int GetMouseActionMenuWidth()
@@ -104,72 +105,66 @@ int GetMouseActionMenuWidth()
 
 const char *GetMouseActionLastlineStr()
 {
-    return mouse_action.lastline_str;
+    return mouse_action.lastline_str.c_str();
 }
 
-static void
-setMouseAction0(const char **str, int *width, MouseActionMap **map, char *p)
+static std::string
+setMouseAction0(int *width, MouseActionMap **map, std::string_view p)
 {
-    char *s;
-    int b, w, x;
-
-    s = getQWord(&p);
-    if (!*s)
+    std::string s;
+    std::tie(p, s) = getQWord(p);
+    if (s.empty())
     {
-        *str = NULL;
         width = 0;
-        for (b = 0; b < 3; b++)
+        for (int b = 0; b < 3; b++)
             map[b] = NULL;
-        return;
+        return "";
     }
-    w = *width;
-    *str = s;
-    *width = get_strwidth(s);
+
+    int w = *width;
+    auto str = s;
+    *width = get_strwidth(s.data());
     if (*width >= LIMIT_MOUSE_MENU)
         *width = LIMIT_MOUSE_MENU;
     if (*width <= w)
-        return;
-    for (b = 0; b < 3; b++)
+        return str;
+    for (int b = 0; b < 3; b++)
     {
         if (!map[b])
             continue;
         map[b] = New_Reuse(MouseActionMap, map[b], *width);
-        for (x = w + 1; x < *width; x++)
+        for (int x = w + 1; x < *width; x++)
         {
             map[b][x].func = NULL;
-            map[b][x].data = NULL;
+            map[b][x].data.clear();
         }
     }
 }
 
 static void
-setMouseAction1(MouseActionMap **map, int width, char *p)
+setMouseAction1(MouseActionMap **map, int width, std::string_view p)
 {
-    char *s;
-    int x, x2;
-
     if (!*map)
     {
         *map = New_N(MouseActionMap, width);
-        for (x = 0; x < width; x++)
+        for (int x = 0; x < width; x++)
         {
             (*map)[x].func = NULL;
-            (*map)[x].data = NULL;
+            (*map)[x].data.clear();
         }
     }
-    s = getWord(&p);
-    x = atoi(s);
-    if (!(IS_DIGIT(*s) && x >= 0 && x < width))
+    std::string s;
+    std::tie(p, s) = getWord(p);
+    auto x = atoi(s.c_str());
+    if (!(IS_DIGIT(s[0]) && x >= 0 && x < width))
         return; /* error */
-    s = getWord(&p);
-    x2 = atoi(s);
-    if (!(IS_DIGIT(*s) && x2 >= 0 && x2 < width))
+    std::tie(p, s) = getWord(p);
+    int x2 = atoi(s.c_str());
+    if (!(IS_DIGIT(s[0]) && x2 >= 0 && x2 < width))
         return; /* error */
-    s = getWord(&p);
+    std::tie(p, s) = getWord(p);
     Command f = getFuncList(s);
-    s = getQWord(&p);
-    if (!*s)
-        s = NULL;
+    std::tie(p, s) = getQWord(p);
     for (; x <= x2; x++)
     {
         (*map)[x].func = f;
@@ -178,15 +173,12 @@ setMouseAction1(MouseActionMap **map, int width, char *p)
 }
 
 static void
-setMouseAction2(MouseActionMap *map, char *p)
+setMouseAction2(MouseActionMap *map, std::string_view p)
 {
-    char *s;
-
-    s = getWord(&p);
+    std::string s;
+    std::tie(p, s) = getWord(p);
     Command f = getFuncList(s);
-    s = getQWord(&p);
-    if (!*s)
-        s = NULL;
+    std::tie(p, s) = getQWord(p);
     map->func = f;
     map->data = s;
 }
@@ -194,66 +186,59 @@ setMouseAction2(MouseActionMap *map, char *p)
 static void
 interpret_mouse_action(FILE *mf)
 {
-    Str line;
-    char *p;
-    const char *s;
-    int b;
-
     while (!feof(mf))
     {
-        line = Strfgets(mf);
+        auto line = Strfgets(mf);
         Strip(line);
         if (line->Size() == 0)
             continue;
-        p = conv_from_system(line->ptr);
-        s = getWord(&p);
-        if (*s == '#') /* comment */
+        std::string_view p = conv_from_system(line->ptr);
+        std::string s;
+        std::tie(p, s) = getWord(p);
+        if (s.size() && s[0] == '#') /* comment */
             continue;
-        if (!strcmp(s, "menu"))
+        if (s == "menu")
         {
-            setMouseAction0(&mouse_action.menu_str, &mouse_action.menu_width,
-                            mouse_action.menu_map, p);
+            mouse_action.menu_str = setMouseAction0(&mouse_action.menu_width, mouse_action.menu_map, p);
             continue;
         }
-        else if (!strcmp(s, "lastline"))
+        else if (s == "lastline")
         {
-            setMouseAction0(&mouse_action.lastline_str,
-                            &mouse_action.lastline_width,
-                            mouse_action.lastline_map, p);
+            mouse_action.lastline_str = setMouseAction0(&mouse_action.lastline_width, mouse_action.lastline_map, p);
             continue;
         }
-        if (strcmp(s, "button"))
+        if (s ==  "button")
             continue; /* error */
-        s = getWord(&p);
-        b = atoi(s) - 1;
+        std::tie(p, s) = getWord(p);
+        auto b = atoi(s.c_str()) - 1;
         if (!(b >= 0 && b <= 2))
             continue; /* error */
-        SKIP_BLANKS(&p);
-        if (IS_DIGIT(*p))
+        p = svu::strip_left(p);
+        if (IS_DIGIT(p[0]))
             s = "menu";
         else
-            s = getWord(&p);
-        if (!strcasecmp(s, "menu"))
+            std::tie(p, s) = getWord(p);
+        if (svu::ic_eq(s, "menu"))
         {
-            if (!mouse_action.menu_str)
+            if (mouse_action.menu_str.empty())
                 continue;
             setMouseAction1(&mouse_action.menu_map[b], mouse_action.menu_width,
                             p);
         }
-        else if (!strcasecmp(s, "lastline"))
+        else if (svu::ic_eq(s, "lastline"))
         {
-            if (!mouse_action.lastline_str)
+            if (mouse_action.lastline_str.empty())
                 continue;
             setMouseAction1(&mouse_action.lastline_map[b],
                             mouse_action.lastline_width, p);
         }
-        else if (!strcasecmp(s, "default"))
+        else if (svu::ic_eq(s, "default"))
             setMouseAction2(&mouse_action.default_map[b], p);
-        else if (!strcasecmp(s, "anchor"))
+        else if (svu::ic_eq(s, "anchor"))
             setMouseAction2(&mouse_action.anchor_map[b], p);
-        else if (!strcasecmp(s, "active"))
+        else if (svu::ic_eq(s, "active"))
             setMouseAction2(&mouse_action.active_map[b], p);
-        else if (!strcasecmp(s, "tab"))
+        else if (svu::ic_eq(s, "tab"))
             setMouseAction2(&mouse_action.tab_map[b], p);
     }
 }
@@ -324,7 +309,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
     }
     else if (y == (::Terminal::lines() - 1))
     {
-        if (mouse_action.lastline_str && x >= 0 &&
+        if (mouse_action.lastline_str.size() && x >= 0 &&
             x < mouse_action.lastline_width)
         {
             if (mouse_action.lastline_map[(int)btn])

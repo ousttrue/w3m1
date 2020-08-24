@@ -803,18 +803,18 @@ write_end:
 struct pre_form_item
 {
     int type;
-    char *name;
-    char *value;
+    std::string name;
+    std::string value;
     int checked;
 };
 using pre_form_item_ptr = std::shared_ptr<pre_form_item>;
 
 struct pre_form
 {
-    const char *url;
+    std::string url;
     Regex *re_url;
-    const char *name;
-    const char *action;
+    std::string name;
+    std::string action;
     std::vector<pre_form_item_ptr> item;
 };
 using pre_form_ptr = std::shared_ptr<pre_form>;
@@ -833,9 +833,9 @@ static pre_form_ptr add_pre_form(const char *url, const char *name, const char *
             newForm->url = allocStr(url + 1, l - 2);
         else
             newForm->url = url + 1;
-        newForm->re_url = newRegex(newForm->url, false, NULL, NULL);
+        newForm->re_url = newRegex(newForm->url.c_str(), false, NULL, NULL);
         if (!newForm->re_url)
-            newForm->url = NULL;
+            newForm->url.clear();
     }
     else if (url)
     {
@@ -850,7 +850,7 @@ static pre_form_ptr add_pre_form(const char *url, const char *name, const char *
 }
 
 static pre_form_item_ptr add_pre_form_item(pre_form_ptr pf, int type,
-                                           char *name, char *value, char *checked)
+                                           std::string_view name, std::string_view value, std::string_view checked)
 {
     if (!pf)
         return NULL;
@@ -859,7 +859,7 @@ static pre_form_item_ptr add_pre_form_item(pre_form_ptr pf, int type,
     newForm->type = type;
     newForm->name = name;
     newForm->value = value;
-    if (checked && *checked && (!strcmp(checked, "0") || strcasecmp(checked, "off") || !strcasecmp(checked, "no")))
+    if (checked == "0" || checked == "off" || checked == "no")
         newForm->checked = 0;
     else
         newForm->checked = 1;
@@ -899,8 +899,6 @@ void loadPreForm(void)
     PreForm.clear();
     while (1)
     {
-        char *p, *s, *arg;
-
         line = Strfgets(fp);
         if (line->Size() == 0)
             break;
@@ -911,38 +909,43 @@ void loadPreForm(void)
             continue;
         }
         Strip(line);
-        p = line->ptr;
-        if (*p == '#' || *p == '\0')
+        std::string_view p = line->ptr;
+        if(p.empty())
+            continue;
+        if (p.size() && p[0] == '#')
             continue; /* comment or empty line */
-        s = getWord(&p);
-        arg = getWord(&p);
-
-        if (!strcmp(s, "url"))
+        std::string s;
+        std::tie(p, s) = getWord(p);
+        std::string arg;
+        std::tie(p, arg) = getWord(p);
+        if (s == "url")
         {
-            if (!arg || !*arg)
+            if (arg.empty())
                 continue;
-            p = getQWord(&p);
-            pf = add_pre_form(arg, NULL, p);
+
+            std::tie(p, s)= getQWord(p);
+            pf = add_pre_form(arg.c_str(), NULL, p.data());
             pi = pf->item.size() ? pf->item[0] : nullptr;
             continue;
         }
         if (!pf)
             continue;
-        if (!strcmp(s, "form"))
+        if (s == "form")
         {
-            if (!arg || !*arg)
+            if (arg.empty())
                 continue;
-            s = getQWord(&p);
-            p = getQWord(&p);
-            if (!p || !*p)
+            std::tie(p, s) = getQWord(p);
+            std::string x;
+            std::tie(p, x) = getQWord(p);
+            if (p.empty())
             {
                 p = s;
-                s = NULL;
+                s.clear();
             }
             if (pf->item.size())
             {
                 auto prev = pf;
-                auto pf = add_pre_form("", s, p);
+                auto pf = add_pre_form("", s.data(), p.data());
                 /* copy previous URL */
                 pf->url = prev->url;
                 pf->re_url = prev->re_url;
@@ -950,35 +953,35 @@ void loadPreForm(void)
             else
             {
                 pf->name = s;
-                pf->action = (p && *p) ? p : NULL;
+                pf->action = p;
             }
             pi = pf->item.size() ? pf->item[0] : nullptr;
             continue;
         }
-        if (!strcmp(s, "text"))
+        if (s == "text")
             type = FORM_INPUT_TEXT;
-        else if (!strcmp(s, "file"))
+        else if (s == "file")
             type = FORM_INPUT_FILE;
-        else if (!strcmp(s, "passwd") || !strcmp(s, "password"))
+        else if (s == "passwd" || s == "password")
             type = FORM_INPUT_PASSWORD;
-        else if (!strcmp(s, "checkbox"))
+        else if (s == "checkbox")
             type = FORM_INPUT_CHECKBOX;
-        else if (!strcmp(s, "radio"))
+        else if (s == "radio")
             type = FORM_INPUT_RADIO;
-        else if (!strcmp(s, "submit"))
+        else if (s == "submit")
             type = FORM_INPUT_SUBMIT;
-        else if (!strcmp(s, "image"))
+        else if (s == "image")
             type = FORM_INPUT_IMAGE;
-        else if (!strcmp(s, "select"))
+        else if (s == "select")
             type = FORM_SELECT;
-        else if (!strcmp(s, "textarea"))
+        else if (s == "textarea")
         {
             type = FORM_TEXTAREA;
             name = Strnew(arg)->ptr;
             textarea = Strnew();
             continue;
         }
-        else if (textarea && name && !strcmp(s, "/textarea"))
+        else if (textarea && name && s == "/textarea")
         {
             pi = add_pre_form_item(pf, type, name, textarea->ptr, NULL);
             textarea = NULL;
@@ -987,8 +990,10 @@ void loadPreForm(void)
         }
         else
             continue;
-        s = getQWord(&p);
-        pi = add_pre_form_item(pf, type, arg, s, getQWord(&p));
+        std::tie(p, s) = getQWord(p);
+        std::string x;
+        std::tie(p, x) = getQWord(p);
+        pi = add_pre_form_item(pf, type, arg, s.c_str(), x.c_str());
     }
     fclose(fp);
 }
@@ -1013,9 +1018,9 @@ void preFormUpdateBuffer(const BufferPtr &buf)
             if (!RegexMatch(pf->re_url, url->ptr, url->Size(), 1))
                 continue;
         }
-        else if (pf->url)
+        else if (pf->url.size())
         {
-            if (buf->currentURL.ToStr()->Cmp(pf->url) != 0)
+            if (buf->currentURL.ToStr()->Cmp(pf->url.c_str()) != 0)
                 continue;
         }
         else
@@ -1025,9 +1030,9 @@ void preFormUpdateBuffer(const BufferPtr &buf)
             a = buf->formitem.anchors[i];
             fi = a->item;
             fl = fi->parent.lock();
-            if (pf->name && (fl->name.empty() || fl->name != pf->name))
+            if (pf->name.size() && (fl->name.empty() || fl->name != pf->name))
                 continue;
-            if (pf->action && (fl->action.empty() || fl->action != pf->action))
+            if (pf->action.size() && (fl->action.empty() || fl->action != pf->action))
                 continue;
             for (auto &pi : pf->item)
             {
@@ -1036,9 +1041,9 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                 if (pi->type == FORM_INPUT_SUBMIT ||
                     pi->type == FORM_INPUT_IMAGE)
                 {
-                    if ((!pi->name || !*pi->name ||
+                    if ((pi->name.empty() ||
                          (fi->name == pi->name)) &&
-                        (!pi->value || !*pi->value ||
+                        (pi->value.empty() ||
                          (fi->value == pi->value)))
                         buf->submit = a;
                     continue;
@@ -1074,7 +1079,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
                     for (auto opt = fi->select_option.begin(); opt != fi->select_option.end();
                          ++j, ++opt)
                     {
-                        if (pi->value && opt->value.size() && opt->value == pi->value)
+                        if (opt->value.size() && opt->value == pi->value)
                         {
                             fi->selected = j;
                             fi->value = opt->value;

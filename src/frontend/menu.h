@@ -40,13 +40,13 @@ struct Menu;
 struct MenuItem
 {
     int type;
-    const char *label;
+    std::string label;
     int *variable;
     int value;
     Command func;
     Menu *popup;
-    const char *keys;
-    const char *data;
+    std::string keys;
+    std::string data;
 };
 
 struct Menu
@@ -88,9 +88,9 @@ int action_menu(Menu *menu);
 void popup_menu(Menu *parent, Menu *menu);
 void guess_menu_xy(Menu *menu, int width, int *x, int *y);
 void new_option_menu(Menu *menu, tcb::span<std::string> label, int *variable, Command func);
-int setMenuItem(MenuItem *item, char *type, char *line);
-int addMenuList(MenuList **list, char *id);
-int getMenuN(MenuList *list, char *id);
+int setMenuItem(MenuItem *item, const char* type, std::string_view line);
+int addMenuList(MenuList **list, const char *id);
+int getMenuN(MenuList *list, const char *id);
 void popupMenu(int x, int y, Menu *menu);
 void optionMenu(int x, int y, tcb::span<std::string> label, int *variable, int initial, Command func);
 void mainMenu(int x, int y);

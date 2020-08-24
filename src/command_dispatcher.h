@@ -18,17 +18,15 @@ void escKeyProc(char c);
 void escbKeyProc(char c);
 void MultiKeyProc(char c);
 void DispatchKey(int c);
-void ExecuteCommand(char *data);
 char *GetKeyData(int key);
-void SetKeymap(char *p, int lineno, int verbose);
+void SetKeymap(std::string_view p, int lineno, int verbose);
 
 void RegisterCommand(const char *name, const char *key, const char *description, Command command);
-Command getFuncList(char *name);
+Command getFuncList(const std::string &name);
 
-char *getQWord(char **str);
-char *getWord(char **str);
+std::tuple<std::string_view, std::string> getQWord(std::string_view str);
+std::tuple<std::string_view, std::string_view> getWord(std::string_view str);
 void initKeymap(int force);
-int getKey(char *s);
 
 class CommandDispatcher
 {
@@ -38,4 +36,5 @@ public:
         static CommandDispatcher s_instance;
         return s_instance;
     }
+    void ExecuteCommand(std::string_view data);
 };
