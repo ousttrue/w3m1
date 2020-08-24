@@ -596,7 +596,7 @@ BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
     //     !stat(cache->file, &st))
     //     goto image_buffer;
 
-    TRAP_ON;
+    // TRAP_ON;
     // if (stream->type() != IST_ENCODED)
     //     stream = newEncodedStream(stream, uf->encoding);
     // if (save2tmp(uf, cache->file) < 0)
@@ -604,7 +604,7 @@ BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
     //     TRAP_OFF;
     //     return NULL;
     // }
-    TRAP_OFF;
+    // TRAP_OFF;
 
     cache->loaded = IMG_FLAG_LOADED;
     cache->index = 0;

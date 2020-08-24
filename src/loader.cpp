@@ -409,7 +409,7 @@ BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEnco
         newBuf->AddNewLine(PropertiedString(lineBuf2), nlines);
     }
 _end:
-    TRAP_OFF;
+    // TRAP_OFF;
 
     newBuf->CurrentAsLast();
 
