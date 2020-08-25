@@ -21,11 +21,11 @@ enum MailcapFlags
 struct Mailcap
 {
     std::string type;
-    const char *viewer;
-    MailcapFlags flags;
-    const char *test;
-    const char *nametemplate;
-    const char *edit;
+    std::string viewer;
+    MailcapFlags flags = MAILCAP_NONE;
+    std::string test;
+    std::string nametemplate;
+    std::string edit;
 
     int match(std::string_view src)
     {
@@ -64,8 +64,6 @@ struct Mailcap
 static Mailcap DefaultMailcap[] = {
     {"image/*", DEF_IMAGE_VIEWER " %s", MAILCAP_NONE},
     {"audio/basic", DEF_AUDIO_PLAYER " %s", MAILCAP_NONE},
-    {NULL, NULL, MAILCAP_NONE}
-    //
 };
 
 static std::vector<std::string> mailcap_list;
@@ -87,9 +85,9 @@ Mailcap *searchMailcap(tcb::span<Mailcap> list, std::string_view type)
         auto i = mp.match(type.data());
         if (i > level)
         {
-            if (mp.test)
+            if (mp.test.size())
             {
-                Str command = unquote_mailcap(mp.test, type.data(), NULL, NULL, NULL);
+                Str command = unquote_mailcap(mp.test.data(), type.data(), NULL, NULL, NULL);
                 if (system(command->ptr) != 0)
                     continue;
             }
