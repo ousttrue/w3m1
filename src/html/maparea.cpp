@@ -1,6 +1,6 @@
 #include "maparea.h"
 #include "indep.h"
-#include "html/frame.h"
+
 #include "file.h"
 #include "ctrlcode.h"
 #include "textlist.h"
@@ -406,60 +406,6 @@ append_link_info(BufferPtr buf, Str html)
     html->Push("</table>\n");
 }
 
-/* append frame URL */
-static void
-append_frame_info(BufferPtr buf, Str html, struct frameset *set, int level)
-{
-    char *p, *q;
-    int i, j;
-
-    if (!set)
-        return;
-
-    for (i = 0; i < set->col * set->row; i++)
-    {
-        union frameset_element frame = set->frame[i];
-        if (frame.element != NULL)
-        {
-            switch (frame.element->attr)
-            {
-            case F_UNLOADED:
-            case F_BODY:
-                if (frame.body->url == NULL)
-                    break;
-                html->Push("<pre_int>");
-                for (j = 0; j < level; j++)
-                    html->Push("   ");
-                q = html_quote(frame.body->url);
-                Strcat_m_charp(html, "<a href=\"", q, "\">", NULL);
-                if (frame.body->name)
-                {
-                    p = html_quote(url_unquote_conv(frame.body->name,
-                                                    buf->document_charset));
-                    html->Push(p);
-                }
-                if (w3mApp::Instance().DecodeURL)
-                    p = html_quote(url_unquote_conv(frame.body->url,
-                                                    buf->document_charset));
-                else
-                    p = q;
-                Strcat_m_charp(html, " ", p, "</a></pre_int><br>\n", NULL);
-#ifdef USE_SSL
-                if (frame.body->ssl_certificate)
-                    Strcat_m_charp(html,
-                                   "<blockquote><h2>SSL certificate</h2><pre>\n",
-                                   html_quote(frame.body->ssl_certificate),
-                                   "</pre></blockquote>\n", NULL);
-#endif
-                break;
-            case F_FRAMESET:
-                append_frame_info(buf, html, frame.set, level + 1);
-                break;
-            }
-        }
-    }
-}
-
 /* 
  * information of current page and link 
  */
@@ -469,7 +415,7 @@ page_info_panel(const BufferPtr &buf)
     Str tmp = Strnew_size(1024);
     AnchorPtr a;
     TextListItem *ti;
-    struct frameset *f_set = NULL;
+
     char *p, *q;
 
     wc_ces_list *list;
@@ -590,11 +536,11 @@ page_info_panel(const BufferPtr &buf)
     //          tab->BackBuffer(buf) != NULL && tab->BackBuffer(buf)->frameset != NULL)
     //     f_set = tab->BackBuffer(buf)->frameset;
 
-    if (f_set)
-    {
-        tmp->Push("<hr width=50%><h1>Frame information</h1>\n");
-        append_frame_info(buf, tmp, f_set, 0);
-    }
+    // if (f_set)
+    // {
+    //     tmp->Push("<hr width=50%><h1>Frame information</h1>\n");
+    //     append_frame_info(buf, tmp, f_set, 0);
+    // }
 
     if (buf->ssl_certificate.size())
         Strcat_m_charp(tmp, "<h1>SSL certificate</h1><pre>\n",

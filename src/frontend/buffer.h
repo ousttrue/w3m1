@@ -23,14 +23,10 @@ struct TextList;
 enum LinkBufferTypes
 {
     LB_NOLINK = -1,
-    LB_FRAME = 0, /* rFrame() */
-    LB_N_FRAME = 1,
-    LB_INFO = 2, /* pginfo() */
-
+    LB_INFO = 0, /* pginfo() */
     // HTML source
-    LB_N_INFO = 3,
-    LB_SOURCE = 4, /* vwSrc() */
-
+    LB_N_INFO,
+    LB_SOURCE, /* vwSrc() */
     LB_N_SOURCE = LB_SOURCE
 };
 const int MAX_LB = 5;
@@ -39,7 +35,6 @@ enum BufferProps : int16_t
 {
     BP_NORMAL = 0x0,
     BP_PIPE = 0x1,
-    BP_FRAME = 0x2,
     BP_INTERNAL = 0x8,
     BP_NO_URL = 0x10,
     BP_REDIRECTED = 0x20,
@@ -344,8 +339,6 @@ public:
     std::string baseTarget;
     int real_scheme = 0;
     std::string sourcefile;
-    struct frameset *frameset = nullptr;
-    struct frameset_queue *frameQ = nullptr;
 
     size_t trbyte = 0;
     char check_url = 0;

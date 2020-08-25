@@ -7,7 +7,7 @@
 #include "gc_helper.h"
 #include "rc.h"
 #include "urimethod.h"
-#include "html/frame.h"
+
 #include "frontend/display.h"
 #include "html/parsetag.h"
 #include "public.h"

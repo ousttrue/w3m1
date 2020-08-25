@@ -38,9 +38,6 @@ class HtmlContext
 
     HtmlTags internal = HTML_UNKNOWN;
 
-    union frameset_element *idFrame = nullptr;
-    std::vector<struct frameset *> frameset_s;
-
     std::vector<int> form_stack;
     std::vector<FormPtr> forms;
 

@@ -149,7 +149,6 @@ add_executable(w3m
     src/html/form.cpp
     src/html/parsetag.cpp
     src/html/html.cpp
-    src/html/frame.cpp
     src/html/maparea.cpp
     src/html/image.cpp
     src/html/tokenizer.cpp

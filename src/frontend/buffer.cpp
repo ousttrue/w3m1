@@ -30,8 +30,6 @@
 #include <iostream>
 
 static int REV_LB[MAX_LB] = {
-    LB_N_FRAME,
-    LB_FRAME,
     LB_N_INFO,
     LB_INFO,
     LB_N_SOURCE,
@@ -77,18 +75,13 @@ Buffer::~Buffer()
     if (sourcefile.size() &&
         (real_type.empty() || real_type.starts_with("image/")))
     {
-        if (real_scheme != SCM_LOCAL || bufferprop & BP_FRAME)
+        if (real_scheme != SCM_LOCAL)
             unlink(sourcefile.c_str());
     }
     if (header_source.size())
         unlink(header_source.c_str());
     if (mailcap_source.size())
         unlink(mailcap_source.c_str());
-    while (frameset)
-    {
-        deleteFrameSet(frameset);
-        frameset = popFrameTree(&(frameQ));
-    }
 }
 
 void Buffer::TmpClear()
@@ -305,8 +298,6 @@ void Buffer::CopyFrom(BufferPtr src)
     baseTarget = src->baseTarget;
     real_scheme = src->real_scheme;
     sourcefile = src->sourcefile;
-    frameset = src->frameset;
-    frameQ = src->frameQ;
 
     trbyte = src->trbyte;
     check_url = src->check_url;

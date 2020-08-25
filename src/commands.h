@@ -102,7 +102,6 @@ void docCSet(w3mApp *w3m, const CommandContext &context);
 void defCSet(w3mApp *w3m, const CommandContext &context);
 void chkURL(w3mApp *w3m, const CommandContext &context);
 void chkWORD(w3mApp *w3m, const CommandContext &context);
-void rFrame(w3mApp *w3m, const CommandContext &context);
 void extbrz(w3mApp *w3m, const CommandContext &context);
 void linkbrz(w3mApp *w3m, const CommandContext &context);
 void curlno(w3mApp *w3m, const CommandContext &context);

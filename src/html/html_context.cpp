@@ -3,7 +3,7 @@
 #include "html/tokenizer.h"
 #include "html/tagstack.h"
 #include "html/image.h"
-#include "html/frame.h"
+
 #include "html/form.h"
 #include "html/maparea.h"
 #include "stream/compression.h"
@@ -1251,19 +1251,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         break;
     case HTML_A:
     {
-        char *p;
-        if (renderFrameSet &&
-            tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
-        {
-            p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-            if (!this->idFrame || strcmp(this->idFrame->body->name, p))
-            {
-                this->idFrame = search_frame(renderFrameSet, p);
-                if (this->idFrame && this->idFrame->body->attr != F_BODY)
-                    this->idFrame = nullptr;
-            }
-        }
-        p = nullptr;
+        char *p = nullptr;
         auto q = Strnew(buf->baseTarget)->ptr;
         char *id = nullptr;
         if (tag->TryGetAttributeValue(ATTR_NAME, &id))
@@ -1300,11 +1288,6 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
                 buf->hmarklist[h].invalid = 0;
                 hseq = -hseq;
             }
-        }
-        if (id && this->idFrame)
-        {
-            auto a = Anchor::CreateName(id, currentLn(buf), pos);
-            this->idFrame->body->nameList.Put(a);
         }
         if (p)
         {
@@ -1576,45 +1559,45 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
     //
     // frame
     //
-    case HTML_FRAMESET:
-    {
-        auto frame = newFrameSet(tag);
-        if (frame)
-        {
-            auto sp = this->frameset_s.size();
-            this->frameset_s.push_back(frame);
-            if (sp == 0)
-            {
-                if (buf->frameset == nullptr)
-                {
-                    buf->frameset = frame;
-                }
-                else
-                {
-                    pushFrameTree(&(buf->frameQ), frame, nullptr);
-                }
-            }
-            else
-            {
-                addFrameSetElement(this->frameset_s[sp - 1], *(union frameset_element *)frame);
-            }
-        }
-        break;
-    }
-    case HTML_N_FRAMESET:
-        if (!this->frameset_s.empty())
-        {
-            this->frameset_s.pop_back();
-        }
-        break;
-    case HTML_FRAME:
-        if (!this->frameset_s.empty())
-        {
-            union frameset_element element;
-            element.body = newFrame(tag, buf);
-            addFrameSetElement(this->frameset_s.back(), element);
-        }
-        break;
+    // case HTML_FRAMESET:
+    // {
+    //     auto frame = newFrameSet(tag);
+    //     if (frame)
+    //     {
+    //         auto sp = this->frameset_s.size();
+    //         this->frameset_s.push_back(frame);
+    //         if (sp == 0)
+    //         {
+    //             if (buf->frameset == nullptr)
+    //             {
+    //                 buf->frameset = frame;
+    //             }
+    //             else
+    //             {
+    //                 pushFrameTree(&(buf->frameQ), frame, nullptr);
+    //             }
+    //         }
+    //         else
+    //         {
+    //             addFrameSetElement(this->frameset_s[sp - 1], *(union frameset_element *)frame);
+    //         }
+    //     }
+    //     break;
+    // }
+    // case HTML_N_FRAMESET:
+    //     if (!this->frameset_s.empty())
+    //     {
+    //         this->frameset_s.pop_back();
+    //     }
+    //     break;
+    // case HTML_FRAME:
+    //     if (!this->frameset_s.empty())
+    //     {
+    //         union frameset_element element;
+    //         element.body = newFrame(tag, buf);
+    //         addFrameSetElement(this->frameset_s.back(), element);
+    //     }
+    //     break;
 
     case HTML_BASE:
     {
@@ -1760,23 +1743,6 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         {
             id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
             buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
-        }
-        char *p = nullptr;
-        if (renderFrameSet &&
-            tag->TryGetAttributeValue(ATTR_FRAMENAME, &p))
-        {
-            p = wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-            if (!this->idFrame || strcmp(this->idFrame->body->name, p))
-            {
-                this->idFrame = search_frame(renderFrameSet, p);
-                if (this->idFrame && this->idFrame->body->attr != F_BODY)
-                    this->idFrame = nullptr;
-            }
-        }
-        if (id && this->idFrame)
-        {
-            auto a = Anchor::CreateName(id, currentLn(buf), pos);
-            this->idFrame->body->nameList.Put(a);
         }
     }
 }

@@ -12,7 +12,7 @@
 #include "html/image.h"
 #include "symbol.h"
 #include "tagstack.h"
-#include "frame.h"
+
 #include "public.h"
 #include "commands.h"
 #include "html/maparea.h"
@@ -122,8 +122,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 
     newBuf->trbyte = trbyte + linelen;
 
-    if (!(newBuf->bufferprop & BP_FRAME))
-        newBuf->document_charset = context.DocCharset();
+    newBuf->document_charset = context.DocCharset();
 
     ImageFlags image_flag;
     if (newBuf->image_flag)

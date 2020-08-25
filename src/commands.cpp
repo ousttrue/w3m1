@@ -13,7 +13,7 @@
 #include "myctype.h"
 #include "public.h"
 #include "regex.h"
-#include "html/frame.h"
+
 #include "command_dispatcher.h"
 #include "frontend/menu.h"
 #include "html/image.h"
@@ -541,7 +541,6 @@ void selBuf(w3mApp *w3m, const CommandContext &context)
             break;
         }
     } while (!ok);
-
 }
 
 /* Suspend (on BSD), or run interactive shell (on SysV) */
@@ -572,7 +571,7 @@ void goLine(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    
+
     if (context.prec_num())
         buf->_goLine("^", context.prec_num());
     else if (context.data.size())
@@ -627,10 +626,10 @@ void editBf(w3mApp *w3m, const CommandContext &context)
 {
     const char *fn = GetCurrentTab()->GetCurrentBuffer()->filename.c_str();
     Str cmd;
-    if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                                       /* Behaving as a pager */
-        (GetCurrentTab()->GetCurrentBuffer()->type.empty() && GetCurrentTab()->GetCurrentBuffer()->edit.empty()) ||                     /* Reading shell */
-        GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentTab()->GetCurrentBuffer()->currentURL.path == "-" || /* file is std input  */
-        GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME)
+    if (fn == NULL || GetCurrentTab()->GetCurrentBuffer()->pagerSource != NULL ||                                                    /* Behaving as a pager */
+        (GetCurrentTab()->GetCurrentBuffer()->type.empty() && GetCurrentTab()->GetCurrentBuffer()->edit.empty()) ||                  /* Reading shell */
+        GetCurrentTab()->GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentTab()->GetCurrentBuffer()->currentURL.path == "-" /* file is std input  */
+    )
     { /* Frame */
         disp_err_message("Can't edit other than local file", true);
         return;
@@ -1454,10 +1453,6 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = tab->GetCurrentBuffer();
-    if (buf->type.empty() || buf->bufferprop & BP_FRAME)
-    {
-        return;
-    }
 
     // {
     //     BufferPtr link;
@@ -1575,47 +1570,6 @@ void reload(w3mApp *w3m, const CommandContext &context)
 
     BufferPtr fbuf = NULL;
     auto sbuf = buf->Copy();
-    if (buf->bufferprop & BP_FRAME &&
-        (fbuf = buf->linkBuffer[LB_N_FRAME]))
-    {
-        // frame
-        if (w3mApp::Instance().fmInitialized)
-        {
-            message("Rendering frame", 0, 0);
-            Screen::Instance().Refresh();
-            Terminal::flush();
-        }
-
-        BufferPtr renderBuf;
-        if (!(renderBuf = renderFrame(fbuf, 1)))
-        {
-            return;
-        }
-        if (fbuf->linkBuffer[LB_FRAME])
-        {
-            if (renderBuf->sourcefile.size() &&
-                fbuf->linkBuffer[LB_FRAME]->sourcefile.size() &&
-                renderBuf->sourcefile == fbuf->linkBuffer[LB_FRAME]->sourcefile)
-                fbuf->linkBuffer[LB_FRAME]->sourcefile.clear();
-            auto tab = GetCurrentTab();
-            // tab->DeleteBuffer(fbuf->linkBuffer[LB_FRAME]);
-        }
-        fbuf->linkBuffer[LB_FRAME] = renderBuf;
-        renderBuf->linkBuffer[LB_N_FRAME] = fbuf;
-        // GetCurrentTab()->Push(renderBuf);
-        if (GetCurrentTab()->GetCurrentBuffer()->LineCount())
-        {
-            GetCurrentTab()->GetCurrentBuffer()->rect = sbuf->rect;
-            GetCurrentTab()->GetCurrentBuffer()->restorePosition(sbuf);
-        }
-        return;
-    }
-
-    // int multipart;
-    if (GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
-    {
-        fbuf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME];
-    }
 
     //
     // form
@@ -1751,45 +1705,6 @@ void chkWORD(w3mApp *w3m, const CommandContext &context)
         return;
     reAnchorWord(GetCurrentTab()->GetCurrentBuffer(), GetCurrentTab()->GetCurrentBuffer()->CurrentLine(), spos, epos);
     // displayCurrentbuf(B_FORCE_REDRAW);
-}
-
-/* render frame */
-
-void rFrame(w3mApp *w3m, const CommandContext &context)
-{
-    BufferPtr buf;
-    // if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME]) != NULL)
-    // {
-    //     GetCurrentTab()->SetCurrentBuffer(buf);
-    //     displayCurrentbuf(B_NORMAL);
-    //     return;
-    // }
-    // if (GetCurrentTab()->GetCurrentBuffer()->frameset == NULL)
-    // {
-    //     if ((buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME]) != NULL)
-    //     {
-    //         GetCurrentTab()->SetCurrentBuffer(buf);
-    //         displayCurrentbuf(B_NORMAL);
-    //     }
-    //     return;
-    // }
-    if (w3mApp::Instance().fmInitialized)
-    {
-        message("Rendering frame", 0, 0);
-        Screen::Instance().Refresh();
-        Terminal::flush();
-    }
-    buf = renderFrame(GetCurrentTab()->GetCurrentBuffer(), 0);
-    if (buf == NULL)
-    {
-        // displayCurrentbuf(B_NORMAL);
-        return;
-    }
-    buf->linkBuffer[LB_N_FRAME] = GetCurrentTab()->GetCurrentBuffer();
-    GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_FRAME] = buf;
-    // GetCurrentTab()->Push(buf);
-    // if (w3mApp::Instance().fmInitialized && display_ok())
-    //     displayCurrentbuf(B_FORCE_REDRAW);
 }
 
 void extbrz(w3mApp *w3m, const CommandContext &context)
@@ -2283,7 +2198,6 @@ void ldDL(w3mApp *w3m, const CommandContext &context)
     if (nReload)
         GetCurrentTab()->GetCurrentBuffer()->event = setAlarmEvent(GetCurrentTab()->GetCurrentBuffer()->event, 1, AL_IMPLICIT,
                                                                    &reload, NULL);
-
 }
 
 void undoPos(w3mApp *w3m, const CommandContext &context)

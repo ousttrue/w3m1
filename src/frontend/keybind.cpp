@@ -21,7 +21,7 @@ Command GlobalKeymap[128] = {
     /*  8       9       :       ;       <       =       >       ?        */
     nulcmd, nulcmd, chkURL, chkWORD, shiftl, pginfo, shiftr, srchbak,
     /*  @       A       B       C       D       E       F       G        */
-    readsh, nulcmd, backBf, nulcmd, ldDL, editBf, rFrame, goLineL,
+    readsh, nulcmd, backBf, nulcmd, ldDL, editBf, nulcmd, goLineL,
     /*  H       I       J       K       L       M       N       O        */
     ldhelp, followI, lup1, ldown1, linkLst, extbrz, srchprv, nulcmd,
     /*  P       Q       R       S       T       U       V       W        */

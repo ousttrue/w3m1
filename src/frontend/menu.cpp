@@ -219,7 +219,7 @@ static std::vector<MenuItem> MainMenuItem = {
     {MENU_FUNC, " Save Link    (A) ", NULL, 0, svA, NULL, "A"},
     {MENU_FUNC, " View Image   (i) ", NULL, 0, followI, NULL, "i"},
     {MENU_FUNC, " Save Image   (I) ", NULL, 0, svI, NULL, "I"},
-    {MENU_FUNC, " View Frame   (f) ", NULL, 0, rFrame, NULL, "fF"},
+    // {MENU_FUNC, " View Frame   (f) ", NULL, 0, rFrame, NULL, "fF"},
     {MENU_NOP, " ---------------- ", NULL, 0, nulcmd, NULL, ""},
     {MENU_FUNC, " Bookmark     (B) ", NULL, 0, ldBmark, NULL, "B"},
     {MENU_FUNC, " Help         (h) ", NULL, 0, ldhelp, NULL, "hH"},

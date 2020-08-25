@@ -5,7 +5,7 @@
 #include "html/table.h"
 #include "indep.h"
 #include "commands.h"
-#include "html/frame.h"
+
 #include "file.h"
 #include "html/anchor.h"
 #include "public.h"

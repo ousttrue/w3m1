@@ -73,7 +73,7 @@ struct frameset *copyFrameSet(struct frameset *of);
 void pushFrameTree(struct frameset_queue **fqpp, struct frameset *fs,
                    BufferPtr buf);
 struct frameset *popFrameTree(struct frameset_queue **fqpp);
-BufferPtr renderFrame(BufferPtr Cbuf, int force_reload);
+// BufferPtr renderFrame(BufferPtr Cbuf, int force_reload);
 union frameset_element *search_frame(struct frameset *fset, char *name);
 
 MySignalHandler reset_exit(SIGNAL_ARG);
