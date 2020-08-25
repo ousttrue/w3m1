@@ -1013,6 +1013,8 @@ void Buffer::CursorRight(int n)
         this->visualpos = l->bwidth + cpos - this->currentColumn;
     }
     this->rect.cursorX = this->visualpos - l->bwidth;
+
+    m_redraw = B_NORMAL;
 }
 
 void Buffer::CursorLeft(int n)
@@ -1048,6 +1050,8 @@ void Buffer::CursorLeft(int n)
         this->visualpos = l->bwidth + cpos - this->currentColumn;
     }
     this->rect.cursorX = this->visualpos - l->bwidth;
+
+    m_redraw = B_NORMAL;
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -1708,7 +1712,7 @@ void Buffer::_goLine(std::string_view l, int prec_num)
     else if (l[0] == '$')
     {
         this->LineSkip(this->LastLine(),
-                      -(this->rect.lines + 1) / 2, true);
+                       -(this->rect.lines + 1) / 2, true);
         this->SetCurrentLine(this->LastLine());
     }
     else
@@ -1830,7 +1834,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
         while (l->bpos && buf->PrevLine(l))
             l = buf->PrevLine(l);
     }
-    
+
     auto begin = l;
     while (pos < l->len() && l->propBuf()[pos] & PC_WCHAR2)
         pos++;
