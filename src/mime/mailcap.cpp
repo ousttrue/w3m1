@@ -6,8 +6,6 @@
 #include "indep.h"
 #include "w3m.h"
 #include "file.h"
-#include "textlist.h"
-#include "history.h"
 
 #define MCSTAT_REPNAME 0x01
 #define MCSTAT_REPTYPE 0x02
@@ -22,7 +20,7 @@ enum MailcapFlags
 };
 struct Mailcap
 {
-    const char *type;
+    std::string type;
     const char *viewer;
     MailcapFlags flags;
     const char *test;
@@ -79,29 +77,24 @@ Mailcap *searchExtViewer(std::string_view type);
 
 Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, int *mc_stat);
 
-Mailcap *
-searchMailcap(Mailcap *table, std::string_view type)
+Mailcap *searchMailcap(tcb::span<Mailcap> list, std::string_view type)
 {
-    if (!table)
-        return NULL;
-
     int level = 0;
     Mailcap *mcap = NULL;
 
-    for (; table->type; table++)
+    for (auto &mp : list)
     {
-        auto i = table->match(type.data());
+        auto i = mp.match(type.data());
         if (i > level)
         {
-            if (table->test)
+            if (mp.test)
             {
-                Str command =
-                    unquote_mailcap(table->test, type.data(), NULL, NULL, NULL);
+                Str command = unquote_mailcap(mp.test, type.data(), NULL, NULL, NULL);
                 if (system(command->ptr) != 0)
                     continue;
             }
             level = i;
-            mcap = table;
+            mcap = &mp;
         }
     }
     return mcap;
@@ -153,11 +146,6 @@ static int matchMailcapAttr(const char *p, const char *attr, int len, Str *value
 
 static std::shared_ptr<Mailcap> extractMailcapEntry(std::string_view mcap_entry)
 {
-    // int j, k;
-    // char *p;
-    // int quoted;
-    // Str tmp;
-
     auto p = svu::strip_left(mcap_entry);
     auto k = -1;
     auto j = 0;
@@ -292,45 +280,43 @@ char *
 acceptableMimeTypes()
 {
     static Str types = NULL;
-    TextList *l;
-    Hash_si *mhash;
-    const char *p;
-    int i;
 
     if (types != NULL)
         return types->ptr;
 
     /* generate acceptable media types */
-    l = newTextList();
-    mhash = newHash_si(16); /* XXX */
-    /* pushText(l, "text"); */
-    putHash_si(mhash, "text", 1);
-    pushText(l, "image");
-    putHash_si(mhash, "image", 1);
-    for (i = 0; i < mailcap_list.size(); i++)
+    std::unordered_map<std::string, int> mhash;
+    mhash.insert(std::make_pair("text", 1));
+    mhash.insert(std::make_pair("image", 1));
+    std::vector<std::string> l;
+    l.push_back("image");
+    for (int i = 0; i < mailcap_list.size(); i++)
     {
         auto &list = UserMailcap[i];
         if (list.empty())
             continue;
         char *mt;
-        for (auto j=0; j<list.size(); ++j)
+        for (auto j = 0; j < list.size(); ++j)
         {
             auto mp = &list[j];
-            p = strchr(mp->type, '/');
+            auto p = strchr(mp->type.c_str(), '/');
             if (p == NULL)
                 continue;
-            mt = allocStr(mp->type, p - mp->type);
-            if (getHash_si(mhash, mt, 0) == 0)
+            mt = allocStr(mp->type.c_str(), p - mp->type.c_str());
+            auto found = mhash.find(mt);
+            if (found == mhash.end())
             {
-                pushText(l, mt);
-                putHash_si(mhash, mt, 1);
+                l.push_back(mt);
+                mhash.insert(std::make_pair(mt, 1));
             }
         }
     }
     types = Strnew();
     types->Push("text/html, text/*;q=0.5");
-    while ((p = popText(l)) != NULL)
+    while (l.size())
     {
+        auto p = l.back();
+        l.pop_back();
         types->Push(", ");
         types->Push(p);
         types->Push("/*");
@@ -340,16 +326,13 @@ acceptableMimeTypes()
 
 Mailcap *searchExtViewer(std::string_view type)
 {
-    Mailcap *p;
-    int i;
-
-    if (mailcap_list.empty())
-        goto no_user_mailcap;
-
-    for (i = 0; i < mailcap_list.size(); i++)
+    for (int i = 0; i < mailcap_list.size(); i++)
     {
-        if ((p = searchMailcap(UserMailcap[i].data(), type)) != NULL)
+        auto p = searchMailcap(UserMailcap[i], type);
+        if (p)
+        {
             return p;
+        }
     }
 
 no_user_mailcap:
