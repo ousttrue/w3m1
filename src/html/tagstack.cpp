@@ -59,7 +59,6 @@ void Breakpoint::back_to(struct readbuffer *obuf)
         obuf->nobr_level = nobr_level;
 }
 
-// #define set_prevchar(x,y,n) Strcopy_charp_n((x),(y),(n))
 static inline void set_space_to_prevchar(Str x)
 {
     x->CopyFrom(" ", 1);
@@ -165,14 +164,15 @@ static void push_nchars(struct readbuffer *obuf, int width,
     obuf->flag |= RB_NFLUSHED;
 }
 
-static void push_charp(readbuffer *obuf, int width,
-                       const char *str, Lineprop mode)
+static void push_charp(readbuffer *obuf, int width, const char *str, Lineprop mode)
 {
     push_nchars(obuf, width, str, strlen(str), mode);
 }
 
-#define push_str(obuf, width, str, mode) \
-    push_nchars(obuf, width, str->ptr, str->Size(), mode)
+static void push_str(readbuffer *obuf, int width, Str str, Lineprop mode)
+{
+    push_nchars(obuf, width, str->ptr, str->Size(), mode);
+}
 
 static void check_breakpoint(struct readbuffer *obuf, int pre_mode, const char *ch)
 {
@@ -199,7 +199,10 @@ push_char(struct readbuffer *obuf, int pre_mode, char ch)
     obuf->flag |= RB_NFLUSHED;
 }
 
-#define PUSH(c) push_char(obuf, obuf->flag &RB_SPECIAL, c)
+void PUSH(readbuffer *obuf, int c)
+{
+    push_char(obuf, obuf->flag & RB_SPECIAL, c);
+}
 
 static void
 push_spaces(struct readbuffer *obuf, int pre_mode, int width)
@@ -452,13 +455,14 @@ void CLOSE_P(readbuffer *obuf, html_feed_environ *h_env)
     }
 }
 
-
-#define CLOSE_DT                           \
-    if (obuf->flag & RB_IN_DT)             \
-    {                                      \
-        obuf->flag &= ~RB_IN_DT;           \
-        HTMLlineproc1("</b>", h_env, seq); \
+void CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env, HtmlContext *seq)
+{
+    if (obuf->flag & RB_IN_DT)
+    {
+        obuf->flag &= ~RB_IN_DT;
+        HTMLlineproc1("</b>", h_env, seq);
     }
+}
 
 void html_feed_environ::Initialize(TextLineList *buf, readbuffer *obuf, int limit, environment *envs, int nenv)
 {
@@ -541,6 +545,14 @@ void push_render_image(Str str, int width, int limit,
     push_spaces(obuf, 1, (limit - width + 1) / 2);
     if (width > 0)
         flushline(h_env, obuf, indent, 0, h_env->limit);
+}
+
+void APPEND(Str str, TextLineList *buf, FILE *f)
+{
+    if (buf)
+        appendTextLine(buf, (str), 0);
+    else if (f)
+        (str)->Puts(f);
 }
 
 void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
@@ -778,12 +790,6 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
         char *p = line->ptr, *q;
         Str tmp = Strnew(), tmp2 = Strnew();
 
-#define APPEND(str)                    \
-    if (buf)                           \
-        appendTextLine(buf, (str), 0); \
-    else if (f)                        \
-    (str)->Puts(f)
-
         while (*p)
         {
             q = p;
@@ -792,7 +798,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
                 tmp->Push(q, p - q);
                 if (force == 2)
                 {
-                    APPEND(tmp);
+                    APPEND(tmp, buf, f);
                 }
                 else
                     tmp2->Push(tmp);
@@ -803,7 +809,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
         {
             if (pass)
             {
-                APPEND(pass);
+                APPEND(pass, buf, f);
             }
             pass = NULL;
         }
@@ -2669,7 +2675,7 @@ table_start:
                         continue;
                     }
                     if (obuf->flag & RB_PRE_INT)
-                        PUSH(' ');
+                        PUSH(obuf, ' ');
                     else
                         flushline(h_env, obuf, h_env->currentEnv().indent,
                                   1, h_env->limit);
@@ -2678,7 +2684,7 @@ table_start:
                 {
                     do
                     {
-                        PUSH(' ');
+                        PUSH(obuf, ' ');
                     } while ((h_env->currentEnv().indent + obuf->pos) % w3mApp::Instance().Tabstop != 0);
                     str++;
                 }
@@ -2713,7 +2719,7 @@ table_start:
                 {
                     if (*obuf->prevchar->ptr != ' ')
                     {
-                        PUSH(' ');
+                        PUSH(obuf, ' ');
                     }
                     str++;
                 }
