@@ -1509,8 +1509,6 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
             else
                 newBuf->real_type = buf->real_type;
             newBuf->buffername = Sprintf("source of %s", buf->buffername)->ptr;
-            newBuf->linkBuffer[LB_N_SOURCE] = buf;
-            buf->linkBuffer[LB_SOURCE] = newBuf;
         }
         else if (buf->type == "text/plain")
         {
@@ -1522,8 +1520,6 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
             newBuf->buffername = Sprintf("HTML view of %s",
                                          buf->buffername)
                                      ->ptr;
-            newBuf->linkBuffer[LB_SOURCE] = buf;
-            buf->linkBuffer[LB_N_SOURCE] = newBuf;
         }
         else
         {

@@ -85,18 +85,7 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
 
 static void change_charset(tcb::span<parsed_tagarg> _arg)
 {
-    auto tab = GetCurrentTab();
-    BufferPtr buf = tab->GetCurrentBuffer()->linkBuffer[LB_N_INFO];
-    if (buf == NULL)
-        return;
-
-    CharacterEncodingScheme charset;
-
-    tab->Back(true);
-    // tab->Push(buf);
-    if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
-        return;
-    charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
+    auto charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
     for (auto &arg: _arg)
     {
         if (!strcmp(arg.arg, "charset"))

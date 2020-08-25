@@ -20,17 +20,6 @@ struct MapList;
 struct AlarmEvent;
 struct TextList;
 
-enum LinkBufferTypes
-{
-    LB_NOLINK = -1,
-    LB_INFO = 0, /* pginfo() */
-    // HTML source
-    LB_N_INFO,
-    LB_SOURCE, /* vwSrc() */
-    LB_N_SOURCE = LB_SOURCE
-};
-const int MAX_LB = 5;
-
 enum BufferProps : int16_t
 {
     BP_NORMAL = 0x0,
@@ -256,7 +245,6 @@ public:
     void undoPos(int prec_num);
     void redoPos();
 
-    std::array<BufferPtr, MAX_LB> linkBuffer;
     short width;
     short height;
 
@@ -382,7 +370,6 @@ public:
     int ReadBufferCache();
     BufferPtr Copy();
     void CopyFrom(BufferPtr src);
-    void ClearLink();
     URL *BaseURL();
     void putHmarker(int line, int pos, int seq);
     void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);

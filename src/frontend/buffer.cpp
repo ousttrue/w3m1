@@ -29,12 +29,6 @@
 #include "stream/input_stream.h"
 #include <iostream>
 
-static int REV_LB[MAX_LB] = {
-    LB_N_INFO,
-    LB_INFO,
-    LB_N_SOURCE,
-};
-
 template <typename T>
 bool fwrite1(const T &d, FILE *f)
 {
@@ -61,13 +55,6 @@ Buffer::~Buffer()
 {
     ImageManager::Instance().deleteImage(this);
     ClearLines();
-    for (int i = 0; i < MAX_LB; i++)
-    {
-        auto b = linkBuffer[i];
-        if (b == NULL)
-            continue;
-        b->linkBuffer[REV_LB[i]] = NULL;
-    }
     if (savecache.size())
         unlink(savecache.c_str());
     if (pagerSource)
@@ -268,7 +255,6 @@ void Buffer::CopyFrom(BufferPtr src)
     // cursor ?
     currentLine = src->currentLine;
 
-    linkBuffer = src->linkBuffer;
     width = src->width;
     height = src->height;
 
@@ -315,14 +301,6 @@ void Buffer::CopyFrom(BufferPtr src)
     submit = src->submit;
     undo = src->undo;
     event = src->event;
-}
-
-void Buffer::ClearLink()
-{
-    for (int i = 0; i < MAX_LB; i++)
-    {
-        linkBuffer[i] = NULL;
-    }
 }
 
 URL *Buffer::BaseURL()
