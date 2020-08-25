@@ -1,8 +1,8 @@
+#include <list>
 #include "tagstack.h"
 #include "indep.h"
 #include "gc_helper.h"
 #include "html.h"
-
 #include "file.h"
 #include "html/html.h"
 #include "table.h"
@@ -73,24 +73,20 @@ struct link_stack
     HtmlTags cmd;
     short offset;
     short pos;
-    struct link_stack *next;
 };
 
-static struct link_stack *link_stack = NULL;
+static struct std::list<link_stack> link_stack;
 
-static char *
-has_hidden_link(struct readbuffer *obuf, int cmd)
+static char *has_hidden_link(struct readbuffer *obuf, int cmd)
 {
     Str line = obuf->line;
-    struct link_stack *p;
-
     if (line->Back() != '>')
         return NULL;
 
-    for (p = link_stack; p; p = p->next)
-        if (p->cmd == cmd)
-            break;
-    if (!p)
+    auto p = std::find_if(link_stack.begin(), link_stack.end(), [cmd](auto &p) -> bool {
+        return p.cmd == cmd;
+    });
+    if (p == link_stack.end())
         return NULL;
 
     if (obuf->pos == p->pos)
@@ -99,16 +95,13 @@ has_hidden_link(struct readbuffer *obuf, int cmd)
     return NULL;
 }
 
-static void
-push_link(HtmlTags cmd, int offset, int pos)
+static void push_link(HtmlTags cmd, int offset, int pos)
 {
-    struct link_stack *p;
-    p = New(struct link_stack);
+    link_stack.push_front({});
+    auto p = &link_stack.front();
     p->cmd = cmd;
     p->offset = offset;
     p->pos = pos;
-    p->next = link_stack;
-    link_stack = p;
 }
 
 static void
@@ -329,12 +322,11 @@ passthrough(struct readbuffer *obuf, char *str, int back)
             auto cmd = gethtmlcmd(&q);
             if (back)
             {
-                struct link_stack *p;
-                for (p = link_stack; p; p = p->next)
+                for (auto p = link_stack.begin(); p!=link_stack.end(); ++p)
                 {
                     if (p->cmd == cmd)
                     {
-                        link_stack = p->next;
+                        link_stack.erase(link_stack.begin(), p);
                         break;
                     }
                 }
@@ -856,7 +848,7 @@ void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int ind
     obuf->flag &= ~RB_NFLUSHED;
     obuf->bp.set(obuf, 0);
     obuf->prev_ctype = PC_ASCII;
-    link_stack = NULL;
+    link_stack.clear();
     fillline(obuf, indent);
     if (pass)
         passthrough(obuf, pass->ptr, 0);
