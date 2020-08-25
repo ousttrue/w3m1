@@ -1055,7 +1055,10 @@ ul_type(struct parsed_tag *tag, int default_type)
     return default_type;
 }
 
-#define REAL_WIDTH(w, limit) (((w) >= 0) ? (int)((w) / ImageManager::Instance().pixel_per_char) : -(w) * (limit) / 100)
+int REAL_WIDTH(int w, int limit)
+{
+    return (((w) >= 0) ? (int)((w) / ImageManager::Instance().pixel_per_char) : -(w) * (limit) / 100);
+}
 
 static Str process_hr(struct parsed_tag *tag, int width, int indent_width, HtmlContext *seq)
 {
