@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <errno.h>
+#include <string_view_util.h>
 #include "mailcap.h"
 
 #include "indep.h"
@@ -42,6 +43,40 @@ struct Mailcap
     const char *test;
     const char *nametemplate;
     const char *edit;
+
+    int match(std::string_view src)
+    {
+        auto [sa, sb] = svu::split(src, '/');
+        if (sb.empty())
+        {
+            return 0;
+        }
+
+        auto [a, b] = svu::split(type, '/');
+        if (b.empty())
+        {
+            return 0;
+        }
+
+        if (!svu::ic_eq(sa, a))
+        {
+            return 0;
+        }
+
+        int level = this->flags & MAILCAP_HTMLOUTPUT ? 1 : 0;
+
+        if (b[0] == '*')
+        {
+            return 10 + level;
+        }
+
+        if (!svu::ic_eq(sb, b))
+        {
+            return 0;
+        }
+
+        return 20 + level;
+    }
 };
 static Mailcap DefaultMailcap[] = {
     {"image/*", DEF_IMAGE_VIEWER " %s", MAILCAP_NONE},
@@ -56,55 +91,20 @@ int mailcapMatch(Mailcap *mcap, const char *type);
 Mailcap *searchMailcap(Mailcap *table, std::string_view type);
 Mailcap *searchExtViewer(std::string_view type);
 
-int mailcapMatch(Mailcap *mcap, const char *type)
-{
-    auto cap = mcap->type;
-    const char *p;
-    for (p = cap; *p != '/'; p++)
-    {
-        if (TOLOWER(*p) != TOLOWER(*type))
-            return 0;
-        type++;
-    }
-
-    if (*type != '/')
-        return 0;
-    p++;
-    type++;
-
-    int level;
-    if (mcap->flags & MAILCAP_HTMLOUTPUT)
-        level = 1;
-    else
-        level = 0;
-    if (*p == '*')
-        return 10 + level;
-    while (*p)
-    {
-        if (TOLOWER(*p) != TOLOWER(*type))
-            return 0;
-        p++;
-        type++;
-    }
-    if (*type != '\0')
-        return 0;
-    return 20 + level;
-}
-
 Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, int *mc_stat);
 
 Mailcap *
 searchMailcap(Mailcap *table, std::string_view type)
 {
+    if (!table)
+        return NULL;
+
     int level = 0;
     Mailcap *mcap = NULL;
-    int i;
 
-    if (table == NULL)
-        return NULL;
     for (; table->type; table++)
     {
-        i = mailcapMatch(table, type.data());
+        auto i = table->match(type.data());
         if (i > level)
         {
             if (table->test)
