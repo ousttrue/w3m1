@@ -2,25 +2,10 @@
 #include <errno.h>
 #include <string_view_util.h>
 #include "mailcap.h"
-
+#include "config.h"
 #include "indep.h"
-#include "gc_helper.h"
-#include "myctype.h"
+#include "w3m.h"
 #include "file.h"
-#include "mime/mimetypes.h"
-#include "html/parsetag.h"
-#include "html/html.h"
-#include "html/html_processor.h"
-#include "stream/local_cgi.h"
-#include "loader.h"
-#include "stream/url.h"
-#include "stream/input_stream.h"
-#include "frontend/tab.h"
-#include "frontend/buffer.h"
-
-#include "frontend/display.h"
-#include "frontend/tabbar.h"
-#include <unistd.h>
 #include "textlist.h"
 #include "history.h"
 
@@ -84,11 +69,12 @@ static Mailcap DefaultMailcap[] = {
     {NULL, NULL, MAILCAP_NONE}
     //
 };
-static TextList *mailcap_list;
-static Mailcap **UserMailcap;
 
-int mailcapMatch(Mailcap *mcap, const char *type);
-Mailcap *searchMailcap(Mailcap *table, std::string_view type);
+static std::vector<std::string> mailcap_list;
+
+using MailcapList = std::vector<Mailcap>;
+static std::vector<MailcapList> UserMailcap;
+
 Mailcap *searchExtViewer(std::string_view type);
 
 Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, int *mc_stat);
@@ -165,31 +151,31 @@ static int matchMailcapAttr(const char *p, const char *attr, int len, Str *value
     return 0;
 }
 
-static int
-extractMailcapEntry(char *mcap_entry, Mailcap *mcap)
+static std::shared_ptr<Mailcap> extractMailcapEntry(std::string_view mcap_entry)
 {
-    int j, k;
-    char *p;
-    int quoted;
-    Str tmp;
+    // int j, k;
+    // char *p;
+    // int quoted;
+    // Str tmp;
 
-    bzero(mcap, sizeof(Mailcap));
-    p = mcap_entry;
-    SKIP_BLANKS(&p);
-    k = -1;
-    for (j = 0; p[j] && p[j] != ';'; j++)
+    auto p = svu::strip_left(mcap_entry);
+    auto k = -1;
+    auto j = 0;
+    for (; p[j] && p[j] != ';'; j++)
     {
         if (!IS_SPACE(p[j]))
             k = j;
     }
-    mcap->type = allocStr(p, (k >= 0) ? k + 1 : j);
-    if (!p[j])
-        return 0;
-    p += j + 1;
 
-    SKIP_BLANKS(&p);
+    auto mcap = std::make_shared<Mailcap>();
+    mcap->type = allocStr(p.data(), (k >= 0) ? k + 1 : j);
+    if (!p[j])
+        return nullptr;
+    p.remove_prefix(j + 1);
+    p = svu::strip_left(p);
+
     k = -1;
-    quoted = 0;
+    auto quoted = 0;
     for (j = 0; p[j] && (quoted || p[j] != ';'); j++)
     {
         if (quoted || !IS_SPACE(p[j]))
@@ -199,72 +185,70 @@ extractMailcapEntry(char *mcap_entry, Mailcap *mcap)
         else if (p[j] == '\\')
             quoted = 1;
     }
-    mcap->viewer = allocStr(p, (k >= 0) ? k + 1 : j);
-    p += j;
+    mcap->viewer = allocStr(p.data(), (k >= 0) ? k + 1 : j);
+    p.remove_prefix(j);
 
-    while (*p == ';')
+    while (p[0] == ';')
     {
-        p++;
-        SKIP_BLANKS(&p);
-        if (matchMailcapAttr(p, "needsterminal", 13, NULL))
+        p.remove_prefix(1);
+        p = svu::strip_left(p);
+        Str tmp = nullptr;
+        if (matchMailcapAttr(p.data(), "needsterminal", 13, NULL))
         {
             mcap->flags |= MAILCAP_NEEDSTERMINAL;
         }
-        else if (matchMailcapAttr(p, "copiousoutput", 13, NULL))
+        else if (matchMailcapAttr(p.data(), "copiousoutput", 13, NULL))
         {
             mcap->flags |= MAILCAP_COPIOUSOUTPUT;
         }
-        else if (matchMailcapAttr(p, "x-htmloutput", 12, NULL) ||
-                 matchMailcapAttr(p, "htmloutput", 10, NULL))
+        else if (matchMailcapAttr(p.data(), "x-htmloutput", 12, NULL) ||
+                 matchMailcapAttr(p.data(), "htmloutput", 10, NULL))
         {
             mcap->flags |= MAILCAP_HTMLOUTPUT;
         }
-        else if (matchMailcapAttr(p, "test", 4, &tmp))
+        else if (matchMailcapAttr(p.data(), "test", 4, &tmp))
         {
             mcap->test = allocStr(tmp->ptr, tmp->Size());
         }
-        else if (matchMailcapAttr(p, "nametemplate", 12, &tmp))
+        else if (matchMailcapAttr(p.data(), "nametemplate", 12, &tmp))
         {
             mcap->nametemplate = allocStr(tmp->ptr, tmp->Size());
         }
-        else if (matchMailcapAttr(p, "edit", 4, &tmp))
+        else if (matchMailcapAttr(p.data(), "edit", 4, &tmp))
         {
             mcap->edit = allocStr(tmp->ptr, tmp->Size());
         }
         quoted = 0;
-        while (*p && (quoted || *p != ';'))
+        while (p.size() && (quoted || p[0] != ';'))
         {
             if (quoted)
                 quoted = 0;
-            else if (*p == '\\')
+            else if (p[0] == '\\')
                 quoted = 1;
-            p++;
+            p.remove_prefix(1);
         }
     }
-    return 1;
+    return mcap;
 }
 
-static Mailcap *
-loadMailcap(char *filename)
+static std::vector<Mailcap> loadMailcap(const std::string &filename)
 {
-    FILE *f;
-    int i, n;
-    Str tmp;
-    Mailcap *mcap;
+    std::vector<Mailcap> mcap;
+    auto f = fopen(expandPath(filename.c_str()), "r");
+    if (!f)
+    {
+        return mcap;
+    }
 
-    f = fopen(expandPath(filename), "r");
-    if (f == NULL)
-        return NULL;
-    i = 0;
+    auto i = 0;
+    Str tmp;
     while (tmp = Strfgets(f), tmp->Size() > 0)
     {
         if (tmp->ptr[0] != '#')
             i++;
     }
     fseek(f, 0, 0);
-    n = i;
-    mcap = New_N(Mailcap, n + 1);
-    i = 0;
+
     while (tmp = Strfgets(f), tmp->Size() > 0)
     {
         if (tmp->ptr[0] == '#')
@@ -279,28 +263,29 @@ loadMailcap(char *filename)
             tmp->Push(Strfgets(f));
             goto redo;
         }
-        if (extractMailcapEntry(tmp->ptr, &mcap[i]))
-            i++;
+        auto mp = extractMailcapEntry(tmp->ptr);
+        if (mp)
+        {
+            mcap.push_back(*mp);
+        }
     }
-    bzero(&mcap[i], sizeof(Mailcap));
     fclose(f);
     return mcap;
 }
 
 void initMailcap()
 {
-    TextListItem *tl;
-    int i;
-
     if (w3mApp::Instance().mailcap_files.size())
-        mailcap_list = make_domain_list(w3mApp::Instance().mailcap_files.c_str());
-    else
-        mailcap_list = NULL;
-    if (mailcap_list == NULL)
-        return;
-    UserMailcap = New_N(Mailcap *, mailcap_list->nitem);
-    for (i = 0, tl = mailcap_list->first; tl; i++, tl = tl->next)
-        UserMailcap[i] = loadMailcap(tl->ptr);
+    {
+        auto splitter = svu::splitter(w3mApp::Instance().mailcap_files.c_str(), [](char c) -> bool {
+            return IS_SPACE(c) || c == ',';
+        });
+        for (auto s : splitter)
+        {
+            mailcap_list.push_back(std::string(s));
+            UserMailcap.push_back(loadMailcap(mailcap_list.back()));
+        }
+    }
 }
 
 char *
@@ -322,14 +307,15 @@ acceptableMimeTypes()
     putHash_si(mhash, "text", 1);
     pushText(l, "image");
     putHash_si(mhash, "image", 1);
-    for (i = 0; i < mailcap_list->nitem; i++)
+    for (i = 0; i < mailcap_list.size(); i++)
     {
-        Mailcap *mp = UserMailcap[i];
-        char *mt;
-        if (mp == NULL)
+        auto &list = UserMailcap[i];
+        if (list.empty())
             continue;
-        for (; mp->type; mp++)
+        char *mt;
+        for (auto j=0; j<list.size(); ++j)
         {
+            auto mp = &list[j];
             p = strchr(mp->type, '/');
             if (p == NULL)
                 continue;
@@ -357,12 +343,12 @@ Mailcap *searchExtViewer(std::string_view type)
     Mailcap *p;
     int i;
 
-    if (mailcap_list == NULL)
+    if (mailcap_list.empty())
         goto no_user_mailcap;
 
-    for (i = 0; i < mailcap_list->nitem; i++)
+    for (i = 0; i < mailcap_list.size(); i++)
     {
-        if ((p = searchMailcap(UserMailcap[i], type)) != NULL)
+        if ((p = searchMailcap(UserMailcap[i].data(), type)) != NULL)
             return p;
     }
 
