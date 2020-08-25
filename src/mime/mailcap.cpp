@@ -27,27 +27,34 @@
 #define MCSTAT_REPTYPE 0x02
 #define MCSTAT_REPPARAM 0x04
 
+enum MailcapFlags
+{
+    MAILCAP_NONE = 0x00,
+    MAILCAP_NEEDSTERMINAL = 0x01,
+    MAILCAP_COPIOUSOUTPUT = 0x02,
+    MAILCAP_HTMLOUTPUT = 0x04,
+};
 struct Mailcap
 {
     const char *type;
     const char *viewer;
-    int flags;
+    MailcapFlags flags;
     const char *test;
     const char *nametemplate;
     const char *edit;
 };
+static Mailcap DefaultMailcap[] = {
+    {"image/*", DEF_IMAGE_VIEWER " %s", MAILCAP_NONE},
+    {"audio/basic", DEF_AUDIO_PLAYER " %s", MAILCAP_NONE},
+    {NULL, NULL, MAILCAP_NONE}
+    //
+};
+static TextList *mailcap_list;
+static Mailcap **UserMailcap;
 
 int mailcapMatch(Mailcap *mcap, const char *type);
 Mailcap *searchMailcap(Mailcap *table, std::string_view type);
 Mailcap *searchExtViewer(std::string_view type);
-
-static Mailcap DefaultMailcap[] = {
-    {"image/*", DEF_IMAGE_VIEWER " %s", 0, NULL, NULL, NULL}, /* */
-    {"audio/basic", DEF_AUDIO_PLAYER " %s", 0, NULL, NULL, NULL},
-    {NULL, NULL, 0, NULL, NULL, NULL}};
-
-static TextList *mailcap_list;
-static Mailcap **UserMailcap;
 
 int mailcapMatch(Mailcap *mcap, const char *type)
 {
@@ -83,6 +90,8 @@ int mailcapMatch(Mailcap *mcap, const char *type)
         return 0;
     return 20 + level;
 }
+
+Str unquote_mailcap(const char *qstr, const char *type, char *name, char *attr, int *mc_stat);
 
 Mailcap *
 searchMailcap(Mailcap *table, std::string_view type)
@@ -562,104 +571,104 @@ BufferPtr doExternal(const URL &url, const InputStreamPtr &stream, std::string_v
         return 0;
 
     // TODO:
-//     if (mcap->nametemplate)
-//     {
-//         tmpf = unquote_mailcap(mcap->nametemplate, NULL, "", NULL, NULL);
-//         if (tmpf->ptr[0] == '.')
-//             ext = tmpf->ptr;
-//     }
-//     tmpf = tmpfname(TMPF_DFL, (ext && *ext) ? ext : NULL);
+    //     if (mcap->nametemplate)
+    //     {
+    //         tmpf = unquote_mailcap(mcap->nametemplate, NULL, "", NULL, NULL);
+    //         if (tmpf->ptr[0] == '.')
+    //             ext = tmpf->ptr;
+    //     }
+    //     tmpf = tmpfname(TMPF_DFL, (ext && *ext) ? ext : NULL);
 
-//     // if (uf->stream->type() != IST_ENCODED)
-//     //     uf->stream = newEncodedStream(uf->stream, uf->encoding);
-//     // header = checkHeader(defaultbuf, "Content-Type:");
-//     // if (header)
-//     //     header = conv_to_system(header);
-//     command = unquote_mailcap(mcap->viewer, type, tmpf->ptr, header, &mc_stat);
-// #ifndef __EMX__
-//     if (!(mc_stat & MCSTAT_REPNAME))
-//     {
-//         Str tmp = Sprintf("(%s) < %s", command->ptr, shell_quote(tmpf->ptr));
-//         command = tmp;
-//     }
-// #endif
+    //     // if (uf->stream->type() != IST_ENCODED)
+    //     //     uf->stream = newEncodedStream(uf->stream, uf->encoding);
+    //     // header = checkHeader(defaultbuf, "Content-Type:");
+    //     // if (header)
+    //     //     header = conv_to_system(header);
+    //     command = unquote_mailcap(mcap->viewer, type, tmpf->ptr, header, &mc_stat);
+    // #ifndef __EMX__
+    //     if (!(mc_stat & MCSTAT_REPNAME))
+    //     {
+    //         Str tmp = Sprintf("(%s) < %s", command->ptr, shell_quote(tmpf->ptr));
+    //         command = tmp;
+    //     }
+    // #endif
 
-// #ifdef HAVE_SETPGRP
-//     if (!(mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)) &&
-//         !(mcap->flags & MAILCAP_NEEDSTERMINAL) && BackgroundExtViewer)
-//     {
-//         Terminal::flush();
-//         if (!fork())
-//         {
-//             setup_child(false, 0, uf->stream->FD());
-//             if (save2tmp(uf, tmpf->ptr) < 0)
-//                 exit(1);
-//             myExec(command->ptr);
-//         }
-//         return nullptr;
-//     }
-//     else
-// #endif
-//     {
-//         if (save2tmp(uf, tmpf->ptr) < 0)
-//         {
-//             return NULL;
-//         }
-//     }
-//     if (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT))
-//     {
-//         buf = newBuffer(INIT_BUFFER_WIDTH());
-//         if (buf->sourcefile.size())
-//             src = Strnew(buf->sourcefile)->ptr;
-//         else
-//             src = tmpf->ptr;
-//         buf->sourcefile.clear();
-//         buf->mailcap = mcap;
-//     }
-//     if (mcap->flags & MAILCAP_HTMLOUTPUT)
-//     {
-//         buf = loadcmdout(command->ptr, loadHTMLBuffer);
-//         if (buf)
-//         {
-//             buf->type = "text/html";
-//             buf->mailcap_source = Strnew(buf->sourcefile)->ptr;
-//             buf->sourcefile = src;
-//         }
-//     }
-//     else if (mcap->flags & MAILCAP_COPIOUSOUTPUT)
-//     {
-//         buf = loadcmdout(command->ptr, loadBuffer);
-//         if (buf)
-//         {
-//             buf->type = "text/plain";
-//             buf->mailcap_source = Strnew(buf->sourcefile)->ptr;
-//             buf->sourcefile = src;
-//         }
-//     }
-//     else
-//     {
-//         if (mcap->flags & MAILCAP_NEEDSTERMINAL || !BackgroundExtViewer)
-//         {
-//             fmTerm();
-//             mySystem(command->ptr, 0);
-//             fmInit();
-//             if (GetCurrentTab() && GetCurrentTab()->GetCurrentBuffer())
-//                 displayCurrentbuf(B_FORCE_REDRAW);
-//         }
-//         else
-//         {
-//             mySystem(command->ptr, 1);
-//         }
-//         buf = nullptr;
-//     }
-//     if (buf)
-//     {
-//         buf->filename = path;
-//         if (buf->buffername.empty() || buf->buffername[0] == '\0')
-//             buf->buffername = conv_from_system(lastFileName(path));
-//         buf->edit = mcap->edit;
-//         buf->mailcap = mcap;
-//     }
+    // #ifdef HAVE_SETPGRP
+    //     if (!(mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT)) &&
+    //         !(mcap->flags & MAILCAP_NEEDSTERMINAL) && BackgroundExtViewer)
+    //     {
+    //         Terminal::flush();
+    //         if (!fork())
+    //         {
+    //             setup_child(false, 0, uf->stream->FD());
+    //             if (save2tmp(uf, tmpf->ptr) < 0)
+    //                 exit(1);
+    //             myExec(command->ptr);
+    //         }
+    //         return nullptr;
+    //     }
+    //     else
+    // #endif
+    //     {
+    //         if (save2tmp(uf, tmpf->ptr) < 0)
+    //         {
+    //             return NULL;
+    //         }
+    //     }
+    //     if (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT))
+    //     {
+    //         buf = newBuffer(INIT_BUFFER_WIDTH());
+    //         if (buf->sourcefile.size())
+    //             src = Strnew(buf->sourcefile)->ptr;
+    //         else
+    //             src = tmpf->ptr;
+    //         buf->sourcefile.clear();
+    //         buf->mailcap = mcap;
+    //     }
+    //     if (mcap->flags & MAILCAP_HTMLOUTPUT)
+    //     {
+    //         buf = loadcmdout(command->ptr, loadHTMLBuffer);
+    //         if (buf)
+    //         {
+    //             buf->type = "text/html";
+    //             buf->mailcap_source = Strnew(buf->sourcefile)->ptr;
+    //             buf->sourcefile = src;
+    //         }
+    //     }
+    //     else if (mcap->flags & MAILCAP_COPIOUSOUTPUT)
+    //     {
+    //         buf = loadcmdout(command->ptr, loadBuffer);
+    //         if (buf)
+    //         {
+    //             buf->type = "text/plain";
+    //             buf->mailcap_source = Strnew(buf->sourcefile)->ptr;
+    //             buf->sourcefile = src;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         if (mcap->flags & MAILCAP_NEEDSTERMINAL || !BackgroundExtViewer)
+    //         {
+    //             fmTerm();
+    //             mySystem(command->ptr, 0);
+    //             fmInit();
+    //             if (GetCurrentTab() && GetCurrentTab()->GetCurrentBuffer())
+    //                 displayCurrentbuf(B_FORCE_REDRAW);
+    //         }
+    //         else
+    //         {
+    //             mySystem(command->ptr, 1);
+    //         }
+    //         buf = nullptr;
+    //     }
+    //     if (buf)
+    //     {
+    //         buf->filename = path;
+    //         if (buf->buffername.empty() || buf->buffername[0] == '\0')
+    //             buf->buffername = conv_from_system(lastFileName(path));
+    //         buf->edit = mcap->edit;
+    //         buf->mailcap = mcap;
+    //     }
 
     return buf;
 }
