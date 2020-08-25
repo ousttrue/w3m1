@@ -1556,7 +1556,7 @@ load_option_panel(void)
     return buf;
 }
 
-void panel_set_option(struct parsed_tagarg *arg)
+void panel_set_option(tcb::span<parsed_tagarg> _arg)
 {
     FILE *f = NULL;
     char *p;
@@ -1573,19 +1573,19 @@ void panel_set_option(struct parsed_tagarg *arg)
             disp_message("Can't write option!", false);
         }
     }
-    while (arg)
+
+    for(auto &arg: _arg)
     {
         /*  InnerCharset -> SystemCharset */
-        if (arg->value)
+        if (arg.value)
         {
-            p = conv_to_system(arg->value);
-            if (set_param(arg->arg, p))
+            p = conv_to_system(arg.value);
+            if (set_param(arg.arg, p))
             {
                 if (f)
-                    fprintf(f, "%s %s\n", arg->arg, p);
+                    fprintf(f, "%s %s\n", arg.arg, p);
             }
         }
-        arg = arg->next;
     }
     if (f)
         fclose(f);

@@ -105,7 +105,7 @@ create_new_bookmark(const char *bmark, const char *section, const char *title, c
     return true;
 }
 
-int insert_bookmark(char *bmark, struct parsed_tagarg *data)
+int insert_bookmark(char *bmark, tcb::span<parsed_tagarg> data)
 {
     const char *url, *title, *section;
     FILE *f;
@@ -189,7 +189,7 @@ int main(int argc, char *argv[], char **envp)
     char *p;
     int length;
     Str qs = NULL;
-    struct parsed_tagarg *cgiarg;
+    std::vector<parsed_tagarg> cgiarg;
     char *bmark;
     const char *mode;
     const char *url;

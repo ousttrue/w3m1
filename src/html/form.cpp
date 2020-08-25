@@ -34,7 +34,7 @@
 
 extern FormSelectOptionList *select_option;
 
-static void follow_map(struct parsed_tagarg *arg)
+static void follow_map(tcb::span<parsed_tagarg> arg)
 {
     auto name = tag_get_value(arg, "link");
 
@@ -83,23 +83,24 @@ static void follow_map(struct parsed_tagarg *arg)
 #endif
 }
 
-static void change_charset(struct parsed_tagarg *arg)
+static void change_charset(tcb::span<parsed_tagarg> _arg)
 {
-    BufferPtr buf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_INFO];
-    CharacterEncodingScheme charset;
-
+    auto tab = GetCurrentTab();
+    BufferPtr buf = tab->GetCurrentBuffer()->linkBuffer[LB_N_INFO];
     if (buf == NULL)
         return;
-    auto tab = GetCurrentTab();
+
+    CharacterEncodingScheme charset;
+
     tab->Back(true);
     // tab->Push(buf);
     if (GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_INTERNAL)
         return;
     charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
-    for (; arg; arg = arg->next)
+    for (auto &arg: _arg)
     {
-        if (!strcmp(arg->arg, "charset"))
-            charset = (CharacterEncodingScheme)atoi(arg->value);
+        if (!strcmp(arg.arg, "charset"))
+            charset = (CharacterEncodingScheme)atoi(arg.value);
     }
     _docCSet(charset);
 }
@@ -108,7 +109,7 @@ static void change_charset(struct parsed_tagarg *arg)
 struct
 {
     const char *action;
-    void (*rout)(struct parsed_tagarg *);
+    parsed_tagarg_func rout;
 } internal_action[] = {
     {"map", follow_map},
     {"option", panel_set_option},
@@ -689,8 +690,10 @@ void do_internal(std::string_view action, std::string_view data)
     {
         if (svu::ic_eq(internal_action[i].action, action))
         {
-            if (internal_action[i].rout)
-                internal_action[i].rout(cgistr2tagarg(data.data()));
+            if (internal_action[i].rout){
+                auto list = cgistr2tagarg(data.data());
+                internal_action[i].rout(list);
+            }
             return;
         }
     }

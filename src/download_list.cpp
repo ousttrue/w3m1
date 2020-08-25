@@ -82,22 +82,22 @@ void stopDownload()
     }
 }
 
-void download_action(struct parsed_tagarg *arg)
+void download_action(tcb::span<parsed_tagarg> _arg)
 {
     DownloadList *d;
     pid_t pid;
 
-    for (; arg; arg = arg->next)
+    for (auto &arg: _arg)
     {
-        if (!strncmp(arg->arg, "stop", 4))
+        if (!strncmp(arg.arg, "stop", 4))
         {
-            pid = (pid_t)atoi(&arg->arg[4]);
+            pid = (pid_t)atoi(&arg.arg[4]);
 #ifndef __MINGW32_VERSION
             kill(pid, SIGKILL);
 #endif
         }
-        else if (!strncmp(arg->arg, "ok", 2))
-            pid = (pid_t)atoi(&arg->arg[2]);
+        else if (!strncmp(arg.arg, "ok", 2))
+            pid = (pid_t)atoi(&arg.arg[2]);
         else
             continue;
         for (d = FirstDL; d; d = d->next)

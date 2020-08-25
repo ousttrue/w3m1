@@ -120,7 +120,7 @@ void printMailcapPanel(char *mailcap)
     fclose(f);
 }
 
-void editMailcap(char *mailcap, struct parsed_tagarg *args)
+void editMailcap(char *mailcap, tcb::span<parsed_tagarg> args)
 {
     TextList *t = newTextList();
     TextListItem *ti;
@@ -140,9 +140,9 @@ void editMailcap(char *mailcap, struct parsed_tagarg *args)
         StripRight(tmp);
         extractMailcapEntry(tmp->ptr, &type, &viewer);
         delete_it = 0;
-        for (a = args; a != NULL; a = a->next)
+        for (auto &a:  args)
         {
-            if (!strcmp(a->arg, "delete") && !strcmp(a->value, type))
+            if (!strcmp(a.arg, "delete") && !strcmp(a.value, type))
             {
                 delete_it = 1;
                 break;
@@ -173,7 +173,7 @@ int main(int argc, char *argv[], char **envp)
     char *p;
     int length;
     Str qs = NULL;
-    struct parsed_tagarg *cgiarg;
+    std::vector<parsed_tagarg> cgiarg;
     const char *mode;
     const char *sent_cookie;
 

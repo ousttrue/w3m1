@@ -613,7 +613,7 @@ BufferPtr CookieManager::cookie_list_panel()
     int i;
     char *tmp, tmp2[80];
     src->Push("<ol>");
-    for (auto &p: g_cookies)
+    for (auto &p : g_cookies)
     {
         tmp = html_quote(p->url.ToStr()->ptr);
         if (p->expires != (time_t)-1)
@@ -718,25 +718,21 @@ BufferPtr CookieManager::cookie_list_panel()
     return loadHTMLString(URL::Parse("w3m://cookie"), src->ptr);
 }
 
-void set_cookie_flag(struct parsed_tagarg *arg)
+void set_cookie_flag(tcb::span<parsed_tagarg> _arg)
 {
-    while (arg)
+    for (auto &arg : _arg)
     {
-        if (arg->arg && *arg->arg && arg->value && *arg->value)
+        auto n = atoi(arg.arg);
+        auto v = atoi(arg.value);
+        if (auto p = nth_cookie(n))
         {
-            auto n = atoi(arg->arg);
-            auto v = atoi(arg->value);
-            if (auto p = nth_cookie(n))
-            {
-                if (v && !(p->flag & COO_USE))
-                    p->flag |= COO_USE;
-                else if (!v && p->flag & COO_USE)
-                    p->flag &= ~COO_USE;
-                if (!(p->flag & COO_DISCARD))
-                    is_saved = 0;
-            }
+            if (v && !(p->flag & COO_USE))
+                p->flag |= COO_USE;
+            else if (!v && p->flag & COO_USE)
+                p->flag &= ~COO_USE;
+            if (!(p->flag & COO_DISCARD))
+                is_saved = 0;
         }
-        arg = arg->next;
     }
     backBf(&w3mApp::Instance(), {});
 }

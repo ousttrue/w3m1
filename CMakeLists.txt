@@ -66,6 +66,7 @@ PUBLIC
 target_link_libraries(w3mbookmark
 PRIVATE
     wc
+    tcb_span
 )
 
 #
@@ -97,6 +98,7 @@ PUBLIC
 target_link_libraries(w3mhelperpanel
 PRIVATE
     wc
+    tcb_span
 )
 
 #

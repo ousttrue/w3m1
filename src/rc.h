@@ -1,12 +1,13 @@
 #pragma once
 #include <memory>
 #include <stdio.h>
+#include "html/parsetag.h"
 
 #define MINIMUM_PIXEL_PER_CHAR 4.0
 #define MAXIMUM_PIXEL_PER_CHAR 32.0
 
 void init_rc(void);
-void panel_set_option(struct parsed_tagarg *);
+void panel_set_option(tcb::span<parsed_tagarg>);
 const char *rcFile(const char *base);
 const char *etcFile(const char *base);
 const char *confFile(const char *base);

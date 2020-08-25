@@ -1,5 +1,6 @@
 #pragma once
 #include "stream/url.h"
+#include "html/parsetag.h"
 #include <string_view>
 #include <memory>
 #include <vector>
@@ -48,6 +49,6 @@ public:
     std::shared_ptr<struct Buffer> cookie_list_panel();
 };
 
-void set_cookie_flag(struct parsed_tagarg *arg);
+void set_cookie_flag(tcb::span<parsed_tagarg> arg);
 Str find_cookie(const URL &pu);
 void initCookie(void);
