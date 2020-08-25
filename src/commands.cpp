@@ -6,7 +6,6 @@
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
 #include "urimethod.h"
-#include "gc_helper.h"
 #include "indep.h"
 #include "frontend/line.h"
 #include "file.h"

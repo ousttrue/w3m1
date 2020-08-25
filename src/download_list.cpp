@@ -1,6 +1,7 @@
+#include <memory>
+#include <list>
 #include "config.h"
 #include "download_list.h"
-#include "gc_helper.h"
 #include <locale.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -29,11 +30,10 @@ struct DownloadList
     time_t time;
     int running;
     int err;
-    DownloadList *next;
-    DownloadList *prev;
 };
-static DownloadList *FirstDL = nullptr;
-static DownloadList *LastDL = nullptr;
+using DownloadListPtr = std::shared_ptr<DownloadList>;
+static std::list<DownloadListPtr> FirstDL;
+
 void sig_chld(int signo)
 {
     int p_stat;
@@ -47,11 +47,9 @@ void sig_chld(int signo)
     if ((pid = wait(&p_stat)) > 0)
 #endif
     {
-        DownloadList *d;
-
         if (WIFEXITED(p_stat))
         {
-            for (d = FirstDL; d != NULL; d = d->next)
+            for (auto &d : FirstDL)
             {
                 if (d->pid == pid)
                 {
@@ -67,11 +65,7 @@ void sig_chld(int signo)
 
 void stopDownload()
 {
-    DownloadList *d;
-
-    if (!FirstDL)
-        return;
-    for (d = FirstDL; d != NULL; d = d->next)
+    for (auto &d : FirstDL)
     {
         if (!d->running)
             continue;
@@ -84,11 +78,11 @@ void stopDownload()
 
 void download_action(tcb::span<parsed_tagarg> _arg)
 {
-    DownloadList *d;
-    pid_t pid;
+    // DownloadList *d;
 
-    for (auto &arg: _arg)
+    for (auto &arg : _arg)
     {
+        pid_t pid;
         if (!strncmp(arg.arg, "stop", 4))
         {
             pid = (pid_t)atoi(&arg.arg[4]);
@@ -100,20 +94,18 @@ void download_action(tcb::span<parsed_tagarg> _arg)
             pid = (pid_t)atoi(&arg.arg[2]);
         else
             continue;
-        for (d = FirstDL; d; d = d->next)
+        for (auto it = FirstDL.begin(); it != FirstDL.end();)
         {
+            auto d = *it;
             if (d->pid == pid)
             {
                 unlink(d->lock);
-                if (d->prev)
-                    d->prev->next = d->next;
-                else
-                    FirstDL = d->next;
-                if (d->next)
-                    d->next->prev = d->prev;
-                else
-                    LastDL = d->prev;
+                it = FirstDL.erase(it);
                 break;
+            }
+            else
+            {
+                ++it;
             }
         }
     }
@@ -122,20 +114,16 @@ void download_action(tcb::span<parsed_tagarg> _arg)
 
 int checkDownloadList()
 {
-    DownloadList *d;
-    struct stat st;
-
-    if (!FirstDL)
-        return false;
-    for (d = FirstDL; d != NULL; d = d->next)
+    for (auto &d : FirstDL)
     {
+        struct stat st;
         if (d->running && !lstat(d->lock, &st))
             return true;
     }
     return false;
 }
 
-static int s_add_download_list = false;
+static bool s_add_download_list = false;
 int add_download_list()
 {
     return s_add_download_list;
@@ -147,9 +135,7 @@ void set_add_download_list(int add)
 
 void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
 {
-    DownloadList *d;
-
-    d = New(DownloadList);
+    auto d = std::make_shared<DownloadList>();
     d->pid = pid;
     d->url = url;
     if (save[0] != '/' && save[0] != '~')
@@ -160,13 +146,7 @@ void addDownloadList(pid_t pid, char *url, char *save, char *lock, clen_t size)
     d->time = time(0);
     d->running = true;
     d->err = 0;
-    d->next = NULL;
-    d->prev = LastDL;
-    if (LastDL)
-        LastDL->next = d;
-    else
-        FirstDL = d;
-    LastDL = d;
+    FirstDL.push_back(d);
     set_add_download_list(true);
 }
 
@@ -186,22 +166,20 @@ static char *convert_size3(clen_t size)
 
 BufferPtr DownloadListBuffer(w3mApp *w3m, const CommandContext &context)
 {
-    DownloadList *d;
     Str src = NULL;
     struct stat st;
     time_t cur_time;
     int duration, rate, eta;
     size_t size;
 
-    if (!FirstDL)
-        return NULL;
     cur_time = time(0);
     /* FIXME: gettextize? */
     src = Strnew_m_charp("<html><head><title>", w3m->DOWNLOAD_LIST_TITLE,
                          "</title></head>\n<body><h1 align=center>", w3m->DOWNLOAD_LIST_TITLE, "</h1>\n"
                                                                                                "<form method=internal action=download><hr>\n");
-    for (d = LastDL; d != NULL; d = d->prev)
+    for (auto it = FirstDL.rbegin(); it!=FirstDL.rend(); ++it)
     {
+        auto d = *it;
         if (lstat(d->lock, &st))
             d->running = false;
         src->Push("<pre>\n");
