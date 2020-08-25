@@ -19,7 +19,6 @@ class InputStream;
 struct MapList;
 struct AlarmEvent;
 struct TextList;
-struct Mailcap;
 
 enum LinkBufferTypes
 {

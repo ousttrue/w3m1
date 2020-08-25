@@ -27,6 +27,20 @@
 #define MCSTAT_REPTYPE 0x02
 #define MCSTAT_REPPARAM 0x04
 
+struct Mailcap
+{
+    const char *type;
+    const char *viewer;
+    int flags;
+    const char *test;
+    const char *nametemplate;
+    const char *edit;
+};
+
+int mailcapMatch(Mailcap *mcap, const char *type);
+Mailcap *searchMailcap(Mailcap *table, std::string_view type);
+Mailcap *searchExtViewer(std::string_view type);
+
 static Mailcap DefaultMailcap[] = {
     {"image/*", DEF_IMAGE_VIEWER " %s", 0, NULL, NULL, NULL}, /* */
     {"audio/basic", DEF_AUDIO_PLAYER " %s", 0, NULL, NULL, NULL},
@@ -648,4 +662,14 @@ BufferPtr doExternal(const URL &url, const InputStreamPtr &stream, std::string_v
 //     }
 
     return buf;
+}
+
+bool is_dump_text_type(std::string_view type)
+{
+    auto mcap = searchExtViewer(type);
+    if (!mcap)
+    {
+        return false;
+    }
+    return mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT);
 }

@@ -171,16 +171,6 @@ bool is_text_type(std::string_view type)
            type.starts_with("message/");
 }
 
-bool is_dump_text_type(std::string_view type)
-{
-    auto mcap = searchExtViewer(type);
-    if (!mcap)
-    {
-        return false;
-    }
-    return mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT);
-}
-
 bool is_plain_text_type(std::string_view type)
 {
     if (type == "text/plain")
