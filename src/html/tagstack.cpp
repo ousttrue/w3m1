@@ -210,15 +210,15 @@ void html_feed_environ::flushline(int indent, int force, int width)
     if (force == 1 || obuf->flag & RB_NFLUSHED)
     {
         TextLine *lbuf = newTextLine(line, obuf->pos);
-        if (RB_GET_ALIGN(obuf) == RB_CENTER)
+        if (obuf->RB_GET_ALIGN() == RB_CENTER)
         {
             align(lbuf, width, ALIGN_CENTER);
         }
-        else if (RB_GET_ALIGN(obuf) == RB_RIGHT)
+        else if (obuf->RB_GET_ALIGN() == RB_RIGHT)
         {
             align(lbuf, width, ALIGN_RIGHT);
         }
-        else if (RB_GET_ALIGN(obuf) == RB_LEFT && obuf->flag & RB_INTABLE)
+        else if (obuf->RB_GET_ALIGN() == RB_LEFT && obuf->flag & RB_INTABLE)
         {
             align(lbuf, width, ALIGN_LEFT);
         }

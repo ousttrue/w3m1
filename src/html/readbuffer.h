@@ -88,7 +88,6 @@ struct cmdtable
     HtmlTags cmd;
 };
 
-#define RB_GET_ALIGN(obuf) ((obuf)->flag & RB_ALIGN)
 #define RB_SET_ALIGN(obuf, align)  \
     {                              \
         (obuf)->flag &= ~RB_ALIGN; \
@@ -97,7 +96,7 @@ struct cmdtable
 #define RB_SAVE_FLAG(obuf)                                              \
     {                                                                   \
         if ((obuf)->flag_sp < RB_STACK_SIZE)                            \
-            (obuf)->flag_stack[(obuf)->flag_sp++] = RB_GET_ALIGN(obuf); \
+            (obuf)->flag_stack[(obuf)->flag_sp++] = obuf->RB_GET_ALIGN(); \
     }
 #define RB_RESTORE_FLAG(obuf)                                          \
     {                                                                  \
@@ -141,6 +140,8 @@ struct readbuffer
     short pos;
     Str prevchar;
     ReadBufferFlags flag;
+    ReadBufferFlags RB_GET_ALIGN() const { return flag & RB_ALIGN; }
+
     ReadBufferFlags flag_stack[RB_STACK_SIZE];
     int flag_sp;
     TokenStatusTypes status;
