@@ -1821,22 +1821,22 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     return 0;
 }
 
-static bool need_flushline(html_feed_environ *h_env, Lineprop mode)
+bool html_feed_environ::need_flushline(Lineprop mode)
 {
-    if (h_env->obuf->flag & RB_PRE_INT)
+    if (this->obuf->flag & RB_PRE_INT)
     {
-        if (h_env->obuf->pos > h_env->limit)
+        if (this->obuf->pos > this->limit)
             return 1;
         else
             return 0;
     }
 
-    auto ch = h_env->obuf->line->Back();
-    /* if (ch == ' ' && h_env->obuf->tag_sp > 0) */
+    auto ch = this->obuf->line->Back();
+    /* if (ch == ' ' && this->obuf->tag_sp > 0) */
     if (ch == ' ')
         return 0;
 
-    if (h_env->obuf->pos > h_env->limit)
+    if (this->obuf->pos > this->limit)
         return 1;
 
     return 0;
@@ -2198,7 +2198,7 @@ table_start:
                         obuf->proc_mchar(obuf->flag & RB_SPECIAL, delta, &str, mode);
                 }
             }
-            if (need_flushline(h_env, mode))
+            if (h_env->need_flushline(mode))
             {
                 char *bp = obuf->line->ptr + obuf->bp.len();
                 char *tp = bp - obuf->bp.tlen();
@@ -2339,3 +2339,4 @@ void completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf
         HTMLlineproc0("</table>", h_env, true, seq);
     }
 }
+

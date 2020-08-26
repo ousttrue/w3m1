@@ -42,6 +42,7 @@ public:
     char *title;
     int blank_lines;
 
+    bool need_flushline(Lineprop mode);
     void flushline(int indent, int force, int width);
     void push_render_image(Str str, int width, int limit);
 };
