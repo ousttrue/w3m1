@@ -152,7 +152,6 @@ add_executable(w3m
     src/html/html.cpp
     src/html/maparea.cpp
     src/html/image.cpp
-    src/html/tokenizer.cpp
     src/loader.cpp
     src/mytime.cpp
     src/indep.cpp

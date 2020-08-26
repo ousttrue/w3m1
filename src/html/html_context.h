@@ -4,6 +4,7 @@
 #include "frontend/buffer.h"
 #include "html/html.h"
 #include "html/form.h"
+#include "html/readbuffer.h"
 
 struct Anchor;
 
@@ -53,7 +54,7 @@ class HtmlContext
     Str cur_option_value = nullptr;
     Str cur_option_label = nullptr;
     bool cur_option_selected = false;
-    int cur_status = 0;
+    TokenStatusTypes cur_status = R_ST_NORMAL;
     std::vector<AnchorPtr > a_textarea;
     std::vector<Str> textarea_str;
     int n_textarea = -1;

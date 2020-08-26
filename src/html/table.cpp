@@ -20,7 +20,7 @@
 #include "html/html.h"
 #include "html/html_context.h"
 #include "html/html_processor.h"
-#include "html/tokenizer.h"
+
 #include "frontend/terminal.h"
 
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
@@ -455,8 +455,8 @@ int visible_length_offset = 0;
 int visible_length(const char *str)
 {
     int len = 0, n, max_len = 0;
-    int status = R_ST_NORMAL;
-    int prev_status = status;
+    TokenStatusTypes status = R_ST_NORMAL;
+    TokenStatusTypes prev_status = status;
     Str tagbuf = Strnew();
     int amp_len = 0;
 
@@ -3571,7 +3571,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, HtmlContext *seq)
 {
     Str tokbuf;
-    int status;
+    TokenStatusTypes status;
     char *line;
     if (!tok)
         return;

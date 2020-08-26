@@ -16,7 +16,7 @@
 #include "public.h"
 #include "commands.h"
 #include "html/maparea.h"
-#include "html/tokenizer.h"
+
 #include "w3m.h"
 #include "textlist.h"
 

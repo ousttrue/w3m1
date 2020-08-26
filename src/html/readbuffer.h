@@ -129,8 +129,10 @@ enum TokenStatusTypes
     R_ST_VALUE = 15,  /* within tag attribule value */
 };
 
-#define ST_IS_REAL_TAG(s) ((s) == R_ST_TAG || (s) == R_ST_TAG0 || (s) == R_ST_EQL || (s) == R_ST_VALUE)
-
+inline bool ST_IS_REAL_TAG(TokenStatusTypes s)
+{
+    return ((s) == R_ST_TAG || (s) == R_ST_TAG0 || (s) == R_ST_EQL || (s) == R_ST_VALUE);
+}
 
 struct readbuffer
 {
@@ -141,7 +143,7 @@ struct readbuffer
     ReadBufferFlags flag;
     ReadBufferFlags flag_stack[RB_STACK_SIZE];
     int flag_sp;
-    int status;
+    TokenStatusTypes status;
     unsigned char end_tag;
     short table_level;
     short nobr_level;
@@ -186,3 +188,5 @@ struct readbuffer
 };
 
 int sloppy_parse_line(char **str);
+bool next_status(char c, TokenStatusTypes *status);
+bool read_token(Str buf, char **instr, TokenStatusTypes *status, int pre, int append);

@@ -14,7 +14,7 @@
 #include "textlist.h"
 #include "html/html_processor.h"
 #include "html/html_context.h"
-#include "html/tokenizer.h"
+
 #include "frontend/buffer.h"
 #include "frontend/line.h"
 #include "charset.h"
