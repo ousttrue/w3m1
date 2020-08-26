@@ -1959,3 +1959,13 @@ void HtmlContext::close_anchor(struct html_feed_environ *h_env, struct readbuffe
     }
     obuf->anchor = {};
 }
+
+void HtmlContext::CLOSE_P(readbuffer *obuf, html_feed_environ *h_env)
+{
+    if (obuf->flag & RB_P)
+    {
+        h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
+        obuf->RB_RESTORE_FLAG();
+        obuf->flag &= ~RB_P;
+    }
+}

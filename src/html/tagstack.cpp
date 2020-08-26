@@ -22,16 +22,6 @@
 static struct table *tables[MAX_TABLE];
 static struct table_mode table_mode[MAX_TABLE];
 
-void CLOSE_P(readbuffer *obuf, html_feed_environ *h_env)
-{
-    if (obuf->flag & RB_P)
-    {
-        h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
-        obuf->RB_RESTORE_FLAG();
-        obuf->flag &= ~RB_P;
-    }
-}
-
 void CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env, HtmlContext *seq)
 {
     if (obuf->flag & RB_IN_DT)
@@ -427,13 +417,6 @@ void purgeline(struct html_feed_environ *h_env)
     h_env->blank_lines--;
 }
 
-
-void CLOSE_A(readbuffer *obuf, html_feed_environ *h_env, HtmlContext *seq)
-{
-    CLOSE_P(obuf, h_env);
-    seq->close_anchor(h_env, obuf);
-}
-
 int REAL_WIDTH(int w, int limit)
 {
     return (((w) >= 0) ? (int)((w) / ImageManager::Instance().pixel_per_char) : -(w) * (limit) / 100);
@@ -677,7 +660,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_P:
     case HTML_N_P:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->flushline(h_env->envs.back().indent, 1, h_env->limit);
@@ -727,7 +710,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_OL:
     case HTML_BLQ:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
@@ -765,7 +748,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_N_BLQ:
     {
         CLOSE_DT;
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (h_env->envs.size())
         {
             h_env->flushline(h_env->envs.back().indent, 0,
@@ -785,7 +768,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_DL:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
@@ -801,7 +784,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_LI:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         CLOSE_DT;
         if (h_env->envs.size())
         {
@@ -899,7 +882,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_DT:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (h_env->envs.empty() ||
             (h_env->envs.back().env != HTML_DL &&
              h_env->envs.back().env != HTML_DL_COMPACT))
@@ -921,7 +904,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_DD:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         CLOSE_DT;
         if (h_env->envs.back().env == HTML_DL_COMPACT)
         {
@@ -980,7 +963,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_NOFRAMES:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->flag |= (RB_NOFRAMES | RB_IGNORE_P);
         /* istr = str; */
@@ -988,7 +971,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_N_NOFRAMES:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->flag &= ~RB_NOFRAMES;
         return 1;
@@ -1022,7 +1005,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_PRE:
     {
         auto x = tag->HasAttribute(ATTR_FOR_TABLE);
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
@@ -1088,7 +1071,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_PRE_PLAIN:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
@@ -1100,7 +1083,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_N_PRE_PLAIN:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
@@ -1115,7 +1098,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_XMP:
     case HTML_PLAINTEXT:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
@@ -1140,7 +1123,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_N_LISTING:
     case HTML_N_XMP:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
@@ -1331,7 +1314,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         return 1;
     case HTML_CENTER:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & (RB_PREMODE | RB_IGNORE_P)))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->RB_SAVE_FLAG();
@@ -1340,7 +1323,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_N_CENTER:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_PREMODE))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->RB_RESTORE_FLAG();
@@ -1348,7 +1331,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_DIV:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->set_alignment(tag);
@@ -1356,14 +1339,14 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_N_DIV:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->RB_RESTORE_FLAG();
         return 1;
     }
     case HTML_DIV_INT:
     {
-        CLOSE_P(h_env->obuf, h_env);
+        seq->CLOSE_P(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->set_alignment(tag);
@@ -1371,14 +1354,14 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_N_DIV_INT:
     {
-        CLOSE_P(h_env->obuf, h_env);
+        seq->CLOSE_P(h_env->obuf, h_env);
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->RB_RESTORE_FLAG();
         return 1;
     }
     case HTML_FORM:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         auto tmp = seq->FormOpen(tag);
@@ -1388,7 +1371,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_N_FORM:
     {
-        CLOSE_A(h_env->obuf, h_env, seq);
+        seq->CLOSE_A(h_env->obuf, h_env);
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->flag |= RB_IGNORE_P;
         seq->FormClose();
