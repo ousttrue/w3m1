@@ -62,7 +62,6 @@ void CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env, HtmlContext *seq)
 void html_feed_environ::Initialize(TextLineList *buf, readbuffer *obuf, int limit)
 {
     this->buf = buf;
-    this->f = NULL;
     this->obuf = obuf;
     this->tagbuf = Strnew();
     this->limit = limit;
@@ -97,13 +96,6 @@ void html_feed_environ::push_render_image(Str str, int width, int limit)
         this->flushline(indent, 0, this->limit);
 }
 
-void APPEND(Str str, TextLineList *buf, FILE *f)
-{
-    if (buf)
-        appendTextLine(buf, (str), 0);
-    else if (f)
-        (str)->Puts(f);
-}
 
 void html_feed_environ::flushline(int indent, int force, int width)
 {
@@ -298,11 +290,6 @@ void html_feed_environ::flushline(int indent, int force, int width)
             this->maxlimit = lbuf->pos;
         if (buf)
             pushTextLine(buf, lbuf);
-        else if (f)
-        {
-            Str_conv_to_halfdump(lbuf->line)->Puts(f);
-            fputc('\n', f);
-        }
         if (obuf->flag & RB_SPECIAL || obuf->flag & RB_NFLUSHED)
             this->blank_lines = 0;
         else
@@ -319,9 +306,9 @@ void html_feed_environ::flushline(int indent, int force, int width)
             if (sloppy_parse_line(&p))
             {
                 tmp->Push(q, p - q);
-                if (force == 2)
+                if (force == 2 && buf)
                 {
-                    APPEND(tmp, buf, f);
+                    appendTextLine(buf, tmp, 0);
                 }
                 else
                     tmp2->Push(tmp);
@@ -330,9 +317,9 @@ void html_feed_environ::flushline(int indent, int force, int width)
         }
         if (force == 2)
         {
-            if (pass)
+            if (pass && buf)
             {
-                APPEND(pass, buf, f);
+                appendTextLine(buf, tmp, 0);
             }
             pass = NULL;
         }

@@ -25,7 +25,6 @@ struct html_feed_environ
     struct readbuffer *obuf;
     TextLineList *buf;
 
-    FILE *f;
     Str tagbuf;
     int limit;
     int maxlimit;
@@ -33,36 +32,9 @@ struct html_feed_environ
     std::vector<environment> envs;
 
 private:
-    // // envs size
-    // int nenv;
-    // // push/pop count. clamp nenv
-    // int envc;
-    // // push/pop count. ignore nenv
-    // int envc_real;
 
 public:
     void Initialize(TextLineList *buf, readbuffer *obuf, int limit);
-
-    // int capacity() const
-    // {
-    //     return nenv;
-    // }
-    // int realIndex() const
-    // {
-    //     return envc_real;
-    // }
-    // int currentIndex() const
-    // {
-    //     return envc;
-    // }
-    // environment &currentEnv() const
-    // {
-    //     return envs[envc];
-    // }
-    // environment &prevEnv() const
-    // {
-    //     return envs[envc - 1];
-    // }
 
     void PUSH_ENV(HtmlTags cmd);
     void POP_ENV();
