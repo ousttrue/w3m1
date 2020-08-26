@@ -33,17 +33,9 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 {
     auto newBuf = newBuffer(url);
     newBuf->type = "text/html";
-
-    // if (newBuf->currentURL.path.size())
-    // {
-    //     *GetCurBaseUrl() = *newBuf->BaseURL();
-    // }
-
-    struct environment envs[MAX_ENV_LEVEL];
     struct html_feed_environ htmlenv1;
     struct readbuffer obuf;
-    init_henv(&htmlenv1, &obuf, envs, MAX_ENV_LEVEL, nullptr, newBuf->width, 0);
-    htmlenv1.buf = newTextLineList();
+    init_henv(&htmlenv1, &obuf, newTextLineList(), newBuf->width, 0);
 
     //
     //

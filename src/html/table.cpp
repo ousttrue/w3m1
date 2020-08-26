@@ -801,7 +801,6 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
     TextListItem *l;
     struct readbuffer obuf;
     struct html_feed_environ h_env;
-    struct environment envs[MAX_ENV_LEVEL];
     int colspan, icell;
 
     if (tbl->tabdata[row] == NULL || tbl->tabdata[row][col] == NULL)
@@ -809,7 +808,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
     orgdata = (TextList *)tbl->tabdata[row][col];
     tbl->tabdata[row][col] = newGeneralList();
 
-    init_henv(&h_env, &obuf, envs, MAX_ENV_LEVEL,
+    init_henv(&h_env, &obuf, 
               (TextLineList *)tbl->tabdata[row][col],
               get_spec_cell_width(tbl, row, col), 0);
     obuf.flag |= RB_INTABLE;
@@ -1785,7 +1784,6 @@ static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
 {
     struct readbuffer obuf;
     struct html_feed_environ h_env;
-    struct environment envs[MAX_ENV_LEVEL];
     struct table *t;
     int i, col, row;
     int indent, maxwidth;
@@ -1797,7 +1795,7 @@ static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
         row = tbl->tables[i].row;
         indent = tbl->tables[i].indent;
 
-        init_henv(&h_env, &obuf, envs, MAX_ENV_LEVEL, tbl->tables[i].buf,
+        init_henv(&h_env, &obuf, tbl->tables[i].buf,
                   get_spec_cell_width(tbl, row, col), indent);
         check_row(tbl, row);
         if (h_env.limit > maxlimit)
@@ -1826,9 +1824,7 @@ make_caption(struct table *t, struct html_feed_environ *h_env, HtmlContext *seq)
 
     struct html_feed_environ henv;
     struct readbuffer obuf;
-    struct environment envs[MAX_ENV_LEVEL];
-    init_henv(&henv, &obuf, envs, MAX_ENV_LEVEL, newTextLineList(),
-              limit, h_env->currentEnv().indent);
+    init_henv(&henv, &obuf, newTextLineList(), limit, h_env->envs.back().indent);
     HTMLlineproc1("<center>", &henv, seq);
     HTMLlineproc0(t->caption->ptr, &henv, false, seq);
     HTMLlineproc1("</center>", &henv, seq);

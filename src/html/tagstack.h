@@ -14,10 +14,12 @@ struct TextLineList;
 
 struct environment
 {
-    unsigned char env;
-    int type;
-    int count;
-    char indent;
+
+    unsigned char env = 0;
+public:
+    int type = 0;
+    int count = 0;
+    int indent = 0;
 };
 
 struct html_feed_environ
@@ -30,38 +32,39 @@ struct html_feed_environ
     int limit;
     int maxlimit;
 
+    std::vector<environment> envs;
+
 private:
-    struct environment *envs;
-    // envs size
-    int nenv;
-    // push/pop count. clamp nenv
-    int envc;
-    // push/pop count. ignore nenv
-    int envc_real;
+    // // envs size
+    // int nenv;
+    // // push/pop count. clamp nenv
+    // int envc;
+    // // push/pop count. ignore nenv
+    // int envc_real;
 
 public:
-    void Initialize(TextLineList *buf, readbuffer *obuf, int limit, environment *envs, int nenv);
+    void Initialize(TextLineList *buf, readbuffer *obuf, int limit);
 
-    int capacity() const
-    {
-        return nenv;
-    }
-    int realIndex() const
-    {
-        return envc_real;
-    }
-    int currentIndex() const
-    {
-        return envc;
-    }
-    environment &currentEnv() const
-    {
-        return envs[envc];
-    }
-    environment &prevEnv() const
-    {
-        return envs[envc - 1];
-    }
+    // int capacity() const
+    // {
+    //     return nenv;
+    // }
+    // int realIndex() const
+    // {
+    //     return envc_real;
+    // }
+    // int currentIndex() const
+    // {
+    //     return envc;
+    // }
+    // environment &currentEnv() const
+    // {
+    //     return envs[envc];
+    // }
+    // environment &prevEnv() const
+    // {
+    //     return envs[envc - 1];
+    // }
 
     void PUSH_ENV(unsigned char cmd);
     void POP_ENV();
@@ -95,5 +98,5 @@ inline void HTMLlineproc1(const char *x, html_feed_environ *y, class HtmlContext
     HTMLlineproc0(x, y, true, seq);
 }
 void init_henv(struct html_feed_environ *, struct readbuffer *,
-               struct environment *, int, TextLineList *, int, int);
+               TextLineList *, int, int);
 void completeHTMLstream(struct html_feed_environ *, struct readbuffer *, class HtmlContext *seq);
