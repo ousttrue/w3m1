@@ -27,7 +27,7 @@ void CLOSE_P(readbuffer *obuf, html_feed_environ *h_env)
     if (obuf->flag & RB_P)
     {
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
-        RB_RESTORE_FLAG(obuf);
+        obuf->RB_RESTORE_FLAG();
         obuf->flag &= ~RB_P;
     }
 }
@@ -773,7 +773,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         }
         do_blankline(h_env, h_env->obuf, h_env->envs.back().indent, 0, h_env->limit);
-        RB_RESTORE_FLAG(h_env->obuf);
+        h_env->obuf->RB_RESTORE_FLAG();
         close_anchor(h_env, h_env->obuf, seq);
         h_env->obuf->flag |= RB_IGNORE_P;
         return 1;
@@ -1398,7 +1398,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         CLOSE_A(h_env->obuf, h_env, seq);
         if (!(h_env->obuf->flag & RB_PREMODE))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
-        RB_RESTORE_FLAG(h_env->obuf);
+        h_env->obuf->RB_RESTORE_FLAG();
         return 1;
     }
     case HTML_DIV:
@@ -1413,7 +1413,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     {
         CLOSE_A(h_env->obuf, h_env, seq);
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
-        RB_RESTORE_FLAG(h_env->obuf);
+        h_env->obuf->RB_RESTORE_FLAG();
         return 1;
     }
     case HTML_DIV_INT:
@@ -1428,7 +1428,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     {
         CLOSE_P(h_env->obuf, h_env);
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
-        RB_RESTORE_FLAG(h_env->obuf);
+        h_env->obuf->RB_RESTORE_FLAG();
         return 1;
     }
     case HTML_FORM:
