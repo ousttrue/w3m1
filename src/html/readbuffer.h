@@ -155,4 +155,6 @@ struct readbuffer
     void append_tags();
     void save_fonteffect();
     void restore_fonteffect();
+    void clear_ignore_p_flag(int cmd);
+    void set_alignment(struct parsed_tag *tag);
 };

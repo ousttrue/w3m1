@@ -7,6 +7,46 @@
 #include "entity.h"
 #include <list>
 
+void Breakpoint::set(const struct readbuffer *obuf, int tag_length)
+{
+    _len = obuf->line->Size();
+    _tlen = tag_length;
+
+    _pos = obuf->pos;
+    flag = obuf->flag;
+#ifdef FORMAT_NICE
+    flag &= ~RB_FILL;
+#endif /* FORMAT_NICE */
+    top_margin = obuf->top_margin;
+    bottom_margin = obuf->bottom_margin;
+
+    if (init_flag)
+    {
+        init_flag = 0;
+
+        anchor = obuf->anchor;
+        img_alt = obuf->img_alt;
+        fontstat = obuf->fontstat;
+        nobr_level = obuf->nobr_level;
+        prev_ctype = obuf->prev_ctype;
+    }
+}
+
+void Breakpoint::back_to(struct readbuffer *obuf)
+{
+    obuf->pos = _pos;
+    obuf->flag = flag;
+    obuf->top_margin = top_margin;
+    obuf->bottom_margin = bottom_margin;
+
+    obuf->anchor = anchor;
+    obuf->img_alt = img_alt;
+    obuf->fontstat = fontstat;
+    obuf->prev_ctype = prev_ctype;
+    if (obuf->flag & RB_NOBR)
+        obuf->nobr_level = nobr_level;
+}
+
 struct link_stack
 {
     HtmlTags cmd;
@@ -402,3 +442,48 @@ void readbuffer::restore_fonteffect()
     if (this->fontstat.in_ins)
         push_tag("<ins>", HTML_INS);
 }
+
+void readbuffer::clear_ignore_p_flag(int cmd)
+{
+    static int clear_flag_cmd[] = {
+        HTML_HR, HTML_UNKNOWN};
+    int i;
+
+    for (i = 0; clear_flag_cmd[i] != HTML_UNKNOWN; i++)
+    {
+        if (cmd == clear_flag_cmd[i])
+        {
+            this->flag &= ~RB_IGNORE_P;
+            return;
+        }
+    }
+}
+
+void readbuffer::set_alignment(struct parsed_tag *tag)
+{
+    ReadBufferFlags flag = (ReadBufferFlags)-1;
+    int align;
+
+    if (tag->TryGetAttributeValue(ATTR_ALIGN, &align))
+    {
+        switch (align)
+        {
+        case ALIGN_CENTER:
+            flag = RB_CENTER;
+            break;
+        case ALIGN_RIGHT:
+            flag = RB_RIGHT;
+            break;
+        case ALIGN_LEFT:
+            flag = RB_LEFT;
+        }
+    }
+
+    auto obuf = this;
+    RB_SAVE_FLAG(obuf);
+    if (flag != -1)
+    {
+        RB_SET_ALIGN(obuf, flag);
+    }
+}
+

@@ -19,51 +19,6 @@
 #include "frontend/line.h"
 #include "charset.h"
 
-void Breakpoint::set(const struct readbuffer *obuf, int tag_length)
-{
-    _len = obuf->line->Size();
-    _tlen = tag_length;
-
-    _pos = obuf->pos;
-    flag = obuf->flag;
-#ifdef FORMAT_NICE
-    flag &= ~RB_FILL;
-#endif /* FORMAT_NICE */
-    top_margin = obuf->top_margin;
-    bottom_margin = obuf->bottom_margin;
-
-    if (init_flag)
-    {
-        init_flag = 0;
-
-        anchor = obuf->anchor;
-        img_alt = obuf->img_alt;
-        fontstat = obuf->fontstat;
-        nobr_level = obuf->nobr_level;
-        prev_ctype = obuf->prev_ctype;
-    }
-}
-
-void Breakpoint::back_to(struct readbuffer *obuf)
-{
-    obuf->pos = _pos;
-    obuf->flag = flag;
-    obuf->top_margin = top_margin;
-    obuf->bottom_margin = bottom_margin;
-
-    obuf->anchor = anchor;
-    obuf->img_alt = img_alt;
-    obuf->fontstat = fontstat;
-    obuf->prev_ctype = prev_ctype;
-    if (obuf->flag & RB_NOBR)
-        obuf->nobr_level = nobr_level;
-}
-
-static inline void set_space_to_prevchar(Str x)
-{
-    x->CopyFrom(" ", 1);
-}
-
 static struct table *tables[MAX_TABLE];
 static struct table_mode table_mode[MAX_TABLE];
 
@@ -84,53 +39,6 @@ int sloppy_parse_line(char **str)
         return 0;
     }
 }
-
-static void
-clear_ignore_p_flag(int cmd, struct readbuffer *obuf)
-{
-    static int clear_flag_cmd[] = {
-        HTML_HR, HTML_UNKNOWN};
-    int i;
-
-    for (i = 0; clear_flag_cmd[i] != HTML_UNKNOWN; i++)
-    {
-        if (cmd == clear_flag_cmd[i])
-        {
-            obuf->flag &= ~RB_IGNORE_P;
-            return;
-        }
-    }
-}
-
-static void
-set_alignment(struct readbuffer *obuf, struct parsed_tag *tag)
-{
-    ReadBufferFlags flag = (ReadBufferFlags)-1;
-    int align;
-
-    if (tag->TryGetAttributeValue(ATTR_ALIGN, &align))
-    {
-        switch (align)
-        {
-        case ALIGN_CENTER:
-            flag = RB_CENTER;
-            break;
-        case ALIGN_RIGHT:
-            flag = RB_RIGHT;
-            break;
-        case ALIGN_LEFT:
-            flag = RB_LEFT;
-        }
-    }
-    RB_SAVE_FLAG(obuf);
-    if (flag != -1)
-    {
-        RB_SET_ALIGN(obuf, flag);
-    }
-}
-
-#ifdef ID_EXT
-#endif /* ID_EXT */
 
 void CLOSE_P(readbuffer *obuf, html_feed_environ *h_env)
 {
@@ -159,10 +67,6 @@ void html_feed_environ::Initialize(TextLineList *buf, readbuffer *obuf, int limi
     this->tagbuf = Strnew();
     this->limit = limit;
     this->maxlimit = 0;
-    // this->envs = envs;
-    // this->nenv = nenv;
-    // this->envc = 0;
-    // this->envc_real = 0;
     this->title = NULL;
     this->blank_lines = 0;
 }
@@ -578,7 +482,7 @@ close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf, HtmlConte
             if (obuf->anchor.hseq > 0)
             {
                 HTMLlineproc0(ANSP, h_env, true, seq);
-                set_space_to_prevchar(obuf->prevchar);
+                obuf->set_space_to_prevchar();
             }
             else
             {
@@ -883,7 +787,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         h_env->obuf->flag |= RB_IGNORE_P;
         if (tag->tagid == HTML_P)
         {
-            set_alignment(h_env->obuf, tag);
+            h_env->obuf->set_alignment(tag);
             h_env->obuf->flag |= RB_P;
         }
         return 1;
@@ -903,7 +807,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                          h_env->limit);
         }
         HTMLlineproc0("<b>", h_env, true, seq);
-        set_alignment(h_env->obuf, tag);
+        h_env->obuf->set_alignment(tag);
         return 1;
     }
     case HTML_N_H:
@@ -1044,7 +948,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                     h_env->obuf->push_charp(1, NBSP, PC_ASCII);
                 h_env->obuf->push_str(seq->SymbolWidth(), tmp, PC_ASCII);
                 h_env->obuf->push_charp(1, NBSP, PC_ASCII);
-                set_space_to_prevchar(h_env->obuf->prevchar);
+                h_env->obuf->set_space_to_prevchar();
                 break;
             }
             case HTML_OL:
@@ -1078,7 +982,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 h_env->obuf->push_spaces(1, w3mApp::Instance().IndentIncr - num->Size());
                 h_env->obuf->push_str(num->Size(), num, PC_ASCII);
                 if (w3mApp::Instance().IndentIncr >= 4)
-                    set_space_to_prevchar(h_env->obuf->prevchar);
+                    h_env->obuf->set_space_to_prevchar();
                 break;
             }
             default:
@@ -1212,7 +1116,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         close_anchor(h_env, h_env->obuf, seq);
         auto tmp = process_hr(tag, h_env->limit, h_env->envs.back().indent, seq);
         HTMLlineproc0(tmp->ptr, h_env, true, seq);
-        set_space_to_prevchar(h_env->obuf->prevchar);
+        h_env->obuf->set_space_to_prevchar();
         return 1;
     }
     case HTML_PRE:
@@ -1547,7 +1451,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         CLOSE_A(h_env->obuf, h_env, seq);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
-        set_alignment(h_env->obuf, tag);
+        h_env->obuf->set_alignment(tag);
         return 1;
     }
     case HTML_N_DIV:
@@ -1562,7 +1466,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         CLOSE_P(h_env->obuf, h_env);
         if (!(h_env->obuf->flag & RB_IGNORE_P))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
-        set_alignment(h_env->obuf, tag);
+        h_env->obuf->set_alignment(tag);
         return 1;
     }
     case HTML_N_DIV_INT:
@@ -2166,7 +2070,7 @@ table_start:
                     do_blankline(h_env, obuf, indent, 0, h_env->limit);
                     obuf->flag |= RB_IGNORE_P;
                 }
-                set_space_to_prevchar(obuf->prevchar);
+                obuf->set_space_to_prevchar();
                 continue;
             case 1:
                 /* <table> tag */
@@ -2197,7 +2101,7 @@ table_start:
             }
 
             obuf->bp.initialize();
-            clear_ignore_p_flag(cmd, obuf);
+            obuf->clear_ignore_p_flag(cmd);
             if (cmd == HTML_TABLE)
                 goto table_start;
             else
@@ -2394,7 +2298,7 @@ void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf, TextLin
     obuf->cprop = P_UNKNOWN;
     obuf->pos = 0;
     obuf->prevchar = Strnew_size(8);
-    set_space_to_prevchar(obuf->prevchar);
+    obuf->set_space_to_prevchar();
     obuf->flag = RB_IGNORE_P;
     obuf->flag_sp = 0;
     obuf->status = R_ST_NORMAL;
