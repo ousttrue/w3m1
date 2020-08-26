@@ -88,16 +88,12 @@ struct cmdtable
     HtmlTags cmd;
 };
 
-#define RB_SAVE_FLAG(obuf)                                                \
-    {                                                                     \
-        if ((obuf)->flag_sp < RB_STACK_SIZE)                              \
-            (obuf)->flag_stack[(obuf)->flag_sp++] = obuf->RB_GET_ALIGN(); \
-    }
 #define RB_RESTORE_FLAG(obuf)                                          \
     {                                                                  \
         if ((obuf)->flag_sp > 0)                                       \
             obuf->RB_SET_ALIGN((obuf)->flag_stack[--(obuf)->flag_sp]); \
     }
+
 #define RB_STACK_SIZE 10
 #define FONT_STACK_SIZE 5
 #define TAG_STACK_SIZE 10
@@ -144,6 +140,12 @@ struct readbuffer
 
     ReadBufferFlags flag_stack[RB_STACK_SIZE];
     int flag_sp;
+    void RB_SAVE_FLAG()
+    {
+        if (flag_sp < RB_STACK_SIZE)
+            flag_stack[flag_sp++] = RB_GET_ALIGN();
+    }
+
     TokenStatusTypes status;
     unsigned char end_tag;
     short table_level;
