@@ -8,44 +8,48 @@
 /// &#38; => 38
 /// &#x26; => 38
 ///
-static std::pair<const char *, uint32_t> getescapechar_sharp(const char *p)
+static std::pair<std::string_view, uint32_t> getescapechar_sharp(std::string_view p)
 {
-    if (*p == 'x' || *p == 'X')
+
+    if (p.size())
     {
-        // hex
-        p++;
-        if (!IS_XDIGIT(*p))
+        if (p[0] == 'x' || p[0] == 'X')
         {
-            return {p, -1};
+            // hex
+            p.remove_prefix(1);
+            if (!IS_XDIGIT(p[0]))
+            {
+                return {p, -1};
+            }
+            uint32_t dummy = 0;
+            for (; p.size() && IS_XDIGIT(p[0]); p.remove_prefix(1))
+            {
+                dummy = dummy * 0x10 + GET_MYCDIGIT(p[0]);
+            }
+            if (p.size() & p[0] == ';')
+            {
+                p.remove_prefix(1);
+            }
+            return {p, dummy};
         }
-        uint32_t dummy = 0;
-        for (; IS_XDIGIT(*p); p++)
+        else
         {
-            dummy = dummy * 0x10 + GET_MYCDIGIT(*p);
+            // digit
+            if (!IS_DIGIT(p[0]))
+            {
+                return {p, -1};
+            }
+            uint32_t dummy = 0;
+            for (; IS_DIGIT(p[0]); p.remove_prefix(1))
+            {
+                dummy = dummy * 10 + GET_MYCDIGIT(p[0]);
+            }
+            if (p.size() && p[0] == ';')
+            {
+                p.remove_prefix(1);
+            }
+            return {p, dummy};
         }
-        if (*p == ';')
-        {
-            p++;
-        }
-        return {p, dummy};
-    }
-    else
-    {
-        // digit
-        if (!IS_DIGIT(*p))
-        {
-            return {p, -1};
-        }
-        uint32_t dummy = 0;
-        for (; IS_DIGIT(*p); p++)
-        {
-            dummy = dummy * 10 + GET_MYCDIGIT(*p);
-        }
-        if (*p == ';')
-        {
-            p++;
-        }
-        return {p, dummy};
     }
 
     assert(false);
@@ -350,14 +354,19 @@ static inline bool iequals(std::string_view l, std::string_view r)
 ///
 /// amp; => 38
 ///
-static std::pair<const char *, int> getescapechar_entity(const char *p)
+static std::pair<std::string_view, int> getescapechar_entity(std::string_view p)
 {
-    auto q = p;
-    SKIP(&p, [](auto c) { return IS_ALNUM(c); });
-    auto word = std::string_view(q, p - q);
+    // auto q = p;
+    // SKIP(&p, [](auto c) { return IS_ALNUM(c); });
+    auto pos = 0;
+    for (; pos < p.size() && IS_ALNUM(p[pos]); ++pos)
+    {
+    }
+    auto word = p.substr(0, pos);
+    p = p.substr(pos);
 
     auto strict_entity = true;
-    if (*p != '=')
+    if (p.size() && p[0] != '=')
     {
         for (auto entity : g_nonstrict_entities)
         {
@@ -376,20 +385,14 @@ static std::pair<const char *, int> getescapechar_entity(const char *p)
             }
         }
     }
-    if (*p == ';')
+
+    if (p.size() && p[0] == ';')
     {
-        p++;
+        p.remove_prefix(1);
     }
-    else
+    else if (strict_entity)
     {
-        if (strict_entity)
-        {
-            return {p, -1};
-        }
-        else
-        {
-            auto a = 0;
-        }
+        return {p, -1};
     }
 
     return {p, GetEntity(word)};
@@ -400,38 +403,25 @@ static std::pair<const char *, int> getescapechar_entity(const char *p)
 /// &#38; => 38: digit
 /// &#x26; => 38: hex
 ///
-uint32_t ucs4_from_entity(const char **str)
+std::tuple<std::string_view, uint32_t> ucs4_from_entity(std::string_view p)
 {
-    const char *p = *str;
+    // const char *p = *str;
 
-    if (*p == '&')
+    if (p.size() && p[0] == '&')
     {
-        p++;
+        p.remove_prefix(1);
     }
 
-    if (*p == '#')
+    if (p.size() && p[0] == '#')
     {
-        auto [q, ucs4] = getescapechar_sharp(p + 1);
-        *str = q;
-        return ucs4;
+        return getescapechar_sharp(p.substr(1));
     }
 
-    if (!IS_ALPHA(*p))
+    if (!IS_ALPHA(p[0]))
     {
         // invalid format
-        *str = p;
-        return -1;
+        return {p, -1};
     }
 
-    {
-        auto [r, ucs4] = getescapechar_entity(p);
-        *str = r;
-        if (ucs4 == -1)
-        {
-            // no entity
-            return -1;
-        }
-
-        return ucs4;
-    }
+    return getescapechar_entity(p);
 }

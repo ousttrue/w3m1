@@ -2441,7 +2441,7 @@ int skip_space(struct table *t, const char *line, struct table_linfo *linfo,
     while (*line)
     {
         const char *save = line, *c = line;
-        int ec, len, wlen, plen;
+        int len, wlen, plen;
         ctype = get_mctype(*line);
         len = get_mcwidth(line);
         wlen = plen = get_mclen(line);
@@ -2457,7 +2457,8 @@ int skip_space(struct table *t, const char *line, struct table_linfo *linfo,
         {
             if (*c == '&')
             {
-                ec = ucs4_from_entity(&line);
+                auto [pos, ec] = ucs4_from_entity(line);
+                line = pos.data();
                 if (ec >= 0)
                 {
                     c = (char *)from_unicode(ec, w3mApp::Instance().InnerCharset);
@@ -3461,9 +3462,10 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
                 }
                 else
                 {
-                    int ec;
                     q = p;
-                    switch (ec = ucs4_from_entity(&p))
+                    auto [pos, ec] = ucs4_from_entity(p);
+                    p = pos.data();
+                    switch (ec)
                     {
                     case '<':
                         tmp->Push("&lt;");

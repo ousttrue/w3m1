@@ -506,7 +506,8 @@ static void
 proc_escape(struct readbuffer *obuf, const char **str_return)
 {
     const char *str = *str_return, *estr;
-    int ech = ucs4_from_entity(str_return);
+    auto [pos, ech] = ucs4_from_entity(*str_return);
+    *str_return = pos.data();
     int width, n_add = *str_return - str;
     Lineprop mode = PC_ASCII;
 
@@ -2655,7 +2656,8 @@ table_start:
                 if (!(obuf->flag & RB_PLAIN) && (*str == '&'))
                 {
                     const char *p = str;
-                    int ech = ucs4_from_entity(&p);
+                    auto [pos, ech] = ucs4_from_entity(p);
+                    p = pos.data();
                     if (ech == '\n' || ech == '\r')
                     {
                         ch = '\n';

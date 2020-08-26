@@ -588,7 +588,8 @@ const char *w3m_help_dir()
 std::pair<const char *, std::string_view> getescapecmd(const char *s, CharacterEncodingScheme ces)
 {
     auto save = s;
-    int ch = ucs4_from_entity(&s);
+    auto [pos, ch] = ucs4_from_entity(s);
+    s = pos.data();
     if (ch >= 0)
     {
         // ENTITY

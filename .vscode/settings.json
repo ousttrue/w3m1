@@ -79,7 +79,8 @@
         "shared_mutex": "cpp",
         "stack": "cpp",
         "thread": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "*.ipp": "cpp"
     },
     "cSpell.words": [
         "myctype"
