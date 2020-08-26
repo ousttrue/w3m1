@@ -79,12 +79,12 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
             lineBuf2 = convertLine(url.scheme, lineBuf2, HTML_MODE, &detected, context.DocCharset());
             context.SetCES(detected);
 
-            HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal, &context);
+            context.HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
         }
         if (obuf.status != R_ST_NORMAL)
         {
             obuf.status = R_ST_EOL;
-            HTMLlineproc0("\n", &htmlenv1, internal, &context);
+            context.HTMLlineproc0("\n", &htmlenv1, internal);
         }
         obuf.status = R_ST_NORMAL;
         context.completeHTMLstream(&htmlenv1, &obuf);
@@ -97,7 +97,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 
     if (!success)
     {
-        HTMLlineproc0("<br>Transfer Interrupted!<br>", &htmlenv1, true, &context);
+        context.HTMLlineproc0("<br>Transfer Interrupted!<br>", &htmlenv1, true);
     }
 
     // if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)

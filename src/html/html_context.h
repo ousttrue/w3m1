@@ -161,4 +161,6 @@ public:
     }
     void CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env);
     Str process_hr(struct parsed_tag *tag, int width, int indent_width);
+
+    void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
 };

@@ -1929,7 +1929,7 @@ void HtmlContext::close_anchor(struct html_feed_environ *h_env, struct readbuffe
         {
             if (obuf->anchor.hseq > 0)
             {
-                ::HTMLlineproc0(ANSP, h_env, true, this);
+                this->HTMLlineproc0(ANSP, h_env, true);
                 obuf->set_space_to_prevchar();
             }
             else
@@ -1975,7 +1975,7 @@ void HtmlContext::CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env)
     if (obuf->flag & RB_IN_DT)
     {
         obuf->flag &= ~RB_IN_DT;
-        HTMLlineproc0("</b>", h_env, true, this);
+        this->HTMLlineproc0("</b>", h_env, true);
     }
 }
 
@@ -2014,12 +2014,12 @@ void HtmlContext::completeHTMLstream(struct html_feed_environ *h_env, struct rea
         obuf->fontstat.in_ins = 0;
     }
     if (obuf->flag & RB_INTXTA)
-        HTMLlineproc0("</textarea>", h_env, true, this);
+       this-> HTMLlineproc0("</textarea>", h_env, true);
     /* for unbalanced select tag */
     if (obuf->flag & RB_INSELECT)
-        HTMLlineproc0("</select>", h_env, true, this);
+        this->HTMLlineproc0("</select>", h_env, true);
     if (obuf->flag & RB_TITLE)
-        HTMLlineproc0("</title>", h_env, true, this);
+        this->HTMLlineproc0("</title>", h_env, true);
 
     /* for unbalanced table tag */
     if (obuf->table_level >= MAX_TABLE)
@@ -2028,7 +2028,7 @@ void HtmlContext::completeHTMLstream(struct html_feed_environ *h_env, struct rea
     while (obuf->table_level >= 0)
     {
         table_mode[obuf->table_level].pre_mode &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
-        HTMLlineproc0("</table>", h_env, true, this);
+        this->HTMLlineproc0("</table>", h_env, true);
     }
 }
 

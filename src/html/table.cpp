@@ -863,12 +863,12 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
             }
         }
         else
-            HTMLlineproc0(l->ptr, &h_env, true, seq);
+            seq->HTMLlineproc0(l->ptr, &h_env, true);
     }
     if (obuf.status != R_ST_NORMAL)
     {
         obuf.status = R_ST_EOL;
-        HTMLlineproc0("\n", &h_env, true, seq);
+        seq->HTMLlineproc0("\n", &h_env, true);
     }
     seq->completeHTMLstream(&h_env, &obuf);
     h_env.flushline(0, 2, h_env.limit);
@@ -1825,17 +1825,17 @@ make_caption(struct table *t, struct html_feed_environ *h_env, HtmlContext *seq)
     struct html_feed_environ henv;
     struct readbuffer obuf;
     init_henv(&henv, &obuf, newTextLineList(), limit, h_env->envs.back().indent);
-    HTMLlineproc0("<center>", &henv, true, seq);
-    HTMLlineproc0(t->caption->ptr, &henv, false, seq);
-    HTMLlineproc0("</center>", &henv, true, seq);
+    seq->HTMLlineproc0("<center>", &henv, true);
+    seq->HTMLlineproc0(t->caption->ptr, &henv, false);
+    seq->HTMLlineproc0("</center>", &henv, true);
 
     if (t->total_width < henv.maxlimit)
         t->total_width = henv.maxlimit;
     limit = h_env->limit;
     h_env->limit = t->total_width;
-    HTMLlineproc0("<center>", h_env, true, seq);
-    HTMLlineproc0(t->caption->ptr, h_env, false, seq);
-    HTMLlineproc0("</center>", h_env, true, seq);
+    seq->HTMLlineproc0("<center>", h_env, true);
+    seq->HTMLlineproc0(t->caption->ptr, h_env, false);
+    seq->HTMLlineproc0("</center>", h_env, true);
     h_env->limit = limit;
 }
 
@@ -2016,12 +2016,12 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 
     make_caption(t, h_env, seq);
 
-    HTMLlineproc0("<pre for_table>", h_env, true, seq);
+    seq->HTMLlineproc0("<pre for_table>", h_env, true);
 #ifdef ID_EXT
     if (t->id != NULL)
     {
         idtag = Sprintf("<_id id=\"%s\">", html_quote((t->id)->ptr));
-        HTMLlineproc0(idtag->ptr, h_env, true, seq);
+        seq->HTMLlineproc0(idtag->ptr, h_env, true);
     }
 #endif /* ID_EXT */
     switch (t->border_mode)
@@ -2138,7 +2138,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         t->total_width = 1;
         h_env->push_render_image(renderbuf, 1, t->total_width);
     }
-    HTMLlineproc0("</pre>", h_env, true, seq);
+    seq->HTMLlineproc0("</pre>", h_env, true);
 }
 
 #ifdef TABLE_NO_COMPACT
