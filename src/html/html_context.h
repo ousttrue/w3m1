@@ -163,4 +163,5 @@ public:
     Str process_hr(struct parsed_tag *tag, int width, int indent_width);
 
     void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
+    int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
 };

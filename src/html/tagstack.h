@@ -56,7 +56,5 @@ void do_blankline(struct html_feed_environ *h_env,
                   int width);
 void purgeline(struct html_feed_environ *h_env);
 
-int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, class HtmlContext *seq);
-
 void init_henv(struct html_feed_environ *, struct readbuffer *,
                TextLineList *, int, int);

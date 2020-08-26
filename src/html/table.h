@@ -93,9 +93,9 @@ struct table
     int real_width;
 #endif /* TABLE_EXPAND */
     Str caption;
-#ifdef ID_EXT
+
     Str id;
-#endif
+
     struct GeneralList ***tabdata;
     table_attr **tabattr;
     table_attr trattr;
