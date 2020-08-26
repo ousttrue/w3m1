@@ -42,7 +42,7 @@ class HtmlContext
     std::vector<int> form_stack;
     std::vector<FormPtr> forms;
 
-    std::vector<AnchorPtr > a_select;
+    std::vector<AnchorPtr> a_select;
     std::vector<FormSelectOptionList> select_option;
     int n_select = -1;
     int cur_option_maxwidth = 0;
@@ -55,7 +55,7 @@ class HtmlContext
     Str cur_option_label = nullptr;
     bool cur_option_selected = false;
     TokenStatusTypes cur_status = R_ST_NORMAL;
-    std::vector<AnchorPtr > a_textarea;
+    std::vector<AnchorPtr> a_textarea;
     std::vector<Str> textarea_str;
     int n_textarea = -1;
     Str cur_textarea;
@@ -123,7 +123,7 @@ public:
             return nullptr;
         return forms[form_id];
     }
-    std::vector<FormPtr > &FormEnd();
+    std::vector<FormPtr> &FormEnd();
     void FormSetSelect(int n);
     FormSelectOptionList *FormSelect(int n);
     std::pair<int, FormSelectOptionList *> FormSelectCurrent();
@@ -150,4 +150,15 @@ private:
 public:
     using FeedFunc = std::function<Str()>;
     void BufferFromLines(BufferPtr buf, const FeedFunc &feed);
+
+    void completeHTMLstream(struct html_feed_environ *, struct readbuffer *);
+    void close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf);
+    void CLOSE_P(readbuffer *obuf, html_feed_environ *h_env);
+    void CLOSE_A(readbuffer *obuf, html_feed_environ *h_env)
+    {
+        CLOSE_P(obuf, h_env);
+        close_anchor(h_env, obuf);
+    }
+    void CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env);
+    Str process_hr(struct parsed_tag *tag, int width, int indent_width);
 };

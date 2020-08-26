@@ -1,6 +1,6 @@
 #include <string_view_util.h>
 #include "html/html_context.h"
-
+#include "ctrlcode.h"
 #include "html/tagstack.h"
 #include "html/image.h"
 
@@ -1903,4 +1903,59 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
 
     addMultirowsForm(buf, buf->formitem);
     addMultirowsImg(buf, buf->img);
+}
+
+void HtmlContext::close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf)
+{
+    if (obuf->anchor.url.size())
+    {
+        int i;
+        char *p = NULL;
+        int is_erased = 0;
+
+        for (i = obuf->tag_sp - 1; i >= 0; i--)
+        {
+            if (obuf->tag_stack[i]->cmd == HTML_A)
+                break;
+        }
+        if (i < 0 && obuf->anchor.hseq > 0 && obuf->line->Back() == ' ')
+        {
+            obuf->line->Pop(1);
+            obuf->pos--;
+            is_erased = 1;
+        }
+
+        if (i >= 0 || (p = obuf->has_hidden_link(HTML_A)))
+        {
+            if (obuf->anchor.hseq > 0)
+            {
+                ::HTMLlineproc0(ANSP, h_env, true, this);
+                obuf->set_space_to_prevchar();
+            }
+            else
+            {
+                if (i >= 0)
+                {
+                    obuf->tag_sp--;
+                    bcopy(&obuf->tag_stack[i + 1], &obuf->tag_stack[i],
+                          (obuf->tag_sp - i) * sizeof(struct cmdtable *));
+                }
+                else
+                {
+                    obuf->passthrough(p, 1);
+                }
+                obuf->anchor = {};
+                return;
+            }
+            is_erased = 0;
+        }
+        if (is_erased)
+        {
+            obuf->line->Push(' ');
+            obuf->pos++;
+        }
+
+        obuf->push_tag("</a>", HTML_N_A);
+    }
+    obuf->anchor = {};
 }

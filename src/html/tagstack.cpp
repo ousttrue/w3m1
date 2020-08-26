@@ -427,66 +427,11 @@ void purgeline(struct html_feed_environ *h_env)
     h_env->blank_lines--;
 }
 
-static void
-close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf, HtmlContext *seq)
-{
-    if (obuf->anchor.url.size())
-    {
-        int i;
-        char *p = NULL;
-        int is_erased = 0;
-
-        for (i = obuf->tag_sp - 1; i >= 0; i--)
-        {
-            if (obuf->tag_stack[i]->cmd == HTML_A)
-                break;
-        }
-        if (i < 0 && obuf->anchor.hseq > 0 && obuf->line->Back() == ' ')
-        {
-            obuf->line->Pop(1);
-            obuf->pos--;
-            is_erased = 1;
-        }
-
-        if (i >= 0 || (p = obuf->has_hidden_link(HTML_A)))
-        {
-            if (obuf->anchor.hseq > 0)
-            {
-                HTMLlineproc0(ANSP, h_env, true, seq);
-                obuf->set_space_to_prevchar();
-            }
-            else
-            {
-                if (i >= 0)
-                {
-                    obuf->tag_sp--;
-                    bcopy(&obuf->tag_stack[i + 1], &obuf->tag_stack[i],
-                          (obuf->tag_sp - i) * sizeof(struct cmdtable *));
-                }
-                else
-                {
-                    obuf->passthrough(p, 1);
-                }
-                obuf->anchor = {};
-                return;
-            }
-            is_erased = 0;
-        }
-        if (is_erased)
-        {
-            obuf->line->Push(' ');
-            obuf->pos++;
-        }
-
-        obuf->push_tag("</a>", HTML_N_A);
-    }
-    obuf->anchor = {};
-}
 
 void CLOSE_A(readbuffer *obuf, html_feed_environ *h_env, HtmlContext *seq)
 {
     CLOSE_P(obuf, h_env);
-    close_anchor(h_env, obuf, seq);
+    seq->close_anchor(h_env, obuf);
 }
 
 int REAL_WIDTH(int w, int limit)
@@ -774,7 +719,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         }
         do_blankline(h_env, h_env->obuf, h_env->envs.back().indent, 0, h_env->limit);
         h_env->obuf->RB_RESTORE_FLAG();
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         h_env->obuf->flag |= RB_IGNORE_P;
         return 1;
     }
@@ -835,7 +780,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
                 h_env->obuf->flag |= RB_IGNORE_P;
             }
         }
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         return 1;
     }
     case HTML_DL:
@@ -993,7 +938,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_TITLE:
     {
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         seq->TitleOpen(tag);
         h_env->obuf->flag |= RB_TITLE;
         h_env->obuf->end_tag = HTML_N_TITLE;
@@ -1068,7 +1013,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_HR:
     {
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         auto tmp = process_hr(tag, h_env->limit, h_env->envs.back().indent, seq);
         HTMLlineproc0(tmp->ptr, h_env, true, seq);
         h_env->obuf->set_space_to_prevchar();
@@ -1102,7 +1047,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             h_env->blank_lines++;
         }
         h_env->obuf->flag &= ~RB_PRE;
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         return 1;
     }
     case HTML_PRE_INT:
@@ -1234,7 +1179,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_A:
     {
         if (h_env->obuf->anchor.url.size())
-            close_anchor(h_env, h_env->obuf, seq);
+            seq->close_anchor(h_env, h_env->obuf);
         char *p;
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
             h_env->obuf->anchor.url = Strnew(p)->ptr;
@@ -1267,7 +1212,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_N_A:
     {
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         return 1;
     }
     case HTML_IMG:
@@ -1325,7 +1270,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_TABLE:
     {
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         h_env->obuf->table_level++;
         if (h_env->obuf->table_level >= MAX_TABLE)
             break;
@@ -1451,7 +1396,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_INPUT:
     {
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         auto tmp = seq->process_input(tag);
         if (tmp)
             HTMLlineproc0(tmp->ptr, h_env, true, seq);
@@ -1459,7 +1404,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     }
     case HTML_SELECT:
     {
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         auto tmp = seq->process_select(tag);
         if (tmp)
             HTMLlineproc0(tmp->ptr, h_env, true, seq);
@@ -1481,7 +1426,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         return 1;
     case HTML_TEXTAREA:
     {
-        close_anchor(h_env, h_env->obuf, seq);
+        seq->close_anchor(h_env, h_env->obuf);
         auto tmp = seq->process_textarea(tag, h_env->limit);
         if (tmp)
             HTMLlineproc0(tmp->ptr, h_env, true, seq);
@@ -2250,7 +2195,7 @@ void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf, TextLin
 
 void completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf, HtmlContext *seq)
 {
-    close_anchor(h_env, obuf, seq);
+    seq->close_anchor(h_env, obuf);
     if (obuf->img_alt)
     {
         obuf->push_tag("</img_alt>", HTML_N_IMG_ALT);
