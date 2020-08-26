@@ -85,17 +85,16 @@ void html_feed_environ::POP_ENV()
     envs.pop_back();
 }
 
-void push_render_image(Str str, int width, int limit,
-                       struct html_feed_environ *h_env)
+void html_feed_environ::push_render_image(Str str, int width, int limit)
 {
-    struct readbuffer *obuf = h_env->obuf;
-    int indent = h_env->envs.back().indent;
+    struct readbuffer *obuf = this->obuf;
+    int indent = this->envs.back().indent;
 
     obuf->push_spaces(1, (limit - width) / 2);
     obuf->push_str(width, str, PC_ASCII);
     obuf->push_spaces(1, (limit - width + 1) / 2);
     if (width > 0)
-        h_env->flushline(indent, 0, h_env->limit);
+        this->flushline(indent, 0, this->limit);
 }
 
 void APPEND(Str str, TextLineList *buf, FILE *f)
@@ -518,22 +517,6 @@ void CLOSE_A(readbuffer *obuf, html_feed_environ *h_env, HtmlContext *seq)
     close_anchor(h_env, obuf, seq);
 }
 
-static int
-ul_type(struct parsed_tag *tag, int default_type)
-{
-    char *p;
-    if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
-    {
-        if (!strcasecmp(p, "disc"))
-            return (int)'d';
-        else if (!strcasecmp(p, "circle"))
-            return (int)'c';
-        else if (!strcasecmp(p, "square"))
-            return (int)'s';
-    }
-    return default_type;
-}
-
 int REAL_WIDTH(int w, int limit)
 {
     return (((w) >= 0) ? (int)((w) / ImageManager::Instance().pixel_per_char) : -(w) * (limit) / 100);
@@ -855,7 +838,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             }
         }
         if (tag->tagid == HTML_UL)
-            h_env->envs.back().type = ul_type(tag, 0);
+            h_env->envs.back().type = tag->ul_type();
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         return 1;
     }
@@ -922,7 +905,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
             {
             case HTML_UL:
             {
-                h_env->envs.back().type = ul_type(tag, h_env->envs.back().type);
+                h_env->envs.back().type = tag->ul_type(h_env->envs.back().type);
                 for (int i = 0; i < w3mApp::Instance().IndentIncr - 3; i++)
                     h_env->obuf->push_charp(1, NBSP, PC_ASCII);
                 auto tmp = Strnew();

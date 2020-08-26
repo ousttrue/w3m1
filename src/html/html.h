@@ -319,6 +319,21 @@ struct parsed_tag : gc_cleanup
 
     void parse(const char **s, bool internal);
 
+    int ul_type(int default_type = 0)
+    {
+        char *p;
+        if (TryGetAttributeValue(ATTR_TYPE, &p))
+        {
+            if (!strcasecmp(p, "disc"))
+                return (int)'d';
+            else if (!strcasecmp(p, "circle"))
+                return (int)'c';
+            else if (!strcasecmp(p, "square"))
+                return (int)'s';
+        }
+        return default_type;
+    }
+
 private:
     bool parse_attr(const char **s, int nattr, bool internal);
 };

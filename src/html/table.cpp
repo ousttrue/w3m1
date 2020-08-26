@@ -2030,7 +2030,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     case BORDER_THICK:
         renderbuf = Strnew();
         print_sep(t, -1, T_TOP, t->maxcol, renderbuf, seq);
-        push_render_image(renderbuf, width, t->total_width, h_env);
+        h_env->push_render_image(renderbuf, width, t->total_width);
         t->total_height += 1;
         break;
     }
@@ -2111,13 +2111,13 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
                 t->total_height += 1;
                 break;
             }
-            push_render_image(renderbuf, width, t->total_width, h_env);
+            h_env->push_render_image(renderbuf, width, t->total_width);
         }
         if (r < t->maxrow && t->border_mode != BORDER_NONE)
         {
             renderbuf = Strnew();
             print_sep(t, r, T_MIDDLE, t->maxcol, renderbuf, seq);
-            push_render_image(renderbuf, width, t->total_width, h_env);
+            h_env->push_render_image(renderbuf, width, t->total_width);
         }
         t->total_height += t->tabheight[r];
     }
@@ -2127,7 +2127,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     case BORDER_THICK:
         renderbuf = Strnew();
         print_sep(t, t->maxrow, T_BOTTOM, t->maxcol, renderbuf, seq);
-        push_render_image(renderbuf, width, t->total_width, h_env);
+        h_env->push_render_image(renderbuf, width, t->total_width);
         t->total_height += 1;
         break;
     }
@@ -2136,7 +2136,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         renderbuf = Strnew(" ");
         t->total_height++;
         t->total_width = 1;
-        push_render_image(renderbuf, 1, t->total_width, h_env);
+        h_env->push_render_image(renderbuf, 1, t->total_width);
     }
     HTMLlineproc0("</pre>", h_env, true, seq);
 }
@@ -2146,7 +2146,6 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 #else
 #define THR_PADDING 4
 #endif
-
 struct table *
 begin_table(int border, int spacing, int padding, int vspace, HtmlContext *seq)
 {
