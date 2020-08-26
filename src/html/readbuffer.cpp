@@ -149,7 +149,6 @@ readbuffer::readbuffer()
     this->fontstat_sp = 0;
     this->top_margin = 0;
     this->bottom_margin = 0;
-    this->bp.initialize();
     this->bp.set(this, 0);
 }
 
@@ -159,9 +158,9 @@ void readbuffer::reset()
     this->pos = 0;
     this->top_margin = 0;
     this->bottom_margin = 0;
-    set_space_to_prevchar();
-    this->bp.initialize();
+    this->set_space_to_prevchar();
     this->flag &= ~RB_NFLUSHED;
+    this->bp = {};
     this->bp.set(this, 0);
     this->prev_ctype = PC_ASCII;
     link_stack.clear();

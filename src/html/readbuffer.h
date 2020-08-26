@@ -65,7 +65,7 @@ class Breakpoint
     short top_margin;
     short bottom_margin;
 
-    char init_flag;
+    char init_flag = 1;
     // initialize
     Anchor anchor;
     Str img_alt;
@@ -74,7 +74,6 @@ class Breakpoint
     Lineprop prev_ctype;
 
 public:
-    void initialize() { init_flag = 1; }
     int pos() const { return _pos; }
     int len() const { return _len; }
     int tlen() const { return _tlen; }

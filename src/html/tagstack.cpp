@@ -2055,7 +2055,7 @@ table_start:
                 obuf->process_idattr(cmd, tag);
             }
 
-            obuf->bp.initialize();
+            obuf->bp = {};
             obuf->clear_ignore_p_flag(cmd);
             if (cmd == HTML_TABLE)
                 goto table_start;
