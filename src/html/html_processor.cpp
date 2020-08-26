@@ -87,7 +87,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
             HTMLlineproc0("\n", &htmlenv1, internal, &context);
         }
         obuf.status = R_ST_NORMAL;
-        completeHTMLstream(&htmlenv1, &obuf, &context);
+        context.completeHTMLstream(&htmlenv1, &obuf);
         htmlenv1.flushline(0, 2, htmlenv1.limit);
         if (htmlenv1.title)
             newBuf->buffername = htmlenv1.title;

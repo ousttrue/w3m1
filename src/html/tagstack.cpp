@@ -20,16 +20,7 @@
 #include "charset.h"
 
 static struct table *tables[MAX_TABLE];
-static struct table_mode table_mode[MAX_TABLE];
-
-void CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env, HtmlContext *seq)
-{
-    if (obuf->flag & RB_IN_DT)
-    {
-        obuf->flag &= ~RB_IN_DT;
-        HTMLlineproc0("</b>", h_env, true, seq);
-    }
-}
+struct table_mode table_mode[MAX_TABLE];
 
 void html_feed_environ::Initialize(TextLineList *buf, readbuffer *obuf, int limit, int indent)
 {
@@ -747,7 +738,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_N_DL:
     case HTML_N_BLQ:
     {
-        CLOSE_DT;
+        seq->CLOSE_DT(h_env->obuf, h_env);
         seq->CLOSE_A(h_env->obuf, h_env);
         if (h_env->envs.size())
         {
@@ -785,7 +776,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_LI:
     {
         seq->CLOSE_A(h_env->obuf, h_env);
-        CLOSE_DT;
+        seq->CLOSE_DT(h_env->obuf, h_env);
         if (h_env->envs.size())
         {
             Str num;
@@ -905,7 +896,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_DD:
     {
         seq->CLOSE_A(h_env->obuf, h_env);
-        CLOSE_DT;
+        seq->CLOSE_DT(h_env->obuf, h_env);
         if (h_env->envs.back().env == HTML_DL_COMPACT)
         {
             if (h_env->obuf->pos > h_env->envs.back().indent)
@@ -2174,57 +2165,5 @@ void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf, TextLin
                int limit, int indent)
 {
     h_env->Initialize(buf, obuf, limit, indent);
-}
-
-void completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf, HtmlContext *seq)
-{
-    seq->close_anchor(h_env, obuf);
-    if (obuf->img_alt)
-    {
-        obuf->push_tag("</img_alt>", HTML_N_IMG_ALT);
-        obuf->img_alt = NULL;
-    }
-    if (obuf->fontstat.in_bold)
-    {
-        obuf->push_tag("</b>", HTML_N_B);
-        obuf->fontstat.in_bold = 0;
-    }
-    if (obuf->fontstat.in_italic)
-    {
-        obuf->push_tag("</i>", HTML_N_I);
-        obuf->fontstat.in_italic = 0;
-    }
-    if (obuf->fontstat.in_under)
-    {
-        obuf->push_tag("</u>", HTML_N_U);
-        obuf->fontstat.in_under = 0;
-    }
-    if (obuf->fontstat.in_strike)
-    {
-        obuf->push_tag("</s>", HTML_N_S);
-        obuf->fontstat.in_strike = 0;
-    }
-    if (obuf->fontstat.in_ins)
-    {
-        obuf->push_tag("</ins>", HTML_N_INS);
-        obuf->fontstat.in_ins = 0;
-    }
-    if (obuf->flag & RB_INTXTA)
-        HTMLlineproc0("</textarea>", h_env, true, seq);
-    /* for unbalanced select tag */
-    if (obuf->flag & RB_INSELECT)
-        HTMLlineproc0("</select>", h_env, true, seq);
-    if (obuf->flag & RB_TITLE)
-        HTMLlineproc0("</title>", h_env, true, seq);
-
-    /* for unbalanced table tag */
-    if (obuf->table_level >= MAX_TABLE)
-        obuf->table_level = MAX_TABLE - 1;
-
-    while (obuf->table_level >= 0)
-    {
-        table_mode[obuf->table_level].pre_mode &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
-        HTMLlineproc0("</table>", h_env, true, seq);
-    }
 }
 

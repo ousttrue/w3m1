@@ -3,7 +3,7 @@
 #include "ctrlcode.h"
 #include "html/tagstack.h"
 #include "html/image.h"
-
+#include "html/table.h"
 #include "html/form.h"
 #include "html/maparea.h"
 #include "stream/compression.h"
@@ -1967,5 +1967,67 @@ void HtmlContext::CLOSE_P(readbuffer *obuf, html_feed_environ *h_env)
         h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         obuf->RB_RESTORE_FLAG();
         obuf->flag &= ~RB_P;
+    }
+}
+
+void HtmlContext::CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env)
+{
+    if (obuf->flag & RB_IN_DT)
+    {
+        obuf->flag &= ~RB_IN_DT;
+        HTMLlineproc0("</b>", h_env, true, this);
+    }
+}
+
+extern struct table_mode *table_mode;
+void HtmlContext::completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf)
+{
+    this->close_anchor(h_env, obuf);
+    if (obuf->img_alt)
+    {
+        obuf->push_tag("</img_alt>", HTML_N_IMG_ALT);
+        obuf->img_alt = NULL;
+    }
+    if (obuf->fontstat.in_bold)
+    {
+        obuf->push_tag("</b>", HTML_N_B);
+        obuf->fontstat.in_bold = 0;
+    }
+    if (obuf->fontstat.in_italic)
+    {
+        obuf->push_tag("</i>", HTML_N_I);
+        obuf->fontstat.in_italic = 0;
+    }
+    if (obuf->fontstat.in_under)
+    {
+        obuf->push_tag("</u>", HTML_N_U);
+        obuf->fontstat.in_under = 0;
+    }
+    if (obuf->fontstat.in_strike)
+    {
+        obuf->push_tag("</s>", HTML_N_S);
+        obuf->fontstat.in_strike = 0;
+    }
+    if (obuf->fontstat.in_ins)
+    {
+        obuf->push_tag("</ins>", HTML_N_INS);
+        obuf->fontstat.in_ins = 0;
+    }
+    if (obuf->flag & RB_INTXTA)
+        HTMLlineproc0("</textarea>", h_env, true, this);
+    /* for unbalanced select tag */
+    if (obuf->flag & RB_INSELECT)
+        HTMLlineproc0("</select>", h_env, true, this);
+    if (obuf->flag & RB_TITLE)
+        HTMLlineproc0("</title>", h_env, true, this);
+
+    /* for unbalanced table tag */
+    if (obuf->table_level >= MAX_TABLE)
+        obuf->table_level = MAX_TABLE - 1;
+
+    while (obuf->table_level >= 0)
+    {
+        table_mode[obuf->table_level].pre_mode &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
+        HTMLlineproc0("</table>", h_env, true, this);
     }
 }

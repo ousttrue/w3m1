@@ -870,7 +870,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
         obuf.status = R_ST_EOL;
         HTMLlineproc0("\n", &h_env, true, seq);
     }
-    completeHTMLstream(&h_env, &obuf, seq);
+    seq->completeHTMLstream(&h_env, &obuf);
     h_env.flushline(0, 2, h_env.limit);
     if (tbl->border_mode == BORDER_NONE)
     {
