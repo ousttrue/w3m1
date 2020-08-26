@@ -14,9 +14,7 @@ struct TextLineList;
 
 struct environment
 {
-
-    unsigned char env = 0;
-public:
+    HtmlTags env = HTML_UNKNOWN;
     int type = 0;
     int count = 0;
     int indent = 0;
@@ -66,7 +64,7 @@ public:
     //     return envs[envc - 1];
     // }
 
-    void PUSH_ENV(unsigned char cmd);
+    void PUSH_ENV(HtmlTags cmd);
     void POP_ENV();
 
     char *title;
