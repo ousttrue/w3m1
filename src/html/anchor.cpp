@@ -739,5 +739,5 @@ link_list_panel(const BufferPtr &buf)
         tmp->Push("</ol>\n");
     }
 
-    return loadHTMLString(buf->currentURL, tmp->ptr);
+    return loadHTMLStream(URL::Parse(std::string("w3m://links/") + buf->currentURL.ToStr()->ptr), StrStream::Create(tmp->ptr), WC_CES_UTF_8, true);
 }

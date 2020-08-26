@@ -617,7 +617,7 @@ BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
     newBuf->mailcap_source = tmpf->ptr;
 
     // auto f = URLFile::FromStream(SCM_LOCAL, );
-    newBuf = loadHTMLStream(url, newStrStream(tmp->ptr), WC_CES_UTF_8, true);
+    newBuf = loadHTMLStream(url, StrStream::Create(tmp->ptr), WC_CES_UTF_8, true);
     if (src)
         fclose(src);
 

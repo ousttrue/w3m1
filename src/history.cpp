@@ -33,7 +33,7 @@ historyBuffer(Hist *hist)
 	}
     }
     src->Push("</ol>\n</body>\n</html>");
-    return loadHTMLString(URL::Parse("w3m://history"), src->ptr);
+    return loadHTMLStream(URL::Parse("w3m://history"), StrStream::Create(src->ptr), WC_CES_UTF_8, true);
 }
 
 void

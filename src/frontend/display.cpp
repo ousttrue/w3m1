@@ -843,7 +843,7 @@ BufferPtr message_list_panel(void)
     else
         tmp->Push("<tr><td>(no message recorded)</td></tr>\n");
     tmp->Push("</table></body></html>");
-    return loadHTMLString(URL::Parse("w3m://message"), tmp->ptr);
+    return loadHTMLStream(URL::Parse("w3m://message"), StrStream::Create(tmp->ptr), WC_CES_UTF_8, true);
 }
 
 void show_message(std::string_view msg)

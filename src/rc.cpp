@@ -1434,7 +1434,6 @@ load_option_panel(void)
     wc_ces_list *c = nullptr;
     int x, i;
     Str tmp;
-    BufferPtr buf;
 
     if (optionpanel_str == NULL)
         optionpanel_str = Sprintf(optionpanel_src1, w3mApp::w3m_version.data(),
@@ -1521,7 +1520,7 @@ load_option_panel(void)
                 }
                 src->Push("</select>");
                 break;
-#ifdef USE_M17N
+
             case PI_CODE:
                 tmp = param.to_str();
                 Strcat_m_charp(src, "<select name=", param.name, ">", NULL);
@@ -1539,7 +1538,7 @@ load_option_panel(void)
                 }
                 src->Push("</select>");
                 break;
-#endif
+
             }
             src->Push("</td></tr>\n");
         }
@@ -1548,11 +1547,10 @@ load_option_panel(void)
         src->Push("</table><hr width=50%>");
     }
     src->Push("</table></form></body></html>");
-    buf = loadHTMLString(URL::Parse("w3m://option"), src->ptr);
 
+    auto buf = loadHTMLStream(URL::Parse("w3m://option"), StrStream::Create(src->ptr), WC_CES_UTF_8, true);
     if (buf)
         buf->document_charset = OptionCharset;
-
     return buf;
 }
 

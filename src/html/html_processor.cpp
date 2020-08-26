@@ -26,9 +26,6 @@
 #include <setjmp.h>
 #include <vector>
 
-///
-/// entry
-///
 BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal)
 {
     auto newBuf = newBuffer(url);
@@ -133,61 +130,12 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
         context.BufferFromLines(newBuf, feed);
     }
 
-    return newBuf;
-}
+    // newBuf->document_charset = w3mApp::Instance().InnerCharset;
+    // newBuf->document_charset = WC_CES_US_ASCII;
+    // newBuf->CurrentAsLast();
+    // newBuf->type = "text/html";
+    // newBuf->real_type = newBuf->type;
+    // formResetBuffer(newBuf, newBuf->formitem);
 
-// /*
-//  * loadHTMLBuffer: read file and make new buffer
-//  */
-// BufferPtr loadHTMLBuffer(const URLFilePtr &f)
-// {
-//     // FILE *src = nullptr;
-//     //
-//     // auto newBuf = newBuffer(INIT_BUFFER_WIDTH());
-//     // if (newBuf->sourcefile.empty() &&
-//     //     (f->scheme != SCM_LOCAL || newBuf->mailcap))
-//     // {
-//     //     auto tmp = tmpfname(TMPF_SRC, ".html");
-//     //     src = fopen(tmp->ptr, "w");
-//     //     if (src)
-//     //         newBuf->sourcefile = tmp->ptr;
-//     // }
-
-//     auto newBuf = loadHTMLStream(f, false /*newBuf->bufferprop & BP_FRAME*/);
-
-//     newBuf->CurrentAsLast();
-
-//     formResetBuffer(newBuf, newBuf->formitem);
-
-//     return newBuf;
-// }
-
-/* 
- * loadHTMLString: read string and make new buffer
- */
-BufferPtr loadHTMLString(const URL &url, std::string_view page, CharacterEncodingScheme content_charset)
-{
-    BufferPtr newBuf = nullptr;
-
-    auto success = TrapJmp([&]() {
-        auto f = newStrStream(page);
-
-        newBuf = loadHTMLStream(url, f, content_charset, true);
-        newBuf->document_charset = w3mApp::Instance().InnerCharset;
-        newBuf->document_charset = WC_CES_US_ASCII;
-
-        return true;
-    });
-
-    if (!success)
-    {
-        return nullptr;
-    }
-
-    newBuf->CurrentAsLast();
-    newBuf->type = "text/html";
-    newBuf->real_type = newBuf->type;
-
-    formResetBuffer(newBuf, newBuf->formitem);
     return newBuf;
 }

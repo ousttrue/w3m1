@@ -201,10 +201,11 @@ class StrStream : public InputStream
 {
     std::string m_str;
     int m_pos = 0;
+    StrStream(int size, std::string_view str) : InputStream(size), m_str(str) {}
 
 public:
-    StrStream(int size, std::string_view str) : InputStream(size), m_str(str) {}
     ~StrStream();
+    static InputStreamPtr Create(std::string_view s);
     InputStreamTypes type() const override { return IST_STR; }
     int ReadFunc(unsigned char *buffer, int size) override;
     void Rewind() override
@@ -247,7 +248,6 @@ public:
 
 InputStreamPtr newInputStream(int des);
 InputStreamPtr newFileStream(FILE *f, const std::function<void(FILE *)> &closep);
-InputStreamPtr newStrStream(std::string_view s);
 InputStreamPtr newSSLStream(const std::shared_ptr<SSLSocket> &ssl);
 InputStreamPtr newEncodedStream(InputStreamPtr is, char encoding);
 

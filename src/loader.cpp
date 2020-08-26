@@ -432,41 +432,6 @@ static int doFileMove(const char *tmpf, const char *defstr)
     return ret;
 }
 
-BufferPtr LoadPage(Str page, CharacterEncodingScheme charset, const URL &pu, const char *t)
-{
-    if (ImageManager::Instance().image_source.size())
-        return NULL;
-
-    auto tmp = tmpfname(TMPF_SRC, ".html");
-    auto src = fopen(tmp->ptr, "w");
-    if (src)
-    {
-        Str s;
-        s = wc_Str_conv_strict(page, w3mApp::Instance().InnerCharset, charset);
-        s->Puts(src);
-        fclose(src);
-    }
-    if (w3mApp::Instance().do_download)
-    {
-        if (!src)
-            return NULL;
-        auto file = guess_filename(pu.path);
-        doFileMove(tmp->ptr, file);
-        return nullptr;
-    }
-    auto b = loadHTMLString({}, page->ptr);
-    if (b)
-    {
-        b->currentURL = pu;
-        b->real_scheme = pu.scheme;
-        b->real_type = t;
-        if (src)
-            b->sourcefile = tmp->ptr;
-        b->document_charset = charset;
-    }
-    return b;
-}
-
 /* 
  * Dispatch URL, return Buffer
  */

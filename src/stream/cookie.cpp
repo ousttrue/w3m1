@@ -715,7 +715,7 @@ BufferPtr CookieManager::cookie_list_panel()
         src->Push("</td></tr><tr><td><input type=submit value=\"OK\"></table><p>");
     }
     src->Push("</ol></form></body></html>");
-    return loadHTMLString(URL::Parse("w3m://cookie"), src->ptr);
+    return loadHTMLStream(URL::Parse("w3m://cookie"), StrStream::Create(src->ptr), WC_CES_UTF_8, true);
 }
 
 void set_cookie_flag(tcb::span<parsed_tagarg> _arg)

@@ -260,5 +260,6 @@ BufferPtr DownloadListBuffer(w3mApp *w3m, const CommandContext &context)
         src->Push("\n</pre><hr>\n");
     }
     src->Push("</form></body></html>");
-    return loadHTMLString(URL::Parse("w3m://download"), src->ptr);
+
+    return loadHTMLStream(URL::Parse("w3m://download"), StrStream::Create(src->ptr), WC_CES_UTF_8, true);
 }

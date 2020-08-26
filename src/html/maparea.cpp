@@ -548,7 +548,7 @@ page_info_panel(const BufferPtr &buf)
 
 end:
     tmp->Push("</body></html>");
-    newbuf = loadHTMLString(URL::Parse("w3m://pageinfo"), tmp->ptr);
+    newbuf = loadHTMLStream(URL::Parse("w3m://pageinfo"), StrStream::Create(tmp->ptr), WC_CES_UTF_8, true);
 
     if (newbuf)
         newbuf->document_charset = buf->document_charset;

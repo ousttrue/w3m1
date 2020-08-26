@@ -200,11 +200,11 @@ int FileStream::FD() const
 //
 // StrStream
 //
-InputStreamPtr newStrStream(std::string_view s)
+InputStreamPtr StrStream::Create(std::string_view src)
 {
-    if (s.empty())
+    if (src.empty())
         return NULL;
-    return std::make_shared<StrStream>(STREAM_BUF_SIZE, s);
+    return std::shared_ptr<StrStream>(new StrStream(STREAM_BUF_SIZE, src));
 }
 
 StrStream::~StrStream()

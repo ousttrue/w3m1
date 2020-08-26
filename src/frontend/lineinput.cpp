@@ -1036,7 +1036,6 @@ char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, Lin
 {
     int opos, x, y, lpos, rpos, epos;
     unsigned char c;
-    char *p;
     Str tmp;
 
     is_passwd = false;
@@ -1206,13 +1205,13 @@ char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, Lin
     }
 
     if (i_broken)
-        return NULL;
+        return "";
 
     Screen::Instance().Move((Terminal::lines() - 1), 0);
     Screen::Instance().Refresh();
     Terminal::flush();
 
-    p = strBuf->ptr;
+    auto p = strBuf->ptr;
     if (flag & (IN_FILENAME | IN_COMMAND))
     {
         SKIP_BLANKS(&p);

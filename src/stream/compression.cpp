@@ -390,5 +390,5 @@ std::shared_ptr<class InputStream> decompress(const std::shared_ptr<class InputS
 
     auto data = decompressor.data();
 
-    return newStrStream(std::string_view((const char *)data.data(), data.size()));
+    return StrStream::Create(std::string_view((const char *)data.data(), data.size()));
 }
