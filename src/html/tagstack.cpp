@@ -12,7 +12,7 @@
 #include "symbol.h"
 #include "ctrlcode.h"
 #include "textlist.h"
-#include "html/html_processor.h"
+
 #include "html/html_context.h"
 
 #include "frontend/buffer.h"

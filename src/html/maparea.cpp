@@ -7,7 +7,7 @@
 #include "frontend/menu.h"
 #include "frontend/tabbar.h"
 #include "html/image.h"
-#include "html/html_processor.h"
+#include "html/html_context.h"
 #include <math.h>
 
 MapListPtr searchMapList(BufferPtr buf, const char *name)

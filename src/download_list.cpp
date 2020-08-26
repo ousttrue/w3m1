@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include "frontend/event.h"
 #include "frontend/terminal.h"
-#include "html/html_processor.h"
+#include "html/html_context.h"
 #include "html/parsetag.h"
 #include "w3m.h"
 #include "commands.h"

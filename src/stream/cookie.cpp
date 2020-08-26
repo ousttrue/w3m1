@@ -21,10 +21,10 @@
 #include "frontend/buffer.h"
 #include "file.h"
 #include "frontend/display.h"
-
 #include "frontend/terminal.h"
 #include "html/parsetag.h"
-#include "html/html_processor.h"
+#include "html/html_context.h"
+
 #include <time.h>
 #ifdef INET6
 #include <sys/socket.h>

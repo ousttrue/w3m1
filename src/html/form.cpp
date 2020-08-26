@@ -21,7 +21,7 @@
 #include "html/anchor.h"
 #include "charset.h"
 #include "history.h"
-#include "html/html_processor.h"
+
 #include "html/html_context.h"
 #include "html/maparea.h"
 #include <unistd.h>

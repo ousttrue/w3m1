@@ -5,7 +5,7 @@
 #include "html/table.h"
 #include "indep.h"
 #include "commands.h"
-
+#include "html/html_context.h"
 #include "file.h"
 #include "html/anchor.h"
 #include "public.h"
@@ -33,7 +33,7 @@
 #include "stream/compression.h"
 #include "rc.h"
 #include "loader.h"
-#include "html/html_processor.h"
+
 #include "wtf.h"
 #include "stream/input_stream.h"
 #include "mime/mailcap.h"

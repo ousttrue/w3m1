@@ -3786,3 +3786,117 @@ bool html_feed_environ::need_flushline(Lineprop mode)
 
     return 0;
 }
+
+BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal)
+{
+    auto newBuf = newBuffer(url);
+    newBuf->type = "text/html";
+    struct html_feed_environ htmlenv1;
+    struct readbuffer obuf;
+    init_henv(&htmlenv1, &obuf, newTextLineList(), newBuf->width, 0);
+
+    //
+    //
+    //
+    clen_t linelen = 0;
+    clen_t trbyte = 0;
+    HtmlContext context;
+
+    context.Initialize(newBuf, content_charset);
+
+    auto success = TrapJmp([&]() {
+        // if (stream->type() != IST_ENCODED)
+        //     stream = newEncodedStream(stream, f->encoding);
+
+        Str lineBuf2 = nullptr;
+        while ((lineBuf2 = stream->mygets())->Size())
+        {
+            // if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
+            // {
+            //     lineBuf2->Delete(0, 1);
+            //     if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
+            //         lineBuf2->ptr[0] == '\0')
+            //     {
+            //         /*
+            //      * iseos(stream) = true;
+            //      */
+            //         break;
+            //     }
+            // }
+
+            linelen += lineBuf2->Size();
+            // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
+            //     printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), true));
+            showProgress(&linelen, &trbyte, 0);
+            /*
+            * if (frame_source)
+            * continue;
+            */
+
+            CharacterEncodingScheme detected;
+            lineBuf2 = convertLine(url.scheme, lineBuf2, HTML_MODE, &detected, context.DocCharset());
+            context.SetCES(detected);
+
+            context.HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
+        }
+        if (obuf.status != R_ST_NORMAL)
+        {
+            obuf.status = R_ST_EOL;
+            context.HTMLlineproc0("\n", &htmlenv1, internal);
+        }
+        obuf.status = R_ST_NORMAL;
+        context.completeHTMLstream(&htmlenv1, &obuf);
+        htmlenv1.flushline(0, 2, htmlenv1.limit);
+        if (htmlenv1.title)
+            newBuf->buffername = htmlenv1.title;
+
+        return true;
+    });
+
+    if (!success)
+    {
+        context.HTMLlineproc0("<br>Transfer Interrupted!<br>", &htmlenv1, true);
+    }
+
+    // if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
+    // {
+    //     context.print_internal_information(&htmlenv1);
+    //     return;
+    // }
+    // if (w3mApp::Instance().w3m_backend)
+    // {
+    //     context.print_internal_information(&htmlenv1);
+    //     backend_halfdump_buf = htmlenv1.buf;
+    //     return;
+    // }
+
+    newBuf->trbyte = trbyte + linelen;
+
+    newBuf->document_charset = context.DocCharset();
+
+    ImageFlags image_flag;
+    if (newBuf->image_flag)
+        image_flag = newBuf->image_flag;
+    else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
+        image_flag = IMG_FLAG_AUTO;
+    else
+        image_flag = IMG_FLAG_SKIP;
+    newBuf->image_flag = image_flag;
+
+    {
+        auto feed = [feeder = TextFeeder{htmlenv1.buf->first}]() -> Str {
+            return feeder();
+        };
+
+        context.BufferFromLines(newBuf, feed);
+    }
+
+    // newBuf->document_charset = w3mApp::Instance().InnerCharset;
+    // newBuf->document_charset = WC_CES_US_ASCII;
+    // newBuf->CurrentAsLast();
+    // newBuf->type = "text/html";
+    // newBuf->real_type = newBuf->type;
+    // formResetBuffer(newBuf, newBuf->formitem);
+
+    return newBuf;
+}

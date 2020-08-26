@@ -6,7 +6,7 @@
 #include "stream/cookie.h"
 #include "stream/input_stream.h"
 #include "stream/compression.h"
-#include "html/html_processor.h"
+
 #include "html/form.h"
 #include "frontend/display.h"
 #include "stream/network.h"

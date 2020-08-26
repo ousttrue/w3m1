@@ -24,7 +24,7 @@
 #include "mime/mimetypes.h"
 #include "frontend/lineinput.h"
 #include "stream/input_stream.h"
-#include "html/html_processor.h"
+#include "html/html_context.h"
 #include "html/form.h"
 #include <assert.h>
 #include <memory>

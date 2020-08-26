@@ -1,12 +1,10 @@
 #pragma once
 #include <wc.h>
-#include "frontend/propstring.h"
 #include "frontend/buffer.h"
+#include "stream/input_stream.h"
 #include "html/html.h"
 #include "html/form.h"
 #include "html/readbuffer.h"
-
-struct Anchor;
 
 using FormSelectOptionList = std::vector<FormSelectOptionItem>;
 // void addSelectOption(std::string_view value, std::string_view label, bool chk);
@@ -147,11 +145,6 @@ private:
     bool EndLineAddBuffer();
     void Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str);
 
-public:
-    using FeedFunc = std::function<Str()>;
-    void BufferFromLines(BufferPtr buf, const FeedFunc &feed);
-
-    void completeHTMLstream(struct html_feed_environ *, struct readbuffer *);
     void close_anchor(struct html_feed_environ *h_env, struct readbuffer *obuf);
     void CLOSE_P(readbuffer *obuf, html_feed_environ *h_env);
     void CLOSE_A(readbuffer *obuf, html_feed_environ *h_env)
@@ -161,7 +154,13 @@ public:
     }
     void CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env);
     Str process_hr(struct parsed_tag *tag, int width, int indent_width);
-
-    void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
     int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
+
+public:
+    using FeedFunc = std::function<Str()>;
+    void BufferFromLines(BufferPtr buf, const FeedFunc &feed);
+    void completeHTMLstream(struct html_feed_environ *, struct readbuffer *);
+    void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
 };
+
+std::shared_ptr<struct Buffer> loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal = false);

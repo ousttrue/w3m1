@@ -10,7 +10,7 @@
 #include "frontend/mouse.h"
 #include "frontend/menu.h"
 #include "html/image.h"
-#include "html/html_processor.h"
+#include "html/html_context.h"
 #include "commands.h"
 #include "file.h"
 #include "frontend/display.h"
