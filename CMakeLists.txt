@@ -143,6 +143,7 @@ add_executable(w3m
     src/mime/mailcap.cpp
     src/html/anchor.cpp
     src/html/tagstack.cpp
+    src/html/readbuffer.cpp
     src/html/html_processor.cpp
     src/html/html_context.cpp
     src/html/table.cpp

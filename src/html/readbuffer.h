@@ -131,4 +131,28 @@ struct readbuffer
     int tag_sp;
     short top_margin;
     short bottom_margin;
+
+    void reset();
+
+    void passthrough(char *str, int back);
+    int close_effect0(int cmd);
+    char *has_hidden_link(int cmd);
+    void process_idattr(int cmd, struct parsed_tag *tag);
+    void proc_escape(const char **str_return);
+
+    void push_nchars(int width, const char *str, int len, Lineprop mode);
+    void push_tag(const char *cmdname, HtmlTags cmd);
+    void push_charp(int width, const char *str, Lineprop mode);
+    void push_str(int width, Str str, Lineprop mode);
+    void check_breakpoint(int pre_mode, const char *ch);
+    void push_char(int pre_mode, char ch);
+    void PUSH(int c);
+    void set_space_to_prevchar();
+    void push_spaces(int pre_mode, int width);
+    void fillline(int indent);
+    void proc_mchar(int pre_mode, int width, const char **str, Lineprop mode);
+
+    void append_tags();
+    void save_fonteffect();
+    void restore_fonteffect();
 };

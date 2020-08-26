@@ -832,7 +832,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
                 struct table *t = tbl->tables[id].ptr;
                 int limit = tbl->tables[id].indent + t->total_width;
                 tbl->tables[id].ptr = NULL;
-                save_fonteffect(&h_env, h_env.obuf);
+                h_env.obuf->save_fonteffect();
                 h_env.flushline(0, 2, h_env.limit);
                 if (t->vspace > 0 && !(obuf.flag & RB_IGNORE_P))
                     do_blankline(&h_env, &obuf, 0, 0, h_env.limit);
@@ -852,7 +852,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
                 appendTextLineList(h_env.buf, tbl->tables[id].buf);
                 if (h_env.maxlimit < limit)
                     h_env.maxlimit = limit;
-                restore_fonteffect(&h_env, h_env.obuf);
+                h_env.obuf->restore_fonteffect();
                 obuf.flag &= ~RB_IGNORE_P;
                 h_env.blank_lines = 0;
                 if (t->vspace > 0)
