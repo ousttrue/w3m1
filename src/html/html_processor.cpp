@@ -97,7 +97,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 
     if (!success)
     {
-        HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1, &context);
+        HTMLlineproc0("<br>Transfer Interrupted!<br>", &htmlenv1, true, &context);
     }
 
     // if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
