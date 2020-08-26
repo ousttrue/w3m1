@@ -503,8 +503,8 @@ void readbuffer::clear_ignore_p_flag(int cmd)
 void readbuffer::set_alignment(struct parsed_tag *tag)
 {
     ReadBufferFlags flag = (ReadBufferFlags)-1;
+    
     int align;
-
     if (tag->TryGetAttributeValue(ATTR_ALIGN, &align))
     {
         switch (align)
@@ -524,7 +524,7 @@ void readbuffer::set_alignment(struct parsed_tag *tag)
     RB_SAVE_FLAG(obuf);
     if (flag != -1)
     {
-        RB_SET_ALIGN(obuf, flag);
+        obuf->RB_SET_ALIGN(flag);
     }
 }
 

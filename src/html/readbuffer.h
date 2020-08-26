@@ -88,20 +88,15 @@ struct cmdtable
     HtmlTags cmd;
 };
 
-#define RB_SET_ALIGN(obuf, align)  \
-    {                              \
-        (obuf)->flag &= ~RB_ALIGN; \
-        (obuf)->flag |= (align);   \
-    }
-#define RB_SAVE_FLAG(obuf)                                              \
-    {                                                                   \
-        if ((obuf)->flag_sp < RB_STACK_SIZE)                            \
+#define RB_SAVE_FLAG(obuf)                                                \
+    {                                                                     \
+        if ((obuf)->flag_sp < RB_STACK_SIZE)                              \
             (obuf)->flag_stack[(obuf)->flag_sp++] = obuf->RB_GET_ALIGN(); \
     }
 #define RB_RESTORE_FLAG(obuf)                                          \
     {                                                                  \
         if ((obuf)->flag_sp > 0)                                       \
-            RB_SET_ALIGN(obuf, (obuf)->flag_stack[--(obuf)->flag_sp]); \
+            obuf->RB_SET_ALIGN((obuf)->flag_stack[--(obuf)->flag_sp]); \
     }
 #define RB_STACK_SIZE 10
 #define FONT_STACK_SIZE 5
@@ -141,6 +136,11 @@ struct readbuffer
     Str prevchar;
     ReadBufferFlags flag;
     ReadBufferFlags RB_GET_ALIGN() const { return flag & RB_ALIGN; }
+    void RB_SET_ALIGN(ReadBufferFlags align)
+    {
+        flag &= ~RB_ALIGN;
+        flag |= align;
+    }
 
     ReadBufferFlags flag_stack[RB_STACK_SIZE];
     int flag_sp;

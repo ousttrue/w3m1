@@ -1390,7 +1390,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
         if (!(h_env->obuf->flag & (RB_PREMODE | RB_IGNORE_P)))
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
         RB_SAVE_FLAG(h_env->obuf);
-        RB_SET_ALIGN(h_env->obuf, RB_CENTER);
+        h_env->obuf->RB_SET_ALIGN(RB_CENTER);
         return 1;
     }
     case HTML_N_CENTER:
