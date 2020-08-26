@@ -408,53 +408,11 @@ void purgeline(struct html_feed_environ *h_env)
     h_env->blank_lines--;
 }
 
-int REAL_WIDTH(int w, int limit)
+static int REAL_WIDTH(int w, int limit)
 {
     return (((w) >= 0) ? (int)((w) / ImageManager::Instance().pixel_per_char) : -(w) * (limit) / 100);
 }
 
-static Str process_hr(struct parsed_tag *tag, int width, int indent_width, HtmlContext *seq)
-{
-    Str tmp = Strnew("<nobr>");
-    int w = 0;
-    int x = ALIGN_CENTER;
-#define HR_ATTR_WIDTH_MAX 65535
-
-    if (width > indent_width)
-        width -= indent_width;
-    if (tag->TryGetAttributeValue(ATTR_WIDTH, &w))
-    {
-        if (w > HR_ATTR_WIDTH_MAX)
-        {
-            w = HR_ATTR_WIDTH_MAX;
-        }
-        w = REAL_WIDTH(w, width);
-    }
-    else
-    {
-        w = width;
-    }
-
-    tag->TryGetAttributeValue(ATTR_ALIGN, &x);
-    switch (x)
-    {
-    case ALIGN_CENTER:
-        tmp->Push("<div_int align=center>");
-        break;
-    case ALIGN_RIGHT:
-        tmp->Push("<div_int align=right>");
-        break;
-    case ALIGN_LEFT:
-        tmp->Push("<div_int align=left>");
-        break;
-    }
-    w /= seq->SymbolWidth();
-    if (w <= 0)
-        w = 1;
-    push_symbol(tmp, HR_SYMBOL, seq->SymbolWidth(), w);
-    tmp->Push("</div_int></nobr>");
-    return tmp;
-}
 
 static char roman_num1[] = {
     'i',
@@ -988,7 +946,7 @@ int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env, HtmlCo
     case HTML_HR:
     {
         seq->close_anchor(h_env, h_env->obuf);
-        auto tmp = process_hr(tag, h_env->limit, h_env->envs.back().indent, seq);
+        auto tmp = seq->process_hr(tag, h_env->limit, h_env->envs.back().indent);
         HTMLlineproc0(tmp->ptr, h_env, true, seq);
         h_env->obuf->set_space_to_prevchar();
         return 1;

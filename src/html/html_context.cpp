@@ -2031,3 +2031,51 @@ void HtmlContext::completeHTMLstream(struct html_feed_environ *h_env, struct rea
         HTMLlineproc0("</table>", h_env, true, this);
     }
 }
+
+static int REAL_WIDTH(int w, int limit)
+{
+    return (((w) >= 0) ? (int)((w) / ImageManager::Instance().pixel_per_char) : -(w) * (limit) / 100);
+}
+
+Str HtmlContext::process_hr(struct parsed_tag *tag, int width, int indent_width)
+{
+    Str tmp = Strnew("<nobr>");
+    int w = 0;
+    int x = ALIGN_CENTER;
+#define HR_ATTR_WIDTH_MAX 65535
+
+    if (width > indent_width)
+        width -= indent_width;
+    if (tag->TryGetAttributeValue(ATTR_WIDTH, &w))
+    {
+        if (w > HR_ATTR_WIDTH_MAX)
+        {
+            w = HR_ATTR_WIDTH_MAX;
+        }
+        w = REAL_WIDTH(w, width);
+    }
+    else
+    {
+        w = width;
+    }
+
+    tag->TryGetAttributeValue(ATTR_ALIGN, &x);
+    switch (x)
+    {
+    case ALIGN_CENTER:
+        tmp->Push("<div_int align=center>");
+        break;
+    case ALIGN_RIGHT:
+        tmp->Push("<div_int align=right>");
+        break;
+    case ALIGN_LEFT:
+        tmp->Push("<div_int align=left>");
+        break;
+    }
+    w /= this->SymbolWidth();
+    if (w <= 0)
+        w = 1;
+    push_symbol(tmp, HR_SYMBOL, this->SymbolWidth(), w);
+    tmp->Push("</div_int></nobr>");
+    return tmp;
+}
