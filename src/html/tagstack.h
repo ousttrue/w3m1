@@ -69,6 +69,8 @@ public:
 
     char *title;
     int blank_lines;
+
+    void flushline(int indent, int force, int width);
 };
 
 void renderTable(struct table *t, int max_width,
@@ -77,8 +79,6 @@ void renderTable(struct table *t, int max_width,
 void push_render_image(Str str, int width, int limit,
                        struct html_feed_environ *h_env);
 
-void flushline(struct html_feed_environ *h_env, struct readbuffer *obuf,
-               int indent, int force, int width);
 void do_blankline(struct html_feed_environ *h_env,
                   struct readbuffer *obuf, int indent, int indent_incr,
                   int width);

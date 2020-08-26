@@ -833,7 +833,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
                 int limit = tbl->tables[id].indent + t->total_width;
                 tbl->tables[id].ptr = NULL;
                 save_fonteffect(&h_env, h_env.obuf);
-                flushline(&h_env, &obuf, 0, 2, h_env.limit);
+                h_env.flushline(0, 2, h_env.limit);
                 if (t->vspace > 0 && !(obuf.flag & RB_IGNORE_P))
                     do_blankline(&h_env, &obuf, 0, 0, h_env.limit);
                 if (RB_GET_ALIGN(h_env.obuf) == RB_CENTER)
@@ -871,7 +871,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
         HTMLlineproc0("\n", &h_env, true, seq);
     }
     completeHTMLstream(&h_env, &obuf, seq);
-    flushline(&h_env, &obuf, 0, 2, h_env.limit);
+    h_env.flushline(0, 2, h_env.limit);
     if (tbl->border_mode == BORDER_NONE)
     {
         int rowspan = table_rowspan(tbl, row, col);
