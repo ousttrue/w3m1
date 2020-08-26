@@ -107,6 +107,31 @@ struct cmdtable
 #define RB_STACK_SIZE 10
 #define FONT_STACK_SIZE 5
 #define TAG_STACK_SIZE 10
+
+/* status flags */
+enum TokenStatusTypes
+{
+    R_ST_NORMAL = 0,  /* normal */
+    R_ST_TAG0 = 1,    /* within tag, just after < */
+    R_ST_TAG = 2,     /* within tag */
+    R_ST_QUOTE = 3,   /* within single quote */
+    R_ST_DQUOTE = 4,  /* within double quote */
+    R_ST_EQL = 5,     /* = */
+    R_ST_AMP = 6,     /* within ampersand quote */
+    R_ST_EOL = 7,     /* end of file */
+    R_ST_CMNT1 = 8,   /* <!  */
+    R_ST_CMNT2 = 9,   /* <!- */
+    R_ST_CMNT = 10,   /* within comment */
+    R_ST_NCMNT1 = 11, /* comment - */
+    R_ST_NCMNT2 = 12, /* comment -- */
+    R_ST_NCMNT3 = 13, /* comment -- space */
+    R_ST_IRRTAG = 14, /* within irregular tag */
+    R_ST_VALUE = 15,  /* within tag attribule value */
+};
+
+#define ST_IS_REAL_TAG(s) ((s) == R_ST_TAG || (s) == R_ST_TAG0 || (s) == R_ST_EQL || (s) == R_ST_VALUE)
+
+
 struct readbuffer
 {
     Str line;
@@ -132,6 +157,7 @@ struct readbuffer
     short top_margin;
     short bottom_margin;
 
+    readbuffer();
     void reset();
 
     void passthrough(char *str, int back);
@@ -158,3 +184,5 @@ struct readbuffer
     void clear_ignore_p_flag(int cmd);
     void set_alignment(struct parsed_tag *tag);
 };
+
+int sloppy_parse_line(char **str);

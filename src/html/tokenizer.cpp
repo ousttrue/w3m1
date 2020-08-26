@@ -1,4 +1,5 @@
 #include "tokenizer.h"
+#include "readbuffer.h"
 #include "myctype.h"
 
 int next_status(char c, int *status)

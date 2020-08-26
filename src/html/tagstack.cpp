@@ -22,24 +22,6 @@
 static struct table *tables[MAX_TABLE];
 static struct table_mode table_mode[MAX_TABLE];
 
-int sloppy_parse_line(char **str)
-{
-    if (**str == '<')
-    {
-        while (**str && **str != '>')
-            (*str)++;
-        if (**str == '>')
-            (*str)++;
-        return 1;
-    }
-    else
-    {
-        while (**str && **str != '<')
-            (*str)++;
-        return 0;
-    }
-}
-
 void CLOSE_P(readbuffer *obuf, html_feed_environ *h_env)
 {
     if (obuf->flag & RB_P)
@@ -59,8 +41,11 @@ void CLOSE_DT(readbuffer *obuf, html_feed_environ *h_env, HtmlContext *seq)
     }
 }
 
-void html_feed_environ::Initialize(TextLineList *buf, readbuffer *obuf, int limit)
+void html_feed_environ::Initialize(TextLineList *buf, readbuffer *obuf, int limit, int indent)
 {
+    this->envs.push_back({
+        indent : indent
+    });
     this->buf = buf;
     this->obuf = obuf;
     this->tagbuf = Strnew();
@@ -2260,32 +2245,7 @@ table_start:
 void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf, TextLineList *buf,
                int limit, int indent)
 {
-    h_env->envs.push_back({
-        indent : indent
-    });
-
-    obuf->line = Strnew();
-    obuf->cprop = P_UNKNOWN;
-    obuf->pos = 0;
-    obuf->prevchar = Strnew_size(8);
-    obuf->set_space_to_prevchar();
-    obuf->flag = RB_IGNORE_P;
-    obuf->flag_sp = 0;
-    obuf->status = R_ST_NORMAL;
-    obuf->table_level = -1;
-    obuf->nobr_level = 0;
-    obuf->anchor = {};
-    obuf->img_alt = 0;
-    obuf->fontstat = {};
-    obuf->prev_ctype = PC_ASCII;
-    obuf->tag_sp = 0;
-    obuf->fontstat_sp = 0;
-    obuf->top_margin = 0;
-    obuf->bottom_margin = 0;
-    obuf->bp.initialize();
-    obuf->bp.set(obuf, 0);
-
-    h_env->Initialize(buf, obuf, limit);
+    h_env->Initialize(buf, obuf, limit, indent);
 }
 
 void completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf, HtmlContext *seq)

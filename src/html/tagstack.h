@@ -34,7 +34,7 @@ struct html_feed_environ
 private:
 
 public:
-    void Initialize(TextLineList *buf, readbuffer *obuf, int limit);
+    void Initialize(TextLineList *buf, readbuffer *obuf, int limit, int indent);
 
     void PUSH_ENV(HtmlTags cmd);
     void POP_ENV();
@@ -61,5 +61,3 @@ void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal, cl
 void init_henv(struct html_feed_environ *, struct readbuffer *,
                TextLineList *, int, int);
 void completeHTMLstream(struct html_feed_environ *, struct readbuffer *, class HtmlContext *seq);
-
-int sloppy_parse_line(char **str);

@@ -2,10 +2,28 @@
 #include "gc_helper.h"
 #include "indep.h"
 #include "file.h"
-#include "tagstack.h"
+// #include "tagstack.h"
 #include "myctype.h"
 #include "entity.h"
 #include <list>
+
+int sloppy_parse_line(char **str)
+{
+    if (**str == '<')
+    {
+        while (**str && **str != '>')
+            (*str)++;
+        if (**str == '>')
+            (*str)++;
+        return 1;
+    }
+    else
+    {
+        while (**str && **str != '<')
+            (*str)++;
+        return 0;
+    }
+}
 
 void Breakpoint::set(const struct readbuffer *obuf, int tag_length)
 {
@@ -65,7 +83,6 @@ static void push_link(HtmlTags cmd, int offset, int pos)
     p->pos = pos;
 }
 
-
 #define MAX_CMD_LEN 128
 
 static HtmlTags gethtmlcmd(char **s)
@@ -112,6 +129,30 @@ static HtmlTags gethtmlcmd(char **s)
 ///
 ///
 ///
+readbuffer::readbuffer()
+{
+    this->line = Strnew();
+    this->cprop = P_UNKNOWN;
+    this->pos = 0;
+    this->prevchar = Strnew_size(8);
+    this->set_space_to_prevchar();
+    this->flag = RB_IGNORE_P;
+    this->flag_sp = 0;
+    this->status = R_ST_NORMAL;
+    this->table_level = -1;
+    this->nobr_level = 0;
+    this->anchor = {};
+    this->img_alt = 0;
+    this->fontstat = {};
+    this->prev_ctype = PC_ASCII;
+    this->tag_sp = 0;
+    this->fontstat_sp = 0;
+    this->top_margin = 0;
+    this->bottom_margin = 0;
+    this->bp.initialize();
+    this->bp.set(this, 0);
+}
+
 void readbuffer::reset()
 {
     this->line = Strnew_size(256);
@@ -122,7 +163,7 @@ void readbuffer::reset()
     this->bp.initialize();
     this->flag &= ~RB_NFLUSHED;
     this->bp.set(this, 0);
-    this->prev_ctype = PC_ASCII;   
+    this->prev_ctype = PC_ASCII;
     link_stack.clear();
 }
 
@@ -344,7 +385,7 @@ void readbuffer::fillline(int indent)
 }
 
 void readbuffer::proc_mchar(int pre_mode,
-           int width, const char **str, Lineprop mode)
+                            int width, const char **str, Lineprop mode)
 {
     check_breakpoint(pre_mode, *str);
     this->pos += width;
@@ -486,4 +527,3 @@ void readbuffer::set_alignment(struct parsed_tag *tag)
         RB_SET_ALIGN(obuf, flag);
     }
 }
-
