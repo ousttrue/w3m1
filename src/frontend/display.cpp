@@ -935,11 +935,11 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         // buf->Reshape();
     }
 
-    if (w3mApp::Instance().showLineNum)
-    {
-        buf->rect.updateRootX(buf->LastLine()->real_linenumber);
-    }
-    else
+    // if (w3mApp::Instance().showLineNum)
+    // {
+    //     buf->rect.updateRootX(buf->LastLine()->real_linenumber);
+    // }
+    // else
     {
         buf->rect.rootX = 0;
     }

@@ -1167,17 +1167,17 @@ void Buffer::DrawLine(LinePtr l, int line)
     /// show line number
     ///
     Screen::Instance().Move(line, 0);
-    if (w3mApp::Instance().showLineNum)
-    {
-        rect.updateRootX(this->LastLine()->real_linenumber);
+    // if (w3mApp::Instance().showLineNum)
+    // {
+    //     rect.updateRootX(this->LastLine()->real_linenumber);
 
-        char tmp[16];
-        if (l->real_linenumber && !l->bpos)
-            sprintf(tmp, "%*ld:", rect.rootX - 1, l->real_linenumber);
-        else
-            sprintf(tmp, "%*s ", rect.rootX - 1, "");
-        Screen::Instance().Puts(tmp);
-    }
+    //     char tmp[16];
+    //     if (l->real_linenumber && !l->bpos)
+    //         sprintf(tmp, "%*ld:", rect.rootX - 1, l->real_linenumber);
+    //     else
+    //         sprintf(tmp, "%*s ", rect.rootX - 1, "");
+    //     Screen::Instance().Puts(tmp);
+    // }
 
     l->CalcWidth();
     if (l->len() == 0 || l->width() - 1 < currentColumn)
@@ -1993,4 +1993,30 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
             break;
     }
     return SR_NOTFOUND;
+}
+
+int Buffer::ColumnSkip(int offset)
+{
+    int i, maxColumn;
+    int column = this->currentColumn + offset;
+    int nlines = this->rect.lines + 1;
+
+    maxColumn = 0;
+    auto l = find(topLine);
+    for (i = 0; i < nlines && l != lines.end(); i++, ++l)
+    {
+        (*l)->CalcWidth();
+        if ((*l)->width() - 1 > maxColumn)
+            maxColumn = (*l)->width() - 1;
+    }
+    maxColumn -= this->rect.cols - 1;
+    if (column < maxColumn)
+        maxColumn = column;
+    if (maxColumn < 0)
+        maxColumn = 0;
+
+    if (this->currentColumn == maxColumn)
+        return 0;
+    this->currentColumn = maxColumn;
+    return 1;
 }

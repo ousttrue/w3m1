@@ -76,7 +76,7 @@ public:
     bool pseudoInlines = true;
 
     bool FoldLine = false;
-    bool showLineNum = false;
+    // bool showLineNum = false;
     bool show_srch_str = true;
     bool label_topline = false;
     bool nextpage_topline = false;

@@ -32,17 +32,17 @@ struct TermRect
             rootY + cursorY);
     }
 
-    void updateRootX(int lastRealLineNumber)
-    {
-        if (rootX == 0)
-        {
-            if (lastRealLineNumber)
-                rootX = (int)(log(lastRealLineNumber + 0.1) / log(10)) + 2;
-            if (rootX < 5)
-                rootX = 5;
-            if (rootX > cols)
-                rootX = cols;
-            cols = cols - rootX;
-        }
-    }
+    // void updateRootX(int lastRealLineNumber)
+    // {
+    //     if (rootX == 0)
+    //     {
+    //         if (lastRealLineNumber)
+    //             rootX = (int)(log(lastRealLineNumber + 0.1) / log(10)) + 2;
+    //         if (rootX < 5)
+    //             rootX = 5;
+    //         if (rootX > cols)
+    //             rootX = cols;
+    //         cols = cols - rootX;
+    //     }
+    // }
 };

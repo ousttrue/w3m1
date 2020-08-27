@@ -451,7 +451,7 @@ void w3mApp::Quit(bool confirm)
 
 int _INIT_BUFFER_WIDTH()
 {
-    return Terminal::columns() - (w3mApp::Instance().showLineNum ? 6 : 1);
+    return Terminal::columns() /*- (w3mApp::Instance().showLineNum ? 6 : 1)*/;
 }
 
 int w3mApp::INIT_BUFFER_WIDTH()
