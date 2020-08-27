@@ -1,4 +1,5 @@
 #include <string_view_util.h>
+#include "config.h"
 #include "html/html_context.h"
 #include "ctrlcode.h"
 #include "html/tagstack.h"
@@ -2232,7 +2233,7 @@ table_start:
              * are fed to the table renderer, and then the renderer
              * makes HTML output.
              */
-            switch (feed_table(tbl, str, tbl_mode, tbl_width, internal, seq))
+            switch (seq->feed_table(tbl, str, tbl_mode, tbl_width, internal))
             {
             case 0:
                 /* </table> tag */
@@ -2248,7 +2249,7 @@ table_start:
                     tbl = tbl0;
                     tbl_mode = &table_mode[obuf->table_level];
                     tbl_width = table_width(h_env, obuf->table_level);
-                    feed_table(tbl, str, tbl_mode, tbl_width, true, seq);
+                    seq->feed_table(tbl, str, tbl_mode, tbl_width, true);
                     continue;
                     /* continue to the next */
                 }
@@ -4035,4 +4036,194 @@ void HtmlContext::do_refill(struct table *tbl, int row, int col, int maxlimit)
         if (tbl->minimum_width[col] < h_env.maxlimit)
             tbl->minimum_width[col] = h_env.maxlimit;
     }
+}
+
+int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal)
+{
+    int i;
+    Str tmp;
+    struct table_linfo *linfo = &tbl->linfo;
+
+    if (*line == '<' && line[1] && REALLY_THE_BEGINNING_OF_A_TAG(line))
+    {
+        struct parsed_tag *tag;
+        const char *p = line;
+        tag = parse_tag(&p, internal);
+        if (tag)
+        {
+            switch (feed_table_tag(tbl, line, mode, width, tag, this))
+            {
+            case TAG_ACTION_NONE:
+                return -1;
+            case TAG_ACTION_N_TABLE:
+                return 0;
+            case TAG_ACTION_TABLE:
+                return 1;
+            case TAG_ACTION_PLAIN:
+                break;
+            case TAG_ACTION_FEED:
+            default:
+                if (tag->need_reconstruct)
+                    line = tag->ToStr()->ptr;
+            }
+        }
+        else
+        {
+            if (!(mode->pre_mode & (TBLM_PLAIN | TBLM_INTXTA | TBLM_INSELECT |
+                                    TBLM_SCRIPT | TBLM_STYLE)))
+                return -1;
+        }
+    }
+    else
+    {
+        if (mode->pre_mode & (TBLM_DEL | TBLM_S))
+            return -1;
+    }
+    if (mode->caption)
+    {
+        tbl->caption->Push(line);
+        return -1;
+    }
+    if (mode->pre_mode & TBLM_SCRIPT)
+        return -1;
+    if (mode->pre_mode & TBLM_STYLE)
+        return -1;
+    if (mode->pre_mode & TBLM_INTXTA)
+    {
+        this->feed_textarea(line);
+        return -1;
+    }
+    if (mode->pre_mode & TBLM_INSELECT)
+    {
+        this->feed_select(line);
+        return -1;
+    }
+    if (!(mode->pre_mode & TBLM_PLAIN) &&
+        !(*line == '<' && line[strlen(line) - 1] == '>') &&
+        strchr(line, '&') != NULL)
+    {
+        tmp = Strnew();
+        for (auto p = line; *p;)
+        {
+            const char *q, *r;
+            if (*p == '&')
+            {
+                if (!strncasecmp(p, "&amp;", 5) ||
+                    !strncasecmp(p, "&gt;", 4) || !strncasecmp(p, "&lt;", 4))
+                {
+                    /* do not convert */
+                    tmp->Push(*p);
+                    p++;
+                }
+                else
+                {
+                    q = p;
+                    auto [pos, ec] = ucs4_from_entity(p);
+                    p = pos.data();
+                    switch (ec)
+                    {
+                    case '<':
+                        tmp->Push("&lt;");
+                        break;
+                    case '>':
+                        tmp->Push("&gt;");
+                        break;
+                    case '&':
+                        tmp->Push("&amp;");
+                        break;
+                    case '\r':
+                        tmp->Push('\n');
+                        break;
+                    default:
+                        r = (char *)from_unicode(ec, w3mApp::Instance().InnerCharset);
+                        if (r != NULL && strlen(r) == 1 &&
+                            ec == (unsigned char)*r)
+                        {
+                            tmp->Push(*r);
+                            break;
+                        }
+                    case -1:
+                        tmp->Push(*q);
+                        p = q + 1;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                tmp->Push(*p);
+                p++;
+            }
+        }
+        line = tmp->ptr;
+    }
+    if (!(mode->pre_mode & (TBLM_SPECIAL & ~TBLM_NOBR)))
+    {
+        if (!(tbl->flag & TBL_IN_COL) || linfo->prev_spaces != 0)
+            while (IS_SPACE(*line))
+                line++;
+        if (*line == '\0')
+            return -1;
+        tbl->check_rowcol(mode);
+        if (mode->pre_mode & TBLM_NOBR && mode->nobr_offset < 0)
+            mode->nobr_offset = tbl->tabcontentssize;
+
+        /* count of number of spaces skipped in normal mode */
+        i = tbl->skip_space(line, linfo, !(mode->pre_mode & TBLM_NOBR));
+        tbl->addcontentssize(visible_length(line) - i);
+        tbl->setwidth(mode);
+        tbl->pushdata(tbl->row, tbl->col, line);
+    }
+    else if (mode->pre_mode & TBLM_PRE_INT)
+    {
+        tbl->check_rowcol(mode);
+        if (mode->nobr_offset < 0)
+            mode->nobr_offset = tbl->tabcontentssize;
+        tbl->addcontentssize(maximum_visible_length(line, tbl->tabcontentssize));
+        tbl->setwidth(mode);
+        tbl->pushdata(tbl->row, tbl->col, line);
+    }
+    else
+    {
+        /* <pre> mode or something like it */
+        tbl->check_rowcol(mode);
+        while (*line)
+        {
+            int nl = false;
+            const char *p;
+            if ((p = strchr(const_cast<char *>(line), '\r')) || (p = strchr(const_cast<char *>(line), '\n')))
+            {
+                if (*p == '\r' && p[1] == '\n')
+                    p++;
+                if (p[1])
+                {
+                    p++;
+                    tmp = Strnew_charp_n(line, p - line);
+                    line = p;
+                    p = tmp->ptr;
+                }
+                else
+                {
+                    p = line;
+                    line = "";
+                }
+                nl = true;
+            }
+            else
+            {
+                p = line;
+                line = "";
+            }
+            if (mode->pre_mode & TBLM_PLAIN)
+                i = maximum_visible_length_plain(p, tbl->tabcontentssize);
+            else
+                i = maximum_visible_length(p, tbl->tabcontentssize);
+            tbl->addcontentssize(i);
+            tbl->setwidth(mode);
+            if (nl)
+                tbl->clearcontentssize(mode);
+            tbl->pushdata(tbl->row, tbl->col, p);
+        }
+    }
+    return -1;
 }

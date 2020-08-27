@@ -71,6 +71,13 @@ enum TableWidthFlags
     CHECK_FIXED = 2,
 };
 
+enum TableFlags
+{
+    TBL_IN_ROW = 1,
+    TBL_EXPAND_OK = 2,
+    TBL_IN_COL = 4,
+};
+
 #define MAXCOL 50
 struct table
 {
@@ -186,11 +193,21 @@ struct table_mode
     HtmlTags end_tag;
 };
 
-void align(struct TextLine *lbuf, int width, AlignTypes mode);
+enum TagActions
+{
+    TAG_ACTION_NONE = 0,
+    TAG_ACTION_FEED = 1,
+    TAG_ACTION_TABLE = 2,
+    TAG_ACTION_N_TABLE = 3,
+    TAG_ACTION_PLAIN = 4,
+};
 
-int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal, class HtmlContext *seq);
+void align(struct TextLine *lbuf, int width, AlignTypes mode);
 
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, class HtmlContext *seq);
 int visible_length(const char *str);
 struct table *newTable(void);
 int bsearch_2short(short e1, short *ent1, short e2, short *ent2, int base, short *indexarray, int nent);
+TagActions feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag, HtmlContext *seq);
+int maximum_visible_length(const char *str, int offset);
+int maximum_visible_length_plain(const char *str, int offset);

@@ -25,9 +25,6 @@
 #define MAX_INDENT_LEVEL 10
 #define MAX_TABLE_N 20 /* maximum number of table in same level */
 
-#define TBL_IN_ROW 1
-#define TBL_EXPAND_OK 2
-#define TBL_IN_COL 4
 
 static int visible_length_offset = 0;
 int visible_length(const char *str)
@@ -147,15 +144,13 @@ int visible_length_plain(const char *str)
     return len > max_len ? len : max_len;
 }
 
-static int
-maximum_visible_length(const char *str, int offset)
+int maximum_visible_length(const char *str, int offset)
 {
     visible_length_offset = offset;
     return visible_length(str);
 }
 
-static int
-maximum_visible_length_plain(const char *str, int offset)
+int maximum_visible_length_plain(const char *str, int offset)
 {
     visible_length_offset = offset;
     return visible_length_plain(str);
@@ -2360,11 +2355,6 @@ void table::table_close_anchor0(struct table_mode *mode)
     }
 }
 
-#define TAG_ACTION_NONE 0
-#define TAG_ACTION_FEED 1
-#define TAG_ACTION_TABLE 2
-#define TAG_ACTION_N_TABLE 3
-#define TAG_ACTION_PLAIN 4
 
 #define CASE_TABLE_TAG    \
     case HTML_TABLE:      \
@@ -2387,9 +2377,7 @@ void table::table_close_anchor0(struct table_mode *mode)
 
 #define ATTR_ROWSPAN_MAX 32766
 
-static int
-feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
-               int width, struct parsed_tag *tag, HtmlContext *seq)
+TagActions feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag, HtmlContext *seq)
 {
     int cmd;
 #ifdef ID_EXT
@@ -3142,196 +3130,6 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
     return TAG_ACTION_NONE;
 }
 
-int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
-               int width, int internal, HtmlContext *seq)
-{
-    int i;
-    Str tmp;
-    struct table_linfo *linfo = &tbl->linfo;
-
-    if (*line == '<' && line[1] && REALLY_THE_BEGINNING_OF_A_TAG(line))
-    {
-        struct parsed_tag *tag;
-        const char *p = line;
-        tag = parse_tag(&p, internal);
-        if (tag)
-        {
-            switch (feed_table_tag(tbl, line, mode, width, tag, seq))
-            {
-            case TAG_ACTION_NONE:
-                return -1;
-            case TAG_ACTION_N_TABLE:
-                return 0;
-            case TAG_ACTION_TABLE:
-                return 1;
-            case TAG_ACTION_PLAIN:
-                break;
-            case TAG_ACTION_FEED:
-            default:
-                if (tag->need_reconstruct)
-                    line = tag->ToStr()->ptr;
-            }
-        }
-        else
-        {
-            if (!(mode->pre_mode & (TBLM_PLAIN | TBLM_INTXTA | TBLM_INSELECT |
-                                    TBLM_SCRIPT | TBLM_STYLE)))
-                return -1;
-        }
-    }
-    else
-    {
-        if (mode->pre_mode & (TBLM_DEL | TBLM_S))
-            return -1;
-    }
-    if (mode->caption)
-    {
-        tbl->caption->Push(line);
-        return -1;
-    }
-    if (mode->pre_mode & TBLM_SCRIPT)
-        return -1;
-    if (mode->pre_mode & TBLM_STYLE)
-        return -1;
-    if (mode->pre_mode & TBLM_INTXTA)
-    {
-        seq->feed_textarea(line);
-        return -1;
-    }
-    if (mode->pre_mode & TBLM_INSELECT)
-    {
-        seq->feed_select(line);
-        return -1;
-    }
-    if (!(mode->pre_mode & TBLM_PLAIN) &&
-        !(*line == '<' && line[strlen(line) - 1] == '>') &&
-        strchr(line, '&') != NULL)
-    {
-        tmp = Strnew();
-        for (auto p = line; *p;)
-        {
-            const char *q, *r;
-            if (*p == '&')
-            {
-                if (!strncasecmp(p, "&amp;", 5) ||
-                    !strncasecmp(p, "&gt;", 4) || !strncasecmp(p, "&lt;", 4))
-                {
-                    /* do not convert */
-                    tmp->Push(*p);
-                    p++;
-                }
-                else
-                {
-                    q = p;
-                    auto [pos, ec] = ucs4_from_entity(p);
-                    p = pos.data();
-                    switch (ec)
-                    {
-                    case '<':
-                        tmp->Push("&lt;");
-                        break;
-                    case '>':
-                        tmp->Push("&gt;");
-                        break;
-                    case '&':
-                        tmp->Push("&amp;");
-                        break;
-                    case '\r':
-                        tmp->Push('\n');
-                        break;
-                    default:
-                        r = (char *)from_unicode(ec, w3mApp::Instance().InnerCharset);
-                        if (r != NULL && strlen(r) == 1 &&
-                            ec == (unsigned char)*r)
-                        {
-                            tmp->Push(*r);
-                            break;
-                        }
-                    case -1:
-                        tmp->Push(*q);
-                        p = q + 1;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                tmp->Push(*p);
-                p++;
-            }
-        }
-        line = tmp->ptr;
-    }
-    if (!(mode->pre_mode & (TBLM_SPECIAL & ~TBLM_NOBR)))
-    {
-        if (!(tbl->flag & TBL_IN_COL) || linfo->prev_spaces != 0)
-            while (IS_SPACE(*line))
-                line++;
-        if (*line == '\0')
-            return -1;
-        tbl->check_rowcol(mode);
-        if (mode->pre_mode & TBLM_NOBR && mode->nobr_offset < 0)
-            mode->nobr_offset = tbl->tabcontentssize;
-
-        /* count of number of spaces skipped in normal mode */
-        i = tbl->skip_space(line, linfo, !(mode->pre_mode & TBLM_NOBR));
-        tbl->addcontentssize(visible_length(line) - i);
-        tbl->setwidth(mode);
-        tbl->pushdata(tbl->row, tbl->col, line);
-    }
-    else if (mode->pre_mode & TBLM_PRE_INT)
-    {
-        tbl->check_rowcol(mode);
-        if (mode->nobr_offset < 0)
-            mode->nobr_offset = tbl->tabcontentssize;
-        tbl->addcontentssize(maximum_visible_length(line, tbl->tabcontentssize));
-        tbl->setwidth(mode);
-        tbl->pushdata(tbl->row, tbl->col, line);
-    }
-    else
-    {
-        /* <pre> mode or something like it */
-        tbl->check_rowcol(mode);
-        while (*line)
-        {
-            int nl = false;
-            const char *p;
-            if ((p = strchr(const_cast<char *>(line), '\r')) || (p = strchr(const_cast<char *>(line), '\n')))
-            {
-                if (*p == '\r' && p[1] == '\n')
-                    p++;
-                if (p[1])
-                {
-                    p++;
-                    tmp = Strnew_charp_n(line, p - line);
-                    line = p;
-                    p = tmp->ptr;
-                }
-                else
-                {
-                    p = line;
-                    line = "";
-                }
-                nl = true;
-            }
-            else
-            {
-                p = line;
-                line = "";
-            }
-            if (mode->pre_mode & TBLM_PLAIN)
-                i = maximum_visible_length_plain(p, tbl->tabcontentssize);
-            else
-                i = maximum_visible_length(p, tbl->tabcontentssize);
-            tbl->addcontentssize(i);
-            tbl->setwidth(mode);
-            if (nl)
-                tbl->clearcontentssize(mode);
-            tbl->pushdata(tbl->row, tbl->col, p);
-        }
-    }
-    return -1;
-}
 
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, HtmlContext *seq)
 {
@@ -3344,7 +3142,7 @@ void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width,
     status = R_ST_NORMAL;
     line = tok->ptr;
     while (read_token(tokbuf, &line, &status, mode->pre_mode & TBLM_PREMODE, 0))
-        feed_table(tbl, tokbuf->ptr, mode, width, true, seq);
+        seq->feed_table(tbl, tokbuf->ptr, mode, width, true);
 }
 
 void table::pushTable(table *tbl1)
