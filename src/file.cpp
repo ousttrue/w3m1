@@ -168,9 +168,6 @@ same_url_p(URL *pu1, URL *pu2)
             (pu1->path.size() ? pu2->path.size() ? pu1->path == pu2->path : 0 : 1));
 }
 
-#define TAG_IS(s, tag, len) \
-    (strncasecmp(s, tag, len) == 0 && (s[len] == '>' || IS_SPACE((int)s[len])))
-
 static int
 is_period_char(unsigned char *ch)
 {

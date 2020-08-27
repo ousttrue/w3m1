@@ -157,6 +157,7 @@ public:
     void completeHTMLstream(struct html_feed_environ *, struct readbuffer *);
     void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
     void make_caption(struct table *t, struct html_feed_environ *h_env);
+    void do_refill(struct table *tbl, int row, int col, int maxlimit);
 };
 
 std::shared_ptr<struct Buffer> loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal = false);

@@ -164,8 +164,6 @@ maximum_visible_length_plain(const char *str, int offset)
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
 #define TK_VERTICALBAR(mode) RULE(mode, 5)
 
-#define TAG_IS(s, tag, len) (strncasecmp(s, tag, len) == 0 && (s[len] == '>' || IS_SPACE((int)s[len])))
-
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif /* not max */
@@ -228,9 +226,8 @@ weight3(int x)
 }
 #endif /* not MATRIX */
 
-static int
-bsearch_2short(short e1, short *ent1, short e2, short *ent2, int base,
-               short *indexarray, int nent)
+int bsearch_2short(short e1, short *ent1, short e2, short *ent2, int base,
+                   short *indexarray, int nent)
 {
     int n = nent;
     int k = 0;
@@ -736,139 +733,18 @@ void table::print_sep(int row, VerticalAlignTypes type, int maxcol, Str buf, int
         push_symbol(buf, RULE(this->border_mode, forbid), symbolWidth, 1);
 }
 
-static int
-get_spec_cell_width(struct table *tbl, int row, int col)
+int table::get_spec_cell_width(int row, int col)
 {
-    int i, w;
-
-    w = tbl->tabwidth[col];
-    for (i = col + 1; i <= tbl->maxcol; i++)
+    int w = this->tabwidth[col];
+    for (int i = col + 1; i <= this->maxcol; i++)
     {
-        tbl->check_row(row);
-        if (tbl->tabattr[row][i] & HTT_X)
-            w += tbl->tabwidth[i] + tbl->cellspacing;
+        this->check_row(row);
+        if (this->tabattr[row][i] & HTT_X)
+            w += this->tabwidth[i] + this->cellspacing;
         else
             break;
     }
     return w;
-}
-
-void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *seq)
-{
-    TextList *orgdata;
-    TextListItem *l;
-    struct readbuffer obuf;
-    int colspan, icell;
-
-    if (tbl->tabdata[row] == NULL || tbl->tabdata[row][col] == NULL)
-        return;
-    orgdata = (TextList *)tbl->tabdata[row][col];
-    tbl->tabdata[row][col] = newGeneralList();
-
-    html_feed_environ h_env(&obuf,
-              (TextLineList *)tbl->tabdata[row][col],
-              get_spec_cell_width(tbl, row, col));
-    obuf.flag |= RB_INTABLE;
-    if (h_env.limit > maxlimit)
-        h_env.limit = maxlimit;
-    if (tbl->border_mode != BORDER_NONE && tbl->vcellpadding > 0)
-        h_env.do_blankline(&obuf, 0, 0, h_env.limit);
-    for (l = orgdata->first; l != NULL; l = l->next)
-    {
-        if (TAG_IS(l->ptr, "<table_alt", 10))
-        {
-            int id = -1;
-            const char *p = l->ptr;
-            struct parsed_tag *tag;
-            if ((tag = parse_tag(&p, true)) != NULL)
-                tag->TryGetAttributeValue(ATTR_TID, &id);
-            if (id >= 0 && id < tbl->ntable)
-            {
-                TextLineListItem *ti;
-                struct table *t = tbl->tables[id].ptr;
-                int limit = tbl->tables[id].indent + t->total_width;
-                tbl->tables[id].ptr = NULL;
-                h_env.obuf->save_fonteffect();
-                h_env.flushline(0, 2, h_env.limit);
-                if (t->vspace > 0 && !(obuf.flag & RB_IGNORE_P))
-                    h_env.do_blankline(&obuf, 0, 0, h_env.limit);
-
-                AlignTypes alignment;
-                if (h_env.obuf->RB_GET_ALIGN() == RB_CENTER)
-                    alignment = ALIGN_CENTER;
-                else if (h_env.obuf->RB_GET_ALIGN() == RB_RIGHT)
-                    alignment = ALIGN_RIGHT;
-                else
-                    alignment = ALIGN_LEFT;
-
-                if (alignment != ALIGN_LEFT)
-                {
-                    for (ti = tbl->tables[id].buf->first;
-                         ti != NULL; ti = ti->next)
-                        align(ti->ptr, h_env.limit, alignment);
-                }
-                appendTextLineList(h_env.buf, tbl->tables[id].buf);
-                if (h_env.maxlimit < limit)
-                    h_env.maxlimit = limit;
-                h_env.obuf->restore_fonteffect();
-                obuf.flag &= ~RB_IGNORE_P;
-                h_env.blank_lines = 0;
-                if (t->vspace > 0)
-                {
-                    h_env.do_blankline(&obuf, 0, 0, h_env.limit);
-                    obuf.flag |= RB_IGNORE_P;
-                }
-            }
-        }
-        else
-            seq->HTMLlineproc0(l->ptr, &h_env, true);
-    }
-    if (obuf.status != R_ST_NORMAL)
-    {
-        obuf.status = R_ST_EOL;
-        seq->HTMLlineproc0("\n", &h_env, true);
-    }
-    seq->completeHTMLstream(&h_env, &obuf);
-    h_env.flushline(0, 2, h_env.limit);
-    if (tbl->border_mode == BORDER_NONE)
-    {
-        int rowspan = tbl->table_rowspan(row, col);
-        if (row + rowspan <= tbl->maxrow)
-        {
-            if (tbl->vcellpadding > 0 && !(obuf.flag & RB_IGNORE_P))
-                h_env.do_blankline(&obuf, 0, 0, h_env.limit);
-        }
-        else
-        {
-            if (tbl->vspace > 0)
-                h_env.purgeline();
-        }
-    }
-    else
-    {
-        if (tbl->vcellpadding > 0)
-        {
-            if (!(obuf.flag & RB_IGNORE_P))
-                h_env.do_blankline(&obuf, 0, 0, h_env.limit);
-        }
-        else
-            h_env.purgeline();
-    }
-    if ((colspan = tbl->table_colspan(row, col)) > 1)
-    {
-        struct table_cell *cell = &tbl->cell;
-        int k;
-        k = bsearch_2short(colspan, cell->colspan, col, cell->col, MAXCOL,
-                           cell->index, cell->maxcell + 1);
-        icell = cell->index[k];
-        if (cell->minimum_width[icell] < h_env.maxlimit)
-            cell->minimum_width[icell] = h_env.maxlimit;
-    }
-    else
-    {
-        if (tbl->minimum_width[col] < h_env.maxlimit)
-            tbl->minimum_width[col] = h_env.maxlimit;
-    }
 }
 
 int table::table_rule_width(int symbolWidth) const
@@ -1752,7 +1628,7 @@ static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
         indent = tbl->tables[i].indent;
 
         html_feed_environ h_env(&obuf, tbl->tables[i].buf,
-                  get_spec_cell_width(tbl, row, col), indent);
+                                tbl->get_spec_cell_width(row, col), indent);
         tbl->check_row(row);
         if (h_env.limit > maxlimit)
             h_env.limit = maxlimit;
@@ -1766,25 +1642,8 @@ static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
     }
 }
 
-
 void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env, HtmlContext *seq)
 {
-    int i, j, w, r, h;
-    Str renderbuf;
-    short new_tabwidth[MAXCOL];
-#ifdef MATRIX
-    int itr;
-    VEC *newwidth;
-    MAT *mat, *minv;
-    PERM *pivot;
-#endif /* MATRIX */
-
-    int rulewidth;
-    Str vrulea = NULL, vruleb = NULL, vrulec = NULL;
-#ifdef ID_EXT
-    Str idtag;
-#endif /* ID_EXT */
-
     t->total_height = 0;
     if (t->maxcol < 0)
     {
@@ -1795,7 +1654,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     if (t->sloppy_width > max_width)
         max_width = t->sloppy_width;
 
-    rulewidth = t->table_rule_width(Terminal::SymbolWidth());
+    int rulewidth = t->table_rule_width(Terminal::SymbolWidth());
 
     max_width -= t->table_border_width(Terminal::SymbolWidth());
 
@@ -1823,11 +1682,11 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     {
         set_table_matrix(t, max_width);
 
-        itr = 0;
-        mat = m_get(t->maxcol + 1, t->maxcol + 1);
-        pivot = px_get(t->maxcol + 1);
-        newwidth = v_get(t->maxcol + 1);
-        minv = m_get(t->maxcol + 1, t->maxcol + 1);
+        int itr = 0;
+        auto mat = m_get(t->maxcol + 1, t->maxcol + 1);
+        auto pivot = px_get(t->maxcol + 1);
+        auto newwidth = v_get(t->maxcol + 1);
+        auto minv = m_get(t->maxcol + 1, t->maxcol + 1);
         do
         {
             m_copy(t->matrix, mat);
@@ -1852,6 +1711,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
             itr++;
 
         } while (check_table_width(t, newwidth->ve, minv, itr, seq));
+        short new_tabwidth[MAXCOL];
         set_integered_width(t, newwidth->ve, new_tabwidth, Terminal::SymbolWidth());
         check_minimum_width(t, new_tabwidth);
         v_free(newwidth);
@@ -1860,7 +1720,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         m_free(minv);
         m_free(t->matrix);
         v_free(t->vector);
-        for (i = 0; i <= t->maxcol; i++)
+        for (int i = 0; i <= t->maxcol; i++)
         {
             t->tabwidth[i] = new_tabwidth[i];
         }
@@ -1874,25 +1734,25 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 #endif /* not MATRIX */
 
     check_minimum_width(t, t->tabwidth);
-    for (i = 0; i <= t->maxcol; i++)
+    for (int i = 0; i <= t->maxcol; i++)
         t->tabwidth[i] = ceil_at_intervals(t->tabwidth[i], rulewidth);
 
     renderCoTable(t, h_env->limit, seq);
 
-    for (i = 0; i <= t->maxcol; i++)
+    for (int i = 0; i <= t->maxcol; i++)
     {
-        for (j = 0; j <= t->maxrow; j++)
+        for (int j = 0; j <= t->maxrow; j++)
         {
             t->check_row(j);
             if (t->tabattr[j][i] & HTT_Y)
                 continue;
-            do_refill(t, j, i, h_env->limit, seq);
+            seq->do_refill(t, j, i, h_env->limit);
         }
     }
 
     check_minimum_width(t, t->tabwidth);
     t->total_width = 0;
-    for (i = 0; i <= t->maxcol; i++)
+    for (int i = 0; i <= t->maxcol; i++)
     {
         t->tabwidth[i] = ceil_at_intervals(t->tabwidth[i], rulewidth);
         t->total_width += t->tabwidth[i];
@@ -1902,17 +1762,15 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 
     check_table_height(t);
 
-    for (i = 0; i <= t->maxcol; i++)
+    for (int i = 0; i <= t->maxcol; i++)
     {
-        for (j = 0; j <= t->maxrow; j++)
+        for (int j = 0; j <= t->maxrow; j++)
         {
-            TextLineList *l;
-            int k;
             if ((t->tabattr[j][i] & HTT_Y) ||
                 (t->tabattr[j][i] & HTT_TOP) || (t->tabdata[j][i] == NULL))
                 continue;
-            h = t->tabheight[j];
-            for (k = j + 1; k <= t->maxrow; k++)
+            auto h = t->tabheight[j];
+            for (auto k = j + 1; k <= t->maxrow; k++)
             {
                 if (!(t->tabattr[k][i] & HTT_Y))
                     break;
@@ -1931,8 +1789,8 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
                 h /= 2;
             if (h <= 0)
                 continue;
-            l = newTextLineList();
-            for (k = 0; k < h; k++)
+            auto l = newTextLineList();
+            for (auto k = 0; k < h; k++)
                 pushTextLine(l, newTextLine(NULL, 0));
             t->tabdata[j][i] = appendGeneralList((GeneralList *)l,
                                                  t->tabdata[j][i]);
@@ -1948,7 +1806,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 
     if (t->id != NULL)
     {
-        idtag = Sprintf("<_id id=\"%s\">", html_quote((t->id)->ptr));
+        auto idtag = Sprintf("<_id id=\"%s\">", html_quote((t->id)->ptr));
         seq->HTMLlineproc0(idtag->ptr, h_env, true);
     }
 
@@ -1956,13 +1814,18 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     {
     case BORDER_THIN:
     case BORDER_THICK:
-        renderbuf = Strnew();
+    {
+        auto renderbuf = Strnew();
         t->print_sep(-1, VALIGN_TOP, t->maxcol, renderbuf, Terminal::SymbolWidth());
         h_env->push_render_image(renderbuf, width, t->total_width);
         t->total_height += 1;
         break;
     }
-    vruleb = Strnew();
+    }
+
+    Str vrulea = nullptr;
+    Str vruleb = Strnew();
+    Str vrulec = nullptr;
     switch (t->border_mode)
     {
     case BORDER_THIN:
@@ -1970,7 +1833,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         vrulea = Strnew();
         vrulec = Strnew();
         push_symbol(vrulea, TK_VERTICALBAR(t->border_mode), Terminal::SymbolWidth(), 1);
-        for (i = 0; i < t->cellpadding; i++)
+        for (int i = 0; i < t->cellpadding; i++)
         {
             vrulea->Push(' ');
             vruleb->Push(' ');
@@ -1979,49 +1842,50 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         push_symbol(vrulec, TK_VERTICALBAR(t->border_mode), Terminal::SymbolWidth(), 1);
     case BORDER_NOWIN:
         push_symbol(vruleb, TK_VERTICALBAR(BORDER_THIN), Terminal::SymbolWidth(), 1);
-        for (i = 0; i < t->cellpadding; i++)
+        for (int i = 0; i < t->cellpadding; i++)
             vruleb->Push(' ');
         break;
     case BORDER_NONE:
-        for (i = 0; i < t->cellspacing; i++)
+        for (int i = 0; i < t->cellspacing; i++)
             vruleb->Push(' ');
     }
 
-    for (r = 0; r <= t->maxrow; r++)
+    for (int r = 0; r <= t->maxrow; r++)
     {
-        for (h = 0; h < t->tabheight[r]; h++)
+        for (int h = 0; h < t->tabheight[r]; h++)
         {
-            renderbuf = Strnew();
+            auto renderbuf = Strnew();
             if (t->border_mode == BORDER_THIN || t->border_mode == BORDER_THICK)
                 renderbuf->Push(vrulea);
-#ifdef ID_EXT
+
             if (t->tridvalue[r] != NULL && h == 0)
             {
-                idtag = Sprintf("<_id id=\"%s\">",
-                                html_quote((t->tridvalue[r])->ptr));
+                auto idtag = Sprintf("<_id id=\"%s\">",
+                                     html_quote((t->tridvalue[r])->ptr));
                 renderbuf->Push(idtag);
             }
-#endif /* ID_EXT */
-            for (i = 0; i <= t->maxcol; i++)
+
+            for (int i = 0; i <= t->maxcol; i++)
             {
                 t->check_row(r);
-#ifdef ID_EXT
+
                 if (t->tabidvalue[r][i] != NULL && h == 0)
                 {
-                    idtag = Sprintf("<_id id=\"%s\">",
-                                    html_quote((t->tabidvalue[r][i])->ptr));
+                    auto idtag = Sprintf("<_id id=\"%s\">",
+                                         html_quote((t->tabidvalue[r][i])->ptr));
                     renderbuf->Push(idtag);
                 }
-#endif /* ID_EXT */
+
                 if (!(t->tabattr[r][i] & HTT_X))
                 {
-                    w = t->tabwidth[i];
-                    for (j = i + 1;
+                    int w = t->tabwidth[i];
+                    for (int j = i + 1;
                          j <= t->maxcol && (t->tabattr[r][j] & HTT_X); j++)
                         w += t->tabwidth[j] + t->cellspacing;
                     if (t->tabattr[r][i] & HTT_Y)
                     {
-                        for (j = r - 1; j >= 0 && t->tabattr[j] && (t->tabattr[j][i] & HTT_Y); j--)
+                        int j = r - 1;
+                        for (; j >= 0 && t->tabattr[j] && (t->tabattr[j][i] & HTT_Y); j--)
                             ;
                         t->print_item(j, i, w, renderbuf);
                     }
@@ -2043,7 +1907,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         }
         if (r < t->maxrow && t->border_mode != BORDER_NONE)
         {
-            renderbuf = Strnew();
+            auto renderbuf = Strnew();
             t->print_sep(r, VALIGN_MIDDLE, t->maxcol, renderbuf, Terminal::SymbolWidth());
             h_env->push_render_image(renderbuf, width, t->total_width);
         }
@@ -2053,15 +1917,17 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     {
     case BORDER_THIN:
     case BORDER_THICK:
-        renderbuf = Strnew();
+    {
+        auto renderbuf = Strnew();
         t->print_sep(t->maxrow, VALIGN_BOTTOM, t->maxcol, renderbuf, Terminal::SymbolWidth());
         h_env->push_render_image(renderbuf, width, t->total_width);
         t->total_height += 1;
         break;
     }
+    }
     if (t->total_height == 0)
     {
-        renderbuf = Strnew(" ");
+        auto renderbuf = Strnew(" ");
         t->total_height++;
         t->total_width = 1;
         h_env->push_render_image(renderbuf, 1, t->total_width);
