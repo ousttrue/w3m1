@@ -49,7 +49,7 @@ Str unescape_spaces(Str s);
 double log_like(int x);
 
 
-void check_rowcol(struct table *tbl, struct table_mode *mode);
+
 int minimum_length(char *line);
 
 

@@ -46,6 +46,3 @@ public:
     void purgeline();
     void do_blankline(struct readbuffer *obuf, int indent, int indent_incr, int width);
 };
-
-void renderTable(struct table *t, int max_width,
-                 struct html_feed_environ *h_env, class HtmlContext *seq);

@@ -182,11 +182,6 @@ static inline void set_space_to_prevchar(Str x)
 #endif /* MATRIX */
 
 #ifdef MATRIX
-int correct_table_matrix(struct table *, int, int, int, double);
-void set_table_matrix(struct table *, int);
-#endif /* MATRIX */
-
-#ifdef MATRIX
 static double
 weight(int x)
 {
