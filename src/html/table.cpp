@@ -2523,37 +2523,35 @@ feed_table_inline_tag(struct table *tbl,
     }
 }
 
-static void
-feed_table_block_tag(struct table *tbl, const char *line, struct table_mode *mode, int indent, int cmd)
+void table::feed_table_block_tag(const char *line, struct table_mode *mode, int indent, int cmd)
 {
-    int offset;
     if (mode->indent_level <= 0 && indent == -1)
         return;
-    setwidth(tbl, mode);
-    feed_table_inline_tag(tbl, line, mode, -1);
-    clearcontentssize(tbl, mode);
+    setwidth(this, mode);
+    feed_table_inline_tag(this, line, mode, -1);
+    clearcontentssize(this, mode);
     if (indent == 1)
     {
         mode->indent_level++;
         if (mode->indent_level <= MAX_INDENT_LEVEL)
-            tbl->indent += w3mApp::Instance().IndentIncr;
+            this->indent += w3mApp::Instance().IndentIncr;
     }
     else if (indent == -1)
     {
         mode->indent_level--;
         if (mode->indent_level < MAX_INDENT_LEVEL)
-            tbl->indent -= w3mApp::Instance().IndentIncr;
+            this->indent -= w3mApp::Instance().IndentIncr;
     }
-    offset = tbl->indent;
+    int offset = this->indent;
     if (cmd == HTML_DT)
     {
         if (mode->indent_level > 0 && mode->indent_level <= MAX_INDENT_LEVEL)
             offset -= w3mApp::Instance().IndentIncr;
     }
-    if (tbl->indent > 0)
+    if (this->indent > 0)
     {
-        check_minimum0(tbl, 0);
-        addcontentssize(tbl, offset);
+        check_minimum0(this, 0);
+        addcontentssize(this, offset);
     }
 }
 
@@ -2645,7 +2643,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         {
             mode->pre_mode &= ~TBLM_PLAIN;
             mode->end_tag = 0;
-            feed_table_block_tag(tbl, line, mode, 0, cmd);
+            tbl->feed_table_block_tag(line, mode, 0, cmd);
             return TAG_ACTION_NONE;
         }
         return TAG_ACTION_PLAIN;
@@ -3031,7 +3029,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
     case HTML_PLAINTEXT:
     case HTML_PRE_PLAIN:
     case HTML_N_PRE_PLAIN:
-        feed_table_block_tag(tbl, line, mode, 0, cmd);
+        tbl->feed_table_block_tag(line, mode, 0, cmd);
         switch (cmd)
         {
         case HTML_PRE:
@@ -3060,13 +3058,13 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
     case HTML_BLQ:
     case HTML_OL:
     case HTML_UL:
-        feed_table_block_tag(tbl, line, mode, 1, cmd);
+        tbl->feed_table_block_tag(line, mode, 1, cmd);
         break;
     case HTML_N_DL:
     case HTML_N_BLQ:
     case HTML_N_OL:
     case HTML_N_UL:
-        feed_table_block_tag(tbl, line, mode, -1, cmd);
+        tbl->feed_table_block_tag(line, mode, -1, cmd);
         break;
     case HTML_NOBR:
     case HTML_WBR:
@@ -3132,13 +3130,13 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         feed_table1(tbl, tok, mode, width, seq);
         break;
     case HTML_FORM:
-        feed_table_block_tag(tbl, "", mode, 0, cmd);
+        tbl->feed_table_block_tag("", mode, 0, cmd);
         tmp = seq->FormOpen(tag);
         if (tmp)
             feed_table1(tbl, tmp, mode, width, seq);
         break;
     case HTML_N_FORM:
-        feed_table_block_tag(tbl, "", mode, 0, cmd);
+        tbl->feed_table_block_tag("", mode, 0, cmd);
         seq->FormClose();
         break;
     case HTML_INPUT:
@@ -3292,7 +3290,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         if (id >= 0 && id < tbl->ntable)
         {
             struct table *tbl1 = tbl->tables[id].ptr;
-            feed_table_block_tag(tbl, line, mode, 0, cmd);
+            tbl->feed_table_block_tag(line, mode, 0, cmd);
             addcontentssize(tbl, maximum_table_width(tbl1));
             check_minimum0(tbl, tbl1->sloppy_width);
 #ifdef TABLE_EXPAND

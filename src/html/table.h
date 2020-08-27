@@ -121,6 +121,7 @@ struct table
 
     void pushTable(struct table *);
     void check_row(int row);
+    void feed_table_block_tag(const char *line, struct table_mode *mode, int indent, int cmd);
 };
 
 #include "readbuffer.h"
