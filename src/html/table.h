@@ -118,6 +118,9 @@ struct table
 #endif /* MATRIX */
     int sloppy_width;
 
+    static table *begin(BorderModes border, int spacing, int padding, int vspace);
+    void end();
+
     int table_border_width(int symbolWidth);
     int table_colspan(int row, int col);
     int table_rowspan(int row, int col);
@@ -164,8 +167,6 @@ void align(struct TextLine *lbuf, int width, AlignTypes mode);
 int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal, class HtmlContext *seq);
 
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, class HtmlContext *seq);
-struct table *begin_table(BorderModes border, int spacing, int padding, int vspace, class HtmlContext *seq);
-void end_table(struct table *tbl, class HtmlContext *seq);
 int visible_length(const char *str);
 struct table *newTable(void);
 int bsearch_2short(short e1, short *ent1, short e2, short *ent2, int base, short *indexarray, int nent);

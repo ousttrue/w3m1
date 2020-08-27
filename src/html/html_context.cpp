@@ -2239,7 +2239,7 @@ table_start:
                 obuf->table_level--;
                 if (obuf->table_level >= MAX_TABLE - 1)
                     continue;
-                end_table(tbl, seq);
+                tbl->end();
                 if (obuf->table_level >= 0)
                 {
                     struct table *tbl0 = tables[obuf->table_level];
@@ -3314,7 +3314,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         tag->TryGetAttributeValue(ATTR_VSPACE, &z);
         char *id;
         tag->TryGetAttributeValue(ATTR_ID, &id);
-        tables[h_env->obuf->table_level] = begin_table(w, x, y, z, this);
+        tables[h_env->obuf->table_level] = table::begin(w, x, y, z);
         if (id != NULL)
             tables[h_env->obuf->table_level]->id = Strnew(id);
 

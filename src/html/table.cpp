@@ -1929,7 +1929,8 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 #else
 #define THR_PADDING 4
 #endif
-struct table *begin_table(BorderModes border, int spacing, int padding, int vspace, HtmlContext *seq)
+
+table *table::begin(BorderModes border, int spacing, int padding, int vspace)
 {
     struct table *t;
     int mincell = minimum_cellspacing(border, Terminal::SymbolWidth());
@@ -2008,22 +2009,22 @@ struct table *begin_table(BorderModes border, int spacing, int padding, int vspa
     return t;
 }
 
-void end_table(struct table *tbl, HtmlContext *seq)
+void table::end()
 {
-    struct table_cell *cell = &tbl->cell;
-    int rulewidth = tbl->table_rule_width(Terminal::SymbolWidth());
+    struct table_cell *cell = &this->cell;
+    int rulewidth = this->table_rule_width(Terminal::SymbolWidth());
     if (rulewidth > 1)
     {
-        if (tbl->total_width > 0)
-            tbl->total_width = ceil_at_intervals(tbl->total_width, rulewidth);
-        for (int i = 0; i <= tbl->maxcol; i++)
+        if (this->total_width > 0)
+            this->total_width = ceil_at_intervals(this->total_width, rulewidth);
+        for (int i = 0; i <= this->maxcol; i++)
         {
-            tbl->minimum_width[i] =
-                ceil_at_intervals(tbl->minimum_width[i], rulewidth);
-            tbl->tabwidth[i] = ceil_at_intervals(tbl->tabwidth[i], rulewidth);
-            if (tbl->fixed_width[i] > 0)
-                tbl->fixed_width[i] =
-                    ceil_at_intervals(tbl->fixed_width[i], rulewidth);
+            this->minimum_width[i] =
+                ceil_at_intervals(this->minimum_width[i], rulewidth);
+            this->tabwidth[i] = ceil_at_intervals(this->tabwidth[i], rulewidth);
+            if (this->fixed_width[i] > 0)
+                this->fixed_width[i] =
+                    ceil_at_intervals(this->fixed_width[i], rulewidth);
         }
         for (int i = 0; i <= cell->maxcell; i++)
         {
@@ -2035,9 +2036,9 @@ void end_table(struct table *tbl, HtmlContext *seq)
                     ceil_at_intervals(cell->fixed_width[i], rulewidth);
         }
     }
-    tbl->sloppy_width = tbl->fixed_table_width();
-    if (tbl->total_width > tbl->sloppy_width)
-        tbl->sloppy_width = tbl->total_width;
+    this->sloppy_width = this->fixed_table_width();
+    if (this->total_width > this->sloppy_width)
+        this->sloppy_width = this->total_width;
 }
 
 static void
