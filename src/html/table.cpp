@@ -789,19 +789,19 @@ check_cell_width(short *tabwidth, short *cellwidth,
     }
 }
 
-void check_minimum_width(struct table *t, short *tabwidth)
+void table::check_minimum_width(short *tabwidth)
 {
     int i;
-    struct table_cell *cell = &t->cell;
+    struct table_cell *cell = &this->cell;
 
-    for (i = 0; i <= t->maxcol; i++)
+    for (i = 0; i <= this->maxcol; i++)
     {
-        if (tabwidth[i] < t->minimum_width[i])
-            tabwidth[i] = t->minimum_width[i];
+        if (tabwidth[i] < this->minimum_width[i])
+            tabwidth[i] = this->minimum_width[i];
     }
 
     check_cell_width(tabwidth, cell->minimum_width, cell->col, cell->colspan,
-                     cell->maxcell, cell->index, t->cellspacing, 0);
+                     cell->maxcell, cell->index, this->cellspacing, 0);
 }
 
 void check_maximum_width(struct table *t)
@@ -1233,7 +1233,7 @@ int table::check_table_width(double *newwidth, MAT *minv, int itr)
     for (i = 0; i <= this->maxcol; i++)
         corwidth[i] = orgwidth[i] = round(newwidth[i]);
 
-    check_minimum_width(this, corwidth);
+    this->check_minimum_width(corwidth);
 
     for (i = 0; i <= this->maxcol; i++)
     {
@@ -1591,7 +1591,7 @@ int table::get_table_width(short *orgwidth, short *cellwidth, TableWidthFlags fl
                          cell->maxcell, cell->index, this->cellspacing, 0);
     }
     if (flag & CHECK_MINIMUM)
-        check_minimum_width(this, newwidth);
+        this->check_minimum_width(newwidth);
 
     swidth = 0;
     for (i = 0; i <= this->maxcol; i++)
@@ -1702,7 +1702,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         } while (t->check_table_width(newwidth->ve, minv, itr));
         short new_tabwidth[MAXCOL];
         set_integered_width(t, newwidth->ve, new_tabwidth, Terminal::SymbolWidth());
-        check_minimum_width(t, new_tabwidth);
+        t->check_minimum_width(new_tabwidth);
         v_free(newwidth);
         px_free(pivot);
         m_free(mat);
@@ -1722,7 +1722,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     }
 #endif /* not MATRIX */
 
-    check_minimum_width(t, t->tabwidth);
+    t->check_minimum_width(t->tabwidth);
     for (int i = 0; i <= t->maxcol; i++)
         t->tabwidth[i] = ceil_at_intervals(t->tabwidth[i], rulewidth);
 
@@ -1739,7 +1739,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         }
     }
 
-    check_minimum_width(t, t->tabwidth);
+    t->check_minimum_width(t->tabwidth);
     t->total_width = 0;
     for (int i = 0; i <= t->maxcol; i++)
     {
@@ -2197,8 +2197,7 @@ void check_rowcol(struct table *tbl, struct table_mode *mode)
     tbl->flag |= TBL_IN_COL;
 }
 
-int skip_space(struct table *t, const char *line, struct table_linfo *linfo,
-               int checkminimum)
+int table::skip_space(const char *line, struct table_linfo *linfo, int checkminimum)
 {
     int skip = 0, s = linfo->prev_spaces;
     Lineprop ctype, prev_ctype = linfo->prev_ctype;
@@ -2209,7 +2208,7 @@ int skip_space(struct table *t, const char *line, struct table_linfo *linfo,
     if (*line == '<' && line[strlen(line) - 1] == '>')
     {
         if (checkminimum)
-            check_minimum0(t, visible_length(line));
+            check_minimum0(this, visible_length(line));
         return 0;
     }
 
@@ -2284,7 +2283,7 @@ int skip_space(struct table *t, const char *line, struct table_linfo *linfo,
         if (min < w)
             min = w;
         linfo->length = w;
-        check_minimum0(t, min);
+        check_minimum0(this, min);
     }
     return skip;
 }
@@ -3287,7 +3286,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
             mode->nobr_offset = tbl->tabcontentssize;
 
         /* count of number of spaces skipped in normal mode */
-        i = skip_space(tbl, line, linfo, !(mode->pre_mode & TBLM_NOBR));
+        i = tbl->skip_space(line, linfo, !(mode->pre_mode & TBLM_NOBR));
         addcontentssize(tbl, visible_length(line) - i);
         tbl->setwidth(mode);
         tbl->pushdata(tbl->row, tbl->col, line);

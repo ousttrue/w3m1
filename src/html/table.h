@@ -149,6 +149,8 @@ struct table
     {
         return get_table_width(fixed_width, cell.fixed_width, CHECK_MINIMUM);
     }
+    int skip_space(const char *line, struct table_linfo *linfo, int checkminimum);
+    void check_minimum_width(short *tabwidth);
 };
 
 struct table_mode
