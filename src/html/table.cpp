@@ -156,9 +156,6 @@ int maximum_visible_length_plain(const char *str, int offset)
     return visible_length_plain(str);
 }
 
-#define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
-#define TK_VERTICALBAR(mode) RULE(mode, 5)
-
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif /* not max */
@@ -275,8 +272,7 @@ bsearch_double(double e, double *ent, short *indexarray, int nent)
     return k;
 }
 
-static int
-ceil_at_intervals(int x, int step)
+int ceil_at_intervals(int x, int step)
 {
     int mo = x % step;
     if (mo > 0)
@@ -286,16 +282,6 @@ ceil_at_intervals(int x, int step)
     return x;
 }
 
-static int
-floor_at_intervals(int x, int step)
-{
-    int mo = x % step;
-    if (mo > 0)
-        x -= mo;
-    else if (mo < 0)
-        x += step - mo;
-    return x;
-}
 
 #define round(x) ((int)floor((x) + 0.5))
 
@@ -619,6 +605,8 @@ void table::print_item(int row, int col, int width, Str buf)
         buf->Push(lbuf->line);
     }
 }
+
+#define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
 
 void table::print_sep(int row, VerticalAlignTypes type, int maxcol, Str buf, int symbolWidth)
 {
@@ -1590,327 +1578,7 @@ int table::get_table_width(short *orgwidth, short *cellwidth, TableWidthFlags fl
     return swidth;
 }
 
-static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
-{
-    struct readbuffer obuf;
-    struct table *t;
-    int i, col, row;
-    int indent, maxwidth;
 
-    for (i = 0; i < tbl->ntable; i++)
-    {
-        t = tbl->tables[i].ptr;
-        col = tbl->tables[i].col;
-        row = tbl->tables[i].row;
-        indent = tbl->tables[i].indent;
-
-        html_feed_environ h_env(&obuf, tbl->tables[i].buf,
-                                tbl->get_spec_cell_width(row, col), indent);
-        tbl->check_row(row);
-        if (h_env.limit > maxlimit)
-            h_env.limit = maxlimit;
-        if (t->total_width == 0)
-            maxwidth = h_env.limit - indent;
-        else if (t->total_width > 0)
-            maxwidth = t->total_width;
-        else
-            maxwidth = t->total_width = -t->total_width * h_env.limit / 100;
-        renderTable(t, maxwidth, &h_env, seq);
-    }
-}
-
-void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env, HtmlContext *seq)
-{
-    t->total_height = 0;
-    if (t->maxcol < 0)
-    {
-        seq->make_caption(t, h_env);
-        return;
-    }
-
-    if (t->sloppy_width > max_width)
-        max_width = t->sloppy_width;
-
-    int rulewidth = t->table_rule_width(Terminal::SymbolWidth());
-
-    max_width -= t->table_border_width(Terminal::SymbolWidth());
-
-    if (rulewidth > 1)
-        max_width = floor_at_intervals(max_width, rulewidth);
-
-    if (max_width < rulewidth)
-        max_width = rulewidth;
-
-    t->check_maximum_width();
-
-#ifdef MATRIX
-    if (t->maxcol == 0)
-    {
-        if (t->tabwidth[0] > max_width)
-            t->tabwidth[0] = max_width;
-        if (t->total_width > 0)
-            t->tabwidth[0] = max_width;
-        else if (t->fixed_width[0] > 0)
-            t->tabwidth[0] = t->fixed_width[0];
-        if (t->tabwidth[0] < t->minimum_width[0])
-            t->tabwidth[0] = t->minimum_width[0];
-    }
-    else
-    {
-        t->set_table_matrix(max_width);
-
-        int itr = 0;
-        auto mat = m_get(t->maxcol + 1, t->maxcol + 1);
-        auto pivot = px_get(t->maxcol + 1);
-        auto newwidth = v_get(t->maxcol + 1);
-        auto minv = m_get(t->maxcol + 1, t->maxcol + 1);
-        do
-        {
-            m_copy(t->matrix, mat);
-            LUfactor(mat, pivot);
-            LUsolve(mat, pivot, t->vector, newwidth);
-            LUinverse(mat, pivot, minv);
-#ifdef TABLE_DEBUG
-            set_integered_width(t, newwidth->ve, new_tabwidth);
-            fprintf(stderr, "itr=%d\n", itr);
-            fprintf(stderr, "max_width=%d\n", max_width);
-            fprintf(stderr, "minimum : ");
-            for (i = 0; i <= t->maxcol; i++)
-                fprintf(stderr, "%2d ", t->minimum_width[i]);
-            fprintf(stderr, "\nfixed : ");
-            for (i = 0; i <= t->maxcol; i++)
-                fprintf(stderr, "%2d ", t->fixed_width[i]);
-            fprintf(stderr, "\ndecided : ");
-            for (i = 0; i <= t->maxcol; i++)
-                fprintf(stderr, "%2d ", new_tabwidth[i]);
-            fprintf(stderr, "\n");
-#endif /* TABLE_DEBUG */
-            itr++;
-
-        } while (t->check_table_width(newwidth->ve, minv, itr));
-        short new_tabwidth[MAXCOL];
-        t->set_integered_width(newwidth->ve, new_tabwidth, Terminal::SymbolWidth());
-        t->check_minimum_width(new_tabwidth);
-        v_free(newwidth);
-        px_free(pivot);
-        m_free(mat);
-        m_free(minv);
-        m_free(t->matrix);
-        v_free(t->vector);
-        for (int i = 0; i <= t->maxcol; i++)
-        {
-            t->tabwidth[i] = new_tabwidth[i];
-        }
-    }
-#else  /* not MATRIX */
-    set_table_width(t, new_tabwidth, max_width);
-    for (i = 0; i <= t->maxcol; i++)
-    {
-        t->tabwidth[i] = new_tabwidth[i];
-    }
-#endif /* not MATRIX */
-
-    t->check_minimum_width(t->tabwidth);
-    for (int i = 0; i <= t->maxcol; i++)
-        t->tabwidth[i] = ceil_at_intervals(t->tabwidth[i], rulewidth);
-
-    renderCoTable(t, h_env->limit, seq);
-
-    for (int i = 0; i <= t->maxcol; i++)
-    {
-        for (int j = 0; j <= t->maxrow; j++)
-        {
-            t->check_row(j);
-            if (t->tabattr[j][i] & HTT_Y)
-                continue;
-            seq->do_refill(t, j, i, h_env->limit);
-        }
-    }
-
-    t->check_minimum_width(t->tabwidth);
-    t->total_width = 0;
-    for (int i = 0; i <= t->maxcol; i++)
-    {
-        t->tabwidth[i] = ceil_at_intervals(t->tabwidth[i], rulewidth);
-        t->total_width += t->tabwidth[i];
-    }
-
-    t->total_width += t->table_border_width(Terminal::SymbolWidth());
-
-    t->check_table_height();
-
-    for (int i = 0; i <= t->maxcol; i++)
-    {
-        for (int j = 0; j <= t->maxrow; j++)
-        {
-            if ((t->tabattr[j][i] & HTT_Y) ||
-                (t->tabattr[j][i] & HTT_TOP) || (t->tabdata[j][i] == NULL))
-                continue;
-            auto h = t->tabheight[j];
-            for (auto k = j + 1; k <= t->maxrow; k++)
-            {
-                if (!(t->tabattr[k][i] & HTT_Y))
-                    break;
-                h += t->tabheight[k];
-                switch (t->border_mode)
-                {
-                case BORDER_THIN:
-                case BORDER_THICK:
-                case BORDER_NOWIN:
-                    h += 1;
-                    break;
-                }
-            }
-            h -= t->tabdata[j][i]->nitem;
-            if (t->tabattr[j][i] & HTT_MIDDLE)
-                h /= 2;
-            if (h <= 0)
-                continue;
-            auto l = newTextLineList();
-            for (auto k = 0; k < h; k++)
-                pushTextLine(l, newTextLine(NULL, 0));
-            t->tabdata[j][i] = appendGeneralList((GeneralList *)l,
-                                                 t->tabdata[j][i]);
-        }
-    }
-
-    /* table output */
-    auto width = t->total_width;
-
-    seq->make_caption(t, h_env);
-
-    seq->HTMLlineproc0("<pre for_table>", h_env, true);
-
-    if (t->id != NULL)
-    {
-        auto idtag = Sprintf("<_id id=\"%s\">", html_quote((t->id)->ptr));
-        seq->HTMLlineproc0(idtag->ptr, h_env, true);
-    }
-
-    switch (t->border_mode)
-    {
-    case BORDER_THIN:
-    case BORDER_THICK:
-    {
-        auto renderbuf = Strnew();
-        t->print_sep(-1, VALIGN_TOP, t->maxcol, renderbuf, Terminal::SymbolWidth());
-        h_env->push_render_image(renderbuf, width, t->total_width);
-        t->total_height += 1;
-        break;
-    }
-    }
-
-    Str vrulea = nullptr;
-    Str vruleb = Strnew();
-    Str vrulec = nullptr;
-    switch (t->border_mode)
-    {
-    case BORDER_THIN:
-    case BORDER_THICK:
-        vrulea = Strnew();
-        vrulec = Strnew();
-        push_symbol(vrulea, TK_VERTICALBAR(t->border_mode), Terminal::SymbolWidth(), 1);
-        for (int i = 0; i < t->cellpadding; i++)
-        {
-            vrulea->Push(' ');
-            vruleb->Push(' ');
-            vrulec->Push(' ');
-        }
-        push_symbol(vrulec, TK_VERTICALBAR(t->border_mode), Terminal::SymbolWidth(), 1);
-    case BORDER_NOWIN:
-        push_symbol(vruleb, TK_VERTICALBAR(BORDER_THIN), Terminal::SymbolWidth(), 1);
-        for (int i = 0; i < t->cellpadding; i++)
-            vruleb->Push(' ');
-        break;
-    case BORDER_NONE:
-        for (int i = 0; i < t->cellspacing; i++)
-            vruleb->Push(' ');
-    }
-
-    for (int r = 0; r <= t->maxrow; r++)
-    {
-        for (int h = 0; h < t->tabheight[r]; h++)
-        {
-            auto renderbuf = Strnew();
-            if (t->border_mode == BORDER_THIN || t->border_mode == BORDER_THICK)
-                renderbuf->Push(vrulea);
-
-            if (t->tridvalue[r] != NULL && h == 0)
-            {
-                auto idtag = Sprintf("<_id id=\"%s\">",
-                                     html_quote((t->tridvalue[r])->ptr));
-                renderbuf->Push(idtag);
-            }
-
-            for (int i = 0; i <= t->maxcol; i++)
-            {
-                t->check_row(r);
-
-                if (t->tabidvalue[r][i] != NULL && h == 0)
-                {
-                    auto idtag = Sprintf("<_id id=\"%s\">",
-                                         html_quote((t->tabidvalue[r][i])->ptr));
-                    renderbuf->Push(idtag);
-                }
-
-                if (!(t->tabattr[r][i] & HTT_X))
-                {
-                    int w = t->tabwidth[i];
-                    for (int j = i + 1;
-                         j <= t->maxcol && (t->tabattr[r][j] & HTT_X); j++)
-                        w += t->tabwidth[j] + t->cellspacing;
-                    if (t->tabattr[r][i] & HTT_Y)
-                    {
-                        int j = r - 1;
-                        for (; j >= 0 && t->tabattr[j] && (t->tabattr[j][i] & HTT_Y); j--)
-                            ;
-                        t->print_item(j, i, w, renderbuf);
-                    }
-                    else
-                        t->print_item(r, i, w, renderbuf);
-                }
-                if (i < t->maxcol && !(t->tabattr[r][i + 1] & HTT_X))
-                    renderbuf->Push(vruleb);
-            }
-            switch (t->border_mode)
-            {
-            case BORDER_THIN:
-            case BORDER_THICK:
-                renderbuf->Push(vrulec);
-                t->total_height += 1;
-                break;
-            }
-            h_env->push_render_image(renderbuf, width, t->total_width);
-        }
-        if (r < t->maxrow && t->border_mode != BORDER_NONE)
-        {
-            auto renderbuf = Strnew();
-            t->print_sep(r, VALIGN_MIDDLE, t->maxcol, renderbuf, Terminal::SymbolWidth());
-            h_env->push_render_image(renderbuf, width, t->total_width);
-        }
-        t->total_height += t->tabheight[r];
-    }
-    switch (t->border_mode)
-    {
-    case BORDER_THIN:
-    case BORDER_THICK:
-    {
-        auto renderbuf = Strnew();
-        t->print_sep(t->maxrow, VALIGN_BOTTOM, t->maxcol, renderbuf, Terminal::SymbolWidth());
-        h_env->push_render_image(renderbuf, width, t->total_width);
-        t->total_height += 1;
-        break;
-    }
-    }
-    if (t->total_height == 0)
-    {
-        auto renderbuf = Strnew(" ");
-        t->total_height++;
-        t->total_width = 1;
-        h_env->push_render_image(renderbuf, 1, t->total_width);
-    }
-    seq->HTMLlineproc0("</pre>", h_env, true);
-}
 
 #ifdef TABLE_NO_COMPACT
 #define THR_PADDING 2

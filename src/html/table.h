@@ -203,10 +203,8 @@ enum TagActions
 };
 
 void align(struct TextLine *lbuf, int width, AlignTypes mode);
-
+int ceil_at_intervals(int x, int step);
 int visible_length(const char *str);
-struct table *newTable(void);
 int bsearch_2short(short e1, short *ent1, short e2, short *ent2, int base, short *indexarray, int nent);
 int maximum_visible_length(const char *str, int offset);
 int maximum_visible_length_plain(const char *str, int offset);
-void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env, struct HtmlContext *seq);

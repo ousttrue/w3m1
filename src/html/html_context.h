@@ -162,6 +162,8 @@ public:
     int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal);
     void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width);
     TagActions feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag);
+    void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env);
+    void renderCoTable(struct table *tbl, int maxlimit);
 };
 
 std::shared_ptr<struct Buffer> loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal = false);
