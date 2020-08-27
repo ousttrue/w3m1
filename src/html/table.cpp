@@ -804,9 +804,9 @@ void table::check_minimum_width(short *tabwidth)
                      cell->maxcell, cell->index, this->cellspacing, 0);
 }
 
-void check_maximum_width(struct table *t)
+void table::check_maximum_width()
 {
-    struct table_cell *cell = &t->cell;
+    struct table_cell *cell = &this->cell;
 #ifdef MATRIX
     int i, j, bcol, ecol;
     int swidth, width;
@@ -818,9 +818,9 @@ void check_maximum_width(struct table *t)
         ecol = bcol + cell->colspan[j];
         swidth = 0;
         for (i = bcol; i < ecol; i++)
-            swidth += t->tabwidth[i];
+            swidth += this->tabwidth[i];
 
-        width = cell->width[j] - (cell->colspan[j] - 1) * t->cellspacing;
+        width = cell->width[j] - (cell->colspan[j] - 1) * this->cellspacing;
         if (width > swidth)
         {
             cell->eindex[cell->necell] = j;
@@ -828,34 +828,33 @@ void check_maximum_width(struct table *t)
         }
     }
 #else  /* not MATRIX */
-    check_cell_width(t->tabwidth, cell->width, cell->col, cell->colspan,
-                     cell->maxcell, cell->index, t->cellspacing, 0);
-    check_minimum_width(t, t->tabwidth);
+    check_cell_width(this->tabwidth, cell->width, cell->col, cell->colspan,
+                     cell->maxcell, cell->index, this->cellspacing, 0);
+    check_minimum_width(this, this->tabwidth);
 #endif /* not MATRIX */
 }
 
 #ifdef MATRIX
-static void
-set_integered_width(struct table *t, double *dwidth, short *iwidth, int symbolWidth)
+void table::set_integered_width(double *dwidth, short *iwidth, int symbolWidth)
 {
     int i, j, k, n, bcol, ecol, step;
     short *indexarray;
     char *fixed;
     double *mod;
     double sum = 0., x = 0.;
-    struct table_cell *cell = &t->cell;
-    int rulewidth = t->table_rule_width(symbolWidth);
+    struct table_cell *cell = &this->cell;
+    int rulewidth = this->table_rule_width(symbolWidth);
 
-    indexarray = NewAtom_N(short, t->maxcol + 1);
-    mod = NewAtom_N(double, t->maxcol + 1);
-    for (i = 0; i <= t->maxcol; i++)
+    indexarray = NewAtom_N(short, this->maxcol + 1);
+    mod = NewAtom_N(double, this->maxcol + 1);
+    for (i = 0; i <= this->maxcol; i++)
     {
         iwidth[i] = ceil_at_intervals(ceil(dwidth[i]), rulewidth);
         mod[i] = (double)iwidth[i] - dwidth[i];
     }
 
     sum = 0.;
-    for (k = 0; k <= t->maxcol; k++)
+    for (k = 0; k <= this->maxcol; k++)
     {
         x = mod[k];
         sum += x;
@@ -869,18 +868,18 @@ set_integered_width(struct table *t, double *dwidth, short *iwidth, int symbolWi
         indexarray[i] = k;
     }
 
-    fixed = NewAtom_N(char, t->maxcol + 1);
-    bzero(fixed, t->maxcol + 1);
+    fixed = NewAtom_N(char, this->maxcol + 1);
+    bzero(fixed, this->maxcol + 1);
     for (step = 0; step < 2; step++)
     {
-        for (i = 0; i <= t->maxcol; i += n)
+        for (i = 0; i <= this->maxcol; i += n)
         {
             int nn;
             char *idx;
             double nsum;
             if (sum < 0.5)
                 return;
-            for (n = 0; i + n <= t->maxcol; n++)
+            for (n = 0; i + n <= this->maxcol; n++)
             {
                 int ii = indexarray[i + n];
                 if (n == 0)
@@ -892,10 +891,10 @@ set_integered_width(struct table *t, double *dwidth, short *iwidth, int symbolWi
             {
                 int ii = indexarray[i + k];
                 if (fixed[ii] < 2 &&
-                    iwidth[ii] - rulewidth < t->minimum_width[ii])
+                    iwidth[ii] - rulewidth < this->minimum_width[ii])
                     fixed[ii] = 2;
                 if (fixed[ii] < 1 &&
-                    iwidth[ii] - rulewidth < t->tabwidth[ii] &&
+                    iwidth[ii] - rulewidth < this->tabwidth[ii] &&
                     (double)rulewidth - mod[ii] > 0.5)
                     fixed[ii] = 1;
             }
@@ -918,7 +917,7 @@ set_integered_width(struct table *t, double *dwidth, short *iwidth, int symbolWi
                 }
                 if (m == 0)
                     continue;
-                width = (cell->colspan[j] - 1) * t->cellspacing;
+                width = (cell->colspan[j] - 1) * this->cellspacing;
                 for (kk = bcol; kk < ecol; kk++)
                     width += iwidth[kk];
                 w = 0;
@@ -1653,7 +1652,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     if (max_width < rulewidth)
         max_width = rulewidth;
 
-    check_maximum_width(t);
+    t->check_maximum_width();
 
 #ifdef MATRIX
     if (t->maxcol == 0)
@@ -1701,7 +1700,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 
         } while (t->check_table_width(newwidth->ve, minv, itr));
         short new_tabwidth[MAXCOL];
-        set_integered_width(t, newwidth->ve, new_tabwidth, Terminal::SymbolWidth());
+        t->set_integered_width(newwidth->ve, new_tabwidth, Terminal::SymbolWidth());
         t->check_minimum_width(new_tabwidth);
         v_free(newwidth);
         px_free(pivot);
@@ -2041,34 +2040,33 @@ void table::end()
         this->sloppy_width = this->total_width;
 }
 
-static void
-check_minimum0(struct table *t, int min)
+void table::check_minimum0(int min)
 {
     int i, w, ww;
     struct table_cell *cell;
 
-    if (t->col < 0)
+    if (this->col < 0)
         return;
-    if (t->tabwidth[t->col] < 0)
+    if (this->tabwidth[this->col] < 0)
         return;
-    t->check_row(t->row);
-    w = t->table_colspan(t->row, t->col);
-    min += t->indent;
+    this->check_row(this->row);
+    w = this->table_colspan(this->row, this->col);
+    min += this->indent;
     if (w == 1)
         ww = min;
     else
     {
-        cell = &t->cell;
+        cell = &this->cell;
         ww = 0;
         if (cell->icell >= 0 && cell->minimum_width[cell->icell] < min)
             cell->minimum_width[cell->icell] = min;
     }
-    for (i = t->col;
-         i <= t->maxcol && (i == t->col || (t->tabattr[t->row][i] & HTT_X));
+    for (i = this->col;
+         i <= this->maxcol && (i == this->col || (this->tabattr[this->row][i] & HTT_X));
          i++)
     {
-        if (t->minimum_width[i] < ww)
-            t->minimum_width[i] = ww;
+        if (this->minimum_width[i] < ww)
+            this->minimum_width[i] = ww;
     }
 }
 
@@ -2105,23 +2103,21 @@ void table::setwidth(struct table_mode *mode)
         return;
 #ifdef NOWRAP
     if (this->tabattr[this->row][this->col] & HTT_NOWRAP)
-        check_minimum0(this, width);
+        this->check_minimum0(width);
 #endif /* NOWRAP */
     if (mode->pre_mode & (TBLM_NOBR | TBLM_PRE | TBLM_PRE_INT) &&
         mode->nobr_offset >= 0)
-        check_minimum0(this, width - mode->nobr_offset);
+        this->check_minimum0(width - mode->nobr_offset);
 }
 
-static void
-addcontentssize(struct table *t, int width)
+void table::addcontentssize(int width)
 {
-
-    if (t->col < 0)
+    if (this->col < 0)
         return;
-    if (t->tabwidth[t->col] < 0)
+    if (this->tabwidth[this->col] < 0)
         return;
-    t->check_row(t->row);
-    t->tabcontentssize += width;
+    this->check_row(this->row);
+    this->tabcontentssize += width;
 }
 
 static void table_close_anchor0(struct table *tbl, struct table_mode *mode);
@@ -2208,7 +2204,7 @@ int table::skip_space(const char *line, struct table_linfo *linfo, int checkmini
     if (*line == '<' && line[strlen(line) - 1] == '>')
     {
         if (checkminimum)
-            check_minimum0(this, visible_length(line));
+            this->check_minimum0(visible_length(line));
         return 0;
     }
 
@@ -2283,7 +2279,7 @@ int table::skip_space(const char *line, struct table_linfo *linfo, int checkmini
         if (min < w)
             min = w;
         linfo->length = w;
-        check_minimum0(this, min);
+        this->check_minimum0(min);
     }
     return skip;
 }
@@ -2296,8 +2292,8 @@ feed_table_inline_tag(struct table *tbl,
     tbl->pushdata(tbl->row, tbl->col, line);
     if (width >= 0)
     {
-        check_minimum0(tbl, width);
-        addcontentssize(tbl, width);
+        tbl->check_minimum0(width);
+        tbl->addcontentssize(width);
         tbl->setwidth(mode);
     }
 }
@@ -2329,8 +2325,8 @@ void table::feed_table_block_tag(const char *line, struct table_mode *mode, int 
     }
     if (this->indent > 0)
     {
-        check_minimum0(this, 0);
-        addcontentssize(this, offset);
+        this->check_minimum0(0);
+        this->addcontentssize(offset);
     }
 }
 
@@ -2360,8 +2356,8 @@ table_close_anchor0(struct table *tbl, struct table_mode *mode)
     mode->pre_mode &= ~TBLM_ANCHOR;
     if (tbl->tabcontentssize == mode->anchor_offset)
     {
-        check_minimum0(tbl, 1);
-        addcontentssize(tbl, 1);
+        tbl->check_minimum0(1);
+        tbl->addcontentssize(1);
         tbl->setwidth(mode);
     }
     else if (tbl->linfo.prev_spaces > 0 &&
@@ -2869,7 +2865,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         mode->nobr_offset = -1;
         if (tbl->linfo.length > 0)
         {
-            check_minimum0(tbl, tbl->linfo.length);
+            tbl->check_minimum0(tbl->linfo.length);
             tbl->linfo.length = 0;
         }
         break;
@@ -3070,8 +3066,8 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         {
             struct table *tbl1 = tbl->tables[id].ptr;
             tbl->feed_table_block_tag(line, mode, 0, cmd);
-            addcontentssize(tbl, tbl1->maximum_table_width());
-            check_minimum0(tbl, tbl1->sloppy_width);
+            tbl->addcontentssize(tbl1->maximum_table_width());
+            tbl->check_minimum0(tbl1->sloppy_width);
 #ifdef TABLE_EXPAND
             w = tbl1->total_width;
             v = 0;
@@ -3088,7 +3084,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             else
                 w = tbl1->real_width;
             if (w > 0)
-                check_minimum0(tbl, w);
+                tbl->check_minimum0(w);
             else if (w < 0 && v < w)
             {
                 if (colspan > 1)
@@ -3287,7 +3283,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
 
         /* count of number of spaces skipped in normal mode */
         i = tbl->skip_space(line, linfo, !(mode->pre_mode & TBLM_NOBR));
-        addcontentssize(tbl, visible_length(line) - i);
+        tbl->addcontentssize(visible_length(line) - i);
         tbl->setwidth(mode);
         tbl->pushdata(tbl->row, tbl->col, line);
     }
@@ -3296,7 +3292,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
         check_rowcol(tbl, mode);
         if (mode->nobr_offset < 0)
             mode->nobr_offset = tbl->tabcontentssize;
-        addcontentssize(tbl, maximum_visible_length(line, tbl->tabcontentssize));
+        tbl->addcontentssize(maximum_visible_length(line, tbl->tabcontentssize));
         tbl->setwidth(mode);
         tbl->pushdata(tbl->row, tbl->col, line);
     }
@@ -3335,7 +3331,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
                 i = maximum_visible_length_plain(p, tbl->tabcontentssize);
             else
                 i = maximum_visible_length(p, tbl->tabcontentssize);
-            addcontentssize(tbl, i);
+            tbl->addcontentssize(i);
             tbl->setwidth(mode);
             if (nl)
                 clearcontentssize(tbl, mode);

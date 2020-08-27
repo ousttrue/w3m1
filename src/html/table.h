@@ -151,6 +151,10 @@ struct table
     }
     int skip_space(const char *line, struct table_linfo *linfo, int checkminimum);
     void check_minimum_width(short *tabwidth);
+    void set_integered_width(double *dwidth, short *iwidth, int symbolWidth);
+    void check_minimum0(int min);
+    void check_maximum_width();
+    void addcontentssize(int width);
 };
 
 struct table_mode
