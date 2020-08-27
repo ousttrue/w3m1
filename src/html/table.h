@@ -165,6 +165,14 @@ struct table
     void table_close_anchor0(struct table_mode *mode);
     void begin_cell(struct table_mode *mode);
     void check_rowcol(struct table_mode *mode);
+    void feed_table_inline_tag(const char *line, struct table_mode *mode, int width);
+    void set_table_matrix(int width);
+    void check_relative_width(int maxwidth);
+    void set_table_matrix0(int maxwidth);
+    void correct_table_matrix4(int col, int cspan, char *flags, double s, double b);
+    void correct_table_matrix3(int col, char *flags, double s, double b);
+    void correct_table_matrix2(int col, int cspan, double s, double b);
+    int correct_table_matrix(int col, int cspan, int a, double b);
 };
 
 struct table_mode

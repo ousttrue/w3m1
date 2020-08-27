@@ -1144,7 +1144,7 @@ _end:
         (span != this->maxcol + 1 && dmin > rulewidth * 0.5))
     {
         int nwidth = ceil_at_intervals(round(owidth - dmin), rulewidth);
-        correct_table_matrix(this, bcol, ecol - bcol, nwidth, 1.);
+        this->correct_table_matrix(bcol, ecol - bcol, nwidth, 1.);
         corr++;
     }
     return corr;
@@ -1251,7 +1251,7 @@ int table::check_table_width(double *newwidth, MAT *minv, int itr)
             }
             if (sxy <= 0.)
             {
-                correct_table_matrix(this, i, 1, this->minimum_width[i], w);
+                this->correct_table_matrix(i, 1, this->minimum_width[i], w);
                 corr++;
             }
         }
@@ -1288,7 +1288,7 @@ int table::check_table_width(double *newwidth, MAT *minv, int itr)
             }
             if (sxy <= 0.)
             {
-                correct_table_matrix(this, bcol, cell->colspan[j], mwidth, w);
+                this->correct_table_matrix(bcol, cell->colspan[j], mwidth, w);
                 corr++;
             }
         }
@@ -1667,7 +1667,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     }
     else
     {
-        set_table_matrix(t, max_width);
+        t->set_table_matrix(max_width);
 
         int itr = 0;
         auto mat = m_get(t->maxcol + 1, t->maxcol + 1);
@@ -2279,17 +2279,15 @@ int table::skip_space(const char *line, struct table_linfo *linfo, int checkmini
     return skip;
 }
 
-static void
-feed_table_inline_tag(struct table *tbl,
-                      const char *line, struct table_mode *mode, int width)
+void table::feed_table_inline_tag(const char *line, struct table_mode *mode, int width)
 {
-    tbl->check_rowcol(mode);
-    tbl->pushdata(tbl->row, tbl->col, line);
+    this->check_rowcol(mode);
+    this->pushdata(this->row, this->col, line);
     if (width >= 0)
     {
-        tbl->check_minimum0(width);
-        tbl->addcontentssize(width);
-        tbl->setwidth(mode);
+        this->check_minimum0(width);
+        this->addcontentssize(width);
+        this->setwidth(mode);
     }
 }
 
@@ -2298,7 +2296,7 @@ void table::feed_table_block_tag(const char *line, struct table_mode *mode, int 
     if (mode->indent_level <= 0 && indent == -1)
         return;
     this->setwidth(mode);
-    feed_table_inline_tag(this, line, mode, -1);
+    this->feed_table_inline_tag(line, mode, -1);
     this->clearcontentssize(mode);
     if (indent == 1)
     {
@@ -2840,7 +2838,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         if (!(tbl->flag & TBL_IN_ROW))
             break;
     case HTML_PRE_INT:
-        feed_table_inline_tag(tbl, line, mode, -1);
+        tbl->feed_table_inline_tag(line, mode, -1);
         switch (cmd)
         {
         case HTML_NOBR:
@@ -2866,14 +2864,14 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
     case HTML_N_NOBR:
         if (!(tbl->flag & TBL_IN_ROW))
             break;
-        feed_table_inline_tag(tbl, line, mode, -1);
+        tbl->feed_table_inline_tag(line, mode, -1);
         if (mode->nobr_level > 0)
             mode->nobr_level--;
         if (mode->nobr_level == 0)
             mode->pre_mode &= ~TBLM_NOBR;
         break;
     case HTML_N_PRE_INT:
-        feed_table_inline_tag(tbl, line, mode, -1);
+        tbl->feed_table_inline_tag(line, mode, -1);
         mode->pre_mode &= ~TBLM_PRE_INT;
         break;
     case HTML_IMG:
@@ -2958,7 +2956,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
                 if (w3mApp::Instance().displayLinkNumber)
                 {
                     Str t = seq->GetLinkNumberStr(-1);
-                    feed_table_inline_tag(tbl, NULL, mode, t->Size());
+                    tbl->feed_table_inline_tag(NULL, mode, t->Size());
                     tmp->Push(t);
                 }
                 tbl->pushdata(tbl->row, tbl->col, tmp->ptr);
@@ -2981,10 +2979,10 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             mode->pre_mode |= TBLM_DEL;
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            feed_table_inline_tag(tbl, line, mode, 5); /* [DEL: */
+            tbl->feed_table_inline_tag(line, mode, 5); /* [DEL: */
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            feed_table_inline_tag(tbl, line, mode, -1);
+            tbl->feed_table_inline_tag(line, mode, -1);
             break;
         }
         break;
@@ -2995,10 +2993,10 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             mode->pre_mode &= ~TBLM_DEL;
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            feed_table_inline_tag(tbl, line, mode, 5); /* :DEL] */
+            tbl->feed_table_inline_tag(line, mode, 5); /* :DEL] */
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            feed_table_inline_tag(tbl, line, mode, -1);
+            tbl->feed_table_inline_tag(line, mode, -1);
             break;
         }
         break;
@@ -3009,10 +3007,10 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             mode->pre_mode |= TBLM_S;
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            feed_table_inline_tag(tbl, line, mode, 3); /* [S: */
+            tbl->feed_table_inline_tag(line, mode, 3); /* [S: */
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            feed_table_inline_tag(tbl, line, mode, -1);
+            tbl->feed_table_inline_tag(line, mode, -1);
             break;
         }
         break;
@@ -3023,10 +3021,10 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             mode->pre_mode &= ~TBLM_S;
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            feed_table_inline_tag(tbl, line, mode, 3); /* :S] */
+            tbl->feed_table_inline_tag(line, mode, 3); /* :S] */
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            feed_table_inline_tag(tbl, line, mode, -1);
+            tbl->feed_table_inline_tag(line, mode, -1);
             break;
         }
         break;
@@ -3037,10 +3035,10 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         case DISPLAY_INS_DEL_SIMPLE:
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            feed_table_inline_tag(tbl, line, mode, 5); /* [INS:, :INS] */
+            tbl->feed_table_inline_tag(line, mode, 5); /* [INS:, :INS] */
             break;
         case DISPLAY_INS_DEL_FONTIFY:
-            feed_table_inline_tag(tbl, line, mode, -1);
+            tbl->feed_table_inline_tag(line, mode, -1);
             break;
         }
         break;
@@ -3048,7 +3046,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
     case HTML_SUB:
     case HTML_N_SUB:
         if (!(mode->pre_mode & (TBLM_DEL | TBLM_S)))
-            feed_table_inline_tag(tbl, line, mode, 1); /* ^, [, ] */
+            tbl->feed_table_inline_tag(line, mode, 1); /* ^, [, ] */
         break;
     case HTML_N_SUP:
         break;
@@ -3375,7 +3373,7 @@ void table::pushTable(table *tbl1)
 }
 
 #ifdef MATRIX
-int correct_table_matrix(struct table *t, int col, int cspan, int a, double b)
+int table::correct_table_matrix(int col, int cspan, int a, double b)
 {
     int i, j;
     int ecol = col + cspan;
@@ -3383,22 +3381,21 @@ int correct_table_matrix(struct table *t, int col, int cspan, int a, double b)
 
     for (i = col; i < ecol; i++)
     {
-        v_add_val(t->vector, i, w * a);
+        v_add_val(this->vector, i, w * a);
         for (j = i; j < ecol; j++)
         {
-            m_add_val(t->matrix, i, j, w);
-            m_set_val(t->matrix, j, i, m_entry(t->matrix, i, j));
+            m_add_val(this->matrix, i, j, w);
+            m_set_val(this->matrix, j, i, m_entry(this->matrix, i, j));
         }
     }
     return i;
 }
 
-static void
-correct_table_matrix2(struct table *t, int col, int cspan, double s, double b)
+void table::correct_table_matrix2(int col, int cspan, double s, double b)
 {
     int i, j;
     int ecol = col + cspan;
-    int size = t->maxcol + 1;
+    int size = this->maxcol + 1;
     double w = 1. / (b * b);
     double ss;
 
@@ -3412,18 +3409,16 @@ correct_table_matrix2(struct table *t, int col, int cspan, double s, double b)
                 ss = -(1. - s) * s;
             else
                 ss = s * s;
-            m_add_val(t->matrix, i, j, w * ss);
+            m_add_val(this->matrix, i, j, w * ss);
         }
     }
 }
 
-static void
-correct_table_matrix3(struct table *t, int col, char *flags, double s,
-                      double b)
+void table::correct_table_matrix3(int col, char *flags, double s, double b)
 {
     int i, j;
     double ss;
-    int size = t->maxcol + 1;
+    int size = this->maxcol + 1;
     double w = 1. / (b * b);
     int flg = (flags[col] == 0);
 
@@ -3441,19 +3436,17 @@ correct_table_matrix3(struct table *t, int col, char *flags, double s,
                 ss = -(1. - s) * s;
             else
                 ss = s * s;
-            m_add_val(t->matrix, i, j, w * ss);
+            m_add_val(this->matrix, i, j, w * ss);
         }
     }
 }
 
-static void
-correct_table_matrix4(struct table *t, int col, int cspan, char *flags,
-                      double s, double b)
+void table::correct_table_matrix4(int col, int cspan, char *flags, double s, double b)
 {
     int i, j;
     double ss;
     int ecol = col + cspan;
-    int size = t->maxcol + 1;
+    int size = this->maxcol + 1;
     double w = 1. / (b * b);
 
     for (i = 0; i < size; i++)
@@ -3470,15 +3463,14 @@ correct_table_matrix4(struct table *t, int col, int cspan, char *flags,
                 ss = -(1. - s) * s;
             else
                 ss = s * s;
-            m_add_val(t->matrix, i, j, w * ss);
+            m_add_val(this->matrix, i, j, w * ss);
         }
     }
 }
 
-static void
-set_table_matrix0(struct table *t, int maxwidth)
+void table::set_table_matrix0(int maxwidth)
 {
-    int size = t->maxcol + 1;
+    int size = this->maxcol + 1;
     int i, j, k, bcol, ecol;
     int width;
     double w0, w1, w, s, b;
@@ -3489,12 +3481,12 @@ set_table_matrix0(struct table *t, int maxwidth)
     double we[MAXCOL];
     char expand[MAXCOL];
 #endif /* not __GNUC__ */
-    struct table_cell *cell = &t->cell;
+    struct table_cell *cell = &this->cell;
 
     w0 = 0.;
     for (i = 0; i < size; i++)
     {
-        we[i] = weight(t->tabwidth[i]);
+        we[i] = weight(this->tabwidth[i]);
         w0 += we[i];
     }
     if (w0 <= 0.)
@@ -3506,7 +3498,7 @@ set_table_matrix0(struct table *t, int maxwidth)
         {
             s = we[i] / w0;
             b = sigma_td_nw((int)(s * maxwidth));
-            correct_table_matrix2(t, i, 1, s, b);
+            this->correct_table_matrix2(i, 1, s, b);
         }
         return;
     }
@@ -3518,16 +3510,16 @@ set_table_matrix0(struct table *t, int maxwidth)
         j = cell->eindex[k];
         bcol = cell->col[j];
         ecol = bcol + cell->colspan[j];
-        width = cell->width[j] - (cell->colspan[j] - 1) * t->cellspacing;
+        width = cell->width[j] - (cell->colspan[j] - 1) * this->cellspacing;
         w1 = 0.;
         for (i = bcol; i < ecol; i++)
         {
-            w1 += t->tabwidth[i] + 0.1;
+            w1 += this->tabwidth[i] + 0.1;
             expand[i]++;
         }
         for (i = bcol; i < ecol; i++)
         {
-            w = weight(width * (t->tabwidth[i] + 0.1) / w1);
+            w = weight(width * (this->tabwidth[i] + 0.1) / w1);
             if (w > we[i])
                 we[i] = w;
         }
@@ -3548,11 +3540,11 @@ set_table_matrix0(struct table *t, int maxwidth)
     {
         j = cell->eindex[k];
         bcol = cell->col[j];
-        width = cell->width[j] - (cell->colspan[j] - 1) * t->cellspacing;
+        width = cell->width[j] - (cell->colspan[j] - 1) * this->cellspacing;
         w = weight(width);
         s = w / (w1 + w);
         b = sigma_td_nw((int)(s * maxwidth));
-        correct_table_matrix4(t, bcol, cell->colspan[j], expand, s, b);
+        this->correct_table_matrix4(bcol, cell->colspan[j], expand, s, b);
     }
 
     for (i = 0; i < size; i++)
@@ -3567,17 +3559,17 @@ set_table_matrix0(struct table *t, int maxwidth)
             s = we[i] / max(w0 - w1, 1.);
             b = sigma_td_nw(maxwidth);
         }
-        correct_table_matrix3(t, i, expand, s, b);
+        this->correct_table_matrix3(i, expand, s, b);
     }
 }
 
-void check_relative_width(struct table *t, int maxwidth)
+void table::check_relative_width(int maxwidth)
 {
     int i;
     double rel_total = 0;
-    int size = t->maxcol + 1;
+    int size = this->maxcol + 1;
     double *rcolwidth = New_N(double, size);
-    struct table_cell *cell = &t->cell;
+    struct table_cell *cell = &this->cell;
     int n_leftcol = 0;
 
     for (i = 0; i < size; i++)
@@ -3585,10 +3577,10 @@ void check_relative_width(struct table *t, int maxwidth)
 
     for (i = 0; i < size; i++)
     {
-        if (t->fixed_width[i] < 0)
-            rcolwidth[i] = -(double)t->fixed_width[i] / 100.0;
-        else if (t->fixed_width[i] > 0)
-            rcolwidth[i] = (double)t->fixed_width[i] / maxwidth;
+        if (this->fixed_width[i] < 0)
+            rcolwidth[i] = -(double)this->fixed_width[i] / 100.0;
+        else if (this->fixed_width[i] > 0)
+            rcolwidth[i] = (double)this->fixed_width[i] / maxwidth;
         else
             n_leftcol++;
     }
@@ -3648,8 +3640,8 @@ void check_relative_width(struct table *t, int maxwidth)
         }
         for (i = 0; i < size; i++)
         {
-            if (t->fixed_width[i] < 0)
-                t->fixed_width[i] = -rcolwidth[i] * 100;
+            if (this->fixed_width[i] < 0)
+                this->fixed_width[i] = -rcolwidth[i] * 100;
         }
         for (i = 0; i <= cell->maxcell; i++)
         {
@@ -3667,41 +3659,41 @@ void check_relative_width(struct table *t, int maxwidth)
     }
 }
 
-void set_table_matrix(struct table *t, int width)
+void table::set_table_matrix(int width)
 {
-    int size = t->maxcol + 1;
+    int size = this->maxcol + 1;
     int i, j;
     double b, s;
     int a;
-    struct table_cell *cell = &t->cell;
+    struct table_cell *cell = &this->cell;
 
     if (size < 1)
         return;
 
-    t->matrix = m_get(size, size);
-    t->vector = v_get(size);
+    this->matrix = m_get(size, size);
+    this->vector = v_get(size);
     for (i = 0; i < size; i++)
     {
         for (j = i; j < size; j++)
-            m_set_val(t->matrix, i, j, 0.);
-        v_set_val(t->vector, i, 0.);
+            m_set_val(this->matrix, i, j, 0.);
+        v_set_val(this->vector, i, 0.);
     }
 
-    check_relative_width(t, width);
+    this->check_relative_width(width);
 
     for (i = 0; i < size; i++)
     {
-        if (t->fixed_width[i] > 0)
+        if (this->fixed_width[i] > 0)
         {
-            a = max(t->fixed_width[i], t->minimum_width[i]);
+            a = max(this->fixed_width[i], this->minimum_width[i]);
             b = sigma_td(a);
-            correct_table_matrix(t, i, 1, a, b);
+            this->correct_table_matrix(i, 1, a, b);
         }
-        else if (t->fixed_width[i] < 0)
+        else if (this->fixed_width[i] < 0)
         {
-            s = -(double)t->fixed_width[i] / 100.;
+            s = -(double)this->fixed_width[i] / 100.;
             b = sigma_td((int)(s * width));
-            correct_table_matrix2(t, i, 1, s, b);
+            this->correct_table_matrix2(i, 1, s, b);
         }
     }
 
@@ -3711,19 +3703,19 @@ void set_table_matrix(struct table *t, int width)
         {
             a = max(cell->fixed_width[j], cell->minimum_width[j]);
             b = sigma_td(a);
-            correct_table_matrix(t, cell->col[j], cell->colspan[j], a, b);
+            this->correct_table_matrix(cell->col[j], cell->colspan[j], a, b);
         }
         else if (cell->fixed_width[j] < 0)
         {
             s = -(double)cell->fixed_width[j] / 100.;
             b = sigma_td((int)(s * width));
-            correct_table_matrix2(t, cell->col[j], cell->colspan[j], s, b);
+            this->correct_table_matrix2(cell->col[j], cell->colspan[j], s, b);
         }
     }
 
-    set_table_matrix0(t, width);
+    this->set_table_matrix0(width);
 
-    if (t->total_width > 0)
+    if (this->total_width > 0)
     {
         b = sigma_table(width);
     }
@@ -3731,7 +3723,7 @@ void set_table_matrix(struct table *t, int width)
     {
         b = sigma_table_nw(width);
     }
-    correct_table_matrix(t, 0, size, width, b);
+    this->correct_table_matrix(0, size, width, b);
 }
 #endif /* MATRIX */
 
