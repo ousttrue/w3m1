@@ -119,6 +119,9 @@ struct table
 #endif /* MATRIX */
     int sloppy_width;
 
+    int table_colspan(int row, int col);
+    int setwidth0(struct table_mode *mode);
+    void setwidth(struct table_mode *mode);
     void pushTable(struct table *);
     void check_row(int row);
     void feed_table_block_tag(const char *line, struct table_mode *mode, int indent, int cmd);

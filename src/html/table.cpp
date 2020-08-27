@@ -240,11 +240,10 @@ dv2sv(double *dv, short *iv, int size)
 }
 #endif
 
-static int
-table_colspan(struct table *t, int row, int col)
+int table::table_colspan(int row, int col)
 {
     int i;
-    for (i = col + 1; i <= t->maxcol && (t->tabattr[row][i] & HTT_X); i++)
+    for (i = col + 1; i <= this->maxcol && (this->tabattr[row][i] & HTT_X); i++)
         ;
     return i - col;
 }
@@ -896,7 +895,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
         else
             purgeline(&h_env);
     }
-    if ((colspan = table_colspan(tbl, row, col)) > 1)
+    if ((colspan = tbl->table_colspan(row, col)) > 1)
     {
         struct table_cell *cell = &tbl->cell;
         int k;
@@ -2269,7 +2268,7 @@ check_minimum0(struct table *t, int min)
     if (t->tabwidth[t->col] < 0)
         return;
     t->check_row(t->row);
-    w = table_colspan(t, t->row, t->col);
+    w = t->table_colspan(t->row, t->col);
     min += t->indent;
     if (w == 1)
         ww = min;
@@ -2289,25 +2288,23 @@ check_minimum0(struct table *t, int min)
     }
 }
 
-static int
-setwidth0(struct table *t, struct table_mode *mode)
+int table::setwidth0(struct table_mode *mode)
 {
-    int w;
-    int width = t->tabcontentssize;
-    struct table_cell *cell = &t->cell;
+    if (this->col < 0)
+        return -1;
+    if (this->tabwidth[this->col] < 0)
+        return -1;
 
-    if (t->col < 0)
-        return -1;
-    if (t->tabwidth[t->col] < 0)
-        return -1;
-    t->check_row(t->row);
-    if (t->linfo.prev_spaces > 0)
-        width -= t->linfo.prev_spaces;
-    w = table_colspan(t, t->row, t->col);
+    struct table_cell *cell = &this->cell;
+    int width = this->tabcontentssize;
+    this->check_row(this->row);
+    if (this->linfo.prev_spaces > 0)
+        width -= this->linfo.prev_spaces;
+    int w = this->table_colspan(this->row, this->col);
     if (w == 1)
     {
-        if (t->tabwidth[t->col] < width)
-            t->tabwidth[t->col] = width;
+        if (this->tabwidth[this->col] < width)
+            this->tabwidth[this->col] = width;
     }
     else if (cell->icell >= 0)
     {
@@ -2317,19 +2314,18 @@ setwidth0(struct table *t, struct table_mode *mode)
     return width;
 }
 
-static void
-setwidth(struct table *t, struct table_mode *mode)
+void table::setwidth(struct table_mode *mode)
 {
-    int width = setwidth0(t, mode);
+    int width = this->setwidth0(mode);
     if (width < 0)
         return;
 #ifdef NOWRAP
-    if (t->tabattr[t->row][t->col] & HTT_NOWRAP)
-        check_minimum0(t, width);
+    if (this->tabattr[this->row][this->col] & HTT_NOWRAP)
+        check_minimum0(this, width);
 #endif /* NOWRAP */
     if (mode->pre_mode & (TBLM_NOBR | TBLM_PRE | TBLM_PRE_INT) &&
         mode->nobr_offset >= 0)
-        check_minimum0(t, width - mode->nobr_offset);
+        check_minimum0(this, width - mode->nobr_offset);
 }
 
 static void
@@ -2519,7 +2515,7 @@ feed_table_inline_tag(struct table *tbl,
     {
         check_minimum0(tbl, width);
         addcontentssize(tbl, width);
-        setwidth(tbl, mode);
+        tbl->setwidth(mode);
     }
 }
 
@@ -2527,7 +2523,7 @@ void table::feed_table_block_tag(const char *line, struct table_mode *mode, int 
 {
     if (mode->indent_level <= 0 && indent == -1)
         return;
-    setwidth(this, mode);
+    this->setwidth(mode);
     feed_table_inline_tag(this, line, mode, -1);
     clearcontentssize(this, mode);
     if (indent == 1)
@@ -2583,7 +2579,7 @@ table_close_anchor0(struct table *tbl, struct table_mode *mode)
     {
         check_minimum0(tbl, 1);
         addcontentssize(tbl, 1);
-        setwidth(tbl, mode);
+        tbl->setwidth(mode);
     }
     else if (tbl->linfo.prev_spaces > 0 &&
              tbl->tabcontentssize - 1 == mode->anchor_offset)
@@ -2737,7 +2733,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         return TAG_ACTION_N_TABLE;
     case HTML_TR:
         if (tbl->col >= 0 && tbl->tabcontentssize > 0)
-            setwidth(tbl, mode);
+            tbl->setwidth(mode);
         tbl->col = -1;
         tbl->row++;
         tbl->flag |= TBL_IN_ROW;
@@ -2784,7 +2780,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
     case HTML_TD:
         prev_col = tbl->col;
         if (tbl->col >= 0 && tbl->tabcontentssize > 0)
-            setwidth(tbl, mode);
+            tbl->setwidth(mode);
         if (tbl->row == -1)
         {
             /* for broken HTML... */
@@ -2986,13 +2982,13 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         begin_cell(tbl, mode);
         break;
     case HTML_N_TR:
-        setwidth(tbl, mode);
+        tbl->setwidth(mode);
         tbl->col = -1;
         tbl->flag &= ~(TBL_IN_ROW | TBL_IN_COL);
         return TAG_ACTION_NONE;
     case HTML_N_TH:
     case HTML_N_TD:
-        setwidth(tbl, mode);
+        tbl->setwidth(mode);
         tbl->flag &= ~TBL_IN_COL;
 #ifdef FEED_TABLE_DEBUG
         {
@@ -3321,7 +3317,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
                     tbl->fixed_width[tbl->col] = w;
             }
 #endif
-            setwidth0(tbl, mode);
+            tbl->setwidth0(mode);
             clearcontentssize(tbl, mode);
         }
         break;
@@ -3509,7 +3505,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
         /* count of number of spaces skipped in normal mode */
         i = skip_space(tbl, line, linfo, !(mode->pre_mode & TBLM_NOBR));
         addcontentssize(tbl, visible_length(line) - i);
-        setwidth(tbl, mode);
+        tbl->setwidth(mode);
         pushdata(tbl, tbl->row, tbl->col, line);
     }
     else if (mode->pre_mode & TBLM_PRE_INT)
@@ -3518,7 +3514,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
         if (mode->nobr_offset < 0)
             mode->nobr_offset = tbl->tabcontentssize;
         addcontentssize(tbl, maximum_visible_length(line, tbl->tabcontentssize));
-        setwidth(tbl, mode);
+        tbl->setwidth(mode);
         pushdata(tbl, tbl->row, tbl->col, line);
     }
     else
@@ -3557,7 +3553,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
             else
                 i = maximum_visible_length(p, tbl->tabcontentssize);
             addcontentssize(tbl, i);
-            setwidth(tbl, mode);
+            tbl->setwidth(mode);
             if (nl)
                 clearcontentssize(tbl, mode);
             pushdata(tbl, tbl->row, tbl->col, p);
