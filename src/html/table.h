@@ -120,6 +120,7 @@ struct table
     int sloppy_width;
 
     void pushTable(struct table *);
+    void check_row(int row);
 };
 
 #include "readbuffer.h"

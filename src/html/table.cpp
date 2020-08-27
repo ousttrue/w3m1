@@ -355,8 +355,7 @@ newTable()
     return t;
 }
 
-static void
-check_row(struct table *t, int row)
+void table::check_row(int row)
 {
     int i, r;
     GeneralList ***tabdata;
@@ -367,9 +366,9 @@ check_row(struct table *t, int row)
     Str *tridvalue;
 #endif /* ID_EXT */
 
-    if (row >= t->max_rowsize)
+    if (row >= this->max_rowsize)
     {
-        r = max(t->max_rowsize * 2, row + 1);
+        r = max(this->max_rowsize * 2, row + 1);
         tabdata = New_N(GeneralList **, r);
         tabattr = New_N(table_attr *, r);
         tabheight = NewAtom_N(short, r);
@@ -377,14 +376,14 @@ check_row(struct table *t, int row)
         tabidvalue = New_N(Str *, r);
         tridvalue = New_N(Str, r);
 #endif /* ID_EXT */
-        for (i = 0; i < t->max_rowsize; i++)
+        for (i = 0; i < this->max_rowsize; i++)
         {
-            tabdata[i] = t->tabdata[i];
-            tabattr[i] = t->tabattr[i];
-            tabheight[i] = t->tabheight[i];
+            tabdata[i] = this->tabdata[i];
+            tabattr[i] = this->tabattr[i];
+            tabheight[i] = this->tabheight[i];
 #ifdef ID_EXT
-            tabidvalue[i] = t->tabidvalue[i];
-            tridvalue[i] = t->tridvalue[i];
+            tabidvalue[i] = this->tabidvalue[i];
+            tridvalue[i] = this->tridvalue[i];
 #endif /* ID_EXT */
         }
         for (; i < r; i++)
@@ -397,29 +396,29 @@ check_row(struct table *t, int row)
             tridvalue[i] = NULL;
 #endif /* ID_EXT */
         }
-        t->tabdata = tabdata;
-        t->tabattr = tabattr;
-        t->tabheight = tabheight;
+        this->tabdata = tabdata;
+        this->tabattr = tabattr;
+        this->tabheight = tabheight;
 #ifdef ID_EXT
-        t->tabidvalue = tabidvalue;
-        t->tridvalue = tridvalue;
+        this->tabidvalue = tabidvalue;
+        this->tridvalue = tridvalue;
 #endif /* ID_EXT */
-        t->max_rowsize = r;
+        this->max_rowsize = r;
     }
 
-    if (t->tabdata[row] == NULL)
+    if (this->tabdata[row] == NULL)
     {
-        t->tabdata[row] = New_N(GeneralList *, MAXCOL);
-        t->tabattr[row] = NewAtom_N(table_attr, MAXCOL);
+        this->tabdata[row] = New_N(GeneralList *, MAXCOL);
+        this->tabattr[row] = NewAtom_N(table_attr, MAXCOL);
 #ifdef ID_EXT
-        t->tabidvalue[row] = New_N(Str, MAXCOL);
+        this->tabidvalue[row] = New_N(Str, MAXCOL);
 #endif /* ID_EXT */
         for (i = 0; i < MAXCOL; i++)
         {
-            t->tabdata[row][i] = NULL;
-            t->tabattr[row][i] = 0;
+            this->tabdata[row][i] = NULL;
+            this->tabattr[row][i] = 0;
 #ifdef ID_EXT
-            t->tabidvalue[row][i] = NULL;
+            this->tabidvalue[row][i] = NULL;
 #endif /* ID_EXT */
         }
     }
@@ -427,7 +426,7 @@ check_row(struct table *t, int row)
 
 void pushdata(struct table *t, int row, int col, const char *data)
 {
-    check_row(t, row);
+    t->check_row(row);
     if (t->tabdata[row][col] == NULL)
         t->tabdata[row][col] = newGeneralList();
 
@@ -653,7 +652,7 @@ void print_item(struct table *t, int row, int col, int width, Str buf)
 
     if (lbuf != NULL)
     {
-        check_row(t, row);
+        t->check_row(row);
         alignment = ALIGN_CENTER;
         if ((t->tabattr[row][col] & HTT_ALIGN) == HTT_LEFT)
             alignment = ALIGN_LEFT;
@@ -683,8 +682,8 @@ static void print_sep(struct table *t, int row, int type, int maxcol, Str buf, H
     int i, k, l, m;
 
     if (row >= 0)
-        check_row(t, row);
-    check_row(t, row + 1);
+        t->check_row(row);
+    t->check_row(row + 1);
     if ((type == T_TOP || type == T_BOTTOM) && t->border_mode == BORDER_THICK)
     {
         rule_mode = BORDER_THICK;
@@ -787,7 +786,7 @@ get_spec_cell_width(struct table *tbl, int row, int col)
     w = tbl->tabwidth[col];
     for (i = col + 1; i <= tbl->maxcol; i++)
     {
-        check_row(tbl, row);
+        tbl->check_row(row);
         if (tbl->tabattr[row][i] & HTT_X)
             w += tbl->tabwidth[i] + tbl->cellspacing;
         else
@@ -1798,7 +1797,7 @@ static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
 
         init_henv(&h_env, &obuf, tbl->tables[i].buf,
                   get_spec_cell_width(tbl, row, col), indent);
-        check_row(tbl, row);
+        tbl->check_row(row);
         if (h_env.limit > maxlimit)
             h_env.limit = maxlimit;
         if (t->total_width == 0)
@@ -1956,7 +1955,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     {
         for (j = 0; j <= t->maxrow; j++)
         {
-            check_row(t, j);
+            t->check_row(j);
             if (t->tabattr[j][i] & HTT_Y)
                 continue;
             do_refill(t, j, i, h_env->limit, seq);
@@ -2077,7 +2076,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 #endif /* ID_EXT */
             for (i = 0; i <= t->maxcol; i++)
             {
-                check_row(t, r);
+                t->check_row(r);
 #ifdef ID_EXT
                 if (t->tabidvalue[r][i] != NULL && h == 0)
                 {
@@ -2269,7 +2268,7 @@ check_minimum0(struct table *t, int min)
         return;
     if (t->tabwidth[t->col] < 0)
         return;
-    check_row(t, t->row);
+    t->check_row(t->row);
     w = table_colspan(t, t->row, t->col);
     min += t->indent;
     if (w == 1)
@@ -2301,7 +2300,7 @@ setwidth0(struct table *t, struct table_mode *mode)
         return -1;
     if (t->tabwidth[t->col] < 0)
         return -1;
-    check_row(t, t->row);
+    t->check_row(t->row);
     if (t->linfo.prev_spaces > 0)
         width -= t->linfo.prev_spaces;
     w = table_colspan(t, t->row, t->col);
@@ -2341,7 +2340,7 @@ addcontentssize(struct table *t, int width)
         return;
     if (t->tabwidth[t->col] < 0)
         return;
-    check_row(t, t->row);
+    t->check_row(t->row);
     t->tabcontentssize += width;
 }
 
@@ -2371,7 +2370,7 @@ begin_cell(struct table *t, struct table_mode *mode)
 
     if (t->suspended_data)
     {
-        check_row(t, t->row);
+        t->check_row(t->row);
         if (t->tabdata[t->row][t->col] == NULL)
             t->tabdata[t->row][t->col] = newGeneralList();
         appendGeneralList(t->tabdata[t->row][t->col],
@@ -2399,7 +2398,7 @@ void check_rowcol(struct table *tbl, struct table_mode *mode)
 
     for (;; tbl->row++)
     {
-        check_row(tbl, tbl->row);
+        tbl->check_row(tbl->row);
         for (; tbl->col < MAXCOL &&
                tbl->tabattr[tbl->row][tbl->col] & (HTT_X | HTT_Y);
              tbl->col++)
@@ -2806,7 +2805,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
                 tbl->maxrow = tbl->row;
         }
         tbl->col++;
-        check_row(tbl, tbl->row);
+        tbl->check_row(tbl->row);
         while (tbl->tabattr[tbl->row][tbl->col])
         {
             tbl->col++;
@@ -2838,7 +2837,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
                 rowspan = ATTR_ROWSPAN_MAX;
             }
             if ((tbl->row + rowspan) >= tbl->max_rowsize)
-                check_row(tbl, tbl->row + rowspan);
+                tbl->check_row(tbl->row + rowspan);
         }
         if (tag->TryGetAttributeValue(ATTR_COLSPAN, &colspan))
         {
@@ -2964,7 +2963,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         }
         for (i = 0; i < rowspan; i++)
         {
-            check_row(tbl, tbl->row + i);
+            tbl->check_row(tbl->row + i);
             for (j = 0; j < colspan; j++)
             {
 #if 0
@@ -3600,7 +3599,7 @@ void table::pushTable(table *tbl1)
     this->tables[this->ntable].row = row;
     this->tables[this->ntable].indent = this->indent;
     this->tables[this->ntable].buf = newTextLineList();
-    check_row(this, row);
+    this->check_row(row);
     if (col + 1 <= this->maxcol && this->tabattr[row][col + 1] & HTT_X)
         this->tables[this->ntable].cell = this->cell.icell;
     else
