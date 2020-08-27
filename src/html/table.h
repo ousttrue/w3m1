@@ -123,6 +123,7 @@ struct table
     void suspend_or_pushdata(const char *line);
     void print_item(int row, int col, int width, Str buf);
     void print_sep(int row, VerticalAlignTypes type, int maxcol, Str buf, int symbolWidth);
+    int table_rule_width(int symbolWidth) const;
 };
 
 struct table_mode

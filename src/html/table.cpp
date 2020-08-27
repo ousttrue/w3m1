@@ -871,12 +871,11 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
     }
 }
 
-static int
-table_rule_width(struct table *t, HtmlContext *seq)
+int table::table_rule_width(int symbolWidth) const
 {
-    if (t->border_mode == BORDER_NONE)
+    if (this->border_mode == BORDER_NONE)
         return 1;
-    return seq->SymbolWidth();
+    return symbolWidth;
 }
 
 static void
@@ -961,7 +960,7 @@ void check_maximum_width(struct table *t)
 
 #ifdef MATRIX
 static void
-set_integered_width(struct table *t, double *dwidth, short *iwidth, HtmlContext *seq)
+set_integered_width(struct table *t, double *dwidth, short *iwidth, int symbolWidth)
 {
     int i, j, k, n, bcol, ecol, step;
     short *indexarray;
@@ -969,7 +968,7 @@ set_integered_width(struct table *t, double *dwidth, short *iwidth, HtmlContext 
     double *mod;
     double sum = 0., x = 0.;
     struct table_cell *cell = &t->cell;
-    int rulewidth = table_rule_width(t, seq);
+    int rulewidth = t->table_rule_width(symbolWidth);
 
     indexarray = NewAtom_N(short, t->maxcol + 1);
     mod = NewAtom_N(double, t->maxcol + 1);
@@ -1179,13 +1178,13 @@ static int
 check_compressible_cell(struct table *t, MAT *minv,
                         double *newwidth, double *swidth, short *cwidth,
                         double totalwidth, double *Sxx,
-                        int icol, int icell, double sxx, int corr, HtmlContext *seq)
+                        int icol, int icell, double sxx, int corr, int symbolWidth)
 {
     struct table_cell *cell = &t->cell;
     int i, j, k, m, bcol, ecol, span;
     double delta, owidth;
     double dmax, dmin, sxy;
-    int rulewidth = table_rule_width(t, seq);
+    int rulewidth = t->table_rule_width(symbolWidth);
 
     if (sxx < 10.)
         return corr;
@@ -1330,7 +1329,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
 
     /* compress table */
     corr = check_compressible_cell(t, minv, newwidth, swidth,
-                                   cwidth, twidth, Sxx, -1, -1, stotal, corr, seq);
+                                   cwidth, twidth, Sxx, -1, -1, stotal, corr, seq->SymbolWidth());
     if (itr < MAX_ITERATION && corr > 0)
         return corr;
 
@@ -1340,7 +1339,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
         j = cell->index[k];
         corr = check_compressible_cell(t, minv, newwidth, swidth,
                                        cwidth, twidth, Sxx,
-                                       -1, j, Sxx[j], corr, seq);
+                                       -1, j, Sxx[j], corr, seq->SymbolWidth());
         if (itr < MAX_ITERATION && corr > 0)
             return corr;
     }
@@ -1350,7 +1349,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
     {
         corr = check_compressible_cell(t, minv, newwidth, swidth,
                                        cwidth, twidth, Sxx,
-                                       i, -1, m_entry(minv, i, i), corr, seq);
+                                       i, -1, m_entry(minv, i, i), corr, seq->SymbolWidth());
         if (itr < MAX_ITERATION && corr > 0)
             return corr;
     }
@@ -1688,7 +1687,7 @@ get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, Ht
     int i;
     int swidth;
     struct table_cell *cell = &t->cell;
-    int rulewidth = table_rule_width(t, seq);
+    int rulewidth = t->table_rule_width(seq->SymbolWidth());
 
     for (i = 0; i <= t->maxcol; i++)
         newwidth[i] = max(orgwidth[i], 0);
@@ -1796,7 +1795,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     if (t->sloppy_width > max_width)
         max_width = t->sloppy_width;
 
-    rulewidth = table_rule_width(t, seq);
+    rulewidth = t->table_rule_width(seq->SymbolWidth());
 
     max_width -= t->table_border_width(seq->SymbolWidth());
 
@@ -1853,7 +1852,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
             itr++;
 
         } while (check_table_width(t, newwidth->ve, minv, itr, seq));
-        set_integered_width(t, newwidth->ve, new_tabwidth, seq);
+        set_integered_width(t, newwidth->ve, new_tabwidth, seq->SymbolWidth());
         check_minimum_width(t, new_tabwidth);
         v_free(newwidth);
         px_free(pivot);
@@ -2157,12 +2156,12 @@ struct table *begin_table(BorderModes border, int spacing, int padding, int vspa
 void end_table(struct table *tbl, HtmlContext *seq)
 {
     struct table_cell *cell = &tbl->cell;
-    int i, rulewidth = table_rule_width(tbl, seq);
+    int rulewidth = tbl->table_rule_width(seq->SymbolWidth());
     if (rulewidth > 1)
     {
         if (tbl->total_width > 0)
             tbl->total_width = ceil_at_intervals(tbl->total_width, rulewidth);
-        for (i = 0; i <= tbl->maxcol; i++)
+        for (int i = 0; i <= tbl->maxcol; i++)
         {
             tbl->minimum_width[i] =
                 ceil_at_intervals(tbl->minimum_width[i], rulewidth);
@@ -2171,7 +2170,7 @@ void end_table(struct table *tbl, HtmlContext *seq)
                 tbl->fixed_width[i] =
                     ceil_at_intervals(tbl->fixed_width[i], rulewidth);
         }
-        for (i = 0; i <= cell->maxcell; i++)
+        for (int i = 0; i <= cell->maxcell; i++)
         {
             cell->minimum_width[i] =
                 ceil_at_intervals(cell->minimum_width[i], rulewidth);
