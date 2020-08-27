@@ -290,7 +290,7 @@ BufferPtr loadcmdout(const char *cmd, LoaderFunc loadproc, CharacterEncodingSche
 //     //         f->stream = newEncodedStream(f->stream, f->encoding);
 //     //     if (save2tmp(f, image_source) == 0)
 //     //     {
-//     //         b = newBuffer(INIT_BUFFER_WIDTH());
+//     //         b = Buffer::Create(INIT_BUFFER_WIDTH());
 //     //         b->sourcefile = image_source;
 //     //         b->real_type = t;
 //     //     }
@@ -364,7 +364,7 @@ BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEnco
     // }
     // TRAP_ON;
 
-    auto newBuf = newBuffer(url);
+    auto newBuf = Buffer::Create(url);
     // if (newBuf->sourcefile.empty() &&
     //     (uf->scheme != SCM_LOCAL || newBuf->mailcap))
     // {

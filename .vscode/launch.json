@@ -23,7 +23,7 @@
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 }
-            ]
+            ],
         },
         {
             "name": "defun.py",

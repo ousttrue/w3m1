@@ -584,7 +584,7 @@ BufferPtr doExternal(const URL &url, const InputStreamPtr &stream, std::string_v
     //     }
     //     if (mcap->flags & (MAILCAP_HTMLOUTPUT | MAILCAP_COPIOUSOUTPUT))
     //     {
-    //         buf = newBuffer(INIT_BUFFER_WIDTH());
+    //         buf = Buffer::Create(INIT_BUFFER_WIDTH());
     //         if (buf->sourcefile.size())
     //             src = Strnew(buf->sourcefile)->ptr;
     //         else

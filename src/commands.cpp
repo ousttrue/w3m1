@@ -1500,7 +1500,7 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
     }
 
     {
-        auto newBuf = newBuffer(buf->currentURL);
+        auto newBuf = Buffer::Create(buf->currentURL);
         if (is_html_type(buf->type.c_str()))
         {
             newBuf->type = "text/plain";

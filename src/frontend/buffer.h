@@ -89,6 +89,8 @@ private:
     }
 
 public:
+    static std::shared_ptr<Buffer> Create(const URL &url);
+
     DisplayMode Update()
     {
         auto redraw = m_redraw;
@@ -300,7 +302,7 @@ public:
 private:
     using SearchFunc = SearchResultTypes (*)(const std::shared_ptr<struct Buffer> &buf, std::string_view str);
     SearchFunc searchRoutine = nullptr;
-    std::string SearchString;    
+    std::string SearchString;
     SearchResultTypes srchcore(std::string_view str, SearchFunc func, int prec_num);
     int dispincsrch(int ch, Str buf, Lineprop *prop, int prec_num);
 
@@ -379,10 +381,6 @@ public:
     void DrawLine(LinePtr l, int i);
     int DrawLineRegion(LinePtr l, int i, int bpos, int epos);
 };
-
-BufferPtr newBuffer(const URL &url);
-
-BufferPtr nullBuffer(void);
 
 void set_buffer_environ(const BufferPtr &buf);
 

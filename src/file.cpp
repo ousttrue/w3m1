@@ -571,7 +571,7 @@ gopher_end:
 
 BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
 {
-    auto newBuf = newBuffer(url);
+    auto newBuf = Buffer::Create(url);
     ImageManager::Instance().loadImage(newBuf, IMG_FLAG_STOP);
 
     Image image;
@@ -603,7 +603,7 @@ BufferPtr loadImageBuffer(const URL &url, const InputStreamPtr &stream)
 
 // image_buffer:
     // if (newBuf == NULL)
-    //     newBuf = newBuffer(INIT_BUFFER_WIDTH());
+    //     newBuf = Buffer::Create(INIT_BUFFER_WIDTH());
     // cache->loaded |= IMG_FLAG_DONT_REMOVE;
     // if (newBuf->sourcefile.empty() && uf->scheme != SCM_LOCAL)
     //     newBuf->sourcefile = cache->file;
@@ -705,7 +705,7 @@ getpipe(char *cmd)
     if (f == NULL)
         return NULL;
 
-    auto buf = newBuffer({});
+    auto buf = Buffer::Create({});
     buf->pagerSource = newFileStream(f, pclose);
     buf->filename = cmd;
     buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
@@ -723,7 +723,7 @@ getpipe(char *cmd)
  */
 BufferPtr openPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme content_charset)
 {
-    auto buf = newBuffer({});
+    auto buf = Buffer::Create({});
     buf->pagerSource = stream;
     buf->buffername = getenv("MAN_PN");
     if (buf->buffername.empty())
@@ -751,7 +751,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
 
     // if (w3mApp::Instance().SearchHeader)
     // {
-    //     t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //     t_buf = Buffer::Create(INIT_BUFFER_WIDTH());
     //     readHeader(uf, t_buf, true, NULL);
     //     t = checkContentType(t_buf);
     //     if (t.empty())

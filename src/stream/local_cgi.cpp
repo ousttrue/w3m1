@@ -575,7 +575,7 @@ ContentStream LocalCGI::GetStream(const URL &url, const URL *base, HttpReferrerP
     // {
     //     searchHeader = w3mApp::Instance().SearchHeader = false;
     //     if (t_buf == NULL)
-    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //         t_buf = Buffer::Create(INIT_BUFFER_WIDTH());
     //     readHeader(&f, t_buf, searchHeader_through, &pu);
     //     if (f.is_cgi && (p = checkHeader(t_buf, "Location:")) != NULL &&
     //         checkRedirection(&pu))
@@ -586,7 +586,7 @@ ContentStream LocalCGI::GetStream(const URL &url, const URL *base, HttpReferrerP
     //         f.Close();
     //         add_auth_cookie_flag = 0;
     //         *current = pu;
-    //         t_buf = newBuffer(INIT_BUFFER_WIDTH());
+    //         t_buf = Buffer::Create(INIT_BUFFER_WIDTH());
     //         t_buf->bufferprop |= BP_REDIRECTED;
     //         status = HTST_NORMAL;
     //         goto load_doc;

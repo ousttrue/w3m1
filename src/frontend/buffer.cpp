@@ -25,7 +25,6 @@
 #include "html/html.h"
 #include "html/form.h"
 
-
 #include "stream/input_stream.h"
 #include <iostream>
 
@@ -234,7 +233,7 @@ int Buffer::ReadBufferCache()
 
 BufferPtr Buffer::Copy()
 {
-    auto copy = newBuffer(currentURL);
+    auto copy = Buffer::Create(currentURL);
     copy->CopyFrom(shared_from_this());
     return copy;
 }
@@ -367,27 +366,12 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
     }
 }
 
-/*
- * Buffer creation
- */
-BufferPtr
-newBuffer(const URL &url)
+std::shared_ptr<Buffer> Buffer::Create(const URL &url)
 {
     auto n = std::make_shared<Buffer>();
     n->width = w3mApp::Instance().INIT_BUFFER_WIDTH();
     n->currentURL = url;
     return n;
-}
-
-/*
- * Create null buffer
- */
-BufferPtr
-nullBuffer(void)
-{
-    auto b = newBuffer({});
-    b->buffername = "*Null*";
-    return b;
 }
 
 LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
