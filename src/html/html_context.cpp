@@ -3933,8 +3933,8 @@ void HtmlContext::do_refill(struct table *tbl, int row, int col, int maxlimit)
     tbl->tabdata[row][col] = newGeneralList();
 
     html_feed_environ h_env(&obuf,
-              (TextLineList *)tbl->tabdata[row][col],
-              tbl->get_spec_cell_width(row, col));
+                            (TextLineList *)tbl->tabdata[row][col],
+                            tbl->get_spec_cell_width(row, col));
     obuf.flag |= RB_INTABLE;
     if (h_env.limit > maxlimit)
         h_env.limit = maxlimit;
@@ -4038,6 +4038,798 @@ void HtmlContext::do_refill(struct table *tbl, int row, int col, int maxlimit)
     }
 }
 
+#define CASE_TABLE_TAG    \
+    case HTML_TABLE:      \
+    case HTML_N_TABLE:    \
+    case HTML_TR:         \
+    case HTML_N_TR:       \
+    case HTML_TD:         \
+    case HTML_N_TD:       \
+    case HTML_TH:         \
+    case HTML_N_TH:       \
+    case HTML_THEAD:      \
+    case HTML_N_THEAD:    \
+    case HTML_TBODY:      \
+    case HTML_N_TBODY:    \
+    case HTML_TFOOT:      \
+    case HTML_N_TFOOT:    \
+    case HTML_COLGROUP:   \
+    case HTML_N_COLGROUP: \
+    case HTML_COL
+
+#define ATTR_ROWSPAN_MAX 32766
+
+static void
+table_close_select(struct table *tbl, struct table_mode *mode, int width, HtmlContext *seq)
+{
+    Str tmp = seq->process_n_select();
+    mode->pre_mode &= ~TBLM_INSELECT;
+    mode->end_tag = HTML_UNKNOWN;
+    seq->feed_table1(tbl, tmp, mode, width);
+}
+
+static void
+table_close_textarea(struct table *tbl, struct table_mode *mode, int width, HtmlContext *seq)
+{
+    Str tmp = seq->process_n_textarea();
+    mode->pre_mode &= ~TBLM_INTXTA;
+    mode->end_tag = HTML_UNKNOWN;
+    seq->feed_table1(tbl, tmp, mode, width);
+}
+
+TagActions HtmlContext::feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag)
+{
+    int cmd;
+#ifdef ID_EXT
+    char *p;
+#endif
+    struct table_cell *cell = &tbl->cell;
+    int colspan, rowspan;
+    int col, prev_col;
+    int i, j, k, v, v0, w, id;
+    Str tok, tmp, anchor;
+    TableAttributes align, valign;
+
+    cmd = tag->tagid;
+
+    if (mode->pre_mode & TBLM_PLAIN)
+    {
+        if (mode->end_tag == cmd)
+        {
+            mode->pre_mode &= ~TBLM_PLAIN;
+            mode->end_tag = HTML_UNKNOWN;
+            tbl->feed_table_block_tag(line, mode, 0, cmd);
+            return TAG_ACTION_NONE;
+        }
+        return TAG_ACTION_PLAIN;
+    }
+    if (mode->pre_mode & TBLM_INTXTA)
+    {
+        switch (cmd)
+        {
+        CASE_TABLE_TAG:
+        case HTML_N_TEXTAREA:
+            table_close_textarea(tbl, mode, width, this);
+            if (cmd == HTML_N_TEXTAREA)
+                return TAG_ACTION_NONE;
+            break;
+        default:
+            return TAG_ACTION_FEED;
+        }
+    }
+    if (mode->pre_mode & TBLM_SCRIPT)
+    {
+        if (mode->end_tag == cmd)
+        {
+            mode->pre_mode &= ~TBLM_SCRIPT;
+            mode->end_tag = HTML_UNKNOWN;
+            return TAG_ACTION_NONE;
+        }
+        return TAG_ACTION_PLAIN;
+    }
+    if (mode->pre_mode & TBLM_STYLE)
+    {
+        if (mode->end_tag == cmd)
+        {
+            mode->pre_mode &= ~TBLM_STYLE;
+            mode->end_tag = HTML_UNKNOWN;
+            return TAG_ACTION_NONE;
+        }
+        return TAG_ACTION_PLAIN;
+    }
+    /* failsafe: a tag other than <option></option>and </select> in *
+     * <select> environment is regarded as the end of <select>. */
+    if (mode->pre_mode & TBLM_INSELECT)
+    {
+        switch (cmd)
+        {
+        CASE_TABLE_TAG:
+        case HTML_N_FORM:
+        case HTML_N_SELECT: /* mode->end_tag */
+            table_close_select(tbl, mode, width, this);
+            if (cmd == HTML_N_SELECT)
+                return TAG_ACTION_NONE;
+            break;
+        default:
+            return TAG_ACTION_FEED;
+        }
+    }
+    if (mode->caption)
+    {
+        switch (cmd)
+        {
+        CASE_TABLE_TAG:
+        case HTML_N_CAPTION:
+            mode->caption = 0;
+            if (cmd == HTML_N_CAPTION)
+                return TAG_ACTION_NONE;
+            break;
+        default:
+            return TAG_ACTION_FEED;
+        }
+    }
+
+    if (mode->pre_mode & TBLM_PRE)
+    {
+        switch (cmd)
+        {
+        case HTML_NOBR:
+        case HTML_N_NOBR:
+        case HTML_PRE_INT:
+        case HTML_N_PRE_INT:
+            return TAG_ACTION_NONE;
+        }
+    }
+
+    switch (cmd)
+    {
+    case HTML_TABLE:
+        tbl->check_rowcol(mode);
+        return TAG_ACTION_TABLE;
+    case HTML_N_TABLE:
+        if (tbl->suspended_data)
+            tbl->check_rowcol(mode);
+        return TAG_ACTION_N_TABLE;
+    case HTML_TR:
+        if (tbl->col >= 0 && tbl->tabcontentssize > 0)
+            tbl->setwidth(mode);
+        tbl->col = -1;
+        tbl->row++;
+        tbl->flag |= TBL_IN_ROW;
+        tbl->flag &= ~TBL_IN_COL;
+        align = {};
+        valign = {};
+        if (tag->TryGetAttributeValue(ATTR_ALIGN, &i))
+        {
+            switch (i)
+            {
+            case ALIGN_LEFT:
+                align = (HTT_LEFT | HTT_TRSET);
+                break;
+            case ALIGN_RIGHT:
+                align = (HTT_RIGHT | HTT_TRSET);
+                break;
+            case ALIGN_CENTER:
+                align = (HTT_CENTER | HTT_TRSET);
+                break;
+            }
+        }
+        if (tag->TryGetAttributeValue(ATTR_VALIGN, &i))
+        {
+            switch (i)
+            {
+            case VALIGN_TOP:
+                valign = (HTT_TOP | HTT_VTRSET);
+                break;
+            case VALIGN_MIDDLE:
+                valign = (HTT_MIDDLE | HTT_VTRSET);
+                break;
+            case VALIGN_BOTTOM:
+                valign = (HTT_BOTTOM | HTT_VTRSET);
+                break;
+            }
+        }
+#ifdef ID_EXT
+        if (tag->TryGetAttributeValue(ATTR_ID, &p))
+            tbl->tridvalue[tbl->row] = Strnew(p);
+#endif /* ID_EXT */
+        tbl->trattr = align | valign;
+        break;
+    case HTML_TH:
+    case HTML_TD:
+        prev_col = tbl->col;
+        if (tbl->col >= 0 && tbl->tabcontentssize > 0)
+            tbl->setwidth(mode);
+        if (tbl->row == -1)
+        {
+            /* for broken HTML... */
+            tbl->row = -1;
+            tbl->col = -1;
+            tbl->maxrow = tbl->row;
+        }
+        if (tbl->col == -1)
+        {
+            if (!(tbl->flag & TBL_IN_ROW))
+            {
+                tbl->row++;
+                tbl->flag |= TBL_IN_ROW;
+            }
+            if (tbl->row > tbl->maxrow)
+                tbl->maxrow = tbl->row;
+        }
+        tbl->col++;
+        tbl->check_row(tbl->row);
+        while (tbl->tabattr[tbl->row][tbl->col])
+        {
+            tbl->col++;
+        }
+        if (tbl->col > MAXCOL - 1)
+        {
+            tbl->col = prev_col;
+            return TAG_ACTION_NONE;
+        }
+        if (tbl->col > tbl->maxcol)
+        {
+            tbl->maxcol = tbl->col;
+        }
+        colspan = rowspan = 1;
+        if (tbl->trattr & HTT_TRSET)
+            align = (tbl->trattr & HTT_ALIGN);
+        else if (cmd == HTML_TH)
+            align = HTT_CENTER;
+        else
+            align = HTT_LEFT;
+        if (tbl->trattr & HTT_VTRSET)
+            valign = (tbl->trattr & HTT_VALIGN);
+        else
+            valign = HTT_MIDDLE;
+        if (tag->TryGetAttributeValue(ATTR_ROWSPAN, &rowspan))
+        {
+            if (rowspan > ATTR_ROWSPAN_MAX)
+            {
+                rowspan = ATTR_ROWSPAN_MAX;
+            }
+            if ((tbl->row + rowspan) >= tbl->max_rowsize)
+                tbl->check_row(tbl->row + rowspan);
+        }
+        if (tag->TryGetAttributeValue(ATTR_COLSPAN, &colspan))
+        {
+            if ((tbl->col + colspan) >= MAXCOL)
+            {
+                /* Can't expand column */
+                colspan = MAXCOL - tbl->col;
+            }
+        }
+        if (tag->TryGetAttributeValue(ATTR_ALIGN, &i))
+        {
+            switch (i)
+            {
+            case ALIGN_LEFT:
+                align = HTT_LEFT;
+                break;
+            case ALIGN_RIGHT:
+                align = HTT_RIGHT;
+                break;
+            case ALIGN_CENTER:
+                align = HTT_CENTER;
+                break;
+            }
+        }
+        if (tag->TryGetAttributeValue(ATTR_VALIGN, &i))
+        {
+            switch (i)
+            {
+            case VALIGN_TOP:
+                valign = HTT_TOP;
+                break;
+            case VALIGN_MIDDLE:
+                valign = HTT_MIDDLE;
+                break;
+            case VALIGN_BOTTOM:
+                valign = HTT_BOTTOM;
+                break;
+            }
+        }
+#ifdef NOWRAP
+        if (tag->HasAttribute(ATTR_NOWRAP))
+            tbl->tabattr[tbl->row][tbl->col] |= HTT_NOWRAP;
+#endif /* NOWRAP */
+        v = 0;
+        if (tag->TryGetAttributeValue(ATTR_WIDTH, &v))
+        {
+#ifdef TABLE_EXPAND
+            if (v > 0)
+            {
+                if (tbl->real_width > 0)
+                    v = -(v * 100) / (tbl->real_width * ImageManager::Instance().pixel_per_char);
+                else
+                    v = (int)(v / ImageManager::Instance().pixel_per_char);
+            }
+#else
+            v = RELATIVE_WIDTH(v);
+#endif /* not TABLE_EXPAND */
+        }
+#ifdef ID_EXT
+        if (tag->TryGetAttributeValue(ATTR_ID, &p))
+            tbl->tabidvalue[tbl->row][tbl->col] = Strnew(p);
+#endif /* ID_EXT */
+#ifdef NOWRAP
+        if (v != 0)
+        {
+            /* NOWRAP and WIDTH= conflicts each other */
+            tbl->tabattr[tbl->row][tbl->col] &= ~HTT_NOWRAP;
+        }
+#endif /* NOWRAP */
+        tbl->tabattr[tbl->row][tbl->col] &= ~(HTT_ALIGN | HTT_VALIGN);
+        tbl->tabattr[tbl->row][tbl->col] |= (align | valign);
+        if (colspan > 1)
+        {
+            col = tbl->col;
+
+            cell->icell = cell->maxcell + 1;
+            k = bsearch_2short(colspan, cell->colspan, col, cell->col, MAXCOL,
+                               cell->index, cell->icell);
+            if (k <= cell->maxcell)
+            {
+                i = cell->index[k];
+                if (cell->col[i] == col && cell->colspan[i] == colspan)
+                    cell->icell = i;
+            }
+            if (cell->icell > cell->maxcell && cell->icell < MAXCELL)
+            {
+                cell->maxcell++;
+                cell->col[cell->maxcell] = col;
+                cell->colspan[cell->maxcell] = colspan;
+                cell->width[cell->maxcell] = 0;
+                cell->minimum_width[cell->maxcell] = 0;
+                cell->fixed_width[cell->maxcell] = 0;
+                if (cell->maxcell > k)
+                {
+                    int ii;
+                    for (ii = cell->maxcell; ii > k; ii--)
+                        cell->index[ii] = cell->index[ii - 1];
+                }
+                cell->index[k] = cell->maxcell;
+            }
+            if (cell->icell > cell->maxcell)
+                cell->icell = -1;
+        }
+        if (v != 0)
+        {
+            if (colspan == 1)
+            {
+                v0 = tbl->fixed_width[tbl->col];
+                if (v0 == 0 || (v0 > 0 && v > v0) || (v0 < 0 && v < v0))
+                {
+#ifdef FEED_TABLE_DEBUG
+                    fprintf(stderr, "width(%d) = %d\n", tbl->col, v);
+#endif /* TABLE_DEBUG */
+                    tbl->fixed_width[tbl->col] = v;
+                }
+            }
+            else if (cell->icell >= 0)
+            {
+                v0 = cell->fixed_width[cell->icell];
+                if (v0 == 0 || (v0 > 0 && v > v0) || (v0 < 0 && v < v0))
+                    cell->fixed_width[cell->icell] = v;
+            }
+        }
+        for (i = 0; i < rowspan; i++)
+        {
+            tbl->check_row(tbl->row + i);
+            for (j = 0; j < colspan; j++)
+            {
+#if 0
+		tbl->tabattr[tbl->row + i][tbl->col + j] &= ~(HTT_X | HTT_Y);
+#endif
+                if (!(tbl->tabattr[tbl->row + i][tbl->col + j] &
+                      (HTT_X | HTT_Y)))
+                {
+                    tbl->tabattr[tbl->row + i][tbl->col + j] |=
+                        ((i > 0) ? HTT_Y : HTT_NONE) | ((j > 0) ? HTT_X : HTT_NONE);
+                }
+                if (tbl->col + j > tbl->maxcol)
+                {
+                    tbl->maxcol = tbl->col + j;
+                }
+            }
+            if (tbl->row + i > tbl->maxrow)
+            {
+                tbl->maxrow = tbl->row + i;
+            }
+        }
+        tbl->begin_cell(mode);
+        break;
+    case HTML_N_TR:
+        tbl->setwidth(mode);
+        tbl->col = -1;
+        tbl->flag &= ~(TBL_IN_ROW | TBL_IN_COL);
+        return TAG_ACTION_NONE;
+    case HTML_N_TH:
+    case HTML_N_TD:
+        tbl->setwidth(mode);
+        tbl->flag &= ~TBL_IN_COL;
+#ifdef FEED_TABLE_DEBUG
+        {
+            TextListItem *it;
+            int i = tbl->col, j = tbl->row;
+            fprintf(stderr, "(a) row,col: %d, %d\n", j, i);
+            if (tbl->tabdata[j] && tbl->tabdata[j][i])
+            {
+                for (it = ((TextList *)tbl->tabdata[j][i])->first;
+                     it; it = it->next)
+                    fprintf(stderr, "  [%s] \n", it->ptr);
+            }
+        }
+#endif
+        return TAG_ACTION_NONE;
+    case HTML_P:
+    case HTML_BR:
+    case HTML_CENTER:
+    case HTML_N_CENTER:
+    case HTML_DIV:
+    case HTML_N_DIV:
+        if (!(tbl->flag & TBL_IN_ROW))
+            break;
+    case HTML_DT:
+    case HTML_DD:
+    case HTML_H:
+    case HTML_N_H:
+    case HTML_LI:
+    case HTML_PRE:
+    case HTML_N_PRE:
+    case HTML_HR:
+    case HTML_LISTING:
+    case HTML_XMP:
+    case HTML_PLAINTEXT:
+    case HTML_PRE_PLAIN:
+    case HTML_N_PRE_PLAIN:
+        tbl->feed_table_block_tag(line, mode, 0, cmd);
+        switch (cmd)
+        {
+        case HTML_PRE:
+        case HTML_PRE_PLAIN:
+            mode->pre_mode |= TBLM_PRE;
+            break;
+        case HTML_N_PRE:
+        case HTML_N_PRE_PLAIN:
+            mode->pre_mode &= ~TBLM_PRE;
+            break;
+        case HTML_LISTING:
+            mode->pre_mode |= TBLM_PLAIN;
+            mode->end_tag = HTML_N_LISTING;
+            break;
+        case HTML_XMP:
+            mode->pre_mode |= TBLM_PLAIN;
+            mode->end_tag = HTML_N_XMP;
+            break;
+        case HTML_PLAINTEXT:
+            mode->pre_mode |= TBLM_PLAIN;
+            mode->end_tag = MAX_HTMLTAG;
+            break;
+        }
+        break;
+    case HTML_DL:
+    case HTML_BLQ:
+    case HTML_OL:
+    case HTML_UL:
+        tbl->feed_table_block_tag(line, mode, 1, cmd);
+        break;
+    case HTML_N_DL:
+    case HTML_N_BLQ:
+    case HTML_N_OL:
+    case HTML_N_UL:
+        tbl->feed_table_block_tag(line, mode, -1, cmd);
+        break;
+    case HTML_NOBR:
+    case HTML_WBR:
+        if (!(tbl->flag & TBL_IN_ROW))
+            break;
+    case HTML_PRE_INT:
+        tbl->feed_table_inline_tag(line, mode, -1);
+        switch (cmd)
+        {
+        case HTML_NOBR:
+            mode->nobr_level++;
+            if (mode->pre_mode & TBLM_NOBR)
+                return TAG_ACTION_NONE;
+            mode->pre_mode |= TBLM_NOBR;
+            break;
+        case HTML_PRE_INT:
+            if (mode->pre_mode & TBLM_PRE_INT)
+                return TAG_ACTION_NONE;
+            mode->pre_mode |= TBLM_PRE_INT;
+            tbl->linfo.prev_spaces = 0;
+            break;
+        }
+        mode->nobr_offset = -1;
+        if (tbl->linfo.length > 0)
+        {
+            tbl->check_minimum0(tbl->linfo.length);
+            tbl->linfo.length = 0;
+        }
+        break;
+    case HTML_N_NOBR:
+        if (!(tbl->flag & TBL_IN_ROW))
+            break;
+        tbl->feed_table_inline_tag(line, mode, -1);
+        if (mode->nobr_level > 0)
+            mode->nobr_level--;
+        if (mode->nobr_level == 0)
+            mode->pre_mode &= ~TBLM_NOBR;
+        break;
+    case HTML_N_PRE_INT:
+        tbl->feed_table_inline_tag(line, mode, -1);
+        mode->pre_mode &= ~TBLM_PRE_INT;
+        break;
+    case HTML_IMG:
+        tbl->check_rowcol(mode);
+        w = tbl->fixed_width[tbl->col];
+        if (w < 0)
+        {
+            if (tbl->total_width > 0)
+                w = -tbl->total_width * w / 100;
+            else if (width > 0)
+                w = -width * w / 100;
+            else
+                w = 0;
+        }
+        else if (w == 0)
+        {
+            if (tbl->total_width > 0)
+                w = tbl->total_width;
+            else if (width > 0)
+                w = width;
+        }
+        tok = this->process_img(tag, w);
+        this->feed_table1(tbl, tok, mode, width);
+        break;
+    case HTML_FORM:
+        tbl->feed_table_block_tag("", mode, 0, cmd);
+        tmp = this->FormOpen(tag);
+        if (tmp)
+            this->feed_table1(tbl, tmp, mode, width);
+        break;
+    case HTML_N_FORM:
+        tbl->feed_table_block_tag("", mode, 0, cmd);
+        this->FormClose();
+        break;
+    case HTML_INPUT:
+        tmp = this->process_input(tag);
+        this->feed_table1(tbl, tmp, mode, width);
+        break;
+    case HTML_SELECT:
+        tmp = this->process_select(tag);
+        if (tmp)
+            this->feed_table1(tbl, tmp, mode, width);
+        mode->pre_mode |= TBLM_INSELECT;
+        mode->end_tag = HTML_N_SELECT;
+        break;
+    case HTML_N_SELECT:
+    case HTML_OPTION:
+        /* nothing */
+        break;
+    case HTML_TEXTAREA:
+        w = 0;
+        tbl->check_rowcol(mode);
+        if (tbl->col + 1 <= tbl->maxcol &&
+            tbl->tabattr[tbl->row][tbl->col + 1] & HTT_X)
+        {
+            if (cell->icell >= 0 && cell->fixed_width[cell->icell] > 0)
+                w = cell->fixed_width[cell->icell];
+        }
+        else
+        {
+            if (tbl->fixed_width[tbl->col] > 0)
+                w = tbl->fixed_width[tbl->col];
+        }
+        tmp = this->process_textarea(tag, w);
+        if (tmp)
+            this->feed_table1(tbl, tmp, mode, width);
+        mode->pre_mode |= TBLM_INTXTA;
+        mode->end_tag = HTML_N_TEXTAREA;
+        break;
+    case HTML_A:
+        tbl->table_close_anchor0(mode);
+        anchor = NULL;
+        i = 0;
+        tag->TryGetAttributeValue(ATTR_HREF, &anchor);
+        tag->TryGetAttributeValue(ATTR_HSEQ, &i);
+        if (anchor)
+        {
+            tbl->check_rowcol(mode);
+            if (i == 0)
+            {
+                Str tmp = this->process_anchor(tag, line);
+                if (w3mApp::Instance().displayLinkNumber)
+                {
+                    Str t = this->GetLinkNumberStr(-1);
+                    tbl->feed_table_inline_tag(NULL, mode, t->Size());
+                    tmp->Push(t);
+                }
+                tbl->pushdata(tbl->row, tbl->col, tmp->ptr);
+            }
+            else
+                tbl->pushdata(tbl->row, tbl->col, line);
+            if (i >= 0)
+            {
+                mode->pre_mode |= TBLM_ANCHOR;
+                mode->anchor_offset = tbl->tabcontentssize;
+            }
+        }
+        else
+            tbl->suspend_or_pushdata(line);
+        break;
+    case HTML_DEL:
+        switch (w3mApp::Instance().displayInsDel)
+        {
+        case DISPLAY_INS_DEL_SIMPLE:
+            mode->pre_mode |= TBLM_DEL;
+            break;
+        case DISPLAY_INS_DEL_NORMAL:
+            tbl->feed_table_inline_tag(line, mode, 5); /* [DEL: */
+            break;
+        case DISPLAY_INS_DEL_FONTIFY:
+            tbl->feed_table_inline_tag(line, mode, -1);
+            break;
+        }
+        break;
+    case HTML_N_DEL:
+        switch (w3mApp::Instance().displayInsDel)
+        {
+        case DISPLAY_INS_DEL_SIMPLE:
+            mode->pre_mode &= ~TBLM_DEL;
+            break;
+        case DISPLAY_INS_DEL_NORMAL:
+            tbl->feed_table_inline_tag(line, mode, 5); /* :DEL] */
+            break;
+        case DISPLAY_INS_DEL_FONTIFY:
+            tbl->feed_table_inline_tag(line, mode, -1);
+            break;
+        }
+        break;
+    case HTML_S:
+        switch (w3mApp::Instance().displayInsDel)
+        {
+        case DISPLAY_INS_DEL_SIMPLE:
+            mode->pre_mode |= TBLM_S;
+            break;
+        case DISPLAY_INS_DEL_NORMAL:
+            tbl->feed_table_inline_tag(line, mode, 3); /* [S: */
+            break;
+        case DISPLAY_INS_DEL_FONTIFY:
+            tbl->feed_table_inline_tag(line, mode, -1);
+            break;
+        }
+        break;
+    case HTML_N_S:
+        switch (w3mApp::Instance().displayInsDel)
+        {
+        case DISPLAY_INS_DEL_SIMPLE:
+            mode->pre_mode &= ~TBLM_S;
+            break;
+        case DISPLAY_INS_DEL_NORMAL:
+            tbl->feed_table_inline_tag(line, mode, 3); /* :S] */
+            break;
+        case DISPLAY_INS_DEL_FONTIFY:
+            tbl->feed_table_inline_tag(line, mode, -1);
+            break;
+        }
+        break;
+    case HTML_INS:
+    case HTML_N_INS:
+        switch (w3mApp::Instance().displayInsDel)
+        {
+        case DISPLAY_INS_DEL_SIMPLE:
+            break;
+        case DISPLAY_INS_DEL_NORMAL:
+            tbl->feed_table_inline_tag(line, mode, 5); /* [INS:, :INS] */
+            break;
+        case DISPLAY_INS_DEL_FONTIFY:
+            tbl->feed_table_inline_tag(line, mode, -1);
+            break;
+        }
+        break;
+    case HTML_SUP:
+    case HTML_SUB:
+    case HTML_N_SUB:
+        if (!(mode->pre_mode & (TBLM_DEL | TBLM_S)))
+            tbl->feed_table_inline_tag(line, mode, 1); /* ^, [, ] */
+        break;
+    case HTML_N_SUP:
+        break;
+    case HTML_TABLE_ALT:
+        id = -1;
+        w = 0;
+        tag->TryGetAttributeValue(ATTR_TID, &id);
+        if (id >= 0 && id < tbl->ntable)
+        {
+            struct table *tbl1 = tbl->tables[id].ptr;
+            tbl->feed_table_block_tag(line, mode, 0, cmd);
+            tbl->addcontentssize(tbl1->maximum_table_width());
+            tbl->check_minimum0(tbl1->sloppy_width);
+#ifdef TABLE_EXPAND
+            w = tbl1->total_width;
+            v = 0;
+            colspan = table_colspan(tbl, tbl->row, tbl->col);
+            if (colspan > 1)
+            {
+                if (cell->icell >= 0)
+                    v = cell->fixed_width[cell->icell];
+            }
+            else
+                v = tbl->fixed_width[tbl->col];
+            if (v < 0 && tbl->real_width > 0 && tbl1->real_width > 0)
+                w = -(tbl1->real_width * 100) / tbl->real_width;
+            else
+                w = tbl1->real_width;
+            if (w > 0)
+                tbl->check_minimum0(w);
+            else if (w < 0 && v < w)
+            {
+                if (colspan > 1)
+                {
+                    if (cell->icell >= 0)
+                        cell->fixed_width[cell->icell] = w;
+                }
+                else
+                    tbl->fixed_width[tbl->col] = w;
+            }
+#endif
+            tbl->setwidth0(mode);
+            tbl->clearcontentssize(mode);
+        }
+        break;
+    case HTML_CAPTION:
+        mode->caption = 1;
+        break;
+    case HTML_N_CAPTION:
+    case HTML_THEAD:
+    case HTML_N_THEAD:
+    case HTML_TBODY:
+    case HTML_N_TBODY:
+    case HTML_TFOOT:
+    case HTML_N_TFOOT:
+    case HTML_COLGROUP:
+    case HTML_N_COLGROUP:
+    case HTML_COL:
+        break;
+    case HTML_SCRIPT:
+        mode->pre_mode |= TBLM_SCRIPT;
+        mode->end_tag = HTML_N_SCRIPT;
+        break;
+    case HTML_STYLE:
+        mode->pre_mode |= TBLM_STYLE;
+        mode->end_tag = HTML_N_STYLE;
+        break;
+    case HTML_N_A:
+        tbl->table_close_anchor0(mode);
+    case HTML_FONT:
+    case HTML_N_FONT:
+    case HTML_NOP:
+        tbl->suspend_or_pushdata(line);
+        break;
+    case HTML_INTERNAL:
+    case HTML_N_INTERNAL:
+    case HTML_FORM_INT:
+    case HTML_N_FORM_INT:
+    case HTML_INPUT_ALT:
+    case HTML_N_INPUT_ALT:
+    case HTML_SELECT_INT:
+    case HTML_N_SELECT_INT:
+    case HTML_OPTION_INT:
+    case HTML_TEXTAREA_INT:
+    case HTML_N_TEXTAREA_INT:
+    case HTML_IMG_ALT:
+    case HTML_SYMBOL:
+    case HTML_N_SYMBOL:
+    default:
+        /* unknown tag: put into table */
+        return TAG_ACTION_FEED;
+    }
+    return TAG_ACTION_NONE;
+}
+
 int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal)
 {
     int i;
@@ -4051,7 +4843,7 @@ int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mo
         tag = parse_tag(&p, internal);
         if (tag)
         {
-            switch (feed_table_tag(tbl, line, mode, width, tag, this))
+            switch (this->feed_table_tag(tbl, line, mode, width, tag))
             {
             case TAG_ACTION_NONE:
                 return -1;
@@ -4226,4 +5018,16 @@ int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mo
         }
     }
     return -1;
+}
+
+void HtmlContext::feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width)
+{
+    if (!tok)
+        return;
+
+    auto tokbuf = Strnew();
+    auto status = R_ST_NORMAL;
+    auto line = tok->ptr;
+    while (read_token(tokbuf, &line, &status, mode->pre_mode & TBLM_PREMODE, 0))
+        this->feed_table(tbl, tokbuf->ptr, mode, width, true);
 }

@@ -5,6 +5,7 @@
 #include "html/html.h"
 #include "html/form.h"
 #include "html/readbuffer.h"
+#include "html/table.h"
 
 using FormSelectOptionList = std::vector<FormSelectOptionItem>;
 // void addSelectOption(std::string_view value, std::string_view label, bool chk);
@@ -159,6 +160,8 @@ public:
     void make_caption(struct table *t, struct html_feed_environ *h_env);
     void do_refill(struct table *tbl, int row, int col, int maxlimit);
     int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal);
+    void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width);
+    TagActions feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag);
 };
 
 std::shared_ptr<struct Buffer> loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal = false);

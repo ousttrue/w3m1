@@ -204,10 +204,9 @@ enum TagActions
 
 void align(struct TextLine *lbuf, int width, AlignTypes mode);
 
-void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, class HtmlContext *seq);
+
 int visible_length(const char *str);
 struct table *newTable(void);
 int bsearch_2short(short e1, short *ent1, short e2, short *ent2, int base, short *indexarray, int nent);
-TagActions feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag, HtmlContext *seq);
 int maximum_visible_length(const char *str, int offset);
 int maximum_visible_length_plain(const char *str, int offset);
