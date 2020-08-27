@@ -155,6 +155,16 @@ struct table
     void check_minimum0(int min);
     void check_maximum_width();
     void addcontentssize(int width);
+    int check_compressible_cell(MAT *minv,
+                                double *newwidth, double *swidth, short *cwidth,
+                                double totalwidth, double *Sxx,
+                                int icol, int icell, double sxx, int corr, int symbolWidth);
+    void set_table_width(short *newwidth, int maxwidth);
+    void check_table_height();
+    void clearcontentssize(struct table_mode *mode);
+    void table_close_anchor0(struct table_mode *mode);
+    void begin_cell(struct table_mode *mode);
+    void check_rowcol(struct table_mode *mode);
 };
 
 struct table_mode
