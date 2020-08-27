@@ -758,7 +758,6 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
     TextList *orgdata;
     TextListItem *l;
     struct readbuffer obuf;
-    struct html_feed_environ h_env;
     int colspan, icell;
 
     if (tbl->tabdata[row] == NULL || tbl->tabdata[row][col] == NULL)
@@ -766,9 +765,9 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
     orgdata = (TextList *)tbl->tabdata[row][col];
     tbl->tabdata[row][col] = newGeneralList();
 
-    init_henv(&h_env, &obuf,
+    html_feed_environ h_env(&obuf,
               (TextLineList *)tbl->tabdata[row][col],
-              get_spec_cell_width(tbl, row, col), 0);
+              get_spec_cell_width(tbl, row, col));
     obuf.flag |= RB_INTABLE;
     if (h_env.limit > maxlimit)
         h_env.limit = maxlimit;
@@ -1742,7 +1741,6 @@ get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, Ht
 static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
 {
     struct readbuffer obuf;
-    struct html_feed_environ h_env;
     struct table *t;
     int i, col, row;
     int indent, maxwidth;
@@ -1754,7 +1752,7 @@ static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
         row = tbl->tables[i].row;
         indent = tbl->tables[i].indent;
 
-        init_henv(&h_env, &obuf, tbl->tables[i].buf,
+        html_feed_environ h_env(&obuf, tbl->tables[i].buf,
                   get_spec_cell_width(tbl, row, col), indent);
         tbl->check_row(row);
         if (h_env.limit > maxlimit)
@@ -1781,9 +1779,8 @@ make_caption(struct table *t, struct html_feed_environ *h_env, HtmlContext *seq)
     else
         limit = h_env->limit;
 
-    struct html_feed_environ henv;
     struct readbuffer obuf;
-    init_henv(&henv, &obuf, newTextLineList(), limit, h_env->envs.back().indent);
+    html_feed_environ henv(&obuf, newTextLineList(), limit, h_env->envs.back().indent);
     seq->HTMLlineproc0("<center>", &henv, true);
     seq->HTMLlineproc0(t->caption->ptr, &henv, false);
     seq->HTMLlineproc0("</center>", &henv, true);

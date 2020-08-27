@@ -31,10 +31,8 @@ struct html_feed_environ
 
     std::vector<environment> envs;
 
-private:
-
 public:
-    void Initialize(TextLineList *buf, readbuffer *obuf, int limit, int indent);
+    html_feed_environ(readbuffer *obuf, TextLineList *buf, int width, int indent = 0);
 
     void PUSH_ENV(HtmlTags cmd);
     void POP_ENV();
@@ -50,11 +48,7 @@ public:
 void renderTable(struct table *t, int max_width,
                  struct html_feed_environ *h_env, class HtmlContext *seq);
 
-
 void do_blankline(struct html_feed_environ *h_env,
                   struct readbuffer *obuf, int indent, int indent_incr,
                   int width);
 void purgeline(struct html_feed_environ *h_env);
-
-void init_henv(struct html_feed_environ *, struct readbuffer *,
-               TextLineList *, int, int);

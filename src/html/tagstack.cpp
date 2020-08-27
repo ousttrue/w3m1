@@ -19,7 +19,7 @@
 #include "frontend/line.h"
 #include "charset.h"
 
-void html_feed_environ::Initialize(TextLineList *buf, readbuffer *obuf, int limit, int indent)
+html_feed_environ::html_feed_environ(readbuffer *obuf, TextLineList *buf, int limit, int indent)
 {
     this->envs.push_back({
         indent : indent
@@ -164,21 +164,19 @@ void html_feed_environ::flushline(int indent, int force, int width)
 
     if (obuf->top_margin > 0)
     {
-        int i;
-        struct html_feed_environ h;
         struct readbuffer o;
-
-        init_henv(&h, &o, NULL, width, indent);
         o.line = Strnew_size(width + 20);
         o.pos = obuf->pos;
         o.flag = obuf->flag;
         o.top_margin = -1;
         o.bottom_margin = -1;
         o.line->Push("<pre_int>");
-        for (i = 0; i < o.pos; i++)
+        for (int i = 0; i < o.pos; i++)
             o.line->Push(' ');
         o.line->Push("</pre_int>");
-        for (i = 0; i < obuf->top_margin; i++)
+
+        html_feed_environ h(&o, nullptr, width, indent);
+        for (int i = 0; i < obuf->top_margin; i++)
             // flushline(h_env, &o, indent, force, width);
             // TODO
             flushline(indent, force, width);
@@ -296,10 +294,8 @@ void html_feed_environ::flushline(int indent, int force, int width)
     if (obuf->bottom_margin > 0)
     {
         int i;
-        struct html_feed_environ h;
         struct readbuffer o;
-
-        init_henv(&h, &o, NULL, width, indent);
+        html_feed_environ h(&o, NULL, width, indent);
         o.line = Strnew_size(width + 20);
         o.pos = obuf->pos;
         o.flag = obuf->flag;
@@ -402,10 +398,4 @@ void purgeline(struct html_feed_environ *h_env)
     }
     appendTextLine(h_env->buf, tmp, 0);
     h_env->blank_lines--;
-}
-
-void init_henv(struct html_feed_environ *h_env, struct readbuffer *obuf, TextLineList *buf,
-               int limit, int indent)
-{
-    h_env->Initialize(buf, obuf, limit, indent);
 }

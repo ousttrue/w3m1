@@ -3792,9 +3792,8 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 {
     auto newBuf = newBuffer(url);
     newBuf->type = "text/html";
-    struct html_feed_environ htmlenv1;
     struct readbuffer obuf;
-    init_henv(&htmlenv1, &obuf, newTextLineList(), newBuf->width, 0);
+    html_feed_environ htmlenv1(&obuf, newTextLineList(), newBuf->width);
 
     //
     //
