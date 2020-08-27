@@ -5,13 +5,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-
+#include "config.h"
 #include "indep.h"
 #include "gc_helper.h"
 #include "myctype.h"
 #include "symbol.h"
-#include "table.h"
-
+#include "html/table.h"
 #include "entity.h"
 #include "file.h"
 #include "tagstack.h"
@@ -19,7 +18,6 @@
 #include "html.h"
 #include "html/html.h"
 #include "html/html_context.h"
-
 #include "frontend/terminal.h"
 
 static int visible_length_offset = 0;
@@ -37,7 +35,6 @@ int visible_length(const char *str)
         prev_status = status;
         if (next_status(*str, &status))
         {
-#ifdef USE_M17N
             len += get_mcwidth(str);
             n = get_mclen(str);
         }
@@ -45,10 +42,6 @@ int visible_length(const char *str)
         {
             n = 1;
         }
-#else
-            len++;
-        }
-#endif
         if (status == R_ST_TAG0)
         {
             tagbuf->Clear();
@@ -104,11 +97,7 @@ int visible_length(const char *str)
                 max_len = len;
             len = 0;
         }
-#ifdef USE_M17N
         str += n;
-#else
-        str++;
-#endif
     }
     if (status == R_ST_AMP)
     {
@@ -142,13 +131,8 @@ int visible_length_plain(const char *str)
         }
         else
         {
-#ifdef USE_M17N
             len += get_mcwidth(str);
             str += get_mclen(str);
-#else
-            len++;
-            str++;
-#endif
         }
     }
     return len > max_len ? len : max_len;
@@ -170,11 +154,6 @@ maximum_visible_length_plain(const char *str, int offset)
 
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
 #define TK_VERTICALBAR(mode) RULE(mode, 5)
-
-#define BORDERWIDTH 2
-#define BORDERHEIGHT 1
-#define NOBORDERWIDTH 1
-#define NOBORDERHEIGHT 0
 
 enum AlignmentsFlags
 {
