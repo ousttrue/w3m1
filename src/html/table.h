@@ -64,6 +64,13 @@ struct table_linfo
     short length;
 };
 
+enum TableWidthFlags
+{
+    CHECK_NONE = 0,
+    CHECK_MINIMUM = 1,
+    CHECK_FIXED = 2,
+};
+
 #define MAXCOL 50
 struct table
 {
@@ -125,6 +132,20 @@ struct table
     void print_sep(int row, VerticalAlignTypes type, int maxcol, Str buf, int symbolWidth);
     int table_rule_width(int symbolWidth) const;
     int get_spec_cell_width(int row, int col);
+    int check_table_width(double *newwidth, MAT *minv, int itr);
+    int get_table_width(short *orgwidth, short *cellwidth, TableWidthFlags flag);
+    int minimum_table_width()
+    {
+        return get_table_width(minimum_width, cell.minimum_width, CHECK_NONE);
+    }
+    int maximum_table_width()
+    {
+        return get_table_width(tabwidth, cell.width, CHECK_FIXED);
+    }
+    int fixed_table_width()
+    {
+        return get_table_width(fixed_width, cell.fixed_width, CHECK_MINIMUM);
+    }
 };
 
 struct table_mode

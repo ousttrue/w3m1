@@ -1153,13 +1153,13 @@ _end:
 }
 
 #define MAX_ITERATION 10
-int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, HtmlContext *seq)
+int table::check_table_width(double *newwidth, MAT *minv, int itr)
 {
     int i, j, k, m, bcol, ecol;
     int corr = 0;
-    struct table_cell *cell = &t->cell;
+    struct table_cell *cell = &this->cell;
 #ifdef __GNUC__
-    short orgwidth[t->maxcol + 1], corwidth[t->maxcol + 1];
+    short orgwidth[this->maxcol + 1], corwidth[this->maxcol + 1];
     short cwidth[cell->maxcell + 1];
     double swidth[cell->maxcell + 1];
 #else  /* __GNUC__ */
@@ -1171,7 +1171,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
 
     twidth = 0.;
     stotal = 0.;
-    for (i = 0; i <= t->maxcol; i++)
+    for (i = 0; i <= this->maxcol; i++)
     {
         twidth += newwidth[i];
         stotal += m_entry(minv, i, i);
@@ -1190,7 +1190,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
         swidth[j] = 0.;
         for (i = bcol; i < ecol; i++)
             swidth[j] += newwidth[i];
-        cwidth[j] = cell->width[j] - (cell->colspan[j] - 1) * t->cellspacing;
+        cwidth[j] = cell->width[j] - (cell->colspan[j] - 1) * this->cellspacing;
         Sxx[j] = 0.;
         for (i = bcol; i < ecol; i++)
         {
@@ -1204,7 +1204,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
     }
 
     /* compress table */
-    corr = check_compressible_cell(t, minv, newwidth, swidth,
+    corr = check_compressible_cell(this, minv, newwidth, swidth,
                                    cwidth, twidth, Sxx, -1, -1, stotal, corr, Terminal::SymbolWidth());
     if (itr < MAX_ITERATION && corr > 0)
         return corr;
@@ -1213,7 +1213,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
     for (k = cell->maxcell; k >= 0; k--)
     {
         j = cell->index[k];
-        corr = check_compressible_cell(t, minv, newwidth, swidth,
+        corr = check_compressible_cell(this, minv, newwidth, swidth,
                                        cwidth, twidth, Sxx,
                                        -1, j, Sxx[j], corr, Terminal::SymbolWidth());
         if (itr < MAX_ITERATION && corr > 0)
@@ -1221,31 +1221,31 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
     }
 
     /* compress single column cell */
-    for (i = 0; i <= t->maxcol; i++)
+    for (i = 0; i <= this->maxcol; i++)
     {
-        corr = check_compressible_cell(t, minv, newwidth, swidth,
+        corr = check_compressible_cell(this, minv, newwidth, swidth,
                                        cwidth, twidth, Sxx,
                                        i, -1, m_entry(minv, i, i), corr, Terminal::SymbolWidth());
         if (itr < MAX_ITERATION && corr > 0)
             return corr;
     }
 
-    for (i = 0; i <= t->maxcol; i++)
+    for (i = 0; i <= this->maxcol; i++)
         corwidth[i] = orgwidth[i] = round(newwidth[i]);
 
-    check_minimum_width(t, corwidth);
+    check_minimum_width(this, corwidth);
 
-    for (i = 0; i <= t->maxcol; i++)
+    for (i = 0; i <= this->maxcol; i++)
     {
         double sx = sqrt(m_entry(minv, i, i));
         if (sx < 0.1)
             continue;
-        if (orgwidth[i] < t->minimum_width[i] &&
-            corwidth[i] == t->minimum_width[i])
+        if (orgwidth[i] < this->minimum_width[i] &&
+            corwidth[i] == this->minimum_width[i])
         {
             double w = (sx > 0.5) ? 0.5 : sx * 0.2;
             sxy = 0.;
-            for (m = 0; m <= t->maxcol; m++)
+            for (m = 0; m <= this->maxcol; m++)
             {
                 if (m == i)
                     continue;
@@ -1253,7 +1253,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
             }
             if (sxy <= 0.)
             {
-                correct_table_matrix(t, i, 1, t->minimum_width[i], w);
+                correct_table_matrix(this, i, 1, this->minimum_width[i], w);
                 corr++;
             }
         }
@@ -1273,7 +1273,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
         for (i = bcol; i < ecol; i++)
             nwidth += corwidth[i];
         mwidth =
-            cell->minimum_width[j] - (cell->colspan[j] - 1) * t->cellspacing;
+            cell->minimum_width[j] - (cell->colspan[j] - 1) * this->cellspacing;
         if (mwidth > swidth[j] && mwidth == nwidth)
         {
             double w = (sx > 0.5) ? 0.5 : sx * 0.2;
@@ -1281,7 +1281,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
             sxy = 0.;
             for (i = bcol; i < ecol; i++)
             {
-                for (m = 0; m <= t->maxcol; m++)
+                for (m = 0; m <= this->maxcol; m++)
                 {
                     if (m >= bcol && m < ecol)
                         continue;
@@ -1290,7 +1290,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
             }
             if (sxy <= 0.)
             {
-                correct_table_matrix(t, bcol, cell->colspan[j], mwidth, w);
+                correct_table_matrix(this, bcol, cell->colspan[j], mwidth, w);
                 corr++;
             }
         }
@@ -1549,23 +1549,19 @@ void check_table_height(struct table *t)
                      cell.maxcell, cell.indexarray, space, 1);
 }
 
-#define CHECK_MINIMUM 1
-#define CHECK_FIXED 2
-
-static int
-get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, HtmlContext *seq)
+int table::get_table_width(short *orgwidth, short *cellwidth, TableWidthFlags flag)
 {
 #ifdef __GNUC__
-    short newwidth[t->maxcol + 1];
+    short newwidth[this->maxcol + 1];
 #else  /* not __GNUC__ */
     short newwidth[MAXCOL];
 #endif /* not __GNUC__ */
     int i;
     int swidth;
-    struct table_cell *cell = &t->cell;
-    int rulewidth = t->table_rule_width(Terminal::SymbolWidth());
+    struct table_cell *cell = &this->cell;
+    int rulewidth = this->table_rule_width(Terminal::SymbolWidth());
 
-    for (i = 0; i <= t->maxcol; i++)
+    for (i = 0; i <= this->maxcol; i++)
         newwidth[i] = max(orgwidth[i], 0);
 
     if (flag & CHECK_FIXED)
@@ -1575,10 +1571,10 @@ get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, Ht
 #else  /* not __GNUC__ */
         short ccellwidth[MAXCELL];
 #endif /* not __GNUC__ */
-        for (i = 0; i <= t->maxcol; i++)
+        for (i = 0; i <= this->maxcol; i++)
         {
-            if (newwidth[i] < t->fixed_width[i])
-                newwidth[i] = t->fixed_width[i];
+            if (newwidth[i] < this->fixed_width[i])
+                newwidth[i] = this->fixed_width[i];
         }
         for (i = 0; i <= cell->maxcell; i++)
         {
@@ -1587,31 +1583,24 @@ get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, Ht
                 ccellwidth[i] = cell->fixed_width[i];
         }
         check_cell_width(newwidth, ccellwidth, cell->col, cell->colspan,
-                         cell->maxcell, cell->index, t->cellspacing, 0);
+                         cell->maxcell, cell->index, this->cellspacing, 0);
     }
     else
     {
         check_cell_width(newwidth, cellwidth, cell->col, cell->colspan,
-                         cell->maxcell, cell->index, t->cellspacing, 0);
+                         cell->maxcell, cell->index, this->cellspacing, 0);
     }
     if (flag & CHECK_MINIMUM)
-        check_minimum_width(t, newwidth);
+        check_minimum_width(this, newwidth);
 
     swidth = 0;
-    for (i = 0; i <= t->maxcol; i++)
+    for (i = 0; i <= this->maxcol; i++)
     {
         swidth += ceil_at_intervals(newwidth[i], rulewidth);
     }
-    swidth += t->table_border_width(Terminal::SymbolWidth());
+    swidth += this->table_border_width(Terminal::SymbolWidth());
     return swidth;
 }
-
-#define minimum_table_width(t) \
-    (get_table_width(t, t->minimum_width, t->cell.minimum_width, 0))
-#define maximum_table_width(t) \
-    (get_table_width(t, t->tabwidth, t->cell.width, CHECK_FIXED, seq))
-#define fixed_table_width(t) \
-    (get_table_width(t, t->fixed_width, t->cell.fixed_width, CHECK_MINIMUM, seq))
 
 static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
 {
@@ -1710,7 +1699,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 #endif /* TABLE_DEBUG */
             itr++;
 
-        } while (check_table_width(t, newwidth->ve, minv, itr, seq));
+        } while (t->check_table_width(newwidth->ve, minv, itr));
         short new_tabwidth[MAXCOL];
         set_integered_width(t, newwidth->ve, new_tabwidth, Terminal::SymbolWidth());
         check_minimum_width(t, new_tabwidth);
@@ -2046,7 +2035,7 @@ void end_table(struct table *tbl, HtmlContext *seq)
                     ceil_at_intervals(cell->fixed_width[i], rulewidth);
         }
     }
-    tbl->sloppy_width = fixed_table_width(tbl);
+    tbl->sloppy_width = tbl->fixed_table_width();
     if (tbl->total_width > tbl->sloppy_width)
         tbl->sloppy_width = tbl->total_width;
 }
@@ -3081,7 +3070,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         {
             struct table *tbl1 = tbl->tables[id].ptr;
             tbl->feed_table_block_tag(line, mode, 0, cmd);
-            addcontentssize(tbl, maximum_table_width(tbl1));
+            addcontentssize(tbl, tbl1->maximum_table_width());
             check_minimum0(tbl, tbl1->sloppy_width);
 #ifdef TABLE_EXPAND
             w = tbl1->total_width;
