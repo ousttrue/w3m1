@@ -89,6 +89,8 @@ static struct w3m_term_info
 static const char *g_title_str = NULL;
 static FILE *g_ttyf = nullptr;
 static bool g_mouseActive = false;
+static int g_symbol_width0 = 0;
+static int g_symbol_width = 0;
 
 void mouse_init()
 {
@@ -331,6 +333,17 @@ Terminal::Terminal()
                 break;
             }
         }
+    }
+
+    if (Terminal::graph_ok())
+    {
+        g_symbol_width = g_symbol_width0 = 1;
+    }
+    else
+    {
+        g_symbol_width0 = 0;
+        get_symbol(w3mApp::Instance().DisplayCharset, &g_symbol_width0);
+        g_symbol_width = WcOption.use_wide ? g_symbol_width0 : 1;
     }
 }
 
@@ -688,4 +701,15 @@ bool Terminal::graph_ok(void)
 void Terminal::write_graphchar(int c)
 {
     write1(graphchar(c));
+}
+
+int Terminal::SymbolWidth()
+{
+    return g_symbol_width;
+}
+
+int Terminal::SymbolWidth0()
+{
+    // charset ?
+    return g_symbol_width0;
 }

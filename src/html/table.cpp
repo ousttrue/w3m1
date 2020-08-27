@@ -1329,7 +1329,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
 
     /* compress table */
     corr = check_compressible_cell(t, minv, newwidth, swidth,
-                                   cwidth, twidth, Sxx, -1, -1, stotal, corr, seq->SymbolWidth());
+                                   cwidth, twidth, Sxx, -1, -1, stotal, corr, Terminal::SymbolWidth());
     if (itr < MAX_ITERATION && corr > 0)
         return corr;
 
@@ -1339,7 +1339,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
         j = cell->index[k];
         corr = check_compressible_cell(t, minv, newwidth, swidth,
                                        cwidth, twidth, Sxx,
-                                       -1, j, Sxx[j], corr, seq->SymbolWidth());
+                                       -1, j, Sxx[j], corr, Terminal::SymbolWidth());
         if (itr < MAX_ITERATION && corr > 0)
             return corr;
     }
@@ -1349,7 +1349,7 @@ int check_table_width(struct table *t, double *newwidth, MAT *minv, int itr, Htm
     {
         corr = check_compressible_cell(t, minv, newwidth, swidth,
                                        cwidth, twidth, Sxx,
-                                       i, -1, m_entry(minv, i, i), corr, seq->SymbolWidth());
+                                       i, -1, m_entry(minv, i, i), corr, Terminal::SymbolWidth());
         if (itr < MAX_ITERATION && corr > 0)
             return corr;
     }
@@ -1687,7 +1687,7 @@ get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, Ht
     int i;
     int swidth;
     struct table_cell *cell = &t->cell;
-    int rulewidth = t->table_rule_width(seq->SymbolWidth());
+    int rulewidth = t->table_rule_width(Terminal::SymbolWidth());
 
     for (i = 0; i <= t->maxcol; i++)
         newwidth[i] = max(orgwidth[i], 0);
@@ -1726,7 +1726,7 @@ get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, Ht
     {
         swidth += ceil_at_intervals(newwidth[i], rulewidth);
     }
-    swidth += t->table_border_width(seq->SymbolWidth());
+    swidth += t->table_border_width(Terminal::SymbolWidth());
     return swidth;
 }
 
@@ -1795,9 +1795,9 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     if (t->sloppy_width > max_width)
         max_width = t->sloppy_width;
 
-    rulewidth = t->table_rule_width(seq->SymbolWidth());
+    rulewidth = t->table_rule_width(Terminal::SymbolWidth());
 
-    max_width -= t->table_border_width(seq->SymbolWidth());
+    max_width -= t->table_border_width(Terminal::SymbolWidth());
 
     if (rulewidth > 1)
         max_width = floor_at_intervals(max_width, rulewidth);
@@ -1852,7 +1852,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
             itr++;
 
         } while (check_table_width(t, newwidth->ve, minv, itr, seq));
-        set_integered_width(t, newwidth->ve, new_tabwidth, seq->SymbolWidth());
+        set_integered_width(t, newwidth->ve, new_tabwidth, Terminal::SymbolWidth());
         check_minimum_width(t, new_tabwidth);
         v_free(newwidth);
         px_free(pivot);
@@ -1898,7 +1898,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         t->total_width += t->tabwidth[i];
     }
 
-    t->total_width += t->table_border_width(seq->SymbolWidth());
+    t->total_width += t->table_border_width(Terminal::SymbolWidth());
 
     check_table_height(t);
 
@@ -1957,7 +1957,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     case BORDER_THIN:
     case BORDER_THICK:
         renderbuf = Strnew();
-        t->print_sep(-1, VALIGN_TOP, t->maxcol, renderbuf, seq->SymbolWidth());
+        t->print_sep(-1, VALIGN_TOP, t->maxcol, renderbuf, Terminal::SymbolWidth());
         h_env->push_render_image(renderbuf, width, t->total_width);
         t->total_height += 1;
         break;
@@ -1969,16 +1969,16 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     case BORDER_THICK:
         vrulea = Strnew();
         vrulec = Strnew();
-        push_symbol(vrulea, TK_VERTICALBAR(t->border_mode), seq->SymbolWidth(), 1);
+        push_symbol(vrulea, TK_VERTICALBAR(t->border_mode), Terminal::SymbolWidth(), 1);
         for (i = 0; i < t->cellpadding; i++)
         {
             vrulea->Push(' ');
             vruleb->Push(' ');
             vrulec->Push(' ');
         }
-        push_symbol(vrulec, TK_VERTICALBAR(t->border_mode), seq->SymbolWidth(), 1);
+        push_symbol(vrulec, TK_VERTICALBAR(t->border_mode), Terminal::SymbolWidth(), 1);
     case BORDER_NOWIN:
-        push_symbol(vruleb, TK_VERTICALBAR(BORDER_THIN), seq->SymbolWidth(), 1);
+        push_symbol(vruleb, TK_VERTICALBAR(BORDER_THIN), Terminal::SymbolWidth(), 1);
         for (i = 0; i < t->cellpadding; i++)
             vruleb->Push(' ');
         break;
@@ -2044,7 +2044,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         if (r < t->maxrow && t->border_mode != BORDER_NONE)
         {
             renderbuf = Strnew();
-            t->print_sep(r, VALIGN_MIDDLE, t->maxcol, renderbuf, seq->SymbolWidth());
+            t->print_sep(r, VALIGN_MIDDLE, t->maxcol, renderbuf, Terminal::SymbolWidth());
             h_env->push_render_image(renderbuf, width, t->total_width);
         }
         t->total_height += t->tabheight[r];
@@ -2054,7 +2054,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     case BORDER_THIN:
     case BORDER_THICK:
         renderbuf = Strnew();
-        t->print_sep(t->maxrow, VALIGN_BOTTOM, t->maxcol, renderbuf, seq->SymbolWidth());
+        t->print_sep(t->maxrow, VALIGN_BOTTOM, t->maxcol, renderbuf, Terminal::SymbolWidth());
         h_env->push_render_image(renderbuf, width, t->total_width);
         t->total_height += 1;
         break;
@@ -2077,7 +2077,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 struct table *begin_table(BorderModes border, int spacing, int padding, int vspace, HtmlContext *seq)
 {
     struct table *t;
-    int mincell = minimum_cellspacing(border, seq->SymbolWidth());
+    int mincell = minimum_cellspacing(border, Terminal::SymbolWidth());
     int rcellspacing;
     int mincell_pixels = round(mincell * ImageManager::Instance().pixel_per_char);
     int ppc = round(ImageManager::Instance().pixel_per_char);
@@ -2156,7 +2156,7 @@ struct table *begin_table(BorderModes border, int spacing, int padding, int vspa
 void end_table(struct table *tbl, HtmlContext *seq)
 {
     struct table_cell *cell = &tbl->cell;
-    int rulewidth = tbl->table_rule_width(seq->SymbolWidth());
+    int rulewidth = tbl->table_rule_width(Terminal::SymbolWidth());
     if (rulewidth > 1)
     {
         if (tbl->total_width > 0)

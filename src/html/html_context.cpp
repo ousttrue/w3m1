@@ -18,7 +18,7 @@
 #include "stream/network.h"
 #include "entity.h"
 
-#define MAX_TABLE 20   /* maximum nest level of table */
+#define MAX_TABLE 20 /* maximum nest level of table */
 static struct table *tables[MAX_TABLE];
 struct table_mode table_mode[MAX_TABLE];
 static int
@@ -51,17 +51,6 @@ static int currentLn(const BufferPtr &buf)
 HtmlContext::HtmlContext()
 {
     doc_charset = w3mApp::Instance().DocumentCharset;
-
-    if (Terminal::graph_ok())
-    {
-        symbol_width = symbol_width0 = 1;
-    }
-    else
-    {
-        symbol_width0 = 0;
-        get_symbol(w3mApp::Instance().DisplayCharset, &symbol_width0);
-        symbol_width = WcOption.use_wide ? symbol_width0 : 1;
-    }
 
     cur_select = nullptr;
     cur_textarea = nullptr;
@@ -990,8 +979,8 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
                         tmp->Push("<pre_int>");
                         pre_int = true;
                     }
-                    push_symbol(tmp, IMG_SYMBOL, SymbolWidth(), 1);
-                    n = SymbolWidth();
+                    push_symbol(tmp, IMG_SYMBOL, Terminal::SymbolWidth(), 1);
+                    n = Terminal::SymbolWidth();
                 }
             }
             goto img_end;
@@ -1004,11 +993,11 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
                 tmp->Push("<pre_int>");
                 pre_int = true;
             }
-            w = w / ImageManager::Instance().pixel_per_char / SymbolWidth();
+            w = w / ImageManager::Instance().pixel_per_char / Terminal::SymbolWidth();
             if (w <= 0)
                 w = 1;
-            push_symbol(tmp, HR_SYMBOL, SymbolWidth(), w);
-            n = w * SymbolWidth();
+            push_symbol(tmp, HR_SYMBOL, Terminal::SymbolWidth(), w);
+            n = w * Terminal::SymbolWidth();
             goto img_end;
         }
     }
@@ -1572,48 +1561,48 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         break;
     }
 
-    //
-    // frame
-    //
-    // case HTML_FRAMESET:
-    // {
-    //     auto frame = newFrameSet(tag);
-    //     if (frame)
-    //     {
-    //         auto sp = this->frameset_s.size();
-    //         this->frameset_s.push_back(frame);
-    //         if (sp == 0)
-    //         {
-    //             if (buf->frameset == nullptr)
-    //             {
-    //                 buf->frameset = frame;
-    //             }
-    //             else
-    //             {
-    //                 pushFrameTree(&(buf->frameQ), frame, nullptr);
-    //             }
-    //         }
-    //         else
-    //         {
-    //             addFrameSetElement(this->frameset_s[sp - 1], *(union frameset_element *)frame);
-    //         }
-    //     }
-    //     break;
-    // }
-    // case HTML_N_FRAMESET:
-    //     if (!this->frameset_s.empty())
-    //     {
-    //         this->frameset_s.pop_back();
-    //     }
-    //     break;
-    // case HTML_FRAME:
-    //     if (!this->frameset_s.empty())
-    //     {
-    //         union frameset_element element;
-    //         element.body = newFrame(tag, buf);
-    //         addFrameSetElement(this->frameset_s.back(), element);
-    //     }
-    //     break;
+        //
+        // frame
+        //
+        // case HTML_FRAMESET:
+        // {
+        //     auto frame = newFrameSet(tag);
+        //     if (frame)
+        //     {
+        //         auto sp = this->frameset_s.size();
+        //         this->frameset_s.push_back(frame);
+        //         if (sp == 0)
+        //         {
+        //             if (buf->frameset == nullptr)
+        //             {
+        //                 buf->frameset = frame;
+        //             }
+        //             else
+        //             {
+        //                 pushFrameTree(&(buf->frameQ), frame, nullptr);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             addFrameSetElement(this->frameset_s[sp - 1], *(union frameset_element *)frame);
+        //         }
+        //     }
+        //     break;
+        // }
+        // case HTML_N_FRAMESET:
+        //     if (!this->frameset_s.empty())
+        //     {
+        //         this->frameset_s.pop_back();
+        //     }
+        //     break;
+        // case HTML_FRAME:
+        //     if (!this->frameset_s.empty())
+        //     {
+        //         union frameset_element element;
+        //         element.body = newFrame(tag, buf);
+        //         addFrameSetElement(this->frameset_s.back(), element);
+        //     }
+        //     break;
 
     case HTML_BASE:
     {
@@ -1805,7 +1794,7 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
             if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
             {
                 // symbol
-                auto p = get_width_symbol(SymbolWidth0(), symbol);
+                auto p = get_width_symbol(Terminal::SymbolWidth0(), symbol);
                 // assert(p.size() > 0);
                 int len = get_mclen(p.data());
                 mode = get_mctype(p[0]);
@@ -1819,7 +1808,7 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
                         out.push(mode | effect | ex_efct(ex_effect), p[i]);
                     }
                 }
-                str += SymbolWidth();
+                str += Terminal::SymbolWidth();
             }
             else if (mode == PC_CTRL || mode == PC_UNDEF)
             {
@@ -2029,7 +2018,7 @@ void HtmlContext::completeHTMLstream(struct html_feed_environ *h_env, struct rea
         obuf->fontstat.in_ins = 0;
     }
     if (obuf->flag & RB_INTXTA)
-       this-> HTMLlineproc0("</textarea>", h_env, true);
+        this->HTMLlineproc0("</textarea>", h_env, true);
     /* for unbalanced select tag */
     if (obuf->flag & RB_INSELECT)
         this->HTMLlineproc0("</select>", h_env, true);
@@ -2087,10 +2076,10 @@ Str HtmlContext::process_hr(struct parsed_tag *tag, int width, int indent_width)
         tmp->Push("<div_int align=left>");
         break;
     }
-    w /= this->SymbolWidth();
+    w /= Terminal::SymbolWidth();
     if (w <= 0)
         w = 1;
-    push_symbol(tmp, HR_SYMBOL, this->SymbolWidth(), w);
+    push_symbol(tmp, HR_SYMBOL, Terminal::SymbolWidth(), w);
     tmp->Push("</div_int></nobr>");
     return tmp;
 }
@@ -2698,7 +2687,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         {
             h_env->flushline(h_env->envs.back().indent, 1, h_env->limit);
             h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                         h_env->limit);
+                                h_env->limit);
         }
         h_env->obuf->flag |= RB_IGNORE_P;
         if (tag->tagid == HTML_P)
@@ -2720,7 +2709,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
             h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                         h_env->limit);
+                                h_env->limit);
         }
         this->HTMLlineproc0("<b>", h_env, true);
         h_env->obuf->set_alignment(tag);
@@ -2750,7 +2739,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
             if (!(h_env->obuf->flag & RB_PREMODE) &&
                 (h_env->envs.empty() || tag->tagid == HTML_BLQ))
                 h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                             h_env->limit);
+                                    h_env->limit);
         }
         h_env->PUSH_ENV(tag->tagid);
         if (tag->tagid == HTML_UL || tag->tagid == HTML_OL)
@@ -2791,8 +2780,8 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
                 (h_env->envs.empty() || tag->tagid == HTML_N_DL || tag->tagid == HTML_N_BLQ))
             {
                 h_env->do_blankline(h_env->obuf,
-                             h_env->envs.back().indent,
-                             w3mApp::Instance().IndentIncr, h_env->limit);
+                                    h_env->envs.back().indent,
+                                    w3mApp::Instance().IndentIncr, h_env->limit);
                 h_env->obuf->flag |= RB_IGNORE_P;
             }
         }
@@ -2807,7 +2796,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
             if (!(h_env->obuf->flag & RB_PREMODE))
                 h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                             h_env->limit);
+                                    h_env->limit);
         }
         h_env->PUSH_ENV(tag->tagid);
         if (tag->HasAttribute(ATTR_COMPACT))
@@ -2845,24 +2834,24 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
                 switch (h_env->envs.back().type)
                 {
                 case 'd':
-                    push_symbol(tmp, UL_SYMBOL_DISC, this->SymbolWidth(), 1);
+                    push_symbol(tmp, UL_SYMBOL_DISC, Terminal::SymbolWidth(), 1);
                     break;
                 case 'c':
-                    push_symbol(tmp, UL_SYMBOL_CIRCLE, this->SymbolWidth(), 1);
+                    push_symbol(tmp, UL_SYMBOL_CIRCLE, Terminal::SymbolWidth(), 1);
                     break;
                 case 's':
-                    push_symbol(tmp, UL_SYMBOL_SQUARE, this->SymbolWidth(), 1);
+                    push_symbol(tmp, UL_SYMBOL_SQUARE, Terminal::SymbolWidth(), 1);
                     break;
                 default:
                     push_symbol(tmp,
                                 UL_SYMBOL((h_env->envs.size() - 1) % MAX_UL_LEVEL),
-                                this->SymbolWidth(),
+                                Terminal::SymbolWidth(),
                                 1);
                     break;
                 }
-                if (this->SymbolWidth() == 1)
+                if (Terminal::SymbolWidth() == 1)
                     h_env->obuf->push_charp(1, NBSP, PC_ASCII);
-                h_env->obuf->push_str(this->SymbolWidth(), tmp, PC_ASCII);
+                h_env->obuf->push_str(Terminal::SymbolWidth(), tmp, PC_ASCII);
                 h_env->obuf->push_charp(1, NBSP, PC_ASCII);
                 h_env->obuf->set_space_to_prevchar();
                 break;
@@ -3044,7 +3033,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
             if (!x)
                 h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                             h_env->limit);
+                                    h_env->limit);
         }
         else
             h_env->obuf->fillline(h_env->envs.back().indent);
@@ -3058,7 +3047,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         if (!(h_env->obuf->flag & RB_IGNORE_P))
         {
             h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                         h_env->limit);
+                                h_env->limit);
             h_env->obuf->flag |= RB_IGNORE_P;
             h_env->blank_lines++;
         }
@@ -3109,7 +3098,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
             h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                         h_env->limit);
+                                h_env->limit);
         }
         h_env->obuf->flag |= (RB_PRE | RB_IGNORE_P);
         return 1;
@@ -3121,7 +3110,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
             h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                         h_env->limit);
+                                h_env->limit);
             h_env->obuf->flag |= RB_IGNORE_P;
         }
         h_env->obuf->flag &= ~RB_PRE;
@@ -3136,7 +3125,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
             h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                         h_env->limit);
+                                h_env->limit);
         }
         h_env->obuf->flag |= (RB_PLAIN | RB_IGNORE_P);
         switch (tag->tagid)
@@ -3161,7 +3150,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         {
             h_env->flushline(h_env->envs.back().indent, 0, h_env->limit);
             h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                         h_env->limit);
+                                h_env->limit);
             h_env->obuf->flag |= RB_IGNORE_P;
         }
         h_env->obuf->flag &= ~RB_PLAIN;
@@ -3510,7 +3499,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
             {
                 this->HTMLlineproc0(tmp->ptr, h_env, true);
                 h_env->do_blankline(h_env->obuf, h_env->envs.back().indent, 0,
-                             h_env->limit);
+                                    h_env->limit);
                 if (!w3mApp::Instance().is_redisplay &&
                     !((h_env->obuf->flag & RB_NOFRAMES) && w3mApp::Instance().RenderFrame))
                 {

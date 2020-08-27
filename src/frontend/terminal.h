@@ -45,4 +45,6 @@ public:
     static void title(const char *s);
     static bool graph_ok();
     static void write_graphchar(int c);
+    static int SymbolWidth(); // const { return symbol_width; }
+    static int SymbolWidth0(); // const { return symbol_width0; }
 };

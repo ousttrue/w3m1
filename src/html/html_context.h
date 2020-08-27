@@ -26,9 +26,6 @@ class HtmlContext
     // image seq ?
     int cur_iseq = 1;
 
-    int symbol_width = 0;
-    int symbol_width0 = 0;
-
     Str cur_title = nullptr;
 
     AnchorPtr a_href = nullptr;
@@ -94,8 +91,6 @@ public:
     int Get() const { return cur_hseq; }
 
     Str GetLinkNumberStr(int correction);
-    int SymbolWidth() const { return symbol_width; }
-    int SymbolWidth0() const { return symbol_width0; }
 
     // process <title>{content}</title> tag
     Str TitleOpen(struct parsed_tag *tag);
