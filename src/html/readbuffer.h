@@ -49,6 +49,24 @@ enum ReadBufferFlags
     RB_S = 0x200000,
 };
 
+enum TableModes
+{
+    TBLM_NONE = RB_NONE,
+    TBLM_PRE = RB_PRE,
+    TBLM_SCRIPT = RB_SCRIPT,
+    TBLM_STYLE = RB_STYLE,
+    TBLM_PLAIN = RB_PLAIN,
+    TBLM_NOBR = RB_NOBR,
+    TBLM_PRE_INT = RB_PRE_INT,
+    TBLM_INTXTA = RB_INTXTA,
+    TBLM_INSELECT = RB_INSELECT,
+    TBLM_PREMODE = RB_PREMODE,
+    TBLM_SPECIAL = RB_SPECIAL,
+    TBLM_DEL = RB_DEL,
+    TBLM_S = RB_S,
+    TBLM_ANCHOR = 0x1000000,
+};
+
 ///
 /// 行の折り返し処理？
 ///

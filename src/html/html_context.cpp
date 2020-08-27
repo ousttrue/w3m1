@@ -18,6 +18,7 @@
 #include "stream/network.h"
 #include "entity.h"
 
+#define MAX_TABLE 20   /* maximum nest level of table */
 static struct table *tables[MAX_TABLE];
 struct table_mode table_mode[MAX_TABLE];
 static int
@@ -3328,11 +3329,11 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *
         if (id != NULL)
             tables[h_env->obuf->table_level]->id = Strnew(id);
 
-        table_mode[h_env->obuf->table_level].pre_mode = 0;
+        table_mode[h_env->obuf->table_level].pre_mode = TBLM_NONE;
         table_mode[h_env->obuf->table_level].indent_level = 0;
         table_mode[h_env->obuf->table_level].nobr_level = 0;
         table_mode[h_env->obuf->table_level].caption = 0;
-        table_mode[h_env->obuf->table_level].end_tag = 0; /* HTML_UNKNOWN */
+        table_mode[h_env->obuf->table_level].end_tag = HTML_UNKNOWN;
 #ifndef TABLE_EXPAND
         tables[h_env->obuf->table_level]->total_width = width;
 #else

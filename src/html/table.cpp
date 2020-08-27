@@ -20,6 +20,15 @@
 #include "html/html_context.h"
 #include "frontend/terminal.h"
 
+#define MAXROW 50
+#define MAXROWCELL 1000
+#define MAX_INDENT_LEVEL 10
+#define MAX_TABLE_N 20 /* maximum number of table in same level */
+
+#define TBL_IN_ROW 1
+#define TBL_EXPAND_OK 2
+#define TBL_IN_COL 4
+
 static int visible_length_offset = 0;
 int visible_length(const char *str)
 {
@@ -154,23 +163,6 @@ maximum_visible_length_plain(const char *str, int offset)
 
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
 #define TK_VERTICALBAR(mode) RULE(mode, 5)
-
-enum AlignmentsFlags
-{
-    HTT_X = 1,
-    HTT_Y = 2,
-    HTT_NOWRAP = 4,
-    HTT_ALIGN = 0x30,
-    HTT_LEFT = 0x00,
-    HTT_CENTER = 0x10,
-    HTT_RIGHT = 0x20,
-    HTT_TRSET = 0x40,
-    HTT_VALIGN = 0x700,
-    HTT_TOP = 0x100,
-    HTT_MIDDLE = 0x200,
-    HTT_BOTTOM = 0x400,
-    HTT_VTRSET = 0x800,
-};
 
 #define TAG_IS(s, tag, len) (strncasecmp(s, tag, len) == 0 && (s[len] == '>' || IS_SPACE((int)s[len])))
 
@@ -428,7 +420,7 @@ struct table *newTable()
     t = New(struct table);
     t->max_rowsize = MAXROW;
     t->tabdata = New_N(GeneralList **, MAXROW);
-    t->tabattr = New_N(table_attr *, MAXROW);
+    t->tabattr = New_N(TableAttributes *, MAXROW);
     t->tabheight = NewAtom_N(short, MAXROW);
 #ifdef ID_EXT
     t->tabidvalue = New_N(Str *, MAXROW);
@@ -468,7 +460,7 @@ struct table *newTable()
 #endif
     t->linfo.prevchar = Strnew_size(8);
     t->linfo.prevchar->CopyFrom("", 0);
-    t->trattr = 0;
+    t->trattr = {};
 
     t->caption = Strnew();
     t->suspended_data = NULL;
@@ -482,7 +474,7 @@ void table::check_row(int row)
 {
     int i, r;
     GeneralList ***tabdata;
-    table_attr **tabattr;
+    TableAttributes **tabattr;
     short *tabheight;
 #ifdef ID_EXT
     Str **tabidvalue;
@@ -493,7 +485,7 @@ void table::check_row(int row)
     {
         r = max(this->max_rowsize * 2, row + 1);
         tabdata = New_N(GeneralList **, r);
-        tabattr = New_N(table_attr *, r);
+        tabattr = New_N(TableAttributes *, r);
         tabheight = NewAtom_N(short, r);
 #ifdef ID_EXT
         tabidvalue = New_N(Str *, r);
@@ -532,14 +524,14 @@ void table::check_row(int row)
     if (this->tabdata[row] == NULL)
     {
         this->tabdata[row] = New_N(GeneralList *, MAXCOL);
-        this->tabattr[row] = NewAtom_N(table_attr, MAXCOL);
+        this->tabattr[row] = NewAtom_N(TableAttributes, MAXCOL);
 #ifdef ID_EXT
         this->tabidvalue[row] = New_N(Str, MAXCOL);
 #endif /* ID_EXT */
         for (i = 0; i < MAXCOL; i++)
         {
             this->tabdata[row][i] = NULL;
-            this->tabattr[row][i] = 0;
+            this->tabattr[row][i] = {};
 #ifdef ID_EXT
             this->tabidvalue[row][i] = NULL;
 #endif /* ID_EXT */
@@ -2327,7 +2319,7 @@ begin_cell(struct table *t, struct table_mode *mode)
     clearcontentssize(t, mode);
     mode->indent_level = 0;
     mode->nobr_level = 0;
-    mode->pre_mode = 0;
+    mode->pre_mode = TBLM_NONE;
     t->indent = 0;
     t->flag |= TBL_IN_COL;
 
@@ -2523,7 +2515,7 @@ table_close_select(struct table *tbl, struct table_mode *mode, int width, HtmlCo
 {
     Str tmp = seq->process_n_select();
     mode->pre_mode &= ~TBLM_INSELECT;
-    mode->end_tag = 0;
+    mode->end_tag = HTML_UNKNOWN;
     feed_table1(tbl, tmp, mode, width, seq);
 }
 
@@ -2532,7 +2524,7 @@ table_close_textarea(struct table *tbl, struct table_mode *mode, int width, Html
 {
     Str tmp = seq->process_n_textarea();
     mode->pre_mode &= ~TBLM_INTXTA;
-    mode->end_tag = 0;
+    mode->end_tag = HTML_UNKNOWN;
     feed_table1(tbl, tmp, mode, width, seq);
 }
 
@@ -2596,7 +2588,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
     int col, prev_col;
     int i, j, k, v, v0, w, id;
     Str tok, tmp, anchor;
-    table_attr align, valign;
+    TableAttributes align, valign;
 
     cmd = tag->tagid;
 
@@ -2605,7 +2597,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         if (mode->end_tag == cmd)
         {
             mode->pre_mode &= ~TBLM_PLAIN;
-            mode->end_tag = 0;
+            mode->end_tag = HTML_UNKNOWN;
             tbl->feed_table_block_tag(line, mode, 0, cmd);
             return TAG_ACTION_NONE;
         }
@@ -2630,7 +2622,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         if (mode->end_tag == cmd)
         {
             mode->pre_mode &= ~TBLM_SCRIPT;
-            mode->end_tag = 0;
+            mode->end_tag = HTML_UNKNOWN;
             return TAG_ACTION_NONE;
         }
         return TAG_ACTION_PLAIN;
@@ -2640,7 +2632,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         if (mode->end_tag == cmd)
         {
             mode->pre_mode &= ~TBLM_STYLE;
-            mode->end_tag = 0;
+            mode->end_tag = HTML_UNKNOWN;
             return TAG_ACTION_NONE;
         }
         return TAG_ACTION_PLAIN;
@@ -2705,8 +2697,8 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
         tbl->row++;
         tbl->flag |= TBL_IN_ROW;
         tbl->flag &= ~TBL_IN_COL;
-        align = 0;
-        valign = 0;
+        align = {};
+        valign = {};
         if (tag->TryGetAttributeValue(ATTR_ALIGN, &i))
         {
             switch (i)
@@ -2934,7 +2926,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
                       (HTT_X | HTT_Y)))
                 {
                     tbl->tabattr[tbl->row + i][tbl->col + j] |=
-                        ((i > 0) ? HTT_Y : 0) | ((j > 0) ? HTT_X : 0);
+                        ((i > 0) ? HTT_Y : HTT_NONE) | ((j > 0) ? HTT_X : HTT_NONE);
                 }
                 if (tbl->col + j > tbl->maxcol)
                 {

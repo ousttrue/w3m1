@@ -1,29 +1,7 @@
 #pragma once
 #include "html/html.h"
-
-#if (defined(MESCHACH) && !defined(MATRIX))
-#define MATRIX
-#endif /* (defined(MESCHACH) && !defined(MATRIX)) */
-
-#ifdef MATRIX
-#ifdef MESCHACH
-#include <matrix2.h>
-#else /* not MESCHACH */
+#include "html/readbuffer.h"
 #include "matrix.h"
-#endif /* not MESCHACH */
-#endif /* MATRIX */
-
-#include "frontend/line.h"
-
-#define MAX_INDENT_LEVEL 10
-
-#define MAX_TABLE 20   /* maximum nest level of table */
-#define MAX_TABLE_N 20 /* maximum number of table in same level */
-
-#define MAXROW 50
-#define MAXCOL 50
-
-#define MAX_WIDTH 80
 
 enum BorderModes
 {
@@ -33,15 +11,25 @@ enum BorderModes
     BORDER_NOWIN = 3,
 };
 
-typedef unsigned short table_attr;
-
-/* flag */
-#define TBL_IN_ROW 1
-#define TBL_EXPAND_OK 2
-#define TBL_IN_COL 4
+enum TableAttributes
+{
+    HTT_NONE = 0,
+    HTT_X = 1,
+    HTT_Y = 2,
+    HTT_NOWRAP = 4,
+    HTT_ALIGN = 0x30,
+    HTT_LEFT = 0x00,
+    HTT_CENTER = 0x10,
+    HTT_RIGHT = 0x20,
+    HTT_TRSET = 0x40,
+    HTT_VALIGN = 0x700,
+    HTT_TOP = 0x100,
+    HTT_MIDDLE = 0x200,
+    HTT_BOTTOM = 0x400,
+    HTT_VTRSET = 0x800,
+};
 
 #define MAXCELL 20
-#define MAXROWCELL 1000
 struct table_cell
 {
     short col[MAXCELL];
@@ -76,6 +64,7 @@ struct table_linfo
     short length;
 };
 
+#define MAXCOL 50
 struct table
 {
     int row;
@@ -101,12 +90,10 @@ struct table
     Str id;
 
     struct GeneralList ***tabdata;
-    table_attr **tabattr;
-    table_attr trattr;
-#ifdef ID_EXT
+    TableAttributes **tabattr;
+    TableAttributes trattr;
     Str **tabidvalue;
     Str *tridvalue;
-#endif
     short tabwidth[MAXCOL];
     short minimum_width[MAXCOL];
     short fixed_width[MAXCOL];
@@ -138,37 +125,16 @@ struct table
     void print_sep(int row, VerticalAlignTypes type, int maxcol, Str buf, int symbolWidth);
 };
 
-#include "readbuffer.h"
-
-#define TBLM_PRE RB_PRE
-#define TBLM_SCRIPT RB_SCRIPT
-#define TBLM_STYLE RB_STYLE
-#define TBLM_PLAIN RB_PLAIN
-#define TBLM_NOBR RB_NOBR
-#define TBLM_PRE_INT RB_PRE_INT
-#define TBLM_INTXTA RB_INTXTA
-#define TBLM_INSELECT RB_INSELECT
-#define TBLM_PREMODE (TBLM_PRE | TBLM_PRE_INT | TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN | TBLM_INTXTA)
-#define TBLM_SPECIAL (TBLM_PRE | TBLM_PRE_INT | TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN | TBLM_NOBR)
-#define TBLM_DEL RB_DEL
-#define TBLM_S RB_S
-#define TBLM_ANCHOR 0x1000000
-
 struct table_mode
 {
-    unsigned int pre_mode;
+    TableModes pre_mode;
     char indent_level;
     char caption;
     short nobr_offset;
     char nobr_level;
     short anchor_offset;
-    unsigned char end_tag;
+    HtmlTags end_tag;
 };
-
-/* Local Variables:    */
-/* c-basic-offset: 4   */
-/* tab-width: 8        */
-/* End:                */
 
 void align(struct TextLine *lbuf, int width, AlignTypes mode);
 
