@@ -1123,7 +1123,7 @@ void Buffer::ArrangeLine()
     if (this->LineCount() == 0)
         return;
 
-    m_redraw = B_NORMAL;
+    m_redraw = B_FORCE_REDRAW;
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
     auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos - this->currentLine->bwidth);
     auto cpos = this->currentLine->COLPOS(i) - this->currentColumn;
