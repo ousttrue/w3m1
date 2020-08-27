@@ -22,6 +22,152 @@
 
 #include "frontend/terminal.h"
 
+static int visible_length_offset = 0;
+int visible_length(const char *str)
+{
+    int len = 0, n, max_len = 0;
+    TokenStatusTypes status = R_ST_NORMAL;
+    TokenStatusTypes prev_status = status;
+    Str tagbuf = Strnew();
+    int amp_len = 0;
+
+    auto t = str;
+    while (*str)
+    {
+        prev_status = status;
+        if (next_status(*str, &status))
+        {
+#ifdef USE_M17N
+            len += get_mcwidth(str);
+            n = get_mclen(str);
+        }
+        else
+        {
+            n = 1;
+        }
+#else
+            len++;
+        }
+#endif
+        if (status == R_ST_TAG0)
+        {
+            tagbuf->Clear();
+            tagbuf->Push(str, n);
+        }
+        else if (status == R_ST_TAG || status == R_ST_DQUOTE || status == R_ST_QUOTE || status == R_ST_EQL || status == R_ST_VALUE)
+        {
+            tagbuf->Push(str, n);
+        }
+        else if (status == R_ST_AMP)
+        {
+            if (prev_status == R_ST_NORMAL)
+            {
+                tagbuf->Clear();
+                len--;
+                amp_len = 0;
+            }
+            else
+            {
+                tagbuf->Push(str, n);
+                amp_len++;
+            }
+        }
+        else if (status == R_ST_NORMAL && prev_status == R_ST_AMP)
+        {
+            tagbuf->Push(str, n);
+            auto [r2, view] = getescapecmd(tagbuf->ptr, w3mApp::Instance().InnerCharset);
+            if (r2[0] == '\0' && (view[0] == '\r' || view[0] == '\n'))
+            {
+                if (len > max_len)
+                    max_len = len;
+                len = 0;
+            }
+            else
+                len += get_strwidth(t) + get_strwidth(r2);
+        }
+        else if (status == R_ST_NORMAL && ST_IS_REAL_TAG(prev_status))
+        {
+            ;
+        }
+        else if (*str == '\t')
+        {
+            len--;
+            do
+            {
+                len++;
+            } while ((visible_length_offset + len) % w3mApp::Instance().Tabstop != 0);
+        }
+        else if (*str == '\r' || *str == '\n')
+        {
+            len--;
+            if (len > max_len)
+                max_len = len;
+            len = 0;
+        }
+#ifdef USE_M17N
+        str += n;
+#else
+        str++;
+#endif
+    }
+    if (status == R_ST_AMP)
+    {
+        auto [r2, view] = getescapecmd(tagbuf->ptr, w3mApp::Instance().InnerCharset);
+        if (view[0] != '\r' && view[0] != '\n')
+            len += get_strwidth(t) + get_strwidth(r2);
+    }
+    return len > max_len ? len : max_len;
+}
+
+int visible_length_plain(const char *str)
+{
+    int len = 0, max_len = 0;
+
+    while (*str)
+    {
+        if (*str == '\t')
+        {
+            do
+            {
+                len++;
+            } while ((visible_length_offset + len) % w3mApp::Instance().Tabstop != 0);
+            str++;
+        }
+        else if (*str == '\r' || *str == '\n')
+        {
+            if (len > max_len)
+                max_len = len;
+            len = 0;
+            str++;
+        }
+        else
+        {
+#ifdef USE_M17N
+            len += get_mcwidth(str);
+            str += get_mclen(str);
+#else
+            len++;
+            str++;
+#endif
+        }
+    }
+    return len > max_len ? len : max_len;
+}
+
+static int
+maximum_visible_length(const char *str, int offset)
+{
+    visible_length_offset = offset;
+    return visible_length(str);
+}
+
+static int
+maximum_visible_length_plain(const char *str, int offset)
+{
+    visible_length_offset = offset;
+    return visible_length_plain(str);
+}
+
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
 #define TK_VERTICALBAR(mode) RULE(mode, 5)
 
@@ -240,6 +386,9 @@ dv2sv(double *dv, short *iv, int size)
 }
 #endif
 
+///
+/// table
+///
 int table::table_colspan(int row, int col)
 {
     int i;
@@ -248,28 +397,26 @@ int table::table_colspan(int row, int col)
     return i - col;
 }
 
-static int
-table_rowspan(struct table *t, int row, int col)
+int table::table_rowspan(int row, int col)
 {
     int i;
-    if (!t->tabattr[row])
+    if (!this->tabattr[row])
         return 0;
-    for (i = row + 1; i <= t->maxrow && t->tabattr[i] &&
-                      (t->tabattr[i][col] & HTT_Y);
+    for (i = row + 1; i <= this->maxrow && this->tabattr[i] &&
+                      (this->tabattr[i][col] & HTT_Y);
          i++)
         ;
     return i - row;
 }
 
-static int
-minimum_cellspacing(int border_mode, HtmlContext *seq)
+static int minimum_cellspacing(BorderModes border_mode, int symbolWidth)
 {
     switch (border_mode)
     {
     case BORDER_THIN:
     case BORDER_THICK:
     case BORDER_NOWIN:
-        return seq->SymbolWidth();
+        return symbolWidth;
     case BORDER_NONE:
         return 1;
     default:
@@ -278,25 +425,23 @@ minimum_cellspacing(int border_mode, HtmlContext *seq)
     }
 }
 
-static int
-table_border_width(struct table *t, HtmlContext *seq)
+int table::table_border_width(int symbolWidth)
 {
-    switch (t->border_mode)
+    switch (this->border_mode)
     {
     case BORDER_THIN:
     case BORDER_THICK:
-        return t->maxcol * t->cellspacing + 2 * (seq->SymbolWidth() + t->cellpadding);
+        return this->maxcol * this->cellspacing + 2 * (symbolWidth + this->cellpadding);
     case BORDER_NOWIN:
     case BORDER_NONE:
-        return t->maxcol * t->cellspacing;
+        return this->maxcol * this->cellspacing;
     default:
         /* not reached */
         return 0;
     }
 }
 
-struct table *
-newTable()
+struct table *newTable()
 {
     struct table *t;
     int i, j;
@@ -423,211 +568,60 @@ void table::check_row(int row)
     }
 }
 
-void pushdata(struct table *t, int row, int col, const char *data)
+void table::pushdata(int row, int col, const char *data)
 {
-    t->check_row(row);
-    if (t->tabdata[row][col] == NULL)
-        t->tabdata[row][col] = newGeneralList();
+    this->check_row(row);
+    if (this->tabdata[row][col] == NULL)
+        this->tabdata[row][col] = newGeneralList();
 
-    pushText((TextList *)t->tabdata[row][col], data ? data : "");
+    pushText((TextList *)this->tabdata[row][col], data ? data : "");
 }
 
-void suspend_or_pushdata(struct table *tbl, const char *line)
+void table::suspend_or_pushdata(const char *line)
 {
-    if (tbl->flag & TBL_IN_COL)
-        pushdata(tbl, tbl->row, tbl->col, line);
+    if (this->flag & TBL_IN_COL)
+        this->pushdata(this->row, this->col, line);
     else
     {
-        if (!tbl->suspended_data)
-            tbl->suspended_data = newTextList();
-        pushText(tbl->suspended_data, line ? line : (char *)"");
+        if (!this->suspended_data)
+            this->suspended_data = newTextList();
+        pushText(this->suspended_data, line ? line : (char *)"");
     }
 }
 
-#ifdef USE_M17N
-#define PUSH_TAG(str, n) tagbuf->Push(str, n)
-#else
-#define PUSH_TAG(str, n) tagbuf->Push(*str)
-#endif
-
-int visible_length_offset = 0;
-int visible_length(const char *str)
+void align(TextLine *lbuf, int width, AlignTypes mode)
 {
-    int len = 0, n, max_len = 0;
-    TokenStatusTypes status = R_ST_NORMAL;
-    TokenStatusTypes prev_status = status;
-    Str tagbuf = Strnew();
-    int amp_len = 0;
-
-    auto t = str;
-    while (*str)
-    {
-        prev_status = status;
-        if (next_status(*str, &status))
-        {
-#ifdef USE_M17N
-            len += get_mcwidth(str);
-            n = get_mclen(str);
-        }
-        else
-        {
-            n = 1;
-        }
-#else
-            len++;
-        }
-#endif
-        if (status == R_ST_TAG0)
-        {
-            tagbuf->Clear();
-            PUSH_TAG(str, n);
-        }
-        else if (status == R_ST_TAG || status == R_ST_DQUOTE || status == R_ST_QUOTE || status == R_ST_EQL || status == R_ST_VALUE)
-        {
-            PUSH_TAG(str, n);
-        }
-        else if (status == R_ST_AMP)
-        {
-            if (prev_status == R_ST_NORMAL)
-            {
-                tagbuf->Clear();
-                len--;
-                amp_len = 0;
-            }
-            else
-            {
-                PUSH_TAG(str, n);
-                amp_len++;
-            }
-        }
-        else if (status == R_ST_NORMAL && prev_status == R_ST_AMP)
-        {
-            PUSH_TAG(str, n);
-            auto [r2, view] = getescapecmd(tagbuf->ptr, w3mApp::Instance().InnerCharset);
-            if (r2[0] == '\0' && (view[0] == '\r' || view[0] == '\n'))
-            {
-                if (len > max_len)
-                    max_len = len;
-                len = 0;
-            }
-            else
-                len += get_strwidth(t) + get_strwidth(r2);
-        }
-        else if (status == R_ST_NORMAL && ST_IS_REAL_TAG(prev_status))
-        {
-            ;
-        }
-        else if (*str == '\t')
-        {
-            len--;
-            do
-            {
-                len++;
-            } while ((visible_length_offset + len) % w3mApp::Instance().Tabstop != 0);
-        }
-        else if (*str == '\r' || *str == '\n')
-        {
-            len--;
-            if (len > max_len)
-                max_len = len;
-            len = 0;
-        }
-#ifdef USE_M17N
-        str += n;
-#else
-        str++;
-#endif
-    }
-    if (status == R_ST_AMP)
-    {
-        auto [r2, view] = getescapecmd(tagbuf->ptr, w3mApp::Instance().InnerCharset);
-        if (view[0] != '\r' && view[0] != '\n')
-            len += get_strwidth(t) + get_strwidth(r2);
-    }
-    return len > max_len ? len : max_len;
-}
-
-int visible_length_plain(const char *str)
-{
-    int len = 0, max_len = 0;
-
-    while (*str)
-    {
-        if (*str == '\t')
-        {
-            do
-            {
-                len++;
-            } while ((visible_length_offset + len) % w3mApp::Instance().Tabstop != 0);
-            str++;
-        }
-        else if (*str == '\r' || *str == '\n')
-        {
-            if (len > max_len)
-                max_len = len;
-            len = 0;
-            str++;
-        }
-        else
-        {
-#ifdef USE_M17N
-            len += get_mcwidth(str);
-            str += get_mclen(str);
-#else
-            len++;
-            str++;
-#endif
-        }
-    }
-    return len > max_len ? len : max_len;
-}
-
-static int
-maximum_visible_length(const char *str, int offset)
-{
-    visible_length_offset = offset;
-    return visible_length(str);
-}
-
-static int
-maximum_visible_length_plain(const char *str, int offset)
-{
-    visible_length_offset = offset;
-    return visible_length_plain(str);
-}
-
-void align(TextLine *lbuf, int width, int mode)
-{
-    int i, l, l1, l2;
-    Str buf, line = lbuf->line;
-
+    Str line = lbuf->line;
     if (line->Size() == 0)
     {
-        for (i = 0; i < width; i++)
+        for (int i = 0; i < width; i++)
             line->Push(' ');
         lbuf->pos = width;
         return;
     }
-    buf = Strnew();
-    l = width - lbuf->pos;
+
+    auto buf = Strnew();
+    auto l = width - lbuf->pos;
     switch (mode)
     {
     case ALIGN_CENTER:
-        l1 = l / 2;
-        l2 = l - l1;
-        for (i = 0; i < l1; i++)
+    {
+        auto l1 = l / 2;
+        auto l2 = l - l1;
+        for (int i = 0; i < l1; i++)
             buf->Push(' ');
         buf->Push(line);
-        for (i = 0; i < l2; i++)
+        for (int i = 0; i < l2; i++)
             buf->Push(' ');
         break;
+    }
     case ALIGN_LEFT:
         buf->Push(line);
-        for (i = 0; i < l; i++)
+        for (int i = 0; i < l; i++)
             buf->Push(' ');
         break;
     case ALIGN_RIGHT:
-        for (i = 0; i < l; i++)
+        for (int i = 0; i < l; i++)
             buf->Push(' ');
         buf->Push(line);
         break;
@@ -639,25 +633,23 @@ void align(TextLine *lbuf, int width, int mode)
         lbuf->pos = width;
 }
 
-void print_item(struct table *t, int row, int col, int width, Str buf)
+void table::print_item(int row, int col, int width, Str buf)
 {
-    int alignment;
-    TextLine *lbuf;
-
-    if (t->tabdata[row])
-        lbuf = popTextLine((TextLineList *)t->tabdata[row][col]);
-    else
-        lbuf = NULL;
-
-    if (lbuf != NULL)
+    if (!this->tabdata[row])
     {
-        t->check_row(row);
-        alignment = ALIGN_CENTER;
-        if ((t->tabattr[row][col] & HTT_ALIGN) == HTT_LEFT)
+        return;
+    }
+
+    auto lbuf = popTextLine((TextLineList *)this->tabdata[row][col]);
+    if (lbuf)
+    {
+        this->check_row(row);
+        auto alignment = ALIGN_CENTER;
+        if ((this->tabattr[row][col] & HTT_ALIGN) == HTT_LEFT)
             alignment = ALIGN_LEFT;
-        else if ((t->tabattr[row][col] & HTT_ALIGN) == HTT_RIGHT)
+        else if ((this->tabattr[row][col] & HTT_ALIGN) == HTT_RIGHT)
             alignment = ALIGN_RIGHT;
-        else if ((t->tabattr[row][col] & HTT_ALIGN) == HTT_CENTER)
+        else if ((this->tabattr[row][col] & HTT_ALIGN) == HTT_CENTER)
             alignment = ALIGN_CENTER;
         align(lbuf, width, alignment);
         buf->Push(lbuf->line);
@@ -670,20 +662,16 @@ void print_item(struct table *t, int row, int col, int width, Str buf)
     }
 }
 
-#define T_TOP 0
-#define T_MIDDLE 1
-#define T_BOTTOM 2
-
-static void print_sep(struct table *t, int row, int type, int maxcol, Str buf, HtmlContext *seq)
+void table::print_sep(int row, VerticalAlignTypes type, int maxcol, Str buf, int symbolWidth)
 {
     int forbid;
     int rule_mode;
     int i, k, l, m;
 
     if (row >= 0)
-        t->check_row(row);
-    t->check_row(row + 1);
-    if ((type == T_TOP || type == T_BOTTOM) && t->border_mode == BORDER_THICK)
+        this->check_row(row);
+    this->check_row(row + 1);
+    if ((type == VALIGN_TOP || type == VALIGN_BOTTOM) && this->border_mode == BORDER_THICK)
     {
         rule_mode = BORDER_THICK;
     }
@@ -692,89 +680,89 @@ static void print_sep(struct table *t, int row, int type, int maxcol, Str buf, H
         rule_mode = BORDER_THIN;
     }
     forbid = 1;
-    if (type == T_TOP)
+    if (type == VALIGN_TOP)
         forbid |= 2;
-    else if (type == T_BOTTOM)
+    else if (type == VALIGN_BOTTOM)
         forbid |= 8;
-    else if (t->tabattr[row + 1][0] & HTT_Y)
+    else if (this->tabattr[row + 1][0] & HTT_Y)
     {
         forbid |= 4;
     }
-    if (t->border_mode != BORDER_NOWIN)
+    if (this->border_mode != BORDER_NOWIN)
     {
-        push_symbol(buf, RULE(t->border_mode, forbid), seq->SymbolWidth(), 1);
+        push_symbol(buf, RULE(this->border_mode, forbid), symbolWidth, 1);
     }
     for (i = 0; i <= maxcol; i++)
     {
         forbid = 10;
-        if (type != T_BOTTOM && (t->tabattr[row + 1][i] & HTT_Y))
+        if (type != VALIGN_BOTTOM && (this->tabattr[row + 1][i] & HTT_Y))
         {
-            if (t->tabattr[row + 1][i] & HTT_X)
+            if (this->tabattr[row + 1][i] & HTT_X)
             {
                 goto do_last_sep;
             }
             else
             {
                 for (k = row;
-                     k >= 0 && t->tabattr[k] && (t->tabattr[k][i] & HTT_Y);
+                     k >= 0 && this->tabattr[k] && (this->tabattr[k][i] & HTT_Y);
                      k--)
                     ;
-                m = t->tabwidth[i] + 2 * t->cellpadding;
-                for (l = i + 1; l <= t->maxcol && (t->tabattr[row][l] & HTT_X);
+                m = this->tabwidth[i] + 2 * this->cellpadding;
+                for (l = i + 1; l <= this->maxcol && (this->tabattr[row][l] & HTT_X);
                      l++)
-                    m += t->tabwidth[l] + t->cellspacing;
-                print_item(t, k, i, m, buf);
+                    m += this->tabwidth[l] + this->cellspacing;
+                this->print_item(k, i, m, buf);
             }
         }
         else
         {
-            int w = t->tabwidth[i] + 2 * t->cellpadding;
-            if (seq->SymbolWidth() == 2)
-                w = (w + 1) / seq->SymbolWidth();
-            push_symbol(buf, RULE(rule_mode, forbid), seq->SymbolWidth(), w);
+            int w = this->tabwidth[i] + 2 * this->cellpadding;
+            if (symbolWidth == 2)
+                w = (w + 1) / symbolWidth;
+            push_symbol(buf, RULE(rule_mode, forbid), symbolWidth, w);
         }
     do_last_sep:
         if (i < maxcol)
         {
             forbid = 0;
-            if (type == T_TOP)
+            if (type == VALIGN_TOP)
                 forbid |= 2;
-            else if (t->tabattr[row][i + 1] & HTT_X)
+            else if (this->tabattr[row][i + 1] & HTT_X)
             {
                 forbid |= 2;
             }
-            if (type == T_BOTTOM)
+            if (type == VALIGN_BOTTOM)
                 forbid |= 8;
             else
             {
-                if (t->tabattr[row + 1][i + 1] & HTT_X)
+                if (this->tabattr[row + 1][i + 1] & HTT_X)
                 {
                     forbid |= 8;
                 }
-                if (t->tabattr[row + 1][i + 1] & HTT_Y)
+                if (this->tabattr[row + 1][i + 1] & HTT_Y)
                 {
                     forbid |= 4;
                 }
-                if (t->tabattr[row + 1][i] & HTT_Y)
+                if (this->tabattr[row + 1][i] & HTT_Y)
                 {
                     forbid |= 1;
                 }
             }
             if (forbid != 15) /* forbid==15 means 'no rule at all' */
-                push_symbol(buf, RULE(rule_mode, forbid), seq->SymbolWidth(), 1);
+                push_symbol(buf, RULE(rule_mode, forbid), symbolWidth, 1);
         }
     }
     forbid = 4;
-    if (type == T_TOP)
+    if (type == VALIGN_TOP)
         forbid |= 2;
-    if (type == T_BOTTOM)
+    if (type == VALIGN_BOTTOM)
         forbid |= 8;
-    if (t->tabattr[row + 1][maxcol] & HTT_Y)
+    if (this->tabattr[row + 1][maxcol] & HTT_Y)
     {
         forbid |= 1;
     }
-    if (t->border_mode != BORDER_NOWIN)
-        push_symbol(buf, RULE(t->border_mode, forbid), seq->SymbolWidth(), 1);
+    if (this->border_mode != BORDER_NOWIN)
+        push_symbol(buf, RULE(this->border_mode, forbid), symbolWidth, 1);
 }
 
 static int
@@ -826,7 +814,6 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
                 tag->TryGetAttributeValue(ATTR_TID, &id);
             if (id >= 0 && id < tbl->ntable)
             {
-                int alignment;
                 TextLineListItem *ti;
                 struct table *t = tbl->tables[id].ptr;
                 int limit = tbl->tables[id].indent + t->total_width;
@@ -835,6 +822,8 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
                 h_env.flushline(0, 2, h_env.limit);
                 if (t->vspace > 0 && !(obuf.flag & RB_IGNORE_P))
                     do_blankline(&h_env, &obuf, 0, 0, h_env.limit);
+
+                AlignTypes alignment;
                 if (h_env.obuf->RB_GET_ALIGN() == RB_CENTER)
                     alignment = ALIGN_CENTER;
                 else if (h_env.obuf->RB_GET_ALIGN() == RB_RIGHT)
@@ -873,7 +862,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
     h_env.flushline(0, 2, h_env.limit);
     if (tbl->border_mode == BORDER_NONE)
     {
-        int rowspan = table_rowspan(tbl, row, col);
+        int rowspan = tbl->table_rowspan(row, col);
         if (row + rowspan <= tbl->maxrow)
         {
             if (tbl->vcellpadding > 0 && !(obuf.flag & RB_IGNORE_P))
@@ -1641,7 +1630,7 @@ void check_table_height(struct table *t)
             else
                 t_dep = t->tabdata[j][i]->nitem;
 
-            rowspan = table_rowspan(t, j, i);
+            rowspan = t->table_rowspan(j, i);
             if (rowspan > 1)
             {
                 int c = cell.maxcell + 1;
@@ -1768,7 +1757,7 @@ get_table_width(struct table *t, short *orgwidth, short *cellwidth, int flag, Ht
     {
         swidth += ceil_at_intervals(newwidth[i], rulewidth);
     }
-    swidth += table_border_width(t, seq);
+    swidth += t->table_border_width(seq->SymbolWidth());
     return swidth;
 }
 
@@ -1868,7 +1857,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 
     rulewidth = table_rule_width(t, seq);
 
-    max_width -= table_border_width(t, seq);
+    max_width -= t->table_border_width(seq->SymbolWidth());
 
     if (rulewidth > 1)
         max_width = floor_at_intervals(max_width, rulewidth);
@@ -1969,7 +1958,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         t->total_width += t->tabwidth[i];
     }
 
-    t->total_width += table_border_width(t, seq);
+    t->total_width += t->table_border_width(seq->SymbolWidth());
 
     check_table_height(t);
 
@@ -2028,7 +2017,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     case BORDER_THIN:
     case BORDER_THICK:
         renderbuf = Strnew();
-        print_sep(t, -1, T_TOP, t->maxcol, renderbuf, seq);
+        t->print_sep(-1, VALIGN_TOP, t->maxcol, renderbuf, seq->SymbolWidth());
         h_env->push_render_image(renderbuf, width, t->total_width);
         t->total_height += 1;
         break;
@@ -2094,10 +2083,10 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
                     {
                         for (j = r - 1; j >= 0 && t->tabattr[j] && (t->tabattr[j][i] & HTT_Y); j--)
                             ;
-                        print_item(t, j, i, w, renderbuf);
+                        t->print_item(j, i, w, renderbuf);
                     }
                     else
-                        print_item(t, r, i, w, renderbuf);
+                        t->print_item(r, i, w, renderbuf);
                 }
                 if (i < t->maxcol && !(t->tabattr[r][i + 1] & HTT_X))
                     renderbuf->Push(vruleb);
@@ -2115,7 +2104,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
         if (r < t->maxrow && t->border_mode != BORDER_NONE)
         {
             renderbuf = Strnew();
-            print_sep(t, r, T_MIDDLE, t->maxcol, renderbuf, seq);
+            t->print_sep(r, VALIGN_MIDDLE, t->maxcol, renderbuf, seq->SymbolWidth());
             h_env->push_render_image(renderbuf, width, t->total_width);
         }
         t->total_height += t->tabheight[r];
@@ -2125,7 +2114,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     case BORDER_THIN:
     case BORDER_THICK:
         renderbuf = Strnew();
-        print_sep(t, t->maxrow, T_BOTTOM, t->maxcol, renderbuf, seq);
+        t->print_sep(t->maxrow, VALIGN_BOTTOM, t->maxcol, renderbuf, seq->SymbolWidth());
         h_env->push_render_image(renderbuf, width, t->total_width);
         t->total_height += 1;
         break;
@@ -2145,11 +2134,10 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
 #else
 #define THR_PADDING 4
 #endif
-struct table *
-begin_table(int border, int spacing, int padding, int vspace, HtmlContext *seq)
+struct table *begin_table(BorderModes border, int spacing, int padding, int vspace, HtmlContext *seq)
 {
     struct table *t;
-    int mincell = minimum_cellspacing(border, seq);
+    int mincell = minimum_cellspacing(border, seq->SymbolWidth());
     int rcellspacing;
     int mincell_pixels = round(mincell * ImageManager::Instance().pixel_per_char);
     int ppc = round(ImageManager::Instance().pixel_per_char);
@@ -2510,7 +2498,7 @@ feed_table_inline_tag(struct table *tbl,
                       const char *line, struct table_mode *mode, int width)
 {
     check_rowcol(tbl, mode);
-    pushdata(tbl, tbl->row, tbl->col, line);
+    tbl->pushdata(tbl->row, tbl->col, line);
     if (width >= 0)
     {
         check_minimum0(tbl, width);
@@ -3188,10 +3176,10 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
                     feed_table_inline_tag(tbl, NULL, mode, t->Size());
                     tmp->Push(t);
                 }
-                pushdata(tbl, tbl->row, tbl->col, tmp->ptr);
+                tbl->pushdata(tbl->row, tbl->col, tmp->ptr);
             }
             else
-                pushdata(tbl, tbl->row, tbl->col, line);
+                tbl->pushdata(tbl->row, tbl->col, line);
             if (i >= 0)
             {
                 mode->pre_mode |= TBLM_ANCHOR;
@@ -3199,7 +3187,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
             }
         }
         else
-            suspend_or_pushdata(tbl, line);
+            tbl->suspend_or_pushdata(line);
         break;
     case HTML_DEL:
         switch (w3mApp::Instance().displayInsDel)
@@ -3348,7 +3336,7 @@ feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode,
     case HTML_FONT:
     case HTML_N_FONT:
     case HTML_NOP:
-        suspend_or_pushdata(tbl, line);
+        tbl->suspend_or_pushdata(line);
         break;
     case HTML_INTERNAL:
     case HTML_N_INTERNAL:
@@ -3506,7 +3494,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
         i = skip_space(tbl, line, linfo, !(mode->pre_mode & TBLM_NOBR));
         addcontentssize(tbl, visible_length(line) - i);
         tbl->setwidth(mode);
-        pushdata(tbl, tbl->row, tbl->col, line);
+        tbl->pushdata(tbl->row, tbl->col, line);
     }
     else if (mode->pre_mode & TBLM_PRE_INT)
     {
@@ -3515,7 +3503,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
             mode->nobr_offset = tbl->tabcontentssize;
         addcontentssize(tbl, maximum_visible_length(line, tbl->tabcontentssize));
         tbl->setwidth(mode);
-        pushdata(tbl, tbl->row, tbl->col, line);
+        tbl->pushdata(tbl->row, tbl->col, line);
     }
     else
     {
@@ -3556,7 +3544,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
             tbl->setwidth(mode);
             if (nl)
                 clearcontentssize(tbl, mode);
-            pushdata(tbl, tbl->row, tbl->col, p);
+            tbl->pushdata(tbl->row, tbl->col, p);
         }
     }
     return -1;

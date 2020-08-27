@@ -47,9 +47,7 @@ const char *mydirname(const char *s);
 
 Str unescape_spaces(Str s);
 double log_like(int x);
-struct table *newTable(void);
 
-void print_item(struct table *t, int row, int col, int width, Str buf);
 
 void check_rowcol(struct table *tbl, struct table_mode *mode);
 int minimum_length(char *line);

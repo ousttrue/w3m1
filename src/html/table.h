@@ -1,4 +1,6 @@
-/* $Id: table.h,v 1.12 2003/09/22 21:02:21 ukai Exp $ */
+#pragma once
+#include "html/html.h"
+
 #if (defined(MESCHACH) && !defined(MATRIX))
 #define MATRIX
 #endif /* (defined(MESCHACH) && !defined(MATRIX)) */
@@ -23,10 +25,13 @@
 
 #define MAX_WIDTH 80
 
-#define BORDER_NONE 0
-#define BORDER_THIN 1
-#define BORDER_THICK 2
-#define BORDER_NOWIN 3
+enum BorderModes
+{
+    BORDER_NONE = 0,
+    BORDER_THIN = 1,
+    BORDER_THICK = 2,
+    BORDER_NOWIN = 3,
+};
 
 typedef unsigned short table_attr;
 
@@ -78,7 +83,7 @@ struct table
     int maxrow;
     int maxcol;
     int max_rowsize;
-    int border_mode;
+    BorderModes border_mode;
     int total_width;
     int total_height;
     int tabcontentssize;
@@ -119,12 +124,18 @@ struct table
 #endif /* MATRIX */
     int sloppy_width;
 
+    int table_border_width(int symbolWidth);
     int table_colspan(int row, int col);
+    int table_rowspan(int row, int col);
     int setwidth0(struct table_mode *mode);
     void setwidth(struct table_mode *mode);
     void pushTable(struct table *);
     void check_row(int row);
     void feed_table_block_tag(const char *line, struct table_mode *mode, int indent, int cmd);
+    void pushdata(int row, int col, const char *data);
+    void suspend_or_pushdata(const char *line);
+    void print_item(int row, int col, int width, Str buf);
+    void print_sep(int row, VerticalAlignTypes type, int maxcol, Str buf, int symbolWidth);
 };
 
 #include "readbuffer.h"
@@ -159,11 +170,12 @@ struct table_mode
 /* tab-width: 8        */
 /* End:                */
 
-void align(struct TextLine *lbuf, int width, int mode);
+void align(struct TextLine *lbuf, int width, AlignTypes mode);
 
 int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal, class HtmlContext *seq);
 void do_refill(struct table *tbl, int row, int col, int maxlimit, class HtmlContext *seq);
 void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width, class HtmlContext *seq);
-struct table *begin_table(int border, int spacing, int padding, int vspace, class HtmlContext *seq);
+struct table *begin_table(BorderModes border, int spacing, int padding, int vspace, class HtmlContext *seq);
 void end_table(struct table *tbl, class HtmlContext *seq);
 int visible_length(const char *str);
+struct table *newTable(void);
