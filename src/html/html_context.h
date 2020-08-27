@@ -67,17 +67,24 @@ public:
 
     HtmlContext();
     ~HtmlContext();
-
     void Initialize(const BufferPtr &newBuf, CharacterEncodingScheme content_charset);
-    void print_internal_information(struct html_feed_environ *henv);
+    const CharacterEncodingScheme &DocCharset() const { return doc_charset; }
+    void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
+    Str process_n_select();
+    FormSelectOptionList *FormSelect(int n);
+    Str Textarea(int n) const;
+    Str process_n_textarea();
+    using FeedFunc = std::function<Str()>;
+    void BufferFromLines(BufferPtr buf, const FeedFunc &feed);
+    void completeHTMLstream(struct html_feed_environ *, struct readbuffer *);
+    void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
+    void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width);
 
 private:
-    void print_internal(struct TextLineList *tl);
+    void print_internal_information(struct html_feed_environ *henv);
 
-public:
-    const CharacterEncodingScheme &DocCharset() const { return doc_charset; }
+    void print_internal(struct TextLineList *tl);
     CharacterEncodingScheme CES() const { return cur_document_charset; }
-    void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
     void SetMetaCharset(CharacterEncodingScheme ces);
 
     void SetCurTitle(Str title)
@@ -92,7 +99,6 @@ public:
     int Get() const { return cur_hseq; }
 
     Str GetLinkNumberStr(int correction);
-
     // process <title>{content}</title> tag
     Str TitleOpen(struct parsed_tag *tag);
     void TitleContent(const char *str);
@@ -103,6 +109,7 @@ public:
     {
         return form_stack.size() ? form_stack.back() : -1;
     }
+
     Str FormOpen(struct parsed_tag *tag, int fid = -1);
     Str FormClose(void)
     {
@@ -117,11 +124,9 @@ public:
             return nullptr;
         return forms[form_id];
     }
-    std::vector<FormPtr> &FormEnd();
     void FormSetSelect(int n);
-    FormSelectOptionList *FormSelect(int n);
+    std::vector<FormPtr> &FormEnd();
     std::pair<int, FormSelectOptionList *> FormSelectCurrent();
-    Str process_n_select();
     void process_option();
     Str process_select(struct parsed_tag *tag);
     void feed_select(const char *str);
@@ -130,14 +135,12 @@ public:
     Str process_anchor(struct parsed_tag *tag, const char *tagbuf);
     // void clear(int n);
     void Textarea(int n, Str str);
-    Str Textarea(int n) const;
     std::pair<int, Str> TextareaCurrent() const;
+
     // push text to current_textarea
     void feed_textarea(const char *str);
     Str process_textarea(struct parsed_tag *tag, int width);
-    Str process_n_textarea();
 
-private:
     bool EndLineAddBuffer();
     void Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str);
 
@@ -152,15 +155,9 @@ private:
     Str process_hr(struct parsed_tag *tag, int width, int indent_width);
     int HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env);
 
-public:
-    using FeedFunc = std::function<Str()>;
-    void BufferFromLines(BufferPtr buf, const FeedFunc &feed);
-    void completeHTMLstream(struct html_feed_environ *, struct readbuffer *);
-    void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
     void make_caption(struct table *t, struct html_feed_environ *h_env);
     void do_refill(struct table *tbl, int row, int col, int maxlimit);
     int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal);
-    void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width);
     TagActions feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag);
     void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env);
     void renderCoTable(struct table *tbl, int maxlimit);
