@@ -20,7 +20,6 @@
 #include "html/html.h"
 #include "html/html_context.h"
 
-
 #include "frontend/terminal.h"
 
 #define RULE(mode, n) (((mode) == BORDER_THICK) ? ((n) + 16) : (n))
@@ -31,21 +30,23 @@
 #define NOBORDERWIDTH 1
 #define NOBORDERHEIGHT 0
 
-#define HTT_X 1
-#define HTT_Y 2
-#define HTT_ALIGN 0x30
-#define HTT_LEFT 0x00
-#define HTT_CENTER 0x10
-#define HTT_RIGHT 0x20
-#define HTT_TRSET 0x40
-#define HTT_VALIGN 0x700
-#define HTT_TOP 0x100
-#define HTT_MIDDLE 0x200
-#define HTT_BOTTOM 0x400
-#define HTT_VTRSET 0x800
-#ifdef NOWRAP
-#define HTT_NOWRAP 4
-#endif /* NOWRAP */
+enum AlignmentsFlags
+{
+    HTT_X = 1,
+    HTT_Y = 2,
+    HTT_NOWRAP = 4,
+    HTT_ALIGN = 0x30,
+    HTT_LEFT = 0x00,
+    HTT_CENTER = 0x10,
+    HTT_RIGHT = 0x20,
+    HTT_TRSET = 0x40,
+    HTT_VALIGN = 0x700,
+    HTT_TOP = 0x100,
+    HTT_MIDDLE = 0x200,
+    HTT_BOTTOM = 0x400,
+    HTT_VTRSET = 0x800,
+};
+
 #define TAG_IS(s, tag, len) (strncasecmp(s, tag, len) == 0 && (s[len] == '>' || IS_SPACE((int)s[len])))
 
 #ifndef max
@@ -808,7 +809,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
     orgdata = (TextList *)tbl->tabdata[row][col];
     tbl->tabdata[row][col] = newGeneralList();
 
-    init_henv(&h_env, &obuf, 
+    init_henv(&h_env, &obuf,
               (TextLineList *)tbl->tabdata[row][col],
               get_spec_cell_width(tbl, row, col), 0);
     obuf.flag |= RB_INTABLE;
@@ -3531,7 +3532,7 @@ int feed_table(struct table *tbl, const char *line, struct table_mode *mode,
         {
             int nl = false;
             const char *p;
-            if ((p = strchr(const_cast<char*>(line), '\r')) || (p = strchr(const_cast<char*>(line), '\n')))
+            if ((p = strchr(const_cast<char *>(line), '\r')) || (p = strchr(const_cast<char *>(line), '\n')))
             {
                 if (*p == '\r' && p[1] == '\n')
                     p++;
@@ -3582,35 +3583,29 @@ void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width,
         feed_table(tbl, tokbuf->ptr, mode, width, true, seq);
 }
 
-void pushTable(struct table *tbl, struct table *tbl1)
+void table::pushTable(table *tbl1)
 {
-    int col;
-    int row;
-
-    col = tbl->col;
-    row = tbl->row;
-
-    if (tbl->ntable >= tbl->tables_size)
+    if (this->ntable >= this->tables_size)
     {
         struct table_in *tmp;
-        tbl->tables_size += MAX_TABLE_N;
-        tmp = New_N(struct table_in, tbl->tables_size);
-        if (tbl->tables)
-            bcopy(tbl->tables, tmp, tbl->ntable * sizeof(struct table_in));
-        tbl->tables = tmp;
+        this->tables_size += MAX_TABLE_N;
+        tmp = New_N(struct table_in, this->tables_size);
+        if (this->tables)
+            bcopy(this->tables, tmp, this->ntable * sizeof(struct table_in));
+        this->tables = tmp;
     }
 
-    tbl->tables[tbl->ntable].ptr = tbl1;
-    tbl->tables[tbl->ntable].col = col;
-    tbl->tables[tbl->ntable].row = row;
-    tbl->tables[tbl->ntable].indent = tbl->indent;
-    tbl->tables[tbl->ntable].buf = newTextLineList();
-    check_row(tbl, row);
-    if (col + 1 <= tbl->maxcol && tbl->tabattr[row][col + 1] & HTT_X)
-        tbl->tables[tbl->ntable].cell = tbl->cell.icell;
+    this->tables[this->ntable].ptr = tbl1;
+    this->tables[this->ntable].col = col;
+    this->tables[this->ntable].row = row;
+    this->tables[this->ntable].indent = this->indent;
+    this->tables[this->ntable].buf = newTextLineList();
+    check_row(this, row);
+    if (col + 1 <= this->maxcol && this->tabattr[row][col + 1] & HTT_X)
+        this->tables[this->ntable].cell = this->cell.icell;
     else
-        tbl->tables[tbl->ntable].cell = -1;
-    tbl->ntable++;
+        this->tables[this->ntable].cell = -1;
+    this->ntable++;
 }
 
 #ifdef MATRIX

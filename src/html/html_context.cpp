@@ -2254,7 +2254,7 @@ table_start:
                 {
                     struct table *tbl0 = tables[obuf->table_level];
                     str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
-                    pushTable(tbl0, tbl);
+                    tbl0->pushTable(tbl0);
                     tbl = tbl0;
                     tbl_mode = &table_mode[obuf->table_level];
                     tbl_width = table_width(h_env, obuf->table_level);

@@ -15,7 +15,6 @@
 
 #define MAX_INDENT_LEVEL 10
 
-
 #define MAX_TABLE 20   /* maximum nest level of table */
 #define MAX_TABLE_N 20 /* maximum number of table in same level */
 
@@ -119,6 +118,8 @@ struct table
     VEC *vector;
 #endif /* MATRIX */
     int sloppy_width;
+
+    void pushTable(struct table *);
 };
 
 #include "readbuffer.h"
