@@ -772,7 +772,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
     if (h_env.limit > maxlimit)
         h_env.limit = maxlimit;
     if (tbl->border_mode != BORDER_NONE && tbl->vcellpadding > 0)
-        do_blankline(&h_env, &obuf, 0, 0, h_env.limit);
+        h_env.do_blankline(&obuf, 0, 0, h_env.limit);
     for (l = orgdata->first; l != NULL; l = l->next)
     {
         if (TAG_IS(l->ptr, "<table_alt", 10))
@@ -791,7 +791,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
                 h_env.obuf->save_fonteffect();
                 h_env.flushline(0, 2, h_env.limit);
                 if (t->vspace > 0 && !(obuf.flag & RB_IGNORE_P))
-                    do_blankline(&h_env, &obuf, 0, 0, h_env.limit);
+                    h_env.do_blankline(&obuf, 0, 0, h_env.limit);
 
                 AlignTypes alignment;
                 if (h_env.obuf->RB_GET_ALIGN() == RB_CENTER)
@@ -815,7 +815,7 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
                 h_env.blank_lines = 0;
                 if (t->vspace > 0)
                 {
-                    do_blankline(&h_env, &obuf, 0, 0, h_env.limit);
+                    h_env.do_blankline(&obuf, 0, 0, h_env.limit);
                     obuf.flag |= RB_IGNORE_P;
                 }
             }
@@ -836,12 +836,12 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
         if (row + rowspan <= tbl->maxrow)
         {
             if (tbl->vcellpadding > 0 && !(obuf.flag & RB_IGNORE_P))
-                do_blankline(&h_env, &obuf, 0, 0, h_env.limit);
+                h_env.do_blankline(&obuf, 0, 0, h_env.limit);
         }
         else
         {
             if (tbl->vspace > 0)
-                purgeline(&h_env);
+                h_env.purgeline();
         }
     }
     else
@@ -849,10 +849,10 @@ void do_refill(struct table *tbl, int row, int col, int maxlimit, HtmlContext *s
         if (tbl->vcellpadding > 0)
         {
             if (!(obuf.flag & RB_IGNORE_P))
-                do_blankline(&h_env, &obuf, 0, 0, h_env.limit);
+                h_env.do_blankline(&obuf, 0, 0, h_env.limit);
         }
         else
-            purgeline(&h_env);
+            h_env.purgeline();
     }
     if ((colspan = tbl->table_colspan(row, col)) > 1)
     {
@@ -1767,33 +1767,6 @@ static void renderCoTable(struct table *tbl, int maxlimit, HtmlContext *seq)
     }
 }
 
-static void
-make_caption(struct table *t, struct html_feed_environ *h_env, HtmlContext *seq)
-{
-    if (t->caption->Size() <= 0)
-        return;
-
-    int limit;
-    if (t->total_width > 0)
-        limit = t->total_width;
-    else
-        limit = h_env->limit;
-
-    struct readbuffer obuf;
-    html_feed_environ henv(&obuf, newTextLineList(), limit, h_env->envs.back().indent);
-    seq->HTMLlineproc0("<center>", &henv, true);
-    seq->HTMLlineproc0(t->caption->ptr, &henv, false);
-    seq->HTMLlineproc0("</center>", &henv, true);
-
-    if (t->total_width < henv.maxlimit)
-        t->total_width = henv.maxlimit;
-    limit = h_env->limit;
-    h_env->limit = t->total_width;
-    seq->HTMLlineproc0("<center>", h_env, true);
-    seq->HTMLlineproc0(t->caption->ptr, h_env, false);
-    seq->HTMLlineproc0("</center>", h_env, true);
-    h_env->limit = limit;
-}
 
 void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env, HtmlContext *seq)
 {
@@ -1806,7 +1779,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     MAT *mat, *minv;
     PERM *pivot;
 #endif /* MATRIX */
-    int width;
+
     int rulewidth;
     Str vrulea = NULL, vruleb = NULL, vrulec = NULL;
 #ifdef ID_EXT
@@ -1816,7 +1789,7 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     t->total_height = 0;
     if (t->maxcol < 0)
     {
-        make_caption(t, h_env, seq);
+        seq->make_caption(t, h_env);
         return;
     }
 
@@ -1968,18 +1941,18 @@ void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env
     }
 
     /* table output */
-    width = t->total_width;
+    auto width = t->total_width;
 
-    make_caption(t, h_env, seq);
+    seq->make_caption(t, h_env);
 
     seq->HTMLlineproc0("<pre for_table>", h_env, true);
-#ifdef ID_EXT
+
     if (t->id != NULL)
     {
         idtag = Sprintf("<_id id=\"%s\">", html_quote((t->id)->ptr));
         seq->HTMLlineproc0(idtag->ptr, h_env, true);
     }
-#endif /* ID_EXT */
+
     switch (t->border_mode)
     {
     case BORDER_THIN:

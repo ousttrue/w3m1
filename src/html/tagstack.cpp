@@ -371,31 +371,28 @@ void html_feed_environ::flushline(int indent, int force, int width)
         obuf->push_tag("<INS>", HTML_INS);
 }
 
-void do_blankline(struct html_feed_environ *h_env, struct readbuffer *obuf,
+void html_feed_environ::do_blankline(struct readbuffer *obuf,
                   int indent, int indent_incr, int width)
 {
-    if (h_env->blank_lines == 0)
-        h_env->flushline(indent, 1, width);
+    if (this->blank_lines == 0)
+        this->flushline(indent, 1, width);
 }
 
-void purgeline(struct html_feed_environ *h_env)
+void html_feed_environ::purgeline()
 {
-    char *p, *q;
-    Str tmp;
-
-    if (h_env->buf == NULL || h_env->blank_lines == 0)
+    if (this->buf == NULL || this->blank_lines == 0)
         return;
 
-    p = rpopTextLine(h_env->buf)->line->ptr;
-    tmp = Strnew();
+    auto p = rpopTextLine(this->buf)->line->ptr;
+    auto tmp = Strnew();
     while (*p)
     {
-        q = p;
+        auto q = p;
         if (sloppy_parse_line(&p))
         {
             tmp->Push(q, p - q);
         }
     }
-    appendTextLine(h_env->buf, tmp, 0);
-    h_env->blank_lines--;
+    appendTextLine(this->buf, tmp, 0);
+    this->blank_lines--;
 }
