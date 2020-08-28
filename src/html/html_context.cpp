@@ -131,13 +131,13 @@ public:
             CharacterEncodingScheme detected = {};
             auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, DocCharset(), w3mApp::Instance().InnerCharset);
             SetCES(detected);
-            HTMLlineproc0(converted->ptr, internal);
+            ProcessLine(converted->ptr, internal);
         }
 
         if (m_obuf.status != R_ST_NORMAL)
         {
             m_obuf.status = R_ST_EOL;
-            HTMLlineproc0("\n", internal);
+            ProcessLine("\n", internal);
         }
         m_obuf.status = R_ST_NORMAL;
         completeHTMLstream();
@@ -211,12 +211,12 @@ public:
             m_obuf.fontstat.in_ins = 0;
         }
         if (m_obuf.flag & RB_INTXTA)
-            this->HTMLlineproc0("</textarea>", true);
+            this->ProcessLine("</textarea>", true);
         /* for unbalanced select tag */
         if (m_obuf.flag & RB_INSELECT)
-            this->HTMLlineproc0("</select>", true);
+            this->ProcessLine("</select>", true);
         if (m_obuf.flag & RB_TITLE)
-            this->HTMLlineproc0("</title>", true);
+            this->ProcessLine("</title>", true);
 
         /* for unbalanced table tag */
         if (m_obuf.table_level >= MAX_TABLE)
@@ -225,7 +225,7 @@ public:
         while (m_obuf.table_level >= 0)
         {
             m_table_modes[m_obuf.table_level].pre_mode &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
-            this->HTMLlineproc0("</table>", true);
+            this->ProcessLine("</table>", true);
         }
     }
 
@@ -233,7 +233,7 @@ public:
     //
     // * from loadHtmlStream
     //
-    void HTMLlineproc0(const char *line, bool internal)
+    void ProcessLine(const char *line, bool internal)
     {
     table_start:
         bool prev_is_hangul = 0;
@@ -586,7 +586,7 @@ public:
                         m_obuf.line->Pop(m_obuf.line->Size() - m_obuf.bp.len());
                         m_obuf.bp.back_to(&m_obuf);
                         m_henv.flushline(indent, 0, m_henv.limit);
-                        this->HTMLlineproc0(line->ptr, true);
+                        this->ProcessLine(line->ptr, true);
                     }
                 }
             }
@@ -707,7 +707,7 @@ private:
             {
                 if (m_obuf.anchor.hseq > 0)
                 {
-                    this->HTMLlineproc0(ANSP, true);
+                    this->ProcessLine(ANSP, true);
                     m_obuf.set_space_to_prevchar();
                 }
                 else
@@ -759,7 +759,7 @@ private:
         if (m_obuf.flag & RB_IN_DT)
         {
             m_obuf.flag &= ~RB_IN_DT;
-            this->HTMLlineproc0("</b>", true);
+            this->ProcessLine("</b>", true);
         }
     }
     Str process_hr(struct parsed_tag *tag, int width, int indent_width);
@@ -2811,32 +2811,32 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     }
     case HTML_EM:
     {
-        this->HTMLlineproc0("<i>", true);
+        this->ProcessLine("<i>", true);
         return 1;
     }
     case HTML_N_EM:
     {
-        this->HTMLlineproc0("</i>", true);
+        this->ProcessLine("</i>", true);
         return 1;
     }
     case HTML_STRONG:
     {
-        this->HTMLlineproc0("<b>", true);
+        this->ProcessLine("<b>", true);
         return 1;
     }
     case HTML_N_STRONG:
     {
-        this->HTMLlineproc0("</b>", true);
+        this->ProcessLine("</b>", true);
         return 1;
     }
     case HTML_Q:
     {
-        this->HTMLlineproc0("`", true);
+        this->ProcessLine("`", true);
         return 1;
     }
     case HTML_N_Q:
     {
-        this->HTMLlineproc0("'", true);
+        this->ProcessLine("'", true);
         return 1;
     }
     case HTML_P:
@@ -2871,13 +2871,13 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             m_henv.do_blankline(m_henv.obuf, m_henv.envs.back().indent, 0,
                                 m_henv.limit);
         }
-        this->HTMLlineproc0("<b>", true);
+        this->ProcessLine("<b>", true);
         m_obuf.set_alignment(tag);
         return 1;
     }
     case HTML_N_H:
     {
-        this->HTMLlineproc0("</b>", true);
+        this->ProcessLine("</b>", true);
         if (!(m_obuf.flag & RB_PREMODE))
         {
             m_henv.flushline(m_henv.envs.back().indent, 0, m_henv.limit);
@@ -3078,7 +3078,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         }
         if (!(m_obuf.flag & RB_IN_DT))
         {
-            this->HTMLlineproc0("<b>", true);
+            this->ProcessLine("<b>", true);
             m_obuf.flag |= RB_IN_DT;
         }
         m_obuf.flag |= RB_IGNORE_P;
@@ -3117,7 +3117,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         m_obuf.end_tag = 0;
         auto tmp = this->TitleClose(tag);
         if (tmp)
-            this->HTMLlineproc0(tmp->ptr, true);
+            this->ProcessLine(tmp->ptr, true);
         return 1;
     }
     case HTML_TITLE_ALT:
@@ -3180,7 +3180,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     {
         this->close_anchor();
         auto tmp = this->process_hr(tag, m_henv.limit, m_henv.envs.back().indent);
-        this->HTMLlineproc0(tmp->ptr, true);
+        this->ProcessLine(tmp->ptr, true);
         m_obuf.set_space_to_prevchar();
         return 1;
     }
@@ -3370,7 +3370,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             auto tmp = this->process_anchor(tag, m_henv.tagbuf->ptr);
             m_obuf.push_tag(tmp->ptr, HTML_A);
             if (w3mApp::Instance().displayLinkNumber)
-                this->HTMLlineproc0(this->GetLinkNumberStr(-1)->ptr, true);
+                this->ProcessLine(this->GetLinkNumberStr(-1)->ptr, true);
             return 1;
         }
         return 0;
@@ -3383,7 +3383,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     case HTML_IMG:
     {
         auto tmp = this->process_img(tag, m_henv.limit);
-        this->HTMLlineproc0(tmp->ptr, true);
+        this->ProcessLine(tmp->ptr, true);
         return 1;
     }
     case HTML_IMG_ALT:
@@ -3548,7 +3548,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             m_henv.flushline(m_henv.envs.back().indent, 0, m_henv.limit);
         auto tmp = this->FormOpen(tag);
         if (tmp)
-            this->HTMLlineproc0(tmp->ptr, true);
+            this->ProcessLine(tmp->ptr, true);
         return 1;
     }
     case HTML_N_FORM:
@@ -3564,7 +3564,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         this->close_anchor();
         auto tmp = this->process_input(tag);
         if (tmp)
-            this->HTMLlineproc0(tmp->ptr, true);
+            this->ProcessLine(tmp->ptr, true);
         return 1;
     }
     case HTML_SELECT:
@@ -3572,7 +3572,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         this->close_anchor();
         auto tmp = this->process_select(tag);
         if (tmp)
-            this->HTMLlineproc0(tmp->ptr, true);
+            this->ProcessLine(tmp->ptr, true);
         m_obuf.flag |= RB_INSELECT;
         m_obuf.end_tag = HTML_N_SELECT;
         return 1;
@@ -3583,7 +3583,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         m_obuf.end_tag = 0;
         auto tmp = this->process_n_select();
         if (tmp)
-            this->HTMLlineproc0(tmp->ptr, true);
+            this->ProcessLine(tmp->ptr, true);
         return 1;
     }
     case HTML_OPTION:
@@ -3594,7 +3594,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         this->close_anchor();
         auto tmp = this->process_textarea(tag, m_henv.limit);
         if (tmp)
-            this->HTMLlineproc0(tmp->ptr, true);
+            this->ProcessLine(tmp->ptr, true);
         m_obuf.flag |= RB_INTXTA;
         m_obuf.end_tag = HTML_N_TEXTAREA;
         return 1;
@@ -3605,7 +3605,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         m_obuf.end_tag = 0;
         auto tmp = this->process_n_textarea();
         if (tmp)
-            this->HTMLlineproc0(tmp->ptr, true);
+            this->ProcessLine(tmp->ptr, true);
         return 1;
     }
     case HTML_ISINDEX:
@@ -3620,7 +3620,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
                                   html_quote(p),
                                   "<input type=text name=\"\" accept></form>",
                                   NULL);
-        this->HTMLlineproc0(tmp->ptr, true);
+        this->ProcessLine(tmp->ptr, true);
         return 1;
     }
     case HTML_META:
@@ -3657,7 +3657,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
                 tmp = Sprintf("Refresh (%d sec)", refresh_interval);
             if (tmp)
             {
-                this->HTMLlineproc0(tmp->ptr, true);
+                this->ProcessLine(tmp->ptr, true);
                 m_henv.do_blankline(m_henv.obuf, m_henv.envs.back().indent, 0,
                                     m_henv.limit);
                 if (!w3mApp::Instance().is_redisplay &&
@@ -3690,7 +3690,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             m_obuf.flag |= RB_DEL;
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            this->HTMLlineproc0("<U>[DEL:</U>", true);
+            this->ProcessLine("<U>[DEL:</U>", true);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
             m_obuf.fontstat.in_strike++;
@@ -3710,7 +3710,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             m_obuf.flag &= ~RB_DEL;
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            this->HTMLlineproc0("<U>:DEL]</U>", true);
+            this->ProcessLine("<U>:DEL]</U>", true);
         case DISPLAY_INS_DEL_FONTIFY:
             if (m_obuf.fontstat.in_strike == 0)
                 return 1;
@@ -3736,7 +3736,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             m_obuf.flag |= RB_S;
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            this->HTMLlineproc0("<U>[S:</U>", true);
+            this->ProcessLine("<U>[S:</U>", true);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
             m_obuf.fontstat.in_strike++;
@@ -3756,7 +3756,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             m_obuf.flag &= ~RB_S;
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            this->HTMLlineproc0("<U>:S]</U>", true);
+            this->ProcessLine("<U>:S]</U>", true);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
             if (m_obuf.fontstat.in_strike == 0)
@@ -3781,7 +3781,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         case DISPLAY_INS_DEL_SIMPLE:
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            this->HTMLlineproc0("<U>[INS:</U>", true);
+            this->ProcessLine("<U>[INS:</U>", true);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
             m_obuf.fontstat.in_ins++;
@@ -3800,7 +3800,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         case DISPLAY_INS_DEL_SIMPLE:
             break;
         case DISPLAY_INS_DEL_NORMAL:
-            this->HTMLlineproc0("<U>:INS]</U>", true);
+            this->ProcessLine("<U>:INS]</U>", true);
             break;
         case DISPLAY_INS_DEL_FONTIFY:
             if (m_obuf.fontstat.in_ins == 0)
@@ -3822,7 +3822,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     case HTML_SUP:
     {
         if (!(m_obuf.flag & (RB_DEL | RB_S)))
-            this->HTMLlineproc0("^", true);
+            this->ProcessLine("^", true);
         return 1;
     }
     case HTML_N_SUP:
@@ -3830,13 +3830,13 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     case HTML_SUB:
     {
         if (!(m_obuf.flag & (RB_DEL | RB_S)))
-            this->HTMLlineproc0("[", true);
+            this->ProcessLine("[", true);
         return 1;
     }
     case HTML_N_SUB:
     {
         if (!(m_obuf.flag & (RB_DEL | RB_S)))
-            this->HTMLlineproc0("]", true);
+            this->ProcessLine("]", true);
         return 1;
     }
     case HTML_FONT:
@@ -3852,7 +3852,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             {
                 auto q = html_quote(p);
                 Str s = Sprintf("<A HREF=\"%s\">bgsound(%s)</A>", q, q);
-                this->HTMLlineproc0(s->ptr, true);
+                this->ProcessLine(s->ptr, true);
             }
         }
         return 1;
@@ -3866,7 +3866,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             {
                 auto q = html_quote(p);
                 Str s = Sprintf("<A HREF=\"%s\">embed(%s)</A>", q, q);
-                this->HTMLlineproc0(s->ptr, true);
+                this->ProcessLine(s->ptr, true);
             }
         }
         return 1;
@@ -3880,7 +3880,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             {
                 auto q = html_quote(p);
                 auto s = Sprintf("<A HREF=\"%s\">applet archive(%s)</A>", q, q);
-                this->HTMLlineproc0(s->ptr, true);
+                this->ProcessLine(s->ptr, true);
             }
         }
         return 1;
@@ -3894,7 +3894,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             {
                 auto q = html_quote(p);
                 auto s = Sprintf("<IMG SRC=\"%s\" ALT=\"bg image(%s)\"><BR>", q, q);
-                this->HTMLlineproc0(s->ptr, true);
+                this->ProcessLine(s->ptr, true);
             }
         }
         return 1;
@@ -3902,7 +3902,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     case HTML_N_HEAD:
     {
         if (m_obuf.flag & RB_TITLE)
-            this->HTMLlineproc0("</title>", true);
+            this->ProcessLine("</title>", true);
         return 1;
     }
     case HTML_HEAD:
@@ -3951,17 +3951,17 @@ void HtmlContext::make_caption(struct table *t)
     // TODO:
     // struct readbuffer obuf;
     // html_feed_environ henv(&obuf, newTextLineList(), limit, h_env->envs.back().indent);
-    this->HTMLlineproc0("<center>", true);
-    this->HTMLlineproc0(t->caption->ptr, false);
-    this->HTMLlineproc0("</center>", true);
+    this->ProcessLine("<center>", true);
+    this->ProcessLine(t->caption->ptr, false);
+    this->ProcessLine("</center>", true);
 
     // if (t->total_width < henv.maxlimit)
     //     t->total_width = henv.maxlimit;
     limit = m_henv.limit;
     m_henv.limit = t->total_width;
-    this->HTMLlineproc0("<center>", true);
-    this->HTMLlineproc0(t->caption->ptr, false);
-    this->HTMLlineproc0("</center>", true);
+    this->ProcessLine("<center>", true);
+    this->ProcessLine(t->caption->ptr, false);
+    this->ProcessLine("</center>", true);
     m_henv.limit = limit;
 }
 
@@ -4035,12 +4035,12 @@ void HtmlContext::do_refill(struct table *tbl, int row, int col, int maxlimit)
             }
         }
         else
-            this->HTMLlineproc0(l->ptr, true);
+            this->ProcessLine(l->ptr, true);
     }
     if (obuf.status != R_ST_NORMAL)
     {
         obuf.status = R_ST_EOL;
-        this->HTMLlineproc0("\n", true);
+        this->ProcessLine("\n", true);
     }
     this->completeHTMLstream();
     h_env.flushline(0, 2, h_env.limit);
@@ -5253,12 +5253,12 @@ void HtmlContext::renderTable(struct table *t, int max_width)
 
     this->make_caption(t);
 
-    this->HTMLlineproc0("<pre for_table>", true);
+    this->ProcessLine("<pre for_table>", true);
 
     if (t->id != NULL)
     {
         auto idtag = Sprintf("<_id id=\"%s\">", html_quote((t->id)->ptr));
-        this->HTMLlineproc0(idtag->ptr, true);
+        this->ProcessLine(idtag->ptr, true);
     }
 
     switch (t->border_mode)
@@ -5383,7 +5383,7 @@ void HtmlContext::renderTable(struct table *t, int max_width)
         t->total_width = 1;
         m_henv.push_render_image(renderbuf, 1, t->total_width);
     }
-    this->HTMLlineproc0("</pre>", true);
+    this->ProcessLine("</pre>", true);
 }
 
 void HtmlContext::renderCoTable(struct table *tbl, int maxlimit)
