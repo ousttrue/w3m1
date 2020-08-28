@@ -160,7 +160,7 @@ struct readbuffer
     }
 
     TokenStatusTypes status;
-    unsigned char end_tag;
+    HtmlTags end_tag;
     short table_level;
     short nobr_level;
     Anchor anchor;

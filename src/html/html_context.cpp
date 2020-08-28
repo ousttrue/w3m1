@@ -43,14 +43,14 @@ class HtmlContext
 {
     table *m_tables[MAX_TABLE];
     table_mode m_table_modes[MAX_TABLE];
-    int table_width(html_feed_environ *h_env, int table_level)
+    int table_width(int table_level)
     {
         if (table_level < 0)
             return 0;
         auto width = m_tables[table_level]->total_width;
         if (table_level > 0 || width > 0)
             return width;
-        return h_env->limit - h_env->envs.back().indent;
+        return m_henv.limit - m_henv.envs.back().indent;
     }
 
     // // HTML <meta>
@@ -74,7 +74,7 @@ class HtmlContext
     AnchorPtr a_img = nullptr;
     AnchorPtr a_form = nullptr;
 
-    HtmlTags internal = HTML_UNKNOWN;
+    HtmlTags m_internal = HTML_UNKNOWN;
 
     std::vector<int> form_stack;
     std::vector<FormPtr> forms;
@@ -229,46 +229,67 @@ public:
         }
     }
 
-    // HTML processing first pass
-    //
-    // * from loadHtmlStream
-    //
-    void ProcessLine(const char *line, bool internal)
+    enum class Flows
     {
-    table_start:
+        Exit,
+        Through,
+        Continue,
+    };
+
+    struct LineState
+    {
         bool prev_is_hangul = 0;
-        auto tokbuf = Strnew();
         table *tbl = NULL;
         table_mode *tbl_mode = NULL;
         int tbl_width = 0;
-        if (m_obuf.table_level >= 0)
+
+        ReadBufferFlags pre_mode(const readbuffer &obuf) const
         {
-            int level = std::min((int)m_obuf.table_level, (int)(MAX_TABLE - 1));
-            tbl = m_tables[level];
-            tbl_mode = &m_table_modes[level];
-            tbl_width = table_width(&m_henv, level);
+            return (ReadBufferFlags)((obuf.table_level >= 0) ? (int)tbl_mode->pre_mode : (int)obuf.flag);
         }
 
+        HtmlTags end_tag(const readbuffer &obuf) const
+        {
+            return (obuf.table_level >= 0) ? tbl_mode->end_tag : obuf.end_tag;
+        }
+
+        bool close_table(const readbuffer &obuf, table *m_tables[], table_mode *m_table_modes)
+        {
+            tbl->end();
+            if (obuf.table_level < 0)
+            {
+                return false;
+            }
+
+            struct table *tbl0 = m_tables[obuf.table_level];
+            auto str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
+            tbl0->pushTable(tbl0);
+            tbl = tbl0;
+            tbl_mode = &m_table_modes[obuf.table_level];
+            return true;
+        }
+    };
+
+    std::tuple<std::string_view, Flows> _ProcessLine(std::string_view _line, LineState *state, bool internal)
+    {
+        auto line = _line.data();
         while (*line != '\0')
         {
-            const char *str;
-            int is_tag = false;
-            int pre_mode = (m_obuf.table_level >= 0) ? tbl_mode->pre_mode : m_obuf.flag;
-            int end_tag = (m_obuf.table_level >= 0) ? tbl_mode->end_tag : m_obuf.end_tag;
-
+            auto is_tag = false;
+            const char *str = nullptr;
             if (*line == '<' || m_obuf.status != R_ST_NORMAL)
             {
                 /* 
-             * Tag processing
-             */
+                * Tag processing
+                */
                 if (m_obuf.status == R_ST_EOL)
                     m_obuf.status = R_ST_NORMAL;
                 else
                 {
                     read_token(m_henv.tagbuf, (char **)&line, &m_obuf.status,
-                               pre_mode & RB_PREMODE, m_obuf.status != R_ST_NORMAL);
+                               state->pre_mode(m_obuf) & RB_PREMODE, m_obuf.status != R_ST_NORMAL);
                     if (m_obuf.status != R_ST_NORMAL)
-                        return;
+                        return {line, Flows::Exit};
                 }
                 if (m_henv.tagbuf->Size() == 0)
                     continue;
@@ -277,8 +298,8 @@ public:
                 {
                     if (str[1] && REALLY_THE_BEGINNING_OF_A_TAG(str))
                         is_tag = true;
-                    else if (!(pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT |
-                                           RB_SCRIPT | RB_STYLE | RB_TITLE)))
+                    else if (!(state->pre_mode(m_obuf) & (RB_PLAIN | RB_INTXTA | RB_INSELECT |
+                                                          RB_SCRIPT | RB_STYLE | RB_TITLE)))
                     {
                         line = Strnew_m_charp(str + 1, line, NULL)->ptr;
                         str = "&lt;";
@@ -287,14 +308,15 @@ public:
             }
             else
             {
-                read_token(tokbuf, (char **)&line, &m_obuf.status, pre_mode & RB_PREMODE, 0);
+                auto tokbuf = Strnew();
+                read_token(tokbuf, (char **)&line, &m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE, 0);
                 if (m_obuf.status != R_ST_NORMAL) /* R_ST_AMP ? */
                     m_obuf.status = R_ST_NORMAL;
                 str = tokbuf->ptr;
             }
 
-            if (pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT | RB_SCRIPT |
-                            RB_STYLE | RB_TITLE))
+            if (state->pre_mode(m_obuf) & (RB_PLAIN | RB_INTXTA | RB_INSELECT | RB_SCRIPT |
+                                           RB_STYLE | RB_TITLE))
             {
                 bool processed = false;
                 if (is_tag)
@@ -302,21 +324,21 @@ public:
                     const char *p = str;
                     if (auto tag = parse_tag(&p, internal))
                     {
-                        if (tag->tagid == end_tag ||
-                            (pre_mode & RB_INSELECT && tag->tagid == HTML_N_FORM) || (pre_mode & RB_TITLE && (tag->tagid == HTML_N_HEAD || tag->tagid == HTML_BODY)))
+                        if (tag->tagid == state->end_tag(m_obuf) ||
+                            (state->pre_mode(m_obuf) & RB_INSELECT && tag->tagid == HTML_N_FORM) || (state->pre_mode(m_obuf) & RB_TITLE && (tag->tagid == HTML_N_HEAD || tag->tagid == HTML_BODY)))
                             processed = true;
                     }
                 }
 
                 /* title */
-                if (!processed && pre_mode & RB_TITLE)
+                if (!processed && state->pre_mode(m_obuf) & RB_TITLE)
                 {
                     this->TitleContent(str);
                     continue;
                 }
 
                 /* select */
-                if (!processed && pre_mode & RB_INSELECT)
+                if (!processed && state->pre_mode(m_obuf) & RB_INSELECT)
                 {
                     if (m_obuf.table_level >= 0)
                     {
@@ -347,62 +369,57 @@ public:
                 }
 
                 /* textarea */
-                if (!processed && pre_mode & RB_INTXTA)
+                if (!processed && state->pre_mode(m_obuf) & RB_INTXTA)
                 {
                     this->feed_textarea(str);
                     continue;
                 }
 
                 /* script */
-                if (!processed && pre_mode & RB_SCRIPT)
+                if (!processed && state->pre_mode(m_obuf) & RB_SCRIPT)
                     continue;
 
                 /* style */
-                if (!processed && pre_mode & RB_STYLE)
+                if (!processed && state->pre_mode(m_obuf) & RB_STYLE)
                     continue;
             }
 
             if (m_obuf.table_level >= 0)
             {
                 /* 
-                * within table: in <table>..</table>, all input tokens
-                * are fed to the table renderer, and then the renderer
-                * makes HTML output.
-                */
-                switch (this->feed_table(tbl, str, tbl_mode, tbl_width, internal))
+            * within table: in <table>..</table>, all input tokens
+            * are fed to the table renderer, and then the renderer
+            * makes HTML output.
+            */
+                switch (this->feed_table(state->tbl, str, state->tbl_mode, state->tbl_width, internal))
                 {
                 case 0:
                     /* </table> tag */
                     m_obuf.table_level--;
                     if (m_obuf.table_level >= MAX_TABLE - 1)
                         continue;
-                    tbl->end();
-                    if (m_obuf.table_level >= 0)
+                    if (state->close_table(m_obuf, m_tables, m_table_modes))
                     {
-                        struct table *tbl0 = m_tables[m_obuf.table_level];
-                        str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
-                        tbl0->pushTable(tbl0);
-                        tbl = tbl0;
-                        tbl_mode = &m_table_modes[m_obuf.table_level];
-                        tbl_width = table_width(&m_henv, m_obuf.table_level);
-                        this->feed_table(tbl, str, tbl_mode, tbl_width, true);
+                        state->tbl_width = table_width(m_obuf.table_level);
+                        this->feed_table(state->tbl, str, state->tbl_mode, state->tbl_width, true);
                         continue;
                         /* continue to the next */
                     }
+
                     if (m_obuf.flag & RB_DEL)
                         continue;
                     /* all tables have been read */
-                    if (tbl->vspace > 0 && !(m_obuf.flag & RB_IGNORE_P))
+                    if (state->tbl->vspace > 0 && !(m_obuf.flag & RB_IGNORE_P))
                     {
                         int indent = m_henv.envs.back().indent;
                         m_henv.flushline(indent, 0, m_henv.limit);
                         m_henv.do_blankline(&m_obuf, indent, 0, m_henv.limit);
                     }
                     m_obuf.save_fonteffect();
-                    this->renderTable(tbl, tbl_width);
+                    this->renderTable(state->tbl, state->tbl_width);
                     m_obuf.restore_fonteffect();
                     m_obuf.flag &= ~RB_IGNORE_P;
-                    if (tbl->vspace > 0)
+                    if (state->tbl->vspace > 0)
                     {
                         int indent = m_henv.envs.back().indent;
                         m_henv.do_blankline(&m_obuf, indent, 0, m_henv.limit);
@@ -422,7 +439,7 @@ public:
             {
                 /*** Beginning of a new tag ***/
                 auto tag = parse_tag(const_cast<const char **>(&str), internal);
-                if(!tag)
+                if (!tag)
                 {
                     continue;
                 }
@@ -444,7 +461,7 @@ public:
                 m_obuf.bp = {};
                 m_obuf.clear_ignore_p_flag(cmd);
                 if (cmd == HTML_TABLE)
-                    goto table_start;
+                    return {line, Flows::Continue};
                 else
                     continue;
             }
@@ -539,7 +556,7 @@ public:
                             is_hangul = wtf_is_hangul((uint8_t *)str);
 
                         if (!w3mApp::Instance().SimplePreserveSpace && mode == PC_KANJI1 &&
-                            !is_hangul && !prev_is_hangul &&
+                            !is_hangul && !state->prev_is_hangul &&
                             m_obuf.pos > m_henv.envs.back().indent &&
                             m_obuf.line->Back() == ' ')
                         {
@@ -561,7 +578,7 @@ public:
                                 m_obuf.pos--;
                             }
                         }
-                        prev_is_hangul = is_hangul;
+                        state->prev_is_hangul = is_hangul;
 
                         if (*str == '&')
                             m_obuf.proc_escape(&str);
@@ -591,11 +608,40 @@ public:
                 }
             }
         }
+
+        return {line, Flows::Through};
+    }
+
+    // HTML processing first pass
+    //
+    // * from loadHtmlStream
+    //
+    void ProcessLine(const char *line, bool internal)
+    {
+        int i = 0;
+        LineState state = {};
+        for (Flows flows = Flows::Continue; flows == Flows::Continue; ++i)
+        {
+            if (m_obuf.table_level >= 0)
+            {
+                int level = std::min((int)m_obuf.table_level, (int)(MAX_TABLE - 1));
+                state.tbl = m_tables[level];
+                state.tbl_mode = &m_table_modes[level];
+                state.tbl_width = table_width(level);
+            }
+
+            std::string_view remain;
+            std::tie(remain, flows) = _ProcessLine(line, &state, internal);
+            line = remain.data();
+            if (flows == Flows::Exit)
+            {
+                return;
+            }
+        }
+
         if (!(m_obuf.flag & (RB_SPECIAL | RB_INTXTA | RB_INSELECT)))
         {
             char *tp;
-            int i = 0;
-
             if (m_obuf.bp.pos() == m_obuf.pos)
             {
                 tp = &m_obuf.line->ptr[m_obuf.bp.len() - m_obuf.bp.tlen()];
@@ -605,6 +651,7 @@ public:
                 tp = &m_obuf.line->ptr[m_obuf.line->Size()];
             }
 
+            int i = 0;
             if (tp > m_obuf.line->ptr && tp[-1] == ' ')
                 i = 1;
 
@@ -1898,17 +1945,17 @@ Str HtmlContext::process_n_textarea()
 /* end of processing for one line */
 bool HtmlContext::EndLineAddBuffer()
 {
-    if (internal == HTML_UNKNOWN)
+    if (m_internal == HTML_UNKNOWN)
     {
         // add non html line
         return true;
     }
 
     // not add html line
-    if (internal == HTML_N_INTERNAL)
+    if (m_internal == HTML_N_INTERNAL)
     {
         // exit internal
-        internal = HTML_UNKNOWN;
+        m_internal = HTML_UNKNOWN;
     }
     return false;
 }
@@ -2339,10 +2386,10 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         break;
     }
     case HTML_INTERNAL:
-        this->internal = HTML_INTERNAL;
+        this->m_internal = HTML_INTERNAL;
         break;
     case HTML_N_INTERNAL:
-        this->internal = HTML_N_INTERNAL;
+        this->m_internal = HTML_N_INTERNAL;
         break;
     case HTML_FORM_INT:
     {
@@ -3114,7 +3161,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         if (!(m_obuf.flag & RB_TITLE))
             return 1;
         m_obuf.flag &= ~RB_TITLE;
-        m_obuf.end_tag = 0;
+        m_obuf.end_tag = HTML_UNKNOWN;
         auto tmp = this->TitleClose(tag);
         if (tmp)
             this->ProcessLine(tmp->ptr, true);
@@ -3314,7 +3361,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
             m_obuf.flag |= RB_IGNORE_P;
         }
         m_obuf.flag &= ~RB_PLAIN;
-        m_obuf.end_tag = 0;
+        m_obuf.end_tag = HTML_UNKNOWN;
         return 1;
     }
     case HTML_SCRIPT:
@@ -3332,13 +3379,13 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     case HTML_N_SCRIPT:
     {
         m_obuf.flag &= ~RB_SCRIPT;
-        m_obuf.end_tag = 0;
+        m_obuf.end_tag = HTML_UNKNOWN;
         return 1;
     }
     case HTML_N_STYLE:
     {
         m_obuf.flag &= ~RB_STYLE;
-        m_obuf.end_tag = 0;
+        m_obuf.end_tag = HTML_UNKNOWN;
         return 1;
     }
     case HTML_A:
@@ -3580,7 +3627,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     case HTML_N_SELECT:
     {
         m_obuf.flag &= ~RB_INSELECT;
-        m_obuf.end_tag = 0;
+        m_obuf.end_tag = HTML_UNKNOWN;
         auto tmp = this->process_n_select();
         if (tmp)
             this->ProcessLine(tmp->ptr, true);
@@ -3602,7 +3649,7 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
     case HTML_N_TEXTAREA:
     {
         m_obuf.flag &= ~RB_INTXTA;
-        m_obuf.end_tag = 0;
+        m_obuf.end_tag = HTML_UNKNOWN;
         auto tmp = this->process_n_textarea();
         if (tmp)
             this->ProcessLine(tmp->ptr, true);
