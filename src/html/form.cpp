@@ -31,8 +31,6 @@
 #define FORM_I_SELECT_DEFAULT_SIZE 40
 #define FORM_I_TEXTAREA_DEFAULT_WIDTH 40
 
-extern FormSelectOptionList *select_option;
-
 static void follow_map(tcb::span<parsed_tagarg> arg)
 {
     auto name = tag_get_value(arg, "link");
