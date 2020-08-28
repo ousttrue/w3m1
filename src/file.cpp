@@ -814,7 +814,7 @@ LinePtr getNextPage(BufferPtr buf, int plen)
     LinePtr cur = buf->CurrentLine();
     int i;
     int nlines = 0;
-    clen_t linelen = 0, trbyte = buf->trbyte;
+    clen_t linelen = 0;
     Str lineBuf2;
     char pre_lbuf = '\0';
 
@@ -868,7 +868,7 @@ LinePtr getNextPage(BufferPtr buf, int plen)
                 break;
             }
             linelen += lineBuf2->Size();
-            showProgress(&linelen, &trbyte, 0);
+            // showProgress(&linelen, &trbyte, 0);
             lineBuf2 = convertLine(SCM_UNKNOWN, lineBuf2, PAGER_MODE, &charset, doc_charset);
             if (w3mApp::Instance().squeezeBlankLine)
             {
@@ -916,8 +916,6 @@ LinePtr getNextPage(BufferPtr buf, int plen)
     {
         return nullptr;
     }
-
-    buf->trbyte = trbyte + linelen;
 
     buf->document_charset = charset;
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;

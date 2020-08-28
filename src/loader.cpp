@@ -411,8 +411,6 @@ _end:
     // TRAP_OFF;
 
     newBuf->CurrentAsLast();
-
-    newBuf->trbyte = trbyte + linelen;
     newBuf->document_charset = charset;
     if (src)
         fclose(src);

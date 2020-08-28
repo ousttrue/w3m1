@@ -308,8 +308,6 @@ public:
     std::string baseTarget;
     int real_scheme = 0;
     std::string sourcefile;
-
-    size_t trbyte = 0;
     char check_url = 0;
     CharacterEncodingScheme document_charset = WC_CES_NONE;
     AutoDetectTypes auto_detect = WC_OPT_DETECT_OFF;

@@ -65,9 +65,8 @@ public:
     Lineprop ex_effect = P_UNKNOWN;
     char symbol = '\0';
 
-    HtmlContext();
+    HtmlContext(CharacterEncodingScheme content_charset);
     ~HtmlContext();
-    void Initialize(const BufferPtr &newBuf, CharacterEncodingScheme content_charset);
     const CharacterEncodingScheme &DocCharset() const { return doc_charset; }
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
     Str process_n_select();

@@ -49,10 +49,9 @@ static int currentLn(const BufferPtr &buf)
         return 1;
 }
 
-HtmlContext::HtmlContext()
+HtmlContext::HtmlContext(CharacterEncodingScheme content_charset)
 {
-    doc_charset = w3mApp::Instance().DocumentCharset;
-
+    doc_charset = content_charset;
     cur_select = nullptr;
     cur_textarea = nullptr;
 }
@@ -67,26 +66,6 @@ void HtmlContext::SetMetaCharset(CharacterEncodingScheme ces)
     {
         cur_document_charset = ces;
     }
-}
-
-// from HTTP header
-//
-// Content-Type: text/html; charset=utf-8
-//
-void HtmlContext::Initialize(const BufferPtr &newBuf, CharacterEncodingScheme content_charset)
-{
-    // if (newBuf)
-    // {
-    //     if (newBuf->bufferprop & BP_FRAME)
-    //         charset = w3mApp::Instance().InnerCharset;
-    //     else if (newBuf->document_charset)
-    //         charset = doc_charset = newBuf->document_charset;
-    // }
-
-    // if (content_charset && w3mApp::Instance().UseContentCharset)
-    doc_charset = content_charset;
-    // else if (f->guess_type == "application/xhtml+xml")
-    //     doc_charset = WC_CES_UTF_8;
 }
 
 void HtmlContext::print_internal_information(struct html_feed_environ *henv)
@@ -5241,24 +5220,20 @@ void HtmlContext::renderCoTable(struct table *tbl, int maxlimit)
 
 BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal)
 {
-    auto newBuf = Buffer::Create(url);
-    newBuf->type = "text/html";
     struct readbuffer obuf;
     html_feed_environ htmlenv1(&obuf, newTextLineList(), Terminal::columns());
-    clen_t linelen = 0;
-    clen_t trbyte = 0;
-    HtmlContext context;
-
-    context.Initialize(newBuf, content_charset);
-    Str lineBuf2 = nullptr;
-    while ((lineBuf2 = stream->mygets())->Size())
+    HtmlContext context(content_charset);
+    while (true)
     {
-        linelen += lineBuf2->Size();
-        showProgress(&linelen, &trbyte, 0);
+        auto lineBuf2 = stream->mygets();
+        if(lineBuf2->Size()==0)
+        {
+            break;
+        } 
         CharacterEncodingScheme detected = {};
         auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, context.DocCharset(), w3mApp::Instance().InnerCharset);
         context.SetCES(detected);
-        context.HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
+        context.HTMLlineproc0(converted->ptr, &htmlenv1, internal);
     }
     if (obuf.status != R_ST_NORMAL)
     {
@@ -5268,30 +5243,13 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
     obuf.status = R_ST_NORMAL;
     context.completeHTMLstream(&htmlenv1, &obuf);
     htmlenv1.flushline(0, 2, htmlenv1.limit);
+
+    auto newBuf = Buffer::Create(url);
+    newBuf->type = "text/html";
     if (htmlenv1.title)
         newBuf->buffername = htmlenv1.title;
 
-    // if (!success)
-    // {
-    //     context.HTMLlineproc0("<br>Transfer Interrupted!<br>", &htmlenv1, true);
-    // }
-
-    // if (w3mApp::Instance().w3m_dump & DUMP_HALFDUMP)
-    // {
-    //     context.print_internal_information(&htmlenv1);
-    //     return;
-    // }
-    // if (w3mApp::Instance().w3m_backend)
-    // {
-    //     context.print_internal_information(&htmlenv1);
-    //     backend_halfdump_buf = htmlenv1.buf;
-    //     return;
-    // }
-
-    newBuf->trbyte = trbyte + linelen;
-
     newBuf->document_charset = context.DocCharset();
-
     ImageFlags image_flag;
     if (newBuf->image_flag)
         image_flag = newBuf->image_flag;

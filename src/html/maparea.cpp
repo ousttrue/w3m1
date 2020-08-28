@@ -469,8 +469,9 @@ page_info_panel(const BufferPtr &buf)
     Strcat_m_charp(tmp,
                    "<tr valign=top><td nowrap>Number of lines<td>",
                    Sprintf("%d", all)->ptr,
-                   "<tr valign=top><td nowrap>Transferred bytes<td>",
-                   Sprintf("%d", buf->trbyte)->ptr, NULL);
+                //    "<tr valign=top><td nowrap>Transferred bytes<td>",
+                //    Sprintf("%d", buf->trbyte)->ptr, 
+                   NULL);
 
     a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)

@@ -46,7 +46,6 @@ Buffer::Buffer()
     url.scheme = SCM_UNKNOWN;
     baseTarget = {};
     bufferprop = BP_NORMAL;
-    trbyte = 0;
     auto_detect = WcOption.auto_detect;
 }
 
@@ -279,8 +278,6 @@ void Buffer::CopyFrom(BufferPtr src)
     baseTarget = src->baseTarget;
     real_scheme = src->real_scheme;
     sourcefile = src->sourcefile;
-
-    trbyte = src->trbyte;
     check_url = src->check_url;
     document_charset = src->document_charset;
     auto_detect = src->auto_detect;
