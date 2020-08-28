@@ -5245,48 +5245,19 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
     newBuf->type = "text/html";
     struct readbuffer obuf;
     html_feed_environ htmlenv1(&obuf, newTextLineList(), Terminal::columns());
-
-    //
-    //
-    //
     clen_t linelen = 0;
     clen_t trbyte = 0;
     HtmlContext context;
 
     context.Initialize(newBuf, content_charset);
-
-    // if (stream->type() != IST_ENCODED)
-    //     stream = newEncodedStream(stream, f->encoding);
-
     Str lineBuf2 = nullptr;
     while ((lineBuf2 = stream->mygets())->Size())
     {
-        // if (f->scheme == SCM_NEWS && lineBuf2->ptr[0] == '.')
-        // {
-        //     lineBuf2->Delete(0, 1);
-        //     if (lineBuf2->ptr[0] == '\n' || lineBuf2->ptr[0] == '\r' ||
-        //         lineBuf2->ptr[0] == '\0')
-        //     {
-        //         /*
-        //      * iseos(stream) = true;
-        //      */
-        //         break;
-        //     }
-        // }
-
         linelen += lineBuf2->Size();
-        // if (w3mApp::Instance().w3m_dump & DUMP_EXTRA)
-        //     printf("W3m-in-progress: %s\n", convert_size2(linelen, GetCurrentContentLength(), true));
         showProgress(&linelen, &trbyte, 0);
-        /*
-            * if (frame_source)
-            * continue;
-            */
-
         CharacterEncodingScheme detected = {};
-        lineBuf2 = convertLine(url.scheme, lineBuf2, HTML_MODE, &detected, context.DocCharset());
+        auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, context.DocCharset(), w3mApp::Instance().InnerCharset);
         context.SetCES(detected);
-
         context.HTMLlineproc0(lineBuf2->ptr, &htmlenv1, internal);
     }
     if (obuf.status != R_ST_NORMAL)
