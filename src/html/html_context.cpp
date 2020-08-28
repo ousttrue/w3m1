@@ -1610,10 +1610,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         char *p = nullptr;
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
         {
-            p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
-                               buf->document_charset)
-                    ->ptr;
-            buf->baseURL = URL::Parse(p, nullptr);
+            p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
         }
         if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
             buf->baseTarget =

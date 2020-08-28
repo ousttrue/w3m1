@@ -62,14 +62,14 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
         return;
     }
 
-    auto p_url = URL::Parse(a->url, GetCurrentBuffer()->BaseURL());
+    auto p_url = URL::Parse(a->url, &GetCurrentBuffer()->currentURL);
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     if (check_target() && w3mApp::Instance().open_tab_blank &&
         (a->target == "_new" || a->target == "_blank"))
     {
         auto tab = CreateTabSetCurrent();
         BufferPtr buf = GetCurrentBuffer();
-        cmd_loadURL(a->url, GetCurrentBuffer()->BaseURL(),
+        cmd_loadURL(a->url, &GetCurrentBuffer()->currentURL,
                     HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
         // if (buf != GetCurrentBuffer())
         //     GetCurrentTab()->DeleteBuffer(buf);
@@ -78,7 +78,7 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
         // displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
-    cmd_loadURL(a->url, GetCurrentBuffer()->BaseURL(),
+    cmd_loadURL(a->url, &GetCurrentBuffer()->currentURL,
                 HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 #endif
 }

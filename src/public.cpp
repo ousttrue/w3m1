@@ -37,8 +37,8 @@
 static void dump_extra(const BufferPtr &buf)
 {
     printf("W3m-current-url: %s\n", buf->currentURL.ToStr()->ptr);
-    if (buf->baseURL)
-        printf("W3m-base-url: %s\n", buf->baseURL.ToStr()->ptr);
+    // if (buf->baseURL)
+    //     printf("W3m-base-url: %s\n", buf->baseURL.ToStr()->ptr);
     printf("W3m-document-charset: %s\n",
            wc_ces_to_charset(buf->document_charset));
 
@@ -100,7 +100,7 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
                     if (a->slave)
                         continue;
 
-                    auto pu = URL::Parse(a->url, buf->BaseURL());
+                    auto pu = URL::Parse(a->url, &buf->currentURL);
                     auto s = pu.ToStr();
                     if (w3mApp::Instance().DecodeURL)
                         s = Strnew(url_unquote_conv(s->ptr, GetCurrentBuffer()->document_charset));
@@ -484,7 +484,7 @@ void _followForm(bool submit)
                 tmp2.push_back(*p);
             }
             // loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
-            tab->Push(URL::Parse(tmp2, buf->BaseURL()));
+            tab->Push(URL::Parse(tmp2, &buf->currentURL));
         }
         else if (fi->parent.lock()->method == FORM_METHOD_POST)
         {
@@ -501,7 +501,7 @@ void _followForm(bool submit)
                 fi->parent.lock()->length = tmp->Size();
             }
             // buf = loadLink(tmp2->ptr, a->target.c_str(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, fi->parent);
-            tab->Push(URL::Parse(tmp2, buf->BaseURL()));
+            tab->Push(URL::Parse(tmp2, &buf->currentURL));
             if (multipart)
             {
                 unlink(fi->parent.lock()->body);
@@ -699,12 +699,12 @@ void bufferA(w3mApp *w3m, const CommandContext &context)
 //     message(Sprintf("loading %s", url)->ptr, 0, 0);
 //     refresh();
 
-//     auto base = GetCurrentBuffer()->BaseURL();
+//     auto base = &GetCurrentBuffer()->currentURL;
 //     if (base == NULL ||
 //         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
 //         referer = HttpReferrerPolicy::NoReferer;
 
-//     auto newBuf = loadGeneralFile(URL::Parse(url, GetCurrentBuffer()->BaseURL()), GetCurrentBuffer()->BaseURL(), referer, request);
+//     auto newBuf = loadGeneralFile(URL::Parse(url, &GetCurrentBuffer()->currentURL), &GetCurrentBuffer()->currentURL, referer, request);
 //     if (newBuf == NULL)
 //     {
 //         char *emsg = Sprintf("Can't load %s", url)->ptr;
@@ -934,7 +934,7 @@ void _nextA(int visited, int n)
                 hseq++;
                 if (visited == true && an)
                 {
-                    auto url = URL::Parse(an->url, buf->BaseURL());
+                    auto url = URL::Parse(an->url, &buf->currentURL);
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
@@ -958,7 +958,7 @@ void _nextA(int visited, int n)
             y = an->start.line;
             if (visited == true)
             {
-                auto url = URL::Parse(an->url, buf->BaseURL());
+                auto url = URL::Parse(an->url, &buf->currentURL);
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
@@ -1021,7 +1021,7 @@ void _prevA(int visited, int n)
                 hseq--;
                 if (visited == true && an)
                 {
-                    auto url = URL::Parse(an->url, buf->BaseURL());
+                    auto url = URL::Parse(an->url, &buf->currentURL);
                     if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                     {
                         goto _end;
@@ -1045,7 +1045,7 @@ void _prevA(int visited, int n)
             y = an->start.line;
             if (visited == true && an)
             {
-                auto url = URL::Parse(an->url, buf->BaseURL());
+                auto url = URL::Parse(an->url, &buf->currentURL);
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->ptr))
                 {
                     goto _end;
@@ -1198,7 +1198,7 @@ void goURL0(std::string_view url, std::string_view prompt, int relative)
     if (url.empty())
     {
         Hist *hist = copyHist(w3mApp::Instance().URLHist);
-        current = buf->BaseURL();
+        current = &buf->currentURL;
         if (current)
         {
             char *c_url = current->ToStr()->ptr;
@@ -1252,7 +1252,7 @@ void goURL0(std::string_view url, std::string_view prompt, int relative)
     HttpReferrerPolicy referer;
     if (relative)
     {
-        current = buf->BaseURL();
+        current = &buf->currentURL;
         referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin;
     }
     else
@@ -1320,7 +1320,7 @@ void _peekURL(int only_img, int n)
     }
     if (!s)
     {
-        auto pu = URL::Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url, &buf->currentURL);
         s = pu.ToStr();
     }
     if (w3mApp::Instance().DecodeURL)

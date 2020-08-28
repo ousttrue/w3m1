@@ -831,8 +831,8 @@ void followI(w3mApp *w3m, const CommandContext &context)
     Screen::Instance().Refresh();
     Terminal::flush();
 
-    GetCurrentTab()->Push(URL::Parse(a->url, buf->BaseURL()));
-    // auto newBuf = loadGeneralFile(URL::Parse(a->url), buf->BaseURL());
+    GetCurrentTab()->Push(URL::Parse(a->url, &buf->currentURL));
+    // auto newBuf = loadGeneralFile(URL::Parse(a->url), &buf->currentURL);
     // if (newBuf == NULL)
     // {
     //     /* FIXME: gettextize? */
@@ -994,7 +994,7 @@ void followA(w3mApp *w3m, const CommandContext &context)
         return;
     }
 
-    auto u = URL::Parse(a->url, buf->BaseURL());
+    auto u = URL::Parse(a->url, &buf->currentURL);
     if (u.ToStr()->Cmp(buf->currentURL.ToStr()) == 0)
     {
         /* index within this buffer */
@@ -1033,7 +1033,7 @@ void followA(w3mApp *w3m, const CommandContext &context)
     //     displayCurrentbuf(B_NORMAL);
     // }
 
-    tab->Push(URL::Parse(url, buf->BaseURL()));
+    tab->Push(URL::Parse(url, &buf->currentURL));
 }
 
 /* go to the next left anchor */
@@ -1244,9 +1244,9 @@ void linkMn(w3mApp *w3m, const CommandContext &context)
         return;
     }
 
-    auto p_url = URL::Parse(l->url(), GetCurrentBuffer()->BaseURL());
+    auto p_url = URL::Parse(l->url(), &GetCurrentBuffer()->currentURL);
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
-    cmd_loadURL(l->url(), GetCurrentBuffer()->BaseURL(), HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
+    cmd_loadURL(l->url(), &GetCurrentBuffer()->currentURL, HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 }
 /* accesskey */
 
@@ -1732,7 +1732,7 @@ void linkbrz(w3mApp *w3m, const CommandContext &context)
     if (a == NULL)
         return;
 
-    auto pu = URL::Parse(a->url, GetCurrentBuffer()->BaseURL());
+    auto pu = URL::Parse(a->url, &GetCurrentBuffer()->currentURL);
     invoke_browser(pu.ToStr()->ptr, context.data, context.prec_num());
 }
 

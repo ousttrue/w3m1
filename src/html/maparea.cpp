@@ -261,7 +261,7 @@ follow_map_panel(BufferPtr buf, char *name)
         a = (MapAreaPtr)al->ptr;
         if (!a)
             continue;
-        parseURL2(a->url, &pu, buf->BaseURL());
+        parseURL2(a->url, &pu, &buf->currentURL);
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
@@ -376,7 +376,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemPtr fi)
         auto a = *al;
         if (!a)
             continue;
-        auto pu = URL::Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url, &buf->currentURL);
         auto q = html_quote(pu.ToStr()->ptr);
         char *p;
         if (w3mApp::Instance().DecodeURL)
@@ -401,7 +401,7 @@ append_link_info(BufferPtr buf, Str html)
     html->Push("<hr width=50%><h1>Link information</h1><table>\n");
     for (auto &l : buf->linklist)
     {
-        html->Push(l.toHtml(*buf->BaseURL(), buf->document_charset));
+        html->Push(l.toHtml(*&buf->currentURL, buf->document_charset));
     }
     html->Push("</table>\n");
 }
@@ -475,7 +475,7 @@ page_info_panel(const BufferPtr &buf)
     a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
-        auto pu = URL::Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url, &buf->currentURL);
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (w3mApp::Instance().DecodeURL)
@@ -489,7 +489,7 @@ page_info_panel(const BufferPtr &buf)
     a = buf->img.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
-        auto pu = URL::Parse(a->url, buf->BaseURL());
+        auto pu = URL::Parse(a->url, &buf->currentURL);
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (w3mApp::Instance().DecodeURL)

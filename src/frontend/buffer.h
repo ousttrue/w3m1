@@ -305,7 +305,6 @@ public:
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
     URL currentURL = {};
-    URL baseURL = {};
     std::string baseTarget;
     int real_scheme = 0;
     std::string sourcefile;
@@ -352,7 +351,6 @@ public:
     int ReadBufferCache();
     BufferPtr Copy();
     void CopyFrom(BufferPtr src);
-    URL *BaseURL();
     void putHmarker(int line, int pos, int seq);
     void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);
     void SavePosition();

@@ -44,7 +44,6 @@ bool fread1(T &d, FILE *f)
 Buffer::Buffer()
 {
     currentURL.scheme = SCM_UNKNOWN;
-    baseURL = {};
     baseTarget = {};
     bufferprop = BP_NORMAL;
     trbyte = 0;
@@ -277,7 +276,6 @@ void Buffer::CopyFrom(BufferPtr src)
     hmarklist = src->hmarklist;
     imarklist = src->imarklist;
     currentURL = src->currentURL;
-    baseURL = src->baseURL;
     baseTarget = src->baseTarget;
     real_scheme = src->real_scheme;
     sourcefile = src->sourcefile;
@@ -298,23 +296,6 @@ void Buffer::CopyFrom(BufferPtr src)
     submit = src->submit;
     undo = src->undo;
     event = src->event;
-}
-
-URL *Buffer::BaseURL()
-{
-    if (bufferprop & BP_NO_URL)
-    {
-        /* no URL is defined for the buffer */
-        return NULL;
-    }
-
-    if (baseURL)
-    {
-        /* <BASE> tag is defined in the document */
-        return &baseURL;
-    }
-
-    return &currentURL;
 }
 
 void Buffer::putHmarker(int line, int pos, int seq)
@@ -715,7 +696,7 @@ void set_buffer_environ(const BufferPtr &buf)
         auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
-            auto pu = URL::Parse(a->url, buf->BaseURL());
+            auto pu = URL::Parse(a->url, &buf->currentURL);
             set_environ("W3M_CURRENT_LINK", pu.ToStr()->ptr);
         }
         else
@@ -723,7 +704,7 @@ void set_buffer_environ(const BufferPtr &buf)
         a = buf->img.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
-            auto pu = URL::Parse(a->url, buf->BaseURL());
+            auto pu = URL::Parse(a->url, &buf->currentURL);
             set_environ("W3M_CURRENT_IMG", pu.ToStr()->ptr);
         }
         else
@@ -1201,7 +1182,7 @@ void Buffer::DrawLine(LinePtr l, int line)
             auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
             {
-                auto url = URL::Parse(a->url, this->BaseURL());
+                auto url = URL::Parse(a->url, &this->currentURL);
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
                     for (int k = a->start.pos; k < a->end.pos; k++)
@@ -1284,7 +1265,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
             auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
             {
-                auto url = URL::Parse(a->url, this->BaseURL());
+                auto url = URL::Parse(a->url, &this->currentURL);
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
                     for (auto k = a->start.pos; k < a->end.pos; k++)
