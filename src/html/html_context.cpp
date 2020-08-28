@@ -2442,15 +2442,8 @@ table_start:
                     obuf->append_tags();
                     auto line = Strnew(bp);
                     obuf->line->Pop(obuf->line->Size() - obuf->bp.len());
-#ifdef FORMAT_NICE
-                    if (obuf->pos - i > h_env->limit)
-                        obuf->flag |= RB_FILL;
-#endif /* FORMAT_NICE */
                     obuf->bp.back_to(obuf);
                     h_env->flushline(indent, 0, h_env->limit);
-#ifdef FORMAT_NICE
-                    obuf->flag &= ~RB_FILL;
-#endif /* FORMAT_NICE */
                     this->HTMLlineproc0(line->ptr, h_env, true);
                 }
             }
@@ -2475,13 +2468,7 @@ table_start:
         indent = h_env->envs.back().indent;
         if (obuf->pos - i > h_env->limit)
         {
-#ifdef FORMAT_NICE
-            obuf->flag |= RB_FILL;
-#endif /* FORMAT_NICE */
             h_env->flushline(indent, 0, h_env->limit);
-#ifdef FORMAT_NICE
-            obuf->flag &= ~RB_FILL;
-#endif /* FORMAT_NICE */
         }
     }
 }

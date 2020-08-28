@@ -32,9 +32,6 @@ void Breakpoint::set(const struct readbuffer *obuf, int tag_length)
 
     _pos = obuf->pos;
     flag = obuf->flag;
-#ifdef FORMAT_NICE
-    flag &= ~RB_FILL;
-#endif /* FORMAT_NICE */
     top_margin = obuf->top_margin;
     bottom_margin = obuf->bottom_margin;
 

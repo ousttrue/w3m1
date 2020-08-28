@@ -197,55 +197,6 @@ void html_feed_environ::flushline(int indent, int force, int width)
         {
             align(lbuf, width, ALIGN_LEFT);
         }
-#ifdef FORMAT_NICE
-        else if (obuf->flag & RB_FILL)
-        {
-            char *p;
-            int rest, rrest;
-            int nspace, d, i;
-
-            rest = width - get_Str_strwidth(line);
-            if (rest > 1)
-            {
-                nspace = 0;
-                for (p = line->ptr + indent; *p; p++)
-                {
-                    if (*p == ' ')
-                        nspace++;
-                }
-                if (nspace > 0)
-                {
-                    int indent_here = 0;
-                    d = rest / nspace;
-                    p = line->ptr;
-                    while (IS_SPACE(*p))
-                    {
-                        p++;
-                        indent_here++;
-                    }
-                    rrest = rest - d * nspace;
-                    line = Strnew_size(width + 1);
-                    for (i = 0; i < indent_here; i++)
-                        line->Push(' ');
-                    for (; *p; p++)
-                    {
-                        line->Push(*p);
-                        if (*p == ' ')
-                        {
-                            for (i = 0; i < d; i++)
-                                line->Push(' ');
-                            if (rrest > 0)
-                            {
-                                line->Push(' ');
-                                rrest--;
-                            }
-                        }
-                    }
-                    lbuf = newTextLine(line, width);
-                }
-            }
-        }
-#endif /* FORMAT_NICE */
         if (lbuf->pos > this->maxlimit)
             this->maxlimit = lbuf->pos;
         if (buf)
