@@ -252,7 +252,7 @@ public:
 
         // dispatch
         auto tab = GetCurrentTab();
-        auto buf = tab->GetCurrentBuffer();
+        auto buf = GetCurrentBuffer();
 
         DispatchKey(c);
 
@@ -263,28 +263,29 @@ public:
             return;
         }
 
-        auto currentTab = GetCurrentTab();
-        auto currentBuf = currentTab->GetCurrentBuffer();
-        if (s_need_resize_screen)
-        {
-            displayBuffer(currentBuf, B_FORCE_REDRAW);
-        }
-        else if (currentTab != tab)
-        {
-            // different tab
-            displayBuffer(currentBuf, B_FORCE_REDRAW);
-        }
-        else if (currentBuf != buf)
-        {
-            // different buf
-            displayBuffer(currentBuf, B_FORCE_REDRAW);
-        }
-        else
-        {
-            // same buf
-            auto drawType = currentBuf->Update();
-            displayBuffer(currentBuf, drawType);
-        }
+        // auto currentTab = GetCurrentTab();
+        // auto currentBuf = GetCurrentBuffer();
+        // if (s_need_resize_screen)
+        // {
+        //     displayBuffer(currentBuf, B_FORCE_REDRAW);
+        // }
+        // else if (currentTab != tab)
+        // {
+        //     // different tab
+        //     displayBuffer(currentBuf, B_FORCE_REDRAW);
+        // }
+        // else if (currentBuf != buf)
+        // {
+        //     // different buf
+        //     displayBuffer(currentBuf, B_FORCE_REDRAW);
+        // }
+        // else
+        // {
+        //     // same buf
+        //     auto drawType = currentBuf->Update();
+        //     displayBuffer(currentBuf, drawType);
+        // }
+        displayBuffer(B_NORMAL);
 
         // next read
         ReadTty();
@@ -311,7 +312,7 @@ public:
 void w3mApp::mainloop2()
 {
     // first draw
-    displayBuffer(GetCurrentTab()->GetCurrentBuffer(), B_NORMAL);
+    displayBuffer(B_NORMAL);
     
     Asio asio;
 
@@ -332,7 +333,7 @@ void w3mApp::mainloop()
         }
 
         auto tab = GetCurrentTab();
-        auto buf = tab->GetCurrentBuffer();
+        auto buf = GetCurrentBuffer();
         if (buf->submit)
         {
             auto a = buf->submit;
@@ -381,8 +382,8 @@ void w3mApp::mainloop()
 
         mySignal(SIGWINCH, resize_hook);
 
-        // if (activeImage && displayImage && GetCurrentTab()->GetCurrentBuffer()->img &&
-        //     !GetCurrentTab()->GetCurrentBuffer()->image_loaded)
+        // if (activeImage && displayImage && GetCurrentBuffer()->img &&
+        //     !GetCurrentBuffer()->image_loaded)
         // {
         //     do
         //     {
@@ -390,7 +391,7 @@ void w3mApp::mainloop()
         //         if (need_resize_screen())
         //             resize_screen();
 
-        //         ImageManager::Instance().loadImage(GetCurrentTab()->GetCurrentBuffer(), IMG_FLAG_NEXT);
+        //         ImageManager::Instance().loadImage(GetCurrentBuffer(), IMG_FLAG_NEXT);
         //     } while (Terminal::sleep_till_anykey(1, 0) <= 0);
         // }
         // else

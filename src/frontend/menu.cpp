@@ -898,7 +898,7 @@ static int menu_search_forward(MenuPtr menu, int from)
     if (str.empty())
         return -1;
     SearchString = str;
-    str = GetCurrentTab()->GetCurrentBuffer()->conv_search_string(str, w3mApp::Instance().DisplayCharset);
+    str = GetCurrentBuffer()->conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuForwardSearch;
     auto found = menuForwardSearch(menu, str, from + 1);
     if (w3mApp::Instance().WrapSearch && found == -1)
@@ -945,7 +945,7 @@ static int menu_search_backward(MenuPtr menu, int from)
     if (str.empty())
         return -1;
     SearchString = str;
-    str = GetCurrentTab()->GetCurrentBuffer()->conv_search_string(str, w3mApp::Instance().DisplayCharset);
+    str = GetCurrentBuffer()->conv_search_string(str, w3mApp::Instance().DisplayCharset);
     menuSearchRoutine = menuBackwardSearch;
     auto found = menuBackwardSearch(menu, str, from - 1);
     if (w3mApp::Instance().WrapSearch && found == -1)
@@ -974,7 +974,7 @@ static int menu_search_next_previous(MenuPtr menu, int from, int reverse)
         disp_message("No previous regular expression", true);
         return -1;
     }
-    std::string_view str = GetCurrentTab()->GetCurrentBuffer()->conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
+    std::string_view str = GetCurrentBuffer()->conv_search_string(SearchString, w3mApp::Instance().DisplayCharset);
     if (reverse != 0)
         reverse = 1;
     if (menuSearchRoutine == menuBackwardSearch)
@@ -1144,7 +1144,7 @@ void popupMenu(int x, int y, MenuPtr menu)
     initSelTabMenu();
 
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     auto [_x, _y] = buf->rect.globalXY();
     menu->cursorX = _x;
     menu->cursorY = _y;
@@ -1229,7 +1229,7 @@ initSelectMenu(void)
 
     // new_option_menu(&SelectMenu, label, &SelectV, smChBuf);
     // SelectMenu.initial = SelectV;
-    // auto [_x, _y] = GetCurrentTab()->GetCurrentBuffer()->rect.globalXY();
+    // auto [_x, _y] = GetCurrentBuffer()->rect.globalXY();
     // SelectMenu.cursorX = _x;
     // SelectMenu.cursorY = _y;
     // SelectMenu.keymap['D'] = smDelBuf;
@@ -1354,8 +1354,8 @@ initSelTabMenu(void)
 
     // new_option_menu(&SelTabMenu, label, &SelTabV, smChTab);
     // SelTabMenu.initial = SelTabV;
-    // SelTabMenu.cursorX = GetCurrentTab()->GetCurrentBuffer()->cursorX + GetCurrentTab()->GetCurrentBuffer()->rootX;
-    // SelTabMenu.cursorY = GetCurrentTab()->GetCurrentBuffer()->cursorY + GetCurrentTab()->GetCurrentBuffer()->rootY;
+    // SelTabMenu.cursorX = GetCurrentBuffer()->cursorX + GetCurrentBuffer()->rootX;
+    // SelTabMenu.cursorY = GetCurrentBuffer()->cursorY + GetCurrentBuffer()->rootY;
     // SelTabMenu.keymap['D'] = smDelTab;
     // SelTabMenu.item[nitem].type = MENU_NOP;
 }
@@ -1886,7 +1886,7 @@ void PopupMenu(std::string_view data)
     MenuPtr menu = MainMenu;
 
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     auto [x, y] = buf->rect.globalXY();
 
     if (data.size())
@@ -1903,7 +1903,7 @@ void PopupMenu(std::string_view data)
 void PopupBufferMenu()
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     auto [x, y] = buf->rect.globalXY();
 
     TryGetMouseActionPosition(&x, &y);
@@ -1913,7 +1913,7 @@ void PopupBufferMenu()
 void PopupTabMenu()
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     auto [x, y] = buf->rect.globalXY();
 
     TryGetMouseActionPosition(&x, &y);

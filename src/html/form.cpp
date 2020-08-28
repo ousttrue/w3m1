@@ -39,16 +39,16 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
     auto name = tag_get_value(arg, "link");
 
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
 
     auto an = buf->img.RetrieveAnchor(buf->CurrentPoint());
     auto [x, y] = buf->rect.globalXY();
-    auto a = follow_map_menu(GetCurrentTab()->GetCurrentBuffer(), name, an, x, y);
+    auto a = follow_map_menu(GetCurrentBuffer(), name, an, x, y);
     if (a == NULL || a->url.empty())
     {
 
 #ifndef MENU_MAP
-        BufferPtr buf = follow_map_panel(GetCurrentTab()->GetCurrentBuffer(), name);
+        BufferPtr buf = follow_map_panel(GetCurrentBuffer(), name);
 
         if (buf != NULL)
             cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
@@ -62,30 +62,30 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
         return;
     }
 
-    auto p_url = URL::Parse(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL());
+    auto p_url = URL::Parse(a->url, GetCurrentBuffer()->BaseURL());
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     if (check_target() && w3mApp::Instance().open_tab_blank &&
         (a->target == "_new" || a->target == "_blank"))
     {
         auto tab = CreateTabSetCurrent();
-        BufferPtr buf = tab->GetCurrentBuffer();
-        cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
+        BufferPtr buf = GetCurrentBuffer();
+        cmd_loadURL(a->url, GetCurrentBuffer()->BaseURL(),
                     HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
-        // if (buf != GetCurrentTab()->GetCurrentBuffer())
+        // if (buf != GetCurrentBuffer())
         //     GetCurrentTab()->DeleteBuffer(buf);
         // else
         //     deleteTab(GetCurrentTab());
         // displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
-    cmd_loadURL(a->url, GetCurrentTab()->GetCurrentBuffer()->BaseURL(),
+    cmd_loadURL(a->url, GetCurrentBuffer()->BaseURL(),
                 HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 #endif
 }
 
 static void change_charset(tcb::span<parsed_tagarg> _arg)
 {
-    auto charset = GetCurrentTab()->GetCurrentBuffer()->document_charset;
+    auto charset = GetCurrentBuffer()->document_charset;
     for (auto &arg: _arg)
     {
         if (!strcmp(arg.arg, "charset"))

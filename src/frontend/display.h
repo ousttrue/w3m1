@@ -1,8 +1,7 @@
 #pragma once
 #include "frontend/buffer.h"
 
-void displayBuffer(BufferPtr  buf, DisplayMode mode);
-// void displayCurrentbuf(DisplayMode mode);
+void displayBuffer(DisplayMode mode);
 void do_color(Linecolor c);
 void clear_effect();
 
@@ -25,3 +24,5 @@ void record_err_message(const char *s);
 
 void fmTerm(void);
 void fmInit(void);
+
+BufferPtr GetCurrentBuffer();

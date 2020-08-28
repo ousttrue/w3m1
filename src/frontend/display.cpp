@@ -20,10 +20,14 @@
 #include "symbol.h"
 #include "w3m.h"
 #include "wtf.h"
+#include "loader.h"
 #include <assert.h>
 #include <math.h>
 #include <signal.h>
 #include <string_view>
+
+BufferPtr g_buf;
+ContentStreamPtr g_content;
 
 /*-
  * color:
@@ -883,8 +887,8 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
         fprintf(stderr, "%s\n", conv_to_system(s));
         return;
     }
-    if (GetCurrentTab() != NULL && GetCurrentTab()->GetCurrentBuffer() != NULL)
-        message(s, GetCurrentTab()->GetCurrentBuffer()->rect);
+    if (!g_buf)
+        message(s, g_buf->rect);
     else
         message(s, 0, (Terminal::lines() - 1));
     Screen::Instance().Refresh();
@@ -907,12 +911,36 @@ void disp_message_nomouse(const char *s, int redraw_current)
 
 void set_delayed_message(const char *s) { delayed_msg = allocStr(s, -1); }
 
-void displayBuffer(BufferPtr buf, DisplayMode mode)
+void displayBuffer(DisplayMode mode)
 {
     if (mode == B_NONE)
     {
         return;
     }
+    mode = B_FORCE_REDRAW;
+
+    auto tab = GetCurrentTab();
+    auto content = tab->GetCurrentContent();
+    if (g_content != content)
+    {
+        g_content = content;
+        g_buf = nullptr;
+    }
+    if (!g_buf)
+    {
+        if (!content)
+        {
+            return;
+        }
+        g_buf = LoadStream(content);
+        if (!g_buf)
+        {
+            LOGE << "fail to LoadStream";
+            return;
+        }
+        g_buf->GotoLine(1, true);
+    }
+    auto buf = g_buf;
     LOGI << "displayBuffer: " << mode << ": " << buf->currentURL;
 
     if (!buf)
@@ -991,29 +1019,31 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
                 Screen::Instance().Puts(GetMouseActionMenuStr().data());
 
             Screen::Instance().CtrlToEolWithBGColor();
-            EachTab([](auto t) {
-                auto b = t->GetCurrentBuffer();
-                Screen::Instance().Move(t->Y(), t->Left());
-                if (t == GetCurrentTab())
-                    Screen::Instance().Enable(S_BOLD);
-                Screen::Instance().PutAscii('[');
-                auto l = t->Width() - get_strwidth(b->buffername.c_str());
-                if (l < 0)
-                    l = 0;
-                if (l / 2 > 0)
-                    Screen::Instance().PutsColumnsFillSpace(" ", l / 2);
-                if (t == GetCurrentTab())
-                    effect_active_start();
-                Screen::Instance().PutsColumns(b->buffername.c_str(), t->Width());
-                if (t == GetCurrentTab())
-                    effect_active_end();
-                if ((l + 1) / 2 > 0)
-                    Screen::Instance().PutsColumnsFillSpace(" ", (l + 1) / 2);
-                Screen::Instance().Move(t->Y(), t->Right());
-                Screen::Instance().PutAscii(']');
-                if (t == GetCurrentTab())
-                    Screen::Instance().Disable(S_BOLD);
-            });
+
+            // for(int i=0; i<GetTabCount(); ++i)
+            // {
+            //     auto b = t->GetCurrentBuffer();
+            //     Screen::Instance().Move(t->Y(), t->Left());
+            //     if (t == GetCurrentTab())
+            //         Screen::Instance().Enable(S_BOLD);
+            //     Screen::Instance().PutAscii('[');
+            //     auto l = t->Width() - get_strwidth(b->buffername.c_str());
+            //     if (l < 0)
+            //         l = 0;
+            //     if (l / 2 > 0)
+            //         Screen::Instance().PutsColumnsFillSpace(" ", l / 2);
+            //     if (t == GetCurrentTab())
+            //         effect_active_start();
+            //     Screen::Instance().PutsColumns(b->buffername.c_str(), t->Width());
+            //     if (t == GetCurrentTab())
+            //         effect_active_end();
+            //     if ((l + 1) / 2 > 0)
+            //         Screen::Instance().PutsColumnsFillSpace(" ", (l + 1) / 2);
+            //     Screen::Instance().Move(t->Y(), t->Right());
+            //     Screen::Instance().PutAscii(']');
+            //     if (t == GetCurrentTab())
+            //         Screen::Instance().Disable(S_BOLD);
+            // }
             Screen::Instance().Move(GetTabbarHeight(), 0);
             for (int i = 0; i < Terminal::columns(); i++)
                 Screen::Instance().PutAscii('~');
@@ -1030,11 +1060,11 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         buf->SetTopLine(buf->FirstLine());
     }
 
-    if (buf->need_reshape)
-    {
-        displayBuffer(buf, B_FORCE_REDRAW);
-        return;
-    }
+    // if (buf->need_reshape)
+    // {
+    //     displayBuffer(buf, B_FORCE_REDRAW);
+    //     return;
+    // }
 
     drawAnchorCursor(buf);
 
@@ -1069,7 +1099,7 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
 //     auto tab = GetCurrentTab();
 //     if (tab)
 //     {
-//         displayBuffer(tab->GetCurrentBuffer(), mode);
+//         displayBuffer(GetCurrentBuffer(), mode);
 //     }
 //     else
 //     {
@@ -1087,4 +1117,9 @@ void disp_srchresult(int result, std::string_view prompt, std::string_view str)
         disp_message(Sprintf("Search wrapped: %s", str)->ptr, true);
     else if (w3mApp::Instance().show_srch_str)
         disp_message(Sprintf("%s%s", prompt, str)->ptr, true);
+}
+
+BufferPtr GetCurrentBuffer()
+{
+    return g_buf;
 }

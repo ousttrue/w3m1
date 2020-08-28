@@ -23,7 +23,7 @@ class Tab
 
     std::vector<URL> m_history;
     int m_current = -1;
-    BufferPtr m_buffer;
+    ContentStreamPtr m_content;
     // BufferList::const_iterator find(BufferPtr b) const
     // {
     //     return std::find(m_history.begin(), m_history.end(), b);
@@ -79,7 +79,7 @@ public:
     int GetBufferCount() const { return m_history.size(); }
     // int GetBufferIndex(const BufferPtr &buf) const;
     int GetCurrentBufferIndex() const { return m_current; }
-    BufferPtr GetCurrentBuffer() const { return m_buffer; }
+    ContentStreamPtr GetCurrentContent() const { return m_content; }
 
 public:
     // history の 先頭に追加する
@@ -104,4 +104,3 @@ public:
 };
 using TabPtr = std::shared_ptr<Tab>;
 
-void followTab(TabPtr tab, const struct CommandContext &context);

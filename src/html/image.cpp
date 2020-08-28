@@ -417,8 +417,8 @@ void ImageManager::loadImage(const BufferPtr &buf, ImageLoadFlags flag)
                     if (image_cache[i])
                         return;
                 }
-                if (image_buffer)
-                    displayBuffer(image_buffer, B_NORMAL);
+                // if (image_buffer)
+                //     displayBuffer(image_buffer, B_NORMAL);
                 return;
             }
             if (cache->loaded == IMG_FLAG_UNLOADED)

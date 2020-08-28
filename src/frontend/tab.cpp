@@ -1,20 +1,10 @@
 #include <plog/Log.h>
 #include "frontend/tab.h"
-#include "frontend/buffer.h"
-#include "indep.h"
-#include "file.h"
 #include "frontend/display.h"
-#include "command_dispatcher.h"
-#include "frontend/mouse.h"
-#include "public.h"
-#include "commands.h"
-#include "frontend/buffer.h"
-#include "html/anchor.h"
-#include "html/image.h"
-
 #include "frontend/terminal.h"
 #include "frontend/screen.h"
-#include "ctrlcode.h"
+#include "indep.h"
+#include "w3m.h"
 #include "loader.h"
 #include <stdexcept>
 #include <algorithm>
@@ -37,42 +27,17 @@ bool Tab::SetCurrent(int index)
     m_current = index;
 
     auto url = m_history[index];
-    auto stream = GetStream(url, m_buffer ? m_buffer->BaseURL() : nullptr);
-    if (!stream)
+    m_content = GetStream(url, m_content ? &m_content->url : nullptr);
+    if (!m_content)
     {
         LOGE << "fail to GetStream";
         return false;
     }
 
-    LOGI << stream->content_type << ";" << stream->content_charset;
+    LOGI << m_content->content_type << ";" << m_content->content_charset;
 
-    auto buf = LoadStream(stream);
-    if (!buf)
-    {
-        LOGE << "fail to LoadStream";
-        return false;
-    }
-
-    buf->GotoLine(1, true);
-
-    m_buffer = buf;
-    // displayCurrentbuf(B_NORMAL);
     return true;
 }
-
-// int Tab::GetBufferIndex(const BufferPtr &b) const
-// {
-//     int i = 0;
-//     for (auto &buf : m_buffers)
-//     {
-//         if (buf == b)
-//         {
-//             return i;
-//         }
-//         ++i;
-//     }
-//     return -1;
-// }
 
 void Tab::DeleteBack()
 {
@@ -172,7 +137,7 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
             Screen::Instance().CtrlToBottomEol();
             break;
         }
-        buf = tab->GetCurrentBuffer();
+        buf = GetCurrentBuffer();
     }
     Screen::Instance().Enable(S_STANDOUT);
     /* FIXME: gettextize? */

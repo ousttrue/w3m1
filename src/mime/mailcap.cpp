@@ -619,7 +619,7 @@ BufferPtr doExternal(const URL &url, const InputStreamPtr &stream, std::string_v
     //             fmTerm();
     //             mySystem(command->ptr, 0);
     //             fmInit();
-    //             if (GetCurrentTab() && GetCurrentTab()->GetCurrentBuffer())
+    //             if (GetCurrentTab() && GetCurrentBuffer())
     //                 displayCurrentbuf(B_FORCE_REDRAW);
     //         }
     //         else

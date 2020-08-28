@@ -2,7 +2,6 @@
 #include "frontend/tab.h"
 #include <functional>
 
-void EachTab(const std::function<void(const TabPtr &)> callback);
 TabPtr CreateTabSetCurrent();
 int GetTabCount();
 int GetTabbarHeight();

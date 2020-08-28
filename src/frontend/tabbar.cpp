@@ -26,14 +26,6 @@ struct TabBar
 };
 static TabBar g_tabBar;
 
-void EachTab(const std::function<void(const TabPtr &)> callback)
-{
-    for (auto &tab : g_tabBar.tabs)
-    {
-        callback(tab);
-    }
-}
-
 int GetTabCount()
 {
     return g_tabBar.tabs.size();
@@ -175,7 +167,7 @@ TabPtr GetTabByPosition(int x, int y)
 TabPtr CreateTabSetCurrent()
 {
     // setup buffer
-    // auto buf = GetCurrentTab()->GetCurrentBuffer()->Copy();
+    // auto buf = GetCurrentBuffer()->Copy();
     // buf->ClearLink();
 
     // new tab
@@ -300,44 +292,44 @@ void set_check_target(int check)
     s_check_target = check;
 }
 
-void followTab(TabPtr tab, const CommandContext &context)
-{
-    if (tab == GetCurrentTab())
-    {
-        set_check_target(false);
-        followA(&w3mApp::Instance(), context);
-        set_check_target(true);
-        return;
-    }
+// void followTab(TabPtr tab, const CommandContext &context)
+// {
+//     if (tab == GetCurrentTab())
+//     {
+//         set_check_target(false);
+//         followA(&w3mApp::Instance(), context);
+//         set_check_target(true);
+//         return;
+//     }
 
-    CreateTabSetCurrent();
-    auto buf = GetCurrentTab()->GetCurrentBuffer();
-    set_check_target(false);
-    followA(&w3mApp::Instance(), context);
-    set_check_target(true);
-    if (tab == NULL)
-    {
-        // if (buf != GetCurrentTab()->GetCurrentBuffer())
-        //     GetCurrentTab()->DeleteBuffer(buf);
-        // else
-        //     deleteTab(GetCurrentTab());
-    }
-    else if (buf != GetCurrentTab()->GetCurrentBuffer())
-    {
-        // TODO:
+//     CreateTabSetCurrent();
+//     auto buf = GetCurrentBuffer();
+//     set_check_target(false);
+//     followA(&w3mApp::Instance(), context);
+//     set_check_target(true);
+//     if (tab == NULL)
+//     {
+//         // if (buf != GetCurrentBuffer())
+//         //     GetCurrentTab()->DeleteBuffer(buf);
+//         // else
+//         //     deleteTab(GetCurrentTab());
+//     }
+//     else if (buf != GetCurrentBuffer())
+//     {
+//         // TODO:
 
-        /* buf <- p <- ... <- Currentbuf = c */
-        deleteTab(GetCurrentTab());
-        // auto c = GetCurrentTab()->GetCurrentBuffer();
-        // auto p = prevBuffer(c, buf);
-        // p->nextBuffer = NULL;
-        // tab->Push(buf);
-        SetCurrentTab(tab);
-        // for (buf = p; buf; buf = p)
-        // {
-        //     p = prevBuffer(c, buf);
-        //     GetCurrentTab()->BufferPushBeforeCurrent(buf);
-        // }
-    }
-    // displayCurrentbuf(B_FORCE_REDRAW);
-}
+//         /* buf <- p <- ... <- Currentbuf = c */
+//         deleteTab(GetCurrentTab());
+//         // auto c = GetCurrentBuffer();
+//         // auto p = prevBuffer(c, buf);
+//         // p->nextBuffer = NULL;
+//         // tab->Push(buf);
+//         SetCurrentTab(tab);
+//         // for (buf = p; buf; buf = p)
+//         // {
+//         //     p = prevBuffer(c, buf);
+//         //     GetCurrentTab()->BufferPushBeforeCurrent(buf);
+//         // }
+//     }
+//     // displayCurrentbuf(B_FORCE_REDRAW);
+// }

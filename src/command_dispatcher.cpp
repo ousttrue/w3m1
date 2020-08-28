@@ -1,19 +1,13 @@
 #include <plog/Log.h>
 #include <string_view_util.h>
 #include "command_dispatcher.h"
-#include "public.h"
 #include "commands.h"
-#include "file.h"
 #include "rc.h"
 #include "ctrlcode.h"
 #include "indep.h"
 #include "frontend/terminal.h"
-
 #include "frontend/display.h"
-#include "frontend/buffer.h"
-#include "frontend/tab.h"
-#include "frontend/tabbar.h"
-#include "charset.h"
+
 
 const int KEYDATA_HASH_SIZE = 16;
 
@@ -77,10 +71,10 @@ void DispatchKey(int c)
 
             DebugPrint(GlobalKeymap, c);
 
-            auto tab = GetCurrentTab();
-            auto buf = tab->GetCurrentBuffer();
-            set_buffer_environ(buf);
-            buf->SavePosition();
+            // auto tab = GetCurrentTab();
+            // auto buf = GetCurrentBuffer();
+            // set_buffer_environ(buf);
+            // buf->SavePosition();
             GlobalKeymap[c](&w3mApp::Instance(), g_context);
 
             g_context.clear();

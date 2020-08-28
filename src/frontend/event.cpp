@@ -3,9 +3,8 @@
 #include "command_dispatcher.h"
 #include "terminal.h"
 #include "gc_helper.h"
-#include "tab.h"
 #include "buffer.h"
-#include "tabbar.h"
+#include "display.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -41,14 +40,14 @@ void SigAlarm(int)
             CurrentAlarm()->sec = 0;
             CurrentAlarm()->status = AL_UNSET;
         }
-        if (GetCurrentTab()->GetCurrentBuffer()->event)
+        if (GetCurrentBuffer()->event)
         {
-            if (GetCurrentTab()->GetCurrentBuffer()->event->status != AL_UNSET)
-                SetCurrentAlarm(GetCurrentTab()->GetCurrentBuffer()->event);
+            if (GetCurrentBuffer()->event->status != AL_UNSET)
+                SetCurrentAlarm(GetCurrentBuffer()->event);
             else
-                GetCurrentTab()->GetCurrentBuffer()->event = NULL;
+                GetCurrentBuffer()->event = NULL;
         }
-        if (!GetCurrentTab()->GetCurrentBuffer()->event)
+        if (!GetCurrentBuffer()->event)
             SetCurrentAlarm(DefaultAlarm());
         if (CurrentAlarm()->sec > 0)
         {

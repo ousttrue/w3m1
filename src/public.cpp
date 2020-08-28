@@ -103,7 +103,7 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
                     auto pu = URL::Parse(a->url, buf->BaseURL());
                     auto s = pu.ToStr();
                     if (w3mApp::Instance().DecodeURL)
-                        s = Strnew(url_unquote_conv(s->ptr, GetCurrentTab()->GetCurrentBuffer()->document_charset));
+                        s = Strnew(url_unquote_conv(s->ptr, GetCurrentBuffer()->document_charset));
                     printf("[%d] %s\n", a->hseq + 1, s->ptr);
                 }
             }
@@ -140,7 +140,7 @@ void cmd_loadfile(const char *fn)
     // else
     // {
     //     GetCurrentTab()->Push(buf);
-    //     if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+    //     if (w3mApp::Instance().RenderFrame && GetCurrentBuffer()->frameset != NULL)
     //         rFrame(&w3mApp::Instance());
     // }
 }
@@ -165,7 +165,7 @@ void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer,
     // else
     // {
     //     GetCurrentTab()->Push(buf);
-    //     if (w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+    //     if (w3mApp::Instance().RenderFrame && GetCurrentBuffer()->frameset != NULL)
     //         rFrame(&w3mApp::Instance());
     // }
     GetCurrentTab()->Push(URL::Parse(url, current));
@@ -214,9 +214,9 @@ int prev_nonnull_line(BufferPtr buf, LinePtr line)
     if (l == NULL || l->len() == 0)
         return -1;
 
-    GetCurrentTab()->GetCurrentBuffer()->SetCurrentLine(l);
+    GetCurrentBuffer()->SetCurrentLine(l);
     if (l != line)
-        GetCurrentTab()->GetCurrentBuffer()->pos = GetCurrentTab()->GetCurrentBuffer()->CurrentLine()->len();
+        GetCurrentBuffer()->pos = GetCurrentBuffer()->CurrentLine()->len();
     return 0;
 }
 
@@ -230,9 +230,9 @@ int next_nonnull_line(BufferPtr buf, LinePtr line)
     if (l == NULL || l->len() == 0)
         return -1;
 
-    GetCurrentTab()->GetCurrentBuffer()->SetCurrentLine(l);
+    GetCurrentBuffer()->SetCurrentLine(l);
     if (l != line)
-        GetCurrentTab()->GetCurrentBuffer()->pos = 0;
+        GetCurrentBuffer()->pos = 0;
     return 0;
 }
 
@@ -336,7 +336,7 @@ void SetMarkString(const char *str)
 void _followForm(bool submit)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
     auto a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
@@ -572,7 +572,7 @@ void query_from_followform(Str *query, FormItemPtr fi, int multipart)
     }
 
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     *query = Strnew();
     for (auto &f2 : fi->parent.lock()->items)
     {
@@ -699,12 +699,12 @@ void bufferA(w3mApp *w3m, const CommandContext &context)
 //     message(Sprintf("loading %s", url)->ptr, 0, 0);
 //     refresh();
 
-//     auto base = GetCurrentTab()->GetCurrentBuffer()->BaseURL();
+//     auto base = GetCurrentBuffer()->BaseURL();
 //     if (base == NULL ||
 //         base->scheme == SCM_LOCAL || base->scheme == SCM_LOCAL_CGI)
 //         referer = HttpReferrerPolicy::NoReferer;
 
-//     auto newBuf = loadGeneralFile(URL::Parse(url, GetCurrentTab()->GetCurrentBuffer()->BaseURL()), GetCurrentTab()->GetCurrentBuffer()->BaseURL(), referer, request);
+//     auto newBuf = loadGeneralFile(URL::Parse(url, GetCurrentBuffer()->BaseURL()), GetCurrentBuffer()->BaseURL(), referer, request);
 //     if (newBuf == NULL)
 //     {
 //         char *emsg = Sprintf("Can't load %s", url)->ptr;
@@ -723,12 +723,12 @@ void bufferA(w3mApp *w3m, const CommandContext &context)
 
 //     if (target == NULL ||                                             /* no target specified (that means this page is not a frame page) */
 //         !strcmp(target, "_top") ||                                    /* this link is specified to be opened as an indivisual * page */
-//         !(GetCurrentTab()->GetCurrentBuffer()->bufferprop & BP_FRAME) /* This page is not a frame page */
+//         !(GetCurrentBuffer()->bufferprop & BP_FRAME) /* This page is not a frame page */
 //     )
 //     {
 //         return loadNormalBuf(newBuf, true);
 //     }
-//     nfbuf = GetCurrentTab()->GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
+//     nfbuf = GetCurrentBuffer()->linkBuffer[LB_N_FRAME];
 //     if (nfbuf == NULL)
 //     {
 //         /* original page (that contains <frameset> tag) doesn't exist */
@@ -745,10 +745,10 @@ void bufferA(w3mApp *w3m, const CommandContext &context)
 //     /* frame page */
 
 //     /* stack current frameset */
-//     pushFrameTree(&(nfbuf->frameQ), copyFrameSet(nfbuf->frameset), GetCurrentTab()->GetCurrentBuffer());
+//     pushFrameTree(&(nfbuf->frameQ), copyFrameSet(nfbuf->frameset), GetCurrentBuffer());
 //     /* delete frame view buffer */
 //     auto tab = GetCurrentTab();
-//     // tab->DeleteBuffer(tab->GetCurrentBuffer());
+//     // tab->DeleteBuffer(GetCurrentBuffer());
 //     // GetCurrentTab()->SetCurrentBuffer(nfbuf);
 //     tab->Push(nfbuf);
 //     /* nfbuf->frameset = copyFrameSet(nfbuf->frameset); */
@@ -764,7 +764,7 @@ void bufferA(w3mApp *w3m, const CommandContext &context)
 //         }
 
 //         auto tab = GetCurrentTab();
-//         auto buf = tab->GetCurrentBuffer();
+//         auto buf = GetCurrentBuffer();
 
 //         if (!al)
 //         {
@@ -884,7 +884,7 @@ Str conv_form_encoding(std::string_view val, FormItemPtr fi, BufferPtr buf)
 // BufferPtr loadNormalBuf(BufferPtr buf, int renderframe)
 // {
 //     GetCurrentTab()->Push(buf);
-//     if (renderframe && w3mApp::Instance().RenderFrame && GetCurrentTab()->GetCurrentBuffer()->frameset != NULL)
+//     if (renderframe && w3mApp::Instance().RenderFrame && GetCurrentBuffer()->frameset != NULL)
 //         rFrame(&w3mApp::Instance());
 //     return buf;
 // }
@@ -893,7 +893,7 @@ Str conv_form_encoding(std::string_view val, FormItemPtr fi, BufferPtr buf)
 void _nextA(int visited, int n)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
     if (buf->hmarklist.empty())
@@ -980,7 +980,7 @@ _end:
 void _prevA(int visited, int n)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
     if (buf->hmarklist.empty())
@@ -1066,7 +1066,7 @@ _end:
 void gotoLabel(std::string_view label)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     auto al = buf->name.SearchByUrl(label.data());
     if (al == NULL)
     {
@@ -1083,14 +1083,14 @@ void gotoLabel(std::string_view label)
     // pushHashHist(w3mApp::Instance().URLHist, copy->currentURL.ToStr()->ptr);
     // (*copy->clone)++;
     GetCurrentTab()->Push(buf->currentURL);
-    GetCurrentTab()->GetCurrentBuffer()->Goto(al->start, w3mApp::Instance().label_topline);
+    GetCurrentBuffer()->Goto(al->start, w3mApp::Instance().label_topline);
 }
 
 /* go to the next left/right anchor */
 void nextX(int d, int dy, int n)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
     if (buf->hmarklist.empty())
@@ -1146,7 +1146,7 @@ void nextX(int d, int dy, int n)
 void nextY(int d, int n)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
     if (buf->hmarklist.empty())
@@ -1191,7 +1191,7 @@ void nextY(int d, int n)
 void goURL0(std::string_view url, std::string_view prompt, int relative)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
 
     // auto url = w3mApp::Instance().searchKeyData();
     URL *current = nullptr;
@@ -1270,7 +1270,7 @@ void goURL0(std::string_view url, std::string_view prompt, int relative)
 void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (!buf->href || buf->hmarklist.empty())
         return;
 
@@ -1286,7 +1286,7 @@ void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
 void _peekURL(int only_img, int n)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
 
@@ -1347,7 +1347,7 @@ void _peekURL(int only_img, int n)
 Str currentURL(void)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (buf->bufferprop & BP_INTERNAL)
         return Strnew_size(0);
     return buf->currentURL.ToStr();
@@ -1356,7 +1356,7 @@ Str currentURL(void)
 void _docCSet(CharacterEncodingScheme charset)
 {
     auto tab = GetCurrentTab();
-    auto buf = tab->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     if (buf->bufferprop & BP_INTERNAL)
         return;
     if (buf->sourcefile.empty())
@@ -1473,23 +1473,23 @@ void tabURL0(TabPtr tab, std::string_view url, const char *prompt, int relative)
     }
 
     CreateTabSetCurrent();
-    auto buf = GetCurrentTab()->GetCurrentBuffer();
+    auto buf = GetCurrentBuffer();
     goURL0(url, prompt, relative);
     if (tab == NULL)
     {
-        // if (buf != GetCurrentTab()->GetCurrentBuffer())
+        // if (buf != GetCurrentBuffer())
         //     GetCurrentTab()->DeleteBuffer(buf);
         // else
         //     deleteTab(GetCurrentTab());
     }
-    else if (buf != GetCurrentTab()->GetCurrentBuffer())
+    else if (buf != GetCurrentBuffer())
     {
         // TODO:
 
         /* buf <- p <- ... <- Currentbuf = c */
         // BufferPtr c;
         // BufferPtr p;
-        // c = GetCurrentTab()->GetCurrentBuffer();
+        // c = GetCurrentBuffer();
         // p = prevBuffer(c, buf);
         // p->nextBuffer = NULL;
         // GetCurrentTab()->SetFirstBuffer(buf);
@@ -1514,11 +1514,11 @@ void tabURL0(TabPtr tab, std::string_view url, const char *prompt, int relative)
 //     {
 //         buf->bufferprop |= (BP_INTERNAL | prop);
 //         if (!(buf->bufferprop & BP_NO_URL))
-//             buf->currentURL = GetCurrentTab()->GetCurrentBuffer()->currentURL;
+//             buf->currentURL = GetCurrentBuffer()->currentURL;
 //         if (linkid != LB_NOLINK)
 //         {
-//             buf->linkBuffer[linkid] = GetCurrentTab()->GetCurrentBuffer();
-//             GetCurrentTab()->GetCurrentBuffer()->linkBuffer[linkid] = buf;
+//             buf->linkBuffer[linkid] = GetCurrentBuffer();
+//             GetCurrentBuffer()->linkBuffer[linkid] = buf;
 //         }
 //         GetCurrentTab()->Push(buf);
 //     }
