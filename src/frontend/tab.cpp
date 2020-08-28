@@ -38,13 +38,13 @@ bool Tab::SetCurrent(int index)
 
     auto url = m_history[index];
     auto stream = GetStream(url, m_buffer ? m_buffer->BaseURL() : nullptr);
-    if (!stream.stream)
+    if (!stream)
     {
         LOGE << "fail to GetStream";
         return false;
     }
 
-    LOGI << stream.content_type << ";" << stream.content_charset;
+    LOGI << stream->content_type << ";" << stream->content_charset;
 
     auto buf = LoadStream(stream);
     if (!buf)

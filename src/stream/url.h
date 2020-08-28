@@ -10,7 +10,7 @@ extern int ai_family_order_table[7][3]; /* XXX */
 
 namespace std
 {
-    typedef basic_ostream<char> ostream;
+typedef basic_ostream<char> ostream;
 }
 
 enum URLSchemeTypes
@@ -109,7 +109,7 @@ public:
     static URL LocalPath(std::string_view path);
     void ResolveInplace(const URL *base);
     URL Resolve(const URL *base) const;
-    URL CopyWithoutFragment()const
+    URL CopyWithoutFragment() const
     {
         auto copy = *this;
         copy.fragment.clear();
@@ -131,7 +131,12 @@ struct ContentStream
     std::shared_ptr<class InputStream> stream;
     std::string content_type;
     std::string content_charset;
+
+    ContentStream(const URL &u, const std::shared_ptr<class InputStream> &s, std::string_view t, std::string_view c = "")
+    : url(u), stream(s), content_type(t), content_charset(c)
+    {}
 };
+using ContentStreamPtr = std::shared_ptr<ContentStream>;
 
 const char *filename_extension(const char *patch, int is_url);
 

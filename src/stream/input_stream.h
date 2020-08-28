@@ -262,6 +262,6 @@ inline InputStreamPtr openIS(const char *path)
 InputStreamPtr OpenHttpAndSendRequest(const std::shared_ptr<struct HttpRequest> &request);
 InputStreamPtr StreamFromFile(std::string_view path);
 
-ContentStream GetStream(const URL &url,
+ContentStreamPtr GetStream(const URL &url,
                         const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
                         const std::shared_ptr<Form> &form = nullptr);

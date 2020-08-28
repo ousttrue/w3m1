@@ -121,5 +121,5 @@ class HttpClient
 
 public:
     std::tuple<std::shared_ptr<class InputStream>, HttpResponsePtr> GetResponse(const URL &url, const URL *base, HttpReferrerPolicy referer, FormPtr form);
-    ContentStream GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, FormPtr form);
+    ContentStreamPtr GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, FormPtr form);
 };

@@ -344,7 +344,7 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
     return {stream, response};
 }
 
-ContentStream HttpClient::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, FormPtr form)
+ContentStreamPtr HttpClient::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, FormPtr form)
 {
     auto [stream, response] = GetResponse(url, base, referer, form);
 
@@ -380,7 +380,7 @@ ContentStream HttpClient::GetStream(const URL &url, const URL *base, HttpReferre
         assert(stream);
     }
 
-    return {url, stream, response->content_type, response->content_charset};
+    return std::make_shared<ContentStream>(url, stream, response->content_type, response->content_charset);
 
     // auto proc = loadBuffer;
     // else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && !useExtImageViewer &&

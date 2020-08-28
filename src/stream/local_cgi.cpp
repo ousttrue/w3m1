@@ -524,7 +524,7 @@ Str loadLocalDir(std::string_view dname)
     return tmp;
 }
 
-ContentStream LocalCGI::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, FormPtr form)
+ContentStreamPtr LocalCGI::GetStream(const URL &url, const URL *base, HttpReferrerPolicy referer, FormPtr form)
 {
     auto cgi = LocalCGIStatus(url.real_file);
     if (!cgi.check_local_cgi())
@@ -606,6 +606,6 @@ ContentStream LocalCGI::GetStream(const URL &url, const URL *base, HttpReferrerP
         auto t = guessContentType(url.path);
         if (t == NULL)
             t = "text/plain";
-        return {url, stream, t};
+        return std::make_shared<ContentStream>(url, stream, t);
     }
 }

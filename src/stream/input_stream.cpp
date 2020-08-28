@@ -793,9 +793,9 @@ InputStreamPtr StreamFromFile(std::string_view path)
     */
 }
 
-std::unordered_map<std::string, ContentStream> g_cache;
+std::unordered_map<std::string, ContentStreamPtr> g_cache;
 
-ContentStream GetStream(const URL &url,
+ContentStreamPtr GetStream(const URL &url,
                         const URL *current, HttpReferrerPolicy referer,
                         const FormPtr &form)
 {
@@ -806,7 +806,7 @@ ContentStream GetStream(const URL &url,
     auto found = g_cache.find(key);
     if (found != g_cache.end())
     {
-        found->second.stream->Rewind();
+        found->second->stream->Rewind();
         return found->second;
     }
 
@@ -819,7 +819,7 @@ ContentStream GetStream(const URL &url,
         //
         HttpClient client;
         auto stream = client.GetStream(url, current, referer, form);
-        if (stream.stream)
+        if (stream->stream)
         {
             g_cache.insert(std::make_pair(key, stream));
         }
@@ -847,7 +847,7 @@ ContentStream GetStream(const URL &url,
             assert(false);
             return {};
         }
-        return {url, stream, "text/html"};
+        return std::make_shared<ContentStream>(url, stream, "text/html");
     }
 
     // not implemened

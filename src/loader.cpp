@@ -473,7 +473,7 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
             assert(false);
             return nullptr;
         }
-        return LoadStream({url, stream, "text/html"});
+        return LoadStream(std::make_shared<ContentStream>(url, stream, "text/html"));
     }
 
     // not implemened
@@ -534,25 +534,25 @@ BufferPtr loadGeneralFile(const URL &_url, const URL *_current, HttpReferrerPoli
 
 // f.modtime = mymktime(checkHeader(t_buf, "Last-Modified:"));
 
-BufferPtr LoadStream(const ContentStream &content)
+BufferPtr LoadStream(const ContentStreamPtr &content)
 {
-    if (!content.stream)
+    if (!content)
     {
         return nullptr;
     }
 
-    auto content_charset = content.content_charset.size()
-                               ? wc_guess_charset(content.content_charset.data(), WC_CES_NONE)
+    auto content_charset = content->content_charset.size()
+                               ? wc_guess_charset(content->content_charset.data(), WC_CES_NONE)
                                : WC_CES_UTF_8;
 
     BufferPtr b;
-    if (is_html_type(content.content_type))
+    if (is_html_type(content->content_type))
     {
-        b = loadHTMLStream(content.url, content.stream, content_charset);
+        b = loadHTMLStream(content->url, content->stream, content_charset);
     }
-    else if (is_plain_text_type(content.content_type))
+    else if (is_plain_text_type(content->content_type))
     {
-        b = loadBuffer(content.url, content.stream, content_charset);
+        b = loadBuffer(content->url, content->stream, content_charset);
     }
     else
     {
@@ -563,7 +563,7 @@ BufferPtr LoadStream(const ContentStream &content)
 
     if (b)
     {
-        if (content.url.fragment.size())
+        if (content->url.fragment.size())
         {
             // if (proc == loadHTMLBuffer)
             // {

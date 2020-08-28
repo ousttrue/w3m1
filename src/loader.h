@@ -13,4 +13,4 @@ BufferPtr loadGeneralFile(const URL &url,
                           const URL *current = nullptr, HttpReferrerPolicy referer = HttpReferrerPolicy::StrictOriginWhenCrossOrigin,
                           FormPtr form = nullptr);
 
-BufferPtr LoadStream(const ContentStream &stream);
+BufferPtr LoadStream(const ContentStreamPtr &stream);
