@@ -96,19 +96,30 @@ class HtmlContext
     std::vector<AnchorPtr> a_textarea;
     std::vector<Str> textarea_str;
     int n_textarea = -1;
-    Str cur_textarea;
+    Str cur_textarea = nullptr;
     int cur_textarea_size;
     int cur_textarea_rows;
     int cur_textarea_readonly;
     bool ignore_nl_textarea = false;
+
+    struct readbuffer obuf;
+    html_feed_environ htmlenv1;
 
 public:
     Lineprop effect = P_UNKNOWN;
     Lineprop ex_effect = P_UNKNOWN;
     char symbol = '\0';
 
-    HtmlContext(CharacterEncodingScheme content_charset);
-    ~HtmlContext();
+    HtmlContext(CharacterEncodingScheme content_charset)
+        : doc_charset(content_charset),
+          htmlenv1(&obuf, newTextLineList(), Terminal::columns())
+    {
+    }
+
+    ~HtmlContext()
+    {        
+    }
+
     const CharacterEncodingScheme &DocCharset() const { return doc_charset; }
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
     Str process_n_select();
@@ -204,17 +215,6 @@ private:
     void renderTable(struct table *t, int max_width, struct html_feed_environ *h_env);
     void renderCoTable(struct table *tbl, int maxlimit);
 };
-
-HtmlContext::HtmlContext(CharacterEncodingScheme content_charset)
-{
-    doc_charset = content_charset;
-    cur_select = nullptr;
-    cur_textarea = nullptr;
-}
-
-HtmlContext::~HtmlContext()
-{
-}
 
 void HtmlContext::SetMetaCharset(CharacterEncodingScheme ces)
 {
@@ -5432,7 +5432,7 @@ FormItemPtr HtmlContext::formList_addInput(FormPtr fl, struct parsed_tag *tag)
 }
 
 ///
-///
+/// public
 ///
 BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal)
 {
@@ -5482,13 +5482,6 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 
         context.BufferFromLines(newBuf, feed);
     }
-
-    // newBuf->document_charset = w3mApp::Instance().InnerCharset;
-    // newBuf->document_charset = WC_CES_US_ASCII;
-    // newBuf->CurrentAsLast();
-    // newBuf->type = "text/html";
-    // newBuf->real_type = newBuf->type;
-    // formResetBuffer(newBuf, newBuf->formitem);
 
     return newBuf;
 }
