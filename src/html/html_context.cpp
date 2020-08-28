@@ -21,19 +21,6 @@
 
 #define FORM_I_TEXT_DEFAULT_SIZE 40
 #define MAX_TABLE 20 /* maximum nest level of table */
-static struct table *tables[MAX_TABLE];
-struct table_mode table_mode[MAX_TABLE];
-static int
-table_width(html_feed_environ *h_env, int table_level)
-{
-    int width;
-    if (table_level < 0)
-        return 0;
-    width = tables[table_level]->total_width;
-    if (table_level > 0 || width > 0)
-        return width;
-    return h_env->limit - h_env->envs.back().indent;
-}
 
 #define MAX_SELECT 10 /* max number of <select>..</select> \
                        * within one document */
@@ -54,6 +41,18 @@ using FormSelectOptionList = std::vector<FormSelectOptionItem>;
 
 class HtmlContext
 {
+    table *m_tables[MAX_TABLE];
+    table_mode m_table_modes[MAX_TABLE];
+    int table_width(html_feed_environ *h_env, int table_level)
+    {
+        if (table_level < 0)
+            return 0;
+        auto width = m_tables[table_level]->total_width;
+        if (table_level > 0 || width > 0)
+            return width;
+        return h_env->limit - h_env->envs.back().indent;
+    }
+
     // // HTML <meta>
     // CharacterEncodingScheme meta_charset = WC_CES_NONE;
     // src charset
@@ -225,7 +224,7 @@ public:
 
         while (m_obuf.table_level >= 0)
         {
-            table_mode[m_obuf.table_level].pre_mode &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
+            m_table_modes[m_obuf.table_level].pre_mode &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
             this->HTMLlineproc0("</table>", true);
         }
     }
@@ -252,8 +251,8 @@ public:
         if (obuf->table_level >= 0)
         {
             int level = std::min((int)obuf->table_level, (int)(MAX_TABLE - 1));
-            tbl = tables[level];
-            tbl_mode = &table_mode[level];
+            tbl = m_tables[level];
+            tbl_mode = &m_table_modes[level];
             tbl_width = table_width(&m_henv, level);
         }
 
@@ -372,11 +371,11 @@ public:
                     tbl->end();
                     if (obuf->table_level >= 0)
                     {
-                        struct table *tbl0 = tables[obuf->table_level];
+                        struct table *tbl0 = m_tables[obuf->table_level];
                         str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
                         tbl0->pushTable(tbl0);
                         tbl = tbl0;
-                        tbl_mode = &table_mode[obuf->table_level];
+                        tbl_mode = &m_table_modes[obuf->table_level];
                         tbl_width = table_width(&m_henv, obuf->table_level);
                         this->feed_table(tbl, str, tbl_mode, tbl_width, true);
                         continue;
@@ -609,7 +608,7 @@ public:
     FormItemPtr formList_addInput(FormPtr fl, struct parsed_tag *tag);
 
 private:
-    void print_internal_information(struct html_feed_environ *henv);
+    void print_internal_information();
 
     void print_internal(struct TextLineList *tl);
     CharacterEncodingScheme CES() const { return cur_document_charset; }
@@ -770,7 +769,7 @@ void HtmlContext::SetMetaCharset(CharacterEncodingScheme ces)
     }
 }
 
-void HtmlContext::print_internal_information(struct html_feed_environ *henv)
+void HtmlContext::print_internal_information()
 {
     // TDOO:
     //     TextLineList *tl = newTextLineList();
@@ -3463,17 +3462,17 @@ int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
         tag->TryGetAttributeValue(ATTR_VSPACE, &z);
         char *id;
         tag->TryGetAttributeValue(ATTR_ID, &id);
-        tables[m_obuf.table_level] = table::begin(w, x, y, z);
+        m_tables[m_obuf.table_level] = table::begin(w, x, y, z);
         if (id != NULL)
-            tables[m_obuf.table_level]->id = Strnew(id);
+            m_tables[m_obuf.table_level]->id = Strnew(id);
 
-        table_mode[m_obuf.table_level].pre_mode = TBLM_NONE;
-        table_mode[m_obuf.table_level].indent_level = 0;
-        table_mode[m_obuf.table_level].nobr_level = 0;
-        table_mode[m_obuf.table_level].caption = 0;
-        table_mode[m_obuf.table_level].end_tag = HTML_UNKNOWN;
+        m_table_modes[m_obuf.table_level].pre_mode = TBLM_NONE;
+        m_table_modes[m_obuf.table_level].indent_level = 0;
+        m_table_modes[m_obuf.table_level].nobr_level = 0;
+        m_table_modes[m_obuf.table_level].caption = 0;
+        m_table_modes[m_obuf.table_level].end_tag = HTML_UNKNOWN;
 #ifndef TABLE_EXPAND
-        tables[m_obuf.table_level]->total_width = width;
+        m_tables[m_obuf.table_level]->total_width = width;
 #else
         tables[m_obuf.table_level]->real_width = width;
         tables[m_obuf.table_level]->total_width = 0;
