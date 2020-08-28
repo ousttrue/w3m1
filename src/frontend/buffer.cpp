@@ -255,9 +255,6 @@ void Buffer::CopyFrom(BufferPtr src)
     // cursor ?
     currentLine = src->currentLine;
 
-    width = src->width;
-    height = src->height;
-
     // mimetype: text/plain
     type = src->type;
     real_type = src->real_type;
@@ -370,7 +367,7 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
 std::shared_ptr<Buffer> Buffer::Create(const URL &url)
 {
     auto n = std::make_shared<Buffer>();
-    n->width = Terminal::columns();
+    // n->width = Terminal::columns();
     n->currentURL = url;
     return n;
 }

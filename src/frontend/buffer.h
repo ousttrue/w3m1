@@ -247,9 +247,6 @@ public:
     void undoPos(int prec_num);
     void redoPos();
 
-    short width;
-    short height;
-
     // mimetype: text/plain
     std::string type;
     std::string real_type;

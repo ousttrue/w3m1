@@ -923,17 +923,17 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
         mode = B_FORCE_REDRAW;
     }
 
-    if (buf->width == 0)
-        buf->width = Terminal::columns();
-    if (buf->height == 0)
-        buf->height = (Terminal::lines() - 1) + 1;
-    if ((buf->width != Terminal::columns() &&
-         (is_html_type(buf->type) /*|| w3mApp::Instance().FoldLine*/)) ||
-        buf->need_reshape)
-    {
-        buf->need_reshape = true;
-        // buf->Reshape();
-    }
+    // if (buf->width == 0)
+    //     buf->width = Terminal::columns();
+    // if (buf->height == 0)
+    //     buf->height = (Terminal::lines() - 1) + 1;
+    // if ((buf->width != Terminal::columns() &&
+    //      (is_html_type(buf->type) /*|| w3mApp::Instance().FoldLine*/)) ||
+    //     buf->need_reshape)
+    // {
+    //     buf->need_reshape = true;
+    //     // buf->Reshape();
+    // }
 
     // if (w3mApp::Instance().showLineNum)
     // {

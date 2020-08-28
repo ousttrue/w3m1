@@ -3783,7 +3783,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
     auto newBuf = Buffer::Create(url);
     newBuf->type = "text/html";
     struct readbuffer obuf;
-    html_feed_environ htmlenv1(&obuf, newTextLineList(), newBuf->width);
+    html_feed_environ htmlenv1(&obuf, newTextLineList(), Terminal::columns());
 
     //
     //
