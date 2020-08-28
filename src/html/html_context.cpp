@@ -303,6 +303,7 @@ public:
             if (pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT | RB_SCRIPT |
                             RB_STYLE | RB_TITLE))
             {
+                bool processed = false;
                 if (is_tag)
                 {
                     const char *p = str;
@@ -310,50 +311,65 @@ public:
                     {
                         if (tag->tagid == end_tag ||
                             (pre_mode & RB_INSELECT && tag->tagid == HTML_N_FORM) || (pre_mode & RB_TITLE && (tag->tagid == HTML_N_HEAD || tag->tagid == HTML_BODY)))
-                            goto proc_normal;
+                            processed = true;
                     }
                 }
+
                 /* title */
-                if (pre_mode & RB_TITLE)
+                if (!processed && pre_mode & RB_TITLE)
                 {
                     this->TitleContent(str);
                     continue;
                 }
+
                 /* select */
-                if (pre_mode & RB_INSELECT)
+                if (!processed && pre_mode & RB_INSELECT)
                 {
                     if (obuf->table_level >= 0)
-                        goto proc_normal;
-                    this->feed_select(str);
-                    continue;
-                }
-                if (is_tag)
-                {
-                    char *p;
-                    if (strncmp(str, "<!--", 4) && (p = strchr(const_cast<char *>(str) + 1, '<')))
                     {
-                        str = Strnew_charp_n(str, p - str)->ptr;
-                        line = Strnew_m_charp(p, line, NULL)->ptr;
+                        processed = true;
                     }
-                    is_tag = false;
+                    else
+                    {
+                        this->feed_select(str);
+                        continue;
+                    }
                 }
-                if (obuf->table_level >= 0)
-                    goto proc_normal;
+
+                if (!processed && is_tag)
+                {
+                    assert(false);
+                    // char *p;
+                    // if (strncmp(str, "<!--", 4) && (p = strchr(const_cast<char *>(str) + 1, '<')))
+                    // {
+                    //     str = Strnew_charp_n(str, p - str)->ptr;
+                    //     line = Strnew_m_charp(p, line, NULL)->ptr;
+                    // }
+                    // is_tag = false;
+                }
+
+                if (!processed && obuf->table_level >= 0)
+                {
+                    processed = true;
+                }
+
                 /* textarea */
-                if (pre_mode & RB_INTXTA)
+                if (!processed && pre_mode & RB_INTXTA)
                 {
                     this->feed_textarea(str);
                     continue;
                 }
+
                 /* script */
-                if (pre_mode & RB_SCRIPT)
+                if (!processed && pre_mode & RB_SCRIPT)
                     continue;
+
                 /* style */
-                if (pre_mode & RB_STYLE)
+                if (!processed && pre_mode & RB_STYLE)
                     continue;
+
             }
 
-        proc_normal:
             if (obuf->table_level >= 0)
             {
                 /* 
