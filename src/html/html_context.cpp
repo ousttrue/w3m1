@@ -235,22 +235,15 @@ public:
     //
     void HTMLlineproc0(const char *line, bool internal)
     {
-        Lineprop mode;
-        HtmlTags cmd;
-        struct readbuffer *obuf = m_henv.obuf;
-        int indent, delta;
-        struct parsed_tag *tag;
-        struct table *tbl = NULL;
-        struct table_mode *tbl_mode = NULL;
-        int tbl_width = 0;
-        int is_hangul, prev_is_hangul = 0;
-
-        auto tokbuf = Strnew();
-
     table_start:
-        if (obuf->table_level >= 0)
+        bool prev_is_hangul = 0;
+        auto tokbuf = Strnew();
+        table *tbl = NULL;
+        table_mode *tbl_mode = NULL;
+        int tbl_width = 0;
+        if (m_obuf.table_level >= 0)
         {
-            int level = std::min((int)obuf->table_level, (int)(MAX_TABLE - 1));
+            int level = std::min((int)m_obuf.table_level, (int)(MAX_TABLE - 1));
             tbl = m_tables[level];
             tbl_mode = &m_table_modes[level];
             tbl_width = table_width(&m_henv, level);
@@ -260,21 +253,21 @@ public:
         {
             const char *str;
             int is_tag = false;
-            int pre_mode = (obuf->table_level >= 0) ? tbl_mode->pre_mode : obuf->flag;
-            int end_tag = (obuf->table_level >= 0) ? tbl_mode->end_tag : obuf->end_tag;
+            int pre_mode = (m_obuf.table_level >= 0) ? tbl_mode->pre_mode : m_obuf.flag;
+            int end_tag = (m_obuf.table_level >= 0) ? tbl_mode->end_tag : m_obuf.end_tag;
 
-            if (*line == '<' || obuf->status != R_ST_NORMAL)
+            if (*line == '<' || m_obuf.status != R_ST_NORMAL)
             {
                 /* 
              * Tag processing
              */
-                if (obuf->status == R_ST_EOL)
-                    obuf->status = R_ST_NORMAL;
+                if (m_obuf.status == R_ST_EOL)
+                    m_obuf.status = R_ST_NORMAL;
                 else
                 {
-                    read_token(m_henv.tagbuf, (char **)&line, &obuf->status,
-                               pre_mode & RB_PREMODE, obuf->status != R_ST_NORMAL);
-                    if (obuf->status != R_ST_NORMAL)
+                    read_token(m_henv.tagbuf, (char **)&line, &m_obuf.status,
+                               pre_mode & RB_PREMODE, m_obuf.status != R_ST_NORMAL);
+                    if (m_obuf.status != R_ST_NORMAL)
                         return;
                 }
                 if (m_henv.tagbuf->Size() == 0)
@@ -294,9 +287,9 @@ public:
             }
             else
             {
-                read_token(tokbuf, (char **)&line, &obuf->status, pre_mode & RB_PREMODE, 0);
-                if (obuf->status != R_ST_NORMAL) /* R_ST_AMP ? */
-                    obuf->status = R_ST_NORMAL;
+                read_token(tokbuf, (char **)&line, &m_obuf.status, pre_mode & RB_PREMODE, 0);
+                if (m_obuf.status != R_ST_NORMAL) /* R_ST_AMP ? */
+                    m_obuf.status = R_ST_NORMAL;
                 str = tokbuf->ptr;
             }
 
@@ -307,7 +300,7 @@ public:
                 if (is_tag)
                 {
                     const char *p = str;
-                    if ((tag = parse_tag(&p, internal)))
+                    if (auto tag = parse_tag(&p, internal))
                     {
                         if (tag->tagid == end_tag ||
                             (pre_mode & RB_INSELECT && tag->tagid == HTML_N_FORM) || (pre_mode & RB_TITLE && (tag->tagid == HTML_N_HEAD || tag->tagid == HTML_BODY)))
@@ -325,7 +318,7 @@ public:
                 /* select */
                 if (!processed && pre_mode & RB_INSELECT)
                 {
-                    if (obuf->table_level >= 0)
+                    if (m_obuf.table_level >= 0)
                     {
                         processed = true;
                     }
@@ -348,7 +341,7 @@ public:
                     // is_tag = false;
                 }
 
-                if (!processed && obuf->table_level >= 0)
+                if (!processed && m_obuf.table_level >= 0)
                 {
                     processed = true;
                 }
@@ -367,56 +360,55 @@ public:
                 /* style */
                 if (!processed && pre_mode & RB_STYLE)
                     continue;
-
             }
 
-            if (obuf->table_level >= 0)
+            if (m_obuf.table_level >= 0)
             {
                 /* 
-             * within table: in <table>..</table>, all input tokens
-             * are fed to the table renderer, and then the renderer
-             * makes HTML output.
-             */
+                * within table: in <table>..</table>, all input tokens
+                * are fed to the table renderer, and then the renderer
+                * makes HTML output.
+                */
                 switch (this->feed_table(tbl, str, tbl_mode, tbl_width, internal))
                 {
                 case 0:
                     /* </table> tag */
-                    obuf->table_level--;
-                    if (obuf->table_level >= MAX_TABLE - 1)
+                    m_obuf.table_level--;
+                    if (m_obuf.table_level >= MAX_TABLE - 1)
                         continue;
                     tbl->end();
-                    if (obuf->table_level >= 0)
+                    if (m_obuf.table_level >= 0)
                     {
-                        struct table *tbl0 = m_tables[obuf->table_level];
+                        struct table *tbl0 = m_tables[m_obuf.table_level];
                         str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
                         tbl0->pushTable(tbl0);
                         tbl = tbl0;
-                        tbl_mode = &m_table_modes[obuf->table_level];
-                        tbl_width = table_width(&m_henv, obuf->table_level);
+                        tbl_mode = &m_table_modes[m_obuf.table_level];
+                        tbl_width = table_width(&m_henv, m_obuf.table_level);
                         this->feed_table(tbl, str, tbl_mode, tbl_width, true);
                         continue;
                         /* continue to the next */
                     }
-                    if (obuf->flag & RB_DEL)
+                    if (m_obuf.flag & RB_DEL)
                         continue;
                     /* all tables have been read */
-                    if (tbl->vspace > 0 && !(obuf->flag & RB_IGNORE_P))
+                    if (tbl->vspace > 0 && !(m_obuf.flag & RB_IGNORE_P))
                     {
                         int indent = m_henv.envs.back().indent;
                         m_henv.flushline(indent, 0, m_henv.limit);
-                        m_henv.do_blankline(obuf, indent, 0, m_henv.limit);
+                        m_henv.do_blankline(&m_obuf, indent, 0, m_henv.limit);
                     }
-                    m_henv.obuf->save_fonteffect();
+                    m_obuf.save_fonteffect();
                     this->renderTable(tbl, tbl_width);
-                    m_henv.obuf->restore_fonteffect();
-                    obuf->flag &= ~RB_IGNORE_P;
+                    m_obuf.restore_fonteffect();
+                    m_obuf.flag &= ~RB_IGNORE_P;
                     if (tbl->vspace > 0)
                     {
                         int indent = m_henv.envs.back().indent;
-                        m_henv.do_blankline(obuf, indent, 0, m_henv.limit);
-                        obuf->flag |= RB_IGNORE_P;
+                        m_henv.do_blankline(&m_obuf, indent, 0, m_henv.limit);
+                        m_obuf.flag |= RB_IGNORE_P;
                     }
-                    obuf->set_space_to_prevchar();
+                    m_obuf.set_space_to_prevchar();
                     continue;
                 case 1:
                     /* <table> tag */
@@ -429,41 +421,44 @@ public:
             if (is_tag)
             {
                 /*** Beginning of a new tag ***/
-                if ((tag = parse_tag(const_cast<const char **>(&str), internal)))
-                    cmd = tag->tagid;
-                else
+                auto tag = parse_tag(const_cast<const char **>(&str), internal);
+                if(!tag)
+                {
                     continue;
+                }
+                auto cmd = tag->tagid;
+
                 /* process tags */
                 if (this->HTMLtagproc1(tag) == 0)
                 {
                     /* preserve the tag for second-stage processing */
                     if (tag->need_reconstruct)
                         m_henv.tagbuf = tag->ToStr();
-                    obuf->push_tag(m_henv.tagbuf->ptr, cmd);
+                    m_obuf.push_tag(m_henv.tagbuf->ptr, cmd);
                 }
                 else
                 {
-                    obuf->process_idattr(cmd, tag);
+                    m_obuf.process_idattr(cmd, tag);
                 }
 
-                obuf->bp = {};
-                obuf->clear_ignore_p_flag(cmd);
+                m_obuf.bp = {};
+                m_obuf.clear_ignore_p_flag(cmd);
                 if (cmd == HTML_TABLE)
                     goto table_start;
                 else
                     continue;
             }
 
-            if (obuf->flag & (RB_DEL | RB_S))
+            if (m_obuf.flag & (RB_DEL | RB_S))
                 continue;
             while (*str)
             {
-                mode = get_mctype(*str);
-                delta = get_mcwidth(str);
-                if (obuf->flag & (RB_SPECIAL & ~RB_NOBR))
+                auto mode = get_mctype(*str);
+                auto delta = get_mcwidth(str);
+                if (m_obuf.flag & (RB_SPECIAL & ~RB_NOBR))
                 {
                     char ch = *str;
-                    if (!(obuf->flag & RB_PLAIN) && (*str == '&'))
+                    if (!(m_obuf.flag & RB_PLAIN) && (*str == '&'))
                     {
                         const char *p = str;
                         auto [pos, ech] = ucs4_from_entity(p);
@@ -480,17 +475,17 @@ public:
                         }
                     }
                     if (ch != '\n')
-                        obuf->flag &= ~RB_IGNORE_P;
+                        m_obuf.flag &= ~RB_IGNORE_P;
                     if (ch == '\n')
                     {
                         str++;
-                        if (obuf->flag & RB_IGNORE_P)
+                        if (m_obuf.flag & RB_IGNORE_P)
                         {
-                            obuf->flag &= ~RB_IGNORE_P;
+                            m_obuf.flag &= ~RB_IGNORE_P;
                             continue;
                         }
-                        if (obuf->flag & RB_PRE_INT)
-                            obuf->PUSH(' ');
+                        if (m_obuf.flag & RB_PRE_INT)
+                            m_obuf.PUSH(' ');
                         else
                             m_henv.flushline(m_henv.envs.back().indent, 1, m_henv.limit);
                     }
@@ -498,123 +493,124 @@ public:
                     {
                         do
                         {
-                            obuf->PUSH(' ');
-                        } while ((m_henv.envs.back().indent + obuf->pos) % w3mApp::Instance().Tabstop != 0);
+                            m_obuf.PUSH(' ');
+                        } while ((m_henv.envs.back().indent + m_obuf.pos) % w3mApp::Instance().Tabstop != 0);
                         str++;
                     }
-                    else if (obuf->flag & RB_PLAIN)
+                    else if (m_obuf.flag & RB_PLAIN)
                     {
                         const char *p = html_quote_char(*str);
                         if (p)
                         {
-                            obuf->push_charp(1, p, PC_ASCII);
+                            m_obuf.push_charp(1, p, PC_ASCII);
                             str++;
                         }
                         else
                         {
-                            obuf->proc_mchar(1, delta, &str, mode);
+                            m_obuf.proc_mchar(1, delta, &str, mode);
                         }
                     }
                     else
                     {
                         if (*str == '&')
-                            obuf->proc_escape(&str);
+                            m_obuf.proc_escape(&str);
                         else
-                            obuf->proc_mchar(1, delta, &str, mode);
+                            m_obuf.proc_mchar(1, delta, &str, mode);
                     }
-                    if (obuf->flag & (RB_SPECIAL & ~RB_PRE_INT))
+                    if (m_obuf.flag & (RB_SPECIAL & ~RB_PRE_INT))
                         continue;
                 }
                 else
                 {
                     if (!IS_SPACE(*str))
-                        obuf->flag &= ~RB_IGNORE_P;
+                        m_obuf.flag &= ~RB_IGNORE_P;
                     if ((mode == PC_ASCII || mode == PC_CTRL) && IS_SPACE(*str))
                     {
-                        if (*obuf->prevchar->ptr != ' ')
+                        if (*m_obuf.prevchar->ptr != ' ')
                         {
-                            obuf->PUSH(' ');
+                            m_obuf.PUSH(' ');
                         }
                         str++;
                     }
                     else
                     {
+                        bool is_hangul = false;
                         if (mode == PC_KANJI1)
                             is_hangul = wtf_is_hangul((uint8_t *)str);
-                        else
-                            is_hangul = 0;
+
                         if (!w3mApp::Instance().SimplePreserveSpace && mode == PC_KANJI1 &&
                             !is_hangul && !prev_is_hangul &&
-                            obuf->pos > m_henv.envs.back().indent &&
-                            obuf->line->Back() == ' ')
+                            m_obuf.pos > m_henv.envs.back().indent &&
+                            m_obuf.line->Back() == ' ')
                         {
-                            while (obuf->line->Size() >= 2 &&
-                                   !strncmp(obuf->line->ptr + obuf->line->Size() -
+                            while (m_obuf.line->Size() >= 2 &&
+                                   !strncmp(m_obuf.line->ptr + m_obuf.line->Size() -
                                                 2,
                                             "  ", 2) &&
-                                   obuf->pos >= m_henv.envs.back().indent)
+                                   m_obuf.pos >= m_henv.envs.back().indent)
                             {
-                                obuf->line->Pop(1);
-                                obuf->pos--;
+                                m_obuf.line->Pop(1);
+                                m_obuf.pos--;
                             }
-                            if (obuf->line->Size() >= 3 &&
-                                obuf->prev_ctype == PC_KANJI1 &&
-                                obuf->line->Back() == ' ' &&
-                                obuf->pos >= m_henv.envs.back().indent)
+                            if (m_obuf.line->Size() >= 3 &&
+                                m_obuf.prev_ctype == PC_KANJI1 &&
+                                m_obuf.line->Back() == ' ' &&
+                                m_obuf.pos >= m_henv.envs.back().indent)
                             {
-                                obuf->line->Pop(1);
-                                obuf->pos--;
+                                m_obuf.line->Pop(1);
+                                m_obuf.pos--;
                             }
                         }
                         prev_is_hangul = is_hangul;
 
                         if (*str == '&')
-                            obuf->proc_escape(&str);
+                            m_obuf.proc_escape(&str);
                         else
-                            obuf->proc_mchar(obuf->flag & RB_SPECIAL, delta, &str, mode);
+                            m_obuf.proc_mchar(m_obuf.flag & RB_SPECIAL, delta, &str, mode);
                     }
                 }
                 if (m_henv.need_flushline(mode))
                 {
-                    char *bp = obuf->line->ptr + obuf->bp.len();
-                    char *tp = bp - obuf->bp.tlen();
+                    char *bp = m_obuf.line->ptr + m_obuf.bp.len();
+                    char *tp = bp - m_obuf.bp.tlen();
                     int i = 0;
 
-                    if (tp > obuf->line->ptr && tp[-1] == ' ')
+                    if (tp > m_obuf.line->ptr && tp[-1] == ' ')
                         i = 1;
 
-                    indent = m_henv.envs.back().indent;
-                    if (obuf->bp.pos() - i > indent)
+                    auto indent = m_henv.envs.back().indent;
+                    if (m_obuf.bp.pos() - i > indent)
                     {
-                        obuf->append_tags();
+                        m_obuf.append_tags();
                         auto line = Strnew(bp);
-                        obuf->line->Pop(obuf->line->Size() - obuf->bp.len());
-                        obuf->bp.back_to(obuf);
+                        m_obuf.line->Pop(m_obuf.line->Size() - m_obuf.bp.len());
+                        m_obuf.bp.back_to(&m_obuf);
                         m_henv.flushline(indent, 0, m_henv.limit);
                         this->HTMLlineproc0(line->ptr, true);
                     }
                 }
             }
         }
-        if (!(obuf->flag & (RB_SPECIAL | RB_INTXTA | RB_INSELECT)))
+        if (!(m_obuf.flag & (RB_SPECIAL | RB_INTXTA | RB_INSELECT)))
         {
             char *tp;
             int i = 0;
 
-            if (obuf->bp.pos() == obuf->pos)
+            if (m_obuf.bp.pos() == m_obuf.pos)
             {
-                tp = &obuf->line->ptr[obuf->bp.len() - obuf->bp.tlen()];
+                tp = &m_obuf.line->ptr[m_obuf.bp.len() - m_obuf.bp.tlen()];
             }
             else
             {
-                tp = &obuf->line->ptr[obuf->line->Size()];
+                tp = &m_obuf.line->ptr[m_obuf.line->Size()];
             }
 
-            if (tp > obuf->line->ptr && tp[-1] == ' ')
+            if (tp > m_obuf.line->ptr && tp[-1] == ' ')
                 i = 1;
-            indent = m_henv.envs.back().indent;
-            if (obuf->pos - i > m_henv.limit)
+
+            if (m_obuf.pos - i > m_henv.limit)
             {
+                int indent = m_henv.envs.back().indent;
                 m_henv.flushline(indent, 0, m_henv.limit);
             }
         }
