@@ -19,6 +19,7 @@
 #include "stream/network.h"
 #include "entity.h"
 
+#define FORM_I_TEXT_DEFAULT_SIZE 40
 #define MAX_TABLE 20 /* maximum nest level of table */
 static struct table *tables[MAX_TABLE];
 struct table_mode table_mode[MAX_TABLE];
@@ -1442,7 +1443,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
             // FormSelectGrow(selectnumber);
         }
 
-        auto fi = formList_addInput(form, tag, this);
+        auto fi = this->formList_addInput(form, tag);
         if (fi)
         {
             auto a = std::make_shared<Anchor>();
@@ -5202,6 +5203,82 @@ void HtmlContext::renderCoTable(struct table *tbl, int maxlimit)
     }
 }
 
+/* 
+ * add <input> element to form_list
+ */
+FormItemPtr HtmlContext::formList_addInput(FormPtr fl, struct parsed_tag *tag)
+{
+    /* if not in <form>..</form> environment, just ignore <input> tag */
+    if (fl == NULL)
+        return NULL;
+
+    auto item = std::make_shared<FormItem>();
+    fl->items.push_back(item);
+    item->parent = fl;
+
+    item->type = FORM_UNKNOWN;
+    item->size = -1;
+    item->rows = 0;
+    item->checked = item->init_checked = 0;
+    item->accept = 0;
+    item->name;
+    item->value = item->init_value;
+    item->readonly = 0;
+    const char *p;
+    if (tag->TryGetAttributeValue(ATTR_TYPE, &p))
+    {
+        item->type = formtype(p);
+        if (item->size < 0 &&
+            (item->type == FORM_INPUT_TEXT ||
+             item->type == FORM_INPUT_FILE ||
+             item->type == FORM_INPUT_PASSWORD))
+            item->size = FORM_I_TEXT_DEFAULT_SIZE;
+    }
+    if (tag->TryGetAttributeValue(ATTR_NAME, &p))
+        item->name = p;
+    if (tag->TryGetAttributeValue(ATTR_VALUE, &p))
+        item->value = item->init_value = p;
+    item->checked = item->init_checked = tag->HasAttribute(ATTR_CHECKED);
+    item->accept = tag->HasAttribute(ATTR_ACCEPT);
+    tag->TryGetAttributeValue(ATTR_SIZE, &item->size);
+    tag->TryGetAttributeValue(ATTR_MAXLENGTH, &item->maxlength);
+    item->readonly = tag->HasAttribute(ATTR_READONLY);
+    int i;
+    if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &i))
+        item->value = item->init_value = this->Textarea(i)->ptr;
+
+    if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
+        item->select_option = *this->FormSelect(i);
+
+    if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
+        item->rows = atoi(p);
+    if (item->type == FORM_UNKNOWN)
+    {
+        /* type attribute is missing. Ignore the tag. */
+        return NULL;
+    }
+
+    if (item->type == FORM_SELECT)
+    {
+        item->chooseSelectOption();
+        item->init_selected = item->selected;
+        item->init_value = item->value;
+        item->init_label = item->label;
+    }
+
+    if (item->type == FORM_INPUT_FILE && item->value.size())
+    {
+        /* security hole ! */
+        return NULL;
+    }
+    if (item->type == FORM_INPUT_HIDDEN)
+        return NULL;
+    return item;
+}
+
+///
+///
+///
 BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal)
 {
     struct readbuffer obuf;

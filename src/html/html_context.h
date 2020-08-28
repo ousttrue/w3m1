@@ -8,7 +8,6 @@
 #include "html/table.h"
 
 using FormSelectOptionList = std::vector<FormSelectOptionItem>;
-// void addSelectOption(std::string_view value, std::string_view label, bool chk);
 
 class HtmlContext
 {
@@ -78,6 +77,7 @@ public:
     void completeHTMLstream(struct html_feed_environ *, struct readbuffer *);
     void HTMLlineproc0(const char *istr, html_feed_environ *h_env, bool internal);
     void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width);
+    FormItemPtr formList_addInput(FormPtr fl, struct parsed_tag *tag);
 
 private:
     void print_internal_information(struct html_feed_environ *henv);

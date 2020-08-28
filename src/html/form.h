@@ -122,7 +122,6 @@ using FormPtr = std::shared_ptr<Form>;
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
 using AnchorPtr = std::shared_ptr<struct Anchor>;
-FormItemPtr formList_addInput(FormPtr fl, struct parsed_tag *tag, class HtmlContext *context);
 void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form);
 void formRecheckRadio(const AnchorPtr &a, BufferPtr buf, FormItemPtr form);
 
