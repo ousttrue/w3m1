@@ -111,6 +111,7 @@ bool HttpResponse::PushIsEndHeader(std::string_view line, const URL &url)
 
     if (lines.empty())
     {
+        LOGD << line;
         lines.push_back(std::string(line));
 
         // first line
@@ -338,7 +339,7 @@ std::tuple<InputStreamPtr, HttpResponsePtr> HttpClient::GetResponse(const URL &u
         // redirect
         auto new_url = URL::Parse(location, nullptr);
         LOGD << "redirect to:" << location;
-        return GetResponse(new_url, &url, referer, nullptr);
+        return GetResponse(new_url, nullptr, referer, nullptr);
     }
 
     return {stream, response};
@@ -380,7 +381,7 @@ ContentStreamPtr HttpClient::GetStream(const URL &url, const URL *base, HttpRefe
         assert(stream);
     }
 
-    return std::make_shared<ContentStream>(url, stream, response->content_type, response->content_charset);
+    return std::make_shared<ContentStream>(exchanges.back().request->url, stream, response->content_type, response->content_charset);
 
     // auto proc = loadBuffer;
     // else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && !useExtImageViewer &&

@@ -1,3 +1,4 @@
+#include <plog/Log.h>
 #include <unistd.h>
 #include <sstream>
 #include "indep.h"
@@ -683,8 +684,13 @@ InputStreamPtr OpenHttpAndSendRequest(const std::shared_ptr<HttpRequest> &reques
         }
 
         // send http request
+        int i = 0;
         for (auto &l : request->lines)
         {
+            if (i++ == 0)
+            {
+                LOGD << l.data();
+            }
             ssl->Write(l.data(), l.size());
         }
         ssl->Write("\r\n", 2);
@@ -796,8 +802,8 @@ InputStreamPtr StreamFromFile(std::string_view path)
 std::unordered_map<std::string, ContentStreamPtr> g_cache;
 
 ContentStreamPtr GetStream(const URL &url,
-                        const URL *current, HttpReferrerPolicy referer,
-                        const FormPtr &form)
+                           const URL *current, HttpReferrerPolicy referer,
+                           const FormPtr &form)
 {
     auto without_fragment = url.CopyWithoutFragment();
     std::stringstream ss;
