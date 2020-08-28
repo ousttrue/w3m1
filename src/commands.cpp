@@ -628,7 +628,7 @@ void editBf(w3mApp *w3m, const CommandContext &context)
     Str cmd;
     if (fn == NULL || GetCurrentBuffer()->pagerSource != NULL ||                                                    /* Behaving as a pager */
         (GetCurrentBuffer()->type.empty() && GetCurrentBuffer()->edit.empty()) ||                  /* Reading shell */
-        GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentBuffer()->currentURL.path == "-" /* file is std input  */
+        GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentBuffer()->url.path == "-" /* file is std input  */
     )
     { /* Frame */
         disp_err_message("Can't edit other than local file", true);
@@ -831,7 +831,7 @@ void followI(w3mApp *w3m, const CommandContext &context)
     Screen::Instance().Refresh();
     Terminal::flush();
 
-    GetCurrentTab()->Push(URL::Parse(a->url, &buf->currentURL));
+    GetCurrentTab()->Push(URL::Parse(a->url, &buf->url));
     // auto newBuf = loadGeneralFile(URL::Parse(a->url), &buf->currentURL);
     // if (newBuf == NULL)
     // {
@@ -994,8 +994,8 @@ void followA(w3mApp *w3m, const CommandContext &context)
         return;
     }
 
-    auto u = URL::Parse(a->url, &buf->currentURL);
-    if (u.ToStr()->Cmp(buf->currentURL.ToStr()) == 0)
+    auto u = URL::Parse(a->url, &buf->url);
+    if (u.ToStr()->Cmp(buf->url.ToStr()) == 0)
     {
         /* index within this buffer */
         if (u.fragment.size())
@@ -1033,7 +1033,7 @@ void followA(w3mApp *w3m, const CommandContext &context)
     //     displayCurrentbuf(B_NORMAL);
     // }
 
-    tab->Push(URL::Parse(url, &buf->currentURL));
+    tab->Push(URL::Parse(url, &buf->url));
 }
 
 /* go to the next left anchor */
@@ -1186,7 +1186,7 @@ void adBmark(w3mApp *w3m, const CommandContext &context)
     auto tmp = Sprintf("mode=panel&cookie=%s&bmark=%s&url=%s&title=%s&charset=%s",
                        UrlEncode((localCookie()))->ptr,
                        UrlEncode((Strnew(w3mApp::Instance().BookmarkFile)))->ptr,
-                       UrlEncode((GetCurrentBuffer()->currentURL.ToStr()))->ptr,
+                       UrlEncode((GetCurrentBuffer()->url.ToStr()))->ptr,
 
                        UrlEncode((wc_conv_strict(GetCurrentBuffer()->buffername.c_str(),
                                                  w3mApp::Instance().InnerCharset,
@@ -1244,9 +1244,9 @@ void linkMn(w3mApp *w3m, const CommandContext &context)
         return;
     }
 
-    auto p_url = URL::Parse(l->url(), &GetCurrentBuffer()->currentURL);
+    auto p_url = URL::Parse(l->url(), &GetCurrentBuffer()->url);
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
-    cmd_loadURL(l->url(), &GetCurrentBuffer()->currentURL, HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
+    cmd_loadURL(l->url(), &GetCurrentBuffer()->url, HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 }
 /* accesskey */
 
@@ -1500,7 +1500,7 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
     }
 
     {
-        auto newBuf = Buffer::Create(buf->currentURL);
+        auto newBuf = Buffer::Create(buf->url);
         if (is_html_type(buf->type.c_str()))
         {
             newBuf->type = "text/plain";
@@ -1525,7 +1525,7 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
         {
             return;
         }
-        newBuf->currentURL = buf->currentURL;
+        newBuf->url = buf->url;
         newBuf->real_scheme = buf->real_scheme;
         newBuf->filename = buf->filename;
         newBuf->sourcefile = buf->sourcefile;
@@ -1534,7 +1534,7 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
         newBuf->document_charset = buf->document_charset;
         newBuf->need_reshape = true;
         // buf->Reshape();
-        GetCurrentTab()->Push(URL::Parse("w3m://htmlsource", &buf->currentURL));
+        GetCurrentTab()->Push(URL::Parse("w3m://htmlsource", &buf->url));
     }
 }
 
@@ -1556,7 +1556,7 @@ void reload(w3mApp *w3m, const CommandContext &context)
         return;
     }
 
-    if (buf->currentURL.IsStdin())
+    if (buf->url.IsStdin())
     {
         /* file is std input */
         /* FIXME: gettextize? */
@@ -1606,7 +1606,7 @@ void reload(w3mApp *w3m, const CommandContext &context)
     w3m->DefaultType = Strnew(buf->real_type)->ptr;
 
     {
-        auto newBuf = loadGeneralFile(buf->currentURL.NoCache(), NULL, HttpReferrerPolicy::NoReferer, request);
+        auto newBuf = loadGeneralFile(buf->url.NoCache(), NULL, HttpReferrerPolicy::NoReferer, request);
 
         w3m->DocumentCharset = old_charset;
 
@@ -1711,14 +1711,14 @@ void extbrz(w3mApp *w3m, const CommandContext &context)
         disp_err_message("Can't browse...", true);
         return;
     }
-    if (GetCurrentBuffer()->currentURL.IsStdin())
+    if (GetCurrentBuffer()->url.IsStdin())
     {
         /* file is std input */
         /* FIXME: gettextize? */
         disp_err_message("Can't browse stdin", true);
         return;
     }
-    invoke_browser(GetCurrentBuffer()->currentURL.ToStr()->ptr, context.data, context.prec_num());
+    invoke_browser(GetCurrentBuffer()->url.ToStr()->ptr, context.data, context.prec_num());
 }
 
 void linkbrz(w3mApp *w3m, const CommandContext &context)
@@ -1732,7 +1732,7 @@ void linkbrz(w3mApp *w3m, const CommandContext &context)
     if (a == NULL)
         return;
 
-    auto pu = URL::Parse(a->url, &GetCurrentBuffer()->currentURL);
+    auto pu = URL::Parse(a->url, &GetCurrentBuffer()->url);
     invoke_browser(pu.ToStr()->ptr, context.data, context.prec_num());
 }
 

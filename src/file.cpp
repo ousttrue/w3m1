@@ -802,7 +802,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
     buf = openPagerBuffer(stream, content_charset);
     buf->type = "text/plain";
     buf->real_type = t;
-    buf->currentURL = URL::StdIn();
+    buf->url = URL::StdIn();
     return buf;
 }
 
@@ -1177,9 +1177,9 @@ const char *last_modified(const BufferPtr &buf)
     //     return "unknown";
     // }
     // else
-    if (buf->currentURL.scheme == SCM_LOCAL)
+    if (buf->url.scheme == SCM_LOCAL)
     {
-        if (stat(buf->currentURL.path.c_str(), &st) < 0)
+        if (stat(buf->url.path.c_str(), &st) < 0)
             return "unknown";
         return ctime(&st.st_mtime);
     }

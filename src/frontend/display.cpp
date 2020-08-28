@@ -344,7 +344,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, std::string
     if (url.empty())
         return s;
 
-    auto pu = URL::Parse(url, &buf->currentURL);
+    auto pu = URL::Parse(url, &buf->url);
     auto u = pu.ToStr();
     if (w3mApp::Instance().DecodeURL)
         u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));
@@ -610,7 +610,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
         {
             Image *image = a->image;
             auto cache = image->cache =
-                getImage(image, &buf->currentURL, buf->image_flag);
+                getImage(image, &buf->url, buf->image_flag);
             if (cache)
             {
                 if ((image->width < 0 && cache->width > 0) ||
@@ -935,7 +935,7 @@ void displayBuffer()
         g_buf->GotoLine(1, true);
     }
     auto buf = g_buf;
-    LOGI << "displayBuffer: " << buf->currentURL;
+    LOGI << "displayBuffer: " << buf->url;
 
     // if (buf->width == 0)
     //     buf->width = Terminal::columns();

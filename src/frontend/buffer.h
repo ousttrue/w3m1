@@ -304,7 +304,7 @@ public:
     std::vector<MapListPtr> maplist;
     std::vector<BufferPoint> hmarklist;
     std::vector<BufferPoint> imarklist;
-    URL currentURL = {};
+    URL url = {};
     std::string baseTarget;
     int real_scheme = 0;
     std::string sourcefile;

@@ -62,14 +62,14 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
         return;
     }
 
-    auto p_url = URL::Parse(a->url, &GetCurrentBuffer()->currentURL);
+    auto p_url = URL::Parse(a->url, &GetCurrentBuffer()->url);
     pushHashHist(w3mApp::Instance().URLHist, p_url.ToStr()->ptr);
     if (check_target() && w3mApp::Instance().open_tab_blank &&
         (a->target == "_new" || a->target == "_blank"))
     {
         auto tab = CreateTabSetCurrent();
         BufferPtr buf = GetCurrentBuffer();
-        cmd_loadURL(a->url, &GetCurrentBuffer()->currentURL,
+        cmd_loadURL(a->url, &GetCurrentBuffer()->url,
                     HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
         // if (buf != GetCurrentBuffer())
         //     GetCurrentTab()->DeleteBuffer(buf);
@@ -78,7 +78,7 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
         // displayCurrentbuf(B_FORCE_REDRAW);
         return;
     }
-    cmd_loadURL(a->url, &GetCurrentBuffer()->currentURL,
+    cmd_loadURL(a->url, &GetCurrentBuffer()->url,
                 HttpReferrerPolicy::StrictOriginWhenCrossOrigin, NULL);
 #endif
 }
@@ -1006,13 +1006,13 @@ void preFormUpdateBuffer(const BufferPtr &buf)
     {
         if (pf->re_url)
         {
-            Str url = buf->currentURL.ToStr();
+            Str url = buf->url.ToStr();
             if (!RegexMatch(pf->re_url, url->ptr, url->Size(), 1))
                 continue;
         }
         else if (pf->url.size())
         {
-            if (buf->currentURL.ToStr()->Cmp(pf->url.c_str()) != 0)
+            if (buf->url.ToStr()->Cmp(pf->url.c_str()) != 0)
                 continue;
         }
         else

@@ -632,7 +632,7 @@ link_list_panel(const BufferPtr &buf)
             const char *p;
             if (l.url().size())
             {
-                auto pu = URL::Parse(l.url(), &buf->currentURL);
+                auto pu = URL::Parse(l.url(), &buf->url);
                 p = pu.ToStr()->ptr;
                 u = html_quote(p);
                 if (w3mApp::Instance().DecodeURL)
@@ -660,7 +660,7 @@ link_list_panel(const BufferPtr &buf)
             auto a = al.anchors[i];
             if (a->hseq < 0 || a->slave)
                 continue;
-            auto pu = URL::Parse(a->url, &buf->currentURL);
+            auto pu = URL::Parse(a->url, &buf->url);
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (w3mApp::Instance().DecodeURL)
@@ -684,7 +684,7 @@ link_list_panel(const BufferPtr &buf)
             auto a = al.anchors[i];
             if (a->slave)
                 continue;
-            auto pu = URL::Parse(a->url, &buf->currentURL);
+            auto pu = URL::Parse(a->url, &buf->url);
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (w3mApp::Instance().DecodeURL)
@@ -715,7 +715,7 @@ link_list_panel(const BufferPtr &buf)
                 for (auto it = ml->area.begin(); it != ml->area.end(); ++it)
                 {
                     auto m = *it;
-                    auto pu = URL::Parse(m->url, &buf->currentURL);
+                    auto pu = URL::Parse(m->url, &buf->url);
                     p = pu.ToStr()->ptr;
                     u = html_quote(p);
                     if (w3mApp::Instance().DecodeURL)
@@ -739,5 +739,5 @@ link_list_panel(const BufferPtr &buf)
         tmp->Push("</ol>\n");
     }
 
-    return loadHTMLStream(URL::Parse(std::string("w3m://links/") + buf->currentURL.ToStr()->ptr), StrStream::Create(tmp->ptr), WC_CES_UTF_8, true);
+    return loadHTMLStream(URL::Parse(std::string("w3m://links/") + buf->url.ToStr()->ptr), StrStream::Create(tmp->ptr), WC_CES_UTF_8, true);
 }

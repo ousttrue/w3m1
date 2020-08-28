@@ -78,14 +78,14 @@ writeBufferName(BufferPtr buf, int n)
     auto msg = Sprintf("<%s> [%d lines]", buf->buffername, all);
     if (buf->filename.size())
     {
-        switch (buf->currentURL.scheme)
+        switch (buf->url.scheme)
         {
         case SCM_LOCAL:
         case SCM_LOCAL_CGI:
-            if (buf->currentURL.path != "-")
+            if (buf->url.path != "-")
             {
                 msg->Push(' ');
-                msg->Push(conv_from_system(buf->currentURL.real_file));
+                msg->Push(conv_from_system(buf->url.real_file));
             }
             break;
         case SCM_UNKNOWN:
@@ -93,7 +93,7 @@ writeBufferName(BufferPtr buf, int n)
             break;
         default:
             msg->Push(' ');
-            msg->Push(buf->currentURL.ToStr());
+            msg->Push(buf->url.ToStr());
             break;
         }
     }

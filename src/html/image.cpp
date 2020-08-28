@@ -273,7 +273,7 @@ void ImageManager::getAllImage(const BufferPtr &buf)
     auto &al = buf->img;
     if (!al)
         return;
-    current = &buf->currentURL;
+    current = &buf->url;
     for (auto &a : al.anchors)
     {
         if (a->image)

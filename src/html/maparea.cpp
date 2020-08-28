@@ -376,7 +376,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemPtr fi)
         auto a = *al;
         if (!a)
             continue;
-        auto pu = URL::Parse(a->url, &buf->currentURL);
+        auto pu = URL::Parse(a->url, &buf->url);
         auto q = html_quote(pu.ToStr()->ptr);
         char *p;
         if (w3mApp::Instance().DecodeURL)
@@ -401,7 +401,7 @@ append_link_info(BufferPtr buf, Str html)
     html->Push("<hr width=50%><h1>Link information</h1><table>\n");
     for (auto &l : buf->linklist)
     {
-        html->Push(l.toHtml(*&buf->currentURL, buf->document_charset));
+        html->Push(l.toHtml(*&buf->url, buf->document_charset));
     }
     html->Push("</table>\n");
 }
@@ -436,7 +436,7 @@ page_info_panel(const BufferPtr &buf)
 
     tmp->Push("<form method=internal action=charset>");
 
-    p = buf->currentURL.ToStr()->ptr;
+    p = buf->url.ToStr()->ptr;
     if (w3mApp::Instance().DecodeURL)
         p = url_unquote_conv(p, WC_CES_NONE);
     Strcat_m_charp(tmp, "<table cellpadding=0>",
@@ -475,7 +475,7 @@ page_info_panel(const BufferPtr &buf)
     a = buf->href.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
-        auto pu = URL::Parse(a->url, &buf->currentURL);
+        auto pu = URL::Parse(a->url, &buf->url);
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (w3mApp::Instance().DecodeURL)
@@ -489,7 +489,7 @@ page_info_panel(const BufferPtr &buf)
     a = buf->img.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
-        auto pu = URL::Parse(a->url, &buf->currentURL);
+        auto pu = URL::Parse(a->url, &buf->url);
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (w3mApp::Instance().DecodeURL)

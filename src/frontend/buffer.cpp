@@ -43,7 +43,7 @@ bool fread1(T &d, FILE *f)
 
 Buffer::Buffer()
 {
-    currentURL.scheme = SCM_UNKNOWN;
+    url.scheme = SCM_UNKNOWN;
     baseTarget = {};
     bufferprop = BP_NORMAL;
     trbyte = 0;
@@ -233,7 +233,7 @@ int Buffer::ReadBufferCache()
 
 BufferPtr Buffer::Copy()
 {
-    auto copy = Buffer::Create(currentURL);
+    auto copy = Buffer::Create(url);
     copy->CopyFrom(shared_from_this());
     return copy;
 }
@@ -275,7 +275,7 @@ void Buffer::CopyFrom(BufferPtr src)
     maplist = src->maplist;
     hmarklist = src->hmarklist;
     imarklist = src->imarklist;
-    currentURL = src->currentURL;
+    url = src->url;
     baseTarget = src->baseTarget;
     real_scheme = src->real_scheme;
     sourcefile = src->sourcefile;
@@ -349,7 +349,7 @@ std::shared_ptr<Buffer> Buffer::Create(const URL &url)
 {
     auto n = std::make_shared<Buffer>();
     // n->width = Terminal::columns();
-    n->currentURL = url;
+    n->url = url;
     return n;
 }
 
@@ -684,7 +684,7 @@ void set_buffer_environ(const BufferPtr &buf)
         set_environ("W3M_SOURCEFILE", buf->sourcefile);
         set_environ("W3M_FILENAME", buf->filename);
         set_environ("W3M_TITLE", buf->buffername.c_str());
-        set_environ("W3M_URL", buf->currentURL.ToStr()->ptr);
+        set_environ("W3M_URL", buf->url.ToStr()->ptr);
         set_environ("W3M_TYPE", buf->real_type.size() ? buf->real_type : "unknown");
         set_environ("W3M_CHARSET", wc_ces_to_charset(buf->document_charset));
     }
@@ -696,7 +696,7 @@ void set_buffer_environ(const BufferPtr &buf)
         auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
-            auto pu = URL::Parse(a->url, &buf->currentURL);
+            auto pu = URL::Parse(a->url, &buf->url);
             set_environ("W3M_CURRENT_LINK", pu.ToStr()->ptr);
         }
         else
@@ -704,7 +704,7 @@ void set_buffer_environ(const BufferPtr &buf)
         a = buf->img.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
-            auto pu = URL::Parse(a->url, &buf->currentURL);
+            auto pu = URL::Parse(a->url, &buf->url);
             set_environ("W3M_CURRENT_IMG", pu.ToStr()->ptr);
         }
         else
@@ -1182,7 +1182,7 @@ void Buffer::DrawLine(LinePtr l, int line)
             auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
             {
-                auto url = URL::Parse(a->url, &this->currentURL);
+                auto url = URL::Parse(a->url, &this->url);
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
                     for (int k = a->start.pos; k < a->end.pos; k++)
@@ -1265,7 +1265,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
             auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
             {
-                auto url = URL::Parse(a->url, &this->currentURL);
+                auto url = URL::Parse(a->url, &this->url);
                 if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
                 {
                     for (auto k = a->start.pos; k < a->end.pos; k++)
