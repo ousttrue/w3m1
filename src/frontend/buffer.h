@@ -39,16 +39,6 @@ struct BufferPos
     int bpos;
 };
 
-enum DisplayMode
-{
-    B_NONE,
-    B_NORMAL,
-    B_FORCE_REDRAW,
-    B_REDRAW,
-    B_SCROLL,
-    B_REDRAW_IMAGE,
-};
-
 /* Search Result */
 enum SearchResultTypes
 {
@@ -70,7 +60,6 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     LineList lines;
 
 private:
-    DisplayMode m_redraw = B_REDRAW;
 
     // scroll
     LinePtr topLine;
@@ -91,12 +80,6 @@ private:
 public:
     static std::shared_ptr<Buffer> Create(const URL &url);
 
-    DisplayMode Update()
-    {
-        auto redraw = m_redraw;
-        m_redraw = B_NONE;
-        return redraw;
-    }
     int LineCount() const
     {
         return lines.size();

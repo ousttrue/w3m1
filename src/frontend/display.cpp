@@ -911,14 +911,8 @@ void disp_message_nomouse(const char *s, int redraw_current)
 
 void set_delayed_message(const char *s) { delayed_msg = allocStr(s, -1); }
 
-void displayBuffer(DisplayMode mode)
+void displayBuffer()
 {
-    if (mode == B_NONE)
-    {
-        return;
-    }
-    mode = B_FORCE_REDRAW;
-
     auto tab = GetCurrentTab();
     auto content = tab->GetCurrentContent();
     if (g_content != content)
@@ -941,15 +935,7 @@ void displayBuffer(DisplayMode mode)
         g_buf->GotoLine(1, true);
     }
     auto buf = g_buf;
-    LOGI << "displayBuffer: " << mode << ": " << buf->currentURL;
-
-    if (!buf)
-        return;
-    if (buf->TopLine() == NULL &&
-        buf->ReadBufferCache() == 0)
-    { /* clear_buffer */
-        mode = B_FORCE_REDRAW;
-    }
+    LOGI << "displayBuffer: " << buf->currentURL;
 
     // if (buf->width == 0)
     //     buf->width = Terminal::columns();
@@ -976,33 +962,33 @@ void displayBuffer(DisplayMode mode)
     int ny = 0;
     if (GetTabCount() > 1 || GetMouseActionMenuStr().size())
     {
-        if (mode == B_FORCE_REDRAW || mode == B_REDRAW_IMAGE)
-            calcTabPos();
+        calcTabPos();
         ny = GetTabbarHeight() + 1;
         if (ny > (Terminal::lines() - 1))
             ny = (Terminal::lines() - 1);
     }
+
     if (buf->rect.rootY != ny || buf->rect.lines != (Terminal::lines() - 1) - ny)
     {
         buf->rect.rootY = ny;
         buf->rect.lines = (Terminal::lines() - 1) - ny;
         buf->ArrangeCursor();
-        mode = B_REDRAW_IMAGE;
     }
-    if (mode == B_FORCE_REDRAW || mode == B_SCROLL || mode == B_REDRAW_IMAGE ||
-        cline != buf->TopLine() || ccolumn != buf->currentColumn)
+
+    // if (mode == B_FORCE_REDRAW || mode == B_SCROLL || mode == B_REDRAW_IMAGE ||
+    //     cline != buf->TopLine() || ccolumn != buf->currentColumn)
     {
-        if (ImageManager::Instance().activeImage &&
-            (mode == B_REDRAW_IMAGE || cline != buf->TopLine() ||
-             ccolumn != buf->currentColumn))
-        {
-            if (draw_image_flag)
-                Screen::Instance().Clear();
-            ImageManager::Instance().clearImage();
-            ImageManager::Instance().loadImage(buf, IMG_FLAG_STOP);
-            image_touch++;
-            draw_image_flag = false;
-        }
+        // if (ImageManager::Instance().activeImage &&
+        //     (mode == B_REDRAW_IMAGE || cline != buf->TopLine() ||
+        //      ccolumn != buf->currentColumn))
+        // {
+        //     if (draw_image_flag)
+        //         Screen::Instance().Clear();
+        //     ImageManager::Instance().clearImage();
+        //     ImageManager::Instance().loadImage(buf, IMG_FLAG_STOP);
+        //     image_touch++;
+        //     draw_image_flag = false;
+        // }
 
         if (w3mApp::Instance().useColor)
         {
@@ -1093,19 +1079,6 @@ void displayBuffer(DisplayMode mode)
         ImageManager::Instance().drawImage();
     }
 }
-
-// void displayCurrentbuf(DisplayMode mode)
-// {
-//     auto tab = GetCurrentTab();
-//     if (tab)
-//     {
-//         displayBuffer(GetCurrentBuffer(), mode);
-//     }
-//     else
-//     {
-//         assert(false);
-//     }
-// }
 
 void disp_srchresult(int result, std::string_view prompt, std::string_view str)
 {

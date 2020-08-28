@@ -1,7 +1,7 @@
 #pragma once
 #include "frontend/buffer.h"
 
-void displayBuffer(DisplayMode mode);
+void displayBuffer();
 void do_color(Linecolor c);
 void clear_effect();
 

@@ -964,8 +964,6 @@ void Buffer::CursorRight(int n)
         this->visualpos = l->bwidth + cpos - this->currentColumn;
     }
     this->rect.cursorX = this->visualpos - l->bwidth;
-
-    m_redraw = B_NORMAL;
 }
 
 void Buffer::CursorLeft(int n)
@@ -1001,8 +999,6 @@ void Buffer::CursorLeft(int n)
         this->visualpos = l->bwidth + cpos - this->currentColumn;
     }
     this->rect.cursorX = this->visualpos - l->bwidth;
-
-    m_redraw = B_NORMAL;
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -1045,7 +1041,6 @@ void Buffer::ArrangeCursor()
 
     int col, col2, pos;
     int delta = 1;
-    m_redraw = B_NORMAL;
     /* Arrange line */
     if (this->currentLine->linenumber - this->topLine->linenumber >= this->rect.lines || this->currentLine->linenumber < this->topLine->linenumber)
     {
@@ -1105,7 +1100,6 @@ void Buffer::ArrangeLine()
     if (this->LineCount() == 0)
         return;
 
-    m_redraw = B_FORCE_REDRAW;
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
     auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos - this->currentLine->bwidth);
     auto cpos = this->currentLine->COLPOS(i) - this->currentColumn;
@@ -1443,9 +1437,6 @@ void Buffer::resetPos(int i)
     newBuf->pos = b.pos;
     newBuf->currentColumn = b.currentColumn;
     restorePosition(newBuf);
-
-    // TODO: erase
-    m_redraw = B_FORCE_REDRAW;
 }
 
 void Buffer::undoPos(int prec_num)
@@ -1504,7 +1495,6 @@ void Buffer::srch_nxtprv(bool reverse, int prec_num)
     if (result & SR_FOUND)
         CurrentLine()->clear_mark();
 
-    m_redraw = B_NORMAL;
     disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
                     SearchString);
 }
@@ -1574,7 +1564,6 @@ int Buffer::dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
                 sbuf->COPY_BUFPOSITION_FROM(shared_from_this());
             }
             this->ArrangeCursor();
-            m_redraw = B_FORCE_REDRAW;
             this->CurrentLine()->clear_mark();
             return -1;
         }
@@ -1590,7 +1579,6 @@ int Buffer::dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
         currentLine = this->CurrentLine();
         s_pos = this->pos;
     }
-    m_redraw = B_FORCE_REDRAW;
     this->CurrentLine()->clear_mark();
     return -1;
 }
@@ -1609,7 +1597,6 @@ void Buffer::isrch(SearchFunc func, const char *prompt, int prec_num)
         COPY_BUFPOSITION_FROM(sbuf);
     }
 
-    m_redraw = B_FORCE_REDRAW;
 }
 
 void Buffer::srch(SearchFunc func, const char *prompt, std::string_view str, int prec_num)
@@ -1622,7 +1609,6 @@ void Buffer::srch(SearchFunc func, const char *prompt, std::string_view str, int
             str = SearchString;
         if (str.empty())
         {
-            m_redraw = B_NORMAL;
             return;
         }
         disp = true;
@@ -1636,7 +1622,6 @@ void Buffer::srch(SearchFunc func, const char *prompt, std::string_view str, int
         this->CurrentLine()->clear_mark();
     else
         this->pos = p;
-    m_redraw = B_NORMAL;
     if (disp)
         disp_srchresult(result, prompt, str);
     searchRoutine = func;

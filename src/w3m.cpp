@@ -285,7 +285,7 @@ public:
         //     auto drawType = currentBuf->Update();
         //     displayBuffer(currentBuf, drawType);
         // }
-        displayBuffer(B_NORMAL);
+        displayBuffer();
 
         // next read
         ReadTty();
@@ -312,10 +312,9 @@ public:
 void w3mApp::mainloop2()
 {
     // first draw
-    displayBuffer(B_NORMAL);
+    displayBuffer();
     
     Asio asio;
-
     asio.ReadTty();
     asio.Signal();
 
