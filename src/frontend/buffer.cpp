@@ -9,6 +9,7 @@
 #include "frontend/line.h"
 #include "frontend/lineinput.h"
 #include "frontend/screen.h"
+#include "frontend/terminal.h"
 #include "urimethod.h"
 #include "public.h"
 #include "indep.h"
@@ -369,7 +370,7 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
 std::shared_ptr<Buffer> Buffer::Create(const URL &url)
 {
     auto n = std::make_shared<Buffer>();
-    n->width = w3mApp::Instance().INIT_BUFFER_WIDTH();
+    n->width = Terminal::columns();
     n->currentURL = url;
     return n;
 }

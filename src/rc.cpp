@@ -657,7 +657,7 @@ auto sections = make_array(
                      {"image_scale", P_SCALE, PI_TEXT, ImageManager::Instance().image_scale, CMT_IMAGE_SCALE},
                      {"imgdisplay", P_STRING, PI_TEXT, ImageManager::Instance().Imgdisplay, CMT_IMGDISPLAY},
                      {"image_map_list", P_INT, PI_ONOFF, ImageManager::Instance().image_map_list, CMT_IMAGE_MAP_LIST},
-                     {"fold_line", P_INT, PI_ONOFF, w3mApp::Instance().FoldLine, CMT_FOLD_LINE},
+                    //  {"fold_line", P_INT, PI_ONOFF, w3mApp::Instance().FoldLine, CMT_FOLD_LINE},
                     //  {"show_lnum", P_INT, PI_ONOFF, w3mApp::Instance().showLineNum, CMT_SHOW_NUM},
                      {"show_srch_str", P_INT, PI_ONOFF, w3mApp::Instance().show_srch_str, CMT_SHOW_SRCH_STR},
                      {"label_topline", P_INT, PI_ONOFF, w3mApp::Instance().label_topline, CMT_LABEL_TOPLINE},

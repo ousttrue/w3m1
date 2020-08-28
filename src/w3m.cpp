@@ -448,18 +448,3 @@ void w3mApp::Quit(bool confirm)
         saveHistory(URLHist, URLHistSize);
     }
 }
-
-int _INIT_BUFFER_WIDTH()
-{
-    return Terminal::columns() /*- (w3mApp::Instance().showLineNum ? 6 : 1)*/;
-}
-
-int w3mApp::INIT_BUFFER_WIDTH()
-{
-    return (_INIT_BUFFER_WIDTH() > 0) ? _INIT_BUFFER_WIDTH() : 0;
-}
-
-int w3mApp::FOLD_BUFFER_WIDTH()
-{
-    return this->FoldLine ? (INIT_BUFFER_WIDTH() + 1) : -1;
-}

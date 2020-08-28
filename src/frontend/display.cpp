@@ -924,11 +924,11 @@ void displayBuffer(BufferPtr buf, DisplayMode mode)
     }
 
     if (buf->width == 0)
-        buf->width = w3mApp::Instance().INIT_BUFFER_WIDTH();
+        buf->width = Terminal::columns();
     if (buf->height == 0)
         buf->height = (Terminal::lines() - 1) + 1;
-    if ((buf->width != w3mApp::Instance().INIT_BUFFER_WIDTH() &&
-         (is_html_type(buf->type) || w3mApp::Instance().FoldLine)) ||
+    if ((buf->width != Terminal::columns() &&
+         (is_html_type(buf->type) /*|| w3mApp::Instance().FoldLine*/)) ||
         buf->need_reshape)
     {
         buf->need_reshape = true;

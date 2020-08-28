@@ -75,7 +75,7 @@ public:
     bool view_unseenobject = false;
     bool pseudoInlines = true;
 
-    bool FoldLine = false;
+    // bool FoldLine = false;
     // bool showLineNum = false;
     bool show_srch_str = true;
     bool label_topline = false;
@@ -226,9 +226,6 @@ private:
 public:
     void Quit(bool confirm = false);
     bool IsQuit() const { return m_quit; }
-
-    int INIT_BUFFER_WIDTH();
-    int FOLD_BUFFER_WIDTH();
 
 private:
     void mainloop();
