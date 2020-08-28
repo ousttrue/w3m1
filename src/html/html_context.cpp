@@ -2067,7 +2067,6 @@ Str HtmlContext::process_hr(struct parsed_tag *tag, int width, int indent_width)
 //
 void HtmlContext::HTMLlineproc0(const char *line, struct html_feed_environ *h_env, bool internal)
 {
-    auto seq = this;
     Lineprop mode;
     HtmlTags cmd;
     struct readbuffer *obuf = h_env->obuf;
@@ -2077,21 +2076,6 @@ void HtmlContext::HTMLlineproc0(const char *line, struct html_feed_environ *h_en
     struct table_mode *tbl_mode = NULL;
     int tbl_width = 0;
     int is_hangul, prev_is_hangul = 0;
-
-#ifdef DEBUG
-    if (w3m_debug)
-    {
-        FILE *f = fopen("zzzproc1", "a");
-        fprintf(f, "%c%c%c%c",
-                (obuf->flag & RB_PREMODE) ? 'P' : ' ',
-                (obuf->table_level >= 0) ? 'T' : ' ',
-                (obuf->flag & RB_INTXTA) ? 'X' : ' ',
-                (obuf->flag & (RB_SCRIPT | RB_STYLE)) ? 'S' : ' ');
-        fprintf(f, "HTMLlineproc0(\"%s\",%d,%lx)\n", line, h_env->limit,
-                (unsigned long)h_env);
-        fclose(f);
-    }
-#endif
 
     auto tokbuf = Strnew();
 
@@ -2209,7 +2193,7 @@ table_start:
              * are fed to the table renderer, and then the renderer
              * makes HTML output.
              */
-            switch (seq->feed_table(tbl, str, tbl_mode, tbl_width, internal))
+            switch (this->feed_table(tbl, str, tbl_mode, tbl_width, internal))
             {
             case 0:
                 /* </table> tag */
@@ -2225,7 +2209,7 @@ table_start:
                     tbl = tbl0;
                     tbl_mode = &table_mode[obuf->table_level];
                     tbl_width = table_width(h_env, obuf->table_level);
-                    seq->feed_table(tbl, str, tbl_mode, tbl_width, true);
+                    this->feed_table(tbl, str, tbl_mode, tbl_width, true);
                     continue;
                     /* continue to the next */
                 }
@@ -2266,7 +2250,7 @@ table_start:
             else
                 continue;
             /* process tags */
-            if (seq->HTMLtagproc1(tag, h_env) == 0)
+            if (this->HTMLtagproc1(tag, h_env) == 0)
             {
                 /* preserve the tag for second-stage processing */
                 if (tag->need_reconstruct)
