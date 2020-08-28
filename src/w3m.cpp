@@ -234,6 +234,7 @@ public:
 
     void ReadTty()
     {
+        Terminal::term_raw();
         auto buffer = asio::buffer(byteArray);
         auto callback = std::bind(&Asio::OnReadTty, this, std::placeholders::_1, std::placeholders::_2);
         tty.async_read_some(buffer, callback);
