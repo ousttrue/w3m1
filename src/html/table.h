@@ -208,3 +208,23 @@ int visible_length(const char *str);
 int bsearch_2short(short e1, short *ent1, short e2, short *ent2, int base, short *indexarray, int nent);
 int maximum_visible_length(const char *str, int offset);
 int maximum_visible_length_plain(const char *str, int offset);
+
+struct TableState
+{
+    bool prev_is_hangul = 0;
+    table *tbl = NULL;
+    table_mode *tbl_mode = NULL;
+    int tbl_width = 0;
+
+    ReadBufferFlags pre_mode(const readbuffer &obuf) const
+    {
+        return (ReadBufferFlags)((obuf.table_level >= 0) ? (int)tbl_mode->pre_mode : (int)obuf.flag);
+    }
+
+    HtmlTags end_tag(const readbuffer &obuf) const
+    {
+        return (obuf.table_level >= 0) ? tbl_mode->end_tag : obuf.end_tag;
+    }
+
+    bool close_table(const readbuffer &obuf, table *m_tables[], table_mode *m_table_modes);
+};

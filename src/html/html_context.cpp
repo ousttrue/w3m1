@@ -236,41 +236,7 @@ public:
         Continue,
     };
 
-    struct LineState
-    {
-        bool prev_is_hangul = 0;
-        table *tbl = NULL;
-        table_mode *tbl_mode = NULL;
-        int tbl_width = 0;
-
-        ReadBufferFlags pre_mode(const readbuffer &obuf) const
-        {
-            return (ReadBufferFlags)((obuf.table_level >= 0) ? (int)tbl_mode->pre_mode : (int)obuf.flag);
-        }
-
-        HtmlTags end_tag(const readbuffer &obuf) const
-        {
-            return (obuf.table_level >= 0) ? tbl_mode->end_tag : obuf.end_tag;
-        }
-
-        bool close_table(const readbuffer &obuf, table *m_tables[], table_mode *m_table_modes)
-        {
-            tbl->end();
-            if (obuf.table_level < 0)
-            {
-                return false;
-            }
-
-            struct table *tbl0 = m_tables[obuf.table_level];
-            auto str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
-            tbl0->pushTable(tbl0);
-            tbl = tbl0;
-            tbl_mode = &m_table_modes[obuf.table_level];
-            return true;
-        }
-    };
-
-    std::tuple<std::string_view, Flows> _ProcessLine(std::string_view _line, LineState *state, bool internal)
+    std::tuple<std::string_view, Flows> _ProcessLine(std::string_view _line, TableState *state, bool internal)
     {
         auto line = _line.data();
         while (*line != '\0')
@@ -612,14 +578,13 @@ public:
         return {line, Flows::Through};
     }
 
+    //
     // HTML processing first pass
     //
-    // * from loadHtmlStream
-    //
-    void ProcessLine(const char *line, bool internal)
+    void ProcessLine(std::string_view line, bool internal)
     {
         int i = 0;
-        LineState state = {};
+        TableState state = {};
         for (Flows flows = Flows::Continue; flows == Flows::Continue; ++i)
         {
             if (m_obuf.table_level >= 0)
@@ -630,9 +595,7 @@ public:
                 state.tbl_width = table_width(level);
             }
 
-            std::string_view remain;
-            std::tie(remain, flows) = _ProcessLine(line, &state, internal);
-            line = remain.data();
+            std::tie(line, flows) = _ProcessLine(line, &state, internal);
             if (flows == Flows::Exit)
             {
                 return;

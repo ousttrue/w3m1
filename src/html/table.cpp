@@ -25,7 +25,6 @@
 #define MAX_INDENT_LEVEL 10
 #define MAX_TABLE_N 20 /* maximum number of table in same level */
 
-
 static int visible_length_offset = 0;
 int visible_length(const char *str)
 {
@@ -281,7 +280,6 @@ int ceil_at_intervals(int x, int step)
         x -= mo;
     return x;
 }
-
 
 #define round(x) ((int)floor((x) + 0.5))
 
@@ -1028,9 +1026,9 @@ recalc_width(double old, double swidth, int cwidth,
 }
 
 int table::check_compressible_cell(MAT *minv,
-                        double *newwidth, double *swidth, short *cwidth,
-                        double totalwidth, double *Sxx,
-                        int icol, int icell, double sxx, int corr, int symbolWidth)
+                                   double *newwidth, double *swidth, short *cwidth,
+                                   double totalwidth, double *Sxx,
+                                   int icol, int icell, double sxx, int corr, int symbolWidth)
 {
     struct table_cell *cell = &this->cell;
     int i, j, k, m, bcol, ecol, span;
@@ -1181,7 +1179,7 @@ int table::check_table_width(double *newwidth, MAT *minv, int itr)
 
     /* compress table */
     corr = this->check_compressible_cell(minv, newwidth, swidth,
-                                   cwidth, twidth, Sxx, -1, -1, stotal, corr, Terminal::SymbolWidth());
+                                         cwidth, twidth, Sxx, -1, -1, stotal, corr, Terminal::SymbolWidth());
     if (itr < MAX_ITERATION && corr > 0)
         return corr;
 
@@ -1190,8 +1188,8 @@ int table::check_table_width(double *newwidth, MAT *minv, int itr)
     {
         j = cell->index[k];
         corr = this->check_compressible_cell(minv, newwidth, swidth,
-                                       cwidth, twidth, Sxx,
-                                       -1, j, Sxx[j], corr, Terminal::SymbolWidth());
+                                             cwidth, twidth, Sxx,
+                                             -1, j, Sxx[j], corr, Terminal::SymbolWidth());
         if (itr < MAX_ITERATION && corr > 0)
             return corr;
     }
@@ -1200,8 +1198,8 @@ int table::check_table_width(double *newwidth, MAT *minv, int itr)
     for (i = 0; i <= this->maxcol; i++)
     {
         corr = this->check_compressible_cell(minv, newwidth, swidth,
-                                       cwidth, twidth, Sxx,
-                                       i, -1, m_entry(minv, i, i), corr, Terminal::SymbolWidth());
+                                             cwidth, twidth, Sxx,
+                                             i, -1, m_entry(minv, i, i), corr, Terminal::SymbolWidth());
         if (itr < MAX_ITERATION && corr > 0)
             return corr;
     }
@@ -1577,8 +1575,6 @@ int table::get_table_width(short *orgwidth, short *cellwidth, TableWidthFlags fl
     swidth += this->table_border_width(Terminal::SymbolWidth());
     return swidth;
 }
-
-
 
 #ifdef TABLE_NO_COMPACT
 #define THR_PADDING 2
@@ -2379,3 +2375,19 @@ void table::set_table_matrix(int width)
     this->correct_table_matrix(0, size, width, b);
 }
 #endif /* MATRIX */
+
+bool TableState::close_table(const readbuffer &obuf, table *m_tables[], table_mode *m_table_modes)
+{
+    tbl->end();
+    if (obuf.table_level < 0)
+    {
+        return false;
+    }
+
+    struct table *tbl0 = m_tables[obuf.table_level];
+    auto str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
+    tbl0->pushTable(tbl0);
+    tbl = tbl0;
+    tbl_mode = &m_table_modes[obuf.table_level];
+    return true;
+}
