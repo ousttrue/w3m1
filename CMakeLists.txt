@@ -149,6 +149,7 @@ add_executable(w3m
     src/html/form.cpp
     src/html/parsetag.cpp
     src/html/html.cpp
+    src/html/html_tag.cpp
     src/html/maparea.cpp
     src/html/image.cpp
     src/loader.cpp

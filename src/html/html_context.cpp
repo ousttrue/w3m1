@@ -1,6 +1,7 @@
 #include <string_view_util.h>
 #include "config.h"
 #include "html/html_context.h"
+#include "html/html_tag.h"
 #include "ctrlcode.h"
 #include "html/tagstack.h"
 #include "html/image.h"
@@ -288,7 +289,7 @@ public:
                 if (is_tag)
                 {
                     std::string_view p = str;
-                    parsed_tag *tag;
+                    HtmlTagPtr tag;
                     std::tie(p, tag) = parse_tag(p, internal);
                     if (tag)
                     {
@@ -630,7 +631,7 @@ public:
     }
 
     void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width);
-    FormItemPtr formList_addInput(FormPtr fl, struct parsed_tag *tag);
+    FormItemPtr formList_addInput(FormPtr fl, HtmlTagPtr tag);
 
 private:
     void print_internal_information();
@@ -652,9 +653,9 @@ private:
 
     Str GetLinkNumberStr(int correction);
     // process <title>{content}</title> tag
-    Str TitleOpen(struct parsed_tag *tag);
+    Str TitleOpen(HtmlTagPtr tag);
     void TitleContent(const char *str);
-    Str TitleClose(struct parsed_tag *tag);
+    Str TitleClose(HtmlTagPtr tag);
 
     // process <form></form>
     int cur_form_id()
@@ -662,7 +663,7 @@ private:
         return form_stack.size() ? form_stack.back() : -1;
     }
 
-    Str FormOpen(struct parsed_tag *tag, int fid = -1);
+    Str FormOpen(HtmlTagPtr tag, int fid = -1);
     Str FormClose(void)
     {
         if (form_stack.size() >= 0)
@@ -680,21 +681,21 @@ private:
     std::vector<FormPtr> &FormEnd();
     std::pair<int, FormSelectOptionList *> FormSelectCurrent();
     void process_option();
-    Str process_select(struct parsed_tag *tag);
+    Str process_select(HtmlTagPtr tag);
     void feed_select(const char *str);
-    Str process_input(struct parsed_tag *tag);
-    Str process_img(struct parsed_tag *tag, int width);
-    Str process_anchor(struct parsed_tag *tag, const char *tagbuf);
+    Str process_input(HtmlTagPtr tag);
+    Str process_img(HtmlTagPtr tag, int width);
+    Str process_anchor(HtmlTagPtr tag, const char *tagbuf);
     // void clear(int n);
     void Textarea(int n, Str str);
     std::pair<int, Str> TextareaCurrent() const;
 
     // push text to current_textarea
     void feed_textarea(const char *str);
-    Str process_textarea(struct parsed_tag *tag, int width);
+    Str process_textarea(HtmlTagPtr tag, int width);
 
     bool EndLineAddBuffer();
-    void Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str);
+    void Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str);
 
     void close_anchor()
     {
@@ -775,13 +776,13 @@ private:
             this->ProcessLine("</b>", true);
         }
     }
-    Str process_hr(struct parsed_tag *tag, int width, int indent_width);
-    int HTMLtagproc1(struct parsed_tag *tag);
+    Str process_hr(HtmlTagPtr tag, int width, int indent_width);
+    int HTMLtagproc1(HtmlTagPtr tag);
 
     void make_caption(struct table *t);
     void do_refill(struct table *tbl, int row, int col, int maxlimit);
     int feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal);
-    TagActions feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag);
+    TagActions feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, HtmlTagPtr tag);
     void renderTable(struct table *t, int max_width);
     void renderCoTable(struct table *tbl, int maxlimit);
 };
@@ -869,7 +870,7 @@ Str HtmlContext::GetLinkNumberStr(int correction)
     return Sprintf("[%d]", cur_hseq + correction);
 }
 
-Str HtmlContext::TitleOpen(struct parsed_tag *tag)
+Str HtmlContext::TitleOpen(HtmlTagPtr tag)
 {
     cur_title = Strnew();
     return NULL;
@@ -904,7 +905,7 @@ void HtmlContext::TitleContent(const char *str)
     }
 }
 
-Str HtmlContext::TitleClose(struct parsed_tag *tag)
+Str HtmlContext::TitleClose(HtmlTagPtr tag)
 {
     if (!cur_title)
         return NULL;
@@ -938,7 +939,7 @@ static char *check_charset(char *p)
 {
     return wc_guess_charset(p, WC_CES_NONE) ? p : NULL;
 }
-Str HtmlContext::FormOpen(struct parsed_tag *tag, int fid)
+Str HtmlContext::FormOpen(HtmlTagPtr tag, int fid)
 {
     auto p = "get";
     tag->TryGetAttributeValue(ATTR_METHOD, &p);
@@ -1019,7 +1020,7 @@ std::pair<int, FormSelectOptionList *> HtmlContext::FormSelectCurrent()
     return {n_select, &select_option[n_select]};
 }
 
-Str HtmlContext::process_select(struct parsed_tag *tag)
+Str HtmlContext::process_select(HtmlTagPtr tag)
 {
     Str tmp = nullptr;
     if (cur_form_id() < 0)
@@ -1204,7 +1205,7 @@ void HtmlContext::process_option()
     n_selectitem++;
 }
 
-Str HtmlContext::process_input(struct parsed_tag *tag)
+Str HtmlContext::process_input(HtmlTagPtr tag)
 {
     Str tmp = nullptr;
     if (cur_form_id() < 0)
@@ -1409,7 +1410,7 @@ Str HtmlContext::process_input(struct parsed_tag *tag)
 }
 
 #define IMG_SYMBOL UL_SYMBOL(12)
-Str HtmlContext::process_img(struct parsed_tag *tag, int width)
+Str HtmlContext::process_img(HtmlTagPtr tag, int width)
 {
     char *p, *q, *r, *r2 = nullptr, *t;
 #ifdef USE_IMAGE
@@ -1764,7 +1765,7 @@ img_end:
     return tmp;
 }
 
-Str HtmlContext::process_anchor(struct parsed_tag *tag, const char *tagbuf)
+Str HtmlContext::process_anchor(HtmlTagPtr tag, const char *tagbuf)
 {
     if (tag->need_reconstruct)
     {
@@ -1832,7 +1833,7 @@ void HtmlContext::feed_textarea(const char *str)
     }
 }
 
-Str HtmlContext::process_textarea(struct parsed_tag *tag, int width)
+Str HtmlContext::process_textarea(HtmlTagPtr tag, int width)
 {
 #define TEXTAREA_ATTR_COL_MAX 4096
 #define TEXTAREA_ATTR_ROWS_MAX 4096
@@ -1931,7 +1932,7 @@ bool HtmlContext::EndLineAddBuffer()
     return false;
 }
 
-void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *str)
+void HtmlContext::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str)
 {
     switch (tag->tagid)
     {
@@ -2041,7 +2042,7 @@ void HtmlContext::Process(parsed_tag *tag, BufferPtr buf, int pos, const char *s
         break;
 
     case HTML_LINK:
-        buf->linklist.push_back(Link::create(*tag, buf->document_charset));
+        buf->linklist.push_back(Link::create(tag, buf->document_charset));
         break;
 
     case HTML_IMG_ALT:
@@ -2624,7 +2625,7 @@ static int REAL_WIDTH(int w, int limit)
     return (((w) >= 0) ? (int)((w) / ImageManager::Instance().pixel_per_char) : -(w) * (limit) / 100);
 }
 
-Str HtmlContext::process_hr(struct parsed_tag *tag, int width, int indent_width)
+Str HtmlContext::process_hr(HtmlTagPtr tag, int width, int indent_width)
 {
     Str tmp = Strnew("<nobr>");
     int w = 0;
@@ -2755,7 +2756,7 @@ static Str romanAlphabet(int n)
     return r;
 }
 
-int HtmlContext::HTMLtagproc1(struct parsed_tag *tag)
+int HtmlContext::HTMLtagproc1(HtmlTagPtr tag)
 {
     if (m_obuf.flag & RB_PRE)
     {
@@ -4144,7 +4145,7 @@ table_close_textarea(struct table *tbl, struct table_mode *mode, int width, Html
     seq->feed_table1(tbl, tmp, mode, width);
 }
 
-TagActions HtmlContext::feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, struct parsed_tag *tag)
+TagActions HtmlContext::feed_table_tag(struct table *tbl, const char *line, struct table_mode *mode, int width, HtmlTagPtr tag)
 {
     int cmd;
 #ifdef ID_EXT
@@ -5436,7 +5437,7 @@ void HtmlContext::renderCoTable(struct table *tbl, int maxlimit)
 /* 
  * add <input> element to form_list
  */
-FormItemPtr HtmlContext::formList_addInput(FormPtr fl, struct parsed_tag *tag)
+FormItemPtr HtmlContext::formList_addInput(FormPtr fl, HtmlTagPtr tag)
 {
     /* if not in <form>..</form> environment, just ignore <input> tag */
     if (fl == NULL)

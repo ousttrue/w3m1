@@ -2,6 +2,7 @@
 #include "stream/input_stream.h"
 #include "frontend/buffer.h"
 #include "frontend/event.h"
+#include "html/html_tag.h"
 
 struct HttpRequest;
 struct Hist;
@@ -63,8 +64,8 @@ void form_write_from_file(FILE *f, char *boundary, char *name,
                           char *filename, char *file);
 int getMapXY(BufferPtr buf, const AnchorPtr a, int *x, int *y);
 BufferPtr page_info_panel(const BufferPtr &buf);
-struct frame_body *newFrame(struct parsed_tag *tag, BufferPtr buf);
-struct frameset *newFrameSet(struct parsed_tag *tag);
+struct frame_body *newFrame(HtmlTagPtr tag, BufferPtr buf);
+struct frameset *newFrameSet(HtmlTagPtr tag);
 void deleteFrame(struct frame_body *b);
 void deleteFrameSet(struct frameset *f);
 struct frameset *copyFrameSet(struct frameset *of);

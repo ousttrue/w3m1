@@ -250,7 +250,7 @@ char *readbuffer::has_hidden_link(int cmd)
     return NULL;
 }
 
-void readbuffer::process_idattr(int cmd, struct parsed_tag *tag)
+void readbuffer::process_idattr(int cmd, HtmlTagPtr tag)
 {
     char *id = NULL, *framename = NULL;
     Str idtag = NULL;
@@ -496,7 +496,7 @@ void readbuffer::clear_ignore_p_flag(int cmd)
     }
 }
 
-void readbuffer::set_alignment(struct parsed_tag *tag)
+void readbuffer::set_alignment(HtmlTagPtr tag)
 {
     ReadBufferFlags flag = (ReadBufferFlags)-1;
 

@@ -3,7 +3,7 @@
 #include <string>
 #include <wc.h>
 #include "stream/url.h"
-#include "html/html.h"
+#include "html/html_tag.h"
 
 enum LinkTypes : char
 {
@@ -20,7 +20,7 @@ class Link
     LinkTypes m_type = LINK_TYPE_NONE; /* Rel, Rev */
 
 public:
-    static Link create(const parsed_tag &tag, CharacterEncodingScheme ces);
+    static Link create(const HtmlTagPtr &tag, CharacterEncodingScheme ces);
 
     std::string_view url() const
     {

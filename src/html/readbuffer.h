@@ -2,7 +2,7 @@
 
 #include "frontend/line.h"
 #include "anchor.h"
-#include "html.h"
+#include "html_tag.h"
 #include <wc.h>
 
 struct FontStat
@@ -181,7 +181,7 @@ struct readbuffer
     void passthrough(char *str, int back);
     int close_effect0(int cmd);
     char *has_hidden_link(int cmd);
-    void process_idattr(int cmd, struct parsed_tag *tag);
+    void process_idattr(int cmd, HtmlTagPtr tag);
     void proc_escape(const char **str_return);
 
     void push_nchars(int width, const char *str, int len, Lineprop mode);
@@ -200,7 +200,7 @@ struct readbuffer
     void save_fonteffect();
     void restore_fonteffect();
     void clear_ignore_p_flag(int cmd);
-    void set_alignment(struct parsed_tag *tag);
+    void set_alignment(HtmlTagPtr tag);
 };
 
 int sloppy_parse_line(char **str);

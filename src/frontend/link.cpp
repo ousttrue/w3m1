@@ -1,18 +1,17 @@
 #include <sstream>
 #include "link.h"
 #include "indep.h"
-
 #include "w3m.h"
 
-Link Link::create(const parsed_tag &tag, CharacterEncodingScheme ces)
+Link Link::create(const HtmlTagPtr &tag, CharacterEncodingScheme ces)
 {
-    auto href = tag.GetAttributeValue(ATTR_HREF);
+    auto href = tag->GetAttributeValue(ATTR_HREF);
     if (href.size())
         href = wc_conv_strict(remove_space(href.data()), w3mApp::Instance().InnerCharset, ces)->ptr;
 
-    auto title = tag.GetAttributeValue(ATTR_TITLE);
-    auto ctype = tag.GetAttributeValue(ATTR_TYPE);
-    auto rel = tag.GetAttributeValue(ATTR_REL);
+    auto title = tag->GetAttributeValue(ATTR_TITLE);
+    auto ctype = tag->GetAttributeValue(ATTR_TYPE);
+    auto rel = tag->GetAttributeValue(ATTR_REL);
 
     LinkTypes type = LINK_TYPE_NONE;
     if (rel.size())
@@ -23,7 +22,7 @@ Link Link::create(const parsed_tag &tag, CharacterEncodingScheme ces)
             title = rel;
     }
 
-    auto rev = tag.GetAttributeValue(ATTR_REV);
+    auto rev = tag->GetAttributeValue(ATTR_REV);
     if (rev.size())
     {
         /* reverse link type */
