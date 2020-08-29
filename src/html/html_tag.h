@@ -1,5 +1,7 @@
 #pragma once
 #include "html.h"
+#include <gc_helper.h>
+#include <Str.h>
 
 struct HtmlTag : gc_cleanup
 {

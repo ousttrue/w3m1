@@ -1,7 +1,4 @@
 #pragma once
-#include <wc.h>
-#include <gc_cpp.h>
-
 //
 // N is close tag
 //
@@ -270,20 +267,3 @@ enum VerticalAlignTypes
 };
 
 HtmlTags GetTag(const char *src, HtmlTags value);
-
-enum TFlags
-{
-    TFLG_NONE = 0,
-    TFLG_END = 1,
-    TFLG_INT = 2,
-};
-
-/* HTML Tag Information Table */
-struct TagInfo
-{
-    const char *name;
-    HtmlTagAttributes *accept_attribute;
-    unsigned char max_attribute;
-    TFlags flag;
-};
-extern TagInfo TagMAP[];
