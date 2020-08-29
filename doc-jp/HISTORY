@@ -671,8 +671,8 @@ Subject: [w3m-dev 01478] Option Setting Panel
 2000/12/7
 
 From: Okabe Katsuya <okabek@guitar.ocn.ne.jp>
-  ��parse_tag �� gethtmlcmd �ε�ǽ���������褦�ˤ���.
-  ���ǽ�� parse_tag ������������°��������դ��ʤ��褦�ˤ���.
+  ��HtmlTag::parse �� gethtmlcmd �ε�ǽ���������褦�ˤ���.
+  ���ǽ�� HtmlTag::parse ������������°��������դ��ʤ��褦�ˤ���.
     �ޤ�, ����°�����ޤޤ�����, ��������°����ޤޤʤ��褦�˥���
     ����ľ���褦�ˤ���.
   ��visible_length �Ǥ����פʥ����β��Ϥ�ߤ᤿.

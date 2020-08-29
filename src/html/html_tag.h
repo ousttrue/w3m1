@@ -4,12 +4,21 @@
 #include <string>
 #include <gc_cpp.h>
 
-struct HtmlTag : public gc_cleanup
+class HtmlTag : public gc_cleanup
 {
-    HtmlTags tagid = HTML_UNKNOWN;
     std::vector<unsigned char> attrid;
     std::vector<char *> value;
     std::vector<unsigned char> map;
+
+    HtmlTag(HtmlTags tag)
+        : tagid(tag)
+    {
+    }
+    std::string_view _parse(std::string_view s, bool internal);
+    std::tuple<std::string_view, bool> parse_attr(std::string_view s, int nattr, bool internal);
+public:
+    static std::tuple<std::string_view, HtmlTag*> parse(std::string_view s, bool internal);
+    HtmlTags tagid = HTML_UNKNOWN;
     bool need_reconstruct = false;
 
     bool CanAcceptAttribute(HtmlTagAttributes id) const;
@@ -27,19 +36,6 @@ struct HtmlTag : public gc_cleanup
         return value;
     }
     std::string ToStr() const;
-
-    HtmlTag(HtmlTags tag)
-        : tagid(tag)
-    {
-    }
-
-    std::string_view parse(std::string_view s, bool internal);
-
     int ul_type(int default_type = 0) const;
-
-private:
-    std::tuple<std::string_view, bool> parse_attr(std::string_view s, int nattr, bool internal);
 };
 using HtmlTagPtr = HtmlTag *;
-
-std::tuple<std::string_view, HtmlTagPtr> parse_tag(std::string_view s, bool internal);

@@ -466,7 +466,7 @@ Subject: [w3m-dev 01478] Option Setting Panel
 2000/12/7
 
 From: Okabe Katsuya <okabek@guitar.ocn.ne.jp>
-  * parse_tag improvements.
+  * HtmlTag::parse improvements.
   * don't parse tag within visible_length().
 
 From: Hironori Sakamoto <h-saka@lsi.nec.co.jp>

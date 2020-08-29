@@ -290,7 +290,7 @@ public:
                 {
                     std::string_view p = str;
                     HtmlTagPtr tag;
-                    std::tie(p, tag) = parse_tag(p, internal);
+                    std::tie(p, tag) = HtmlTag::parse(p, internal);
                     if (tag)
                     {
                         if (tag->tagid == state->end_tag(m_obuf) ||
@@ -407,7 +407,7 @@ public:
             if (is_tag)
             {
                 /*** Beginning of a new tag ***/
-                auto [pos, tag] = parse_tag(str, internal);
+                auto [pos, tag] = HtmlTag::parse(str, internal);
                 str = pos.data();
                 if (!tag)
                 {
@@ -1025,8 +1025,7 @@ Str HtmlContext::process_select(HtmlTagPtr tag)
     Str tmp = nullptr;
     if (cur_form_id() < 0)
     {
-        auto s = "<form_int method=internal action=none>";
-        auto [pos, tag] = parse_tag(s, true);
+        auto [pos, tag] = HtmlTag::parse("<form_int method=internal action=none>", true);
         tmp = FormOpen(tag);
     }
 
@@ -1073,7 +1072,7 @@ void HtmlContext::feed_select(const char *str)
         const char *p = tmp->ptr;
         if (tmp->ptr[0] == '<' && tmp->Back() == '>')
         {
-            auto [pos, tag] = parse_tag(p, false);
+            auto [pos, tag] = HtmlTag::parse(p, false);
             p = pos.data();
             char *q;
             if (!tag)
@@ -1211,7 +1210,7 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
     if (cur_form_id() < 0)
     {
         const char *s = "<form_int method=internal action=none>";
-        auto [pos, tag] = parse_tag(s, true);
+        auto [pos, tag] = HtmlTag::parse(s, true);
         tmp = FormOpen(tag);
     }
     if (tmp == nullptr)
@@ -1511,7 +1510,7 @@ Str HtmlContext::process_img(HtmlTagPtr tag, int width)
     {
         r2 = strchr(r, '#');
         auto s = "<form_int method=internal action=map>";
-        auto [pos, tag] = parse_tag(s, true);
+        auto [pos, tag] = HtmlTag::parse(s, true);
         auto tmp2 = FormOpen(tag);
         if (tmp2)
             tmp->Push(tmp2);
@@ -1842,7 +1841,7 @@ Str HtmlContext::process_textarea(HtmlTagPtr tag, int width)
     if (cur_form_id() < 0)
     {
         auto s = "<form_int method=internal action=none>";
-        auto [pos, tag] = parse_tag(s, true);
+        auto [pos, tag] = HtmlTag::parse(s, true);
         tmp = FormOpen(tag);
     }
 
@@ -2588,7 +2587,7 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
             else
             {
                 /* tag processing */
-                auto [pos, tag] = parse_tag(str, true);
+                auto [pos, tag] = HtmlTag::parse(str, true);
                 str = pos.data();
                 if (!tag)
                     continue;
@@ -4013,7 +4012,7 @@ void HtmlContext::do_refill(struct table *tbl, int row, int col, int maxlimit)
         {
             int id = -1;
             const char *p = l->ptr;
-            auto [pos, tag] = parse_tag(p, true);
+            auto [pos, tag] = HtmlTag::parse(p, true);
             p = pos.data();
             if (tag)
                 tag->TryGetAttributeValue(ATTR_TID, &id);
@@ -4907,7 +4906,7 @@ int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mo
 
     if (*line == '<' && line[1] && REALLY_THE_BEGINNING_OF_A_TAG(line))
     {       
-        auto[pos, tag] = parse_tag(line, internal);
+        auto[pos, tag] = HtmlTag::parse(line, internal);
         if (tag)
         {
             switch (this->feed_table_tag(tbl, line, mode, width, tag))

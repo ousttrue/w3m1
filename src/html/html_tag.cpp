@@ -516,6 +516,89 @@ static int (*toValFunc[])(char *, int *) = {
 };
 /* *INDENT-ON* */
 
+bool HtmlTag::CanAcceptAttribute(HtmlTagAttributes id) const
+{
+    return (this->map.size() && this->map[id] != MAX_TAGATTR);
+}
+
+bool HtmlTag::HasAttribute(HtmlTagAttributes id) const
+{
+    return CanAcceptAttribute(id) && (this->attrid[this->map[id]] != ATTR_UNKNOWN);
+}
+
+bool HtmlTag::SetAttributeValue(HtmlTagAttributes id, const char *value)
+{
+    int i;
+
+    if (!this->CanAcceptAttribute(id))
+        return 0;
+
+    i = this->map[id];
+    this->attrid[i] = id;
+    if (value)
+        this->value[i] = allocStr(value, -1);
+    else
+        this->value[i] = NULL;
+    this->need_reconstruct = true;
+    return 1;
+}
+
+bool HtmlTag::TryGetAttributeValue(HtmlTagAttributes id, void *value) const
+{
+    if (!HasAttribute(id))
+    {
+        return false;
+    }
+    if (map.empty())
+    {
+        return false;
+    }
+    int i = map[id];
+    auto v = this->value[i];
+    if (!v)
+    {
+        return 0;
+    }
+    return toValFunc[AttrMAP[id].vtype](v, (int *)value);
+}
+
+std::string HtmlTag::ToStr() const
+{
+    int i;
+    int tag_id = this->tagid;
+    int nattr = TagMAP[tag_id].max_attribute;
+    Str tagstr = Strnew();
+    tagstr->Push('<');
+    tagstr->Push(TagMAP[tag_id].name);
+    for (i = 0; i < nattr; i++)
+    {
+        if (this->attrid[i] != ATTR_UNKNOWN)
+        {
+            tagstr->Push(' ');
+            tagstr->Push(AttrMAP[this->attrid[i]].name);
+            if (this->value[i])
+                tagstr->Push(Sprintf("=\"%s\"", html_quote(this->value[i])));
+        }
+    }
+    tagstr->Push('>');
+    return tagstr->ptr;
+}
+
+int HtmlTag::ul_type(int default_type) const
+{
+    char *p;
+    if (TryGetAttributeValue(ATTR_TYPE, &p))
+    {
+        if (!strcasecmp(p, "disc"))
+            return (int)'d';
+        else if (!strcasecmp(p, "circle"))
+            return (int)'c';
+        else if (!strcasecmp(p, "square"))
+            return (int)'s';
+    }
+    return default_type;
+}
+
 std::tuple<std::string_view, bool> HtmlTag::parse_attr(std::string_view s, int nattr, bool internal)
 {
     auto q = s;
@@ -649,7 +732,7 @@ std::tuple<std::string_view, bool> HtmlTag::parse_attr(std::string_view s, int n
     return {q, true};
 }
 
-std::string_view HtmlTag::parse(std::string_view s, bool internal)
+std::string_view HtmlTag::_parse(std::string_view s, bool internal)
 {
     int nattr = TagMAP[this->tagid].max_attribute;
     if (nattr)
@@ -682,90 +765,7 @@ std::string_view HtmlTag::parse(std::string_view s, bool internal)
     return q;
 }
 
-bool HtmlTag::CanAcceptAttribute(HtmlTagAttributes id) const
-{
-    return (this->map.size() && this->map[id] != MAX_TAGATTR);
-}
-
-bool HtmlTag::HasAttribute(HtmlTagAttributes id) const
-{
-    return CanAcceptAttribute(id) && (this->attrid[this->map[id]] != ATTR_UNKNOWN);
-}
-
-bool HtmlTag::SetAttributeValue(HtmlTagAttributes id, const char *value)
-{
-    int i;
-
-    if (!this->CanAcceptAttribute(id))
-        return 0;
-
-    i = this->map[id];
-    this->attrid[i] = id;
-    if (value)
-        this->value[i] = allocStr(value, -1);
-    else
-        this->value[i] = NULL;
-    this->need_reconstruct = true;
-    return 1;
-}
-
-bool HtmlTag::TryGetAttributeValue(HtmlTagAttributes id, void *value) const
-{
-    if (!HasAttribute(id))
-    {
-        return false;
-    }
-    if (map.empty())
-    {
-        return false;
-    }
-    int i = map[id];
-    auto v = this->value[i];
-    if (!v)
-    {
-        return 0;
-    }
-    return toValFunc[AttrMAP[id].vtype](v, (int *)value);
-}
-
-std::string HtmlTag::ToStr() const
-{
-    int i;
-    int tag_id = this->tagid;
-    int nattr = TagMAP[tag_id].max_attribute;
-    Str tagstr = Strnew();
-    tagstr->Push('<');
-    tagstr->Push(TagMAP[tag_id].name);
-    for (i = 0; i < nattr; i++)
-    {
-        if (this->attrid[i] != ATTR_UNKNOWN)
-        {
-            tagstr->Push(' ');
-            tagstr->Push(AttrMAP[this->attrid[i]].name);
-            if (this->value[i])
-                tagstr->Push(Sprintf("=\"%s\"", html_quote(this->value[i])));
-        }
-    }
-    tagstr->Push('>');
-    return tagstr->ptr;
-}
-
-int HtmlTag::ul_type(int default_type) const
-{
-    char *p;
-    if (TryGetAttributeValue(ATTR_TYPE, &p))
-    {
-        if (!strcasecmp(p, "disc"))
-            return (int)'d';
-        else if (!strcasecmp(p, "circle"))
-            return (int)'c';
-        else if (!strcasecmp(p, "square"))
-            return (int)'s';
-    }
-    return default_type;
-}
-
-std::tuple<std::string_view, HtmlTagPtr> parse_tag(std::string_view s, bool internal)
+std::tuple<std::string_view, HtmlTagPtr> HtmlTag::parse(std::string_view s, bool internal)
 {
     /* Parse tag name */
     auto q = s.substr(1); // (*s) + 1;
@@ -800,6 +800,6 @@ std::tuple<std::string_view, HtmlTagPtr> parse_tag(std::string_view s, bool inte
     }
 
     auto tag = new HtmlTag(tag_id);
-    q = tag->parse(q, internal);
+    q = tag->_parse(q, internal);
     return {q, tag};
 }
