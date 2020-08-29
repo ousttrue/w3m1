@@ -554,7 +554,7 @@ bool HtmlTag::TryGetAttributeValue(HtmlTagAttributes id, void *value) const
         return false;
     }
     int i = map[id];
-    auto v = this->value[i];
+    auto &v = this->value[i];
     if (!v)
     {
         return 0;
@@ -597,6 +597,17 @@ int HtmlTag::ul_type(int default_type) const
             return (int)'s';
     }
     return default_type;
+}
+
+std::string_view HtmlTag::GetAttributeValue(HtmlTagAttributes id, std::string_view defaultValue) const
+{
+    char *p;
+    if (!TryGetAttributeValue(id, &p))
+    {
+        return defaultValue;
+    }
+
+    return p;
 }
 
 std::tuple<std::string_view, bool> HtmlTag::parse_attr(std::string_view s, int nattr, bool internal)

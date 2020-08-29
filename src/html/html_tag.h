@@ -26,16 +26,7 @@ public:
     bool HasAttribute(HtmlTagAttributes id) const;
     bool TryGetAttributeValue(HtmlTagAttributes id, void *value) const;
     bool SetAttributeValue(HtmlTagAttributes id, const char *value);
-    std::string_view GetAttributeValue(HtmlTagAttributes id) const
-    {
-        char *value = nullptr;
-        TryGetAttributeValue(id, &value);
-        if (!value)
-        {
-            return "";
-        }
-        return value;
-    }
+    std::string_view GetAttributeValue(HtmlTagAttributes id, std::string_view defaultValue = "") const;
     std::string ToStr() const;
     int ul_type(int default_type = 0) const;
 };

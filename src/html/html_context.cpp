@@ -941,10 +941,8 @@ static char *check_charset(char *p)
 }
 Str HtmlContext::FormOpen(HtmlTagPtr tag, int fid)
 {
-    auto p = "get";
-    tag->TryGetAttributeValue(ATTR_METHOD, &p);
-    auto q = "!CURRENT_URL!";
-    tag->TryGetAttributeValue(ATTR_ACTION, &q);
+    auto p = tag->GetAttributeValue(ATTR_METHOD, "get");
+    auto q = tag->GetAttributeValue(ATTR_ACTION, "!CURRENT_URL!");
     char *r = nullptr;
     if (tag->TryGetAttributeValue(ATTR_ACCEPT_CHARSET, &r))
         r = check_accept_charset(r);
@@ -981,7 +979,7 @@ Str HtmlContext::FormOpen(HtmlTagPtr tag, int fid)
     //     form_stack = New_Reuse(int, form_stack, forms_size);
     // }
 
-    forms[fid] = Form::Create(q, p,
+    forms[fid] = Form::Create(q, p.data(),
                               r ? r : "",
                               s ? s : "",
                               tg ? tg : "",
