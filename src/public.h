@@ -28,7 +28,7 @@ const char *MarkString();
 void SetMarkString(const char *str);
 void do_dump(w3mApp *w3m, BufferPtr buf);
 void _followForm(bool submit);
-void query_from_followform(Str *query, FormItemPtr fi, int multipart);
+
 // BufferPtr loadLink(const char *url, const char *target, HttpReferrerPolicy referer, FormList *request);
 FormItemPtr save_submit_formlist(FormItemPtr src);
 Str conv_form_encoding(std::string_view val, FormItemPtr fi, BufferPtr buf);

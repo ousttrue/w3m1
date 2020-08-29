@@ -83,7 +83,7 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
 static void change_charset(tcb::span<parsed_tagarg> _arg)
 {
     auto charset = GetCurrentBuffer()->document_charset;
-    for (auto &arg: _arg)
+    for (auto &arg : _arg)
     {
         if (!strcmp(arg.arg, "charset"))
             charset = (CharacterEncodingScheme)atoi(arg.value);
@@ -603,7 +603,8 @@ void do_internal(std::string_view action, std::string_view data)
     {
         if (svu::ic_eq(internal_action[i].action, action))
         {
-            if (internal_action[i].rout){
+            if (internal_action[i].rout)
+            {
                 auto list = cgistr2tagarg(data.data());
                 internal_action[i].rout(list);
             }
@@ -826,7 +827,7 @@ void loadPreForm(void)
         }
         Strip(line);
         std::string_view p = line->ptr;
-        if(p.empty())
+        if (p.empty())
             continue;
         if (p.size() && p[0] == '#')
             continue; /* comment or empty line */
@@ -839,7 +840,7 @@ void loadPreForm(void)
             if (arg.empty())
                 continue;
 
-            std::tie(p, s)= getQWord(p);
+            std::tie(p, s) = getQWord(p);
             pf = add_pre_form(arg.c_str(), NULL, p.data());
             pi = pf->item.size() ? pf->item[0] : nullptr;
             continue;
@@ -1011,4 +1012,132 @@ void preFormUpdateBuffer(const BufferPtr &buf)
             }
         }
     }
+}
+
+Str Form::Query(const FormItemPtr &fi, bool multipart) const
+{
+    FILE *body = NULL;
+    if (multipart)
+    {
+        auto tmp = tmpfname(TMPF_DFL, NULL);
+        body = fopen(tmp->ptr, "w");
+        if (!body)
+        {
+            return nullptr;
+        }
+        fi->parent.lock()->body = tmp->ptr;
+        fi->parent.lock()->boundary =
+            Sprintf("------------------------------%d%ld%ld%ld", w3mApp::Instance().CurrentPid,
+                    fi->parent, fi->parent.lock()->body, fi->parent.lock()->boundary)
+                ->ptr;
+    }
+
+    auto buf = GetCurrentBuffer();
+    auto query = Strnew();
+    for (auto &f2 : this->items)
+    {
+        if (f2->name.empty())
+            continue;
+        /* <ISINDEX> is translated into single text form */
+        // if (f2->name->Size() == 0 &&
+        //     (multipart || f2->type != FORM_INPUT_TEXT))
+        //     continue;
+        switch (f2->type)
+        {
+        case FORM_INPUT_RESET:
+            /* do nothing */
+            continue;
+        case FORM_INPUT_SUBMIT:
+        case FORM_INPUT_IMAGE:
+            if (f2 != fi || f2->value.empty())
+                continue;
+            break;
+        case FORM_INPUT_RADIO:
+        case FORM_INPUT_CHECKBOX:
+            if (!f2->checked)
+                continue;
+        }
+        if (multipart)
+        {
+            if (f2->type == FORM_INPUT_IMAGE)
+            {
+                int x = 0, y = 0;
+
+                getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
+
+                query = conv_form_encoding(f2->name, fi, buf)->Clone();
+                query->Push(".x");
+                form_write_data(body, fi->parent.lock()->boundary, query->ptr,
+                                Sprintf("%d", x)->ptr);
+                query = conv_form_encoding(f2->name, fi, buf)->Clone();
+                query->Push(".y");
+                form_write_data(body, fi->parent.lock()->boundary, query->ptr,
+                                Sprintf("%d", y)->ptr);
+            }
+            else if (f2->name.size() && f2->value.size())
+            {
+                /* not IMAGE */
+                query = conv_form_encoding(f2->value.c_str(), fi, buf);
+                if (f2->type == FORM_INPUT_FILE)
+                    form_write_from_file(body, fi->parent.lock()->boundary,
+                                         conv_form_encoding(f2->name, fi,
+                                                            buf)
+                                             ->ptr,
+                                         query->ptr,
+                                         conv_to_system(f2->value.c_str()));
+                else
+                    form_write_data(body, fi->parent.lock()->boundary,
+                                    conv_form_encoding(f2->name, fi,
+                                                       buf)
+                                        ->ptr,
+                                    query->ptr);
+            }
+        }
+        else
+        {
+            /* not multipart */
+            if (f2->type == FORM_INPUT_IMAGE)
+            {
+                int x = 0, y = 0;
+                getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
+                query->Push(
+                    UrlEncode(conv_form_encoding(f2->name, fi, buf)));
+                query->Push(Sprintf(".x=%d&", x));
+                query->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
+                query->Push(Sprintf(".y=%d", y));
+            }
+            else
+            {
+                /* not IMAGE */
+                if (f2->name.size())
+                {
+                    query->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
+                    query->Push('=');
+                }
+                if (f2->value.size())
+                {
+                    if (fi->parent.lock()->method == FORM_METHOD_INTERNAL)
+                        query->Push(UrlEncode(Strnew(f2->value)));
+                    else
+                    {
+                        query->Push(UrlEncode(conv_form_encoding(f2->value, fi, buf)));
+                    }
+                }
+            }
+            if (&f2 != &f2->parent.lock()->items.back())
+                query->Push('&');
+        }
+    }
+    if (multipart)
+    {
+        fprintf(body, "--%s--\r\n", fi->parent.lock()->boundary);
+        fclose(body);
+    }
+    else
+    {
+        /* remove trailing & */
+        while (query->Back() == '&')
+            query->Pop(1);
+    }
+    return query;
 }

@@ -117,6 +117,8 @@ struct Form
         std::string_view enctype = "",
         std::string_view target = "",
         std::string_view name = "");
+
+    Str Query(const FormItemPtr &fi, bool multipart) const;
 };
 using FormPtr = std::shared_ptr<Form>;
 

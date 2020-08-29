@@ -1571,16 +1571,15 @@ void reload(w3mApp *w3m, const CommandContext &context)
     // form
     //
     FormPtr request;
-    int multipart = 0;
+    auto multipart = true;
     if (GetCurrentBuffer()->form_submit)
     {
         request = GetCurrentBuffer()->form_submit->parent.lock();
         if (request->method == FORM_METHOD_POST && request->enctype == FORM_ENCTYPE_MULTIPART)
         {
-            Str query;
+            auto form = GetCurrentBuffer()->form_submit->parent.lock();
+            auto query = form->Query(GetCurrentBuffer()->form_submit, multipart);
             struct stat st;
-            multipart = 1;
-            query_from_followform(&query, GetCurrentBuffer()->form_submit, multipart);
             stat(request->body, &st);
             request->length = st.st_size;
         }

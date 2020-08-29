@@ -113,7 +113,6 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
     });
 }
 
-
 void shiftvisualpos(BufferPtr buf, int shift)
 {
     LinePtr l = buf->CurrentLine();
@@ -457,10 +456,11 @@ void _followForm(bool submit)
     case FORM_INPUT_BUTTON:
     {
     do_submit:
-        auto tmp = Strnew();
         auto multipart = (fi->parent.lock()->method == FORM_METHOD_POST &&
                           fi->parent.lock()->enctype == FORM_ENCTYPE_MULTIPART);
-        query_from_followform(&tmp, fi, multipart);
+
+        auto form = fi->parent.lock();
+        auto tmp = form->Query(fi, multipart);
 
         std::string tmp2 = fi->parent.lock()->action;
         if (tmp2 == "!CURRENT_URL!")
@@ -550,134 +550,6 @@ void _followForm(bool submit)
     case FORM_INPUT_HIDDEN:
     default:
         break;
-    }
-}
-
-void query_from_followform(Str *query, FormItemPtr fi, int multipart)
-{
-    FILE *body = NULL;
-    if (multipart)
-    {
-        *query = tmpfname(TMPF_DFL, NULL);
-        body = fopen((*query)->ptr, "w");
-        if (body == NULL)
-        {
-            return;
-        }
-        fi->parent.lock()->body = (*query)->ptr;
-        fi->parent.lock()->boundary =
-            Sprintf("------------------------------%d%ld%ld%ld", w3mApp::Instance().CurrentPid,
-                    fi->parent, fi->parent.lock()->body, fi->parent.lock()->boundary)
-                ->ptr;
-    }
-
-    auto tab = GetCurrentTab();
-    auto buf = GetCurrentBuffer();
-    *query = Strnew();
-    for (auto &f2 : fi->parent.lock()->items)
-    {
-        if (f2->name.empty())
-            continue;
-        /* <ISINDEX> is translated into single text form */
-        // if (f2->name->Size() == 0 &&
-        //     (multipart || f2->type != FORM_INPUT_TEXT))
-        //     continue;
-        switch (f2->type)
-        {
-        case FORM_INPUT_RESET:
-            /* do nothing */
-            continue;
-        case FORM_INPUT_SUBMIT:
-        case FORM_INPUT_IMAGE:
-            if (f2 != fi || f2->value.empty())
-                continue;
-            break;
-        case FORM_INPUT_RADIO:
-        case FORM_INPUT_CHECKBOX:
-            if (!f2->checked)
-                continue;
-        }
-        if (multipart)
-        {
-            if (f2->type == FORM_INPUT_IMAGE)
-            {
-                int x = 0, y = 0;
-
-                getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
-
-                *query = conv_form_encoding(f2->name, fi, buf)->Clone();
-                (*query)->Push(".x");
-                form_write_data(body, fi->parent.lock()->boundary, (*query)->ptr,
-                                Sprintf("%d", x)->ptr);
-                *query = conv_form_encoding(f2->name, fi, buf)->Clone();
-                (*query)->Push(".y");
-                form_write_data(body, fi->parent.lock()->boundary, (*query)->ptr,
-                                Sprintf("%d", y)->ptr);
-            }
-            else if (f2->name.size() && f2->value.size())
-            {
-                /* not IMAGE */
-                *query = conv_form_encoding(f2->value.c_str(), fi, buf);
-                if (f2->type == FORM_INPUT_FILE)
-                    form_write_from_file(body, fi->parent.lock()->boundary,
-                                         conv_form_encoding(f2->name, fi,
-                                                            buf)
-                                             ->ptr,
-                                         (*query)->ptr,
-                                         conv_to_system(f2->value.c_str()));
-                else
-                    form_write_data(body, fi->parent.lock()->boundary,
-                                    conv_form_encoding(f2->name, fi,
-                                                       buf)
-                                        ->ptr,
-                                    (*query)->ptr);
-            }
-        }
-        else
-        {
-            /* not multipart */
-            if (f2->type == FORM_INPUT_IMAGE)
-            {
-                int x = 0, y = 0;
-                getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
-                (*query)->Push(
-                    UrlEncode(conv_form_encoding(f2->name, fi, buf)));
-                (*query)->Push(Sprintf(".x=%d&", x));
-                (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
-                (*query)->Push(Sprintf(".y=%d", y));
-            }
-            else
-            {
-                /* not IMAGE */
-                if (f2->name.size())
-                {
-                    (*query)->Push(UrlEncode(conv_form_encoding(f2->name, fi, buf)));
-                    (*query)->Push('=');
-                }
-                if (f2->value.size())
-                {
-                    if (fi->parent.lock()->method == FORM_METHOD_INTERNAL)
-                        (*query)->Push(UrlEncode(Strnew(f2->value)));
-                    else
-                    {
-                        (*query)->Push(UrlEncode(conv_form_encoding(f2->value, fi, buf)));
-                    }
-                }
-            }
-            if (&f2 != &f2->parent.lock()->items.back())
-                (*query)->Push('&');
-        }
-    }
-    if (multipart)
-    {
-        fprintf(body, "--%s--\r\n", fi->parent.lock()->boundary);
-        fclose(body);
-    }
-    else
-    {
-        /* remove trailing & */
-        while ((*query)->Back() == '&')
-            (*query)->Pop(1);
     }
 }
 
