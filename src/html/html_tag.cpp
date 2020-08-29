@@ -731,7 +731,7 @@ bool HtmlTag::TryGetAttributeValue(HtmlTagAttributes id, void *value) const
     return toValFunc[AttrMAP[id].vtype](v, (int *)value);
 }
 
-Str HtmlTag::ToStr() const
+std::string HtmlTag::ToStr() const
 {
     int i;
     int tag_id = this->tagid;
@@ -750,7 +750,22 @@ Str HtmlTag::ToStr() const
         }
     }
     tagstr->Push('>');
-    return tagstr;
+    return tagstr->ptr;
+}
+
+int HtmlTag::ul_type(int default_type) const
+{
+    char *p;
+    if (TryGetAttributeValue(ATTR_TYPE, &p))
+    {
+        if (!strcasecmp(p, "disc"))
+            return (int)'d';
+        else if (!strcasecmp(p, "circle"))
+            return (int)'c';
+        else if (!strcasecmp(p, "square"))
+            return (int)'s';
+    }
+    return default_type;
 }
 
 std::tuple<std::string_view, HtmlTagPtr> parse_tag(std::string_view s, bool internal)

@@ -420,7 +420,7 @@ public:
                 {
                     /* preserve the tag for second-stage processing */
                     if (tag->need_reconstruct)
-                        m_henv.tagbuf = tag->ToStr();
+                        m_henv.tagbuf = Strnew(tag->ToStr());
                     m_obuf.push_tag(m_henv.tagbuf->ptr, cmd);
                 }
                 else
@@ -1770,7 +1770,7 @@ Str HtmlContext::process_anchor(HtmlTagPtr tag, const char *tagbuf)
     if (tag->need_reconstruct)
     {
         tag->SetAttributeValue(ATTR_HSEQ, Sprintf("%d", Increment())->ptr);
-        return tag->ToStr();
+        return Strnew(tag->ToStr());
     }
     else
     {
@@ -4900,6 +4900,7 @@ TagActions HtmlContext::feed_table_tag(struct table *tbl, const char *line, stru
 
 int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mode *mode, int width, int internal)
 {
+    std::string x;
     int i;
     Str tmp;
     struct table_linfo *linfo = &tbl->linfo;
@@ -4921,8 +4922,10 @@ int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mo
                 break;
             case TAG_ACTION_FEED:
             default:
-                if (tag->need_reconstruct)
-                    line = tag->ToStr()->ptr;
+                if (tag->need_reconstruct){
+                    x = tag->ToStr();
+                    line = x.c_str();
+                }
             }
         }
         else

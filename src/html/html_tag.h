@@ -1,9 +1,8 @@
 #pragma once
 #include "html.h"
-#include <gc_helper.h>
-#include <Str.h>
+#include <gc_cpp.h>
 
-struct HtmlTag : gc_cleanup
+struct HtmlTag : public gc_cleanup
 {
     HtmlTags tagid = HTML_UNKNOWN;
     unsigned char *attrid = nullptr;
@@ -25,7 +24,7 @@ struct HtmlTag : gc_cleanup
         }
         return value;
     }
-    Str ToStr() const;
+    std::string ToStr() const;
 
     HtmlTag(HtmlTags tag)
         : tagid(tag)
@@ -34,20 +33,7 @@ struct HtmlTag : gc_cleanup
 
     std::string_view parse(std::string_view s, bool internal);
 
-    int ul_type(int default_type = 0)
-    {
-        char *p;
-        if (TryGetAttributeValue(ATTR_TYPE, &p))
-        {
-            if (!strcasecmp(p, "disc"))
-                return (int)'d';
-            else if (!strcasecmp(p, "circle"))
-                return (int)'c';
-            else if (!strcasecmp(p, "square"))
-                return (int)'s';
-        }
-        return default_type;
-    }
+    int ul_type(int default_type = 0) const;
 
 private:
     std::tuple<std::string_view, bool> parse_attr(std::string_view s, int nattr, bool internal);
