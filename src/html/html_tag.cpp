@@ -1,7 +1,6 @@
 #include <string_view_util.h>
 #include "html_tag.h"
 #include "indep.h"
-#include "gc_helper.h"
 #include "myctype.h"
 #include "w3m.h"
 
@@ -655,11 +654,9 @@ std::string_view HtmlTag::parse(std::string_view s, bool internal)
     int nattr = TagMAP[this->tagid].max_attribute;
     if (nattr)
     {
-        this->attrid = NewAtom_N(unsigned char, nattr);
-        this->value = New_N(char *, nattr);
-        this->map = NewAtom_N(unsigned char, MAX_TAGATTR);
-        memset(this->map, MAX_TAGATTR, MAX_TAGATTR);
-        memset(this->attrid, ATTR_UNKNOWN, nattr);
+        this->attrid.resize(nattr, ATTR_UNKNOWN);
+        this->value.resize(nattr, nullptr);
+        this->map.resize(MAX_TAGATTR, MAX_TAGATTR);
         for (auto i = 0; i < nattr; i++)
             this->map[TagMAP[this->tagid].accept_attribute[i]] = i;
     }
@@ -687,7 +684,7 @@ std::string_view HtmlTag::parse(std::string_view s, bool internal)
 
 bool HtmlTag::CanAcceptAttribute(HtmlTagAttributes id) const
 {
-    return (this->map && this->map[id] != MAX_TAGATTR);
+    return (this->map.size() && this->map[id] != MAX_TAGATTR);
 }
 
 bool HtmlTag::HasAttribute(HtmlTagAttributes id) const
@@ -718,7 +715,7 @@ bool HtmlTag::TryGetAttributeValue(HtmlTagAttributes id, void *value) const
     {
         return false;
     }
-    if (!map)
+    if (map.empty())
     {
         return false;
     }

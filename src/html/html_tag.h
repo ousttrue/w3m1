@@ -1,13 +1,15 @@
 #pragma once
 #include "html.h"
+#include <vector>
+#include <string>
 #include <gc_cpp.h>
 
 struct HtmlTag : public gc_cleanup
 {
     HtmlTags tagid = HTML_UNKNOWN;
-    unsigned char *attrid = nullptr;
-    char **value;
-    unsigned char *map;
+    std::vector<unsigned char> attrid;
+    std::vector<char *> value;
+    std::vector<unsigned char> map;
     bool need_reconstruct = false;
 
     bool CanAcceptAttribute(HtmlTagAttributes id) const;
