@@ -4,10 +4,16 @@
 #include <vector>
 #include <string>
 
+// #define HTML_TAG_USE_STRING 1
+
 class HtmlTag
 {
     std::vector<unsigned char> attrid;
+#ifdef HTML_TAG_USE_STRING
+    std::vector<std::string> value;
+#else
     std::vector<char *> value;
+#endif
     std::vector<unsigned char> map;
 
     HtmlTag(HtmlTags tag)

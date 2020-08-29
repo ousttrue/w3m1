@@ -423,16 +423,14 @@ TagAttrInfo AttrMAP[MAX_TAGATTR] = {
     {"pre_int", VTYPE_NONE, AFLG_INT},          /* 74 ATTR_PRE_INT      */
 };
 
-static int
-noConv(char *oval, int *_str)
+static int noConv(const char *oval, int *_str)
 {
-    char **str = (char **)_str;
+    auto str = (const char **)_str;
     *str = oval;
     return 1;
 }
 
-static int
-toNumber(char *oval, int *num)
+static int toNumber(const char *oval, int *num)
 {
     char *ep;
     int x;
@@ -448,8 +446,7 @@ toNumber(char *oval, int *num)
         return 0;
 }
 
-static int
-toLength(char *oval, int *len)
+static int toLength(const char *oval, int *len)
 {
     int w;
     if (!IS_DIGIT(oval[0]))
@@ -466,8 +463,7 @@ toLength(char *oval, int *len)
     return 1;
 }
 
-static int
-toAlign(char *oval, int *align)
+static int toAlign(const char *oval, int *align)
 {
     if (strcasecmp(oval, "left") == 0)
         *align = ALIGN_LEFT;
@@ -486,8 +482,7 @@ toAlign(char *oval, int *align)
     return 1;
 }
 
-static int
-toVAlign(char *oval, int *valign)
+static int toVAlign(const char *oval, int *valign)
 {
     if (strcasecmp(oval, "top") == 0 || strcasecmp(oval, "baseline") == 0)
         *valign = VALIGN_TOP;
@@ -501,7 +496,7 @@ toVAlign(char *oval, int *valign)
 }
 
 /* *INDENT-OFF* */
-static int (*toValFunc[])(char *, int *) = {
+static int (*toValFunc[])(const char *, int *) = {
     noConv,   /* VTYPE_NONE    */
     noConv,   /* VTYPE_STR     */
     toNumber, /* VTYPE_NUMBER  */
@@ -538,7 +533,13 @@ bool HtmlTag::SetAttributeValue(HtmlTagAttributes id, const char *value)
     if (value)
         this->value[i] = allocStr(value, -1);
     else
+    {
+#ifdef HTML_TAG_USE_STRING
+        this->value[i].clear();
+#else
         this->value[i] = NULL;
+#endif
+    }
     this->need_reconstruct = true;
     return 1;
 }
@@ -555,11 +556,19 @@ bool HtmlTag::TryGetAttributeValue(HtmlTagAttributes id, void *value) const
     }
     int i = map[id];
     auto &v = this->value[i];
+#ifdef HTML_TAG_USE_STRING
+    if (false)
+#else
     if (!v)
+#endif
     {
         return 0;
     }
+#ifdef HTML_TAG_USE_STRING
+    return toValFunc[AttrMAP[id].vtype](v.data(), (int *)value);
+#else
     return toValFunc[AttrMAP[id].vtype](v, (int *)value);
+#endif
 }
 
 std::string HtmlTag::ToStr() const
@@ -576,7 +585,11 @@ std::string HtmlTag::ToStr() const
         {
             tagstr->Push(' ');
             tagstr->Push(AttrMAP[this->attrid[i]].name);
+#ifdef HTML_TAG_USE_STRING
+            if (this->value[i].size())
+#else
             if (this->value[i])
+#endif
                 tagstr->Push(Sprintf("=\"%s\"", html_quote(this->value[i])));
         }
     }
@@ -698,7 +711,12 @@ std::tuple<std::string_view, bool> HtmlTag::parse_attr(std::string_view s, int n
         for (j = 0; j < i; j++)
         {
             if (this->attrid[j] == ATTR_TYPE &&
-                strcmp("hidden", this->value[j]) == 0)
+#ifdef HTML_TAG_USE_STRING
+                this->value[j] == "hidden"
+#else
+                strcmp("hidden", this->value[j]) == 0
+#endif
+            )
             {
                 hidden = true;
                 break;
@@ -734,7 +752,11 @@ std::tuple<std::string_view, bool> HtmlTag::parse_attr(std::string_view s, int n
         if (value)
             this->value[i] = html_unquote(value->ptr, w3mApp::Instance().InnerCharset);
         else
+#ifdef HTML_TAG_USE_STRING
+            this->value[i].clear();
+#else
             this->value[i] = NULL;
+#endif
     }
     else
     {
@@ -749,7 +771,11 @@ std::string_view HtmlTag::_parse(std::string_view s, bool internal)
     if (nattr)
     {
         this->attrid.resize(nattr, ATTR_UNKNOWN);
+#ifdef HTML_TAG_USE_STRING
+        this->value.resize(nattr);
+#else        
         this->value.resize(nattr, nullptr);
+#endif
         this->map.resize(MAX_TAGATTR, MAX_TAGATTR);
         for (auto i = 0; i < nattr; i++)
             this->map[TagMAP[this->tagid].accept_attribute[i]] = i;

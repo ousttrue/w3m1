@@ -3490,7 +3490,7 @@ int HtmlContext::HTMLtagproc1(HtmlTagPtr tag)
         tag->TryGetAttributeValue(ATTR_CELLSPACING, &x);
         tag->TryGetAttributeValue(ATTR_CELLPADDING, &y);
         tag->TryGetAttributeValue(ATTR_VSPACE, &z);
-        char *id;
+        char *id = nullptr;
         tag->TryGetAttributeValue(ATTR_ID, &id);
         m_tables[m_obuf.table_level] = table::begin(w, x, y, z);
         if (id != NULL)
