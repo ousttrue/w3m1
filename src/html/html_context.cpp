@@ -253,8 +253,8 @@ public:
                     m_obuf.status = R_ST_NORMAL;
                 else
                 {
-                    read_token(m_henv.tagbuf, (char **)&line, &m_obuf.status,
-                               state->pre_mode(m_obuf) & RB_PREMODE, m_obuf.status != R_ST_NORMAL);
+                    auto pos = read_token(line, m_henv.tagbuf, &m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE, m_obuf.status != R_ST_NORMAL);
+                    line = pos.data();
                     if (m_obuf.status != R_ST_NORMAL)
                         return {line, Flows::Exit};
                 }
@@ -276,7 +276,8 @@ public:
             else
             {
                 auto tokbuf = Strnew();
-                read_token(tokbuf, (char **)&line, &m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE, 0);
+                auto pos = read_token(line, tokbuf, &m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE, 0);
+                line = pos.data();
                 if (m_obuf.status != R_ST_NORMAL) /* R_ST_AMP ? */
                     m_obuf.status = R_ST_NORMAL;
                 str = tokbuf->ptr;
@@ -1065,7 +1066,8 @@ void HtmlContext::feed_select(const char *str)
         return;
     while (*str)
     {
-        read_token(tmp, const_cast<char **>(&str), &cur_status, 0, 0);
+        auto pos = read_token(str, tmp, &cur_status, 0, 0);
+        str = pos.data();
         if (cur_status != R_ST_NORMAL || prev_status != R_ST_NORMAL)
             continue;
         const char *p = tmp->ptr;
@@ -5098,10 +5100,10 @@ void HtmlContext::feed_table1(struct table *tbl, Str tok, struct table_mode *mod
 
     auto tokbuf = Strnew();
     auto status = R_ST_NORMAL;
-    auto line = tok->ptr;
-    while (*line)
+    std::string_view line = tok->ptr;
+    while (line.size())
     {
-        read_token(tokbuf, &line, &status, mode->pre_mode & TBLM_PREMODE, 0);
+        line = read_token(line, tokbuf, &status, mode->pre_mode & TBLM_PREMODE, 0);
         this->feed_table(tbl, tokbuf->ptr, mode, width, true);
     }
 }

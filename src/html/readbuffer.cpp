@@ -62,14 +62,14 @@ void Breakpoint::back_to(struct readbuffer *obuf)
         obuf->nobr_level = nobr_level;
 }
 
-struct link_stack
+struct link_item
 {
     HtmlTags cmd;
     short offset;
     short pos;
 };
 
-static struct std::list<link_stack> link_stack;
+static struct std::list<link_item> link_stack;
 
 static void push_link(HtmlTags cmd, int offset, int pos)
 {
@@ -674,25 +674,24 @@ bool next_status(char c, TokenStatusTypes *status)
     return 0;
 }
 
-void read_token(Str buf, char **instr, TokenStatusTypes *status, bool pre, bool append)
+std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *status, bool pre, bool append)
 {
     if (!append)
         buf->Clear();
-    if (**instr == '\0')
-        return;
+    if (instr.empty())
+        return instr;
 
-    TokenStatusTypes prev_status;
-    auto p = *instr;
-    for (; *p; p++)
+    auto p = instr;
+    for (; p.size(); p.remove_prefix(1))
     {
-        prev_status = *status;
-        next_status(*p, status);
+        auto prev_status = *status;
+        next_status(p[0], status);
         switch (*status)
         {
         case R_ST_NORMAL:
-            if (prev_status == R_ST_AMP && *p != ';')
+            if (prev_status == R_ST_AMP && p[0] != ';')
             {
-                p--;
+                p = std::string_view(p.data() - 1, p.size() + 1);
                 break;
             }
             if (prev_status == R_ST_NCMNT2 || prev_status == R_ST_NCMNT3 ||
@@ -701,30 +700,29 @@ void read_token(Str buf, char **instr, TokenStatusTypes *status, bool pre, bool 
                 if (prev_status == R_ST_CMNT1 && !append && !pre)
                     buf->Clear();
                 if (pre)
-                    buf->Push(*p);
-                p++;
-                goto proc_end;
+                    buf->Push(p[0]);
+                p.remove_prefix(1);
+                return p;
             }
-            buf->Push((!pre && IS_SPACE(*p)) ? ' ' : *p);
+            buf->Push((!pre && IS_SPACE(p[0])) ? ' ' : p[0]);
             if (ST_IS_REAL_TAG(prev_status))
             {
-                *instr = p + 1;
+                instr = p.substr(1);
                 if (buf->Size() < 2 ||
                     buf->ptr[buf->Size() - 2] != '<' ||
                     buf->ptr[buf->Size() - 1] != '>')
-                    return;
+                    return instr;
                 buf->Pop(2);
             }
             break;
         case R_ST_TAG0:
         case R_ST_TAG:
-            if (prev_status == R_ST_NORMAL && p != *instr)
+            if (prev_status == R_ST_NORMAL && p != instr)
             {
-                *instr = p;
                 *status = prev_status;
-                return;
+                return p;
             }
-            if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p))
+            if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p.data()))
             {
                 /* it seems that this '<' is not a beginning of a tag */
                 /*
@@ -734,19 +732,19 @@ void read_token(Str buf, char **instr, TokenStatusTypes *status, bool pre, bool 
                 *status = R_ST_NORMAL;
             }
             else
-                buf->Push(*p);
+                buf->Push(p[0]);
             break;
         case R_ST_EQL:
         case R_ST_QUOTE:
         case R_ST_DQUOTE:
         case R_ST_VALUE:
         case R_ST_AMP:
-            buf->Push(*p);
+            buf->Push(p[0]);
             break;
         case R_ST_CMNT:
         case R_ST_IRRTAG:
             if (pre)
-                buf->Push(*p);
+                buf->Push(p[0]);
             else if (!append)
                 buf->Clear();
             break;
@@ -757,11 +755,9 @@ void read_token(Str buf, char **instr, TokenStatusTypes *status, bool pre, bool 
         case R_ST_NCMNT3:
             /* do nothing */
             if (pre)
-                buf->Push(*p);
+                buf->Push(p[0]);
             break;
         }
     }
-proc_end:
-    *instr = p;
-    return;
+    return p;
 }
