@@ -1080,15 +1080,20 @@ void HtmlContext::feed_select(const char *str)
             {
                 process_option();
                 cur_option = Strnew();
-                char *q;
-                if (tag->TryGetAttributeValue(ATTR_VALUE, &q))
-                    cur_option_value = Strnew(q);
-                else
-                    cur_option_value = nullptr;
-                if (tag->TryGetAttributeValue(ATTR_LABEL, &q))
-                    cur_option_label = Strnew(q);
-                else
-                    cur_option_label = nullptr;
+                {
+                    auto q = tag->GetAttributeValue(ATTR_VALUE);
+                    if (q.size())
+                        cur_option_value = Strnew(q.data());
+                    else
+                        cur_option_value = nullptr;
+                }
+                {
+                    auto q = tag->GetAttributeValue(ATTR_LABEL);
+                    if (q.size())
+                        cur_option_label = Strnew(q.data());
+                    else
+                        cur_option_label = nullptr;
+                }
                 cur_option_selected = tag->HasAttribute(ATTR_SELECTED);
                 prev_spaces = -1;
                 break;
@@ -1309,14 +1314,21 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
             auto s = tag->GetAttributeValue(ATTR_SRC);
             if (s.size())
             {
-                int iw, ih;
                 tmp->Push(Sprintf("<img src=\"%s\"", html_quote(s)));
                 if (p2.size())
                     tmp->Push(Sprintf(" alt=\"%s\"", html_quote(p2)));
-                if (tag->TryGetAttributeValue(ATTR_WIDTH, &iw))
+
+                auto iw = tag->GetAttributeValue(ATTR_WIDTH, 0);
+                if (iw)
+                {
                     tmp->Push(Sprintf(" width=\"%d\"", iw));
-                if (tag->TryGetAttributeValue(ATTR_HEIGHT, &ih))
+                }
+                auto ih = tag->GetAttributeValue(ATTR_HEIGHT, 0);
+                if (ih)
+                {
                     tmp->Push(Sprintf(" height=\"%d\"", ih));
+                }
+
                 tmp->Push(" pre_int>");
                 tmp->Push("</input_alt></pre_int>");
                 return tmp;
@@ -1404,19 +1416,16 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
 Str HtmlContext::process_img(HtmlTagPtr tag, int width)
 {
     char *p, *q, *r, *r2 = nullptr, *t;
-#ifdef USE_IMAGE
     int w, i, nw, ni = 1, n, w0 = -1, i0 = -1;
     int align, xoffset, yoffset, top, bottom, ismap = 0;
     int use_image = ImageManager::Instance().activeImage && ImageManager::Instance().displayImage;
-#else
-    int w, i, nw, n;
-#endif
     int pre_int = false, ext_pre_int = false;
     Str tmp = Strnew();
 
     if (!tag->TryGetAttributeValue(ATTR_SRC, &p))
         return tmp;
     p = remove_space(p);
+    
     q = nullptr;
     tag->TryGetAttributeValue(ATTR_ALT, &q);
     if (!w3mApp::Instance().pseudoInlines && (q == nullptr || (*q == '\0' && w3mApp::Instance().ignore_null_img_alt)))
