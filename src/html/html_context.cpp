@@ -1288,7 +1288,7 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
     auto z = tag->HasAttribute(ATTR_READONLY);
     tmp->Push(Sprintf("<input_alt hseq=\"%d\" fid=\"%d\" type=%s "
                       "name=\"%s\" width=%d maxlength=%d value=\"%s\"",
-                      Increment(), cur_form_id(), p.data(), html_quote(r), w, i, qq));
+                      Increment(), cur_form_id(), p.data(), html_quote(r).c_str(), w, i, qq));
 
     if (x)
         tmp->Push(" checked");
