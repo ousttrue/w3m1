@@ -1028,8 +1028,7 @@ Str HtmlContext::process_select(HtmlTagPtr tag)
         tmp = FormOpen(tag);
     }
 
-    auto p = "";
-    tag->TryGetAttributeValue(ATTR_NAME, &p);
+    auto p = tag->GetAttributeValue(ATTR_NAME);
     cur_select = Strnew(p);
     select_is_multiple = tag->HasAttribute(ATTR_MULTIPLE);
 
@@ -1073,14 +1072,15 @@ void HtmlContext::feed_select(const char *str)
         {
             auto [pos, tag] = HtmlTag::parse(p, false);
             p = pos.data();
-            char *q;
             if (!tag)
                 continue;
             switch (tag->tagid)
             {
             case HTML_OPTION:
+            {
                 process_option();
                 cur_option = Strnew();
+                char *q;
                 if (tag->TryGetAttributeValue(ATTR_VALUE, &q))
                     cur_option_value = Strnew(q);
                 else
@@ -1092,6 +1092,7 @@ void HtmlContext::feed_select(const char *str)
                 cur_option_selected = tag->HasAttribute(ATTR_SELECTED);
                 prev_spaces = -1;
                 break;
+            }
             case HTML_N_OPTION:
                 /* do nothing */
                 break;
@@ -1217,31 +1218,13 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
         tmp = Strnew();
     }
 
-    int i, w, v, x, y, z, iw, ih;
-    const char *qq = "";
-    int qlen = 0;
-
-    auto p = "text";
-    tag->TryGetAttributeValue(ATTR_TYPE, &p);
-    const char *q = nullptr;
-    tag->TryGetAttributeValue(ATTR_VALUE, &q);
-    auto r = "";
-    tag->TryGetAttributeValue(ATTR_NAME, &r);
-    w = 20;
-    tag->TryGetAttributeValue(ATTR_SIZE, &w);
-    i = 20;
-    tag->TryGetAttributeValue(ATTR_MAXLENGTH, &i);
-    char *p2 = nullptr;
-    tag->TryGetAttributeValue(ATTR_ALT, &p2);
-    x = tag->HasAttribute(ATTR_CHECKED);
-    y = tag->HasAttribute(ATTR_ACCEPT);
-    z = tag->HasAttribute(ATTR_READONLY);
-
-    v = formtype(p);
+    auto p = tag->GetAttributeValue(ATTR_TYPE, "text");
+    auto v = formtype(p);
     if (v == FORM_UNKNOWN)
         return nullptr;
 
-    if (!q)
+    auto q = tag->GetAttributeValue(ATTR_VALUE);
+    if (q.empty())
     {
         switch (v)
         {
@@ -1264,11 +1247,14 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
     }
     /* VALUE attribute is not allowed in <INPUT TYPE=FILE> tag. */
     if (v == FORM_INPUT_FILE)
-        q = nullptr;
-    if (q)
+        q = "";
+
+    const char *qq = "";
+    int qlen = 0;
+    if (q.size())
     {
-        qq = html_quote(q);
-        qlen = get_strwidth(q);
+        qq = html_quote(q.data());
+        qlen = get_strwidth(q.data());
     }
 
     tmp->Push("<pre_int>");
@@ -1288,9 +1274,16 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
         tmp->Push('(');
     }
 
+    auto r = tag->GetAttributeValue(ATTR_NAME);
+    auto w = tag->GetAttributeValue(ATTR_SIZE, 20);
+    auto i = tag->GetAttributeValue(ATTR_MAXLENGTH, 20);
+    auto p2 = tag->GetAttributeValue(ATTR_ALT);
+    auto x = tag->HasAttribute(ATTR_CHECKED);
+    auto y = tag->HasAttribute(ATTR_ACCEPT);
+    auto z = tag->HasAttribute(ATTR_READONLY);
     tmp->Push(Sprintf("<input_alt hseq=\"%d\" fid=\"%d\" type=%s "
                       "name=\"%s\" width=%d maxlength=%d value=\"%s\"",
-                      Increment(), cur_form_id(), p, html_quote(r), w, i, qq));
+                      Increment(), cur_form_id(), p.data(), html_quote(r), w, i, qq));
 
     if (x)
         tmp->Push(" checked");
@@ -1313,12 +1306,12 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
             break;
         case FORM_INPUT_IMAGE:
         {
-            char *s = nullptr;
-            tag->TryGetAttributeValue(ATTR_SRC, &s);
-            if (s)
+            auto s = tag->GetAttributeValue(ATTR_SRC);
+            if (s.size())
             {
+                int iw, ih;
                 tmp->Push(Sprintf("<img src=\"%s\"", html_quote(s)));
-                if (p2)
+                if (p2.size())
                     tmp->Push(Sprintf(" alt=\"%s\"", html_quote(p2)));
                 if (tag->TryGetAttributeValue(ATTR_WIDTH, &iw))
                     tmp->Push(Sprintf(" width=\"%d\"", iw));
@@ -1341,7 +1334,7 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
         {
         case FORM_INPUT_PASSWORD:
             i = 0;
-            if (q)
+            if (q.size())
             {
                 for (; i < qlen && i < w; i++)
                     tmp->Push('*');
@@ -1351,8 +1344,8 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
             break;
         case FORM_INPUT_TEXT:
         case FORM_INPUT_FILE:
-            if (q)
-                tmp->Push(textfieldrep(Strnew(q), w));
+            if (q.size())
+                tmp->Push(textfieldrep(Strnew(q.data()), w));
             else
             {
                 for (i = 0; i < w; i++)
@@ -1361,7 +1354,7 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
             break;
         case FORM_INPUT_SUBMIT:
         case FORM_INPUT_BUTTON:
-            if (p2)
+            if (p2.size())
                 tmp->Push(html_quote(p2));
             else
                 tmp->Push(qq);

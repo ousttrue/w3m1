@@ -623,6 +623,16 @@ std::string_view HtmlTag::GetAttributeValue(HtmlTagAttributes id, std::string_vi
     return p;
 }
 
+int HtmlTag::GetAttributeValue(HtmlTagAttributes id, int defaultValue) const
+{
+    int p;
+    if (!TryGetAttributeValue(id, &p))
+    {
+        return defaultValue;
+    }
+    return p;
+}
+
 std::tuple<std::string_view, bool> HtmlTag::parse_attr(std::string_view s, int nattr, bool internal)
 {
     auto q = s;
