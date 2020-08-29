@@ -674,13 +674,12 @@ bool next_status(char c, TokenStatusTypes *status)
     return 0;
 }
 
-std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *status, bool pre, bool append)
+std::tuple<std::string_view, std::string> read_token(std::string_view instr, TokenStatusTypes *status, bool pre)
 {
-    if (!append)
-        buf->Clear();
     if (instr.empty())
-        return instr;
+        return {};
 
+    std::string buf;
     auto p = instr;
     for (; p.size(); p.remove_prefix(1))
     {
@@ -697,22 +696,23 @@ std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *s
             if (prev_status == R_ST_NCMNT2 || prev_status == R_ST_NCMNT3 ||
                 prev_status == R_ST_IRRTAG || prev_status == R_ST_CMNT1)
             {
-                if (prev_status == R_ST_CMNT1 && !append && !pre)
-                    buf->Clear();
+                // if (prev_status == R_ST_CMNT1 && !append && !pre){
+                //     buf->Clear();
                 if (pre)
-                    buf->Push(p[0]);
+                    buf.push_back(p[0]);
                 p.remove_prefix(1);
-                return p;
+                return {p, buf};
             }
-            buf->Push((!pre && IS_SPACE(p[0])) ? ' ' : p[0]);
+            buf.push_back((!pre && IS_SPACE(p[0])) ? ' ' : p[0]);
             if (ST_IS_REAL_TAG(prev_status))
             {
                 instr = p.substr(1);
-                if (buf->Size() < 2 ||
-                    buf->ptr[buf->Size() - 2] != '<' ||
-                    buf->ptr[buf->Size() - 1] != '>')
-                    return instr;
-                buf->Pop(2);
+                if (buf.size() < 2 ||
+                    buf[buf.size() - 2] != '<' ||
+                    buf[buf.size() - 1] != '>')
+                    return {instr, buf};
+                buf.pop_back();
+                buf.pop_back();
             }
             break;
         case R_ST_TAG0:
@@ -720,7 +720,7 @@ std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *s
             if (prev_status == R_ST_NORMAL && p != instr)
             {
                 *status = prev_status;
-                return p;
+                return {p, buf};
             }
             if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p.data()))
             {
@@ -728,25 +728,25 @@ std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *s
                 /*
                  * buf->Push( "&lt;");
                  */
-                buf->Push('<');
+                buf.push_back('<');
                 *status = R_ST_NORMAL;
             }
             else
-                buf->Push(p[0]);
+                buf.push_back(p[0]);
             break;
         case R_ST_EQL:
         case R_ST_QUOTE:
         case R_ST_DQUOTE:
         case R_ST_VALUE:
         case R_ST_AMP:
-            buf->Push(p[0]);
+            buf.push_back(p[0]);
             break;
         case R_ST_CMNT:
         case R_ST_IRRTAG:
             if (pre)
-                buf->Push(p[0]);
-            else if (!append)
-                buf->Clear();
+                buf.push_back(p[0]);
+            else /* if (!append) */
+                buf.clear();
             break;
         case R_ST_CMNT1:
         case R_ST_CMNT2:
@@ -755,9 +755,9 @@ std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *s
         case R_ST_NCMNT3:
             /* do nothing */
             if (pre)
-                buf->Push(p[0]);
+                buf.push_back(p[0]);
             break;
         }
     }
-    return p;
+    return {p, buf};
 }

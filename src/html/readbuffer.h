@@ -205,4 +205,14 @@ struct readbuffer
 
 int sloppy_parse_line(char **str);
 bool next_status(char c, TokenStatusTypes *status);
-std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *status, bool pre, bool append);
+std::tuple<std::string_view, std::string> read_token(std::string_view instr, TokenStatusTypes *status, bool pre);
+inline std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *status, bool pre, bool append)
+{
+    auto [remain, token] = read_token(instr, status, pre);
+    if (!append)
+    {
+        buf->Clear();
+    }
+    buf->Push(token);
+    return remain;
+}
