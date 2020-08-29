@@ -287,8 +287,10 @@ public:
                 bool processed = false;
                 if (is_tag)
                 {
-                    const char *p = str;
-                    if (auto tag = parse_tag(&p, internal))
+                    std::string_view p = str;
+                    parsed_tag *tag;
+                    std::tie(p, tag) = parse_tag(p, internal);
+                    if (tag)
                     {
                         if (tag->tagid == state->end_tag(m_obuf) ||
                             (state->pre_mode(m_obuf) & RB_INSELECT && tag->tagid == HTML_N_FORM) || (state->pre_mode(m_obuf) & RB_TITLE && (tag->tagid == HTML_N_HEAD || tag->tagid == HTML_BODY)))
@@ -404,7 +406,8 @@ public:
             if (is_tag)
             {
                 /*** Beginning of a new tag ***/
-                auto tag = parse_tag(const_cast<const char **>(&str), internal);
+                auto [pos, tag] = parse_tag(str, internal);
+                str = pos.data();
                 if (!tag)
                 {
                     continue;
@@ -1022,7 +1025,8 @@ Str HtmlContext::process_select(struct parsed_tag *tag)
     if (cur_form_id() < 0)
     {
         auto s = "<form_int method=internal action=none>";
-        tmp = FormOpen(parse_tag(&s, true));
+        auto [pos, tag] = parse_tag(s, true);
+        tmp = FormOpen(tag);
     }
 
     auto p = "";
@@ -1068,9 +1072,10 @@ void HtmlContext::feed_select(const char *str)
         const char *p = tmp->ptr;
         if (tmp->ptr[0] == '<' && tmp->Back() == '>')
         {
-            struct parsed_tag *tag;
+            auto [pos, tag] = parse_tag(p, false);
+            p = pos.data();
             char *q;
-            if (!(tag = parse_tag(&p, false)))
+            if (!tag)
                 continue;
             switch (tag->tagid)
             {
@@ -1205,7 +1210,8 @@ Str HtmlContext::process_input(struct parsed_tag *tag)
     if (cur_form_id() < 0)
     {
         const char *s = "<form_int method=internal action=none>";
-        tmp = FormOpen(parse_tag(&s, true));
+        auto [pos, tag] = parse_tag(s, true);
+        tmp = FormOpen(tag);
     }
     if (tmp == nullptr)
     {
@@ -1504,7 +1510,8 @@ Str HtmlContext::process_img(struct parsed_tag *tag, int width)
     {
         r2 = strchr(r, '#');
         auto s = "<form_int method=internal action=map>";
-        auto tmp2 = FormOpen(parse_tag(&s, true));
+        auto [pos, tag] = parse_tag(s, true);
+        auto tmp2 = FormOpen(tag);
         if (tmp2)
             tmp->Push(tmp2);
         tmp->Push(Sprintf("<input_alt fid=\"%d\" "
@@ -1834,7 +1841,8 @@ Str HtmlContext::process_textarea(struct parsed_tag *tag, int width)
     if (cur_form_id() < 0)
     {
         auto s = "<form_int method=internal action=none>";
-        tmp = FormOpen(parse_tag(&s, true));
+        auto [pos, tag] = parse_tag(s, true);
+        tmp = FormOpen(tag);
     }
 
     auto p = "";
@@ -2579,7 +2587,8 @@ void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
             else
             {
                 /* tag processing */
-                auto tag = parse_tag(&str, true);
+                auto [pos, tag] = parse_tag(str, true);
+                str = pos.data();
                 if (!tag)
                     continue;
 
@@ -4003,8 +4012,9 @@ void HtmlContext::do_refill(struct table *tbl, int row, int col, int maxlimit)
         {
             int id = -1;
             const char *p = l->ptr;
-            struct parsed_tag *tag;
-            if ((tag = parse_tag(&p, true)) != NULL)
+            auto [pos, tag] = parse_tag(p, true);
+            p = pos.data();
+            if (tag)
                 tag->TryGetAttributeValue(ATTR_TID, &id);
             if (id >= 0 && id < tbl->ntable)
             {
@@ -4894,10 +4904,8 @@ int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mo
     struct table_linfo *linfo = &tbl->linfo;
 
     if (*line == '<' && line[1] && REALLY_THE_BEGINNING_OF_A_TAG(line))
-    {
-        struct parsed_tag *tag;
-        const char *p = line;
-        tag = parse_tag(&p, internal);
+    {       
+        auto[pos, tag] = parse_tag(line, internal);
         if (tag)
         {
             switch (this->feed_table_tag(tbl, line, mode, width, tag))

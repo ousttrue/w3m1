@@ -294,7 +294,7 @@ struct parsed_tag : gc_cleanup
     unsigned char *attrid = nullptr;
     char **value;
     unsigned char *map;
-    char need_reconstruct = 0;
+    bool need_reconstruct = false;
 
     bool CanAcceptAttribute(HtmlTagAttributes id) const;
     bool HasAttribute(HtmlTagAttributes id) const;
@@ -317,7 +317,7 @@ struct parsed_tag : gc_cleanup
     {
     }
 
-    void parse(const char **s, bool internal);
+    std::string_view parse(std::string_view s, bool internal);
 
     int ul_type(int default_type = 0)
     {
@@ -335,7 +335,7 @@ struct parsed_tag : gc_cleanup
     }
 
 private:
-    bool parse_attr(const char **s, int nattr, bool internal);
+    std::tuple<std::string_view, bool> parse_attr(std::string_view s, int nattr, bool internal);
 };
 
-struct parsed_tag *parse_tag(const char **s, int internal);
+std::tuple<std::string_view, struct parsed_tag *> parse_tag(std::string_view s, bool internal);
