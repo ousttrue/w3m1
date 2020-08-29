@@ -917,44 +917,49 @@ Str HtmlContext::TitleClose(HtmlTagPtr tag)
     return tmp;
 }
 
-static char *check_accept_charset(char *ac)
+static std::string_view check_accept_charset(std::string_view ac)
 {
-    char *s = ac;
-    while (*s)
+    auto s = ac;
+    while (s.size())
     {
-        while (*s && (IS_SPACE(*s) || *s == ','))
-            s++;
-        if (!*s)
+        while (s.size() && (IS_SPACE(s[0]) || s[0] == ','))
+            s.remove_prefix(1);
+        if (s.empty())
             break;
         auto e = s;
-        while (*e && !(IS_SPACE(*e) || *e == ','))
-            e++;
-        if (wc_guess_charset(Strnew_charp_n(s, e - s)->ptr, WC_CES_NONE))
+        while (e[0] && !(IS_SPACE(e[0]) || e[0] == ','))
+            e.remove_prefix(1);
+        if (wc_guess_charset(Strnew_charp_n(s.data(), e.data() - s.data())->ptr, WC_CES_NONE))
             return ac;
         s = e;
     }
-    return NULL;
+    return "";
 }
-static char *check_charset(char *p)
+static std::string_view check_charset(std::string_view p)
 {
-    return wc_guess_charset(p, WC_CES_NONE) ? p : NULL;
+    return wc_guess_charset(p.data(), WC_CES_NONE) ? p : "";
 }
 Str HtmlContext::FormOpen(HtmlTagPtr tag, int fid)
 {
     auto p = tag->GetAttributeValue(ATTR_METHOD, "get");
     auto q = tag->GetAttributeValue(ATTR_ACTION, "!CURRENT_URL!");
-    char *r = nullptr;
-    if (tag->TryGetAttributeValue(ATTR_ACCEPT_CHARSET, &r))
+    auto r = tag->GetAttributeValue(ATTR_ACCEPT_CHARSET);
+    if (r.size())
+    {
         r = check_accept_charset(r);
-    if (!r && tag->TryGetAttributeValue(ATTR_CHARSET, &r))
-        r = check_charset(r);
+    }
+    if (r.empty())
+    {
+        r = tag->GetAttributeValue(ATTR_CHARSET);
+        if (r.size())
+        {
+            r = check_charset(r);
+        }
+    }
 
-    char *s = nullptr;
-    tag->TryGetAttributeValue(ATTR_ENCTYPE, &s);
-    char *tg = nullptr;
-    tag->TryGetAttributeValue(ATTR_TARGET, &tg);
-    char *n = nullptr;
-    tag->TryGetAttributeValue(ATTR_NAME, &n);
+    auto s = tag->GetAttributeValue(ATTR_ENCTYPE);
+    auto tg = tag->GetAttributeValue(ATTR_TARGET);
+    auto n = tag->GetAttributeValue(ATTR_NAME);
 
     if (fid < 0)
     {
@@ -979,11 +984,7 @@ Str HtmlContext::FormOpen(HtmlTagPtr tag, int fid)
     //     form_stack = New_Reuse(int, form_stack, forms_size);
     // }
 
-    forms[fid] = Form::Create(q, p.data(),
-                              r ? r : "",
-                              s ? s : "",
-                              tg ? tg : "",
-                              n ? n : "");
+    forms[fid] = Form::Create(q, p, r, s, tg, n);
     form_stack.push_back(fid);
 
     return nullptr;
@@ -4903,8 +4904,8 @@ int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mo
     struct table_linfo *linfo = &tbl->linfo;
 
     if (*line == '<' && line[1] && REALLY_THE_BEGINNING_OF_A_TAG(line))
-    {       
-        auto[pos, tag] = HtmlTag::parse(line, internal);
+    {
+        auto [pos, tag] = HtmlTag::parse(line, internal);
         if (tag)
         {
             switch (this->feed_table_tag(tbl, line, mode, width, tag))
@@ -4919,7 +4920,8 @@ int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mo
                 break;
             case TAG_ACTION_FEED:
             default:
-                if (tag->need_reconstruct){
+                if (tag->need_reconstruct)
+                {
                     x = tag->ToStr();
                     line = x.c_str();
                 }
