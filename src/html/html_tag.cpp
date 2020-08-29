@@ -799,7 +799,7 @@ std::tuple<std::string_view, HtmlTagPtr> HtmlTag::parse(std::string_view s, bool
         return {s, nullptr};
     }
 
-    auto tag = new HtmlTag(tag_id);
+    auto tag = std::shared_ptr<HtmlTag>(new HtmlTag(tag_id));
     q = tag->_parse(q, internal);
     return {q, tag};
 }

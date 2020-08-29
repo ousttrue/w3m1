@@ -1,10 +1,10 @@
 #pragma once
 #include "html.h"
+#include <memory>
 #include <vector>
 #include <string>
-#include <gc_cpp.h>
 
-class HtmlTag : public gc_cleanup
+class HtmlTag
 {
     std::vector<unsigned char> attrid;
     std::vector<char *> value;
@@ -16,8 +16,9 @@ class HtmlTag : public gc_cleanup
     }
     std::string_view _parse(std::string_view s, bool internal);
     std::tuple<std::string_view, bool> parse_attr(std::string_view s, int nattr, bool internal);
+
 public:
-    static std::tuple<std::string_view, HtmlTag*> parse(std::string_view s, bool internal);
+    static std::tuple<std::string_view, std::shared_ptr<HtmlTag>> parse(std::string_view s, bool internal);
     HtmlTags tagid = HTML_UNKNOWN;
     bool need_reconstruct = false;
 
@@ -38,4 +39,4 @@ public:
     std::string ToStr() const;
     int ul_type(int default_type = 0) const;
 };
-using HtmlTagPtr = HtmlTag *;
+using HtmlTagPtr = std::shared_ptr<HtmlTag>;
