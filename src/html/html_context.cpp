@@ -1063,8 +1063,9 @@ void HtmlContext::feed_select(const char *str)
 
     if (cur_select == nullptr)
         return;
-    while (read_token(tmp, const_cast<char **>(&str), &cur_status, 0, 0))
+    while (*str)
     {
+        read_token(tmp, const_cast<char **>(&str), &cur_status, 0, 0);
         if (cur_status != R_ST_NORMAL || prev_status != R_ST_NORMAL)
             continue;
         const char *p = tmp->ptr;
@@ -1425,7 +1426,7 @@ Str HtmlContext::process_img(HtmlTagPtr tag, int width)
     if (!tag->TryGetAttributeValue(ATTR_SRC, &p))
         return tmp;
     p = remove_space(p);
-    
+
     q = nullptr;
     tag->TryGetAttributeValue(ATTR_ALT, &q);
     if (!w3mApp::Instance().pseudoInlines && (q == nullptr || (*q == '\0' && w3mApp::Instance().ignore_null_img_alt)))
@@ -5098,8 +5099,11 @@ void HtmlContext::feed_table1(struct table *tbl, Str tok, struct table_mode *mod
     auto tokbuf = Strnew();
     auto status = R_ST_NORMAL;
     auto line = tok->ptr;
-    while (read_token(tokbuf, &line, &status, mode->pre_mode & TBLM_PREMODE, 0))
+    while (*line)
+    {
+        read_token(tokbuf, &line, &status, mode->pre_mode & TBLM_PREMODE, 0);
         this->feed_table(tbl, tokbuf->ptr, mode, width, true);
+    }
 }
 
 static int

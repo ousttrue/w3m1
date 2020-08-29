@@ -674,12 +674,12 @@ bool next_status(char c, TokenStatusTypes *status)
     return 0;
 }
 
-bool read_token(Str buf, char **instr, TokenStatusTypes *status, int pre, int append)
+void read_token(Str buf, char **instr, TokenStatusTypes *status, bool pre, bool append)
 {
     if (!append)
         buf->Clear();
     if (**instr == '\0')
-        return 0;
+        return;
 
     TokenStatusTypes prev_status;
     auto p = *instr;
@@ -712,7 +712,7 @@ bool read_token(Str buf, char **instr, TokenStatusTypes *status, int pre, int ap
                 if (buf->Size() < 2 ||
                     buf->ptr[buf->Size() - 2] != '<' ||
                     buf->ptr[buf->Size() - 1] != '>')
-                    return 1;
+                    return;
                 buf->Pop(2);
             }
             break;
@@ -722,7 +722,7 @@ bool read_token(Str buf, char **instr, TokenStatusTypes *status, int pre, int ap
             {
                 *instr = p;
                 *status = prev_status;
-                return 1;
+                return;
             }
             if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p))
             {
@@ -763,5 +763,5 @@ bool read_token(Str buf, char **instr, TokenStatusTypes *status, int pre, int ap
     }
 proc_end:
     *instr = p;
-    return 1;
+    return;
 }
