@@ -143,6 +143,122 @@ struct FormData
     {
         return forms;
     }
+
+    int n_textarea = -1;
+    std::vector<Str> textarea_str;
+    Str cur_textarea = nullptr;
+    bool ignore_nl_textarea = false;
+    int cur_textarea_size;
+    int cur_textarea_rows;
+    int cur_textarea_readonly;
+
+    void Textarea(int n, Str str)
+    {
+        n_textarea = n;
+        textarea_str[n_textarea] = str;
+    }
+
+    Str Textarea(int n) const
+    {
+        return textarea_str[n];
+    }
+
+    std::pair<int, Str> TextareaCurrent() const
+    {
+        if (n_textarea < 0)
+        {
+            return {-1, nullptr};
+        }
+        return {n_textarea, textarea_str[n_textarea]};
+    }
+
+    // push text to current_textarea
+    void feed_textarea(const char *str)
+    {
+        if (cur_textarea == nullptr)
+            return;
+
+        if (ignore_nl_textarea)
+        {
+            if (*str == '\r')
+                str++;
+            if (*str == '\n')
+                str++;
+        }
+        ignore_nl_textarea = false;
+
+        while (*str)
+        {
+            if (*str == '&')
+            {
+                auto [pos, cmd] = getescapecmd(str, w3mApp::Instance().InnerCharset);
+                str = const_cast<char *>(pos);
+                textarea_str[n_textarea]->Push(cmd);
+            }
+            else if (*str == '\n')
+            {
+                textarea_str[n_textarea]->Push("\r\n");
+                str++;
+            }
+            else if (*str != '\r')
+                textarea_str[n_textarea]->Push(*(str++));
+        }
+    }
+
+    Str process_textarea(HtmlTagPtr tag, int width)
+    {
+#define TEXTAREA_ATTR_COL_MAX 4096
+#define TEXTAREA_ATTR_ROWS_MAX 4096
+
+        Str tmp = nullptr;
+        if (cur_form_id() < 0)
+        {
+            auto s = "<form_int method=internal action=none>";
+            auto [pos, tag] = HtmlTag::parse(s, true);
+            tmp = FormOpen(tag);
+        }
+
+        auto p = "";
+        tag->TryGetAttributeValue(ATTR_NAME, &p);
+        cur_textarea = Strnew(p);
+        cur_textarea_size = 20;
+        if (tag->TryGetAttributeValue(ATTR_COLS, &p))
+        {
+            cur_textarea_size = atoi(p);
+            if (p[strlen(p) - 1] == '%')
+                cur_textarea_size = width * cur_textarea_size / 100 - 2;
+            if (cur_textarea_size <= 0)
+            {
+                cur_textarea_size = 20;
+            }
+            else if (cur_textarea_size > TEXTAREA_ATTR_COL_MAX)
+            {
+                cur_textarea_size = TEXTAREA_ATTR_COL_MAX;
+            }
+        }
+        cur_textarea_rows = 1;
+        if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
+        {
+            cur_textarea_rows = atoi(p);
+            if (cur_textarea_rows <= 0)
+            {
+                cur_textarea_rows = 1;
+            }
+            else if (cur_textarea_rows > TEXTAREA_ATTR_ROWS_MAX)
+            {
+                cur_textarea_rows = TEXTAREA_ATTR_ROWS_MAX;
+            }
+        }
+        cur_textarea_readonly = tag->HasAttribute(ATTR_READONLY);
+        if (n_textarea >= textarea_str.size())
+        {
+            textarea_str.resize(n_textarea + 1);
+        }
+        textarea_str[n_textarea] = Strnew();
+        ignore_nl_textarea = true;
+
+        return tmp;
+    }
 };
 using FormDataPtr = std::shared_ptr<FormData>;
 
@@ -199,13 +315,6 @@ class HtmlContext
     bool cur_option_selected = false;
     TokenStatusTypes cur_status = R_ST_NORMAL;
     std::vector<AnchorPtr> a_textarea;
-    std::vector<Str> textarea_str;
-    int n_textarea = -1;
-    Str cur_textarea = nullptr;
-    int cur_textarea_size;
-    int cur_textarea_rows;
-    int cur_textarea_readonly;
-    bool ignore_nl_textarea = false;
 
     struct readbuffer m_obuf;
     html_feed_environ m_henv;
@@ -239,7 +348,6 @@ public:
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
     Str process_n_select();
     FormSelectOptionList *FormSelect(int n);
-    Str Textarea(int n) const;
     Str process_n_textarea();
     using FeedFunc = std::function<Str()>;
     void BufferFromLines(BufferPtr buf);
@@ -398,7 +506,7 @@ public:
                 /* textarea */
                 if (!processed && state->pre_mode(m_obuf) & RB_INTXTA)
                 {
-                    this->feed_textarea(str);
+                    m_form->feed_textarea(str);
                     continue;
                 }
 
@@ -702,7 +810,6 @@ public:
 private:
     void print_internal_information();
 
-    void print_internal(struct TextLineList *tl);
     CharacterEncodingScheme CES() const { return cur_document_charset; }
     void SetMetaCharset(CharacterEncodingScheme ces);
 
@@ -733,12 +840,6 @@ private:
     Str process_img(HtmlTagPtr tag, int width);
     Str process_anchor(HtmlTagPtr tag, const char *tagbuf);
     // void clear(int n);
-    void Textarea(int n, Str str);
-    std::pair<int, Str> TextareaCurrent() const;
-
-    // push text to current_textarea
-    void feed_textarea(const char *str);
-    Str process_textarea(HtmlTagPtr tag, int width);
 
     bool EndLineAddBuffer();
     void Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str);
@@ -875,40 +976,6 @@ void HtmlContext::print_internal_information()
     //         for (p = tl->first; p; p = p->next)
     //             fprintf(henv->f, "%s\n", Str_conv_to_halfdump(p->ptr->line)->ptr);
     //     }
-}
-
-void HtmlContext::print_internal(TextLineList *tl)
-{
-    if (select_option.size())
-    {
-        int i = 0;
-        for (auto &so : select_option)
-        {
-            auto s = Sprintf("<select_int selectnumber=%d>", i++);
-            pushTextLine(tl, newTextLine(s, 0));
-            for (auto ip : so)
-            {
-                s = Sprintf("<option_int value=\"%s\" label=\"%s\"%s>",
-                            html_quote(ip.value.size() ? ip.value : ip.label),
-                            html_quote(ip.label),
-                            ip.checked ? " selected" : "");
-                pushTextLine(tl, newTextLine(s, 0));
-            }
-            s = Strnew("</select_int>");
-            pushTextLine(tl, newTextLine(s, 0));
-        }
-    }
-    if (n_textarea > 0)
-    {
-        for (int i = 0; i < n_textarea; i++)
-        {
-            auto s = Sprintf("<textarea_int textareanumber=%d>", i);
-            pushTextLine(tl, newTextLine(s, 0));
-            s = Strnew(html_quote(textarea_str[i]->ptr));
-            s->Push("</textarea_int>");
-            pushTextLine(tl, newTextLine(s, 0));
-        }
-    }
 }
 
 Str HtmlContext::GetLinkNumberStr(int correction)
@@ -1750,117 +1817,9 @@ Str HtmlContext::process_anchor(HtmlTagPtr tag, const char *tagbuf)
     }
 }
 
-void HtmlContext::Textarea(int n, Str str)
-{
-    n_textarea = n;
-    textarea_str[n_textarea] = str;
-}
-
-Str HtmlContext::Textarea(int n) const
-{
-    return textarea_str[n];
-}
-
-std::pair<int, Str> HtmlContext::TextareaCurrent() const
-{
-    if (n_textarea < 0)
-    {
-        return {-1, nullptr};
-    }
-    return {n_textarea, textarea_str[n_textarea]};
-}
-
-// push text to current_textarea
-void HtmlContext::feed_textarea(const char *str)
-{
-    if (cur_textarea == nullptr)
-        return;
-
-    if (ignore_nl_textarea)
-    {
-        if (*str == '\r')
-            str++;
-        if (*str == '\n')
-            str++;
-    }
-    ignore_nl_textarea = false;
-
-    while (*str)
-    {
-        if (*str == '&')
-        {
-            auto [pos, cmd] = getescapecmd(str, w3mApp::Instance().InnerCharset);
-            str = const_cast<char *>(pos);
-            textarea_str[n_textarea]->Push(cmd);
-        }
-        else if (*str == '\n')
-        {
-            textarea_str[n_textarea]->Push("\r\n");
-            str++;
-        }
-        else if (*str != '\r')
-            textarea_str[n_textarea]->Push(*(str++));
-    }
-}
-
-Str HtmlContext::process_textarea(HtmlTagPtr tag, int width)
-{
-#define TEXTAREA_ATTR_COL_MAX 4096
-#define TEXTAREA_ATTR_ROWS_MAX 4096
-
-    Str tmp = nullptr;
-    if (m_form->cur_form_id() < 0)
-    {
-        auto s = "<form_int method=internal action=none>";
-        auto [pos, tag] = HtmlTag::parse(s, true);
-        tmp = m_form->FormOpen(tag);
-    }
-
-    auto p = "";
-    tag->TryGetAttributeValue(ATTR_NAME, &p);
-    cur_textarea = Strnew(p);
-    cur_textarea_size = 20;
-    if (tag->TryGetAttributeValue(ATTR_COLS, &p))
-    {
-        cur_textarea_size = atoi(p);
-        if (p[strlen(p) - 1] == '%')
-            cur_textarea_size = width * cur_textarea_size / 100 - 2;
-        if (cur_textarea_size <= 0)
-        {
-            cur_textarea_size = 20;
-        }
-        else if (cur_textarea_size > TEXTAREA_ATTR_COL_MAX)
-        {
-            cur_textarea_size = TEXTAREA_ATTR_COL_MAX;
-        }
-    }
-    cur_textarea_rows = 1;
-    if (tag->TryGetAttributeValue(ATTR_ROWS, &p))
-    {
-        cur_textarea_rows = atoi(p);
-        if (cur_textarea_rows <= 0)
-        {
-            cur_textarea_rows = 1;
-        }
-        else if (cur_textarea_rows > TEXTAREA_ATTR_ROWS_MAX)
-        {
-            cur_textarea_rows = TEXTAREA_ATTR_ROWS_MAX;
-        }
-    }
-    cur_textarea_readonly = tag->HasAttribute(ATTR_READONLY);
-    if (n_textarea >= textarea_str.size())
-    {
-        textarea_str.resize(n_textarea + 1);
-    }
-    textarea_str[n_textarea] = Strnew();
-    ignore_nl_textarea = true;
-
-    return tmp;
-}
-
 Str HtmlContext::process_n_textarea()
 {
-    if (cur_textarea == nullptr)
+    if (m_form->cur_textarea == nullptr)
         return nullptr;
 
     auto tmp = Strnew();
@@ -1868,18 +1827,18 @@ Str HtmlContext::process_n_textarea()
                       "type=textarea name=\"%s\" size=%d rows=%d "
                       "top_margin=%d textareanumber=%d",
                       Get(), m_form->cur_form_id(),
-                      html_quote(cur_textarea->ptr),
-                      cur_textarea_size, cur_textarea_rows,
-                      cur_textarea_rows - 1, n_textarea));
-    if (cur_textarea_readonly)
+                      html_quote(m_form->cur_textarea->ptr),
+                      m_form->cur_textarea_size, m_form->cur_textarea_rows,
+                      m_form->cur_textarea_rows - 1, m_form->n_textarea));
+    if (m_form->cur_textarea_readonly)
         tmp->Push(" readonly");
     tmp->Push("><u>");
-    for (int i = 0; i < cur_textarea_size; i++)
+    for (int i = 0; i < m_form->cur_textarea_size; i++)
         tmp->Push(' ');
     tmp->Push("</u></input_alt>]</pre_int>\n");
     Increment();
-    n_textarea++;
-    cur_textarea = nullptr;
+    m_form->n_textarea++;
+    m_form->cur_textarea = nullptr;
 
     return tmp;
 }
@@ -2345,13 +2304,13 @@ void HtmlContext::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *st
         int n_textarea = -1;
         if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &n_textarea))
         {
-            Textarea(n_textarea, Strnew());
+            m_form->Textarea(n_textarea, Strnew());
         }
         break;
     }
     case HTML_N_TEXTAREA_INT:
     {
-        auto [n, t] = TextareaCurrent();
+        auto [n, t] = m_form->TextareaCurrent();
         auto anchor = a_textarea[n];
         if (anchor)
         {
@@ -2455,7 +2414,7 @@ void HtmlContext::BufferFromLines(BufferPtr buf)
                 break;
             }
 
-            auto [n, t] = TextareaCurrent();
+            auto [n, t] = m_form->TextareaCurrent();
             if (n >= 0 && *(line->ptr) != '<')
             { /* halfload */
                 t->Push(line);
@@ -3586,7 +3545,7 @@ int HtmlContext::HTMLtagproc1(HtmlTagPtr tag)
     case HTML_TEXTAREA:
     {
         this->close_anchor();
-        auto tmp = this->process_textarea(tag, m_henv.limit);
+        auto tmp = m_form->process_textarea(tag, m_henv.limit);
         if (tmp)
             this->ProcessLine(tmp->ptr, true);
         m_obuf.flag |= RB_INTXTA;
@@ -4665,7 +4624,7 @@ TagActions HtmlContext::feed_table_tag(struct table *tbl, const char *line, stru
             if (tbl->fixed_width[tbl->col] > 0)
                 w = tbl->fixed_width[tbl->col];
         }
-        tmp = this->process_textarea(tag, w);
+        tmp = m_form->process_textarea(tag, w);
         if (tmp)
             this->feed_table1(tbl, tmp, mode, width);
         mode->pre_mode |= TBLM_INTXTA;
@@ -4926,7 +4885,7 @@ int HtmlContext::feed_table(struct table *tbl, const char *line, struct table_mo
         return -1;
     if (mode->pre_mode & TBLM_INTXTA)
     {
-        this->feed_textarea(line);
+        m_form->feed_textarea(line);
         return -1;
     }
     if (mode->pre_mode & TBLM_INSELECT)
@@ -5457,7 +5416,7 @@ FormItemPtr HtmlContext::formList_addInput(FormPtr fl, HtmlTagPtr tag)
     item->readonly = tag->HasAttribute(ATTR_READONLY);
     int i;
     if (tag->TryGetAttributeValue(ATTR_TEXTAREANUMBER, &i))
-        item->value = item->init_value = this->Textarea(i)->ptr;
+        item->value = item->init_value = m_form->Textarea(i)->ptr;
 
     if (tag->TryGetAttributeValue(ATTR_SELECTNUMBER, &i))
         item->select_option = *this->FormSelect(i);
