@@ -523,155 +523,128 @@ void readbuffer::set_alignment(HtmlTagPtr tag)
     }
 }
 
-bool next_status(char c, TokenStatusTypes *status)
+TokenStatusTypes next_status(char c, TokenStatusTypes status)
 {
-    switch (*status)
+    switch (status)
     {
     case R_ST_NORMAL:
         if (c == '<')
         {
-            *status = R_ST_TAG0;
-            return 0;
+            return R_ST_TAG0;
         }
         else if (c == '&')
         {
-            *status = R_ST_AMP;
-            return 1;
+            return R_ST_AMP;
         }
-        else
-            return 1;
-        break;
+        return R_ST_NORMAL;
+
     case R_ST_TAG0:
         if (c == '!')
         {
-            *status = R_ST_CMNT1;
-            return 0;
+            return R_ST_CMNT1;
         }
-        *status = R_ST_TAG;
         /* continues to next case */
     case R_ST_TAG:
         if (c == '>')
-            *status = R_ST_NORMAL;
+            return R_ST_NORMAL;
         else if (c == '=')
-            *status = R_ST_EQL;
-        return 0;
+            return R_ST_EQL;
+        return R_ST_TAG;
+
     case R_ST_EQL:
         if (c == '"')
-            *status = R_ST_DQUOTE;
+            return R_ST_DQUOTE;
         else if (c == '\'')
-            *status = R_ST_QUOTE;
+            return R_ST_QUOTE;
         else if (IS_SPACE(c))
-            *status = R_ST_EQL;
+            return R_ST_EQL;
         else if (c == '>')
-            *status = R_ST_NORMAL;
+            return R_ST_NORMAL;
         else
-            *status = R_ST_VALUE;
-        return 0;
+            return R_ST_VALUE;
+        assert(false);
+        return R_ST_EQL;
+
     case R_ST_QUOTE:
         if (c == '\'')
-            *status = R_ST_TAG;
-        return 0;
+            return R_ST_TAG;
+        return R_ST_QUOTE;
+
     case R_ST_DQUOTE:
         if (c == '"')
-            *status = R_ST_TAG;
-        return 0;
+            return R_ST_TAG;
+        return R_ST_DQUOTE;
+
     case R_ST_VALUE:
         if (c == '>')
-            *status = R_ST_NORMAL;
+            return R_ST_NORMAL;
         else if (IS_SPACE(c))
-            *status = R_ST_TAG;
-        return 0;
+            return R_ST_TAG;
+        return R_ST_VALUE;
+
     case R_ST_AMP:
         if (c == ';')
         {
-            *status = R_ST_NORMAL;
-            return 0;
+            return R_ST_NORMAL;
         }
         else if (c != '#' && !IS_ALNUM(c) && c != '_')
         {
             /* something's wrong! */
-            *status = R_ST_NORMAL;
-            return 0;
+            return R_ST_NORMAL;
         }
-        else
-            return 0;
+        return R_ST_AMP;
+
     case R_ST_CMNT1:
-        switch (c)
-        {
-        case '-':
-            *status = R_ST_CMNT2;
-            break;
-        case '>':
-            *status = R_ST_NORMAL;
-            break;
-        default:
-            *status = R_ST_IRRTAG;
-        }
-        return 0;
+        if (c == '-')
+            return R_ST_CMNT2;
+        else if (c == '>')
+            return R_ST_NORMAL;
+        return R_ST_IRRTAG;
+
     case R_ST_CMNT2:
-        switch (c)
-        {
-        case '-':
-            *status = R_ST_CMNT;
-            break;
-        case '>':
-            *status = R_ST_NORMAL;
-            break;
-        default:
-            *status = R_ST_IRRTAG;
-        }
-        return 0;
+        if (c == '-')
+            return R_ST_CMNT;
+        else if (c == '>')
+            return R_ST_NORMAL;
+        return R_ST_IRRTAG;
+
     case R_ST_CMNT:
         if (c == '-')
-            *status = R_ST_NCMNT1;
-        return 0;
+            return R_ST_NCMNT1;
+        return R_ST_CMNT;
+
     case R_ST_NCMNT1:
         if (c == '-')
-            *status = R_ST_NCMNT2;
-        else
-            *status = R_ST_CMNT;
-        return 0;
+            return R_ST_NCMNT2;
+        return R_ST_CMNT;
+
     case R_ST_NCMNT2:
-        switch (c)
-        {
-        case '>':
-            *status = R_ST_NORMAL;
-            break;
-        case '-':
-            *status = R_ST_NCMNT2;
-            break;
-        default:
-            if (IS_SPACE(c))
-                *status = R_ST_NCMNT3;
-            else
-                *status = R_ST_CMNT;
-            break;
-        }
-        break;
+        if (c == '>')
+            return R_ST_NORMAL;
+        else if (c == '-')
+            return R_ST_NCMNT2;
+        else if (IS_SPACE(c))
+            return R_ST_NCMNT3;
+        return R_ST_CMNT;
+
     case R_ST_NCMNT3:
-        switch (c)
-        {
-        case '>':
-            *status = R_ST_NORMAL;
-            break;
-        case '-':
-            *status = R_ST_NCMNT1;
-            break;
-        default:
-            if (IS_SPACE(c))
-                *status = R_ST_NCMNT3;
-            else
-                *status = R_ST_CMNT;
-            break;
-        }
-        return 0;
+        if (c == '>')
+            return R_ST_NORMAL;
+        else if (c == '-')
+            return R_ST_NCMNT1;
+        else if (IS_SPACE(c))
+            return R_ST_NCMNT3;
+        return R_ST_CMNT;
+
     case R_ST_IRRTAG:
         if (c == '>')
-            *status = R_ST_NORMAL;
-        return 0;
+            return R_ST_NORMAL;
+        return R_ST_IRRTAG;
     }
+
     /* notreached */
-    return 0;
+    assert(false);
+    return status;
 }
 
 std::tuple<std::string_view, std::string> read_token(std::string_view instr, TokenStatusTypes *status, bool pre)
@@ -684,7 +657,7 @@ std::tuple<std::string_view, std::string> read_token(std::string_view instr, Tok
     for (; p.size(); p.remove_prefix(1))
     {
         auto prev_status = *status;
-        next_status(p[0], status);
+        *status = next_status(p[0], *status);
         switch (*status)
         {
         case R_ST_NORMAL:

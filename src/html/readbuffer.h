@@ -204,7 +204,7 @@ struct readbuffer
 };
 
 int sloppy_parse_line(char **str);
-bool next_status(char c, TokenStatusTypes *status);
+TokenStatusTypes next_status(char c, TokenStatusTypes status);
 std::tuple<std::string_view, std::string> read_token(std::string_view instr, TokenStatusTypes *status, bool pre);
 inline std::string_view read_token(std::string_view instr, Str buf, TokenStatusTypes *status, bool pre, bool append)
 {

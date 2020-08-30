@@ -25,6 +25,15 @@
 #define MAX_INDENT_LEVEL 10
 #define MAX_TABLE_N 20 /* maximum number of table in same level */
 
+static bool is_mc(TokenStatusTypes prev, TokenStatusTypes status)
+{
+    if (prev != R_ST_NORMAL)
+    {
+        return false;
+    }
+    return status == R_ST_NORMAL || status == R_ST_AMP;
+}
+
 static int visible_length_offset = 0;
 int visible_length(const char *str)
 {
@@ -38,7 +47,8 @@ int visible_length(const char *str)
     while (*str)
     {
         prev_status = status;
-        if (next_status(*str, &status))
+        status = next_status(*str, status);
+        if (is_mc(prev_status, status))
         {
             len += get_mcwidth(str);
             n = get_mclen(str);
@@ -47,6 +57,7 @@ int visible_length(const char *str)
         {
             n = 1;
         }
+
         if (status == R_ST_TAG0)
         {
             tagbuf->Clear();
