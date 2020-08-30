@@ -50,33 +50,31 @@ void HtmlToBuffer::BufferFromLines(BufferPtr buf, TextLineList *list)
         return feeder();
     };
 
-    //
-    // each line
-    //
-    Str line = nullptr;
     int nlines = 1;
-    while(true)
+    while (true)
     {
+        //
+        // get line
+        //
+        auto line = feed();
         if (!line)
         {
-            // new line
-            line = feed();
-            if (!line)
-            {
-                break;
-            }
-
-            auto [n, t] = m_form->TextareaCurrent();
-            if (n >= 0 && *(line->ptr) != '<')
-            { /* halfload */
-                t->Push(line);
-                continue;
-            }
-
-            StripRight(line);
+            break;
         }
 
-        line = ProcessLine(buf, line, nlines++);
+        auto [n, t] = m_form->TextareaCurrent();
+        if (n >= 0 && *(line->ptr) != '<')
+        { /* halfload */
+            t->Push(line);
+            continue;
+        }
+
+        StripRight(line);
+
+        while (line)
+        {
+            line = ProcessLine(buf, line, nlines++);
+        }
     }
 
     buf->formlist = m_form->FormEnd();
