@@ -44,9 +44,6 @@ BufferPtr HtmlToBuffer::CreateBuffer(const URL &url, std::string_view title, Cha
     return newBuf;
 }
 
-///
-/// 1行ごとに Line の構築と html タグを解釈する
-///
 void HtmlToBuffer::BufferFromLines(BufferPtr buf, TextLineList *list)
 {
     auto feed = [feeder = TextFeeder{list->first}]() -> Str {
@@ -57,7 +54,8 @@ void HtmlToBuffer::BufferFromLines(BufferPtr buf, TextLineList *list)
     // each line
     //
     Str line = nullptr;
-    for (int nlines = 1;; ++nlines)
+    int nlines = 1;
+    while(true)
     {
         if (!line)
         {
@@ -78,133 +76,137 @@ void HtmlToBuffer::BufferFromLines(BufferPtr buf, TextLineList *list)
             StripRight(line);
         }
 
-        //
-        // each char
-        //
-        const char *str = line->ptr;
-        auto endp = str + line->Size();
-        PropertiedString out;
-        while (str < endp)
-        {
-            auto mode = get_mctype(*str);
-            if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
-            {
-                // symbol
-                auto p = get_width_symbol(Terminal::SymbolWidth0(), symbol);
-                // assert(p.size() > 0);
-                int len = get_mclen(p.data());
-                mode = get_mctype(p[0]);
+        line = ProcessLine(buf, line, nlines++);
+    }
 
-                out.push(mode | effect | ex_efct(ex_effect), p[0]);
-                if (--len)
+    buf->formlist = m_form->FormEnd();
+    addMultirowsForm(buf, buf->formitem);
+    addMultirowsImg(buf, buf->img);
+}
+
+Str HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
+{
+    //
+    // each char
+    //
+    const char *str = line->ptr;
+    auto endp = str + line->Size();
+    PropertiedString out;
+    while (str < endp)
+    {
+        auto mode = get_mctype(*str);
+        if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
+        {
+            // symbol
+            auto p = get_width_symbol(Terminal::SymbolWidth0(), symbol);
+            // assert(p.size() > 0);
+            int len = get_mclen(p.data());
+            mode = get_mctype(p[0]);
+
+            out.push(mode | effect | ex_efct(ex_effect), p[0]);
+            if (--len)
+            {
+                mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
+                for (int i = 1; len--; ++i)
                 {
-                    mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
-                    for (int i = 1; len--; ++i)
-                    {
-                        out.push(mode | effect | ex_efct(ex_effect), p[i]);
-                    }
-                }
-                str += Terminal::SymbolWidth();
-            }
-            else if (mode == PC_CTRL || mode == PC_UNDEF)
-            {
-                // control
-                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
-                str++;
-            }
-            else if (mode & PC_UNKNOWN)
-            {
-                // unknown
-                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
-                str += get_mclen(str);
-            }
-            else if (*str != '<' && *str != '&')
-            {
-                // multibyte char ?
-                int len = get_mclen(str);
-                out.push(mode | effect | ex_efct(ex_effect), *(str++));
-                if (--len)
-                {
-                    mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
-                    while (len--)
-                    {
-                        out.push(mode | effect | ex_efct(ex_effect), *(str++));
-                    }
+                    out.push(mode | effect | ex_efct(ex_effect), p[i]);
                 }
             }
-            else if (*str == '&')
+            str += Terminal::SymbolWidth();
+        }
+        else if (mode == PC_CTRL || mode == PC_UNDEF)
+        {
+            // control
+            out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+            str++;
+        }
+        else if (mode & PC_UNKNOWN)
+        {
+            // unknown
+            out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+            str += get_mclen(str);
+        }
+        else if (*str != '<' && *str != '&')
+        {
+            // multibyte char ?
+            int len = get_mclen(str);
+            out.push(mode | effect | ex_efct(ex_effect), *(str++));
+            if (--len)
             {
-                /* 
+                mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
+                while (len--)
+                {
+                    out.push(mode | effect | ex_efct(ex_effect), *(str++));
+                }
+            }
+        }
+        else if (*str == '&')
+        {
+            /* 
                  * & escape processing
                  */
-                char *p;
-                {
-                    auto [pos, view] = getescapecmd(str, w3mApp::Instance().InnerCharset);
-                    str = const_cast<char *>(pos);
-                    p = const_cast<char *>(view.data());
-                }
+            char *p;
+            {
+                auto [pos, view] = getescapecmd(str, w3mApp::Instance().InnerCharset);
+                str = const_cast<char *>(pos);
+                p = const_cast<char *>(view.data());
+            }
 
-                while (*p)
+            while (*p)
+            {
+                mode = get_mctype(*p);
+                if (mode == PC_CTRL || mode == PC_UNDEF)
                 {
-                    mode = get_mctype(*p);
-                    if (mode == PC_CTRL || mode == PC_UNDEF)
+                    out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                    p++;
+                }
+                else if (mode & PC_UNKNOWN)
+                {
+                    out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+                    p += get_mclen(p);
+                }
+                else
+                {
+                    int len = get_mclen(p);
+                    out.push(mode | effect | ex_efct(ex_effect), *(p++));
+                    if (--len)
                     {
-                        out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
-                        p++;
-                    }
-                    else if (mode & PC_UNKNOWN)
-                    {
-                        out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
-                        p += get_mclen(p);
-                    }
-                    else
-                    {
-                        int len = get_mclen(p);
-                        out.push(mode | effect | ex_efct(ex_effect), *(p++));
-                        if (--len)
+                        mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
+                        while (len--)
                         {
-                            mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
-                            while (len--)
-                            {
-                                out.push(mode | effect | ex_efct(ex_effect), *(p++));
-                            }
+                            out.push(mode | effect | ex_efct(ex_effect), *(p++));
                         }
                     }
                 }
             }
-            else
-            {
-                /* tag processing */
-                auto [pos, tag] = HtmlTag::parse(str, true);
-                str = pos.data();
-                if (!tag)
-                    continue;
-
-                Process(tag, buf, out.len(), str);
-            }
-        }
-
-        if (EndLineAddBuffer())
-        {
-            buf->AddNewLine(out, nlines);
-        }
-
-        if (str != endp)
-        {
-            // advance line
-            line = line->Substr(str - line->ptr, endp - str);
         }
         else
         {
-            // clear for next line
-            line = nullptr;
+            /* tag processing */
+            auto [pos, tag] = HtmlTag::parse(str, true);
+            str = pos.data();
+            if (!tag)
+                continue;
+
+            Process(tag, buf, out.len(), str);
         }
     }
 
-    buf->formlist = m_form->FormEnd();
+    if (EndLineAddBuffer())
+    {
+        buf->AddNewLine(out, nlines);
+    }
 
-    addMultirowsForm(buf, buf->formitem);
-    addMultirowsImg(buf, buf->img);
+    if (str != endp)
+    {
+        // advance line
+        return line->Substr(str - line->ptr, endp - str);
+    }
+    else
+    {
+        // clear for next line
+        return nullptr;
+    }
 }
 
 void HtmlToBuffer::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str)
