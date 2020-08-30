@@ -4,6 +4,9 @@
 #pragma once
 #include <tcb/span.hpp>
 #include <memory>
+#include <vector>
+#include <string>
+#include <wc.h>
 
 struct Anchor;
 

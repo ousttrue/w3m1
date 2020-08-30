@@ -152,6 +152,8 @@ add_executable(w3m
     src/html/html_tag.cpp
     src/html/maparea.cpp
     src/html/image.cpp
+    src/html/html_to_buffer.cpp
+    src/html/formdata.cpp
     src/loader.cpp
     src/mytime.cpp
     src/indep.cpp
