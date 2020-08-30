@@ -31,8 +31,8 @@ public:
     BufferPtr CreateBuffer(const URL &url, std::string_view title, CharacterEncodingScheme charset, struct TextLineList *list);
 
 private:
-    void BufferFromLines(BufferPtr buf, struct TextLineList *list);
-    void Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str);
+    void BufferFromLines(const BufferPtr &buf, struct TextLineList *list);
     void ProcessLine(const BufferPtr &buffer, Str line, int lines);
+    void Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const char *str);
     FormItemPtr formList_addInput(FormPtr fl, HtmlTagPtr tag);
 };

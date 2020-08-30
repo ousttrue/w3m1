@@ -44,7 +44,7 @@ BufferPtr HtmlToBuffer::CreateBuffer(const URL &url, std::string_view title, Cha
     return newBuf;
 }
 
-void HtmlToBuffer::BufferFromLines(BufferPtr buf, TextLineList *list)
+void HtmlToBuffer::BufferFromLines(const BufferPtr &buf, TextLineList *list)
 {
     auto feed = [feeder = TextFeeder{list->first}]() -> Str {
         return feeder();
@@ -178,10 +178,10 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
             /* tag processing */
             HtmlTagPtr tag;
             std::tie(str, tag) = HtmlTag::parse(str, true);
-            if (!tag)
-                continue;
-
-            Process(tag, buf, out.len(), str.data());
+            if (tag)
+            {
+                Process(buf, tag, out.len(), str.data());
+            }
         }
     }
 
@@ -189,7 +189,7 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
     assert(str.empty());
 }
 
-void HtmlToBuffer::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str)
+void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const char *str)
 {
     switch (tag->tagid)
     {
@@ -223,8 +223,10 @@ void HtmlToBuffer::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *s
     case HTML_N_S:
         this->ex_effect &= ~PE_EX_STRIKE;
         break;
+
     case HTML_A:
     {
+        // <a>
         char *p = nullptr;
         auto q = Strnew(buf->baseTarget)->ptr;
         char *id = nullptr;
@@ -281,7 +283,9 @@ void HtmlToBuffer::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *s
         }
         break;
     }
+
     case HTML_N_A:
+        // </a>
         this->effect &= ~PE_ANCHOR;
         if (this->a_href)
         {
