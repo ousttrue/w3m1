@@ -806,6 +806,7 @@ public:
 
     void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width);
     FormItemPtr formList_addInput(FormPtr fl, HtmlTagPtr tag);
+    BufferPtr CreateBuffer(const URL &url);
 
 private:
     void print_internal_information();
@@ -5447,13 +5448,38 @@ FormItemPtr HtmlContext::formList_addInput(FormPtr fl, HtmlTagPtr tag)
     return item;
 }
 
+BufferPtr HtmlContext::CreateBuffer(const URL &url)
+{
+    auto newBuf = Buffer::Create(url);
+    newBuf->type = "text/html";
+    auto title = Title();
+    if (title.size())
+        newBuf->buffername = title;
+
+    newBuf->document_charset = DocCharset();
+    ImageFlags image_flag;
+    if (newBuf->image_flag)
+        image_flag = newBuf->image_flag;
+    else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
+        image_flag = IMG_FLAG_AUTO;
+    else
+        image_flag = IMG_FLAG_SKIP;
+    newBuf->image_flag = image_flag;
+
+    BufferFromLines(newBuf);
+
+    return newBuf;
+}
+
 ///
 /// public
 ///
 BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, CharacterEncodingScheme content_charset, bool internal)
 {
+    ///
+    /// parse
+    ///
     HtmlContext context(content_charset);
-
     while (true)
     {
         auto lineBuf2 = stream->mygets();
@@ -5466,28 +5492,10 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
         context.SetCES(detected);
         context.ProcessLine(converted->ptr, internal);
     }
-
     context.Finalize(internal);
 
-    auto newBuf = Buffer::Create(url);
-    newBuf->type = "text/html";
-    auto title = context.Title();
-    if (title.size())
-        newBuf->buffername = title;
-
-    newBuf->document_charset = context.DocCharset();
-    ImageFlags image_flag;
-    if (newBuf->image_flag)
-        image_flag = newBuf->image_flag;
-    else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
-        image_flag = IMG_FLAG_AUTO;
-    else
-        image_flag = IMG_FLAG_SKIP;
-    newBuf->image_flag = image_flag;
-
-    context.BufferFromLines(newBuf);
-
-    return newBuf;
-
-    // return context.LoadStream(url, stream, internal);
+    ///
+    /// create buffer
+    ///
+    return context.CreateBuffer(url);
 }
