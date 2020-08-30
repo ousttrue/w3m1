@@ -230,14 +230,7 @@ public:
         }
     }
 
-    enum class Flows
-    {
-        Exit,
-        Through,
-        Continue,
-    };
-
-    std::tuple<std::string_view, Flows> _ProcessLine(std::string_view _line, TableState *state, bool internal)
+    std::string_view _ProcessLine(std::string_view _line, TableState *state, bool internal)
     {
         auto line = _line.data();
         while (*line != '\0')
@@ -256,7 +249,11 @@ public:
                     auto pos = read_token(line, m_henv.tagbuf, &m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE, m_obuf.status != R_ST_NORMAL);
                     line = pos.data();
                     if (m_obuf.status != R_ST_NORMAL)
-                        return {line, Flows::Exit};
+                    {
+                        // invalid
+                        assert(false);
+                        return {};
+                    }
                 }
                 if (m_henv.tagbuf->Size() == 0)
                     continue;
@@ -432,7 +429,7 @@ public:
                 m_obuf.bp = {};
                 m_obuf.clear_ignore_p_flag(cmd);
                 if (cmd == HTML_TABLE)
-                    return {line, Flows::Continue};
+                    return line;
                 else
                     continue;
             }
@@ -580,7 +577,7 @@ public:
             }
         }
 
-        return {line, Flows::Through};
+        return line;
     }
 
     //
@@ -590,7 +587,7 @@ public:
     {
         int i = 0;
         TableState state = {};
-        for (Flows flows = Flows::Continue; flows == Flows::Continue; ++i)
+        while (line.size())
         {
             if (m_obuf.table_level >= 0)
             {
@@ -600,11 +597,7 @@ public:
                 state.tbl_width = table_width(level);
             }
 
-            std::tie(line, flows) = _ProcessLine(line, &state, internal);
-            if (flows == Flows::Exit)
-            {
-                return;
-            }
+            line = _ProcessLine(line, &state, internal);
         }
 
         if (!(m_obuf.flag & (RB_SPECIAL | RB_INTXTA | RB_INSELECT)))
