@@ -12,7 +12,7 @@ class HtmlToBuffer
     Lineprop effect = P_UNKNOWN;
     Lineprop ex_effect = P_UNKNOWN;
     char symbol = '\0';
-    HtmlTags m_internal = HTML_UNKNOWN;
+    // HtmlTags m_internal = HTML_UNKNOWN;
 
     AnchorPtr a_href = nullptr;
     AnchorPtr a_img = nullptr;
@@ -34,6 +34,6 @@ private:
     void BufferFromLines(BufferPtr buf, struct TextLineList *list);
     void Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str);
     Str ProcessLine(const BufferPtr &buffer, Str line, int lines);
-    bool EndLineAddBuffer();
+    // bool EndLineAddBuffer();
     FormItemPtr formList_addInput(FormPtr fl, HtmlTagPtr tag);
 };

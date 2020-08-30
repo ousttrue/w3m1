@@ -190,7 +190,7 @@ Str HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
         }
     }
 
-    if (EndLineAddBuffer())
+    // if (EndLineAddBuffer())
     {
         buf->AddNewLine(out, nlines);
     }
@@ -632,12 +632,16 @@ void HtmlToBuffer::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *s
         }
         break;
     }
+
     case HTML_INTERNAL:
-        this->m_internal = HTML_INTERNAL;
+        assert(false);
+        // this->m_internal = HTML_INTERNAL;
         break;
     case HTML_N_INTERNAL:
-        this->m_internal = HTML_N_INTERNAL;
+        assert(false);
+        // this->m_internal = HTML_N_INTERNAL;
         break;
+
     case HTML_FORM_INT:
     {
         int form_id;
@@ -736,23 +740,23 @@ void HtmlToBuffer::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *s
     }
 }
 
-/* end of processing for one line */
-bool HtmlToBuffer::EndLineAddBuffer()
-{
-    if (m_internal == HTML_UNKNOWN)
-    {
-        // add non html line
-        return true;
-    }
+// /* end of processing for one line */
+// bool HtmlToBuffer::EndLineAddBuffer()
+// {
+//     if (m_internal == HTML_UNKNOWN)
+//     {
+//         // add non html line
+//         return true;
+//     }
 
-    // not add html line
-    if (m_internal == HTML_N_INTERNAL)
-    {
-        // exit internal
-        m_internal = HTML_UNKNOWN;
-    }
-    return false;
-}
+//     // not add html line
+//     if (m_internal == HTML_N_INTERNAL)
+//     {
+//         // exit internal
+//         m_internal = HTML_UNKNOWN;
+//     }
+//     return false;
+// }
 
 /* 
  * add <input> element to form_list
