@@ -40,6 +40,112 @@ static int currentLn(const BufferPtr &buf)
 
 using FormSelectOptionList = std::vector<FormSelectOptionItem>;
 
+static std::string_view check_accept_charset(std::string_view ac)
+{
+    auto s = ac;
+    while (s.size())
+    {
+        while (s.size() && (IS_SPACE(s[0]) || s[0] == ','))
+            s.remove_prefix(1);
+        if (s.empty())
+            break;
+        auto e = s;
+        while (e[0] && !(IS_SPACE(e[0]) || e[0] == ','))
+            e.remove_prefix(1);
+        if (wc_guess_charset(Strnew_charp_n(s.data(), e.data() - s.data())->ptr, WC_CES_NONE))
+            return ac;
+        s = e;
+    }
+    return "";
+}
+
+static std::string_view check_charset(std::string_view p)
+{
+    return wc_guess_charset(p.data(), WC_CES_NONE) ? p : "";
+}
+
+struct FormData
+{
+    std::vector<FormPtr> forms;
+    std::vector<int> form_stack;
+
+    int cur_form_id()
+    {
+        return form_stack.size() ? form_stack.back() : -1;
+    }
+
+    Str FormClose(void)
+    {
+        if (form_stack.size() >= 0)
+            form_stack.pop_back();
+        return nullptr;
+    }
+
+    FormPtr FormCurrent(int form_id)
+    {
+        if (form_id < 0 || form_id >= forms.size())
+            /* outside of <form>..</form> */
+            return nullptr;
+        return forms[form_id];
+    }
+    Str FormOpen(HtmlTagPtr tag, int fid = -1)
+    {
+        auto p = tag->GetAttributeValue(ATTR_METHOD, "get");
+        auto q = tag->GetAttributeValue(ATTR_ACTION, "!CURRENT_URL!");
+        auto r = tag->GetAttributeValue(ATTR_ACCEPT_CHARSET);
+        if (r.size())
+        {
+            r = check_accept_charset(r);
+        }
+        if (r.empty())
+        {
+            r = tag->GetAttributeValue(ATTR_CHARSET);
+            if (r.size())
+            {
+                r = check_charset(r);
+            }
+        }
+
+        auto s = tag->GetAttributeValue(ATTR_ENCTYPE);
+        auto tg = tag->GetAttributeValue(ATTR_TARGET);
+        auto n = tag->GetAttributeValue(ATTR_NAME);
+
+        if (fid < 0)
+        {
+            fid = forms.size();
+            forms.push_back(nullptr);
+        }
+        else
+        { /* <form_int> */
+            if (fid >= forms.size())
+                forms.resize(fid + 1);
+        }
+        // if (forms_size == 0)
+        // {
+        //     forms_size = INITIAL_FORM_SIZE;
+        //     forms = New_N(FormPtr , forms_size);
+        //     form_stack = NewAtom_N(int, forms_size);
+        // }
+        // else if (forms_size <= form_max)
+        // {
+        //     forms_size += form_max;
+        //     forms = New_Reuse(FormPtr , forms, forms_size);
+        //     form_stack = New_Reuse(int, form_stack, forms_size);
+        // }
+
+        forms[fid] = Form::Create(q, p, r, s, tg, n);
+        form_stack.push_back(fid);
+
+        return nullptr;
+    }
+
+    std::vector<FormPtr> &FormEnd()
+    {
+        return forms;
+    }
+};
+using FormDataPtr = std::shared_ptr<FormData>;
+
 class HtmlContext
 {
     table *m_tables[MAX_TABLE];
@@ -77,8 +183,7 @@ class HtmlContext
 
     HtmlTags m_internal = HTML_UNKNOWN;
 
-    std::vector<int> form_stack;
-    std::vector<FormPtr> forms;
+    FormDataPtr m_form;
 
     std::vector<AnchorPtr> a_select;
     std::vector<FormSelectOptionList> select_option;
@@ -112,7 +217,8 @@ public:
 
     HtmlContext(CharacterEncodingScheme content_charset)
         : doc_charset(content_charset),
-          m_henv(&m_obuf, newTextLineList(), Terminal::columns())
+          m_henv(&m_obuf, newTextLineList(), Terminal::columns()),
+          m_form(new FormData)
     {
     }
 
@@ -128,56 +234,6 @@ public:
         }
         return m_henv.title;
     }
-
-    // BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, bool internal)
-    // {
-    //     while (true)
-    //     {
-    //         auto lineBuf2 = stream->mygets();
-    //         if (lineBuf2->Size() == 0)
-    //         {
-    //             break;
-    //         }
-    //         CharacterEncodingScheme detected = {};
-    //         auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, DocCharset(), w3mApp::Instance().InnerCharset);
-    //         SetCES(detected);
-    //         ProcessLine(converted->ptr, internal);
-    //     }
-
-    //     if (m_obuf.status != R_ST_NORMAL)
-    //     {
-    //         m_obuf.status = R_ST_EOL;
-    //         ProcessLine("\n", internal);
-    //     }
-    //     m_obuf.status = R_ST_NORMAL;
-    //     completeHTMLstream();
-    //     m_henv.flushline(0, 2, m_henv.limit);
-
-    //     auto newBuf = Buffer::Create(url);
-    //     newBuf->type = "text/html";
-    //     if (m_henv.title)
-    //         newBuf->buffername = m_henv.title;
-
-    //     newBuf->document_charset = DocCharset();
-    //     ImageFlags image_flag;
-    //     if (newBuf->image_flag)
-    //         image_flag = newBuf->image_flag;
-    //     else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
-    //         image_flag = IMG_FLAG_AUTO;
-    //     else
-    //         image_flag = IMG_FLAG_SKIP;
-    //     newBuf->image_flag = image_flag;
-
-    //     {
-    //         auto feed = [feeder = TextFeeder{m_henv.buf->first}]() -> Str {
-    //             return feeder();
-    //         };
-
-    //         BufferFromLines(newBuf, feed);
-    //     }
-
-    //     return newBuf;
-    // }
 
     const CharacterEncodingScheme &DocCharset() const { return doc_charset; }
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
@@ -668,27 +724,7 @@ private:
     Str TitleClose(HtmlTagPtr tag);
 
     // process <form></form>
-    int cur_form_id()
-    {
-        return form_stack.size() ? form_stack.back() : -1;
-    }
-
-    Str FormOpen(HtmlTagPtr tag, int fid = -1);
-    Str FormClose(void)
-    {
-        if (form_stack.size() >= 0)
-            form_stack.pop_back();
-        return nullptr;
-    }
-    FormPtr FormCurrent(int form_id)
-    {
-        if (form_id < 0 || form_id >= forms.size())
-            /* outside of <form>..</form> */
-            return nullptr;
-        return forms[form_id];
-    }
     void FormSetSelect(int n);
-    std::vector<FormPtr> &FormEnd();
     std::pair<int, FormSelectOptionList *> FormSelectCurrent();
     void process_option();
     Str process_select(HtmlTagPtr tag);
@@ -927,84 +963,6 @@ Str HtmlContext::TitleClose(HtmlTagPtr tag)
     return tmp;
 }
 
-static std::string_view check_accept_charset(std::string_view ac)
-{
-    auto s = ac;
-    while (s.size())
-    {
-        while (s.size() && (IS_SPACE(s[0]) || s[0] == ','))
-            s.remove_prefix(1);
-        if (s.empty())
-            break;
-        auto e = s;
-        while (e[0] && !(IS_SPACE(e[0]) || e[0] == ','))
-            e.remove_prefix(1);
-        if (wc_guess_charset(Strnew_charp_n(s.data(), e.data() - s.data())->ptr, WC_CES_NONE))
-            return ac;
-        s = e;
-    }
-    return "";
-}
-static std::string_view check_charset(std::string_view p)
-{
-    return wc_guess_charset(p.data(), WC_CES_NONE) ? p : "";
-}
-Str HtmlContext::FormOpen(HtmlTagPtr tag, int fid)
-{
-    auto p = tag->GetAttributeValue(ATTR_METHOD, "get");
-    auto q = tag->GetAttributeValue(ATTR_ACTION, "!CURRENT_URL!");
-    auto r = tag->GetAttributeValue(ATTR_ACCEPT_CHARSET);
-    if (r.size())
-    {
-        r = check_accept_charset(r);
-    }
-    if (r.empty())
-    {
-        r = tag->GetAttributeValue(ATTR_CHARSET);
-        if (r.size())
-        {
-            r = check_charset(r);
-        }
-    }
-
-    auto s = tag->GetAttributeValue(ATTR_ENCTYPE);
-    auto tg = tag->GetAttributeValue(ATTR_TARGET);
-    auto n = tag->GetAttributeValue(ATTR_NAME);
-
-    if (fid < 0)
-    {
-        fid = forms.size();
-        forms.push_back(nullptr);
-    }
-    else
-    { /* <form_int> */
-        if (fid >= forms.size())
-            forms.resize(fid + 1);
-    }
-    // if (forms_size == 0)
-    // {
-    //     forms_size = INITIAL_FORM_SIZE;
-    //     forms = New_N(FormPtr , forms_size);
-    //     form_stack = NewAtom_N(int, forms_size);
-    // }
-    // else if (forms_size <= form_max)
-    // {
-    //     forms_size += form_max;
-    //     forms = New_Reuse(FormPtr , forms, forms_size);
-    //     form_stack = New_Reuse(int, form_stack, forms_size);
-    // }
-
-    forms[fid] = Form::Create(q, p, r, s, tg, n);
-    form_stack.push_back(fid);
-
-    return nullptr;
-}
-
-std::vector<FormPtr> &HtmlContext::FormEnd()
-{
-    return forms;
-}
-
 FormSelectOptionList *HtmlContext::FormSelect(int n)
 {
     return &select_option[n];
@@ -1032,10 +990,10 @@ std::pair<int, FormSelectOptionList *> HtmlContext::FormSelectCurrent()
 Str HtmlContext::process_select(HtmlTagPtr tag)
 {
     Str tmp = nullptr;
-    if (cur_form_id() < 0)
+    if (m_form->cur_form_id() < 0)
     {
         auto [pos, tag] = HtmlTag::parse("<form_int method=internal action=none>", true);
-        tmp = FormOpen(tag);
+        tmp = m_form->FormOpen(tag);
     }
 
     auto p = tag->GetAttributeValue(ATTR_NAME);
@@ -1049,7 +1007,7 @@ Str HtmlContext::process_select(HtmlTagPtr tag)
             select_str->Push(GetLinkNumberStr(0));
         select_str->Push(Sprintf("[<input_alt hseq=\"%d\" "
                                  "fid=\"%d\" type=select name=\"%s\" selectnumber=%d",
-                                 Increment(), cur_form_id(), html_quote(p), n_select));
+                                 Increment(), m_form->cur_form_id(), html_quote(p), n_select));
         select_str->Push(">");
         select_option[n_select] = {};
         cur_option_maxwidth = 0;
@@ -1207,7 +1165,7 @@ void HtmlContext::process_option()
     }
     select_str->Push(Sprintf("<br><pre_int>%c<input_alt hseq=\"%d\" "
                              "fid=\"%d\" type=%s name=\"%s\" value=\"%s\"",
-                             begin_char, Increment(), cur_form_id(),
+                             begin_char, Increment(), m_form->cur_form_id(),
                              select_is_multiple ? "checkbox" : "radio",
                              html_quote(cur_select->ptr),
                              html_quote(cur_option_value->ptr)));
@@ -1224,11 +1182,11 @@ void HtmlContext::process_option()
 Str HtmlContext::process_input(HtmlTagPtr tag)
 {
     Str tmp = nullptr;
-    if (cur_form_id() < 0)
+    if (m_form->cur_form_id() < 0)
     {
         const char *s = "<form_int method=internal action=none>";
         auto [pos, tag] = HtmlTag::parse(s, true);
-        tmp = FormOpen(tag);
+        tmp = m_form->FormOpen(tag);
     }
     if (tmp == nullptr)
     {
@@ -1300,7 +1258,7 @@ Str HtmlContext::process_input(HtmlTagPtr tag)
     auto z = tag->HasAttribute(ATTR_READONLY);
     tmp->Push(Sprintf("<input_alt hseq=\"%d\" fid=\"%d\" type=%s "
                       "name=\"%s\" width=%d maxlength=%d value=\"%s\"",
-                      Increment(), cur_form_id(), p.data(), html_quote(r).c_str(), w, i, qq));
+                      Increment(), m_form->cur_form_id(), p.data(), html_quote(r).c_str(), w, i, qq));
 
     if (x)
         tmp->Push(" checked");
@@ -1524,16 +1482,16 @@ Str HtmlContext::process_img(HtmlTagPtr tag, int width)
         r2 = strchr(r, '#');
         auto s = "<form_int method=internal action=map>";
         auto [pos, tag] = HtmlTag::parse(s, true);
-        auto tmp2 = FormOpen(tag);
+        auto tmp2 = m_form->FormOpen(tag);
         if (tmp2)
             tmp->Push(tmp2);
         tmp->Push(Sprintf("<input_alt fid=\"%d\" "
                           "type=hidden name=link value=\"",
-                          cur_form_id()));
+                          m_form->cur_form_id()));
         tmp->Push(html_quote((r2) ? r2 + 1 : r));
         tmp->Push(Sprintf("\"><input_alt hseq=\"%d\" fid=\"%d\" "
                           "type=submit no_effect=true>",
-                          Increment(), cur_form_id()));
+                          Increment(), m_form->cur_form_id()));
     }
 
     if (use_image)
@@ -1759,7 +1717,7 @@ img_end:
     if (r)
     {
         tmp->Push("</input_alt>");
-        FormClose();
+        m_form->FormClose();
     }
 
     if (use_image)
@@ -1851,11 +1809,11 @@ Str HtmlContext::process_textarea(HtmlTagPtr tag, int width)
 #define TEXTAREA_ATTR_ROWS_MAX 4096
 
     Str tmp = nullptr;
-    if (cur_form_id() < 0)
+    if (m_form->cur_form_id() < 0)
     {
         auto s = "<form_int method=internal action=none>";
         auto [pos, tag] = HtmlTag::parse(s, true);
-        tmp = FormOpen(tag);
+        tmp = m_form->FormOpen(tag);
     }
 
     auto p = "";
@@ -1909,7 +1867,7 @@ Str HtmlContext::process_n_textarea()
     tmp->Push(Sprintf("<pre_int>[<input_alt hseq=\"%d\" fid=\"%d\" "
                       "type=textarea name=\"%s\" size=%d rows=%d "
                       "top_margin=%d textareanumber=%d",
-                      Get(), cur_form_id(),
+                      Get(), m_form->cur_form_id(),
                       html_quote(cur_textarea->ptr),
                       cur_textarea_size, cur_textarea_rows,
                       cur_textarea_rows - 1, n_textarea));
@@ -2158,7 +2116,7 @@ void HtmlContext::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *st
         tag->TryGetAttributeValue(ATTR_TOP_MARGIN, &top);
         tag->TryGetAttributeValue(ATTR_BOTTOM_MARGIN, &bottom);
 
-        auto form = FormCurrent(form_id);
+        auto form = m_form->FormCurrent(form_id);
         if (!form)
         {
             break;
@@ -2379,7 +2337,7 @@ void HtmlContext::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *st
     {
         int form_id;
         if (tag->TryGetAttributeValue(ATTR_FID, &form_id))
-            FormOpen(tag, form_id);
+            m_form->FormOpen(tag, form_id);
         break;
     }
     case HTML_TEXTAREA_INT:
@@ -2630,7 +2588,7 @@ void HtmlContext::BufferFromLines(BufferPtr buf)
         }
     }
 
-    buf->formlist = FormEnd();
+    buf->formlist = m_form->FormEnd();
 
     addMultirowsForm(buf, buf->formitem);
     addMultirowsImg(buf, buf->img);
@@ -3582,7 +3540,7 @@ int HtmlContext::HTMLtagproc1(HtmlTagPtr tag)
         this->CLOSE_A();
         if (!(m_obuf.flag & RB_IGNORE_P))
             m_henv.flushline(m_henv.envs.back().indent, 0, m_henv.limit);
-        auto tmp = this->FormOpen(tag);
+        auto tmp = m_form->FormOpen(tag);
         if (tmp)
             this->ProcessLine(tmp->ptr, true);
         return 1;
@@ -3592,7 +3550,7 @@ int HtmlContext::HTMLtagproc1(HtmlTagPtr tag)
         this->CLOSE_A();
         m_henv.flushline(m_henv.envs.back().indent, 0, m_henv.limit);
         m_obuf.flag |= RB_IGNORE_P;
-        this->FormClose();
+        m_form->FormClose();
         return 1;
     }
     case HTML_INPUT:
@@ -4670,13 +4628,13 @@ TagActions HtmlContext::feed_table_tag(struct table *tbl, const char *line, stru
         break;
     case HTML_FORM:
         tbl->feed_table_block_tag("", mode, 0, cmd);
-        tmp = this->FormOpen(tag);
+        tmp = m_form->FormOpen(tag);
         if (tmp)
             this->feed_table1(tbl, tmp, mode, width);
         break;
     case HTML_N_FORM:
         tbl->feed_table_block_tag("", mode, 0, cmd);
-        this->FormClose();
+        m_form->FormClose();
         break;
     case HTML_INPUT:
         tmp = this->process_input(tag);
