@@ -80,7 +80,10 @@
         "stack": "cpp",
         "thread": "cpp",
         "variant": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "codecvt": "cpp",
+        "csignal": "cpp",
+        "source_location": "cpp"
     },
     "cSpell.words": [
         "myctype"

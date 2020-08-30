@@ -647,7 +647,7 @@ TokenStatusTypes next_status(char c, TokenStatusTypes status)
     return status;
 }
 
-std::tuple<std::string_view, std::string> read_token(std::string_view instr, TokenStatusTypes *status, bool pre)
+std::tuple<std::string_view, TokenStatusTypes, std::string> read_token(std::string_view instr, TokenStatusTypes status, bool pre)
 {
     if (instr.empty())
         return {};
@@ -656,9 +656,9 @@ std::tuple<std::string_view, std::string> read_token(std::string_view instr, Tok
     auto p = instr;
     for (; p.size(); p.remove_prefix(1))
     {
-        auto prev_status = *status;
-        *status = next_status(p[0], *status);
-        switch (*status)
+        auto prev_status = status;
+        status = next_status(p[0], status);
+        switch (status)
         {
         case R_ST_NORMAL:
             if (prev_status == R_ST_AMP && p[0] != ';')
@@ -674,7 +674,7 @@ std::tuple<std::string_view, std::string> read_token(std::string_view instr, Tok
                 if (pre)
                     buf.push_back(p[0]);
                 p.remove_prefix(1);
-                return {p, buf};
+                return {p, status, buf};
             }
             buf.push_back((!pre && IS_SPACE(p[0])) ? ' ' : p[0]);
             if (ST_IS_REAL_TAG(prev_status))
@@ -683,7 +683,7 @@ std::tuple<std::string_view, std::string> read_token(std::string_view instr, Tok
                 if (buf.size() < 2 ||
                     buf[buf.size() - 2] != '<' ||
                     buf[buf.size() - 1] != '>')
-                    return {instr, buf};
+                    return {instr, status, buf};
                 buf.pop_back();
                 buf.pop_back();
             }
@@ -692,17 +692,16 @@ std::tuple<std::string_view, std::string> read_token(std::string_view instr, Tok
         case R_ST_TAG:
             if (prev_status == R_ST_NORMAL && p != instr)
             {
-                *status = prev_status;
-                return {p, buf};
+                return {p, status, buf};
             }
-            if (*status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p.data()))
+            if (status == R_ST_TAG0 && !REALLY_THE_BEGINNING_OF_A_TAG(p.data()))
             {
                 /* it seems that this '<' is not a beginning of a tag */
                 /*
                  * buf->Push( "&lt;");
                  */
                 buf.push_back('<');
-                *status = R_ST_NORMAL;
+                status = R_ST_NORMAL;
             }
             else
                 buf.push_back(p[0]);
@@ -732,5 +731,5 @@ std::tuple<std::string_view, std::string> read_token(std::string_view instr, Tok
             break;
         }
     }
-    return {p, buf};
+    return {p, status, buf};
 }
