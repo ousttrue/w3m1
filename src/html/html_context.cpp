@@ -120,55 +120,64 @@ public:
     {
     }
 
-    BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, bool internal)
+    std::string_view Title() const
     {
-        while (true)
+        if (!m_henv.title)
         {
-            auto lineBuf2 = stream->mygets();
-            if (lineBuf2->Size() == 0)
-            {
-                break;
-            }
-            CharacterEncodingScheme detected = {};
-            auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, DocCharset(), w3mApp::Instance().InnerCharset);
-            SetCES(detected);
-            ProcessLine(converted->ptr, internal);
+            return "";
         }
-
-        if (m_obuf.status != R_ST_NORMAL)
-        {
-            m_obuf.status = R_ST_EOL;
-            ProcessLine("\n", internal);
-        }
-        m_obuf.status = R_ST_NORMAL;
-        completeHTMLstream();
-        m_henv.flushline(0, 2, m_henv.limit);
-
-        auto newBuf = Buffer::Create(url);
-        newBuf->type = "text/html";
-        if (m_henv.title)
-            newBuf->buffername = m_henv.title;
-
-        newBuf->document_charset = DocCharset();
-        ImageFlags image_flag;
-        if (newBuf->image_flag)
-            image_flag = newBuf->image_flag;
-        else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
-            image_flag = IMG_FLAG_AUTO;
-        else
-            image_flag = IMG_FLAG_SKIP;
-        newBuf->image_flag = image_flag;
-
-        {
-            auto feed = [feeder = TextFeeder{m_henv.buf->first}]() -> Str {
-                return feeder();
-            };
-
-            BufferFromLines(newBuf, feed);
-        }
-
-        return newBuf;
+        return m_henv.title;
     }
+
+    // BufferPtr LoadStream(const URL &url, const InputStreamPtr &stream, bool internal)
+    // {
+    //     while (true)
+    //     {
+    //         auto lineBuf2 = stream->mygets();
+    //         if (lineBuf2->Size() == 0)
+    //         {
+    //             break;
+    //         }
+    //         CharacterEncodingScheme detected = {};
+    //         auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, DocCharset(), w3mApp::Instance().InnerCharset);
+    //         SetCES(detected);
+    //         ProcessLine(converted->ptr, internal);
+    //     }
+
+    //     if (m_obuf.status != R_ST_NORMAL)
+    //     {
+    //         m_obuf.status = R_ST_EOL;
+    //         ProcessLine("\n", internal);
+    //     }
+    //     m_obuf.status = R_ST_NORMAL;
+    //     completeHTMLstream();
+    //     m_henv.flushline(0, 2, m_henv.limit);
+
+    //     auto newBuf = Buffer::Create(url);
+    //     newBuf->type = "text/html";
+    //     if (m_henv.title)
+    //         newBuf->buffername = m_henv.title;
+
+    //     newBuf->document_charset = DocCharset();
+    //     ImageFlags image_flag;
+    //     if (newBuf->image_flag)
+    //         image_flag = newBuf->image_flag;
+    //     else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
+    //         image_flag = IMG_FLAG_AUTO;
+    //     else
+    //         image_flag = IMG_FLAG_SKIP;
+    //     newBuf->image_flag = image_flag;
+
+    //     {
+    //         auto feed = [feeder = TextFeeder{m_henv.buf->first}]() -> Str {
+    //             return feeder();
+    //         };
+
+    //         BufferFromLines(newBuf, feed);
+    //     }
+
+    //     return newBuf;
+    // }
 
     const CharacterEncodingScheme &DocCharset() const { return doc_charset; }
     void SetCES(CharacterEncodingScheme ces) { cur_document_charset = ces; }
@@ -177,7 +186,7 @@ public:
     Str Textarea(int n) const;
     Str process_n_textarea();
     using FeedFunc = std::function<Str()>;
-    void BufferFromLines(BufferPtr buf, const FeedFunc &feed);
+    void BufferFromLines(BufferPtr buf);
     void completeHTMLstream()
     {
         this->close_anchor();
@@ -246,7 +255,7 @@ public:
             auto front = line[0];
             std::tie(pos, new_status, token) = read_token(line, m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE);
             line = pos.data();
-            if(token.empty())
+            if (token.empty())
             {
                 continue;
             }
@@ -617,6 +626,18 @@ public:
                 m_henv.flushline(indent, 0, m_henv.limit);
             }
         }
+    }
+
+    void Finalize(bool internal)
+    {
+        if (m_obuf.status != R_ST_NORMAL)
+        {
+            m_obuf.status = R_ST_EOL;
+            ProcessLine("\n", internal);
+        }
+        m_obuf.status = R_ST_NORMAL;
+        completeHTMLstream();
+        m_henv.flushline(0, 2, m_henv.limit);
     }
 
     void feed_table1(struct table *tbl, Str tok, struct table_mode *mode, int width);
@@ -2455,8 +2476,12 @@ void HtmlContext::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *st
 ///
 /// 1行ごとに Line の構築と html タグを解釈する
 ///
-void HtmlContext::BufferFromLines(BufferPtr buf, const FeedFunc &feed)
+void HtmlContext::BufferFromLines(BufferPtr buf)
 {
+    auto feed = [feeder = TextFeeder{m_henv.buf->first}]() -> Str {
+        return feeder();
+    };
+
     //
     // each line
     //
@@ -5512,5 +5537,40 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
 {
     HtmlContext context(content_charset);
 
-    return context.LoadStream(url, stream, internal);
+    while (true)
+    {
+        auto lineBuf2 = stream->mygets();
+        if (lineBuf2->Size() == 0)
+        {
+            break;
+        }
+        CharacterEncodingScheme detected = {};
+        auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, context.DocCharset(), w3mApp::Instance().InnerCharset);
+        context.SetCES(detected);
+        context.ProcessLine(converted->ptr, internal);
+    }
+
+    context.Finalize(internal);
+
+    auto newBuf = Buffer::Create(url);
+    newBuf->type = "text/html";
+    auto title = context.Title();
+    if (title.size())
+        newBuf->buffername = title;
+
+    newBuf->document_charset = context.DocCharset();
+    ImageFlags image_flag;
+    if (newBuf->image_flag)
+        image_flag = newBuf->image_flag;
+    else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
+        image_flag = IMG_FLAG_AUTO;
+    else
+        image_flag = IMG_FLAG_SKIP;
+    newBuf->image_flag = image_flag;
+
+    context.BufferFromLines(newBuf);
+
+    return newBuf;
+
+    // return context.LoadStream(url, stream, internal);
 }
