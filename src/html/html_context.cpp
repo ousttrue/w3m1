@@ -235,29 +235,33 @@ public:
         auto line = _line.data();
         while (*line != '\0')
         {
+            //
+            // get token
+            //
             auto is_tag = false;
             const char *str = nullptr;
-            if (*line == '<' || m_obuf.status != R_ST_NORMAL)
+            std::string_view pos;
+            std::string token;
+            TokenStatusTypes new_status;
+            auto front = line[0];
+            std::tie(pos, new_status, token) = read_token(line, m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE);
+            line = pos.data();
+            if(token.empty())
             {
-                /* 
-                * Tag processing
-                */
-                if (m_obuf.status == R_ST_EOL)
-                    m_obuf.status = R_ST_NORMAL;
-                else
+                continue;
+            }
+            str = token.data();
+            if (front == '<' /*|| m_obuf.status != R_ST_NORMAL*/)
+            {
+                // Tag processing
+                if (new_status != R_ST_NORMAL)
                 {
-                    auto pos = read_token(line, m_henv.tagbuf, &m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE, m_obuf.status != R_ST_NORMAL);
-                    line = pos.data();
-                    if (m_obuf.status != R_ST_NORMAL)
-                    {
-                        // invalid
-                        assert(false);
-                        return {};
-                    }
+                    // invalid
+                    assert(false);
+                    return {};
                 }
-                if (m_henv.tagbuf->Size() == 0)
-                    continue;
-                str = m_henv.tagbuf->ptr;
+                m_henv.tagbuf->Clear();
+                m_henv.tagbuf->Push(token);
                 if (*str == '<')
                 {
                     if (str[1] && REALLY_THE_BEGINNING_OF_A_TAG(str))
@@ -269,15 +273,6 @@ public:
                         str = "&lt;";
                     }
                 }
-            }
-            else
-            {
-                auto tokbuf = Strnew();
-                auto pos = read_token(line, tokbuf, &m_obuf.status, state->pre_mode(m_obuf) & RB_PREMODE, 0);
-                line = pos.data();
-                if (m_obuf.status != R_ST_NORMAL) /* R_ST_AMP ? */
-                    m_obuf.status = R_ST_NORMAL;
-                str = tokbuf->ptr;
             }
 
             if (state->pre_mode(m_obuf) & (RB_PLAIN | RB_INTXTA | RB_INSELECT | RB_SCRIPT |
@@ -354,10 +349,10 @@ public:
             if (m_obuf.table_level >= 0)
             {
                 /* 
-            * within table: in <table>..</table>, all input tokens
-            * are fed to the table renderer, and then the renderer
-            * makes HTML output.
-            */
+                * within table: in <table>..</table>, all input tokens
+                * are fed to the table renderer, and then the renderer
+                * makes HTML output.
+                */
                 switch (this->feed_table(state->tbl, str, state->tbl_mode, state->tbl_width, internal))
                 {
                 case 0:
