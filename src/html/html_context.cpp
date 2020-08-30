@@ -194,8 +194,8 @@ public:
                 // Tag processing
                 if (new_status != R_ST_NORMAL)
                 {
-                    // invalid
-                    assert(false);
+                    // unknown tag ? ex. <nav>
+                    // assert(false);
                     return {};
                 }
                 m_henv.tagbuf->Clear();
@@ -4379,26 +4379,26 @@ void HtmlContext::renderCoTable(struct table *tbl, int maxlimit)
     int i, col, row;
     int indent, maxwidth;
 
-    for (i = 0; i < tbl->ntable; i++)
-    {
-        t = tbl->tables[i].ptr;
-        col = tbl->tables[i].col;
-        row = tbl->tables[i].row;
-        indent = tbl->tables[i].indent;
+    // for (i = 0; i < tbl->ntable; i++)
+    // {
+    //     t = tbl->tables[i].ptr;
+    //     col = tbl->tables[i].col;
+    //     row = tbl->tables[i].row;
+    //     indent = tbl->tables[i].indent;
 
-        html_feed_environ h_env(&obuf, tbl->tables[i].buf,
-                                tbl->get_spec_cell_width(row, col), indent);
-        tbl->check_row(row);
-        if (h_env.limit > maxlimit)
-            h_env.limit = maxlimit;
-        if (t->total_width == 0)
-            maxwidth = h_env.limit - indent;
-        else if (t->total_width > 0)
-            maxwidth = t->total_width;
-        else
-            maxwidth = t->total_width = -t->total_width * h_env.limit / 100;
-        this->renderTable(t, maxwidth);
-    }
+    //     html_feed_environ h_env(&obuf, tbl->tables[i].buf,
+    //                             tbl->get_spec_cell_width(row, col), indent);
+    //     tbl->check_row(row);
+    //     if (h_env.limit > maxlimit)
+    //         h_env.limit = maxlimit;
+    //     if (t->total_width == 0)
+    //         maxwidth = h_env.limit - indent;
+    //     else if (t->total_width > 0)
+    //         maxwidth = t->total_width;
+    //     else
+    //         maxwidth = t->total_width = -t->total_width * h_env.limit / 100;
+    //     this->renderTable(t, maxwidth);
+    // }
 }
 
 ///
