@@ -10,18 +10,13 @@
 #include "html/maparea.h"
 #include "html/html_to_buffer.h"
 #include "html/formdata.h"
-#include "stream/compression.h"
 #include "frontend/terminal.h"
 #include "indep.h"
 #include "gc_helper.h"
 #include "w3m.h"
-#include "myctype.h"
 #include "file.h"
-#include "commands.h"
 #include "textlist.h"
-#include "stream/network.h"
 #include "entity.h"
-
 
 #define MAX_TABLE 20 /* maximum nest level of table */
 
@@ -4419,6 +4414,22 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
         }
         CharacterEncodingScheme detected = {};
         auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, context.DocCharset(), w3mApp::Instance().InnerCharset);
+
+#if DEBUG_UTF8
+        std::string wtf8 = converted->ptr;
+        std::string utf8 = wc_Str_conv_with_detect(lineBuf2, &detected, context.DocCharset(), WC_CES_UTF_8)->ptr;
+        for (int i = 0; i < wtf8.size(); ++i)
+        {
+            if (wtf8[i] != utf8[i])
+            {
+                wtf8 = wtf8.substr(i);
+                utf8 = utf8.substr(i);
+                auto a = 0;
+                break;
+            }
+        }
+#endif
+
         context.SetCES(detected);
         context.ProcessLine(converted->ptr, internal);
     }
