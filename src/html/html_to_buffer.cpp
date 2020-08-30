@@ -53,9 +53,6 @@ void HtmlToBuffer::BufferFromLines(BufferPtr buf, TextLineList *list)
     int nlines = 1;
     while (true)
     {
-        //
-        // get line
-        //
         auto line = feed();
         if (!line)
         {
@@ -70,11 +67,7 @@ void HtmlToBuffer::BufferFromLines(BufferPtr buf, TextLineList *list)
         }
 
         StripRight(line);
-
-        while (line)
-        {
-            line = ProcessLine(buf, line, nlines++);
-        }
+        ProcessLine(buf, line, nlines++);
     }
 
     buf->formlist = m_form->FormEnd();
@@ -82,18 +75,18 @@ void HtmlToBuffer::BufferFromLines(BufferPtr buf, TextLineList *list)
     addMultirowsImg(buf, buf->img);
 }
 
-Str HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
+void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
 {
     //
     // each char
     //
-    const char *str = line->ptr;
-    auto endp = str + line->Size();
+    std::string_view str = line->ptr;
+    // auto endp = str + line->Size();
     PropertiedString out;
-    while (str < endp)
+    while (str.size())
     {
-        auto mode = get_mctype(*str);
-        if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && *str != '<')
+        auto mode = get_mctype(str[0]);
+        if ((effect | ex_efct(ex_effect)) & PC_SYMBOL && str[0] != '<')
         {
             // symbol
             auto p = get_width_symbol(Terminal::SymbolWidth0(), symbol);
@@ -110,42 +103,44 @@ Str HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
                     out.push(mode | effect | ex_efct(ex_effect), p[i]);
                 }
             }
-            str += Terminal::SymbolWidth();
+            str.remove_prefix(Terminal::SymbolWidth());
         }
         else if (mode == PC_CTRL || mode == PC_UNDEF)
         {
             // control
             out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
-            str++;
+            str.remove_prefix(1);
         }
         else if (mode & PC_UNKNOWN)
         {
             // unknown
             out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
-            str += get_mclen(str);
+            str.remove_prefix(get_mclen(str));
         }
-        else if (*str != '<' && *str != '&')
+        else if (str[0] != '<' && str[0] != '&')
         {
             // multibyte char ?
             int len = get_mclen(str);
-            out.push(mode | effect | ex_efct(ex_effect), *(str++));
+            out.push(mode | effect | ex_efct(ex_effect), str[0]);
+            str.remove_prefix(1);
             if (--len)
             {
                 mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
                 while (len--)
                 {
-                    out.push(mode | effect | ex_efct(ex_effect), *(str++));
+                    out.push(mode | effect | ex_efct(ex_effect), str[0]);
+                    str.remove_prefix(1);
                 }
             }
         }
-        else if (*str == '&')
+        else if (str[0] == '&')
         {
             /* 
                  * & escape processing
                  */
             char *p;
             {
-                auto [pos, view] = getescapecmd(str, w3mApp::Instance().InnerCharset);
+                auto [pos, view] = getescapecmd(str.data(), w3mApp::Instance().InnerCharset);
                 str = const_cast<char *>(pos);
                 p = const_cast<char *>(view.data());
             }
@@ -181,30 +176,17 @@ Str HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
         else
         {
             /* tag processing */
-            auto [pos, tag] = HtmlTag::parse(str, true);
-            str = pos.data();
+            HtmlTagPtr tag;
+            std::tie(str, tag) = HtmlTag::parse(str, true);
             if (!tag)
                 continue;
 
-            Process(tag, buf, out.len(), str);
+            Process(tag, buf, out.len(), str.data());
         }
     }
 
-    // if (EndLineAddBuffer())
-    {
-        buf->AddNewLine(out, nlines);
-    }
-
-    if (str != endp)
-    {
-        // advance line
-        return line->Substr(str - line->ptr, endp - str);
-    }
-    else
-    {
-        // clear for next line
-        return nullptr;
-    }
+    buf->AddNewLine(out, nlines);
+    assert(str.empty());
 }
 
 void HtmlToBuffer::Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str)

@@ -58,6 +58,10 @@ inline int get_mclen(const char *c)
 {
     return wtf_len1((uint8_t *)(c));
 }
+inline int get_mclen(std::string_view s)
+{
+    return wtf_len1((uint8_t *)(s.data()));
+}
 inline int get_mcwidth(const char *c)
 {
     return wtf_width((uint8_t *)(c));

@@ -33,7 +33,6 @@ public:
 private:
     void BufferFromLines(BufferPtr buf, struct TextLineList *list);
     void Process(HtmlTagPtr tag, BufferPtr buf, int pos, const char *str);
-    Str ProcessLine(const BufferPtr &buffer, Str line, int lines);
-    // bool EndLineAddBuffer();
+    void ProcessLine(const BufferPtr &buffer, Str line, int lines);
     FormItemPtr formList_addInput(FormPtr fl, HtmlTagPtr tag);
 };
