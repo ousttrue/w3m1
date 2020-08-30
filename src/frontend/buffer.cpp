@@ -42,6 +42,7 @@ bool fread1(T &d, FILE *f)
 }
 
 Buffer::Buffer()
+: m_document(new Document)
 {
     url.scheme = SCM_UNKNOWN;
     baseTarget = {};
@@ -75,7 +76,7 @@ void Buffer::TmpClear()
     {
         topLine = NULL;
         currentLine = NULL;
-        lines.clear();
+        m_document->Clear();
     }
 }
 
@@ -106,8 +107,9 @@ int Buffer::WriteBufferCache()
         fwrite1(this->topLine->linenumber, cache))
         goto _error;
 
-    for (auto &l : lines)
+    for (auto i = 0; i < m_document->LineCount(); ++i)
     {
+        auto l = m_document->GetLine(i);
         if (fwrite1(l->real_linenumber, cache) ||
             fwrite1(l->usrflags, cache) ||
             fwrite1(l->width(), cache) ||
@@ -246,7 +248,7 @@ void Buffer::CopyFrom(BufferPtr src)
     buffername = src->buffername;
 
     need_reshape = src->need_reshape;
-    lines = src->lines;
+    m_document->m_lines = src->m_document->m_lines;
 
     // scroll
     topLine = src->topLine;
@@ -353,7 +355,7 @@ std::shared_ptr<Buffer> Buffer::Create(const URL &url)
 LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
 {
     int i, n;
-    auto l = find(line);
+    auto l = m_document->_find(line);
 
     if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
     {
@@ -364,17 +366,17 @@ LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
                (getNextPage(shared_from_this(), 1) != NULL))
             ;
         if (last)
-            l = find(this->LastLine());
+            l = m_document->_find(this->LastLine());
     }
 
     if (offset == 0)
         return *l;
     if (offset > 0)
-        for (i = 0; i < offset && (*l) != lines.back(); i++, ++l)
+        for (i = 0; i < offset && (*l) != m_document->m_lines.back(); i++, ++l)
         {
         }
     else
-        for (i = 0; i < -offset && l != lines.begin(); i++, --l)
+        for (i = 0; i < -offset && l != m_document->m_lines.begin(); i++, --l)
         {
         }
     return *l;
@@ -382,11 +384,11 @@ LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
 
 void Buffer::LineSkip(LinePtr line, int offset, int last)
 {
-    auto l = find(CurrentLineSkip(line, offset, last));
+    auto l = m_document->_find(CurrentLineSkip(line, offset, last));
     int i;
     if (!w3mApp::Instance().nextpage_topline)
         for (i = this->rect.lines - 1 - (this->LastLine()->linenumber - (*l)->linenumber);
-             i > 0 && l != lines.begin();
+             i > 0 && l != m_document->m_lines.begin();
              i--, --l)
         {
         };
@@ -428,8 +430,8 @@ void Buffer::GotoLine(int n, bool topline)
         LineSkip(this->currentLine, -(this->rect.lines - 1), false);
         return;
     }
-    auto it = find(l);
-    for (; it != lines.end(); ++it)
+    auto it = m_document->_find(l);
+    for (; it != m_document->m_lines.end(); ++it)
     {
         if ((*it)->linenumber >= n)
         {
@@ -551,8 +553,8 @@ void Buffer::GotoRealLine(int n)
         return;
     }
 
-    auto it = find(l);
-    for (; it != lines.end(); ++it)
+    auto it = m_document->_find(l);
+    for (; it != m_document->m_lines.end(); ++it)
     {
         if ((*it)->real_linenumber >= n)
         {
@@ -737,13 +739,13 @@ Lineprop NullProp[] = {P_UNKNOWN};
 
 void Buffer::AddNewLine(const PropertiedString &lineBuffer, int real_linenumber)
 {
-    auto l = std::make_shared<Line>(lineBuffer);
-    if (lines.empty())
+    auto l = m_document->AddLine();
+    l->buffer = lineBuffer;
+    if (m_document->LineCount() == 1)
     {
         topLine = l;
     }
     currentLine = l;
-    lines.push_back(l);
 
     // 1 origin linenumber
     l->linenumber = this->LineCount();
@@ -1574,7 +1576,6 @@ void Buffer::isrch(SearchFunc func, const char *prompt, int prec_num)
     {
         COPY_BUFPOSITION_FROM(sbuf);
     }
-
 }
 
 void Buffer::srch(SearchFunc func, const char *prompt, std::string_view str, int prec_num)
@@ -1958,13 +1959,12 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
 
 int Buffer::ColumnSkip(int offset)
 {
-    int i, maxColumn;
     int column = this->currentColumn + offset;
     int nlines = this->rect.lines + 1;
 
-    maxColumn = 0;
-    auto l = find(topLine);
-    for (i = 0; i < nlines && l != lines.end(); i++, ++l)
+    int maxColumn = 0;
+    auto l = m_document->_find(topLine);
+    for (int i = 0; i < nlines && l != m_document->m_lines.end(); i++, ++l)
     {
         (*l)->CalcWidth();
         if ((*l)->width() - 1 > maxColumn)

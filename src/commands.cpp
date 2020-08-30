@@ -626,8 +626,8 @@ void editBf(w3mApp *w3m, const CommandContext &context)
 {
     const char *fn = GetCurrentBuffer()->filename.c_str();
     Str cmd;
-    if (fn == NULL || GetCurrentBuffer()->pagerSource != NULL ||                                                    /* Behaving as a pager */
-        (GetCurrentBuffer()->type.empty() && GetCurrentBuffer()->edit.empty()) ||                  /* Reading shell */
+    if (fn == NULL || GetCurrentBuffer()->pagerSource != NULL ||                            /* Behaving as a pager */
+        (GetCurrentBuffer()->type.empty() && GetCurrentBuffer()->edit.empty()) ||           /* Reading shell */
         GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentBuffer()->url.path == "-" /* file is std input  */
     )
     { /* Frame */
@@ -797,7 +797,9 @@ void reMark(w3mApp *w3m, const CommandContext &context)
     }
     SetMarkString(str.data());
 
-    buf->EachLine([&](auto l) {
+    for (int i = 0; i < buf->LineCount(); ++i)
+    {
+        auto l = buf->m_document->GetLine(i);
         char *p, *p1, *p2;
         p = l->lineBuf();
         for (;;)
@@ -811,7 +813,7 @@ void reMark(w3mApp *w3m, const CommandContext &context)
             else
                 break;
         }
-    });
+    }
 }
 
 /* view inline image */
@@ -2192,7 +2194,7 @@ void ldDL(w3mApp *w3m, const CommandContext &context)
 
     if (nReload)
         GetCurrentBuffer()->event = setAlarmEvent(GetCurrentBuffer()->event, 1, AL_IMPLICIT,
-                                                                   &reload, NULL);
+                                                  &reload, NULL);
 }
 
 void undoPos(w3mApp *w3m, const CommandContext &context)

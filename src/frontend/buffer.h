@@ -48,41 +48,138 @@ enum SearchResultTypes
     SR_WRAPPED = 0x4,
 };
 
+using DocumentPtr = std::shared_ptr<class Document>;
+using LineList = std::vector<LinePtr>;
+class Document
+{
+public:
+    LineList m_lines;
+    LineList::iterator _find(LinePtr l)
+    {
+        return std::find(m_lines.begin(), m_lines.end(), l);
+    }
+    LineList::const_iterator _find(LinePtr l) const
+    {
+        return std::find(m_lines.begin(), m_lines.end(), l);
+    }
+
+public:
+    int LineCount() const
+    {
+        return m_lines.size();
+    }
+    LinePtr GetLine(int i) const
+    {
+        if (i < 0 || i >= m_lines.size())
+        {
+            return nullptr;
+        }
+        return m_lines[i];
+    }
+    void Clear()
+    {
+        m_lines.clear();
+    }
+    LinePtr AddLine()
+    {
+        auto line = std::make_shared<Line>();
+        m_lines.push_back(line);
+        return line;
+    }
+    LinePtr FirstLine() const
+    {
+        if (m_lines.empty())
+        {
+            return nullptr;
+        }
+        return m_lines.front();
+    }
+    LinePtr LastLine() const
+    {
+        if (m_lines.empty())
+        {
+            return nullptr;
+        }
+        return m_lines.back();
+    }
+    void EraseTo(const LinePtr &currentLine)
+    {
+        if (currentLine)
+        {
+            auto it = _find(currentLine);
+            if (it == m_lines.end())
+            {
+                assert(false);
+                return;
+            }
+            ++it;
+            m_lines.erase(it, m_lines.end());
+        }
+    }
+    LinePtr NextLine(LinePtr line) const
+    {
+        auto it = _find(line);
+        if (it == m_lines.end())
+        {
+            return nullptr;
+        }
+        ++it;
+        if (it == m_lines.end())
+        {
+            return nullptr;
+        }
+        return *it;
+    }
+    void InsertNext(LinePtr pos, LinePtr line)
+    {
+        auto it = _find(pos);
+        assert(it != m_lines.end());
+        ++it;
+        m_lines.insert(it, line);
+    }
+    LinePtr PrevLine(LinePtr line) const
+    {
+        auto it = _find(line);
+        if (it == m_lines.end())
+        {
+            return nullptr;
+        }
+        if (it == m_lines.begin())
+        {
+            return nullptr;
+        }
+        --it;
+        return *it;
+    }
+    void InsertPrev(LinePtr line, LinePtr prev)
+    {
+        auto it = _find(line);
+        assert(it != m_lines.end());
+        m_lines.insert(it, prev);
+    }
+};
+
 using BufferPtr = std::shared_ptr<struct Buffer>;
 using LinePtr = std::shared_ptr<struct Line>;
-using LineList = std::vector<LinePtr>;
 struct Buffer : std::enable_shared_from_this<Buffer>
 {
     std::string filename;
     std::string buffername;
 
     bool need_reshape = false;
-    LineList lines;
 
-private:
-
+    DocumentPtr m_document;
     // scroll
     LinePtr topLine;
     // cursor ?
     LinePtr currentLine;
-
-    // private:
-    // list
-    LineList::iterator find(LinePtr l)
-    {
-        return std::find(lines.begin(), lines.end(), l);
-    }
-    LineList::const_iterator find(LinePtr l) const
-    {
-        return std::find(lines.begin(), lines.end(), l);
-    }
 
 public:
     static std::shared_ptr<Buffer> Create(const URL &url);
 
     int LineCount() const
     {
-        return lines.size();
+        return m_document->LineCount();
     }
 
 public:
@@ -91,23 +188,15 @@ public:
     void ClearLines()
     {
         currentLine = topLine = NULL;
-        lines.clear();
+        m_document->Clear();
     }
     LinePtr FirstLine() const
     {
-        if (lines.empty())
-        {
-            return nullptr;
-        }
-        return lines.front();
+        return m_document->FirstLine();
     }
     LinePtr LastLine() const
     {
-        if (lines.empty())
-        {
-            return nullptr;
-        }
-        return lines.back();
+        return m_document->LastLine();
     }
     LinePtr TopLine() const
     {
@@ -160,69 +249,32 @@ public:
     void NScroll(int n);
     void CurrentAsLast()
     {
-        if (currentLine)
-        {
-            auto it = find(currentLine);
-            if (it == lines.end())
-            {
-                assert(false);
-                return;
-            }
-            ++it;
-            lines.erase(it, lines.end());
-        }
-
-        // lastLine = currentLine;
+        m_document->EraseTo(currentLine);
         topLine = FirstLine();
         currentLine = FirstLine();
     }
-    void EachLine(const std::function<void(LinePtr)> &func)
-    {
-        for (auto &l : lines)
-        {
-            func(l);
-        }
-    }
+    // void EachLine(const std::function<void(LinePtr)> &func)
+    // {
+    //     for (auto &l : lines)
+    //     {
+    //         func(l);
+    //     }
+    // }
     LinePtr NextLine(LinePtr line) const
     {
-        auto it = find(line);
-        if (it == lines.end())
-        {
-            return nullptr;
-        }
-        ++it;
-        if (it == lines.end())
-        {
-            return nullptr;
-        }
-        return *it;
+        return m_document->NextLine(line);
     }
     void SetNextLine(LinePtr line, LinePtr next)
     {
-        auto it = find(line);
-        assert(it != lines.end());
-        ++it;
-        lines.insert(it, next);
+        m_document->InsertNext(line, next);
     }
     LinePtr PrevLine(LinePtr line) const
     {
-        auto it = find(line);
-        if (it == lines.end())
-        {
-            return nullptr;
-        }
-        if (it == lines.begin())
-        {
-            return nullptr;
-        }
-        --it;
-        return *it;
+        return m_document->PrevLine(line);
     }
     void SetPrevLine(LinePtr line, LinePtr prev)
     {
-        auto it = find(line);
-        assert(it != lines.end());
-        lines.insert(it, prev);
+        m_document->InsertPrev(line, prev);
     }
     bool MoveLeftWord(int n);
     bool MoveRightWord(int n);
