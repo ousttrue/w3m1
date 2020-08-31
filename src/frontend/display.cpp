@@ -450,12 +450,12 @@ static Str make_lastline_message(const BufferPtr &buf)
     return msg;
 }
 
-static void DrawLineRegion(const BufferPtr &buf,  LinePtr l, int i, int bpos, int epos)
+static void DrawLineRegion(int i, LinePtr l, const TermRect &rect, int bpos, int epos, int currentColumn)
 {
     if (l == NULL)
         return;
 
-    int pos = columnPos(l, buf->currentColumn);
+    int pos = columnPos(l, currentColumn);
     auto p = &(l->lineBuf()[pos]);
     auto pr = &(l->propBuf()[pos]);
     Linecolor *pc;
@@ -469,39 +469,39 @@ static void DrawLineRegion(const BufferPtr &buf,  LinePtr l, int i, int bpos, in
     int ecol = epos - pos;
     int delta = 1;
     int vpos = -1;
-    for (int j = 0; rcol - buf->currentColumn < buf->rect.cols && pos + j < l->len(); j += delta)
+    for (int j = 0; rcol - currentColumn < rect.cols && pos + j < l->len(); j += delta)
     {
-        if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
-        {
-            auto a = buf->m_document->href.RetrieveAnchor({l->linenumber, pos + j});
-            if (a)
-            {
-                auto url = URL::Parse(a->url, &buf->url);
-                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
-                {
-                    for (auto k = a->start.pos; k < a->end.pos; k++)
-                        pr[k - pos] |= PE_VISITED;
-                }
-                vpos = a->end.pos;
-            }
-        }
+        // if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
+        // {
+        //     auto a = buf->m_document->href.RetrieveAnchor({l->linenumber, pos + j});
+        //     if (a)
+        //     {
+        //         auto url = URL::Parse(a->url, &buf->url);
+        //         if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
+        //         {
+        //             for (auto k = a->start.pos; k < a->end.pos; k++)
+        //                 pr[k - pos] |= PE_VISITED;
+        //         }
+        //         vpos = a->end.pos;
+        //     }
+        // }
 
         delta = wtf_len((uint8_t *)&p[j]);
         auto ncol = l->COLPOS(pos + j + delta);
-        if (ncol - buf->currentColumn > buf->rect.cols)
+        if (ncol - currentColumn > rect.cols)
             break;
         if (pc)
             do_color(pc[j]);
         if (j >= bcol && j < ecol)
         {
-            if (rcol < buf->currentColumn)
+            if (rcol < currentColumn)
             {
-                Screen::Instance().Move(i, buf->rect.rootX);
-                for (rcol = buf->currentColumn; rcol < ncol; rcol++)
+                Screen::Instance().Move(i, rect.rootX);
+                for (rcol = currentColumn; rcol < ncol; rcol++)
                     addChar(' ');
                 continue;
             }
-            Screen::Instance().Move(i, rcol - buf->currentColumn + buf->rect.rootX);
+            Screen::Instance().Move(i, rcol - currentColumn + rect.rootX);
             if (p[j] == '\t')
             {
                 for (; rcol < ncol; rcol++)
@@ -518,15 +518,14 @@ static void DrawLineRegion(const BufferPtr &buf,  LinePtr l, int i, int bpos, in
 }
 
 static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
-                              int prevhseq, int tline, int eline, int active)
+                              int prevhseq, bool active)
 {
     auto l = buf->TopLine();
-    for (int j = 0; j < al.size(); j++)
+    for (auto &an : al.anchors)
     {
-        auto an = al.anchors[j];
-        if (an->start.line < tline)
+        if (an->start.line < buf->TopLine()->linenumber)
             continue;
-        if (an->start.line >= eline)
+        if (an->start.line >= buf->TopLine()->linenumber + buf->rect.lines)
             return;
 
         while (l)
@@ -560,14 +559,18 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
                 }
             }
             if (active)
-                DrawLineRegion(buf, l, l->linenumber - tline + buf->rect.rootY,
-                                    an->start.pos, an->end.pos);
+                DrawLineRegion(l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l,
+                               buf->rect,
+                               an->start.pos, an->end.pos,
+                               buf->currentColumn);
         }
         else if (prevhseq >= 0 && an->hseq == prevhseq)
         {
             if (active)
-                DrawLineRegion(buf, l, l->linenumber - tline + buf->rect.rootY,
-                                    an->start.pos, an->end.pos);
+                DrawLineRegion(l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l,
+                               buf->rect,
+                               an->start.pos, an->end.pos,
+                               buf->currentColumn);
         }
     }
 }
@@ -587,19 +590,17 @@ static void drawAnchorCursor(const BufferPtr &buf)
     if (an)
         hseq = an->hseq;
 
-    int tline = buf->TopLine()->linenumber;
-    int eline = tline + buf->rect.lines;
     int prevhseq = buf->prevhseq;
 
     if (buf->m_document->href)
     {
-        drawAnchorCursor0(buf, buf->m_document->href, hseq, prevhseq, tline, eline, 1);
-        drawAnchorCursor0(buf, buf->m_document->href, hseq, -1, tline, eline, 0);
+        drawAnchorCursor0(buf, buf->m_document->href, hseq, prevhseq, 1);
+        drawAnchorCursor0(buf, buf->m_document->href, hseq, -1, 0);
     }
     if (buf->m_document->formitem)
     {
-        drawAnchorCursor0(buf, buf->m_document->formitem, hseq, prevhseq, tline, eline, 1);
-        drawAnchorCursor0(buf, buf->m_document->formitem, hseq, -1, tline, eline, 0);
+        drawAnchorCursor0(buf, buf->m_document->formitem, hseq, prevhseq, 1);
+        drawAnchorCursor0(buf, buf->m_document->formitem, hseq, -1, 0);
     }
     buf->prevhseq = hseq;
 }
@@ -727,7 +728,7 @@ static void redrawNLine(const BufferPtr &buf)
         int i = 0;
         for (auto l = buf->TopLine(); l && i < buf->rect.lines; i++, l = buf->m_document->NextLine(l))
         {
-            assert(buf->rect.rootX==buf->currentColumn);
+            assert(buf->rect.rootX == buf->currentColumn);
             DrawLine(l, i + buf->rect.rootY, buf->rect, buf->currentColumn, buf->m_document);
         }
         Screen::Instance().Move(i + buf->rect.rootY, 0);
