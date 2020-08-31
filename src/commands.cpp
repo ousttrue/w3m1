@@ -1753,11 +1753,11 @@ void curlno(w3mApp *w3m, const CommandContext &context)
     if (l)
     {
         auto cur = l->real_linenumber;
-        auto col = l->bwidth + buf->currentColumn + buf->rect.cursorX + 1;
+        auto col = buf->currentColumn + buf->rect.cursorX + 1;
         while (doc->NextLine(l))
             l = doc->NextLine(l);
         l->CalcWidth();
-        len = l->bend();
+        len = l->width();
     }
 
     int all=0;

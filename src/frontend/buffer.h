@@ -279,6 +279,7 @@ public:
     int pos = 0;
     int visualpos = 0;
 
+    // this->rect.cursorX = this->visualpos - l->bwidth;
     TermRect rect;
 
     void CursorHome()

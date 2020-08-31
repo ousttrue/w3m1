@@ -488,19 +488,19 @@ void Buffer::NScroll(int n)
         //     this->CursorDown(1);
         // else
         {
-            while (m_document->NextLine(this->currentLine) && this->currentLine->bend() < this->currentColumn + this->visualpos)
+            while (m_document->NextLine(this->currentLine) && this->currentLine->width() < this->currentColumn + this->visualpos)
                 this->CursorDown0(1);
         }
     }
     else
     {
-        if (this->currentLine->bend() <
+        if (this->currentLine->width() <
             this->currentColumn + this->visualpos)
             this->CursorUp(1);
         else
         {
-            while (m_document->PrevLine(this->currentLine) && this->currentLine->bwidth >= this->currentColumn + this->visualpos)
-                this->CursorUp0(1);
+            // while (m_document->PrevLine(this->currentLine) && this->currentLine->bwidth >= this->currentColumn + this->visualpos)
+            //     this->CursorUp0(1);
         }
     }
 }
@@ -866,7 +866,7 @@ void Buffer::CursorDown(int n)
     }
     CursorDown0(n);
     // while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos &&
-    //        this->currentLine->bend() <
+    //        this->currentLine->width() <
     //            this->currentColumn + this->visualpos)
     //     CursorDown0(n);
 }
@@ -920,7 +920,7 @@ void Buffer::CursorRight(int n)
             this->pos--;
     }
     cpos = l->COLPOS(this->pos);
-    this->visualpos = l->bwidth + cpos - this->currentColumn;
+    this->visualpos = cpos - this->currentColumn;
     delta = 1;
 
     while (this->pos + delta < l->len() && p[this->pos + delta] & PC_WCHAR2)
@@ -930,9 +930,9 @@ void Buffer::CursorRight(int n)
     if (vpos2 >= this->rect.cols && n)
     {
         ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
-        this->visualpos = l->bwidth + cpos - this->currentColumn;
+        this->visualpos = cpos - this->currentColumn;
     }
-    this->rect.cursorX = this->visualpos - l->bwidth;
+    this->rect.cursorX = this->visualpos;
 }
 
 void Buffer::CursorLeft(int n)
@@ -961,13 +961,13 @@ void Buffer::CursorLeft(int n)
     else
         this->pos = 0;
     cpos = l->COLPOS(this->pos);
-    this->visualpos = l->bwidth + cpos - this->currentColumn;
-    if (this->visualpos - l->bwidth < 0 && n)
+    this->visualpos = cpos - this->currentColumn;
+    if (this->visualpos < 0 && n)
     {
-        ColumnSkip(-n + this->visualpos - l->bwidth - (this->visualpos - l->bwidth) % n);
-        this->visualpos = l->bwidth + cpos - this->currentColumn;
+        ColumnSkip(-n + this->visualpos - this->visualpos % n);
+        this->visualpos = cpos - this->currentColumn;
     }
-    this->rect.cursorX = this->visualpos - l->bwidth;
+    this->rect.cursorX = this->visualpos;
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -1052,9 +1052,8 @@ void Buffer::ArrangeCursor()
     }
     /* Arrange cursor */
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    this->visualpos = this->currentLine->bwidth +
-                      this->currentLine->COLPOS(this->pos) - this->currentColumn;
-    this->rect.cursorX = this->visualpos - this->currentLine->bwidth;
+    this->visualpos = this->currentLine->COLPOS(this->pos) - this->currentColumn;
+    this->rect.cursorX = this->visualpos;
 
 #ifdef DISPLAY_DEBUG
     fprintf(stderr,
@@ -1070,7 +1069,7 @@ void Buffer::ArrangeLine()
         return;
 
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos - this->currentLine->bwidth);
+    auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos);
     auto cpos = this->currentLine->COLPOS(i) - this->currentColumn;
     if (cpos >= 0)
     {

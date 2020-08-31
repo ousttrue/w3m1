@@ -5,8 +5,6 @@
 struct Line
 {
     PropertiedString buffer;
-    // separate start column
-    int bwidth = 0;
 
     // on buffer
     // 1 origin ?
@@ -17,7 +15,6 @@ struct Line
     unsigned short usrflags = 0;
 
 private:
-    // sepate column size
     int m_width = -1;
 
 public:
@@ -28,9 +25,7 @@ public:
     Line(const PropertiedString str)
     {
         buffer = str;
-
         m_width = -1;
-        bwidth = 0;
     }
 
     ~Line()
@@ -57,10 +52,6 @@ public:
     int width() const
     {
         return m_width;
-    }
-    int bend() const
-    {
-        return bwidth + m_width;
     }
 
     void CalcWidth(bool force = false);

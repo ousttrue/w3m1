@@ -113,13 +113,13 @@ void shiftvisualpos(BufferPtr buf, int shift)
 {
     LinePtr l = buf->CurrentLine();
     buf->visualpos -= shift;
-    if (buf->visualpos - l->bwidth >= buf->rect.cols)
-        buf->visualpos = l->bwidth + buf->rect.cols - 1;
-    else if (buf->visualpos - l->bwidth < 0)
-        buf->visualpos = l->bwidth;
+    if (buf->visualpos >= buf->rect.cols)
+        buf->visualpos = buf->rect.cols - 1;
+    else if (buf->visualpos < 0)
+        buf->visualpos = 0;
     buf->ArrangeLine();
-    if (buf->visualpos - l->bwidth == -shift && buf->rect.cursorX == 0)
-        buf->visualpos = l->bwidth;
+    if (buf->visualpos == -shift && buf->rect.cursorX == 0)
+        buf->visualpos = 0;
 }
 
 void cmd_loadfile(const char *fn)

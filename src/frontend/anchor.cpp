@@ -215,12 +215,12 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
     }
     for (i = spos; i < epos; i++)
         l->propBuf()[i] |= PE_ANCHOR;
-    while (spos > l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
-    {
-        spos -= l->len();
-        epos -= l->len();
-        l = buf->m_document->NextLine(l);
-    }
+    // while (spos > l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+    // {
+    //     spos -= l->len();
+    //     epos -= l->len();
+    //     l = buf->m_document->NextLine(l);
+    // }
     while (1)
     {
         a = anchorproc(buf, p1, p2, l->linenumber, spos);
@@ -231,14 +231,14 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
             hseq = a->hseq;
         }
         a->end.line = l->linenumber;
-        if (epos > l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
-        {
-            a->end.pos = l->len();
-            spos = 0;
-            epos -= l->len();
-            l = buf->m_document->NextLine(l);
-        }
-        else
+        // if (epos > l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+        // {
+        //     a->end.pos = l->len();
+        //     spos = 0;
+        //     epos -= l->len();
+        //     l = buf->m_document->NextLine(l);
+        // }
+        // else
         {
             a->end.pos = epos;
             break;
@@ -273,8 +273,8 @@ reAnchorAny(BufferPtr buf, const char *re,
                                                                                   (w3mApp::Instance().MarkAllPages || l->linenumber < buf->TopLine()->linenumber + ::Terminal::lines() - 1);
          l = buf->m_document->NextLine(l))
     {
-        if (p && l->bpos)
-            goto next_line;
+        // if (p && l->bpos)
+        //     goto next_line;
         p = l->lineBuf();
         for (;;)
         {
@@ -338,8 +338,8 @@ reAnchorNewsheader(const BufferPtr &buf)
         for (l = buf->m_document->FirstLine(); l != NULL && l->real_linenumber == 0;
              l = buf->m_document->NextLine(l))
         {
-            if (l->bpos)
-                continue;
+            // if (l->bpos)
+            //     continue;
             p = l->lineBuf();
             if (!IS_SPACE(*p))
             {

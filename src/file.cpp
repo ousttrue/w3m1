@@ -645,8 +645,8 @@ pager_next:
             tmp = Strnew_charp_n(l->lineBuf(), l->len());
         tmp = wc_Str_conv(tmp, w3mApp::Instance().InnerCharset, charset);
         tmp->Puts(f);
-        if (tmp->Back() != '\n' && !(cont && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos))
-            putc('\n', f);
+        // if (tmp->Back() != '\n' && !(cont && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos))
+        putc('\n', f);
     }
 
     // if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
