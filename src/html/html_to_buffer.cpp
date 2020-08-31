@@ -29,7 +29,7 @@ BufferPtr HtmlToBuffer::CreateBuffer(const URL &url, std::string_view title, Cha
     if (title.size())
         newBuf->buffername = title;
 
-    newBuf->document_charset = charset;
+    newBuf->m_document->document_charset = charset;
     ImageFlags image_flag;
     if (newBuf->image_flag)
         image_flag = newBuf->image_flag;
@@ -232,18 +232,18 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         char *id = nullptr;
         if (tag->TryGetAttributeValue(ATTR_NAME, &id))
         {
-            id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+            id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->m_document->document_charset)->ptr;
             buf->m_document->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
         }
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
             p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
-                               buf->document_charset)
+                               buf->m_document->document_charset)
                     ->ptr;
         if (tag->TryGetAttributeValue(ATTR_TARGET, &q))
-            q = wc_conv_strict(q, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+            q = wc_conv_strict(q, w3mApp::Instance().InnerCharset, buf->m_document->document_charset)->ptr;
         char *r = nullptr;
         if (tag->TryGetAttributeValue(ATTR_REFERER, &r))
-            r = wc_conv_strict(r, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+            r = wc_conv_strict(r, w3mApp::Instance().InnerCharset, buf->m_document->document_charset)->ptr;
         char *s = nullptr;
         tag->TryGetAttributeValue(ATTR_TITLE, &s);
         auto t = "";
@@ -303,7 +303,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         break;
 
     case HTML_LINK:
-        buf->m_document->linklist.push_back(Link::create(tag, buf->document_charset));
+        buf->m_document->linklist.push_back(Link::create(tag, buf->m_document->document_charset));
         break;
 
     case HTML_IMG_ALT:
@@ -332,7 +332,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             char *s = nullptr;
             tag->TryGetAttributeValue(ATTR_TITLE, &s);
             p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
-                               buf->document_charset)
+                               buf->m_document->document_charset)
                     ->ptr;
             this->a_img = Anchor::CreateImage(
                 p,
@@ -518,7 +518,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
         {
             p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
-                               buf->document_charset)
+                               buf->m_document->document_charset)
                     ->ptr;
             char *t = nullptr;
             tag->TryGetAttributeValue(ATTR_TARGET, &t);
@@ -582,11 +582,11 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         char *p = nullptr;
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
         {
-            p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+            p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset, buf->m_document->document_charset)->ptr;
         }
         if (tag->TryGetAttributeValue(ATTR_TARGET, &p))
             buf->baseTarget =
-                wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+                wc_conv_strict(p, w3mApp::Instance().InnerCharset, buf->m_document->document_charset)->ptr;
         break;
     }
     case HTML_META:
@@ -603,7 +603,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             if (tmp)
             {
                 p = wc_conv_strict(remove_space(tmp->ptr), w3mApp::Instance().InnerCharset,
-                                   buf->document_charset)
+                                   buf->m_document->document_charset)
                         ->ptr;
                 buf->event = setAlarmEvent(buf->event,
                                            refresh_interval,
@@ -720,7 +720,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         char *id = nullptr;
         if (tag->TryGetAttributeValue(ATTR_ID, &id))
         {
-            id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
+            id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->m_document->document_charset)->ptr;
             buf->m_document->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
         }
     }

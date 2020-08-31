@@ -53,6 +53,8 @@ using LineList = std::vector<LinePtr>;
 class Document
 {
 public:
+    CharacterEncodingScheme document_charset = WC_CES_NONE;
+
     LineList m_lines;
     LineList::iterator _find(LinePtr l)
     {
@@ -372,7 +374,6 @@ public:
     int real_scheme = 0;
     std::string sourcefile;
     char check_url = 0;
-    CharacterEncodingScheme document_charset = WC_CES_NONE;
     AutoDetectTypes auto_detect = WC_OPT_DETECT_OFF;
     // TextList *document_header = nullptr;
     FormItemPtr form_submit;

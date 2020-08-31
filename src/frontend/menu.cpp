@@ -1641,7 +1641,7 @@ Link *link_menu(const BufferPtr &buf)
         if (l.url().empty())
             p = "";
         else if (w3mApp::Instance().DecodeURL)
-            p = url_unquote_conv(l.url(), buf->document_charset);
+            p = url_unquote_conv(l.url(), buf->m_document->document_charset);
         else
             p = l.url();
         str->Push(p);

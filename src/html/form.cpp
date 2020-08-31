@@ -82,7 +82,7 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
 
 static void change_charset(tcb::span<parsed_tagarg> _arg)
 {
-    auto charset = GetCurrentBuffer()->document_charset;
+    auto charset = GetCurrentBuffer()->m_document->document_charset;
     for (auto &arg : _arg)
     {
         if (!strcmp(arg.arg, "charset"))

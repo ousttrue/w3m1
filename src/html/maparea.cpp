@@ -249,7 +249,7 @@ follow_map_panel(BufferPtr buf, char *name)
     MapAreaPtr a;
     URL pu;
     char *p, *q;
-    BufferPtr newbuf;
+    BufferPtr newBuf;
 
     ml = searchMapList(buf, name);
     if (ml == NULL)
@@ -265,7 +265,7 @@ follow_map_panel(BufferPtr buf, char *name)
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (DecodeURL)
-            p = html_quote(url_unquote_conv(p, buf->document_charset));
+            p = html_quote(url_unquote_conv(p, buf->m_document->document_charset));
         else
             p = q;
         Strcat_m_charp(mappage, "<tr valign=top><td><a href=\"", q, "\">",
@@ -274,12 +274,12 @@ follow_map_panel(BufferPtr buf, char *name)
     }
     mappage->Push("</table></body></html>");
 
-    newbuf = loadHTMLString(mappage);
+    newBuf = loadHTMLString(mappage);
 #ifdef USE_M17N
-    if (newbuf)
-        newbuf->document_charset = buf->document_charset;
+    if (newBuf)
+        newBuf->m_document->document_charset = buf->m_document->document_charset;
 #endif
-    return newbuf;
+    return newBuf;
 }
 #endif
 
@@ -380,7 +380,7 @@ append_map_info(BufferPtr buf, Str tmp, FormItemPtr fi)
         auto q = html_quote(pu.ToStr()->ptr);
         char *p;
         if (w3mApp::Instance().DecodeURL)
-            p = html_quote(url_unquote_conv(a->url, buf->document_charset));
+            p = html_quote(url_unquote_conv(a->url, buf->m_document->document_charset));
         else
             p = html_quote(a->url.c_str());
         Strcat_m_charp(tmp, "<tr valign=top><td>&nbsp;&nbsp;<td><a href=\"",
@@ -401,7 +401,7 @@ append_link_info(BufferPtr buf, Str html)
     html->Push("<hr width=50%><h1>Link information</h1><table>\n");
     for (auto &l : buf->m_document->linklist)
     {
-        html->Push(l.toHtml(*&buf->url, buf->document_charset));
+        html->Push(l.toHtml(*&buf->url, buf->m_document->document_charset));
     }
     html->Push("</table>\n");
 }
@@ -421,7 +421,7 @@ page_info_panel(const BufferPtr &buf)
     wc_ces_list *list;
     char charset[16];
 
-    BufferPtr newbuf;
+    BufferPtr newBuf;
 
     tmp->Push("<html><head>\
 <title>Information about current page</title>\
@@ -449,7 +449,7 @@ page_info_panel(const BufferPtr &buf)
                    "<tr valign=top><td nowrap>Last Modified<td>",
                    html_quote(last_modified(buf)), NULL);
 
-    if (buf->document_charset != w3mApp::Instance().InnerCharset)
+    if (buf->m_document->document_charset != w3mApp::Instance().InnerCharset)
     {
         list = wc_get_ces_list();
         tmp->Push(
@@ -458,7 +458,7 @@ page_info_panel(const BufferPtr &buf)
         {
             sprintf(charset, "%d", (unsigned int)list->id);
             Strcat_m_charp(tmp, "<option value=", charset,
-                           (buf->document_charset == list->id) ? " selected>"
+                           (buf->m_document->document_charset == list->id) ? " selected>"
                                                                : ">",
                            list->desc, NULL);
         }
@@ -480,7 +480,7 @@ page_info_panel(const BufferPtr &buf)
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (w3mApp::Instance().DecodeURL)
-            p = html_quote(url_unquote_conv(p, buf->document_charset));
+            p = html_quote(url_unquote_conv(p, buf->m_document->document_charset));
         else
             p = q;
         Strcat_m_charp(tmp,
@@ -494,7 +494,7 @@ page_info_panel(const BufferPtr &buf)
         p = pu.ToStr()->ptr;
         q = html_quote(p);
         if (w3mApp::Instance().DecodeURL)
-            p = html_quote(url_unquote_conv(p, buf->document_charset));
+            p = html_quote(url_unquote_conv(p, buf->m_document->document_charset));
         else
             p = q;
         Strcat_m_charp(tmp,
@@ -507,7 +507,7 @@ page_info_panel(const BufferPtr &buf)
         auto fi = a->item;
         p = fi->ToStr()->ptr;
         if (w3mApp::Instance().DecodeURL)
-            p = html_quote(url_unquote_conv(p, buf->document_charset));
+            p = html_quote(url_unquote_conv(p, buf->m_document->document_charset));
         else
             p = html_quote(p);
         Strcat_m_charp(tmp,
@@ -549,10 +549,10 @@ page_info_panel(const BufferPtr &buf)
 
 end:
     tmp->Push("</body></html>");
-    newbuf = loadHTMLStream(URL::Parse("w3m://pageinfo"), StrStream::Create(tmp->ptr), WC_CES_UTF_8, true);
+    newBuf = loadHTMLStream(URL::Parse("w3m://pageinfo"), StrStream::Create(tmp->ptr), WC_CES_UTF_8, true);
 
-    if (newbuf)
-        newbuf->document_charset = buf->document_charset;
+    if (newBuf)
+        newBuf->m_document->document_charset = buf->m_document->document_charset;
 
-    return newbuf;
+    return newBuf;
 }

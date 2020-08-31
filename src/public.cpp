@@ -40,7 +40,7 @@ static void dump_extra(const BufferPtr &buf)
     // if (buf->baseURL)
     //     printf("W3m-base-url: %s\n", buf->baseURL.ToStr()->ptr);
     printf("W3m-document-charset: %s\n",
-           wc_ces_to_charset(buf->document_charset));
+           wc_ces_to_charset(buf->m_document->document_charset));
 
     if (buf->ssl_certificate.size())
     {
@@ -76,7 +76,7 @@ static void dump_head(w3mApp *w3m, BufferPtr buf)
     // {
     //     printf("%s",
     //            wc_conv_strict(ti->ptr, w3m->InnerCharset,
-    //                           buf->document_charset)
+    //                           buf->m_document->document_charset)
     //                ->ptr);
     // }
     puts("");
@@ -84,33 +84,29 @@ static void dump_head(w3mApp *w3m, BufferPtr buf)
 
 void do_dump(w3mApp *w3m, BufferPtr buf)
 {
-    TrapJmp([&]() {
-        dump_extra(buf);
-        dump_head(w3m, buf);
-        buf->DumpSource();
+    dump_extra(buf);
+    dump_head(w3m, buf);
+    buf->DumpSource();
+    {
+        int i;
+        saveBuffer(buf, stdout, false);
+        if (w3mApp::Instance().displayLinkNumber && buf->m_document->href)
         {
-            int i;
-            saveBuffer(buf, stdout, false);
-            if (w3mApp::Instance().displayLinkNumber && buf->m_document->href)
+            printf("\nReferences:\n\n");
+            for (i = 0; i < buf->m_document->href.size(); i++)
             {
-                printf("\nReferences:\n\n");
-                for (i = 0; i < buf->m_document->href.size(); i++)
-                {
-                    auto a = buf->m_document->href.anchors[i];
-                    if (a->slave)
-                        continue;
+                auto a = buf->m_document->href.anchors[i];
+                if (a->slave)
+                    continue;
 
-                    auto pu = URL::Parse(a->url, &buf->url);
-                    auto s = pu.ToStr();
-                    if (w3mApp::Instance().DecodeURL)
-                        s = Strnew(url_unquote_conv(s->ptr, GetCurrentBuffer()->document_charset));
-                    printf("[%d] %s\n", a->hseq + 1, s->ptr);
-                }
+                auto pu = URL::Parse(a->url, &buf->url);
+                auto s = pu.ToStr();
+                if (w3mApp::Instance().DecodeURL)
+                    s = Strnew(url_unquote_conv(s->ptr, GetCurrentBuffer()->m_document->document_charset));
+                printf("[%d] %s\n", a->hseq + 1, s->ptr);
             }
         }
-
-        return true;
-    });
+    }
 }
 
 void shiftvisualpos(BufferPtr buf, int shift)
@@ -748,8 +744,8 @@ Str conv_form_encoding(std::string_view val, FormItemPtr fi, BufferPtr buf)
 
     if (fi->parent.lock()->charset)
         charset = fi->parent.lock()->charset;
-    else if (buf->document_charset && buf->document_charset != WC_CES_US_ASCII)
-        charset = buf->document_charset;
+    else if (buf->m_document->document_charset && buf->m_document->document_charset != WC_CES_US_ASCII)
+        charset = buf->m_document->document_charset;
     return wc_conv_strict(val.data(), w3mApp::Instance().InnerCharset, charset);
 }
 
@@ -1092,7 +1088,7 @@ void goURL0(std::string_view url, std::string_view prompt, int relative)
             {
                 url = a_url;
                 if (w3mApp::Instance().DecodeURL)
-                    url = url_unquote_conv(url, buf->document_charset);
+                    url = url_unquote_conv(url, buf->m_document->document_charset);
             }
             else
                 pushHist(hist, a_url);
@@ -1103,9 +1099,9 @@ void goURL0(std::string_view url, std::string_view prompt, int relative)
 
     if (url.size())
     {
-        if ((relative || url[0] == '#') && buf->document_charset)
+        if ((relative || url[0] == '#') && buf->m_document->document_charset)
             url = wc_conv_strict(url.data(), w3mApp::Instance().InnerCharset,
-                                 buf->document_charset)
+                                 buf->m_document->document_charset)
                       ->ptr;
         else
             url = conv_to_system(url.data());
@@ -1196,7 +1192,7 @@ void _peekURL(int only_img, int n)
         s = pu.ToStr();
     }
     if (w3mApp::Instance().DecodeURL)
-        s = Strnew(url_unquote_conv(s->ptr, buf->document_charset));
+        s = Strnew(url_unquote_conv(s->ptr, buf->m_document->document_charset));
 
     auto propstr = PropertiedString::create(s);
 
@@ -1236,7 +1232,7 @@ void _docCSet(CharacterEncodingScheme charset)
         disp_message("Can't reload...", false);
         return;
     }
-    buf->document_charset = charset;
+    buf->m_document->document_charset = charset;
     buf->need_reshape = true;
 }
 

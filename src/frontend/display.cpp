@@ -347,7 +347,7 @@ static Str make_lastline_link(BufferPtr buf, std::string_view title, std::string
     auto pu = URL::Parse(url, &buf->url);
     auto u = pu.ToStr();
     if (w3mApp::Instance().DecodeURL)
-        u = Strnew(url_unquote_conv(u->c_str(), buf->document_charset));
+        u = Strnew(url_unquote_conv(u->c_str(), buf->m_document->document_charset));
 
     auto propstr = PropertiedString::create(u);
 

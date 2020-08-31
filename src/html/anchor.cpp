@@ -109,7 +109,7 @@ _put_anchor_news(BufferPtr buf, char *p1, char *p2, int line, int pos)
             p2--;
     }
     auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), w3mApp::Instance().InnerCharset,
-                                  buf->document_charset);
+                                  buf->m_document->document_charset);
     tmp = Sprintf("news:%s", file_quote(tmp->ptr));
 
     auto a = Anchor::CreateHref(tmp->ptr, "", HttpReferrerPolicy::NoReferer, "", '\0', line, pos);
@@ -121,7 +121,7 @@ static AnchorPtr
 _put_anchor_all(BufferPtr buf, char *p1, char *p2, int line, int pos)
 {
     auto tmp = wc_Str_conv_strict(Strnew_charp_n(p1, p2 - p1), w3mApp::Instance().InnerCharset,
-                                  buf->document_charset);
+                                  buf->m_document->document_charset);
     auto a = Anchor::CreateHref(url_quote(tmp->ptr), "", HttpReferrerPolicy::NoReferer, "",
                                 '\0', line, pos);
     buf->m_document->href.Put(a);
@@ -636,7 +636,7 @@ link_list_panel(const BufferPtr &buf)
                 p = pu.ToStr()->ptr;
                 u = html_quote(p);
                 if (w3mApp::Instance().DecodeURL)
-                    p = html_quote(url_unquote_conv(p, buf->document_charset));
+                    p = html_quote(url_unquote_conv(p, buf->m_document->document_charset));
                 else
                     p = u;
             }
@@ -664,7 +664,7 @@ link_list_panel(const BufferPtr &buf)
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (w3mApp::Instance().DecodeURL)
-                p = html_quote(url_unquote_conv(p, buf->document_charset));
+                p = html_quote(url_unquote_conv(p, buf->m_document->document_charset));
             else
                 p = u;
             auto t = getAnchorText(buf, al, a);
@@ -688,14 +688,14 @@ link_list_panel(const BufferPtr &buf)
             auto p = pu.ToStr()->ptr;
             auto u = html_quote(p);
             if (w3mApp::Instance().DecodeURL)
-                p = html_quote(url_unquote_conv(p, buf->document_charset));
+                p = html_quote(url_unquote_conv(p, buf->m_document->document_charset));
             else
                 p = u;
             const char *t;
             if (a->title.size() && a->title[0])
                 t = html_quote(a->title.c_str());
             else if (w3mApp::Instance().DecodeURL)
-                t = html_quote(url_unquote_conv(a->url.c_str(), buf->document_charset));
+                t = html_quote(url_unquote_conv(a->url.c_str(), buf->m_document->document_charset));
             else
                 t = html_quote(a->url.c_str());
             Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t, "</a><br>", p,
@@ -720,14 +720,14 @@ link_list_panel(const BufferPtr &buf)
                     u = html_quote(p);
                     if (w3mApp::Instance().DecodeURL)
                         p = html_quote(url_unquote_conv(p,
-                                                        buf->document_charset));
+                                                        buf->m_document->document_charset));
                     else
                         p = u;
                     if (m->alt.size())
                         t = html_quote(m->alt.c_str());
                     else if (w3mApp::Instance().DecodeURL)
                         t = html_quote(url_unquote_conv(m->url,
-                                                        buf->document_charset));
+                                                        buf->m_document->document_charset));
                     else
                         t = html_quote(m->url.c_str());
                     Strcat_m_charp(tmp, "<li><a href=\"", u, "\">", t,

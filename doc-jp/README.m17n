@@ -621,7 +621,7 @@ TODO
  * form ��Ǥη��ʸ��(width=0)���н衣
  * DEL �� wtf_width_map �� 2 �ˤʤäƤ����Х��ν�����
  * table ��� <hr> ������ȥ�����󥰤������Х��ν�����(��ޤƤ��� thanks!)
- * pager �⡼�ɤ��� HTML view ������� buf->document_charset ��
+ * pager �⡼�ɤ��� HTML view ������� buf->m_document->document_charset ��
    saveBuffer �����ͤˤ�����
  * entity �ΰ�����������
  * DocumentCharset �� UTF-8 �ξ��� auto detect �� ISO-8859-1 ��Ƚ�̤���

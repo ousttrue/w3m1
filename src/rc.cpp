@@ -1550,7 +1550,7 @@ load_option_panel(void)
 
     auto buf = loadHTMLStream(URL::Parse("w3m://option"), StrStream::Create(src->ptr), WC_CES_UTF_8, true);
     if (buf)
-        buf->document_charset = OptionCharset;
+        buf->m_document->document_charset = OptionCharset;
     return buf;
 }
 

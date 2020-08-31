@@ -653,7 +653,7 @@ pager_next:
     {
         l = getNextPage(buf, w3mApp::Instance().PagerMax);
         if (set_charset)
-            charset = buf->document_charset;
+            charset = buf->m_document->document_charset;
 
         goto pager_next;
     }
@@ -713,7 +713,7 @@ getpipe(char *cmd)
                           ->ptr;
     buf->bufferprop |= BP_PIPE;
 #ifdef USE_M17N
-    buf->document_charset = WC_CES_US_ASCII;
+    buf->m_document->document_charset = WC_CES_US_ASCII;
 #endif
     return buf;
 }
@@ -733,9 +733,9 @@ BufferPtr openPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme 
     buf->bufferprop |= BP_PIPE;
 
     if (content_charset && w3mApp::Instance().UseContentCharset)
-        buf->document_charset = content_charset;
+        buf->m_document->document_charset = content_charset;
     else
-        buf->document_charset = WC_CES_US_ASCII;
+        buf->m_document->document_charset = WC_CES_US_ASCII;
 
     buf->SetCurrentLine(buf->FirstLine());
 
@@ -838,9 +838,9 @@ LinePtr getNextPage(BufferPtr buf, int plen)
         buf->SetCurrentLine(last);
     }
 
-    charset = buf->document_charset;
-    if (buf->document_charset != WC_CES_US_ASCII)
-        doc_charset = buf->document_charset;
+    charset = buf->m_document->document_charset;
+    if (buf->m_document->document_charset != WC_CES_US_ASCII)
+        doc_charset = buf->m_document->document_charset;
     else if (w3mApp::Instance().UseContentCharset)
     {
         // content_charset = WC_CES_NONE;
@@ -917,7 +917,7 @@ LinePtr getNextPage(BufferPtr buf, int plen)
         return nullptr;
     }
 
-    buf->document_charset = charset;
+    buf->m_document->document_charset = charset;
     WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
 
     buf->SetTopLine(top);

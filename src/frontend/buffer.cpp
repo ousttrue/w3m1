@@ -250,6 +250,7 @@ void Buffer::CopyFrom(BufferPtr src)
     need_reshape = src->need_reshape;
 
     // document
+    m_document->document_charset = src->m_document->document_charset;
     m_document->m_lines = src->m_document->m_lines;
     m_document->href = src->m_document->href;
     m_document->name = src->m_document->name;
@@ -283,7 +284,6 @@ void Buffer::CopyFrom(BufferPtr src)
     real_scheme = src->real_scheme;
     sourcefile = src->sourcefile;
     check_url = src->check_url;
-    document_charset = src->document_charset;
     auto_detect = src->auto_detect;
     form_submit = src->form_submit;
     savecache = src->savecache;
@@ -678,7 +678,7 @@ void set_buffer_environ(const BufferPtr &buf)
         set_environ("W3M_TITLE", buf->buffername.c_str());
         set_environ("W3M_URL", buf->url.ToStr()->ptr);
         set_environ("W3M_TYPE", buf->real_type.size() ? buf->real_type : "unknown");
-        set_environ("W3M_CHARSET", wc_ces_to_charset(buf->document_charset));
+        set_environ("W3M_CHARSET", wc_ces_to_charset(buf->m_document->document_charset));
     }
     l = buf->CurrentLine();
     if (l && (buf != prev_buf || l != prev_line || buf->pos != prev_pos))
@@ -1712,8 +1712,8 @@ err:
 std::string Buffer::conv_search_string(std::string_view str, CharacterEncodingScheme f_ces)
 {
     if (w3mApp::Instance().SearchConv && !WcOption.pre_conv &&
-        this->document_charset != f_ces)
-        str = wtf_conv_fit(str.data(), this->document_charset);
+        this->m_document->document_charset != f_ces)
+        str = wtf_conv_fit(str.data(), this->m_document->document_charset);
     return std::string(str);
 }
 

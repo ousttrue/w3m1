@@ -374,8 +374,8 @@ BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEnco
     //         newBuf->sourcefile = tmpf->ptr;
     // }
 
-    if (newBuf->document_charset)
-        charset = doc_charset = newBuf->document_charset;
+    if (newBuf->m_document->document_charset)
+        charset = doc_charset = newBuf->m_document->document_charset;
     if (content_charset && w3mApp::Instance().UseContentCharset)
         doc_charset = content_charset;
 
@@ -411,7 +411,7 @@ _end:
     // TRAP_OFF;
 
     newBuf->CurrentAsLast();
-    newBuf->document_charset = charset;
+    newBuf->m_document->document_charset = charset;
     if (src)
         fclose(src);
 

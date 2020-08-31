@@ -1294,11 +1294,11 @@ void movlistMn(w3mApp *w3m, const CommandContext &context)
 /* link,anchor,image list */
 void linkLst(w3mApp *w3m, const CommandContext &context)
 {
-    BufferPtr buf;
-    buf = link_list_panel(GetCurrentBuffer());
-    if (buf != NULL)
+    auto buf = GetCurrentBuffer();
+    auto newBuf = link_list_panel(GetCurrentBuffer());
+    if (newBuf != NULL)
     {
-        buf->document_charset = GetCurrentBuffer()->document_charset;
+        newBuf->m_document->document_charset = buf->m_document->document_charset;
         // cmd_loadBuffer(buf, BP_NORMAL, LB_NOLINK);
     }
 }
@@ -1482,8 +1482,8 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
 
             old_charset = w3mApp::Instance().DisplayCharset;
             old_fix_width_conv = WcOption.fix_width_conv;
-            w3mApp::Instance().DisplayCharset = (buf->document_charset != WC_CES_US_ASCII)
-                                                    ? buf->document_charset
+            w3mApp::Instance().DisplayCharset = (buf->m_document->document_charset != WC_CES_US_ASCII)
+                                                    ? buf->m_document->document_charset
                                                     : WC_CES_NONE;
             WcOption.fix_width_conv = false;
 
@@ -1533,7 +1533,7 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
         newBuf->sourcefile = buf->sourcefile;
         newBuf->header_source = buf->header_source;
         newBuf->search_header = buf->search_header;
-        newBuf->document_charset = buf->document_charset;
+        newBuf->m_document->document_charset = buf->m_document->document_charset;
         newBuf->need_reshape = true;
         // buf->Reshape();
         GetCurrentTab()->Push(URL::Parse("w3m://htmlsource", &buf->url));
@@ -1600,8 +1600,8 @@ void reload(w3mApp *w3m, const CommandContext &context)
     Terminal::flush();
 
     auto old_charset = w3m->DocumentCharset;
-    if (buf->document_charset != WC_CES_US_ASCII)
-        w3m->DocumentCharset = buf->document_charset;
+    if (buf->m_document->document_charset != WC_CES_US_ASCII)
+        w3m->DocumentCharset = buf->m_document->document_charset;
 
     w3m->SearchHeader = buf->search_header;
     w3m->DefaultType = Strnew(buf->real_type)->ptr;
@@ -1660,11 +1660,12 @@ void reshape(w3mApp *w3m, const CommandContext &context)
 
 void docCSet(w3mApp *w3m, const CommandContext &context)
 {
+    auto buf = GetCurrentBuffer();
     auto cs = context.data;
     if (cs.empty())
         /* FIXME: gettextize? */
         cs = inputStr("Document charset: ",
-                      wc_ces_to_charset(GetCurrentBuffer()->document_charset));
+                      wc_ces_to_charset(buf->m_document->document_charset));
     auto charset = wc_guess_charset_short(cs.data(), WC_CES_NONE);
     if (charset == 0)
     {
@@ -1765,7 +1766,7 @@ void curlno(w3mApp *w3m, const CommandContext &context)
                       (int)((double)cur * 100.0 / (double)(all ? all : 1) + 0.5), col, len);
 
     tmp->Push("  ");
-    tmp->Push(wc_ces_to_charset_desc(buf->document_charset));
+    tmp->Push(wc_ces_to_charset_desc(buf->m_document->document_charset));
 
     disp_message(tmp->ptr, false);
 }
