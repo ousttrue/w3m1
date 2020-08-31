@@ -395,11 +395,11 @@ append_map_info(BufferPtr buf, Str tmp, FormItemPtr fi)
 static void
 append_link_info(BufferPtr buf, Str html)
 {
-    if (buf->linklist.empty())
+    if (buf->m_document->linklist.empty())
         return;
 
     html->Push("<hr width=50%><h1>Link information</h1><table>\n");
-    for (auto &l : buf->linklist)
+    for (auto &l : buf->m_document->linklist)
     {
         html->Push(l.toHtml(*&buf->url, buf->document_charset));
     }

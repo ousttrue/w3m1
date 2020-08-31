@@ -861,7 +861,7 @@ void topA(w3mApp *w3m, const CommandContext &context)
     if (buf->LineCount() == 0)
         return;
 
-    auto &hl = buf->hmarklist;
+    auto &hl = buf->m_document->hmarklist;
     if (hl.empty())
         return;
 
@@ -895,7 +895,7 @@ void lastA(w3mApp *w3m, const CommandContext &context)
     if (buf->LineCount() == 0)
         return;
 
-    auto &hl = buf->hmarklist;
+    auto &hl = buf->m_document->hmarklist;
     int hseq;
     if (hl.empty())
         return;

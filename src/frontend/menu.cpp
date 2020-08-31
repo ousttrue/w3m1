@@ -1625,7 +1625,7 @@ MenuTypes MenuItem::setMenuItem(std::string_view type, std::string_view line)
 ///
 Link *link_menu(const BufferPtr &buf)
 {
-    if (buf->linklist.empty())
+    if (buf->m_document->linklist.empty())
         return NULL;
 
     // int i, nitem, len = 0, ;
@@ -1634,7 +1634,7 @@ Link *link_menu(const BufferPtr &buf)
     std::vector<std::string> labelBuffer;
     std::vector<std::string> labels;
     auto maxLen = 0;
-    for (auto &l : buf->linklist)
+    for (auto &l : buf->m_document->linklist)
     {
         auto str = Strnew_m_charp(l.title(), l.type());
         std::string_view p;
@@ -1664,9 +1664,9 @@ Link *link_menu(const BufferPtr &buf)
     menu->y = menu->cursorY + 2;
     popup_menu(NULL, menu);
 
-    if (linkV < 0 || linkV >= buf->linklist.size())
+    if (linkV < 0 || linkV >= buf->m_document->linklist.size())
         return NULL;
-    return &buf->linklist[linkV];
+    return &buf->m_document->linklist[linkV];
 }
 
 /* --- LinkMenu (END) --- */

@@ -768,7 +768,7 @@ void _nextA(int visited, int n)
     auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
-    if (buf->hmarklist.empty())
+    if (buf->m_document->hmarklist.empty())
         return;
 
     auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
@@ -781,7 +781,7 @@ void _nextA(int visited, int n)
     // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (visited == true)
     {
-        n = buf->hmarklist.size();
+        n = buf->m_document->hmarklist.size();
     }
 
     for (int i = 0; i < n; i++)
@@ -792,14 +792,14 @@ void _nextA(int visited, int n)
             int hseq = an->hseq + 1;
             do
             {
-                if (hseq >= buf->hmarklist.size())
+                if (hseq >= buf->m_document->hmarklist.size())
                 {
                     if (visited == true)
                         return;
                     an = pan;
                     goto _end;
                 }
-                auto &po = buf->hmarklist[hseq];
+                auto &po = buf->m_document->hmarklist[hseq];
                 an = buf->m_document->href.RetrieveAnchor(po);
                 if (visited != true && an == NULL)
                     an = buf->m_document->formitem.RetrieveAnchor(po);
@@ -845,7 +845,7 @@ _end:
     if (an == NULL || an->hseq < 0)
         return;
 
-    buf->Goto(buf->hmarklist[an->hseq]);
+    buf->Goto(buf->m_document->hmarklist[an->hseq]);
 }
 
 /* go to the previous anchor */
@@ -855,7 +855,7 @@ void _prevA(int visited, int n)
     auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
-    if (buf->hmarklist.empty())
+    if (buf->m_document->hmarklist.empty())
         return;
 
     auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
@@ -868,7 +868,7 @@ void _prevA(int visited, int n)
     // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (visited == true)
     {
-        n = buf->hmarklist.size();
+        n = buf->m_document->hmarklist.size();
     }
 
     for (int i = 0; i < n; i++)
@@ -886,7 +886,7 @@ void _prevA(int visited, int n)
                     an = pan;
                     goto _end;
                 }
-                auto &po = buf->hmarklist[hseq];
+                auto &po = buf->m_document->hmarklist[hseq];
                 an = buf->m_document->href.RetrieveAnchor(po);
                 if (visited != true && an == NULL)
                     an = buf->m_document->formitem.RetrieveAnchor(po);
@@ -932,7 +932,7 @@ _end:
     if (an == NULL || an->hseq < 0)
         return;
 
-    buf->Goto(buf->hmarklist[an->hseq]);
+    buf->Goto(buf->m_document->hmarklist[an->hseq]);
 }
 
 void gotoLabel(std::string_view label)
@@ -965,7 +965,7 @@ void nextX(int d, int dy, int n)
     auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
-    if (buf->hmarklist.empty())
+    if (buf->m_document->hmarklist.empty())
         return;
 
     auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
@@ -1021,7 +1021,7 @@ void nextY(int d, int n)
     auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
-    if (buf->hmarklist.empty())
+    if (buf->m_document->hmarklist.empty())
         return;
 
     auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
@@ -1143,14 +1143,14 @@ void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (!buf->m_document->href || buf->hmarklist.empty())
+    if (!buf->m_document->href || buf->m_document->hmarklist.empty())
         return;
 
     auto a = menu_func(buf);
     if (!a || a->hseq < 0)
         return;
 
-    buf->Goto(buf->hmarklist[a->hseq]);
+    buf->Goto(buf->m_document->hmarklist[a->hseq]);
     if (go)
         followA(&w3mApp::Instance(), {});
 }

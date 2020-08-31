@@ -145,7 +145,7 @@ reseq_anchor0(AnchorList &al, short *seqmap)
 static void
 reseq_anchor(const BufferPtr &buf)
 {
-    int i, j, n, nmark = buf->hmarklist.size();
+    int i, j, n, nmark = buf->m_document->hmarklist.size();
     short *seqmap;
 
     if (!buf->m_document->href)
@@ -184,14 +184,14 @@ reseq_anchor(const BufferPtr &buf)
                 for (j = a1->hseq; j < nmark; j++)
                     seqmap[j]++;
             }
-            buf->putHmarker(a->start.line, a->start.pos, seqmap[n]);
+            buf->m_document->putHmarker(a->start.line, a->start.pos, seqmap[n]);
             n++;
         }
     }
 
     for (i = 0; i < nmark; i++)
     {
-        buf->putHmarker(buf->hmarklist[i].line, buf->hmarklist[i].pos, seqmap[i]);
+        buf->m_document->putHmarker(buf->m_document->hmarklist[i].line, buf->m_document->hmarklist[i].pos, seqmap[i]);
     }
 
     reseq_anchor0(buf->m_document->href, seqmap);
@@ -547,8 +547,8 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
             auto pos = columnPos(l, col);
             if (j == 0)
             {
-                buf->hmarklist[a_form->hseq].line = l->linenumber;
-                buf->hmarklist[a_form->hseq].pos = pos;
+                buf->m_document->hmarklist[a_form->hseq].line = l->linenumber;
+                buf->m_document->hmarklist[a_form->hseq].pos = pos;
             }
             if (a_form->start.line == l->linenumber)
                 continue;
@@ -614,7 +614,7 @@ BufferPtr
 link_list_panel(const BufferPtr &buf)
 {
     if (buf->bufferprop & BP_INTERNAL ||
-        (buf->linklist.empty() && !buf->m_document->href && !buf->m_document->img))
+        (buf->m_document->linklist.empty() && !buf->m_document->href && !buf->m_document->img))
     {
         return NULL;
     }
@@ -623,10 +623,10 @@ link_list_panel(const BufferPtr &buf)
     Str tmp = Strnew("<title>Link List</title>\
 <h1 align=center>Link List</h1>\n");
 
-    if (buf->linklist.size())
+    if (buf->m_document->linklist.size())
     {
         tmp->Push("<hr><h2>Links</h2>\n<ol>\n");
-        for (auto &l : buf->linklist)
+        for (auto &l : buf->m_document->linklist)
         {
             const char *u;
             const char *p;

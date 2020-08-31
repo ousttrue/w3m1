@@ -42,7 +42,7 @@ bool fread1(T &d, FILE *f)
 }
 
 Buffer::Buffer()
-: m_document(new Document)
+    : m_document(new Document)
 {
     url.scheme = SCM_UNKNOWN;
     baseTarget = {};
@@ -255,6 +255,9 @@ void Buffer::CopyFrom(BufferPtr src)
     m_document->name = src->m_document->name;
     m_document->img = src->m_document->img;
     m_document->formitem = src->m_document->formitem;
+    m_document->linklist = src->m_document->linklist;
+    m_document->hmarklist = src->m_document->hmarklist;
+    m_document->imarklist = src->m_document->imarklist;
 
     // scroll
     topLine = src->topLine;
@@ -273,11 +276,8 @@ void Buffer::CopyFrom(BufferPtr src)
     pagerSource = src->pagerSource;
     prevhseq = src->prevhseq;
 
-    linklist = src->linklist;
     formlist = src->formlist;
     maplist = src->maplist;
-    hmarklist = src->hmarklist;
-    imarklist = src->imarklist;
     url = src->url;
     baseTarget = src->baseTarget;
     real_scheme = src->real_scheme;
@@ -299,16 +299,6 @@ void Buffer::CopyFrom(BufferPtr src)
     event = src->event;
 }
 
-void Buffer::putHmarker(int line, int pos, int seq)
-{
-    if ((seq + 1) >= hmarklist.size())
-    {
-        hmarklist.resize(seq + 1);
-    }
-    hmarklist[seq].line = line;
-    hmarklist[seq].pos = pos;
-    hmarklist[seq].invalid = 0;
-}
 
 void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift)
 {
@@ -330,6 +320,7 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
         else
             e = s - 1;
     }
+
     for (; s < al.size(); s++)
     {
         auto a = al.anchors[s];
@@ -338,8 +329,8 @@ void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shif
         if (a->start.pos > bp.pos)
         {
             a->start.pos += shift;
-            if (hmarklist[a->hseq].line == bp.line)
-                hmarklist[a->hseq].pos = a->start.pos;
+            if (m_document->hmarklist[a->hseq].line == bp.line)
+                m_document->hmarklist[a->hseq].pos = a->start.pos;
         }
         if (a->end.pos >= bp.pos)
             a->end.pos += shift;

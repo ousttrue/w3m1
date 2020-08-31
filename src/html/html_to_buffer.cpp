@@ -251,17 +251,17 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         auto hseq = 0;
         tag->TryGetAttributeValue(ATTR_HSEQ, &hseq);
         if (hseq > 0)
-            buf->putHmarker(currentLn(buf), pos, hseq - 1);
+            buf->m_document->putHmarker(currentLn(buf), pos, hseq - 1);
         else if (hseq < 0)
         {
             int h = -hseq - 1;
-            if (buf->hmarklist.size() &&
-                h < buf->hmarklist.size() &&
-                buf->hmarklist[h].invalid)
+            if (buf->m_document->hmarklist.size() &&
+                h < buf->m_document->hmarklist.size() &&
+                buf->m_document->hmarklist[h].invalid)
             {
-                buf->hmarklist[h].pos = pos;
-                buf->hmarklist[h].line = currentLn(buf);
-                buf->hmarklist[h].invalid = 0;
+                buf->m_document->hmarklist[h].pos = pos;
+                buf->m_document->hmarklist[h].line = currentLn(buf);
+                buf->m_document->hmarklist[h].invalid = 0;
                 hseq = -hseq;
             }
         }
@@ -293,9 +293,9 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             this->a_href->end.pos = pos;
             if (this->a_href->start == this->a_href->end)
             {
-                if (buf->hmarklist.size() &&
-                    this->a_href->hseq < buf->hmarklist.size())
-                    buf->hmarklist[this->a_href->hseq].invalid = 1;
+                if (buf->m_document->hmarklist.size() &&
+                    this->a_href->hseq < buf->m_document->hmarklist.size())
+                    buf->m_document->hmarklist[this->a_href->hseq].invalid = 1;
                 this->a_href->hseq = -1;
             }
             this->a_href = nullptr;
@@ -303,7 +303,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         break;
 
     case HTML_LINK:
-        buf->linklist.push_back(Link::create(tag, buf->document_charset));
+        buf->m_document->linklist.push_back(Link::create(tag, buf->document_charset));
         break;
 
     case HTML_IMG_ALT:
@@ -326,7 +326,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             tag->TryGetAttributeValue(ATTR_USEMAP, &q);
             if (iseq > 0)
             {
-                buf->putHmarker(currentLn(buf), pos, iseq - 1);
+                buf->m_document->putHmarker(currentLn(buf), pos, iseq - 1);
             }
 
             char *s = nullptr;
@@ -377,7 +377,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             }
             else if (iseq < 0)
             {
-                auto a = buf->m_document->img.RetrieveAnchor(buf->imarklist[-iseq - 1]);
+                auto a = buf->m_document->img.RetrieveAnchor(buf->m_document->imarklist[-iseq - 1]);
                 if (a)
                 {
                     this->a_img->url = a->url;
@@ -418,7 +418,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             int hpos = pos;
             if (*str == '[')
                 hpos++;
-            buf->putHmarker(currentLn(buf), hpos, hseq - 1);
+            buf->m_document->putHmarker(currentLn(buf), hpos, hseq - 1);
         }
         if (form->target.empty())
             form->target = buf->baseTarget;
