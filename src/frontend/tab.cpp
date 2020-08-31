@@ -72,7 +72,7 @@ void Tab::Push(const URL &url)
 static void
 writeBufferName(BufferPtr buf, int n)
 {
-    auto all = buf->LineCount();
+    auto all = buf->m_document->LineCount();
     Screen::Instance().Move(n, 0);
     /* FIXME: gettextize? */
     auto msg = Sprintf("<%s> [%d lines]", buf->buffername, all);

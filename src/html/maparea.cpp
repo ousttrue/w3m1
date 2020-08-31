@@ -432,7 +432,7 @@ page_info_panel(const BufferPtr &buf)
     int all = 0;
     if (buf == NULL)
         goto end;
-    all = buf->LineCount();
+    all = buf->m_document->LineCount();
 
     tmp->Push("<form method=internal action=charset>");
 

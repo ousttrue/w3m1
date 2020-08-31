@@ -661,12 +661,12 @@ pager_next:
 
 void saveBuffer(BufferPtr buf, FILE *f, int cont)
 {
-    _saveBuffer(buf, buf->FirstLine(), f, cont);
+    _saveBuffer(buf, buf->m_document->FirstLine(), f, cont);
 }
 
 void saveBufferBody(BufferPtr buf, FILE *f, int cont)
 {
-    LinePtr l = buf->FirstLine();
+    LinePtr l = buf->m_document->FirstLine();
 
     while (l != NULL && l->real_linenumber == 0)
         l = buf->NextLine(l);
@@ -738,7 +738,7 @@ BufferPtr openPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme 
     // else
     //     buf->m_document->document_charset = WC_CES_US_ASCII;
 
-    // buf->SetCurrentLine(buf->FirstLine());
+    // buf->SetCurrentLine(buf->m_document->FirstLine());
 
     // return buf;
 }
@@ -811,7 +811,7 @@ BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncoding
 LinePtr getNextPage(BufferPtr buf, int plen)
 {
     LinePtr top = buf->TopLine();
-    LinePtr last = buf->LastLine();
+    LinePtr last = buf->m_document->LastLine();
     LinePtr cur = buf->CurrentLine();
     int i;
     int nlines = 0;
@@ -889,12 +889,12 @@ LinePtr getNextPage(BufferPtr buf, int plen)
     //         buf->AddNewLine(PropertiedString(lineBuf2), nlines);
     //         if (!top)
     //         {
-    //             top = buf->FirstLine();
+    //             top = buf->m_document->FirstLine();
     //             cur = top;
     //         }
-    //         if (buf->LastLine()->real_linenumber - buf->FirstLine()->real_linenumber >= w3mApp::Instance().PagerMax)
+    //         if (buf->m_document->LastLine()->real_linenumber - buf->m_document->FirstLine()->real_linenumber >= w3mApp::Instance().PagerMax)
     //         {
-    //             LinePtr l = buf->FirstLine();
+    //             LinePtr l = buf->m_document->FirstLine();
     //             do
     //             {
     //                 if (top == l)
@@ -906,7 +906,7 @@ LinePtr getNextPage(BufferPtr buf, int plen)
     //                 l = buf->NextLine(l);
     //             } while (l && l->bpos);
     //             buf->SetFirstLine(l);
-    //             buf->SetPrevLine(buf->FirstLine(), NULL);
+    //             buf->SetPrevLine(buf->m_document->FirstLine(), NULL);
     //         }
     //     }
 
@@ -924,7 +924,7 @@ LinePtr getNextPage(BufferPtr buf, int plen)
     // buf->SetTopLine(top);
     // buf->SetCurrentLine(cur);
     // if (!last)
-    //     last = buf->FirstLine();
+    //     last = buf->m_document->FirstLine();
     // else if (last && (buf->NextLine(last) || !squeeze_flag))
     //     last = buf->NextLine(last);
     // return last;

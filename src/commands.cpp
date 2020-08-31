@@ -600,7 +600,7 @@ void linbeg(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     while (buf->PrevLine(buf->CurrentLine()) && buf->CurrentLine()->bpos)
         buf->CursorUp0(1);
@@ -613,7 +613,7 @@ void linend(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     while (buf->NextLine(buf->CurrentLine()) && buf->NextLine(buf->CurrentLine())->bpos)
         buf->CursorDown0(1);
@@ -689,7 +689,7 @@ void _mark(w3mApp *w3m, const CommandContext &context)
 
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     auto l = buf->CurrentLine();
     l->propBuf()[buf->pos] ^= PE_MARK;
@@ -705,7 +705,7 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
         return;
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     i = buf->pos + 1;
     l = buf->CurrentLine();
@@ -742,7 +742,7 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
         return;
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     i = buf->pos - 1;
     l = buf->CurrentLine();
@@ -797,7 +797,7 @@ void reMark(w3mApp *w3m, const CommandContext &context)
     }
     SetMarkString(str.data());
 
-    for (int i = 0; i < buf->LineCount(); ++i)
+    for (int i = 0; i < buf->m_document->LineCount(); ++i)
     {
         auto l = buf->m_document->GetLine(i);
         char *p, *p1, *p2;
@@ -821,7 +821,7 @@ void followI(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     auto a = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
@@ -858,7 +858,7 @@ void topA(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
 
     auto &hl = buf->m_document->hmarklist;
@@ -892,7 +892,7 @@ void lastA(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
 
     auto &hl = buf->m_document->hmarklist;
@@ -964,7 +964,7 @@ void followA(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     auto l = buf->CurrentLine();
 
@@ -1641,7 +1641,7 @@ void reload(w3mApp *w3m, const CommandContext &context)
         }
         GetCurrentBuffer()->search_header = sbuf->search_header;
         GetCurrentBuffer()->form_submit = sbuf->form_submit;
-        if (GetCurrentBuffer()->LineCount())
+        if (GetCurrentBuffer()->m_document->LineCount())
         {
             GetCurrentBuffer()->rect = sbuf->rect;
             GetCurrentBuffer()->restorePosition(sbuf);
@@ -1727,7 +1727,7 @@ void linkbrz(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
 
     auto a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
@@ -1755,8 +1755,8 @@ void curlno(w3mApp *w3m, const CommandContext &context)
         len = l->bend();
     }
 
-    if (buf->LastLine())
-        all = buf->LastLine()->real_linenumber;
+    if (buf->m_document->LastLine())
+        all = buf->m_document->LastLine()->real_linenumber;
 
     Str tmp;
     // if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))

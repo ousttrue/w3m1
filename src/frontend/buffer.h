@@ -200,11 +200,6 @@ struct Buffer : std::enable_shared_from_this<Buffer>
 public:
     static std::shared_ptr<Buffer> Create(const URL &url);
 
-    int LineCount() const
-    {
-        return m_document->LineCount();
-    }
-
 public:
     void AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_linenumber, int width);
     void AddNewLine(const PropertiedString &lineBuffer, int real_linenumber = -1);
@@ -212,14 +207,6 @@ public:
     {
         currentLine = topLine = NULL;
         m_document->Clear();
-    }
-    LinePtr FirstLine() const
-    {
-        return m_document->FirstLine();
-    }
-    LinePtr LastLine() const
-    {
-        return m_document->LastLine();
     }
     LinePtr TopLine() const
     {
@@ -273,8 +260,8 @@ public:
     void CurrentAsLast()
     {
         m_document->EraseTo(currentLine);
-        topLine = FirstLine();
-        currentLine = FirstLine();
+        topLine = m_document->FirstLine();
+        currentLine = m_document->FirstLine();
     }
     // void EachLine(const std::function<void(LinePtr)> &func)
     // {
@@ -345,7 +332,7 @@ public:
     }
     void restorePosition(const BufferPtr orig)
     {
-        this->LineSkip(this->FirstLine(), orig->TOP_LINENUMBER() - 1, false);
+        this->LineSkip(m_document->FirstLine(), orig->TOP_LINENUMBER() - 1, false);
         this->GotoLine(orig->CUR_LINENUMBER());
         this->pos = orig->pos;
         if (this->currentLine && orig->currentLine)

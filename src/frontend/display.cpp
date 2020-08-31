@@ -311,8 +311,6 @@ void clear_effect()
         do_color(0);
 }
 
-static void drawAnchorCursor(const BufferPtr &buf);
-
 static int image_touch = 0;
 static int draw_image_flag = false;
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i);
@@ -413,10 +411,10 @@ static Str make_lastline_message(const BufferPtr &buf)
         msg = Strnew(GetMouseActionLastlineStr());
     else
         msg = Strnew();
-    if (w3mApp::Instance().displayLineInfo && buf->LineCount() > 0)
+    if (w3mApp::Instance().displayLineInfo && buf->m_document->LineCount() > 0)
     {
         int cl = buf->CurrentLine()->real_linenumber;
-        int ll = buf->LastLine()->real_linenumber;
+        int ll = buf->m_document->LastLine()->real_linenumber;
         int r = (int)((double)cl * 100.0 / (double)(ll ? ll : 1) + 0.5);
         msg->Push(Sprintf("%d/%d (%d%%)", cl, ll, r));
     }
@@ -510,7 +508,7 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
 
 static void drawAnchorCursor(const BufferPtr &buf)
 {
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     if (!buf->m_document->href && !buf->m_document->formitem)
         return;
@@ -519,11 +517,9 @@ static void drawAnchorCursor(const BufferPtr &buf)
     if (!an)
         an = retrieveCurrentMap(buf);
 
-    int hseq;
+    int hseq = -1;
     if (an)
         hseq = an->hseq;
-    else
-        hseq = -1;
 
     int tline = buf->TopLine()->linenumber;
     int eline = tline + buf->rect.lines;
@@ -665,7 +661,7 @@ static void redrawNLine(const BufferPtr &buf)
         int i = 0;
         for (auto l = buf->TopLine(); l && i < buf->rect.lines; i++, l = buf->NextLine(l))
         {
-            assert(buf->rect.cursorX==buf->currentColumn);
+            assert(buf->rect.rootX==buf->currentColumn);
             DrawLine(l, i + buf->rect.rootY, buf->rect, buf->currentColumn, buf->m_document);
         }
         Screen::Instance().Move(i + buf->rect.rootY, 0);
@@ -1056,7 +1052,7 @@ void displayBuffer()
 
     // if (w3mApp::Instance().showLineNum)
     // {
-    //     buf->rect.updateRootX(buf->LastLine()->real_linenumber);
+    //     buf->rect.updateRootX(buf->m_document->LastLine()->real_linenumber);
     // }
     // else
     {
@@ -1148,7 +1144,7 @@ void displayBuffer()
     }
     if (buf->TopLine() == NULL)
     {
-        buf->SetTopLine(buf->FirstLine());
+        buf->SetTopLine(buf->m_document->FirstLine());
     }
 
     // if (buf->need_reshape)
@@ -1160,7 +1156,7 @@ void displayBuffer()
     drawAnchorCursor(buf);
 
     auto msg = make_lastline_message(buf);
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
     {
         /* FIXME: gettextize? */
         msg->Push("\tNo Line");

@@ -269,7 +269,7 @@ reAnchorAny(BufferPtr buf, const char *re,
     {
         return re;
     }
-    for (l = w3mApp::Instance().MarkAllPages ? buf->FirstLine() : buf->TopLine(); l != NULL &&
+    for (l = w3mApp::Instance().MarkAllPages ? buf->m_document->FirstLine() : buf->TopLine(); l != NULL &&
                                                                                   (w3mApp::Instance().MarkAllPages || l->linenumber < buf->TopLine()->linenumber + ::Terminal::lines() - 1);
          l = buf->NextLine(l))
     {
@@ -321,7 +321,7 @@ reAnchorNewsheader(const BufferPtr &buf)
     const char **q;
     int i, search = false;
 
-    if (!buf || !buf->FirstLine())
+    if (!buf || !buf->m_document->FirstLine())
         return NULL;
     for (i = 0; i <= 1; i++)
     {
@@ -335,7 +335,7 @@ reAnchorNewsheader(const BufferPtr &buf)
             regexCompile("[a-zA-Z0-9\\.\\-_]+", 1);
             header = header_group;
         }
-        for (l = buf->FirstLine(); l != NULL && l->real_linenumber == 0;
+        for (l = buf->m_document->FirstLine(); l != NULL && l->real_linenumber == 0;
              l = buf->NextLine(l))
         {
             if (l->bpos)
@@ -421,7 +421,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         auto img = a_img->image;
         if (a_img->hseq < 0 || !img || img->rows <= 1)
             continue;
-        auto l = buf->FirstLine();
+        auto l = buf->m_document->FirstLine();
         for (; l != NULL; l = buf->NextLine(l))
         {
             if (l->linenumber == img->y)
@@ -519,7 +519,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
         al.anchors[i]->rows = 1;
         if (a_form->hseq < 0 || a_form->rows <= 1)
             continue;
-        auto l = buf->FirstLine();
+        auto l = buf->m_document->FirstLine();
         for (; l != NULL; l = buf->NextLine(l))
         {
             if (l->linenumber == a_form->y)
@@ -584,7 +584,7 @@ getAnchorText(BufferPtr buf, AnchorList &al, AnchorPtr a)
     if (!a || a->hseq < 0)
         return NULL;
     hseq = a->hseq;
-    l = buf->FirstLine();
+    l = buf->m_document->FirstLine();
     for (i = 0; i < al.size(); i++)
     {
         a = al.anchors[i];

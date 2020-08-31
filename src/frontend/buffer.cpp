@@ -94,7 +94,7 @@ int Buffer::WriteBufferCache()
     FILE *cache = NULL;
     int colorflag;
 
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         goto _error1;
 
     tmp = tmpfname(TMPF_CACHE, NULL);
@@ -353,13 +353,13 @@ LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
     // if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
     // {
     //     n = line->linenumber + offset + this->rect.lines;
-    //     if (this->LastLine()->linenumber < n)
-    //         getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
-    //     while ((last || (this->LastLine()->linenumber < n)) &&
+    //     if (m_document->LastLine()->linenumber < n)
+    //         getNextPage(shared_from_this(), n - m_document->LastLine()->linenumber);
+    //     while ((last || (m_document->LastLine()->linenumber < n)) &&
     //            (getNextPage(shared_from_this(), 1) != NULL))
     //         ;
     //     if (last)
-    //         l = m_document->_find(this->LastLine());
+    //         l = m_document->_find(m_document->LastLine());
     // }
 
     if (offset == 0)
@@ -380,7 +380,7 @@ void Buffer::LineSkip(LinePtr line, int offset, int last)
     auto l = m_document->_find(CurrentLineSkip(line, offset, last));
     int i;
     if (!w3mApp::Instance().nextpage_topline)
-        for (i = this->rect.lines - 1 - (this->LastLine()->linenumber - (*l)->linenumber);
+        for (i = this->rect.lines - 1 - (m_document->LastLine()->linenumber - (*l)->linenumber);
              i > 0 && l != m_document->m_lines.begin();
              i--, --l)
         {
@@ -394,14 +394,14 @@ void Buffer::LineSkip(LinePtr line, int offset, int last)
 void Buffer::GotoLine(int n, bool topline)
 {
     char msg[32];
-    LinePtr l = this->FirstLine();
+    LinePtr l = m_document->FirstLine();
     if (l == NULL)
         return;
     // if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
     // {
-    //     if (this->LastLine()->linenumber < n)
-    //         getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
-    //     while ((this->LastLine()->linenumber < n) &&
+    //     if (m_document->LastLine()->linenumber < n)
+    //         getNextPage(shared_from_this(), n - m_document->LastLine()->linenumber);
+    //     while ((m_document->LastLine()->linenumber < n) &&
     //            (getNextPage(shared_from_this(), 1) != NULL))
     //         ;
     // }
@@ -413,11 +413,11 @@ void Buffer::GotoLine(int n, bool topline)
         this->topLine = this->currentLine = l;
         return;
     }
-    if (this->LastLine()->linenumber < n)
+    if (m_document->LastLine()->linenumber < n)
     {
-        l = this->LastLine();
+        l = m_document->LastLine();
         /* FIXME: gettextize? */
-        sprintf(msg, "Last line is #%ld", this->LastLine()->linenumber);
+        sprintf(msg, "Last line is #%ld", m_document->LastLine()->linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
         LineSkip(this->currentLine, -(this->rect.lines - 1), false);
@@ -452,8 +452,8 @@ void Buffer::Scroll(int n)
         lnum += n;
         if (lnum < this->topLine->linenumber)
             lnum = this->topLine->linenumber;
-        else if (lnum > this->LastLine()->linenumber)
-            lnum = this->LastLine()->linenumber;
+        else if (lnum > m_document->LastLine()->linenumber)
+            lnum = m_document->LastLine()->linenumber;
     }
     else
     {
@@ -474,7 +474,7 @@ void Buffer::Scroll(int n)
 
 void Buffer::NScroll(int n)
 {
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
 
     this->Scroll(n);
@@ -514,15 +514,15 @@ void Buffer::NScroll(int n)
 void Buffer::GotoRealLine(int n)
 {
     char msg[32];
-    LinePtr l = this->FirstLine();
+    LinePtr l = m_document->FirstLine();
 
     if (l == NULL)
         return;
     // if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
     // {
-    //     if (this->LastLine()->real_linenumber < n)
-    //         getNextPage(shared_from_this(), n - this->LastLine()->real_linenumber);
-    //     while ((this->LastLine()->real_linenumber < n) &&
+    //     if (m_document->LastLine()->real_linenumber < n)
+    //         getNextPage(shared_from_this(), n - m_document->LastLine()->real_linenumber);
+    //     while ((m_document->LastLine()->real_linenumber < n) &&
     //            (getNextPage(shared_from_this(), 1) != NULL))
     //         ;
     // }
@@ -534,11 +534,11 @@ void Buffer::GotoRealLine(int n)
         this->topLine = this->currentLine = l;
         return;
     }
-    if (this->LastLine()->real_linenumber < n)
+    if (m_document->LastLine()->real_linenumber < n)
     {
-        l = this->LastLine();
+        l = m_document->LastLine();
         /* FIXME: gettextize? */
-        sprintf(msg, "Last line is #%ld", this->LastLine()->real_linenumber);
+        sprintf(msg, "Last line is #%ld", m_document->LastLine()->real_linenumber);
         set_delayed_message(msg);
         this->currentLine = l;
         LineSkip(this->currentLine, -(this->rect.lines - 1),
@@ -623,7 +623,7 @@ void Buffer::GotoRealLine(int n)
 //     w3mApp::Instance().UseContentCharset = true;
 
 //     this->height = (rect.lines - 1) + 1;
-//     if (this->FirstLine() && sbuf->FirstLine())
+//     if (m_document->FirstLine() && sbuf->FirstLine())
 //     {
 //         LinePtr cur = sbuf->currentLine;
 //         int n;
@@ -741,7 +741,7 @@ void Buffer::AddNewLine(const PropertiedString &lineBuffer, int real_linenumber)
     currentLine = l;
 
     // 1 origin linenumber
-    l->linenumber = this->LineCount();
+    l->linenumber = m_document->LineCount();
     if (real_linenumber >= 0)
     {
         l->real_linenumber = real_linenumber;
@@ -788,7 +788,7 @@ void Buffer::AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_l
 
 void Buffer::SavePosition()
 {
-    if (LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
 
     auto b = undo.size() ? &undo.back() : nullptr;
@@ -826,11 +826,11 @@ void Buffer::CursorUp0(int n)
 void Buffer::CursorUp(int n)
 {
     LinePtr l = this->currentLine;
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
     while (PrevLine(this->currentLine) && this->currentLine->bpos)
         CursorUp0(n);
-    if (this->currentLine == this->FirstLine())
+    if (this->currentLine == m_document->FirstLine())
     {
         this->GotoLine(l->linenumber);
         ArrangeLine();
@@ -858,11 +858,11 @@ void Buffer::CursorDown0(int n)
 void Buffer::CursorDown(int n)
 {
     LinePtr l = this->currentLine;
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
     while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos)
         CursorDown0(n);
-    if (this->currentLine == this->LastLine())
+    if (this->currentLine == m_document->LastLine())
     {
         this->GotoLine(l->linenumber);
         ArrangeLine();
@@ -879,7 +879,7 @@ void Buffer::CursorUpDown(int n)
 {
     LinePtr cl = this->currentLine;
 
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
     if ((this->currentLine = this->CurrentLineSkip(cl, n, false)) == cl)
         return;
@@ -892,7 +892,7 @@ void Buffer::CursorRight(int n)
     LinePtr l = this->currentLine;
     Lineprop *p;
 
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
     if (this->pos == l->len() && !(NextLine(l) && NextLine(l)->bpos))
         return;
@@ -945,7 +945,7 @@ void Buffer::CursorLeft(int n)
     LinePtr l = this->currentLine;
     Lineprop *p;
 
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
     i = this->pos;
     p = l->propBuf();
@@ -1070,7 +1070,7 @@ void Buffer::ArrangeCursor()
 
 void Buffer::ArrangeLine()
 {
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
 
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
@@ -1189,7 +1189,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
 
 bool Buffer::MoveLeftWord(int n)
 {
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return false;
 
     for (int i = 0; i < n; i++)
@@ -1241,7 +1241,7 @@ end:
 
 bool Buffer::MoveRightWord(int n)
 {
-    if (this->LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return false;
 
     for (int i = 0; i < n; i++)
@@ -1301,7 +1301,7 @@ void Buffer::resetPos(int i)
 
 void Buffer::undoPos(int prec_num)
 {
-    if (LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
     if (undo.size() < 2)
     {
@@ -1324,7 +1324,7 @@ void Buffer::undoPos(int prec_num)
 
 void Buffer::redoPos()
 {
-    if (LineCount() == 0)
+    if (m_document->LineCount() == 0)
         return;
 
     // TODO:
@@ -1501,14 +1501,14 @@ void Buffer::_goLine(std::string_view l, int prec_num)
     }
     else if (l[0] == '^')
     {
-        this->SetCurrentLine(this->FirstLine());
-        this->SetTopLine(this->FirstLine());
+        this->SetCurrentLine(m_document->FirstLine());
+        this->SetTopLine(m_document->FirstLine());
     }
     else if (l[0] == '$')
     {
-        this->LineSkip(this->LastLine(),
+        this->LineSkip(m_document->LastLine(),
                        -(this->rect.lines + 1) / 2, true);
-        this->SetCurrentLine(this->LastLine());
+        this->SetCurrentLine(m_document->LastLine());
     }
     else
     {
@@ -1661,7 +1661,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
             //     {
             //         if (w3mApp::Instance().WrapSearch && !wrapped)
             //         {
-            //             l = buf->FirstLine();
+            //             l = buf->m_document->FirstLine();
             //             wrapped = true;
             //         }
             //         else
@@ -1673,7 +1673,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
             // else
             if (w3mApp::Instance().WrapSearch)
             {
-                l = buf->FirstLine();
+                l = buf->m_document->FirstLine();
                 wrapped = true;
             }
             else
@@ -1794,7 +1794,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
         {
             if (w3mApp::Instance().WrapSearch)
             {
-                l = buf->LastLine();
+                l = buf->m_document->LastLine();
                 wrapped = true;
             }
             else

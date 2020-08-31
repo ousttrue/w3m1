@@ -308,7 +308,7 @@ int cur_real_linenumber(const BufferPtr &buf)
     if (!cur)
         return 1;
     auto n = cur->real_linenumber ? cur->real_linenumber : 1;
-    for (auto l = buf->FirstLine(); l && l != cur && l->real_linenumber == 0; l = buf->NextLine(l))
+    for (auto l = buf->m_document->FirstLine(); l && l != cur && l->real_linenumber == 0; l = buf->NextLine(l))
     { /* header */
         if (l->bpos == 0)
             n++;
@@ -332,7 +332,7 @@ void _followForm(bool submit)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     auto a = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
@@ -762,7 +762,7 @@ void _nextA(int visited, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     if (buf->m_document->hmarklist.empty())
         return;
@@ -849,7 +849,7 @@ void _prevA(int visited, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     if (buf->m_document->hmarklist.empty())
         return;
@@ -959,7 +959,7 @@ void nextX(int d, int dy, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     if (buf->m_document->hmarklist.empty())
         return;
@@ -1015,7 +1015,7 @@ void nextY(int d, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
     if (buf->m_document->hmarklist.empty())
         return;
@@ -1034,7 +1034,7 @@ void nextY(int d, int n)
         if (an)
             hseq = abs(an->hseq);
         an = NULL;
-        for (; y >= 0 && y <= buf->LineCount(); y += d)
+        for (; y >= 0 && y <= buf->m_document->LineCount(); y += d)
         {
             an = buf->m_document->href.RetrieveAnchor({y, x});
             if (!an)
@@ -1155,7 +1155,7 @@ void _peekURL(int only_img, int n)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->LineCount() == 0)
+    if (buf->m_document->LineCount() == 0)
         return;
 
     int offset = 0;
