@@ -127,6 +127,7 @@ add_executable(w3m
     src/frontend/mouse.cpp
     src/frontend/keybind.cpp
     src/frontend/event.cpp
+    src/frontend/anchor.cpp
     src/file.cpp
     src/stream/network.cpp
     src/stream/input_stream.cpp
@@ -141,7 +142,6 @@ add_executable(w3m
     src/mime/mimeencoding.cpp
     src/mime/mimetypes.cpp
     src/mime/mailcap.cpp
-    src/html/anchor.cpp
     src/html/tagstack.cpp
     src/html/readbuffer.cpp
     src/html/html_context.cpp

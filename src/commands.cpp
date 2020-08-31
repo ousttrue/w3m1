@@ -26,7 +26,7 @@
 #include "frontend/tabbar.h"
 #include "mime/mimetypes.h"
 #include "stream/local_cgi.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "loader.h"
 #include "mime/mailcap.h"
 #include "frontend/event.h"

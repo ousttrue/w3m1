@@ -1,7 +1,7 @@
 
 #include "indep.h"
 #include "gc_helper.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "myctype.h"
 #include "regex.h"
 #include "file.h"

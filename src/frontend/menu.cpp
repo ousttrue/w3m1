@@ -11,7 +11,7 @@
 #include "file.h"
 #include "html/html.h"
 #include "charset.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "stream/url.h"
 #include "frontend/display.h"
 #include "frontend/menu.h"

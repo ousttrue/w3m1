@@ -8,7 +8,7 @@
 #include "commands.h"
 #include "symbol.h"
 #include "file.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "frontend/mouse.h"
 #include "frontend/tab.h"
 #include "frontend/display.h"

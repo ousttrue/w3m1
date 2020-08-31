@@ -1,6 +1,6 @@
 #pragma once
 #include "stream/url.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "html/maparea.h"
 #include "html/form.h"
 #include "html/image.h"

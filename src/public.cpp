@@ -23,7 +23,7 @@
 #include "stream/url.h"
 #include "stream/cookie.h"
 #include "ctrlcode.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "html/maparea.h"
 #include "frontend/mouse.h"
 #include "frontend/buffer.h"

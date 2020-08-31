@@ -7,7 +7,7 @@
 #include "commands.h"
 #include "html/html_context.h"
 #include "file.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "public.h"
 #include "symbol.h"
 #include "html/maparea.h"

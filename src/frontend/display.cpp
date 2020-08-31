@@ -10,7 +10,7 @@
 #include "frontend/mouse.h"
 #include "frontend/tab.h"
 #include "frontend/tabbar.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "html/image.h"
 #include "html/maparea.h"
 #include "html/html_context.h"

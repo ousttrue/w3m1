@@ -8,7 +8,7 @@
 
 #include "html/form.h"
 #include "frontend/display.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "stream/http.h"
 #include <pwd.h>
 #include <sys/types.h>

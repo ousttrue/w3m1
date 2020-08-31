@@ -18,7 +18,7 @@
 #include "mime/mimetypes.h"
 #include "frontend/display.h"
 #include "frontend/tabbar.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "charset.h"
 #include "history.h"
 

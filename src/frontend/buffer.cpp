@@ -18,7 +18,7 @@
 #include "html/html.h"
 #include "ctrlcode.h"
 #include "stream/local_cgi.h"
-#include "html/anchor.h"
+#include "frontend/anchor.h"
 #include "stream/url.h"
 #include "loader.h"
 #include "mime/mimetypes.h"
