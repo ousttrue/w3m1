@@ -598,11 +598,11 @@ void goLineL(w3mApp *w3m, const CommandContext &context)
 /* Go to the beginning of the line */
 void linbeg(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->m_document->LineCount() == 0)
+    auto doc = buf->m_document;
+    if (doc->LineCount() == 0)
         return;
-    while (buf->PrevLine(buf->CurrentLine()) && buf->CurrentLine()->bpos)
+    while (doc->PrevLine(buf->CurrentLine()) && buf->CurrentLine()->bpos)
         buf->CursorUp0(1);
     buf->pos = 0;
     buf->ArrangeCursor();
@@ -611,11 +611,11 @@ void linbeg(w3mApp *w3m, const CommandContext &context)
 /* Go to the bottom of the line */
 void linend(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->m_document->LineCount() == 0)
+    auto doc = buf->m_document;
+    if (doc->LineCount() == 0)
         return;
-    while (buf->NextLine(buf->CurrentLine()) && buf->NextLine(buf->CurrentLine())->bpos)
+    while (doc->NextLine(buf->CurrentLine()) && doc->NextLine(buf->CurrentLine())->bpos)
         buf->CursorDown0(1);
     buf->pos = buf->CurrentLine()->len() - 1;
     buf->ArrangeCursor();
@@ -703,16 +703,18 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
     int i;
     if (!w3mApp::Instance().use_mark)
         return;
-    auto tab = GetCurrentTab();
+
     auto buf = GetCurrentBuffer();
-    if (buf->m_document->LineCount() == 0)
+    auto doc = buf->m_document;
+    if (doc->LineCount() == 0)
         return;
+
     i = buf->pos + 1;
     l = buf->CurrentLine();
     if (i >= l->len())
     {
         i = 0;
-        l = buf->NextLine(l);
+        l = doc->NextLine(l);
     }
     while (l != NULL)
     {
@@ -726,9 +728,10 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
                 return;
             }
         }
-        l = buf->NextLine(l);
+        l = doc->NextLine(l);
         i = 0;
     }
+
     /* FIXME: gettextize? */
     disp_message("No mark exist after here", true);
 }
@@ -740,15 +743,15 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
     int i;
     if (!w3mApp::Instance().use_mark)
         return;
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (buf->m_document->LineCount() == 0)
+    auto doc = buf->m_document;
+    if (doc->LineCount() == 0)
         return;
     i = buf->pos - 1;
     l = buf->CurrentLine();
     if (i < 0)
     {
-        l = buf->PrevLine(l);
+        l = doc->PrevLine(l);
         if (l != NULL)
             i = l->len() - 1;
     }
@@ -764,7 +767,7 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
                 return;
             }
         }
-        l = buf->PrevLine(l);
+        l = doc->PrevLine(l);
         if (l != NULL)
             i = l->len() - 1;
     }
@@ -1741,20 +1744,23 @@ void linkbrz(w3mApp *w3m, const CommandContext &context)
 /* show current line number and number of lines in the entire document */
 void curlno(w3mApp *w3m, const CommandContext &context)
 {
-    int cur = 0, all = 0, col = 0, len = 0;
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
+    auto doc = buf->m_document;
+    auto len = 0;
+    auto cur = 0;
+    auto col = 0;
     LinePtr l = buf->CurrentLine();
     if (l)
     {
-        cur = l->real_linenumber;
-        col = l->bwidth + buf->currentColumn + buf->rect.cursorX + 1;
-        while (buf->NextLine(l) && buf->NextLine(l)->bpos)
-            l = buf->NextLine(l);
+        auto cur = l->real_linenumber;
+        auto col = l->bwidth + buf->currentColumn + buf->rect.cursorX + 1;
+        while (doc->NextLine(l) && doc->NextLine(l)->bpos)
+            l = doc->NextLine(l);
         l->CalcWidth();
         len = l->bend();
     }
 
+    int all=0;
     if (buf->m_document->LastLine())
         all = buf->m_document->LastLine()->real_linenumber;
 

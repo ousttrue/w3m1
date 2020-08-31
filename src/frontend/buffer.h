@@ -263,29 +263,6 @@ public:
         topLine = m_document->FirstLine();
         currentLine = m_document->FirstLine();
     }
-    // void EachLine(const std::function<void(LinePtr)> &func)
-    // {
-    //     for (auto &l : lines)
-    //     {
-    //         func(l);
-    //     }
-    // }
-    LinePtr NextLine(LinePtr line) const
-    {
-        return m_document->NextLine(line);
-    }
-    void SetNextLine(LinePtr line, LinePtr next)
-    {
-        m_document->InsertNext(line, next);
-    }
-    LinePtr PrevLine(LinePtr line) const
-    {
-        return m_document->PrevLine(line);
-    }
-    void SetPrevLine(LinePtr line, LinePtr prev)
-    {
-        m_document->InsertPrev(line, prev);
-    }
     bool MoveLeftWord(int n);
     bool MoveRightWord(int n);
     void resetPos(int i);

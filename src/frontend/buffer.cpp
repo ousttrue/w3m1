@@ -487,7 +487,7 @@ void Buffer::NScroll(int n)
             this->CursorDown(1);
         else
         {
-            while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos &&
+            while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos &&
                    this->currentLine->bend() <
                        this->currentColumn + this->visualpos)
                 this->CursorDown0(1);
@@ -500,7 +500,7 @@ void Buffer::NScroll(int n)
             this->CursorUp(1);
         else
         {
-            while (PrevLine(this->currentLine) && this->currentLine->bpos &&
+            while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos &&
                    this->currentLine->bwidth >=
                        this->currentColumn + this->visualpos)
                 this->CursorUp0(1);
@@ -629,8 +629,8 @@ void Buffer::GotoRealLine(int n)
 //         int n;
 
 //         this->pos = sbuf->pos + cur->bpos;
-//         while (cur->bpos && PrevLine(cur))
-//             cur = PrevLine(cur);
+//         while (cur->bpos && m_document->PrevLine(cur))
+//             cur = m_document->PrevLine(cur);
 //         if (cur->real_linenumber > 0)
 //             this->GotoRealLine(cur->real_linenumber);
 //         else
@@ -817,8 +817,8 @@ void Buffer::CursorUp0(int n)
     else
     {
         this->LineSkip(this->topLine, -n, false);
-        if (PrevLine(this->currentLine) != NULL)
-            this->currentLine = PrevLine(this->currentLine);
+        if (m_document->PrevLine(this->currentLine) != NULL)
+            this->currentLine = m_document->PrevLine(this->currentLine);
         ArrangeLine();
     }
 }
@@ -828,7 +828,7 @@ void Buffer::CursorUp(int n)
     LinePtr l = this->currentLine;
     if (m_document->LineCount() == 0)
         return;
-    while (PrevLine(this->currentLine) && this->currentLine->bpos)
+    while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos)
         CursorUp0(n);
     if (this->currentLine == m_document->FirstLine())
     {
@@ -837,7 +837,7 @@ void Buffer::CursorUp(int n)
         return;
     }
     CursorUp0(n);
-    while (PrevLine(this->currentLine) && this->currentLine->bpos &&
+    while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos &&
            this->currentLine->bwidth >= this->currentColumn + this->visualpos)
         CursorUp0(n);
 }
@@ -849,8 +849,8 @@ void Buffer::CursorDown0(int n)
     else
     {
         this->LineSkip(this->topLine, n, false);
-        if (NextLine(this->currentLine) != NULL)
-            this->currentLine = NextLine(this->currentLine);
+        if (m_document->NextLine(this->currentLine) != NULL)
+            this->currentLine = m_document->NextLine(this->currentLine);
         ArrangeLine();
     }
 }
@@ -860,7 +860,7 @@ void Buffer::CursorDown(int n)
     LinePtr l = this->currentLine;
     if (m_document->LineCount() == 0)
         return;
-    while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos)
+    while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos)
         CursorDown0(n);
     if (this->currentLine == m_document->LastLine())
     {
@@ -869,7 +869,7 @@ void Buffer::CursorDown(int n)
         return;
     }
     CursorDown0(n);
-    while (NextLine(this->currentLine) && NextLine(this->currentLine)->bpos &&
+    while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos &&
            this->currentLine->bend() <
                this->currentColumn + this->visualpos)
         CursorDown0(n);
@@ -894,7 +894,7 @@ void Buffer::CursorRight(int n)
 
     if (m_document->LineCount() == 0)
         return;
-    if (this->pos == l->len() && !(NextLine(l) && NextLine(l)->bpos))
+    if (this->pos == l->len() && !(m_document->NextLine(l) && m_document->NextLine(l)->bpos))
         return;
     i = this->pos;
     p = l->propBuf();
@@ -910,7 +910,7 @@ void Buffer::CursorRight(int n)
     {
         this->pos = 0;
     }
-    else if (NextLine(l) && NextLine(l)->bpos)
+    else if (m_document->NextLine(l) && m_document->NextLine(l)->bpos)
     {
         CursorDown0(1);
         this->pos = 0;
@@ -955,7 +955,7 @@ void Buffer::CursorLeft(int n)
 
     if (i >= delta)
         this->pos = i - delta;
-    else if (PrevLine(l) && l->bpos)
+    else if (m_document->PrevLine(l) && l->bpos)
     {
         CursorUp0(-1);
         this->pos = this->currentLine->len() - 1;
@@ -1020,14 +1020,14 @@ void Buffer::ArrangeCursor()
         this->LineSkip(this->currentLine, 0, false);
     }
     /* Arrange column */
-    while (this->pos < 0 && PrevLine(this->currentLine) && this->currentLine->bpos)
+    while (this->pos < 0 && m_document->PrevLine(this->currentLine) && this->currentLine->bpos)
     {
-        pos = this->pos + PrevLine(this->currentLine)->len();
+        pos = this->pos + m_document->PrevLine(this->currentLine)->len();
         CursorUp0(1);
         this->pos = pos;
     }
-    while (this->pos >= this->currentLine->len() && NextLine(this->currentLine) &&
-           NextLine(this->currentLine)->bpos)
+    while (this->pos >= this->currentLine->len() && m_document->NextLine(this->currentLine) &&
+           m_document->NextLine(this->currentLine)->bpos)
     {
         pos = this->pos - this->currentLine->len();
         CursorDown0(1);
@@ -1213,7 +1213,7 @@ bool Buffer::MoveLeftWord(int n)
             }
             if (this->pos > 0)
                 break;
-            if (prev_nonnull_line(shared_from_this(), this->PrevLine(this->CurrentLine())) < 0)
+            if (prev_nonnull_line(shared_from_this(), this->m_document->PrevLine(this->CurrentLine())) < 0)
             {
                 this->SetCurrentLine(pline);
                 this->pos = ppos;
@@ -1264,7 +1264,7 @@ bool Buffer::MoveRightWord(int n)
                 nextChar(&this->pos, l);
             if (this->pos < l->len())
                 break;
-            if (next_nonnull_line(shared_from_this(), this->NextLine(this->CurrentLine())) < 0)
+            if (next_nonnull_line(shared_from_this(), this->m_document->NextLine(this->CurrentLine())) < 0)
             {
                 this->SetCurrentLine(pline);
                 this->pos = ppos;
@@ -1626,8 +1626,8 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
     if (l->bpos)
     {
         pos += l->bpos;
-        while (l->bpos && buf->PrevLine(l))
-            l = buf->PrevLine(l);
+        while (l->bpos && buf->m_document->PrevLine(l))
+            l = buf->m_document->PrevLine(l);
     }
 
     auto begin = l;
@@ -1638,10 +1638,10 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
     {
         matchedPosition(&first, &last);
         pos = first - l->lineBuf();
-        while (pos >= l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
+        while (pos >= l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
         {
             pos -= l->len();
-            l = buf->NextLine(l);
+            l = buf->m_document->NextLine(l);
         }
         buf->pos = pos;
         if (l != buf->CurrentLine())
@@ -1650,7 +1650,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
         set_mark(l, pos, pos + last - first);
         return SR_FOUND;
     }
-    for (l = buf->NextLine(l);; l = buf->NextLine(l))
+    for (l = buf->m_document->NextLine(l);; l = buf->m_document->NextLine(l))
     {
         if (l == NULL)
         {
@@ -1687,10 +1687,10 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
         {
             matchedPosition(&first, &last);
             pos = first - l->lineBuf();
-            while (pos >= l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
+            while (pos >= l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
             {
                 pos -= l->len();
-                l = buf->NextLine(l);
+                l = buf->m_document->NextLine(l);
             }
             buf->pos = pos;
             buf->SetCurrentLine(l);
@@ -1739,8 +1739,8 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
     if (l->bpos)
     {
         pos += l->bpos;
-        while (l->bpos && buf->PrevLine(l))
-            l = buf->PrevLine(l);
+        while (l->bpos && buf->m_document->PrevLine(l))
+            l = buf->m_document->PrevLine(l);
     }
     begin = l;
     if (pos > 0)
@@ -1775,10 +1775,10 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
         if (found)
         {
             pos = found - l->lineBuf();
-            while (pos >= l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
+            while (pos >= l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
             {
                 pos -= l->len();
-                l = buf->NextLine(l);
+                l = buf->m_document->NextLine(l);
             }
             buf->pos = pos;
             if (l != buf->CurrentLine())
@@ -1788,7 +1788,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
             return SR_FOUND;
         }
     }
-    for (l = buf->PrevLine(l);; l = buf->PrevLine(l))
+    for (l = buf->m_document->PrevLine(l);; l = buf->m_document->PrevLine(l))
     {
         if (l == NULL)
         {
@@ -1821,10 +1821,10 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
         if (found)
         {
             pos = found - l->lineBuf();
-            while (pos >= l->len() && buf->NextLine(l) && buf->NextLine(l)->bpos)
+            while (pos >= l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
             {
                 pos -= l->len();
-                l = buf->NextLine(l);
+                l = buf->m_document->NextLine(l);
             }
             buf->pos = pos;
             buf->GotoLine(l->linenumber);

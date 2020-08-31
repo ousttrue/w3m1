@@ -468,7 +468,7 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
             if (l->linenumber == an->start.line)
                 break;
 
-            auto next = buf->NextLine(l);
+            auto next = buf->m_document->NextLine(l);
             if (!next)
             {
                 return;
@@ -515,7 +515,7 @@ static void drawAnchorCursor(const BufferPtr &buf)
 
     auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (!an)
-        an = retrieveCurrentMap(buf);
+        an = retrieveCurrentMap(buf->m_document, buf->CurrentPoint());
 
     int hseq = -1;
     if (an)
@@ -659,7 +659,7 @@ static void redrawNLine(const BufferPtr &buf)
     // lines
     {
         int i = 0;
-        for (auto l = buf->TopLine(); l && i < buf->rect.lines; i++, l = buf->NextLine(l))
+        for (auto l = buf->TopLine(); l && i < buf->rect.lines; i++, l = buf->m_document->NextLine(l))
         {
             assert(buf->rect.rootX==buf->currentColumn);
             DrawLine(l, i + buf->rect.rootY, buf->rect, buf->currentColumn, buf->m_document);
@@ -678,7 +678,7 @@ static void redrawNLine(const BufferPtr &buf)
     {
         int i = 0;
         for (auto l = buf->TopLine(); i < buf->rect.lines && l;
-             i++, l = buf->NextLine(l))
+             i++, l = buf->m_document->NextLine(l))
         {
             redrawLineImage(buf, l, i + buf->rect.rootY);
         }

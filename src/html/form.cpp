@@ -438,17 +438,17 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
         {
             int n = a->y - buf->CurrentLine()->linenumber;
             if (n > 0)
-                for (; l && n; l = buf->PrevLine(l), n--)
+                for (; l && n; l = buf->m_document->PrevLine(l), n--)
                     ;
             else if (n < 0)
-                for (; l && n; l = buf->PrevLine(l), n++)
+                for (; l && n; l = buf->m_document->PrevLine(l), n++)
                     if (!l)
                         break;
         }
 
         auto rows = form->rows ? form->rows : 1;
         auto col = l->COLPOS(a->start.pos);
-        for (auto c_rows = 0; c_rows < rows; c_rows++, l = buf->NextLine(l))
+        for (auto c_rows = 0; c_rows < rows; c_rows++, l = buf->m_document->NextLine(l))
         {
             if (rows > 1)
             {

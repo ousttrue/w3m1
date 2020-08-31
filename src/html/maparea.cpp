@@ -177,9 +177,9 @@ int getMapXY(BufferPtr buf, const AnchorPtr a, int *x, int *y)
     return 1;
 }
 
-AnchorPtr retrieveCurrentMap(const BufferPtr &buf)
+AnchorPtr retrieveCurrentMap(const DocumentPtr &doc, const BufferPoint &point)
 {
-    auto a = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
+    auto a = doc->formitem.RetrieveAnchor(point);
     if (!a || !a->url.size())
         return NULL;
     auto fi = a->item;

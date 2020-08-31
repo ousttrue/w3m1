@@ -204,7 +204,7 @@ int prev_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;
 
-    for (l = line; l != NULL && l->len() == 0; l = buf->PrevLine(l))
+    for (l = line; l != NULL && l->len() == 0; l = buf->m_document->PrevLine(l))
         ;
     if (l == NULL || l->len() == 0)
         return -1;
@@ -219,7 +219,7 @@ int next_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;
 
-    for (l = line; l != NULL && l->len() == 0; l = buf->NextLine(l))
+    for (l = line; l != NULL && l->len() == 0; l = buf->m_document->NextLine(l))
         ;
 
     if (l == NULL || l->len() == 0)
@@ -308,7 +308,7 @@ int cur_real_linenumber(const BufferPtr &buf)
     if (!cur)
         return 1;
     auto n = cur->real_linenumber ? cur->real_linenumber : 1;
-    for (auto l = buf->m_document->FirstLine(); l && l != cur && l->real_linenumber == 0; l = buf->NextLine(l))
+    for (auto l = buf->m_document->FirstLine(); l && l != cur && l->real_linenumber == 0; l = buf->m_document->NextLine(l))
     { /* header */
         if (l->bpos == 0)
             n++;
@@ -993,7 +993,7 @@ void nextX(int d, int dy, int n)
             }
             if (!dy || an)
                 break;
-            l = (dy > 0) ? buf->NextLine(l) : buf->PrevLine(l);
+            l = (dy > 0) ? buf->m_document->NextLine(l) : buf->m_document->PrevLine(l);
             if (!l)
                 break;
             x = (d > 0) ? 0 : l->len() - 1;

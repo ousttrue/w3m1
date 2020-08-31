@@ -637,7 +637,7 @@ _saveBuffer(BufferPtr buf, LinePtr l, FILE *f, int cont)
 
     Str tmp;
 pager_next:
-    for (; l != NULL; l = buf->NextLine(l))
+    for (; l != NULL; l = buf->m_document->NextLine(l))
     {
         if (is_html)
             tmp = l->buffer.conv_symbol();
@@ -645,7 +645,7 @@ pager_next:
             tmp = Strnew_charp_n(l->lineBuf(), l->len());
         tmp = wc_Str_conv(tmp, w3mApp::Instance().InnerCharset, charset);
         tmp->Puts(f);
-        if (tmp->Back() != '\n' && !(cont && buf->NextLine(l) && buf->NextLine(l)->bpos))
+        if (tmp->Back() != '\n' && !(cont && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos))
             putc('\n', f);
     }
 
@@ -669,7 +669,7 @@ void saveBufferBody(BufferPtr buf, FILE *f, int cont)
     LinePtr l = buf->m_document->FirstLine();
 
     while (l != NULL && l->real_linenumber == 0)
-        l = buf->NextLine(l);
+        l = buf->m_document->NextLine(l);
     _saveBuffer(buf, l, f, cont);
 }
 
@@ -898,12 +898,12 @@ LinePtr getNextPage(BufferPtr buf, int plen)
     //             do
     //             {
     //                 if (top == l)
-    //                     top = buf->NextLine(l);
+    //                     top = buf->m_document->NextLine(l);
     //                 if (cur == l)
-    //                     cur = buf->NextLine(l);
+    //                     cur = buf->m_document->NextLine(l);
     //                 if (last == l)
     //                     last = NULL;
-    //                 l = buf->NextLine(l);
+    //                 l = buf->m_document->NextLine(l);
     //             } while (l && l->bpos);
     //             buf->SetFirstLine(l);
     //             buf->SetPrevLine(buf->m_document->FirstLine(), NULL);

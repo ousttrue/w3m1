@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <memory>
+#include "bufferpoint.h"
 
 enum ShapeTypes
 {
@@ -32,7 +34,7 @@ using MapListPtr = std::shared_ptr<MapList>;
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
 using AnchorPtr = std::shared_ptr<struct Anchor>;
-AnchorPtr retrieveCurrentMap(const BufferPtr &buf);
+AnchorPtr retrieveCurrentMap(const std::shared_ptr<class Document> &doc, const BufferPoint &point);
 MapAreaPtr follow_map_menu(BufferPtr buf, const char *name, const AnchorPtr &a_img, int x, int y);
 MapAreaPtr retrieveCurrentMapArea(const BufferPtr &buf);
 MapAreaPtr newMapArea(const char *url, const char *target, const char *alt, const char *shape, const char *coords);
