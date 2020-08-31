@@ -56,8 +56,8 @@ Buffer::~Buffer()
     ClearLines();
     if (savecache.size())
         unlink(savecache.c_str());
-    if (pagerSource)
-        pagerSource = nullptr;
+    // if (pagerSource)
+    //     pagerSource = nullptr;
     if (sourcefile.size() &&
         (real_type.empty() || real_type.starts_with("image/")))
     {
@@ -72,7 +72,7 @@ Buffer::~Buffer()
 
 void Buffer::TmpClear()
 {
-    if (this->pagerSource == NULL && this->WriteBufferCache() == 0)
+    if (/*this->pagerSource == NULL &&*/ this->WriteBufferCache() == 0)
     {
         topLine = NULL;
         currentLine = NULL;
@@ -277,7 +277,7 @@ void Buffer::CopyFrom(BufferPtr src)
     pos = src->pos;
     visualpos = src->visualpos;
     rect = src->rect;
-    pagerSource = src->pagerSource;
+
     prevhseq = src->prevhseq;
 
     url = src->url;
@@ -350,17 +350,17 @@ LinePtr Buffer::CurrentLineSkip(LinePtr line, int offset, int last)
     int i, n;
     auto l = m_document->_find(line);
 
-    if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
-    {
-        n = line->linenumber + offset + this->rect.lines;
-        if (this->LastLine()->linenumber < n)
-            getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
-        while ((last || (this->LastLine()->linenumber < n)) &&
-               (getNextPage(shared_from_this(), 1) != NULL))
-            ;
-        if (last)
-            l = m_document->_find(this->LastLine());
-    }
+    // if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
+    // {
+    //     n = line->linenumber + offset + this->rect.lines;
+    //     if (this->LastLine()->linenumber < n)
+    //         getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
+    //     while ((last || (this->LastLine()->linenumber < n)) &&
+    //            (getNextPage(shared_from_this(), 1) != NULL))
+    //         ;
+    //     if (last)
+    //         l = m_document->_find(this->LastLine());
+    // }
 
     if (offset == 0)
         return *l;
@@ -397,14 +397,14 @@ void Buffer::GotoLine(int n, bool topline)
     LinePtr l = this->FirstLine();
     if (l == NULL)
         return;
-    if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
-    {
-        if (this->LastLine()->linenumber < n)
-            getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
-        while ((this->LastLine()->linenumber < n) &&
-               (getNextPage(shared_from_this(), 1) != NULL))
-            ;
-    }
+    // if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
+    // {
+    //     if (this->LastLine()->linenumber < n)
+    //         getNextPage(shared_from_this(), n - this->LastLine()->linenumber);
+    //     while ((this->LastLine()->linenumber < n) &&
+    //            (getNextPage(shared_from_this(), 1) != NULL))
+    //         ;
+    // }
     if (l->linenumber > n)
     {
         /* FIXME: gettextize? */
@@ -518,14 +518,14 @@ void Buffer::GotoRealLine(int n)
 
     if (l == NULL)
         return;
-    if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
-    {
-        if (this->LastLine()->real_linenumber < n)
-            getNextPage(shared_from_this(), n - this->LastLine()->real_linenumber);
-        while ((this->LastLine()->real_linenumber < n) &&
-               (getNextPage(shared_from_this(), 1) != NULL))
-            ;
-    }
+    // if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
+    // {
+    //     if (this->LastLine()->real_linenumber < n)
+    //         getNextPage(shared_from_this(), n - this->LastLine()->real_linenumber);
+    //     while ((this->LastLine()->real_linenumber < n) &&
+    //            (getNextPage(shared_from_this(), 1) != NULL))
+    //         ;
+    // }
     if (l->real_linenumber > n)
     {
         /* FIXME: gettextize? */
@@ -1767,23 +1767,24 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
     {
         if (l == NULL)
         {
-            if (buf->pagerSource)
-            {
-                l = getNextPage(buf, 1);
-                if (l == NULL)
-                {
-                    if (w3mApp::Instance().WrapSearch && !wrapped)
-                    {
-                        l = buf->FirstLine();
-                        wrapped = true;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            else if (w3mApp::Instance().WrapSearch)
+            // if (buf->pagerSource)
+            // {
+            //     l = getNextPage(buf, 1);
+            //     if (l == NULL)
+            //     {
+            //         if (w3mApp::Instance().WrapSearch && !wrapped)
+            //         {
+            //             l = buf->FirstLine();
+            //             wrapped = true;
+            //         }
+            //         else
+            //         {
+            //             break;
+            //         }
+            //     }
+            // }
+            // else
+            if (w3mApp::Instance().WrapSearch)
             {
                 l = buf->FirstLine();
                 wrapped = true;

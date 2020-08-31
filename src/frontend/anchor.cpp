@@ -287,9 +287,11 @@ reAnchorAny(BufferPtr buf, const char *re,
                 break;
         }
     next_line:
-        if (w3mApp::Instance().MarkAllPages && buf->NextLine(l) == NULL && buf->pagerSource &&
-            !(buf->bufferprop & BP_CLOSE))
-            getNextPage(buf, w3mApp::Instance().PagerMax);
+    ;
+
+    //     if (w3mApp::Instance().MarkAllPages && buf->NextLine(l) == NULL && buf->pagerSource &&
+    //         !(buf->bufferprop & BP_CLOSE))
+    //         getNextPage(buf, w3mApp::Instance().PagerMax);
     }
     return NULL;
 }

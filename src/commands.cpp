@@ -626,7 +626,7 @@ void editBf(w3mApp *w3m, const CommandContext &context)
 {
     const char *fn = GetCurrentBuffer()->filename.c_str();
     Str cmd;
-    if (fn == NULL || GetCurrentBuffer()->pagerSource != NULL ||                            /* Behaving as a pager */
+    if (fn == NULL ||
         (GetCurrentBuffer()->type.empty() && GetCurrentBuffer()->edit.empty()) ||           /* Reading shell */
         GetCurrentBuffer()->real_scheme != SCM_LOCAL || GetCurrentBuffer()->url.path == "-" /* file is std input  */
     )
@@ -1469,33 +1469,33 @@ void vwSrc(w3mApp *w3m, const CommandContext &context)
 
     if (buf->sourcefile.empty())
     {
-        if (buf->pagerSource && buf->type == "text/plain")
-        {
-            // pager
-            CharacterEncodingScheme old_charset;
-            bool old_fix_width_conv;
+        // if (buf->pagerSource && buf->type == "text/plain")
+        // {
+        //     // pager
+        //     CharacterEncodingScheme old_charset;
+        //     bool old_fix_width_conv;
 
-            Str tmpf = tmpfname(TMPF_SRC, NULL);
-            auto f = fopen(tmpf->ptr, "w");
-            if (f == NULL)
-                return;
+        //     Str tmpf = tmpfname(TMPF_SRC, NULL);
+        //     auto f = fopen(tmpf->ptr, "w");
+        //     if (f == NULL)
+        //         return;
 
-            old_charset = w3mApp::Instance().DisplayCharset;
-            old_fix_width_conv = WcOption.fix_width_conv;
-            w3mApp::Instance().DisplayCharset = (buf->m_document->document_charset != WC_CES_US_ASCII)
-                                                    ? buf->m_document->document_charset
-                                                    : WC_CES_NONE;
-            WcOption.fix_width_conv = false;
+        //     old_charset = w3mApp::Instance().DisplayCharset;
+        //     old_fix_width_conv = WcOption.fix_width_conv;
+        //     w3mApp::Instance().DisplayCharset = (buf->m_document->document_charset != WC_CES_US_ASCII)
+        //                                             ? buf->m_document->document_charset
+        //                                             : WC_CES_NONE;
+        //     WcOption.fix_width_conv = false;
 
-            saveBufferBody(buf, f, true);
+        //     saveBufferBody(buf, f, true);
 
-            w3mApp::Instance().DisplayCharset = old_charset;
-            WcOption.fix_width_conv = old_fix_width_conv;
+        //     w3mApp::Instance().DisplayCharset = old_charset;
+        //     WcOption.fix_width_conv = old_fix_width_conv;
 
-            fclose(f);
-            buf->sourcefile = tmpf->ptr;
-        }
-        else
+        //     fclose(f);
+        //     buf->sourcefile = tmpf->ptr;
+        // }
+        // else
         {
             return;
         }
@@ -1759,9 +1759,9 @@ void curlno(w3mApp *w3m, const CommandContext &context)
         all = buf->LastLine()->real_linenumber;
 
     Str tmp;
-    if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
-        tmp = Sprintf("line %d col %d/%d", cur, col, len);
-    else
+    // if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
+    //     tmp = Sprintf("line %d col %d/%d", cur, col, len);
+    // else
         tmp = Sprintf("line %d/%d (%d%%) col %d/%d", cur, all,
                       (int)((double)cur * 100.0 / (double)(all ? all : 1) + 0.5), col, len);
 
@@ -2195,7 +2195,7 @@ void ldDL(w3mApp *w3m, const CommandContext &context)
 
     if (nReload)
         GetCurrentBuffer()->m_document->event = setAlarmEvent(GetCurrentBuffer()->m_document->event, 1, AL_IMPLICIT,
-                                                  &reload, NULL);
+                                                              &reload, NULL);
 }
 
 void undoPos(w3mApp *w3m, const CommandContext &context)

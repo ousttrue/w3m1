@@ -367,7 +367,6 @@ public:
     std::string conv_search_string(std::string_view str, CharacterEncodingScheme f_ces);
     void srch_nxtprv(bool reverse, int prec_num);
 
-    std::shared_ptr<class InputStream> pagerSource;
     int prevhseq = -1;
 
     URL url = {};

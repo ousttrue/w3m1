@@ -550,17 +550,8 @@ static void redrawNLine(const BufferPtr &buf)
     // lines
     {
         int i = 0;
-        for (auto l = buf->TopLine(); i < buf->rect.lines; i++, l = buf->NextLine(l))
+        for (auto l = buf->TopLine(); l && i < buf->rect.lines; i++, l = buf->NextLine(l))
         {
-            if (l == NULL)
-            {
-                if (buf->pagerSource)
-                {
-                    l = getNextPage(buf, buf->rect.lines + buf->rect.rootY - i);
-                }
-            }
-            if (l == NULL)
-                break;
             buf->DrawLine(l, i + buf->rect.rootY);
         }
         Screen::Instance().Move(i + buf->rect.rootY, 0);

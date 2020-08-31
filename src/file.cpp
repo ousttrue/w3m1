@@ -649,14 +649,14 @@ pager_next:
             putc('\n', f);
     }
 
-    if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
-    {
-        l = getNextPage(buf, w3mApp::Instance().PagerMax);
-        if (set_charset)
-            charset = buf->m_document->document_charset;
+    // if (buf->pagerSource && !(buf->bufferprop & BP_CLOSE))
+    // {
+    //     l = getNextPage(buf, w3mApp::Instance().PagerMax);
+    //     if (set_charset)
+    //         charset = buf->m_document->document_charset;
 
-        goto pager_next;
-    }
+    //     goto pager_next;
+    // }
 }
 
 void saveBuffer(BufferPtr buf, FILE *f, int cont)
@@ -697,25 +697,25 @@ getshell(char *cmd)
 BufferPtr
 getpipe(char *cmd)
 {
-    if (cmd == NULL || *cmd == '\0')
+    // if (cmd == NULL || *cmd == '\0')
         return NULL;
 
-    FILE *popen(const char *, const char *);
-    auto f = popen(cmd, "r");
-    if (f == NULL)
-        return NULL;
+//     FILE *popen(const char *, const char *);
+//     auto f = popen(cmd, "r");
+//     if (f == NULL)
+//         return NULL;
 
-    auto buf = Buffer::Create({});
-    buf->pagerSource = newFileStream(f, pclose);
-    buf->filename = cmd;
-    buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
-                              conv_from_system(cmd))
-                          ->ptr;
-    buf->bufferprop |= BP_PIPE;
-#ifdef USE_M17N
-    buf->m_document->document_charset = WC_CES_US_ASCII;
-#endif
-    return buf;
+//     auto buf = Buffer::Create({});
+//     buf->pagerSource = newFileStream(f, pclose);
+//     buf->filename = cmd;
+//     buf->buffername = Sprintf("%s %s", PIPEBUFFERNAME,
+//                               conv_from_system(cmd))
+//                           ->ptr;
+//     buf->bufferprop |= BP_PIPE;
+// #ifdef USE_M17N
+//     buf->m_document->document_charset = WC_CES_US_ASCII;
+// #endif
+//     return buf;
 }
 
 /*
@@ -723,23 +723,24 @@ getpipe(char *cmd)
  */
 BufferPtr openPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme content_charset)
 {
-    auto buf = Buffer::Create({});
-    buf->pagerSource = stream;
-    buf->buffername = getenv("MAN_PN");
-    if (buf->buffername.empty())
-        buf->buffername = PIPEBUFFERNAME;
-    else
-        buf->buffername = conv_from_system(buf->buffername.c_str());
-    buf->bufferprop |= BP_PIPE;
+    return nullptr;
+    // auto buf = Buffer::Create({});
+    // buf->pagerSource = stream;
+    // buf->buffername = getenv("MAN_PN");
+    // if (buf->buffername.empty())
+    //     buf->buffername = PIPEBUFFERNAME;
+    // else
+    //     buf->buffername = conv_from_system(buf->buffername.c_str());
+    // buf->bufferprop |= BP_PIPE;
 
-    if (content_charset && w3mApp::Instance().UseContentCharset)
-        buf->m_document->document_charset = content_charset;
-    else
-        buf->m_document->document_charset = WC_CES_US_ASCII;
+    // if (content_charset && w3mApp::Instance().UseContentCharset)
+    //     buf->m_document->document_charset = content_charset;
+    // else
+    //     buf->m_document->document_charset = WC_CES_US_ASCII;
 
-    buf->SetCurrentLine(buf->FirstLine());
+    // buf->SetCurrentLine(buf->FirstLine());
 
-    return buf;
+    // return buf;
 }
 
 BufferPtr openGeneralPagerBuffer(const InputStreamPtr &stream, CharacterEncodingScheme content_charset)
@@ -826,107 +827,107 @@ LinePtr getNextPage(BufferPtr buf, int plen)
 
     MySignalHandler prevtrap = NULL;
 
-    if (buf->pagerSource == NULL)
+    // if (buf->pagerSource == NULL)
         return NULL;
 
-    if (last != NULL)
-    {
-        nlines = last->real_linenumber;
-        pre_lbuf = *(last->lineBuf());
-        if (pre_lbuf == '\0')
-            pre_lbuf = '\n';
-        buf->SetCurrentLine(last);
-    }
+    // if (last != NULL)
+    // {
+    //     nlines = last->real_linenumber;
+    //     pre_lbuf = *(last->lineBuf());
+    //     if (pre_lbuf == '\0')
+    //         pre_lbuf = '\n';
+    //     buf->SetCurrentLine(last);
+    // }
 
-    charset = buf->m_document->document_charset;
-    if (buf->m_document->document_charset != WC_CES_US_ASCII)
-        doc_charset = buf->m_document->document_charset;
-    else if (w3mApp::Instance().UseContentCharset)
-    {
-        // content_charset = WC_CES_NONE;
-        // checkContentType(buf);
-        // if (content_charset)
-        //     doc_charset = content_charset;
-    }
-    WcOption.auto_detect = buf->auto_detect;
+    // charset = buf->m_document->document_charset;
+    // if (buf->m_document->document_charset != WC_CES_US_ASCII)
+    //     doc_charset = buf->m_document->document_charset;
+    // else if (w3mApp::Instance().UseContentCharset)
+    // {
+    //     // content_charset = WC_CES_NONE;
+    //     // checkContentType(buf);
+    //     // if (content_charset)
+    //     //     doc_charset = content_charset;
+    // }
+    // WcOption.auto_detect = buf->auto_detect;
 
-    auto success = TrapJmp([&]() {
-        for (i = 0; i < plen; i++)
-        {
-            lineBuf2 = buf->pagerSource->mygets();
-            if (lineBuf2->Size() == 0)
-            {
-                /* Assume that `cmd == buf->filename' */
-                if (buf->filename.size())
-                    buf->buffername = Sprintf("%s %s",
-                                              CPIPEBUFFERNAME,
-                                              conv_from_system(buf->filename))
-                                          ->ptr;
-                else if (getenv("MAN_PN") == NULL)
-                    buf->buffername = CPIPEBUFFERNAME;
-                buf->bufferprop |= BP_CLOSE;
-                break;
-            }
-            linelen += lineBuf2->Size();
-            // showProgress(&linelen, &trbyte, 0);
-            lineBuf2 = convertLine(SCM_UNKNOWN, lineBuf2, PAGER_MODE, &charset, doc_charset);
-            if (w3mApp::Instance().squeezeBlankLine)
-            {
-                squeeze_flag = false;
-                if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
-                {
-                    ++nlines;
-                    --i;
-                    squeeze_flag = true;
-                    continue;
-                }
-                pre_lbuf = lineBuf2->ptr[0];
-            }
-            ++nlines;
-            StripRight(lineBuf2);
+    // auto success = TrapJmp([&]() {
+    //     for (i = 0; i < plen; i++)
+    //     {
+    //         lineBuf2 = buf->pagerSource->mygets();
+    //         if (lineBuf2->Size() == 0)
+    //         {
+    //             /* Assume that `cmd == buf->filename' */
+    //             if (buf->filename.size())
+    //                 buf->buffername = Sprintf("%s %s",
+    //                                           CPIPEBUFFERNAME,
+    //                                           conv_from_system(buf->filename))
+    //                                       ->ptr;
+    //             else if (getenv("MAN_PN") == NULL)
+    //                 buf->buffername = CPIPEBUFFERNAME;
+    //             buf->bufferprop |= BP_CLOSE;
+    //             break;
+    //         }
+    //         linelen += lineBuf2->Size();
+    //         // showProgress(&linelen, &trbyte, 0);
+    //         lineBuf2 = convertLine(SCM_UNKNOWN, lineBuf2, PAGER_MODE, &charset, doc_charset);
+    //         if (w3mApp::Instance().squeezeBlankLine)
+    //         {
+    //             squeeze_flag = false;
+    //             if (lineBuf2->ptr[0] == '\n' && pre_lbuf == '\n')
+    //             {
+    //                 ++nlines;
+    //                 --i;
+    //                 squeeze_flag = true;
+    //                 continue;
+    //             }
+    //             pre_lbuf = lineBuf2->ptr[0];
+    //         }
+    //         ++nlines;
+    //         StripRight(lineBuf2);
 
-            buf->AddNewLine(PropertiedString(lineBuf2), nlines);
-            if (!top)
-            {
-                top = buf->FirstLine();
-                cur = top;
-            }
-            if (buf->LastLine()->real_linenumber - buf->FirstLine()->real_linenumber >= w3mApp::Instance().PagerMax)
-            {
-                LinePtr l = buf->FirstLine();
-                do
-                {
-                    if (top == l)
-                        top = buf->NextLine(l);
-                    if (cur == l)
-                        cur = buf->NextLine(l);
-                    if (last == l)
-                        last = NULL;
-                    l = buf->NextLine(l);
-                } while (l && l->bpos);
-                buf->SetFirstLine(l);
-                buf->SetPrevLine(buf->FirstLine(), NULL);
-            }
-        }
+    //         buf->AddNewLine(PropertiedString(lineBuf2), nlines);
+    //         if (!top)
+    //         {
+    //             top = buf->FirstLine();
+    //             cur = top;
+    //         }
+    //         if (buf->LastLine()->real_linenumber - buf->FirstLine()->real_linenumber >= w3mApp::Instance().PagerMax)
+    //         {
+    //             LinePtr l = buf->FirstLine();
+    //             do
+    //             {
+    //                 if (top == l)
+    //                     top = buf->NextLine(l);
+    //                 if (cur == l)
+    //                     cur = buf->NextLine(l);
+    //                 if (last == l)
+    //                     last = NULL;
+    //                 l = buf->NextLine(l);
+    //             } while (l && l->bpos);
+    //             buf->SetFirstLine(l);
+    //             buf->SetPrevLine(buf->FirstLine(), NULL);
+    //         }
+    //     }
 
-        return true;
-    });
+    //     return true;
+    // });
 
-    if (!success)
-    {
-        return nullptr;
-    }
+    // if (!success)
+    // {
+    //     return nullptr;
+    // }
 
-    buf->m_document->document_charset = charset;
-    WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
+    // buf->m_document->document_charset = charset;
+    // WcOption.auto_detect = (AutoDetectTypes)old_auto_detect;
 
-    buf->SetTopLine(top);
-    buf->SetCurrentLine(cur);
-    if (!last)
-        last = buf->FirstLine();
-    else if (last && (buf->NextLine(last) || !squeeze_flag))
-        last = buf->NextLine(last);
-    return last;
+    // buf->SetTopLine(top);
+    // buf->SetCurrentLine(cur);
+    // if (!last)
+    //     last = buf->FirstLine();
+    // else if (last && (buf->NextLine(last) || !squeeze_flag))
+    //     last = buf->NextLine(last);
+    // return last;
 }
 
 int checkSaveFile(const InputStreamPtr &stream, char *path2)
