@@ -545,6 +545,119 @@ static void drawAnchorCursor(const BufferPtr &buf)
 ///
 /// term に描画する
 ///
+///
+/// draw a line
+///
+static void DrawLine(LinePtr l, int line, const TermRect &rect, int currentColumn, const DocumentPtr &document)
+{
+    if (l == NULL)
+    {
+        return;
+    }
+    Screen::Instance().Move(line, 0);
+
+    ///
+    /// show line number
+    ///
+    // if (w3mApp::Instance().showLineNum)
+    // {
+    //     rect.updateRootX(this->LastLine()->real_linenumber);
+
+    //     char tmp[16];
+    //     if (l->real_linenumber && !l->bpos)
+    //         sprintf(tmp, "%*ld:", rect.rootX - 1, l->real_linenumber);
+    //     else
+    //         sprintf(tmp, "%*s ", rect.rootX - 1, "");
+    //     Screen::Instance().Puts(tmp);
+    // }
+
+    l->CalcWidth();
+    if (l->len() == 0 || l->width() - 1 < currentColumn)
+    {
+        Screen::Instance().CtrlToEolWithBGColor();
+        return;
+    }
+
+    ///
+    /// draw line
+    ///
+    Screen::Instance().Move(line, rect.rootX);
+    auto pos = columnPos(l, currentColumn);
+    auto p = &(l->lineBuf()[pos]);
+    auto pr = &(l->propBuf()[pos]);
+    Linecolor *pc;
+    if (w3mApp::Instance().useColor && l->colorBuf())
+        pc = &(l->colorBuf()[pos]);
+    else
+        pc = NULL;
+
+    auto rcol = l->COLPOS(pos);
+    int delta = 1;
+    int vpos = -1;
+    for (int j = 0; rcol - currentColumn < rect.cols && pos + j < l->len(); j += delta)
+    {
+        // if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
+        // {
+        //     auto a = document->href.RetrieveAnchor({l->linenumber, pos + j});
+        //     if (a)
+        //     {
+        //         auto url = URL::Parse(a->url, &this->url);
+        //         if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
+        //         {
+        //             for (int k = a->start.pos; k < a->end.pos; k++)
+        //                 pr[k - pos] |= PE_VISITED;
+        //         }
+        //         vpos = a->end.pos;
+        //     }
+        // }
+
+        delta = wtf_len((uint8_t *)&p[j]);
+        switch (delta)
+        {
+        case 3:
+        {
+            auto a = 0;
+        }
+        break;
+
+        case 4:
+        {
+            auto b = 0;
+        }
+        break;
+        }
+
+        int ncol = l->COLPOS(pos + j + delta);
+        if (ncol - currentColumn > rect.cols)
+            break;
+
+        if (pc)
+            do_color(pc[j]);
+
+        if (rcol < currentColumn)
+        {
+            for (rcol = currentColumn; rcol < ncol; rcol++)
+                addChar(' ');
+            continue;
+        }
+        if (p[j] == '\t')
+        {
+            for (; rcol < ncol; rcol++)
+                addChar(' ');
+        }
+        else
+        {
+            addMChar(&p[j], pr[j], delta);
+        }
+        rcol = ncol;
+    }
+
+    clear_effect();
+
+    if (rcol - currentColumn < rect.cols)
+        Screen::Instance().CtrlToEolWithBGColor();
+}
+
 static void redrawNLine(const BufferPtr &buf)
 {
     // lines
@@ -552,7 +665,8 @@ static void redrawNLine(const BufferPtr &buf)
         int i = 0;
         for (auto l = buf->TopLine(); l && i < buf->rect.lines; i++, l = buf->NextLine(l))
         {
-            buf->DrawLine(l, i + buf->rect.rootY);
+            assert(buf->rect.cursorX==buf->currentColumn);
+            DrawLine(l, i + buf->rect.rootY, buf->rect, buf->currentColumn, buf->m_document);
         }
         Screen::Instance().Move(i + buf->rect.rootY, 0);
         Screen::Instance().CtrlToBottomEol();

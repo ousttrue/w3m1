@@ -415,8 +415,6 @@ public:
     void shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift);
     void SavePosition();
     void DumpSource();
-
-    void DrawLine(LinePtr l, int i);
     int DrawLineRegion(LinePtr l, int i, int bpos, int epos);
 };
 
