@@ -351,14 +351,14 @@ void w3mApp::mainloop()
 
         /* get keypress event */
 
-        if (buf->event)
+        if (buf->m_document->event)
         {
-            if (buf->event->status != AL_UNSET)
+            if (buf->m_document->event->status != AL_UNSET)
             {
-                SetCurrentAlarm(buf->event);
+                SetCurrentAlarm(buf->m_document->event);
                 if (CurrentAlarm()->sec == 0)
                 { /* refresh (0sec) */
-                    buf->event = NULL;
+                    buf->m_document->event = NULL;
                     CurrentAlarm()->cmd(&w3mApp::Instance(), {
                         data : (const char *)CurrentAlarm()->data
                     });
@@ -366,9 +366,9 @@ void w3mApp::mainloop()
                 }
             }
             else
-                buf->event = NULL;
+                buf->m_document->event = NULL;
         }
-        if (!buf->event)
+        if (!buf->m_document->event)
             SetCurrentAlarm(DefaultAlarm());
 
         DisableMouseAction();

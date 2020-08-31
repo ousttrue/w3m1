@@ -15,7 +15,7 @@ MapListPtr searchMapList(BufferPtr buf, const char *name)
     if (name == NULL)
         return NULL;
 
-    for (auto &ml : buf->maplist)
+    for (auto &ml : buf->m_document->maplist)
     {
         if (ml->name == name)
         {

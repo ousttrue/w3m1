@@ -259,6 +259,9 @@ void Buffer::CopyFrom(BufferPtr src)
     m_document->linklist = src->m_document->linklist;
     m_document->hmarklist = src->m_document->hmarklist;
     m_document->imarklist = src->m_document->imarklist;
+    m_document->formlist = src->m_document->formlist;
+    m_document->maplist = src->m_document->maplist;
+    m_document->event = src->m_document->event;
 
     // scroll
     topLine = src->topLine;
@@ -277,8 +280,6 @@ void Buffer::CopyFrom(BufferPtr src)
     pagerSource = src->pagerSource;
     prevhseq = src->prevhseq;
 
-    formlist = src->formlist;
-    maplist = src->maplist;
     url = src->url;
     baseTarget = src->baseTarget;
     real_scheme = src->real_scheme;
@@ -296,7 +297,6 @@ void Buffer::CopyFrom(BufferPtr src)
     image_loaded = src->image_loaded;
     submit = src->submit;
     undo = src->undo;
-    event = src->event;
 }
 
 

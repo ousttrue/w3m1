@@ -40,14 +40,15 @@ void SigAlarm(int)
             CurrentAlarm()->sec = 0;
             CurrentAlarm()->status = AL_UNSET;
         }
-        if (GetCurrentBuffer()->event)
+        auto buf = GetCurrentBuffer();
+        if (buf->m_document->event)
         {
-            if (GetCurrentBuffer()->event->status != AL_UNSET)
-                SetCurrentAlarm(GetCurrentBuffer()->event);
+            if (buf->m_document->event->status != AL_UNSET)
+                SetCurrentAlarm(buf->m_document->event);
             else
-                GetCurrentBuffer()->event = NULL;
+                buf->m_document->event = NULL;
         }
-        if (!GetCurrentBuffer()->event)
+        if (!buf->m_document->event)
             SetCurrentAlarm(DefaultAlarm());
         if (CurrentAlarm()->sec > 0)
         {

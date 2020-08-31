@@ -30,14 +30,14 @@ BufferPtr HtmlToBuffer::CreateBuffer(const URL &url, std::string_view title, Cha
         newBuf->buffername = title;
 
     newBuf->m_document->document_charset = charset;
-    ImageFlags image_flag;
-    if (newBuf->image_flag)
-        image_flag = newBuf->image_flag;
-    else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
-        image_flag = IMG_FLAG_AUTO;
-    else
-        image_flag = IMG_FLAG_SKIP;
-    newBuf->image_flag = image_flag;
+    // ImageFlags image_flag;
+    // if (newBuf->image_flag)
+    //     image_flag = newBuf->image_flag;
+    // else if (ImageManager::Instance().activeImage && ImageManager::Instance().displayImage && ImageManager::Instance().autoImage)
+    //     image_flag = IMG_FLAG_AUTO;
+    // else
+    //     image_flag = IMG_FLAG_SKIP;
+    // newBuf->image_flag = image_flag;
 
     BufferFromLines(newBuf, list);
 
@@ -70,7 +70,7 @@ void HtmlToBuffer::BufferFromLines(const BufferPtr &buf, TextLineList *list)
         ProcessLine(buf, line, nlines++);
     }
 
-    buf->formlist = m_form->FormEnd();
+    buf->m_document->formlist = m_form->FormEnd();
     addMultirowsForm(buf, buf->m_document->formitem);
     addMultirowsImg(buf, buf->m_document->img);
 }
@@ -501,7 +501,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         if (tag->TryGetAttributeValue(ATTR_NAME, &p))
         {
             auto m = std::make_shared<MapList>();
-            buf->maplist.push_back(m);
+            buf->m_document->maplist.push_back(m);
             m->name = p;
         }
         break;
@@ -511,7 +511,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         break;
     case HTML_AREA:
     {
-        if (buf->maplist.empty()) /* outside of <map>..</map> */
+        if (buf->m_document->maplist.empty()) /* outside of <map>..</map> */
             break;
 
         char *p = nullptr;
@@ -529,7 +529,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             char *s = nullptr;
             tag->TryGetAttributeValue(ATTR_COORDS, &s);
             auto a = newMapArea(p, t, q, r, s);
-            buf->maplist.back()->area.push_back(a);
+            buf->m_document->maplist.back()->area.push_back(a);
         }
         break;
     }
@@ -605,13 +605,13 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
                 p = wc_conv_strict(remove_space(tmp->ptr), w3mApp::Instance().InnerCharset,
                                    buf->m_document->document_charset)
                         ->ptr;
-                buf->event = setAlarmEvent(buf->event,
+                buf->m_document->event = setAlarmEvent(buf->m_document->event,
                                            refresh_interval,
                                            AL_IMPLICIT_ONCE,
                                            &gorURL, p);
             }
             else if (refresh_interval > 0)
-                buf->event = setAlarmEvent(buf->event,
+                buf->m_document->event = setAlarmEvent(buf->m_document->event,
                                            refresh_interval,
                                            AL_IMPLICIT,
                                            &reload, nullptr);

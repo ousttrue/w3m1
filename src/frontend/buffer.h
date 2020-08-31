@@ -166,7 +166,6 @@ public:
     AnchorList formitem;
     std::vector<Link> linklist;
     std::vector<BufferPoint> hmarklist;
-    std::vector<BufferPoint> imarklist;
     void putHmarker(int line, int pos, int seq)
     {
         if ((seq + 1) >= hmarklist.size())
@@ -177,6 +176,10 @@ public:
         hmarklist[seq].pos = pos;
         hmarklist[seq].invalid = 0;
     }
+    std::vector<BufferPoint> imarklist;
+    std::vector<FormPtr> formlist;
+    std::vector<MapListPtr> maplist;
+    AlarmEvent *event = nullptr;
 };
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
@@ -367,8 +370,6 @@ public:
     std::shared_ptr<class InputStream> pagerSource;
     int prevhseq = -1;
 
-    std::vector<FormPtr> formlist;
-    std::vector<MapListPtr> maplist;
     URL url = {};
     std::string baseTarget;
     int real_scheme = 0;
@@ -391,7 +392,6 @@ public:
     char image_loaded = 0;
     AnchorPtr submit = nullptr;
     std::vector<BufferPos> undo;
-    AlarmEvent *event = nullptr;
 
     Buffer();
     ~Buffer();

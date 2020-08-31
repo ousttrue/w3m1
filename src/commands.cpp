@@ -2194,7 +2194,7 @@ void ldDL(w3mApp *w3m, const CommandContext &context)
         deletePrevBuf(w3m, context);
 
     if (nReload)
-        GetCurrentBuffer()->event = setAlarmEvent(GetCurrentBuffer()->event, 1, AL_IMPLICIT,
+        GetCurrentBuffer()->m_document->event = setAlarmEvent(GetCurrentBuffer()->m_document->event, 1, AL_IMPLICIT,
                                                   &reload, NULL);
 }
 
