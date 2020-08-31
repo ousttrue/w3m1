@@ -21,6 +21,7 @@
 #include "w3m.h"
 #include "wtf.h"
 #include "loader.h"
+#include "history.h"
 #include <assert.h>
 #include <math.h>
 #include <signal.h>
@@ -315,8 +316,6 @@ static int image_touch = 0;
 static int draw_image_flag = false;
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i);
 
-static int redrawLineRegion(BufferPtr buf, LinePtr l, int i, int bpos,
-                            int epos);
 static void do_effects(Lineprop m);
 
 static Str make_lastline_link(BufferPtr buf, std::string_view title, std::string_view url)
@@ -451,6 +450,73 @@ static Str make_lastline_message(const BufferPtr &buf)
     return msg;
 }
 
+static void DrawLineRegion(const BufferPtr &buf,  LinePtr l, int i, int bpos, int epos)
+{
+    if (l == NULL)
+        return;
+
+    int pos = columnPos(l, buf->currentColumn);
+    auto p = &(l->lineBuf()[pos]);
+    auto pr = &(l->propBuf()[pos]);
+    Linecolor *pc;
+    if (w3mApp::Instance().useColor && l->colorBuf())
+        pc = &(l->colorBuf()[pos]);
+    else
+        pc = NULL;
+
+    int rcol = l->COLPOS(pos);
+    int bcol = bpos - pos;
+    int ecol = epos - pos;
+    int delta = 1;
+    int vpos = -1;
+    for (int j = 0; rcol - buf->currentColumn < buf->rect.cols && pos + j < l->len(); j += delta)
+    {
+        if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
+        {
+            auto a = buf->m_document->href.RetrieveAnchor({l->linenumber, pos + j});
+            if (a)
+            {
+                auto url = URL::Parse(a->url, &buf->url);
+                if (getHashHist(w3mApp::Instance().URLHist, url.ToStr()->c_str()))
+                {
+                    for (auto k = a->start.pos; k < a->end.pos; k++)
+                        pr[k - pos] |= PE_VISITED;
+                }
+                vpos = a->end.pos;
+            }
+        }
+
+        delta = wtf_len((uint8_t *)&p[j]);
+        auto ncol = l->COLPOS(pos + j + delta);
+        if (ncol - buf->currentColumn > buf->rect.cols)
+            break;
+        if (pc)
+            do_color(pc[j]);
+        if (j >= bcol && j < ecol)
+        {
+            if (rcol < buf->currentColumn)
+            {
+                Screen::Instance().Move(i, buf->rect.rootX);
+                for (rcol = buf->currentColumn; rcol < ncol; rcol++)
+                    addChar(' ');
+                continue;
+            }
+            Screen::Instance().Move(i, rcol - buf->currentColumn + buf->rect.rootX);
+            if (p[j] == '\t')
+            {
+                for (; rcol < ncol; rcol++)
+                    addChar(' ');
+            }
+            else
+
+                addMChar(&p[j], pr[j], delta);
+        }
+        rcol = ncol;
+    }
+
+    clear_effect();
+}
+
 static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
                               int prevhseq, int tline, int eline, int active)
 {
@@ -494,13 +560,13 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
                 }
             }
             if (active)
-                buf->DrawLineRegion(l, l->linenumber - tline + buf->rect.rootY,
+                DrawLineRegion(buf, l, l->linenumber - tline + buf->rect.rootY,
                                     an->start.pos, an->end.pos);
         }
         else if (prevhseq >= 0 && an->hseq == prevhseq)
         {
             if (active)
-                buf->DrawLineRegion(l, l->linenumber - tline + buf->rect.rootY,
+                DrawLineRegion(buf, l, l->linenumber - tline + buf->rect.rootY,
                                     an->start.pos, an->end.pos);
         }
     }
