@@ -157,6 +157,11 @@ public:
         assert(it != m_lines.end());
         m_lines.insert(it, prev);
     }
+
+    AnchorList href;
+    AnchorList name;
+    AnchorList img;
+    AnchorList formitem;
 };
 
 using BufferPtr = std::shared_ptr<struct Buffer>;
@@ -345,10 +350,6 @@ public:
     void srch_nxtprv(bool reverse, int prec_num);
 
     std::shared_ptr<class InputStream> pagerSource;
-    AnchorList href;
-    AnchorList name;
-    AnchorList img;
-    AnchorList formitem;
     int prevhseq = -1;
 
     std::vector<Link> linklist;

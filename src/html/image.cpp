@@ -248,7 +248,7 @@ void ImageManager::deleteImage(Buffer *buf)
     if (!buf)
         return;
 
-    for (auto &a : buf->img.anchors)
+    for (auto &a : buf->m_document->img.anchors)
     {
         if (a->image && a->image->cache &&
             a->image->cache->loaded != IMG_FLAG_UNLOADED &&
@@ -270,7 +270,7 @@ void ImageManager::getAllImage(const BufferPtr &buf)
     int i;
 
     buf->image_loaded = true;
-    auto &al = buf->img;
+    auto &al = buf->m_document->img;
     if (!al)
         return;
     current = &buf->url;
@@ -293,7 +293,7 @@ void showImageProgress(const BufferPtr &buf)
 
     if (!buf)
         return;
-    auto &al = buf->img;
+    auto &al = buf->m_document->img;
     if (!al)
         return;
     for (auto &a : al.anchors)

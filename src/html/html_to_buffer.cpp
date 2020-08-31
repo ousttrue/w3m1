@@ -71,8 +71,8 @@ void HtmlToBuffer::BufferFromLines(const BufferPtr &buf, TextLineList *list)
     }
 
     buf->formlist = m_form->FormEnd();
-    addMultirowsForm(buf, buf->formitem);
-    addMultirowsImg(buf, buf->img);
+    addMultirowsForm(buf, buf->m_document->formitem);
+    addMultirowsImg(buf, buf->m_document->img);
 }
 
 void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
@@ -233,7 +233,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         if (tag->TryGetAttributeValue(ATTR_NAME, &id))
         {
             id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-            buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
+            buf->m_document->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
         }
         if (tag->TryGetAttributeValue(ATTR_HREF, &p))
             p = wc_conv_strict(remove_space(p), w3mApp::Instance().InnerCharset,
@@ -277,7 +277,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
                                               referer,
                                               s ? s : "",
                                               *t, currentLn(buf), pos);
-            buf->href.Put(this->a_href);
+            buf->m_document->href.Put(this->a_href);
             this->a_href->hseq = ((hseq > 0) ? hseq : -hseq) - 1;
             this->a_href->slave = (hseq > 0) ? false : true;
         }
@@ -338,7 +338,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
                 p,
                 s ? s : "",
                 currentLn(buf), pos);
-            buf->img.Put(this->a_img);
+            buf->m_document->img.Put(this->a_img);
 
             this->a_img->hseq = iseq;
             this->a_img->image = nullptr;
@@ -377,7 +377,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             }
             else if (iseq < 0)
             {
-                auto a = buf->img.RetrieveAnchor(buf->imarklist[-iseq - 1]);
+                auto a = buf->m_document->img.RetrieveAnchor(buf->imarklist[-iseq - 1]);
                 if (a)
                 {
                     this->a_img->url = a->url;
@@ -448,7 +448,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
             a->start = bp;
             a->end = bp;
             this->a_form = a;
-            buf->formitem.Put(a);
+            buf->m_document->formitem.Put(a);
         }
         else
         {
@@ -721,7 +721,7 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
         if (tag->TryGetAttributeValue(ATTR_ID, &id))
         {
             id = wc_conv_strict(id, w3mApp::Instance().InnerCharset, buf->document_charset)->ptr;
-            buf->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
+            buf->m_document->name.Put(Anchor::CreateName(id, currentLn(buf), pos));
         }
     }
 }

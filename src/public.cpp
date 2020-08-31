@@ -91,12 +91,12 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
         {
             int i;
             saveBuffer(buf, stdout, false);
-            if (w3mApp::Instance().displayLinkNumber && buf->href)
+            if (w3mApp::Instance().displayLinkNumber && buf->m_document->href)
             {
                 printf("\nReferences:\n\n");
-                for (i = 0; i < buf->href.size(); i++)
+                for (i = 0; i < buf->m_document->href.size(); i++)
                 {
-                    auto a = buf->href.anchors[i];
+                    auto a = buf->m_document->href.anchors[i];
                     if (a->slave)
                         continue;
 
@@ -338,7 +338,7 @@ void _followForm(bool submit)
     auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
-    auto a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
         return;
 
@@ -528,9 +528,9 @@ void _followForm(bool submit)
     }
     case FORM_INPUT_RESET:
     {
-        for (auto i = 0; i < buf->formitem.size(); i++)
+        for (auto i = 0; i < buf->m_document->formitem.size(); i++)
         {
-            auto a2 = buf->formitem.anchors[i];
+            auto a2 = buf->m_document->formitem.anchors[i];
             auto f2 = a2->item;
             if (f2->parent.lock() == fi->parent.lock() &&
                 f2->name.size() && f2->value.size() &&
@@ -641,7 +641,7 @@ void bufferA(w3mApp *w3m, const CommandContext &context)
 //         if (!al)
 //         {
 //             label = std::string("_") + target;
-//             al = buf->name.SearchByUrl(label.c_str());
+//             al = buf->m_document->name.SearchByUrl(label.c_str());
 //         }
 //         if (al)
 //         {
@@ -771,9 +771,9 @@ void _nextA(int visited, int n)
     if (buf->hmarklist.empty())
         return;
 
-    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (!visited && !an)
-        an = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+        an = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto y = buf->CurrentLine()->linenumber;
     auto x = buf->pos;
@@ -800,9 +800,9 @@ void _nextA(int visited, int n)
                     goto _end;
                 }
                 auto &po = buf->hmarklist[hseq];
-                an = buf->href.RetrieveAnchor(po);
+                an = buf->m_document->href.RetrieveAnchor(po);
                 if (visited != true && an == NULL)
-                    an = buf->formitem.RetrieveAnchor(po);
+                    an = buf->m_document->formitem.RetrieveAnchor(po);
                 hseq++;
                 if (visited == true && an)
                 {
@@ -816,9 +816,9 @@ void _nextA(int visited, int n)
         }
         else
         {
-            an = buf->href.ClosestNext(NULL, x, y);
+            an = buf->m_document->href.ClosestNext(NULL, x, y);
             if (!visited)
-                an = buf->formitem.ClosestNext(an, x, y);
+                an = buf->m_document->formitem.ClosestNext(an, x, y);
             if (an == NULL)
             {
                 if (visited)
@@ -858,9 +858,9 @@ void _prevA(int visited, int n)
     if (buf->hmarklist.empty())
         return;
 
-    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (!visited && !an)
-        an = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+        an = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto y = buf->CurrentLine()->linenumber;
     auto x = buf->pos;
@@ -887,9 +887,9 @@ void _prevA(int visited, int n)
                     goto _end;
                 }
                 auto &po = buf->hmarklist[hseq];
-                an = buf->href.RetrieveAnchor(po);
+                an = buf->m_document->href.RetrieveAnchor(po);
                 if (visited != true && an == NULL)
-                    an = buf->formitem.RetrieveAnchor(po);
+                    an = buf->m_document->formitem.RetrieveAnchor(po);
                 hseq--;
                 if (visited == true && an)
                 {
@@ -903,9 +903,9 @@ void _prevA(int visited, int n)
         }
         else
         {
-            an = buf->href.ClosestPrev(NULL, x, y);
+            an = buf->m_document->href.ClosestPrev(NULL, x, y);
             if (visited != true)
-                an = buf->formitem.ClosestPrev(an, x, y);
+                an = buf->m_document->formitem.ClosestPrev(an, x, y);
             if (an == NULL)
             {
                 if (visited == true)
@@ -939,7 +939,7 @@ void gotoLabel(std::string_view label)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    auto al = buf->name.SearchByUrl(label.data());
+    auto al = buf->m_document->name.SearchByUrl(label.data());
     if (al == NULL)
     {
         /* FIXME: gettextize? */
@@ -968,9 +968,9 @@ void nextX(int d, int dy, int n)
     if (buf->hmarklist.empty())
         return;
 
-    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (an == NULL)
-        an = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+        an = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto l = buf->CurrentLine();
     auto x = buf->pos;
@@ -986,9 +986,9 @@ void nextX(int d, int dy, int n)
         {
             for (; x >= 0 && x < l->len(); x += d)
             {
-                an = buf->href.RetrieveAnchor({y, x});
+                an = buf->m_document->href.RetrieveAnchor({y, x});
                 if (!an)
-                    an = buf->formitem.RetrieveAnchor({y, x});
+                    an = buf->m_document->formitem.RetrieveAnchor({y, x});
                 if (an)
                 {
                     pan = an;
@@ -1024,9 +1024,9 @@ void nextY(int d, int n)
     if (buf->hmarklist.empty())
         return;
 
-    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (!an)
-        an = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+        an = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     int x = buf->pos;
     int y = buf->CurrentLine()->linenumber + d;
@@ -1040,9 +1040,9 @@ void nextY(int d, int n)
         an = NULL;
         for (; y >= 0 && y <= buf->LineCount(); y += d)
         {
-            an = buf->href.RetrieveAnchor({y, x});
+            an = buf->m_document->href.RetrieveAnchor({y, x});
             if (!an)
-                an = buf->formitem.RetrieveAnchor({y, x});
+                an = buf->m_document->formitem.RetrieveAnchor({y, x});
             if (an && hseq != abs(an->hseq))
             {
                 pan = an;
@@ -1083,7 +1083,7 @@ void goURL0(std::string_view url, std::string_view prompt, int relative)
             else
                 pushHist(hist, c_url);
         }
-        auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
+        auto a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
             auto p_url = URL::Parse(a->url, current);
@@ -1143,7 +1143,7 @@ void anchorMn(AnchorPtr (*menu_func)(const BufferPtr &), int go)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    if (!buf->href || buf->hmarklist.empty())
+    if (!buf->m_document->href || buf->hmarklist.empty())
         return;
 
     auto a = menu_func(buf);
@@ -1176,14 +1176,14 @@ void _peekURL(int only_img, int n)
     //     offset = 0;
     // }
 
-    auto a = (only_img ? NULL : buf->href.RetrieveAnchor(buf->CurrentPoint()));
+    auto a = (only_img ? NULL : buf->m_document->href.RetrieveAnchor(buf->CurrentPoint()));
     Str s = nullptr;
     if (a == NULL)
     {
-        a = (only_img ? NULL : buf->formitem.RetrieveAnchor(buf->CurrentPoint()));
+        a = (only_img ? NULL : buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint()));
         if (a == NULL)
         {
-            a = buf->img.RetrieveAnchor(buf->CurrentPoint());
+            a = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
             if (a == NULL)
                 return;
         }

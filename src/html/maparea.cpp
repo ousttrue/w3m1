@@ -139,10 +139,10 @@ retrieveCurrentMapArea(const BufferPtr &buf)
     MapListPtr ml;
     int i, n;
 
-    auto a_img = buf->img.RetrieveAnchor(buf->CurrentPoint());
+    auto a_img = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
     if (!(a_img && a_img->image && a_img->image->map))
         return NULL;
-    auto a_form = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+    auto a_form = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (!(a_form && a_form->url.size()))
         return NULL;
     auto fi = a_form->item;
@@ -179,7 +179,7 @@ int getMapXY(BufferPtr buf, const AnchorPtr a, int *x, int *y)
 
 AnchorPtr retrieveCurrentMap(const BufferPtr &buf)
 {
-    auto a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (!a || !a->url.size())
         return NULL;
     auto fi = a->item;
@@ -473,7 +473,7 @@ page_info_panel(const BufferPtr &buf)
                 //    Sprintf("%d", buf->trbyte)->ptr, 
                    NULL);
 
-    a = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
         auto pu = URL::Parse(a->url, &buf->url);
@@ -487,7 +487,7 @@ page_info_panel(const BufferPtr &buf)
                        "<tr valign=top><td nowrap>URL of current anchor<td><a href=\"",
                        q, "\">", p, "</a>", NULL);
     }
-    a = buf->img.RetrieveAnchor(buf->CurrentPoint());
+    a = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
         auto pu = URL::Parse(a->url, &buf->url);
@@ -501,7 +501,7 @@ page_info_panel(const BufferPtr &buf)
                        "<tr valign=top><td nowrap>URL of current image<td><a href=\"",
                        q, "\">", p, "</a>", NULL);
     }
-    a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+    a = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
     if (a != NULL)
     {
         auto fi = a->item;

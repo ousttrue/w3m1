@@ -388,13 +388,13 @@ static Str make_lastline_message(const BufferPtr &buf)
             s = make_lastline_link(buf, a->alt, a->url);
         else
         {
-            auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
+            auto a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
             std::string p = NULL;
             if (a && a->title.size() && a->title[0])
                 p = a->title;
             else
             {
-                auto a_img = buf->img.RetrieveAnchor(buf->CurrentPoint());
+                auto a_img = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
                 if (a_img && a_img->title.size() && a_img->title[0])
                     p = a_img->title;
             }
@@ -512,10 +512,10 @@ static void drawAnchorCursor(const BufferPtr &buf)
 {
     if (buf->LineCount() == 0)
         return;
-    if (!buf->href && !buf->formitem)
+    if (!buf->m_document->href && !buf->m_document->formitem)
         return;
 
-    auto an = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (!an)
         an = retrieveCurrentMap(buf);
 
@@ -529,15 +529,15 @@ static void drawAnchorCursor(const BufferPtr &buf)
     int eline = tline + buf->rect.lines;
     int prevhseq = buf->prevhseq;
 
-    if (buf->href)
+    if (buf->m_document->href)
     {
-        drawAnchorCursor0(buf, buf->href, hseq, prevhseq, tline, eline, 1);
-        drawAnchorCursor0(buf, buf->href, hseq, -1, tline, eline, 0);
+        drawAnchorCursor0(buf, buf->m_document->href, hseq, prevhseq, tline, eline, 1);
+        drawAnchorCursor0(buf, buf->m_document->href, hseq, -1, tline, eline, 0);
     }
-    if (buf->formitem)
+    if (buf->m_document->formitem)
     {
-        drawAnchorCursor0(buf, buf->formitem, hseq, prevhseq, tline, eline, 1);
-        drawAnchorCursor0(buf, buf->formitem, hseq, -1, tline, eline, 0);
+        drawAnchorCursor0(buf, buf->m_document->formitem, hseq, prevhseq, tline, eline, 1);
+        drawAnchorCursor0(buf, buf->m_document->formitem, hseq, -1, tline, eline, 0);
     }
     buf->prevhseq = hseq;
 }
@@ -568,7 +568,7 @@ static void redrawNLine(const BufferPtr &buf)
     }
 
     if (!(ImageManager::Instance().activeImage && ImageManager::Instance().displayImage &&
-          buf->img))
+          buf->m_document->img))
         return;
 
     auto [x, y] = buf->rect.globalXY();
@@ -605,7 +605,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
             rcol = l->COLPOS(pos + j + 1);
             continue;
         }
-        auto a = buf->img.RetrieveAnchor({l->linenumber, pos + j});
+        auto a = buf->m_document->img.RetrieveAnchor({l->linenumber, pos + j});
         if (a && a->image && a->image->touch < image_touch)
         {
             Image *image = a->image;
@@ -1074,7 +1074,7 @@ void displayBuffer()
     Screen::Instance().Refresh();
     Terminal::flush();
 
-    if (buf->img)
+    if (buf->m_document->img)
     {
         ImageManager::Instance().drawImage();
     }

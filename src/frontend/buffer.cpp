@@ -248,7 +248,13 @@ void Buffer::CopyFrom(BufferPtr src)
     buffername = src->buffername;
 
     need_reshape = src->need_reshape;
+
+    // document
     m_document->m_lines = src->m_document->m_lines;
+    m_document->href = src->m_document->href;
+    m_document->name = src->m_document->name;
+    m_document->img = src->m_document->img;
+    m_document->formitem = src->m_document->formitem;
 
     // scroll
     topLine = src->topLine;
@@ -265,10 +271,6 @@ void Buffer::CopyFrom(BufferPtr src)
     visualpos = src->visualpos;
     rect = src->rect;
     pagerSource = src->pagerSource;
-    href = src->href;
-    name = src->name;
-    img = src->img;
-    formitem = src->formitem;
     prevhseq = src->prevhseq;
 
     linklist = src->linklist;
@@ -692,7 +694,7 @@ void set_buffer_environ(const BufferPtr &buf)
     {
         char *s = GetWord(buf);
         set_environ("W3M_CURRENT_WORD", (char *)(s ? s : ""));
-        auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
+        auto a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
             auto pu = URL::Parse(a->url, &buf->url);
@@ -700,7 +702,7 @@ void set_buffer_environ(const BufferPtr &buf)
         }
         else
             set_environ("W3M_CURRENT_LINK", "");
-        a = buf->img.RetrieveAnchor(buf->CurrentPoint());
+        a = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
         if (a)
         {
             auto pu = URL::Parse(a->url, &buf->url);
@@ -708,7 +710,7 @@ void set_buffer_environ(const BufferPtr &buf)
         }
         else
             set_environ("W3M_CURRENT_IMG", "");
-        a = buf->formitem.RetrieveAnchor(buf->CurrentPoint());
+        a = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
         if (a)
             set_environ("W3M_CURRENT_FORM", a->item->ToStr()->ptr);
         else
@@ -1178,7 +1180,7 @@ void Buffer::DrawLine(LinePtr l, int line)
     {
         if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
-            auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
+            auto a = this->m_document->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
             {
                 auto url = URL::Parse(a->url, &this->url);
@@ -1261,7 +1263,7 @@ int Buffer::DrawLineRegion(LinePtr l, int i, int bpos, int epos)
     {
         if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         {
-            auto a = this->href.RetrieveAnchor({l->linenumber, pos + j});
+            auto a = this->m_document->href.RetrieveAnchor({l->linenumber, pos + j});
             if (a)
             {
                 auto url = URL::Parse(a->url, &this->url);

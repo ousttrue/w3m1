@@ -1673,7 +1673,7 @@ Link *link_menu(const BufferPtr &buf)
 
 AnchorPtr accesskey_menu(const BufferPtr &buf)
 {
-    AnchorList &al = buf->href;
+    AnchorList &al = buf->m_document->href;
     if (!al)
         return NULL;
 
@@ -1736,7 +1736,7 @@ AnchorPtr accesskey_menu(const BufferPtr &buf)
         menu->keyselect[(int)c] = i;
     }
 
-    auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (a && a->accesskey && IS_ASCII(a->accesskey))
     {
         for (i = 0; i < nitem; i++)
@@ -1784,7 +1784,7 @@ lmSelect(char c)
 AnchorPtr list_menu(const BufferPtr &buf)
 {
     auto menu = std::make_shared<Menu>();
-    AnchorList &al = buf->href;
+    AnchorList &al = buf->m_document->href;
     int i, n, nitem = 0, key = -1, two = false;
     const char *t;
     unsigned char c;
@@ -1863,7 +1863,7 @@ AnchorPtr list_menu(const BufferPtr &buf)
         }
     }
 
-    auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (a)
     {
         for (i = 0; i < nitem; i++)

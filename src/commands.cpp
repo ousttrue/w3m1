@@ -823,7 +823,7 @@ void followI(w3mApp *w3m, const CommandContext &context)
     auto buf = GetCurrentBuffer();
     if (buf->LineCount() == 0)
         return;
-    auto a = buf->img.RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
         return;
 
@@ -878,9 +878,9 @@ void topA(w3mApp *w3m, const CommandContext &context)
         if (hseq >= hl.size())
             return;
         po = hl[hseq];
-        an = buf->href.RetrieveAnchor(po);
+        an = buf->m_document->href.RetrieveAnchor(po);
         if (an == NULL)
-            an = buf->formitem.RetrieveAnchor(po);
+            an = buf->m_document->formitem.RetrieveAnchor(po);
         hseq++;
     } while (an == NULL);
 
@@ -913,9 +913,9 @@ void lastA(w3mApp *w3m, const CommandContext &context)
         if (hseq < 0)
             return;
         po = hl[hseq];
-        an = buf->href.RetrieveAnchor(po);
+        an = buf->m_document->href.RetrieveAnchor(po);
         if (an == NULL)
-            an = buf->formitem.RetrieveAnchor(po);
+            an = buf->m_document->formitem.RetrieveAnchor(po);
         hseq--;
     } while (an == NULL);
 
@@ -973,7 +973,7 @@ void followA(w3mApp *w3m, const CommandContext &context)
     int y = -1;
 
     {
-        auto a = buf->img.RetrieveAnchor(buf->CurrentPoint());
+        auto a = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
         if (a && a->image && a->image->map)
         {
             _followForm(false);
@@ -983,7 +983,7 @@ void followA(w3mApp *w3m, const CommandContext &context)
         std::tie(map, x, y) = isMap(buf, a);
     }
 
-    auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
     {
         _followForm(false);
@@ -1729,7 +1729,7 @@ void linkbrz(w3mApp *w3m, const CommandContext &context)
     if (buf->LineCount() == 0)
         return;
 
-    auto a = buf->href.RetrieveAnchor(buf->CurrentPoint());
+    auto a = buf->m_document->href.RetrieveAnchor(buf->CurrentPoint());
     if (a == NULL)
         return;
 

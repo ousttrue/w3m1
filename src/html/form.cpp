@@ -38,7 +38,7 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
 
-    auto an = buf->img.RetrieveAnchor(buf->CurrentPoint());
+    auto an = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
     auto [x, y] = buf->rect.globalXY();
     auto a = follow_map_menu(GetCurrentBuffer(), name, an, x, y);
     if (a == NULL || a->url.empty())
@@ -186,9 +186,9 @@ Str FormItem::ToStr() const
 
 void formRecheckRadio(const AnchorPtr &a, BufferPtr buf, FormItemPtr fi)
 {
-    for (int i = 0; i < buf->formitem.size(); i++)
+    for (int i = 0; i < buf->m_document->formitem.size(); i++)
     {
-        auto a2 = buf->formitem.anchors[i];
+        auto a2 = buf->m_document->formitem.anchors[i];
         auto f2 = a2->item;
         if (f2->parent.lock() == fi->parent.lock() && f2 != fi &&
             f2->type == FORM_INPUT_RADIO && f2->name == fi->name)
@@ -207,11 +207,11 @@ void formResetBuffer(BufferPtr buf, AnchorList &formitem)
     AnchorPtr a;
     FormItemPtr f1, f2;
 
-    if (buf == NULL || !buf->formitem || !formitem)
+    if (buf == NULL || !buf->m_document->formitem || !formitem)
         return;
-    for (i = 0; i < buf->formitem.size() && i < formitem.size(); i++)
+    for (i = 0; i < buf->m_document->formitem.size() && i < formitem.size(); i++)
     {
-        a = buf->formitem.anchors[i];
+        a = buf->m_document->formitem.anchors[i];
         if (a->y != a->start.line)
             continue;
         f1 = a->item;
@@ -453,7 +453,7 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
             if (rows > 1)
             {
                 auto pos = columnPos(l, col);
-                auto a = buf->formitem.RetrieveAnchor({l->linenumber, pos});
+                auto a = buf->m_document->formitem.RetrieveAnchor({l->linenumber, pos});
                 if (a == NULL)
                     break;
                 spos = a->start.pos;
@@ -471,10 +471,10 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
                         line : a->start.line,
                         pos : spos,
                     };
-                    buf->shiftAnchorPosition(buf->href, bp, pos - epos);
-                    buf->shiftAnchorPosition(buf->name, bp, pos - epos);
-                    buf->shiftAnchorPosition(buf->img, bp, pos - epos);
-                    buf->shiftAnchorPosition(buf->formitem, bp, pos - epos);
+                    buf->shiftAnchorPosition(buf->m_document->href, bp, pos - epos);
+                    buf->shiftAnchorPosition(buf->m_document->name, bp, pos - epos);
+                    buf->shiftAnchorPosition(buf->m_document->img, bp, pos - epos);
+                    buf->shiftAnchorPosition(buf->m_document->formitem, bp, pos - epos);
                 }
             }
         }
@@ -924,7 +924,7 @@ void preFormUpdateBuffer(const BufferPtr &buf)
     FormSelectOptionItem *opt;
     int j;
 
-    if (!buf || !buf->formitem || PreForm.empty())
+    if (!buf || !buf->m_document->formitem || PreForm.empty())
         return;
 
     for (auto &pf : PreForm)
@@ -942,9 +942,9 @@ void preFormUpdateBuffer(const BufferPtr &buf)
         }
         else
             continue;
-        for (i = 0; i < buf->formitem.size(); i++)
+        for (i = 0; i < buf->m_document->formitem.size(); i++)
         {
-            a = buf->formitem.anchors[i];
+            a = buf->m_document->formitem.anchors[i];
             fi = a->item;
             fl = fi->parent.lock();
             if (pf->name.size() && (fl->name.empty() || fl->name != pf->name))
@@ -1063,7 +1063,7 @@ Str Form::Query(const FormItemPtr &fi, bool multipart) const
             {
                 int x = 0, y = 0;
 
-                getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
+                getMapXY(buf, buf->m_document->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
 
                 query = conv_form_encoding(f2->name, fi, buf)->Clone();
                 query->Push(".x");
@@ -1099,7 +1099,7 @@ Str Form::Query(const FormItemPtr &fi, bool multipart) const
             if (f2->type == FORM_INPUT_IMAGE)
             {
                 int x = 0, y = 0;
-                getMapXY(buf, buf->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
+                getMapXY(buf, buf->m_document->img.RetrieveAnchor(buf->CurrentPoint()), &x, &y);
                 query->Push(
                     UrlEncode(conv_form_encoding(f2->name, fi, buf)));
                 query->Push(Sprintf(".x=%d&", x));
