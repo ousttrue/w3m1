@@ -310,8 +310,7 @@ int cur_real_linenumber(const BufferPtr &buf)
     auto n = cur->real_linenumber ? cur->real_linenumber : 1;
     for (auto l = buf->m_document->FirstLine(); l && l != cur && l->real_linenumber == 0; l = buf->m_document->NextLine(l))
     { /* header */
-        if (l->bpos == 0)
-            n++;
+        n++;
     }
     return n;
 }

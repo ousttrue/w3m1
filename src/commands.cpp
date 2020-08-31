@@ -602,7 +602,7 @@ void linbeg(w3mApp *w3m, const CommandContext &context)
     auto doc = buf->m_document;
     if (doc->LineCount() == 0)
         return;
-    while (doc->PrevLine(buf->CurrentLine()) && buf->CurrentLine()->bpos)
+    while (doc->PrevLine(buf->CurrentLine()))
         buf->CursorUp0(1);
     buf->pos = 0;
     buf->ArrangeCursor();
@@ -615,7 +615,7 @@ void linend(w3mApp *w3m, const CommandContext &context)
     auto doc = buf->m_document;
     if (doc->LineCount() == 0)
         return;
-    while (doc->NextLine(buf->CurrentLine()) && doc->NextLine(buf->CurrentLine())->bpos)
+    while (doc->NextLine(buf->CurrentLine()))
         buf->CursorDown0(1);
     buf->pos = buf->CurrentLine()->len() - 1;
     buf->ArrangeCursor();
@@ -1754,7 +1754,7 @@ void curlno(w3mApp *w3m, const CommandContext &context)
     {
         auto cur = l->real_linenumber;
         auto col = l->bwidth + buf->currentColumn + buf->rect.cursorX + 1;
-        while (doc->NextLine(l) && doc->NextLine(l)->bpos)
+        while (doc->NextLine(l))
             l = doc->NextLine(l);
         l->CalcWidth();
         len = l->bend();

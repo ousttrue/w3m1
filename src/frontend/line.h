@@ -5,8 +5,6 @@
 struct Line
 {
     PropertiedString buffer;
-    // separate start bytes
-    int bpos = 0;
     // separate start column
     int bwidth = 0;
 
@@ -32,7 +30,6 @@ public:
         buffer = str;
 
         m_width = -1;
-        bpos = 0;
         bwidth = 0;
     }
 

@@ -312,8 +312,6 @@ public:
         this->LineSkip(m_document->FirstLine(), orig->TOP_LINENUMBER() - 1, false);
         this->GotoLine(orig->CUR_LINENUMBER());
         this->pos = orig->pos;
-        if (this->currentLine && orig->currentLine)
-            this->pos += orig->currentLine->bpos - this->currentLine->bpos;
         this->currentColumn = orig->currentColumn;
         this->ArrangeCursor();
     }
