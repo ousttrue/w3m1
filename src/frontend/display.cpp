@@ -450,26 +450,23 @@ static Str make_lastline_message(const BufferPtr &buf)
     return msg;
 }
 
-static void DrawLineRegion(int i, LinePtr l, const TermRect &rect, int bpos, int epos, int currentColumn)
+static void DrawHover(int y, LinePtr l, const Viewport &viewport, int bpos, int epos, int leftColumn)
 {
-    if (l == NULL)
-        return;
-
-    int pos = columnPos(l, currentColumn);
-    auto p = &(l->lineBuf()[pos]);
-    auto pr = &(l->propBuf()[pos]);
-    Linecolor *pc;
+    int leftPos = columnPos(l, leftColumn);
+    auto p = l->lineBuf();
+    auto pr = l->propBuf();
+    Linecolor *pc = nullptr;
     if (w3mApp::Instance().useColor && l->colorBuf())
-        pc = &(l->colorBuf()[pos]);
-    else
-        pc = NULL;
+        pc = l->colorBuf();
 
-    int rcol = l->COLPOS(pos);
-    int bcol = bpos - pos;
-    int ecol = epos - pos;
-    int delta = 1;
-    int vpos = -1;
-    for (int j = 0; rcol - currentColumn < rect.cols && pos + j < l->len(); j += delta)
+    // int bcol = bpos - leftPos;
+    // int ecol = epos - leftPos;
+    // int vpos = -1;
+
+    int col = l->COLPOS(leftPos);
+    int pos = leftPos;
+    for (int col = 0, pos = leftPos; col < viewport.cols && pos < l->len();)
+    // for (int j = 0; rcol - leftColumn < viewport.cols && leftPos + j < l->len();)
     {
         // if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         // {
@@ -486,32 +483,37 @@ static void DrawLineRegion(int i, LinePtr l, const TermRect &rect, int bpos, int
         //     }
         // }
 
-        delta = wtf_len((uint8_t *)&p[j]);
-        auto ncol = l->COLPOS(pos + j + delta);
-        if (ncol - currentColumn > rect.cols)
+        auto delta = wtf_len((uint8_t *)&p[pos]);
+        auto nextCol = l->COLPOS(pos + delta);
+        if (nextCol - leftColumn > viewport.cols)
             break;
         if (pc)
-            do_color(pc[j]);
-        if (j >= bcol && j < ecol)
         {
-            if (rcol < currentColumn)
+            do_color(pc[pos]);
+        }
+
+        if (pos >= bpos && pos < epos)
+        {
+            if (col < leftColumn)
             {
-                Screen::Instance().Move(i, rect.rootX);
-                for (rcol = currentColumn; rcol < ncol; rcol++)
+                Screen::Instance().Move(y, viewport.rootX);
+                for (col = leftColumn; col < nextCol; col++)
                     addChar(' ');
                 continue;
             }
-            Screen::Instance().Move(i, rcol - currentColumn + rect.rootX);
-            if (p[j] == '\t')
+            Screen::Instance().Move(y, col - leftColumn + viewport.rootX);
+            if (p[pos] == '\t')
             {
-                for (; rcol < ncol; rcol++)
+                for (; col < nextCol; col++)
                     addChar(' ');
             }
             else
-
-                addMChar(&p[j], pr[j], delta);
+            {
+                addMChar(&p[pos], pr[pos], delta);
+            }
         }
-        rcol = ncol;
+        col = nextCol;
+        pos += delta;
     }
 
     clear_effect();
@@ -559,18 +561,18 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
                 }
             }
             if (active)
-                DrawLineRegion(l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l,
-                               buf->rect,
-                               an->start.pos, an->end.pos,
-                               buf->currentColumn);
+                DrawHover(l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l,
+                          buf->rect,
+                          an->start.pos, an->end.pos,
+                          buf->currentColumn);
         }
         else if (prevhseq >= 0 && an->hseq == prevhseq)
         {
             if (active)
-                DrawLineRegion(l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l,
-                               buf->rect,
-                               an->start.pos, an->end.pos,
-                               buf->currentColumn);
+                DrawHover(l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l,
+                          buf->rect,
+                          an->start.pos, an->end.pos,
+                          buf->currentColumn);
         }
     }
 }
@@ -611,7 +613,7 @@ static void drawAnchorCursor(const BufferPtr &buf)
 ///
 /// draw a line
 ///
-static void DrawLine(LinePtr l, int line, const TermRect &rect, int currentColumn, const DocumentPtr &document)
+static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColumn, const DocumentPtr &document)
 {
     if (l == NULL)
     {

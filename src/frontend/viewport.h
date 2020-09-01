@@ -5,7 +5,7 @@
 //
 // viewport for buffer
 //
-struct TermRect
+struct Viewport
 {
     // viewport top left corner
     short rootX = 0;

@@ -8,7 +8,7 @@ void clear_effect();
 // message
 void show_message(std::string_view s);
 void message(std::string_view s, int return_x, int return_y);
-inline void message(const char *s, const TermRect &rect)
+inline void message(const char *s, const Viewport &rect)
 {
     auto [x, y] = rect.globalXY();
     message(s, x, y);

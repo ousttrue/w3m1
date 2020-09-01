@@ -4,7 +4,7 @@
 #include "html/maparea.h"
 #include "html/form.h"
 #include "html/image.h"
-#include "termrect.h"
+#include "viewport.h"
 #include "line.h"
 #include "link.h"
 
@@ -280,7 +280,7 @@ public:
     int visualpos = 0;
 
     // this->rect.cursorX = this->visualpos - l->bwidth;
-    TermRect rect;
+    Viewport rect;
 
     void CursorHome()
     {
