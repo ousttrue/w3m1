@@ -392,3 +392,51 @@ PropertiedString PropertiedString::create(Str s, bool use_color)
 
     return PropertiedString(s->ptr, prop_buffer, s->Size(), check_color ? color_buffer : NULL);
 }
+
+int PropertiedString::calcPosition(int pos, int bpos, CalcPositionMode mode) const
+{
+    static int *realColumn = nullptr;
+    static int size = 0;
+    static char *prevl = nullptr;
+    int i, j;
+
+    auto l = const_cast<char *>(lineBuf());
+    auto pr = propBuf();
+    auto len = this->len();
+
+    if (l == nullptr || len == 0)
+        return bpos;
+    if (l == prevl && mode == CP_AUTO)
+    {
+        if (pos <= len)
+            return realColumn[pos];
+    }
+    if (size < len + 1)
+    {
+        size = (len + 1 > LINELEN) ? (len + 1) : LINELEN;
+        realColumn = New_N(int, size);
+    }
+    prevl = l;
+    i = 0;
+    j = bpos;
+    if (pr[i] & PC_WCHAR2)
+    {
+        for (; i < len && pr[i] & PC_WCHAR2; i++)
+            realColumn[i] = j;
+        if (i > 0 && pr[i - 1] & PC_KANJI && WcOption.use_wide)
+            j++;
+    }
+    while (1)
+    {
+        realColumn[i] = j;
+        if (i == len)
+            break;
+        j += PropertiedCharacter{l + i, pr[i]}.ColumnLen();
+        i++;
+        for (; i < len && pr[i] & PC_WCHAR2; i++)
+            realColumn[i] = realColumn[i - 1];
+    }
+    if (pos >= i)
+        return j;
+    return realColumn[pos];
+}

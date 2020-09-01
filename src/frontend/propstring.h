@@ -97,6 +97,12 @@ struct PropertiedCharacter
     int ColumnLen() const;
 };
 
+/* Flags for calcPosition() */
+enum CalcPositionMode
+{
+    CP_AUTO = 0,
+    CP_FORCE = 1,
+};
 class PropertiedString
 {
     std::vector<char> m_lineBuf;
@@ -144,4 +150,6 @@ public:
     }
 
     Str conv_symbol() const;
+
+    int calcPosition(int pos, int bpos, CalcPositionMode mode) const;
 };

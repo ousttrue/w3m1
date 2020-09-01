@@ -61,12 +61,5 @@ public:
 };
 using LinePtr = std::shared_ptr<Line>;
 
-/* Flags for calcPosition() */
-enum CalcPositionMode
-{
-    CP_AUTO = 0,
-    CP_FORCE = 1,
-};
-int calcPosition(const PropertiedString &str, int pos, int bpos, CalcPositionMode mode);
 int columnPos(LinePtr line, int column);
 int columnLen(LinePtr line, int column);

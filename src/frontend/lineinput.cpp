@@ -49,41 +49,14 @@ static Str doComplete(Str ifn, int *status, int next);
 /* *INDENT-OFF* */
 void (*InputKeymap[32])() = {
     /*  C-@     C-a     C-b     C-c     C-d     C-e     C-f     C-g     */
-    _compl,
-    _mvB,
-    _mvL,
-    _inbrk,
-    delC,
-    _mvE,
-    _mvR,
-    _inbrk,
+    _compl, _mvB, _mvL, _inbrk, delC, _mvE, _mvR, _inbrk,
     /*  C-h     C-i     C-j     C-k     C-l     C-m     C-n     C-o     */
-    _bs,
-    iself,
-    _enter,
-    killn,
-    iself,
-    _enter,
-    _next,
-    _editor,
+    _bs, iself, _enter, killn, iself, _enter, _next, _editor,
     /*  C-p     C-q     C-r     C-s     C-t     C-u     C-v     C-w     */
-    _prev,
-    _quo,
-    _bsw,
-    iself,
-    _mvLw,
-    killb,
-    _quo,
-    _bsw,
+    _prev, _quo, _bsw, iself, _mvLw, killb, _quo, _bsw,
     /*  C-x     C-y     C-z     C-[     C-\     C-]     C-^     C-_     */
-    _tcompl,
-    _mvRw,
-    iself,
-    _esc,
-    iself,
-    iself,
-    iself,
-    iself,
+    _tcompl, _mvRw, iself, _esc, iself, iself, iself, iself,
+    //
 };
 /* *INDENT-ON* */
 
@@ -100,51 +73,15 @@ static int move_word;
 static Hist *CurrentHist;
 static Str strCurrentBuf;
 static int use_hist;
-#ifdef USE_M17N
 static void ins_char(Str str);
-#else
-static void ins_char(char c);
-#endif
 
-#ifdef __EMX__
-static int
-getcntrl(void)
+static void addPasswd(char *p, Lineprop *pr, int len, int offset, int limit)
 {
-    switch (getch())
-    {
-    case K_DEL:
-        return CTRL_D;
-    case K_LEFT:
-        return CTRL_B;
-    case K_RIGHT:
-        return CTRL_F;
-    case K_UP:
-        return CTRL_P;
-    case K_DOWN:
-        return CTRL_N;
-    case K_HOME:
-    case K_CTRL_LEFT:
-        return CTRL_A;
-    case K_END:
-    case K_CTRL_RIGHT:
-        return CTRL_E;
-    case K_CTRL_HOME:
-        return CTRL_U;
-    case K_CTRL_END:
-        return CTRL_K;
-    }
-    return 0;
-}
-#endif
-
-static void
-addPasswd(char *p, Lineprop *pr, int len, int offset, int limit)
-{
-    int rcol = 0, ncol;
-
-    ncol = calcPosition({p, pr, len}, len, 0, CP_AUTO);
+    auto ncol = PropertiedString(p, pr, len).calcPosition(len, 0, CP_AUTO);
     if (ncol > offset + limit)
         ncol = offset + limit;
+
+    int rcol = 0;
     if (offset)
     {
         addChar('{');
@@ -154,8 +91,7 @@ addPasswd(char *p, Lineprop *pr, int len, int offset, int limit)
         addChar('*');
 }
 
-static void
-addStr(char *p, Lineprop *pr, int len, int offset, int limit)
+static void addStr(char *p, Lineprop *pr, int len, int offset, int limit)
 {
     int i = 0, rcol = 0, ncol, delta = 1;
 
@@ -163,27 +99,26 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
     {
         for (i = 0; i < len; i++)
         {
-            if (calcPosition({p, pr, len}, i, 0, CP_AUTO) > offset)
+            if (PropertiedString(p, pr, len).calcPosition(i, 0, CP_AUTO) > offset)
                 break;
         }
         if (i >= len)
             return;
-#ifdef USE_M17N
+
         while (pr[i] & PC_WCHAR2)
             i++;
-#endif
+
         addChar('{');
         rcol = offset + 1;
-        ncol = calcPosition({p, pr, len}, i, 0, CP_AUTO);
+        ncol = PropertiedString(p, pr, len).calcPosition(i, 0, CP_AUTO);
         for (; rcol < ncol; rcol++)
             addChar(' ');
     }
     for (; i < len; i += delta)
     {
-#ifdef USE_M17N
         delta = wtf_len((uint8_t *)&p[i]);
-#endif
-        ncol = calcPosition({p, pr, len}, i + delta, 0, CP_AUTO);
+
+        ncol = PropertiedString(p, pr, len).calcPosition(i + delta, 0, CP_AUTO);
         if (ncol - offset > limit)
             break;
         if (p[i] == '\t')
@@ -194,19 +129,13 @@ addStr(char *p, Lineprop *pr, int len, int offset, int limit)
         }
         else
         {
-#ifdef USE_M17N
             addMChar(&p[i], pr[i], delta);
-#else
-            addChar(p[i], pr[i]);
-#endif
         }
         rcol = ncol;
     }
 }
 
-#ifdef USE_M17N
-static void
-ins_char(Str str)
+static void ins_char(Str str)
 {
     char *p = str->ptr, *ep = p + str->Size();
     Lineprop ctype;
@@ -242,10 +171,8 @@ ins_char(Str str)
         }
     }
 }
-#endif
 
-static void
-_esc(void)
+static void _esc(void)
 {
     char c;
 
@@ -297,11 +224,10 @@ _esc(void)
         if (w3mApp::Instance().emacs_like_lineedit)
             _bsw();
         break;
-#ifdef USE_M17N
+
     default:
         if (wc_char_conv(ESC_CODE) == NULL && wc_char_conv(c) == NULL)
             i_quote = true;
-#endif
     }
 }
 
@@ -315,18 +241,17 @@ static void insC()
     }
 }
 
-static void
-delC(void)
+static void delC(void)
 {
     int i = CPos;
     int delta = 1;
 
     if (CLen == CPos)
         return;
-#ifdef USE_M17N
+
     while (i + delta < CLen && strProp[i + delta] & PC_WCHAR2)
         delta++;
-#endif
+
     for (i = CPos; i < CLen; i++)
     {
         strProp[i] = strProp[i + delta];
@@ -335,64 +260,51 @@ delC(void)
     CLen -= delta;
 }
 
-static void
-_mvL(void)
+static void _mvL(void)
 {
     if (CPos > 0)
         CPos--;
-#ifdef USE_M17N
     while (CPos > 0 && strProp[CPos] & PC_WCHAR2)
         CPos--;
-#endif
 }
 
-static void
-_mvLw(void)
+static void _mvLw(void)
 {
     int first = 1;
     while (CPos > 0 && (first || !terminated(strBuf->ptr[CPos - 1])))
     {
         CPos--;
         first = 0;
-#ifdef USE_M17N
         if (CPos > 0 && strProp[CPos] & PC_WCHAR2)
             CPos--;
-#endif
         if (!move_word)
             break;
     }
 }
 
-static void
-_mvRw(void)
+static void _mvRw(void)
 {
     int first = 1;
     while (CPos < CLen && (first || !terminated(strBuf->ptr[CPos - 1])))
     {
         CPos++;
         first = 0;
-#ifdef USE_M17N
         if (CPos < CLen && strProp[CPos] & PC_WCHAR2)
             CPos++;
-#endif
         if (!move_word)
             break;
     }
 }
 
-static void
-_mvR(void)
+static void _mvR(void)
 {
     if (CPos < CLen)
         CPos++;
-#ifdef USE_M17N
     while (CPos < CLen && strProp[CPos] & PC_WCHAR2)
         CPos++;
-#endif
 }
 
-static void
-_bs(void)
+static void _bs(void)
 {
     if (CPos > 0)
     {
@@ -401,8 +313,7 @@ _bs(void)
     }
 }
 
-static void
-_bsw(void)
+static void _bsw(void)
 {
     int t = 0;
     while (CPos > 0 && !t)
@@ -413,14 +324,12 @@ _bsw(void)
     }
 }
 
-static void
-_enter(void)
+static void _enter(void)
 {
     i_cont = false;
 }
 
-static void
-insertself(char c)
+static void insertself(char c)
 {
     if (CLen >= STR_LEN)
         return;
@@ -430,40 +339,34 @@ insertself(char c)
     CPos++;
 }
 
-static void
-_quo(void)
+static void _quo(void)
 {
     i_quote = true;
 }
 
-static void
-_mvB(void)
+static void _mvB(void)
 {
     CPos = 0;
 }
 
-static void
-_mvE(void)
+static void _mvE(void)
 {
     CPos = CLen;
 }
 
-static void
-killn(void)
+static void killn(void)
 {
     CLen = CPos;
     strBuf->Truncate(CLen);
 }
 
-static void
-killb(void)
+static void killb(void)
 {
     while (CPos > 0)
         _bs();
 }
 
-static void
-_inbrk(void)
+static void _inbrk(void)
 {
     i_cont = false;
     i_broken = true;
@@ -481,20 +384,17 @@ _inbrk(void)
 #define CPL_ALWAYS 0x4
 #define CPL_URL 0x8
 
-static void
-_compl(void)
+static void _compl(void)
 {
     next_compl(1);
 }
 
-static void
-_rcompl(void)
+static void _rcompl(void)
 {
     next_compl(-1);
 }
 
-static void
-_tcompl(void)
+static void _tcompl(void)
 {
     if (cm_mode & CPL_OFF)
         cm_mode = CPL_ON;
@@ -502,8 +402,7 @@ _tcompl(void)
         cm_mode = CPL_OFF;
 }
 
-static void
-next_compl(int next)
+static void next_compl(int next)
 {
     int status;
     int b, a;
@@ -558,20 +457,17 @@ next_compl(int next)
         CPos = CLen;
 }
 
-static void
-_dcompl(void)
+static void _dcompl(void)
 {
     next_dcompl(1);
 }
 
-static void
-_rdcompl(void)
+static void _rdcompl(void)
 {
     next_dcompl(-1);
 }
 
-static void
-next_dcompl(int next)
+static void next_dcompl(int next)
 {
     static int col, row, len;
     static Str d;
@@ -768,8 +664,7 @@ Str unescape_spaces(Str s)
     return s;
 }
 
-static Str
-doComplete(Str ifn, int *status, int next)
+static Str doComplete(Str ifn, int *status, int next)
 {
     int fl, i;
     char *fn, *p;
@@ -899,8 +794,7 @@ doComplete(Str ifn, int *status, int next)
     return Str_conv_from_system(CompleteBuf);
 }
 
-static void
-_prev(void)
+static void _prev(void)
 {
     Hist *hist = CurrentHist;
     char *p;
@@ -927,8 +821,7 @@ _prev(void)
     offset = 0;
 }
 
-static void
-_next(void)
+static void _next(void)
 {
     Hist *hist = CurrentHist;
     char *p;
@@ -953,8 +846,7 @@ _next(void)
     offset = 0;
 }
 
-static int
-setStrType(Str str, Lineprop *prop)
+static int setStrType(Str str, Lineprop *prop)
 {
     Lineprop ctype;
     char *p = str->ptr, *ep = p + str->Size();
@@ -962,9 +854,8 @@ setStrType(Str str, Lineprop *prop)
 
     for (i = 0; p < ep;)
     {
-#ifdef USE_M17N
         len = get_mclen(p);
-#endif
+
         if (i + len > STR_LEN)
             break;
         ctype = get_mctype(*p);
@@ -972,13 +863,13 @@ setStrType(Str str, Lineprop *prop)
         {
             if (ctype & PC_CTRL)
                 ctype = PC_ASCII;
-#ifdef USE_M17N
+
             if (ctype & PC_UNKNOWN)
                 ctype = PC_WCHAR1;
-#endif
+
         }
         prop[i++] = ctype;
-#ifdef USE_M17N
+
         p += len;
         if (--len)
         {
@@ -986,15 +877,11 @@ setStrType(Str str, Lineprop *prop)
             while (len--)
                 prop[i++] = ctype;
         }
-#else
-        p++;
-#endif
     }
     return i;
 }
 
-static int
-terminated(unsigned char c)
+static int terminated(unsigned char c)
 {
     int termchar[] = {'/', '&', '?', ' ', -1};
     int *tp;
@@ -1010,8 +897,7 @@ terminated(unsigned char c)
     return 0;
 }
 
-static void
-_editor(void)
+static void _editor(void)
 {
     if (is_passwd)
         return;
@@ -1104,10 +990,10 @@ char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, Lin
 
     do
     {
-        x = calcPosition({strBuf->ptr, strProp, CLen}, CPos, 0, CP_FORCE);
+        x = PropertiedString(strBuf->ptr, strProp, CLen).calcPosition(CPos, 0, CP_FORCE);
         if (x - rpos > offset)
         {
-            y = calcPosition({strBuf->ptr, strProp, CLen}, CLen, 0, CP_AUTO);
+            y = PropertiedString(strBuf->ptr, strProp, CLen).calcPosition(CLen, 0, CP_AUTO);
             if (y - epos > x - rpos)
                 offset = x - rpos;
             else if (y - epos > 0)
@@ -1199,7 +1085,8 @@ char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, Lin
 
     if (GetCurrentTab())
     {
-        if (need_redraw){
+        if (need_redraw)
+        {
             // displayCurrentbuf(B_FORCE_REDRAW);
         }
     }

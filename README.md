@@ -25,6 +25,14 @@ w3m を改造して遊ぶ。
 * [ ] local CGI
 * [ ] stream cache => http cache
 
+## Line
+横方向の変数名。
+
+* Cell, Column, Columns,
+* Bytes, ByteLength,
+
+len, size, pos, width は避ける。
+
 ## Group
 
 * libwc / Str / symbol / entity / myctype / indep
