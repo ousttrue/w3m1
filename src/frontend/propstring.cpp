@@ -393,19 +393,20 @@ PropertiedString PropertiedString::create(Str s, bool use_color)
     return PropertiedString(s->ptr, prop_buffer, s->Size(), check_color ? color_buffer : NULL);
 }
 
-int PropertiedString::calcPosition(int pos, int bpos, CalcPositionMode mode) const
+int PropertiedString::calcPosition(int pos, CalcPositionMode mode) const
 {
     static int *realColumn = nullptr;
     static int size = 0;
     static char *prevl = nullptr;
-    int i, j;
 
     auto l = const_cast<char *>(lineBuf());
     auto pr = propBuf();
     auto len = this->len();
+    if (!l || len == 0)
+    {
+        return 0;
+    }
 
-    if (l == nullptr || len == 0)
-        return bpos;
     if (l == prevl && mode == CP_AUTO)
     {
         if (pos <= len)
@@ -416,9 +417,10 @@ int PropertiedString::calcPosition(int pos, int bpos, CalcPositionMode mode) con
         size = (len + 1 > LINELEN) ? (len + 1) : LINELEN;
         realColumn = New_N(int, size);
     }
+
     prevl = l;
-    i = 0;
-    j = bpos;
+    int i = 0;
+    int j = 0;
     if (pr[i] & PC_WCHAR2)
     {
         for (; i < len && pr[i] & PC_WCHAR2; i++)

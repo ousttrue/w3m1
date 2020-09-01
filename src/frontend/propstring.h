@@ -151,5 +151,5 @@ public:
 
     Str conv_symbol() const;
 
-    int calcPosition(int pos, int bpos, CalcPositionMode mode) const;
+    int calcPosition(int pos, CalcPositionMode mode) const;
 };

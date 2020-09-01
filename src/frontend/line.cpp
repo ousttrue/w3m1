@@ -26,7 +26,7 @@ int columnLen(LinePtr line, int column)
 // text position to column position ?
 int Line::COLPOS(int c)
 {
-    return buffer.calcPosition(c, 0, CP_AUTO);
+    return buffer.calcPosition(c, CP_AUTO);
 }
 
 void Line::CalcWidth(bool force)
