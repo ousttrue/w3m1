@@ -452,7 +452,7 @@ static Str make_lastline_message(const BufferPtr &buf)
 
 static void DrawHover(int y, LinePtr l, const Viewport &viewport, const AnchorPtr &a, int leftColumn)
 {
-    int leftPos = columnPos(l, leftColumn);
+    int leftPos = l->columnPos(leftColumn);
     auto p = l->lineBuf();
     auto pr = l->propBuf();
     Linecolor *pc = nullptr;
@@ -640,7 +640,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     /// draw line
     ///
     Screen::Instance().Move(line, rect.rootX);
-    auto pos = columnPos(l, currentColumn);
+    auto pos = l->columnPos(currentColumn);
     auto p = &(l->lineBuf()[pos]);
     auto pr = &(l->propBuf()[pos]);
     Linecolor *pc;
@@ -759,7 +759,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
     l->CalcWidth();
     if (l->len() == 0 || l->width() - 1 < column)
         return l;
-    pos = columnPos(l, column);
+    pos = l->columnPos(column);
     rcol = l->buffer.calcPosition(pos);
     for (j = 0; rcol - column < buf->rect.cols && pos + j < l->len(); j++)
     {

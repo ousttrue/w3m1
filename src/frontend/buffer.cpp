@@ -1069,7 +1069,7 @@ void Buffer::ArrangeLine()
         return;
 
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos);
+    auto i = this->currentLine->columnPos(this->currentColumn + this->visualpos);
     auto cpos = this->currentLine->buffer.calcPosition(i) - this->currentColumn;
     if (cpos >= 0)
     {

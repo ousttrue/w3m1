@@ -57,8 +57,9 @@ public:
     void CalcWidth(bool force = false);
 
     void clear_mark();
+
+    int columnPos(int column);
 };
 using LinePtr = std::shared_ptr<Line>;
 
-int columnPos(LinePtr line, int column);
 int columnLen(LinePtr line, int column);

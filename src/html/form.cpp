@@ -452,7 +452,7 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
         {
             if (rows > 1)
             {
-                auto pos = columnPos(l, col);
+                auto pos = l->columnPos(col);
                 auto a = buf->m_document->formitem.RetrieveAnchor({l->linenumber, pos});
                 if (a == NULL)
                     break;

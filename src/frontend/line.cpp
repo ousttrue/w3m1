@@ -31,16 +31,15 @@ void Line::CalcWidth(bool force)
     }
 }
 
-int columnPos(LinePtr line, int column)
+int Line::columnPos(int column)
 {
     int i;
-
-    for (i = 1; i < line->len(); i++)
+    for (i = 1; i < this->len(); i++)
     {
-        if (line->buffer.calcPosition(i) > column)
+        if (this->buffer.calcPosition(i) > column)
             break;
     }
-    for (i--; i > 0 && line->propBuf()[i] & PC_WCHAR2; i--)
+    for (i--; i > 0 && this->propBuf()[i] & PC_WCHAR2; i--)
         ;
     return i;
 }

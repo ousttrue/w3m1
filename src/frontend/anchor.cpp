@@ -464,7 +464,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
         {
             if (a_img->start.line == l->linenumber)
                 continue;
-            auto pos = columnPos(l, col);
+            auto pos = l->columnPos(col);
             {
                 // img
                 auto a = Anchor::CreateImage(a_img->url, a_img->title, l->linenumber, pos);
@@ -546,7 +546,7 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
         auto ecol = ls->buffer.calcPosition(a_form->end.pos);
         for (auto j = 0; l && j < a_form->rows; l = buf->m_document->NextLine(l), j++)
         {
-            auto pos = columnPos(l, col);
+            auto pos = l->columnPos(col);
             if (j == 0)
             {
                 buf->m_document->hmarklist[a_form->hseq].line = l->linenumber;
