@@ -705,7 +705,7 @@ void set_buffer_environ(const BufferPtr &buf)
                                                 l->real_linenumber)
                                             ->ptr);
         set_environ("W3M_CURRENT_COLUMN", Sprintf("%d",
-                                                  buf->leftCol + buf->rect.cursorX + 1)
+                                                  buf->leftCol + buf->CursorX() + 1)
                                               ->ptr);
     }
     else if (!l)
@@ -806,7 +806,7 @@ void Buffer::SavePosition()
 
 void Buffer::CursorUp0(int n)
 {
-    if (this->rect.cursorY > 0)
+    if (this->CursorY() > 0)
         CursorUpDown(-1);
     else
     {
@@ -838,7 +838,7 @@ void Buffer::CursorUp(int n)
 
 void Buffer::CursorDown0(int n)
 {
-    if (this->rect.cursorY < this->rect.lines - 1)
+    if (this->CursorY() < this->rect.lines - 1)
         CursorUpDown(1);
     else
     {
@@ -930,7 +930,6 @@ void Buffer::CursorRight(int n)
         ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
         // this->currentCol = cpos - this->leftCol;
     }
-    this->rect.cursorX = this->CurrentCol();
 }
 
 void Buffer::CursorLeft(int n)
@@ -965,7 +964,7 @@ void Buffer::CursorLeft(int n)
         ColumnSkip(-n + this->CurrentCol() - this->CurrentCol() % n);
         // this->currentCol = cpos - this->leftCol;
     }
-    // this->rect.cursorX = this->currentCol;
+    // CursorX() = this->currentCol;
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -974,25 +973,25 @@ void Buffer::CursorXY(int x, int y)
     x -= rect.rootX;
     y -= rect.rootY;
 
-    CursorUpDown(y - rect.cursorY);
+    CursorUpDown(y - CursorY());
 
-    if (this->rect.cursorX > x)
+    if (CursorX() > x)
     {
-        while (this->rect.cursorX > x)
+        while (CursorX() > x)
             CursorLeft(this->rect.cols / 2);
     }
-    else if (this->rect.cursorX < x)
+    else if (CursorX() < x)
     {
-        while (this->rect.cursorX < x)
+        while (CursorX() < x)
         {
-            int oldX = this->rect.cursorX;
+            int oldX = CursorX();
 
             CursorRight(this->rect.cols / 2);
 
-            if (oldX == this->rect.cursorX)
+            if (oldX == CursorX())
                 break;
         }
-        if (this->rect.cursorX > x)
+        if (CursorX() > x)
             CursorLeft(this->rect.cols / 2);
     }
 }
@@ -1048,35 +1047,12 @@ void Buffer::ArrangeCursor()
         if (col2 > this->rect.cols)
             ColumnSkip(col);
     }
-    /* Arrange cursor */
-    this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    // this->currentCol = this->currentLine->buffer.BytePositionToColumn(this->bytePosition) - this->leftCol;
-    this->rect.cursorX = this->CurrentCol() - this->leftCol;
 }
 
 void Buffer::ArrangeLine()
 {
     if (m_document->LineCount() == 0)
         return;
-
-    this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    auto i = this->bytePosition;
-    auto cpos = this->currentLine->buffer.BytePositionToColumn(i) - this->leftCol;
-    if (cpos >= 0)
-    {
-        this->rect.cursorX = cpos;
-        this->bytePosition = i;
-    }
-    else if (this->currentLine->buffer.len() > i)
-    {
-        this->rect.cursorX = 0;
-        this->bytePosition = i + 1;
-    }
-    else
-    {
-        this->rect.cursorX = 0;
-        this->bytePosition = 0;
-    }
 }
 
 void Buffer::DumpSource()

@@ -118,7 +118,7 @@ void shiftvisualpos(BufferPtr buf, int shift)
     // else if (buf->currentCol < 0)
     //     buf->currentCol = 0;
     // buf->ArrangeLine();
-    // if (buf->currentCol == -shift && buf->rect.cursorX == 0)
+    // if (buf->currentCol == -shift && buf->CursorX() == 0)
     //     buf->currentCol = 0;
 }
 
@@ -436,9 +436,9 @@ void _followForm(bool submit)
         if (submit)
             goto do_submit;
         if (!fi->formChooseOptionByMenu(
-                buf->rect.cursorX - buf->bytePosition +
+                buf->CursorX() - buf->bytePosition +
                     a->start.pos + buf->rect.rootX,
-                buf->rect.cursorY + buf->rect.rootY))
+                buf->CursorY() + buf->rect.rootY))
             break;
         formUpdateBuffer(a, buf, fi);
         if (fi->parent.lock()->nitems() == 1)

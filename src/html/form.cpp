@@ -39,7 +39,7 @@ static void follow_map(tcb::span<parsed_tagarg> arg)
     auto buf = GetCurrentBuffer();
 
     auto an = buf->m_document->img.RetrieveAnchor(buf->CurrentPoint());
-    auto [x, y] = buf->rect.globalXY();
+    auto [x, y] = buf->GlobalXY();
     auto a = follow_map_menu(GetCurrentBuffer(), name, an, x, y);
     if (a == NULL || a->url.empty())
     {

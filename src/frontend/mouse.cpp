@@ -302,12 +302,12 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
     }
     else if (y > ny)
     {
-        auto [_x, _y] = buf->rect.globalXY();
+        auto [_x, _y] = buf->GlobalXY();
         x = _x;
         y = _y;
         if (y &&
             (x || (WcOption.use_wide && buf->CurrentLine() != NULL &&
-                   (CharType(buf->CurrentLine()->buffer.propBuf()[buf->bytePosition]) == PC_KANJI1) && x == buf->rect.cursorX + buf->rect.rootX + 1)))
+                   (CharType(buf->CurrentLine()->buffer.propBuf()[buf->bytePosition]) == PC_KANJI1) && x == buf->CursorX() + buf->rect.rootX + 1)))
         {
             if (buf->m_document->href.RetrieveAnchor(buf->CurrentPoint()) || buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint()))
             {
@@ -318,16 +318,16 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         }
         else
         {
-            int cx = buf->rect.cursorX;
-            int cy = buf->rect.cursorY;
+            int cx = buf->CursorX();
+            int cy = buf->CursorY();
             buf->CursorXY(x - buf->rect.rootX, y - buf->rect.rootY);
 
-            auto [_x, _y] = buf->rect.globalXY();
+            auto [_x, _y] = buf->GlobalXY();
             x = _x;
             y = _y;
             if (y &&
                 (x || (WcOption.use_wide && buf->CurrentLine() != NULL &&
-                       (CharType(buf->CurrentLine()->buffer.propBuf()[buf->bytePosition]) == PC_KANJI1) && x == buf->rect.cursorX + buf->rect.rootX + 1)) &&
+                       (CharType(buf->CurrentLine()->buffer.propBuf()[buf->bytePosition]) == PC_KANJI1) && x == buf->CursorX() + buf->rect.rootX + 1)) &&
                 (buf->m_document->href.RetrieveAnchor(buf->CurrentPoint()) || buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint())))
                 map = &mouse_action.anchor_map[(int)btn];
             buf->CursorXY(cx, cy);
@@ -386,20 +386,20 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                 else if (press_x >= GetCurrentBuffer()->rect.rootX)
                 {
                     BufferPtr buf = GetCurrentBuffer();
-                    int cx = GetCurrentBuffer()->rect.cursorX;
-                    int cy = GetCurrentBuffer()->rect.cursorY;
+                    int cx = GetCurrentBuffer()->CursorX();
+                    int cy = GetCurrentBuffer()->CursorY();
 
                     t = GetTabByPosition(x, y);
                     if (t == NULL)
                         return;
                     GetCurrentBuffer()->CursorXY(press_x - GetCurrentBuffer()->rect.rootX,
                                                                   press_y - GetCurrentBuffer()->rect.rootY);
-                    if (GetCurrentBuffer()->rect.cursorY == press_y - GetCurrentBuffer()->rect.rootY &&
-                        (GetCurrentBuffer()->rect.cursorX == press_x - GetCurrentBuffer()->rect.rootX
+                    if (GetCurrentBuffer()->CursorY() == press_y - GetCurrentBuffer()->rect.rootY &&
+                        (GetCurrentBuffer()->CursorX() == press_x - GetCurrentBuffer()->rect.rootX
 
                          || (WcOption.use_wide &&
                              GetCurrentBuffer()->CurrentLine() != NULL &&
-                             (CharType(GetCurrentBuffer()->CurrentLine()->buffer.propBuf()[GetCurrentBuffer()->bytePosition]) == PC_KANJI1) && GetCurrentBuffer()->rect.cursorX == press_x - GetCurrentBuffer()->rect.rootX - 1)
+                             (CharType(GetCurrentBuffer()->CurrentLine()->buffer.propBuf()[GetCurrentBuffer()->bytePosition]) == PC_KANJI1) && GetCurrentBuffer()->CursorX() == press_x - GetCurrentBuffer()->rect.rootX - 1)
 
                              ))
                     {

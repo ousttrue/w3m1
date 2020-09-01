@@ -112,7 +112,7 @@ void ctrCsrV(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    int offsety = buf->rect.lines / 2 - buf->rect.cursorY;
+    int offsety = buf->rect.lines / 2 - buf->CursorY();
     buf->LineSkip(buf->TopLine(), -offsety, false);
     // buf->ArrangeLine();
 }
@@ -121,7 +121,7 @@ void ctrCsrH(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    int offsetx = buf->rect.cursorX - buf->rect.cols / 2;
+    int offsetx = buf->CursorX() - buf->rect.cols / 2;
     buf->ColumnSkip(offsetx);
 }
 
@@ -1748,7 +1748,7 @@ void curlno(w3mApp *w3m, const CommandContext &context)
     if (l)
     {
         auto cur = l->real_linenumber;
-        auto col = buf->leftCol + buf->rect.cursorX + 1;
+        auto col = buf->leftCol + buf->CursorX() + 1;
         while (doc->NextLine(l))
             l = doc->NextLine(l);
         len = l->buffer.Columns();

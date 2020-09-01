@@ -13,24 +13,24 @@ struct Viewport
     // viewport size
     short cols = 0;
     short lines = 0;
-    // buffer local cursor position
-    short cursorX = 0;
-    short cursorY = 0;
+    // // buffer local cursor position
+    // short cursorX = 0;
+    // short cursorY = 0;
 
     short right() const { return rootX + cols; }
     short bottom() const { return rootY + lines; }
-    void resetCursor()
-    {
-        cursorX = 0;
-        cursorY = 0;
-    }
+    // void resetCursor()
+    // {
+    //     cursorX = 0;
+    //     cursorY = 0;
+    // }
 
-    std::tuple<int, int> globalXY() const
-    {
-        return std::make_pair(
-            rootX + cursorX,
-            rootY + cursorY);
-    }
+    // std::tuple<int, int> globalXY() const
+    // {
+    //     return std::make_pair(
+    //         rootX + cursorX,
+    //         rootY + cursorY);
+    // }
 
     // void updateRootX(int lastRealLineNumber)
     // {

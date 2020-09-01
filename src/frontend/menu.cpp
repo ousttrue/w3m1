@@ -1145,7 +1145,7 @@ void popupMenu(int x, int y, MenuPtr menu)
 
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    auto [_x, _y] = buf->rect.globalXY();
+    auto [_x, _y] = buf->GlobalXY();
     menu->cursorX = _x;
     menu->cursorY = _y;
     menu->x = x + FRAME_WIDTH + 1;
@@ -1229,7 +1229,7 @@ initSelectMenu(void)
 
     // new_option_menu(&SelectMenu, label, &SelectV, smChBuf);
     // SelectMenu.initial = SelectV;
-    // auto [_x, _y] = GetCurrentBuffer()->rect.globalXY();
+    // auto [_x, _y] = GetCurrentBuffer()->GlobalXY();
     // SelectMenu.cursorX = _x;
     // SelectMenu.cursorY = _y;
     // SelectMenu.keymap['D'] = smDelBuf;
@@ -1657,7 +1657,7 @@ Link *link_menu(const BufferPtr &buf)
     int linkV = -1;
     new_option_menu(menu, labels, &linkV, NULL);
     menu->initial = 0;
-    auto [_x, _y] = buf->rect.globalXY();
+    auto [_x, _y] = buf->GlobalXY();
     menu->cursorX = _x;
     menu->cursorY = _y;
     menu->x = menu->cursorX + FRAME_WIDTH + 1;
@@ -1710,7 +1710,7 @@ AnchorPtr accesskey_menu(const BufferPtr &buf)
     new_option_menu(menu, label, &key, NULL);
 
     menu->initial = 0;
-    auto [_x, _y] = buf->rect.globalXY();
+    auto [_x, _y] = buf->GlobalXY();
     menu->cursorX = _x;
     menu->cursorY = _y;
     menu->x = menu->cursorX + FRAME_WIDTH + 1;
@@ -1831,7 +1831,7 @@ AnchorPtr list_menu(const BufferPtr &buf)
     new_option_menu(menu, label, &key, NULL);
 
     menu->initial = 0;
-    auto [_x, _y] = buf->rect.globalXY();
+    auto [_x, _y] = buf->GlobalXY();
     menu->cursorX = _x;
     menu->cursorY = _y;
     menu->x = menu->cursorX + FRAME_WIDTH + 1;
@@ -1887,7 +1887,7 @@ void PopupMenu(std::string_view data)
 
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    auto [x, y] = buf->rect.globalXY();
+    auto [x, y] = buf->GlobalXY();
 
     if (data.size())
     {
@@ -1904,7 +1904,7 @@ void PopupBufferMenu()
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    auto [x, y] = buf->rect.globalXY();
+    auto [x, y] = buf->GlobalXY();
 
     TryGetMouseActionPosition(&x, &y);
     popupMenu(x, y, SelectMenu);
@@ -1914,7 +1914,7 @@ void PopupTabMenu()
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    auto [x, y] = buf->rect.globalXY();
+    auto [x, y] = buf->GlobalXY();
 
     TryGetMouseActionPosition(&x, &y);
     popupMenu(x, y, SelTabMenu);

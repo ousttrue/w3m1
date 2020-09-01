@@ -733,7 +733,7 @@ static void redrawNLine(const BufferPtr &buf)
           buf->m_document->img))
         return;
 
-    auto [x, y] = buf->rect.globalXY();
+    auto [x, y] = buf->GlobalXY();
     Screen::Instance().Move(y, x);
 
     {
@@ -1047,8 +1047,10 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
         fprintf(stderr, "%s\n", conv_to_system(s));
         return;
     }
-    if (!g_buf)
-        message(s, g_buf->rect);
+    if (!g_buf){
+        auto [x, y] = g_buf->GlobalXY();
+        message(s, x, y);
+    }
     else
         message(s, 0, (Terminal::lines() - 1));
     Screen::Instance().Refresh();
@@ -1228,7 +1230,8 @@ void displayBuffer()
         Terminal::flush();
     }
     Screen::Instance().Enable(S_STANDOUT);
-    message(msg->c_str(), buf->rect);
+    auto [x, y] = buf->GlobalXY();
+    message(msg->c_str(), x, y);
     Screen::Instance().Disable(S_STANDOUT);
     Terminal::title(conv_to_system(buf->buffername.c_str()));
     Screen::Instance().Refresh();

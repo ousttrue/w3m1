@@ -200,6 +200,10 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     LinePtr topLine;
     // cursor line
     LinePtr currentLine;
+    int CursorY() const
+    {
+        return currentLine->linenumber - topLine->linenumber;
+    }
 
     //
     // horizontal
@@ -213,6 +217,19 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     }
 
     int bytePosition = 0;
+
+    int CursorX() const
+    {
+        return CurrentCol() - leftCol;
+    }
+
+    std::tuple<int, int> GlobalXY() const
+    {
+        return {
+            rect.rootX + CursorX(),
+            rect.rootY + CursorY(),
+        };
+    }
 
 public:
     static std::shared_ptr<Buffer> Create(const URL &url);
@@ -298,7 +315,7 @@ public:
     void CursorHome()
     {
         bytePosition = 0;
-        rect.resetCursor();
+        currentLine = 0;
     }
     void CursorXY(int x, int y);
     void CursorUp0(int n);
@@ -313,12 +330,10 @@ public:
     int ColumnSkip(int offset);
     void COPY_BUFPOSITION_FROM(const BufferPtr srcbuf)
     {
-        this->SetTopLine((srcbuf)->TopLine());
-        this->currentLine = (srcbuf)->currentLine;
-        this->bytePosition = (srcbuf)->bytePosition;
-        this->rect.cursorX = (srcbuf)->rect.cursorX;
-        this->rect.cursorY = (srcbuf)->rect.cursorY;
-        this->leftCol = (srcbuf)->leftCol;
+        this->topLine = srcbuf->topLine;
+        this->currentLine = srcbuf->currentLine;
+        this->bytePosition = srcbuf->bytePosition;
+        this->leftCol = srcbuf->leftCol;
     }
     void restorePosition(const BufferPtr orig)
     {
