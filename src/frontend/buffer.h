@@ -207,9 +207,12 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     // left column
     int leftCol = 0;
     // curosr column
-    int currentCol = 0;
+    int CurrentCol() const
+    {
+        return CurrentLine()->buffer.BytePositionToColumn(bytePosition);
+    }
 
-    int pos = 0;
+    int bytePosition = 0;
 
 public:
     static std::shared_ptr<Buffer> Create(const URL &url);
@@ -261,7 +264,7 @@ public:
     void Goto(const BufferPoint &po, bool topline = false)
     {
         GotoLine(po.line, topline);
-        pos = po.pos;
+        bytePosition = po.pos;
         ArrangeCursor();
     }
 
@@ -294,7 +297,7 @@ public:
 
     void CursorHome()
     {
-        currentCol = 0;
+        bytePosition = 0;
         rect.resetCursor();
     }
     void CursorXY(int x, int y);
@@ -312,17 +315,16 @@ public:
     {
         this->SetTopLine((srcbuf)->TopLine());
         this->currentLine = (srcbuf)->currentLine;
-        this->pos = (srcbuf)->pos;
+        this->bytePosition = (srcbuf)->bytePosition;
         this->rect.cursorX = (srcbuf)->rect.cursorX;
         this->rect.cursorY = (srcbuf)->rect.cursorY;
-        this->currentCol = (srcbuf)->currentCol;
         this->leftCol = (srcbuf)->leftCol;
     }
     void restorePosition(const BufferPtr orig)
     {
         this->LineSkip(m_document->FirstLine(), orig->TOP_LINENUMBER() - 1, false);
         this->GotoLine(orig->CUR_LINENUMBER());
-        this->pos = orig->pos;
+        this->bytePosition = orig->bytePosition;
         this->leftCol = orig->leftCol;
         this->ArrangeCursor();
     }
@@ -377,7 +379,7 @@ public:
         {
             return {-1, -1, true};
         }
-        return {line->linenumber, pos};
+        return {line->linenumber, bytePosition};
     }
 
     void TmpClear();

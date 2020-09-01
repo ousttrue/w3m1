@@ -604,7 +604,7 @@ void linbeg(w3mApp *w3m, const CommandContext &context)
         return;
     while (doc->PrevLine(buf->CurrentLine()))
         buf->CursorUp0(1);
-    buf->pos = 0;
+    buf->bytePosition = 0;
     buf->ArrangeCursor();
 }
 
@@ -617,7 +617,7 @@ void linend(w3mApp *w3m, const CommandContext &context)
         return;
     while (doc->NextLine(buf->CurrentLine()))
         buf->CursorDown0(1);
-    buf->pos = buf->CurrentLine()->buffer.len() - 1;
+    buf->bytePosition = buf->CurrentLine()->buffer.len() - 1;
     buf->ArrangeCursor();
 }
 
@@ -690,7 +690,7 @@ void _mark(w3mApp *w3m, const CommandContext &context)
     if (buf->m_document->LineCount() == 0)
         return;
     auto &l = buf->CurrentLine()->buffer;
-    l.propBuf()[buf->pos] ^= PE_MARK;
+    l.propBuf()[buf->bytePosition] ^= PE_MARK;
 }
 
 /* Go to next mark */
@@ -704,7 +704,7 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
     if (doc->LineCount() == 0)
         return;
 
-    auto i = buf->pos + 1;
+    auto i = buf->bytePosition + 1;
     auto l = buf->CurrentLine();
     if (i >= l->buffer.len())
     {
@@ -718,7 +718,7 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
             if (l->buffer.propBuf()[i] & PE_MARK)
             {
                 buf->SetCurrentLine(l);
-                buf->pos = i;
+                buf->bytePosition = i;
                 buf->ArrangeCursor();
                 return;
             }
@@ -742,7 +742,7 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
     auto doc = buf->m_document;
     if (doc->LineCount() == 0)
         return;
-    i = buf->pos - 1;
+    i = buf->bytePosition - 1;
     l = buf->CurrentLine();
     if (i < 0)
     {
@@ -757,7 +757,7 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
             if (l->buffer.propBuf()[i] & PE_MARK)
             {
                 buf->SetCurrentLine(l);
-                buf->pos = i;
+                buf->bytePosition = i;
                 buf->ArrangeCursor();
                 return;
             }
