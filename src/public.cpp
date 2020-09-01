@@ -112,14 +112,14 @@ void do_dump(w3mApp *w3m, BufferPtr buf)
 void shiftvisualpos(BufferPtr buf, int shift)
 {
     LinePtr l = buf->CurrentLine();
-    buf->visualpos -= shift;
-    if (buf->visualpos >= buf->rect.cols)
-        buf->visualpos = buf->rect.cols - 1;
-    else if (buf->visualpos < 0)
-        buf->visualpos = 0;
+    buf->currentCol -= shift;
+    if (buf->currentCol >= buf->rect.cols)
+        buf->currentCol = buf->rect.cols - 1;
+    else if (buf->currentCol < 0)
+        buf->currentCol = 0;
     buf->ArrangeLine();
-    if (buf->visualpos == -shift && buf->rect.cursorX == 0)
-        buf->visualpos = 0;
+    if (buf->currentCol == -shift && buf->rect.cursorX == 0)
+        buf->currentCol = 0;
 }
 
 void cmd_loadfile(const char *fn)

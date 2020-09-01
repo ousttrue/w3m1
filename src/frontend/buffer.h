@@ -192,10 +192,24 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     bool need_reshape = false;
 
     DocumentPtr m_document;
-    // scroll
+
+    //
+    // vertical
+    //
+    // top line
     LinePtr topLine;
-    // cursor ?
+    // cursor line
     LinePtr currentLine;
+
+    //
+    // horizontal
+    //
+    // left column
+    int leftCol = 0;
+    // curosr column
+    int currentCol = 0;
+
+    int pos = 0;
 
 public:
     static std::shared_ptr<Buffer> Create(const URL &url);
@@ -275,16 +289,12 @@ public:
 
 public:
     BufferProps bufferprop = BP_NORMAL;
-    int currentColumn = 0;
-    int pos = 0;
-    int visualpos = 0;
 
-    // this->rect.cursorX = this->visualpos - l->bwidth;
     Viewport rect;
 
     void CursorHome()
     {
-        visualpos = 0;
+        currentCol = 0;
         rect.resetCursor();
     }
     void CursorXY(int x, int y);
@@ -305,15 +315,15 @@ public:
         this->pos = (srcbuf)->pos;
         this->rect.cursorX = (srcbuf)->rect.cursorX;
         this->rect.cursorY = (srcbuf)->rect.cursorY;
-        this->visualpos = (srcbuf)->visualpos;
-        this->currentColumn = (srcbuf)->currentColumn;
+        this->currentCol = (srcbuf)->currentCol;
+        this->leftCol = (srcbuf)->leftCol;
     }
     void restorePosition(const BufferPtr orig)
     {
         this->LineSkip(m_document->FirstLine(), orig->TOP_LINENUMBER() - 1, false);
         this->GotoLine(orig->CUR_LINENUMBER());
         this->pos = orig->pos;
-        this->currentColumn = orig->currentColumn;
+        this->leftCol = orig->leftCol;
         this->ArrangeCursor();
     }
 

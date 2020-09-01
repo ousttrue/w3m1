@@ -274,9 +274,9 @@ void Buffer::CopyFrom(BufferPtr src)
     real_type = src->real_type;
 
     bufferprop = src->bufferprop;
-    currentColumn = src->currentColumn;
+    leftCol = src->leftCol;
     pos = src->pos;
-    visualpos = src->visualpos;
+    currentCol = src->currentCol;
     rect = src->rect;
 
     prevhseq = src->prevhseq;
@@ -488,14 +488,14 @@ void Buffer::NScroll(int n)
         //     this->CursorDown(1);
         // else
         {
-            while (m_document->NextLine(this->currentLine) && this->currentLine->buffer.Columns() < this->currentColumn + this->visualpos)
+            while (m_document->NextLine(this->currentLine) && this->currentLine->buffer.Columns() < this->leftCol + this->currentCol)
                 this->CursorDown0(1);
         }
     }
     else
     {
         if (this->currentLine->buffer.Columns() <
-            this->currentColumn + this->visualpos)
+            this->leftCol + this->currentCol)
             this->CursorUp(1);
         else
         {
@@ -707,7 +707,7 @@ void set_buffer_environ(const BufferPtr &buf)
                                                 l->real_linenumber)
                                             ->ptr);
         set_environ("W3M_CURRENT_COLUMN", Sprintf("%d",
-                                                  buf->currentColumn + buf->rect.cursorX + 1)
+                                                  buf->leftCol + buf->rect.cursorX + 1)
                                               ->ptr);
     }
     else if (!l)
@@ -791,7 +791,7 @@ void Buffer::SavePosition()
     auto b = undo.size() ? &undo.back() : nullptr;
     if (b && b->top_linenumber == TOP_LINENUMBER() &&
         b->cur_linenumber == CUR_LINENUMBER() &&
-        b->currentColumn == currentColumn &&
+        b->currentColumn == leftCol &&
         b->pos == pos)
     {
         return;
@@ -802,7 +802,7 @@ void Buffer::SavePosition()
     b = &undo.back();
     b->top_linenumber = TOP_LINENUMBER();
     b->cur_linenumber = CUR_LINENUMBER();
-    b->currentColumn = this->currentColumn;
+    b->currentColumn = this->leftCol;
     b->pos = this->pos;
 }
 
@@ -920,19 +920,19 @@ void Buffer::CursorRight(int n)
             this->pos--;
     }
     cpos = l->buffer.BytePositionToColumn(this->pos);
-    this->visualpos = cpos - this->currentColumn;
+    this->currentCol = cpos - this->leftCol;
     delta = 1;
 
     while (this->pos + delta < l->buffer.len() && p[this->pos + delta] & PC_WCHAR2)
         delta++;
 
-    vpos2 = l->buffer.BytePositionToColumn(this->pos + delta) - this->currentColumn - 1;
+    vpos2 = l->buffer.BytePositionToColumn(this->pos + delta) - this->leftCol - 1;
     if (vpos2 >= this->rect.cols && n)
     {
         ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
-        this->visualpos = cpos - this->currentColumn;
+        this->currentCol = cpos - this->leftCol;
     }
-    this->rect.cursorX = this->visualpos;
+    this->rect.cursorX = this->currentCol;
 }
 
 void Buffer::CursorLeft(int n)
@@ -961,13 +961,13 @@ void Buffer::CursorLeft(int n)
     else
         this->pos = 0;
     cpos = l->buffer.BytePositionToColumn(this->pos);
-    this->visualpos = cpos - this->currentColumn;
-    if (this->visualpos < 0 && n)
+    this->currentCol = cpos - this->leftCol;
+    if (this->currentCol < 0 && n)
     {
-        ColumnSkip(-n + this->visualpos - this->visualpos % n);
-        this->visualpos = cpos - this->currentColumn;
+        ColumnSkip(-n + this->currentCol - this->currentCol % n);
+        this->currentCol = cpos - this->leftCol;
     }
-    this->rect.cursorX = this->visualpos;
+    this->rect.cursorX = this->currentCol;
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -1044,23 +1044,16 @@ void Buffer::ArrangeCursor()
         delta++;
 
     col2 = this->currentLine->buffer.BytePositionToColumn(this->pos + delta);
-    if (col < this->currentColumn || col2 > this->rect.cols + this->currentColumn)
+    if (col < this->leftCol || col2 > this->rect.cols + this->leftCol)
     {
-        this->currentColumn = 0;
+        this->leftCol = 0;
         if (col2 > this->rect.cols)
             ColumnSkip(col);
     }
     /* Arrange cursor */
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    this->visualpos = this->currentLine->buffer.BytePositionToColumn(this->pos) - this->currentColumn;
-    this->rect.cursorX = this->visualpos;
-
-#ifdef DISPLAY_DEBUG
-    fprintf(stderr,
-            "arrangeCursor: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
-            this->currentColumn, this->cursorX, this->visualpos, this->pos,
-            this->currentLine->buffer.len());
-#endif
+    this->currentCol = this->currentLine->buffer.BytePositionToColumn(this->pos) - this->leftCol;
+    this->rect.cursorX = this->currentCol;
 }
 
 void Buffer::ArrangeLine()
@@ -1069,8 +1062,8 @@ void Buffer::ArrangeLine()
         return;
 
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    auto i = this->currentLine->buffer.ColumnToBytePosition(this->currentColumn + this->visualpos);
-    auto cpos = this->currentLine->buffer.BytePositionToColumn(i) - this->currentColumn;
+    auto i = this->currentLine->buffer.ColumnToBytePosition(this->leftCol + this->currentCol);
+    auto cpos = this->currentLine->buffer.BytePositionToColumn(i) - this->leftCol;
     if (cpos >= 0)
     {
         this->rect.cursorX = cpos;
@@ -1086,13 +1079,6 @@ void Buffer::ArrangeLine()
         this->rect.cursorX = 0;
         this->pos = 0;
     }
-
-#ifdef DISPLAY_DEBUG
-    fprintf(stderr,
-            "arrangeLine: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
-            this->currentColumn, this->cursorX, this->visualpos, this->pos,
-            this->currentLine->buffer.len());
-#endif
 }
 
 void Buffer::DumpSource()
@@ -1220,7 +1206,7 @@ void Buffer::resetPos(int i)
     newBuf->SetTopLine(top);
     newBuf->SetCurrentLine(cur);
     newBuf->pos = b.pos;
-    newBuf->currentColumn = b.currentColumn;
+    newBuf->leftCol = b.currentColumn;
     restorePosition(newBuf);
 }
 
@@ -1765,7 +1751,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
 
 int Buffer::ColumnSkip(int offset)
 {
-    int column = this->currentColumn + offset;
+    int column = this->leftCol + offset;
     int nlines = this->rect.lines + 1;
 
     int maxColumn = 0;
@@ -1781,8 +1767,8 @@ int Buffer::ColumnSkip(int offset)
     if (maxColumn < 0)
         maxColumn = 0;
 
-    if (this->currentColumn == maxColumn)
+    if (this->leftCol == maxColumn)
         return 0;
-    this->currentColumn = maxColumn;
+    this->leftCol = maxColumn;
     return 1;
 }
