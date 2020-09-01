@@ -15,8 +15,15 @@ struct Anchor
     HttpReferrerPolicy referer;
     std::string title;
     unsigned char accesskey = 0;
+
+    // byte position
     BufferPoint start;
     BufferPoint end;
+    bool IsHit(int pos) const
+    {
+        return pos >= start.pos && pos < end.pos;
+    }
+
     int hseq = 0;
     char slave = 0;
     short y = 0;
@@ -25,7 +32,7 @@ struct Anchor
     std::shared_ptr<FormItem> item;
 
     static std::shared_ptr<Anchor> CreateHref(std::string_view url, std::string_view target, HttpReferrerPolicy referer,
-                                std::string title, unsigned char key, int line, int pos)
+                                              std::string title, unsigned char key, int line, int pos)
     {
         auto p = std::make_shared<Anchor>();
         *p = Anchor{
