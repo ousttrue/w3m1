@@ -393,7 +393,7 @@ PropertiedString PropertiedString::create(Str s, bool use_color)
     return PropertiedString(s->ptr, prop_buffer, s->Size(), check_color ? color_buffer : NULL);
 }
 
-int PropertiedString::BytePositionToColumns(int pos, CalcPositionMode mode) const
+int PropertiedString::BytePositionToColumn(int pos, CalcPositionMode mode) const
 {
     static int *realColumn = nullptr;
     static int size = 0;
@@ -443,12 +443,12 @@ int PropertiedString::BytePositionToColumns(int pos, CalcPositionMode mode) cons
     return realColumn[pos];
 }
 
-int PropertiedString::columnPos(int column) const
+int PropertiedString::ColumnToBytePosition(int column) const
 {
     int i;
     for (i = 1; i < this->len(); i++)
     {
-        if (this->BytePositionToColumns(i) > column)
+        if (this->BytePositionToColumn(i) > column)
             break;
     }
     for (i--; i > 0 && this->propBuf()[i] & PC_WCHAR2; i--)
@@ -456,7 +456,7 @@ int PropertiedString::columnPos(int column) const
     return i;
 }
 
-int PropertiedString::columnLen(int column) const
+int PropertiedString::ColumnToByteLength(int column) const
 {
     for (int i = 0, j = 0; i < this->len();)
     {

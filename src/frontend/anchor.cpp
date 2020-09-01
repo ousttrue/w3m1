@@ -458,13 +458,13 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
             if (a)
                 a_form = a;
         }
-        auto col = ls->buffer.BytePositionToColumns(a_img->start.pos);
-        auto ecol = ls->buffer.BytePositionToColumns(a_img->end.pos);
+        auto col = ls->buffer.BytePositionToColumn(a_img->start.pos);
+        auto ecol = ls->buffer.BytePositionToColumn(a_img->end.pos);
         for (int j = 0; l && j < img->rows; l = buf->m_document->NextLine(l), j++)
         {
             if (a_img->start.line == l->linenumber)
                 continue;
-            auto pos = l->buffer.columnPos(col);
+            auto pos = l->buffer.ColumnToBytePosition(col);
             {
                 // img
                 auto a = Anchor::CreateImage(a_img->url, a_img->title, l->linenumber, pos);
@@ -542,11 +542,11 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
                 continue;
         }
         auto fi = a_form->item;
-        auto col = ls->buffer.BytePositionToColumns(a_form->start.pos);
-        auto ecol = ls->buffer.BytePositionToColumns(a_form->end.pos);
+        auto col = ls->buffer.BytePositionToColumn(a_form->start.pos);
+        auto ecol = ls->buffer.BytePositionToColumn(a_form->end.pos);
         for (auto j = 0; l && j < a_form->rows; l = buf->m_document->NextLine(l), j++)
         {
-            auto pos = l->buffer.columnPos(col);
+            auto pos = l->buffer.ColumnToBytePosition(col);
             if (j == 0)
             {
                 buf->m_document->hmarklist[a_form->hseq].line = l->linenumber;

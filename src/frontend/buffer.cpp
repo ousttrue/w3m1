@@ -919,14 +919,14 @@ void Buffer::CursorRight(int n)
         while (this->pos && p[this->pos] & PC_WCHAR2)
             this->pos--;
     }
-    cpos = l->buffer.BytePositionToColumns(this->pos);
+    cpos = l->buffer.BytePositionToColumn(this->pos);
     this->visualpos = cpos - this->currentColumn;
     delta = 1;
 
     while (this->pos + delta < l->buffer.len() && p[this->pos + delta] & PC_WCHAR2)
         delta++;
 
-    vpos2 = l->buffer.BytePositionToColumns(this->pos + delta) - this->currentColumn - 1;
+    vpos2 = l->buffer.BytePositionToColumn(this->pos + delta) - this->currentColumn - 1;
     if (vpos2 >= this->rect.cols && n)
     {
         ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
@@ -960,7 +960,7 @@ void Buffer::CursorLeft(int n)
     // }
     else
         this->pos = 0;
-    cpos = l->buffer.BytePositionToColumns(this->pos);
+    cpos = l->buffer.BytePositionToColumn(this->pos);
     this->visualpos = cpos - this->currentColumn;
     if (this->visualpos < 0 && n)
     {
@@ -1037,13 +1037,13 @@ void Buffer::ArrangeCursor()
     while (this->pos > 0 && this->currentLine->buffer.propBuf()[this->pos] & PC_WCHAR2)
         this->pos--;
 
-    col = this->currentLine->buffer.BytePositionToColumns(this->pos);
+    col = this->currentLine->buffer.BytePositionToColumn(this->pos);
 
     while (this->pos + delta < this->currentLine->buffer.len() &&
            this->currentLine->buffer.propBuf()[this->pos + delta] & PC_WCHAR2)
         delta++;
 
-    col2 = this->currentLine->buffer.BytePositionToColumns(this->pos + delta);
+    col2 = this->currentLine->buffer.BytePositionToColumn(this->pos + delta);
     if (col < this->currentColumn || col2 > this->rect.cols + this->currentColumn)
     {
         this->currentColumn = 0;
@@ -1052,7 +1052,7 @@ void Buffer::ArrangeCursor()
     }
     /* Arrange cursor */
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    this->visualpos = this->currentLine->buffer.BytePositionToColumns(this->pos) - this->currentColumn;
+    this->visualpos = this->currentLine->buffer.BytePositionToColumn(this->pos) - this->currentColumn;
     this->rect.cursorX = this->visualpos;
 
 #ifdef DISPLAY_DEBUG
@@ -1069,8 +1069,8 @@ void Buffer::ArrangeLine()
         return;
 
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    auto i = this->currentLine->buffer.columnPos(this->currentColumn + this->visualpos);
-    auto cpos = this->currentLine->buffer.BytePositionToColumns(i) - this->currentColumn;
+    auto i = this->currentLine->buffer.ColumnToBytePosition(this->currentColumn + this->visualpos);
+    auto cpos = this->currentLine->buffer.BytePositionToColumn(i) - this->currentColumn;
     if (cpos >= 0)
     {
         this->rect.cursorX = cpos;

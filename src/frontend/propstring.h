@@ -155,21 +155,21 @@ public:
 
     Str conv_symbol() const;
 
-    int BytePositionToColumns(int pos, CalcPositionMode mode = CP_AUTO) const;
+    int BytePositionToColumn(int pos, CalcPositionMode mode = CP_AUTO) const;
 
     int Columns()
     {
         if (m_columns < 0)
         {
-            m_columns = BytePositionToColumns(len());
+            m_columns = BytePositionToColumn(len());
         }
         return m_columns;
     }
 
     // byte position of column
-    int columnPos(int column) const;
+    int ColumnToBytePosition(int column) const;
     // byte length of column
-    int columnLen(int column) const;
+    int ColumnToByteLength(int column) const;
 
     void clear_mark();
 };

@@ -452,7 +452,7 @@ static Str make_lastline_message(const BufferPtr &buf)
 
 static void DrawHover(int y, LinePtr l, const Viewport &viewport, const AnchorPtr &a, int leftColumn)
 {
-    int leftPos = l->buffer.columnPos(leftColumn);
+    int leftPos = l->buffer.ColumnToBytePosition(leftColumn);
     auto p = l->buffer.lineBuf();
     auto pr = l->buffer.propBuf();
     const Linecolor *pc = nullptr;
@@ -479,7 +479,7 @@ static void DrawHover(int y, LinePtr l, const Viewport &viewport, const AnchorPt
         // }
 
         auto delta = wtf_len((uint8_t *)&p[pos]);
-        auto nextCol = l->buffer.BytePositionToColumns(pos + delta);
+        auto nextCol = l->buffer.BytePositionToColumn(pos + delta);
         if (nextCol - leftColumn > viewport.cols)
         {
             break;
@@ -639,7 +639,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     /// draw line
     ///
     Screen::Instance().Move(line, rect.rootX);
-    auto pos = l->buffer.columnPos(currentColumn);
+    auto pos = l->buffer.ColumnToBytePosition(currentColumn);
     auto p = &(l->buffer.lineBuf()[pos]);
     auto pr = &(l->buffer.propBuf()[pos]);
     const Linecolor *pc;
@@ -648,7 +648,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     else
         pc = NULL;
 
-    auto rcol = l->buffer.BytePositionToColumns(pos);
+    auto rcol = l->buffer.BytePositionToColumn(pos);
     int delta = 1;
     int vpos = -1;
     for (int j = 0; rcol - currentColumn < rect.cols && pos + j < l->buffer.len(); j += delta)
@@ -684,7 +684,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
         break;
         }
 
-        int ncol = l->buffer.BytePositionToColumns(pos + j + delta);
+        int ncol = l->buffer.BytePositionToColumn(pos + j + delta);
         if (ncol - currentColumn > rect.cols)
             break;
 
@@ -756,13 +756,13 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
         return NULL;
     if (l->buffer.len() == 0 || l->buffer.Columns() - 1 < column)
         return l;
-    int pos = l->buffer.columnPos(column);
-    int rcol = l->buffer.BytePositionToColumns(pos);
+    int pos = l->buffer.ColumnToBytePosition(column);
+    int rcol = l->buffer.BytePositionToColumn(pos);
     for (int j = 0; rcol - column < buf->rect.cols && pos + j < l->buffer.len(); j++)
     {
         if (rcol - column < 0)
         {
-            rcol = l->buffer.BytePositionToColumns(pos + j + 1);
+            rcol = l->buffer.BytePositionToColumn(pos + j + 1);
             continue;
         }
         auto a = buf->m_document->img.RetrieveAnchor({l->linenumber, pos + j});
@@ -783,7 +783,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                 x = (int)((rcol - column + buf->rect.rootX) *
                           ImageManager::Instance().pixel_per_char);
                 y = (int)(i * ImageManager::Instance().pixel_per_line);
-                sx = (int)((rcol - l->buffer.BytePositionToColumns(a->start.pos)) *
+                sx = (int)((rcol - l->buffer.BytePositionToColumn(a->start.pos)) *
                            ImageManager::Instance().pixel_per_char);
                 sy = (int)((l->linenumber - image->y) *
                            ImageManager::Instance().pixel_per_line);
@@ -813,7 +813,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                 draw_image_flag = true;
             }
         }
-        rcol = l->buffer.BytePositionToColumns(pos + j + 1);
+        rcol = l->buffer.BytePositionToColumn(pos + j + 1);
     }
     return l;
 }

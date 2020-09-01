@@ -77,7 +77,7 @@ static void ins_char(Str str);
 
 static void addPasswd(char *p, Lineprop *pr, int len, int offset, int limit)
 {
-    auto ncol = PropertiedString(p, pr, len).BytePositionToColumns(len, CP_AUTO);
+    auto ncol = PropertiedString(p, pr, len).BytePositionToColumn(len, CP_AUTO);
     if (ncol > offset + limit)
         ncol = offset + limit;
 
@@ -99,7 +99,7 @@ static void addStr(char *p, Lineprop *pr, int len, int offset, int limit)
     {
         for (i = 0; i < len; i++)
         {
-            if (PropertiedString(p, pr, len).BytePositionToColumns(i, CP_AUTO) > offset)
+            if (PropertiedString(p, pr, len).BytePositionToColumn(i, CP_AUTO) > offset)
                 break;
         }
         if (i >= len)
@@ -110,7 +110,7 @@ static void addStr(char *p, Lineprop *pr, int len, int offset, int limit)
 
         addChar('{');
         rcol = offset + 1;
-        ncol = PropertiedString(p, pr, len).BytePositionToColumns(i, CP_AUTO);
+        ncol = PropertiedString(p, pr, len).BytePositionToColumn(i, CP_AUTO);
         for (; rcol < ncol; rcol++)
             addChar(' ');
     }
@@ -118,7 +118,7 @@ static void addStr(char *p, Lineprop *pr, int len, int offset, int limit)
     {
         delta = wtf_len((uint8_t *)&p[i]);
 
-        ncol = PropertiedString(p, pr, len).BytePositionToColumns(i + delta, CP_AUTO);
+        ncol = PropertiedString(p, pr, len).BytePositionToColumn(i + delta, CP_AUTO);
         if (ncol - offset > limit)
             break;
         if (p[i] == '\t')
@@ -990,10 +990,10 @@ char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, Lin
 
     do
     {
-        x = PropertiedString(strBuf->ptr, strProp, CLen).BytePositionToColumns(CPos, CP_FORCE);
+        x = PropertiedString(strBuf->ptr, strProp, CLen).BytePositionToColumn(CPos, CP_FORCE);
         if (x - rpos > offset)
         {
-            y = PropertiedString(strBuf->ptr, strProp, CLen).BytePositionToColumns(CLen, CP_AUTO);
+            y = PropertiedString(strBuf->ptr, strProp, CLen).BytePositionToColumn(CLen, CP_AUTO);
             if (y - epos > x - rpos)
                 offset = x - rpos;
             else if (y - epos > 0)
