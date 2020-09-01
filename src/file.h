@@ -37,10 +37,6 @@ int matchattr(const char *p, const char *attr, int len, Str *value);
 
 // char *checkHeader(BufferPtr buf, const char *field);
 
-void addChar(char c, Lineprop mode = P_UNKNOWN);
-
-void addMChar(char *c, Lineprop mode, size_t len);
-
 BufferPtr message_list_panel(void);
 
 char *lastFileName(const char *path);

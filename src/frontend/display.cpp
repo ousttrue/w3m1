@@ -450,18 +450,11 @@ static Str make_lastline_message(const BufferPtr &buf)
     return msg;
 }
 
-static void DrawHover(int y, LinePtr l, const Viewport &viewport, const AnchorPtr &a, int leftColumn)
+static void DrawHover(const Viewport &viewport,
+                      int y, const PropertiedString &l, int leftColumn,
+                      const AnchorPtr &a)
 {
-    int leftPos = l->buffer.ColumnToBytePosition(leftColumn);
-    auto p = l->buffer.lineBuf();
-    auto pr = l->buffer.propBuf();
-    const Linecolor *pc = nullptr;
-    if (w3mApp::Instance().useColor && l->buffer.colorBuf())
-        pc = l->buffer.colorBuf();
-
-    int pos = leftPos;
-    for (int col = 0, pos = leftPos; col < viewport.cols && pos < l->buffer.len();)
-    // for (int j = 0; rcol - leftColumn < viewport.cols && leftPos + j < l->buffer.len();)
+    for (int col = 0, pos = l.ColumnToBytePosition(leftColumn); col < viewport.cols && pos < l.len();)
     {
         // if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         // {
@@ -478,30 +471,31 @@ static void DrawHover(int y, LinePtr l, const Viewport &viewport, const AnchorPt
         //     }
         // }
 
-        auto delta = wtf_len((uint8_t *)&p[pos]);
-        auto nextCol = l->buffer.BytePositionToColumn(pos + delta);
+        auto delta = wtf_len((uint8_t *)&l.lineBuf()[pos]);
+        auto nextCol = l.BytePositionToColumn(pos + delta);
         if (nextCol - leftColumn > viewport.cols)
         {
             break;
         }
 
-        if (pc)
+        if (l.colorBuf())
         {
-            do_color(pc[pos]);
+            do_color(l.colorBuf()[pos]);
         }
 
         if (a->IsHit(pos))
         {
             Screen::Instance().Move(y, col + viewport.rootX);
-            if (p[pos] == '\t')
+            if (l.lineBuf()[pos] == '\t')
             {
-                for (; col < nextCol; col++){
+                for (; col < nextCol; col++)
+                {
                     addChar(' ');
                 }
             }
             else
             {
-                addMChar(&p[pos], pr[pos], delta);
+                addMChar(&l.lineBuf()[pos], l.propBuf()[pos], delta);
             }
         }
 
@@ -554,18 +548,16 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
                 }
             }
             if (active)
-                DrawHover(l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l,
-                          buf->rect,
-                          an,
-                          buf->leftCol);
+                DrawHover(buf->rect,
+                          l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l->buffer, buf->leftCol,
+                          an);
         }
         else if (prevhseq >= 0 && an->hseq == prevhseq)
         {
             if (active)
-                DrawHover(l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l,
-                          buf->rect,
-                          an,
-                          buf->leftCol);
+                DrawHover(buf->rect,
+                          l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l->buffer, buf->leftCol,
+                          an);
         }
     }
 }
@@ -886,16 +878,12 @@ void do_color(Linecolor c)
     color_mode = c;
 }
 
-#ifdef USE_M17N
 void addChar(char c, Lineprop mode)
 {
     addMChar(&c, mode, 1);
 }
 
-void addMChar(char *p, Lineprop mode, size_t len)
-#else
-void addChar(char c, Lineprop mode)
-#endif
+void addMChar(const char *p, Lineprop mode, size_t len)
 {
     Lineprop m = CharEffect(mode);
 #ifdef USE_M17N
@@ -1047,7 +1035,8 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
         fprintf(stderr, "%s\n", conv_to_system(s));
         return;
     }
-    if (!g_buf){
+    if (!g_buf)
+    {
         auto [x, y] = g_buf->GlobalXY();
         message(s, x, y);
     }

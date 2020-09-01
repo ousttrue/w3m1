@@ -26,3 +26,6 @@ void fmTerm(void);
 void fmInit(void);
 
 BufferPtr GetCurrentBuffer();
+
+void addChar(char c, Lineprop mode = P_UNKNOWN);
+void addMChar(const char *c, Lineprop mode, size_t len);
