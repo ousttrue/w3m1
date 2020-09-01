@@ -12,8 +12,6 @@ struct Line
     // on file
     long real_linenumber = 0;
 
-    unsigned short usrflags = 0;
-
 private:
     int m_width = -1;
 

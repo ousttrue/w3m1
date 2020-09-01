@@ -111,7 +111,7 @@ int Buffer::WriteBufferCache()
     {
         auto l = m_document->GetLine(i);
         if (fwrite1(l->real_linenumber, cache) ||
-            fwrite1(l->usrflags, cache) ||
+            // fwrite1(l->usrflags, cache) ||
             fwrite1(l->width(), cache) ||
             fwrite1(l->len(), cache) 
             // || fwrite1(l->bpos, cache) || fwrite1(l->bwidth, cache)
