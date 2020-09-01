@@ -393,7 +393,7 @@ PropertiedString PropertiedString::create(Str s, bool use_color)
     return PropertiedString(s->ptr, prop_buffer, s->Size(), check_color ? color_buffer : NULL);
 }
 
-int PropertiedString::calcPosition(int pos, CalcPositionMode mode) const
+int PropertiedString::BytePositionToColumns(int pos, CalcPositionMode mode) const
 {
     static int *realColumn = nullptr;
     static int size = 0;
@@ -441,4 +441,41 @@ int PropertiedString::calcPosition(int pos, CalcPositionMode mode) const
     if (pos >= i)
         return j;
     return realColumn[pos];
+}
+
+int PropertiedString::columnPos(int column) const
+{
+    int i;
+    for (i = 1; i < this->len(); i++)
+    {
+        if (this->BytePositionToColumns(i) > column)
+            break;
+    }
+    for (i--; i > 0 && this->propBuf()[i] & PC_WCHAR2; i--)
+        ;
+    return i;
+}
+
+int PropertiedString::columnLen(int column) const
+{
+    for (int i = 0, j = 0; i < this->len();)
+    {
+        auto colLen = this->Get(i).ColumnLen();
+        j += colLen;
+        if (j > column)
+            return i;
+        i++;
+
+        while (i < this->len() && this->propBuf()[i] & PC_WCHAR2)
+            i++;
+    }
+    return this->len();
+}
+
+void PropertiedString::clear_mark()
+{
+    for (int i = 0; i < len(); i++)
+    {
+        m_propBuf[i] &= ~PE_MARK;
+    }
 }

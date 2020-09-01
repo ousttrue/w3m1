@@ -294,7 +294,7 @@ static std::tuple<std::string_view, int> form_update_line(LinePtr line, std::str
     }
     pos += width - w;
 
-    auto len = line->len() + pos + spos - epos;
+    auto len = line->buffer.len() + pos + spos - epos;
 
     auto copy = line->buffer;
     auto buf = const_cast<char *>(copy.lineBuf());
@@ -447,12 +447,12 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
         }
 
         auto rows = form->rows ? form->rows : 1;
-        auto col = l->buffer.calcPosition(a->start.pos);
+        auto col = l->buffer.BytePositionToColumns(a->start.pos);
         for (auto c_rows = 0; c_rows < rows; c_rows++, l = buf->m_document->NextLine(l))
         {
             if (rows > 1)
             {
-                auto pos = l->columnPos(col);
+                auto pos = l->buffer.columnPos(col);
                 auto a = buf->m_document->formitem.RetrieveAnchor({l->linenumber, pos});
                 if (a == NULL)
                     break;
@@ -462,7 +462,7 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
 
             {
                 int pos;
-                std::tie(p, pos) = form_update_line(l, p, spos, epos, l->buffer.calcPosition(epos) - col,
+                std::tie(p, pos) = form_update_line(l, p, spos, epos, l->buffer.BytePositionToColumns(epos) - col,
                                                     rows > 1,
                                                     form->type == FORM_INPUT_PASSWORD);
                 if (pos != epos)

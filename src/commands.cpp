@@ -617,7 +617,7 @@ void linend(w3mApp *w3m, const CommandContext &context)
         return;
     while (doc->NextLine(buf->CurrentLine()))
         buf->CursorDown0(1);
-    buf->pos = buf->CurrentLine()->len() - 1;
+    buf->pos = buf->CurrentLine()->buffer.len() - 1;
     buf->ArrangeCursor();
 }
 
@@ -711,14 +711,14 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
 
     i = buf->pos + 1;
     l = buf->CurrentLine();
-    if (i >= l->len())
+    if (i >= l->buffer.len())
     {
         i = 0;
         l = doc->NextLine(l);
     }
     while (l != NULL)
     {
-        for (; i < l->len(); i++)
+        for (; i < l->buffer.len(); i++)
         {
             if (l->propBuf()[i] & PE_MARK)
             {
@@ -753,7 +753,7 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
     {
         l = doc->PrevLine(l);
         if (l != NULL)
-            i = l->len() - 1;
+            i = l->buffer.len() - 1;
     }
     while (l != NULL)
     {
@@ -769,7 +769,7 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
         }
         l = doc->PrevLine(l);
         if (l != NULL)
-            i = l->len() - 1;
+            i = l->buffer.len() - 1;
     }
     /* FIXME: gettextize? */
     disp_message("No mark exist before here", true);
@@ -807,7 +807,7 @@ void reMark(w3mApp *w3m, const CommandContext &context)
         p = l->lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->lineBuf()[l->len()] - p, p == l->lineBuf()) == 1)
+            if (regexMatch(p, &l->lineBuf()[l->buffer.len()] - p, p == l->lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
                 l->propBuf()[p1 - l->lineBuf()] |= PE_MARK;

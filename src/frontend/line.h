@@ -42,10 +42,6 @@ public:
     {
         return const_cast<Linecolor *>(buffer.colorBuf());
     }
-    int len() const
-    {
-        return buffer.len();
-    }
 
     int width() const
     {
@@ -53,12 +49,5 @@ public:
     }
 
     void CalcWidth(bool force = false);
-
-    void clear_mark();
-
-    // byte position of column
-    int columnPos(int column) const;
-    // byte length of column
-    int columnLen(int column) const;
 };
 using LinePtr = std::shared_ptr<Line>;

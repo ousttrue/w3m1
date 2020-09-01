@@ -113,14 +113,14 @@ int Buffer::WriteBufferCache()
         if (fwrite1(l->real_linenumber, cache) ||
             // fwrite1(l->usrflags, cache) ||
             fwrite1(l->width(), cache) ||
-            fwrite1(l->len(), cache) 
+            fwrite1(l->buffer.len(), cache) 
             // || fwrite1(l->bpos, cache) || fwrite1(l->bwidth, cache)
             )
             goto _error;
         // if (l->bpos == 0)
         {
-            if (fwrite(l->lineBuf(), 1, l->len(), cache) < l->len() ||
-                fwrite(l->propBuf(), sizeof(Lineprop), l->len(), cache) < l->len())
+            if (fwrite(l->lineBuf(), 1, l->buffer.len(), cache) < l->buffer.len() ||
+                fwrite(l->propBuf(), sizeof(Lineprop), l->buffer.len(), cache) < l->buffer.len())
                 goto _error;
         }
 
@@ -131,8 +131,8 @@ int Buffer::WriteBufferCache()
         {
             // if (l->bpos == 0)
             {
-                if (fwrite(l->colorBuf(), sizeof(Linecolor), l->len(), cache) <
-                    l->len())
+                if (fwrite(l->colorBuf(), sizeof(Linecolor), l->buffer.len(), cache) <
+                    l->buffer.len())
                     goto _error;
             }
         }
@@ -185,18 +185,18 @@ int Buffer::ReadBufferCache()
     //     if (fread1(l->real_linenumber, cache) ||
     //         fread1(l->usrflags, cache) ||
     //         fread1(l->width, cache) ||
-    //         fread1(l->len(), cache) ||
-    //         fread1(l->len(), cache) ||
+    //         fread1(l->buffer.len(), cache) ||
+    //         fread1(l->buffer.len(), cache) ||
     //         fread1(l->bpos, cache) || fread1(l->bwidth, cache))
     //         break;
     //     if (l->bpos == 0)
     //     {
     //         basel = l;
-    //         l->lineBuf() = NewAtom_N(char, l->len() + 1);
-    //         fread(l->lineBuf(), 1, l->len(), cache);
-    //         l->lineBuf()[l->len()] = '\0';
-    //         l->propBuf() = NewAtom_N(Lineprop, l->len());
-    //         fread(l->propBuf(), sizeof(Lineprop), l->len(), cache);
+    //         l->lineBuf() = NewAtom_N(char, l->buffer.len() + 1);
+    //         fread(l->lineBuf(), 1, l->buffer.len(), cache);
+    //         l->lineBuf()[l->buffer.len()] = '\0';
+    //         l->propBuf() = NewAtom_N(Lineprop, l->buffer.len());
+    //         fread(l->propBuf(), sizeof(Lineprop), l->buffer.len(), cache);
     //     }
     //     else if (basel)
     //     {
@@ -212,8 +212,8 @@ int Buffer::ReadBufferCache()
     //     {
     //         if (l->bpos == 0)
     //         {
-    //             l->colorBuf() = NewAtom_N(Linecolor, l->len());
-    //             fread(l->colorBuf(), sizeof(Linecolor), l->len(), cache);
+    //             l->colorBuf() = NewAtom_N(Linecolor, l->buffer.len());
+    //             fread(l->colorBuf(), sizeof(Linecolor), l->buffer.len(), cache);
     //         }
     //         else
     //             l->colorBuf() = basel->colorBuf() + l->bpos;
@@ -765,14 +765,14 @@ void Buffer::AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_l
     //     if (i == 0)
     //     {
     //         i++;
-    //         while (i < l->len() && p[i] & PC_WCHAR2)
+    //         while (i < l->buffer.len() && p[i] & PC_WCHAR2)
     //             i++;
     //     }
     //     l->buffer.len = i;
-    //     l->width = l->buffer.calcPosition(l->len());
+    //     l->width = l->buffer.calcPosition(l->buffer.len());
     //     if (pos <= i)
     //         return;
-    //     bpos += l->len();
+    //     bpos += l->buffer.len();
     //     bwidth += l->width;
     //     s += i;
     //     p += i;
@@ -890,19 +890,19 @@ void Buffer::CursorRight(int n)
 
     if (m_document->LineCount() == 0)
         return;
-    // if (this->pos == l->len() && !(m_document->NextLine(l) && m_document->NextLine(l)->bpos))
+    // if (this->pos == l->buffer.len() && !(m_document->NextLine(l) && m_document->NextLine(l)->bpos))
     //     return;
     i = this->pos;
     p = l->propBuf();
 
-    while (i + delta < l->len() && p[i + delta] & PC_WCHAR2)
+    while (i + delta < l->buffer.len() && p[i + delta] & PC_WCHAR2)
         delta++;
 
-    if (i + delta < l->len())
+    if (i + delta < l->buffer.len())
     {
         this->pos = i + delta;
     }
-    else if (l->len() == 0)
+    else if (l->buffer.len() == 0)
     {
         this->pos = 0;
     }
@@ -915,18 +915,18 @@ void Buffer::CursorRight(int n)
     // }
     else
     {
-        this->pos = l->len() - 1;
+        this->pos = l->buffer.len() - 1;
         while (this->pos && p[this->pos] & PC_WCHAR2)
             this->pos--;
     }
-    cpos = l->buffer.calcPosition(this->pos);
+    cpos = l->buffer.BytePositionToColumns(this->pos);
     this->visualpos = cpos - this->currentColumn;
     delta = 1;
 
-    while (this->pos + delta < l->len() && p[this->pos + delta] & PC_WCHAR2)
+    while (this->pos + delta < l->buffer.len() && p[this->pos + delta] & PC_WCHAR2)
         delta++;
 
-    vpos2 = l->buffer.calcPosition(this->pos + delta) - this->currentColumn - 1;
+    vpos2 = l->buffer.BytePositionToColumns(this->pos + delta) - this->currentColumn - 1;
     if (vpos2 >= this->rect.cols && n)
     {
         ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
@@ -954,13 +954,13 @@ void Buffer::CursorLeft(int n)
     // else if (m_document->PrevLine(l) && l->bpos)
     // {
     //     CursorUp0(-1);
-    //     this->pos = this->currentLine->len() - 1;
+    //     this->pos = this->currentLine->buffer.len() - 1;
     //     ArrangeCursor();
     //     return;
     // }
     else
         this->pos = 0;
-    cpos = l->buffer.calcPosition(this->pos);
+    cpos = l->buffer.BytePositionToColumns(this->pos);
     this->visualpos = cpos - this->currentColumn;
     if (this->visualpos < 0 && n)
     {
@@ -1022,28 +1022,28 @@ void Buffer::ArrangeCursor()
     //     CursorUp0(1);
     //     this->pos = pos;
     // }
-    // while (this->pos >= this->currentLine->len() && m_document->NextLine(this->currentLine) &&
+    // while (this->pos >= this->currentLine->buffer.len() && m_document->NextLine(this->currentLine) &&
     //        m_document->NextLine(this->currentLine)->bpos)
     // {
-    //     pos = this->pos - this->currentLine->len();
+    //     pos = this->pos - this->currentLine->buffer.len();
     //     CursorDown0(1);
     //     this->pos = pos;
     // }
-    if (this->currentLine->len() == 0 || this->pos < 0)
+    if (this->currentLine->buffer.len() == 0 || this->pos < 0)
         this->pos = 0;
-    else if (this->pos >= this->currentLine->len())
-        this->pos = this->currentLine->len() - 1;
+    else if (this->pos >= this->currentLine->buffer.len())
+        this->pos = this->currentLine->buffer.len() - 1;
 
     while (this->pos > 0 && this->currentLine->propBuf()[this->pos] & PC_WCHAR2)
         this->pos--;
 
-    col = this->currentLine->buffer.calcPosition(this->pos);
+    col = this->currentLine->buffer.BytePositionToColumns(this->pos);
 
-    while (this->pos + delta < this->currentLine->len() &&
+    while (this->pos + delta < this->currentLine->buffer.len() &&
            this->currentLine->propBuf()[this->pos + delta] & PC_WCHAR2)
         delta++;
 
-    col2 = this->currentLine->buffer.calcPosition(this->pos + delta);
+    col2 = this->currentLine->buffer.BytePositionToColumns(this->pos + delta);
     if (col < this->currentColumn || col2 > this->rect.cols + this->currentColumn)
     {
         this->currentColumn = 0;
@@ -1052,14 +1052,14 @@ void Buffer::ArrangeCursor()
     }
     /* Arrange cursor */
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    this->visualpos = this->currentLine->buffer.calcPosition(this->pos) - this->currentColumn;
+    this->visualpos = this->currentLine->buffer.BytePositionToColumns(this->pos) - this->currentColumn;
     this->rect.cursorX = this->visualpos;
 
 #ifdef DISPLAY_DEBUG
     fprintf(stderr,
             "arrangeCursor: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
             this->currentColumn, this->cursorX, this->visualpos, this->pos,
-            this->currentLine->len());
+            this->currentLine->buffer.len());
 #endif
 }
 
@@ -1069,14 +1069,14 @@ void Buffer::ArrangeLine()
         return;
 
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    auto i = this->currentLine->columnPos(this->currentColumn + this->visualpos);
-    auto cpos = this->currentLine->buffer.calcPosition(i) - this->currentColumn;
+    auto i = this->currentLine->buffer.columnPos(this->currentColumn + this->visualpos);
+    auto cpos = this->currentLine->buffer.BytePositionToColumns(i) - this->currentColumn;
     if (cpos >= 0)
     {
         this->rect.cursorX = cpos;
         this->pos = i;
     }
-    else if (this->currentLine->len() > i)
+    else if (this->currentLine->buffer.len() > i)
     {
         this->rect.cursorX = 0;
         this->pos = i + 1;
@@ -1091,7 +1091,7 @@ void Buffer::ArrangeLine()
     fprintf(stderr,
             "arrangeLine: column=%d, cursorX=%d, visualpos=%d, pos=%d, len=%d\n",
             this->currentColumn, this->cursorX, this->visualpos, this->pos,
-            this->currentLine->len());
+            this->currentLine->buffer.len());
 #endif
 }
 
@@ -1145,7 +1145,7 @@ bool Buffer::MoveLeftWord(int n)
                 this->pos = ppos;
                 goto end;
             }
-            this->pos = this->CurrentLine()->len();
+            this->pos = this->CurrentLine()->buffer.len();
         }
         {
             auto l = this->CurrentLine();
@@ -1179,16 +1179,16 @@ bool Buffer::MoveRightWord(int n)
 
         auto l = this->CurrentLine();
         auto lb = l->lineBuf();
-        while (this->pos < l->len() &&
+        while (this->pos < l->buffer.len() &&
                is_wordchar(getChar(&lb[this->pos])))
             nextChar(&this->pos, l);
 
         while (1)
         {
-            while (this->pos < l->len() &&
+            while (this->pos < l->buffer.len() &&
                    !is_wordchar(getChar(&lb[this->pos])))
                 nextChar(&this->pos, l);
-            if (this->pos < l->len())
+            if (this->pos < l->buffer.len())
                 break;
             if (next_nonnull_line(shared_from_this(), this->m_document->NextLine(this->CurrentLine())) < 0)
             {
@@ -1278,7 +1278,7 @@ void Buffer::srch_nxtprv(bool reverse, int prec_num)
         pos += 1;
     auto result = srchcore(SearchString, routine[reverse], prec_num);
     if (result & SR_FOUND)
-        CurrentLine()->clear_mark();
+        CurrentLine()->buffer.clear_mark();
 
     disp_srchresult(result, (char *)(reverse ? "Backward: " : "Forward: "),
                     SearchString);
@@ -1299,7 +1299,7 @@ SearchResultTypes Buffer::srchcore(std::string_view str, SearchFunc func, int pr
     {
         result = func(shared_from_this(), converted);
         if (i < prec_num - 1 && result & SR_FOUND)
-            CurrentLine()->clear_mark();
+            CurrentLine()->buffer.clear_mark();
     }
     return result;
 }
@@ -1349,7 +1349,7 @@ int Buffer::dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
                 sbuf->COPY_BUFPOSITION_FROM(shared_from_this());
             }
             this->ArrangeCursor();
-            this->CurrentLine()->clear_mark();
+            this->CurrentLine()->buffer.clear_mark();
             return -1;
         }
         else
@@ -1364,7 +1364,7 @@ int Buffer::dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
         currentLine = this->CurrentLine();
         s_pos = this->pos;
     }
-    this->CurrentLine()->clear_mark();
+    this->CurrentLine()->buffer.clear_mark();
     return -1;
 }
 
@@ -1403,7 +1403,7 @@ void Buffer::srch(SearchFunc func, const char *prompt, std::string_view str, int
         this->pos += 1;
     auto result = srchcore(str, func, prec_num);
     if (result & SR_FOUND)
-        this->CurrentLine()->clear_mark();
+        this->CurrentLine()->buffer.clear_mark();
     else
         this->pos = p;
     if (disp)
@@ -1445,7 +1445,7 @@ void Buffer::_goLine(std::string_view l, int prec_num)
 static void
 set_mark(LinePtr l, int pos, int epos)
 {
-    for (; pos < epos && pos < l->len(); pos++)
+    for (; pos < epos && pos < l->buffer.len(); pos++)
         l->propBuf()[pos] |= PE_MARK;
 }
 
@@ -1556,16 +1556,16 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
     // }
 
     auto begin = l;
-    while (pos < l->len() && l->propBuf()[pos] & PC_WCHAR2)
+    while (pos < l->buffer.len() && l->propBuf()[pos] & PC_WCHAR2)
         pos++;
 
-    if (pos < l->len() && regexMatch(&l->lineBuf()[pos], l->len() - pos, 0) == 1)
+    if (pos < l->buffer.len() && regexMatch(&l->lineBuf()[pos], l->buffer.len() - pos, 0) == 1)
     {
         matchedPosition(&first, &last);
         pos = first - l->lineBuf();
-        // while (pos >= l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+        // while (pos >= l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
         // {
-        //     pos -= l->len();
+        //     pos -= l->buffer.len();
         //     l = buf->m_document->NextLine(l);
         // }
         buf->pos = pos;
@@ -1608,13 +1608,13 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
         }
         // if (l->bpos)
         //     continue;
-        if (regexMatch(l->lineBuf(), l->len(), 1) == 1)
+        if (regexMatch(l->lineBuf(), l->buffer.len(), 1) == 1)
         {
             matchedPosition(&first, &last);
             pos = first - l->lineBuf();
-            // while (pos >= l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+            // while (pos >= l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
             // {
-            //     pos -= l->len();
+            //     pos -= l->buffer.len();
             //     l = buf->m_document->NextLine(l);
             // }
             buf->pos = pos;
@@ -1679,7 +1679,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
         found = NULL;
         found_last = NULL;
         q = l->lineBuf();
-        while (regexMatch(q, &l->lineBuf()[l->len()] - q, q == l->lineBuf()) == 1)
+        while (regexMatch(q, &l->lineBuf()[l->buffer.len()] - q, q == l->lineBuf()) == 1)
         {
             matchedPosition(&first, &last);
             if (first <= p)
@@ -1687,11 +1687,11 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
                 found = first;
                 found_last = last;
             }
-            if (q - l->lineBuf() >= l->len())
+            if (q - l->lineBuf() >= l->buffer.len())
                 break;
             q++;
 #ifdef USE_M17N
-            while (q - l->lineBuf() < l->len() && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
+            while (q - l->lineBuf() < l->buffer.len() && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
                 q++;
 #endif
             if (q > p)
@@ -1700,9 +1700,9 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
         if (found)
         {
             pos = found - l->lineBuf();
-            // while (pos >= l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+            // while (pos >= l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
             // {
-            //     pos -= l->len();
+            //     pos -= l->buffer.len();
             //     l = buf->m_document->NextLine(l);
             // }
             buf->pos = pos;
@@ -1730,25 +1730,25 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
         found = NULL;
         found_last = NULL;
         q = l->lineBuf();
-        while (regexMatch(q, &l->lineBuf()[l->len()] - q, q == l->lineBuf()) == 1)
+        while (regexMatch(q, &l->lineBuf()[l->buffer.len()] - q, q == l->lineBuf()) == 1)
         {
             matchedPosition(&first, &last);
             found = first;
             found_last = last;
-            if (q - l->lineBuf() >= l->len())
+            if (q - l->lineBuf() >= l->buffer.len())
                 break;
             q++;
 #ifdef USE_M17N
-            while (q - l->lineBuf() < l->len() && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
+            while (q - l->lineBuf() < l->buffer.len() && l->propBuf()[q - l->lineBuf()] & PC_WCHAR2)
                 q++;
 #endif
         }
         if (found)
         {
             pos = found - l->lineBuf();
-            // while (pos >= l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+            // while (pos >= l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
             // {
-            //     pos -= l->len();
+            //     pos -= l->buffer.len();
             //     l = buf->m_document->NextLine(l);
             // }
             buf->pos = pos;

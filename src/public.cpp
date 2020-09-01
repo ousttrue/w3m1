@@ -204,14 +204,14 @@ int prev_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;
 
-    for (l = line; l != NULL && l->len() == 0; l = buf->m_document->PrevLine(l))
+    for (l = line; l != NULL && l->buffer.len() == 0; l = buf->m_document->PrevLine(l))
         ;
-    if (l == NULL || l->len() == 0)
+    if (l == NULL || l->buffer.len() == 0)
         return -1;
 
     GetCurrentBuffer()->SetCurrentLine(l);
     if (l != line)
-        GetCurrentBuffer()->pos = GetCurrentBuffer()->CurrentLine()->len();
+        GetCurrentBuffer()->pos = GetCurrentBuffer()->CurrentLine()->buffer.len();
     return 0;
 }
 
@@ -219,10 +219,10 @@ int next_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;
 
-    for (l = line; l != NULL && l->len() == 0; l = buf->m_document->NextLine(l))
+    for (l = line; l != NULL && l->buffer.len() == 0; l = buf->m_document->NextLine(l))
         ;
 
-    if (l == NULL || l->len() == 0)
+    if (l == NULL || l->buffer.len() == 0)
         return -1;
 
     GetCurrentBuffer()->SetCurrentLine(l);
@@ -257,7 +257,7 @@ getCurWord(BufferPtr buf, int *spos, int *epos)
             break;
         b = tmp;
     }
-    while (e < l->len() && is_wordchar(getChar(&p[e])))
+    while (e < l->buffer.len() && is_wordchar(getChar(&p[e])))
         nextChar(&e, l);
     *spos = b;
     *epos = e;
@@ -281,7 +281,7 @@ void nextChar(int *s, LinePtr l)
     do
     {
         (*s)++;
-    } while ((*s) < (l)->len() && (l)->propBuf()[*s] & PC_WCHAR2);
+    } while ((*s) < l->buffer.len() && l->propBuf()[*s] & PC_WCHAR2);
 }
 
 uint32_t getChar(char *p)
@@ -979,7 +979,7 @@ void nextX(int d, int dy, int n)
         an = NULL;
         while (1)
         {
-            for (; x >= 0 && x < l->len(); x += d)
+            for (; x >= 0 && x < l->buffer.len(); x += d)
             {
                 an = buf->m_document->href.RetrieveAnchor({y, x});
                 if (!an)
@@ -995,7 +995,7 @@ void nextX(int d, int dy, int n)
             l = (dy > 0) ? buf->m_document->NextLine(l) : buf->m_document->PrevLine(l);
             if (!l)
                 break;
-            x = (d > 0) ? 0 : l->len() - 1;
+            x = (d > 0) ? 0 : l->buffer.len() - 1;
             y = l->linenumber;
         }
         if (!an)

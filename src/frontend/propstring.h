@@ -151,5 +151,12 @@ public:
 
     Str conv_symbol() const;
 
-    int calcPosition(int pos, CalcPositionMode mode = CP_AUTO) const;
+    int BytePositionToColumns(int pos, CalcPositionMode mode = CP_AUTO) const;
+
+    // byte position of column
+    int columnPos(int column) const;
+    // byte length of column
+    int columnLen(int column) const;
+
+    void clear_mark();
 };

@@ -215,10 +215,10 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
     }
     for (i = spos; i < epos; i++)
         l->propBuf()[i] |= PE_ANCHOR;
-    // while (spos > l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+    // while (spos > l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
     // {
-    //     spos -= l->len();
-    //     epos -= l->len();
+    //     spos -= l->buffer.len();
+    //     epos -= l->buffer.len();
     //     l = buf->m_document->NextLine(l);
     // }
     while (1)
@@ -231,11 +231,11 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
             hseq = a->hseq;
         }
         a->end.line = l->linenumber;
-        // if (epos > l->len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+        // if (epos > l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
         // {
-        //     a->end.pos = l->len();
+        //     a->end.pos = l->buffer.len();
         //     spos = 0;
-        //     epos -= l->len();
+        //     epos -= l->buffer.len();
         //     l = buf->m_document->NextLine(l);
         // }
         // else
@@ -278,7 +278,7 @@ reAnchorAny(BufferPtr buf, const char *re,
         p = l->lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->lineBuf()[l->len()] - p, p == l->lineBuf()) == 1)
+            if (regexMatch(p, &l->lineBuf()[l->buffer.len()] - p, p == l->lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
                 p = reAnchorPos(buf, l, p1, p2, anchorproc);
@@ -358,7 +358,7 @@ reAnchorNewsheader(const BufferPtr &buf)
                 continue;
             for (;;)
             {
-                if (regexMatch(p, &l->lineBuf()[l->len()] - p, p == l->lineBuf()) == 1)
+                if (regexMatch(p, &l->lineBuf()[l->buffer.len()] - p, p == l->lineBuf()) == 1)
                 {
                     matchedPosition(&p1, &p2);
                     p = reAnchorPos(buf, l, p1, p2, _put_anchor_news);
@@ -458,13 +458,13 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
             if (a)
                 a_form = a;
         }
-        auto col = ls->buffer.calcPosition(a_img->start.pos);
-        auto ecol = ls->buffer.calcPosition(a_img->end.pos);
+        auto col = ls->buffer.BytePositionToColumns(a_img->start.pos);
+        auto ecol = ls->buffer.BytePositionToColumns(a_img->end.pos);
         for (int j = 0; l && j < img->rows; l = buf->m_document->NextLine(l), j++)
         {
             if (a_img->start.line == l->linenumber)
                 continue;
-            auto pos = l->columnPos(col);
+            auto pos = l->buffer.columnPos(col);
             {
                 // img
                 auto a = Anchor::CreateImage(a_img->url, a_img->title, l->linenumber, pos);
@@ -542,11 +542,11 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
                 continue;
         }
         auto fi = a_form->item;
-        auto col = ls->buffer.calcPosition(a_form->start.pos);
-        auto ecol = ls->buffer.calcPosition(a_form->end.pos);
+        auto col = ls->buffer.BytePositionToColumns(a_form->start.pos);
+        auto ecol = ls->buffer.BytePositionToColumns(a_form->end.pos);
         for (auto j = 0; l && j < a_form->rows; l = buf->m_document->NextLine(l), j++)
         {
-            auto pos = l->columnPos(col);
+            auto pos = l->buffer.columnPos(col);
             if (j == 0)
             {
                 buf->m_document->hmarklist[a_form->hseq].line = l->linenumber;
