@@ -58,8 +58,9 @@ public:
 
     void clear_mark();
 
-    int columnPos(int column);
+    // byte position of column
+    int columnPos(int column) const;
+    // byte length of column
+    int columnLen(int column) const;
 };
 using LinePtr = std::shared_ptr<Line>;
-
-int columnLen(LinePtr line, int column);

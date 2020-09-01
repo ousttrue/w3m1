@@ -5,22 +5,20 @@
 #include "wtf.h"
 #include "display.h"
 
-int columnLen(LinePtr line, int column)
+int Line::columnLen(int column) const
 {
-    int i, j;
-
-    for (i = 0, j = 0; i < line->len();)
+    for (int i = 0, j = 0; i < this->len();)
     {
-        auto colLen = line->buffer.Get(i).ColumnLen();
+        auto colLen = this->buffer.Get(i).ColumnLen();
         j += colLen;
         if (j > column)
             return i;
         i++;
 
-        while (i < line->len() && line->propBuf()[i] & PC_WCHAR2)
+        while (i < this->len() && this->buffer.propBuf()[i] & PC_WCHAR2)
             i++;
     }
-    return line->len();
+    return this->len();
 }
 
 void Line::CalcWidth(bool force)
@@ -31,7 +29,7 @@ void Line::CalcWidth(bool force)
     }
 }
 
-int Line::columnPos(int column)
+int Line::columnPos(int column) const
 {
     int i;
     for (i = 1; i < this->len(); i++)
@@ -39,7 +37,7 @@ int Line::columnPos(int column)
         if (this->buffer.calcPosition(i) > column)
             break;
     }
-    for (i--; i > 0 && this->propBuf()[i] & PC_WCHAR2; i--)
+    for (i--; i > 0 && this->buffer.propBuf()[i] & PC_WCHAR2; i--)
         ;
     return i;
 }
