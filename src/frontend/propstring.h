@@ -109,6 +109,8 @@ class PropertiedString
     std::vector<Lineprop> m_propBuf;
     std::vector<Linecolor> m_colorBuf;
 
+    int m_columns = -1;
+
 public:
     PropertiedString()
     {
@@ -140,7 +142,9 @@ public:
     }
 
     const char *lineBuf() const { return m_lineBuf.data(); }
+    char *lineBuf() { return m_lineBuf.data(); }
     const Lineprop *propBuf() const { return m_propBuf.data(); }
+    Lineprop *propBuf() { return m_propBuf.data(); }
     int len() const { return m_lineBuf.size(); }
     const Linecolor *colorBuf() const { return m_colorBuf.empty() ? nullptr : m_colorBuf.data(); }
 
@@ -152,6 +156,15 @@ public:
     Str conv_symbol() const;
 
     int BytePositionToColumns(int pos, CalcPositionMode mode = CP_AUTO) const;
+
+    int Columns()
+    {
+        if (m_columns < 0)
+        {
+            m_columns = BytePositionToColumns(len());
+        }
+        return m_columns;
+    }
 
     // byte position of column
     int columnPos(int column) const;

@@ -234,21 +234,20 @@ int next_nonnull_line(BufferPtr buf, LinePtr line)
 char *
 getCurWord(BufferPtr buf, int *spos, int *epos)
 {
-    char *p;
-    LinePtr l = buf->CurrentLine();
-    int b, e;
-
     *spos = 0;
     *epos = 0;
+
+    LinePtr l = buf->CurrentLine();
     if (l == NULL)
         return NULL;
-    p = l->lineBuf();
-    e = buf->pos;
+
+    auto p = l->buffer.lineBuf();
+    auto e = buf->pos;
     while (e > 0 && !is_wordchar(getChar(&p[e])))
         prevChar(&e, l);
     if (!is_wordchar(getChar(&p[e])))
         return NULL;
-    b = e;
+    auto b = e;
     while (b > 0)
     {
         int tmp = b;
@@ -273,7 +272,7 @@ void prevChar(int *s, LinePtr l)
     do
     {
         (*s)--;
-    } while ((*s) > 0 && (l)->propBuf()[*s] & PC_WCHAR2);
+    } while ((*s) > 0 && (l)->buffer.propBuf()[*s] & PC_WCHAR2);
 }
 
 void nextChar(int *s, LinePtr l)
@@ -281,7 +280,7 @@ void nextChar(int *s, LinePtr l)
     do
     {
         (*s)++;
-    } while ((*s) < l->buffer.len() && l->propBuf()[*s] & PC_WCHAR2);
+    } while ((*s) < l->buffer.len() && l->buffer.propBuf()[*s] & PC_WCHAR2);
 }
 
 uint32_t getChar(char *p)

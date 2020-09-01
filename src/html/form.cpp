@@ -300,7 +300,7 @@ static std::tuple<std::string_view, int> form_update_line(LinePtr line, std::str
     auto buf = const_cast<char *>(copy.lineBuf());
     auto prop = const_cast<Lineprop *>(copy.propBuf());
 
-    auto effect = CharEffect(line->propBuf()[spos]);
+    auto effect = CharEffect(line->buffer.propBuf()[spos]);
     for (p = str.data(), w = 0, pos = spos; *p && w < width;)
     {
         auto c_type = get_mctype(*p);
@@ -412,9 +412,9 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
     case FORM_INPUT_CHECKBOX:
     case FORM_INPUT_RADIO:
         if (form->checked)
-            buf->CurrentLine()->lineBuf()[spos] = '*';
+            buf->CurrentLine()->buffer.lineBuf()[spos] = '*';
         else
-            buf->CurrentLine()->lineBuf()[spos] = ' ';
+            buf->CurrentLine()->buffer.lineBuf()[spos] = ' ';
         break;
     case FORM_INPUT_TEXT:
     case FORM_INPUT_FILE:

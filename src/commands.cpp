@@ -686,21 +686,16 @@ void _mark(w3mApp *w3m, const CommandContext &context)
 {
     if (!w3mApp::Instance().use_mark)
         return;
-
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     if (buf->m_document->LineCount() == 0)
         return;
-    auto l = buf->CurrentLine();
-    l->propBuf()[buf->pos] ^= PE_MARK;
-    // displayCurrentbuf(B_FORCE_REDRAW);
+    auto &l = buf->CurrentLine()->buffer;
+    l.propBuf()[buf->pos] ^= PE_MARK;
 }
 
 /* Go to next mark */
 void nextMk(w3mApp *w3m, const CommandContext &context)
 {
-    LinePtr l;
-    int i;
     if (!w3mApp::Instance().use_mark)
         return;
 
@@ -709,8 +704,8 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
     if (doc->LineCount() == 0)
         return;
 
-    i = buf->pos + 1;
-    l = buf->CurrentLine();
+    auto i = buf->pos + 1;
+    auto l = buf->CurrentLine();
     if (i >= l->buffer.len())
     {
         i = 0;
@@ -720,7 +715,7 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
     {
         for (; i < l->buffer.len(); i++)
         {
-            if (l->propBuf()[i] & PE_MARK)
+            if (l->buffer.propBuf()[i] & PE_MARK)
             {
                 buf->SetCurrentLine(l);
                 buf->pos = i;
@@ -759,7 +754,7 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
     {
         for (; i >= 0; i--)
         {
-            if (l->propBuf()[i] & PE_MARK)
+            if (l->buffer.propBuf()[i] & PE_MARK)
             {
                 buf->SetCurrentLine(l);
                 buf->pos = i;
@@ -803,14 +798,14 @@ void reMark(w3mApp *w3m, const CommandContext &context)
     for (int i = 0; i < buf->m_document->LineCount(); ++i)
     {
         auto l = buf->m_document->GetLine(i);
-        char *p, *p1, *p2;
-        p = l->lineBuf();
+        char *p1, *p2;
+        auto p = l->buffer.lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->lineBuf()[l->buffer.len()] - p, p == l->lineBuf()) == 1)
+            if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.len()] - p, p == l->buffer.lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
-                l->propBuf()[p1 - l->lineBuf()] |= PE_MARK;
+                l->buffer.propBuf()[p1 - l->buffer.lineBuf()] |= PE_MARK;
                 p = p2;
             }
             else
@@ -1756,8 +1751,7 @@ void curlno(w3mApp *w3m, const CommandContext &context)
         auto col = buf->currentColumn + buf->rect.cursorX + 1;
         while (doc->NextLine(l))
             l = doc->NextLine(l);
-        l->CalcWidth();
-        len = l->width();
+        len = l->buffer.Columns();
     }
 
     int all=0;

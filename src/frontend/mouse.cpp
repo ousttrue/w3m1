@@ -307,7 +307,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         y = _y;
         if (y &&
             (x || (WcOption.use_wide && buf->CurrentLine() != NULL &&
-                   (CharType(buf->CurrentLine()->propBuf()[buf->pos]) == PC_KANJI1) && x == buf->rect.cursorX + buf->rect.rootX + 1)))
+                   (CharType(buf->CurrentLine()->buffer.propBuf()[buf->pos]) == PC_KANJI1) && x == buf->rect.cursorX + buf->rect.rootX + 1)))
         {
             if (buf->m_document->href.RetrieveAnchor(buf->CurrentPoint()) || buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint()))
             {
@@ -327,7 +327,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
             y = _y;
             if (y &&
                 (x || (WcOption.use_wide && buf->CurrentLine() != NULL &&
-                       (CharType(buf->CurrentLine()->propBuf()[buf->pos]) == PC_KANJI1) && x == buf->rect.cursorX + buf->rect.rootX + 1)) &&
+                       (CharType(buf->CurrentLine()->buffer.propBuf()[buf->pos]) == PC_KANJI1) && x == buf->rect.cursorX + buf->rect.rootX + 1)) &&
                 (buf->m_document->href.RetrieveAnchor(buf->CurrentPoint()) || buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint())))
                 map = &mouse_action.anchor_map[(int)btn];
             buf->CursorXY(cx, cy);
@@ -399,7 +399,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
 
                          || (WcOption.use_wide &&
                              GetCurrentBuffer()->CurrentLine() != NULL &&
-                             (CharType(GetCurrentBuffer()->CurrentLine()->propBuf()[GetCurrentBuffer()->pos]) == PC_KANJI1) && GetCurrentBuffer()->rect.cursorX == press_x - GetCurrentBuffer()->rect.rootX - 1)
+                             (CharType(GetCurrentBuffer()->CurrentLine()->buffer.propBuf()[GetCurrentBuffer()->pos]) == PC_KANJI1) && GetCurrentBuffer()->rect.cursorX == press_x - GetCurrentBuffer()->rect.rootX - 1)
 
                              ))
                     {

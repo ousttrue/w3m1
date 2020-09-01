@@ -206,15 +206,15 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
     int spos, epos;
     int i, hseq = -2;
 
-    spos = p1 - l->lineBuf();
-    epos = p2 - l->lineBuf();
+    spos = p1 - l->buffer.lineBuf();
+    epos = p2 - l->buffer.lineBuf();
     for (i = spos; i < epos; i++)
     {
-        if (l->propBuf()[i] & (PE_ANCHOR | PE_FORM))
+        if (l->buffer.propBuf()[i] & (PE_ANCHOR | PE_FORM))
             return p2;
     }
     for (i = spos; i < epos; i++)
-        l->propBuf()[i] |= PE_ANCHOR;
+        l->buffer.propBuf()[i] |= PE_ANCHOR;
     // while (spos > l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
     // {
     //     spos -= l->buffer.len();
@@ -249,7 +249,7 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
 
 void reAnchorWord(BufferPtr buf, LinePtr l, int spos, int epos)
 {
-    reAnchorPos(buf, l, &l->lineBuf()[spos], &l->lineBuf()[epos], _put_anchor_all);
+    reAnchorPos(buf, l, &l->buffer.lineBuf()[spos], &l->buffer.lineBuf()[epos], _put_anchor_all);
 }
 
 /* search regexp and register them as anchors */
@@ -275,10 +275,10 @@ reAnchorAny(BufferPtr buf, const char *re,
     {
         // if (p && l->bpos)
         //     goto next_line;
-        p = l->lineBuf();
+        p = l->buffer.lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->lineBuf()[l->buffer.len()] - p, p == l->lineBuf()) == 1)
+            if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.len()] - p, p == l->buffer.lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
                 p = reAnchorPos(buf, l, p1, p2, anchorproc);
@@ -340,7 +340,7 @@ reAnchorNewsheader(const BufferPtr &buf)
         {
             // if (l->bpos)
             //     continue;
-            p = l->lineBuf();
+            p = l->buffer.lineBuf();
             if (!IS_SPACE(*p))
             {
                 search = false;
@@ -358,7 +358,7 @@ reAnchorNewsheader(const BufferPtr &buf)
                 continue;
             for (;;)
             {
-                if (regexMatch(p, &l->lineBuf()[l->buffer.len()] - p, p == l->lineBuf()) == 1)
+                if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.len()] - p, p == l->buffer.lineBuf()) == 1)
                 {
                     matchedPosition(&p1, &p2);
                     p = reAnchorPos(buf, l, p1, p2, _put_anchor_news);
@@ -474,7 +474,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
                 a->end.pos = pos + ecol - col;
                 buf->m_document->img.Put(a);
                 for (int k = pos; k < a->end.pos; k++)
-                    l->propBuf()[k] |= PE_IMAGE;
+                    l->buffer.propBuf()[k] |= PE_IMAGE;
             }
             if (a_href.url.size())
             {
@@ -487,7 +487,7 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
                 a->end.pos = pos + ecol - col;
                 buf->m_document->href.Put(a);
                 for (int k = pos; k < a->end.pos; k++)
-                    l->propBuf()[k] |= PE_ANCHOR;
+                    l->buffer.propBuf()[k] |= PE_ANCHOR;
             }
             if (a_form && a_form->item)
             {
@@ -565,10 +565,10 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
                 pos : pos + ecol - col
             };
             buf->m_document->formitem.Put(a);
-            l->lineBuf()[pos - 1] = '[';
-            l->lineBuf()[a->end.pos] = ']';
+            l->buffer.lineBuf()[pos - 1] = '[';
+            l->buffer.lineBuf()[a->end.pos] = ']';
             for (int k = pos; k < a->end.pos; k++)
-                l->propBuf()[k] |= PE_FORM;
+                l->buffer.propBuf()[k] |= PE_FORM;
         }
     }
 }
@@ -597,8 +597,8 @@ getAnchorText(BufferPtr buf, AnchorList &al, AnchorPtr a)
         }
         if (!l)
             break;
-        p = l->lineBuf() + a->start.pos;
-        ep = l->lineBuf() + a->end.pos;
+        p = l->buffer.lineBuf() + a->start.pos;
+        ep = l->buffer.lineBuf() + a->end.pos;
         for (; p < ep && IS_SPACE(*p); p++)
             ;
         if (p == ep)

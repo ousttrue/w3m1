@@ -453,11 +453,11 @@ static Str make_lastline_message(const BufferPtr &buf)
 static void DrawHover(int y, LinePtr l, const Viewport &viewport, const AnchorPtr &a, int leftColumn)
 {
     int leftPos = l->buffer.columnPos(leftColumn);
-    auto p = l->lineBuf();
-    auto pr = l->propBuf();
-    Linecolor *pc = nullptr;
-    if (w3mApp::Instance().useColor && l->colorBuf())
-        pc = l->colorBuf();
+    auto p = l->buffer.lineBuf();
+    auto pr = l->buffer.propBuf();
+    const Linecolor *pc = nullptr;
+    if (w3mApp::Instance().useColor && l->buffer.colorBuf())
+        pc = l->buffer.colorBuf();
 
     int pos = leftPos;
     for (int col = 0, pos = leftPos; col < viewport.cols && pos < l->buffer.len();)
@@ -545,12 +545,12 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
             //
             for (int i = an->start.pos; i < an->end.pos; i++)
             {
-                if (l->propBuf()[i] & (PE_IMAGE | PE_ANCHOR | PE_FORM))
+                if (l->buffer.propBuf()[i] & (PE_IMAGE | PE_ANCHOR | PE_FORM))
                 {
                     if (active)
-                        l->propBuf()[i] |= PE_ACTIVE;
+                        l->buffer.propBuf()[i] |= PE_ACTIVE;
                     else
-                        l->propBuf()[i] &= ~PE_ACTIVE;
+                        l->buffer.propBuf()[i] &= ~PE_ACTIVE;
                 }
             }
             if (active)
@@ -629,8 +629,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     //     Screen::Instance().Puts(tmp);
     // }
 
-    l->CalcWidth();
-    if (l->buffer.len() == 0 || l->width() - 1 < currentColumn)
+    if (l->buffer.len() == 0 || l->buffer.Columns() - 1 < currentColumn)
     {
         Screen::Instance().CtrlToEolWithBGColor();
         return;
@@ -641,11 +640,11 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     ///
     Screen::Instance().Move(line, rect.rootX);
     auto pos = l->buffer.columnPos(currentColumn);
-    auto p = &(l->lineBuf()[pos]);
-    auto pr = &(l->propBuf()[pos]);
-    Linecolor *pc;
-    if (w3mApp::Instance().useColor && l->colorBuf())
-        pc = &(l->colorBuf()[pos]);
+    auto p = &(l->buffer.lineBuf()[pos]);
+    auto pr = &(l->buffer.propBuf()[pos]);
+    const Linecolor *pc;
+    if (w3mApp::Instance().useColor && l->buffer.colorBuf())
+        pc = &(l->buffer.colorBuf()[pos]);
     else
         pc = NULL;
 
@@ -750,18 +749,16 @@ static void redrawNLine(const BufferPtr &buf)
 
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
 {
-    int j, pos, rcol;
     int column = buf->currentColumn;
     int x, y, sx, sy, w, h;
 
     if (l == NULL)
         return NULL;
-    l->CalcWidth();
-    if (l->buffer.len() == 0 || l->width() - 1 < column)
+    if (l->buffer.len() == 0 || l->buffer.Columns() - 1 < column)
         return l;
-    pos = l->buffer.columnPos(column);
-    rcol = l->buffer.BytePositionToColumns(pos);
-    for (j = 0; rcol - column < buf->rect.cols && pos + j < l->buffer.len(); j++)
+    int pos = l->buffer.columnPos(column);
+    int rcol = l->buffer.BytePositionToColumns(pos);
+    for (int j = 0; rcol - column < buf->rect.cols && pos + j < l->buffer.len(); j++)
     {
         if (rcol - column < 0)
         {
