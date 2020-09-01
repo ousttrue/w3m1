@@ -479,7 +479,7 @@ static void DrawHover(int y, LinePtr l, const Viewport &viewport, const AnchorPt
         // }
 
         auto delta = wtf_len((uint8_t *)&p[pos]);
-        auto nextCol = l->COLPOS(pos + delta);
+        auto nextCol = l->buffer.calcPosition(pos + delta);
         if (nextCol - leftColumn > viewport.cols)
         {
             break;
@@ -649,7 +649,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     else
         pc = NULL;
 
-    auto rcol = l->COLPOS(pos);
+    auto rcol = l->buffer.calcPosition(pos);
     int delta = 1;
     int vpos = -1;
     for (int j = 0; rcol - currentColumn < rect.cols && pos + j < l->len(); j += delta)
@@ -685,7 +685,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
         break;
         }
 
-        int ncol = l->COLPOS(pos + j + delta);
+        int ncol = l->buffer.calcPosition(pos + j + delta);
         if (ncol - currentColumn > rect.cols)
             break;
 
@@ -760,12 +760,12 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
     if (l->len() == 0 || l->width() - 1 < column)
         return l;
     pos = columnPos(l, column);
-    rcol = l->COLPOS(pos);
+    rcol = l->buffer.calcPosition(pos);
     for (j = 0; rcol - column < buf->rect.cols && pos + j < l->len(); j++)
     {
         if (rcol - column < 0)
         {
-            rcol = l->COLPOS(pos + j + 1);
+            rcol = l->buffer.calcPosition(pos + j + 1);
             continue;
         }
         auto a = buf->m_document->img.RetrieveAnchor({l->linenumber, pos + j});
@@ -786,7 +786,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                 x = (int)((rcol - column + buf->rect.rootX) *
                           ImageManager::Instance().pixel_per_char);
                 y = (int)(i * ImageManager::Instance().pixel_per_line);
-                sx = (int)((rcol - l->COLPOS(a->start.pos)) *
+                sx = (int)((rcol - l->buffer.calcPosition(a->start.pos)) *
                            ImageManager::Instance().pixel_per_char);
                 sy = (int)((l->linenumber - image->y) *
                            ImageManager::Instance().pixel_per_line);
@@ -816,7 +816,7 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
                 draw_image_flag = true;
             }
         }
-        rcol = l->COLPOS(pos + j + 1);
+        rcol = l->buffer.calcPosition(pos + j + 1);
     }
     return l;
 }

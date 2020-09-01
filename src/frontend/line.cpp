@@ -23,17 +23,11 @@ int columnLen(LinePtr line, int column)
     return line->len();
 }
 
-// text position to column position ?
-int Line::COLPOS(int c)
-{
-    return buffer.calcPosition(c, CP_AUTO);
-}
-
 void Line::CalcWidth(bool force)
 {
     if (force || m_width < 0)
     {
-        m_width = COLPOS(len());
+        m_width = buffer.calcPosition(len());
     }
 }
 
@@ -43,7 +37,7 @@ int columnPos(LinePtr line, int column)
 
     for (i = 1; i < line->len(); i++)
     {
-        if (line->COLPOS(i) > column)
+        if (line->buffer.calcPosition(i) > column)
             break;
     }
     for (i--; i > 0 && line->propBuf()[i] & PC_WCHAR2; i--)

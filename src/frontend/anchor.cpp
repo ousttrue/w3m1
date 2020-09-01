@@ -458,8 +458,8 @@ void addMultirowsImg(BufferPtr buf, AnchorList &al)
             if (a)
                 a_form = a;
         }
-        auto col = ls->COLPOS(a_img->start.pos);
-        auto ecol = ls->COLPOS(a_img->end.pos);
+        auto col = ls->buffer.calcPosition(a_img->start.pos);
+        auto ecol = ls->buffer.calcPosition(a_img->end.pos);
         for (int j = 0; l && j < img->rows; l = buf->m_document->NextLine(l), j++)
         {
             if (a_img->start.line == l->linenumber)
@@ -542,8 +542,8 @@ void addMultirowsForm(BufferPtr buf, AnchorList &al)
                 continue;
         }
         auto fi = a_form->item;
-        auto col = ls->COLPOS(a_form->start.pos);
-        auto ecol = ls->COLPOS(a_form->end.pos);
+        auto col = ls->buffer.calcPosition(a_form->start.pos);
+        auto ecol = ls->buffer.calcPosition(a_form->end.pos);
         for (auto j = 0; l && j < a_form->rows; l = buf->m_document->NextLine(l), j++)
         {
             auto pos = columnPos(l, col);

@@ -447,7 +447,7 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
         }
 
         auto rows = form->rows ? form->rows : 1;
-        auto col = l->COLPOS(a->start.pos);
+        auto col = l->buffer.calcPosition(a->start.pos);
         for (auto c_rows = 0; c_rows < rows; c_rows++, l = buf->m_document->NextLine(l))
         {
             if (rows > 1)
@@ -462,7 +462,7 @@ void formUpdateBuffer(const AnchorPtr &a, BufferPtr buf, FormItemPtr form)
 
             {
                 int pos;
-                std::tie(p, pos) = form_update_line(l, p, spos, epos, l->COLPOS(epos) - col,
+                std::tie(p, pos) = form_update_line(l, p, spos, epos, l->buffer.calcPosition(epos) - col,
                                                     rows > 1,
                                                     form->type == FORM_INPUT_PASSWORD);
                 if (pos != epos)

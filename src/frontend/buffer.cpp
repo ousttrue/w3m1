@@ -769,7 +769,7 @@ void Buffer::AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_l
     //             i++;
     //     }
     //     l->buffer.len = i;
-    //     l->width = l->COLPOS(l->len());
+    //     l->width = l->buffer.calcPosition(l->len());
     //     if (pos <= i)
     //         return;
     //     bpos += l->len();
@@ -919,14 +919,14 @@ void Buffer::CursorRight(int n)
         while (this->pos && p[this->pos] & PC_WCHAR2)
             this->pos--;
     }
-    cpos = l->COLPOS(this->pos);
+    cpos = l->buffer.calcPosition(this->pos);
     this->visualpos = cpos - this->currentColumn;
     delta = 1;
 
     while (this->pos + delta < l->len() && p[this->pos + delta] & PC_WCHAR2)
         delta++;
 
-    vpos2 = l->COLPOS(this->pos + delta) - this->currentColumn - 1;
+    vpos2 = l->buffer.calcPosition(this->pos + delta) - this->currentColumn - 1;
     if (vpos2 >= this->rect.cols && n)
     {
         ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
@@ -960,7 +960,7 @@ void Buffer::CursorLeft(int n)
     // }
     else
         this->pos = 0;
-    cpos = l->COLPOS(this->pos);
+    cpos = l->buffer.calcPosition(this->pos);
     this->visualpos = cpos - this->currentColumn;
     if (this->visualpos < 0 && n)
     {
@@ -1037,13 +1037,13 @@ void Buffer::ArrangeCursor()
     while (this->pos > 0 && this->currentLine->propBuf()[this->pos] & PC_WCHAR2)
         this->pos--;
 
-    col = this->currentLine->COLPOS(this->pos);
+    col = this->currentLine->buffer.calcPosition(this->pos);
 
     while (this->pos + delta < this->currentLine->len() &&
            this->currentLine->propBuf()[this->pos + delta] & PC_WCHAR2)
         delta++;
 
-    col2 = this->currentLine->COLPOS(this->pos + delta);
+    col2 = this->currentLine->buffer.calcPosition(this->pos + delta);
     if (col < this->currentColumn || col2 > this->rect.cols + this->currentColumn)
     {
         this->currentColumn = 0;
@@ -1052,7 +1052,7 @@ void Buffer::ArrangeCursor()
     }
     /* Arrange cursor */
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
-    this->visualpos = this->currentLine->COLPOS(this->pos) - this->currentColumn;
+    this->visualpos = this->currentLine->buffer.calcPosition(this->pos) - this->currentColumn;
     this->rect.cursorX = this->visualpos;
 
 #ifdef DISPLAY_DEBUG
@@ -1070,7 +1070,7 @@ void Buffer::ArrangeLine()
 
     this->rect.cursorY = this->currentLine->linenumber - this->topLine->linenumber;
     auto i = columnPos(this->currentLine, this->currentColumn + this->visualpos);
-    auto cpos = this->currentLine->COLPOS(i) - this->currentColumn;
+    auto cpos = this->currentLine->buffer.calcPosition(i) - this->currentColumn;
     if (cpos >= 0)
     {
         this->rect.cursorX = cpos;

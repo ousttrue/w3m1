@@ -55,7 +55,6 @@ public:
     }
 
     void CalcWidth(bool force = false);
-    int COLPOS(int c);
 
     void clear_mark();
 };
