@@ -311,11 +311,18 @@ public:
         bytePosition = 0;
         m_currentLine = 0;
     }
+    void CursorUp()
+    {
+        --this->m_currentLine;
+        ArrangeLine();
+    }
+    void CursorDown()
+    {
+        ++this->m_currentLine;
+        ArrangeLine();
+    }
+
     void CursorXY(int x, int y);
-    void CursorUp0(int n);
-    void CursorUp(int n);
-    void CursorDown(int n);
-    void CursorUpDown(int n);
     void CursorRight(int n);
     void CursorLeft(int n);
     void ArrangeLine();

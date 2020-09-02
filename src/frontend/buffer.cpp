@@ -778,65 +778,6 @@ void Buffer::SavePosition()
     // b->pos = this->bytePosition;
 }
 
-void Buffer::CursorUp0(int n)
-{
-    // if (this->CursorY() > 0)
-    //     CursorUpDown(-1);
-    // else
-    // {
-    //     this->LineSkip(this->topLine, -n, false);
-    //     if (m_document->PrevLine(this->currentLine) != NULL)
-    //         this->currentLine = m_document->PrevLine(this->currentLine);
-    //     ArrangeLine();
-    // }
-}
-
-void Buffer::CursorUp(int n)
-{
-    // LinePtr l = this->currentLine;
-    // if (m_document->LineCount() == 0)
-    //     return;
-    // // while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos)
-    // //     CursorUp0(n);
-    // if (this->currentLine == m_document->FirstLine())
-    // {
-    //     this->GotoLine(l->linenumber);
-    //     ArrangeLine();
-    //     return;
-    // }
-    // CursorUp0(n);
-    // // while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos &&
-    // //        this->currentLine->bwidth >= this->currentColumn + this->visualpos)
-    // //     CursorUp0(n);
-}
-
-void Buffer::CursorDown(int n)
-{
-    if (this->CursorY() < this->rect.lines - 1)
-    {
-        CursorUpDown(1);
-    }
-    else
-    {
-        this->m_topLine += n;
-        if(this->m_currentLine < m_document->LineCount()-1)
-        {
-            ++this->m_currentLine;
-        }
-    }
-}
-
-void Buffer::CursorUpDown(int n)
-{
-    // LinePtr cl = this->currentLine;
-
-    // if (m_document->LineCount() == 0)
-    //     return;
-    // if ((this->currentLine = this->CurrentLineSkip(cl, n, false)) == cl)
-    //     return;
-    // ArrangeLine();
-}
-
 void Buffer::CursorRight(int n)
 {
     // int i, delta = 1, vpos2;
@@ -930,7 +871,7 @@ void Buffer::CursorXY(int x, int y)
     x -= rect.rootX;
     y -= rect.rootY;
 
-    CursorUpDown(y - CursorY());
+    m_currentLine += y;
 
     if (CursorX() > x)
     {
@@ -1009,7 +950,32 @@ void Buffer::ArrangeCursor()
 void Buffer::ArrangeLine()
 {
     if (m_document->LineCount() == 0)
+    {
         return;
+    }
+    if (this->m_currentLine < 0)
+    {
+        this->m_currentLine = 0;
+    }
+    else if (this->m_currentLine >= m_document->LineCount())
+    {
+        m_currentLine = m_document->LineCount() - 1;
+    }
+
+    if (m_currentLine < m_topLine)
+    {
+        // scroll up
+        m_topLine = m_currentLine;
+    }
+    else
+    {
+        auto delta = this->m_currentLine - this->m_topLine;
+        if (delta >= rect.lines)
+        {
+            // scroll down
+            this->m_topLine = m_currentLine - (rect.lines - 1);
+        }
+    }
 }
 
 void Buffer::DumpSource()

@@ -434,28 +434,28 @@ void movD(w3mApp *w3m, const CommandContext &context)
 {
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
-        buf->CursorDown((buf->rect.lines + 1) / 2);
+        buf->CursorDown();
 }
 
 void movD1(w3mApp *w3m, const CommandContext &context)
 {
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
-        buf->CursorDown(1);
+        buf->CursorDown();
 }
 
 void movU(w3mApp *w3m, const CommandContext &context)
 {
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
-        buf->CursorUp((buf->rect.lines + 1) / 2);
+        buf->CursorUp();
 }
 
 void movU1(w3mApp *w3m, const CommandContext &context)
 {
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
-        buf->CursorUp(1);
+        buf->CursorUp();
 }
 
 void movR(w3mApp *w3m, const CommandContext &context)
@@ -593,7 +593,7 @@ void linbeg(w3mApp *w3m, const CommandContext &context)
     if (doc->LineCount() == 0)
         return;
     while (doc->PrevLine(buf->CurrentLine()))
-        buf->CursorUp0(1);
+        buf->CursorUp();
     buf->bytePosition = 0;
     buf->ArrangeCursor();
 }
@@ -606,7 +606,7 @@ void linend(w3mApp *w3m, const CommandContext &context)
     if (doc->LineCount() == 0)
         return;
     while (doc->NextLine(buf->CurrentLine()))
-        buf->CursorDown(1);
+        buf->CursorDown();
     buf->bytePosition = buf->CurrentLine()->buffer.len() - 1;
     buf->ArrangeCursor();
 }
