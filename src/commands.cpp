@@ -186,9 +186,9 @@ void shiftl(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    int column = buf->leftCol;
+    int column = buf->m_leftCol;
     buf->ColumnSkip(context.prec_num() * (-buf->rect.cols + 1) + 1);
-    shiftvisualpos(buf, buf->leftCol - column);
+    shiftvisualpos(buf, buf->m_leftCol - column);
 }
 
 /* Shift screen right */
@@ -196,9 +196,9 @@ void shiftr(w3mApp *w3m, const CommandContext &context)
 {
     auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
-    int column = buf->leftCol;
+    int column = buf->m_leftCol;
     buf->ColumnSkip(context.prec_num() * (buf->rect.cols - 1) - 1);
-    shiftvisualpos(buf, buf->leftCol - column);
+    shiftvisualpos(buf, buf->m_leftCol - column);
 }
 
 void col1R(w3mApp *w3m, const CommandContext &context)
@@ -210,9 +210,9 @@ void col1R(w3mApp *w3m, const CommandContext &context)
         return;
     for (int j = 0; j < context.prec_num(); j++)
     {
-        int column = buf->leftCol;
+        int column = buf->m_leftCol;
         buf->ColumnSkip(1);
-        if (column == buf->leftCol)
+        if (column == buf->m_leftCol)
             break;
         shiftvisualpos(buf, 1);
     }
@@ -227,7 +227,7 @@ void col1L(w3mApp *w3m, const CommandContext &context)
         return;
     for (int j = 0; j < context.prec_num(); j++)
     {
-        if (buf->leftCol == 0)
+        if (buf->m_leftCol == 0)
             break;
         buf->ColumnSkip(-1);
         shiftvisualpos(buf, -1);
@@ -1738,7 +1738,7 @@ void curlno(w3mApp *w3m, const CommandContext &context)
     if (l)
     {
         auto cur = l->real_linenumber;
-        auto col = buf->leftCol + buf->CursorX() + 1;
+        auto col = buf->m_leftCol + buf->CursorX() + 1;
         while (doc->NextLine(l))
             l = doc->NextLine(l);
         len = l->buffer.Columns();

@@ -305,7 +305,7 @@ void Buffer::CopyFrom(BufferPtr src)
     real_type = src->real_type;
 
     bufferprop = src->bufferprop;
-    leftCol = src->leftCol;
+    m_leftCol = src->m_leftCol;
     bytePosition = src->bytePosition;
     rect = src->rect;
 
@@ -735,7 +735,7 @@ void set_buffer_environ(const BufferPtr &buf)
                                                 l->real_linenumber)
                                             ->ptr);
         set_environ("W3M_CURRENT_COLUMN", Sprintf("%d",
-                                                  buf->leftCol + buf->CursorX() + 1)
+                                                  buf->m_leftCol + buf->CursorX() + 1)
                                               ->ptr);
     }
     else if (!l)
@@ -1049,7 +1049,7 @@ void Buffer::resetPos(int i)
     // newBuf->SetTopLine(top);
     // newBuf->SetCurrentLine(cur);
     newBuf->bytePosition = b.pos;
-    newBuf->leftCol = b.currentColumn;
+    newBuf->m_leftCol = b.currentColumn;
     restorePosition(newBuf);
 }
 
@@ -1583,7 +1583,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
 
 int Buffer::ColumnSkip(int offset)
 {
-    int column = this->leftCol + offset;
+    int column = this->m_leftCol + offset;
     int nlines = this->rect.lines + 1;
 
     // int maxColumn = 0;

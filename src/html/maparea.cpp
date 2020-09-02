@@ -168,7 +168,7 @@ int getMapXY(BufferPtr buf, const AnchorPtr a, int *x, int *y)
 {
     if (!buf || !a || !a->image || !x || !y)
         return 0;
-    *x = (int)((buf->leftCol + buf->CursorX() - buf->CurrentLine()->buffer.BytePositionToColumn(a->start.pos) + 0.5) * ImageManager::Instance().pixel_per_char) - a->image->xoffset;
+    *x = (int)((buf->m_leftCol + buf->CursorX() - buf->CurrentLine()->buffer.BytePositionToColumn(a->start.pos) + 0.5) * ImageManager::Instance().pixel_per_char) - a->image->xoffset;
     *y = (int)((buf->CurrentLine()->linenumber - a->image->y + 0.5) * ImageManager::Instance().pixel_per_line) - a->image->yoffset;
     if (*x <= 0)
         *x = 1;

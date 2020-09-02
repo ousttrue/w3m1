@@ -549,14 +549,14 @@ static void drawAnchorCursor0(BufferPtr buf, AnchorList &al, int hseq,
             }
             if (active)
                 DrawHover(buf->rect,
-                          l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l->buffer, buf->leftCol,
+                          l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l->buffer, buf->m_leftCol,
                           an);
         }
         else if (prevhseq >= 0 && an->hseq == prevhseq)
         {
             if (active)
                 DrawHover(buf->rect,
-                          l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l->buffer, buf->leftCol,
+                          l->linenumber - buf->TopLine()->linenumber + buf->rect.rootY, l->buffer, buf->m_leftCol,
                           an);
         }
     }
@@ -714,8 +714,8 @@ static void redrawNLine(const BufferPtr &buf)
         int i = 0;
         for (auto l = buf->TopLine(); l && i < buf->rect.lines; i++, l = buf->m_document->NextLine(l))
         {
-            assert(buf->rect.rootX == buf->leftCol);
-            DrawLine(l, i + buf->rect.rootY, buf->rect, buf->leftCol, buf->m_document);
+            assert(buf->rect.rootX == buf->m_leftCol);
+            DrawLine(l, i + buf->rect.rootY, buf->rect, buf->m_leftCol, buf->m_document);
         }
         Screen::Instance().LineCol(i + buf->rect.rootY, 0);
         Screen::Instance().CtrlToBottomEol();
@@ -741,7 +741,7 @@ static void redrawNLine(const BufferPtr &buf)
 
 static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
 {
-    int column = buf->leftCol;
+    int column = buf->m_leftCol;
     int x, y, sx, sy, w, h;
 
     if (l == NULL)
@@ -1183,7 +1183,7 @@ void displayBuffer()
         redrawNLine(buf);
 
         cline = buf->TopLine();
-        ccolumn = buf->leftCol;
+        ccolumn = buf->m_leftCol;
     }
 
     // if (buf->need_reshape)

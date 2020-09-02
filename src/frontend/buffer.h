@@ -204,7 +204,7 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     // horizontal
     //
     // left column
-    int leftCol = 0;
+    int m_leftCol = 0;
     // curosr column
     int CurrentCol() const
     {
@@ -215,7 +215,7 @@ struct Buffer : std::enable_shared_from_this<Buffer>
 
     int CursorX() const
     {
-        return CurrentCol() - leftCol;
+        return CurrentCol() - m_leftCol;
     }
 
     std::tuple<int, int> GlobalXY() const
@@ -333,14 +333,14 @@ public:
         this->m_topLine = srcbuf->m_topLine;
         this->m_currentLine = srcbuf->m_currentLine;
         this->bytePosition = srcbuf->bytePosition;
-        this->leftCol = srcbuf->leftCol;
+        this->m_leftCol = srcbuf->m_leftCol;
     }
     void restorePosition(const BufferPtr orig)
     {
         this->m_topLine = orig->m_topLine;
         this->m_currentLine = orig->m_currentLine;
         this->bytePosition = orig->bytePosition;
-        this->leftCol = orig->leftCol;
+        this->m_leftCol = orig->m_leftCol;
         this->ArrangeCursor();
     }
 
