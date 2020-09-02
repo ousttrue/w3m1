@@ -810,37 +810,20 @@ void Buffer::CursorUp(int n)
     // //     CursorUp0(n);
 }
 
-void Buffer::CursorDown0(int n)
-{
-    // if (this->CursorY() < this->rect.lines - 1)
-    //     CursorUpDown(1);
-    // else
-    // {
-    //     this->LineSkip(this->topLine, n, false);
-    //     if (m_document->NextLine(this->currentLine) != NULL)
-    //         this->currentLine = m_document->NextLine(this->currentLine);
-    //     ArrangeLine();
-    // }
-}
-
 void Buffer::CursorDown(int n)
 {
-    // LinePtr l = this->currentLine;
-    // if (m_document->LineCount() == 0)
-    //     return;
-    // // while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos)
-    // //     CursorDown0(n);
-    // if (this->currentLine == m_document->LastLine())
-    // {
-    //     this->GotoLine(l->linenumber);
-    //     ArrangeLine();
-    //     return;
-    // }
-    // CursorDown0(n);
-    // // while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos &&
-    // //        this->currentLine->buffer.Columns() <
-    // //            this->currentColumn + this->visualpos)
-    // //     CursorDown0(n);
+    if (this->CursorY() < this->rect.lines - 1)
+    {
+        CursorUpDown(1);
+    }
+    else
+    {
+        this->m_topLine += n;
+        if(this->m_currentLine < m_document->LineCount()-1)
+        {
+            ++this->m_currentLine;
+        }
+    }
 }
 
 void Buffer::CursorUpDown(int n)

@@ -418,7 +418,6 @@ void ldhelp(w3mApp *w3m, const CommandContext &context)
 
 void movL(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
         buf->CursorLeft(buf->rect.cols / 2);
@@ -426,7 +425,6 @@ void movL(w3mApp *w3m, const CommandContext &context)
 
 void movL1(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); ++i)
         buf->CursorLeft(1);
@@ -434,7 +432,6 @@ void movL1(w3mApp *w3m, const CommandContext &context)
 
 void movD(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
         buf->CursorDown((buf->rect.lines + 1) / 2);
@@ -442,7 +439,6 @@ void movD(w3mApp *w3m, const CommandContext &context)
 
 void movD1(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
         buf->CursorDown(1);
@@ -450,7 +446,6 @@ void movD1(w3mApp *w3m, const CommandContext &context)
 
 void movU(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
         buf->CursorUp((buf->rect.lines + 1) / 2);
@@ -458,7 +453,6 @@ void movU(w3mApp *w3m, const CommandContext &context)
 
 void movU1(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
         buf->CursorUp(1);
@@ -466,7 +460,6 @@ void movU1(w3mApp *w3m, const CommandContext &context)
 
 void movR(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
         buf->CursorRight(buf->rect.cols / 2);
@@ -474,7 +467,6 @@ void movR(w3mApp *w3m, const CommandContext &context)
 
 void movR1(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
         buf->CursorRight(1);
@@ -482,14 +474,12 @@ void movR1(w3mApp *w3m, const CommandContext &context)
 
 void movLW(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     buf->MoveLeftWord(context.prec_num());
 }
 
 void movRW(w3mApp *w3m, const CommandContext &context)
 {
-    auto tab = GetCurrentTab();
     auto buf = GetCurrentBuffer();
     buf->MoveRightWord(context.prec_num());
 }
@@ -616,7 +606,7 @@ void linend(w3mApp *w3m, const CommandContext &context)
     if (doc->LineCount() == 0)
         return;
     while (doc->NextLine(buf->CurrentLine()))
-        buf->CursorDown0(1);
+        buf->CursorDown(1);
     buf->bytePosition = buf->CurrentLine()->buffer.len() - 1;
     buf->ArrangeCursor();
 }

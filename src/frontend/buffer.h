@@ -314,7 +314,6 @@ public:
     void CursorXY(int x, int y);
     void CursorUp0(int n);
     void CursorUp(int n);
-    void CursorDown0(int n);
     void CursorDown(int n);
     void CursorUpDown(int n);
     void CursorRight(int n);

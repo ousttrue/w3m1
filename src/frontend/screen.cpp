@@ -1,5 +1,5 @@
 #include "screen.h"
-
+#include <plog/Log.h>
 #include "terminal.h"
 #include "w3m.h"
 #include <myctype.h>
@@ -162,12 +162,22 @@ public:
     void LineCol(int line, int column)
     {
         if (line >= 0 && line < Lines())
-            CurLine = line;
+        {
+            if (CurLine != line)
+            {
+                CurLine = line;
+            }
+        }
         if (column >= 0 && column < Cols())
-            CurColumn = column;
+        {
+            if (CurColumn != column)
+            {
+                CurColumn = column;
+            }
+        }
     }
 
-    std::tuple<int, int> LineCol()const
+    std::tuple<int, int> LineCol() const
     {
         return {CurLine, CurColumn};
     }
@@ -450,7 +460,6 @@ public:
 
     void Refresh()
     {
-        int col, pcol;
         int pline = CurLine;
         int moved = RF_NEED_TO_MOVE;
         l_prop mode = 0;
@@ -469,7 +478,8 @@ public:
             if (*dirty & L_DIRTY)
             {
                 *dirty &= ~L_DIRTY;
-                for (col = 0; col < cols && !(pr[col] & S_EOL); col++)
+                int col = 0;
+                for (; col < cols && !(pr[col] & S_EOL); col++)
                 {
                     if (*dirty & L_NEED_CE && col >= m_lineEnds[line])
                     {
@@ -482,6 +492,7 @@ public:
                             break;
                     }
                 }
+                int pcol;
                 if (*dirty & (L_NEED_CE | L_CLRTOEOL))
                 {
                     pcol = m_lineEnds[line];
@@ -533,15 +544,15 @@ public:
                     }
 
                     /* 
-                * some terminal emulators do linefeed when a
-                * character is put on Terminal::columns()-th column. this behavior
-                * is different from one of vt100, but such terminal
-                * emulators are used as vt100-compatible
-                * emulators. This behaviour causes scroll when a
-                * character is drawn on (Terminal::columns()-1,Terminal::lines()-1) point.  To
-                * avoid the scroll, I prohibit to draw character on
-                * (Terminal::columns()-1,Terminal::lines()-1).
-                */
+                    * some terminal emulators do linefeed when a
+                    * character is put on Terminal::columns()-th column. this behavior
+                    * is different from one of vt100, but such terminal
+                    * emulators are used as vt100-compatible
+                    * emulators. This behaviour causes scroll when a
+                    * character is drawn on (Terminal::columns()-1,Terminal::lines()-1) point.  To
+                    * avoid the scroll, I prohibit to draw character on
+                    * (Terminal::columns()-1,Terminal::lines()-1).
+                    */
                     if ((!(pr[col] & S_STANDOUT) && (mode & S_STANDOUT)) ||
                         (!(pr[col] & S_UNDERLINE) && (mode & S_UNDERLINE)) ||
                         (!(pr[col] & S_BOLD) && (mode & S_BOLD)) ||

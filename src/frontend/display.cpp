@@ -721,12 +721,12 @@ static void redrawNLine(const BufferPtr &buf)
         Screen::Instance().CtrlToBottomEol();
     }
 
+    auto [x, y] = buf->GlobalXY();
+    Screen::Instance().LineCol(y, x);
+
     if (!(ImageManager::Instance().activeImage && ImageManager::Instance().displayImage &&
           buf->m_document->img))
         return;
-
-    auto [x, y] = buf->GlobalXY();
-    Screen::Instance().LineCol(y, x);
 
     {
         int i = 0;
@@ -1011,15 +1011,11 @@ void show_message(std::string_view msg)
 
 void message(std::string_view s)
 {
-    if (!w3mApp::Instance().fmInitialized)
-        return;
-
-    auto [y, x] = Screen::Instance().LineCol();
-
+    auto [l, c] = Screen::Instance().LineCol();
     Screen::Instance().LineCol((Terminal::lines() - 1), 0);
     Screen::Instance().PutsColumns(s.data(), Terminal::columns() - 1);
     Screen::Instance().CtrlToEolWithBGColor();
-    Screen::Instance().LineCol(x, y);
+    Screen::Instance().LineCol(l, c);
 }
 
 void disp_err_message(const char *s, int redraw_current)
@@ -1198,6 +1194,7 @@ void displayBuffer()
 
     drawAnchorCursor(buf);
 
+    // msg
     auto msg = make_lastline_message(buf);
     if (buf->m_document->LineCount() == 0)
     {
@@ -1214,10 +1211,11 @@ void displayBuffer()
     Screen::Instance().Enable(S_STANDOUT);
     message(msg->c_str());
     Screen::Instance().Disable(S_STANDOUT);
+
+    // out
     Terminal::title(conv_to_system(buf->buffername.c_str()));
     Screen::Instance().Refresh();
     Terminal::flush();
-
     if (buf->m_document->img)
     {
         ImageManager::Instance().drawImage();
