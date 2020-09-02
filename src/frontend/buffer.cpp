@@ -778,91 +778,37 @@ void Buffer::SavePosition()
     // b->pos = this->bytePosition;
 }
 
-void Buffer::CursorRight(int n)
+void Buffer::CursorRight()
 {
-    // int i, delta = 1, vpos2;
-    // LinePtr l = this->currentLine;
-    // Lineprop *p;
+    if (m_document->LineCount() == 0)
+        return;
 
-    // if (m_document->LineCount() == 0)
-    //     return;
-    // // if (this->pos == l->buffer.len() && !(m_document->NextLine(l) && m_document->NextLine(l)->bpos))
-    // //     return;
-    // i = this->bytePosition;
-    // p = l->buffer.propBuf();
+    auto l = CurrentLine();
+    auto p = l->buffer.propBuf();
+    auto delta = 1;
+    while (p[this->bytePosition + delta] & PC_WCHAR2)
+        delta++;
 
-    // while (i + delta < l->buffer.len() && p[i + delta] & PC_WCHAR2)
-    //     delta++;
-
-    // if (i + delta < l->buffer.len())
-    // {
-    //     this->bytePosition = i + delta;
-    // }
-    // else if (l->buffer.len() == 0)
-    // {
-    //     this->bytePosition = 0;
-    // }
-    // // else if (m_document->NextLine(l) && m_document->NextLine(l)->bpos)
-    // // {
-    // //     CursorDown0(1);
-    // //     this->pos = 0;
-    // //     ArrangeCursor();
-    // //     return;
-    // // }
-    // else
-    // {
-    //     this->bytePosition = l->buffer.len() - 1;
-    //     while (this->bytePosition && p[this->bytePosition] & PC_WCHAR2)
-    //         this->bytePosition--;
-    // }
-    // auto cpos = this->CurrentCol();
-    // // this->currentCol = cpos - this->leftCol;
-    // delta = 1;
-
-    // while (this->bytePosition + delta < l->buffer.len() && p[this->bytePosition + delta] & PC_WCHAR2)
-    //     delta++;
-
-    // vpos2 = l->buffer.BytePositionToColumn(this->bytePosition + delta) - this->leftCol - 1;
-    // if (vpos2 >= this->rect.cols && n)
-    // {
-    //     ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
-    //     // this->currentCol = cpos - this->leftCol;
-    // }
+    if (this->bytePosition + delta < l->buffer.len())
+    {
+        this->bytePosition += delta;
+    }
 }
 
-void Buffer::CursorLeft(int n)
+void Buffer::CursorLeft()
 {
-    int i, delta = 1, cpos;
-    // LinePtr l = this->currentLine;
-    // Lineprop *p;
+    if (m_document->LineCount() == 0)
+        return;
 
-    // if (m_document->LineCount() == 0)
-    //     return;
-    // i = this->bytePosition;
-    // p = l->buffer.propBuf();
+    auto l = CurrentLine();
+    auto p = l->buffer.propBuf();
+    auto delta = 1;
+    while (this->bytePosition - delta > 0 && p[this->bytePosition - delta] & PC_WCHAR2)
+        delta++;
 
-    // while (i - delta > 0 && p[i - delta] & PC_WCHAR2)
-    //     delta++;
-
-    // if (i >= delta)
-    //     this->bytePosition = i - delta;
-    // // else if (m_document->PrevLine(l) && l->bpos)
-    // // {
-    // //     CursorUp0(-1);
-    // //     this->pos = this->currentLine->buffer.len() - 1;
-    // //     ArrangeCursor();
-    // //     return;
-    // // }
-    // else
-    //     this->bytePosition = 0;
-    // cpos = l->buffer.BytePositionToColumn(this->bytePosition);
-    // // this->currentCol = cpos - this->leftCol;
-    // if (this->CurrentCol() < 0 && n)
-    // {
-    //     ColumnSkip(-n + this->CurrentCol() - this->CurrentCol() % n);
-    //     // this->currentCol = cpos - this->leftCol;
-    // }
-    // // CursorX() = this->currentCol;
+    if (this->bytePosition >= delta){
+        this->bytePosition -= delta;
+    }
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -876,7 +822,7 @@ void Buffer::CursorXY(int x, int y)
     if (CursorX() > x)
     {
         while (CursorX() > x)
-            CursorLeft(this->rect.cols / 2);
+            CursorLeft();
     }
     else if (CursorX() < x)
     {
@@ -884,13 +830,13 @@ void Buffer::CursorXY(int x, int y)
         {
             int oldX = CursorX();
 
-            CursorRight(this->rect.cols / 2);
+            CursorRight();
 
             if (oldX == CursorX())
                 break;
         }
         if (CursorX() > x)
-            CursorLeft(this->rect.cols / 2);
+            CursorLeft();
     }
 }
 

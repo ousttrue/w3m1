@@ -323,8 +323,8 @@ public:
     }
 
     void CursorXY(int x, int y);
-    void CursorRight(int n);
-    void CursorLeft(int n);
+    void CursorRight();
+    void CursorLeft();
     void ArrangeLine();
     void ArrangeCursor();
     int ColumnSkip(int offset);

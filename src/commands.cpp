@@ -420,14 +420,14 @@ void movL(w3mApp *w3m, const CommandContext &context)
 {
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
-        buf->CursorLeft(buf->rect.cols / 2);
+        buf->CursorLeft();
 }
 
 void movL1(w3mApp *w3m, const CommandContext &context)
 {
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); ++i)
-        buf->CursorLeft(1);
+        buf->CursorLeft();
 }
 
 void movD(w3mApp *w3m, const CommandContext &context)
@@ -462,14 +462,14 @@ void movR(w3mApp *w3m, const CommandContext &context)
 {
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
-        buf->CursorRight(buf->rect.cols / 2);
+        buf->CursorRight();
 }
 
 void movR1(w3mApp *w3m, const CommandContext &context)
 {
     auto buf = GetCurrentBuffer();
     for (int i = 0; i < context.prec_num(); i++)
-        buf->CursorRight(1);
+        buf->CursorRight();
 }
 
 void movLW(w3mApp *w3m, const CommandContext &context)
