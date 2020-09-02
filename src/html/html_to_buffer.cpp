@@ -185,7 +185,9 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
         }
     }
 
-    buf->AddNewLine(out, nlines);
+    auto l = buf->m_document->AddLine();
+    l->buffer = out;
+
     assert(str.empty());
 }
 

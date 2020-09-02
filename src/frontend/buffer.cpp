@@ -755,58 +755,6 @@ void set_buffer_environ(const BufferPtr &buf)
 const char *NullLine = "";
 Lineprop NullProp[] = {P_UNKNOWN};
 
-void Buffer::AddNewLine(const PropertiedString &lineBuffer, int real_linenumber)
-{
-    auto l = m_document->AddLine();
-    l->buffer = lineBuffer;
-    m_currentLine = m_document->LineCount() - 1;
-
-    // 1 origin linenumber
-    l->linenumber = m_document->LineCount();
-    if (real_linenumber >= 0)
-    {
-        l->real_linenumber = real_linenumber;
-    }
-    else
-    {
-        l->real_linenumber = l->linenumber;
-    }
-}
-
-void Buffer::AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_linenumber, int width)
-{
-    // TODO:
-    assert(false);
-    // separate line
-    // int bpos = 0;
-    // int bwidth = 0;
-    // while (1)
-    // {
-    //     auto l = CurrentLine();
-    //     l->bpos = bpos;
-    //     l->bwidth = bwidth;
-    //     auto i = columnLen(l, width);
-    //     if (i == 0)
-    //     {
-    //         i++;
-    //         while (i < l->buffer.len() && p[i] & PC_WCHAR2)
-    //             i++;
-    //     }
-    //     l->buffer.len = i;
-    //     l->width = l->buffer.calcPosition(l->buffer.len());
-    //     if (pos <= i)
-    //         return;
-    //     bpos += l->buffer.len();
-    //     bwidth += l->width;
-    //     s += i;
-    //     p += i;
-    //     if (c)
-    //         c += i;
-    //     pos -= i;
-    //     AddLine(s, p, c, pos, nlines);
-    // }
-}
-
 void Buffer::SavePosition()
 {
     if (m_document->LineCount() == 0)

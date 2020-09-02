@@ -230,8 +230,6 @@ public:
     static std::shared_ptr<Buffer> Create(const URL &url);
 
 public:
-    void AddNewLineFixedWidth(const PropertiedString &lineBuffer, int real_linenumber, int width);
-    void AddNewLine(const PropertiedString &lineBuffer, int real_linenumber = -1);
     void ClearLines()
     {
         m_currentLine = 0;

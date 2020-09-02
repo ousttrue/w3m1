@@ -405,7 +405,9 @@ BufferPtr loadBuffer(const URL &url, const InputStreamPtr &stream, CharacterEnco
         }
         ++nlines;
         StripRight(lineBuf2);
-        newBuf->AddNewLine(PropertiedString(lineBuf2), nlines);
+        auto line = newBuf->m_document->AddLine();
+        line->buffer = PropertiedString(lineBuf2);
+        // newBuf->AddNewLine(, nlines);
     }
 _end:
     // TRAP_OFF;
