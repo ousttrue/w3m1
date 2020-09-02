@@ -26,6 +26,7 @@
 #include <math.h>
 #include <signal.h>
 #include <string_view>
+#include <wchar.h>
 
 BufferPtr g_buf;
 ContentStreamPtr g_content;
@@ -660,7 +661,13 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
         //     }
         // }
 
-        delta = wtf_len((uint8_t *)&p[j]);
+        // delta = wtf_len((uint8_t *)&p[j]);
+        auto sc = SingleCharacter::as_utf8((const char8_t *)&p[j]);
+        delta = sc.size();
+
+        auto unicode = SingleCharacter::unicode_from_utf8((const char8_t*)&p[j]);
+        auto col =  wcwidth(unicode.value);
+
         switch (delta)
         {
         case 3:
@@ -676,7 +683,8 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
         break;
         }
 
-        int ncol = l->buffer.BytePositionToColumn(pos + j + delta);
+        // int ncol = l->buffer.BytePositionToColumn(pos + j + delta);
+        int ncol = rcol + col;
         if (ncol - currentColumn > rect.cols)
             break;
 

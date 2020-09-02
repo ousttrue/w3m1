@@ -4413,7 +4413,9 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
             break;
         }
         CharacterEncodingScheme detected = {};
-        auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, context.DocCharset(), w3mApp::Instance().InnerCharset);
+
+        // auto converted = wc_Str_conv_with_detect(lineBuf2, &detected, context.DocCharset(), w3mApp::Instance().InnerCharset);
+        auto converted = lineBuf2;
 
 #if DEBUG_UTF8
         std::string wtf8 = converted->ptr;
@@ -4430,7 +4432,7 @@ BufferPtr loadHTMLStream(const URL &url, const InputStreamPtr &stream, Character
         }
 #endif
 
-        context.SetCES(detected);
+        // context.SetCES(detected);
         context.ProcessLine(converted->ptr, internal);
     }
     context.Finalize(internal);

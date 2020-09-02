@@ -21,9 +21,9 @@ enum MyCTypeFlags
 
 extern unsigned char MYCTYPE_MAP[];
 
-inline auto GET_MYCTYPE(int x)
+inline auto GET_MYCTYPE(unsigned char x)
 {
-    return MYCTYPE_MAP[(int)(unsigned char)x];
+    return MYCTYPE_MAP[x];
 }
 inline bool IS_CNTRL(int x)
 {

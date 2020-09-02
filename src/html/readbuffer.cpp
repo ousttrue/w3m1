@@ -279,9 +279,9 @@ void readbuffer::proc_escape(const char **str_return)
     auto [pos, ech] = ucs4_from_entity(*str_return);
     *str_return = pos.data();
     int width, n_add = *str_return - str;
-    Lineprop mode = PC_ASCII;
+    auto mode = PC_ASCII;
 
-    if (ech < 0)
+    if (ech == -1)
     {
         *str_return = str;
         proc_mchar(this->flag & RB_SPECIAL, 1, str_return, PC_ASCII);
@@ -300,7 +300,9 @@ void readbuffer::proc_escape(const char **str_return)
         push_charp(width, estr, mode);
     }
     else
+    {
         push_nchars(width, str, n_add, mode);
+    }
     this->prevchar->CopyFrom(estr, strlen(estr));
     this->prev_ctype = mode;
 }

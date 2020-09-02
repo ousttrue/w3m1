@@ -105,7 +105,7 @@ enum CalcPositionMode
 };
 class PropertiedString
 {
-    std::vector<char> m_lineBuf;
+    std::vector<char8_t> m_lineBuf;
     std::vector<Lineprop> m_propBuf;
     std::vector<Linecolor> m_colorBuf;
 
@@ -141,8 +141,8 @@ public:
         m_propBuf.push_back(prop);
     }
 
-    const char *lineBuf() const { return m_lineBuf.data(); }
-    char *lineBuf() { return m_lineBuf.data(); }
+    const char *lineBuf() const { return (const char *)m_lineBuf.data(); }
+    char *lineBuf() { return (char *)m_lineBuf.data(); }
     const Lineprop *propBuf() const { return m_propBuf.data(); }
     Lineprop *propBuf() { return m_propBuf.data(); }
     int ByteLength() const { return m_lineBuf.size(); }
@@ -150,7 +150,7 @@ public:
 
     PropertiedCharacter Get(int index) const
     {
-        return {m_lineBuf.data() + index, m_propBuf[index]};
+        return {(const char *)m_lineBuf.data() + index, m_propBuf[index]};
     }
 
     Str conv_symbol() const;

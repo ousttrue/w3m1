@@ -202,13 +202,14 @@ inline CharacterEncodingScheme &operator^=(CharacterEncodingScheme &a, Character
 
 union SingleCharacter
 {
-    uint64_t value;
-    union
+    // uint64_t value;
+    char32_t value;
+    struct
     {
         uint16_t low;
         uint16_t high;
     };
-    std::array<uint8_t, 8> bytes;
+    std::array<char8_t, 4> bytes;
 
     /// src: string include a character. allow multibyte, any encoding
     // CharacterCode(std::string_view src)
@@ -255,7 +256,7 @@ union SingleCharacter
         uint32_t i = 0;
         for (; i < size; ++i, ++src)
         {
-            if(!*src)
+            if (!*src)
             {
                 break;
             }
@@ -274,22 +275,22 @@ union SingleCharacter
 
     uint32_t size() const
     {
-        if (bytes[7])
-        {
-            return 8;
-        }
-        if (bytes[6])
-        {
-            return 7;
-        }
-        if (bytes[5])
-        {
-            return 6;
-        }
-        if (bytes[4])
-        {
-            return 5;
-        }
+        // if (bytes[7])
+        // {
+        //     return 8;
+        // }
+        // if (bytes[6])
+        // {
+        //     return 7;
+        // }
+        // if (bytes[5])
+        // {
+        //     return 6;
+        // }
+        // if (bytes[4])
+        // {
+        //     return 5;
+        // }
         if (bytes[3])
         {
             return 4;
@@ -326,9 +327,116 @@ union SingleCharacter
         value = c;
     }
 
+    enum
+    {
+        UTF8_HEAD1 = 128,
+        UTF8_HEAD2 = 128 + 64,
+        UTF8_HEAD3 = 128 + 64 + 32,
+        UTF8_HEAD4 = 128 + 64 + 32 + 16,
+        UTF8_MASK6 = 32 + 16 + 8 + 4 + 2 + 1,
+        UTF8_MASK5 = 16 + 8 + 4 + 2 + 1,
+        UTF8_MASK4 = 8 + 4 + 2 + 1,
+        UTF8_MASK3 = 4 + 2 + 1,
+    };
+
+    static SingleCharacter as_utf8(const char8_t *utf8)
+    {
+        if (utf8[0] < 0x8f)
+        {
+            // ascii
+            return SingleCharacter(utf8, 1);
+        }
+
+        auto masked = utf8[0] & UTF8_HEAD4;
+        if (masked == UTF8_HEAD4)
+        {
+            // 4
+            return SingleCharacter(utf8, 4);
+        }
+        else if (masked == UTF8_HEAD3)
+        {
+            // 3
+            return SingleCharacter(utf8, 3);
+        }
+        else if (masked == UTF8_HEAD2)
+        {
+            // 2
+            return SingleCharacter(utf8, 2);
+        }
+        else
+        {
+            assert(false);
+            return {};
+        }
+    }
+
+    static SingleCharacter unicode_from_utf8(const char8_t *utf8)
+    {
+        if (utf8[0] < 0x8f)
+        {
+            // ascii
+            return SingleCharacter(utf8, 1);
+        }
+
+        SingleCharacter sc;
+        auto masked = utf8[0] & UTF8_HEAD4;
+        if (masked == UTF8_HEAD4)
+        {
+            // 4
+        }
+        else if (masked == UTF8_HEAD3)
+        {
+            // 3
+            sc.value += ((utf8[0] & UTF8_MASK5) << 12);
+            sc.value += ((utf8[1] & UTF8_MASK6) << 6);
+            sc.value += (utf8[2] & UTF8_MASK6);
+        }
+        else if (masked == UTF8_HEAD2)
+        {
+            // 2
+        }
+        else
+        {
+            assert(false);
+        }
+
+        return sc;
+    }
+
+    static SingleCharacter unicode_to_utf8(char32_t unicode)
+    {
+        SingleCharacter sc;
+        if (unicode <= 0x7f)
+        {
+            sc.bytes[0] = unicode;
+        }
+        else if (unicode <= 0x7ff)
+        {
+            sc.bytes[0] = UTF8_HEAD2 | UTF8_MASK5 & (unicode >> 6);
+            sc.bytes[1] = UTF8_HEAD1 | UTF8_MASK6 & unicode;
+        }
+        else if (unicode <= 0xFFFF)
+        {
+            // to big endian
+            sc.bytes[0] = UTF8_HEAD3 | ((unicode >> 12));
+            sc.bytes[1] = UTF8_HEAD1 | (UTF8_MASK6 & (unicode >> 6));
+            sc.bytes[2] = UTF8_HEAD1 | (UTF8_MASK6 & unicode);
+            auto a = 0;
+        }
+        else if (unicode <= 0x10FFFF)
+        {
+            assert(false);
+        }
+        else
+        {
+            assert(false);
+        }
+        return sc;
+    }
+
     bool operator==(const SingleCharacter &rhs) const
     {
         return value == rhs.value;
     }
 };
-static_assert(sizeof(SingleCharacter) == 8);
+static_assert(sizeof(SingleCharacter) == 4);

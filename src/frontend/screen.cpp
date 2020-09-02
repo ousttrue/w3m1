@@ -458,6 +458,20 @@ public:
         }
     }
 
+    class RawWriter
+    {
+        FILE *m_f;
+
+    public:
+        RawWriter(FILE *f) : m_f(f) {}
+        void end() {}
+        void clear_status() {}
+        void putc(const SingleCharacter &sc)
+        {
+            fwrite(&sc, sc.size(), 1, m_f);
+        }
+    };
+
     void Refresh()
     {
         int pline = CurLine;
@@ -466,7 +480,8 @@ public:
         l_prop color = COL_FTERM;
         l_prop bcolor = COL_BTERM;
 
-        WCWriter writer(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset, Terminal::file());
+        // WCWriter writer(w3mApp::Instance().InnerCharset, w3mApp::Instance().DisplayCharset, Terminal::file());
+        RawWriter writer(Terminal::file());
 
         auto pc = m_chars.data();
         auto pr = m_props.data();

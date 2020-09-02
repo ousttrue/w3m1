@@ -14,6 +14,7 @@
 #include "stream/input_stream.h"
 #include <sys/stat.h>
 #include <zlib.h>
+#include <fstream>
 
 struct compression_decoder
 {
@@ -344,7 +345,11 @@ public:
         }
     }
 
-    tcb::span<uint8_t> data() { return decompressed; }
+    tcb::span<uint8_t> data()
+    {
+        decompressed.resize(d_stream.total_out);
+        return decompressed;
+    }
 };
 
 std::shared_ptr<class InputStream> decompress(const std::shared_ptr<class InputStream> &stream, CompressionTypes type)
@@ -389,6 +394,17 @@ std::shared_ptr<class InputStream> decompress(const std::shared_ptr<class InputS
     }
 
     auto data = decompressor.data();
+
+#if 1
+    // debug
+
+    std::ofstream s("tmp.html", std::ios::binary);
+    if (s)
+    {
+        s.write((const char *)data.data(), data.size());
+    }
+
+#endif
 
     return StrStream::Create(std::string_view((const char *)data.data(), data.size()));
 }

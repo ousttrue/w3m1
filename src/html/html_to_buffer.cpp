@@ -10,6 +10,7 @@
 #include "w3m.h"
 #include "file.h"
 #include "commands.h"
+#include "entity.h"
 
 #define FORM_I_TEXT_DEFAULT_SIZE 40
 
@@ -136,14 +137,20 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
         else if (str[0] == '&')
         {
             /* 
-                 * & escape processing
-                 */
-            char *p;
-            {
-                auto [pos, view] = getescapecmd(str.data(), w3mApp::Instance().InnerCharset);
-                str = const_cast<char *>(pos);
-                p = const_cast<char *>(view.data());
-            }
+            * & escape processing
+            */
+
+            // auto [pos, view] = getescapecmd(str.data(), w3mApp::Instance().InnerCharset);
+            char32_t code;
+            std::tie(str, code) = ucs4_from_entity(str);
+
+            // str = pos.data();
+            // auto p = const_cast<char *>(view.data());
+
+            auto sc = SingleCharacter::unicode_to_utf8(code);
+            auto p = (const char *)&sc;
+            auto _ = (const char8_t *)&sc;
+            auto len = sc.size();
 
             while (*p)
             {
@@ -160,7 +167,7 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
                 }
                 else
                 {
-                    int len = get_mclen(p);
+                    // int len = get_mclen(p);
                     out.push(mode | effect | ex_efct(ex_effect), *(p++));
                     if (--len)
                     {
@@ -186,6 +193,7 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
     }
 
     auto l = buf->m_document->AddLine();
+    auto _ = (const char8_t*)out.lineBuf();
     l->buffer = out;
 
     assert(str.empty());
@@ -608,15 +616,15 @@ void HtmlToBuffer::Process(const BufferPtr &buf, HtmlTagPtr tag, int pos, const 
                                    buf->m_document->document_charset)
                         ->ptr;
                 buf->m_document->event = setAlarmEvent(buf->m_document->event,
-                                           refresh_interval,
-                                           AL_IMPLICIT_ONCE,
-                                           &gorURL, p);
+                                                       refresh_interval,
+                                                       AL_IMPLICIT_ONCE,
+                                                       &gorURL, p);
             }
             else if (refresh_interval > 0)
                 buf->m_document->event = setAlarmEvent(buf->m_document->event,
-                                           refresh_interval,
-                                           AL_IMPLICIT,
-                                           &reload, nullptr);
+                                                       refresh_interval,
+                                                       AL_IMPLICIT,
+                                                       &reload, nullptr);
         }
         break;
     }
