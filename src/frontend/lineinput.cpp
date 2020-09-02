@@ -571,12 +571,12 @@ disp_next:
     }
     if (y)
     {
-        Screen::Instance().Move(y - 1, 0);
+        Screen::Instance().LineCol(y - 1, 0);
         Screen::Instance().CtrlToEolWithBGColor();
     }
     if (comment)
     {
-        Screen::Instance().Move(y, 0);
+        Screen::Instance().LineCol(y, 0);
         Screen::Instance().CtrlToEolWithBGColor();
         Screen::Instance().Enable(S_BOLD);
         /* FIXME: gettextize? */
@@ -591,7 +591,7 @@ disp_next:
             n = cm_disp_next + j * row + i;
             if (n >= NCFileBuf)
                 break;
-            Screen::Instance().Move(y, j * len);
+            Screen::Instance().LineCol(y, j * len);
             Screen::Instance().CtrlToEolWithBGColor();
             f = d->Clone();
             f->Push(CFileBuf[n]);
@@ -603,7 +603,7 @@ disp_next:
     }
     if (comment && y == (Terminal::lines() - 1) - 1)
     {
-        Screen::Instance().Move(y, 0);
+        Screen::Instance().LineCol(y, 0);
         Screen::Instance().CtrlToEolWithBGColor();
         Screen::Instance().Enable(S_BOLD);
         if (w3mApp::Instance().emacs_like_lineedit)
@@ -1006,14 +1006,14 @@ char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, Lin
             else
                 offset = 0;
         }
-        Screen::Instance().Move(Terminal::lines() - 1, 0);
+        Screen::Instance().LineCol(Terminal::lines() - 1, 0);
         Screen::Instance().Puts(prompt.data());
         if (is_passwd)
             addPasswd(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         else
             addStr(strBuf->ptr, strProp, CLen, offset, Terminal::columns() - opos);
         Screen::Instance().CtrlToEolWithBGColor();
-        Screen::Instance().Move((Terminal::lines() - 1), opos + x - offset);
+        Screen::Instance().LineCol((Terminal::lines() - 1), opos + x - offset);
         Screen::Instance().Refresh();
         Terminal::flush();
 
@@ -1094,7 +1094,7 @@ char *inputLineHistSearch(std::string_view prompt, std::string_view def_str, Lin
     if (i_broken)
         return "";
 
-    Screen::Instance().Move((Terminal::lines() - 1), 0);
+    Screen::Instance().LineCol((Terminal::lines() - 1), 0);
     Screen::Instance().Refresh();
     Terminal::flush();
 

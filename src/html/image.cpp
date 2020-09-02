@@ -307,8 +307,7 @@ void showImageProgress(const BufferPtr &buf)
     }
     if (n)
     {
-        auto [x, y] = buf->GlobalXY();
-        message(Sprintf("%d/%d images loaded", l, n)->ptr, x, y);
+        message(Sprintf("%d/%d images loaded", l, n)->ptr);
         Screen::Instance().Refresh();
         Terminal::flush();
     }

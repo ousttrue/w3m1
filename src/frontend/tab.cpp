@@ -73,7 +73,7 @@ static void
 writeBufferName(BufferPtr buf, int n)
 {
     auto all = buf->m_document->LineCount();
-    Screen::Instance().Move(n, 0);
+    Screen::Instance().LineCol(n, 0);
     /* FIXME: gettextize? */
     auto msg = Sprintf("<%s> [%d lines]", buf->buffername, all);
     if (buf->filename.size())
@@ -103,7 +103,7 @@ writeBufferName(BufferPtr buf, int n)
 static BufferPtr
 listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
 {
-    Screen::Instance().Move(0, 0);
+    Screen::Instance().LineCol(0, 0);
 
     if (w3mApp::Instance().useColor)
     {
@@ -126,14 +126,14 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
         {
             Screen::Instance().Disable(S_STANDOUT);
             Screen::Instance().CtrlToEolWithBGColor();
-            Screen::Instance().Move(i, 0);
+            Screen::Instance().LineCol(i, 0);
             Screen::Instance().StandToggle();
         }
         else
             Screen::Instance().CtrlToEolWithBGColor();
         if (!tab->Back())
         {
-            Screen::Instance().Move(i + 1, 0);
+            Screen::Instance().LineCol(i + 1, 0);
             Screen::Instance().CtrlToBottomEol();
             break;
         }
@@ -141,11 +141,11 @@ listBuffer(Tab *tab, BufferPtr top, BufferPtr current)
     }
     Screen::Instance().Enable(S_STANDOUT);
     /* FIXME: gettextize? */
-    message("Buffer selection mode: SPC for select / D for delete buffer", 0, 0);
+    message("Buffer selection mode: SPC for select / D for delete buffer");
     Screen::Instance().Disable(S_STANDOUT);
     /* 
      * move((Terminal::lines()-1), Terminal::columns() - 1); */
-    Screen::Instance().Move(c, 0);
+    Screen::Instance().LineCol(c, 0);
     Screen::Instance().Refresh();
     Terminal::flush();
 

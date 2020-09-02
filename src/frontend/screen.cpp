@@ -159,7 +159,7 @@ public:
         CurColumn = 0;
     }
 
-    void Move(int line, int column)
+    void LineCol(int line, int column)
     {
         if (line >= 0 && line < Lines())
             CurLine = line;
@@ -167,10 +167,15 @@ public:
             CurColumn = column;
     }
 
+    std::tuple<int, int> LineCol()const
+    {
+        return {CurLine, CurColumn};
+    }
+
     void Clear()
     {
         Terminal::Terminal::writestr(T_cl);
-        Move(0, 0);
+        LineCol(0, 0);
         std::fill(m_lineStatus.begin(), m_lineStatus.end(), L_NONE);
         std::fill(m_props.begin(), m_props.end(), S_EOL);
     }
@@ -230,7 +235,7 @@ public:
         int cco = CurColumn;
         for (int i = CurColumn; i < Cols(); i++)
             Screen::Instance().PutAscii(' ');
-        Move(cli, cco);
+        LineCol(cli, cco);
     }
 
     void CtrlToBottomEol()
@@ -735,9 +740,14 @@ void Screen::StandToggle()
     m_impl->StandToggle();
 }
 
-void Screen::Move(int line, int column)
+std::tuple<int, int> Screen::LineCol()
 {
-    m_impl->Move(line, column);
+    return m_impl->LineCol();
+}
+
+void Screen::LineCol(int line, int column)
+{
+    m_impl->LineCol(line, column);
 }
 
 void Screen::Refresh()

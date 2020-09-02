@@ -1471,7 +1471,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
     const char *p;
     if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
     {
-        message(p, 0, 0);
+        message(p);
         return SR_NOTFOUND;
     }
 
@@ -1573,20 +1573,9 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
     int wrapped = false;
     int pos;
 
-#ifdef USE_MIGEMO
-    if (migemo_active > 0)
+    if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
     {
-        if (((p = regexCompile(migemostr(str), IgnoreCase)) != NULL) && ((p = regexCompile(str, IgnoreCase)) != NULL))
-        {
-            message(p, 0, 0);
-            return SR_NOTFOUND;
-        }
-    }
-    else
-#endif
-        if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
-    {
-        message(p, 0, 0);
+        message(p);
         return SR_NOTFOUND;
     }
     l = buf->CurrentLine();

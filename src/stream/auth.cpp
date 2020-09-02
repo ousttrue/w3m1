@@ -643,7 +643,7 @@ void getAuthCookie(struct http_auth *hauth, char *auth_header,
          */
         if (w3mApp::Instance().fmInitialized)
         {
-            message("Wrong username or password", 0, 0);
+            message("Wrong username or password");
             Screen::Instance().Refresh();
             Terminal::flush();
         }

@@ -261,9 +261,9 @@ int getMenuN(std::string_view id)
 
 static MenuPtr CurrentMenu = std::make_shared<Menu>();
 
-#define mvaddch(y, x, c) (Screen::Instance().Move(y, x), addch(c))
-#define mvaddstr(y, x, str) (Screen::Instance().Move(y, x), Screen::Instance().Puts(str))
-#define mvaddnstr(y, x, str, n) (Screen::Instance().Move(y, x), Screen::Instance().PutsColumns(str, n))
+#define mvaddch(y, x, c) (Screen::Instance().LineCol(y, x), addch(c))
+#define mvaddstr(y, x, str) (Screen::Instance().LineCol(y, x), Screen::Instance().Puts(str))
+#define mvaddnstr(y, x, str, n) (Screen::Instance().LineCol(y, x), Screen::Instance().PutsColumns(str, n))
 
 static void new_menu(MenuPtr menu, std::vector<MenuItem> &item)
 {
@@ -452,7 +452,7 @@ int select_menu(MenuPtr menu, int mselect)
     Screen::Instance().Disable(S_STANDOUT);
     /* 
      * move(menu->cursorY, menu->cursorX); */
-    Screen::Instance().Move(menu->y + mselect - menu->offset, menu->x);
+    Screen::Instance().LineCol(menu->y + mselect - menu->offset, menu->x);
     Screen::Instance().StandToggle();
     Screen::Instance().Refresh();
     Terminal::flush();
@@ -878,7 +878,7 @@ static int menuForwardSearch(MenuPtr menu, std::string_view str, int from)
     const char *p;
     if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
     {
-        message(p, 0, 0);
+        message(p);
         return -1;
     }
     if (from < 0)
@@ -925,7 +925,7 @@ static int menuBackwardSearch(MenuPtr menu, std::string_view str, int from)
     const char *p;
     if ((p = regexCompile(str.data(), w3mApp::Instance().IgnoreCase)) != NULL)
     {
-        message(p, 0, 0);
+        message(p);
         return -1;
     }
     if (from >= menu->nitem)

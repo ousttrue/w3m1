@@ -1,5 +1,6 @@
 #pragma once
 #include <stdio.h>
+#include <tuple>
 
 typedef unsigned short l_prop;
 
@@ -69,7 +70,8 @@ public:
 
     void Setup();
     void Clear();
-    void Move(int line, int column);
+    void LineCol(int line, int column);
+    std::tuple<int, int> LineCol();
     void PutChar(const char *c, int len);
     void PutAscii(char c)
     {

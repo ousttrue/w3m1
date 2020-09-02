@@ -549,7 +549,7 @@ void susp(w3mApp *w3m, const CommandContext &context)
 #ifndef SIGSTOP
     char *shell;
 #endif /* not SIGSTOP */
-    Screen::Instance().Move((Terminal::lines() - 1), 0);
+    Screen::Instance().LineCol((Terminal::lines() - 1), 0);
     Screen::Instance().CtrlToEolWithBGColor();
     Screen::Instance().Refresh();
     Terminal::flush();
@@ -827,7 +827,7 @@ void followI(w3mApp *w3m, const CommandContext &context)
 
     auto l = buf->CurrentLine();
     /* FIXME: gettextize? */
-    message(Sprintf("loading %s", a->url)->ptr, 0, 0);
+    message(Sprintf("loading %s", a->url)->ptr);
     Screen::Instance().Refresh();
     Terminal::flush();
 
@@ -1593,7 +1593,7 @@ void reload(w3mApp *w3m, const CommandContext &context)
     // reload
     //
     /* FIXME: gettextize? */
-    message("Reloading...", 0, 0);
+    message("Reloading...");
     Screen::Instance().Refresh();
     Terminal::flush();
 

@@ -393,7 +393,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         cur_time = time(0);
         if (*trbyte == 0)
         {
-            Screen::Instance().Move((Terminal::lines() - 1), 0);
+            Screen::Instance().LineCol((Terminal::lines() - 1), 0);
             Screen::Instance().CtrlToEolWithBGColor();
             start_time = cur_time;
         }
@@ -402,7 +402,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         if (cur_time == last_time)
             return;
         last_time = cur_time;
-        Screen::Instance().Move((Terminal::lines() - 1), 0);
+        Screen::Instance().LineCol((Terminal::lines() - 1), 0);
         ratio = 100.0 * (*trbyte) / content_length;
         fmtrbyte = convert_size2(*trbyte, content_length, 1);
         duration = cur_time - start_time;
@@ -426,7 +426,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         Screen::Instance().Puts(messages->ptr);
         pos = 42;
         i = pos + (Terminal::columns() - pos - 1) * (*trbyte) / content_length;
-        Screen::Instance().Move((Terminal::lines() - 1), pos);
+        Screen::Instance().LineCol((Terminal::lines() - 1), pos);
         Screen::Instance().Enable(S_STANDOUT);
 
         Screen::Instance().PutAscii(' ');
@@ -442,7 +442,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         cur_time = time(0);
         if (*trbyte == 0)
         {
-            Screen::Instance().Move((Terminal::lines() - 1), 0);
+            Screen::Instance().LineCol((Terminal::lines() - 1), 0);
             Screen::Instance().CtrlToEolWithBGColor();
             start_time = cur_time;
         }
@@ -451,7 +451,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         if (cur_time == last_time)
             return;
         last_time = cur_time;
-        Screen::Instance().Move((Terminal::lines() - 1), 0);
+        Screen::Instance().LineCol((Terminal::lines() - 1), 0);
         fmtrbyte = convert_size(*trbyte, 1);
         duration = cur_time - start_time;
         if (duration)
@@ -463,7 +463,7 @@ void showProgress(clen_t *linelen, clen_t *trbyte, long long content_length)
         {
             messages = Sprintf("%7s loaded", fmtrbyte);
         }
-        message(messages->ptr, 0, 0);
+        message(messages->ptr);
         Screen::Instance().Refresh();
         Terminal::flush();
     }
@@ -1214,7 +1214,7 @@ FILE *openSecretFile(const char *fname)
     {
         if (w3mApp::Instance().fmInitialized)
         {
-            message(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr, 0, 0);
+            message(Sprintf(FILE_IS_READABLE_MSG, fname)->ptr);
             Screen::Instance().Refresh();
             Terminal::flush();
         }

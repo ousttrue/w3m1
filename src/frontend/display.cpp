@@ -206,7 +206,7 @@ void fmTerm(void)
 {
     if (w3mApp::Instance().fmInitialized)
     {
-        Screen::Instance().Move((Terminal::lines() - 1), 0);
+        Screen::Instance().LineCol((Terminal::lines() - 1), 0);
         Screen::Instance().CtrlToEolWithBGColor();
         Screen::Instance().Refresh();
         Terminal::flush();
@@ -485,7 +485,7 @@ static void DrawHover(const Viewport &viewport,
 
         if (a->IsHit(pos))
         {
-            Screen::Instance().Move(y, col + viewport.rootX);
+            Screen::Instance().LineCol(y, col + viewport.rootX);
             if (l.lineBuf()[pos] == '\t')
             {
                 for (; col < nextCol; col++)
@@ -604,7 +604,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     {
         return;
     }
-    Screen::Instance().Move(line, 0);
+    Screen::Instance().LineCol(line, 0);
 
     ///
     /// show line number
@@ -630,7 +630,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     ///
     /// draw line
     ///
-    Screen::Instance().Move(line, rect.rootX);
+    Screen::Instance().LineCol(line, rect.rootX);
     auto pos = l->buffer.ColumnToBytePosition(currentColumn);
     auto p = &(l->buffer.lineBuf()[pos]);
     auto pr = &(l->buffer.propBuf()[pos]);
@@ -717,7 +717,7 @@ static void redrawNLine(const BufferPtr &buf)
             assert(buf->rect.rootX == buf->leftCol);
             DrawLine(l, i + buf->rect.rootY, buf->rect, buf->leftCol, buf->m_document);
         }
-        Screen::Instance().Move(i + buf->rect.rootY, 0);
+        Screen::Instance().LineCol(i + buf->rect.rootY, 0);
         Screen::Instance().CtrlToBottomEol();
     }
 
@@ -726,7 +726,7 @@ static void redrawNLine(const BufferPtr &buf)
         return;
 
     auto [x, y] = buf->GlobalXY();
-    Screen::Instance().Move(y, x);
+    Screen::Instance().LineCol(y, x);
 
     {
         int i = 0;
@@ -1003,20 +1003,23 @@ void show_message(std::string_view msg)
     {
         Terminal::term_cbreak();
         /* FIXME: gettextize? */
-        message(msg, 0, 0);
+        message(msg);
         Screen::Instance().Refresh();
         Terminal::flush();
     }
 }
 
-void message(std::string_view s, int return_x, int return_y)
+void message(std::string_view s)
 {
     if (!w3mApp::Instance().fmInitialized)
         return;
-    Screen::Instance().Move((Terminal::lines() - 1), 0);
+
+    auto [y, x] = Screen::Instance().LineCol();
+
+    Screen::Instance().LineCol((Terminal::lines() - 1), 0);
     Screen::Instance().PutsColumns(s.data(), Terminal::columns() - 1);
     Screen::Instance().CtrlToEolWithBGColor();
-    Screen::Instance().Move(return_y, return_x);
+    Screen::Instance().LineCol(x, y);
 }
 
 void disp_err_message(const char *s, int redraw_current)
@@ -1035,13 +1038,7 @@ void disp_message_nsec(const char *s, int redraw_current, int sec, int purge,
         fprintf(stderr, "%s\n", conv_to_system(s));
         return;
     }
-    if (!g_buf)
-    {
-        auto [x, y] = g_buf->GlobalXY();
-        message(s, x, y);
-    }
-    else
-        message(s, 0, (Terminal::lines() - 1));
+    message(s);
     Screen::Instance().Refresh();
     Terminal::flush();
 
@@ -1150,7 +1147,7 @@ void displayBuffer()
         // TAB
         if (GetTabCount() > 1 || GetMouseActionMenuStr().size())
         {
-            Screen::Instance().Move(0, 0);
+            Screen::Instance().LineCol(0, 0);
 
             if (GetMouseActionMenuStr().size())
                 Screen::Instance().Puts(GetMouseActionMenuStr().data());
@@ -1160,7 +1157,7 @@ void displayBuffer()
             // for(int i=0; i<GetTabCount(); ++i)
             // {
             //     auto b = t->GetCurrentBuffer();
-            //     Screen::Instance().Move(t->Y(), t->Left());
+            //     Screen::Instance().LineCol(t->Y(), t->Left());
             //     if (t == GetCurrentTab())
             //         Screen::Instance().Enable(S_BOLD);
             //     Screen::Instance().PutAscii('[');
@@ -1176,12 +1173,12 @@ void displayBuffer()
             //         effect_active_end();
             //     if ((l + 1) / 2 > 0)
             //         Screen::Instance().PutsColumnsFillSpace(" ", (l + 1) / 2);
-            //     Screen::Instance().Move(t->Y(), t->Right());
+            //     Screen::Instance().LineCol(t->Y(), t->Right());
             //     Screen::Instance().PutAscii(']');
             //     if (t == GetCurrentTab())
             //         Screen::Instance().Disable(S_BOLD);
             // }
-            Screen::Instance().Move(GetTabbarHeight(), 0);
+            Screen::Instance().LineCol(GetTabbarHeight(), 0);
             for (int i = 0; i < Terminal::columns(); i++)
                 Screen::Instance().PutAscii('~');
         }
@@ -1215,8 +1212,7 @@ void displayBuffer()
         Terminal::flush();
     }
     Screen::Instance().Enable(S_STANDOUT);
-    auto [x, y] = buf->GlobalXY();
-    message(msg->c_str(), x, y);
+    message(msg->c_str());
     Screen::Instance().Disable(S_STANDOUT);
     Terminal::title(conv_to_system(buf->buffername.c_str()));
     Screen::Instance().Refresh();
