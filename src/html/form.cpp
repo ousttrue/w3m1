@@ -294,7 +294,7 @@ static std::tuple<std::string_view, int> form_update_line(LinePtr line, std::str
     }
     pos += width - w;
 
-    auto len = line->buffer.len() + pos + spos - epos;
+    auto len = line->buffer.ByteLength() + pos + spos - epos;
 
     auto copy = line->buffer;
     auto buf = const_cast<char *>(copy.lineBuf());

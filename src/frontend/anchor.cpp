@@ -215,10 +215,10 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
     }
     for (i = spos; i < epos; i++)
         l->buffer.propBuf()[i] |= PE_ANCHOR;
-    // while (spos > l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+    // while (spos > l->buffer.ByteLength() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
     // {
-    //     spos -= l->buffer.len();
-    //     epos -= l->buffer.len();
+    //     spos -= l->buffer.ByteLength();
+    //     epos -= l->buffer.ByteLength();
     //     l = buf->m_document->NextLine(l);
     // }
     while (1)
@@ -231,11 +231,11 @@ reAnchorPos(BufferPtr buf, LinePtr l, char *p1, char *p2,
             hseq = a->hseq;
         }
         a->end.line = l->linenumber;
-        // if (epos > l->buffer.len() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
+        // if (epos > l->buffer.ByteLength() && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos)
         // {
-        //     a->end.pos = l->buffer.len();
+        //     a->end.pos = l->buffer.ByteLength();
         //     spos = 0;
-        //     epos -= l->buffer.len();
+        //     epos -= l->buffer.ByteLength();
         //     l = buf->m_document->NextLine(l);
         // }
         // else
@@ -278,7 +278,7 @@ reAnchorAny(BufferPtr buf, const char *re,
         p = l->buffer.lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.len()] - p, p == l->buffer.lineBuf()) == 1)
+            if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.ByteLength()] - p, p == l->buffer.lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
                 p = reAnchorPos(buf, l, p1, p2, anchorproc);
@@ -358,7 +358,7 @@ reAnchorNewsheader(const BufferPtr &buf)
                 continue;
             for (;;)
             {
-                if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.len()] - p, p == l->buffer.lineBuf()) == 1)
+                if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.ByteLength()] - p, p == l->buffer.lineBuf()) == 1)
                 {
                     matchedPosition(&p1, &p2);
                     p = reAnchorPos(buf, l, p1, p2, _put_anchor_news);

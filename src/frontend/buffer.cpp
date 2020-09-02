@@ -45,14 +45,14 @@ int prev_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;
 
-    for (l = line; l != NULL && l->buffer.len() == 0; l = buf->m_document->PrevLine(l))
+    for (l = line; l != NULL && l->buffer.ByteLength() == 0; l = buf->m_document->PrevLine(l))
         ;
-    if (l == NULL || l->buffer.len() == 0)
+    if (l == NULL || l->buffer.ByteLength() == 0)
         return -1;
 
     // GetCurrentBuffer()->SetCurrentLine(l);
     if (l != line)
-        GetCurrentBuffer()->bytePosition = GetCurrentBuffer()->CurrentLine()->buffer.len();
+        GetCurrentBuffer()->BytePosition(GetCurrentBuffer()->CurrentLine()->buffer.ByteLength());
     return 0;
 }
 
@@ -60,15 +60,15 @@ int next_nonnull_line(BufferPtr buf, LinePtr line)
 {
     LinePtr l;
 
-    for (l = line; l != NULL && l->buffer.len() == 0; l = buf->m_document->NextLine(l))
+    for (l = line; l != NULL && l->buffer.ByteLength() == 0; l = buf->m_document->NextLine(l))
         ;
 
-    if (l == NULL || l->buffer.len() == 0)
+    if (l == NULL || l->buffer.ByteLength() == 0)
         return -1;
 
     // GetCurrentBuffer()->SetCurrentLine(l);
     if (l != line)
-        GetCurrentBuffer()->bytePosition = 0;
+        GetCurrentBuffer()->m_currentCol = 0;
     return 0;
 }
 
@@ -144,14 +144,14 @@ int Buffer::WriteBufferCache()
         if (fwrite1(l->real_linenumber, cache) ||
             // fwrite1(l->usrflags, cache) ||
             fwrite1(l->buffer.Columns(), cache) ||
-            fwrite1(l->buffer.len(), cache)
+            fwrite1(l->buffer.ByteLength(), cache)
             // || fwrite1(l->bpos, cache) || fwrite1(l->bwidth, cache)
         )
             goto _error;
         // if (l->bpos == 0)
         {
-            if (fwrite(l->buffer.lineBuf(), 1, l->buffer.len(), cache) < l->buffer.len() ||
-                fwrite(l->buffer.propBuf(), sizeof(Lineprop), l->buffer.len(), cache) < l->buffer.len())
+            if (fwrite(l->buffer.lineBuf(), 1, l->buffer.ByteLength(), cache) < l->buffer.ByteLength() ||
+                fwrite(l->buffer.propBuf(), sizeof(Lineprop), l->buffer.ByteLength(), cache) < l->buffer.ByteLength())
                 goto _error;
         }
 
@@ -162,8 +162,8 @@ int Buffer::WriteBufferCache()
         {
             // if (l->bpos == 0)
             {
-                if (fwrite(l->buffer.colorBuf(), sizeof(Linecolor), l->buffer.len(), cache) <
-                    l->buffer.len())
+                if (fwrite(l->buffer.colorBuf(), sizeof(Linecolor), l->buffer.ByteLength(), cache) <
+                    l->buffer.ByteLength())
                     goto _error;
             }
         }
@@ -306,7 +306,7 @@ void Buffer::CopyFrom(BufferPtr src)
 
     bufferprop = src->bufferprop;
     m_leftCol = src->m_leftCol;
-    bytePosition = src->bytePosition;
+    m_currentCol = src->m_currentCol;
     rect = src->rect;
 
     prevhseq = src->prevhseq;
@@ -706,7 +706,7 @@ void set_buffer_environ(const BufferPtr &buf)
         set_environ("W3M_CHARSET", wc_ces_to_charset(buf->m_document->document_charset));
     }
     l = buf->CurrentLine();
-    if (l && (buf != prev_buf || l != prev_line || buf->bytePosition != prev_pos))
+    if (l && (buf != prev_buf || l != prev_line || buf->BytePosition() != prev_pos))
     {
         char *s = GetWord(buf);
         set_environ("W3M_CURRENT_WORD", (char *)(s ? s : ""));
@@ -749,7 +749,7 @@ void set_buffer_environ(const BufferPtr &buf)
     }
     prev_buf = buf;
     prev_line = l;
-    prev_pos = buf->bytePosition;
+    prev_pos = buf->BytePosition();
 }
 
 const char *NullLine = "";
@@ -775,40 +775,7 @@ void Buffer::SavePosition()
     // b->top_linenumber = TOP_LINENUMBER();
     // b->cur_linenumber = CUR_LINENUMBER();
     // b->currentColumn = this->leftCol;
-    // b->pos = this->bytePosition;
-}
-
-void Buffer::CursorRight()
-{
-    if (m_document->LineCount() == 0)
-        return;
-
-    auto l = CurrentLine();
-    auto p = l->buffer.propBuf();
-    auto delta = 1;
-    while (p[this->bytePosition + delta] & PC_WCHAR2)
-        delta++;
-
-    if (this->bytePosition + delta < l->buffer.len())
-    {
-        this->bytePosition += delta;
-    }
-}
-
-void Buffer::CursorLeft()
-{
-    if (m_document->LineCount() == 0)
-        return;
-
-    auto l = CurrentLine();
-    auto p = l->buffer.propBuf();
-    auto delta = 1;
-    while (this->bytePosition - delta > 0 && p[this->bytePosition - delta] & PC_WCHAR2)
-        delta++;
-
-    if (this->bytePosition >= delta){
-        this->bytePosition -= delta;
-    }
+    // b->pos = this->BytePosition();
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -846,6 +813,7 @@ void Buffer::CursorXY(int x, int y)
  */
 void Buffer::ArrangeCursor()
 {
+
     // if (this->currentLine == NULL)
     //     return;
 
@@ -870,21 +838,21 @@ void Buffer::ArrangeCursor()
     // //     CursorDown0(1);
     // //     this->pos = pos;
     // // }
-    // if (this->currentLine->buffer.len() == 0 || this->bytePosition < 0)
-    //     this->bytePosition = 0;
-    // else if (this->bytePosition >= this->currentLine->buffer.len())
-    //     this->bytePosition = this->currentLine->buffer.len() - 1;
+    // if (this->currentLine->buffer.len() == 0 || this->BytePosition() < 0)
+    //     this->BytePosition() = 0;
+    // else if (this->BytePosition() >= this->currentLine->buffer.len())
+    //     this->BytePosition() = this->currentLine->buffer.len() - 1;
 
-    // while (this->bytePosition > 0 && this->currentLine->buffer.propBuf()[this->bytePosition] & PC_WCHAR2)
-    //     this->bytePosition--;
+    // while (this->BytePosition() > 0 && this->currentLine->buffer.propBuf()[this->BytePosition()] & PC_WCHAR2)
+    //     this->BytePosition()--;
 
-    // col = this->currentLine->buffer.BytePositionToColumn(this->bytePosition);
+    // col = this->currentLine->buffer.BytePositionToColumn(this->BytePosition());
 
-    // while (this->bytePosition + delta < this->currentLine->buffer.len() &&
-    //        this->currentLine->buffer.propBuf()[this->bytePosition + delta] & PC_WCHAR2)
+    // while (this->BytePosition() + delta < this->currentLine->buffer.len() &&
+    //        this->currentLine->buffer.propBuf()[this->BytePosition() + delta] & PC_WCHAR2)
     //     delta++;
 
-    // col2 = this->currentLine->buffer.BytePositionToColumn(this->bytePosition + delta);
+    // col2 = this->currentLine->buffer.BytePositionToColumn(this->BytePosition() + delta);
     // if (col < this->leftCol || col2 > this->rect.cols + this->leftCol)
     // {
     //     this->leftCol = 0;
@@ -950,7 +918,7 @@ bool Buffer::MoveLeftWord(int n)
     for (int i = 0; i < n; i++)
     {
         auto pline = this->CurrentLine();
-        auto ppos = this->bytePosition;
+        auto ppos = this->BytePosition();
         if (prev_nonnull_line(shared_from_this(), this->CurrentLine()) < 0)
             goto end;
 
@@ -958,34 +926,34 @@ bool Buffer::MoveLeftWord(int n)
         {
             auto l = this->CurrentLine();
             auto lb = l->buffer.lineBuf();
-            while (this->bytePosition > 0)
+            while (this->BytePosition() > 0)
             {
-                int tmp = this->bytePosition;
+                int tmp = this->BytePosition();
                 prevChar(&tmp, l);
                 if (is_wordchar(getChar(&lb[tmp])))
                     break;
-                this->bytePosition = tmp;
+                this->BytePosition(tmp);
             }
-            if (this->bytePosition > 0)
+            if (this->BytePosition() > 0)
                 break;
             if (prev_nonnull_line(shared_from_this(), this->m_document->PrevLine(this->CurrentLine())) < 0)
             {
                 // this->SetCurrentLine(pline);
-                this->bytePosition = ppos;
+                this->BytePosition(ppos);
                 goto end;
             }
-            this->bytePosition = this->CurrentLine()->buffer.len();
+            this->BytePosition(this->CurrentLine()->buffer.ByteLength());
         }
         {
             auto l = this->CurrentLine();
             auto lb = l->buffer.lineBuf();
-            while (this->bytePosition > 0)
+            while (this->BytePosition() > 0)
             {
-                int tmp = this->bytePosition;
+                int tmp = this->BytePosition();
                 prevChar(&tmp, l);
                 if (!is_wordchar(getChar(&lb[tmp])))
                     break;
-                this->bytePosition = tmp;
+                this->BytePosition(tmp);
             }
         }
     }
@@ -1002,33 +970,36 @@ bool Buffer::MoveRightWord(int n)
     for (int i = 0; i < n; i++)
     {
         auto pline = this->CurrentLine();
-        auto ppos = this->bytePosition;
+        auto ppos = this->BytePosition();
         if (next_nonnull_line(shared_from_this(), this->CurrentLine()) < 0)
             goto end;
 
         auto l = this->CurrentLine();
         auto lb = l->buffer.lineBuf();
-        while (this->bytePosition < l->buffer.len() &&
-               is_wordchar(getChar(&lb[this->bytePosition])))
-            nextChar(&this->bytePosition, l);
-
-        while (1)
+        while (this->BytePosition() < l->buffer.ByteLength() &&
+               is_wordchar(getChar(&lb[this->BytePosition()])))
         {
-            while (this->bytePosition < l->buffer.len() &&
-                   !is_wordchar(getChar(&lb[this->bytePosition])))
-                nextChar(&this->bytePosition, l);
-            if (this->bytePosition < l->buffer.len())
-                break;
-            if (next_nonnull_line(shared_from_this(), this->m_document->NextLine(this->CurrentLine())) < 0)
-            {
-                // this->SetCurrentLine(pline);
-                this->bytePosition = ppos;
-                goto end;
-            }
-            this->bytePosition = 0;
-            l = this->CurrentLine();
-            lb = l->buffer.lineBuf();
+            // this->BytePosition(l);
+            // nextChar(&);
         }
+
+        // while (1)
+        // {
+        //     while (this->BytePosition() < l->buffer.len() &&
+        //            !is_wordchar(getChar(&lb[this->BytePosition()])))
+        //         nextChar(&this->BytePosition(), l);
+        //     if (this->BytePosition() < l->buffer.len())
+        //         break;
+        //     if (next_nonnull_line(shared_from_this(), this->m_document->NextLine(this->CurrentLine())) < 0)
+        //     {
+        //         // this->SetCurrentLine(pline);
+        //         this->BytePosition() = ppos;
+        //         goto end;
+        //     }
+        //     this->BytePosition() = 0;
+        //     l = this->CurrentLine();
+        //     lb = l->buffer.lineBuf();
+        // }
     }
 end:
     this->ArrangeCursor();
@@ -1048,7 +1019,7 @@ void Buffer::resetPos(int i)
     BufferPtr newBuf = std::make_shared<Buffer>();
     // newBuf->SetTopLine(top);
     // newBuf->SetCurrentLine(cur);
-    newBuf->bytePosition = b.pos;
+    newBuf->m_currentCol = b.pos;
     newBuf->m_leftCol = b.currentColumn;
     restorePosition(newBuf);
 }
@@ -1104,7 +1075,7 @@ void Buffer::srch_nxtprv(bool reverse, int prec_num)
     if (searchRoutine == backwardSearch)
         reverse = !reverse;
     if (reverse)
-        bytePosition += 1;
+        m_currentCol += 1;
     auto result = srchcore(SearchString, routine[reverse], prec_num);
     if (result & SR_FOUND)
         CurrentLine()->buffer.clear_mark();
@@ -1144,7 +1115,7 @@ int Buffer::dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
     {
         sbuf->COPY_BUFPOSITION_FROM(shared_from_this()); /* search starting point */
         currentLine = sbuf->CurrentLine();
-        s_pos = sbuf->bytePosition;
+        s_pos = sbuf->BytePosition();
         return -1;
     }
 
@@ -1170,11 +1141,11 @@ int Buffer::dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
         if (*str)
         {
             if (searchRoutine == forwardSearch)
-                this->bytePosition += 1;
+                this->m_currentCol += 1;
             sbuf->COPY_BUFPOSITION_FROM(shared_from_this());
             if (srchcore(str, searchRoutine, prec_num) == SR_NOTFOUND && searchRoutine == forwardSearch)
             {
-                this->bytePosition -= 1;
+                this->m_currentCol -= 1;
                 sbuf->COPY_BUFPOSITION_FROM(shared_from_this());
             }
             this->ArrangeCursor();
@@ -1191,7 +1162,7 @@ int Buffer::dispincsrch(int ch, Str src, Lineprop *prop, int prec_num)
         srchcore(str, searchRoutine, prec_num);
         this->ArrangeCursor();
         currentLine = this->CurrentLine();
-        s_pos = this->bytePosition;
+        s_pos = this->BytePosition();
     }
     this->CurrentLine()->buffer.clear_mark();
     return -1;
@@ -1227,14 +1198,14 @@ void Buffer::srch(SearchFunc func, const char *prompt, std::string_view str, int
         disp = true;
     }
 
-    auto p = this->bytePosition;
+    auto p = this->BytePosition();
     if (func == forwardSearch)
-        this->bytePosition += 1;
+        this->m_currentCol += 1;
     auto result = srchcore(str, func, prec_num);
     if (result & SR_FOUND)
         this->CurrentLine()->buffer.clear_mark();
     else
-        this->bytePosition = p;
+        this->m_currentCol = p;
     if (disp)
         disp_srchresult(result, prompt, str);
     searchRoutine = func;
@@ -1248,7 +1219,7 @@ void Buffer::_goLine(std::string_view l, int prec_num)
         return;
     }
 
-    this->bytePosition = 0;
+    this->m_currentCol = 0;
     if (((l[0] == '^') || (l[0] == '$')) && prec_num)
     {
         this->GotoRealLine(prec_num);
@@ -1274,7 +1245,7 @@ void Buffer::_goLine(std::string_view l, int prec_num)
 static void
 set_mark(LinePtr l, int pos, int epos)
 {
-    for (; pos < epos && pos < l->buffer.len(); pos++)
+    for (; pos < epos && pos < l->buffer.ByteLength(); pos++)
         l->buffer.propBuf()[pos] |= PE_MARK;
 }
 
@@ -1376,7 +1347,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
         return SR_NOTFOUND;
     }
 
-    auto pos = buf->bytePosition;
+    auto pos = buf->BytePosition();
     // if (l->bpos)
     // {
     //     pos += l->bpos;
@@ -1385,10 +1356,10 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
     // }
 
     auto begin = l;
-    while (pos < l->buffer.len() && l->buffer.propBuf()[pos] & PC_WCHAR2)
+    while (pos < l->buffer.ByteLength() && l->buffer.propBuf()[pos] & PC_WCHAR2)
         pos++;
 
-    if (pos < l->buffer.len() && regexMatch(&l->buffer.lineBuf()[pos], l->buffer.len() - pos, 0) == 1)
+    if (pos < l->buffer.ByteLength() && regexMatch(&l->buffer.lineBuf()[pos], l->buffer.ByteLength() - pos, 0) == 1)
     {
         matchedPosition(&first, &last);
         pos = first - l->buffer.lineBuf();
@@ -1397,7 +1368,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
         //     pos -= l->buffer.len();
         //     l = buf->m_document->NextLine(l);
         // }
-        buf->bytePosition = pos;
+        buf->BytePosition(pos);
         if (l != buf->CurrentLine())
             buf->GotoLine(l->linenumber);
         buf->ArrangeCursor();
@@ -1437,7 +1408,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
         }
         // if (l->bpos)
         //     continue;
-        if (regexMatch(l->buffer.lineBuf(), l->buffer.len(), 1) == 1)
+        if (regexMatch(l->buffer.lineBuf(), l->buffer.ByteLength(), 1) == 1)
         {
             matchedPosition(&first, &last);
             pos = first - l->buffer.lineBuf();
@@ -1446,7 +1417,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
             //     pos -= l->buffer.len();
             //     l = buf->m_document->NextLine(l);
             // }
-            buf->bytePosition = pos;
+            buf->BytePosition(pos);
             // buf->SetCurrentLine(l);
             buf->GotoLine(l->linenumber);
             buf->ArrangeCursor();
@@ -1478,7 +1449,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
     {
         return SR_NOTFOUND;
     }
-    pos = buf->bytePosition;
+    pos = buf->BytePosition();
     // if (l->bpos)
     // {
     //     pos += l->bpos;
@@ -1497,7 +1468,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
         found = NULL;
         found_last = NULL;
         q = l->buffer.lineBuf();
-        while (regexMatch(q, &l->buffer.lineBuf()[l->buffer.len()] - q, q == l->buffer.lineBuf()) == 1)
+        while (regexMatch(q, &l->buffer.lineBuf()[l->buffer.ByteLength()] - q, q == l->buffer.lineBuf()) == 1)
         {
             matchedPosition(&first, &last);
             if (first <= p)
@@ -1505,11 +1476,11 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
                 found = first;
                 found_last = last;
             }
-            if (q - l->buffer.lineBuf() >= l->buffer.len())
+            if (q - l->buffer.lineBuf() >= l->buffer.ByteLength())
                 break;
             q++;
 #ifdef USE_M17N
-            while (q - l->buffer.lineBuf() < l->buffer.len() && l->buffer.propBuf()[q - l->buffer.lineBuf()] & PC_WCHAR2)
+            while (q - l->buffer.lineBuf() < l->buffer.ByteLength() && l->buffer.propBuf()[q - l->buffer.lineBuf()] & PC_WCHAR2)
                 q++;
 #endif
             if (q > p)
@@ -1523,7 +1494,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
             //     pos -= l->buffer.len();
             //     l = buf->m_document->NextLine(l);
             // }
-            buf->bytePosition = pos;
+            buf->BytePosition(pos);
             if (l != buf->CurrentLine())
                 buf->GotoLine(l->linenumber);
             buf->ArrangeCursor();
@@ -1548,16 +1519,16 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
         found = NULL;
         found_last = NULL;
         q = l->buffer.lineBuf();
-        while (regexMatch(q, &l->buffer.lineBuf()[l->buffer.len()] - q, q == l->buffer.lineBuf()) == 1)
+        while (regexMatch(q, &l->buffer.lineBuf()[l->buffer.ByteLength()] - q, q == l->buffer.lineBuf()) == 1)
         {
             matchedPosition(&first, &last);
             found = first;
             found_last = last;
-            if (q - l->buffer.lineBuf() >= l->buffer.len())
+            if (q - l->buffer.lineBuf() >= l->buffer.ByteLength())
                 break;
             q++;
 #ifdef USE_M17N
-            while (q - l->buffer.lineBuf() < l->buffer.len() && l->buffer.propBuf()[q - l->buffer.lineBuf()] & PC_WCHAR2)
+            while (q - l->buffer.lineBuf() < l->buffer.ByteLength() && l->buffer.propBuf()[q - l->buffer.lineBuf()] & PC_WCHAR2)
                 q++;
 #endif
         }
@@ -1569,7 +1540,7 @@ SearchResultTypes backwardSearch(const BufferPtr &buf, std::string_view str)
             //     pos -= l->buffer.len();
             //     l = buf->m_document->NextLine(l);
             // }
-            buf->bytePosition = pos;
+            buf->BytePosition(pos);
             buf->GotoLine(l->linenumber);
             buf->ArrangeCursor();
             set_mark(l, pos, pos + found_last - found);

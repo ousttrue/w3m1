@@ -594,7 +594,7 @@ void linbeg(w3mApp *w3m, const CommandContext &context)
         return;
     while (doc->PrevLine(buf->CurrentLine()))
         buf->CursorUp();
-    buf->bytePosition = 0;
+    buf->m_currentCol = 0;
     buf->ArrangeCursor();
 }
 
@@ -607,7 +607,7 @@ void linend(w3mApp *w3m, const CommandContext &context)
         return;
     while (doc->NextLine(buf->CurrentLine()))
         buf->CursorDown();
-    buf->bytePosition = buf->CurrentLine()->buffer.len() - 1;
+    buf->CurrentLine()->buffer.BytePositionToColumn(buf->CurrentLine()->buffer.ByteLength() - 1);
     buf->ArrangeCursor();
 }
 
@@ -680,7 +680,7 @@ void _mark(w3mApp *w3m, const CommandContext &context)
     if (buf->m_document->LineCount() == 0)
         return;
     auto &l = buf->CurrentLine()->buffer;
-    l.propBuf()[buf->bytePosition] ^= PE_MARK;
+    l.propBuf()[buf->BytePosition()] ^= PE_MARK;
 }
 
 /* Go to next mark */
@@ -694,21 +694,21 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
     if (doc->LineCount() == 0)
         return;
 
-    auto i = buf->bytePosition + 1;
+    auto i = buf->BytePosition() + 1;
     auto l = buf->CurrentLine();
-    if (i >= l->buffer.len())
+    if (i >= l->buffer.ByteLength())
     {
         i = 0;
         l = doc->NextLine(l);
     }
     while (l != NULL)
     {
-        for (; i < l->buffer.len(); i++)
+        for (; i < l->buffer.ByteLength(); i++)
         {
             if (l->buffer.propBuf()[i] & PE_MARK)
             {
                 // buf->SetCurrentLine(l);
-                buf->bytePosition = i;
+                buf->BytePosition(i);
                 buf->ArrangeCursor();
                 return;
             }
@@ -732,13 +732,13 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
     auto doc = buf->m_document;
     if (doc->LineCount() == 0)
         return;
-    i = buf->bytePosition - 1;
+    i = buf->BytePosition() - 1;
     l = buf->CurrentLine();
     if (i < 0)
     {
         l = doc->PrevLine(l);
         if (l != NULL)
-            i = l->buffer.len() - 1;
+            i = l->buffer.ByteLength() - 1;
     }
     while (l != NULL)
     {
@@ -747,14 +747,14 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
             if (l->buffer.propBuf()[i] & PE_MARK)
             {
                 // buf->SetCurrentLine(l);
-                buf->bytePosition = i;
+                buf->BytePosition(i);
                 buf->ArrangeCursor();
                 return;
             }
         }
         l = doc->PrevLine(l);
         if (l != NULL)
-            i = l->buffer.len() - 1;
+            i = l->buffer.ByteLength() - 1;
     }
     /* FIXME: gettextize? */
     disp_message("No mark exist before here", true);
@@ -792,7 +792,7 @@ void reMark(w3mApp *w3m, const CommandContext &context)
         auto p = l->buffer.lineBuf();
         for (;;)
         {
-            if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.len()] - p, p == l->buffer.lineBuf()) == 1)
+            if (regexMatch(p, &l->buffer.lineBuf()[l->buffer.ByteLength()] - p, p == l->buffer.lineBuf()) == 1)
             {
                 matchedPosition(&p1, &p2);
                 l->buffer.propBuf()[p1 - l->buffer.lineBuf()] |= PE_MARK;

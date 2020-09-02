@@ -454,7 +454,7 @@ static void DrawHover(const Viewport &viewport,
                       int y, const PropertiedString &l, int leftColumn,
                       const AnchorPtr &a)
 {
-    for (int col = 0, pos = l.ColumnToBytePosition(leftColumn); col < viewport.cols && pos < l.len();)
+    for (int col = 0, pos = l.ColumnToBytePosition(leftColumn); col < viewport.cols && pos < l.ByteLength();)
     {
         // if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         // {
@@ -621,7 +621,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     //     Screen::Instance().Puts(tmp);
     // }
 
-    if (l->buffer.len() == 0 || l->buffer.Columns() - 1 < currentColumn)
+    if (l->buffer.ByteLength() == 0 || l->buffer.Columns() - 1 < currentColumn)
     {
         Screen::Instance().CtrlToEolWithBGColor();
         return;
@@ -643,7 +643,7 @@ static void DrawLine(LinePtr l, int line, const Viewport &rect, int currentColum
     auto rcol = l->buffer.BytePositionToColumn(pos);
     int delta = 1;
     int vpos = -1;
-    for (int j = 0; rcol - currentColumn < rect.cols && pos + j < l->buffer.len(); j += delta)
+    for (int j = 0; rcol - currentColumn < rect.cols && pos + j < l->buffer.ByteLength(); j += delta)
     {
         // if (w3mApp::Instance().useVisitedColor && vpos <= pos + j && !(pr[j] & PE_VISITED))
         // {
@@ -721,9 +721,6 @@ static void redrawNLine(const BufferPtr &buf)
         Screen::Instance().CtrlToBottomEol();
     }
 
-    auto [x, y] = buf->GlobalXY();
-    Screen::Instance().LineCol(y, x);
-
     if (!(ImageManager::Instance().activeImage && ImageManager::Instance().displayImage &&
           buf->m_document->img))
         return;
@@ -746,11 +743,11 @@ static LinePtr redrawLineImage(BufferPtr buf, LinePtr l, int i)
 
     if (l == NULL)
         return NULL;
-    if (l->buffer.len() == 0 || l->buffer.Columns() - 1 < column)
+    if (l->buffer.ByteLength() == 0 || l->buffer.Columns() - 1 < column)
         return l;
     int pos = l->buffer.ColumnToBytePosition(column);
     int rcol = l->buffer.BytePositionToColumn(pos);
-    for (int j = 0; rcol - column < buf->rect.cols && pos + j < l->buffer.len(); j++)
+    for (int j = 0; rcol - column < buf->rect.cols && pos + j < l->buffer.ByteLength(); j++)
     {
         if (rcol - column < 0)
         {
@@ -1211,6 +1208,10 @@ void displayBuffer()
     Screen::Instance().Enable(S_STANDOUT);
     message(msg->c_str());
     Screen::Instance().Disable(S_STANDOUT);
+
+    // cursor
+    auto [y, x] = buf->CursorLineCol();
+    Screen::Instance().LineCol(y, x);
 
     // out
     Terminal::title(conv_to_system(buf->buffername.c_str()));

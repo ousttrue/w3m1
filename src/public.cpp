@@ -211,7 +211,7 @@ getCurWord(BufferPtr buf, int *spos, int *epos)
         return NULL;
 
     auto p = l->buffer.lineBuf();
-    auto e = buf->bytePosition;
+    auto e = buf->BytePosition();
     while (e > 0 && !is_wordchar(getChar(&p[e])))
         prevChar(&e, l);
     if (!is_wordchar(getChar(&p[e])))
@@ -225,7 +225,7 @@ getCurWord(BufferPtr buf, int *spos, int *epos)
             break;
         b = tmp;
     }
-    while (e < l->buffer.len() && is_wordchar(getChar(&p[e])))
+    while (e < l->buffer.ByteLength() && is_wordchar(getChar(&p[e])))
         nextChar(&e, l);
     *spos = b;
     *epos = e;
@@ -249,7 +249,7 @@ void nextChar(int *s, LinePtr l)
     do
     {
         (*s)++;
-    } while ((*s) < l->buffer.len() && l->buffer.propBuf()[*s] & PC_WCHAR2);
+    } while ((*s) < l->buffer.ByteLength() && l->buffer.propBuf()[*s] & PC_WCHAR2);
 }
 
 uint32_t getChar(char *p)
@@ -405,7 +405,7 @@ void _followForm(bool submit)
         if (submit)
             goto do_submit;
         if (!fi->formChooseOptionByMenu(
-                buf->CursorX() - buf->bytePosition +
+                buf->CursorX() - buf->BytePosition() +
                     a->start.pos + buf->rect.rootX,
                 buf->CursorY() + buf->rect.rootY))
             break;
@@ -739,7 +739,7 @@ void _nextA(int visited, int n)
         an = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto y = buf->CurrentLine()->linenumber;
-    auto x = buf->bytePosition;
+    auto x = buf->BytePosition();
 
     // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (visited == true)
@@ -826,7 +826,7 @@ void _prevA(int visited, int n)
         an = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto y = buf->CurrentLine()->linenumber;
-    auto x = buf->bytePosition;
+    auto x = buf->BytePosition();
 
     // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
     if (visited == true)
@@ -936,7 +936,7 @@ void nextX(int d, int dy, int n)
         an = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
 
     auto l = buf->CurrentLine();
-    auto x = buf->bytePosition;
+    auto x = buf->BytePosition();
     auto y = l->linenumber;
     AnchorPtr pan;
     // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
@@ -947,7 +947,7 @@ void nextX(int d, int dy, int n)
         an = NULL;
         while (1)
         {
-            for (; x >= 0 && x < l->buffer.len(); x += d)
+            for (; x >= 0 && x < l->buffer.ByteLength(); x += d)
             {
                 an = buf->m_document->href.RetrieveAnchor({y, x});
                 if (!an)
@@ -963,7 +963,7 @@ void nextX(int d, int dy, int n)
             l = (dy > 0) ? buf->m_document->NextLine(l) : buf->m_document->PrevLine(l);
             if (!l)
                 break;
-            x = (d > 0) ? 0 : l->buffer.len() - 1;
+            x = (d > 0) ? 0 : l->buffer.ByteLength() - 1;
             y = l->linenumber;
         }
         if (!an)
@@ -973,7 +973,7 @@ void nextX(int d, int dy, int n)
     if (pan == NULL)
         return;
     buf->GotoLine(y);
-    buf->bytePosition = pan->start.pos;
+    buf->BytePosition(pan->start.pos);
     buf->ArrangeCursor();
 }
 
@@ -991,7 +991,7 @@ void nextY(int d, int n)
     if (!an)
         an = buf->m_document->formitem.RetrieveAnchor(buf->CurrentPoint());
 
-    int x = buf->bytePosition;
+    int x = buf->BytePosition();
     int y = buf->CurrentLine()->linenumber + d;
     AnchorPtr pan;
     // int n = w3mApp::Instance().w3mApp::Instance().searchKeyNum();
@@ -1172,7 +1172,7 @@ void _peekURL(int only_img, int n)
     if (n > 1 && s->Size() > (n - 1) * (Terminal::columns() - 1))
         offset = (n - 1) * (Terminal::columns() - 1);
 
-    while (offset < propstr.len() && propstr.propBuf()[offset] & PC_WCHAR2)
+    while (offset < propstr.ByteLength() && propstr.propBuf()[offset] & PC_WCHAR2)
         offset++;
 
     disp_message_nomouse(&s->ptr[offset], true);

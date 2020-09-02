@@ -145,7 +145,7 @@ public:
     char *lineBuf() { return m_lineBuf.data(); }
     const Lineprop *propBuf() const { return m_propBuf.data(); }
     Lineprop *propBuf() { return m_propBuf.data(); }
-    int len() const { return m_lineBuf.size(); }
+    int ByteLength() const { return m_lineBuf.size(); }
     const Linecolor *colorBuf() const { return m_colorBuf.empty() ? nullptr : m_colorBuf.data(); }
 
     PropertiedCharacter Get(int index) const
@@ -161,15 +161,17 @@ public:
     {
         if (m_columns < 0)
         {
-            m_columns = BytePositionToColumn(len());
+            m_columns = BytePositionToColumn(ByteLength());
         }
         return m_columns;
     }
 
+    // column is head of full width char
+    bool IsHeadColumn(int col) const;
     // byte position of column
-    int ColumnToBytePosition(int column) const;
+    int ColumnToBytePosition(int col) const;
     // byte length of column
-    int ColumnToByteLength(int column) const;
+    int ColumnToByteLength(int col) const;
 
     void clear_mark();
 };

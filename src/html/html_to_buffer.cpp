@@ -180,7 +180,7 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
             std::tie(str, tag) = HtmlTag::parse(str, true);
             if (tag)
             {
-                Process(buf, tag, out.len(), str.data());
+                Process(buf, tag, out.ByteLength(), str.data());
             }
         }
     }

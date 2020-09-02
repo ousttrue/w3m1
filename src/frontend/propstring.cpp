@@ -51,7 +51,7 @@ Str PropertiedString::conv_symbol() const
     const char **symbol = NULL;
     auto tmp = Strnew();
     auto pr = this->propBuf();
-    for (auto p = this->lineBuf(), ep = p + this->len(); p < ep; p++, pr++)
+    for (auto p = this->lineBuf(), ep = p + this->ByteLength(); p < ep; p++, pr++)
     {
         if (*pr & PC_SYMBOL)
         {
@@ -401,7 +401,7 @@ int PropertiedString::BytePositionToColumn(int pos, CalcPositionMode mode) const
 
     auto l = const_cast<char *>(lineBuf());
     auto pr = propBuf();
-    auto len = this->len();
+    auto len = this->ByteLength();
     if (!l || len == 0)
     {
         return 0;
@@ -443,10 +443,30 @@ int PropertiedString::BytePositionToColumn(int pos, CalcPositionMode mode) const
     return realColumn[pos];
 }
 
+bool PropertiedString::IsHeadColumn(int col) const
+{
+    auto c = 0;
+    for (int i = 0; i < ByteLength();)
+    {
+        if (c == col)
+        {
+            return true;
+        }
+        if (c > col)
+        {
+            break;
+        }
+        auto letter = Get(i);
+        i += ColumnToByteLength(c);
+        c += letter.ColumnLen();
+    }
+    return false;
+}
+
 int PropertiedString::ColumnToBytePosition(int column) const
 {
     int i;
-    for (i = 1; i < this->len(); i++)
+    for (i = 1; i < this->ByteLength(); i++)
     {
         if (this->BytePositionToColumn(i) > column)
             break;
@@ -458,7 +478,7 @@ int PropertiedString::ColumnToBytePosition(int column) const
 
 int PropertiedString::ColumnToByteLength(int column) const
 {
-    for (int i = 0, j = 0; i < this->len();)
+    for (int i = 0, j = 0; i < this->ByteLength();)
     {
         auto colLen = this->Get(i).ColumnLen();
         j += colLen;
@@ -466,15 +486,15 @@ int PropertiedString::ColumnToByteLength(int column) const
             return i;
         i++;
 
-        while (i < this->len() && this->propBuf()[i] & PC_WCHAR2)
+        while (i < this->ByteLength() && this->propBuf()[i] & PC_WCHAR2)
             i++;
     }
-    return this->len();
+    return this->ByteLength();
 }
 
 void PropertiedString::clear_mark()
 {
-    for (int i = 0; i < len(); i++)
+    for (int i = 0; i < ByteLength(); i++)
     {
         m_propBuf[i] &= ~PE_MARK;
     }

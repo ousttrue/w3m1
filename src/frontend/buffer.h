@@ -191,9 +191,7 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     //
     // vertical
     //
-    // top line
     int m_topLine = 0;
-    // cursor line
     int m_currentLine = 0;
     int CursorY() const
     {
@@ -203,19 +201,39 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     //
     // horizontal
     //
-    // left column
     int m_leftCol = 0;
-    // curosr column
-    int CurrentCol() const
-    {
-        return CurrentLine()->buffer.BytePositionToColumn(bytePosition);
-    }
+    int m_currentCol = 0;
 
-    int bytePosition = 0;
+    int BytePosition() const
+    {
+        return CurrentLine()->buffer.ColumnToBytePosition(m_currentCol);
+    }
+    void BytePosition(int p)
+    {
+        m_currentCol = CurrentLine()->buffer.BytePositionToColumn(p);
+    }
 
     int CursorX() const
     {
-        return CurrentCol() - m_leftCol;
+        return m_currentCol - m_leftCol;
+    }
+
+    int CursorXNormalized() const
+    {       
+        auto c = m_currentCol - m_leftCol;
+        if (!CurrentLine()->buffer.IsHeadColumn(m_currentCol))
+        {
+            --c;
+        }
+        return c;
+    }
+
+    std::tuple<int, int> CursorLineCol() const
+    {
+        return {
+            rect.rootY + CursorY(),
+            rect.rootX + CursorXNormalized(),
+        };
     }
 
     std::tuple<int, int> GlobalXY() const
@@ -275,7 +293,7 @@ public:
     void Goto(const BufferPoint &po, bool topline = false)
     {
         GotoLine(po.line, topline);
-        bytePosition = po.pos;
+        m_currentCol = po.pos;
         ArrangeCursor();
     }
 
@@ -308,8 +326,8 @@ public:
 
     void CursorHome()
     {
-        bytePosition = 0;
         m_currentLine = 0;
+        m_currentCol = 0;
     }
     void CursorUp()
     {
@@ -321,10 +339,18 @@ public:
         ++this->m_currentLine;
         ArrangeLine();
     }
+    void CursorRight()
+    {
+        ++this->m_currentCol;
+        ArrangeCursor();
+    }
+    void CursorLeft()
+    {
+        --this->m_currentCol;
+        ArrangeCursor();
+    }
 
     void CursorXY(int x, int y);
-    void CursorRight();
-    void CursorLeft();
     void ArrangeLine();
     void ArrangeCursor();
     int ColumnSkip(int offset);
@@ -332,15 +358,15 @@ public:
     {
         this->m_topLine = srcbuf->m_topLine;
         this->m_currentLine = srcbuf->m_currentLine;
-        this->bytePosition = srcbuf->bytePosition;
         this->m_leftCol = srcbuf->m_leftCol;
+        this->m_currentCol = srcbuf->m_currentCol;
     }
     void restorePosition(const BufferPtr orig)
     {
         this->m_topLine = orig->m_topLine;
         this->m_currentLine = orig->m_currentLine;
-        this->bytePosition = orig->bytePosition;
         this->m_leftCol = orig->m_leftCol;
+        this->m_currentCol = orig->m_currentCol;
         this->ArrangeCursor();
     }
 
@@ -394,7 +420,7 @@ public:
         {
             return {-1, -1, true};
         }
-        return {line->linenumber, bytePosition};
+        return {line->linenumber, m_currentCol};
     }
 
     void TmpClear();

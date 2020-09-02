@@ -642,7 +642,7 @@ pager_next:
         if (is_html)
             tmp = l->buffer.conv_symbol();
         else
-            tmp = Strnew_charp_n(l->buffer.lineBuf(), l->buffer.len());
+            tmp = Strnew_charp_n(l->buffer.lineBuf(), l->buffer.ByteLength());
         tmp = wc_Str_conv(tmp, w3mApp::Instance().InnerCharset, charset);
         tmp->Puts(f);
         // if (tmp->Back() != '\n' && !(cont && buf->m_document->NextLine(l) && buf->m_document->NextLine(l)->bpos))
