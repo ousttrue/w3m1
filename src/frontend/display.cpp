@@ -1192,10 +1192,6 @@ void displayBuffer()
         cline = buf->TopLine();
         ccolumn = buf->leftCol;
     }
-    if (buf->TopLine() == NULL)
-    {
-        buf->SetTopLine(buf->m_document->FirstLine());
-    }
 
     // if (buf->need_reshape)
     // {

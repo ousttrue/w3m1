@@ -717,7 +717,7 @@ void nextMk(w3mApp *w3m, const CommandContext &context)
         {
             if (l->buffer.propBuf()[i] & PE_MARK)
             {
-                buf->SetCurrentLine(l);
+                // buf->SetCurrentLine(l);
                 buf->bytePosition = i;
                 buf->ArrangeCursor();
                 return;
@@ -756,7 +756,7 @@ void prevMk(w3mApp *w3m, const CommandContext &context)
         {
             if (l->buffer.propBuf()[i] & PE_MARK)
             {
-                buf->SetCurrentLine(l);
+                // buf->SetCurrentLine(l);
                 buf->bytePosition = i;
                 buf->ArrangeCursor();
                 return;

@@ -41,6 +41,37 @@ bool fread1(T &d, FILE *f)
     return (fread(&d, sizeof(d), 1, f) == 0);
 }
 
+int prev_nonnull_line(BufferPtr buf, LinePtr line)
+{
+    LinePtr l;
+
+    for (l = line; l != NULL && l->buffer.len() == 0; l = buf->m_document->PrevLine(l))
+        ;
+    if (l == NULL || l->buffer.len() == 0)
+        return -1;
+
+    // GetCurrentBuffer()->SetCurrentLine(l);
+    if (l != line)
+        GetCurrentBuffer()->bytePosition = GetCurrentBuffer()->CurrentLine()->buffer.len();
+    return 0;
+}
+
+int next_nonnull_line(BufferPtr buf, LinePtr line)
+{
+    LinePtr l;
+
+    for (l = line; l != NULL && l->buffer.len() == 0; l = buf->m_document->NextLine(l))
+        ;
+
+    if (l == NULL || l->buffer.len() == 0)
+        return -1;
+
+    // GetCurrentBuffer()->SetCurrentLine(l);
+    if (l != line)
+        GetCurrentBuffer()->bytePosition = 0;
+    return 0;
+}
+
 Buffer::Buffer()
     : m_document(new Document)
 {
@@ -74,8 +105,8 @@ void Buffer::TmpClear()
 {
     if (/*this->pagerSource == NULL &&*/ this->WriteBufferCache() == 0)
     {
-        topLine = NULL;
-        currentLine = NULL;
+        m_topLine = 0;
+        m_currentLine = 0;
         m_document->Clear();
     }
 }
@@ -103,8 +134,8 @@ int Buffer::WriteBufferCache()
     if (!cache)
         goto _error1;
 
-    if (fwrite1(this->currentLine->linenumber, cache) ||
-        fwrite1(this->topLine->linenumber, cache))
+    if (fwrite1(this->m_currentLine, cache) ||
+        fwrite1(this->m_topLine, cache))
         goto _error;
 
     for (auto i = 0; i < m_document->LineCount(); ++i)
@@ -113,9 +144,9 @@ int Buffer::WriteBufferCache()
         if (fwrite1(l->real_linenumber, cache) ||
             // fwrite1(l->usrflags, cache) ||
             fwrite1(l->buffer.Columns(), cache) ||
-            fwrite1(l->buffer.len(), cache) 
+            fwrite1(l->buffer.len(), cache)
             // || fwrite1(l->bpos, cache) || fwrite1(l->bwidth, cache)
-            )
+        )
             goto _error;
         // if (l->bpos == 0)
         {
@@ -265,9 +296,9 @@ void Buffer::CopyFrom(BufferPtr src)
     m_document->event = src->m_document->event;
 
     // scroll
-    topLine = src->topLine;
+    m_topLine = src->m_topLine;
     // cursor ?
-    currentLine = src->currentLine;
+    m_currentLine = src->m_currentLine;
 
     // mimetype: text/plain
     type = src->type;
@@ -298,7 +329,6 @@ void Buffer::CopyFrom(BufferPtr src)
     submit = src->submit;
     undo = src->undo;
 }
-
 
 void Buffer::shiftAnchorPosition(AnchorList &al, const BufferPoint &bp, int shift)
 {
@@ -385,7 +415,7 @@ void Buffer::LineSkip(LinePtr line, int offset, int last)
              i--, --l)
         {
         };
-    topLine = *l;
+    // topLine = *l;
 }
 
 /*
@@ -410,7 +440,7 @@ void Buffer::GotoLine(int n, bool topline)
         /* FIXME: gettextize? */
         sprintf(msg, "First line is #%ld", l->linenumber);
         set_delayed_message(msg);
-        this->topLine = this->currentLine = l;
+        // this->topLine = this->currentLine = l;
         return;
     }
     if (m_document->LastLine()->linenumber < n)
@@ -419,8 +449,8 @@ void Buffer::GotoLine(int n, bool topline)
         /* FIXME: gettextize? */
         sprintf(msg, "Last line is #%ld", m_document->LastLine()->linenumber);
         set_delayed_message(msg);
-        this->currentLine = l;
-        LineSkip(this->currentLine, -(this->rect.lines - 1), false);
+        // this->currentLine = l;
+        // LineSkip(this->currentLine, -(this->rect.lines - 1), false);
         return;
     }
     auto it = m_document->_find(l);
@@ -428,10 +458,10 @@ void Buffer::GotoLine(int n, bool topline)
     {
         if ((*it)->linenumber >= n)
         {
-            this->currentLine = *it;
-            if (n < this->topLine->linenumber ||
-                this->topLine->linenumber + this->rect.lines <= n)
-                LineSkip(*it, -(this->rect.lines + 1) / 2, false);
+            // this->currentLine = *it;
+            // if (n < this->topLine->linenumber ||
+            //     this->topLine->linenumber + this->rect.lines <= n)
+            //     LineSkip(*it, -(this->rect.lines + 1) / 2, false);
             break;
         }
     }
@@ -444,63 +474,63 @@ void Buffer::GotoLine(int n, bool topline)
 
 void Buffer::Scroll(int n)
 {
-    auto lnum = currentLine->linenumber;
-    auto top = topLine;
-    this->LineSkip(top, n, false);
-    if (this->topLine == top)
-    {
-        lnum += n;
-        if (lnum < this->topLine->linenumber)
-            lnum = this->topLine->linenumber;
-        else if (lnum > m_document->LastLine()->linenumber)
-            lnum = m_document->LastLine()->linenumber;
-    }
-    else
-    {
-        auto tlnum = this->topLine->linenumber;
-        auto llnum = this->topLine->linenumber + this->rect.lines - 1;
-        int diff_n;
-        if (w3mApp::Instance().nextpage_topline)
-            diff_n = 0;
-        else
-            diff_n = n - (tlnum - top->linenumber);
-        if (lnum < tlnum)
-            lnum = tlnum + diff_n;
-        if (lnum > llnum)
-            lnum = llnum + diff_n;
-    }
-    this->GotoLine(lnum);
+    // auto lnum = currentLine->linenumber;
+    // auto top = topLine;
+    // this->LineSkip(top, n, false);
+    // if (this->topLine == top)
+    // {
+    //     lnum += n;
+    //     if (lnum < this->topLine->linenumber)
+    //         lnum = this->topLine->linenumber;
+    //     else if (lnum > m_document->LastLine()->linenumber)
+    //         lnum = m_document->LastLine()->linenumber;
+    // }
+    // else
+    // {
+    //     auto tlnum = this->topLine->linenumber;
+    //     auto llnum = this->topLine->linenumber + this->rect.lines - 1;
+    //     int diff_n;
+    //     if (w3mApp::Instance().nextpage_topline)
+    //         diff_n = 0;
+    //     else
+    //         diff_n = n - (tlnum - top->linenumber);
+    //     if (lnum < tlnum)
+    //         lnum = tlnum + diff_n;
+    //     if (lnum > llnum)
+    //         lnum = llnum + diff_n;
+    // }
+    // this->GotoLine(lnum);
 }
 
 void Buffer::NScroll(int n)
 {
-    if (m_document->LineCount() == 0)
-        return;
+    // if (m_document->LineCount() == 0)
+    //     return;
 
-    this->Scroll(n);
+    // this->Scroll(n);
 
-    this->ArrangeLine();
-    if (n > 0)
-    {
-        // if (this->currentLine->bpos &&
-        //     this->currentLine->bwidth >= this->currentColumn + this->visualpos)
-        //     this->CursorDown(1);
-        // else
-        {
-            while (m_document->NextLine(this->currentLine) && this->currentLine->buffer.Columns() < this->CurrentCol())
-                this->CursorDown0(1);
-        }
-    }
-    else
-    {
-        if (this->currentLine->buffer.Columns() < this->CurrentCol())
-            this->CursorUp(1);
-        else
-        {
-            // while (m_document->PrevLine(this->currentLine) && this->currentLine->bwidth >= this->currentColumn + this->visualpos)
-            //     this->CursorUp0(1);
-        }
-    }
+    // this->ArrangeLine();
+    // if (n > 0)
+    // {
+    //     // if (this->currentLine->bpos &&
+    //     //     this->currentLine->bwidth >= this->currentColumn + this->visualpos)
+    //     //     this->CursorDown(1);
+    //     // else
+    //     {
+    //         while (m_document->NextLine(this->currentLine) && this->currentLine->buffer.Columns() < this->CurrentCol())
+    //             this->CursorDown0(1);
+    //     }
+    // }
+    // else
+    // {
+    //     if (this->currentLine->buffer.Columns() < this->CurrentCol())
+    //         this->CursorUp(1);
+    //     else
+    //     {
+    //         // while (m_document->PrevLine(this->currentLine) && this->currentLine->bwidth >= this->currentColumn + this->visualpos)
+    //         //     this->CursorUp0(1);
+    //     }
+    // }
 }
 
 /*
@@ -511,48 +541,48 @@ void Buffer::GotoRealLine(int n)
     char msg[32];
     LinePtr l = m_document->FirstLine();
 
-    if (l == NULL)
-        return;
-    // if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
+    // if (l == NULL)
+    //     return;
+    // // if (this->pagerSource && !(this->bufferprop & BP_CLOSE))
+    // // {
+    // //     if (m_document->LastLine()->real_linenumber < n)
+    // //         getNextPage(shared_from_this(), n - m_document->LastLine()->real_linenumber);
+    // //     while ((m_document->LastLine()->real_linenumber < n) &&
+    // //            (getNextPage(shared_from_this(), 1) != NULL))
+    // //         ;
+    // // }
+    // if (l->real_linenumber > n)
     // {
-    //     if (m_document->LastLine()->real_linenumber < n)
-    //         getNextPage(shared_from_this(), n - m_document->LastLine()->real_linenumber);
-    //     while ((m_document->LastLine()->real_linenumber < n) &&
-    //            (getNextPage(shared_from_this(), 1) != NULL))
-    //         ;
+    //     /* FIXME: gettextize? */
+    //     sprintf(msg, "First line is #%ld", l->real_linenumber);
+    //     set_delayed_message(msg);
+    //     this->topLine = this->currentLine = l;
+    //     return;
     // }
-    if (l->real_linenumber > n)
-    {
-        /* FIXME: gettextize? */
-        sprintf(msg, "First line is #%ld", l->real_linenumber);
-        set_delayed_message(msg);
-        this->topLine = this->currentLine = l;
-        return;
-    }
-    if (m_document->LastLine()->real_linenumber < n)
-    {
-        l = m_document->LastLine();
-        /* FIXME: gettextize? */
-        sprintf(msg, "Last line is #%ld", m_document->LastLine()->real_linenumber);
-        set_delayed_message(msg);
-        this->currentLine = l;
-        LineSkip(this->currentLine, -(this->rect.lines - 1),
-                 false);
-        return;
-    }
+    // if (m_document->LastLine()->real_linenumber < n)
+    // {
+    //     l = m_document->LastLine();
+    //     /* FIXME: gettextize? */
+    //     sprintf(msg, "Last line is #%ld", m_document->LastLine()->real_linenumber);
+    //     set_delayed_message(msg);
+    //     this->currentLine = l;
+    //     LineSkip(this->currentLine, -(this->rect.lines - 1),
+    //              false);
+    //     return;
+    // }
 
-    auto it = m_document->_find(l);
-    for (; it != m_document->m_lines.end(); ++it)
-    {
-        if ((*it)->real_linenumber >= n)
-        {
-            this->currentLine = *it;
-            if (n < this->topLine->real_linenumber ||
-                this->topLine->real_linenumber + this->rect.lines <= n)
-                LineSkip(*it, -(this->rect.lines + 1) / 2, false);
-            break;
-        }
-    }
+    // auto it = m_document->_find(l);
+    // for (; it != m_document->m_lines.end(); ++it)
+    // {
+    //     if ((*it)->real_linenumber >= n)
+    //     {
+    //         this->currentLine = *it;
+    //         if (n < this->topLine->real_linenumber ||
+    //             this->topLine->real_linenumber + this->rect.lines <= n)
+    //             LineSkip(*it, -(this->rect.lines + 1) / 2, false);
+    //         break;
+    //     }
+    // }
 }
 
 /*
@@ -729,11 +759,7 @@ void Buffer::AddNewLine(const PropertiedString &lineBuffer, int real_linenumber)
 {
     auto l = m_document->AddLine();
     l->buffer = lineBuffer;
-    if (m_document->LineCount() == 1)
-    {
-        topLine = l;
-    }
-    currentLine = l;
+    m_currentLine = m_document->LineCount() - 1;
 
     // 1 origin linenumber
     l->linenumber = m_document->LineCount();
@@ -786,185 +812,185 @@ void Buffer::SavePosition()
     if (m_document->LineCount() == 0)
         return;
 
-    auto b = undo.size() ? &undo.back() : nullptr;
-    if (b && b->top_linenumber == TOP_LINENUMBER() &&
-        b->cur_linenumber == CUR_LINENUMBER() &&
-        b->currentColumn == leftCol &&
-        b->pos == bytePosition)
-    {
-        return;
-    }
+    // auto b = undo.size() ? &undo.back() : nullptr;
+    // if (b && b->top_linenumber == TOP_LINENUMBER() &&
+    //     b->cur_linenumber == CUR_LINENUMBER() &&
+    //     b->currentColumn == leftCol &&
+    //     b->pos == bytePosition)
+    // {
+    //     return;
+    // }
 
-    undo.push_back({});
+    // undo.push_back({});
 
-    b = &undo.back();
-    b->top_linenumber = TOP_LINENUMBER();
-    b->cur_linenumber = CUR_LINENUMBER();
-    b->currentColumn = this->leftCol;
-    b->pos = this->bytePosition;
+    // b = &undo.back();
+    // b->top_linenumber = TOP_LINENUMBER();
+    // b->cur_linenumber = CUR_LINENUMBER();
+    // b->currentColumn = this->leftCol;
+    // b->pos = this->bytePosition;
 }
 
 void Buffer::CursorUp0(int n)
 {
-    if (this->CursorY() > 0)
-        CursorUpDown(-1);
-    else
-    {
-        this->LineSkip(this->topLine, -n, false);
-        if (m_document->PrevLine(this->currentLine) != NULL)
-            this->currentLine = m_document->PrevLine(this->currentLine);
-        ArrangeLine();
-    }
+    // if (this->CursorY() > 0)
+    //     CursorUpDown(-1);
+    // else
+    // {
+    //     this->LineSkip(this->topLine, -n, false);
+    //     if (m_document->PrevLine(this->currentLine) != NULL)
+    //         this->currentLine = m_document->PrevLine(this->currentLine);
+    //     ArrangeLine();
+    // }
 }
 
 void Buffer::CursorUp(int n)
 {
-    LinePtr l = this->currentLine;
-    if (m_document->LineCount() == 0)
-        return;
-    // while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos)
-    //     CursorUp0(n);
-    if (this->currentLine == m_document->FirstLine())
-    {
-        this->GotoLine(l->linenumber);
-        ArrangeLine();
-        return;
-    }
-    CursorUp0(n);
-    // while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos &&
-    //        this->currentLine->bwidth >= this->currentColumn + this->visualpos)
-    //     CursorUp0(n);
+    // LinePtr l = this->currentLine;
+    // if (m_document->LineCount() == 0)
+    //     return;
+    // // while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos)
+    // //     CursorUp0(n);
+    // if (this->currentLine == m_document->FirstLine())
+    // {
+    //     this->GotoLine(l->linenumber);
+    //     ArrangeLine();
+    //     return;
+    // }
+    // CursorUp0(n);
+    // // while (m_document->PrevLine(this->currentLine) && this->currentLine->bpos &&
+    // //        this->currentLine->bwidth >= this->currentColumn + this->visualpos)
+    // //     CursorUp0(n);
 }
 
 void Buffer::CursorDown0(int n)
 {
-    if (this->CursorY() < this->rect.lines - 1)
-        CursorUpDown(1);
-    else
-    {
-        this->LineSkip(this->topLine, n, false);
-        if (m_document->NextLine(this->currentLine) != NULL)
-            this->currentLine = m_document->NextLine(this->currentLine);
-        ArrangeLine();
-    }
+    // if (this->CursorY() < this->rect.lines - 1)
+    //     CursorUpDown(1);
+    // else
+    // {
+    //     this->LineSkip(this->topLine, n, false);
+    //     if (m_document->NextLine(this->currentLine) != NULL)
+    //         this->currentLine = m_document->NextLine(this->currentLine);
+    //     ArrangeLine();
+    // }
 }
 
 void Buffer::CursorDown(int n)
 {
-    LinePtr l = this->currentLine;
-    if (m_document->LineCount() == 0)
-        return;
-    // while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos)
-    //     CursorDown0(n);
-    if (this->currentLine == m_document->LastLine())
-    {
-        this->GotoLine(l->linenumber);
-        ArrangeLine();
-        return;
-    }
-    CursorDown0(n);
-    // while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos &&
-    //        this->currentLine->buffer.Columns() <
-    //            this->currentColumn + this->visualpos)
-    //     CursorDown0(n);
+    // LinePtr l = this->currentLine;
+    // if (m_document->LineCount() == 0)
+    //     return;
+    // // while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos)
+    // //     CursorDown0(n);
+    // if (this->currentLine == m_document->LastLine())
+    // {
+    //     this->GotoLine(l->linenumber);
+    //     ArrangeLine();
+    //     return;
+    // }
+    // CursorDown0(n);
+    // // while (m_document->NextLine(this->currentLine) && m_document->NextLine(this->currentLine)->bpos &&
+    // //        this->currentLine->buffer.Columns() <
+    // //            this->currentColumn + this->visualpos)
+    // //     CursorDown0(n);
 }
 
 void Buffer::CursorUpDown(int n)
 {
-    LinePtr cl = this->currentLine;
+    // LinePtr cl = this->currentLine;
 
-    if (m_document->LineCount() == 0)
-        return;
-    if ((this->currentLine = this->CurrentLineSkip(cl, n, false)) == cl)
-        return;
-    ArrangeLine();
+    // if (m_document->LineCount() == 0)
+    //     return;
+    // if ((this->currentLine = this->CurrentLineSkip(cl, n, false)) == cl)
+    //     return;
+    // ArrangeLine();
 }
 
 void Buffer::CursorRight(int n)
 {
-    int i, delta = 1, vpos2;
-    LinePtr l = this->currentLine;
-    Lineprop *p;
+    // int i, delta = 1, vpos2;
+    // LinePtr l = this->currentLine;
+    // Lineprop *p;
 
-    if (m_document->LineCount() == 0)
-        return;
-    // if (this->pos == l->buffer.len() && !(m_document->NextLine(l) && m_document->NextLine(l)->bpos))
+    // if (m_document->LineCount() == 0)
     //     return;
-    i = this->bytePosition;
-    p = l->buffer.propBuf();
+    // // if (this->pos == l->buffer.len() && !(m_document->NextLine(l) && m_document->NextLine(l)->bpos))
+    // //     return;
+    // i = this->bytePosition;
+    // p = l->buffer.propBuf();
 
-    while (i + delta < l->buffer.len() && p[i + delta] & PC_WCHAR2)
-        delta++;
+    // while (i + delta < l->buffer.len() && p[i + delta] & PC_WCHAR2)
+    //     delta++;
 
-    if (i + delta < l->buffer.len())
-    {
-        this->bytePosition = i + delta;
-    }
-    else if (l->buffer.len() == 0)
-    {
-        this->bytePosition = 0;
-    }
-    // else if (m_document->NextLine(l) && m_document->NextLine(l)->bpos)
+    // if (i + delta < l->buffer.len())
     // {
-    //     CursorDown0(1);
-    //     this->pos = 0;
-    //     ArrangeCursor();
-    //     return;
+    //     this->bytePosition = i + delta;
     // }
-    else
-    {
-        this->bytePosition = l->buffer.len() - 1;
-        while (this->bytePosition && p[this->bytePosition] & PC_WCHAR2)
-            this->bytePosition--;
-    }
-    auto cpos = this->CurrentCol();
-    // this->currentCol = cpos - this->leftCol;
-    delta = 1;
+    // else if (l->buffer.len() == 0)
+    // {
+    //     this->bytePosition = 0;
+    // }
+    // // else if (m_document->NextLine(l) && m_document->NextLine(l)->bpos)
+    // // {
+    // //     CursorDown0(1);
+    // //     this->pos = 0;
+    // //     ArrangeCursor();
+    // //     return;
+    // // }
+    // else
+    // {
+    //     this->bytePosition = l->buffer.len() - 1;
+    //     while (this->bytePosition && p[this->bytePosition] & PC_WCHAR2)
+    //         this->bytePosition--;
+    // }
+    // auto cpos = this->CurrentCol();
+    // // this->currentCol = cpos - this->leftCol;
+    // delta = 1;
 
-    while (this->bytePosition + delta < l->buffer.len() && p[this->bytePosition + delta] & PC_WCHAR2)
-        delta++;
+    // while (this->bytePosition + delta < l->buffer.len() && p[this->bytePosition + delta] & PC_WCHAR2)
+    //     delta++;
 
-    vpos2 = l->buffer.BytePositionToColumn(this->bytePosition + delta) - this->leftCol - 1;
-    if (vpos2 >= this->rect.cols && n)
-    {
-        ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
-        // this->currentCol = cpos - this->leftCol;
-    }
+    // vpos2 = l->buffer.BytePositionToColumn(this->bytePosition + delta) - this->leftCol - 1;
+    // if (vpos2 >= this->rect.cols && n)
+    // {
+    //     ColumnSkip(n + (vpos2 - this->rect.cols) - (vpos2 - this->rect.cols) % n);
+    //     // this->currentCol = cpos - this->leftCol;
+    // }
 }
 
 void Buffer::CursorLeft(int n)
 {
     int i, delta = 1, cpos;
-    LinePtr l = this->currentLine;
-    Lineprop *p;
+    // LinePtr l = this->currentLine;
+    // Lineprop *p;
 
-    if (m_document->LineCount() == 0)
-        return;
-    i = this->bytePosition;
-    p = l->buffer.propBuf();
-
-    while (i - delta > 0 && p[i - delta] & PC_WCHAR2)
-        delta++;
-
-    if (i >= delta)
-        this->bytePosition = i - delta;
-    // else if (m_document->PrevLine(l) && l->bpos)
-    // {
-    //     CursorUp0(-1);
-    //     this->pos = this->currentLine->buffer.len() - 1;
-    //     ArrangeCursor();
+    // if (m_document->LineCount() == 0)
     //     return;
+    // i = this->bytePosition;
+    // p = l->buffer.propBuf();
+
+    // while (i - delta > 0 && p[i - delta] & PC_WCHAR2)
+    //     delta++;
+
+    // if (i >= delta)
+    //     this->bytePosition = i - delta;
+    // // else if (m_document->PrevLine(l) && l->bpos)
+    // // {
+    // //     CursorUp0(-1);
+    // //     this->pos = this->currentLine->buffer.len() - 1;
+    // //     ArrangeCursor();
+    // //     return;
+    // // }
+    // else
+    //     this->bytePosition = 0;
+    // cpos = l->buffer.BytePositionToColumn(this->bytePosition);
+    // // this->currentCol = cpos - this->leftCol;
+    // if (this->CurrentCol() < 0 && n)
+    // {
+    //     ColumnSkip(-n + this->CurrentCol() - this->CurrentCol() % n);
+    //     // this->currentCol = cpos - this->leftCol;
     // }
-    else
-        this->bytePosition = 0;
-    cpos = l->buffer.BytePositionToColumn(this->bytePosition);
-    // this->currentCol = cpos - this->leftCol;
-    if (this->CurrentCol() < 0 && n)
-    {
-        ColumnSkip(-n + this->CurrentCol() - this->CurrentCol() % n);
-        // this->currentCol = cpos - this->leftCol;
-    }
-    // CursorX() = this->currentCol;
+    // // CursorX() = this->currentCol;
 }
 
 void Buffer::CursorXY(int x, int y)
@@ -1002,51 +1028,51 @@ void Buffer::CursorXY(int x, int y)
  */
 void Buffer::ArrangeCursor()
 {
-    if (this->currentLine == NULL)
-        return;
+    // if (this->currentLine == NULL)
+    //     return;
 
-    int col, col2, pos;
-    int delta = 1;
-    /* Arrange line */
-    if (this->currentLine->linenumber - this->topLine->linenumber >= this->rect.lines || this->currentLine->linenumber < this->topLine->linenumber)
-    {
-        this->LineSkip(this->currentLine, 0, false);
-    }
-    /* Arrange column */
-    // while (this->pos < 0 && m_document->PrevLine(this->currentLine) && this->currentLine->bpos)
+    // int col, col2, pos;
+    // int delta = 1;
+    // /* Arrange line */
+    // if (this->currentLine->linenumber - this->topLine->linenumber >= this->rect.lines || this->currentLine->linenumber < this->topLine->linenumber)
     // {
-    //     pos = this->pos + m_document->PrevLine(this->currentLine)->len();
-    //     CursorUp0(1);
-    //     this->pos = pos;
+    //     this->LineSkip(this->currentLine, 0, false);
     // }
-    // while (this->pos >= this->currentLine->buffer.len() && m_document->NextLine(this->currentLine) &&
-    //        m_document->NextLine(this->currentLine)->bpos)
+    // /* Arrange column */
+    // // while (this->pos < 0 && m_document->PrevLine(this->currentLine) && this->currentLine->bpos)
+    // // {
+    // //     pos = this->pos + m_document->PrevLine(this->currentLine)->len();
+    // //     CursorUp0(1);
+    // //     this->pos = pos;
+    // // }
+    // // while (this->pos >= this->currentLine->buffer.len() && m_document->NextLine(this->currentLine) &&
+    // //        m_document->NextLine(this->currentLine)->bpos)
+    // // {
+    // //     pos = this->pos - this->currentLine->buffer.len();
+    // //     CursorDown0(1);
+    // //     this->pos = pos;
+    // // }
+    // if (this->currentLine->buffer.len() == 0 || this->bytePosition < 0)
+    //     this->bytePosition = 0;
+    // else if (this->bytePosition >= this->currentLine->buffer.len())
+    //     this->bytePosition = this->currentLine->buffer.len() - 1;
+
+    // while (this->bytePosition > 0 && this->currentLine->buffer.propBuf()[this->bytePosition] & PC_WCHAR2)
+    //     this->bytePosition--;
+
+    // col = this->currentLine->buffer.BytePositionToColumn(this->bytePosition);
+
+    // while (this->bytePosition + delta < this->currentLine->buffer.len() &&
+    //        this->currentLine->buffer.propBuf()[this->bytePosition + delta] & PC_WCHAR2)
+    //     delta++;
+
+    // col2 = this->currentLine->buffer.BytePositionToColumn(this->bytePosition + delta);
+    // if (col < this->leftCol || col2 > this->rect.cols + this->leftCol)
     // {
-    //     pos = this->pos - this->currentLine->buffer.len();
-    //     CursorDown0(1);
-    //     this->pos = pos;
+    //     this->leftCol = 0;
+    //     if (col2 > this->rect.cols)
+    //         ColumnSkip(col);
     // }
-    if (this->currentLine->buffer.len() == 0 || this->bytePosition < 0)
-        this->bytePosition = 0;
-    else if (this->bytePosition >= this->currentLine->buffer.len())
-        this->bytePosition = this->currentLine->buffer.len() - 1;
-
-    while (this->bytePosition > 0 && this->currentLine->buffer.propBuf()[this->bytePosition] & PC_WCHAR2)
-        this->bytePosition--;
-
-    col = this->currentLine->buffer.BytePositionToColumn(this->bytePosition);
-
-    while (this->bytePosition + delta < this->currentLine->buffer.len() &&
-           this->currentLine->buffer.propBuf()[this->bytePosition + delta] & PC_WCHAR2)
-        delta++;
-
-    col2 = this->currentLine->buffer.BytePositionToColumn(this->bytePosition + delta);
-    if (col < this->leftCol || col2 > this->rect.cols + this->leftCol)
-    {
-        this->leftCol = 0;
-        if (col2 > this->rect.cols)
-            ColumnSkip(col);
-    }
 }
 
 void Buffer::ArrangeLine()
@@ -1101,7 +1127,7 @@ bool Buffer::MoveLeftWord(int n)
                 break;
             if (prev_nonnull_line(shared_from_this(), this->m_document->PrevLine(this->CurrentLine())) < 0)
             {
-                this->SetCurrentLine(pline);
+                // this->SetCurrentLine(pline);
                 this->bytePosition = ppos;
                 goto end;
             }
@@ -1152,7 +1178,7 @@ bool Buffer::MoveRightWord(int n)
                 break;
             if (next_nonnull_line(shared_from_this(), this->m_document->NextLine(this->CurrentLine())) < 0)
             {
-                this->SetCurrentLine(pline);
+                // this->SetCurrentLine(pline);
                 this->bytePosition = ppos;
                 goto end;
             }
@@ -1177,8 +1203,8 @@ void Buffer::resetPos(int i)
     cur->linenumber = b.cur_linenumber;
 
     BufferPtr newBuf = std::make_shared<Buffer>();
-    newBuf->SetTopLine(top);
-    newBuf->SetCurrentLine(cur);
+    // newBuf->SetTopLine(top);
+    // newBuf->SetCurrentLine(cur);
     newBuf->bytePosition = b.pos;
     newBuf->leftCol = b.currentColumn;
     restorePosition(newBuf);
@@ -1386,14 +1412,14 @@ void Buffer::_goLine(std::string_view l, int prec_num)
     }
     else if (l[0] == '^')
     {
-        this->SetCurrentLine(m_document->FirstLine());
-        this->SetTopLine(m_document->FirstLine());
+        // this->SetCurrentLine(m_document->FirstLine());
+        // this->SetTopLine(m_document->FirstLine());
     }
     else if (l[0] == '$')
     {
         this->LineSkip(m_document->LastLine(),
                        -(this->rect.lines + 1) / 2, true);
-        this->SetCurrentLine(m_document->LastLine());
+        // this->SetCurrentLine(m_document->LastLine());
     }
     else
     {
@@ -1578,7 +1604,7 @@ SearchResultTypes forwardSearch(const BufferPtr &buf, std::string_view str)
             //     l = buf->m_document->NextLine(l);
             // }
             buf->bytePosition = pos;
-            buf->SetCurrentLine(l);
+            // buf->SetCurrentLine(l);
             buf->GotoLine(l->linenumber);
             buf->ArrangeCursor();
             set_mark(l, pos, pos + last - first);
@@ -1728,21 +1754,21 @@ int Buffer::ColumnSkip(int offset)
     int column = this->leftCol + offset;
     int nlines = this->rect.lines + 1;
 
-    int maxColumn = 0;
-    auto l = m_document->_find(topLine);
-    for (int i = 0; i < nlines && l != m_document->m_lines.end(); i++, ++l)
-    {
-        if ((*l)->buffer.Columns() - 1 > maxColumn)
-            maxColumn = (*l)->buffer.Columns() - 1;
-    }
-    maxColumn -= this->rect.cols - 1;
-    if (column < maxColumn)
-        maxColumn = column;
-    if (maxColumn < 0)
-        maxColumn = 0;
+    // int maxColumn = 0;
+    // auto l = m_document->_find(topLine);
+    // for (int i = 0; i < nlines && l != m_document->m_lines.end(); i++, ++l)
+    // {
+    //     if ((*l)->buffer.Columns() - 1 > maxColumn)
+    //         maxColumn = (*l)->buffer.Columns() - 1;
+    // }
+    // maxColumn -= this->rect.cols - 1;
+    // if (column < maxColumn)
+    //     maxColumn = column;
+    // if (maxColumn < 0)
+    //     maxColumn = 0;
 
-    if (this->leftCol == maxColumn)
-        return 0;
-    this->leftCol = maxColumn;
+    // if (this->leftCol == maxColumn)
+    //     return 0;
+    // this->leftCol = maxColumn;
     return 1;
 }

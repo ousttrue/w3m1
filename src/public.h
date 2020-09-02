@@ -14,8 +14,6 @@ void shiftvisualpos(BufferPtr buf, int shift);
 void cmd_loadfile(const char *fn);
 void cmd_loadURL(std::string_view url, URL *current, HttpReferrerPolicy referer, FormPtr request);
 int handleMailto(const char *url);
-int prev_nonnull_line(BufferPtr buf, LinePtr line);
-int next_nonnull_line(BufferPtr buf, LinePtr line);
 char *getCurWord(BufferPtr buf, int *spos, int *epos);
 void prevChar(int *s, LinePtr l);
 void nextChar(int *s, LinePtr l);

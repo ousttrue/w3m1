@@ -104,19 +104,14 @@ public:
         }
         return m_lines.back();
     }
-    void EraseTo(const LinePtr &currentLine)
+    void EraseTo(int currentLine)
     {
-        if (currentLine)
+        auto s = m_lines.begin();
+        auto e = m_lines.begin();
+        for (int i = 0; i < LineCount() && e != m_lines.end(); ++i, ++e)
         {
-            auto it = _find(currentLine);
-            if (it == m_lines.end())
-            {
-                assert(false);
-                return;
-            }
-            ++it;
-            m_lines.erase(it, m_lines.end());
         }
+        m_lines.erase(s, e);
     }
     LinePtr NextLine(LinePtr line) const
     {
@@ -197,12 +192,12 @@ struct Buffer : std::enable_shared_from_this<Buffer>
     // vertical
     //
     // top line
-    LinePtr topLine;
+    int m_topLine = 0;
     // cursor line
-    LinePtr currentLine;
+    int m_currentLine = 0;
     int CursorY() const
     {
-        return currentLine->linenumber - topLine->linenumber;
+        return m_currentLine - m_topLine;
     }
 
     //
@@ -239,16 +234,17 @@ public:
     void AddNewLine(const PropertiedString &lineBuffer, int real_linenumber = -1);
     void ClearLines()
     {
-        currentLine = topLine = NULL;
+        m_currentLine = 0;
+        m_topLine = 0;
         m_document->Clear();
     }
     LinePtr TopLine() const
     {
-        return topLine;
+        return m_document->GetLine(m_topLine);
     }
     LinePtr CurrentLine() const
     {
-        return currentLine;
+        return m_document->GetLine(m_currentLine);
     }
     void SetFirstLine(LinePtr line)
     {
@@ -259,22 +255,22 @@ public:
     {
         assert(false);
     }
-    void SetTopLine(LinePtr line)
-    {
-        topLine = line;
-    }
-    void SetCurrentLine(LinePtr line)
-    {
-        currentLine = line;
-    }
-    int TOP_LINENUMBER() const
-    {
-        return (TopLine() ? TopLine()->linenumber : 1);
-    }
-    int CUR_LINENUMBER() const
-    {
-        return (currentLine ? currentLine->linenumber : 1);
-    }
+    // void SetTopLine(LinePtr line)
+    // {
+    //     topLine = line;
+    // }
+    // void SetCurrentLine(LinePtr line)
+    // {
+    //     currentLine = line;
+    // }
+    // int TOP_LINENUMBER() const
+    // {
+    //     return (TopLine() ? TopLine()->linenumber : 1);
+    // }
+    // int CUR_LINENUMBER() const
+    // {
+    //     return (currentLine ? currentLine->linenumber : 1);
+    // }
 
     void _goLine(std::string_view l, int prec_num);
     void GotoLine(int n, bool topline = false);
@@ -293,9 +289,9 @@ public:
     void NScroll(int n);
     void CurrentAsLast()
     {
-        m_document->EraseTo(currentLine);
-        topLine = m_document->FirstLine();
-        currentLine = m_document->FirstLine();
+        m_document->EraseTo(m_currentLine);
+        m_topLine = 0;
+        m_currentLine = 0;
     }
     bool MoveLeftWord(int n);
     bool MoveRightWord(int n);
@@ -315,7 +311,7 @@ public:
     void CursorHome()
     {
         bytePosition = 0;
-        currentLine = 0;
+        m_currentLine = 0;
     }
     void CursorXY(int x, int y);
     void CursorUp0(int n);
@@ -330,15 +326,15 @@ public:
     int ColumnSkip(int offset);
     void COPY_BUFPOSITION_FROM(const BufferPtr srcbuf)
     {
-        this->topLine = srcbuf->topLine;
-        this->currentLine = srcbuf->currentLine;
+        this->m_topLine = srcbuf->m_topLine;
+        this->m_currentLine = srcbuf->m_currentLine;
         this->bytePosition = srcbuf->bytePosition;
         this->leftCol = srcbuf->leftCol;
     }
     void restorePosition(const BufferPtr orig)
     {
-        this->LineSkip(m_document->FirstLine(), orig->TOP_LINENUMBER() - 1, false);
-        this->GotoLine(orig->CUR_LINENUMBER());
+        this->m_topLine = orig->m_topLine;
+        this->m_currentLine = orig->m_currentLine;
         this->bytePosition = orig->bytePosition;
         this->leftCol = orig->leftCol;
         this->ArrangeCursor();

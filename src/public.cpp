@@ -200,37 +200,6 @@ int handleMailto(const char *url)
     return 1;
 }
 
-int prev_nonnull_line(BufferPtr buf, LinePtr line)
-{
-    LinePtr l;
-
-    for (l = line; l != NULL && l->buffer.len() == 0; l = buf->m_document->PrevLine(l))
-        ;
-    if (l == NULL || l->buffer.len() == 0)
-        return -1;
-
-    GetCurrentBuffer()->SetCurrentLine(l);
-    if (l != line)
-        GetCurrentBuffer()->bytePosition = GetCurrentBuffer()->CurrentLine()->buffer.len();
-    return 0;
-}
-
-int next_nonnull_line(BufferPtr buf, LinePtr line)
-{
-    LinePtr l;
-
-    for (l = line; l != NULL && l->buffer.len() == 0; l = buf->m_document->NextLine(l))
-        ;
-
-    if (l == NULL || l->buffer.len() == 0)
-        return -1;
-
-    GetCurrentBuffer()->SetCurrentLine(l);
-    if (l != line)
-        GetCurrentBuffer()->bytePosition = 0;
-    return 0;
-}
-
 char *
 getCurWord(BufferPtr buf, int *spos, int *epos)
 {
