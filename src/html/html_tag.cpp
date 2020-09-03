@@ -655,6 +655,11 @@ std::tuple<std::string_view, bool> HtmlTag::parse_attr(std::string_view s, int n
         q.remove_prefix(1);
     q = svu::strip_left(q);
 
+    if (std::string_view(attrname) == "value")
+    {
+        auto a = 0;
+    }
+
     // value
     Str value_tmp = nullptr;
     if (q[0] == '=')
@@ -783,7 +788,7 @@ std::string_view HtmlTag::_parse(std::string_view s, bool internal)
         this->attrid.resize(nattr, ATTR_UNKNOWN);
 #ifdef HTML_TAG_USE_STRING
         this->value.resize(nattr);
-#else        
+#else
         this->value.resize(nattr, nullptr);
 #endif
         this->map.resize(MAX_TAGATTR, MAX_TAGATTR);

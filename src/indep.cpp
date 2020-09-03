@@ -617,9 +617,19 @@ html_unquote(const char *str, CharacterEncodingScheme ces)
     {
         if (*p == '&')
         {
-            auto [pos, q] = getescapecmd(p, ces);
-            p = pos;
-            tmp->Push(q);
+            auto [pos, unicode] = ucs4_from_entity(p);
+            if (unicode == -1)
+            {
+                auto [pos, q] = getescapecmd(p, ces);
+                tmp->Push(q);
+                p = pos;
+            }
+            else
+            {
+                p = pos.data();
+                auto utf8 = SingleCharacter::unicode_to_utf8(unicode);
+                tmp->Push((const char *)utf8.bytes.data(), utf8.size());
+            }
         }
         else
         {
