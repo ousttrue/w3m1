@@ -420,15 +420,19 @@ public:
                         }
                         else
                         {
-                            m_obuf.proc_mchar(1, delta, &str, mode);
+                            auto pos = m_obuf.proc_mchar(1, delta, str, mode);
+                            str = pos.data();
                         }
                     }
                     else
                     {
-                        if (*str == '&')
+                        if (*str == '&'){
                             m_obuf.proc_escape(&str);
-                        else
-                            m_obuf.proc_mchar(1, delta, &str, mode);
+                        }
+                        else{
+                            auto pos = m_obuf.proc_mchar(1, delta, str, mode);
+                            str = pos.data();
+                        }
                     }
                     if (m_obuf.flag & (RB_SPECIAL & ~RB_PRE_INT))
                         continue;
@@ -480,8 +484,10 @@ public:
                         {
                             m_obuf.proc_escape(&str);
                         }
-                        else
-                            m_obuf.proc_mchar(m_obuf.flag & RB_SPECIAL, delta, &str, mode);
+                        else{
+                            auto pos = m_obuf.proc_mchar(m_obuf.flag & RB_SPECIAL, delta, str, mode);
+                            str = pos.data();
+                        }
                     }
                 }
                 if (m_henv.need_flushline(mode))

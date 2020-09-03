@@ -194,7 +194,7 @@ struct readbuffer
     void set_space_to_prevchar();
     void push_spaces(int pre_mode, int width);
     void fillline(int indent);
-    void proc_mchar(int pre_mode, int width, const char **str, Lineprop mode);
+    std::string_view proc_mchar(int pre_mode, int width, std::string_view str, Lineprop mode);
 
     void append_tags();
     void save_fonteffect();

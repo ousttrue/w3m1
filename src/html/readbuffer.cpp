@@ -282,8 +282,8 @@ void readbuffer::proc_escape(const char **str_return)
 
     if (ech == -1)
     {
-        *str_return = str;
-        proc_mchar(this->flag & RB_SPECIAL, 1, str_return, PC_ASCII);
+        auto pos = proc_mchar(this->flag & RB_SPECIAL, 1, str, PC_ASCII);
+        *str_return = pos.data();
         return;
     }
 
@@ -394,20 +394,20 @@ void readbuffer::fillline(int indent)
     this->flag &= ~RB_NFLUSHED;
 }
 
-void readbuffer::proc_mchar(int pre_mode,
-                            int width, const char **str, Lineprop mode)
+std::string_view readbuffer::proc_mchar(int pre_mode, int width, std::string_view str, Lineprop mode)
 {
-    check_breakpoint(pre_mode, *str);
+    check_breakpoint(pre_mode, str.data());
     this->pos += width;
-    this->line->Push(*str, get_mclen(*str));
+    auto len = SingleCharacter::as_utf8(str.data()).size();
+    this->line->Push(str.data(), len);
     if (width > 0)
     {
-        this->prevchar->CopyFrom(*str, 1);
-        if (**str != ' ')
+        this->prevchar->CopyFrom(str.data(), 1);
+        if (str[0] != ' ')
             this->prev_ctype = mode;
     }
-    (*str) += get_mclen(*str);
     this->flag |= RB_NFLUSHED;
+    return str.substr(len);
 }
 
 void readbuffer::append_tags()
