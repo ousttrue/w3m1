@@ -339,6 +339,10 @@ union SingleCharacter
         UTF8_MASK3 = 4 + 2 + 1,
     };
 
+    static SingleCharacter as_utf8(const char *utf8)
+    {
+        return as_utf8((const char8_t *)utf8);
+    }
     static SingleCharacter as_utf8(const char8_t *utf8)
     {
         if (utf8[0] < 0x8f)

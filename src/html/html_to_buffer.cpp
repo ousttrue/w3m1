@@ -152,31 +152,19 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
             auto _ = (const char8_t *)&sc;
             auto len = sc.size();
 
-            while (*p)
+            if (len == 1)
             {
-                mode = get_mctype(*p);
-                if (mode == PC_CTRL || mode == PC_UNDEF)
+                out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
+            }
+            else
+            {
+                for (int i = 0; i < len; ++i, ++p)
                 {
-                    out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
-                    p++;
-                }
-                else if (mode & PC_UNKNOWN)
-                {
-                    out.push(PC_ASCII | effect | ex_efct(ex_effect), ' ');
-                    p += get_mclen(p);
-                }
-                else
-                {
-                    // int len = get_mclen(p);
-                    out.push(mode | effect | ex_efct(ex_effect), *(p++));
-                    if (--len)
+                    if (i)
                     {
                         mode = (mode & ~PC_WCHAR1) | PC_WCHAR2;
-                        while (len--)
-                        {
-                            out.push(mode | effect | ex_efct(ex_effect), *(p++));
-                        }
                     }
+                    out.push(mode | effect | ex_efct(ex_effect), *p);
                 }
             }
         }
@@ -193,7 +181,7 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
     }
 
     auto l = buf->m_document->AddLine();
-    auto _ = (const char8_t*)out.lineBuf();
+    auto _ = (const char8_t *)out.lineBuf();
     l->buffer = out;
 
     assert(str.empty());

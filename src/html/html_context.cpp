@@ -96,7 +96,7 @@ public:
 
     TextLineList *List() const
     {
-        return m_henv.buf;
+        return m_henv.list();
     }
 
     FormDataPtr Form() const
@@ -477,7 +477,9 @@ public:
                         state->prev_is_hangul = is_hangul;
 
                         if (*str == '&')
+                        {
                             m_obuf.proc_escape(&str);
+                        }
                         else
                             m_obuf.proc_mchar(m_obuf.flag & RB_SPECIAL, delta, &str, mode);
                     }
@@ -2997,7 +2999,7 @@ void HtmlContext::do_refill(struct table *tbl, int row, int col, int maxlimit)
                          ti != NULL; ti = ti->next)
                         align(ti->ptr, h_env.limit, alignment);
                 }
-                appendTextLineList(h_env.buf, tbl->tables[id].buf);
+                appendTextLineList(h_env.list(), tbl->tables[id].buf);
                 if (h_env.maxlimit < limit)
                     h_env.maxlimit = limit;
                 h_env.obuf->restore_fonteffect();

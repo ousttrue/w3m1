@@ -275,11 +275,10 @@ void readbuffer::process_idattr(int cmd, HtmlTagPtr tag)
 
 void readbuffer::proc_escape(const char **str_return)
 {
-    const char *str = *str_return, *estr;
+    const char *str = *str_return;
     auto [pos, ech] = ucs4_from_entity(*str_return);
     *str_return = pos.data();
-    int width, n_add = *str_return - str;
-    auto mode = PC_ASCII;
+    int n_add = *str_return - str;
 
     if (ech == -1)
     {
@@ -287,11 +286,24 @@ void readbuffer::proc_escape(const char **str_return)
         proc_mchar(this->flag & RB_SPECIAL, 1, str_return, PC_ASCII);
         return;
     }
-    mode = IS_CNTRL(ech) ? PC_CTRL : PC_ASCII;
 
-    estr = (char *)from_unicode(ech, w3mApp::Instance().InnerCharset);
+    auto unicode = SingleCharacter::unicode_to_utf8(ech);
+    Lineprop mode;
+    auto width = wcwidth(ech);
+    if (unicode.size() == 1)
+    {
+        mode = IS_CNTRL(ech) ? PC_CTRL : PC_ASCII;
+    }
+    else
+    {
+        mode = PC_KANJI1;
+    }
+
+    // estr = (char *)from_unicode(ech, w3mApp::Instance().InnerCharset);
+    auto estr = (const char *)unicode.bytes.data();
+
     check_breakpoint(this->flag & RB_SPECIAL, estr);
-    width = get_strwidth(estr);
+    // auto width = get_strwidth(estr);
     if (width == 1 && ech == (unsigned char)*estr &&
         ech != '&' && ech != '<' && ech != '>')
     {

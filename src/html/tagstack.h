@@ -22,9 +22,12 @@ struct environment
 
 struct html_feed_environ
 {
-    struct readbuffer *obuf;
+private:
     TextLineList *buf;
 
+public:
+    TextLineList *list() const { return buf; }
+    struct readbuffer *obuf;
     Str tagbuf;
     int limit;
     int maxlimit;
