@@ -121,7 +121,9 @@ void HtmlToBuffer::ProcessLine(const BufferPtr &buf, Str line, int nlines)
         else if (str[0] != '<' && str[0] != '&')
         {
             // multibyte char ?
-            int len = get_mclen(str);
+            auto utf8 = SingleCharacter::as_utf8(str.data());
+            auto len = utf8.size();
+            // int len = get_mclen(str);
             out.push(mode | effect | ex_efct(ex_effect), str[0]);
             str.remove_prefix(1);
             if (--len)

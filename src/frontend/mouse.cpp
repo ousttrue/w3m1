@@ -240,9 +240,8 @@ void initMouseAction(void)
     {
 
         int w = 0;
-        const char **symbol = get_symbol(w3mApp::Instance().DisplayCharset, &w);
-        mouse_action.lastline_str =
-            Strnew(symbol[N_GRAPH_SYMBOL + 13])->ptr;
+        const char **symbol = get_symbol(WC_CES_UTF_8, &w);
+        // mouse_action.lastline_str = Strnew(symbol[N_GRAPH_SYMBOL + 13])->ptr;
     }
 
     if ((mf = fopen(confFile(MOUSE_FILE), "rt")) != NULL)
@@ -345,7 +344,7 @@ void do_mouse_action(MouseBtnAction btn, int x, int y)
         mouse_action.cursorX = x;
         mouse_action.cursorY = y;
         (*map->func)(&w3mApp::Instance(), {
-            data: map->data,
+            data : map->data,
         });
     }
 }
@@ -393,7 +392,7 @@ void process_mouse(MouseBtnAction btn, int x, int y)
                     if (t == NULL)
                         return;
                     GetCurrentBuffer()->CursorXY(press_x - GetCurrentBuffer()->rect.rootX,
-                                                                  press_y - GetCurrentBuffer()->rect.rootY);
+                                                 press_y - GetCurrentBuffer()->rect.rootY);
                     if (GetCurrentBuffer()->CursorY() == press_y - GetCurrentBuffer()->rect.rootY &&
                         (GetCurrentBuffer()->CursorX() == press_x - GetCurrentBuffer()->rect.rootX
 
